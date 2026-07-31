@@ -288,7 +288,7 @@ async function fetchAndParseSubtitles(url) {
     STATE.cues = [];
     renderTranscript(detectedL2Code);
   }
-  updateStatus(t('loadingSubtitles', [detectedL2Code]));
+  updateStatus(t('msg.loading'));
 
   const gen = ++fetchGen;
 
@@ -333,6 +333,7 @@ async function fetchAndParseSubtitles(url) {
     } else {
       STATE.activeCueIdx = -1;
       renderTranscript();
+      updateStatus('');
       if (!STATE.panelVisible) {
         const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
         if (pref !== false) {
@@ -586,7 +587,7 @@ function mainWorldFetch(url) {
 async function fetchYTTrack(track) {
   try {
     trace('FETCH', `YouTube track: ${track.languageCode} (kind=${track.kind || 'manual'})`);
-    updateStatus(t('loadingSubtitles', ['en']));
+    updateStatus(t('msg.loading'));
 
     // Ensure URL is absolute
     let url = track.baseUrl;
@@ -642,7 +643,7 @@ async function fetchYTTrack(track) {
       }
     }
     setBadge(true);
-    updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
+    updateStatus('');
   } catch (err) {
     logerr('Failed to fetch YouTube subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
@@ -929,7 +930,7 @@ function createPanelUI() {
   // L1 (interface/native) language selector
   l1SelectEl = document.createElement('select');
   l1SelectEl.id = 'lpv-l1-select';
-  l1SelectEl.title = t('interfaceLanguage');
+  l1SelectEl.title = t('placeholder.select_language');
   l1SelectEl.addEventListener('change', () => {
     onL1Change(l1SelectEl.value);
   });
@@ -937,7 +938,7 @@ function createPanelUI() {
   // L2 (learning) language selector
   l2SelectEl = document.createElement('select');
   l2SelectEl.id = 'lpv-l2-select';
-  l2SelectEl.title = t('learningLanguage');
+  l2SelectEl.title = t('placeholder.select_language');
   l2SelectEl.addEventListener('change', () => {
     onL2Change(l2SelectEl.value);
   });
@@ -964,7 +965,7 @@ function createPanelUI() {
 
   statusEl = document.createElement('div');
   statusEl.id = 'lpv-status';
-  statusEl.textContent = t('waitingForSubtitles');
+  statusEl.textContent = '';
 
   panelContent = document.createElement('div');
   panelContent.id = 'lpv-panel-content';
@@ -983,10 +984,10 @@ function createPanelUI() {
 /** Refresh all static UI labels after a locale change.
  *  Called by onL1Change() after setLocale() loads the new messages. */
 function refreshUILabels() {
-  if (l1SelectEl) l1SelectEl.title = t('interfaceLanguage');
-  if (l2SelectEl) l2SelectEl.title = t('learningLanguage');
+  if (l1SelectEl) l1SelectEl.title = t('placeholder.select_language');
+  if (l2SelectEl) l2SelectEl.title = t('placeholder.select_language');
   if (statusEl && STATE.cues.length === 0) {
-    statusEl.textContent = t('waitingForSubtitles');
+    statusEl.textContent = '';
   }
   // Close button is just '✕' (no text), no update needed
   // L1/L2 dropdown options are endonyms, handled by populateL1Selector/populateL2Selector
@@ -1157,7 +1158,7 @@ async function loadNetflixTrackForLanguage(langCode) {
   // Clear old cues and show spinner
   STATE.cues = [];
   renderTranscript(bestKey);
-  updateStatus(t('loadingSubtitles', [bestKey]));
+  updateStatus(t('msg.loading'));
 
   try {
     const response = await fetch(track.url);
@@ -1195,7 +1196,7 @@ async function loadNetflixTrackForLanguage(langCode) {
       }
     }
     setBadge(true);
-    updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
+    updateStatus('');
   } catch (err) {
     logerr('Failed to fetch Netflix subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
@@ -1396,7 +1397,7 @@ async function init() {
         }
       }
       setBadge(true);
-      updateStatus(t('subtitleEntriesLoaded', [String(STATE.cues.length)]));
+      updateStatus('');
     }
     attachTimeTracking();
     setInterval(() => {

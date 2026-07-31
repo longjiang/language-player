@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Αναμονή για υπότιτλους…"
+  "actions": {
+    "message": "Περισσότερα"
   },
-  "startPlaying": {
-    "message": "Ξεκινήστε την αναπαραγωγή ενός βίντεο."
-  },
-  "loadingLanguage": {
-    "message": "Φόρτωση $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "Φορτώθηκαν $count$ εγγραφές υποτίτλων",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Αποτυχία φόρτωσης υποτίτλων"
-  },
-  "loadingSubtitles": {
-    "message": "Φόρτωση υποτίτλων $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Κλείσιμο"
-  },
-  "learningLanguage": {
-    "message": "Γλώσσα εκμάθησης"
-  },
-  "interfaceLanguage": {
-    "message": "Γλώσσα διεπαφής"
-  },
-  "popularLanguages": {
-    "message": "Δημοφιλή"
+  "aiThinking": {
+    "message": "Φόρτωση..."
   },
   "allLanguages": {
     "message": "Όλα"
   },
-  "translate": {
-    "message": "Μετάφραση"
+  "close": {
+    "message": "Κλείσιμο"
   },
-  "showTranslation": {
-    "message": "Εμφάνιση μετάφρασης"
-  },
-  "translating": {
-    "message": "Μετάφραση… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Ενέργειες"
+  "closePanel": {
+    "message": "Κλείσιμο"
   },
   "copy": {
     "message": "Αντιγραφή"
-  },
-  "speak": {
-    "message": "Μίλα"
   },
   "explain": {
     "message": "Ρωτήστε την τεχνητή νοημοσύνη"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Ρωτήστε την τεχνητή νοημοσύνη"
   },
-  "aiThinking": {
-    "message": "🤖 Η ΤΝ σκέφτεται…"
+  "extensionDescription": {
+    "message": "Διαδραστικοί δίγλωσσοι υπότιτλοι για εκμάθηση γλωσσών σε Prime Video, YouTube, Netflix, Disney+, Hulu και Max."
   },
-  "thinking": {
-    "message": "σκέφτεται…"
+  "failedToLoadSubtitles": {
+    "message": "Αποτυχία φόρτωσης υποτίτλων"
+  },
+  "interfaceLanguage": {
+    "message": "Επιλέξτε μια γλώσσα"
+  },
+  "learningLanguage": {
+    "message": "Επιλέξτε μια γλώσσα"
+  },
+  "loadingSubtitles": {
+    "message": "Φόρτωση..."
+  },
+  "noTranscriptFound": {
+    "message": "Οι υπότιτλοι δεν είναι ακόμα διαθέσιμοι για αυτό το βίντεο."
+  },
+  "popularLanguages": {
+    "message": "Δημοφιλή"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Βεβαιωθείτε ότι <strong>οι υπότιτλοι είναι ενεργοποιημένοι</strong> στη γλώσσα που μελετάτε."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Κάντε κλικ</strong> σε οποιαδήποτε λέξη για να την αναζητήσετε στο λεξικό"
+  },
+  "popupEmailPlaceholder": {
+    "message": "Ηλεκτρονικό ταχυδρομείο"
+  },
+  "popupInstructions": {
+    "message": "Ξεκινήστε την αναπαραγωγή οποιουδήποτε βίντεο στο <strong>Prime Video</strong>, <strong>YouTube</strong> ή <strong>Netflix</strong>. Ο πίνακας απομαγνητοφώνησης ανοίγει αυτόματα όταν βρεθούν υπότιτλοι."
+  },
+  "popupLoginBtn": {
+    "message": "Σύνδεση"
+  },
+  "popupLoginPrompt": {
+    "message": "Συνδεθείτε για να αποθηκεύετε λέξεις και να συγχρονίζετε με το Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Αποσύνδεση"
+  },
+  "popupNoTranscript": {
+    "message": "Οι υπότιτλοι δεν είναι ακόμα διαθέσιμοι για αυτό το βίντεο."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Κωδικός πρόσβασης"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Αποθηκεύστε</strong> λέξεις στον λογαριασμό σας στο Language Player"
+  },
+  "popupShowTranscript": {
+    "message": "Εμφάνιση απομαγνητοφώνησης"
+  },
+  "popupToggleShortcut": {
+    "message": "Πατήστε <kbd>Alt</kbd> + <kbd>T</kbd> για εναλλαγή του πίνακα"
   },
   "save": {
     "message": "Αποθήκευση λέξης"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Αποθηκεύτηκε"
   },
-  "close": {
-    "message": "Κλείσιμο"
-  },
   "showTranscript": {
     "message": "Εμφάνιση απομαγνητοφώνησης"
   },
-  "noTranscriptFound": {
-    "message": "Δεν βρέθηκε απομαγνητοφώνηση"
+  "showTranslation": {
+    "message": "Εμφάνιση μετάφρασης"
   },
-  "extensionDescription": {
-    "message": "Διαδραστικοί δίγλωσσοι υπότιτλοι για εκμάθηση γλωσσών σε Prime Video, YouTube, Netflix, Disney+, Hulu και Max."
+  "speak": {
+    "message": "Μίλα"
   },
-  "popupLoginPrompt": {
-    "message": "Συνδεθείτε για να αποθηκεύετε λέξεις και να συγχρονίζετε με το Language Player."
+  "startPlaying": {
+    "message": "Ξεκινήστε την αναπαραγωγή ενός βίντεο."
   },
-  "popupEmailPlaceholder": {
-    "message": "Email"
+  "translate": {
+    "message": "Μετάφραση"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Κωδικός πρόσβασης"
-  },
-  "popupLoginBtn": {
-    "message": "Σύνδεση"
-  },
-  "popupLogoutBtn": {
-    "message": "Αποσύνδεση"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Εμφάνιση απομαγνητοφώνησης"
-  },
-  "popupNoTranscript": {
-    "message": "Δεν βρέθηκε απομαγνητοφώνηση"
-  },
-  "popupInstructions": {
-    "message": "Ξεκινήστε την αναπαραγωγή οποιουδήποτε βίντεο στο <strong>Prime Video</strong>, <strong>YouTube</strong> ή <strong>Netflix</strong>. Ο πίνακας απομαγνητοφώνησης ανοίγει αυτόματα όταν βρεθούν υπότιτλοι."
-  },
-  "popupClickWord": {
-    "message": "<strong>Κάντε κλικ</strong> σε οποιαδήποτε λέξη για να την αναζητήσετε στο λεξικό"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Αποθηκεύστε</strong> λέξεις στον λογαριασμό σας στο Language Player"
-  },
-  "popupToggleShortcut": {
-    "message": "Πατήστε <kbd>Alt</kbd> + <kbd>T</kbd> για εναλλαγή του πίνακα"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Βεβαιωθείτε ότι <strong>οι υπότιτλοι είναι ενεργοποιημένοι</strong> στη γλώσσα που μελετάτε."
+  "translating": {
+    "message": "Μετάφραση…"
   }
 }

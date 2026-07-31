@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Väntar på undertexter…"
+  "actions": {
+    "message": "Mer"
   },
-  "startPlaying": {
-    "message": "Börja spela upp en video."
-  },
-  "loadingLanguage": {
-    "message": "Laddar $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "$count$ undertextposter laddade",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Kunde inte ladda undertexter"
-  },
-  "loadingSubtitles": {
-    "message": "Laddar $lang$ undertexter…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Stäng"
-  },
-  "learningLanguage": {
-    "message": "Språk att lära sig"
-  },
-  "interfaceLanguage": {
-    "message": "Gränssnittsspråk"
-  },
-  "popularLanguages": {
-    "message": "Populära"
+  "aiThinking": {
+    "message": "Laddar..."
   },
   "allLanguages": {
     "message": "Alla"
   },
-  "translate": {
-    "message": "Översättning"
+  "close": {
+    "message": "Stäng"
   },
-  "showTranslation": {
-    "message": "Visa översättning"
-  },
-  "translating": {
-    "message": "Översätter… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Åtgärder"
+  "closePanel": {
+    "message": "Stäng"
   },
   "copy": {
     "message": "Kopiera"
-  },
-  "speak": {
-    "message": "Tala"
   },
   "explain": {
     "message": "Fråga AI"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Fråga AI"
   },
-  "aiThinking": {
-    "message": "🤖 AI tänker…"
+  "extensionDescription": {
+    "message": "Interaktiva tvåspråkiga undertexter för språkinlärning på Prime Video, YouTube, Netflix, Disney+, Hulu och Max."
   },
-  "thinking": {
-    "message": "tänker…"
+  "failedToLoadSubtitles": {
+    "message": "Kunde inte ladda undertexter"
+  },
+  "interfaceLanguage": {
+    "message": "Välj ett språk"
+  },
+  "learningLanguage": {
+    "message": "Välj ett språk"
+  },
+  "loadingSubtitles": {
+    "message": "Laddar..."
+  },
+  "noTranscriptFound": {
+    "message": "Undertexter är ännu inte tillgängliga för denna video."
+  },
+  "popularLanguages": {
+    "message": "Populära"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Se till att <strong>undertexter är påslagna</strong> på språket du studerar."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Klicka</strong> på valfritt ord för att slå upp det i ordlistan"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-post"
+  },
+  "popupInstructions": {
+    "message": "Börja spela upp en video på <strong>Prime Video</strong>, <strong>YouTube</strong> eller <strong>Netflix</strong>. Transkriberingspanelen öppnas automatiskt när undertexter hittas."
+  },
+  "popupLoginBtn": {
+    "message": "Logga in"
+  },
+  "popupLoginPrompt": {
+    "message": "Logga in för att spara ord och synkronisera med Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Logga ut"
+  },
+  "popupNoTranscript": {
+    "message": "Undertexter är ännu inte tillgängliga för denna video."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Lösenord"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Spara</strong> ord till ditt Language Player-konto"
+  },
+  "popupShowTranscript": {
+    "message": "Visa transkribering"
+  },
+  "popupToggleShortcut": {
+    "message": "Tryck på <kbd>Alt</kbd> + <kbd>T</kbd> för att visa/dölja panelen"
   },
   "save": {
     "message": "Spara ord"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Sparad"
   },
-  "close": {
-    "message": "Stäng"
-  },
   "showTranscript": {
     "message": "Visa transkribering"
   },
-  "noTranscriptFound": {
-    "message": "Ingen transkribering hittades"
+  "showTranslation": {
+    "message": "Visa översättning"
   },
-  "extensionDescription": {
-    "message": "Interaktiva tvåspråkiga undertexter för språkinlärning på Prime Video, YouTube, Netflix, Disney+, Hulu och Max."
+  "speak": {
+    "message": "Tala"
   },
-  "popupLoginPrompt": {
-    "message": "Logga in för att spara ord och synkronisera med Language Player."
+  "startPlaying": {
+    "message": "Börja spela upp en video."
   },
-  "popupEmailPlaceholder": {
-    "message": "E-post"
+  "translate": {
+    "message": "Översättning"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Lösenord"
-  },
-  "popupLoginBtn": {
-    "message": "Logga in"
-  },
-  "popupLogoutBtn": {
-    "message": "Logga ut"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Visa transkribering"
-  },
-  "popupNoTranscript": {
-    "message": "Ingen transkribering hittades"
-  },
-  "popupInstructions": {
-    "message": "Börja spela upp en video på <strong>Prime Video</strong>, <strong>YouTube</strong> eller <strong>Netflix</strong>. Transkriberingspanelen öppnas automatiskt när undertexter hittas."
-  },
-  "popupClickWord": {
-    "message": "<strong>Klicka</strong> på valfritt ord för att slå upp det i ordlistan"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Spara</strong> ord till ditt Language Player-konto"
-  },
-  "popupToggleShortcut": {
-    "message": "Tryck på <kbd>Alt</kbd> + <kbd>T</kbd> för att visa/dölja panelen"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Se till att <strong>undertexter är påslagna</strong> på språket du studerar."
+  "translating": {
+    "message": "Översätter…"
   }
 }

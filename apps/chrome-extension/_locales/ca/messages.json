@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Esperant els subtítols…"
+  "actions": {
+    "message": "Més"
   },
-  "startPlaying": {
-    "message": "Comença a reproduir un vídeo."
-  },
-  "loadingLanguage": {
-    "message": "S'està carregant $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "$count$ entrades de subtítols carregades",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "No s'han pogut carregar els subtítols"
-  },
-  "loadingSubtitles": {
-    "message": "S'estan carregant els subtítols de $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Tancar"
-  },
-  "learningLanguage": {
-    "message": "Idioma d'aprenentatge"
-  },
-  "interfaceLanguage": {
-    "message": "Idioma de la interfície"
-  },
-  "popularLanguages": {
-    "message": "Populars"
+  "aiThinking": {
+    "message": "S'està carregant..."
   },
   "allLanguages": {
     "message": "Tot"
   },
-  "translate": {
-    "message": "Traducció"
+  "close": {
+    "message": "Tancar"
   },
-  "showTranslation": {
-    "message": "Mostra traducció"
-  },
-  "translating": {
-    "message": "S'està traduint… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Accions"
+  "closePanel": {
+    "message": "Tancar"
   },
   "copy": {
     "message": "Copiar"
-  },
-  "speak": {
-    "message": "Parlar"
   },
   "explain": {
     "message": "Preguntar a la IA"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Preguntar a la IA"
   },
-  "aiThinking": {
-    "message": "🤖 La IA està pensant…"
+  "extensionDescription": {
+    "message": "Subtítols bilingües interactius per a l'aprenentatge d'idiomes a Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
   },
-  "thinking": {
-    "message": "pensant…"
+  "failedToLoadSubtitles": {
+    "message": "No s'han pogut carregar els subtítols"
+  },
+  "interfaceLanguage": {
+    "message": "Selecciona un idioma"
+  },
+  "learningLanguage": {
+    "message": "Selecciona un idioma"
+  },
+  "loadingSubtitles": {
+    "message": "S'està carregant..."
+  },
+  "noTranscriptFound": {
+    "message": "Encara no hi ha subtítols disponibles per a aquest vídeo."
+  },
+  "popularLanguages": {
+    "message": "Populars"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Assegura't que <strong>els subtítols estan activats</strong> en l'idioma que estudies."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "Fes <strong>clic</strong> a qualsevol paraula per buscar-la al diccionari"
+  },
+  "popupEmailPlaceholder": {
+    "message": "Correu electrònic"
+  },
+  "popupInstructions": {
+    "message": "Comença a reproduir qualsevol vídeo a <strong>Prime Video</strong>, <strong>YouTube</strong> o <strong>Netflix</strong>. El panell de transcripció s'obre automàticament quan es troben subtítols."
+  },
+  "popupLoginBtn": {
+    "message": "Iniciar sessió"
+  },
+  "popupLoginPrompt": {
+    "message": "Inicia sessió per desar paraules i sincronitzar amb Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Tancar sessió"
+  },
+  "popupNoTranscript": {
+    "message": "Encara no hi ha subtítols disponibles per a aquest vídeo."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Contrasenya"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Desa</strong> paraules al teu compte de Language Player"
+  },
+  "popupShowTranscript": {
+    "message": "Mostra la transcripció"
+  },
+  "popupToggleShortcut": {
+    "message": "Prem <kbd>Alt</kbd> + <kbd>T</kbd> per mostrar/amagar el panell"
   },
   "save": {
     "message": "Guardar paraula"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Desat"
   },
-  "close": {
-    "message": "Tancar"
-  },
   "showTranscript": {
     "message": "Mostra la transcripció"
   },
-  "noTranscriptFound": {
-    "message": "No s'ha trobat cap transcripció"
+  "showTranslation": {
+    "message": "Mostra traducció"
   },
-  "extensionDescription": {
-    "message": "Subtítols bilingües interactius per a l'aprenentatge d'idiomes a Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
+  "speak": {
+    "message": "Parlar"
   },
-  "popupLoginPrompt": {
-    "message": "Inicia sessió per desar paraules i sincronitzar amb Language Player."
+  "startPlaying": {
+    "message": "Comença a reproduir un vídeo."
   },
-  "popupEmailPlaceholder": {
-    "message": "Correu electrònic"
+  "translate": {
+    "message": "Traducció"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Contrasenya"
-  },
-  "popupLoginBtn": {
-    "message": "Iniciar sessió"
-  },
-  "popupLogoutBtn": {
-    "message": "Tancar sessió"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Mostra la transcripció"
-  },
-  "popupNoTranscript": {
-    "message": "No s'ha trobat cap transcripció"
-  },
-  "popupInstructions": {
-    "message": "Comença a reproduir qualsevol vídeo a <strong>Prime Video</strong>, <strong>YouTube</strong> o <strong>Netflix</strong>. El panell de transcripció s'obre automàticament quan es troben subtítols."
-  },
-  "popupClickWord": {
-    "message": "Fes <strong>clic</strong> a qualsevol paraula per buscar-la al diccionari"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Desa</strong> paraules al teu compte de Language Player"
-  },
-  "popupToggleShortcut": {
-    "message": "Prem <kbd>Alt</kbd> + <kbd>T</kbd> per mostrar/amagar el panell"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Assegura't que <strong>els subtítols estan activats</strong> en l'idioma que estudies."
+  "translating": {
+    "message": "Traduint…"
   }
 }

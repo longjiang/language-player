@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Feliratokra vár…"
+  "actions": {
+    "message": "Több"
   },
-  "startPlaying": {
-    "message": "Indítson el egy videót."
-  },
-  "loadingLanguage": {
-    "message": "$lang$ betöltése…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "$count$ felirat betöltve",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Nem sikerült betölteni a feliratokat"
-  },
-  "loadingSubtitles": {
-    "message": "$lang$ feliratok betöltése…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Bezár"
-  },
-  "learningLanguage": {
-    "message": "Tanult nyelv"
-  },
-  "interfaceLanguage": {
-    "message": "Felület nyelve"
-  },
-  "popularLanguages": {
-    "message": "Népszerű"
+  "aiThinking": {
+    "message": "Betöltés..."
   },
   "allLanguages": {
     "message": "Minden"
   },
-  "translate": {
-    "message": "Fordítás"
+  "close": {
+    "message": "Bezár"
   },
-  "showTranslation": {
-    "message": "Fordítás megjelenítése"
-  },
-  "translating": {
-    "message": "Fordítás… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Műveletek"
+  "closePanel": {
+    "message": "Bezár"
   },
   "copy": {
     "message": "Másolás"
-  },
-  "speak": {
-    "message": "Beszéd"
   },
   "explain": {
     "message": "Kérdezd a mesterséges intelligenciát"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Kérdezd a mesterséges intelligenciát"
   },
-  "aiThinking": {
-    "message": "🤖 A MI gondolkodik…"
+  "extensionDescription": {
+    "message": "Interaktív kétnyelvű feliratok nyelvtanuláshoz a Prime Video, YouTube, Netflix, Disney+, Hulu és Max platformokon."
   },
-  "thinking": {
-    "message": "gondolkodik…"
+  "failedToLoadSubtitles": {
+    "message": "Nem sikerült betölteni a feliratokat"
+  },
+  "interfaceLanguage": {
+    "message": "Nyelv kiválasztása"
+  },
+  "learningLanguage": {
+    "message": "Nyelv kiválasztása"
+  },
+  "loadingSubtitles": {
+    "message": "Betöltés..."
+  },
+  "noTranscriptFound": {
+    "message": "A feliratok még nem érhetők el ehhez a videóhoz."
+  },
+  "popularLanguages": {
+    "message": "Népszerű"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Győződjön meg róla, hogy <strong>a feliratok be vannak kapcsolva</strong> a tanult nyelven."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Kattintson</strong> bármely szóra a szótárban való kereséshez"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-mail"
+  },
+  "popupInstructions": {
+    "message": "Indítson el bármilyen videót a <strong>Prime Video</strong>, <strong>YouTube</strong> vagy <strong>Netflix</strong> oldalon. Az átirat panel automatikusan megnyílik, amikor feliratokat talál."
+  },
+  "popupLoginBtn": {
+    "message": "Bejelentkezés"
+  },
+  "popupLoginPrompt": {
+    "message": "Jelentkezzen be a szavak mentéséhez és a Language Player szinkronizálásához."
+  },
+  "popupLogoutBtn": {
+    "message": "Kijelentkezés"
+  },
+  "popupNoTranscript": {
+    "message": "A feliratok még nem érhetők el ehhez a videóhoz."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Jelszó"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Mentsen</strong> szavakat a Language Player fiókjába"
+  },
+  "popupShowTranscript": {
+    "message": "Átirat megjelenítése"
+  },
+  "popupToggleShortcut": {
+    "message": "Nyomja meg az <kbd>Alt</kbd> + <kbd>T</kbd> billentyűket a panel ki/be kapcsolásához"
   },
   "save": {
     "message": "Szó mentése"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Mentve"
   },
-  "close": {
-    "message": "Bezár"
-  },
   "showTranscript": {
     "message": "Átirat megjelenítése"
   },
-  "noTranscriptFound": {
-    "message": "Nem található átirat"
+  "showTranslation": {
+    "message": "Fordítás megjelenítése"
   },
-  "extensionDescription": {
-    "message": "Interaktív kétnyelvű feliratok nyelvtanuláshoz a Prime Video, YouTube, Netflix, Disney+, Hulu és Max platformokon."
+  "speak": {
+    "message": "Beszéd"
   },
-  "popupLoginPrompt": {
-    "message": "Jelentkezzen be a szavak mentéséhez és a Language Player szinkronizálásához."
+  "startPlaying": {
+    "message": "Indítson el egy videót."
   },
-  "popupEmailPlaceholder": {
-    "message": "E-mail"
+  "translate": {
+    "message": "Fordítás"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Jelszó"
-  },
-  "popupLoginBtn": {
-    "message": "Bejelentkezés"
-  },
-  "popupLogoutBtn": {
-    "message": "Kijelentkezés"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Átirat megjelenítése"
-  },
-  "popupNoTranscript": {
-    "message": "Nem található átirat"
-  },
-  "popupInstructions": {
-    "message": "Indítson el bármilyen videót a <strong>Prime Video</strong>, <strong>YouTube</strong> vagy <strong>Netflix</strong> oldalon. Az átirat panel automatikusan megnyílik, amikor feliratokat talál."
-  },
-  "popupClickWord": {
-    "message": "<strong>Kattintson</strong> bármely szóra a szótárban való kereséshez"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Mentsen</strong> szavakat a Language Player fiókjába"
-  },
-  "popupToggleShortcut": {
-    "message": "Nyomja meg az <kbd>Alt</kbd> + <kbd>T</kbd> billentyűket a panel ki/be kapcsolásához"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Győződjön meg róla, hogy <strong>a feliratok be vannak kapcsolva</strong> a tanult nyelven."
+  "translating": {
+    "message": "Fordítás…"
   }
 }

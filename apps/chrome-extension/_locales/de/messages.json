@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Warte auf Untertitel…"
+  "actions": {
+    "message": "Mehr"
   },
-  "startPlaying": {
-    "message": "Starte die Wiedergabe eines Videos."
-  },
-  "loadingLanguage": {
-    "message": "$lang$ wird geladen…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "$count$ Untertiteleinträge geladen",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Fehler beim Laden der Untertitel"
-  },
-  "loadingSubtitles": {
-    "message": "Lade $lang$ Untertitel…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Schließen"
-  },
-  "learningLanguage": {
-    "message": "Lernsprache"
-  },
-  "interfaceLanguage": {
-    "message": "Oberflächensprache"
-  },
-  "popularLanguages": {
-    "message": "Beliebt"
+  "aiThinking": {
+    "message": "Wird geladen..."
   },
   "allLanguages": {
     "message": "Alle"
   },
-  "translate": {
-    "message": "Übersetzung"
+  "close": {
+    "message": "Schließen"
   },
-  "showTranslation": {
-    "message": "Übersetzung anzeigen"
-  },
-  "translating": {
-    "message": "Übersetze… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Aktionen"
+  "closePanel": {
+    "message": "Schließen"
   },
   "copy": {
     "message": "Kopieren"
-  },
-  "speak": {
-    "message": "Sprechen"
   },
   "explain": {
     "message": "KI fragen"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "KI fragen"
   },
-  "aiThinking": {
-    "message": "🤖 KI denkt nach…"
+  "extensionDescription": {
+    "message": "Interaktive zweisprachige Untertitel zum Sprachenlernen auf Prime Video, YouTube, Netflix, Disney+, Hulu und Max."
   },
-  "thinking": {
-    "message": "denkt nach…"
+  "failedToLoadSubtitles": {
+    "message": "Fehler beim Laden der Untertitel"
+  },
+  "interfaceLanguage": {
+    "message": "Sprache auswählen"
+  },
+  "learningLanguage": {
+    "message": "Sprache auswählen"
+  },
+  "loadingSubtitles": {
+    "message": "Wird geladen..."
+  },
+  "noTranscriptFound": {
+    "message": "Für dieses Video sind noch keine Untertitel verfügbar."
+  },
+  "popularLanguages": {
+    "message": "Beliebt"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Stelle sicher, dass <strong>Untertitel eingeschaltet sind</strong> in der Sprache, die du lernst."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Klicke</strong> auf ein beliebiges Wort, um es im Wörterbuch nachzuschlagen"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-Mail"
+  },
+  "popupInstructions": {
+    "message": "Starte ein beliebiges Video auf <strong>Prime Video</strong>, <strong>YouTube</strong> oder <strong>Netflix</strong>. Das Transkript-Panel öffnet sich automatisch, sobald Untertitel gefunden werden."
+  },
+  "popupLoginBtn": {
+    "message": "Anmelden"
+  },
+  "popupLoginPrompt": {
+    "message": "Melde dich an, um Wörter zu speichern und mit Language Player zu synchronisieren."
+  },
+  "popupLogoutBtn": {
+    "message": "Abmelden"
+  },
+  "popupNoTranscript": {
+    "message": "Für dieses Video sind noch keine Untertitel verfügbar."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Passwort"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Speichere</strong> Wörter in deinem Language Player-Konto"
+  },
+  "popupShowTranscript": {
+    "message": "Transkript anzeigen"
+  },
+  "popupToggleShortcut": {
+    "message": "Drücke <kbd>Alt</kbd> + <kbd>T</kbd> zum Ein-/Ausblenden des Panels"
   },
   "save": {
     "message": "Wort speichern"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Gespeichert"
   },
-  "close": {
-    "message": "Schließen"
-  },
   "showTranscript": {
     "message": "Transkript anzeigen"
   },
-  "noTranscriptFound": {
-    "message": "Kein Transkript gefunden"
+  "showTranslation": {
+    "message": "Übersetzung anzeigen"
   },
-  "extensionDescription": {
-    "message": "Interaktive zweisprachige Untertitel zum Sprachenlernen auf Prime Video, YouTube, Netflix, Disney+, Hulu und Max."
+  "speak": {
+    "message": "Sprechen"
   },
-  "popupLoginPrompt": {
-    "message": "Melde dich an, um Wörter zu speichern und mit Language Player zu synchronisieren."
+  "startPlaying": {
+    "message": "Starte die Wiedergabe eines Videos."
   },
-  "popupEmailPlaceholder": {
-    "message": "E-Mail"
+  "translate": {
+    "message": "Übersetzung"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Passwort"
-  },
-  "popupLoginBtn": {
-    "message": "Anmelden"
-  },
-  "popupLogoutBtn": {
-    "message": "Abmelden"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Transkript anzeigen"
-  },
-  "popupNoTranscript": {
-    "message": "Kein Transkript gefunden"
-  },
-  "popupInstructions": {
-    "message": "Starte ein beliebiges Video auf <strong>Prime Video</strong>, <strong>YouTube</strong> oder <strong>Netflix</strong>. Das Transkript-Panel öffnet sich automatisch, sobald Untertitel gefunden werden."
-  },
-  "popupClickWord": {
-    "message": "<strong>Klicke</strong> auf ein beliebiges Wort, um es im Wörterbuch nachzuschlagen"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Speichere</strong> Wörter in deinem Language Player-Konto"
-  },
-  "popupToggleShortcut": {
-    "message": "Drücke <kbd>Alt</kbd> + <kbd>T</kbd> zum Ein-/Ausblenden des Panels"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Stelle sicher, dass <strong>Untertitel eingeschaltet sind</strong> in der Sprache, die du lernst."
+  "translating": {
+    "message": "Übersetzung läuft…"
   }
 }
