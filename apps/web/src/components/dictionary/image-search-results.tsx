@@ -50,9 +50,12 @@ function buildImageQuery(term: string, l2Code: string): string {
 }
 
 /**
- * 404 sniffing: verify a thumbnail actually returns an image before rendering.
- * Uses HEAD so it's cheap and parallel. Hosts that block CORS are kept as-is —
- * an <img> tag can still load them even when fetch can't inspect the response.
+ * Dead-thumbnail sniffing: verify a thumbnail actually returns an image before
+ * rendering. Uses HEAD so it's cheap and parallel. Openverse returns 424
+ * "Failed Dependency" for records whose upstream image is gone, so anything
+ * non-2xx is pruned — except 429 (rate limit is retryable, not dead). Hosts
+ * that block CORS are kept as-is: an <img> tag can still load them even when
+ * fetch can't inspect the response.
  */
 async function sniffThumbnail(
   img: OpenverseImage,
@@ -71,8 +74,8 @@ async function sniffThumbnail(
       timedOut,
     ]);
     if (res === null) return img; // timed out — keep rather than risk a false drop
-    if (res.status === 404 || res.status === 410) {
-      log('Thumbnail dead, filtered:', img.title, target);
+    if (!res.ok && res.status !== 429) {
+      log('Thumbnail dead, filtered:', img.title, target, `HTTP ${res.status}`);
       return null;
     }
     return img;
