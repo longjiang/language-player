@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Inatafsiri…"
+  },
+  "confirm": {
+    "message": "Thibitisha"
+  },
+  "iSpeak": {
+    "message": "Ninazungumza"
+  },
+  "iLearning": {
+    "message": "Ninajifunza"
+  },
+  "language": {
+    "message": "Lugha"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

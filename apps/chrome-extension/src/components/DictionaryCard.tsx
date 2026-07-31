@@ -15,6 +15,7 @@ import { useSavedWords } from './SavedWordsProvider';
 import { fetchInflectedForms } from '../saved-words';
 import { useSubscription } from '../use-subscription';
 import { Markdown } from './Markdown';
+import { Bookmark, BookmarkCheck, X } from './Icons';
 import { log, logerr, t } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -169,7 +170,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
           title={isSaved ? t('removeFromSaved') : t('save')}
         >
-          {saving ? '…' : isSaved ? '★' : '☆'}
+          {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
         </button>
       )}
     </div>
@@ -332,7 +333,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </div>
         <div className="lpv-dict-card-header-right">
           <button onClick={onClose} className="lpv-dict-card-close" title={t('close')}>
-            ✕
+            <X size={14} />
           </button>
         </div>
       </div>

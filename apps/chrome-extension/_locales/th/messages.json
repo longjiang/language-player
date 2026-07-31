@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "กำลังแปล…"
+  },
+  "confirm": {
+    "message": "ยืนยัน"
+  },
+  "iSpeak": {
+    "message": "ฉันพูด"
+  },
+  "iLearning": {
+    "message": "ฉันกำลังเรียน"
+  },
+  "language": {
+    "message": "ภาษา"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Menerjemahkan…"
+  },
+  "confirm": {
+    "message": "Konfirmasi"
+  },
+  "iSpeak": {
+    "message": "Saya berbicara"
+  },
+  "iLearning": {
+    "message": "Saya belajar"
+  },
+  "language": {
+    "message": "Bahasa"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

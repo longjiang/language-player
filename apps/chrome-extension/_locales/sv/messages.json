@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Översätter…"
+  },
+  "confirm": {
+    "message": "Bekräfta"
+  },
+  "iSpeak": {
+    "message": "Jag talar"
+  },
+  "iLearning": {
+    "message": "Jag lär mig"
+  },
+  "language": {
+    "message": "Språk"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Μετάφραση…"
+  },
+  "confirm": {
+    "message": "Επιβεβαίωση"
+  },
+  "iSpeak": {
+    "message": "Μιλάω"
+  },
+  "iLearning": {
+    "message": "Μαθαίνω"
+  },
+  "language": {
+    "message": "Γλώσσα"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

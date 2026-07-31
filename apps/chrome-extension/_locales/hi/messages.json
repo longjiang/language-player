@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "अनुवाद हो रहा है…"
+  },
+  "confirm": {
+    "message": "पुष्टि करें"
+  },
+  "iSpeak": {
+    "message": "मैं बोलता हूँ"
+  },
+  "iLearning": {
+    "message": "मैं सीख रहा हूँ"
+  },
+  "language": {
+    "message": "भाषा"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

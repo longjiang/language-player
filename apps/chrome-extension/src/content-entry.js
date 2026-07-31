@@ -9,6 +9,7 @@
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
+import { mountLanguageModal, unmountLanguageModal } from './components/LanguageSwitchModal';
 import { SUPPORTED_L2S } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import {
@@ -68,8 +69,6 @@ let fetchGen = 0;
 let panelRoot = null;
 let panelContent = null;
 let statusEl = null;
-let l1SelectEl = null;
-let l2SelectEl = null;
 
 // ── L2 language state ────────────────────────────────────────────────────
 
@@ -751,7 +750,7 @@ async function loadYouTubeSubtitles() {
     return;
   }
 
-  populateL2Selector();
+  // Pick best track: prefer manual matching saved L2
 
   // Pick best track: prefer manual matching saved L2
   let best = null;
@@ -767,40 +766,6 @@ async function loadYouTubeSubtitles() {
     log('Loading track:', best.languageCode, best.kind === 'asr' ? '(auto)' : '');
     await fetchYTTrack(best);
   }
-}
-
-/** Populate the L2 language dropdown with all supported languages */
-function populateL2Selector() {
-  if (!l2SelectEl) return;
-  l2SelectEl.innerHTML = '';
-
-  const { popular, rest } = getSortedL2List();
-
-  // Popular group
-  const popularGroup = document.createElement('optgroup');
-  popularGroup.label = t('popularLanguages');
-  for (const code of popular) {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = languageName(code);
-    if (code === savedL2Code) opt.selected = true;
-    popularGroup.appendChild(opt);
-  }
-  l2SelectEl.appendChild(popularGroup);
-
-  // Rest group
-  const restGroup = document.createElement('optgroup');
-  restGroup.label = t('allLanguages');
-  for (const code of rest) {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = languageName(code);
-    if (code === savedL2Code) opt.selected = true;
-    restGroup.appendChild(opt);
-  }
-  l2SelectEl.appendChild(restGroup);
-
-  l2SelectEl.disabled = false;
 }
 
 /** CSV-style locale → Chrome _locales/ directory name.
@@ -836,28 +801,7 @@ const UI_LANGUAGES = [
   'pt', 'ro', 'ru', 'sr', 'sv', 'sw', 'th', 'tr', 'vi',
 ];
 
-/** Populate the L1 (interface/native) language dropdown */
-function populateL1Selector() {
-  if (!l1SelectEl) return;
-  l1SelectEl.innerHTML = '';
-
-  // Sort alphabetically by endonym (language's own name, e.g. Deutsch, Français)
-  const sorted = [...UI_LANGUAGES].sort((a, b) =>
-    languageEndonym(a).localeCompare(languageEndonym(b))
-  );
-
-  for (const code of sorted) {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = languageEndonym(code);
-    if (code === L1_CODE) opt.selected = true;
-    l1SelectEl.appendChild(opt);
-  }
-
-  l1SelectEl.disabled = false;
-}
-
-/** Handle L1 (interface) language change from the dropdown */
+/** Handle L1 (interface) language change */
 async function onL1Change(newCode) {
   if (newCode === L1_CODE) return;
   L1_CODE = newCode;
@@ -872,10 +816,6 @@ async function onL1Change(newCode) {
 
   // Refresh all static UI labels that were set during createPanelUI()
   refreshUILabels();
-
-  // Repopulate pickers so L2 language names reflect the new UI language
-  populateL1Selector();
-  populateL2Selector();
 
   log('L1 changed to:', newCode);
   // Re-render transcript with new L1 (re-triggers translation with new l1Code)
@@ -902,7 +842,6 @@ async function onL2Change(newCode) {
   if (newCode === savedL2Code) return;
   savedL2Code = newCode;
   hideL2MismatchBanner();
-  if (l2SelectEl) l2SelectEl.value = newCode;
 
   // Persist user preference
   try {
@@ -999,28 +938,38 @@ function createPanelUI() {
 
   title.appendChild(logoImg);
 
-  // L1 (interface/native) language selector
-  l1SelectEl = document.createElement('select');
-  l1SelectEl.id = 'lpv-l1-select';
-  l1SelectEl.title = t('interfaceLanguage');
-  l1SelectEl.addEventListener('change', () => {
-    onL1Change(l1SelectEl.value);
+  // Language button — shows current L2 name + chevron, opens "I speak / I'm learning" modal
+  const langBtn = document.createElement('button');
+  langBtn.id = 'lpv-lang-btn';
+  langBtn.title = t('language');
+  langBtn.addEventListener('click', () => {
+    mountLanguageModal(
+      L1_CODE,
+      savedL2Code,
+      UI_LANGUAGES,
+      (code) => languageEndonym(code),
+      async (newL1, newL2) => {
+        if (newL1 !== L1_CODE) await onL1Change(newL1);
+        if (newL2 !== savedL2Code) await onL2Change(newL2);
+        updateLangBtnText();
+      },
+    );
   });
 
-  // L2 (learning) language selector
-  l2SelectEl = document.createElement('select');
-  l2SelectEl.id = 'lpv-l2-select';
-  l2SelectEl.title = t('learningLanguage');
-  l2SelectEl.addEventListener('change', () => {
-    onL2Change(l2SelectEl.value);
-  });
+  /** Update the language button text to show the current L2 name */
+  function updateLangBtnText() {
+    if (!langBtn) return;
+    const name = languageName(savedL2Code);
+    langBtn.innerHTML = `<span class="lpv-lang-btn-name">${name}</span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lpv-lang-btn-chevron"><path d="m6 9 6 6 6-6"/></svg>`;
+  }
+  updateLangBtnText();
 
   const headerRight = document.createElement('div');
   headerRight.id = 'lpv-header-right';
 
   const closeBtn = document.createElement('button');
   closeBtn.id = 'lpv-close-btn';
-  closeBtn.innerHTML = '✕';
+  closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
   closeBtn.title = t('closePanel');
   closeBtn.addEventListener('click', () => {
     log('User closed the transcript panel with ✕');
@@ -1028,8 +977,7 @@ function createPanelUI() {
     setPanelVisible(false);
   });
 
-  headerRight.appendChild(l1SelectEl);
-  headerRight.appendChild(l2SelectEl);
+  headerRight.appendChild(langBtn);
   headerRight.appendChild(closeBtn);
 
   header.appendChild(title);
@@ -1056,13 +1004,13 @@ function createPanelUI() {
 /** Refresh all static UI labels after a locale change.
  *  Called by onL1Change() after setLocale() loads the new messages. */
 function refreshUILabels() {
-  if (l1SelectEl) l1SelectEl.title = t('interfaceLanguage');
-  if (l2SelectEl) l2SelectEl.title = t('learningLanguage');
+  // Update language button tooltip
+  const langBtn = document.getElementById('lpv-lang-btn');
+  if (langBtn) langBtn.title = t('language');
   if (statusEl && STATE.cues.length === 0) {
     statusEl.textContent = '';
   }
-  // Close button is just '✕' (no text), no update needed
-  // L1/L2 dropdown options are endonyms, handled by populateL1Selector/populateL2Selector
+  // Close button uses SVG icon (no text to update)
 }
 
 function setPanelVisible(visible) {
@@ -1442,8 +1390,6 @@ async function init() {
   await setLocale(L1_CODE);
 
   createPanelUI();
-  populateL1Selector();
-  populateL2Selector();
   setupKeyboard();
 
   if (isYouTube) {

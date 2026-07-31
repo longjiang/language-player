@@ -120,7 +120,7 @@ body.lpv-panel-open disney-web-player-ui {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Language Selectors ──────────────────────────────────────────── */
+/* ── Language Button ─────────────────────────────────────────────── */
 
 #lpv-header-right {
   display: flex;
@@ -129,83 +129,43 @@ body.lpv-panel-open disney-web-player-ui {
   flex-shrink: 0;
 }
 
-#lpv-l1-select {
-  padding: 2px 6px;
+#lpv-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
   font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: #ccc;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 5px;
-  outline: none;
+  border-radius: 6px;
   cursor: pointer;
-  max-width: 100px;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  padding-right: 20px;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
-#lpv-l1-select:hover {
+#lpv-lang-btn:hover {
+  color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-#lpv-l1-select:focus {
-  border-color: rgba(0, 168, 225, 0.5);
+.lpv-lang-btn-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-#lpv-l2-select {
-  padding: 2px 6px;
-  font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 5px;
-  outline: none;
-  cursor: pointer;
-  max-width: 140px;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  padding-right: 20px;
-}
-
-#lpv-l2-select optgroup {
-  font-weight: 700;
-  font-style: normal;
-  color: #888;
-  background: rgb(22, 25, 38);
-}
-
-#lpv-l2-select option {
-  font-weight: 400;
-  color: #ddd;
-  background: rgb(22, 25, 38);
-}
-
-#lpv-l2-select:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-#lpv-l2-select:focus {
-  border-color: rgba(0, 168, 225, 0.5);
-}
-
-#lpv-l2-select:disabled {
+.lpv-lang-btn-chevron {
+  flex-shrink: 0;
   opacity: 0.5;
-  cursor: default;
-  background-image: none;
-  padding-right: 6px;
+  transition: opacity 0.15s;
 }
+
+#lpv-lang-btn:hover .lpv-lang-btn-chevron {
+  opacity: 1;
 }
 
 /* ── Status Bar ────────────────────────────────────────────────────────── */
@@ -226,26 +186,34 @@ body.lpv-panel-open disney-web-player-ui {
 
 #lpv-panel-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lpv-cue-list {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 4px 0;
   scroll-behavior: smooth;
 }
 
-#lpv-panel-content::-webkit-scrollbar {
+.lpv-cue-list::-webkit-scrollbar {
   width: 6px;
 }
 
-#lpv-panel-content::-webkit-scrollbar-track {
+.lpv-cue-list::-webkit-scrollbar-track {
   background: transparent;
 }
 
-#lpv-panel-content::-webkit-scrollbar-thumb {
+.lpv-cue-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
-#lpv-panel-content::-webkit-scrollbar-thumb:hover {
+.lpv-cue-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
@@ -461,15 +429,15 @@ body.lpv-panel-open disney-web-player-ui {
   color: #fff;
 }
 
-/* ── Control Bar (translate toggle switch) ──────────────────────────── */
+/* ── Bottom Bar (translation toggle) ─────────────────────────────────── */
 
-.lpv-control-bar {
+.lpv-bottom-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.02);
+  padding: 8px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(22, 25, 38);
   flex-shrink: 0;
 }
 
@@ -921,41 +889,6 @@ body.lpv-panel-open disney-web-player-ui {
   border-bottom: none;
 }
 
-.lpv-entry-save-btn {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  margin: 6px 8px 0 4px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background: transparent;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-
-.lpv-entry-save-btn:hover {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.3);
-  background: rgba(255, 193, 7, 0.08);
-}
-
-.lpv-entry-save-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.lpv-entry-save-btn-saved {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.3);
-  background: rgba(255, 193, 7, 0.1);
-}
-
 .lpv-dict-levels {
   display: flex;
   gap: 4px;
@@ -1041,4 +974,281 @@ body.lpv-panel-open disney-web-player-ui {
     width: 100vw;
     max-width: 100vw;
   }
+}
+
+/* ── Language Switch Modal ────────────────────────────────────────────── */
+
+.lpv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.lpv-modal {
+  width: 640px;
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: rgb(22, 25, 38);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.lpv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.lpv-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.lpv-modal-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.lpv-modal-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lpv-modal-columns {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lpv-modal-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+}
+
+.lpv-modal-column-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lpv-modal-column-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #eee;
+  margin: 0;
+}
+
+.lpv-icon-primary {
+  color: #00A8E1;
+}
+
+.lpv-icon-muted {
+  color: #555;
+}
+
+.lpv-modal-arrow-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+}
+
+.lpv-modal-search {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.lpv-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  pointer-events: none;
+}
+
+.lpv-modal-search-input {
+  width: 100%;
+  padding: 8px 10px 8px 32px;
+  font-size: 12px;
+  color: #ddd;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.lpv-modal-search-input:focus {
+  border-color: rgba(0, 168, 225, 0.5);
+}
+
+.lpv-modal-search-input::placeholder {
+  color: #555;
+}
+
+.lpv-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.lpv-modal-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lpv-modal-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.lpv-modal-list-label {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lpv-modal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #bbb;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.lpv-modal-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.lpv-modal-item-selected {
+  background: rgba(0, 168, 225, 0.15);
+  color: #00A8E1;
+}
+
+.lpv-modal-item-code {
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+}
+
+.lpv-modal-item-selected .lpv-modal-item-code {
+  color: rgba(0, 168, 225, 0.6);
+}
+
+.lpv-modal-divider {
+  margin: 4px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lpv-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.lpv-modal-selection {
+  font-size: 12px;
+  color: #888;
+}
+
+.lpv-modal-confirm-btn {
+  padding: 6px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #00A8E1;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lpv-modal-confirm-btn:hover {
+  background: #0090c8;
+}
+
+.lpv-modal-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Entry Save Button (SVG icon) ────────────────────────────────────── */
+
+.lpv-entry-save-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 6px 8px 0 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.lpv-entry-save-btn:hover {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.08);
+}
+
+.lpv-entry-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lpv-entry-save-btn-saved {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.1);
 }
