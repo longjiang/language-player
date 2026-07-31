@@ -66,7 +66,7 @@ export interface TokenizedTextProps {
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'relaxed' (1.625×).
+   * Line-height (leading) for tokenized text. Defaults to 'loose' (2×).
    * Pass 'none' to inherit from the parent container.
    */
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
@@ -88,7 +88,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'relaxed', testID }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -174,7 +174,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     return style;
   }, [tokenSettings.zoom, tokenSettings.typeFace]);
 
-  // ── Leading ratio from prop (default: relaxed = 1.625) ──
+  // ── Leading ratio from prop (default: loose = 2) ──
   const LEADING_RATIOS: Record<string, number> = {
     relaxed: 1.625,
     normal: 1.5,
@@ -182,7 +182,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     snug: 1.375,
     loose: 2,
   };
-  const leadingRatio: number | undefined = leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 1.625);
+  const leadingRatio: number | undefined = leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 2);
 
   // ── Quick lookup set for saved word forms (quickGloss) ──
   const savedFormSet = useMemo(() => {
