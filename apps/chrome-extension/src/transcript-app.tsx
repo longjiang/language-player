@@ -13,6 +13,7 @@ import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
 import { Markdown } from './components/Markdown';
+import { X, Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
@@ -262,7 +263,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             className={`lpv-cue-menu-btn ${menuOpen ? 'lpv-cue-menu-btn-open' : ''}`}
             title={t('actions')}
           >
-            …
+            <Ellipsis size={14} />
           </button>
           {menuOpen && (
             <div className="lpv-cue-menu-dropdown">
@@ -429,26 +430,8 @@ Text: ${cue.text}`;
 
   return (
     <>
-      {/* Control bar */}
-      <div className="lpv-control-bar">
-        <label className="lpv-translate-switch" title={t('showTranslation')}>
-          <input
-            type="checkbox"
-            checked={showTranslation}
-            onChange={(e) => setShowTranslation(e.target.checked)}
-          />
-          <span className="lpv-switch-slider" />
-          <span className="lpv-switch-label">{t('translate')}</span>
-        </label>
-        {translating && (
-          <span className="lpv-control-status">
-            {t('translating')}{' '}
-            <span className="lpv-progress-badge">{progress}/{cues.length}</span>
-          </span>
-        )}
-      </div>
-
-      <div ref={listRef}>
+      {/* Scrollable cue list */}
+      <div ref={listRef} className="lpv-cue-list">
         {cues.map((cue, i) => (
           <CueLine
             key={i}
@@ -465,6 +448,25 @@ Text: ${cue.text}`;
             localeVersion={localeVersion}
           />
         ))}
+      </div>
+
+      {/* Bottom bar — translation toggle */}
+      <div className="lpv-bottom-bar">
+        <label className="lpv-translate-switch" title={t('showTranslation')}>
+          <input
+            type="checkbox"
+            checked={showTranslation}
+            onChange={(e) => setShowTranslation(e.target.checked)}
+          />
+          <span className="lpv-switch-slider" />
+          <span className="lpv-switch-label">{t('translate')}</span>
+        </label>
+        {translating && (
+          <span className="lpv-control-status">
+            {t('translating')}{' '}
+            <span className="lpv-progress-badge">{progress}/{cues.length}</span>
+          </span>
+        )}
       </div>
 
       {selectedToken && (
@@ -491,7 +493,7 @@ Text: ${cue.text}`;
                 <span className="lpv-dict-card-word">{t('explainTitle')}</span>
                 {explainLoading && <span className="lpv-spinner lpv-spinner-sm" />}
               </div>
-              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}>✕</button>
+              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}><X size={14} /></button>
             </div>
             <div className="lpv-dict-card-body">
               <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>

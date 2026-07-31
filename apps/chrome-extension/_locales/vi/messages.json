@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Đang dịch…"
+  },
+  "confirm": {
+    "message": "Xác nhận"
+  },
+  "iSpeak": {
+    "message": "Tôi nói"
+  },
+  "iLearning": {
+    "message": "Tôi đang học"
+  },
+  "language": {
+    "message": "Ngôn ngữ"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

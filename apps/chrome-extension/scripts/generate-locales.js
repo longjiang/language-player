@@ -54,6 +54,11 @@ const CSV_LOOKUP = {
   'popupPasswordPlaceholder': 'placeholder.password',
   'noTranscriptFound': 'subtitle.subtitles_unavailable',
   'popupNoTranscript': 'subtitle.subtitles_unavailable',
+  // Language switch modal
+  'iSpeak': 'title.i_speak',
+  'iLearning': 'title.i_learning',
+  'searchLanguages': 'placeholder.search_languages',
+  'confirm': 'action.confirm',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.
@@ -475,6 +480,21 @@ const MANUAL = {
     'th': 'ตั้งค่า L2 ของฉันเป็น{detectedLang}',
     'tr': 'L2\'imi {detectedLang} olarak ayarla',
     'vi': 'Đặt L2 của tôi thành {detectedLang}',
+  },
+  'language': {
+    'ja': '言語',
+    'zh-Hans': '语言',
+    'zh-Hant': '語言',
+    'fr': 'Langue',
+    'af': 'Taal', 'ar': 'اللغة', 'ca': 'Idioma',
+    'de': 'Sprache', 'el': 'Γλώσσα', 'es': 'Idioma',
+    'fi': 'Kieli', 'ga': 'Teanga', 'hi': 'भाषा',
+    'hr': 'Jezik', 'hu': 'Nyelv', 'id': 'Bahasa',
+    'it': 'Lingua', 'ko': '언어', 'nl': 'Taal',
+    'no': 'Språk', 'pl': 'Język', 'pt': 'Idioma',
+    'ro': 'Limbă', 'ru': 'Язык', 'sr': 'Језик',
+    'sv': 'Språk', 'sw': 'Lugha', 'th': 'ภาษา',
+    'tr': 'Dil', 'vi': 'Ngôn ngữ',
   },
 };
 

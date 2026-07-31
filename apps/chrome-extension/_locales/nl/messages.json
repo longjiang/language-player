@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Vertalen…"
+  },
+  "confirm": {
+    "message": "Bevestigen"
+  },
+  "iSpeak": {
+    "message": "Ik spreek"
+  },
+  "iLearning": {
+    "message": "Ik leer"
+  },
+  "language": {
+    "message": "Taal"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

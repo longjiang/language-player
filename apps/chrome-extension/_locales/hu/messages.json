@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Fordítás…"
+  },
+  "confirm": {
+    "message": "Megerősítés"
+  },
+  "iSpeak": {
+    "message": "Beszélek"
+  },
+  "iLearning": {
+    "message": "Tanulok"
+  },
+  "language": {
+    "message": "Nyelv"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

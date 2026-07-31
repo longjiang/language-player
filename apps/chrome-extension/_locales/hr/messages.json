@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Prevođenje…"
+  },
+  "confirm": {
+    "message": "Potvrdi"
+  },
+  "iSpeak": {
+    "message": "Govorim"
+  },
+  "iLearning": {
+    "message": "Učim"
+  },
+  "language": {
+    "message": "Jezik"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Çevriliyor…"
+  },
+  "confirm": {
+    "message": "Onayla"
+  },
+  "iSpeak": {
+    "message": "Konuşuyorum"
+  },
+  "iLearning": {
+    "message": "Öğreniyorum"
+  },
+  "language": {
+    "message": "Dil"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

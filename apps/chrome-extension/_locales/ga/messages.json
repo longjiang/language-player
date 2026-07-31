@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Á aistriú…"
+  },
+  "confirm": {
+    "message": "Deimhnigh"
+  },
+  "iSpeak": {
+    "message": "Labhraím"
+  },
+  "iLearning": {
+    "message": "Tá mé ag foghlaim"
+  },
+  "language": {
+    "message": "Teanga"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }

@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "翻訳中…"
+  },
+  "confirm": {
+    "message": "確認"
+  },
+  "iSpeak": {
+    "message": "話せる言語"
+  },
+  "iLearning": {
+    "message": "学習中の言語"
+  },
+  "language": {
+    "message": "言語"
+  },
+  "searchLanguages": {
+    "message": "言語を検索…"
   }
 }

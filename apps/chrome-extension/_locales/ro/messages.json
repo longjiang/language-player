@@ -146,5 +146,20 @@
   },
   "translating": {
     "message": "Se traduce…"
+  },
+  "confirm": {
+    "message": "Confirmă"
+  },
+  "iSpeak": {
+    "message": "Vorbesc"
+  },
+  "iLearning": {
+    "message": "Învăț"
+  },
+  "language": {
+    "message": "Limbă"
+  },
+  "searchLanguages": {
+    "message": "Search languages…"
   }
 }
