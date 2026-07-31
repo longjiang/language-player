@@ -54,12 +54,13 @@ interface TokenizedLineProps {
   text: string;
   l2Code: string;
   isActive: boolean;
+  showPhonetics: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, onClickLine, onTokenClick }) => {
+  ({ text, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens } = useBatchLemmatize();
@@ -101,6 +102,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               token={token}
               l2Code={l2Code}
               isActive={isActive}
+              showPhonetics={showPhonetics}
               onClickLine={onClickLine}
               onTokenClick={onTokenClick}
             />
@@ -120,12 +122,13 @@ interface TokenSpanProps {
   token: LemmatizedToken;
   l2Code: string;
   isActive: boolean;
+  showPhonetics: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
-  ({ token, l2Code, isActive, onClickLine, onTokenClick }) => {
+  ({ token, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
     const { savedFormSet } = useSavedWords();
 
     // Structural tokens
@@ -142,8 +145,8 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
 
     const isSaved = savedFormSet.has(token.text.toLowerCase());
 
-    // Build ruby segments
-    const hasPhonetics = token.pronunciation && token.pronunciation !== token.text;
+    // Build ruby segments — gated by showPhonetics
+    const hasPhonetics = showPhonetics && token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
@@ -184,6 +187,7 @@ interface CueLineProps {
   index: number;
   isActive: boolean;
   l2Code: string;
+  showPhonetics: boolean;
   onSeekTo: (timeSec: number) => void;
   onTokenClick: (token: LemmatizedToken, cue: SubtitleCue) => void;
   /** L1 translation text (empty string if not available/disabled) */
@@ -197,7 +201,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
+  ({ cue, index, isActive, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +254,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             text={cue.text}
             l2Code={l2Code}
             isActive={isActive}
+            showPhonetics={showPhonetics}
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
           />
@@ -303,6 +308,9 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
 /** Number of cues ahead of the active cue to pre-fetch tokens for. */
 const PRE_FETCH_LOOKAHEAD = 15;
 
+/** Font size percentages for text scale levels 0–4. */
+const TEXT_SCALE_SIZES = [87, 100, 112, 125, 150] as const;
+
 const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   cues,
   activeCueIdx,
@@ -320,6 +328,9 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   /** The cue from which the selectedToken was clicked — used for save context. */
   const [selectedCue, setSelectedCue] = useState<SubtitleCue | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [showPhonetics, setShowPhonetics] = useState(true);
+  /** Text scale index: 0 (smallest) to 4 (largest). Maps to 87%–150%. */
+  const [textScale, setTextScale] = useState(2);
   const [explainLoading, setExplainLoading] = useState(false);
   const [explainText, setExplainText] = useState<string | null>(null);
   const [explainError, setExplainError] = useState<string | null>(null);
@@ -328,10 +339,43 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const { isPro } = useSubscription();
   const { preFetch } = useBatchLemmatize();
 
+  // Load saved preferences
+  useEffect(() => {
+    try {
+      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
+        if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
+        if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
+        if (result.textScale !== undefined) setTextScale(result.textScale);
+      });
+    } catch {}
+  }, []);
+
+  // Persist phonetics preference on change
+  const handlePhoneticsToggle = useCallback((checked: boolean) => {
+    setShowPhonetics(checked);
+    try { chrome.storage.local.set({ showPhonetics: checked }); } catch {}
+  }, []);
+
+  // Persist translation preference on change
+  const handleTranslationToggle = useCallback((checked: boolean) => {
+    setShowTranslation(checked);
+    try { chrome.storage.local.set({ showTranslation: checked }); } catch {}
+  }, []);
+
+  // Persist text scale
+  const adjustTextScale = useCallback((delta: number) => {
+    setTextScale(prev => {
+      const next = Math.max(0, Math.min(4, prev + delta));
+      try { chrome.storage.local.set({ textScale: next }); } catch {}
+      return next;
+    });
+  }, []);
+
   const { translated, loading: translating, progress } = useTranslateLines(
     cues,
     l1Code,
     l2Code,
+    activeCueIdx,
     showTranslation,
   );
 
@@ -431,7 +475,7 @@ Text: ${cue.text}`;
   return (
     <>
       {/* Scrollable cue list */}
-      <div ref={listRef} className="lpv-cue-list">
+      <div ref={listRef} className="lpv-cue-list" style={{ fontSize: `${TEXT_SCALE_SIZES[textScale]}%` }}>
         {cues.map((cue, i) => (
           <CueLine
             key={i}
@@ -439,6 +483,7 @@ Text: ${cue.text}`;
             index={i}
             isActive={i === activeCueIdx}
             l2Code={l2Code}
+            showPhonetics={showPhonetics}
             onSeekTo={handleSeekTo}
             onTokenClick={handleTokenClick}
             translation={translated.get(i) || ''}
@@ -450,17 +495,45 @@ Text: ${cue.text}`;
         ))}
       </div>
 
-      {/* Bottom bar — translation toggle */}
+      {/* Bottom bar — phonetics | translation | text size | progress */}
       <div className="lpv-bottom-bar">
+        <label className="lpv-translate-switch" title={t('showPhonetics') || 'Show Phonetics'}>
+          <input
+            type="checkbox"
+            checked={showPhonetics}
+            onChange={(e) => handlePhoneticsToggle(e.target.checked)}
+          />
+          <span className="lpv-switch-slider" />
+          <span className="lpv-switch-label">あ</span>
+        </label>
         <label className="lpv-translate-switch" title={t('showTranslation')}>
           <input
             type="checkbox"
             checked={showTranslation}
-            onChange={(e) => setShowTranslation(e.target.checked)}
+            onChange={(e) => handleTranslationToggle(e.target.checked)}
           />
           <span className="lpv-switch-slider" />
           <span className="lpv-switch-label">{t('translate')}</span>
         </label>
+        <div className="lpv-stepper">
+          <button
+            className="lpv-stepper-btn"
+            onClick={() => adjustTextScale(-1)}
+            disabled={textScale <= 0}
+            title={t('action.zoom_out') || 'Smaller'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/></svg>
+          </button>
+          <span className="lpv-stepper-value">A</span>
+          <button
+            className="lpv-stepper-btn"
+            onClick={() => adjustTextScale(1)}
+            disabled={textScale >= 4}
+            title={t('action.zoom_in') || 'Larger'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          </button>
+        </div>
         {translating && (
           <span className="lpv-control-status">
             {t('translating')}{' '}

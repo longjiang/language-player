@@ -501,7 +501,51 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-control-status {
   font-size: 11px;
   color: #666;
-}/* Ruby text (furigana / pinyin) */
+  margin-left: auto;
+}
+
+/* ── Text Size Stepper ───────────────────────────────────────────────── */
+
+.lpv-stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lpv-stepper-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.lpv-stepper-btn:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lpv-stepper-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.lpv-stepper-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  min-width: 20px;
+  text-align: center;
+  user-select: none;
+}
 .lpv-token ruby {
   ruby-align: center;
 }

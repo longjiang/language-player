@@ -1,8 +1,9 @@
 /**
- * useTranslateLines — hook for batch-translating subtitle lines.
+ * useTranslateLines — hook for lazy batch-translating subtitle lines.
  *
- * Mirrors the web app's useSubtitleTranslation but adapted for the extension.
- * Fetches translations in chunks of 5 from /translate_array.
+ * Only translates lines within a window around the active cue, similar to
+ * how useBatchLemmatize lazy-loads tokens. As the active cue advances,
+ * newly-visible lines are fetched in chunks of 5 from /translate_array.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -10,6 +11,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { log, logwarn } from './i18n';
 
 const CHUNK_SIZE = 5;
+/** Number of lines ahead of the active cue to pre-translate. */
+const LOOKAHEAD = 15;
 const API_BASE = 'https://pythonvps.zerotohero.ca';
 
 export interface SubCue {
@@ -22,98 +25,92 @@ interface UseTranslateLinesResult {
   translated: Map<number, string>; // index → L1 text
   loading: boolean;
   progress: number;
-  start: () => void;
-  reset: () => void;
 }
 
 export function useTranslateLines(
   cues: SubCue[],
   l1Code: string,
   l2Code: string,
+  activeCueIdx: number,
   enabled: boolean,
 ): UseTranslateLinesResult {
   const [translated, setTranslated] = useState<Map<number, string>>(new Map());
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const abortRef = useRef<AbortController | null>(null);
-  const doneRef = useRef(false);
+  const inFlightRef = useRef<Set<number>>(new Set());
+  const fetchedRef = useRef<Set<number>>(new Set());
+  const cuesRef = useRef(cues);
+  cuesRef.current = cues;
 
-  const start = useCallback(async () => {
-    if (!enabled || cues.length === 0) return;
-    if (doneRef.current) return; // already translated
-
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setLoading(true);
-    setProgress(0);
-    setTranslated(new Map());
-
-    log(`[TRANSLATE] Starting batch translation: ${cues.length} lines, l1=${l1Code}, l2=${l2Code}`);
-
-    const lines = cues.map(c => c.text);
-    const total = lines.length;
-    const result = new Map<number, string>();
-
-    for (let start = 0; start < total; start += CHUNK_SIZE) {
-      if (controller.signal.aborted) break;
-      const end = Math.min(start + CHUNK_SIZE, total);
-      const chunk = lines.slice(start, end);
-
-      try {
-        const res = await fetch(`${API_BASE}/translate_array`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: chunk, l1: l1Code, l2: l2Code }),
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const translatedTexts: string[] = data.translated_texts ?? [];
-        log(`[TRANSLATE] Chunk ${start}-${end}/${total}: ${translatedTexts.length} translations`);
-        for (let i = 0; i < translatedTexts.length; i++) {
-          result.set(start + i, translatedTexts[i]!);
-        }
-        setTranslated(new Map(result));
-        setProgress(Math.min(end, total));
-      } catch (err: any) {
-        if (err.name === 'AbortError' || controller.signal.aborted) break;
-        logwarn('Translation chunk failed:', err);
-        break;
+  const fetchChunk = useCallback(async (start: number) => {
+    const cues = cuesRef.current;
+    const end = Math.min(start + CHUNK_SIZE, cues.length);
+    const chunk: string[] = [];
+    const indices: number[] = [];
+    for (let i = start; i < end; i++) {
+      if (!fetchedRef.current.has(i) && !inFlightRef.current.has(i)) {
+        chunk.push(cues[i].text);
+        indices.push(i);
+        inFlightRef.current.add(i);
       }
     }
+    if (chunk.length === 0) return;
 
-    if (!controller.signal.aborted) {
+    setLoading(true);
+    try {
+      const controller = new AbortController();
+      const res = await fetch(`${API_BASE}/translate_array`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: chunk, l1: l1Code, l2: l2Code }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const translatedTexts: string[] = data.translated_texts ?? [];
+
+      setTranslated(prev => {
+        const next = new Map(prev);
+        for (let i = 0; i < translatedTexts.length; i++) {
+          const idx = indices[i];
+          if (idx !== undefined) {
+            next.set(idx, translatedTexts[i]!);
+            fetchedRef.current.add(idx);
+          }
+        }
+        return next;
+      });
+      setProgress(fetchedRef.current.size);
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      logwarn('Translation chunk failed:', err);
+    } finally {
+      for (const idx of indices) {
+        inFlightRef.current.delete(idx);
+      }
       setLoading(false);
-      setProgress(total);
-      doneRef.current = true;
-      log(`[TRANSLATE] Complete: ${total}/${total} lines`);
     }
-  }, [cues, l1Code, l2Code, enabled]);
+  }, [l1Code, l2Code]);
 
-  const reset = useCallback(() => {
-    abortRef.current?.abort();
+  // When cues change (new video), reset everything
+  useEffect(() => {
     setTranslated(new Map());
-    setLoading(false);
     setProgress(0);
-    doneRef.current = false;
-  }, []);
-
-  useEffect(() => {
-    if (enabled) {
-      start();
-    } else {
-      reset();
-    }
-  }, [enabled]);
-
-  // Reset translation state when cues change (e.g. YouTube SPA navigation
-  // to a new video). Without this, doneRef.current stays true from the
-  // previous video and start() bails out immediately.
-  useEffect(() => {
-    reset();
+    fetchedRef.current = new Set();
+    inFlightRef.current = new Set();
+    setLoading(false);
   }, [cues]);
 
-  return { translated, loading, progress, start, reset };
+  // Lazy: when enabled, translate chunks around the active cue
+  useEffect(() => {
+    if (!enabled) return;
+    if (cues.length === 0) return;
+    const start = Math.max(0, activeCueIdx);
+    const end = Math.min(cues.length, activeCueIdx + LOOKAHEAD);
+    for (let i = start; i < end; i += CHUNK_SIZE) {
+      fetchChunk(i);
+    }
+  }, [enabled, activeCueIdx, cues.length, fetchChunk]);
+
+  return { translated, loading, progress };
 }
