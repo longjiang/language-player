@@ -11,7 +11,7 @@ import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
-import { getCachedEntries } from '@langplayer/utils';
+import { getCachedEntries, bulkLookupWords } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -141,6 +141,19 @@ export default function ReviewPage() {
       }));
   }, [l2SavedWords, store, l2Code]);
 
+  // ── Pre-fetch dictionary entries for all due cards ──
+  // This ensures entries are in the cache before the user reveals a card,
+  // avoiding a misleading "no definition" flash.
+  useEffect(() => {
+    if (dueCards.length === 0) return;
+    const words = dueCards.map((dc) => ({
+      text: dc.word.forms[0] || dc.word.id,
+      l2Code,
+      l1Code: baseCode(l1.code),
+    }));
+    bulkLookupWords(words, PYTHON_API_URL);
+  }, [dueCards, l2Code, l1.code]);
+
   // ── Derive entry for the current card from the reactive cache ──
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.word.forms[0] || currentDueCard?.word.id || '';
@@ -161,26 +174,6 @@ export default function ReviewPage() {
     // Fall back to the reactive hook value for forms[0]
     return allCachedEntries?.find((e) => e.id === sw.id) ?? null;
   }, [currentDueCard?.word?.id, currentDueCard?.word?.forms, l2Code, wordForm, allCachedEntries]);
-
-  // ── Debug: log entry resolution for the current card ──
-  useEffect(() => {
-    const sw = currentDueCard?.word;
-    if (!sw) return;
-    console.log('[LP Web] Review card entry resolution:', {
-      wordId: sw.id,
-      forms: sw.forms,
-      isLlmId: sw.id.startsWith('llm-'),
-      perFormCache: sw.forms.map((f) => {
-        const entries = getCachedEntries(l2Code, f);
-        return {
-          form: f,
-          count: entries?.length ?? 0,
-          ids: entries?.map(e => e.id),
-        };
-      }),
-      cachedEntryFound: !!cachedEntry,
-    });
-  }, [currentDueCard?.word?.id, l2Code, cachedEntry]);
 
   const currentEntry = useMemo((): DictionaryEntry | null => {
     return cachedEntry;
@@ -462,7 +455,13 @@ export default function ReviewPage() {
 
   // ── Render states ──
 
-  const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing || (status === 'authenticated' && !cloudLoaded);
+  // For authenticated users, savedWords may still be {} after cloudLoaded
+  // becomes true — the cloud hydration effect in useSavedWords hasn't fired
+  // yet.  Treat an empty store for authenticated users as still-loading to
+  // avoid a misleading "no cards to review" flash.
+  const savedWordsEmpty = Object.keys(savedWords).length === 0;
+  const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing
+    || (status === 'authenticated' && (!cloudLoaded || savedWordsEmpty));
 
   if (isLoading) {
     return (
