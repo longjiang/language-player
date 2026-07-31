@@ -81,7 +81,7 @@ function extractYoutubeId(url: string): string | undefined {
 }
 
 const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl }) => {
-  const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
+  const { savedWords, saveWord, removeSavedWord, isLoggedIn, loading: wordsLoading } = useSavedWords();
   const [saving, setSaving] = useState(false);
 
   const dictId = entry.dictionary?.id ?? 'llm';
@@ -92,7 +92,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const handleSave = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || wordsLoading) return;
 
     setSaving(true);
     try {
@@ -128,7 +128,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     } finally {
       setSaving(false);
     }
-  }, [entry, isLoggedIn, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
+  }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
 
   return (
     <div className="lpv-dict-entry-row">
@@ -163,7 +163,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           </div>
         )}
       </a>
-      {isLoggedIn && (
+      {isLoggedIn && !wordsLoading && (
         <button
           onClick={handleSave}
           disabled={saving}
