@@ -33,7 +33,7 @@ export interface TokenizedTextProps {
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
   typeFace?: 'default' | 'serif' | 'sans-serif';
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'relaxed' (1.625×).
+   * Line-height (leading) for tokenized text. Defaults to 'loose' (2×).
    * Pass 'none' to inherit from the parent container.
    */
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
@@ -77,7 +77,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   l2Code,
   textScale,
   typeFace = 'default',
-  leading = 'relaxed',
+  leading = 'loose',
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
