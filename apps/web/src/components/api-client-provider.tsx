@@ -4,6 +4,7 @@ import { useRef, useMemo } from 'react';
 import { createApiClient } from '@langplayer/api-client';
 import { useSession } from 'next-auth/react';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logerr } from '@/lib/logger';
 
 /**
  * Initializes the shared API client synchronously before any child component
@@ -28,7 +29,7 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
         return Promise.resolve(token ?? null);
       },
       onError(error) {
-        console.error('[API]', error.code, error.message);
+        logerr('[API]', error.code, error.message);
       },
     });
   }, []); // once, on mount

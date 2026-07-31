@@ -10,6 +10,7 @@ import { VideoGrid } from '@/components/video/VideoGrid';
 import { LevelFilter } from '@/components/video/LevelFilter';
 import { PageContainer } from '@/components/layout/PageContainer';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { logwarn } from '@/lib/logger';
 
 export default function ExploreScreen() {
   const { l2Lang } = useLanguage();
@@ -41,7 +42,7 @@ export default function ExploreScreen() {
       setHasMore(newVideos.length >= 24);
       setError(null);
     } catch (err) {
-      console.warn('[explore] Fetch failed:', err);
+      logwarn('[explore] Fetch failed:', err);
       if (videos.length === 0) setError('msg.no_videos_found');
     } finally {
       setLoading(false);

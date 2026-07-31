@@ -1,6 +1,7 @@
 import React, { type ReactNode, useMemo } from 'react';
 import { IntlProvider } from 'react-intl';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { logerr } from '@/lib/logger';
 
 // Static import map — Metro can't resolve dynamic requires.
 // These are the 31 supported locales from translations.csv.
@@ -65,7 +66,7 @@ export function IntlProviderWrapper({ children }: { children: ReactNode }) {
   // MISSING_TRANSLATION lookup before falling back to defaultMessage.
   const handleError = useMemo(() => (err: any) => {
     if (err?.code === 'MISSING_TRANSLATION') return;
-    console.error(err);
+    logerr('[IntlProvider]', err);
   }, []);
 
   // react-intl's IntlProvider has a React 19 type incompatibility

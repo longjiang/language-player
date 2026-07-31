@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import sharp from 'sharp';
+import { logerr } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -193,7 +194,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error('OG image generation failed:', error);
+    logerr('OG image generation failed:', error);
     return new Response(
       `OG render error: ${error instanceof Error ? error.message : String(error)}`,
       { status: 500, headers: { 'Content-Type': 'text/plain' } },

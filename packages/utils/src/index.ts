@@ -39,6 +39,8 @@ export {
   applyRomajiAccent,
   circledPattern,
 } from './pitch-accent';
+export { createLogger, getLogLevel, setLogLevel } from './logger';
+export type { Logger } from './logger';
 export { md5 } from './md5';
 export { useEntryCache, useEntryByIdCache } from './use-entry-cache';
 export { TokenCache } from './token-cache';

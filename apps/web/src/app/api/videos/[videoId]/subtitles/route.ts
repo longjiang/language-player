@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logerr } from '@/lib/logger';
 
 /** GET /api/videos/[videoId]/subtitles?l2=ja */
 export async function GET(
@@ -18,7 +19,7 @@ export async function GET(
     );
 
     if (!flaskRes.ok) {
-      console.error('Flask subtitle fetch failed:', flaskRes.status);
+      logerr('Flask subtitle fetch failed:', flaskRes.status);
       return NextResponse.json({ lines: [] });
     }
 
@@ -32,7 +33,7 @@ export async function GET(
 
     return NextResponse.json({ lines });
   } catch (err) {
-    console.error('Subtitle fetch error:', err);
+    logerr('Subtitle fetch error:', err);
     return NextResponse.json({ lines: [] });
   }
 }

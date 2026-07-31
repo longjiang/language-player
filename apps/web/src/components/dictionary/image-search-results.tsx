@@ -5,18 +5,13 @@ import { useT } from '@/hooks/use-t';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { cn } from '@/lib/utils';
+import { log } from '@/lib/logger';
 import { AlertCircle, ImageOff, Loader2 } from 'lucide-react';
 
 const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
 const PAGE_SIZE = 20;
 const THUMBNAIL_TIMEOUT_MS = 5000;
 
-// ── Logging (gated by a single flag — per AGENTS.md) ──
-// Logs in dev so the actual Openverse search terms are visible; never in prod.
-const LOG_ENABLED = process.env.NODE_ENV !== 'production';
-function log(msg: string, ...args: unknown[]) {
-  if (LOG_ENABLED) console.log('[LP Web] [ImageSearch]', msg, ...args);
-}
 
 interface OpenverseImage {
   id: string;
@@ -75,7 +70,7 @@ async function sniffThumbnail(
     ]);
     if (res === null) return img; // timed out — keep rather than risk a false drop
     if (!res.ok && res.status !== 429) {
-      log('Thumbnail dead, filtered:', img.title, target, `HTTP ${res.status}`);
+      log('[ImageSearch] Thumbnail dead, filtered:', img.title, target, `HTTP ${res.status}`);
       return null;
     }
     return img;
@@ -166,7 +161,7 @@ export function ImageSearchResults({
 
       await Promise.all(searchQueries.map(async (q) => {
         const url = `${OPENVERSE_IMAGES_URL}?q=${encodeURIComponent(q)}&page_size=${PAGE_SIZE}&filter_dead=true`;
-        log('Openverse fetch:', q, url);
+        log('[ImageSearch] Openverse fetch:', q, url);
         try {
           const res = await fetch(url, { signal: controller.signal });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);

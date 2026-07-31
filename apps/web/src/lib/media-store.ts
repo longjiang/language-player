@@ -11,6 +11,8 @@
  * reused directly. Otherwise, the user is prompted to re-select the file.
  */
 
+import { logwarn } from '@/lib/logger';
+
 const DB_NAME = 'lp-media-store';
 const DB_VERSION = 1;
 const STORE_NAME = 'media';
@@ -164,7 +166,7 @@ export async function openMediaFile(): Promise<{
       return { file, handle };
     } catch (err: any) {
       if (err?.name === 'AbortError') return null;
-      console.warn('File System Access API failed, using fallback:', err);
+      logwarn('File System Access API failed, using fallback:', err);
     }
   }
 

@@ -4,6 +4,7 @@ import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 
 interface UseEpubPaginationOptions {
   text: string;
@@ -165,7 +166,7 @@ export function useEpubPagination({
 
     const gen = ++tokenLoadGenRef.current;
     setLoadingTokens(true);
-    if (__DEV__) console.log(`[lemmatize] 📦 BATCH REQ l2=${l2Code} blocks=${missing.length}`);
+    log(`[lemmatize] 📦 BATCH REQ l2=${l2Code} blocks=${missing.length}`);
     fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -175,10 +176,8 @@ export function useEpubPagination({
       .then(data => {
         if (tokenLoadGenRef.current !== gen) return;
         const results: LemmatizedToken[][] = data?.results ?? [];
-        if (__DEV__) {
-          const withLemmas = results.filter(r => r?.some(t => t.lemmas.length > 0)).length;
-          console.log(`[lemmatize] 📦 BATCH OK l2=${l2Code} results=${results.length} withLemmas=${withLemmas}`);
-        }
+        const withLemmas = results.filter(r => r?.some(t => t.lemmas.length > 0)).length;
+        log(`[lemmatize] 📦 BATCH OK l2=${l2Code} results=${results.length} withLemmas=${withLemmas}`);
         setTokenCache(prev => {
           const next = { ...prev };
           missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
@@ -188,7 +187,7 @@ export function useEpubPagination({
       .catch(async (e: any) => {
         // Offline fallback: lemmatizeText() has server-first-then-local chain.
         // lemmatizeInflight dedup handles concurrent calls for identical text.
-        if (__DEV__) console.log(`[lemmatize] 📦 BATCH FAIL l2=${l2Code} → falling back to per-block lemmatizeText()`, e?.message ?? e);
+        log(`[lemmatize] 📦 BATCH FAIL l2=${l2Code} → falling back to per-block lemmatizeText()`, e?.message ?? e);
         if (tokenLoadGenRef.current !== gen) return;
         const { lemmatizeText } = await import('@/lib/tokenizer');
         const results = await Promise.all(

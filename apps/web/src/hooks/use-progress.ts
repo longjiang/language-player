@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import type { ProgressStore, L2Progress } from '@langplayer/shared';
+import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthProgress'; // match Classic for migration compatibility
 const SYNC_DEBOUNCE_MS = 3000;
@@ -84,7 +85,7 @@ export function useProgress(l2Code: string) {
       if (!raw) { isSyncing.current = false; return; }
       await syncProgress(raw);
     } catch (err) {
-      console.warn('[progress] Cloud sync failed:', err);
+      logwarn('[progress] Cloud sync failed:', err);
     } finally {
       isSyncing.current = false;
     }
@@ -149,7 +150,7 @@ export function useProgress(l2Code: string) {
         setProgress({ ...currentEntry, level: parseLevel(currentEntry.level) });
       }
     } catch (err) {
-      console.warn('[progress] Could not load from cloud:', err);
+      logwarn('[progress] Could not load from cloud:', err);
     }
     cloudLoaded.current = true;
   }, [status, l2Code, cloudUserData, cloudLoaded2]);

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemInstance } from '@langplayer/shared';
 import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
+import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
 const SYNC_DEBOUNCE_MS = 2000;
@@ -87,7 +88,7 @@ export function useSavedWords() {
         return next;
       });
     } catch (err) {
-      console.warn('[savedWords] Could not parse cloud data:', err);
+      logwarn('[savedWords] Could not parse cloud data:', err);
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 
@@ -104,7 +105,7 @@ export function useSavedWords() {
       try {
         await syncSavedWords(JSON.stringify(words));
       } catch (err) {
-        console.warn('[savedWords] Sync failed — will retry:', err);
+        logwarn('[savedWords] Sync failed — will retry:', err);
         // Retry after a delay so a transient failure doesn't silently drop a
         // save/unsave (which would let an unsaved word come back on refresh).
         syncTimer.current = setTimeout(() => {

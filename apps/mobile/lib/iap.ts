@@ -22,6 +22,7 @@
 
 import { Platform } from 'react-native';
 import type { InAppPurchase, IAPErrorCode, IAPQueryResponse, IAPResponseCode } from 'expo-in-app-purchases';
+import { logwarn } from '@/lib/logger';
 
 // ── Lazy module loader ──
 
@@ -82,7 +83,7 @@ export async function connectIap(): Promise<void> {
     await m.connectAsync();
     _connectionState = 'connected';
   } catch (err) {
-    console.warn('[IAP] connect failed:', err);
+    logwarn('[IAP] connect failed:', err);
     _connectionState = 'error';
     throw err;
   }
@@ -163,7 +164,7 @@ export async function finishPurchaseTransaction(
     const m = await iap();
     await m.finishTransactionAsync(purchase, false);
   } catch (err) {
-    console.warn('[IAP] finishTransactionAsync failed:', err);
+    logwarn('[IAP] finishTransactionAsync failed:', err);
   }
 }
 
@@ -196,7 +197,7 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
         receipt: p.transactionReceipt!,
       }));
   } catch (err) {
-    console.warn('[IAP] restore failed:', err);
+    logwarn('[IAP] restore failed:', err);
     return [];
   }
 }

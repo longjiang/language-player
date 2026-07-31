@@ -5,6 +5,7 @@ import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/contexts/UserDataContext';
 import { createSrsStore } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
+import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
 const SYNC_DEBOUNCE_MS = 3000;
@@ -69,7 +70,7 @@ export function useSrs() {
         const { apiClient } = await import('@langplayer/api-client');
         await apiClient.post('/user-data/sync', { srs_progress: JSON.stringify(s) });
       } catch (err) {
-        console.warn('[srs] Cloud sync failed:', err);
+        logwarn('[srs] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }

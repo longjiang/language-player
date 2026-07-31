@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
 
 const SAVE_INTERVAL_MS = 15_000; // every 15 seconds
 
@@ -46,7 +47,7 @@ export function useWatchHistoryRecorder(
         const userId = data?.user?.id ?? null;
         const token = data?.user?.directusToken ?? null;
         setSession({ userId, token, loaded: true });
-        console.log('[watch-history] session loaded', { hasUserId: !!userId, hasToken: !!token });
+        log('[watch-history] session loaded', { hasUserId: !!userId, hasToken: !!token });
       })
       .catch(() => {
         if (!cancelled) setSession({ userId: null, token: null, loaded: true });
@@ -59,12 +60,12 @@ export function useWatchHistoryRecorder(
     if (!videoId || !userId || !token) {
       // Only log when session is loaded to avoid noise during initial fetch
       if (loaded || videoId) {
-        console.log('[watch-history] recorder inactive', { hasVideoId: !!videoId, hasUserId: !!userId, hasToken: !!token });
+        log('[watch-history] recorder inactive', { hasVideoId: !!videoId, hasUserId: !!userId, hasToken: !!token });
       }
       return;
     }
 
-    console.log('[watch-history] recorder active — will save every 15s', { videoId, userId });
+    log('[watch-history] recorder active — will save every 15s', { videoId, userId });
 
     const interval = setInterval(() => {
       const time = currentTimeRef.current;
@@ -80,7 +81,7 @@ export function useWatchHistoryRecorder(
 
       lastSavedRef.current = { time, videoId };
 
-      console.log('[watch-history] sending save', { videoId, position: Math.round(time) });
+      log('[watch-history] sending save', { videoId, position: Math.round(time) });
 
       fetch(`${PYTHON_API_URL}/save-watch-history`, {
         method: 'POST',

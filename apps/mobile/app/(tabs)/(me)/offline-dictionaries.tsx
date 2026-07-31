@@ -10,6 +10,7 @@ import { ContextMenu } from '@/components/ui/context-menu';
 import type { ContextMenuItem } from '@/components/ui/context-menu';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search } from 'lucide-react-native';
+import { log } from '@/lib/logger';
 
 // ── Language name lookup ─────────────────────
 
@@ -128,7 +129,7 @@ export default function OfflineDictionariesScreen() {
   // ── Load downloaded status on mount ──
   useEffect(() => {
     (async () => {
-      console.log('[OfflineDict] 🔍 checking already-downloaded dicts...');
+      log('[OfflineDict] 🔍 checking already-downloaded dicts...');
       const dl = new Set<string>();
       const counts = new Map<string, number>();
       for (const l2 of SUPPORTED_L2S) {
@@ -139,7 +140,7 @@ export default function OfflineDictionariesScreen() {
           }
         } catch {}
       }
-      console.log('[OfflineDict] 📋 downloaded dicts found:', dl.size, '—', [...dl].join(', ') || '(none)');
+      log('[OfflineDict] 📋 downloaded dicts found:', dl.size, '—', [...dl].join(', ') || '(none)');
       setDownloaded(dl);
       setDownloadedCounts(counts);
     })();
@@ -149,15 +150,15 @@ export default function OfflineDictionariesScreen() {
   useEffect(() => {
     (async () => {
       const fetchStart = Date.now();
-      console.log('[OfflineDict] 🌐 GET /dictionary/download/languages (batch)');
+      log('[OfflineDict] 🌐 GET /dictionary/download/languages (batch)');
       try {
         const baseUrl = require('@/lib/api-url').PYTHON_API_URL;
         const res = await fetch(`${baseUrl}/dictionary/download/languages`);
         const data = await res.json();
         const langs = (data.languages ?? {}) as Record<string, { totalEntries: number; freqCount: number; downloaded: number; capped: boolean; version: string }>;
         const count = Object.keys(langs).length;
-        console.log('[OfflineDict] ✅ batch response —', count, 'languages — took', Date.now() - fetchStart, 'ms');
-        console.log('[OfflineDict] 📋 available:', Object.keys(langs).sort().join(', '));
+        log('[OfflineDict] ✅ batch response —', count, 'languages — took', Date.now() - fetchStart, 'ms');
+        log('[OfflineDict] 📋 available:', Object.keys(langs).sort().join(', '));
 
         const next = new Map<string, LangStatus>();
         for (const [l2, info] of Object.entries(langs)) {
@@ -178,7 +179,7 @@ export default function OfflineDictionariesScreen() {
         }
         setStatuses(next);
       } catch (e: any) {
-        console.log('[OfflineDict] ❌ batch request failed:', e?.message ?? e);
+        log('[OfflineDict] ❌ batch request failed:', e?.message ?? e);
       }
     })();
   }, []);
@@ -194,7 +195,7 @@ export default function OfflineDictionariesScreen() {
   // ── Actions ──
 
   const handleDownload = async (l2: string) => {
-    console.log('[OfflineDict] 🚀 handleDownload — l2:', l2, '— timestamp:', Date.now());
+    log('[OfflineDict] 🚀 handleDownload — l2:', l2, '— timestamp:', Date.now());
     downloadingRef.current.add(l2);
     setTick((t) => t + 1);
     try {
@@ -203,10 +204,10 @@ export default function OfflineDictionariesScreen() {
       setDownloaded((prev) => new Set(prev).add(l2));
       const count = await getDownloadedCount(l2);
       setDownloadedCounts((prev) => new Map(prev).set(l2, count));
-      console.log('[OfflineDict] ✅ handleDownload finished — l2:', l2, 'count:', count);
+      log('[OfflineDict] ✅ handleDownload finished — l2:', l2, 'count:', count);
     } catch (e: any) {
       const wasCancelled = e?.message === 'Download cancelled';
-      console.log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
+      log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
     } finally {
       downloadingRef.current.delete(l2);
       setTick((t) => t + 1);
@@ -214,14 +215,14 @@ export default function OfflineDictionariesScreen() {
   };
 
   const handleCancel = (l2: string) => {
-    console.log('[OfflineDict] 🛑 handleCancel — l2:', l2);
+    log('[OfflineDict] 🛑 handleCancel — l2:', l2);
     cancelDownload(l2);
     downloadingRef.current.delete(l2);
     setTick((t) => t + 1);
   };
 
   const handleDelete = (l2: string) => {
-    console.log('[OfflineDict] 🗑 handleDelete prompt — l2:', l2);
+    log('[OfflineDict] 🗑 handleDelete prompt — l2:', l2);
     Alert.alert(
       `${t('action.delete')} ${getLanguageName(l2, localeLangNames)}`,
       t('msg.confirm_delete_dictionary', { lang: getLanguageName(l2, localeLangNames) }),

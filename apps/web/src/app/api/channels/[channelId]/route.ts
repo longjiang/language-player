@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logerr } from '@/lib/logger';
 
 /**
  * GET /api/channels/[channelId]?l2=zh&page=1&page_size=24
@@ -30,7 +31,7 @@ export async function GET(
     );
 
     if (!flaskRes.ok) {
-      console.error(`Flask channel error (${channelId}): ${flaskRes.status}`);
+      logerr(`Flask channel error (${channelId}): ${flaskRes.status}`);
       return NextResponse.json({ channel: null, videos: [], hasMore: false }, { status: 200 });
     }
 
@@ -57,7 +58,7 @@ export async function GET(
       hasMore: data.hasMore,
     });
   } catch (error) {
-    console.error('Channel API error:', error);
+    logerr('Channel API error:', error);
     return NextResponse.json({ error: 'Failed to fetch channel videos' }, { status: 500 });
   }
 }

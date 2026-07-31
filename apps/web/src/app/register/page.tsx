@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logwarn } from '@/lib/logger';
 
 type Step = 'form' | 'verify' | 'complete';
 
@@ -55,7 +56,7 @@ export default function RegisterPage() {
       });
 
       if (!verifyRes.ok) {
-        console.warn('Verification email failed to send');
+        logwarn('Verification email failed to send');
       }
 
       setStep('verify');

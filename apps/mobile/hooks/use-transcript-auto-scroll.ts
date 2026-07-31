@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import type { FlatList, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
 import { decideAutoScroll, SCROLL, type AutoScrollState } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 
 // ── Types ──────────────────────────────────────
 
@@ -80,7 +81,7 @@ export function useTranscriptAutoScroll({
     (e: LayoutChangeEvent) => {
       const h = e.nativeEvent.layout.height;
       if (h > 0 && h !== containerHeight) {
-        console.log(`[auto-scroll] 📏 container height: ${h}px (≈${Math.floor(h / estimatedItemHeight)} items)`);
+        log(`[auto-scroll] 📏 container height: ${h}px (≈${Math.floor(h / estimatedItemHeight)} items)`);
         setContainerHeight(h);
       }
     },
@@ -95,7 +96,7 @@ export function useTranscriptAutoScroll({
   // ── Reset state on video change (activeIndex → -1) ──
   useEffect(() => {
     if (activeIndex === -1) {
-      console.log('[auto-scroll] 🔄 reset: video changed');
+      log('[auto-scroll] 🔄 reset: video changed');
       isInitialLoad.current = true;
       lastScrolledIdx.current = -1;
       lastAutoScrollTime.current = 0;
@@ -136,7 +137,7 @@ export function useTranscriptAutoScroll({
 
     const decision = decideAutoScroll(state);
 
-    console.log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px itemH=${estimatedItemHeight}) isFullyOut=${isFullyOut} effOut=${effectiveFullyOut} isNearEdge=${isNearEdge} userCooldown=${inUserCooldown} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
+    log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px itemH=${estimatedItemHeight}) isFullyOut=${isFullyOut} effOut=${effectiveFullyOut} isNearEdge=${isNearEdge} userCooldown=${inUserCooldown} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
 
     if (!decision.shouldScroll) return;
 
@@ -145,7 +146,7 @@ export function useTranscriptAutoScroll({
     lastScrolledIdx.current = activeIndex;
     isInitialLoad.current = false;
 
-    console.log(`[auto-scroll] 🚀 EXECUTE scrollToIndex: index=${activeIndex} animated=${decision.animated} reason=${decision.reason}`);
+    log(`[auto-scroll] 🚀 EXECUTE scrollToIndex: index=${activeIndex} animated=${decision.animated} reason=${decision.reason}`);
 
     flatListRef.current?.scrollToIndex({
       index: activeIndex,

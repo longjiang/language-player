@@ -108,8 +108,8 @@ This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `
 | App | Where |
 |---|---|
 | Chrome Extension | `src/i18n.js` — `LOG_LEVEL` constant (0=off, 1=errors, 2=warnings, 3=verbose) |
-| Web (Next.js) | TBD |
-| Mobile (Expo/RN) | TBD |
+| Web (Next.js) | `src/lib/logger.ts` (wraps shared `packages/utils/src/logger.ts`) — `LOG_LEVEL` (0=off, 1=errors, 2=warnings, 3=verbose); set via `NEXT_PUBLIC_LOG_LEVEL` env or `setLogLevel()` at runtime |
+| Mobile (Expo/RN) | `lib/logger.ts` (wraps shared `packages/utils/src/logger.ts`) — same `LOG_LEVEL`; set via `EXPO_PUBLIC_LOG_LEVEL` env or `setLogLevel()` at runtime |
 
 Use a simple pattern — export `log()`, `logwarn()`, `logerr()` helpers that check the flag internally. Never call `console.log` directly in application code.
 

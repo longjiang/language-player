@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserData, type UserDataResponse } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
+import { logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
   TOKENIZED_TEXT_DEFAULTS,
@@ -71,7 +72,7 @@ export function useSettings() {
           settings_v2: JSON.stringify(s),
         });
       } catch (err) {
-        console.warn('[settings] Cloud sync failed:', err);
+        logwarn('[settings] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }
@@ -188,7 +189,7 @@ export function useSettings() {
         return merged;
       });
     } catch (err) {
-      console.warn('[settings] Could not parse cloud data:', err);
+      logwarn('[settings] Could not parse cloud data:', err);
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 

@@ -10,6 +10,7 @@ import { OfflineBanner } from '@/components/dictionary/OfflineBanner';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function DictionaryScreen() {
@@ -36,17 +37,17 @@ export default function DictionaryScreen() {
   // DEBUG: Verbose logging to trace the tap → navigation → detail chain.
   // If handleEntryPress never fires, the bug is upstream (card Pressable).
   const handleEntryPress = (entry: DictionaryEntry) => {
-    console.log('[Dict] handleEntryPress — entry:', JSON.stringify({ id: entry.id, head: entry.head }), '— timestamp:', Date.now());
+    log('[Dict] handleEntryPress — entry:', JSON.stringify({ id: entry.id, head: entry.head }), '— timestamp:', Date.now());
     setDetailHead(entry.head);
-    console.log('[Dict] handleEntryPress — setDetailHead done');
+    log('[Dict] handleEntryPress — setDetailHead done');
     setSidebarSource({ kind: 'results', items: results! });
-    console.log('[Dict] handleEntryPress — setSidebarSource done');
+    log('[Dict] handleEntryPress — setSidebarSource done');
     setCameFromSearch(true);
-    console.log('[Dict] handleEntryPress — setCameFromSearch done, pushing route...');
+    log('[Dict] handleEntryPress — setCameFromSearch done, pushing route...');
     // Encode commas for expo-router compatibility
     const safeId = entry.id.replace(/,/g, '~');
     router.push(`word/${safeId}` as any);
-    console.log('[Dict] handleEntryPress — router.push called, safeId:', safeId);
+    log('[Dict] handleEntryPress — router.push called, safeId:', safeId);
   };
 
   return (
@@ -149,7 +150,7 @@ export default function DictionaryScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View className="px-4 py-1"
-              onTouchEnd={() => console.log('[Dict] FlatList item touch — id:', item.id, 'head:', item.head)}>
+              onTouchEnd={() => log('[Dict] FlatList item touch — id:', item.id, 'head:', item.head)}>
               <DictionaryEntryCard entry={item} onPress={handleEntryPress} l2Code={l2Lang.code} />
             </View>
           )}

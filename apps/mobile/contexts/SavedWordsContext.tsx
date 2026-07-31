@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './AuthContext';
 import { useCloudUserData } from './UserDataContext';
 import { decomposeWordId, type DictionaryEntry, type LlmGeneratedEntry } from '@langplayer/shared';
+import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords';
 const SYNC_DEBOUNCE_MS = 2000;
@@ -69,7 +70,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
           if (!cancelled) setLoaded(true);
         }
       } catch (err) {
-        console.warn('[SavedWordsContext] error loading from SecureStore:', err);
+        logwarn('[SavedWordsContext] error loading from SecureStore:', err);
         if (!cancelled) setLoaded(true);
       }
     })();
@@ -88,7 +89,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         return merged;
       });
     } catch (err) {
-      console.warn('[SavedWordsContext] error parsing cloud data:', err);
+      logwarn('[SavedWordsContext] error parsing cloud data:', err);
     }
   }, [user, loaded, cloudLoaded, cloudData]);
 
@@ -102,7 +103,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         const { apiClient } = await import('@langplayer/api-client');
         await apiClient.post('/user-data/sync', { saved_words: JSON.stringify(words) });
       } catch (err) {
-        console.warn('[SavedWordsContext] Cloud sync failed:', err);
+        logwarn('[SavedWordsContext] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }

@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { e2e } from '@/lib/e2e';
+import { logwarn } from '@/lib/logger';
 
 type VerifyState = 'verifying' | 'success' | 'error';
 
@@ -34,13 +35,13 @@ export default function VerifyEmailScreen() {
         });
 
         if (!res.ok) {
-          console.warn(`[verify-email] Server returned ${res.status}; showing success`);
+          logwarn(`[verify-email] Server returned ${res.status}; showing success`);
         }
 
         setState('success');
       } catch {
         // Network error — still show success since the link was valid
-        console.warn('[verify-email] Network error; showing success');
+        logwarn('[verify-email] Network error; showing success');
         setState('success');
       }
     })();
