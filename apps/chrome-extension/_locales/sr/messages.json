@@ -21,10 +21,13 @@
     "message": "Kopiraj"
   },
   "explain": {
-    "message": "Pitaj AI"
+    "message": "Neka DeepSeek objasni"
+  },
+  "explainPro": {
+    "message": "Neka DeepSeek objasni (Pro)"
   },
   "explainTitle": {
-    "message": "Pitaj AI"
+    "message": "Neka DeepSeek objasni"
   },
   "extensionDescription": {
     "message": "Interaktivni dvojezični titlovi za učenje jezika na Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Учитавање..."
+  },
+  "lookingUpWord": {
+    "message": "Traženje $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Titlovi za ovaj video još uvek nisu dostupni."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Pritisnite <kbd>Alt</kbd> + <kbd>T</kbd> za uključivanje/isključivanje panela"
+  },
+  "removeFromSaved": {
+    "message": "Ukloni iz sačuvanih reči"
   },
   "save": {
     "message": "Sačuvaj reč"

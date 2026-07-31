@@ -21,10 +21,13 @@
     "message": "Sao chép"
   },
   "explain": {
-    "message": "Hỏi AI"
+    "message": "Để DeepSeek giải thích"
+  },
+  "explainPro": {
+    "message": "Để DeepSeek giải thích (Pro)"
   },
   "explainTitle": {
-    "message": "Hỏi AI"
+    "message": "Để DeepSeek giải thích"
   },
   "extensionDescription": {
     "message": "Phụ đề song ngữ tương tác để học ngôn ngữ trên Prime Video, YouTube, Netflix, Disney+, Hulu và Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Đang tải..."
+  },
+  "lookingUpWord": {
+    "message": "Đang tra $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Phụ đề chưa có sẵn cho video này."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Nhấn <kbd>Alt</kbd> + <kbd>T</kbd> để bật/tắt bảng điều khiển"
+  },
+  "removeFromSaved": {
+    "message": "Xóa khỏi từ đã lưu"
   },
   "save": {
     "message": "Lưu từ"

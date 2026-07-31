@@ -21,10 +21,13 @@
     "message": "Kopioi"
   },
   "explain": {
-    "message": "Kysy tekoälyltä"
+    "message": "Anna DeepSeekin selittää"
+  },
+  "explainPro": {
+    "message": "Anna DeepSeekin selittää (Pro)"
   },
   "explainTitle": {
-    "message": "Kysy tekoälyltä"
+    "message": "Anna DeepSeekin selittää"
   },
   "extensionDescription": {
     "message": "Vuorovaikutteiset kaksikieliset tekstitykset kielten oppimiseen Prime Video, YouTube, Netflix, Disney+, Hulu ja Max -palveluissa."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Ladataan..."
+  },
+  "lookingUpWord": {
+    "message": "Etsitään $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Tekstitykset eivät ole vielä saatavilla tälle videolle."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Paina <kbd>Alt</kbd> + <kbd>T</kbd> vaihtaaksesi paneelia"
+  },
+  "removeFromSaved": {
+    "message": "Poista tallennetuista sanoista"
   },
   "save": {
     "message": "Tallenna sana"

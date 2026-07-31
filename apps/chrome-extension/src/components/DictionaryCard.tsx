@@ -15,7 +15,7 @@ import { useSavedWords } from './SavedWordsProvider';
 import { fetchInflectedForms } from '../saved-words';
 import { useSubscription } from '../use-subscription';
 import { Markdown } from './Markdown';
-import { log, logerr } from '../i18n';
+import { log, logerr, t } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -144,7 +144,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           onClick={handleSave}
           disabled={saving}
           className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
-          title={isSaved ? 'Unsave' : 'Save word'}
+          title={isSaved ? t('removeFromSaved') : t('save')}
         >
           {saving ? '…' : isSaved ? '★' : '☆'}
         </button>
@@ -305,7 +305,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           )}
         </div>
         <div className="lpv-dict-card-header-right">
-          <button onClick={onClose} className="lpv-dict-card-close" title="Close">
+          <button onClick={onClose} className="lpv-dict-card-close" title={t('close')}>
             ✕
           </button>
         </div>
@@ -318,9 +318,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
             onClick={handleExplain}
             disabled={explainLoading}
             className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
-            title="Let DeepSeek Explain (Pro)"
+            title={t('explainPro')}
           >
-            {explainLoading ? '…' : '🤖 Let DeepSeek Explain'}
+            {explainLoading ? '…' : t('explain')}
           </button>
         </div>
       )}
@@ -331,7 +331,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         {showExplain && (
           <div className="lpv-explain-section">
             {explainLoading && (
-              <div className="lpv-explain-loading">🤖 AI is thinking…</div>
+              <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
             )}
             {explainError && (
               <div className="lpv-explain-error">{explainError}</div>
@@ -343,7 +343,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         )}
 
         {loading && (
-          <div className="lpv-dict-loading">Looking up &ldquo;{token.text}&rdquo;…</div>
+          <div className="lpv-dict-loading"><span className="lpv-spinner" /> {t('lookingUpWord', [token.text])}</div>
         )}
 
         {error && (

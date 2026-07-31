@@ -21,10 +21,13 @@
     "message": "Copiar"
   },
   "explain": {
-    "message": "Preguntar a la IA"
+    "message": "Que DeepSeek ho expliqui"
+  },
+  "explainPro": {
+    "message": "Deixa que DeepSeek ho expliqui (Pro)"
   },
   "explainTitle": {
-    "message": "Preguntar a la IA"
+    "message": "Que DeepSeek ho expliqui"
   },
   "extensionDescription": {
     "message": "Subtítols bilingües interactius per a l'aprenentatge d'idiomes a Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "S'està carregant..."
+  },
+  "lookingUpWord": {
+    "message": "S'està cercant $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Encara no hi ha subtítols disponibles per a aquest vídeo."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Prem <kbd>Alt</kbd> + <kbd>T</kbd> per mostrar/amagar el panell"
+  },
+  "removeFromSaved": {
+    "message": "Eliminar de paraules guardades"
   },
   "save": {
     "message": "Guardar paraula"

@@ -21,10 +21,13 @@
     "message": "Kopyala"
   },
   "explain": {
-    "message": "AI'ye Sor"
+    "message": "DeepSeek Açıklasın"
+  },
+  "explainPro": {
+    "message": "DeepSeek Açıklasın (Pro)"
   },
   "explainTitle": {
-    "message": "AI'ye Sor"
+    "message": "DeepSeek Açıklasın"
   },
   "extensionDescription": {
     "message": "Prime Video, YouTube, Netflix, Disney+, Hulu ve Max'te dil öğrenimi için etkileşimli çift altyazı."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Yükleniyor..."
+  },
+  "lookingUpWord": {
+    "message": "$word$ aranıyor…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Bu video için henüz altyazı mevcut değil."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Paneli açıp kapatmak için <kbd>Alt</kbd> + <kbd>T</kbd> tuşlarına basın"
+  },
+  "removeFromSaved": {
+    "message": "Kaydedilen kelimelerden kaldır"
   },
   "save": {
     "message": "Kelimeyi Kaydet"

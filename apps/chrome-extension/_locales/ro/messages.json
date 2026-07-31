@@ -21,10 +21,13 @@
     "message": "Copiază"
   },
   "explain": {
-    "message": "Întreabă AI"
+    "message": "Lasă DeepSeek să explice"
+  },
+  "explainPro": {
+    "message": "Lasă DeepSeek să explice (Pro)"
   },
   "explainTitle": {
-    "message": "Întreabă AI"
+    "message": "Lasă DeepSeek să explice"
   },
   "extensionDescription": {
     "message": "Subtitrări bilingve interactive pentru învățarea limbilor străine pe Prime Video, YouTube, Netflix, Disney+, Hulu și Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Se încarcă..."
+  },
+  "lookingUpWord": {
+    "message": "Se caută $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Subtitrările nu sunt disponibile încă pentru acest videoclip."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Apăsați <kbd>Alt</kbd> + <kbd>T</kbd> pentru a comuta panoul"
+  },
+  "removeFromSaved": {
+    "message": "Elimină din cuvintele salvate"
   },
   "save": {
     "message": "Salvează cuvântul"

@@ -21,10 +21,13 @@
     "message": "प्रतिलिपि बनाएँ"
   },
   "explain": {
-    "message": "AI से पूछें"
+    "message": "डीपसीक से समझाएं"
+  },
+  "explainPro": {
+    "message": "DeepSeek से समझाएं (Pro)"
   },
   "explainTitle": {
-    "message": "AI से पूछें"
+    "message": "डीपसीक से समझाएं"
   },
   "extensionDescription": {
     "message": "Prime Video, YouTube, Netflix, Disney+, Hulu और Max पर भाषा सीखने के लिए इंटरैक्टिव दोहरे उपशीर्षक।"
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "लोड हो रहा है..."
+  },
+  "lookingUpWord": {
+    "message": "$word$ खोज रहे हैं…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "इस वीडियो के लिए अभी उपशीर्षक उपलब्ध नहीं हैं।"
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "पैनल टॉगल करने के लिए <kbd>Alt</kbd> + <kbd>T</kbd> दबाएं"
+  },
+  "removeFromSaved": {
+    "message": "सहेजे गए शब्दों से हटाएं"
   },
   "save": {
     "message": "शब्द सहेजें"
