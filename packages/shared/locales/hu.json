@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-generált",
         "ai_says": "DeepSeek azt mondja:",
+        "all_image_queries": "Összes {n, plural, other {# keresőszó}}",
         "all_voices": "Minden hang",
         "auto_best_available": "Automatikus (legjobb elérhető)",
         "auto_best_for": "Automatikus (legjobb {l2} számára)",
@@ -918,7 +919,9 @@
         "explain_text_label": "Szöveg",
         "explain_word": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó. Add meg a kiejtését. Ha ragozott vagy konjugált alak, említsd meg a szótári alakját és a ragozást; egyébként ne említs ragozást.",
         "explain_word_context": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó a következő kifejezésben: \"{context}\". Add meg a kiejtését. Ha ragozott vagy konjugált alak, említsd meg a szótári alakját és a ragozást; egyébként ne említs ragozást.",
-        "explain_word_context_form": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó (ragozott alak: {contextForm}) a következő kifejezésben: \"{context}\". Add meg a kiejtését. Említsd meg a szótári alakját és a ragozást."
+        "explain_word_context_form": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó (ragozott alak: {contextForm}) a következő kifejezésben: \"{context}\". Add meg a kiejtését. Említsd meg a szótári alakját és a ragozást.",
+        "explain_word_examples": "Adj 2 példát is a szó tipikus használatára.",
+        "explain_word_examples_context": "Adj 2 példát is arra, hogyan használják a szót a megadott szövegkörnyezetben szereplő azonos jelentésben."
     },
     "review": {
         "again": "Újra",

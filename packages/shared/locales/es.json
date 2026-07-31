@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generado por IA",
         "ai_says": "DeepSeek dice:",
+        "all_image_queries": "Todos {n, plural, one {# término} other {# términos}}",
         "all_voices": "Todas las voces",
         "auto_best_available": "Automático (mejor disponible)",
         "auto_best_for": "Automático (mejor para {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Texto",
         "explain_word": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\". Da su pronunciación. Si está flexionada o conjugada, menciona su forma de diccionario y la flexión; de lo contrario, no menciones la flexión.",
         "explain_word_context": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\" en la frase: \"{context}\". Da su pronunciación. Si está flexionada o conjugada, menciona su forma de diccionario y la flexión; de lo contrario, no menciones la flexión.",
-        "explain_word_context_form": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Da su pronunciación. Menciona su forma de diccionario y la flexión."
+        "explain_word_context_form": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Da su pronunciación. Menciona su forma de diccionario y la flexión.",
+        "explain_word_examples": "Da también 2 ejemplos de cómo se usa habitualmente la palabra.",
+        "explain_word_examples_context": "Da también 2 ejemplos de cómo se usa la palabra con el mismo sentido que en el contexto proporcionado."
     },
     "review": {
         "again": "Otra vez",

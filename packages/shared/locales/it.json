@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generato dall'IA",
         "ai_says": "DeepSeek dice:",
+        "all_image_queries": "Tutti {n, plural, one {# termine} other {# termini}}",
         "all_voices": "Tutte le voci",
         "auto_best_available": "Automatico (migliore disponibile)",
         "auto_best_for": "Automatico (migliore per {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Testo",
         "explain_word": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\". Fornisci la pronuncia. Se è flessa o coniugata, menziona la forma del dizionario e la flessione; altrimenti non menzionare la flessione.",
         "explain_word_context": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\" nella frase: \"{context}\". Fornisci la pronuncia. Se è flessa o coniugata, menziona la forma del dizionario e la flessione; altrimenti non menzionare la flessione.",
-        "explain_word_context_form": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\" (forma flessa: {contextForm}) nella frase: \"{context}\". Fornisci la pronuncia. Menziona la forma del dizionario e la flessione."
+        "explain_word_context_form": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\" (forma flessa: {contextForm}) nella frase: \"{context}\". Fornisci la pronuncia. Menziona la forma del dizionario e la flessione.",
+        "explain_word_examples": "Fornisci anche 2 esempi di come la parola viene solitamente usata.",
+        "explain_word_examples_context": "Fornisci anche 2 esempi di come la parola viene usata con lo stesso significato del contesto fornito."
     },
     "review": {
         "again": "Di nuovo",

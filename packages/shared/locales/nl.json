@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-gegenereerd",
         "ai_says": "DeepSeek zegt:",
+        "all_image_queries": "Alle {n, plural, one {# zoekterm} other {# zoektermen}}",
         "all_voices": "Alle stemmen",
         "auto_best_available": "Automatisch (best beschikbaar)",
         "auto_best_for": "Automatisch (best voor {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Tekst",
         "explain_word": "Leg in het {l1Name} uit wat het {l2Name} woord \"{word}\" betekent. Geef de uitspraak. Als het verbogen of geconjugeerd is, vermeld dan de woordenboekvorm en de verbuiging; anders, vermeld geen verbuiging.",
         "explain_word_context": "Leg in het {l1Name} uit wat het {l2Name} woord \"{word}\" betekent in de zin: \"{context}\". Geef de uitspraak. Als het verbogen of geconjugeerd is, vermeld dan de woordenboekvorm en de verbuiging; anders, vermeld geen verbuiging.",
-        "explain_word_context_form": "Leg in het {l1Name} uit wat het {l2Name} woord \"{word}\" (verbuigingsvorm: {contextForm}) betekent in de zin: \"{context}\". Geef de uitspraak. Vermeld de woordenboekvorm en de verbuiging."
+        "explain_word_context_form": "Leg in het {l1Name} uit wat het {l2Name} woord \"{word}\" (verbuigingsvorm: {contextForm}) betekent in de zin: \"{context}\". Geef de uitspraak. Vermeld de woordenboekvorm en de verbuiging.",
+        "explain_word_examples": "Geef ook 2 voorbeelden van hoe het woord doorgaans wordt gebruikt.",
+        "explain_word_examples_context": "Geef ook 2 voorbeelden van hoe het woord in dezelfde betekenis als in de gegeven context wordt gebruikt."
     },
     "review": {
         "again": "Opnieuw",

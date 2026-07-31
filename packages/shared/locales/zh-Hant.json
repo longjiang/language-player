@@ -199,6 +199,7 @@
     "label": {
         "ai_generated": "AI 產生",
         "ai_says": "DeepSeek 說明：",
+        "all_image_queries": "全部 {n, plural, other {# 個搜尋詞}}",
         "all_voices": "所有語音",
         "auto_best_available": "自動（最佳可用）",
         "auto_best_for": "自動（最適合 {l2}）",
@@ -871,7 +872,9 @@
         "explain_text_label": "文本",
         "explain_word": "用{l1Name}解釋{l2Name}單詞\"{word}\"的含義。給出其發音。如果是屈折或變位形式，提及原形和屈折變化；如果不是，不要提及屈折或詞元。",
         "explain_word_context": "用{l1Name}解釋{l2Name}單詞\"{word}\"在\"{context}\"這段話中的含義。給出其發音。如果是屈折或變位形式，提及原形和屈折變化；如果不是，不要提及屈折或詞元。",
-        "explain_word_context_form": "用{l1Name}解釋{l2Name}單詞\"{word}\"（屈折形式：{contextForm}）在\"{context}\"這段話中的含義。給出其發音。提及原形和屈折變化。"
+        "explain_word_context_form": "用{l1Name}解釋{l2Name}單詞\"{word}\"（屈折形式：{contextForm}）在\"{context}\"這段話中的含義。給出其發音。提及原形和屈折變化。",
+        "explain_word_examples": "再給出2個該單詞典型用法的示例。",
+        "explain_word_examples_context": "再給出2個示例，說明該詞在與所提供語境相同的含義下如何使用。"
     },
     "review": {
         "again": "重來",

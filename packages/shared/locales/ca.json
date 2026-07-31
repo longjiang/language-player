@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generat per IA",
         "ai_says": "DeepSeek diu:",
+        "all_image_queries": "Tots {n, plural, one {# terme} other {# termes}}",
         "all_voices": "Totes les Veus",
         "auto_best_available": "Automàtic (millor disponible)",
         "auto_best_for": "Automàtic (millor per a {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Text",
         "explain_word": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\". Dona la pronunciació. Si està flexionada o conjugada, esmenta la forma del diccionari i la flexió; en cas contrari, no esmentis la flexió.",
         "explain_word_context": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\" en la frase: \"{context}\". Dona la pronunciació. Si està flexionada o conjugada, esmenta la forma del diccionari i la flexió; en cas contrari, no esmentis la flexió.",
-        "explain_word_context_form": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Dona la pronunciació. Esmenta la forma del diccionari i la flexió."
+        "explain_word_context_form": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Dona la pronunciació. Esmenta la forma del diccionari i la flexió.",
+        "explain_word_examples": "Dona també 2 exemples d'ús habitual de la paraula.",
+        "explain_word_examples_context": "Dona també 2 exemples de com s'utilitza la paraula amb el mateix sentit que en el context proporcionat."
     },
     "review": {
         "again": "De nou",

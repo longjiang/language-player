@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Généré par IA",
         "ai_says": "DeepSeek dit :",
+        "all_image_queries": "Tous {n, plural, one {# terme} other {# termes}}",
         "all_voices": "Toutes les voix",
         "auto_best_available": "Auto (meilleur disponible)",
         "auto_best_for": "Auto (meilleur pour {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Texte",
         "explain_word": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
         "explain_word_context": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" dans la phrase : \"{context}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
-        "explain_word_context_form": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans la phrase : \"{context}\". Donnez sa prononciation. Mentionnez sa forme dictionnairique et la flexion."
+        "explain_word_context_form": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans la phrase : \"{context}\". Donnez sa prononciation. Mentionnez sa forme dictionnairique et la flexion.",
+        "explain_word_examples": "Donne aussi 2 exemples d'utilisation typique du mot.",
+        "explain_word_examples_context": "Donne aussi 2 exemples de la façon dont le mot est utilisé dans le même sens que dans le contexte fourni."
     },
     "review": {
         "again": "Encore",

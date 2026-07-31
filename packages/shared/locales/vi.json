@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Do AI Tạo ra",
         "ai_says": "DeepSeek nói:",
+        "all_image_queries": "Tất cả {n, plural, other {# truy vấn}}",
         "all_voices": "Tất cả giọng nói",
         "auto_best_available": "Tự động (tốt nhất hiện có)",
         "auto_best_for": "Tự động (tốt nhất cho {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Văn bản",
         "explain_word": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\". Cho biết cách phát âm. Nếu là dạng biến cách hoặc chia động từ, hãy nêu dạng từ điển và biến cách; nếu không, đừng đề cập đến biến cách.",
         "explain_word_context": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\" trong cụm từ: \"{context}\". Cho biết cách phát âm. Nếu là dạng biến cách hoặc chia động từ, hãy nêu dạng từ điển và biến cách; nếu không, đừng đề cập đến biến cách.",
-        "explain_word_context_form": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\" (dạng biến cách: {contextForm}) trong cụm từ: \"{context}\". Cho biết cách phát âm. Nêu dạng từ điển và biến cách."
+        "explain_word_context_form": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\" (dạng biến cách: {contextForm}) trong cụm từ: \"{context}\". Cho biết cách phát âm. Nêu dạng từ điển và biến cách.",
+        "explain_word_examples": "Cũng đưa ra 2 ví dụ về cách từ này thường được dùng.",
+        "explain_word_examples_context": "Cũng đưa ra 2 ví dụ về cách từ này được dùng với cùng nghĩa như trong ngữ cảnh đã cho."
     },
     "review": {
         "again": "Lại nữa",

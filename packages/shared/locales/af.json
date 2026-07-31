@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "KI-gegenereer",
         "ai_says": "DeepSeek sê:",
+        "all_image_queries": "Al {n, plural, one {# term} other {# terme}}",
         "all_voices": "Alle stemme",
         "auto_best_available": "Outo (beste beskikbaar)",
         "auto_best_for": "Outo (beste vir {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Teks",
         "explain_word": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken. Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
         "explain_word_context": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken in die frase: \"{context}\". Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
-        "explain_word_context_form": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) beteken in die frase: \"{context}\". Gee die uitspraak. Noem die woordeboekvorm en die verbuiging."
+        "explain_word_context_form": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) beteken in die frase: \"{context}\". Gee die uitspraak. Noem die woordeboekvorm en die verbuiging.",
+        "explain_word_examples": "Gee ook 2 voorbeelde van hoe die woord tipies gebruik word.",
+        "explain_word_examples_context": "Gee ook 2 voorbeelde van hoe die woord in dieselfde betekenis as in die verskafde konteks gebruik word."
     },
     "review": {
         "again": "Weer",

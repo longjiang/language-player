@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI 생성",
         "ai_says": "딥시크가 말합니다:",
+        "all_image_queries": "전체 {n, plural, other {#개 검색어}}",
         "all_voices": "모든 음성",
         "auto_best_available": "자동 (최적 사용 가능)",
         "auto_best_for": "자동 ({l2}에 최적)",
@@ -918,7 +919,9 @@
         "explain_text_label": "텍스트",
         "explain_word": "{l1Name}로 {l2Name} 단어 \"{word}\"의 의미를 설명하세요. 발음을 제시하세요. 굴절 또는 활용된 형태인 경우 사전형과 굴절을 언급하고, 그렇지 않으면 굴절을 언급하지 마세요.",
         "explain_word_context": "{l1Name}로 {l2Name} 단어 \"{word}\"가 구문 \"{context}\"에서 무엇을 의미하는지 설명하세요. 발음을 제시하세요. 굴절 또는 활용된 형태인 경우 사전형과 굴절을 언급하고, 그렇지 않으면 굴절을 언급하지 마세요.",
-        "explain_word_context_form": "{l1Name}로 {l2Name} 단어 \"{word}\"(굴절형: {contextForm})가 구문 \"{context}\"에서 무엇을 의미하는지 설명하세요. 발음을 제시하세요. 사전형과 굴절을 언급하세요."
+        "explain_word_context_form": "{l1Name}로 {l2Name} 단어 \"{word}\"(굴절형: {contextForm})가 구문 \"{context}\"에서 무엇을 의미하는지 설명하세요. 발음을 제시하세요. 사전형과 굴절을 언급하세요.",
+        "explain_word_examples": "단어가 일반적으로 어떻게 사용되는지 예 2개도 제시하세요.",
+        "explain_word_examples_context": "제공된 맥락과 같은 의미로 단어가 어떻게 사용되는지 예 2개도 제시하세요."
     },
     "review": {
         "again": "다시",

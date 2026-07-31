@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generat de AI",
         "ai_says": "DeepSeek spune:",
+        "all_image_queries": "Toate {n, plural, one {# termen} other {# termeni}}",
         "all_voices": "Toate vocile",
         "auto_best_available": "Auto (cel mai bun disponibil)",
         "auto_best_for": "Auto (cel mai bun pentru {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Text",
         "explain_word": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
         "explain_word_context": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" în expresia: \"{context}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
-        "explain_word_context_form": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" (formă flexionată: {contextForm}) în expresia: \"{context}\". Dă pronunția. Menționează forma de dicționar și flexiunea."
+        "explain_word_context_form": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" (formă flexionată: {contextForm}) în expresia: \"{context}\". Dă pronunția. Menționează forma de dicționar și flexiunea.",
+        "explain_word_examples": "Dă și 2 exemple despre cum este folosit cuvântul în mod obișnuit.",
+        "explain_word_examples_context": "Dă și 2 exemple despre cum este folosit cuvântul cu același sens ca în contextul oferit."
     },
     "review": {
         "again": "Din nou",

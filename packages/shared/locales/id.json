@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Buatan AI",
         "ai_says": "DeepSeek berkata:",
+        "all_image_queries": "Semua {n, plural, other {# kata kunci}}",
         "all_voices": "Semua Suara",
         "auto_best_available": "Otomatis (terbaik yang tersedia)",
         "auto_best_for": "Otomatis (terbaik untuk {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Teks",
         "explain_word": "Jelaskan dalam {l1Name} apa arti kata {l2Name} \"{word}\". Berikan pengucapannya. Jika terinfleksi atau terkonjugasi, sebutkan bentuk kamus dan infleksinya; jika tidak, jangan sebutkan infleksi.",
         "explain_word_context": "Jelaskan dalam {l1Name} apa arti kata {l2Name} \"{word}\" dalam frasa: \"{context}\". Berikan pengucapannya. Jika terinfleksi atau terkonjugasi, sebutkan bentuk kamus dan infleksinya; jika tidak, jangan sebutkan infleksi.",
-        "explain_word_context_form": "Jelaskan dalam {l1Name} apa arti kata {l2Name} \"{word}\" (bentuk infleksi: {contextForm}) dalam frasa: \"{context}\". Berikan pengucapannya. Sebutkan bentuk kamus dan infleksinya."
+        "explain_word_context_form": "Jelaskan dalam {l1Name} apa arti kata {l2Name} \"{word}\" (bentuk infleksi: {contextForm}) dalam frasa: \"{context}\". Berikan pengucapannya. Sebutkan bentuk kamus dan infleksinya.",
+        "explain_word_examples": "Berikan juga 2 contoh bagaimana kata tersebut biasanya digunakan.",
+        "explain_word_examples_context": "Berikan juga 2 contoh bagaimana kata tersebut digunakan dalam makna yang sama seperti pada konteks yang diberikan."
     },
     "review": {
         "again": "Lagi",
