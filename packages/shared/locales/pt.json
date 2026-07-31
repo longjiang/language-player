@@ -914,9 +914,9 @@
         "explain_context_label": "Contexto",
         "explain_morphology": "Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema.",
         "explain_text_label": "Texto",
-        "explain_word": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} na frase: {context}.",
-        "explain_word_context_form": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} (forma flexionada: {contextForm}) na frase: {context}."
+        "explain_word": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\". Dá a sua pronúncia. Se for flexionada ou conjugada, menciona a forma de dicionário e a flexão; caso contrário, não menciones flexão.",
+        "explain_word_context": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\" na frase: \"{context}\". Dá a sua pronúncia. Se for flexionada ou conjugada, menciona a forma de dicionário e a flexão; caso contrário, não menciones flexão.",
+        "explain_word_context_form": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\" (forma flexionada: {contextForm}) na frase: \"{context}\". Dá a sua pronúncia. Menciona a forma de dicionário e a flexão."
     },
     "review": {
         "again": "Novamente",

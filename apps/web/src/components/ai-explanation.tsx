@@ -46,7 +46,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const openInReader = () => {
     localStorage.setItem('lp_reader_text', explanation ?? '');
-    localStorage.setItem('lp_reader_title', `DeepSeek: ${word}`);
+    localStorage.setItem('lp_reader_title', `${t('label.ai_says')}: ${word}`);
     router.push(`/${l1.code}/${l2.code}/reader`);
   };
 

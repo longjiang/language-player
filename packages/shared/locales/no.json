@@ -914,9 +914,9 @@
         "explain_context_label": "Kontekst",
         "explain_morphology": "Oppgi uttalen og morfologien (eller etymologien hvis passende). Hvis bøyd, oppgi lemmaet og bøyningen; ellers, ikke nevn bøyning eller lemma.",
         "explain_text_label": "Tekst",
-        "explain_word": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr.",
-        "explain_word_context": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr i setningen: {context}.",
-        "explain_word_context_form": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} (bøyd form: {contextForm}) betyr i setningen: {context}."
+        "explain_word": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr. Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
+        "explain_word_context": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr i setningen: \"{context}\". Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
+        "explain_word_context_form": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" (bøyd form: {contextForm}) betyr i setningen: \"{context}\". Oppgi uttalen. Nevn ordbokformen og bøyningen."
     },
     "review": {
         "again": "Igjen",
