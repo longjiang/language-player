@@ -105,6 +105,8 @@ async function flushQueue() {
 interface UseBatchLemmatizeResult {
   /** Look up cached tokens for a line. Returns null if not yet fetched. */
   getTokens: (text: string, l2: string) => LemmatizedToken[] | null;
+  /** Whether a text is currently queued or in-flight for tokenization. */
+  isQueued: (text: string, l2: string) => boolean;
   /** Number of texts currently in the batch queue. */
   queueSize: number;
   /** Force-tokenize a set of texts immediately (for pre-fetching). */
@@ -142,6 +144,13 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     return null;
   }, []);
 
+  /** Check if a text is currently queued or in-flight. */
+  const isQueued = useCallback((text: string, l2: string): boolean => {
+    const base = baseCode(l2);
+    const cacheKey = `${base}:${text}`;
+    return _queue.has(cacheKey) || inflightMap.has(cacheKey);
+  }, []);
+
   /** Pre-fetch a batch of texts immediately (skips the queue). */
   const preFetch = useCallback((texts: string[], l2: string) => {
     const base = baseCode(l2);
@@ -160,7 +169,7 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     }
   }, []);
 
-  return { getTokens, queueSize: _queue.size, preFetch };
+  return { getTokens, isQueued, queueSize: _queue.size, preFetch };
 }
 
 // ── Batch sender (module-level, not exported) ─────────────────────────────
