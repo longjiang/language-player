@@ -7,6 +7,7 @@ import { SessionProvider } from '@/providers/session-provider';
 import { ApiClientProvider } from '@/components/api-client-provider';
 import { UserDataProvider } from '@/providers/user-data-provider';
 import { SavedWordsProvider } from '@/providers/saved-words-provider';
+import { SubscriptionProvider } from '@/providers/subscription-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ogVideos from '@/data/og-videos.json';
 import './globals.css';
@@ -108,7 +109,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ApiClientProvider>
                 <UserDataProvider>
                   <SavedWordsProvider>
-                    {children}
+                    <SubscriptionProvider>
+                      {children}
+                    </SubscriptionProvider>
                   </SavedWordsProvider>
                 </UserDataProvider>
               </ApiClientProvider>
