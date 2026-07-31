@@ -86,11 +86,17 @@ export function ImageSearchResults({
   l2Code,
   l1Code = 'en',
   definition,
+  contextText,
+  contextForm,
 }: {
   term: string;
   l2Code: string;
   l1Code?: string;
   definition?: string;
+  /** Surrounding sentence the word appears in (biases query sense). */
+  contextText?: string;
+  /** Inflected form of the word as it appears in contextText. */
+  contextForm?: string;
 }) {
   const t = useT();
   const [images, setImages] = useState<OpenverseImage[] | null>(null);
@@ -114,7 +120,14 @@ export function ImageSearchResults({
         const res = await fetch(`${PYTHON_API_URL}/dictionary/image-queries`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ word: term, l2: l2Code, l1: l1Code, definition }),
+          body: JSON.stringify({
+            word: term,
+            l2: l2Code,
+            l1: l1Code,
+            definition,
+            context: contextText,
+            contextForm,
+          }),
           signal: controller.signal,
         });
         if (res.ok) {
@@ -185,7 +198,7 @@ export function ImageSearchResults({
       cancelled = true;
       controller.abort();
     };
-  }, [term, l2Code, l1Code, definition]);
+  }, [term, l2Code, l1Code, definition, contextText, contextForm]);
 
   if (error) {
     return (
