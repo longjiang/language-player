@@ -564,22 +564,21 @@ Text: ${cue.text}`;
             <div className="lpv-dict-card-header">
               <div className="lpv-dict-card-header-left">
                 <span className="lpv-dict-card-word">{t('explainTitle')}</span>
-                {explainLoading && <span className="lpv-spinner lpv-spinner-sm" />}
               </div>
               <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}><X size={14} /></button>
             </div>
             <div className="lpv-dict-card-body">
-              <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
-                {explainLoading && (
-                  <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
-                )}
-                {explainError && (
-                  <div className="lpv-explain-error">{explainError}</div>
-                )}
-                {explainText && (
+              {explainLoading && (
+                <div className="lpv-explain-loading"><span className="lpv-spinner" /></div>
+              )}
+              {explainError && (
+                <div className="lpv-explain-error">{explainError}</div>
+              )}
+              {explainText && (
+                <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
                   <Markdown text={explainText} />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

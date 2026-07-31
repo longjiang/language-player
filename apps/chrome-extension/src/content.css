@@ -641,9 +641,11 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-explain-loading {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
   color: #a78bfa;
-  animation: lpv-pulse 1.5s ease-in-out infinite;
 }
 
 .lpv-explain-error {
