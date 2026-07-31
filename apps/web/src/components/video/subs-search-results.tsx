@@ -45,6 +45,38 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+// The "user advanced to another result → don't autoplay" decision is persisted
+// per word (l2 + term) so it survives page refresh and remounts (tab switches,
+// client-side navigation). A fresh search without the flag still autoplays.
+function autoplayDisabledKey(l2Code: string, term: string): string {
+  return `lp:subs-search:autoplay-off:${baseCode(l2Code)}:${term}`;
+}
+
+function isAutoplayDisabled(l2Code: string, term: string): boolean {
+  try {
+    return (
+      typeof window !== 'undefined' &&
+      sessionStorage.getItem(autoplayDisabledKey(l2Code, term)) === '1'
+    );
+  } catch {
+    return false;
+  }
+}
+
+function rememberAutoplayDisabled(l2Code: string, term: string) {
+  try {
+    sessionStorage.setItem(autoplayDisabledKey(l2Code, term), '1');
+  } catch {
+    // ignore storage errors (private mode etc.)
+  }
+}
+
+// ── Logging (gated by a single flag — per AGENTS.md) ──
+const LOG_ENABLED = true; // Debugging autoplay behavior — set to false when done
+function log(msg: string, ...args: unknown[]) {
+  if (LOG_ENABLED) console.log('[LP Web] [SubsSearch]', msg, ...args);
+}
+
 function HighlightLine({ line, term }: { line: string; term: string }) {
   const lowerLine = line.toLowerCase();
   const lowerTerm = term.toLowerCase();
@@ -78,6 +110,43 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   const [paused, setPaused] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+
+  // Autoplay policy:
+  //  - Initial page load / mount: never autoplay (even when the term resolves
+  //    right after mount, e.g. inflections loading).
+  //  - A fresh search that happens while the component is already mounted
+  //    (e.g. navigating to another word): autoplay by default.
+  //  - Once the user navigates to another result (prev/next buttons or the
+  //    list-all menu), new videos load paused instead. That choice is
+  //    persisted per word in sessionStorage so refresh/navigation honors it.
+  const [autoplayEnabled, setAutoplayEnabled] = useState(false);
+  const autoplayRef = useRef(autoplayEnabled);
+  useEffect(() => {
+    autoplayRef.current = autoplayEnabled;
+  }, [autoplayEnabled]);
+
+  // Whether the first search after mount has completed. The initial load never
+  // autoplays; only searches triggered after mount may autoplay.
+  const initialLoadRef = useRef(true);
+
+  // Debug: component lifecycle
+  useEffect(() => {
+    log('component mount', {
+      l2: l2.code,
+      term,
+      initialAutoplay: autoplayEnabled,
+      autoplayDisabled: isAutoplayDisabled(l2.code, term),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const prevTermRef = useRef(term);
+  useEffect(() => {
+    if (prevTermRef.current !== term) {
+      log('term changed', { from: prevTermRef.current, to: term });
+      prevTermRef.current = term;
+    }
+  }, [term]);
 
   // Modal state
   const [listOpen, setListOpen] = useState(false);
@@ -156,8 +225,21 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
           );
+        const firstLoad = initialLoadRef.current;
+        initialLoadRef.current = false;
+        const autoplay = firstLoad
+          ? false
+          : !isAutoplayDisabled(l2.code, term);
+        log('search loaded', {
+          term,
+          resultCount: parsed.length,
+          firstLoad,
+          autoplay,
+          storageKey: autoplayDisabledKey(l2.code, term),
+        });
         setVideos(parsed);
         setCurrentIndex(0);
+        setAutoplayEnabled(autoplay);
         setLoading(false);
       })
       .catch((err) => {
@@ -179,8 +261,19 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     if (currentVideo && playerRef.current) {
       const matchTime = matchLine?.starttime ?? 0;
       const timer = setTimeout(() => {
-        playerRef.current?.seekTo(matchTime);
-        playerRef.current?.play();
+        log('seek effect fired', {
+          autoplay: autoplayRef.current,
+          index: currentIndex,
+          youtubeId: currentVideo.youtube_id,
+          matchTime,
+        });
+        if (autoplayRef.current) {
+          playerRef.current?.seekTo(matchTime);
+          playerRef.current?.play();
+        }
+        // When autoplay is off, onReady already cued the video at the exact
+        // match time (paused). Seeking again here would restart playback from
+        // the cued state, so we intentionally don't seek in that case.
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -197,12 +290,22 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   }, []);
 
   const goToPrevious = useCallback(() => {
-    if (currentIndex > 0) setCurrentIndex((i) => i - 1);
-  }, [currentIndex]);
+    if (currentIndex > 0) {
+      log('result navigated', { source: 'prev', from: currentIndex, to: currentIndex - 1 });
+      rememberAutoplayDisabled(l2.code, term);
+      setAutoplayEnabled(false);
+      setCurrentIndex((i) => i - 1);
+    }
+  }, [currentIndex, l2.code, term]);
 
   const goToNext = useCallback(() => {
-    if (currentIndex < videos.length - 1) setCurrentIndex((i) => i + 1);
-  }, [currentIndex, videos.length]);
+    if (currentIndex < videos.length - 1) {
+      log('result navigated', { source: 'next', from: currentIndex, to: currentIndex + 1 });
+      rememberAutoplayDisabled(l2.code, term);
+      setAutoplayEnabled(false);
+      setCurrentIndex((i) => i + 1);
+    }
+  }, [currentIndex, videos.length, l2.code, term]);
 
   const goToPreviousLine = useCallback(() => {
     if (!currentVideo) return;
@@ -323,11 +426,14 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     (idx: number) => {
       const realIdx = videos.indexOf(filteredVideos[idx]!);
       if (realIdx >= 0) {
+        log('result navigated', { source: 'list', from: currentIndex, to: realIdx });
+        rememberAutoplayDisabled(l2.code, term);
+        setAutoplayEnabled(false);
         setCurrentIndex(realIdx);
         setListOpen(false);
       }
     },
-    [videos, filteredVideos],
+    [videos, filteredVideos, l2.code, term],
   );
 
   // ── Loading / Error / Empty ──────────────────
@@ -474,7 +580,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
           <YouTubePlayer
             ref={playerRef}
             youtubeId={currentVideo.youtube_id}
-            autoplay
+            autoplay={autoplayEnabled}
             startTime={matchLine?.starttime}
             onTimeUpdate={handleTimeUpdate}
             onDuration={handleDuration}
