@@ -11,6 +11,7 @@ import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
+import { getCachedEntries } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -143,26 +144,47 @@ export default function ReviewPage() {
   // ── Derive entry for the current card from the reactive cache ──
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.word.forms[0] || currentDueCard?.word.id || '';
-  const cachedEntry = useEntryCache(l2Code, wordForm)
-    ?.find((e) => e.id === currentDueCard?.word.id) ?? null;
+  const allCachedEntries = useEntryCache(l2Code, wordForm);
 
-  // If no dictionary entry in cache, fall back to LLM-generated entry on the saved word
+  // Try all forms for cache lookup, not just forms[0]
+  const cachedEntry = useMemo(() => {
+    const sw = currentDueCard?.word;
+    if (!sw) return null;
+    // Try each form (including kana/kanji variants) to find a cache match
+    for (const form of sw.forms) {
+      const entries = getCachedEntries(l2Code, form);
+      if (entries) {
+        const match = entries.find((e) => e.id === sw.id);
+        if (match) return match;
+      }
+    }
+    // Fall back to the reactive hook value for forms[0]
+    return allCachedEntries?.find((e) => e.id === sw.id) ?? null;
+  }, [currentDueCard?.word?.id, currentDueCard?.word?.forms, l2Code, wordForm, allCachedEntries]);
+
+  // ── Debug: log entry resolution for the current card ──
+  useEffect(() => {
+    const sw = currentDueCard?.word;
+    if (!sw) return;
+    console.log('[LP Web] Review card entry resolution:', {
+      wordId: sw.id,
+      forms: sw.forms,
+      isLlmId: sw.id.startsWith('llm-'),
+      perFormCache: sw.forms.map((f) => {
+        const entries = getCachedEntries(l2Code, f);
+        return {
+          form: f,
+          count: entries?.length ?? 0,
+          ids: entries?.map(e => e.id),
+        };
+      }),
+      cachedEntryFound: !!cachedEntry,
+    });
+  }, [currentDueCard?.word?.id, l2Code, cachedEntry]);
+
   const currentEntry = useMemo((): DictionaryEntry | null => {
-    if (cachedEntry) return cachedEntry;
-    const llmEntry = currentDueCard?.word?.llmEntry;
-    if (!llmEntry) return null;
-    // Construct a DictionaryEntry-compatible shape from the LLM entry
-    return {
-      ...llmEntry,
-      kind: 'dictionary' as const,
-      dictionary: { id: 'llm', name: 'AI-Generated', version: '1' },
-      id: currentDueCard!.word.id,
-      match_type: null,
-      levels: null,
-      source: 'llm',
-      studyMaterials: null,
-    } as DictionaryEntry;
-  }, [cachedEntry, currentDueCard?.word?.llmEntry, currentDueCard?.word?.id]);
+    return cachedEntry;
+  }, [cachedEntry]);
 
   // ── Merge due cards with the reactive entry ──
   const cards: ReviewCard[] = useMemo(
