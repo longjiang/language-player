@@ -914,9 +914,9 @@
         "explain_context_label": "Bağlam",
         "explain_morphology": "Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme.",
         "explain_text_label": "Metin",
-        "explain_word": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin ne anlama geldiğini kısaca açıkla.",
-        "explain_word_context": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: {context}.",
-        "explain_word_context_form": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin (çekimli hâli: {contextForm}) ifadede ne anlama geldiğini kısaca açıkla: {context}."
+        "explain_word": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün ne anlama geldiğini açıkla. Telaffuzunu ver. Eğer çekimli veya konjuge ise, sözlük biçimini ve çekimini belirt; değilse çekimden bahsetme.",
+        "explain_word_context": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün \"{context}\" ifadesinde ne anlama geldiğini açıkla. Telaffuzunu ver. Eğer çekimli veya konjuge ise, sözlük biçimini ve çekimini belirt; değilse çekimden bahsetme.",
+        "explain_word_context_form": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün (çekimli biçimi: {contextForm}) \"{context}\" ifadesinde ne anlama geldiğini açıkla. Telaffuzunu ver. Sözlük biçimini ve çekimini belirt."
     },
     "review": {
         "again": "Tekrar",

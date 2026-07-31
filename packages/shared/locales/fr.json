@@ -914,9 +914,9 @@
         "explain_context_label": "Con texte",
         "explain_morphology": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.",
         "explain_text_label": "Texte",
-        "explain_word": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} dans la phrase : {context}.",
-        "explain_word_context_form": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} (forme fléchie : {contextForm}) dans la phrase : {context}."
+        "explain_word": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
+        "explain_word_context": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" dans la phrase : \"{context}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
+        "explain_word_context_form": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans la phrase : \"{context}\". Donnez sa prononciation. Mentionnez sa forme dictionnairique et la flexion."
     },
     "review": {
         "again": "Encore",

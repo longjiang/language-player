@@ -914,9 +914,9 @@
         "explain_context_label": "Kon teks",
         "explain_morphology": "Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie.",
         "explain_text_label": "Teks",
-        "explain_word": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} beteken.",
-        "explain_word_context": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} in die frase beteken: {context}.",
-        "explain_word_context_form": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} (verbuigde vorm: {contextForm}) in die frase beteken: {context}."
+        "explain_word": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken. Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
+        "explain_word_context": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken in die frase: \"{context}\". Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
+        "explain_word_context_form": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) beteken in die frase: \"{context}\". Gee die uitspraak. Noem die woordeboekvorm en die verbuiging."
     },
     "review": {
         "again": "Weer",

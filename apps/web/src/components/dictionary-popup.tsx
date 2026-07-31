@@ -202,7 +202,7 @@ export function DictionaryPopup({
             )}
             {token.lemmas.length > 0 && token.lemmas[0]!.lemma !== token.text && (
               <div className="text-xs text-muted-foreground">
-                lemma: {token.lemmas.map((l) => l.lemma).join(', ')}
+                {t('label.lemma')}: {token.lemmas.map((l) => l.lemma).join(', ')}
               </div>
             )}
           </div>
