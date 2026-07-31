@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "KI-generiert",
         "ai_says": "DeepSeek sagt:",
+        "all_image_queries": "Alle {n, plural, one {# Suchbegriff} other {# Suchbegriffe}}",
         "all_voices": "Alle Stimmen",
         "auto_best_available": "Automatisch (am besten verfügbar)",
         "auto_best_for": "Automatisch (am besten für {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Text",
         "explain_word": "Erkläre auf {l1Name}, was das {l2Name}-Wort \"{word}\" bedeutet. Gib die Aussprache an. Wenn es flektiert oder konjugiert ist, nenne die Wörterbuchform und die Flexion; andernfalls erwähne die Flexion nicht.",
         "explain_word_context": "Erkläre auf {l1Name}, was das {l2Name}-Wort \"{word}\" im Satz \"{context}\" bedeutet. Gib die Aussprache an. Wenn es flektiert oder konjugiert ist, nenne die Wörterbuchform und die Flexion; andernfalls erwähne die Flexion nicht.",
-        "explain_word_context_form": "Erkläre auf {l1Name}, was das {l2Name}-Wort \"{word}\" (flektierte Form: {contextForm}) im Satz \"{context}\" bedeutet. Gib die Aussprache an. Nenne die Wörterbuchform und die Flexion."
+        "explain_word_context_form": "Erkläre auf {l1Name}, was das {l2Name}-Wort \"{word}\" (flektierte Form: {contextForm}) im Satz \"{context}\" bedeutet. Gib die Aussprache an. Nenne die Wörterbuchform und die Flexion.",
+        "explain_word_examples": "Gib außerdem 2 Beispiele dafür, wie das Wort typischerweise verwendet wird.",
+        "explain_word_examples_context": "Gib außerdem 2 Beispiele dafür, wie das Wort in derselben Bedeutung wie im angegebenen Kontext verwendet wird."
     },
     "review": {
         "again": "Erneut",

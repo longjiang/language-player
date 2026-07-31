@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-generisano",
         "ai_says": "DeepSeek каже:",
+        "all_image_queries": "Све {n, plural, one {# претрага} few {# претраге} other {# претрага}}",
         "all_voices": "Сви гласови",
         "auto_best_available": "Аутоматски (најбоље доступно)",
         "auto_best_for": "Аутоматски (најбоље за {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Tekst",
         "explain_word": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rečnički oblik i fleksiju; inače ne pominji fleksiju.",
         "explain_word_context": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\" u izrazu: \"{context}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rečnički oblik i fleksiju; inače ne pominji fleksiju.",
-        "explain_word_context_form": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rečnički oblik i fleksiju."
+        "explain_word_context_form": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rečnički oblik i fleksiju.",
+        "explain_word_examples": "Наведи и 2 примера како се реч обично користи.",
+        "explain_word_examples_context": "Наведи и 2 примера како се реч користи у истом значењу као у датом контексту."
     },
     "review": {
         "again": "Ponovo",

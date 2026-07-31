@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Tekoälyn luoma",
         "ai_says": "DeepSeek sanoo:",
+        "all_image_queries": "Kaikki {n, plural, one {# hakulause} other {# hakulausetta}}",
         "all_voices": "Kaikki äänet",
         "auto_best_available": "Automaattinen (paras saatavilla)",
         "auto_best_for": "Automaattinen (paras kohteelle {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Teksti",
         "explain_word": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" tarkoittaa. Anna sen ääntämys. Jos se on taivutettu tai konjugoitu, mainitse sen sanakirjamuoto ja taivutus; muuten älä mainitse taivutusta.",
         "explain_word_context": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" tarkoittaa lauseessa: \"{context}\". Anna sen ääntämys. Jos se on taivutettu tai konjugoitu, mainitse sen sanakirjamuoto ja taivutus; muuten älä mainitse taivutusta.",
-        "explain_word_context_form": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" (taivutusmuoto: {contextForm}) tarkoittaa lauseessa: \"{context}\". Anna sen ääntämys. Mainitse sen sanakirjamuoto ja taivutus."
+        "explain_word_context_form": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" (taivutusmuoto: {contextForm}) tarkoittaa lauseessa: \"{context}\". Anna sen ääntämys. Mainitse sen sanakirjamuoto ja taivutus.",
+        "explain_word_examples": "Anna myös 2 esimerkkiä sanan tyypillisestä käytöstä.",
+        "explain_word_examples_context": "Anna myös 2 esimerkkiä siitä, miten sanaa käytetään samassa merkityksessä kuin annetussa asiayhteydessä."
     },
     "review": {
         "again": "Uudelleen",

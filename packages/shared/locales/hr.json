@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generirano umjetnom inteligencijom",
         "ai_says": "DeepSeek kaže:",
+        "all_image_queries": "Sve {n, plural, one {# pretraživanje} few {# pretraživanja} other {# pretraživanja}}",
         "all_voices": "Svi glasovi",
         "auto_best_available": "Automatski (najbolje dostupno)",
         "auto_best_for": "Automatski (najbolje za {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Tekst",
         "explain_word": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rječnički oblik i fleksiju; inače ne spominji fleksiju.",
         "explain_word_context": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\" u izrazu: \"{context}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rječnički oblik i fleksiju; inače ne spominji fleksiju.",
-        "explain_word_context_form": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rječnički oblik i fleksiju."
+        "explain_word_context_form": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rječnički oblik i fleksiju.",
+        "explain_word_examples": "Navedi i 2 primjera kako se riječ obično koristi.",
+        "explain_word_examples_context": "Navedi i 2 primjera kako se riječ koristi u istom značenju kao u navedenom kontekstu."
     },
     "review": {
         "again": "Ponovno",

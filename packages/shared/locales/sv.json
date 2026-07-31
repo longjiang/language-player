@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-genererad",
         "ai_says": "DeepSeek säger:",
+        "all_image_queries": "Alla {n, plural, one {# sökterm} other {# söktermer}}",
         "all_voices": "Alla röster",
         "auto_best_available": "Auto (bästa tillgängliga)",
         "auto_best_for": "Auto (bäst för {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Text",
         "explain_word": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" betyder. Ange uttalet. Om det är böjt eller konjugerat, nämn ordboksformen och böjningen; annars, nämn inte böjning.",
         "explain_word_context": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" betyder i meningen: \"{context}\". Ange uttalet. Om det är böjt eller konjugerat, nämn ordboksformen och böjningen; annars, nämn inte böjning.",
-        "explain_word_context_form": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" (böjd form: {contextForm}) betyder i meningen: \"{context}\". Ange uttalet. Nämn ordboksformen och böjningen."
+        "explain_word_context_form": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" (böjd form: {contextForm}) betyder i meningen: \"{context}\". Ange uttalet. Nämn ordboksformen och böjningen.",
+        "explain_word_examples": "Ge också 2 exempel på hur ordet vanligtvis används.",
+        "explain_word_examples_context": "Ge också 2 exempel på hur ordet används i samma betydelse som i den angivna kontexten."
     },
     "review": {
         "again": "Igen",

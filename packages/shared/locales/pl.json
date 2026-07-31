@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Generowane przez AI",
         "ai_says": "DeepSeek mówi:",
+        "all_image_queries": "Wszystkie {n, plural, one {# zapytanie} few {# zapytania} other {# zapytań}}",
         "all_voices": "Wszystkie głosy",
         "auto_best_available": "Auto (najlepsze dostępne)",
         "auto_best_for": "Auto (najlepsze dla {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Tekst",
         "explain_word": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\". Podaj jego wymowę. Jeśli jest odmienione lub koniugowane, podaj formę słownikową i odmianę; w przeciwnym razie nie wspominaj o odmianie.",
         "explain_word_context": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\" w zdaniu: \"{context}\". Podaj jego wymowę. Jeśli jest odmienione lub koniugowane, podaj formę słownikową i odmianę; w przeciwnym razie nie wspominaj o odmianie.",
-        "explain_word_context_form": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\" (forma odmieniona: {contextForm}) w zdaniu: \"{context}\". Podaj jego wymowę. Podaj formę słownikową i odmianę."
+        "explain_word_context_form": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\" (forma odmieniona: {contextForm}) w zdaniu: \"{context}\". Podaj jego wymowę. Podaj formę słownikową i odmianę.",
+        "explain_word_examples": "Podaj również 2 przykłady typowego użycia słowa.",
+        "explain_word_examples_context": "Podaj również 2 przykłady użycia słowa w tym samym znaczeniu co w podanym kontekście."
     },
     "review": {
         "again": "Ponownie",

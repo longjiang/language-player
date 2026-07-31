@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI生成",
         "ai_says": "DeepSeekは言う：",
+        "all_image_queries": "全 {n, plural, other {# 件の検索語}}",
         "all_voices": "すべての音声",
         "auto_best_available": "自動（最適なものを選択）",
         "auto_best_for": "自動（{l2}に最適）",
@@ -918,7 +919,9 @@
         "explain_text_label": "テキスト",
         "explain_word": "{l1Name}で、{l2Name}の単語\"{word}\"の意味を説明してください。発音を示してください。屈折または活用している場合は、辞書形と屈折を述べてください。そうでない場合は、屈折に言及しないでください。",
         "explain_word_context": "{l1Name}で、{l2Name}の単語\"{word}\"がフレーズ\"{context}\"の中で何を意味するか説明してください。発音を示してください。屈折または活用している場合は、辞書形と屈折を述べてください。そうでない場合は、屈折に言及しないでください。",
-        "explain_word_context_form": "{l1Name}で、{l2Name}の単語\"{word}\"（屈折形：{contextForm}）がフレーズ\"{context}\"の中で何を意味するか説明してください。発音を示してください。辞書形と屈折を述べてください。"
+        "explain_word_context_form": "{l1Name}で、{l2Name}の単語\"{word}\"（屈折形：{contextForm}）がフレーズ\"{context}\"の中で何を意味するか説明してください。発音を示してください。辞書形と屈折を述べてください。",
+        "explain_word_examples": "また、その単語が通常どのように使われるかの例を2つ示してください。",
+        "explain_word_examples_context": "また、提供された文脈と同じ意味でその単語がどのように使われるかの例を2つ示してください。"
     },
     "review": {
         "again": "もう一度",

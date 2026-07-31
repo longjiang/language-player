@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-Generated",
         "ai_says": "DeepSeek says:",
+        "all_image_queries": "All {n, plural, one {# term} other {# terms}}",
         "all_voices": "All Voices",
         "auto_best_available": "Auto (best available)",
         "auto_best_for": "Auto (best for {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Text",
         "explain_word": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means. Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
         "explain_word_context": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means in the phrase: \"{context}\". Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
-        "explain_word_context_form": "Explain using {l1Name}, what the {l2Name} word \"{word}\" (inflected form: {contextForm}) means in the phrase: \"{context}\". Give its pronunciation. Mention its dictionary form and the inflection."
+        "explain_word_context_form": "Explain using {l1Name}, what the {l2Name} word \"{word}\" (inflected form: {contextForm}) means in the phrase: \"{context}\". Give its pronunciation. Mention its dictionary form and the inflection.",
+        "explain_word_examples": "Also give 2 examples of how the word is typically used.",
+        "explain_word_examples_context": "Also give 2 examples of how the word is used in the same sense as in the context provided."
     },
     "review": {
         "again": "Again",

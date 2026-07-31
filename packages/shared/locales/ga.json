@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "Ginte ag AI",
         "ai_says": "Deir DeepSeek:",
+        "all_image_queries": "Gach {n, plural, one {# téarma} other {# téarmaí}}",
         "all_voices": "Gach Guth",
         "auto_best_available": "Uathoibríoch (an chuid is fearr atá ar fáil)",
         "auto_best_for": "Uathoibríoch (is fearr do {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Téacs",
         "explain_word": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\". Tabhair a fhuaimniú. Má tá sé infhillte nó réimnithe, luaigh a fhoirm foclóra agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh.",
         "explain_word_context": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\" san fhrása: \"{context}\". Tabhair a fhuaimniú. Má tá sé infhillte nó réimnithe, luaigh a fhoirm foclóra agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh.",
-        "explain_word_context_form": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\" (foirm infhillte: {contextForm}) san fhrása: \"{context}\". Tabhair a fhuaimniú. Luaigh a fhoirm foclóra agus an t-infhilleadh."
+        "explain_word_context_form": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\" (foirm infhillte: {contextForm}) san fhrása: \"{context}\". Tabhair a fhuaimniú. Luaigh a fhoirm foclóra agus an t-infhilleadh.",
+        "explain_word_examples": "Tabhair 2 shampla freisin de conas a úsáidtear an focal de ghnáth.",
+        "explain_word_examples_context": "Tabhair 2 shampla freisin de conas a úsáidtear an focal sa chiall chéanna agus atá sa chomhthéacs a soláthraíodh."
     },
     "review": {
         "again": "Arís",

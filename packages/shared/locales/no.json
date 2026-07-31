@@ -207,6 +207,7 @@
     "label": {
         "ai_generated": "AI-generert",
         "ai_says": "DeepSeek sier:",
+        "all_image_queries": "Alle {n, plural, one {# søkeord} other {# søkeord}}",
         "all_voices": "Alle stemmer",
         "auto_best_available": "Automatisk (beste tilgjengelig)",
         "auto_best_for": "Automatisk (best for {l2})",
@@ -918,7 +919,9 @@
         "explain_text_label": "Tekst",
         "explain_word": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr. Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
         "explain_word_context": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr i setningen: \"{context}\". Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
-        "explain_word_context_form": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" (bøyd form: {contextForm}) betyr i setningen: \"{context}\". Oppgi uttalen. Nevn ordbokformen og bøyningen."
+        "explain_word_context_form": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" (bøyd form: {contextForm}) betyr i setningen: \"{context}\". Oppgi uttalen. Nevn ordbokformen og bøyningen.",
+        "explain_word_examples": "Gi også 2 eksempler på hvordan ordet vanligvis brukes.",
+        "explain_word_examples_context": "Gi også 2 eksempler på hvordan ordet brukes i samme betydning som i den gitte sammenhengen."
     },
     "review": {
         "again": "Igjen",

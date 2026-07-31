@@ -121,7 +121,12 @@ export function DictionaryEntryTabs({
           />
         )}
         {tab === 'images' && (
-          <ImageSearchResults term={entry.head} l2Code={l2Code} />
+          <ImageSearchResults
+            term={entry.head}
+            l2Code={l2Code}
+            l1Code={l1Code}
+            definition={entry.definitions?.[0]}
+          />
         )}
         {tab === 'deepseek' && (
           <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
