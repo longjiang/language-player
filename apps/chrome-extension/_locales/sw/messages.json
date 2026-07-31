@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Inasubiri manukuu…"
+  "actions": {
+    "message": "Zaidi"
   },
-  "startPlaying": {
-    "message": "Anza kucheza video."
-  },
-  "loadingLanguage": {
-    "message": "Inapakia $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "Ingizo $count$ za manukuu zimepakiwa",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Imeshindwa kupakia manukuu"
-  },
-  "loadingSubtitles": {
-    "message": "Inapakia manukuu ya $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Funga"
-  },
-  "learningLanguage": {
-    "message": "Lugha ya kujifunza"
-  },
-  "interfaceLanguage": {
-    "message": "Lugha ya kiolesura"
-  },
-  "popularLanguages": {
-    "message": "Maarufu"
+  "aiThinking": {
+    "message": "Inapakia..."
   },
   "allLanguages": {
     "message": "Zote"
   },
-  "translate": {
-    "message": "Tafsiri"
+  "close": {
+    "message": "Funga"
   },
-  "showTranslation": {
-    "message": "Onyesha tafsiri"
-  },
-  "translating": {
-    "message": "Inatafsiri… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Vitendo"
+  "closePanel": {
+    "message": "Funga"
   },
   "copy": {
     "message": "Nakala"
-  },
-  "speak": {
-    "message": "Sema"
   },
   "explain": {
     "message": "Uliza AI"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Uliza AI"
   },
-  "aiThinking": {
-    "message": "🤖 AI inafikiria…"
+  "extensionDescription": {
+    "message": "Manukuu shirikishi ya lugha mbili kwa ajili ya kujifunza lugha kwenye Prime Video, YouTube, Netflix, Disney+, Hulu na Max."
   },
-  "thinking": {
-    "message": "inafikiria…"
+  "failedToLoadSubtitles": {
+    "message": "Imeshindwa kupakia manukuu"
+  },
+  "interfaceLanguage": {
+    "message": "Chagua lugha"
+  },
+  "learningLanguage": {
+    "message": "Chagua lugha"
+  },
+  "loadingSubtitles": {
+    "message": "Inapakia..."
+  },
+  "noTranscriptFound": {
+    "message": "Manukuu bado hayapatikani kwa video hii."
+  },
+  "popularLanguages": {
+    "message": "Maarufu"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Hakikisha <strong>manukuu yamewashwa</strong> katika lugha unayojifunza."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Bofya</strong> neno lolote kulitafuta katika kamusi"
+  },
+  "popupEmailPlaceholder": {
+    "message": "Barua pepe"
+  },
+  "popupInstructions": {
+    "message": "Anza kucheza video yoyote kwenye <strong>Prime Video</strong>, <strong>YouTube</strong> au <strong>Netflix</strong>. Paneli ya nakala hufunguka kiotomatiki manukuu yanapopatikana."
+  },
+  "popupLoginBtn": {
+    "message": "Ingia"
+  },
+  "popupLoginPrompt": {
+    "message": "Ingia ili kuhifadhi maneno na kusawazisha na Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Toka"
+  },
+  "popupNoTranscript": {
+    "message": "Manukuu bado hayapatikani kwa video hii."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Nenosiri"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Hifadhi</strong> maneno kwenye akaunti yako ya Language Player"
+  },
+  "popupShowTranscript": {
+    "message": "Onyesha Nakala"
+  },
+  "popupToggleShortcut": {
+    "message": "Bonyeza <kbd>Alt</kbd> + <kbd>T</kbd> kufungua/kufunga paneli"
   },
   "save": {
     "message": "Hifadhi neno"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Imehifadhiwa"
   },
-  "close": {
-    "message": "Funga"
-  },
   "showTranscript": {
     "message": "Onyesha Nakala"
   },
-  "noTranscriptFound": {
-    "message": "Hakuna Nakala Iliyopatikana"
+  "showTranslation": {
+    "message": "Onyesha tafsiri"
   },
-  "extensionDescription": {
-    "message": "Manukuu shirikishi ya lugha mbili kwa ajili ya kujifunza lugha kwenye Prime Video, YouTube, Netflix, Disney+, Hulu na Max."
+  "speak": {
+    "message": "Sema"
   },
-  "popupLoginPrompt": {
-    "message": "Ingia ili kuhifadhi maneno na kusawazisha na Language Player."
+  "startPlaying": {
+    "message": "Anza kucheza video."
   },
-  "popupEmailPlaceholder": {
-    "message": "Barua pepe"
+  "translate": {
+    "message": "Tafsiri"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Nenosiri"
-  },
-  "popupLoginBtn": {
-    "message": "Ingia"
-  },
-  "popupLogoutBtn": {
-    "message": "Toka"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Onyesha Nakala"
-  },
-  "popupNoTranscript": {
-    "message": "Hakuna Nakala Iliyopatikana"
-  },
-  "popupInstructions": {
-    "message": "Anza kucheza video yoyote kwenye <strong>Prime Video</strong>, <strong>YouTube</strong> au <strong>Netflix</strong>. Paneli ya nakala hufunguka kiotomatiki manukuu yanapopatikana."
-  },
-  "popupClickWord": {
-    "message": "<strong>Bofya</strong> neno lolote kulitafuta katika kamusi"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Hifadhi</strong> maneno kwenye akaunti yako ya Language Player"
-  },
-  "popupToggleShortcut": {
-    "message": "Bonyeza <kbd>Alt</kbd> + <kbd>T</kbd> kufungua/kufunga paneli"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Hakikisha <strong>manukuu yamewashwa</strong> katika lugha unayojifunza."
+  "translating": {
+    "message": "Inatafsiri…"
   }
 }

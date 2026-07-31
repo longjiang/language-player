@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Aguardando legendas…"
+  "actions": {
+    "message": "Mais"
   },
-  "startPlaying": {
-    "message": "Comece a reproduzir um vídeo."
-  },
-  "loadingLanguage": {
-    "message": "Carregando $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "$count$ entradas de legendas carregadas",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Falha ao carregar legendas"
-  },
-  "loadingSubtitles": {
-    "message": "Carregando legendas em $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Fechar"
-  },
-  "learningLanguage": {
-    "message": "Idioma de aprendizagem"
-  },
-  "interfaceLanguage": {
-    "message": "Idioma da interface"
-  },
-  "popularLanguages": {
-    "message": "Popular"
+  "aiThinking": {
+    "message": "Carregando..."
   },
   "allLanguages": {
     "message": "Tudo"
   },
-  "translate": {
-    "message": "Tradução"
+  "close": {
+    "message": "Fechar"
   },
-  "showTranslation": {
-    "message": "Mostrar tradução"
-  },
-  "translating": {
-    "message": "Traduzindo… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Ações"
+  "closePanel": {
+    "message": "Fechar"
   },
   "copy": {
     "message": "Copiar"
-  },
-  "speak": {
-    "message": "Falar"
   },
   "explain": {
     "message": "Perguntar à IA"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Perguntar à IA"
   },
-  "aiThinking": {
-    "message": "🤖 IA está pensando…"
+  "extensionDescription": {
+    "message": "Legendas bilíngues interativas para aprendizado de idiomas no Prime Video, YouTube, Netflix, Disney+, Hulu e Max."
   },
-  "thinking": {
-    "message": "pensando…"
+  "failedToLoadSubtitles": {
+    "message": "Falha ao carregar legendas"
+  },
+  "interfaceLanguage": {
+    "message": "Selecione um idioma"
+  },
+  "learningLanguage": {
+    "message": "Selecione um idioma"
+  },
+  "loadingSubtitles": {
+    "message": "Carregando..."
+  },
+  "noTranscriptFound": {
+    "message": "As legendas ainda não estão disponíveis para este vídeo."
+  },
+  "popularLanguages": {
+    "message": "Popular"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Certifique-se de que <strong>as legendas estão ativadas</strong> no idioma que você estuda."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Clique</strong> em qualquer palavra para consultá-la no dicionário"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-mail"
+  },
+  "popupInstructions": {
+    "message": "Comece a reproduzir qualquer vídeo no <strong>Prime Video</strong>, <strong>YouTube</strong> ou <strong>Netflix</strong>. O painel de transcrição abre automaticamente quando as legendas são encontradas."
+  },
+  "popupLoginBtn": {
+    "message": "Entrar"
+  },
+  "popupLoginPrompt": {
+    "message": "Faça login para salvar palavras e sincronizar com o Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Sair"
+  },
+  "popupNoTranscript": {
+    "message": "As legendas ainda não estão disponíveis para este vídeo."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Senha"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Salve</strong> palavras na sua conta do Language Player"
+  },
+  "popupShowTranscript": {
+    "message": "Mostrar transcrição"
+  },
+  "popupToggleShortcut": {
+    "message": "Pressione <kbd>Alt</kbd> + <kbd>T</kbd> para mostrar/ocultar o painel"
   },
   "save": {
     "message": "Salvar palavra"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Salvo"
   },
-  "close": {
-    "message": "Fechar"
-  },
   "showTranscript": {
     "message": "Mostrar transcrição"
   },
-  "noTranscriptFound": {
-    "message": "Nenhuma transcrição encontrada"
+  "showTranslation": {
+    "message": "Mostrar tradução"
   },
-  "extensionDescription": {
-    "message": "Legendas bilíngues interativas para aprendizado de idiomas no Prime Video, YouTube, Netflix, Disney+, Hulu e Max."
+  "speak": {
+    "message": "Falar"
   },
-  "popupLoginPrompt": {
-    "message": "Faça login para salvar palavras e sincronizar com o Language Player."
+  "startPlaying": {
+    "message": "Comece a reproduzir um vídeo."
   },
-  "popupEmailPlaceholder": {
-    "message": "Email"
+  "translate": {
+    "message": "Tradução"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Senha"
-  },
-  "popupLoginBtn": {
-    "message": "Entrar"
-  },
-  "popupLogoutBtn": {
-    "message": "Sair"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Mostrar transcrição"
-  },
-  "popupNoTranscript": {
-    "message": "Nenhuma transcrição encontrada"
-  },
-  "popupInstructions": {
-    "message": "Comece a reproduzir qualquer vídeo no <strong>Prime Video</strong>, <strong>YouTube</strong> ou <strong>Netflix</strong>. O painel de transcrição abre automaticamente quando as legendas são encontradas."
-  },
-  "popupClickWord": {
-    "message": "<strong>Clique</strong> em qualquer palavra para consultá-la no dicionário"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Salve</strong> palavras na sua conta do Language Player"
-  },
-  "popupToggleShortcut": {
-    "message": "Pressione <kbd>Alt</kbd> + <kbd>T</kbd> para mostrar/ocultar o painel"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Certifique-se de que <strong>as legendas estão ativadas</strong> no idioma que você estuda."
+  "translating": {
+    "message": "Traduzindo…"
   }
 }

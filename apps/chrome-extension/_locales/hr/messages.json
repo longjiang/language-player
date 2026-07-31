@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Čekanje titlova…"
+  "actions": {
+    "message": "Više"
   },
-  "startPlaying": {
-    "message": "Pokrenite video."
-  },
-  "loadingLanguage": {
-    "message": "Učitavanje $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "Učitano $count$ unosa titlova",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Učitavanje titlova nije uspjelo"
-  },
-  "loadingSubtitles": {
-    "message": "Učitavanje $lang$ titlova…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Zatvori"
-  },
-  "learningLanguage": {
-    "message": "Jezik učenja"
-  },
-  "interfaceLanguage": {
-    "message": "Jezik sučelja"
-  },
-  "popularLanguages": {
-    "message": "Popularno"
+  "aiThinking": {
+    "message": "Učitavanje..."
   },
   "allLanguages": {
     "message": "Sve"
   },
-  "translate": {
-    "message": "Prijevod"
+  "close": {
+    "message": "Zatvori"
   },
-  "showTranslation": {
-    "message": "Prikaži prijevod"
-  },
-  "translating": {
-    "message": "Prevođenje… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Radnje"
+  "closePanel": {
+    "message": "Zatvori"
   },
   "copy": {
     "message": "Kopiraj"
-  },
-  "speak": {
-    "message": "Izgovori"
   },
   "explain": {
     "message": "Pitaj AI"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Pitaj AI"
   },
-  "aiThinking": {
-    "message": "🤖 AI razmišlja…"
+  "extensionDescription": {
+    "message": "Interaktivni dvojezični titlovi za učenje jezika na Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
   },
-  "thinking": {
-    "message": "razmišlja…"
+  "failedToLoadSubtitles": {
+    "message": "Učitavanje titlova nije uspjelo"
+  },
+  "interfaceLanguage": {
+    "message": "Odaberi jezik"
+  },
+  "learningLanguage": {
+    "message": "Odaberi jezik"
+  },
+  "loadingSubtitles": {
+    "message": "Učitavanje..."
+  },
+  "noTranscriptFound": {
+    "message": "Titlovi još nisu dostupni za ovaj videozapis."
+  },
+  "popularLanguages": {
+    "message": "Popularno"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Provjerite jesu li <strong>titlovi uključeni</strong> na jeziku koji učite."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Kliknite</strong> bilo koju riječ kako biste je potražili u rječniku"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-mail"
+  },
+  "popupInstructions": {
+    "message": "Pokrenite bilo koji video na <strong>Prime Video</strong>, <strong>YouTube</strong> ili <strong>Netflix</strong>. Ploča s transkriptom automatski se otvara kada se pronađu titlovi."
+  },
+  "popupLoginBtn": {
+    "message": "Prijavi se"
+  },
+  "popupLoginPrompt": {
+    "message": "Prijavite se za spremanje riječi i sinkronizaciju s Language Playerom."
+  },
+  "popupLogoutBtn": {
+    "message": "Odjavi se"
+  },
+  "popupNoTranscript": {
+    "message": "Titlovi još nisu dostupni za ovaj videozapis."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Lozinka"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Spremite</strong> riječi na svoj Language Player račun"
+  },
+  "popupShowTranscript": {
+    "message": "Prikaži transkript"
+  },
+  "popupToggleShortcut": {
+    "message": "Pritisnite <kbd>Alt</kbd> + <kbd>T</kbd> za uključivanje/isključivanje ploče"
   },
   "save": {
     "message": "Spremi riječ"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Spremljeno"
   },
-  "close": {
-    "message": "Zatvori"
-  },
   "showTranscript": {
     "message": "Prikaži transkript"
   },
-  "noTranscriptFound": {
-    "message": "Transkript nije pronađen"
+  "showTranslation": {
+    "message": "Prikaži prijevod"
   },
-  "extensionDescription": {
-    "message": "Interaktivni dvojezični titlovi za učenje jezika na Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
+  "speak": {
+    "message": "Izgovori"
   },
-  "popupLoginPrompt": {
-    "message": "Prijavite se za spremanje riječi i sinkronizaciju s Language Playerom."
+  "startPlaying": {
+    "message": "Pokrenite video."
   },
-  "popupEmailPlaceholder": {
-    "message": "E-pošta"
+  "translate": {
+    "message": "Prijevod"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Lozinka"
-  },
-  "popupLoginBtn": {
-    "message": "Prijavi se"
-  },
-  "popupLogoutBtn": {
-    "message": "Odjavi se"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Prikaži transkript"
-  },
-  "popupNoTranscript": {
-    "message": "Transkript nije pronađen"
-  },
-  "popupInstructions": {
-    "message": "Pokrenite bilo koji video na <strong>Prime Video</strong>, <strong>YouTube</strong> ili <strong>Netflix</strong>. Ploča s transkriptom automatski se otvara kada se pronađu titlovi."
-  },
-  "popupClickWord": {
-    "message": "<strong>Kliknite</strong> bilo koju riječ kako biste je potražili u rječniku"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Spremite</strong> riječi na svoj Language Player račun"
-  },
-  "popupToggleShortcut": {
-    "message": "Pritisnite <kbd>Alt</kbd> + <kbd>T</kbd> za uključivanje/isključivanje ploče"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Provjerite jesu li <strong>titlovi uključeni</strong> na jeziku koji učite."
+  "translating": {
+    "message": "Prevođenje…"
   }
 }

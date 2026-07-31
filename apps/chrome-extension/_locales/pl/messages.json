@@ -2,84 +2,23 @@
   "appName": {
     "message": "Language Player"
   },
-  "waitingForSubtitles": {
-    "message": "Oczekiwanie na napisy…"
+  "actions": {
+    "message": "Więcej"
   },
-  "startPlaying": {
-    "message": "Rozpocznij odtwarzanie filmu."
-  },
-  "loadingLanguage": {
-    "message": "Ładowanie $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "subtitleEntriesLoaded": {
-    "message": "Załadowano $count$ wpisów napisów",
-    "placeholders": {
-      "count": {
-        "content": "$1",
-        "example": "390"
-      }
-    }
-  },
-  "failedToLoadSubtitles": {
-    "message": "Nie udało się załadować napisów"
-  },
-  "loadingSubtitles": {
-    "message": "Ładowanie napisów $lang$…",
-    "placeholders": {
-      "lang": {
-        "content": "$1",
-        "example": "ja"
-      }
-    }
-  },
-  "closePanel": {
-    "message": "Zamknij"
-  },
-  "learningLanguage": {
-    "message": "Język nauki"
-  },
-  "interfaceLanguage": {
-    "message": "Język interfejsu"
-  },
-  "popularLanguages": {
-    "message": "Popularne"
+  "aiThinking": {
+    "message": "Ładowanie..."
   },
   "allLanguages": {
     "message": "Wszystko"
   },
-  "translate": {
-    "message": "Tłumaczenie"
+  "close": {
+    "message": "Zamknij"
   },
-  "showTranslation": {
-    "message": "Pokaż tłumaczenie"
-  },
-  "translating": {
-    "message": "Tłumaczenie… $progress$/$total$",
-    "placeholders": {
-      "progress": {
-        "content": "$1",
-        "example": "5"
-      },
-      "total": {
-        "content": "$2",
-        "example": "390"
-      }
-    }
-  },
-  "actions": {
-    "message": "Działania"
+  "closePanel": {
+    "message": "Zamknij"
   },
   "copy": {
     "message": "Kopiuj"
-  },
-  "speak": {
-    "message": "Mów"
   },
   "explain": {
     "message": "Zapytaj AI"
@@ -87,11 +26,65 @@
   "explainTitle": {
     "message": "Zapytaj AI"
   },
-  "aiThinking": {
-    "message": "🤖 SI myśli…"
+  "extensionDescription": {
+    "message": "Interaktywne dwujęzyczne napisy do nauki języków na Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
   },
-  "thinking": {
-    "message": "myśli…"
+  "failedToLoadSubtitles": {
+    "message": "Nie udało się załadować napisów"
+  },
+  "interfaceLanguage": {
+    "message": "Wybierz język"
+  },
+  "learningLanguage": {
+    "message": "Wybierz język"
+  },
+  "loadingSubtitles": {
+    "message": "Ładowanie..."
+  },
+  "noTranscriptFound": {
+    "message": "Napisy nie są jeszcze dostępne dla tego filmu."
+  },
+  "popularLanguages": {
+    "message": "Popularne"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Upewnij się, że <strong>napisy są włączone</strong> w języku, którego się uczysz."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupClickWord": {
+    "message": "<strong>Kliknij</strong> dowolne słowo, aby sprawdzić je w słowniku"
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-mail"
+  },
+  "popupInstructions": {
+    "message": "Rozpocznij odtwarzanie dowolnego filmu na <strong>Prime Video</strong>, <strong>YouTube</strong> lub <strong>Netflix</strong>. Panel transkrypcji otwiera się automatycznie po znalezieniu napisów."
+  },
+  "popupLoginBtn": {
+    "message": "Zaloguj się"
+  },
+  "popupLoginPrompt": {
+    "message": "Zaloguj się, aby zapisywać słowa i synchronizować z Language Player."
+  },
+  "popupLogoutBtn": {
+    "message": "Wyloguj się"
+  },
+  "popupNoTranscript": {
+    "message": "Napisy nie są jeszcze dostępne dla tego filmu."
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Hasło"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Zapisuj</strong> słowa na swoim koncie Language Player"
+  },
+  "popupShowTranscript": {
+    "message": "Pokaż transkrypcję"
+  },
+  "popupToggleShortcut": {
+    "message": "Naciśnij <kbd>Alt</kbd> + <kbd>T</kbd>, aby przełączyć panel"
   },
   "save": {
     "message": "Zapisz słowo"
@@ -99,55 +92,22 @@
   "saved": {
     "message": "Zapisano"
   },
-  "close": {
-    "message": "Zamknij"
-  },
   "showTranscript": {
     "message": "Pokaż transkrypcję"
   },
-  "noTranscriptFound": {
-    "message": "Nie znaleziono transkrypcji"
+  "showTranslation": {
+    "message": "Pokaż tłumaczenie"
   },
-  "extensionDescription": {
-    "message": "Interaktywne dwujęzyczne napisy do nauki języków na Prime Video, YouTube, Netflix, Disney+, Hulu i Max."
+  "speak": {
+    "message": "Mów"
   },
-  "popupLoginPrompt": {
-    "message": "Zaloguj się, aby zapisywać słowa i synchronizować z Language Player."
+  "startPlaying": {
+    "message": "Rozpocznij odtwarzanie filmu."
   },
-  "popupEmailPlaceholder": {
-    "message": "Email"
+  "translate": {
+    "message": "Tłumaczenie"
   },
-  "popupPasswordPlaceholder": {
-    "message": "Hasło"
-  },
-  "popupLoginBtn": {
-    "message": "Zaloguj się"
-  },
-  "popupLogoutBtn": {
-    "message": "Wyloguj się"
-  },
-  "popupChecking": {
-    "message": "Checking…"
-  },
-  "popupShowTranscript": {
-    "message": "Pokaż transkrypcję"
-  },
-  "popupNoTranscript": {
-    "message": "Nie znaleziono transkrypcji"
-  },
-  "popupInstructions": {
-    "message": "Rozpocznij odtwarzanie dowolnego filmu na <strong>Prime Video</strong>, <strong>YouTube</strong> lub <strong>Netflix</strong>. Panel transkrypcji otwiera się automatycznie po znalezieniu napisów."
-  },
-  "popupClickWord": {
-    "message": "<strong>Kliknij</strong> dowolne słowo, aby sprawdzić je w słowniku"
-  },
-  "popupSaveWords": {
-    "message": "<strong>Zapisuj</strong> słowa na swoim koncie Language Player"
-  },
-  "popupToggleShortcut": {
-    "message": "Naciśnij <kbd>Alt</kbd> + <kbd>T</kbd>, aby przełączyć panel"
-  },
-  "popupCaptionsHint": {
-    "message": "💡 Upewnij się, że <strong>napisy są włączone</strong> w języku, którego się uczysz."
+  "translating": {
+    "message": "Tłumaczenie…"
   }
 }

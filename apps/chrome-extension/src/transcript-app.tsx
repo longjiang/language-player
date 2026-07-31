@@ -282,16 +282,9 @@ CueLine.displayName = 'CueLine';
 const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
   <div className="lpv-empty">
     {loadingL2 ? (
-      <>
-        <span className="lpv-spinner" />
-        {t('loadingLanguage', [loadingL2])}
-      </>
+      <span className="lpv-spinner" />
     ) : (
-      <>
-        {t('waitingForSubtitles')}
-        <br />
-        {t('startPlaying')}
-      </>
+      t('startPlaying')
     )}
   </div>
 );
@@ -435,7 +428,8 @@ Text: ${cue.text}`;
         </label>
         {translating && (
           <span className="lpv-control-status">
-            {t('translating', [String(progress), String(cues.length)])}
+            {t('subtitle.translating')}{' '}
+            <span className="lpv-progress-badge">{progress}/{cues.length}</span>
           </span>
         )}
       </div>
@@ -477,14 +471,14 @@ Text: ${cue.text}`;
             <div className="lpv-dict-card-header">
               <div className="lpv-dict-card-header-left">
                 <span className="lpv-dict-card-word">{t('explainTitle')}</span>
-                {explainLoading && <span className="lpv-dict-card-pron">{t('thinking')}</span>}
+                {explainLoading && <span className="lpv-spinner lpv-spinner-sm" />}
               </div>
               <button onClick={closeExplain} className="lpv-dict-card-close" title="Close">✕</button>
             </div>
             <div className="lpv-dict-card-body">
               <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
                 {explainLoading && (
-                  <div className="lpv-explain-loading">{t('aiThinking')}</div>
+                  <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('msg.loading')}</div>
                 )}
                 {explainError && (
                   <div className="lpv-explain-error">{explainError}</div>
