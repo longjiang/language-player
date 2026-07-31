@@ -179,7 +179,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <SheetContent
           side="right"
-          className="w-80 max-w-[85vw] p-0"
+          className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
           showCloseButton={false}
         >
           {renderSidebarPanel(() => setMobileSidebarOpen(false))}
