@@ -126,6 +126,8 @@ export function DictionaryEntryTabs({
             l2Code={l2Code}
             l1Code={l1Code}
             definition={entry.definitions?.[0]}
+            contextText={contextText}
+            contextForm={contextForm}
           />
         )}
         {tab === 'deepseek' && (
