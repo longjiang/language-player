@@ -177,7 +177,7 @@ export default function EpubPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={epub.coverUrl}
-                alt="Cover"
+                alt={t('label.cover')}
                 className="max-h-[70vh] max-w-full cursor-pointer rounded-lg shadow-xl transition-transform hover:scale-[1.02]"
                 onClick={() => {
                   // Mark cover tapped and load first chapter if not already loaded

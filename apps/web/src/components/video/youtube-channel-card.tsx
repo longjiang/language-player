@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ChannelActionsMenu } from './channel-actions-menu';
+import { useT } from '@/hooks/use-t';
 import { Loader2, ExternalLink } from 'lucide-react';
 
 interface ChannelInfo {
@@ -18,6 +19,7 @@ interface ChannelCardProps {
 
 export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
   const { l1, l2 } = useLanguage();
+  const t = useT();
   const [channel, setChannel] = useState<ChannelInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -72,7 +74,7 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
         target="_blank"
         rel="noopener noreferrer"
         className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-        title="View on YouTube"
+        title={t('action.view_on_youtube')}
       >
         <ExternalLink className="h-4 w-4" />
       </a>

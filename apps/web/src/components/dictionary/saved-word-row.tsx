@@ -6,6 +6,7 @@ import { WordListItem } from '@/components/dictionary/word-list';
 import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useT } from '@/hooks/use-t';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import type { SavedLexicalItemRecord } from '@langplayer/shared';
 
@@ -33,6 +34,7 @@ export function SavedWordRow({
   srsDot,
   compact = false,
 }: SavedWordRowProps) {
+  const t = useT();
   const { removeSavedWord } = useSavedWordsContext();
   const insts = normalizeInstances(word);
   const latest = insts[insts.length - 1];
@@ -70,7 +72,7 @@ export function SavedWordRow({
           <button
             onClick={handleRemove}
             className="shrink-0 self-start mt-0.5 text-amber-500 transition-colors hover:text-red-500"
-            title="Remove from saved words"
+            title={t('action.remove_from_saved')}
           >
             <BookmarkCheck className="h-5 w-5 fill-current" />
           </button>

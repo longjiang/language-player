@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import type { TokenCache } from '@langplayer/shared';
@@ -41,6 +42,7 @@ export function SubtitlesModeBand({
 }: SubtitlesModeBandProps) {
   const { l2 } = useLanguage();
   const { display } = useSettingsContext();
+  const t = useT();
   const showTranslation = display.translation;
 
   const activeIndex = useMemo(() => {
@@ -97,7 +99,7 @@ export function SubtitlesModeBand({
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}
           onClick={onPrevVideo} disabled={!hasPrevVideo}
-          title="Previous video"
+          title={t('player.previous_video')}
         >
           <SkipBack className="h-4 w-4" />
         </Button>
@@ -105,7 +107,7 @@ export function SubtitlesModeBand({
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}
           onClick={handlePrevLine} disabled={isFirstLine}
-          title="Previous subtitle line"
+          title={t('player.previous_subtitle_line')}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -113,7 +115,7 @@ export function SubtitlesModeBand({
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}
           onClick={handleNextLine} disabled={isLastLine}
-          title="Next subtitle line"
+          title={t('player.next_subtitle_line')}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -121,7 +123,7 @@ export function SubtitlesModeBand({
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}
           onClick={onNextVideo} disabled={!hasNextVideo}
-          title="Next video"
+          title={t('player.next_video')}
         >
           <SkipForward className="h-4 w-4" />
         </Button>
@@ -130,7 +132,7 @@ export function SubtitlesModeBand({
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}
           onClick={onSwitchToTranscriptMode}
-          title="Show transcript & queue"
+          title={t('player.show_transcript_and_queue')}
         >
           <PanelRightOpen className="h-4 w-4" />
         </Button>
