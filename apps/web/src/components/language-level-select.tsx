@@ -49,7 +49,7 @@ export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSe
       }}
     >
       <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select your level...">
+        <SelectValue placeholder={t('placeholder.select_level')}>
           {currentLabel}
         </SelectValue>
       </SelectTrigger>

@@ -100,9 +100,9 @@ export default function GoProSuccessPage() {
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-bold">Payment successful</h1>
+          <h1 className="text-2xl font-bold">{t('msg.payment_successful')}</h1>
           <p className="mt-2 text-muted-foreground">
-            Please log in to verify your Pro status.
+            {t('msg.login_to_verify_pro')}
           </p>
           <div className="mt-8">
             <Link href="/login">

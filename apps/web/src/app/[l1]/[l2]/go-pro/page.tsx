@@ -88,7 +88,7 @@ export default function GoProPage() {
   useEffect(() => {
     getStripePrices()
       .then(setPrices)
-      .catch(() => setError('Could not load pricing. Please try again later.'))
+      .catch(() => setError(t('msg.pricing_load_error')))
       .finally(() => setLoadingPrices(false));
   }, []);
 
@@ -103,7 +103,7 @@ export default function GoProPage() {
     try {
       const usdPrice = findUsdPrice(prices, selectedPlan);
       if (!usdPrice) {
-        setError('No USD price available for this plan. Please try another payment method.');
+        setError(t('msg.no_usd_price'));
         setCheckingOut(false);
         return;
       }
@@ -122,7 +122,7 @@ export default function GoProPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setError(err?.error ?? 'Could not create checkout session. Please try again.');
+        setError(err?.error ?? t('msg.checkout_session_error'));
         setCheckingOut(false);
         return;
       }
@@ -131,11 +131,11 @@ export default function GoProPage() {
       if (url) {
         window.location.href = url; // redirect to Stripe-hosted checkout
       } else {
-        setError('No checkout URL returned. Please try again.');
+        setError(t('msg.no_checkout_url'));
         setCheckingOut(false);
       }
     } catch (err: any) {
-      setError(err?.message ?? 'An unexpected error occurred.');
+      setError(err?.message ?? t('msg.unexpected_error'));
       setCheckingOut(false);
     }
   }, [selectedPlan, userId, prices]);
