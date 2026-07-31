@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Φόρτωση..."
   },
+  "l2Mismatch": {
+    "message": "Οι υπότιτλοι που επιλέξατε από τη συσκευή αναπαραγωγής βίντεο είναι στα $detectedLang$, αλλά η γλώσσα-στόχος σας (L2) στο Language Player έχει οριστεί σε $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Ορισμός της L2 μου σε $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Αναζήτηση $word$…",
     "placeholders": {

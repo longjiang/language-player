@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Betöltés..."
   },
+  "l2Mismatch": {
+    "message": "A videólejátszóban kiválasztott feliratok nyelve $detectedLang$, de a Language Playerben a célnyelv (L2) beállítása $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "L2 beállítása erre: $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$ keresése…",
     "placeholders": {

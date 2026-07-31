@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Laddar..."
   },
+  "l2Mismatch": {
+    "message": "Undertexterna du valde i videospelaren är på $detectedLang$, men ditt målspråk (L2) i Language Player är inställt på $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Ställ in min L2 till $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Söker efter $word$…",
     "placeholders": {

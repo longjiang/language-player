@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "加载中..."
   },
+  "l2Mismatch": {
+    "message": "您在视频播放器中选择的字幕是$detectedLang$，但您在Language Player中的目标语言（L2）设置为$savedLang$。",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "将我的L2设置为$detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "正在查找 $word$…",
     "placeholders": {

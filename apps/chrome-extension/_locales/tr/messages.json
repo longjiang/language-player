@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Yükleniyor..."
   },
+  "l2Mismatch": {
+    "message": "Video oynatıcıdan seçtiğiniz altyazılar $detectedLang$ dilinde, ancak Language Player'daki hedef diliniz (L2) $savedLang$ olarak ayarlanmış.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "L2'imi $detectedLang$ olarak ayarla",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$ aranıyor…",
     "placeholders": {

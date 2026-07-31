@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Laai..."
   },
+  "l2Mismatch": {
+    "message": "Die onderskrifte wat jy in die videospeler gekies het, is in $detectedLang$, maar jou teikentaal (L2) in Language Player is op $savedLang$ gestel.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Stel my L2 na $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Soek $word$…",
     "placeholders": {

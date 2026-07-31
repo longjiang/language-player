@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Laden..."
   },
+  "l2Mismatch": {
+    "message": "De ondertitels die u in de videospeler hebt geselecteerd, zijn in het $detectedLang$, maar uw doeltaal (L2) in Language Player is ingesteld op $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Mijn L2 instellen op $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$ opzoeken…",
     "placeholders": {

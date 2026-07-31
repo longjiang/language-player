@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Á lódáil..."
   },
+  "l2Mismatch": {
+    "message": "Tá na fotheidil a roghnaigh tú ón seinnteoir físeáin i $detectedLang$, ach tá do sprioctheanga (L2) in Language Player socraithe go $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Socraigh mo L2 go $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Ag cuardach $word$…",
     "placeholders": {

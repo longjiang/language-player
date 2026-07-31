@@ -27,12 +27,16 @@ execSync('node scripts/generate-lang-names.js', {
   stdio: 'inherit',
 });
 
+// Read current version from manifest (for the generated-file banner)
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+const currentVersion = manifest.version;
+
 // Step 2: Bundle content script
 console.log('[build] Bundling content script...');
 
 const banner = [
   '/**',
-  ` * LANGUAGE PLAYER — Chrome Extension Content Script v${newVersion}`,
+  ` * LANGUAGE PLAYER — Chrome Extension Content Script v${currentVersion}`,
   ' *',
   ' * ⚠️  THIS IS A GENERATED FILE — DO NOT EDIT DIRECTLY.',
   ' * Source: apps/chrome-extension/src/content-entry.js',

@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Učitavanje..."
   },
+  "l2Mismatch": {
+    "message": "Titlovi koje ste odabrali u video playeru su na $detectedLang$, ali vaš ciljni jezik (L2) u Language Playeru postavljen je na $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Postavi moj L2 na $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Traženje $word$…",
     "placeholders": {

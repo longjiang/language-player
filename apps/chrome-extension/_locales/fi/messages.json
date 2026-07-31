@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Ladataan..."
   },
+  "l2Mismatch": {
+    "message": "Videosoittimesta valitsemasi tekstitykset ovat kielellä $detectedLang$, mutta kohdekielesi (L2) Language Playerissa on asetettu kieleksi $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Aseta L2-kielekseni $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Etsitään $word$…",
     "placeholders": {
