@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "กำลังโหลด..."
   },
+  "l2Mismatch": {
+    "message": "คำบรรยายที่คุณเลือกจากเครื่องเล่นวิดีโอเป็นภาษา$detectedLang$ แต่ภาษาเป้าหมาย (L2) ของคุณใน Language Player ถูกตั้งค่าเป็น$savedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "ตั้งค่า L2 ของฉันเป็น$detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "กำลังค้นหา $word$…",
     "placeholders": {

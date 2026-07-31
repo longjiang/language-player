@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Đang tải..."
   },
+  "l2Mismatch": {
+    "message": "Phụ đề bạn đã chọn từ trình phát video bằng $detectedLang$, nhưng ngôn ngữ đích (L2) của bạn trong Language Player được đặt thành $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Đặt L2 của tôi thành $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Đang tra $word$…",
     "placeholders": {

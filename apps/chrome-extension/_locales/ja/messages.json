@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "読み込み中..."
   },
+  "l2Mismatch": {
+    "message": "動画プレーヤーで選択した字幕は$detectedLang$ですが、Language Playerの学習言語（L2）は$savedLang$に設定されています。",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "L2を$detectedLang$に設定する",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$を検索中…",
     "placeholders": {

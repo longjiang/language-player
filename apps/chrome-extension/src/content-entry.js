@@ -10,6 +10,7 @@
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
 import { SUPPORTED_L2S } from '@langplayer/shared';
+import { baseCode } from '@langplayer/utils';
 import {
   parseTimeToSeconds, stripTags, decodeEntities,
   parseTTML, parseWebVTTLike, parseSRT,
@@ -70,8 +71,15 @@ let statusEl = null;
 let l1SelectEl = null;
 let l2SelectEl = null;
 
-// ── L2 language detection ────────────────────────────────────────────────
-let detectedL2Code = 'en';
+// ── L2 language state ────────────────────────────────────────────────────
+
+/** The user's chosen L2 (persisted in chrome.storage.local). Single source of truth.
+ *  Only changes when the user explicitly picks an L2 via the dropdown or mismatch prompt. */
+let savedL2Code = 'en';
+
+/** The language detected from the current video's subtitles (for mismatch check).
+ *  Set by track metadata or heuristic detection — never used for lemmatization. */
+let detectedSubLang = null;
 
 /** The user's native / UI language. Defaults to 'en'. Changed via L1 dropdown. */
 let L1_CODE = 'en';
@@ -80,21 +88,69 @@ let L1_CODE = 'en';
 let ytCaptionTracks = [];
 let ytPlayerResponse = null;
 
-/** Try to detect the subtitle language from page metadata */
-function detectL2Code() {
-  // Check for lang attribute on html element
-  const htmlLang = document.documentElement.lang;
-  if (htmlLang) {
-    const code = htmlLang.split('-')[0];
-    if (code) { detectedL2Code = code; return; }
+// ── L2 Mismatch Detection ────────────────────────────────────────────────
+
+let mismatchBannerEl = null;
+
+/** Compare detected subtitle language against user's saved L2.
+ *  Shows a prompt if they don't match (after stripping region codes). */
+function checkL2Mismatch() {
+  if (!detectedSubLang) return;
+  if (!savedL2Code) return;
+
+  const detectedBase = baseCode(detectedSubLang);
+  const savedBase = baseCode(savedL2Code);
+
+  if (detectedBase === savedBase) {
+    hideL2MismatchBanner();
+    return;
   }
-  // Check og:locale meta
-  const ogLocale = document.querySelector('meta[property="og:locale"]');
-  if (ogLocale) {
-    const code = ogLocale.getAttribute('content')?.split('_')[0];
-    if (code) { detectedL2Code = code; return; }
+
+  showL2MismatchBanner(detectedSubLang, savedL2Code);
+}
+
+function showL2MismatchBanner(subLang, savedLang) {
+  if (!panelRoot) return;
+
+  if (!mismatchBannerEl) {
+    mismatchBannerEl = document.createElement('div');
+    mismatchBannerEl.id = 'lpv-mismatch-banner';
+    const header = document.getElementById('lpv-panel-header');
+    if (header?.nextSibling) {
+      panelRoot.insertBefore(mismatchBannerEl, header.nextSibling);
+    } else {
+      panelRoot.appendChild(mismatchBannerEl);
+    }
   }
-  // Fallback: try subtitle filename heuristics later
+
+  const subLangName = languageName(subLang);
+  const savedLangName = languageName(savedLang);
+
+  mismatchBannerEl.innerHTML = `
+    <div class="lpv-mismatch-content">
+      <span class="lpv-mismatch-icon">⚠️</span>
+      <span class="lpv-mismatch-text">${t('l2Mismatch', [subLangName, savedLangName])}</span>
+    </div>
+    <div class="lpv-mismatch-actions">
+      <button class="lpv-mismatch-switch-btn">${t('l2MismatchSwitch', [subLangName])}</button>
+      <button class="lpv-mismatch-dismiss-btn">${t('close')}</button>
+    </div>
+  `;
+
+  mismatchBannerEl.querySelector('.lpv-mismatch-switch-btn').addEventListener('click', () => {
+    onL2Change(subLang);
+  });
+  mismatchBannerEl.querySelector('.lpv-mismatch-dismiss-btn').addEventListener('click', () => {
+    hideL2MismatchBanner();
+  });
+
+  mismatchBannerEl.style.display = 'block';
+}
+
+function hideL2MismatchBanner() {
+  if (mismatchBannerEl) {
+    mismatchBannerEl.style.display = 'none';
+  }
 }
 
 // ── Video Integration ────────────────────────────────────────────────────
@@ -219,7 +275,7 @@ function renderTranscript(loadingL2) {
     panelContent,
     STATE.cues,
     STATE.activeCueIdx,
-    detectedL2Code,
+    savedL2Code,
     L1_CODE,
     seekTo,
     loadingL2,
@@ -286,7 +342,7 @@ async function fetchAndParseSubtitles(url) {
   const isDisneySegment = isDisneyPlus && /\.vtt(\?|$)/i.test(url);
   if (!isDisneySegment) {
     STATE.cues = [];
-    renderTranscript(detectedL2Code);
+    renderTranscript(savedL2Code);
   }
   updateStatus(t('loadingSubtitles'));
 
@@ -326,10 +382,11 @@ async function fetchAndParseSubtitles(url) {
     trace('PARSE', `${cues.length} cues parsed from subtitle text`);
 
     // Try to detect language from subtitle content
-    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
+    tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
+    checkL2Mismatch();
 
     if (cues.length === 0) {
-      mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
+      mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
     } else {
       STATE.activeCueIdx = -1;
       renderTranscript();
@@ -362,19 +419,23 @@ function getLangEntry(code) {
 }
 
 /** Get a readable language name for display in the dropdown.
- *  Uses translations from the monorepo's translations.csv (lang.* keys). */
+ *  Uses translations from the monorepo's translations.csv (lang.* keys),
+ *  resolved against the extension's selected L1 (UI language), not the browser's. */
 function languageName(code) {
   const entry = getLangEntry(code);
   if (!entry) return code.toUpperCase();
 
-  // Get Chrome UI language (e.g., 'fr-FR', 'zh_CN', 'en-US')
-  let uiLang = 'en';
-  try { uiLang = chrome.i18n.getUILanguage(); } catch {}
+  // Use the extension's selected L1, not the browser's UI language
+  const uiLang = L1_CODE;
+  const chromeLocale = CSV_TO_CHROME_LOCALE[uiLang] || uiLang;
 
-  // Direct match
+  // Direct match via Chrome locale key (e.g., zh_CN, fr, ja)
+  if (entry[chromeLocale]) return entry[chromeLocale];
+
+  // Try the raw CSV code (e.g., zh-Hans)
   if (entry[uiLang]) return entry[uiLang];
 
-  // Try stripping region suffix (fr-FR → fr, en-US → en, zh-Hans-CN → zh-Hans)
+  // Try stripping region suffix
   const bare = uiLang.replace(/[-_][A-Z]{2}$/i, '');
   if (bare !== uiLang && entry[bare]) return entry[bare];
 
@@ -627,10 +688,10 @@ async function fetchYTTrack(track) {
     trace('PARSE', `${cues.length} YouTube cues parsed`);
 
     if (track.languageCode) {
-      detectedL2Code = track.languageCode.split('-')[0];
-      if (l2SelectEl) l2SelectEl.value = detectedL2Code;
+      detectedSubLang = track.languageCode.split('-')[0];
     }
-    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
+    tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
+    checkL2Mismatch();
 
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
@@ -687,9 +748,9 @@ async function loadYouTubeSubtitles() {
 
   populateL2Selector();
 
-  // Pick best track: prefer manual matching detected L2
+  // Pick best track: prefer manual matching saved L2
   let best = null;
-  const l2Matches = tracks.filter(t => t.languageCode === detectedL2Code || t.languageCode?.startsWith(detectedL2Code));
+  const l2Matches = tracks.filter(t => t.languageCode === savedL2Code || t.languageCode?.startsWith(savedL2Code));
   if (l2Matches.length > 0) {
     best = l2Matches.find(t => t.kind !== 'asr') || l2Matches[0];
   }
@@ -717,7 +778,7 @@ function populateL2Selector() {
     const opt = document.createElement('option');
     opt.value = code;
     opt.textContent = languageName(code);
-    if (code === detectedL2Code) opt.selected = true;
+    if (code === savedL2Code) opt.selected = true;
     popularGroup.appendChild(opt);
   }
   l2SelectEl.appendChild(popularGroup);
@@ -729,7 +790,7 @@ function populateL2Selector() {
     const opt = document.createElement('option');
     opt.value = code;
     opt.textContent = languageName(code);
-    if (code === detectedL2Code) opt.selected = true;
+    if (code === savedL2Code) opt.selected = true;
     restGroup.appendChild(opt);
   }
   l2SelectEl.appendChild(restGroup);
@@ -807,6 +868,10 @@ async function onL1Change(newCode) {
   // Refresh all static UI labels that were set during createPanelUI()
   refreshUILabels();
 
+  // Repopulate pickers so L2 language names reflect the new UI language
+  populateL1Selector();
+  populateL2Selector();
+
   log('L1 changed to:', newCode);
   // Re-render transcript with new L1 (re-triggers translation with new l1Code)
   renderTranscript();
@@ -817,8 +882,8 @@ async function loadSavedLanguagePreferences() {
   try {
     const result = await chrome.storage.local.get(['l2Language', 'l1Language']);
     if (result.l2Language && SUPPORTED_L2S.includes(result.l2Language)) {
-      detectedL2Code = result.l2Language;
-      log('Loaded saved L2 preference:', detectedL2Code);
+      savedL2Code = result.l2Language;
+      log('Loaded saved L2 preference:', savedL2Code);
     }
     if (result.l1Language && UI_LANGUAGES.includes(result.l1Language)) {
       L1_CODE = result.l1Language;
@@ -829,8 +894,10 @@ async function loadSavedLanguagePreferences() {
 
 /** Handle L2 language change from the dropdown */
 async function onL2Change(newCode) {
-  if (newCode === detectedL2Code) return;
-  detectedL2Code = newCode;
+  if (newCode === savedL2Code) return;
+  savedL2Code = newCode;
+  hideL2MismatchBanner();
+  if (l2SelectEl) l2SelectEl.value = newCode;
 
   // Persist user preference
   try {
@@ -865,7 +932,7 @@ async function onL2Change(newCode) {
     const best = ytCaptionTracks.find(t => t.kind !== 'asr') || ytCaptionTracks[0];
     if (best) {
       await fetchYTTrack(best);
-      detectedL2Code = newCode;
+      savedL2Code = newCode;
       renderTranscript();
       return;
     }
@@ -978,7 +1045,7 @@ function createPanelUI() {
   STATE.panelReady = true;
 
   // Initial empty render
-  mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
+  mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
 }
 
 /** Refresh all static UI labels after a locale change.
@@ -1178,11 +1245,12 @@ async function loadNetflixTrackForLanguage(langCode) {
     log('Netflix parsed', cues.length, 'cues');
 
     STATE.cues = cues;
-    detectedL2Code = track.languageCode || detectedL2Code;
-    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
+    detectedSubLang = track.languageCode || detectedSubLang;
+    tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
+    checkL2Mismatch();
 
-    if (l2SelectEl && detectedL2Code) {
-      l2SelectEl.value = detectedL2Code;
+    if (l2SelectEl && savedL2Code) {
+      l2SelectEl.value = savedL2Code;
     }
 
     if (cues.length > 0) {
@@ -1233,7 +1301,7 @@ async function handleNetflixSubs(tracks) {
     await loadNetflixTrackForLanguage(activeLang);
   } else {
     // Fallback: save preference then first available
-    const userL2 = l2SelectEl?.value || detectedL2Code;
+    const userL2 = l2SelectEl?.value || savedL2Code;
     const langKeys = Object.keys(subs);
     const bestKey = langKeys.find(k => subs[k].languageCode === userL2)
       || langKeys.find(k => subs[k].languageCode?.startsWith?.(userL2?.split('-')[0]))
@@ -1301,7 +1369,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({
       cuesCount: STATE.cues.length,
       panelVisible: STATE.panelVisible,
-      detectedL2Code,
+      savedL2Code,
     });
     return true;
   }
@@ -1351,8 +1419,6 @@ function setupKeyboard() {
 
 async function init() {
   log('Content script loaded');
-
-  detectL2Code();
 
   // Netflix: inject the JSON.parse monkeypatch IMMEDIATELY, before waiting
   // for the player. Netflix loads its playback manifest early in the page

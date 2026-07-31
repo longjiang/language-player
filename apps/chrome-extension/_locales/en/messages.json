@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Loading..."
   },
+  "l2Mismatch": {
+    "message": "The subtitle you selected from the video player is in $detectedLang$, but your target language (L2) in Language Player is set to $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Set my L2 to $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Looking up $word$…",
     "placeholders": {

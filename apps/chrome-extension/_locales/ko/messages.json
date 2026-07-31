@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "로딩 중..."
   },
+  "l2Mismatch": {
+    "message": "비디오 플레이어에서 선택한 자막은 $detectedLang$이지만 Language Player의 학습 언어(L2)는 $savedLang$(으)로 설정되어 있습니다.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "내 L2를 $detectedLang$(으)로 설정",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$ 찾는 중…",
     "placeholders": {

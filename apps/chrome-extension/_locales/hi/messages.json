@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "लोड हो रहा है..."
   },
+  "l2Mismatch": {
+    "message": "आपके द्वारा वीडियो प्लेयर में चुने गए उपशीर्षक $detectedLang$ में हैं, लेकिन Language Player में आपकी लक्ष्य भाषा (L2) $savedLang$ पर सेट है।",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "मेरी L2 को $detectedLang$ पर सेट करें",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "$word$ खोज रहे हैं…",
     "placeholders": {

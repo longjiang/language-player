@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Carregando..."
   },
+  "l2Mismatch": {
+    "message": "As legendas que você selecionou no player de vídeo estão em $detectedLang$, mas seu idioma alvo (L2) no Language Player está definido como $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Definir meu L2 como $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Procurando $word$…",
     "placeholders": {

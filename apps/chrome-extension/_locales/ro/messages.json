@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Se încarcă..."
   },
+  "l2Mismatch": {
+    "message": "Subtitrările pe care le-ați selectat din playerul video sunt în $detectedLang$, dar limba țintă (L2) în Language Player este setată pe $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Setează L2-ul meu la $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Se caută $word$…",
     "placeholders": {

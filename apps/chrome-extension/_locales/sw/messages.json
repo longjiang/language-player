@@ -44,6 +44,28 @@
   "loadingSubtitles": {
     "message": "Inapakia..."
   },
+  "l2Mismatch": {
+    "message": "Manuku uliyochagua kutoka kwa kicheza video yako katika $detectedLang$, lakini lugha yako lengwa (L2) katika Language Player imewekwa kuwa $savedLang$.",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      },
+      "savedLang": {
+        "content": "$2",
+        "example": "French"
+      }
+    }
+  },
+  "l2MismatchSwitch": {
+    "message": "Weka L2 yangu kuwa $detectedLang$",
+    "placeholders": {
+      "detectedLang": {
+        "content": "$1",
+        "example": "Japanese"
+      }
+    }
+  },
   "lookingUpWord": {
     "message": "Inatafuta $word$…",
     "placeholders": {
