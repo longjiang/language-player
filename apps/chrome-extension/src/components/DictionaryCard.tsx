@@ -105,7 +105,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
       } else {
         const allForms = await fetchInflectedForms(entry.head, l2Code);
         const youtubeId = pageUrl ? extractYoutubeId(pageUrl) : undefined;
-        saveWord(l2Code, {
+        const record = {
           id: entry.id,
           forms: allForms,
           date: Date.now(),
@@ -127,7 +127,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
               videoTitle,
             },
           }],
-        });
+        };
+        log('[SAVE] Saving word:', JSON.stringify(record, null, 2));
+        saveWord(l2Code, record);
       }
     } finally {
       setSaving(false);

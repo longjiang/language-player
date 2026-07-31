@@ -10,7 +10,7 @@
 
 import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
 import { getAuthState } from './auth';
-import { logwarn } from './i18n';
+import { log, logwarn } from './i18n';
 
 const API_BASE = 'https://pythonvps.zerotohero.ca';
 
@@ -48,15 +48,17 @@ export async function syncSavedWords(store: SavedLexicalItemStore): Promise<void
   const auth = await getAuthState();
   if (!auth) return;
 
+  const payload = { saved_words: JSON.stringify(store) };
+  log('[SAVE] Syncing to server — word count by L2:',
+    Object.fromEntries(Object.entries(store).map(([k, v]) => [k, v.length])));
+
   const res = await fetch(`${API_BASE}/user-data/sync`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${auth.token}`,
     },
-    body: JSON.stringify({
-      saved_words: JSON.stringify(store),
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

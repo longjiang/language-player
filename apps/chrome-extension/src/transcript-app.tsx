@@ -542,6 +542,7 @@ Text: ${cue.text}`;
         )}
       </div>
 
+      {/* Dictionary popup + AI explain — renders above bottom bar */}
       {selectedToken && (
         <div className="lpv-dict-overlay">
           <DictionaryCard
@@ -557,7 +558,6 @@ Text: ${cue.text}`;
         </div>
       )}
 
-      {/* Line-level AI explain overlay */}
       {explainCue && (
         <div className="lpv-dict-overlay">
           <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
