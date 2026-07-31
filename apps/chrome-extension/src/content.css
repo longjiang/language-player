@@ -566,7 +566,7 @@ body.lpv-panel-open disney-web-player-ui {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  background: rgb(14, 16, 27);
+  background: rgb(18, 21, 32);
   border-top: 1px solid rgba(0, 168, 225, 0.25);
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
   max-height: 50vh;
@@ -574,10 +574,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-dict-card {
-  margin: 8px 16px;
-  border: 1px solid rgba(0, 168, 225, 0.3);
-  border-radius: 8px;
-  background: rgb(22, 25, 38);
+  /* No border, no margin — flush with overlay */
   overflow: hidden;
 }
 
@@ -585,9 +582,8 @@ body.lpv-panel-open disney-web-player-ui {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 10px 12px;
-  background: rgba(0, 168, 225, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .lpv-dict-card-header-left {
@@ -602,55 +598,24 @@ body.lpv-panel-open disney-web-player-ui {
   flex-shrink: 0;
 }
 
-.lpv-save-btn {
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #00A8E1;
-  background: transparent;
-  border: 1px solid rgba(0, 168, 225, 0.4);
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
-}
-
-.lpv-save-btn:hover {
-  background: rgba(0, 168, 225, 0.15);
-}
-
-.lpv-save-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.lpv-save-btn-saved {
-  color: #ffc107;
-  border-color: rgba(255, 193, 7, 0.5);
-  background: rgba(255, 193, 7, 0.1);
-}
-
-.lpv-save-btn-saved:hover {
-  background: rgba(255, 193, 7, 0.2);
-}
-
 .lpv-explain-btn {
   display: block;
   width: 100%;
-  padding: 4px 10px;
+  padding: 8px 16px;
   font-size: 12px;
   font-weight: 600;
+  text-align: center;
   color: #a78bfa;
-  background: transparent;
-  border: 1px solid rgba(167, 139, 250, 0.4);
-  border-radius: 4px;
+  background: rgba(167, 139, 250, 0.06);
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
 
 .lpv-explain-btn:hover {
-  background: rgba(167, 139, 250, 0.15);
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
 }
 
 .lpv-explain-btn:disabled {
@@ -659,18 +624,18 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-explain-btn-active {
-  background: rgba(167, 139, 250, 0.15);
+  background: rgba(167, 139, 250, 0.1);
+  color: #c4b5fd;
 }
 
 .lpv-explain-bar {
-  padding: 6px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  /* Bar merged into button — no extra padding */
 }
 
 /* ── AI Explanation Section ─────────────────────────────────────────── */
 
 .lpv-explain-section {
-  padding: 10px 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(167, 139, 250, 0.04);
 }
@@ -830,13 +795,12 @@ body.lpv-panel-open disney-web-player-ui {
 .lpv-dict-card-body {
   max-height: 300px;
   overflow-y: auto;
-  padding: 8px 0;
 }
 
 .lpv-dict-loading,
 .lpv-dict-error,
 .lpv-dict-empty {
-  padding: 16px 12px;
+  padding: 16px;
   font-size: 13px;
   color: #888;
   text-align: center;

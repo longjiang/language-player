@@ -338,18 +338,15 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </div>
       </div>
 
-      {/* Explain button — separate row below header, matching popup dictionary layout */}
-      {isPro && (
-        <div className="lpv-explain-bar">
-          <button
-            onClick={handleExplain}
-            disabled={explainLoading}
-            className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
-            title={t('explainPro')}
-          >
-            {explainLoading ? '…' : t('explain')}
-          </button>
-        </div>
+      {/* Explain button — hidden once clicked (spinner/result replaces it) */}
+      {isPro && !showExplain && (
+        <button
+          onClick={handleExplain}
+          className="lpv-explain-btn"
+          title={t('explainPro')}
+        >
+          {t('explain')}
+        </button>
       )}
 
       {/* Card body */}
