@@ -2,7 +2,7 @@
 
 import { useT } from '@/hooks/use-t';
 import {
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
 import type { TocItem } from '@/components/reader/epub-upload';
 
@@ -10,6 +10,8 @@ interface EpubChapterSidebarProps {
   toc: TocItem[];
   currentChapterHref: string | null;
   loading: boolean;
+  /** Shown on narrow screens to close the sidebar overlay sheet. */
+  onClose?: () => void;
   onLoadChapter: (href: string) => void;
   onPrevChapter: () => void;
   onNextChapter: () => void;
@@ -62,6 +64,7 @@ export function EpubChapterSidebar({
   toc,
   currentChapterHref,
   loading,
+  onClose,
   onLoadChapter,
   onPrevChapter,
   onNextChapter,
@@ -90,6 +93,15 @@ export function EpubChapterSidebar({
           {t('action.next_chapter')}
           <ChevronRight className="h-3.5 w-3.5" />
         </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="ml-1 flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label={t('action.close')}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {/* TOC */}
