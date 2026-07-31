@@ -271,6 +271,9 @@ function renderTranscript(loadingL2) {
   if (!panelContent) return;
   const cueCount = STATE.cues.length;
   trace('REACT', `mountTranscript(${cueCount} cues, activeIdx=${STATE.activeCueIdx})`);
+  // Extract video title — strip platform suffixes like " | Prime Video", " - YouTube"
+  const rawTitle = document.title || '';
+  const videoTitle = rawTitle.replace(/\s*[|\\-]\s*(Prime Video|YouTube|Netflix|Disney\+|Hulu|Max|HBO Max).*$/i, '').trim() || rawTitle;
   mountTranscript(
     panelContent,
     STATE.cues,
@@ -280,6 +283,8 @@ function renderTranscript(loadingL2) {
     seekTo,
     loadingL2,
     getLocaleVersion(),
+    videoTitle,
+    location.href,
   );
 }
 
