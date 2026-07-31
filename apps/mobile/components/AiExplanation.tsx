@@ -112,7 +112,7 @@ export function AiExplanation({ word, entryFound, autoLoad = false }: AiExplanat
           )}
           {!loading && (
             <Pressable
-              onPress={() => stream(buildPrompt())}
+              onPress={() => stream(buildPrompt(), { regenerate: true })}
               className="mt-3 self-start rounded-full bg-muted px-3 py-1"
             >
               <Text className="text-xs text-foreground">{t('action.regenerate')}</Text>
