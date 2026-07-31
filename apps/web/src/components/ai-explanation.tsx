@@ -82,9 +82,9 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
     if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
-      stream(buildPrompt());
+      fetchExplanation();
     }
-  }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, stream, buildPrompt]);
+  }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, fetchExplanation]);
 
   // Pro gate — free user (skip the gate while still loading — show the button optimistically)
   if (subLoaded && !isPro && (showAi || autoLoad)) {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
+import { firstGloss } from '@langplayer/shared';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries } from '@/lib/dictionary-cache';
@@ -155,9 +156,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       .then((r) => r.json())
       .then((data) => {
         const results = (data.results ?? []) as DictionaryEntry[];
-        const firstDef = results[0]?.definitions?.[0] ?? null;
-        _l1DefCache.set(cacheKey, firstDef ?? '');
-        return firstDef;
+        const gloss = results[0]?.definitions ? firstGloss(results[0].definitions) : null;
+        _l1DefCache.set(cacheKey, gloss ?? '');
+        return gloss;
       })
       .catch(() => null)
       .finally(() => { _l1DefInflight.delete(cacheKey); });
@@ -194,17 +195,17 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     return () => { cancelled = true; };
   }, [token.text, useTraditional]);
 
-  // ── First cached entry's first definition — shared by quick gloss and interlinear ──
+  // ── First gloss segment — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
     for (const lemma of token.lemmas) {
       const entries = getCachedEntries(l2Code, lemma.lemma);
       if (entries && entries.length > 0 && entries[0]!.definitions.length > 0) {
-        return entries[0]!.definitions[0]!;
+        return firstGloss(entries[0]!.definitions);
       }
     }
     const surfaceEntries = getCachedEntries(l2Code, token.text);
     if (surfaceEntries && surfaceEntries.length > 0 && surfaceEntries[0]!.definitions.length > 0) {
-      return surfaceEntries[0]!.definitions[0]!;
+      return firstGloss(surfaceEntries[0]!.definitions);
     }
     return null;
   }, [l2Code, token.text, token.lemmas]);
