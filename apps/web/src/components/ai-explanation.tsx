@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
@@ -11,6 +9,7 @@ import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
+import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
 
 interface AiExplanationProps {
@@ -73,7 +72,9 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     const examplesPrompt = cleanContext
       ? t('prompt.explain_word_examples_context')
       : t('prompt.explain_word_examples');
-    return `${prompt}\n\n${examplesPrompt}`;
+    // L2 strings are backticked so they render as interactive tokenized text
+    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+    return `${prompt}\n\n${examplesPrompt}\n\n${ticksPrompt}`;
   };
 
   const fetchExplanation = useCallback(() => {
@@ -173,7 +174,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
           {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+          <MarkdownExplanation text={explanation} l2Code={l2.code} streaming={loading} />
         </div>
         {error && (
           <div className="mt-2 flex items-center gap-2 text-xs text-red-600 dark:text-red-400">

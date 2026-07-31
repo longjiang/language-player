@@ -917,6 +917,7 @@
         "explain_context_label": "Kontekst",
         "explain_morphology": "Podaj wymowę i morfologię (lub etymologię, jeśli to stosowne). Jeśli odmienione, podaj lemat i odmianę; w przeciwnym razie nie wspominaj o odmianie ani lemacie.",
         "explain_text_label": "Tekst",
+        "explain_ticks": "Umieszczaj każde słowo, frazę lub całe zdanie w języku {l2Name} w pojedynczych apostrofach wstecznych (`). Umieszczaj całe zdania przykładowe jako jeden blok, np. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, a nie tylko słowo docelowe. Nie zagnieżdżaj apostrofów.",
         "explain_word": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\". Podaj jego wymowę. Jeśli jest odmienione lub koniugowane, podaj formę słownikową i odmianę; w przeciwnym razie nie wspominaj o odmianie.",
         "explain_word_context": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\" w zdaniu: \"{context}\". Podaj jego wymowę. Jeśli jest odmienione lub koniugowane, podaj formę słownikową i odmianę; w przeciwnym razie nie wspominaj o odmianie.",
         "explain_word_context_form": "Wyjaśnij w języku {l1Name}, co oznacza słowo {l2Name} \"{word}\" (forma odmieniona: {contextForm}) w zdaniu: \"{context}\". Podaj jego wymowę. Podaj formę słownikową i odmianę.",

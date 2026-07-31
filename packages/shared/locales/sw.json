@@ -917,6 +917,7 @@
         "explain_context_label": "Muktadha",
         "explain_morphology": "Toa matamshi yake na mofolojia (au etimolojia ikiwa inafaa). Ikiwa imenyambulika, toa lemma na unyambulishaji wake; vinginevyo, usitaje unyambulishaji wala lemma.",
         "explain_text_label": "Maandishi",
+        "explain_ticks": "Funga kila neno, kirai, au sentensi nzima ya {l2Name} kwa backtick moja (`). Funga sentensi za mfano nzima kama kizuizi kimoja, k.m. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, si neno lengwa pekee. Usiweke backtick ndani ya backtick.",
         "explain_word": "Eleza kwa {l1Name} maana ya neno la {l2Name} \"{word}\". Toa matamshi yake. Ikiwa limenyambulika au limenyambuliwa, taja umbo la kamusi na unyambulishaji; vinginevyo, usitaje unyambulishaji.",
         "explain_word_context": "Eleza kwa {l1Name} maana ya neno la {l2Name} \"{word}\" katika kifungu: \"{context}\". Toa matamshi yake. Ikiwa limenyambulika au limenyambuliwa, taja umbo la kamusi na unyambulishaji; vinginevyo, usitaje unyambulishaji.",
         "explain_word_context_form": "Eleza kwa {l1Name} maana ya neno la {l2Name} \"{word}\" (umbo lililonyambulika: {contextForm}) katika kifungu: \"{context}\". Toa matamshi yake. Taja umbo la kamusi na unyambulishaji.",

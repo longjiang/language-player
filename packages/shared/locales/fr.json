@@ -917,6 +917,7 @@
         "explain_context_label": "Con texte",
         "explain_morphology": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.",
         "explain_text_label": "Texte",
+        "explain_ticks": "Encadre chaque mot, expression ou phrase entière en {l2Name} par des accents graves simples (`). Encadre les phrases d'exemple entières comme un seul bloc, p. ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, pas seulement le mot cible. N'imbrique pas les accents graves.",
         "explain_word": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
         "explain_word_context": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" dans la phrase : \"{context}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
         "explain_word_context_form": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans la phrase : \"{context}\". Donnez sa prononciation. Mentionnez sa forme dictionnairique et la flexion.",

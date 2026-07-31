@@ -917,6 +917,7 @@
         "explain_context_label": "Kon teksti",
         "explain_morphology": "Anna sen ääntämys ja morfologia (tai etymologia tarvittaessa). Jos taivutettu, anna lemma ja taivutus; muuten älä mainitse taivutusta tai lemmaa.",
         "explain_text_label": "Teksti",
+        "explain_ticks": "Merkitse jokainen {l2Name}-kielen sana, ilmaus tai kokonainen lause yksinkertaisilla takakenoheittomerkeillä (`). Merkitse kokonaiset esimerkkilauseet yhtenä lohkona, esim. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, ei vain kohdesanaa. Älä sisäkkäistä merkkejä.",
         "explain_word": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" tarkoittaa. Anna sen ääntämys. Jos se on taivutettu tai konjugoitu, mainitse sen sanakirjamuoto ja taivutus; muuten älä mainitse taivutusta.",
         "explain_word_context": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" tarkoittaa lauseessa: \"{context}\". Anna sen ääntämys. Jos se on taivutettu tai konjugoitu, mainitse sen sanakirjamuoto ja taivutus; muuten älä mainitse taivutusta.",
         "explain_word_context_form": "Selitä kielellä {l1Name}, mitä {l2Name}-sana \"{word}\" (taivutusmuoto: {contextForm}) tarkoittaa lauseessa: \"{context}\". Anna sen ääntämys. Mainitse sen sanakirjamuoto ja taivutus.",

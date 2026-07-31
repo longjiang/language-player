@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useCallback, type ReactNode } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
+import { languageName } from '@/lib/language-data';
 import { TokenizedText } from '@/components/tokenized-text';
+import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { toast } from 'sonner';
@@ -86,8 +86,9 @@ export function TextActionMenu({
     const header = t('prompt.explain_block_header', { l2Code });
     const item1 = t('prompt.explain_block_item1', { l1Name });
     const item2 = t('prompt.explain_block_item2');
+    const item3 = t('prompt.explain_ticks', { l2Name: languageName(l2Code, effectiveL1) });
     const textLabel = t('prompt.explain_text_label');
-    const lines = [header, `1. ${item1}`, `2. ${item2}`];
+    const lines = [header, `1. ${item1}`, `2. ${item2}`, `3. ${item3}`];
     if (context) {
       const ctxLabel = t('prompt.explain_context_label');
       lines.push('', `${ctxLabel}: ${context}`);
@@ -95,7 +96,7 @@ export function TextActionMenu({
     lines.push('', `${textLabel}: ${text}`);
     const prompt = lines.join('\n');
     streamExplain(prompt);
-  }, [text, l2Code, context, l1.name, t, streamExplain]);
+  }, [text, l2Code, effectiveL1, context, l1.name, t, streamExplain]);
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');
@@ -195,7 +196,7 @@ export function TextActionMenu({
                   <p className="text-sm text-destructive">{explainError}</p>
                 ) : (
                   <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{explainText || '_'}</ReactMarkdown>
+                    <MarkdownExplanation text={explainText || '_'} l2Code={l2Code} streaming={explainLoading} />
                   </div>
                 )}
                 {explainError && explainText && (

@@ -917,6 +917,7 @@
         "explain_context_label": "Context",
         "explain_morphology": "Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma.",
         "explain_text_label": "Text",
+        "explain_ticks": "Wrap every {l2Name} word, phrase, or whole sentence in single backticks (`). Wrap entire example sentences as one backticked span, e.g. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, not just the target word. Never nest backticks.",
         "explain_word": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means. Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
         "explain_word_context": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means in the phrase: \"{context}\". Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
         "explain_word_context_form": "Explain using {l1Name}, what the {l2Name} word \"{word}\" (inflected form: {contextForm}) means in the phrase: \"{context}\". Give its pronunciation. Mention its dictionary form and the inflection.",
