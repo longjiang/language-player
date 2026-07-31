@@ -165,10 +165,10 @@ export function DictionaryPopup({
     <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { setDialogOpen(false); setTimeout(onClose, 150); } }}>
       <DialogContent
         showCloseButton={false}
-        className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4"
+        className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4 gap-1"
       >
         {/* Header */}
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-1 flex items-center justify-between">
           <div>
             <span className="text-xl font-bold">{token.text}</span>
             {token.pronunciation && (
