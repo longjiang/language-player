@@ -497,6 +497,48 @@ Text: ${cue.text}`;
         ))}
       </div>
 
+      {/* Dictionary popup + AI explain — renders above bottom bar */}
+      {selectedToken && (
+        <div className="lpv-dict-overlay">
+          <DictionaryCard
+            token={selectedToken}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            contextText={selectedCue?.text}
+            cueStartTime={selectedCue?.start}
+            videoTitle={videoTitle}
+            pageUrl={pageUrl}
+            onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
+          />
+        </div>
+      )}
+
+      {explainCue && (
+        <div className="lpv-dict-overlay">
+          <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lpv-dict-card-header">
+              <div className="lpv-dict-card-header-left">
+                <span className="lpv-dict-card-word">{t('explainTitle')}</span>
+              </div>
+              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}><X size={14} /></button>
+            </div>
+            <div className="lpv-dict-card-body">
+              {explainLoading && (
+                <div className="lpv-explain-loading"><span className="lpv-spinner" /></div>
+              )}
+              {explainError && (
+                <div className="lpv-explain-error">{explainError}</div>
+              )}
+              {explainText && (
+                <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
+                  <Markdown text={explainText} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom bar — phonetics | translation | text size | progress */}
       <div className="lpv-bottom-bar">
         <label className="lpv-translate-switch" title={t('showPhonetics') || 'Show Phonetics'}>
@@ -543,48 +585,6 @@ Text: ${cue.text}`;
           </span>
         )}
       </div>
-
-      {/* Dictionary popup + AI explain — renders above bottom bar */}
-      {selectedToken && (
-        <div className="lpv-dict-overlay">
-          <DictionaryCard
-            token={selectedToken}
-            l1Code={l1Code}
-            l2Code={l2Code}
-            contextText={selectedCue?.text}
-            cueStartTime={selectedCue?.start}
-            videoTitle={videoTitle}
-            pageUrl={pageUrl}
-            onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
-          />
-        </div>
-      )}
-
-      {explainCue && (
-        <div className="lpv-dict-overlay">
-          <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
-            <div className="lpv-dict-card-header">
-              <div className="lpv-dict-card-header-left">
-                <span className="lpv-dict-card-word">{t('explainTitle')}</span>
-              </div>
-              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}><X size={14} /></button>
-            </div>
-            <div className="lpv-dict-card-body">
-              {explainLoading && (
-                <div className="lpv-explain-loading"><span className="lpv-spinner" /></div>
-              )}
-              {explainError && (
-                <div className="lpv-explain-error">{explainError}</div>
-              )}
-              {explainText && (
-                <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
-                  <Markdown text={explainText} />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
