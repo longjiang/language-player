@@ -143,8 +143,26 @@ export default function ReviewPage() {
   // ── Derive entry for the current card from the reactive cache ──
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.word.forms[0] || currentDueCard?.word.id || '';
-  const currentEntry = useEntryCache(l2Code, wordForm)
+  const cachedEntry = useEntryCache(l2Code, wordForm)
     ?.find((e) => e.id === currentDueCard?.word.id) ?? null;
+
+  // If no dictionary entry in cache, fall back to LLM-generated entry on the saved word
+  const currentEntry = useMemo((): DictionaryEntry | null => {
+    if (cachedEntry) return cachedEntry;
+    const llmEntry = currentDueCard?.word?.llmEntry;
+    if (!llmEntry) return null;
+    // Construct a DictionaryEntry-compatible shape from the LLM entry
+    return {
+      ...llmEntry,
+      kind: 'dictionary' as const,
+      dictionary: { id: 'llm', name: 'AI-Generated', version: '1' },
+      id: currentDueCard!.word.id,
+      match_type: null,
+      levels: null,
+      source: 'llm',
+      studyMaterials: null,
+    } as DictionaryEntry;
+  }, [cachedEntry, currentDueCard?.word?.llmEntry, currentDueCard?.word?.id]);
 
   // ── Merge due cards with the reactive entry ──
   const cards: ReviewCard[] = useMemo(
