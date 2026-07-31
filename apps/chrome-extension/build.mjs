@@ -2,7 +2,6 @@
  * Build script for the Language Player browser extension.
  *
  * Uses esbuild to bundle React + shared packages into a single content script.
- * Auto-bumps the patch version in manifest.json on each build.
  * Run from the monorepo root:
  *   node apps/chrome-extension/build.mjs
  *
@@ -20,24 +19,6 @@ const root = resolve(__dirname, '../..');
 const manifestPath = resolve(__dirname, 'manifest.json');
 const outDir = resolve(__dirname, 'dist');
 mkdirSync(outDir, { recursive: true });
-
-// ── Version bump ──────────────────────────────────────────────────────────
-// Conventions:
-//   - Major: breaking API changes (manual bump)
-//   - Minor: new features (manual bump)
-//   - Patch:  auto-bumped on every build (fixes, refactors, bundle changes)
-console.log('[build] Bumping patch version...');
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-const parts = manifest.version.split('.').map(Number);
-if (parts.length !== 3 || parts.some(isNaN)) {
-  console.error(`[build] Invalid version format in manifest.json: "${manifest.version}"`);
-  process.exit(1);
-}
-parts[2] += 1;
-const newVersion = parts.join('.');
-manifest.version = newVersion;
-writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-console.log(`[build] Version → ${newVersion}`);
 
 // Step 1: Generate language name translations from monorepo CSV
 console.log('[build] Generating language name translations...');
