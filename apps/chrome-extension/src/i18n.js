@@ -77,13 +77,51 @@ export async function setLocale(localeCode) {
 
 /**
  * Get a translated message by key.
- * Uses chrome.i18n.getMessage() for proper placeholder resolution
- * (handles both named $word$ and positional $1$ placeholders).
- * Caches runtime-loaded messages but delegates to Chrome for substitution.
+ *
+ * Priority:
+ *   1. runtimeMessages cache — loaded by setLocale() for the user-selected
+ *      extension language. This is the CORRECT language to show.
+ *   2. chrome.i18n.getMessage() — fallback using the browser's UI language.
+ *      Only used when runtimeMessages hasn't been loaded yet (e.g., before
+ *      setLocale() completes) or when a key is missing from the loaded locale.
+ *
+ * Placeholder substitution:
+ *   - Named placeholders ($word$, $lang$, etc.) are resolved using the
+ *     placeholders config from the message entry (generated from en template).
+ *   - Positional $1$, $2$ are used as fallback when no placeholders config exists.
  */
 export function t(key, substitutions) {
-  // Always prefer Chrome's built-in i18n which handles all placeholder types
-  // ($word$, $1$, etc.) and placeholders config correctly.
+  // 1. Runtime cache first — has the user-selected locale, NOT the browser's UI language.
+  //    chrome.i18n.getMessage() only knows about the browser UI language and
+  //    default_locale ("en"), so it must NOT take priority over runtimeMessages.
+  if (runtimeMessages && runtimeMessages[key]) {
+    const entry = runtimeMessages[key];
+    let msg = entry.message;
+    if (substitutions && substitutions.length > 0) {
+      const placeholders = entry.placeholders;
+      if (placeholders) {
+        // Named placeholders: { word: { content: "$1" } } — map names to substitution indices
+        for (const [name, config] of Object.entries(placeholders)) {
+          const match = config.content?.match(/^\$(\d+)$/);
+          if (match) {
+            const idx = parseInt(match[1], 10) - 1; // "$1" → index 0
+            if (idx >= 0 && idx < substitutions.length) {
+              msg = msg.replace(`$${name}$`, substitutions[idx]);
+            }
+          }
+        }
+      } else {
+        // Positional fallback: $1$, $2$, etc. (for messages without placeholders config)
+        substitutions.forEach((val, i) => {
+          msg = msg.replace(`$${i + 1}$`, val);
+        });
+      }
+    }
+    if (msg) return msg;
+  }
+
+  // 2. Fallback to Chrome's built-in i18n — uses browser UI language, not user-selected.
+  //    Only reached when runtimeMessages hasn't been loaded or key is missing.
   if (typeof chrome !== 'undefined' && chrome.i18n) {
     const msg = substitutions && substitutions.length
       ? chrome.i18n.getMessage(key, ...substitutions)
@@ -91,17 +129,6 @@ export function t(key, substitutions) {
     if (msg) return msg;
   }
 
-  // Fallback to runtime cache if Chrome i18n is unavailable
-  if (runtimeMessages && runtimeMessages[key]) {
-    let msg = runtimeMessages[key].message;
-    if (substitutions && substitutions.length > 0) {
-      substitutions.forEach((val, i) => {
-        msg = msg.replace(`$${i + 1}$`, val);
-      });
-    }
-    if (msg) return msg;
-  }
-
-  // Final fallback
+  // 3. Final fallback
   return key;
 }
