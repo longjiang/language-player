@@ -128,20 +128,11 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     };
   }, []);
 
-  /** Synchronous cache lookup. Enqueues if missing. */
+  /** Synchronous cache lookup. Does NOT enqueue — pure read. */
   const getTokens = useCallback((text: string, l2: string): LemmatizedToken[] | null => {
     const base = baseCode(l2);
     const cacheKey = `${base}:${text}`;
-
-    const cached = tokenCache.get(cacheKey);
-    if (cached) return cached;
-
-    // Skip if already queued or in-flight
-    if (!_queue.has(cacheKey) && !inflightMap.has(cacheKey)) {
-      _queue.add(cacheKey);
-    }
-    scheduleFlush();
-    return null;
+    return tokenCache.get(cacheKey) ?? null;
   }, []);
 
   /** Check if a text is currently queued or in-flight. */
