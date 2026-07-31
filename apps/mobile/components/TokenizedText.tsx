@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { View, Text, Platform } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { firstGloss } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -328,7 +329,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         const e = surfaceEntries[0]!;
         return {
           byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? null,
-          firstDef: e.definitions?.[0] ?? null,
+          firstDef: e.definitions ? firstGloss(e.definitions) : null,
         };
       }
       return { byeonggiText: null, firstDef: null };
@@ -336,7 +337,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     const firstEntry = entries[0]!;
     return {
       byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? null,
-      firstDef: firstEntry.definitions?.[0] ?? null,
+      firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
     };
   }, [l2Code, cacheVersion]);
   if (tokens.length > 0) {

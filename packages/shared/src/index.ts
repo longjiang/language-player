@@ -7,6 +7,7 @@ export * from './docs';
 export * from './sample-texts';
 export * from './sample-sentences';
 export * from './settings-search-keys';
+export * from './first-gloss';
 export * from './hooks/use-language-picker';
 export * from './language-data';
 export * from './transcript-scroll';
