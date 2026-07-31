@@ -45,6 +45,9 @@ export const SavedWordsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  /** True once the initial fetch completes (success or failure). Prevents
+   *  saving before we know the server state, which would overwrite all words. */
+  const [loaded, setLoaded] = useState(false);
 
   // Load saved words on mount (if logged in)
   useEffect(() => {
@@ -54,12 +57,17 @@ export const SavedWordsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (cancelled) return;
       setIsLoggedIn(!!auth);
       if (auth) {
-        const store = await fetchSavedWords();
-        if (!cancelled) {
-          setSavedWords(store);
-          setLoading(false);
+        try {
+          const store = await fetchSavedWords();
+          if (!cancelled) {
+            setSavedWords(store);
+          }
+        } catch {
+          // fetchSavedWords already logs the error; keep empty state
         }
-      } else {
+      }
+      if (!cancelled) {
+        setLoaded(true);
         setLoading(false);
       }
     })();
