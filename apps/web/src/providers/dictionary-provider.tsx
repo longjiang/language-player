@@ -74,6 +74,9 @@ interface DictionaryContextValue {
   setSidebarSource: (s: SidebarSource) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (v: boolean) => void;
+  /** Mobile (narrow screen): whether the sidebar overlay sheet is open. */
+  mobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (v: boolean) => void;
 
   // Detail view
   /** The head word of the currently viewed entry (for the search bar). */
@@ -106,6 +109,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const [cameFromSearch, setCameFromSearch] = useState(false);
   const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'saved' });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [detailHead, setDetailHead] = useState<string | null>(null);
 
   // Reload recent searches when l2 changes
@@ -119,6 +123,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setSearchedText('');
     setCameFromSearch(false);
     setSidebarSource({ kind: 'saved' });
+    setMobileSidebarOpen(false);
     setDetailHead(null);
     searchedRef.current = false;
   }, [l2.code]);
@@ -141,6 +146,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       setSearchedText('');
       setCameFromSearch(false);
       setSidebarSource({ kind: 'saved' });
+      setMobileSidebarOpen(false);
       setDetailHead(null);
     }
   }, [searchParams, pathname]);
@@ -227,6 +233,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         cameFromSearch, setCameFromSearch,
         sidebarSource, setSidebarSource,
         sidebarOpen, setSidebarOpen,
+        mobileSidebarOpen, setMobileSidebarOpen,
         detailHead, setDetailHead,
       }}
     >

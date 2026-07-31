@@ -25,6 +25,7 @@ export function PersistentSearchBar() {
     loading, detailHead,
     cameFromSearch,
     sidebarOpen, setSidebarOpen,
+    setMobileSidebarOpen,
     doSearch, handleSearch, clearSearch,
   } = useDictionaryContext();
 
@@ -121,10 +122,19 @@ export function PersistentSearchBar() {
         <span className="hidden sm:inline">{t('action.search')}</span>
       </Button>
 
-      {/* Sidebar toggle — always visible, even when collapsed */}
+      {/* Sidebar toggle — mobile: opens the slide-in sheet */}
+      <button
+        onClick={() => setMobileSidebarOpen(true)}
+        className="lg:hidden flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        aria-label={t('action.show_sidebar')}
+      >
+        <PanelRight className="h-4 w-4" />
+      </button>
+
+      {/* Sidebar toggle — desktop: collapses the persistent panel */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        className="hidden lg:flex flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         title={sidebarOpen ? t('action.hide_sidebar') : t('action.show_sidebar')}
       >
         {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
