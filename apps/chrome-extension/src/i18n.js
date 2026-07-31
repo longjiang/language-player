@@ -77,27 +77,28 @@ export async function setLocale(localeCode) {
 
 /**
  * Get a translated message by key.
- * Checks the runtime cache first (set by setLocale), falls back to
- * chrome.i18n.getMessage() which uses the browser's UI language.
+ * Uses chrome.i18n.getMessage() for proper placeholder resolution
+ * (handles both named $word$ and positional $1$ placeholders).
+ * Caches runtime-loaded messages but delegates to Chrome for substitution.
  */
 export function t(key, substitutions) {
-  // Check runtime cache first
+  // Always prefer Chrome's built-in i18n which handles all placeholder types
+  // ($word$, $1$, etc.) and placeholders config correctly.
+  if (typeof chrome !== 'undefined' && chrome.i18n) {
+    const msg = substitutions && substitutions.length
+      ? chrome.i18n.getMessage(key, ...substitutions)
+      : chrome.i18n.getMessage(key);
+    if (msg) return msg;
+  }
+
+  // Fallback to runtime cache if Chrome i18n is unavailable
   if (runtimeMessages && runtimeMessages[key]) {
     let msg = runtimeMessages[key].message;
-    // Replace $1$, $2$ etc. placeholders
     if (substitutions && substitutions.length > 0) {
       substitutions.forEach((val, i) => {
         msg = msg.replace(`$${i + 1}$`, val);
       });
     }
-    if (msg) return msg;
-  }
-
-  // Fallback to Chrome's built-in i18n
-  if (typeof chrome !== 'undefined' && chrome.i18n) {
-    const msg = substitutions && substitutions.length
-      ? chrome.i18n.getMessage(key, ...substitutions)
-      : chrome.i18n.getMessage(key);
     if (msg) return msg;
   }
 
