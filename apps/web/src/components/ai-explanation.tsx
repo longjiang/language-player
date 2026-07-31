@@ -59,13 +59,21 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // Strip trailing punctuation from context to avoid doubled periods
     const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
 
+    let prompt: string;
     if (cleanContext && contextForm && contextForm !== word) {
-      return t('prompt.explain_word_context_form', { l1Name, l2Name, word, contextForm, context: cleanContext });
+      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, word, contextForm, context: cleanContext });
     } else if (cleanContext) {
-      return t('prompt.explain_word_context', { l1Name, l2Name, word, context: cleanContext });
+      prompt = t('prompt.explain_word_context', { l1Name, l2Name, word, context: cleanContext });
     } else {
-      return t('prompt.explain_word', { l1Name, l2Name, word });
+      prompt = t('prompt.explain_word', { l1Name, l2Name, word });
     }
+
+    // Ask for two usage examples — same sense as the provided context when available,
+    // otherwise typical usage (e.g. the entry detail page has no surrounding context).
+    const examplesPrompt = cleanContext
+      ? t('prompt.explain_word_examples_context')
+      : t('prompt.explain_word_examples');
+    return `${prompt}\n\n${examplesPrompt}`;
   };
 
   const fetchExplanation = useCallback(() => {
