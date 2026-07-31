@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { LanguageSwitcher } from './language-switcher';
@@ -138,7 +137,6 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
 export function Header() {
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -165,14 +163,14 @@ export function Header() {
 
         <div className="flex-1" />
 
-        {/* Search icon */}
-        <button
-          onClick={() => router.push(`/${l1.code}/${l2.code}/search`)}
+        {/* Search icon — use Link for automatic prefetch */}
+        <Link
+          href={`/${l1.code}/${l2.code}/search`}
           className="flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           aria-label={t('title.search')}
         >
           <Search className="h-5 w-5" />
-        </button>
+        </Link>
 
         {/* Language switcher */}
         <LanguageSwitcher />

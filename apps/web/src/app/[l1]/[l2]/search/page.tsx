@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef, type FormEvent } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -8,9 +9,15 @@ import { useVideos } from '@langplayer/api-client';
 import { apiClient } from '@langplayer/api-client';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { languageName, baseCode } from '@/lib/language-data';
-import { VideoGrid } from '@/components/video/video-grid';
 import { Search, Loader2, AlertCircle, Film, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Lazy-load VideoGrid — only needed after search results come back.
+// This shaves ~170 lines of VideoCard + its sub-imports off the initial bundle.
+const VideoGrid = dynamic(
+  () => import('@/components/video/video-grid').then((mod) => ({ default: mod.VideoGrid })),
+  { ssr: false, loading: () => <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div> },
+);
 
 interface VideoTag {
   tag: string;
