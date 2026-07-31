@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
+import { languageName } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
@@ -52,25 +53,19 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Build the prompt matching Classic's chatGPTPrompt logic
   const buildPrompt = (): string => {
     const l1Name = l1.name;
-    const l2Name = l2.name;
-    const code = l2.code;
+    // L2 name in the L1 language (e.g., "Japanese" for en, "日语" for zh-Hans)
+    const l2Name = languageName(l2.code, l1.code);
 
-    let prompt: string;
-    if (contextText && contextForm && contextForm !== word) {
-      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, code, word, contextForm, context: contextText });
-    } else if (contextText) {
-      prompt = t('prompt.explain_word_context', { l1Name, l2Name, code, word, context: contextText });
+    // Strip trailing punctuation from context to avoid doubled periods
+    const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
+
+    if (cleanContext && contextForm && contextForm !== word) {
+      return t('prompt.explain_word_context_form', { l1Name, l2Name, word, contextForm, context: cleanContext });
+    } else if (cleanContext) {
+      return t('prompt.explain_word_context', { l1Name, l2Name, word, context: cleanContext });
     } else {
-      prompt = t('prompt.explain_word', { l1Name, l2Name, code, word });
+      return t('prompt.explain_word', { l1Name, l2Name, word });
     }
-
-    // Languages that don't inflect don't need the morphology prompt
-    const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
-    if (!nonInflecting.includes(code)) {
-      prompt += ' ' + t('prompt.explain_morphology');
-    }
-
-    return prompt;
   };
 
   const fetchExplanation = useCallback(() => {
