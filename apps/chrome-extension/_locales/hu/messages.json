@@ -21,10 +21,13 @@
     "message": "Másolás"
   },
   "explain": {
-    "message": "Kérdezd a mesterséges intelligenciát"
+    "message": "Hadd magyarázza el a DeepSeek"
+  },
+  "explainPro": {
+    "message": "A DeepSeek magyarázza el (Pro)"
   },
   "explainTitle": {
-    "message": "Kérdezd a mesterséges intelligenciát"
+    "message": "Hadd magyarázza el a DeepSeek"
   },
   "extensionDescription": {
     "message": "Interaktív kétnyelvű feliratok nyelvtanuláshoz a Prime Video, YouTube, Netflix, Disney+, Hulu és Max platformokon."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Betöltés..."
+  },
+  "lookingUpWord": {
+    "message": "$word$ keresése…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "A feliratok még nem érhetők el ehhez a videóhoz."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Nyomja meg az <kbd>Alt</kbd> + <kbd>T</kbd> billentyűket a panel ki/be kapcsolásához"
+  },
+  "removeFromSaved": {
+    "message": "Eltávolítás a mentett szavak közül"
   },
   "save": {
     "message": "Szó mentése"

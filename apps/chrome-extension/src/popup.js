@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   fillText('#popup-title', 'appName');
   fillText('#popup-login-prompt', 'popupLoginPrompt');
-  fillPlaceholder('#auth-email', 'placeholder.email');
-  fillPlaceholder('#auth-password', 'placeholder.password');
+  fillPlaceholder('#auth-email', 'popupEmailPlaceholder');
+  fillPlaceholder('#auth-password', 'popupPasswordPlaceholder');
   fillText('#auth-login-btn', 'popupLoginBtn');
   fillText('#auth-logout-btn', 'popupLogoutBtn');
   fillHtml('#popup-instructions', 'popupInstructions');
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function showNoTranscript() {
-    transcriptBtn.textContent = chrome.i18n.getMessage('subtitle.subtitles_unavailable');
+    transcriptBtn.textContent = chrome.i18n.getMessage('popupNoTranscript');
     transcriptBtn.className = 'lpv-btn-unavailable';
     transcriptBtn.disabled = true;
     transcriptHint.classList.remove('hidden');

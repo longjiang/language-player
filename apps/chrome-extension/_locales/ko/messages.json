@@ -21,10 +21,13 @@
     "message": "복사"
   },
   "explain": {
-    "message": "AI에 물어보기"
+    "message": "DeepSeek에게 설명 요청"
+  },
+  "explainPro": {
+    "message": "DeepSeek에게 설명 요청 (Pro)"
   },
   "explainTitle": {
-    "message": "AI에 물어보기"
+    "message": "DeepSeek에게 설명 요청"
   },
   "extensionDescription": {
     "message": "Prime Video, YouTube, Netflix, Disney+, Hulu, Max에서 언어 학습을 위한 대화형 이중 자막."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "로딩 중..."
+  },
+  "lookingUpWord": {
+    "message": "$word$ 찾는 중…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "이 동영상에 아직 자막이 제공되지 않습니다."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "<kbd>Alt</kbd> + <kbd>T</kbd>를 눌러 패널을 표시/숨깁니다"
+  },
+  "removeFromSaved": {
+    "message": "저장된 단어에서 제거"
   },
   "save": {
     "message": "단어 저장"

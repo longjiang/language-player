@@ -21,10 +21,13 @@
     "message": "نسخ"
   },
   "explain": {
-    "message": "اسأل الذكاء الاصطناعي"
+    "message": "دع DeepSeek يشرح"
+  },
+  "explainPro": {
+    "message": "دع DeepSeek يشرح (Pro)"
   },
   "explainTitle": {
-    "message": "اسأل الذكاء الاصطناعي"
+    "message": "دع DeepSeek يشرح"
   },
   "extensionDescription": {
     "message": "ترجمات ثنائية تفاعلية لتعلم اللغات على Prime Video وYouTube وNetflix وDisney+ وHulu وMax."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "جارٍ التحميل..."
+  },
+  "lookingUpWord": {
+    "message": "البحث عن $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "الترجمات غير متاحة لهذا الفيديو بعد."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "اضغط على <kbd>Alt</kbd> + <kbd>T</kbd> لتبديل اللوحة"
+  },
+  "removeFromSaved": {
+    "message": "إزالة من الكلمات المحفوظة"
   },
   "save": {
     "message": "حفظ الكلمة"

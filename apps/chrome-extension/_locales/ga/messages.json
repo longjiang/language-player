@@ -21,10 +21,13 @@
     "message": "Cóipeáil"
   },
   "explain": {
-    "message": "Fiafraigh den AI"
+    "message": "Lig do DeepSeek Míniú"
+  },
+  "explainPro": {
+    "message": "Lig do DeepSeek a mhíniú (Pro)"
   },
   "explainTitle": {
-    "message": "Fiafraigh den AI"
+    "message": "Lig do DeepSeek Míniú"
   },
   "extensionDescription": {
     "message": "Fotheidil dhátheangacha idirghníomhacha d'fhoghlaim teangacha ar Prime Video, YouTube, Netflix, Disney+, Hulu agus Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Á lódáil..."
+  },
+  "lookingUpWord": {
+    "message": "Ag cuardach $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Níl fotheidil ar fáil don fhíseán seo fós."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Brúigh <kbd>Alt</kbd> + <kbd>T</kbd> chun an painéal a scoránú"
+  },
+  "removeFromSaved": {
+    "message": "Bain de na focail shábháilte"
   },
   "save": {
     "message": "Sábháil focal"

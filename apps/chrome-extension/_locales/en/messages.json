@@ -1,150 +1,128 @@
 {
   "appName": {
-    "message": "Language Player",
-    "description": "Extension name shown in panel header"
+    "message": "Language Player"
   },
   "actions": {
-    "message": "Actions",
-    "description": "Tooltip for the cue menu button (\u2026)"
+    "message": "More"
   },
   "aiThinking": {
-    "message": "AI is thinking\u2026",
-    "description": "Shown while waiting for AI explanation"
+    "message": "Loading..."
   },
   "allLanguages": {
-    "message": "All Languages",
-    "description": "Optgroup label for all other languages"
+    "message": "All"
   },
   "close": {
-    "message": "Close",
-    "description": "Tooltip/aria for close buttons"
+    "message": "Close"
   },
   "closePanel": {
-    "message": "Close panel",
-    "description": "Tooltip for the close button"
+    "message": "Close"
   },
   "copy": {
-    "message": "\ud83d\udccb Copy",
-    "description": "Menu item to copy subtitle text"
+    "message": "Copy"
   },
   "explain": {
-    "message": "\ud83e\udd16 Explain",
-    "description": "Menu item to get AI explanation of a line"
+    "message": "Let DeepSeek Explain"
+  },
+  "explainPro": {
+    "message": "Let DeepSeek Explain (Pro)"
   },
   "explainTitle": {
-    "message": "\ud83e\udd16 Explain",
-    "description": "Header for the AI explanation card"
+    "message": "Let DeepSeek Explain"
   },
   "extensionDescription": {
-    "message": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and Max.",
-    "description": "Extension description in manifest and Chrome Web Store"
+    "message": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and Max."
   },
   "failedToLoadSubtitles": {
-    "message": "Failed to load subtitles",
-    "description": "Error status when subtitle fetch fails"
+    "message": "Failed to load subtitles"
   },
   "interfaceLanguage": {
-    "message": "UI Language",
-    "description": "Tooltip for the L1 (interface/native) language dropdown"
+    "message": "Select a language"
   },
   "learningLanguage": {
-    "message": "Learning language",
-    "description": "Tooltip for the L2 (target language) dropdown"
+    "message": "Select a language"
   },
   "loadingSubtitles": {
-    "message": "Loading subtitles\u2026",
-    "description": "Status bar while fetching subtitles"
+    "message": "Loading..."
+  },
+  "lookingUpWord": {
+    "message": "Looking up $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
-    "message": "No Transcript Found",
-    "description": "Popup message when no subtitles detected"
+    "message": "Subtitles are not available for this video yet."
   },
   "popularLanguages": {
-    "message": "Popular",
-    "description": "Optgroup label for popular languages"
+    "message": "Popular"
   },
   "popupCaptionsHint": {
-    "message": "\ud83d\udca1 Make sure <strong>captions are turned on</strong> in the language you're studying.",
-    "description": "Popup hint about captions"
+    "message": "💡 Make sure <strong>captions are turned on</strong> in the language you're studying."
   },
   "popupChecking": {
-    "message": "Checking\u2026",
-    "description": "Transcript button while checking status"
+    "message": "Checking…"
   },
   "popupClickWord": {
-    "message": "<strong>Click</strong> any word to look it up in the dictionary",
-    "description": "Popup instruction item 1"
+    "message": "<strong>Click</strong> any word to look it up in the dictionary"
   },
   "popupEmailPlaceholder": {
-    "message": "Email",
-    "description": "Placeholder for email input"
+    "message": "Email"
   },
   "popupInstructions": {
-    "message": "Start playing any video on <strong>Prime Video</strong>, <strong>YouTube</strong>, or <strong>Netflix</strong>. The transcript panel opens automatically when subtitles are found.",
-    "description": "Popup instructions paragraph"
+    "message": "Start playing any video on <strong>Prime Video</strong>, <strong>YouTube</strong>, or <strong>Netflix</strong>. The transcript panel opens automatically when subtitles are found."
   },
   "popupLoginBtn": {
-    "message": "Log In",
-    "description": "Login button text"
+    "message": "Log In"
   },
   "popupLoginPrompt": {
-    "message": "Log in to save words and sync with Language Player.",
-    "description": "Popup prompt above login form"
+    "message": "Log in to save words and sync with Language Player."
   },
   "popupLogoutBtn": {
-    "message": "Log Out",
-    "description": "Logout button text"
+    "message": "Log Out"
   },
   "popupNoTranscript": {
-    "message": "No Transcript Found",
-    "description": "Transcript button when no subtitles"
+    "message": "Subtitles are not available for this video yet."
   },
   "popupPasswordPlaceholder": {
-    "message": "Password",
-    "description": "Placeholder for password input"
+    "message": "Password"
   },
   "popupSaveWords": {
-    "message": "<strong>Save</strong> words to your Language Player account",
-    "description": "Popup instruction item 2"
+    "message": "<strong>Save</strong> words to your Language Player account"
   },
   "popupShowTranscript": {
-    "message": "Show Transcript",
-    "description": "Transcript button when subtitles available"
+    "message": "Show Transcript"
   },
   "popupToggleShortcut": {
-    "message": "Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel",
-    "description": "Popup instruction item 3"
+    "message": "Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel"
+  },
+  "removeFromSaved": {
+    "message": "Remove from saved words"
   },
   "save": {
-    "message": "Save",
-    "description": "Button to save a word"
+    "message": "Save word"
   },
   "saved": {
-    "message": "Saved",
-    "description": "Button state after word is saved"
+    "message": "Saved"
   },
   "showTranscript": {
-    "message": "Show Transcript",
-    "description": "Popup button to open the transcript panel"
+    "message": "Show Transcript"
   },
   "showTranslation": {
-    "message": "Show translation (L1)",
-    "description": "Tooltip for translation toggle"
+    "message": "Show Translation"
   },
   "speak": {
-    "message": "\ud83d\udd0a Speak",
-    "description": "Menu item to speak subtitle text via TTS"
+    "message": "Speak"
   },
   "startPlaying": {
-    "message": "Start playing a video.",
-    "description": "Instruction shown below 'Waiting for subtitles'"
+    "message": "Start playing a video."
   },
   "translate": {
-    "message": "Translate",
-    "description": "Label for the translation toggle switch"
+    "message": "Translation"
   },
   "translating": {
-    "message": "Translating\u2026",
-    "description": "Status during translation"
+    "message": "Translating…"
   }
 }

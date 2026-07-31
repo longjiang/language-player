@@ -21,10 +21,13 @@
     "message": "Kopiëren"
   },
   "explain": {
-    "message": "Vraag AI"
+    "message": "Laat DeepSeek het uitleggen"
+  },
+  "explainPro": {
+    "message": "Laat DeepSeek het uitleggen (Pro)"
   },
   "explainTitle": {
-    "message": "Vraag AI"
+    "message": "Laat DeepSeek het uitleggen"
   },
   "extensionDescription": {
     "message": "Interactieve tweetalige ondertitels voor taalonderwijs op Prime Video, YouTube, Netflix, Disney+, Hulu en Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Laden..."
+  },
+  "lookingUpWord": {
+    "message": "$word$ opzoeken…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Ondertitels zijn nog niet beschikbaar voor deze video."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Druk op <kbd>Alt</kbd> + <kbd>T</kbd> om het paneel te tonen/verbergen"
+  },
+  "removeFromSaved": {
+    "message": "Verwijderen uit opgeslagen woorden"
   },
   "save": {
     "message": "Woord opslaan"

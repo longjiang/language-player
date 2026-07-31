@@ -21,10 +21,13 @@
     "message": "คัดลอก"
   },
   "explain": {
-    "message": "ถาม AI"
+    "message": "ให้ DeepSeek อธิบาย"
+  },
+  "explainPro": {
+    "message": "ให้ DeepSeek อธิบาย (Pro)"
   },
   "explainTitle": {
-    "message": "ถาม AI"
+    "message": "ให้ DeepSeek อธิบาย"
   },
   "extensionDescription": {
     "message": "คำบรรยายสองภาษาแบบโต้ตอบสำหรับการเรียนรู้ภาษาบน Prime Video, YouTube, Netflix, Disney+, Hulu และ Max"
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "กำลังโหลด..."
+  },
+  "lookingUpWord": {
+    "message": "กำลังค้นหา $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "ยังไม่มีคำบรรยายสำหรับวิดีโอนี้"
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "กด <kbd>Alt</kbd> + <kbd>T</kbd> เพื่อสลับแผง"
+  },
+  "removeFromSaved": {
+    "message": "ลบออกจากคำที่บันทึกไว้"
   },
   "save": {
     "message": "บันทึกคำ"

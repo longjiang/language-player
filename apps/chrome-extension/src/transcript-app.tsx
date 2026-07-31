@@ -428,7 +428,7 @@ Text: ${cue.text}`;
         </label>
         {translating && (
           <span className="lpv-control-status">
-            {t('subtitle.translating')}{' '}
+            {t('translating')}{' '}
             <span className="lpv-progress-badge">{progress}/{cues.length}</span>
           </span>
         )}
@@ -473,12 +473,12 @@ Text: ${cue.text}`;
                 <span className="lpv-dict-card-word">{t('explainTitle')}</span>
                 {explainLoading && <span className="lpv-spinner lpv-spinner-sm" />}
               </div>
-              <button onClick={closeExplain} className="lpv-dict-card-close" title="Close">✕</button>
+              <button onClick={closeExplain} className="lpv-dict-card-close" title={t('close')}>✕</button>
             </div>
             <div className="lpv-dict-card-body">
               <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
                 {explainLoading && (
-                  <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('msg.loading')}</div>
+                  <div className="lpv-explain-loading"><span className="lpv-spinner" /> {t('aiThinking')}</div>
                 )}
                 {explainError && (
                   <div className="lpv-explain-error">{explainError}</div>

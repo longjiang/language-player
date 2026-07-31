@@ -21,10 +21,13 @@
     "message": "Копировать"
   },
   "explain": {
-    "message": "Спросить ИИ"
+    "message": "Пусть DeepSeek объяснит"
+  },
+  "explainPro": {
+    "message": "Пусть DeepSeek объяснит (Pro)"
   },
   "explainTitle": {
-    "message": "Спросить ИИ"
+    "message": "Пусть DeepSeek объяснит"
   },
   "extensionDescription": {
     "message": "Интерактивные двуязычные субтитры для изучения языков на Prime Video, YouTube, Netflix, Disney+, Hulu и Max."
@@ -40,6 +43,15 @@
   },
   "loadingSubtitles": {
     "message": "Загрузка..."
+  },
+  "lookingUpWord": {
+    "message": "Поиск $word$…",
+    "placeholders": {
+      "word": {
+        "content": "$1",
+        "example": "你好"
+      }
+    }
   },
   "noTranscriptFound": {
     "message": "Субтитры для этого видео пока недоступны."
@@ -85,6 +97,9 @@
   },
   "popupToggleShortcut": {
     "message": "Нажмите <kbd>Alt</kbd> + <kbd>T</kbd> для переключения панели"
+  },
+  "removeFromSaved": {
+    "message": "Удалить из сохранённых слов"
   },
   "save": {
     "message": "Сохранить слово"
