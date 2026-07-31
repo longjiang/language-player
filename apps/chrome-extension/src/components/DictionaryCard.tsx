@@ -285,8 +285,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
     try {
       const code = l2Code;
-      const l1Name = (props as any).l1Name || l1Code.toUpperCase();
-      const l2Name = (props as any).l2Name || l2Code.toUpperCase();
       const lemma = token.lemmas[0]?.lemma || token.text;
       const hasContext = !!contextText;
       const hasInflectedForm = hasContext && token.text !== lemma;
@@ -321,7 +319,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     } finally {
       setExplainLoading(false);
     }
-  }, [showExplain, explainText, explainError, token, l1Code, l2Code, contextText]);
+  }, [showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
 
   const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
 
