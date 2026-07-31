@@ -63,9 +63,10 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
   ({ text, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
-    const { getTokens } = useBatchLemmatize();
+    const { getTokens, isQueued } = useBatchLemmatize();
 
     const tokens = visible ? getTokens(text, l2Code) : null;
+    const queued = visible && !tokens && isQueued(text, l2Code);
 
     // ── Lazy visibility: show raw text until scrolled near viewport ──
     useEffect(() => {
@@ -87,8 +88,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
       return () => observer.disconnect();
     }, [visible, text]);
 
-    // ── Render: three visual states ──
-    const renderState = tokens ? 'TOKENS' : visible ? 'LOADING' : 'HIDDEN';
+    // ── Render: TOKENS → raw (not queued) → pulsating (queued) → hidden
     return (
       <span
         ref={containerRef}
@@ -107,8 +107,10 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               onTokenClick={onTokenClick}
             />
           ))
-        ) : (
+        ) : queued ? (
           <span className="lpv-cue-loading">{text}</span>
+        ) : (
+          <span>{text}</span>
         )}
       </span>
     );
