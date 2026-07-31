@@ -34,21 +34,6 @@ const PLAYER_STATES = {
   CUED: 5,
 };
 
-const STATE_NAMES: Record<number, string> = {
-  [PLAYER_STATES.UNSTARTED]: 'UNSTARTED',
-  [PLAYER_STATES.ENDED]: 'ENDED',
-  [PLAYER_STATES.PLAYING]: 'PLAYING',
-  [PLAYER_STATES.PAUSED]: 'PAUSED',
-  [PLAYER_STATES.BUFFERING]: 'BUFFERING',
-  [PLAYER_STATES.CUED]: 'CUED',
-};
-
-// ── Logging (gated by a single flag — per AGENTS.md) ──
-const LOG_ENABLED = true; // Debugging autoplay behavior — set to false when done
-function log(msg: string, ...args: unknown[]) {
-  if (LOG_ENABLED) console.log('[LP Web] [YouTubePlayer]', msg, ...args);
-}
-
 declare global {
   interface Window {
     onYouTubeIframeAPIReady?: () => void;
@@ -134,7 +119,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     setPlayerError(null);
 
     try {
-      log('player created', { youtubeId, autoplay, startTime });
       const player = new window.YT!.Player(playerIdRef.current, {
         videoId: youtubeId,
         playerVars: {
@@ -146,12 +130,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         },
         events: {
           onReady: () => {
-            log('player ready', {
-              youtubeId,
-              autoplay,
-              startTime,
-              duration: player.getDuration(),
-            });
             // Resume from saved position (only once per mount)
             if (startTime && startTime > 1 && !startAppliedRef.current) {
               startAppliedRef.current = true;
@@ -159,12 +137,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
               // Only resume if not near the end (> 30s remaining)
               if (d <= 0 || startTime < d - 30) {
                 if (autoplay) {
-                  log('positioning: seek + play', { startTime });
                   player.seekTo(startTime, true);
                 } else {
                   // seekTo from the UNSTARTED/CUED state starts playback, so
                   // cue the video at the position instead — cueing does not play.
-                  log('positioning: cue', { startTime });
                   player.cueVideoById({ videoId: youtubeId, startSeconds: startTime });
                 }
               }
@@ -185,10 +161,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             }, 500);
           },
           onStateChange: (event: any) => {
-            log('state change', {
-              state: event.data,
-              name: STATE_NAMES[event.data] ?? 'UNKNOWN',
-            });
             onStateChange?.(event.data);
             if (event.data === PLAYER_STATES.PLAYING) {
               const duration = player.getDuration();
@@ -230,20 +202,17 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
   // Seek to a specific time
   const seekTo = useCallback((seconds: number) => {
-    log('seekTo called', { seconds });
     if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
       playerRef.current.seekTo(seconds, true);
     }
   }, []);
 
   const play = useCallback(() => {
-    log('play called');
     if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
       playerRef.current.playVideo();
     }
   }, []);
   const pause = useCallback(() => {
-    log('pause called');
     if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
       playerRef.current.pauseVideo();
     }
