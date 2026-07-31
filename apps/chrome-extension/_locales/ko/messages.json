@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "언어 검색…"
+  },
+  "showPhonetics": {
+    "message": "발음 표시"
+  },
+  "explainWord": {
+    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$의 의미를 간결하게 설명하세요.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$가 구문에서 무엇을 의미하는지 간결하게 설명하세요: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$(굴절형: $contextForm$)가 구문에서 무엇을 의미하는지 간결하게 설명하세요: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "발음과 형태(또는 적절한 경우 어원)를 제시하세요. 굴절된 형태라면 기본형(레마)과 굴절형을 제시하고, 그렇지 않으면 굴절이나 기본형을 언급하지 마세요."
   }
 }

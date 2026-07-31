@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "แสดงสัทอักษร"
+  },
+  "explainWord": {
+    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำ$l2Name$ ($code$) $word$ หมายถึงอะไร",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำ$l2Name$ ($code$) $word$ ในวลีหมายถึงอะไร: $context$",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำว่า$word$ในภาษา$l2Name$ ($code$) (รูปผัน: $contextForm$) หมายถึงอะไรในวลี: $context$",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "ระบุการออกเสียงและวิทยาหน่วยคำ (หรือศัพทมูลวิทยาหากเหมาะสม) หากผันรูป ให้ระบุคำตั้ง (lemma) และการผันรูป มิฉะนั้นอย่ากล่าวถึงการผันรูปหรือคำตั้ง"
   }
 }

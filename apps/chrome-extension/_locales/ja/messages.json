@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "言語を検索…"
+  },
+  "showPhonetics": {
+    "message": "ふりがなを表示"
+  },
+  "explainWord": {
+    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$の意味を簡潔に説明してください。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$がフレーズ中で何を意味するか簡潔に説明してください：$context$。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$（屈折形: $contextForm$）がフレーズ中で何を意味するか簡潔に説明してください：$context$。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "発音と形態（または適切であれば語源）を示してください。活用形の場合は、見出し語（レンマ）と活用形を示し、そうでない場合は活用や見出し語に言及しないでください。"
   }
 }

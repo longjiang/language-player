@@ -475,7 +475,7 @@ Text: ${cue.text}`;
   return (
     <>
       {/* Scrollable cue list */}
-      <div ref={listRef} className="lpv-cue-list" style={{ fontSize: `${TEXT_SCALE_SIZES[textScale]}%` }}>
+      <div ref={listRef} className="lpv-cue-list" style={{ '--lpv-font-scale': TEXT_SCALE_SIZES[textScale] / 100 } as React.CSSProperties}>
         {cues.map((cue, i) => (
           <CueLine
             key={i}

@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Εμφάνιση φωνητικής"
+  },
+  "explainWord": {
+    "message": "Εξήγησε συνοπτικά στα $l1Name$ τι σημαίνει η λέξη $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Εξήγησε συνοπτικά στα $l1Name$ τι σημαίνει η λέξη $l2Name$ ($code$) $word$ στη φράση: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Εξήγησε συνοπτικά στα $l1Name$ τι σημαίνει η λέξη $l2Name$ ($code$) $word$ (κλιτός τύπος: $contextForm$) στη φράση: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Δώσε την προφορά και τη μορφολογία (ή ετυμολογία αν είναι κατάλληλο). Αν είναι κλιτό, δώσε το λήμμα και την κλίση· διαφορετικά, μην αναφέρεις κλίση ή λήμμα."
   }
 }

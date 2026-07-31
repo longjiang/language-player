@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "ध्वन्यात्मकता दिखाएं"
+  },
+  "explainWord": {
+    "message": "$l1Name$ में संक्षेप में बताएं कि $l2Name$ ($code$) शब्द $word$ का क्या अर्थ है।",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "$l1Name$ में संक्षेप में बताएं कि $l2Name$ ($code$) शब्द $word$ का वाक्यांश में क्या अर्थ है: $context$।",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "$l1Name$ में संक्षेप में बताएं कि $l2Name$ ($code$) शब्द $word$ (विकृत रूप: $contextForm$) का वाक्यांश में क्या अर्थ है: $context$।",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "इसका उच्चारण और रूपविज्ञान (या उपयुक्त हो तो व्युत्पत्ति) बताएं। यदि विकृत है, तो इसका लेमा (मूल रूप) और विकृति बताएं; अन्यथा विकृति या लेमा का उल्लेख न करें।"
   }
 }

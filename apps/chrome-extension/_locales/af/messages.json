@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Wys fonetiek"
+  },
+  "explainWord": {
+    "message": "Verduidelik bondig met $l1Name$ wat die $l2Name$ ($code$) woord $word$ beteken.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Verduidelik bondig met $l1Name$ wat die $l2Name$ ($code$) woord $word$ in die frase beteken: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Verduidelik bondig met $l1Name$ wat die $l2Name$ ($code$) woord $word$ (verbuigde vorm: $contextForm$) in die frase beteken: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie."
   }
 }

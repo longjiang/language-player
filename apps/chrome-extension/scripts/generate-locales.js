@@ -59,6 +59,11 @@ const CSV_LOOKUP = {
   'iLearning': 'title.i_learning',
   'searchLanguages': 'placeholder.search_languages',
   'confirm': 'action.confirm',
+  // AI explain prompts
+  'explainWord': 'prompt.explain_word',
+  'explainWordContext': 'prompt.explain_word_context',
+  'explainWordContextForm': 'prompt.explain_word_context_form',
+  'explainMorphology': 'prompt.explain_morphology',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.
@@ -495,6 +500,25 @@ const MANUAL = {
     'ro': 'Limbă', 'ru': 'Язык', 'sr': 'Језик',
     'sv': 'Språk', 'sw': 'Lugha', 'th': 'ภาษา',
     'tr': 'Dil', 'vi': 'Ngôn ngữ',
+  },
+  'showPhonetics': {
+    'ja': 'ふりがなを表示',
+    'zh-Hans': '显示拼音',
+    'zh-Hant': '顯示拼音',
+    'fr': 'Afficher la phonétique',
+    'af': 'Wys fonetiek', 'ar': 'إظهار الصوتيات',
+    'ca': 'Mostra fonètica', 'de': 'Phonetik anzeigen',
+    'el': 'Εμφάνιση φωνητικής', 'es': 'Mostrar fonética',
+    'fi': 'Näytä fonetiikka', 'ga': 'Taispeáin foghraíocht',
+    'hi': 'ध्वन्यात्मकता दिखाएं', 'hr': 'Prikaži fonetiku',
+    'hu': 'Fonetika megjelenítése', 'id': 'Tampilkan fonetik',
+    'it': 'Mostra fonetica', 'ko': '발음 표시',
+    'nl': 'Toon fonetiek', 'no': 'Vis fonetikk',
+    'pl': 'Pokaż fonetykę', 'pt': 'Mostrar fonética',
+    'ro': 'Arată fonetica', 'ru': 'Показать фонетику',
+    'sr': 'Прикажи фонетику', 'sv': 'Visa fonetik',
+    'sw': 'Onyesha fonetiki', 'th': 'แสดงสัทอักษร',
+    'tr': 'Fonetiği göster', 'vi': 'Hiển thị ngữ âm',
   },
 };
 

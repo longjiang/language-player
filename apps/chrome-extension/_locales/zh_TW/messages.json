@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "搜尋語言…"
+  },
+  "showPhonetics": {
+    "message": "顯示拼音"
+  },
+  "explainWord": {
+    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$的含義。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$在短語中的含義：$context$。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$（屈折形式：$contextForm$）在短語中的含義：$context$。",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "給出其發音和形態（或適當的詞源）。如果是屈折形式，給出其詞元（原形）和屈折變化；否則不要提及屈折或詞元。"
   }
 }
