@@ -55,21 +55,18 @@ interface TokenizedLineProps {
   l2Code: string;
   isActive: boolean;
   showPhonetics: boolean;
-  /** Only queue for tokenization when true — prevents distant lines from pulsating. */
-  shouldTokenize: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, showPhonetics, shouldTokenize, onClickLine, onTokenClick }) => {
+  ({ text, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
     const { getTokens, isQueued } = useBatchLemmatize();
 
-    // Only call getTokens (which enqueues) for lines in the active window
-    const tokens = (visible && shouldTokenize) ? getTokens(text, l2Code) : null;
-    const queued = visible && shouldTokenize && !tokens && isQueued(text, l2Code);
+    const tokens = visible ? getTokens(text, l2Code) : null;
+    const queued = visible && !tokens && isQueued(text, l2Code);
 
     // ── Lazy visibility: show raw text until scrolled near viewport ──
     useEffect(() => {
@@ -193,7 +190,6 @@ interface CueLineProps {
   isActive: boolean;
   l2Code: string;
   showPhonetics: boolean;
-  shouldTokenize: boolean;
   onSeekTo: (timeSec: number) => void;
   onTokenClick: (token: LemmatizedToken, cue: SubtitleCue) => void;
   /** L1 translation text (empty string if not available/disabled) */
@@ -207,7 +203,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, showPhonetics, shouldTokenize, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
+  ({ cue, index, isActive, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -261,7 +257,6 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             l2Code={l2Code}
             isActive={isActive}
             showPhonetics={showPhonetics}
-            shouldTokenize={shouldTokenize}
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
           />
@@ -491,7 +486,6 @@ Text: ${cue.text}`;
             isActive={i === activeCueIdx}
             l2Code={l2Code}
             showPhonetics={showPhonetics}
-            shouldTokenize={i >= activeCueIdx && i < activeCueIdx + PRE_FETCH_LOOKAHEAD}
             onSeekTo={handleSeekTo}
             onTokenClick={handleTokenClick}
             translation={translated.get(i) || ''}
