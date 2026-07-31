@@ -121,18 +121,6 @@ node apps/chrome-extension/build.mjs
 ```
 Then go to `chrome://extensions` → refresh Language Player → reload the video page. The build auto-bumps the patch version in `manifest.json`. Note that `content.css`, `popup.html`, `popup.css`, `_locales/`, and `icons/` are NOT bundled — they are loaded directly by the extension runtime, so changes to those files only need a Chrome extension refresh (no build step).
 
-**⚠️ Chrome Extension i18n — how it works.** The extension's translations are generated from `translations.csv` (the single source of truth) into `_locales/{locale}/messages.json` by `scripts/generate-locales.js`. Run it after ANY change to translations-related files (see ARCH-019 for the full pipeline):
-```bash
-node apps/chrome-extension/scripts/generate-locales.js
-```
-Key rules when editing the extension's i18n:
-- **Never hardcode English in UI strings.** Always use `t('key')` (from `src/i18n.js`) in JS/TSX, `chrome.i18n.getMessage('key')` in popup.js, and `fillText`/`fillHtml`/`fillPlaceholder` in popup.
-- **No dots in message keys.** Chrome rejects `chrome.i18n.getMessage('subtitle.translating')`. Source must use flat keys like `translating`, `loadingSubtitles`, `actions`. Map them to dotted CSV keys via `CSV_LOOKUP` in `generate-locales.js`.
-- **The `$` quirk:** a message like `$1$` with NO `placeholders` definition **refuses to load the entire extension** (`Variable $1$ used but not defined`). Use named placeholders: write `$word$` in the message AND declare it under `placeholders` with `"content": "$1"` in `en/messages.json`. Never add bare `$1$`/`$2$` to a message without a matching `placeholders` entry.
-- Messages with placeholders must have their `placeholders` definition in the `en/messages.json` template entry (the generator preserves it across all 31 locales).
-- **New key workflow:** (1) if a CSV key already exists (e.g. `msg.loading`, `subtitle.translating`), add a `CSV_LOOKUP` mapping; (2) if not, add a `MANUAL` entry with ALL 31 locale translations (missing locales silently fall back to English); (3) add the template message to `en/messages.json`; (4) rerun the generator.
-- **Localized L2 dropdown names** come from `dist/lang-names.json` (auto-generated from CSV `lang.*` keys on build) — language names are endonyms per locale, so a Japanese L1 sees `日本語`, not `Japanese`.
-
 **⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
@@ -263,6 +251,59 @@ node scripts/batch-translate.mjs --locale=fr
 `en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
 
 Before translating, always check if `translations.csv` already has the same or very similar key that can do the same job. If so, modify your key new key to reuse it instead of creating a new key.
+
+#### Chrome Extension i18n — Special Rules
+
+The Chrome extension uses `chrome.i18n.getMessage()` which has two critical constraints not present in the web/mobile apps:
+
+**⚠️ Rule 1: Message keys MUST NOT contain dots (`.`)**
+
+`chrome.i18n.getMessage('action.close')` silently returns `""` — dots are not allowed in Chrome message keys. The extension uses **flat, dot-free keys** (e.g., `closePanel`, `actions`, `translating`) and a build-time `CSV_LOOKUP` dictionary maps them to CSV keys with dots:
+
+```
+Source code:            t('translating')
+                           │
+_en/locales/en/messages.json:  "translating"  ← flat key, NO dots
+                           │
+generate-locales.js CSV_LOOKUP:  'translating': 'subtitle.translating'
+                           │
+translations.csv:        subtitle.translating → "Translating…" (31 locales)
+```
+
+**When adding a new string to the extension, you MUST use a flat key name. Never use a dotted CSV key directly in `t()` or `chrome.i18n.getMessage()`.**
+
+**⚠️ Rule 2: Named placeholders (`$word$`) require a `placeholders` definition**
+
+Chrome messages use `$PLACEHOLDER$` syntax. CSV uses `{placeholder}`. The generator auto-converts `{name}` → `$name$`. But any message with a `$name$` placeholder MUST have a `placeholders` config in `en/messages.json`:
+
+```json
+{
+  "lookingUpWord": {
+    "message": "Looking up $word$…",
+    "placeholders": {
+      "word": { "content": "$1", "example": "你好" }
+    }
+  }
+}
+```
+
+Without this, Chrome **rejects the entire extension** at load time: `"Variable $word$ used but not defined"`.
+
+**Adding a new UI string to the extension — workflow:**
+
+1. **Check if CSV already has the string** → Map it via CSV_LOOKUP (no new MANUAL entry needed)
+2. **Check if CSV has a close-enough string** → Use CSV_LOOKUP with the closest match (e.g., `actions` → `action.more`)
+3. **Extension-specific string?** → Add to `en/messages.json` (flat key) + `MANUAL` object in `generate-locales.js` (all 30 non-English locales)
+4. **Can it be a visual indicator?** → Use CSS spinner/icon, eliminate the key entirely
+
+```bash
+# After any _locales/ or generate-locales.js change:
+node apps/chrome-extension/scripts/generate-locales.js
+node apps/chrome-extension/build.mjs
+# Then: chrome://extensions → refresh Language Player → reload video page
+```
+
+See `docs/arch/019-chrome-extension-architecture.md#i18n--translation-pipeline` for the full pipeline documentation.
 
 ### Writing User-Facing Documentation
 
