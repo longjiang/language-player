@@ -291,10 +291,10 @@ export default function ReviewScreen() {
   useEffect(() => {
     if (!wordForm) return;
     bulkLookupWords(
-      [{ text: wordForm, l2Code, l1Code: baseCode(l1Lang.code) }],
+      [{ text: wordForm, l2Code }],
       PYTHON_API_URL,
     );
-  }, [currentIndex, l2Code, l1Lang.code, wordForm]);
+  }, [currentIndex, l2Code, wordForm]);
 
   // ── Pre-warm tokenization + dictionary cache for upcoming cards ──
   useEffect(() => {
@@ -307,7 +307,7 @@ export default function ReviewScreen() {
         )];
         if (uniqueLemmas.length > 0) {
           bulkLookupWords(
-            uniqueLemmas.map(text => ({ text, l2Code: ctx.l2Code, l1Code: ctx.l1Code })),
+            uniqueLemmas.map(text => ({ text, l2Code: ctx.l2Code })),
             PYTHON_API_URL,
           );
         }

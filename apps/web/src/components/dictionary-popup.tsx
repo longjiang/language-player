@@ -74,6 +74,7 @@ export function DictionaryPopup({
       ].filter((t, i, a) => a.indexOf(t) === i);
 
       let allEntries: DictionaryEntry[] = [];
+      let cacheHit = false;
 
       // ── Check cache first ──
       for (const text of texts) {
@@ -85,12 +86,13 @@ export function DictionaryPopup({
             }
           }
           allEntries.push(...cached);
+          cacheHit = true;
           break; // use first matching cached result
         }
       }
 
       // ── Cache miss: fetch from server ──
-      if (allEntries.length === 0) {
+      if (!cacheHit) {
         setLoading(true);
         for (const text of texts) {
           if (cancelled) break;
@@ -109,7 +111,6 @@ export function DictionaryPopup({
           }
           if (allEntries.length > 0) break;
         }
-        setLoading(false);
       }
 
       if (!cancelled) {
@@ -121,6 +122,29 @@ export function DictionaryPopup({
         });
         setEntries(deduped);
         setLoading(false);
+      }
+
+      // ── Cache hit + non-English L1: fetch L1-translated definitions in background ──
+      // Batch lookup returns English-only definitions for speed. When the user
+      // clicks a word and their L1 is not English, fetch translated definitions
+      // and replace the displayed entries once they arrive.
+      if (cacheHit && l1Code !== 'en' && !cancelled) {
+        for (const text of texts) {
+          if (cancelled) break;
+          const results = await lookupWord(text, controller.signal);
+          if (!cancelled && results.length > 0) {
+            // Cache the L1-translated results so future lookups get them directly
+            setCachedEntries(l2Code, text, results);
+            const seen2 = new Set<string>();
+            const deduped2 = results.filter((e) => {
+              if (seen2.has(e.id)) return false;
+              seen2.add(e.id);
+              return true;
+            });
+            setEntries(deduped2);
+            break;
+          }
+        }
       }
     };
 

@@ -85,6 +85,10 @@ export default function ReviewPage() {
   const [justCompleted, setJustCompleted] = useState(false);
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
+  /** Per-card L1-translated dictionary entry (fetched on reveal for non-English L1 users).
+   *  Batch lookup returns English-only definitions for speed; this provides the
+   *  translated version when the user actually interacts with a card. */
+  const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
   /** Track the current card's word ID to detect unsave-triggered card changes. */
   const lastCardIdRef = useRef<string | null>(null);
   /** Previous card SRS state saved before a rating, used by the Undo action. */
@@ -144,15 +148,16 @@ export default function ReviewPage() {
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,
   // avoiding a misleading "no definition" flash.
+  // Batch lookup returns English-only definitions for speed.
+  // Per-card L1 translation (if needed) happens on reveal below.
   useEffect(() => {
     if (dueCards.length === 0) return;
     const words = dueCards.map((dc) => ({
       text: dc.word.forms[0] || dc.word.id,
       l2Code,
-      l1Code: baseCode(l1.code),
     }));
     bulkLookupWords(words, PYTHON_API_URL);
-  }, [dueCards, l2Code, l1.code]);
+  }, [dueCards, l2Code]);
 
   // ── Derive entry for the current card from the reactive cache ──
   const currentDueCard = dueCards[currentIndex];
@@ -422,6 +427,43 @@ export default function ReviewPage() {
     setContextTranslation(null);
   }, [currentCard?.word.id]);
 
+  // ── Per-card L1 dictionary lookup (non-English L1 users) ──
+  // Batch lookup returns English-only definitions for speed. When the user
+  // reveals a card and their L1 is not English, fetch the L1-translated
+  // entry so they see definitions in their language.
+  useEffect(() => {
+    if (!showDefinition || l1.code === 'en') return;
+    const card = cards[currentIndex];
+    if (!card) return;
+    const form = card.word.forms[0] || card.word.id;
+    // Skip if we already have an L1 entry for this word
+    if (l1Entry?.id === card.word.id) return;
+
+    let cancelled = false;
+    fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: form, l2: l2Code, l1: baseCode(l1.code) }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const results = (data.results ?? []) as DictionaryEntry[];
+        // Try to match the saved word's entry ID; fall back to first result
+        const match = results.find((e) => e.id === card.word.id) ?? results[0] ?? null;
+        setL1Entry(match);
+      })
+      .catch(() => {
+        // Silently fail — the English def from cache is still shown
+      });
+    return () => { cancelled = true; };
+  }, [showDefinition, currentIndex, cards, l1.code, l2Code, l1Entry?.id]);
+
+  // Clear L1 entry when card changes
+  useEffect(() => {
+    setL1Entry(null);
+  }, [currentCard?.word.id]);
+
   // ── Auto-translate context text when back is revealed (if no saved translation) ──
   useEffect(() => {
     if (!showDefinition || !display.translation) return;
@@ -572,7 +614,9 @@ export default function ReviewPage() {
 
   if (!currentCard) return null;
 
-  const entry = currentCard.entry;
+  // Prefer the L1-translated entry (fetched on reveal for non-English users)
+  // over the cached English-only entry from batch lookup.
+  const entry = l1Entry ?? currentCard.entry;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
 

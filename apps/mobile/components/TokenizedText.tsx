@@ -311,11 +311,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     const words = Array.from(uniqueLemmas.keys()).map((text) => ({
       text,
       l2Code: l2Code,
-      l1Code: l1Lang?.code ?? 'en',
     }));
 
     bulkLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
-  }, [tokens, loading, l2Code, l1Lang?.code]);
+  }, [tokens, loading, l2Code]);
 
   // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {

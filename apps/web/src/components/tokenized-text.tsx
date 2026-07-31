@@ -262,7 +262,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const words = Array.from(uniqueLemmas.keys()).map((text) => ({
       text,
       l2Code: baseCode(l2Code),
-      l1Code: l1.code,
     }));
 
     bulkLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
@@ -342,6 +341,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               key={i}
               token={token}
               l2Code={l2Code}
+              l1Code={l1.code}
               phoneticsMode={phoneticsShow}
               phoneticsConditions={l2Settings.tokenSpan.phonetics.conditions}
               userLevel={typeof userLevel === 'number' ? userLevel : undefined}
