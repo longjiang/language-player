@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -12,8 +12,17 @@ import { Toaster } from '@/components/ui/sonner';
 import ogVideos from '@/data/og-videos.json';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
+// Inter is vendored locally (src/app/fonts/) so builds never fetch Google
+// Fonts at build time; this keeps `next build` working in sandboxed/offline
+// environments. next/font/local requires the files inside the app directory,
+// so the same TTFs are also vendored in apps/mobile/assets/fonts/.
+const inter = localFont({
+  src: [
+    { path: './fonts/Inter_400Regular.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/Inter_500Medium.ttf', weight: '500', style: 'normal' },
+    { path: './fonts/Inter_600SemiBold.ttf', weight: '600', style: 'normal' },
+    { path: './fonts/Inter_700Bold.ttf', weight: '700', style: 'normal' },
+  ],
   variable: '--font-inter',
 });
 

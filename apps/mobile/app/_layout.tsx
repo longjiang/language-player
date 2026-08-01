@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
 import { logerr } from '@/lib/logger';
+import { useAppFonts } from '@/lib/fonts';
 
 // ── Custom toast config ──
 
@@ -103,6 +104,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
+  const [fontsLoaded, fontError] = useAppFonts();
+
+  // Keep the splash visible (and skip the first render) until the vendored
+  // Inter fonts are ready. On failure, render with system fonts instead.
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <ErrorBoundary>
