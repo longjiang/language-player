@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Megnyitás a Language Playerben"
   },
+  "readInLanguagePlayer": {
+    "message": "Olvasás a Language Playerben"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Megnézés a Language Playerben"
+  },
   "popularLanguages": {
     "message": "Népszerű"
   },

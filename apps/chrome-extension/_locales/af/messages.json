@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Maak oop in Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Lees in Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Kyk in Language Player"
+  },
   "popularLanguages": {
     "message": "Gewild"
   },

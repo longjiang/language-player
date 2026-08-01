@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Открыть в Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Читать в Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Смотреть в Language Player"
+  },
   "popularLanguages": {
     "message": "Популярное"
   },

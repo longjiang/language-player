@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Mở trong Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Đọc trong Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Xem trong Language Player"
+  },
   "popularLanguages": {
     "message": "Phổ biến"
   },

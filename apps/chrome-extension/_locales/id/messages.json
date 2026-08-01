@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Buka di Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Baca di Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Tonton di Language Player"
+  },
   "popularLanguages": {
     "message": "Populer"
   },

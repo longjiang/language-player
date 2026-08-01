@@ -983,26 +983,36 @@ function createPanelUI() {
   mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
 }
 
-/** Web app watch URL: https://language-player.netlify.app/{l1}/{l2}/watch/{videoId}
- *  Returns null on non-YouTube pages or when no video ID is available. */
-function buildWebWatchUrl() {
-  if (!isYouTube) return null;
+/** Web app URL for the current page.
+ *  - YouTube video with subtitles loaded → watch page: {l1}/{l2}/watch/{videoId}
+ *  - anything else → reader page: {l1}/{l2}/web-reader?url={current page} */
+function buildWebUrl() {
+  const base = `https://language-player.netlify.app/${encodeURIComponent(L1_CODE)}/${encodeURIComponent(savedL2Code)}`;
   const videoId = getYTVideoId();
-  if (!videoId) return null;
-  return `https://language-player.netlify.app/${encodeURIComponent(L1_CODE)}/${encodeURIComponent(savedL2Code)}/watch/${encodeURIComponent(videoId)}`;
+  if (isYouTube && videoId && STATE.cues.length > 0) {
+    return { url: `${base}/watch/${encodeURIComponent(videoId)}`, labelKey: 'watchInLanguagePlayer' };
+  }
+  return { url: `${base}/web-reader?url=${encodeURIComponent(location.href)}`, labelKey: 'readInLanguagePlayer' };
 }
 
-/** Show/hide the "Open in Language Player" button and refresh its URL/label.
- *  Called on panel creation, L1/L2 changes, and YouTube SPA navigation. */
+/** Show the web-app button and refresh its URL/label.
+ *  Warns (tooltip + warning style) when the detected page L2 differs from the
+ *  user's saved L2. Called on panel creation, L1/L2 changes, and YouTube SPA
+ *  navigation. */
 function updateOpenInWebBtn() {
   if (!openInWebBtn) return;
-  const url = buildWebWatchUrl();
-  if (url) {
-    openInWebBtn.href = url;
-    openInWebBtn.textContent = t('openInLanguagePlayer');
-    openInWebBtn.classList.add('lpv-visible');
+  const target = buildWebUrl();
+  openInWebBtn.href = target.url;
+  openInWebBtn.textContent = t(target.labelKey);
+  openInWebBtn.classList.add('lpv-visible');
+
+  const mismatch = detectedSubLang && baseCode(detectedSubLang) !== baseCode(savedL2Code);
+  if (mismatch) {
+    openInWebBtn.title = t('l2Mismatch', [languageName(detectedSubLang), languageName(savedL2Code)]);
+    openInWebBtn.classList.add('lpv-warning');
   } else {
-    openInWebBtn.classList.remove('lpv-visible');
+    openInWebBtn.title = '';
+    openInWebBtn.classList.remove('lpv-warning');
   }
 }
 
@@ -1331,6 +1341,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       cuesCount: STATE.cues.length,
       panelVisible: STATE.panelVisible,
       savedL2Code,
+      detectedSubLang,
     });
     return true;
   }

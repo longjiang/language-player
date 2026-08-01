@@ -265,6 +265,17 @@ h1 img {
   background: var(--accent-bright);
 }
 
+#open-web-warn {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+}
+
 #instructions kbd {
   display: inline-block;
   padding: 1px 6px;

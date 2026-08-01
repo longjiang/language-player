@@ -5,9 +5,34 @@ document.addEventListener('DOMContentLoaded', function() {
    *  language. Falls back to chrome.i18n.getMessage(). */
   let runtimeMessages = null;
 
-  function t(key) {
-    if (runtimeMessages && runtimeMessages[key]) return runtimeMessages[key].message;
-    return chrome.i18n.getMessage(key) || key;
+  function t(key, substitutions) {
+    if (runtimeMessages && runtimeMessages[key]) {
+      const entry = runtimeMessages[key];
+      let msg = entry.message;
+      if (substitutions && substitutions.length > 0) {
+        const placeholders = entry.placeholders;
+        if (placeholders) {
+          // Named placeholders: { word: { content: "$1" } } — map names to indices
+          for (const [name, config] of Object.entries(placeholders)) {
+            const match = config.content?.match(/^\$(\d+)$/);
+            if (match) {
+              const idx = parseInt(match[1], 10) - 1;
+              if (idx >= 0 && idx < substitutions.length) {
+                msg = msg.replace(`$${name}$`, substitutions[idx]);
+              }
+            }
+          }
+        } else {
+          substitutions.forEach((val, i) => {
+            msg = msg.replace(`$${i + 1}$`, val);
+          });
+        }
+      }
+      if (msg) return msg;
+    }
+    return substitutions && substitutions.length
+      ? chrome.i18n.getMessage(key, ...substitutions)
+      : (chrome.i18n.getMessage(key) || key);
   }
   function fillText(sel, key) { const el = document.querySelector(sel); if (el) el.textContent = t(key); }
   function fillHtml(sel, key) { const el = document.querySelector(sel); if (el) el.innerHTML = t(key); }
@@ -33,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
     fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
     setTranscriptChecking();
     fillHtml('#transcript-hint', 'popupCaptionsHint');
-    fillText('#open-in-web-btn', 'openInLanguagePlayer');
   }
 
   /** Grey-out state shown while checking for subtitles (and after locale
@@ -41,12 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function setTranscriptChecking() {
     const btn = document.querySelector('#transcript-btn');
     if (!btn) return;
-    const wasHidden = btn.classList.contains('hidden');
     btn.textContent = t('popupChecking');
     btn.className = 'lpv-btn-unavailable';
     btn.disabled = true;
     btn.onclick = null;
-    if (!wasHidden) btn.classList.remove('hidden');
   }
 
   // ── Language picker ──────────────────────────────────────────────────
@@ -249,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderStrings();
     renderLanguageUI();
     setPickerOpen(false);
+    checkTranscriptStatus(); // refresh button labels/warning in the new L1
   }
 
   async function initLanguage() {
@@ -371,7 +394,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const transcriptBtn = document.getElementById('transcript-btn');
   const transcriptHint = document.getElementById('transcript-hint');
   const openInWebBtn = document.getElementById('open-in-web-btn');
+  const openWebWarn = document.getElementById('open-web-warn');
   const WEB_APP_URL = 'https://language-player.netlify.app';
+
+  /** Supported video domains where the content script runs
+   *  (mirrors manifest.json content_scripts matches). */
+  const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
+
+  function isVideoDomain(tabUrl) {
+    try {
+      return VIDEO_HOST_RE.test(new URL(tabUrl).hostname);
+    } catch {
+      return false;
+    }
+  }
+
+  /** Strip BCP 47 subtags down to the primary language code ("zh-Hans" → "zh"). */
+  function baseCode(code) {
+    return (code || '').split('-')[0];
+  }
 
   /** Extract a YouTube video ID from a tab URL (mirrors content-entry.js). */
   function getYouTubeVideoId(tabUrl) {
@@ -385,16 +426,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  /** Show the "Open in Language Player" button on YouTube videos and
-   *  refresh its URL with the current saved L1/L2 and video ID. */
-  function updateOpenInWebBtn(tabUrl) {
-    const videoId = tabUrl ? getYouTubeVideoId(tabUrl) : null;
-    if (videoId) {
-      openInWebBtn.dataset.url =
-        `${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/watch/${encodeURIComponent(videoId)}`;
-      openInWebBtn.classList.remove('hidden');
-    } else {
+  /** Update the "Open in Language Player" button:
+   *  - YouTube video with subtitles → "Watch in Language Player" (watch page)
+   *  - anything else → "Read in Language Player" (reader page with ?url=current)
+   *  Warns when the page's detected L2 differs from the user's saved L2. */
+  function updateOpenInWebBtn(tabUrl, status) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl)) {
       openInWebBtn.classList.add('hidden');
+      openWebWarn.classList.add('hidden');
+      return;
+    }
+
+    const videoId = getYouTubeVideoId(tabUrl);
+    const subsAvailable = !!(status && status.cuesCount > 0);
+    const base = `${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}`;
+
+    if (videoId && subsAvailable) {
+      openInWebBtn.dataset.url = `${base}/watch/${encodeURIComponent(videoId)}`;
+      openInWebBtn.textContent = t('watchInLanguagePlayer');
+    } else {
+      openInWebBtn.dataset.url = `${base}/web-reader?url=${encodeURIComponent(tabUrl)}`;
+      openInWebBtn.textContent = t('readInLanguagePlayer');
+    }
+    openInWebBtn.classList.remove('hidden');
+
+    const detectedL2 = status && status.detectedSubLang;
+    const mismatch = detectedL2 && baseCode(detectedL2) !== baseCode(l2Code);
+    if (mismatch) {
+      openWebWarn.textContent = t('l2Mismatch', [languageName(detectedL2), languageName(l2Code)]);
+      openWebWarn.classList.remove('hidden');
+    } else {
+      openWebWarn.classList.add('hidden');
     }
   }
 
@@ -406,33 +468,58 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   async function checkTranscriptStatus() {
+    let tab = null;
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) { showNoTranscript(); updateOpenInWebBtn(null); return; }
-      updateOpenInWebBtn(tab.url || null);
+      [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    } catch {}
 
-      const res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
-      if (res?.cuesCount > 0) {
-        transcriptHint.classList.add('hidden');
-        if (res.panelVisible) {
-          // Panel is already open — don't show the transcript button at all
-          transcriptBtn.classList.add('hidden');
-          transcriptBtn.disabled = true;
-        } else {
-          transcriptBtn.classList.remove('hidden');
-          transcriptBtn.textContent = t('popupShowTranscript');
-          transcriptBtn.className = 'lpv-btn-available';
-          transcriptBtn.disabled = false;
-          transcriptBtn.onclick = () => {
-            chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
-            window.close();
-          };
-        }
-      } else {
-        showNoTranscript();
-      }
+    if (!tab?.id) {
+      showNoTranscript();
+      updateOpenInWebBtn(null);
+      return;
+    }
+
+    // Non-video domains: hide the transcript UI entirely and skip status
+    // detecting — the content script doesn't run there anyway.
+    if (!isVideoDomain(tab.url || '')) {
+      transcriptBtn.classList.add('hidden');
+      transcriptHint.classList.add('hidden');
+      updateOpenInWebBtn(tab.url || null, null);
+      return;
+    }
+
+    // Video domain: show the greyed-out "Checking…" state while querying the
+    // content script.
+    transcriptBtn.classList.remove('hidden');
+    setTranscriptChecking();
+
+    // The content script may not be loaded on this page — still show the
+    // "Read in Language Player" button using the best status we have.
+    let res = null;
+    try {
+      res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
     } catch {
       // Content script not loaded on this page
+    }
+    updateOpenInWebBtn(tab.url || null, res || null);
+
+    if (res?.cuesCount > 0) {
+      transcriptHint.classList.add('hidden');
+      if (res.panelVisible) {
+        // Panel is already open — don't show the transcript button at all
+        transcriptBtn.classList.add('hidden');
+        transcriptBtn.disabled = true;
+      } else {
+        transcriptBtn.classList.remove('hidden');
+        transcriptBtn.textContent = t('popupShowTranscript');
+        transcriptBtn.className = 'lpv-btn-available';
+        transcriptBtn.disabled = false;
+        transcriptBtn.onclick = () => {
+          chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
+          window.close();
+        };
+      }
+    } else {
       showNoTranscript();
     }
   }

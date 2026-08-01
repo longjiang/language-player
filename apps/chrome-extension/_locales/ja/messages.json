@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Language Player で開く"
   },
+  "readInLanguagePlayer": {
+    "message": "Language Player で読む"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Language Player で視聴"
+  },
   "popularLanguages": {
     "message": "人気"
   },
