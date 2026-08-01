@@ -220,6 +220,7 @@ export function ImageSearchResults({
   definition,
   contextText,
   contextForm,
+  variant = 'grid',
 }: {
   term: string;
   l2Code: string;
@@ -229,8 +230,12 @@ export function ImageSearchResults({
   contextText?: string;
   /** Inflected form of the word as it appears in contextText. */
   contextForm?: string;
+  /** 'grid' = full experience (pills, pagination); 'compact' = one
+   *  horizontally scrolling row, 3 images per query, no pills. */
+  variant?: 'grid' | 'compact';
 }) {
   const t = useT();
+  const isCompact = variant === 'compact';
   const [images, setImages] = useState<OpenverseImage[] | null>(null);
   const [queries, setQueries] = useState<string[]>([]);
   const [activeQuery, setActiveQuery] = useState<string | null>(null);
@@ -303,11 +308,16 @@ export function ImageSearchResults({
       await Promise.all(searchQueries.map(async (q) => {
         try {
           const results = await fetchQueryResults(q, controller.signal);
-          const capped = capByOwner(results);
-          if (capped.length < results.length) {
-            log('[ImageSearch] Owner-capped:', q, results.length - capped.length, 'removed');
+          if (isCompact) {
+            // Compact: 3 per query, no owner cap — the query mix is the diversity.
+            perQuery.set(q, results.slice(0, 3));
+          } else {
+            const capped = capByOwner(results);
+            if (capped.length < results.length) {
+              log('[ImageSearch] Owner-capped:', q, results.length - capped.length, 'removed');
+            }
+            perQuery.set(q, capped);
           }
-          perQuery.set(q, capped);
         } catch (err: any) {
           if (err?.name !== 'AbortError') failures++;
         }
@@ -378,6 +388,7 @@ export function ImageSearchResults({
   const pageSize = cols * 3;
 
   if (!images) {
+    if (isCompact) return <SkeletonStrip />;
     return (
       <>
         <SkeletonPills />
@@ -390,6 +401,26 @@ export function ImageSearchResults({
           ))}
         </div>
       </>
+    );
+  }
+
+  if (isCompact) {
+    return images.length === 0 ? (
+      <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
+        <ImageOff className="h-6 w-6 text-muted-foreground/50" />
+        <p className="text-xs text-muted-foreground">{t('msg.no_images_found', { term })}</p>
+      </div>
+    ) : (
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {images.map((image) => (
+          <ImageTile
+            key={image.id}
+            image={image}
+            term={term}
+            className="h-24 w-24 flex-shrink-0 sm:h-28 sm:w-28"
+          />
+        ))}
+      </div>
     );
   }
 
@@ -438,35 +469,12 @@ export function ImageSearchResults({
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {gridCells.map((image, i) =>
             image ? (
-              <a
+              <ImageTile
                 key={image.id}
-                href={image.foreign_landing_url ?? image.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={image.attribution || image.title}
-                className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
-              >
-                {image.thumbnail ?? image.url ? (
-                  // Openverse serves a proxied thumbnail designed for embedding;
-                  // clicking opens the image's source page.
-                  <img
-                    src={image.thumbnail ?? image.url}
-                    alt={image.title || term}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <ImageOff className="h-5 w-5 text-muted-foreground/50" />
-                  </div>
-                )}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-                  <p className="truncate">{image.title || term}</p>
-                  <p className="truncate opacity-80">
-                    {image.creator ? `${image.creator} · ${image.provider}` : image.provider}
-                  </p>
-                </div>
-              </a>
+                image={image}
+                term={term}
+                className="aspect-square"
+              />
             ) : (
               <div
                 key={`placeholder-${i}`}
@@ -578,5 +586,65 @@ function SkeletonPills() {
       <div className="h-6 w-28 flex-shrink-0 animate-pulse rounded-full bg-muted" />
       <div className="h-6 w-36 flex-shrink-0 animate-pulse rounded-full bg-muted" />
     </div>
+  );
+}
+
+function SkeletonStrip() {
+  return (
+    <div
+      aria-hidden
+      className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {Array.from({ length: 12 }, (_, i) => (
+        <div
+          key={i}
+          className="h-24 w-24 flex-shrink-0 animate-pulse rounded-lg border border-border bg-muted sm:h-28 sm:w-28"
+        />
+      ))}
+    </div>
+  );
+}
+
+function ImageTile({
+  image,
+  term,
+  className,
+}: {
+  image: OpenverseImage;
+  term: string;
+  className?: string;
+}) {
+  return (
+    <a
+      href={image.foreign_landing_url ?? image.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={image.attribution || image.title}
+      className={cn(
+        'group relative block overflow-hidden rounded-lg border border-border bg-muted',
+        className,
+      )}
+    >
+      {image.thumbnail ?? image.url ? (
+        // Openverse serves a proxied thumbnail designed for embedding;
+        // clicking opens the image's source page.
+        <img
+          src={image.thumbnail ?? image.url}
+          alt={image.title || term}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <ImageOff className="h-5 w-5 text-muted-foreground/50" />
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+        <p className="truncate">{image.title || term}</p>
+        <p className="truncate opacity-80">
+          {image.creator ? `${image.creator} · ${image.provider}` : image.provider}
+        </p>
+      </div>
+    </a>
   );
 }

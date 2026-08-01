@@ -8,6 +8,7 @@ import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
+import { ImageSearchResults } from './dictionary/image-search-results';
 import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
@@ -243,6 +244,17 @@ export function DictionaryPopup({
             word={token.text}
             contextText={context?.text}
             entryFound={entries.length > 0}
+          />
+
+          {/* Compact image strip — one scrolling row, 3 images per query */}
+          <ImageSearchResults
+            variant="compact"
+            term={token.text}
+            l2Code={l2Code}
+            l1Code={l1Code}
+            definition={entries[0]?.definitions?.[0]}
+            contextText={context?.text}
+            contextForm={context?.form ?? token.text}
           />
 
           {/* Unrecognized saved words (Tier 2 — legacy data) */}
