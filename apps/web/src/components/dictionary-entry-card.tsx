@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
-import { BookOpen, CalendarClock, ExternalLink, Video } from 'lucide-react';
+import { BookmarkCheck, BookOpen, ExternalLink, Video } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
@@ -236,13 +236,13 @@ export function DictionaryEntryCard({
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
           <div className="mt-2 space-y-1 rounded-md bg-muted/40 px-2.5 py-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <CalendarClock className="h-3 w-3 shrink-0" />
-              <span className="truncate">{t('label.saved')} · {saveDateStr}</span>
+            <div className="flex items-start gap-1.5">
+              <BookmarkCheck className="mt-0.5 h-3 w-3 shrink-0" />
+              <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
+                <span>{saveDateStr}</span>
+                {contextSentence && <> · “{contextSentence}”</>}
+              </p>
             </div>
-            {contextSentence && (
-              <p className="truncate" lang={l2Code}>“{contextSentence}”</p>
-            )}
             {sourceLabel && (
               <div className="flex items-center gap-1.5">
                 {hasVideoSource
@@ -409,13 +409,13 @@ export function DictionaryEntryCard({
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
         <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4 shrink-0" />
-            <span>{t('label.saved')} · {saveDateStr}</span>
+          <div className="flex items-start gap-2">
+            <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
+              <span>{saveDateStr}</span>
+              {contextSentence && <> · “{contextSentence}”</>}
+            </p>
           </div>
-          {contextSentence && (
-            <p className="truncate" lang={l2Code}>“{contextSentence}”</p>
-          )}
           {sourceLabel && (
             <div className="flex items-center gap-2">
               {hasVideoSource
