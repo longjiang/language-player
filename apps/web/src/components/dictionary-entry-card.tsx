@@ -254,17 +254,17 @@ export function DictionaryEntryCard({
 
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
-          <div className="mt-2 text-sm text-muted-foreground">
+          <div className="mt-2 text-xs text-muted-foreground">
             <p className="line-clamp-3" lang={l2Code}>
-              <BookmarkCheck className="inline h-3.5 w-3.5 align-[-2px]" />
+              <BookmarkCheck className="inline h-3 w-3 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
               {(hasVideoSource || hasTextSource) && (
                 <>
                   {' · '}
                   {hasVideoSource
-                    ? <Video className="inline h-3.5 w-3.5 align-[-2px]" />
-                    : <BookOpen className="inline h-3.5 w-3.5 align-[-2px]" />}
+                    ? <Video className="inline h-3 w-3 align-[-2px]" />
+                    : <BookOpen className="inline h-3 w-3 align-[-2px]" />}
                   {sourceLabel && <> {' '}{sourceLabel}</>}
                 </>
               )}
