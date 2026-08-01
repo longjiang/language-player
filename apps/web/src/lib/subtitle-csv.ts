@@ -37,6 +37,34 @@ export function parseCSVSubtitles(csv: string): SubtitleLine[] {
   }));
 }
 
+// ── Subtitle line duration helpers ───────────────────────────────────────
+
+/**
+ * Strip a leading duration prefix from subtitle text.
+ * Raw format: "0.64,来" → "来". Some legacy Directus subs_l2 rows store the
+ * duration as a float + comma prefix inside the line text.
+ */
+export function stripSubtitleDurationPrefix(text: string): string {
+  return text.replace(/^[\d.]+,\s*/, '');
+}
+
+/**
+ * Duration (seconds) of a subtitle line. Prefers the parsed `duration`
+ * field — from the subs_l2 CSV `duration` column or YouTube captions — and
+ * falls back to the legacy "0.64," prefix embedded in the raw line text.
+ */
+export function extractSubtitleDuration(
+  line: { duration?: number; l2Line?: string; line?: string },
+): number | undefined {
+  if (line.duration != null && line.duration > 0) return line.duration;
+  const m = /^([\d.]+),/.exec(line.l2Line ?? line.line ?? '');
+  if (m) {
+    const d = parseFloat(m[1]!);
+    if (!Number.isNaN(d) && d > 0) return d;
+  }
+  return undefined;
+}
+
 // ── Subtitle line synchronization ────────────────────────────────────────
 
 // Re-export from shared package — single source of truth.
