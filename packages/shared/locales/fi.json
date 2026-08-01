@@ -797,7 +797,6 @@
         "swap_languages": "Vaihda kieliä",
         "tap_any_word_to_lookup": "Napauta mitä tahansa sanaa etsiäksesi sitä",
         "tap_to_open": "Avaa napauttamalla",
-        "this_form": "Tämä muoto",
         "time_spent_learning": "Aika käytetty {language} oppimiseen Language Playerissa",
         "today": "Tänään",
         "tokenizer_desc": "Tokenisaatio + lemmatisointi {l2}-kielelle. Katso, miten teksti jakautuu yksittäisiin sanoihin ja niiden perusmuotoihin.",

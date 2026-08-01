@@ -41,6 +41,8 @@ interface VideoControlBarProps {
   hasNextLine?: boolean;
   hasPreviousVideo?: boolean;
   hasNextVideo?: boolean;
+  /** Optional "Video X of Y" label shown between the prev/next video buttons. */
+  videoCountText?: string | null;
   className?: string;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
@@ -65,6 +67,7 @@ export function VideoControlBar({
   hasNextLine = true,
   hasPreviousVideo = false,
   hasNextVideo = false,
+  videoCountText,
   className,
   reduced = false,
   translatingText,
@@ -123,6 +126,11 @@ export function VideoControlBar({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
+        {videoCountText && (
+          <span className="px-1 text-xs tabular-nums text-muted-foreground">
+            {videoCountText}
+          </span>
+        )}
         <Button
           variant="ghost"
           size="icon"

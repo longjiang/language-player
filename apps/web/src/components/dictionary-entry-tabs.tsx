@@ -113,6 +113,7 @@ export function DictionaryEntryTabs({
         {tab === 'examples' && (
           <SubsSearchResults
             term={searchTermString}
+            headTerm={headTerm}
             exactMatch={exactMatch}
             onExactToggle={setExactMatch}
             formCount={formCount}

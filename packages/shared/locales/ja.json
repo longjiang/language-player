@@ -797,7 +797,6 @@
         "swap_languages": "言語を入れ替える",
         "tap_any_word_to_lookup": "単語をタップして調べる",
         "tap_to_open": "タップして開く",
-        "this_form": "この活用形",
         "time_spent_learning": "Language Playerで{language}の学習に費やした時間",
         "today": "今日",
         "tokenizer_desc": "{l2}のトークン化とレンマ化。テキストがどのように個々の単語とその基本形に分解されるかを確認してください。",
