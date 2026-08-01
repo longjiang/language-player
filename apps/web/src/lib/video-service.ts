@@ -151,6 +151,7 @@ export async function fetchYouTubeL2Captions(
     return data.map((c) => ({
       starttime: c.start,
       line: c.text,
+      duration: c.duration,
     }));
   } catch {
     return [];

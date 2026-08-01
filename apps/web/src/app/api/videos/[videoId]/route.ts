@@ -3,10 +3,14 @@ import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { parseCSVSubtitles } from '@/lib/subtitle-csv';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { fetchYouTubeL2Captions } from '@/lib/video-service';
 
-/** Parse ISO 8601 duration string (PT1H23M45S) into seconds. */
-function parseDuration(iso: string | undefined): number | undefined {
-  if (!iso) return undefined;
+/** Parse duration into seconds — accepts ISO 8601 (PT1H23M45S) or a raw number.
+ *  Directus videos come back as ISO strings; the YouTube fallback for imported
+ *  videos returns seconds as a number. */
+function parseDuration(iso: string | number | undefined): number | undefined {
+  if (iso == null) return undefined;
+  if (typeof iso === 'number') return iso;
   const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
   if (!m) return undefined;
   return (parseInt(m[1] ?? '0') * 3600) + (parseInt(m[2] ?? '0') * 60) + parseFloat(m[3] ?? '0');
@@ -54,12 +58,25 @@ export async function GET(
     }
 
     // Wrap L2 lines as SyncedLine with empty L1 (translations come later via /translate_array)
-    const syncedLines: SyncedLine[] = l2Lines.map((l) => ({
+    let syncedLines: SyncedLine[] = l2Lines.map((l) => ({
       starttime: l.starttime,
       duration: l.duration,
       l1Line: '',
       l2Line: l.line,
     }));
+
+    // Imported video (not in our DB) or DB video without saved subs: the Flask
+    // /videos response has no lines, so fetch captions from YouTube through the
+    // captions endpoint (same best-locale logic Nuxt uses, server-side).
+    if (syncedLines.length === 0) {
+      const captions = await fetchYouTubeL2Captions(params.videoId, l2);
+      syncedLines = captions.map((l) => ({
+        starttime: l.starttime,
+        duration: l.duration,
+        l1Line: '',
+        l2Line: l.line,
+      }));
+    }
 
     // Build video object
     const video: YouTubeVideo = {
