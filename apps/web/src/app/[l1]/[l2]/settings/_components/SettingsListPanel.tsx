@@ -40,7 +40,14 @@ export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps)
   useEffect(() => {
     const result: Record<string, string[]> = {};
     for (const [category, keys] of Object.entries(SETTINGS_SEARCH_KEYS)) {
-      result[category] = keys.map(key => t(key).toLowerCase());
+      result[category] = keys
+        .map((key) => {
+          const raw = t.raw(key);
+          // Skip messages with ICU placeholders ({l2}, {count}, …) — they need
+          // values at translate time and don't make useful search terms anyway.
+          return typeof raw === 'string' && !raw.includes('{') ? raw.toLowerCase() : '';
+        })
+        .filter(Boolean);
     }
     setLocalizedLabels(result);
   }, [l1.code, t]);
