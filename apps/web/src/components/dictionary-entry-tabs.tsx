@@ -110,7 +110,10 @@ export function DictionaryEntryTabs({
         {tab === 'deepseek' && (
           <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
         )}
-        {tab === 'examples' && (
+        {/* Prefetch strategy: Examples/Images/Inflections stay mounted (hidden)
+            so their fetches start as soon as the tabs mount or the entry changes.
+            Switching tabs only toggles visibility, so nothing is loaded twice. */}
+        <div className={tab === 'examples' ? '' : 'hidden'}>
           <SubsSearchResults
             term={searchTermString}
             headTerm={headTerm}
@@ -119,8 +122,8 @@ export function DictionaryEntryTabs({
             formCount={formCount}
             embedded
           />
-        )}
-        {tab === 'images' && (
+        </div>
+        <div className={tab === 'images' ? '' : 'hidden'}>
           <ImageSearchResults
             term={entry.head}
             l2Code={l2Code}
@@ -129,10 +132,10 @@ export function DictionaryEntryTabs({
             contextText={contextText}
             contextForm={contextForm}
           />
-        )}
-        {tab === 'inflections' && (
+        </div>
+        <div className={tab === 'inflections' ? '' : 'hidden'}>
           <InflectionTable head={entry.head} l2Code={l2Code} embedded />
-        )}
+        </div>
       </TabbedPanel>
     </div>
   );
