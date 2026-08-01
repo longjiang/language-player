@@ -6,11 +6,10 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Globe, Loader2, PanelRightClose, PanelRight, X } from 'lucide-react';
+import { Sidebar } from '@/components/ui/sidebar';
+import { Globe, Loader2, PanelRightClose, PanelRight } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { cn } from '@/lib/utils';
 
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -92,25 +91,6 @@ export default function WebReaderPage() {
   }, [text]);
 
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
-
-  // Shared sidebar panel — rendered in the desktop aside and the mobile sheet.
-  const renderSidebarPanel = (onClose?: () => void) => (
-    <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-        <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="ml-auto rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label={t('action.close')}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-      <div className="flex-1" />
-    </div>
-  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
@@ -218,27 +198,15 @@ export default function WebReaderPage() {
           )}
         </div>
 
-        {/* Sidebar — persistent panel on desktop */}
-        <aside
-          className={cn(
-            'hidden lg:flex flex-shrink-0 transition-all duration-200',
-            sidebarOpen ? 'w-64 ml-3' : 'lg:w-0 overflow-hidden',
-          )}
-        >
-          {renderSidebarPanel()}
-        </aside>
+        {/* Sidebar — shared desktop panel + mobile sheet */}
+        <Sidebar
+          open={mobileSidebarOpen}
+          onOpenChange={setMobileSidebarOpen}
+          sidebarOpen={sidebarOpen}
+          title={t('title.notes')}
+          desktopClassName="w-64 ml-3"
+        />
       </div>
-
-      {/* Mobile: sidebar as a slide-in sheet overlay */}
-      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent
-          side="right"
-          className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
-          showCloseButton={false}
-        >
-          {renderSidebarPanel(() => setMobileSidebarOpen(false))}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

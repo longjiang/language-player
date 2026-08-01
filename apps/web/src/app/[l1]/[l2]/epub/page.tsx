@@ -6,14 +6,13 @@ import { useT } from '@/hooks/use-t';
 import type { SavedWordContext } from '@langplayer/shared';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { cn } from '@/lib/utils';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { useEpub } from '@/hooks/use-epub';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sidebar } from '@/components/ui/sidebar';
 import {
-  BookOpen, Loader2, PanelRightClose, PanelRight, X,
+  BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight, X,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -98,23 +97,6 @@ export default function EpubPage() {
     text: stripMarkdown(text).slice(0, 200),
     textTitle: epub.chapterTitle || epub.fileName || 'EPUB Reader',
   };
-
-  // Shared sidebar panel — rendered in the desktop aside and the mobile sheet.
-  const renderSidebarPanel = (onClose?: () => void) => (
-    <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
-      <EpubChapterSidebar
-        toc={epub.toc}
-        currentChapterHref={epub.chapterHref}
-        loading={epub.loading}
-        onClose={onClose}
-        onLoadChapter={handleLoadChapter}
-        onPrevChapter={epub.prevChapter}
-        onNextChapter={epub.nextChapter}
-        hasPrevChapter={!!epub.prevHref}
-        hasNextChapter={!!epub.nextHref}
-      />
-    </div>
-  );
 
   // Loading state while restoring from storage
   if (!initialized) {
@@ -250,31 +232,50 @@ export default function EpubPage() {
           ) : null}
         </div>
 
-        {/* Sidebar — persistent panel on desktop */}
+        {/* Sidebar — shared desktop panel + mobile sheet */}
         {epub.toc.length > 0 && (
-          <aside
-            className={cn(
-              'hidden lg:flex flex-shrink-0 transition-all duration-200',
-              sidebarOpen ? 'w-64 ml-3' : 'lg:w-0 overflow-hidden',
-            )}
+          <Sidebar
+            open={mobileSidebarOpen}
+            onOpenChange={setMobileSidebarOpen}
+            sidebarOpen={sidebarOpen}
+            title={t('msg.chapters')}
+            desktopClassName="w-64 ml-3"
+            headerActions={
+              <>
+                <button
+                  onClick={epub.prevChapter}
+                  disabled={!epub.prevHref || epub.loading}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  {t('action.previous_chapter')}
+                </button>
+                <button
+                  onClick={epub.nextChapter}
+                  disabled={!epub.nextHref || epub.loading}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+                >
+                  {t('action.next_chapter')}
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </>
+            }
+            footer={
+              <div className="px-3 py-2">
+                <p className="text-xs text-muted-foreground">
+                  {epub.toc.length} {t('msg.chapters')}
+                </p>
+              </div>
+            }
           >
-            {renderSidebarPanel()}
-          </aside>
+            <EpubChapterSidebar
+              toc={epub.toc}
+              currentChapterHref={epub.chapterHref}
+              onLoadChapter={handleLoadChapter}
+            />
+          </Sidebar>
         )}
       </div>
-
-      {/* Mobile: sidebar as a slide-in sheet overlay */}
-      {epub.toc.length > 0 && (
-        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-          <SheetContent
-            side="right"
-            className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
-            showCloseButton={false}
-          >
-            {renderSidebarPanel(() => setMobileSidebarOpen(false))}
-          </SheetContent>
-        </Sheet>
-      )}
     </div>
   );
 }

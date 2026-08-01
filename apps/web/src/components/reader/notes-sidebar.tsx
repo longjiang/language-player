@@ -1,14 +1,22 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { NoteListItem } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import {
   Loader2, Plus, PenLine, Trash2,
-  MoreHorizontal, X,
+  MoreHorizontal,
 } from 'lucide-react';
 
 export interface NotesSidebarProps {
@@ -17,8 +25,6 @@ export interface NotesSidebarProps {
   notesError: string | null;
   currentNoteId: number | null;
   session: any;
-  /** Shown on narrow screens to close the sidebar overlay sheet. */
-  onClose?: () => void;
   onSelectNote: (noteId: number) => void;
   onNewNote: () => void;
   onRenameNote: (noteId: number, newTitle: string) => Promise<void>;
@@ -31,7 +37,6 @@ export function NotesSidebar({
   notesError,
   currentNoteId,
   session,
-  onClose,
   onSelectNote,
   onNewNote,
   onRenameNote,
@@ -40,35 +45,45 @@ export function NotesSidebar({
   const t = useT();
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const [renameTarget, setRenameTarget] = useState<NoteListItem | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<NoteListItem | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleRename = useCallback(async (noteId: number) => {
+  const openRename = (noteId: number) => {
     setMenuOpen(null);
-    const note = notes.find(n => n.id === noteId);
-    const newTitle = prompt(t('action.rename'), note?.title || '');
-    if (!newTitle || newTitle.trim() === '' || newTitle.trim() === note?.title) return;
-    await onRenameNote(noteId, newTitle.trim());
-  }, [notes, t, onRenameNote]);
+    const note = notes.find((n) => n.id === noteId);
+    setRenameTarget(note ?? null);
+    setRenameDraft(note?.title || '');
+  };
 
-  const handleDelete = useCallback(async (noteId: number) => {
-    setMenuOpen(null);
-    if (!confirm(t('msg.confirm_delete_note'))) return;
-    await onDeleteNote(noteId);
-  }, [t, onDeleteNote]);
+  const confirmRename = async () => {
+    if (!renameTarget) return;
+    const newTitle = renameDraft.trim();
+    if (newTitle && newTitle !== renameTarget.title) {
+      setBusy(true);
+      try {
+        await onRenameNote(renameTarget.id, newTitle);
+      } finally {
+        setBusy(false);
+      }
+    }
+    setRenameTarget(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setBusy(true);
+    try {
+      await onDeleteNote(deleteTarget.id);
+    } finally {
+      setBusy(false);
+      setDeleteTarget(null);
+    }
+  };
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-        <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="ml-auto rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label={t('action.close')}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
       <div className="px-3 py-2">
         <Button
           variant="outline"
@@ -81,52 +96,52 @@ export function NotesSidebar({
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto px-1">
-            {notesLoading && (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
+        {notesLoading && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {notesError && (
+          <p className="px-3 py-4 text-xs text-red-500">{notesError}</p>
+        )}
+        {!notesLoading && !notesError && notes.length === 0 && session && (
+          <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</p>
+        )}
+        {!notesLoading && !session && (
+          <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
+        )}
+        {notes.map((note) => (
+          <div
+            key={note.id}
+            className={cn(
+              'group flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors cursor-pointer',
+              'hover:bg-muted',
+              currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
             )}
-            {notesError && (
-              <p className="px-3 py-4 text-xs text-red-500">{notesError}</p>
-            )}
-            {!notesLoading && !notesError && notes.length === 0 && session && (
-              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</p>
-            )}
-            {!notesLoading && !session && (
-              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
-            )}
-            {notes.map((note) => (
-              <div
-                key={note.id}
-                className={cn(
-                  'group flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors cursor-pointer',
-                  'hover:bg-muted',
-                  currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
-                )}
-                onClick={() => onSelectNote(note.id)}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="truncate">{note.title || t('msg.untitled_note')}</div>
-                  {note.created_on && (
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(note.created_on).toLocaleDateString()}
-                    </div>
-                  )}
+            onClick={() => onSelectNote(note.id)}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate">{note.title || t('msg.untitled_note')}</div>
+              {note.created_on && (
+                <div className="text-xs text-muted-foreground">
+                  {new Date(note.created_on).toLocaleDateString()}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-                    setMenuOpen(menuOpen === note.id ? null : note.id);
-                  }}
-                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
-                  title={t('action.more')}
-                >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
+              )}
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                setMenuOpen(menuOpen === note.id ? null : note.id);
+              }}
+              className="flex-shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+              title={t('action.more')}
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Portal action menu */}
@@ -138,13 +153,13 @@ export function NotesSidebar({
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => handleRename(menuOpen)}
+              onClick={() => openRename(menuOpen)}
               className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <PenLine className="h-3.5 w-3.5" /> {t('action.rename')}
             </button>
             <button
-              onClick={() => handleDelete(menuOpen)}
+              onClick={() => { setDeleteTarget(notes.find((n) => n.id === menuOpen) ?? null); setMenuOpen(null); }}
               className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" /> {t('action.delete')}
@@ -153,6 +168,51 @@ export function NotesSidebar({
         </div>,
         document.body,
       )}
+
+      {/* Rename dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(o) => { if (!o) setRenameTarget(null); }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('action.rename')}</DialogTitle>
+          </DialogHeader>
+          <input
+            autoFocus
+            value={renameDraft}
+            onChange={(e) => setRenameDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); confirmRename(); }
+            }}
+            placeholder={t('msg.untitled_note')}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>
+              {t('action.cancel')}
+            </Button>
+            <Button onClick={confirmRename} disabled={busy || !renameDraft.trim()}>
+              {t('action.rename')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('action.delete')}</DialogTitle>
+            <DialogDescription>{t('msg.confirm_delete_note')}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              {t('action.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={busy}>
+              {t('action.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

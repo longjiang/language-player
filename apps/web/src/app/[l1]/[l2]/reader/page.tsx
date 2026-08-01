@@ -9,14 +9,13 @@ import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@lan
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { cn } from '@/lib/utils';
 import {
   Loader2, BookOpen, PenLine,
   PanelRightClose, PanelRight,
 } from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { NotesSidebar } from '@/components/reader/notes-sidebar';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sidebar } from '@/components/ui/sidebar';
 
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -231,24 +230,6 @@ export default function ReaderPage() {
 
   const ctx: Partial<SavedWordContext> = { text: stripMarkdown(text).slice(0, 200), textTitle: title || 'Reader' };
 
-  // Shared sidebar panel — rendered in the desktop aside and the mobile sheet.
-  const renderSidebarPanel = (onClose?: () => void) => (
-    <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
-      <NotesSidebar
-        notes={notes}
-        notesLoading={notesLoading}
-        notesError={notesError}
-        currentNoteId={currentNoteId}
-        session={session}
-        onClose={onClose}
-        onSelectNote={handleSelectNote}
-        onNewNote={handleNewNote}
-        onRenameNote={handleRenameNote}
-        onDeleteNote={handleDeleteNote}
-      />
-    </div>
-  );
-
   if (loading && !text) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -350,27 +331,27 @@ export default function ReaderPage() {
           />
         </div>
 
-        {/* Sidebar — persistent panel on desktop */}
-        <aside
-          className={cn(
-            'hidden lg:flex flex-shrink-0 transition-all duration-200',
-            sidebarOpen ? 'w-64 ml-3' : 'lg:w-0 overflow-hidden',
-          )}
+        {/* Sidebar — shared desktop panel + mobile sheet */}
+        <Sidebar
+          open={mobileSidebarOpen}
+          onOpenChange={setMobileSidebarOpen}
+          sidebarOpen={sidebarOpen}
+          title={t('title.notes')}
+          desktopClassName="w-64 ml-3"
         >
-          {renderSidebarPanel()}
-        </aside>
+          <NotesSidebar
+            notes={notes}
+            notesLoading={notesLoading}
+            notesError={notesError}
+            currentNoteId={currentNoteId}
+            session={session}
+            onSelectNote={handleSelectNote}
+            onNewNote={handleNewNote}
+            onRenameNote={handleRenameNote}
+            onDeleteNote={handleDeleteNote}
+          />
+        </Sidebar>
       </div>
-
-      {/* Mobile: sidebar as a slide-in sheet overlay */}
-      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent
-          side="right"
-          className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
-          showCloseButton={false}
-        >
-          {renderSidebarPanel(() => setMobileSidebarOpen(false))}
-        </SheetContent>
-      </Sheet>
 
       {error && (
         <div className="flex-shrink-0 mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 shadow-lg">{error}</div>
