@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WordList } from '@/components/dictionary/word-list';
-import { SavedWordRow } from '@/components/dictionary/saved-word-row';
+import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-card';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { decomposeWordId } from '@langplayer/shared';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
@@ -296,7 +296,7 @@ function SavedWordGroup({
         const card = getCard(l2Code, word.id);
         const srsStatus = getSrsStatus(card);
         return (
-          <SavedWordRow
+          <SavedWordEntryCard
             key={`${word.id}-${word.date}`}
             word={word}
             l1Code={l1Code}
