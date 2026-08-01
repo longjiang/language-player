@@ -21,7 +21,9 @@ interface MarkdownExplanationProps {
  *   1. streaming — plain formatted markdown, no tokenization (backticked L2
  *      spans show as regular inline code);
  *   2. finished — the markdown is re-rendered and backticked L2 spans are
- *      swapped for interactive TokenizedText with a muted highlight.
+ *      swapped for interactive TokenizedText. Tokens stay clickable for
+ *      dictionary lookup but render plain: no saved-word highlighting, quick
+ *      gloss, byeonggi, or interlinear definitions.
  */
 export function MarkdownExplanation({ text, l2Code, streaming = false }: MarkdownExplanationProps) {
   // Memoize the renderer so its identity is stable across re-renders. An inline
@@ -42,7 +44,16 @@ export function MarkdownExplanation({ text, l2Code, streaming = false }: Markdow
         // with a muted highlight, matching <code> styling without the ticks
         return (
           <span className="rounded bg-muted px-0.5 py-px">
-            <TokenizedText text={content} l2Code={l2Code} textScale={0} leading="none" />
+            <TokenizedText
+              text={content}
+              l2Code={l2Code}
+              textScale={0}
+              leading="none"
+              highlightSaved={false}
+              quickGloss={false}
+              showDefinition={false}
+              byeonggi={false}
+            />
           </span>
         );
       },
