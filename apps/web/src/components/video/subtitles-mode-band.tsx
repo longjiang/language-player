@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useTextScale } from '@/hooks/use-text-scale';
 import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import type { SyncedLine } from '@/lib/subtitle-csv';
@@ -44,6 +45,7 @@ export function SubtitlesModeBand({
   const { l2 } = useLanguage();
   const { display } = useSettingsContext();
   const t = useT();
+  const textZoomFactor = useTextScale();
   const showTranslation = display.translation;
 
   const activeIndex = useMemo(() => {
@@ -159,7 +161,10 @@ export function SubtitlesModeBand({
               />
             </div>
             {showTranslation && activeLine.l1Line && (
-              <p className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}>
+              <p
+                className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
+                style={{ fontSize: `${0.875 * textZoomFactor}rem` }}
+              >
                 {activeLine.l1Line}
               </p>
             )}

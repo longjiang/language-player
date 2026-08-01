@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { useTextScale } from '@/hooks/use-text-scale';
 import { useSpeech } from '@/hooks/use-speech';
 import { languageName } from '@/lib/language-data';
 import { log } from '@/lib/logger';
@@ -56,6 +57,7 @@ export function TextActionMenu({
   const { l1 } = useLanguage();
   const effectiveL1 = l1Code ?? l1.code;
   const t = useT();
+  const textZoomFactor = useTextScale();
   const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
   const { text: explainText, error: explainError, loading: explainLoading, stream: streamExplain, reset: resetExplain } = useStreamingExplanation();
   const [activeAction, setActiveAction] = useState<ActionKind | null>(null);
@@ -249,7 +251,12 @@ export function TextActionMenu({
           {translateError ? (
             <p className="text-sm text-destructive">{translateError}</p>
           ) : (
-            <div className="text-sm whitespace-pre-wrap leading-relaxed">{translateText}</div>
+            <div
+              className="text-sm whitespace-pre-wrap leading-relaxed"
+              style={{ fontSize: `${0.875 * textZoomFactor}rem` }}
+            >
+              {translateText}
+            </div>
           )}
         </div>
       )}
