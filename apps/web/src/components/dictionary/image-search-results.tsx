@@ -13,6 +13,70 @@ const PAGE_SIZE = 20;
 const THUMBNAIL_TIMEOUT_MS = 5000;
 const OWNER_MAX_IMAGES = 2;
 
+// ── Caches (in-memory + sessionStorage) ──
+// Openverse results, LLM queries and thumbnail liveness are stable within a
+// session. The Maps make repeat lookups instant; sessionStorage backs them so
+// reloads don't redo work either, while expiring naturally when the tab
+// session ends (no stale-data TTL needed).
+const searchCache = new Map<string, OpenverseImage[]>();
+const llmQueryCache = new Map<string, string[]>();
+const thumbnailCache = new Map<string, boolean>(); // URL → alive
+
+const STORAGE_PREFIX = 'lp:imageSearch:';
+
+function storageGet<T>(key: string): T | undefined {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw === null ? undefined : JSON.parse(raw) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+function storageSet(key: string, value: unknown) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Quota/availability errors must never break the search.
+  }
+}
+
+function getSearchCache(query: string): OpenverseImage[] | undefined {
+  if (searchCache.has(query)) return searchCache.get(query);
+  const stored = storageGet<OpenverseImage[]>(`${STORAGE_PREFIX}results:${query}`);
+  if (stored !== undefined) searchCache.set(query, stored);
+  return stored;
+}
+
+function setSearchCache(query: string, results: OpenverseImage[]) {
+  searchCache.set(query, results);
+  storageSet(`${STORAGE_PREFIX}results:${query}`, results);
+}
+
+function getLlmCache(key: string): string[] | undefined {
+  if (llmQueryCache.has(key)) return llmQueryCache.get(key);
+  const stored = storageGet<string[]>(`${STORAGE_PREFIX}queries:${key}`);
+  if (stored !== undefined) llmQueryCache.set(key, stored);
+  return stored;
+}
+
+function setLlmCache(key: string, queries: string[]) {
+  llmQueryCache.set(key, queries);
+  storageSet(`${STORAGE_PREFIX}queries:${key}`, queries);
+}
+
+function getThumbnailStatus(url: string): boolean | undefined {
+  if (thumbnailCache.has(url)) return thumbnailCache.get(url);
+  const stored = storageGet<boolean>(`${STORAGE_PREFIX}thumb:${url}`);
+  if (stored !== undefined) thumbnailCache.set(url, stored);
+  return stored;
+}
+
+function setThumbnailStatus(url: string, alive: boolean) {
+  thumbnailCache.set(url, alive);
+  storageSet(`${STORAGE_PREFIX}thumb:${url}`, alive);
+}
+
 interface OpenverseImage {
   id: string;
   title: string;
@@ -59,6 +123,9 @@ async function sniffThumbnail(
   const target = img.thumbnail ?? img.url;
   if (!target) return img;
 
+  const cached = getThumbnailStatus(target);
+  if (cached !== undefined) return cached ? img : null;
+
   const timedOut: Promise<null> = new Promise((resolve) => {
     setTimeout(() => resolve(null), THUMBNAIL_TIMEOUT_MS);
   });
@@ -70,9 +137,11 @@ async function sniffThumbnail(
     ]);
     if (res === null) return img; // timed out — keep rather than risk a false drop
     if (!res.ok && res.status !== 429) {
+      setThumbnailStatus(target, false);
       log('[ImageSearch] Thumbnail dead, filtered:', img.title, target, `HTTP ${res.status}`);
       return null;
     }
+    setThumbnailStatus(target, true);
     return img;
   } catch {
     return img; // CORS/network error — can't verify, keep (img tag may still load it)
@@ -88,14 +157,28 @@ async function sniffThumbnail(
  */
 async function fetchQueryResults(query: string, signal: AbortSignal): Promise<OpenverseImage[]> {
   const words = query.split(/\s+/).filter(Boolean);
-  for (let i = words.length; i >= 1; i--) {
+  // Try the relaxed variant first: LLM queries often end in words like
+  // "substance" or "compound" that rarely appear in captions, so the full
+  // string usually comes back empty anyway — skip it and save a call. The
+  // ladder below still drops more words if the relaxed variant is also empty.
+  const start = words.length > 2 ? words.length - 1 : words.length;
+  for (let i = start; i >= 1; i--) {
     const candidate = words.slice(0, i).join(' ');
+    const cached = getSearchCache(candidate);
+    if (cached !== undefined) {
+      if (cached.length > 0) return cached;
+      continue; // known empty — try a shorter candidate
+    }
+    if (i === start && start < words.length) {
+      log('[ImageSearch] Pre-relaxed:', query, '→', candidate);
+    }
     const url = `${OPENVERSE_IMAGES_URL}?q=${encodeURIComponent(candidate)}&page_size=${PAGE_SIZE}&filter_dead=true`;
     log('[ImageSearch] Openverse fetch:', candidate, url);
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json() as OpenverseResponse;
     const results = data.results ?? [];
+    setSearchCache(candidate, results);
     if (results.length > 0) {
       if (candidate !== query) log('[ImageSearch] Query relaxed:', query, '→', candidate);
       return results;
@@ -167,31 +250,35 @@ export function ImageSearchResults({
     const run = async () => {
       // 1. Ask the backend for LLM-rewritten queries (cached server-side).
       //    Fall back to a direct search if the LLM step is unavailable.
-      let searchQueries: string[] = [];
-      try {
-        const res = await fetch(`${PYTHON_API_URL}/dictionary/image-queries`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            word: term,
-            l2: l2Code,
-            l1: l1Code,
-            definition,
-            context: contextText,
-            contextForm,
-          }),
-          signal: controller.signal,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.queries)) {
-            searchQueries = data.queries.filter(
-              (q: unknown): q is string => typeof q === 'string' && q.trim().length > 0,
-            );
+      const llmCacheKey = [l2Code, term, l1Code, definition ?? '', contextText ?? '', contextForm ?? ''].join('|');
+      let searchQueries = getLlmCache(llmCacheKey) ?? [];
+      if (searchQueries.length === 0) {
+        try {
+          const res = await fetch(`${PYTHON_API_URL}/dictionary/image-queries`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              word: term,
+              l2: l2Code,
+              l1: l1Code,
+              definition,
+              context: contextText,
+              contextForm,
+            }),
+            signal: controller.signal,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.queries)) {
+              searchQueries = data.queries.filter(
+                (q: unknown): q is string => typeof q === 'string' && q.trim().length > 0,
+              );
+              if (searchQueries.length > 0) setLlmCache(llmCacheKey, searchQueries);
+            }
           }
+        } catch {
+          // LLM unavailable — fall through to the direct search below.
         }
-      } catch {
-        // LLM unavailable — fall through to the direct search below.
       }
       if (cancelled) return;
 
