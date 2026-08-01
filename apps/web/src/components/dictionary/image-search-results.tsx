@@ -6,7 +6,7 @@ import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { cn } from '@/lib/utils';
 import { log } from '@/lib/logger';
-import { AlertCircle, ChevronLeft, ChevronRight, ImageOff, Loader2 } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 
 const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
 const PAGE_SIZE = 20;
@@ -288,21 +288,36 @@ export function ImageSearchResults({
     );
   }
 
+  const pageSize = cols * 3;
+
   if (!images) {
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <>
+        <SkeletonPills />
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" aria-hidden>
+          {Array.from({ length: pageSize }, (_, i) => (
+            <div
+              key={i}
+              className="aspect-square animate-pulse rounded-lg border border-border bg-muted"
+            />
+          ))}
+        </div>
+      </>
     );
   }
 
   const visibleImages = activeQuery
     ? images.filter((img) => img.sourceQuery === activeQuery)
     : images;
-  const pageSize = cols * 3;
   const pageCount = Math.max(1, Math.ceil(visibleImages.length / pageSize));
   const safePage = Math.min(page, pageCount - 1);
   const pageImages = visibleImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  // Always render a full three rows — muted placeholders fill the gaps so the
+  // grid never shifts between pages or states.
+  const gridCells: (OpenverseImage | null)[] = Array.from(
+    { length: pageSize },
+    (_, i) => pageImages[i] ?? null,
+  );
 
   const handleSelectQuery = (q: string | null) => {
     setActiveQuery(q);
@@ -334,37 +349,45 @@ export function ImageSearchResults({
       ) : (
       <>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {pageImages.map((image) => (
-            <a
-              key={image.id}
-              href={image.foreign_landing_url ?? image.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={image.attribution || image.title}
-              className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
-            >
-              {image.thumbnail ?? image.url ? (
-                // Openverse serves a proxied thumbnail designed for embedding;
-                // clicking opens the image's source page.
-                <img
-                  src={image.thumbnail ?? image.url}
-                  alt={image.title || term}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ImageOff className="h-5 w-5 text-muted-foreground/50" />
+          {gridCells.map((image, i) =>
+            image ? (
+              <a
+                key={image.id}
+                href={image.foreign_landing_url ?? image.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={image.attribution || image.title}
+                className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+              >
+                {image.thumbnail ?? image.url ? (
+                  // Openverse serves a proxied thumbnail designed for embedding;
+                  // clicking opens the image's source page.
+                  <img
+                    src={image.thumbnail ?? image.url}
+                    alt={image.title || term}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageOff className="h-5 w-5 text-muted-foreground/50" />
+                  </div>
+                )}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                  <p className="truncate">{image.title || term}</p>
+                  <p className="truncate opacity-80">
+                    {image.creator ? `${image.creator} · ${image.provider}` : image.provider}
+                  </p>
                 </div>
-              )}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-                <p className="truncate">{image.title || term}</p>
-                <p className="truncate opacity-80">
-                  {image.creator ? `${image.creator} · ${image.provider}` : image.provider}
-                </p>
-              </div>
-            </a>
-          ))}
+              </a>
+            ) : (
+              <div
+                key={`placeholder-${i}`}
+                aria-hidden
+                className="aspect-square rounded-lg border border-border bg-muted/50"
+              />
+            ),
+          )}
         </div>
 
         {pageCount > 1 && (
@@ -453,6 +476,20 @@ function QueryPills({
           {q}
         </button>
       ))}
+    </div>
+  );
+}
+
+function SkeletonPills() {
+  return (
+    <div
+      aria-hidden
+      className="mb-3 flex flex-nowrap items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <div className="h-6 w-24 flex-shrink-0 animate-pulse rounded-full bg-muted" />
+      <div className="h-6 w-32 flex-shrink-0 animate-pulse rounded-full bg-muted" />
+      <div className="h-6 w-28 flex-shrink-0 animate-pulse rounded-full bg-muted" />
+      <div className="h-6 w-36 flex-shrink-0 animate-pulse rounded-full bg-muted" />
     </div>
   );
 }
