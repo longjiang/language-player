@@ -9,6 +9,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
 import {
@@ -414,12 +415,11 @@ export function ReaderPanel({
                 <span className="mx-2 text-muted-foreground/30">|</span>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <span className="text-xs">{t('action.translation')}</span>
-                  <span className="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox" checked={showTranslation}
-                      onChange={e => updateDisplay({ translation: e.target.checked })}
-                      className="sr-only peer" />
-                    <div className="w-9 h-5 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
-                  </span>
+                  <Switch
+                    checked={showTranslation}
+                    onCheckedChange={(checked) => updateDisplay({ translation: checked })}
+                    className="shrink-0"
+                  />
                 </label>
               </div>
             </div>

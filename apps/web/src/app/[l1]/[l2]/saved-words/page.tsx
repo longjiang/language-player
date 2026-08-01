@@ -12,6 +12,14 @@ import {
   Loader2, Search, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-card';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { decomposeWordId } from '@langplayer/shared';
@@ -60,6 +68,7 @@ export default function SavedWordsPage() {
   const t = useT();
 
   const [filterText, setFilterText] = useState('');
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   const allWords = useMemo(() => getSavedWords(l2.code), [getSavedWords, l2.code]);
 
@@ -111,9 +120,8 @@ export default function SavedWordsPage() {
   };
 
   const handleClearAll = () => {
-    if (window.confirm(t('msg.confirm_clear_words'))) {
-      clearSavedWords(l2.code);
-    }
+    clearSavedWords(l2.code);
+    setConfirmClearOpen(false);
   };
 
   /** Navigate to the entry detail page for a saved word. */
@@ -192,7 +200,7 @@ export default function SavedWordsPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={handleClearAll}
+                onClick={() => setConfirmClearOpen(true)}
                 disabled={allWords.length === 0}
                 className="shrink-0 gap-1.5 px-2 sm:px-4"
                 title={t('action.clear_all')}
@@ -236,6 +244,24 @@ export default function SavedWordsPage() {
           </div>
         </>
       )}
+
+      {/* Clear-all confirmation dialog */}
+      <Dialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('action.clear_all')}</DialogTitle>
+            <DialogDescription>{t('msg.confirm_clear_words')}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmClearOpen(false)}>
+              {t('action.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleClearAll}>
+              {t('action.delete_all')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

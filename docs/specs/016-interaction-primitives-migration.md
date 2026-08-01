@@ -1,5 +1,7 @@
 # SPEC-016: Interaction Primitives — Headless UI Migration (Web + Mobile)
 
+> **Superseded for web**: the web portion of this spec (Phase 1, `@base-ui/react`) has been replaced by [SPEC-030](030-radix-ui-migration.md) and ADR-0020 — web primitives now use `@radix-ui/react`. This spec remains valid for the **mobile** portion (`@rn-primitives`, Phase 2).
+
 ## Metadata
 - **Spec ID**: SPEC-016
 - **Feature**: Migrate hand-rolled interaction components to headless UI primitives on both platforms

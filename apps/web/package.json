@@ -12,7 +12,6 @@
     "clean": "rm -rf .next && echo '.next cleared'"
   },
   "dependencies": {
-    "@base-ui/react": "^1.6.0",
     "@langplayer/api-client": "*",
     "@langplayer/shared": "*",
     "@langplayer/utils": "*",

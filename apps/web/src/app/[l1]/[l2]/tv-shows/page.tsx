@@ -9,6 +9,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TVShow } from '@langplayer/shared';
 import { Search, Loader2, AlertCircle, Tv, Filter, Globe } from 'lucide-react';
 import { youtubeThumbnail } from '@/lib/video-service';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ShowWithMeta extends TVShow {
   year?: number;
@@ -113,29 +114,31 @@ export default function TVShowsPage() {
         </div>
 
         {/* Sort */}
-        <select
-          value={sortKey}
-          onChange={e => setSortKey(e.target.value as SortKey)}
-          className="h-10 rounded-lg border border-border bg-background px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-        >
-          <option value="views">{t('sort.most_viewed')}</option>
-          <option value="title">{t('sort.title')}</option>
-          <option value="year">{t('sort.year')}</option>
-        </select>
+        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+          <SelectTrigger className="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="views">{t('sort.most_viewed')}</SelectItem>
+            <SelectItem value="title">{t('sort.title')}</SelectItem>
+            <SelectItem value="year">{t('sort.year')}</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Locale filter */}
         {locales.length > 2 && (
-          <select
-            value={localeFilter}
-            onChange={e => setLocaleFilter(e.target.value)}
-            className="h-10 rounded-lg border border-border bg-background px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          >
-            {locales.map(loc => (
-              <option key={loc} value={loc}>
-                {loc === 'all' ? t('title.filter_by_locale') : loc.toUpperCase()}
-              </option>
-            ))}
-          </select>
+          <Select value={localeFilter} onValueChange={setLocaleFilter}>
+            <SelectTrigger className="h-10">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {locales.map(loc => (
+                <SelectItem key={loc} value={loc}>
+                  {loc === 'all' ? t('title.filter_by_locale') : loc.toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 
