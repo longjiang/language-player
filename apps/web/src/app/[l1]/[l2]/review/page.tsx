@@ -20,6 +20,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
+import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
@@ -85,6 +86,8 @@ export default function ReviewPage() {
   const [justCompleted, setJustCompleted] = useState(false);
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
+  /** True while the context translation above is being fetched. */
+  const [contextTranslating, setContextTranslating] = useState(false);
   /** Per-card L1-translated dictionary entry (fetched on reveal for non-English L1 users).
    *  Batch lookup returns English-only definitions for speed; this provides the
    *  translated version when the user actually interacts with a card. */
@@ -441,6 +444,7 @@ export default function ReviewPage() {
   // ── Clear stale context translation when card changes ──
   useEffect(() => {
     setContextTranslation(null);
+    setContextTranslating(false);
   }, [currentCard?.word.id]);
 
   // ── Per-card L1 dictionary lookup (non-English L1 users) ──
@@ -488,11 +492,13 @@ export default function ReviewPage() {
     const savedTranslation = currentCard?.word.context?.translation;
     if (!ctxText || savedTranslation) {
       setContextTranslation(null);
+      setContextTranslating(false);
       return;
     }
 
     let cancelled = false;
     const fetchTranslation = async () => {
+      setContextTranslating(true);
       try {
         const res = await fetch(`${PYTHON_API_URL}/translate`, {
           method: 'POST',
@@ -506,6 +512,9 @@ export default function ReviewPage() {
           setContextTranslation(data?.translated_text ?? data?.translation ?? data?.text ?? null);
         }
       } catch { /* network error — silently ignore */ }
+      finally {
+        if (!cancelled) setContextTranslating(false);
+      }
     };
     fetchTranslation();
     return () => { cancelled = true; };
@@ -713,6 +722,9 @@ export default function ReviewPage() {
             <div className="text-xs text-muted-foreground/70 mt-1">
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
+            {showDefinition && display.translation && !wordCtx.translation && !contextTranslation && contextTranslating && (
+              <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
+            )}
             {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
                 {wordCtx.translation || contextTranslation}
@@ -812,4 +824,3 @@ export default function ReviewPage() {
     </div>
   );
 }
-

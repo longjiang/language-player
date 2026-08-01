@@ -4,9 +4,10 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
-import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
+import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
@@ -269,6 +270,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 <p className={`mt-0.5 text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                   {line.l1Line}
                 </p>
+              )}
+              {showTranslation && !line.l1Line && translating && isLineInTranslationLookahead(i, activeIndex) && (
+                <TranslationSkeleton text={line.l2Line} className="mt-0.5" barClassName="h-2.5" />
               )}
             </div>
           );

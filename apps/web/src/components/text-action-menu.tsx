@@ -8,6 +8,7 @@ import { languageName } from '@/lib/language-data';
 import { log } from '@/lib/logger';
 import { TokenizedText } from '@/components/tokenized-text';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
+import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { toast } from 'sonner';
@@ -157,11 +158,8 @@ export function TextActionMenu({
           </div>
         )}
         {loading && !translation && (
-          <div className={`flex-[2] min-w-0 flex flex-col gap-y-1.5 pt-1 xl:pt-0 ${translationClass || 'text-sm'}`}>
-            {Array.from({ length: Math.max(1, Math.ceil(text.length / 50)) }).map((_, li) => (
-              <div key={li} className="h-3.5 bg-muted rounded animate-pulse"
-                style={{ width: `${['90%', '75%', '60%', '80%', '50%'][li % 5]}` }} />
-            ))}
+          <div className={`flex-[2] min-w-0 pt-1 xl:pt-0 ${translationClass || 'text-sm'}`}>
+            <TranslationSkeleton text={text} />
           </div>
         )}
       </div>
