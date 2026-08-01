@@ -22,6 +22,13 @@ const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 // TokenizedText instances mount simultaneously and all hit the fallback.
 const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
 
+/** True when a token is whitespace-only or punctuation-only — used to decide
+ *  whether a quick gloss needs a trailing space to separate it from the next word. */
+function isSeparatorToken(text: string): boolean {
+  const t = text.trim();
+  return t === '' || /^[\p{P}]+$/u.test(t);
+}
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
@@ -58,6 +65,11 @@ export interface TokenizedTextProps {
    *  review page so the target word's reading stays hidden until the card is
    *  revealed. Defaults to true — highlighting alone does not hide readings. */
   phoneticsOnHighlight?: boolean;
+  /** When false, the quick gloss is suppressed on highlighted tokens. Used by the
+   *  SRS review page so the target word's gloss stays hidden until the card is
+   *  revealed. Defaults to true — highlighting alone does not hide a saved word's
+   *  gloss. */
+  quickGlossOnHighlight?: boolean;
 }
 
 /**
@@ -91,6 +103,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   highlightForms,
   karaokeProgress,
   phoneticsOnHighlight = true,
+  quickGlossOnHighlight = true,
 }) => {
   // Map typeFace to Tailwind font-family class
   const fontClass =
@@ -356,6 +369,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           let wordIndexSoFar = 0;
           return tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
+          const nextToken = tokens[i + 1];
+          const nextTokenIsSeparator = nextToken ? isSeparatorToken(nextToken.text) : true;
           const phoneticsShow = isPhoneticsEligible(l2Code)
             ? l2Settings.tokenSpan.phonetics.show
             : false;
@@ -384,10 +399,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
                 (!!highlightForm && token.text === highlightForm) ||
                 (!!highlightForms && highlightForms.some((f) => f === token.text))
               }
+              nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={() => handleTokenClick(token)}
               cacheVersion={cacheVersion}
               isKaraokeSpoken={isKaraokeSpoken}
               phoneticsOnHighlight={phoneticsOnHighlight}
+              quickGlossOnHighlight={quickGlossOnHighlight}
             />
           );
         });

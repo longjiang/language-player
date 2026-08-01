@@ -85,11 +85,19 @@ export interface TokenSpanProps {
   cacheVersion: number;
   /** In karaoke mode: true = this word has been spoken (full brightness), false = not yet spoken (dimmed). */
   isKaraokeSpoken?: boolean;
+  /** True when the following token is whitespace or punctuation — suppress the
+   *  trailing space after the quick gloss so it stays attached to the next word. */
+  nextTokenIsSeparator?: boolean;
   /** When false, phonetics (ruby) are suppressed on highlighted tokens. Used by
    *  the SRS review page so the target word's reading stays hidden until the
    *  card is revealed. Defaults to true — highlighting alone does not hide a
    *  word's reading. */
   phoneticsOnHighlight?: boolean;
+  /** When false, the quick gloss is suppressed on highlighted tokens. Used by
+   *  the SRS review page so the target word's gloss stays hidden until the
+   *  card is revealed. Defaults to true — highlighting alone does not hide a
+   *  saved word's gloss. */
+  quickGlossOnHighlight?: boolean;
 }
 
 /**
@@ -113,7 +121,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   onClick,
   cacheVersion,
   isKaraokeSpoken,
+  nextTokenIsSeparator,
   phoneticsOnHighlight = true,
+  quickGlossOnHighlight = true,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
@@ -127,8 +137,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     // Only fetch when all conditions are met:
     //   - Word is saved + quick gloss is on
     //   - L1 is not English (English defs are already in cache from batch lookup)
-    //   - Word is not currently highlighted (don't compete with review page)
-    if (!isSaved || !quickGloss || isHighlighted || l1Code === 'en') {
+    //   - Word is not highlighted, or highlighting is allowed to show the gloss
+    //     (the review page hides the target word's gloss until the card is revealed)
+    if (!isSaved || !quickGloss || (isHighlighted && !quickGlossOnHighlight) || l1Code === 'en') {
       setL1GlossDef(null);
       return;
     }
@@ -173,7 +184,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     promise.then((def) => { if (!cancelled) setL1GlossDef(def); });
 
     return () => { cancelled = true; };
-  }, [isSaved, quickGloss, isHighlighted, l1Code, l2Code, token.lemmas, token.text]);
+  }, [isSaved, quickGloss, isHighlighted, quickGlossOnHighlight, l1Code, l2Code, token.lemmas, token.text]);
 
   // ── Quiz blanking state — computed early since byeonggiNode, wrapperClass, etc. depend on it ──
   const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
@@ -217,9 +228,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   }, [l2Code, token.text, token.lemmas]);
 
   // ── Quick gloss: only for saved words with gloss enabled.
-  //    Suppressed for highlighted words (e.g. the term being tested on the review page).
+  //    Suppressed for highlighted words only when quickGlossOnHighlight is false
+  //    (the review page hides the target word's gloss until the card is revealed).
   //    Prefer L1-translated definition (fetched per-word) over cached English def. ──
-  const quickGlossDef = (isSaved && quickGloss && !isHighlighted) ? (l1GlossDef ?? firstDef) : null;
+  const quickGlossDef = (isSaved && quickGloss && (quickGlossOnHighlight || !isHighlighted)) ? (l1GlossDef ?? firstDef) : null;
   // ── Interlinear definition: for all words (when enabled) ──
   const interlinearDef = showDefinition ? firstDef : null;
 
@@ -361,7 +373,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const wordWithGloss = (
     <>
       {annotatedWord}
-      {quickGlossDef && !isQuizBlanking && <QuickGloss def={quickGlossDef} />}
+      {quickGlossDef && !isQuizBlanking && (
+        <QuickGloss def={quickGlossDef} needsTrailingSpace={nextTokenIsSeparator !== true} />
+      )}
     </>
   );
 
@@ -387,9 +401,15 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   );
 };
 
-/** Inline quick gloss — first definition shown after a saved word. Bottom-aligned, not highlighted. */
-const QuickGloss: React.FC<{ def: string }> = ({ def }) => (
-  <span className="ml-0.5 text-[0.6em] text-muted-foreground/70 font-normal select-none align-text-bottom">
-    '{def}'
+/** Inline quick gloss — first definition shown after a saved word, wrapped in
+ *  parentheses and typographic single quotes at the same size and color as normal text.
+ *  A leading space separates it from the word; a trailing space separates it from the
+ *  next word unless the next token is whitespace or punctuation. */
+const QuickGloss: React.FC<{ def: string; needsTrailingSpace: boolean }> = ({ def, needsTrailingSpace }) => (
+  <span className="font-normal select-none">
+    {' (‘'}
+    {def}
+    {'’)'}
+    {needsTrailingSpace ? ' ' : null}
   </span>
 );
