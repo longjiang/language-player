@@ -13,8 +13,6 @@ interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
   /** 'compact' = popup/list view; 'full' = detail page view */
   variant?: 'compact' | 'full';
-  /** Language-specific level label formatter */
-  levelLabel?: (scale: string, value: string | number) => string;
   /** Called when the card is clicked (navigates to entry detail page) */
   onClick?: (entry: DictionaryEntry) => void;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
@@ -34,7 +32,6 @@ interface DictionaryEntryCardProps {
 export function DictionaryEntryCard({
   entry,
   variant = 'compact',
-  levelLabel,
   onClick,
   saveContext,
   pronunciation,
@@ -51,13 +48,7 @@ export function DictionaryEntryCard({
   const levels = entry.levels ?? [];
   const levelBadges = levels
     .filter((l) => l.numeric != null)
-    .map((l) => {
-      const formatted = formatNumericLevel(l.numeric, scale);
-      return {
-        label: levelLabel ? levelLabel(l.scale, l.value) : formatted.short,
-        hexColor: formatted.hexColor,
-      };
-    });
+    .map((l) => formatNumericLevel(l.numeric, scale));
 
   const formattedPron = pronunciation !== undefined
     ? pronunciation
@@ -75,11 +66,10 @@ export function DictionaryEntryCard({
           key={i}
           className={isFull
             ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-            : "ml-auto shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium"
+            : "ml-auto shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
           }
-          style={isFull ? undefined : { backgroundColor: level.hexColor + '1A', color: level.hexColor }}
         >
-          {level.label}
+          {level.short}
         </span>
       ))}
     </>

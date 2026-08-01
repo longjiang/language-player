@@ -14,8 +14,6 @@ import { ImageSearchResults } from '@/components/dictionary/image-search-results
 
 interface DictionaryEntryTabsProps {
   entry: DictionaryEntry;
-  /** Language-specific level label formatter (passed through to DictionaryEntryCard). */
-  levelLabel?: (scale: string, value: string | number) => string;
   /** Context for the save/bookmark button (passed through to DictionaryEntryCard). */
   saveContext?: SavedWordContext;
   /** ISO 639-1 code of the target language. */
@@ -47,7 +45,6 @@ interface DictionaryEntryTabsProps {
  */
 export function DictionaryEntryTabs({
   entry,
-  levelLabel,
   saveContext,
   l2Code,
   l1Code,
@@ -105,7 +102,6 @@ export function DictionaryEntryTabs({
             variant="full"
             l2Code={l2Code}
             l1Code={l1Code}
-            levelLabel={levelLabel}
             saveContext={saveContext}
             headingLevel="h2"
             onClick={onCardClick}

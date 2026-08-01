@@ -8,7 +8,6 @@ import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { formatLevel } from '@langplayer/shared';
 import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
@@ -82,9 +81,6 @@ export default function DictionaryEntryPage() {
     }
   }, [searchParams, setSidebarSource, setCameFromSearch]);
 
-  const levelLabel = (scale: string, value: string | number) =>
-    formatLevel({ scale, value }).long;
-
   const saveContext = {
     form: entry?.head ?? '',
     text: entry?.head ?? '',
@@ -136,7 +132,6 @@ export default function DictionaryEntryPage() {
             variant="full"
             l2Code={l2.code}
             l1Code={l1.code}
-            levelLabel={levelLabel}
             saveContext={saveContext}
             headingLevel="h1"
           />
@@ -148,7 +143,6 @@ export default function DictionaryEntryPage() {
             entry={entry}
             l2Code={l2.code}
             l1Code={l1.code}
-            levelLabel={levelLabel}
             showDefinitionTab={false}
             activeTab={activeTab}
             onTabChange={setActiveTab}

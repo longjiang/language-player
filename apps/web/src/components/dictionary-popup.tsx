@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { formatLevel } from '@langplayer/shared';
 import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
@@ -162,8 +161,6 @@ export function DictionaryPopup({
     };
   }, [token, lookupWord, l2Code]);
 
-  const levelLabel = (scale: string, value: string | number) => formatLevel({ scale, value }).long;
-
   // Find saved words for this token whose IDs don't match any loaded entry
   const unmatchedSavedWords = useMemo(() => {
     if (loading || error) return [];
@@ -294,7 +291,6 @@ export function DictionaryPopup({
               <DictionaryEntryCard
                 key={entry.id}
                 entry={entry}
-                levelLabel={levelLabel}
                 onClick={handleEntryClick}
                 saveContext={context}
                 pronunciation={formatPronunciation(entry, l2Code)}
