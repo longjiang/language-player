@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import { md5 } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -97,7 +98,8 @@ export interface ReaderPanelProps {
   onTabChange: (tab: 'edit' | 'read') => void;
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
-  onPageTranslate: (texts: string[]) => Promise<string[]>;
+  /** Returns translations keyed by the md5 of each source text (see translateTextsKeyed). */
+  onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
   /** Called by ReaderPanel to lemmatize text blocks for the current page. */
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   /** Called when the visible page changes — gives the first ~40 chars as anchor. */
@@ -131,7 +133,9 @@ export function ReaderPanel({
   const [page, setPage] = useState(0);
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
   const totalPages = Math.max(1, pageBreaks.length + 1);
-  const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
+  // Keyed by md5(text) — a translation is only ever shown for the exact text
+  // it was requested for, never by array position.
+  const [blockTranslations, setBlockTranslations] = useState<Record<string, string>>({});
   const translateGenerationRef = useRef(0);
   const [isAutoTranslating, setIsAutoTranslating] = useState(false);
   const [hasMeasured, setHasMeasured] = useState(false);
@@ -347,16 +351,11 @@ export function ReaderPanel({
     const gen = translateGenerationRef.current;
     setIsAutoTranslating(true);
     log('[WebReader] Page translate: requesting %d text block(s)', texts.length);
-    onPageTranslate(texts).then(translated => {
+    onPageTranslate(texts).then(byKey => {
       if (translateGenerationRef.current !== gen) return; // stale — user navigated away
-      log('[WebReader] Page translate: got %d translation(s)', translated.length);
-      if (translated.length > 0) {
-        const map: Record<number, string> = {};
-        textBlocks.forEach((_, i) => {
-          if (i < translated.length) map[i] = translated[i]!;
-        });
-        setBlockTranslations(map);
-      }
+      const matched = Object.keys(byKey).length;
+      log('[WebReader] Page translate: got %d verified translation(s)', matched);
+      if (matched > 0) setBlockTranslations(prev => ({ ...prev, ...byKey }));
     }).catch(err => {
       if (translateGenerationRef.current !== gen) return;
       logwarn('[WebReader] Page translate failed:', err);
@@ -464,6 +463,10 @@ export function ReaderPanel({
                           );
                         }
                         const tb = block as TextBlock;
+                        // Translation lookup is keyed by the block's own text
+                        // hash, so a stale or misaligned response can never be
+                        // attached to a different block.
+                        const blockKey = md5(tb.text);
                         const Tag = blockTag(tb);
                         // Find the original index of this block in the full blocks array
                         const globalIndex = blocks!.indexOf(block);
@@ -486,9 +489,9 @@ export function ReaderPanel({
                         );
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-                            translation={showTranslation ? blockTranslations[i] : undefined}
+                            translation={showTranslation ? blockTranslations[blockKey] : undefined}
                             translationClass={translationClass(tb)}
-                            loading={isAutoTranslating && !blockTranslations[i]}>
+                            loading={isAutoTranslating && !blockTranslations[blockKey]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                                 tokens={cachedTokens} href={blockHref} />

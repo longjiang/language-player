@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { log, logwarn, logerr } from '@/lib/logger';
 
@@ -320,15 +321,10 @@ export default function WebReaderPage() {
           }}
           onPageTranslate={async (texts) => {
             try {
-              const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
-              });
-              const data = await res.json();
-              return data?.translated_texts ?? [];
+              const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
+              return byKey;
             } catch {
-              return [];
+              return {};
             }
           }}
         />
