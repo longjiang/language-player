@@ -49,12 +49,14 @@ export function DictionaryEntryCard({
 
   const scale = primaryScale(l2Code ?? '');
   const levels = entry.levels ?? [];
-  const levelTexts = levels
+  const levelBadges = levels
     .filter((l) => l.numeric != null)
     .map((l) => {
-      if (levelLabel) return levelLabel(l.scale, l.value);
       const formatted = formatNumericLevel(l.numeric, scale);
-      return formatted.short;
+      return {
+        label: levelLabel ? levelLabel(l.scale, l.value) : formatted.short,
+        hexColor: formatted.hexColor,
+      };
     });
 
   const formattedPron = pronunciation !== undefined
@@ -68,12 +70,16 @@ export function DictionaryEntryCard({
   // ── Shared: level badges ──
   const badges = (
     <>
-      {levelTexts.map((text, i) => (
-        <span key={i} className={isFull
-          ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-          : "ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-        }>
-          {text}
+      {levelBadges.map((level, i) => (
+        <span
+          key={i}
+          className={isFull
+            ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+            : "ml-auto shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium"
+          }
+          style={isFull ? undefined : { backgroundColor: level.hexColor + '1A', color: level.hexColor }}
+        >
+          {level.label}
         </span>
       ))}
     </>
