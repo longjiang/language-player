@@ -322,7 +322,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 />
               </div>
               {showTranslation && line.l1Line && (
-                <p className={`mt-0.5 text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+                <p className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                   {line.l1Line}
                 </p>
               )}

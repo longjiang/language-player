@@ -737,11 +737,11 @@ export default function ReviewPage() {
             )}
             {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
               wordCtx.translation ? (
-                <p className="text-sm mt-2 text-muted-foreground border-t border-border pt-2">
+                <p className="text-sm mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2">
                   {wordCtx.translation}
                 </p>
               ) : (
-                <div className="text-sm mt-2 text-muted-foreground border-t border-border pt-2">
+                <div className="text-sm mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2">
                   <ReactMarkdown
                     components={{
                       p: ({ children }) => <span>{children}</span>,
