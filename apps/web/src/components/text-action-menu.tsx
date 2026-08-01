@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
 import { languageName } from '@/lib/language-data';
+import { log } from '@/lib/logger';
 import { TokenizedText } from '@/components/tokenized-text';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { useStreamingExplanation } from '@langplayer/api-client';
@@ -95,8 +96,28 @@ export function TextActionMenu({
     }
     lines.push('', `${textLabel}: ${text}`);
     const prompt = lines.join('\n');
+    log('AI explain stream start', { l2Code, chars: prompt.length });
     streamExplain(prompt);
   }, [text, l2Code, effectiveL1, context, l1.name, t, streamExplain]);
+
+  // Debug: track streaming lifecycle — per-chunk updates and stream end
+  useEffect(() => {
+    if (explainLoading && explainText) {
+      log('AI explain streaming', { chars: explainText.length });
+    }
+  }, [explainText, explainLoading]);
+
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    if (explainLoading) {
+      wasLoadingRef.current = true;
+      return;
+    }
+    if (wasLoadingRef.current) {
+      log('AI explain stream finished', { chars: explainText.length, error: explainError ?? undefined });
+      wasLoadingRef.current = false;
+    }
+  }, [explainLoading, explainText, explainError]);
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');
@@ -185,9 +206,13 @@ export function TextActionMenu({
 
             {/* Body */}
             <div className="max-h-[70vh] overflow-y-auto px-5 py-4 space-y-4">
-              {/* Original text — tokenized */}
+              {/* Original text — tokenized after the stream ends */}
               <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <TokenizedText text={text} l2Code={l2Code} textScale={0} />
+                {explainLoading ? (
+                  <span className="text-muted-foreground/80">{text}</span>
+                ) : (
+                  <TokenizedText text={text} l2Code={l2Code} textScale={0} />
+                )}
               </div>
 
               {/* DeepSeek breakdown */}

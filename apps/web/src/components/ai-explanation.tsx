@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
@@ -51,7 +51,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   };
 
   // Build the prompt matching Classic's chatGPTPrompt logic
-  const buildPrompt = (): string => {
+  const buildPrompt = useCallback((): string => {
     const l1Name = l1.name;
     // L2 name in the L1 language (e.g., "Japanese" for en, "日语" for zh-Hans)
     const l2Name = languageName(l2.code, l1.code);
@@ -76,18 +76,53 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     // L2 strings are backticked so they render as interactive tokenized text
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
     return `${prompt}\n\n${examplesPrompt}\n\n${ticksPrompt}`;
-  };
+  }, [
+    t,
+    l1.name,
+    l1.code,
+    l2.code,
+    word,
+    contextText,
+    contextForm,
+  ]);
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
+    log('AI explain stream start', { word });
     stream(prompt);
-  }, [stream, buildPrompt]);
+  }, [stream, buildPrompt, word]);
 
   const handleRegenerate = useCallback(() => {
     const prompt = buildPrompt();
-    log('AI regenerate prompt:', prompt);
+    log('AI explain stream start (regenerate)', { word });
     stream(prompt, { regenerate: true });
-  }, [stream, buildPrompt]);
+  }, [stream, buildPrompt, word]);
+
+  // Abort the in-flight stream when the component unmounts (also neutralizes
+  // React StrictMode's double-mounted effect: the first fetch is aborted before
+  // the second runs, so only one stream proceeds).
+  useEffect(() => () => {
+    reset();
+  }, [reset]);
+
+  // Debug: track streaming lifecycle — per-chunk updates and stream end
+  useEffect(() => {
+    if (loading && explanation) {
+      log('AI explain streaming', { chars: explanation.length });
+    }
+  }, [explanation, loading]);
+
+  const wasLoadingRef = useRef(false);
+  useEffect(() => {
+    if (loading) {
+      wasLoadingRef.current = true;
+      return;
+    }
+    if (wasLoadingRef.current) {
+      log('AI explain stream finished', { chars: explanation.length, error: error ?? undefined });
+      wasLoadingRef.current = false;
+    }
+  }, [loading, explanation, error]);
 
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
