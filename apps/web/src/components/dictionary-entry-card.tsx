@@ -256,18 +256,16 @@ export function DictionaryEntryCard({
         {savedRecord && (
           <div className="mt-2 text-sm text-muted-foreground">
             <p className="line-clamp-3" lang={l2Code}>
-              <BookmarkCheck className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />
+              <BookmarkCheck className="inline h-3.5 w-3.5 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
               {(hasVideoSource || hasTextSource) && (
                 <>
                   {' · '}
-                  <span className="inline-block max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
-                    {hasVideoSource
-                      ? <Video className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />
-                      : <BookOpen className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />}
-                    {sourceLabel && <> {' '}{sourceLabel}</>}
-                  </span>
+                  {hasVideoSource
+                    ? <Video className="inline h-3.5 w-3.5 align-[-2px]" />
+                    : <BookOpen className="inline h-3.5 w-3.5 align-[-2px]" />}
+                  {sourceLabel && <> {' '}{sourceLabel}</>}
                 </>
               )}
               {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
@@ -429,18 +427,16 @@ export function DictionaryEntryCard({
       {savedRecord && (
         <div className="mb-6 text-sm text-muted-foreground">
           <p className="line-clamp-3" lang={l2Code}>
-            <BookmarkCheck className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
+            <BookmarkCheck className="inline h-4 w-4 align-[-2px]" />
             {' '}
             <span className="whitespace-nowrap">{saveDateStr}</span>
             {(hasVideoSource || hasTextSource) && (
               <>
                 {' · '}
-                <span className="inline-block max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
-                  {hasVideoSource
-                    ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
-                    : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
-                  {sourceLabel && <> {' '}{sourceLabel}</>}
-                </span>
+                {hasVideoSource
+                  ? <Video className="inline h-4 w-4 align-[-2px]" />
+                  : <BookOpen className="inline h-4 w-4 align-[-2px]" />}
+                {sourceLabel && <> {' '}{sourceLabel}</>}
               </>
             )}
             {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
