@@ -663,6 +663,7 @@
         "explore_media_for": "Chunguza Midia ya {l2}",
         "failed_to_load_images": "Haikuweza kupakia picha.",
         "failed_to_load_note": "Imeshindwa kupakia dokezo",
+        "failed_to_load_transcript": "Video inachezwa, lakini hatukuweza kupakia maandishi na manukuu. Onyesha upya ukurasa au ujaribu tena baada ya muda mfupi.",
         "failed_to_load_url": "Imeshindwa kupakia URL",
         "failed_to_load_watch_history": "Imeshindwa kupakia historia ya kutazama",
         "find_videos_matched": "Tafuta video zinazolingana na kiwango chako",

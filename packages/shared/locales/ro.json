@@ -663,6 +663,7 @@
         "explore_media_for": "Explorează media {l2}",
         "failed_to_load_images": "Nu s-au putut încărca imaginile.",
         "failed_to_load_note": "Încărcarea notiței a eșuat",
+        "failed_to_load_transcript": "Videoclipul se redă, dar nu am putut încărca transcrierea și subtitrările. Reîmprospătați pagina sau încercați din nou într-o clipă.",
         "failed_to_load_url": "Nu s-a putut încărca URL-ul",
         "failed_to_load_watch_history": "Eroare la încărcarea istoricului vizionărilor",
         "find_videos_matched": "Găsiți videoclipuri potrivite nivelului dvs.",

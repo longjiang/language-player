@@ -663,6 +663,7 @@
         "explore_media_for": "Истражи {l2} медије",
         "failed_to_load_images": "Није могуће учитати слике.",
         "failed_to_load_note": "Учитавање белешке није успело",
+        "failed_to_load_transcript": "Видео се репродукује, али нисмо успели да учитамо транскрипт и титлове. Освежите страницу или покушајте поново за тренутак.",
         "failed_to_load_url": "Nije uspelo učitavanje URL-a",
         "failed_to_load_watch_history": "Nije uspelo učitavanje istorije gledanja",
         "find_videos_matched": "Пронађите видео снимке прилагођене вашем нивоу",

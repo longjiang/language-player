@@ -663,6 +663,7 @@
         "explore_media_for": "{l2} Medien entdecken",
         "failed_to_load_images": "Bilder konnten nicht geladen werden.",
         "failed_to_load_note": "Notiz konnte nicht geladen werden",
+        "failed_to_load_transcript": "Das Video wird abgespielt, aber wir konnten Transkript und Untertitel nicht laden. Aktualisiere die Seite oder versuche es gleich noch einmal.",
         "failed_to_load_url": "URL konnte nicht geladen werden",
         "failed_to_load_watch_history": "Fehler beim Laden des Wiedergabeverlaufs",
         "find_videos_matched": "Finde Videos, die deinem Niveau entsprechen",
