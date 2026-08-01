@@ -13,6 +13,9 @@ import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
 import { isPhoneticsEligible } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
+import { useRouter } from 'next/navigation';
+import { useT } from '@/hooks/use-t';
+import { ChevronRight } from 'lucide-react';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -174,6 +177,11 @@ export interface TokenizedTextProps {
   tokenCacheLoaded?: boolean;
   /** Pre-loaded tokens — when set, skips the API call entirely. */
   tokens?: LemmatizedToken[];
+  /**
+   * When set, renders a chevron button after the tokenized text that
+   * navigates to the web reader for this URL (http/https links only).
+   */
+  href?: string;
   /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
   highlightForm?: string;
   /** Multiple word forms to highlight (e.g. search terms in subs-search). Any token
@@ -228,6 +236,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokenCache,
   tokenCacheLoaded,
   tokens: preloadedTokens,
+  href,
   highlightForm,
   highlightForms,
   karaokeProgress,
@@ -244,6 +253,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     typeFace === 'sans-serif' ? 'font-sans' : '';
   const leadingClass = LEADING_CLASS[leading] ?? '';
   const { l1 } = useLanguage();
+  const router = useRouter();
+  const t = useT();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
@@ -265,6 +276,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+
+  // Open a block's linked URL inside the web reader instead of leaving the app.
+  const openInWebReader = useCallback(() => {
+    if (!href || !/^https?:\/\//i.test(href)) return;
+    router.push(`/${l1.code}/${l2Code}/web-reader?url=${encodeURIComponent(href)}`);
+  }, [href, l1.code, l2Code, router]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -540,6 +557,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           );
         });
       })()}
+      {href && /^https?:\/\//i.test(href) && (
+        <button
+          type="button"
+          onClick={openInWebReader}
+          aria-label={t('action.open_in_reader')}
+          title={href}
+          className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-md align-middle text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
       </span>
 
       {/* Dictionary popup */}

@@ -116,17 +116,6 @@ export default function WebReaderPage() {
     setVisitedSites(loadVisitedSites());
   }, []);
 
-  // Load from URL param on mount
-  const urlParam = searchParams.get('url');
-  useEffect(() => {
-    if (urlParam) {
-      // searchParams.get already URL-decodes the value once — don't decode again.
-      setUrl(urlParam);
-      handleLoad(urlParam);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
@@ -150,6 +139,7 @@ export default function WebReaderPage() {
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
       log('[WebReader] Step 3 — converted: title="%s", %d chars of markdown', pageTitle, md.length);
       log('[WebReader] Step 3 — first %d lines of markdown:\n%s', 5, firstLines(md));
+      log('[WebReader] Step 3 — FULL markdown (%d chars):\n%s', md.length, md);
       setTitle(pageTitle);
       document.title = pageTitle;
       setText(md);
@@ -198,6 +188,19 @@ export default function WebReaderPage() {
       setBlocks(null);
     }
   }, [text]);
+
+  // Load from URL param — on mount and whenever it changes (e.g. a chevron
+  // link inside a block navigates to another article while already here).
+  const urlParam = searchParams.get('url');
+  useEffect(() => {
+    if (!urlParam) return;
+    // Guard against double-loading when the form submit already replaced the
+    // URL (the input state matches the param by the time this effect fires).
+    if (urlParam === url) return;
+    // searchParams.get already URL-decodes the value once — don't decode again.
+    setUrl(urlParam);
+    handleLoad(urlParam);
+  }, [urlParam, url, handleLoad]);
 
   const handleRename = useCallback((siteUrl: string) => {
     setEditingUrl(siteUrl);
