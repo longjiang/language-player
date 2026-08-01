@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, Film, Binary, ImageIcon } from 'lucide-react';
+import { BookOpen, Film, Binary, Sparkles, ImageIcon } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { InflectionTable } from '@/components/inflection-table';
+import { AiExplanation } from '@/components/ai-explanation';
 import { ImageSearchResults } from '@/components/dictionary/image-search-results';
 
 interface DictionaryEntryTabsProps {
@@ -36,7 +37,7 @@ interface DictionaryEntryTabsProps {
 }
 
 /**
- * Tabbed container for dictionary entry subsections: Examples, Images, Conjugations.
+ * Tabbed container for dictionary entry subsections: Examples, DeepSeek, Conjugations.
  * Optionally includes a "Dictionary" tab (first) that embeds DictionaryEntryCard.
  *
  * Uncontrolled mode (no activeTab/onTabChange): manages tab state internally.
@@ -76,12 +77,14 @@ export function DictionaryEntryTabs({
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
         { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
       ];
 
   return (
@@ -99,8 +102,6 @@ export function DictionaryEntryTabs({
             variant="full"
             l2Code={l2Code}
             l1Code={l1Code}
-            contextText={contextText}
-            contextForm={contextForm}
             saveContext={saveContext}
             headingLevel="h2"
             onClick={onCardClick}
@@ -124,6 +125,9 @@ export function DictionaryEntryTabs({
             contextText={contextText}
             contextForm={contextForm}
           />
+        )}
+        {tab === 'deepseek' && (
+          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
         )}
         {tab === 'inflections' && (
           <InflectionTable head={entry.head} l2Code={l2Code} embedded />
