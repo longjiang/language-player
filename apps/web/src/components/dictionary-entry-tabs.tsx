@@ -102,6 +102,8 @@ export function DictionaryEntryTabs({
             variant="full"
             l2Code={l2Code}
             l1Code={l1Code}
+            contextText={contextText}
+            contextForm={contextForm}
             saveContext={saveContext}
             headingLevel="h2"
             onClick={onCardClick}
