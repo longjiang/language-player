@@ -797,7 +797,6 @@
         "swap_languages": "Byt språk",
         "tap_any_word_to_lookup": "Tryck på valfritt ord för att slå upp det",
         "tap_to_open": "Tryck för att öppna",
-        "this_form": "Den här formen",
         "time_spent_learning": "Tid spenderad på att lära sig {language} i Language Player",
         "today": "Idag",
         "tokenizer_desc": "Tokenisering + lemmatisering för {l2}. Se hur text bryts ner i enskilda ord och deras grundformer.",

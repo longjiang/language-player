@@ -2,16 +2,20 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
+import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from './youtube-player';
 import { SubtitleDisplay } from './subtitle-display';
 import { Button } from '@/components/ui/button';
+import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { VideoControlBar } from './video-control-bar';
-import type { SubsSearchVideo } from '@langplayer/shared';
+import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import {
   Loader2,
@@ -25,6 +29,8 @@ import {
 
 interface SubsSearchResultsProps {
   term: string;
+  /** The dictionary head form — shown as the "exact form" pill label. */
+  headTerm?: string;
   /** When true, removes outer card styling so the component fills its parent container. */
   embedded?: boolean;
   /** When true, search only the exact head form. Default: false (fuzzy, all forms). */
@@ -43,6 +49,32 @@ function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+/** Escape regex metacharacters so a word form can be used in a RegExp safely. */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function lineHasAnyTerm(line: string, terms: string[]): boolean {
+  const lower = line.toLowerCase();
+  return terms.some((f) => lower.includes(f.trim().toLowerCase()));
+}
+
+/** Wrap every search term occurrence in **...** markdown (standalone matches)
+ *  so the LLM carries the emphasis into the translated sentence. */
+function emphasizeTerms(text: string, terms: string[]): string {
+  return terms
+    .map((f) => f.trim())
+    .filter(Boolean)
+    .reduce(
+      (out, f) =>
+        out.replace(
+          new RegExp(`(?<![\\p{L}\\p{N}])(${escapeRegExp(f)})(?![\\p{L}\\p{N}])`, 'gu'),
+          '**$1**',
+        ),
+      text,
+    );
 }
 
 function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
@@ -88,9 +120,10 @@ function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
 
 // ── Main Component ─────────────────────────────
 
-export function SubsSearchResults({ term, embedded = false, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
+export function SubsSearchResults({ term, headTerm = '', embedded = false, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const { display } = useSettingsContext();
   const playerRef = useRef<YouTubePlayerHandle>(null);
 
   const [videos, setVideos] = useState<SubsSearchVideo[]>([]);
@@ -352,7 +385,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   // ── Modal: filter + sort ─────────────────────
 
-  const filteredVideos = (() => {
+  const filteredVideos = useMemo(() => {
     let result = [...videos];
     if (listSearch.trim()) {
       const q = listSearch.toLowerCase();
@@ -426,7 +459,93 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
       }
     });
     return result;
-  })();
+  }, [videos, listSearch, listSort, term]);
+
+  // Per-row context segments (prev + match + next), each flagged with whether
+  // it contains a search term. Translations are requested per segment so the
+  // translation can mirror the muted/normal treatment of the original.
+  const rowSegments = useMemo(
+    () =>
+      filteredVideos.map((video) => {
+        const ml = video.subs_l2[video.matchLineIndex];
+        const segs: { text: string; hasTerm: boolean }[] = [];
+        if (video.matchLineIndex > 0) {
+          const prev = video.subs_l2[video.matchLineIndex - 1]?.line ?? '';
+          if (prev) segs.push({ text: prev, hasTerm: lineHasAnyTerm(prev, highlightTerms) });
+        }
+        const match = ml?.line ?? '';
+        if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, highlightTerms) });
+        if (video.matchLineIndex < video.subs_l2.length - 1) {
+          const next = video.subs_l2[video.matchLineIndex + 1]?.line ?? '';
+          if (next) segs.push({ text: next, hasTerm: lineHasAnyTerm(next, highlightTerms) });
+        }
+        return segs;
+      }),
+    [filteredVideos, highlightTerms],
+  );
+
+  // Flat per-segment translation input (markdown emphasis on term-bearing
+  // lines) plus each row's starting index into that flat array.
+  const translationInput = useMemo(() => {
+    const lines: SubtitleLine[] = [];
+    const rowStarts: number[] = [];
+    for (const segs of rowSegments) {
+      rowStarts.push(lines.length);
+      for (const seg of segs) {
+        lines.push({
+          line: seg.hasTerm ? emphasizeTerms(seg.text, highlightTerms) : seg.text,
+          starttime: 0,
+        });
+      }
+    }
+    return { lines, rowStarts };
+  }, [rowSegments, highlightTerms]);
+
+  // ── Modal: lazy row translations ──
+  // Like the watch page, only rows near what's visible get translated
+  // (visible rows + lookahead chunks). Scrolling feeds a new anchor index.
+  const listRef = useRef<HTMLDivElement>(null);
+  const visibleIndexesRef = useRef<Set<number>>(new Set());
+  const [listFirstVisible, setListFirstVisible] = useState(0);
+
+  useEffect(() => {
+    if (!listOpen) return;
+    visibleIndexesRef.current.clear();
+    setListFirstVisible(0);
+    const container = listRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const idx = Number((entry.target as HTMLElement).dataset.rowIndex);
+          if (entry.isIntersecting) visibleIndexesRef.current.add(idx);
+          else visibleIndexesRef.current.delete(idx);
+        }
+        const visible = [...visibleIndexesRef.current];
+        if (visible.length > 0) setListFirstVisible(Math.min(...visible));
+      },
+      { root: container, rootMargin: '100px 0px 100px 0px' },
+    );
+
+    container
+      .querySelectorAll<HTMLElement>('[data-row-index]')
+      .forEach((row) => observer.observe(row));
+    return () => observer.disconnect();
+  }, [listOpen, filteredVideos]);
+
+  const listFirstLineIndex = translationInput.rowStarts[listFirstVisible] ?? 0;
+  const listTranslationsEnabled = listOpen && display.translation;
+  const {
+    translatedLines: listTranslations,
+    loading: listTranslating,
+  } = useSubtitleTranslation(
+    translationInput.lines,
+    l1.code,
+    baseCode(l2.code),
+    listTranslationsEnabled && translationInput.lines.length > 0,
+    listFirstLineIndex,
+  );
 
   const selectFromList = useCallback(
     (idx: number) => {
@@ -502,9 +621,9 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
-                  title={t('msg.exact_match_searching_only', { term, n: formCount })}
+                  title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
                 >
-                  {t('msg.this_form')}
+                  {headTerm || term}
                 </button>
                 <button
                   onClick={() => onExactToggle?.(false)}
@@ -521,15 +640,15 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50">
               <Play className="h-3.5 w-3.5" />
-              {t('action.watch')}
+              <span className="hidden sm:inline">{t('action.watch')}</span>
             </span>
             <button
               disabled
               onClick={() => setListOpen(true)}
-              className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50 transition-colors disabled:pointer-events-none"
+              className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50 transition-colors disabled:pointer-events-none"
             >
               <List className="h-3.5 w-3.5" />
-              {t('action.list_all')}
+              <span className="hidden sm:inline">{t('action.list_all')}</span>
             </button>
           </div>
         </div>
@@ -548,10 +667,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
       {/* ── Nav bar (above video) ── */}
-      <div className="flex items-center justify-between border-b border-border py-2">
-        <span className="text-xs text-muted-foreground">
-          {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
-        </span>
+      <div className="flex items-center justify-center border-b border-border py-2">
         <div className="flex items-center gap-1">
           {/* Exact-match toggle — only visible when formCount > 1 */}
           {formCount > 1 && (
@@ -563,9 +679,9 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                title={t('msg.exact_match_searching_only', { term, n: formCount })}
+                title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
               >
-                {t('msg.this_form')}
+                {headTerm || term}
               </button>
               <button
                 onClick={() => onExactToggle?.(false)}
@@ -583,18 +699,18 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
           {currentVideo && (
             <Link
               href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
-              className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Play className="h-3.5 w-3.5" />
-              {t('action.watch')}
+              <span className="hidden sm:inline">{t('action.watch')}</span>
             </Link>
           )}
           <button
             onClick={() => setListOpen(true)}
-            className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <List className="h-3.5 w-3.5" />
-            {t('action.list_all')}
+            <span className="hidden sm:inline">{t('action.list_all')}</span>
           </button>
         </div>
       </div>
@@ -631,6 +747,10 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
           hasNextVideo={currentIndex < videos.length - 1}
+          videoCountText={t('msg.video_n_of_total', {
+            n: currentIndex + 1,
+            total: videos.length,
+          })}
         />
       </div>
 
@@ -699,7 +819,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-2">
+            <div ref={listRef} className="flex-1 overflow-y-auto p-2">
               {filteredVideos.length === 0 ? (
                 <p className="py-8 text-center text-xs text-muted-foreground">
                   {t('msg.no_results')}
@@ -712,6 +832,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                     return (
                       <button
                         key={`${video.id}`}
+                        data-row-index={i}
                         onClick={() => selectFromList(i)}
                         className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50 ${
                           isActive ? 'bg-primary/5 ring-1 ring-primary/30' : ''
@@ -732,23 +853,58 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                           )}
                         </div>
 
-                        {/* Subtitle context — all lines joined into one
-                            horizontally scrolling row, no video title */}
-                        <div className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-base leading-snug">
-                          <HighlightTerms
-                            line={[
-                              video.matchLineIndex > 0
-                                ? video.subs_l2[video.matchLineIndex - 1]?.line
-                                : '',
-                              ml?.line ?? '',
-                              video.matchLineIndex < video.subs_l2.length - 1
-                                ? video.subs_l2[video.matchLineIndex + 1]?.line
-                                : '',
-                            ]
-                              .filter(Boolean)
-                              .join(' ')}
-                            terms={highlightTerms}
-                          />
+                        {/* Original on top, translation (smaller, muted) below */}
+                        <div className="min-w-0 flex-1 overflow-x-auto">
+                          <div className="w-max">
+                            <div className="whitespace-nowrap text-base leading-snug">
+                              {rowSegments[i]?.map((seg, j) => (
+                                <span
+                                  key={j}
+                                  className={seg.hasTerm ? '' : 'text-muted-foreground'}
+                                >
+                                  {j > 0 ? ' ' : ''}
+                                  <HighlightTerms line={seg.text} terms={highlightTerms} />
+                                </span>
+                              ))}
+                            </div>
+                            {display.translation && (
+                              <div className="mt-1 whitespace-nowrap text-sm text-muted-foreground">
+                              {rowSegments[i]?.map((seg, j) => {
+                                const flatIdx = (translationInput.rowStarts[i] ?? 0) + j;
+                                const translated = listTranslations[flatIdx]?.line;
+                                return (
+                                  <span
+                                    key={j}
+                                    className={seg.hasTerm ? '' : 'text-muted-foreground/50'}
+                                  >
+                                    {j > 0 ? ' ' : ''}
+                                    {translated ? (
+                                      <ReactMarkdown
+                                        components={{
+                                          p: ({ children }) => <span>{children}</span>,
+                                          strong: ({ children }) => (
+                                            <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                                              {children}
+                                            </mark>
+                                          ),
+                                        }}
+                                      >
+                                        {translated}
+                                      </ReactMarkdown>
+                                    ) : listTranslating &&
+                                      isLineInTranslationLookahead(flatIdx, listFirstLineIndex) ? (
+                                      <TranslationSkeleton
+                                        text={seg.text}
+                                        className="inline-flex w-24 align-bottom"
+                                        barClassName="h-3"
+                                      />
+                                    ) : null}
+                                  </span>
+                                );
+                              })}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </button>
                     );
