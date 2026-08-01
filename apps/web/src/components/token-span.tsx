@@ -85,6 +85,11 @@ export interface TokenSpanProps {
   cacheVersion: number;
   /** In karaoke mode: true = this word has been spoken (full brightness), false = not yet spoken (dimmed). */
   isKaraokeSpoken?: boolean;
+  /** When false, phonetics (ruby) are suppressed on highlighted tokens. Used by
+   *  the SRS review page so the target word's reading stays hidden until the
+   *  card is revealed. Defaults to true — highlighting alone does not hide a
+   *  word's reading. */
+  phoneticsOnHighlight?: boolean;
 }
 
 /**
@@ -108,6 +113,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   onClick,
   cacheVersion,
   isKaraokeSpoken,
+  phoneticsOnHighlight = true,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
@@ -315,7 +321,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     wordContent = <span className={wordBgClass}>{displayText}</span>;
   } else {
     // ── Ruby text ──
-    const hasPhonetics = !isHighlighted && !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
+    const hasPhonetics = !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(displayText, token.pronunciation!, l2Code)
       : null;
