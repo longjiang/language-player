@@ -13,6 +13,7 @@ import { youtubeThumbnail } from '@/lib/video-service';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from './youtube-player';
 import { SubtitleDisplay } from './subtitle-display';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { VideoControlBar } from './video-control-bar';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
@@ -795,18 +796,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                   className="h-8 w-full rounded-md border border-border bg-muted/50 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <select
-                value={listSort}
-                onChange={(e) => setListSort(e.target.value as SortKey)}
-                className="h-8 rounded-md border border-border bg-muted/50 px-2 text-xs focus:outline-none"
-              >
-                <option value="views">{t('sort.most_viewed')}</option>
-                <option value="likes">{t('title.likes')}</option>
-                <option value="date">{t('title.date')}</option>
-                <option value="length">{t('title.length')}</option>
-                <option value="leftContext">{t('title.leftContext')}</option>
-                <option value="rightContext">{t('title.rightContext')}</option>
-              </select>
+              <Select value={listSort} onValueChange={(v) => setListSort(v as SortKey)}>
+                <SelectTrigger size="sm" className="h-8 rounded-md bg-muted/50 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="views">{t('sort.most_viewed')}</SelectItem>
+                  <SelectItem value="likes">{t('title.likes')}</SelectItem>
+                  <SelectItem value="date">{t('title.date')}</SelectItem>
+                  <SelectItem value="length">{t('title.length')}</SelectItem>
+                  <SelectItem value="leftContext">{t('title.leftContext')}</SelectItem>
+                  <SelectItem value="rightContext">{t('title.rightContext')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* List */}

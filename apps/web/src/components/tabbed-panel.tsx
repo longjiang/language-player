@@ -49,7 +49,7 @@ export function TabbedPanel<T extends string = string>({
 }: TabbedPanelProps<T>) {
   return (
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
-      {/* Tab bar — uses @base-ui/react/tabs for keyboard nav and ARIA roles */}
+      {/* Tab bar — Radix Tabs provides keyboard nav and ARIA roles */}
       <Tabs value={activeTab} onValueChange={(v) => onTabClick ? onTabClick(v as T) : onTabChange(v as T)} className="flex-1 min-h-0 flex-col">
         <TabsList className="border-b border-border w-full">
           {tabs.map((tab) => (

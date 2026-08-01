@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-030
 - **Feature**: Migrate `apps/web` interaction primitives from `@base-ui/react` to `@radix-ui/react`, and consolidate the four hand-rolled sidebars onto one shared primitive
-- **Status**: draft
+- **Status**: complete (phases 0–3 shipped; see Progress below)
 - **Created**: 2026-08-01
 - **ROADMAP Phase**: Phase 4 — Dictionary (pilot); cross-cutting for the full migration
 - **See also**:
@@ -228,3 +228,14 @@ Each PR is independently deployable: wrapper APIs stay stable, so feature call s
 - **Settings/Docs nav sidebars**: in scope for the shared primitive, or tracked separately?
 - **Hover card**: migrate or delete (zero consumers today)?
 - **SPEC-016**: update in place vs. leave as historical with a superseded banner — prefer the banner + pointer to SPEC-030.
+
+## Progress
+
+Implemented on 2026-08-01 (commits `30eced73`, `c025cdb5`, `a4efd7aa`, `6f507641`; ADR-0020):
+
+- ✅ Phase 0 — shared `ui/sidebar.tsx`; dictionary, reader notes, EPUB, and web-reader sidebars migrated; `prompt()`/`confirm()` replaced with dialogs; raw toggle converted to `ui/switch`
+- ✅ Phase 1 — all Radix packages installed and declared
+- ✅ Phase 2 — dialog, sheet, popover, tabs, switch, hover-card, and select wrappers migrated; sr-only `DialogTitle`s added; native selects converted (TV shows, Live TV, subs-search)
+- ✅ Phase 3 — `@base-ui/react` removed; SPEC-016 banner; ADR-0020; ROADMAP updated
+
+Remaining follow-ups (non-blocking): Settings/Docs left-nav sidebars, hover-card delete-or-use decision, VoicePicker search-UI evaluation (Radix Select works today), SPEC-016 in-place update vs. banner (banner chosen).

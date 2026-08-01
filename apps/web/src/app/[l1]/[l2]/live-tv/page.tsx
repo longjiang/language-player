@@ -8,6 +8,7 @@ import { languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useT } from '@/hooks/use-t';
 import { Loader2, Monitor, Wifi, WifiOff } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface LiveTVChannel {
   id: number;
@@ -228,26 +229,34 @@ export default function LiveTVPage() {
         {/* Channel list */}
         <aside className="mt-6 shrink-0 lg:mt-0 lg:w-80 xl:w-96">
           <div className="mb-3 flex gap-2">
-            <select
-              value={country ?? ''}
-              onChange={e => { setCountry(e.target.value || null); }}
-              className="h-9 flex-1 rounded-lg border border-border bg-background px-2 text-xs"
+            <Select
+              value={country ?? '__all__'}
+              onValueChange={(v) => setCountry(v === '__all__' ? null : v)}
             >
-              <option value="">{t('title.all_countries')}</option>
-              {countries.map(c => (
-                <option key={c} value={c}>{countryName(c)}</option>
-              ))}
-            </select>
-            <select
-              value={category ?? ''}
-              onChange={e => setCategory(e.target.value || null)}
-              className="h-9 flex-1 rounded-lg border border-border bg-background px-2 text-xs"
+              <SelectTrigger className="h-9 flex-1 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{t('title.all_countries')}</SelectItem>
+                {countries.map(c => (
+                  <SelectItem key={c} value={c}>{countryName(c)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={category ?? '__all__'}
+              onValueChange={(v) => setCategory(v === '__all__' ? null : v)}
             >
-              <option value="">{t('title.all_categories')}</option>
-              {categories.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 flex-1 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">{t('title.all_categories')}</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto">
