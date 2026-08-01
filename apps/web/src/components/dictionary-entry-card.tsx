@@ -8,6 +8,7 @@ import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { AiExplanation } from '@/components/ai-explanation';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -23,6 +24,10 @@ interface DictionaryEntryCardProps {
   l2Code?: string;
   /** ISO 639-1 code of the user's L1 (for SpeakButton language context). */
   l1Code?: string;
+  /** Optional surrounding text context for the DeepSeek explanation. */
+  contextText?: string;
+  /** Optional inflected form of the word as it appears in contextText. */
+  contextForm?: string;
   /** WAI-ARIA heading level for the headword (full mode defaults to h1). */
   headingLevel?: 'h1' | 'h2' | 'h3';
 }
@@ -37,6 +42,8 @@ export function DictionaryEntryCard({
   pronunciation,
   l2Code,
   l1Code,
+  contextText,
+  contextForm,
   headingLevel = 'h1',
 }: DictionaryEntryCardProps) {
   const t = useT();
@@ -340,6 +347,9 @@ export function DictionaryEntryCard({
         </div>
         {saveContext && saveBtn('default')}
       </div>
+
+      {/* DeepSeek explanation — same component/props as the DictionaryEntryTabs deepseek tab (pro-gated) */}
+      <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
     </div>
   );
 }
