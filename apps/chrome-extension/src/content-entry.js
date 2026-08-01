@@ -9,7 +9,6 @@
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
-import { mountLanguageModal, unmountLanguageModal } from './components/LanguageSwitchModal';
 import { SUPPORTED_L2S } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import {
@@ -789,20 +788,6 @@ const CSV_TO_CHROME_LOCALE = {
   'tr': 'tr', 'vi': 'vi',
 };
 
-/**
- * Get a language's name in that language (its endonym/autonym).
- * E.g. Français for fr, Deutsch for de, 日本語 for ja, 简体中文 for zh-Hans.
- */
-function languageEndonym(code) {
-  const entry = getLangEntry(code);
-  if (!entry) return code.toUpperCase();
-  const chromeLocale = CSV_TO_CHROME_LOCALE[code];
-  if (chromeLocale && entry[chromeLocale]) return entry[chromeLocale];
-  // Fallback: try first non-English value
-  const first = Object.values(entry).find(v => v);
-  return first || code.toUpperCase();
-}
-
 /** UI languages for the L1 (interface) dropdown.
  *  These are the 31 Chrome locales supported by the extension. */
 const UI_LANGUAGES = [
@@ -948,32 +933,6 @@ function createPanelUI() {
 
   title.appendChild(logoImg);
 
-  // Language button — shows current L2 name + chevron, opens "I speak / I'm learning" modal
-  const langBtn = document.createElement('button');
-  langBtn.id = 'lpv-lang-btn';
-  langBtn.title = t('language');
-  langBtn.addEventListener('click', () => {
-    mountLanguageModal(
-      L1_CODE,
-      savedL2Code,
-      UI_LANGUAGES,
-      (code) => languageEndonym(code),
-      async (newL1, newL2) => {
-        if (newL1 !== L1_CODE) await onL1Change(newL1);
-        if (newL2 !== savedL2Code) await onL2Change(newL2);
-        updateLangBtnText();
-      },
-    );
-  });
-
-  /** Update the language button text to show the current L2 name */
-  function updateLangBtnText() {
-    if (!langBtn) return;
-    const name = languageName(savedL2Code);
-    langBtn.innerHTML = `<span class="lpv-lang-btn-name">${name}</span><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lpv-lang-btn-chevron"><path d="m6 9 6 6 6-6"/></svg>`;
-  }
-  updateLangBtnText();
-
   const headerRight = document.createElement('div');
   headerRight.id = 'lpv-header-right';
 
@@ -987,7 +946,6 @@ function createPanelUI() {
     setPanelVisible(false);
   });
 
-  headerRight.appendChild(langBtn);
   headerRight.appendChild(closeBtn);
 
   header.appendChild(title);
@@ -1014,9 +972,6 @@ function createPanelUI() {
 /** Refresh all static UI labels after a locale change.
  *  Called by onL1Change() after setLocale() loads the new messages. */
 function refreshUILabels() {
-  // Update language button tooltip
-  const langBtn = document.getElementById('lpv-lang-btn');
-  if (langBtn) langBtn.title = t('language');
   if (statusEl && STATE.cues.length === 0) {
     statusEl.textContent = '';
   }
@@ -1347,6 +1302,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.sync.set({ autoOpenPanel: true });
     setPanelVisible(true);
     sendResponse({ success: true });
+  }
+
+  if (message.action === 'changeLanguage') {
+    // Language picker lives in the popup now; apply the change in the panel.
+    log('Language change via popup:', message.l1, '→', message.l2);
+    (async () => {
+      if (message.l1 && message.l1 !== L1_CODE) await onL1Change(message.l1);
+      if (message.l2 && message.l2 !== savedL2Code) await onL2Change(message.l2);
+      sendResponse({ success: true });
+    })();
+    return true; // async response
   }
 
   sendResponse({ received: true });

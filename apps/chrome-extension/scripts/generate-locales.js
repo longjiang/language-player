@@ -28,6 +28,7 @@ const CSV_TO_CHROME = {
 // Extension message key → CSV key (pull translation from monorepo CSV)
 const CSV_LOOKUP = {
   'closePanel': 'action.close',
+  'changeLanguage': 'action.change_language',
   'allLanguages': 'filter.all',        // CSV has "All", we append "Languages" below
   'translate': 'action.translation',
   'showTranslation': 'label.show_translation',

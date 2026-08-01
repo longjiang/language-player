@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "الكل"
   },
+  "changeLanguage": {
+    "message": "تغيير اللغة"
+  },
   "close": {
     "message": "إغلاق"
   },

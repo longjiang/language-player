@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Tümü"
   },
+  "changeLanguage": {
+    "message": "Dili değiştir"
+  },
   "close": {
     "message": "Kapat"
   },

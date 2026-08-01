@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Uile"
   },
+  "changeLanguage": {
+    "message": "Athraigh teanga"
+  },
   "close": {
     "message": "Dún"
   },

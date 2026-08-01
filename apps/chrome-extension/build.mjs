@@ -81,6 +81,37 @@ if (result.warnings.length > 0) {
   console.warn('[build] Warnings:', result.warnings);
 }
 
+// Step 2b: Bundle language options for the popup (vanilla JS popup loads this)
+console.log('[build] Bundling popup language options...');
+
+const popupOptionsResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/popup-options.js')],
+  bundle: true,
+  outfile: resolve(outDir, 'popup-options.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (popupOptionsResult.errors.length > 0) {
+  console.error('[build] Popup options errors:', popupOptionsResult.errors);
+  process.exit(1);
+}
+if (popupOptionsResult.warnings.length > 0) {
+  console.warn('[build] Popup options warnings:', popupOptionsResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),

@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Όλα"
   },
+  "changeLanguage": {
+    "message": "Αλλαγή γλώσσας"
+  },
   "close": {
     "message": "Κλείσιμο"
   },

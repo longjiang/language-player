@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Minden"
   },
+  "changeLanguage": {
+    "message": "Nyelv váltása"
+  },
   "close": {
     "message": "Bezár"
   },

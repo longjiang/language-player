@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Sve"
   },
+  "changeLanguage": {
+    "message": "Promijeni jezik"
+  },
   "close": {
     "message": "Zatvori"
   },

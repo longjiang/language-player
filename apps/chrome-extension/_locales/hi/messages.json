@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "सभी"
   },
+  "changeLanguage": {
+    "message": "भाषा बदलें"
+  },
   "close": {
     "message": "बंद करें"
   },
