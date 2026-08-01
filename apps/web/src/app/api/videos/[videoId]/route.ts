@@ -25,9 +25,12 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const l2 = searchParams.get('l2') ?? 'en';
 
-    // Fetch via Flask backend (which proxies Directus + falls back to YouTube)
+    // Fetch via Flask backend (which proxies Directus + falls back to YouTube).
+    // clean_generated=0 keeps auto-generated captions raw on the initial load
+    // — SPEC-029 normalization is applied progressively on the client instead
+    // of blocking the first paint on the whole LLM cleanup.
     const flaskRes = await fetch(
-      `${PYTHON_API_URL}/videos?youtube_id=${params.videoId}&l2=${l2}&subs_l2=1`,
+      `${PYTHON_API_URL}/videos?youtube_id=${params.videoId}&l2=${l2}&subs_l2=1&clean_generated=0`,
       { next: { revalidate: 3600 } },
     );
 
@@ -37,6 +40,7 @@ export async function GET(
 
     const flaskData = await flaskRes.json();
     const item = flaskData?.video;
+    const isGenerated = flaskData?.isGenerated === true;
 
     if (!item) {
       return NextResponse.json({ error: 'Video not found' }, { status: 404 });
@@ -99,7 +103,7 @@ export async function GET(
     };
 
     return NextResponse.json(
-      { video, lines: syncedLines },
+      { video, lines: syncedLines, isGenerated },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',

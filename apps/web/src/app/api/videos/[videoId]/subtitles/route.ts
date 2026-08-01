@@ -10,17 +10,24 @@ export async function GET(
 ) {
   const { searchParams } = new URL(request.url);
   const l2 = searchParams.get('l2') ?? 'en';
+  // Pass through clean_generated (e.g. '0') so the initial subtitle load can
+  // request raw auto-generated captions; SPEC-029 normalization then happens
+  // progressively on the client via /timedtext/clean.
+  const cleanGenerated = searchParams.get('clean_generated');
+  const cleanParam = cleanGenerated !== null
+    ? `&clean_generated=${encodeURIComponent(cleanGenerated)}`
+    : '';
 
   try {
     // Fetch subtitles via Flask backend (which proxies Directus + falls back to YouTube)
     const flaskRes = await fetch(
-      `${PYTHON_API_URL}/videos/subtitles?youtube_id=${params.videoId}&l2=${l2}`,
+      `${PYTHON_API_URL}/videos/subtitles?youtube_id=${params.videoId}&l2=${l2}${cleanParam}`,
       { next: { revalidate: 3600 } },
     );
 
     if (!flaskRes.ok) {
       logerr('Flask subtitle fetch failed:', flaskRes.status);
-      return NextResponse.json({ lines: [] });
+      return NextResponse.json({ lines: [], isGenerated: false });
     }
 
     const data = await flaskRes.json();
@@ -31,9 +38,12 @@ export async function GET(
       l2Line: l.l2Line ?? l.line ?? '',
     }));
 
-    return NextResponse.json({ lines });
+    return NextResponse.json({
+      lines,
+      isGenerated: data?.isGenerated === true,
+    });
   } catch (err) {
     logerr('Subtitle fetch error:', err);
-    return NextResponse.json({ lines: [] });
+    return NextResponse.json({ lines: [], isGenerated: false });
   }
 }

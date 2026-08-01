@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
@@ -13,11 +13,17 @@ import { TranscriptQueuePanel } from '@/components/video/transcript-queue-panel'
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import { SubtitlesModeBand } from '@/components/video/subtitles-mode-band';
-import type { YouTubeVideo } from '@langplayer/shared';
-import type { SyncedLine } from '@/lib/subtitle-csv';
+import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
+import { findActiveLineIndex } from '@langplayer/shared';
+import {
+  stripSubtitleDurationPrefix,
+  extractSubtitleDuration,
+  type SyncedLine,
+} from '@/lib/subtitle-csv';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
+import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 
@@ -65,6 +71,7 @@ export default function WatchPage() {
   const [paused, setPaused] = useState(false);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [subtitleLines, setSubtitleLines] = useState<SyncedLine[]>([]);
+  const [isGenerated, setIsGenerated] = useState(false);
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
@@ -135,6 +142,7 @@ export default function WatchPage() {
           setSubtitleLines(data.lines);
           setSubtitleStartTimes(data.lines.map((l: any) => l.starttime));
         }
+        setIsGenerated(data?.isGenerated === true);
       } catch {
         setDataError('msg.failed_to_load_transcript');
       } finally {
@@ -149,6 +157,34 @@ export default function WatchPage() {
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
   }, []);
+
+  // ── Progressive caption normalization (SPEC-029) ──
+  // Auto-generated captions load raw; the hook cleans them in 40-line chunks
+  // near the playhead and hands back a sparse overlay. The overlay feeds both
+  // the transcript and the subtitles-mode band below.
+  const rawL2Lines = useMemo<SubtitleLine[]>(
+    () => subtitleLines.map((l) => ({
+      line: stripSubtitleDurationPrefix(l.l2Line),
+      starttime: l.starttime,
+      duration: extractSubtitleDuration(l),
+    })),
+    [subtitleLines],
+  );
+  const activeSubtitleIndex = findActiveLineIndex(subtitleStartTimes, currentTime);
+  const { normalizedLines: captionOverlay } = useCaptionNormalization({
+    youtubeId: video?.youtube_id,
+    l2Code: baseCode(l2.code),
+    lines: rawL2Lines,
+    enabled: isGenerated && subtitleLines.length > 0,
+    activeIndex: activeSubtitleIndex,
+  });
+  const displaySubtitleLines = useMemo<SyncedLine[]>(() => {
+    if (!captionOverlay || captionOverlay.length === 0) return subtitleLines;
+    return subtitleLines.map((l, i) => {
+      const cleaned = captionOverlay[i];
+      return cleaned ? { ...l, l2Line: cleaned } : l;
+    });
+  }, [subtitleLines, captionOverlay]);
 
   const handlePauseToggle = useCallback(() => {
     const player = playerRef.current;
@@ -304,7 +340,7 @@ export default function WatchPage() {
           <div className="h-full">{playerElement}</div>
           <SubtitlesModeBand
             overlay
-            subtitleLines={subtitleLines}
+            subtitleLines={displaySubtitleLines}
             currentTime={currentTime}
             onSeekToLine={handleSeekToLine}
             onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
@@ -330,7 +366,7 @@ export default function WatchPage() {
         </div>
         <SubtitlesModeBand
           overlay={false}
-          subtitleLines={subtitleLines}
+          subtitleLines={displaySubtitleLines}
           currentTime={currentTime}
           onSeekToLine={handleSeekToLine}
           onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
@@ -390,7 +426,7 @@ export default function WatchPage() {
         <div className="flex-1 min-h-0 px-4 pb-4">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
             queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
             info={videoInfo}
           />
@@ -431,7 +467,7 @@ export default function WatchPage() {
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
             queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
           />
         </aside>

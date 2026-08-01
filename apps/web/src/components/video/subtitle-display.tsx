@@ -6,6 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
+import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -43,6 +44,14 @@ interface SubtitleDisplayProps {
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   /** Pre-loaded subtitle lines — if provided, skips the subtitles API fetch */
   initialLines?: SyncedLine[];
+  /** True when the transcript is YouTube auto-generated (ASR) — enables
+   *  progressive SPEC-029 caption normalization (raw-first, then cleaned in
+   *  chunks near the playhead). */
+  isGenerated?: boolean;
+  /** Sparse overlay of cleaned caption text (index → text, undefined = still
+   *  raw). When provided, normalization is owned by the parent and this
+   *  component only applies the overlay. */
+  normalizedOverlay?: (string | null | undefined)[];
   /** Display mode: 'multiline' (default) shows all lines; 'singleline' shows only the active line ± contextLines. */
   mode?: 'multiline' | 'singleline';
   /** In singleline mode, how many context lines to show before and after the active line. Default: 0. */
@@ -66,13 +75,14 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
+  const [fetchedIsGenerated, setFetchedIsGenerated] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const isSingleline = mode === 'singleline';
   const showTranslation = display.translation;
@@ -91,10 +101,14 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     // In singleline mode, initialLines is required — don't fetch
     if (isSingleline) return;
     if (!youtubeId) return;
+    setFetchedIsGenerated(false);
     const fetchSubtitles = async () => {
-      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}&l1=${l1Code}`);
+      // clean_generated=0 keeps auto-generated captions raw so normalization
+      // can run progressively on the client (SPEC-029).
+      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}&l1=${l1Code}&clean_generated=0`);
       if (!res.ok) return;
       const data = await res.json();
+      setFetchedIsGenerated(data?.isGenerated === true);
       const lines = data.lines?.map((l: SyncedLine) => ({
         line: stripSubtitleDurationPrefix(l.l2Line ?? ''),
         starttime: l.starttime,
@@ -111,6 +125,36 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     [l2Lines, highlightTerms],
   );
 
+  // ── Progressive caption normalization (SPEC-029) ──
+  // Only auto-generated transcripts are normalized, and only when the parent
+  // hasn't already taken ownership by passing a normalizedOverlay (e.g. the
+  // watch page, which also feeds the subtitles-mode band).
+  const effectiveIsGenerated = isGenerated ?? fetchedIsGenerated;
+  const { normalizedLines: ownNormalizedLines } = useCaptionNormalization({
+    youtubeId,
+    l2Code,
+    lines: l2Lines,
+    enabled: !normalizedOverlay && effectiveIsGenerated && !!youtubeId && l2Lines.length > 0,
+    activeIndex,
+  });
+  const captionOverlay = normalizedOverlay ?? ownNormalizedLines;
+
+  // Raw lines with the cleaned overlay swapped in. Identity is preserved when
+  // nothing changed so dependent memos don't churn.
+  const effectiveL2Lines = useMemo(() => {
+    if (!captionOverlay || captionOverlay.length === 0) return l2Lines;
+    let changed = false;
+    const merged = l2Lines.map((l, i) => {
+      const cleaned = captionOverlay[i];
+      if (cleaned && cleaned !== l.line) {
+        changed = true;
+        return { ...l, line: cleaned };
+      }
+      return l;
+    });
+    return changed ? merged : l2Lines;
+  }, [l2Lines, captionOverlay]);
+
   const { translatedLines, loading: translating, progress, error, retry } = useSubtitleTranslation(
     l2Lines,
     l1.code,
@@ -125,10 +169,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     // untranslated positions are undefined. Filter before passing to syncLines.
     const validTranslated = translatedLines.filter((l): l is SubtitleLine => l != null);
     if (validTranslated.length > 0) {
-      return syncLines(validTranslated, l2Lines);
+      return syncLines(validTranslated, effectiveL2Lines);
     }
-    return l2Lines.map((l) => ({ starttime: l.starttime, duration: l.duration, l1Line: '', l2Line: l.line }));
-  }, [l2Lines, translatedLines]);
+    return effectiveL2Lines.map((l) => ({ starttime: l.starttime, duration: l.duration, l1Line: '', l2Line: l.line }));
+  }, [effectiveL2Lines, translatedLines]);
 
   useEffect(() => {
     const startTimes = syncedLines.map(l => l.starttime);
@@ -201,7 +245,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   // ── Singleline mode ──
   if (isSingleline) {
-    const activeLine = activeIndex >= 0 ? l2Lines[activeIndex] : null;
+    const activeLine = activeIndex >= 0 ? effectiveL2Lines[activeIndex] : null;
     const activeTranslation = activeIndex >= 0 ? translatedLines[activeIndex] : null;
 
     return (
