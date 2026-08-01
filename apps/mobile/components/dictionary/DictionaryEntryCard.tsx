@@ -291,7 +291,7 @@ export function DictionaryEntryCard({
         <View className="mt-3 flex-row flex-wrap gap-x-4 gap-y-1">
           {Object.entries(entry.phonetic_detail).map(([key, value]) => {
             if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return null;
-            if (key === 'pinyin_numeric') return null;
+            if (key === 'pinyin_numeric' || key === 'kana') return null;
             if (key === 'ipa' && value === entry.pronunciation) return null;
             if (typeof value === 'string' && value) {
               return <Text key={key} className="text-xs text-muted-foreground/70">{key}: {value}</Text>;
