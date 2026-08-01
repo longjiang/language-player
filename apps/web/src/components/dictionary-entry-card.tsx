@@ -159,7 +159,7 @@ export function DictionaryEntryCard({
   if (!isFull) {
     return (
       <div
-        className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
+        className="flex flex-col rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
         onClick={() => onClick?.(entry)}
       >
         {/* Header */}
@@ -253,7 +253,7 @@ export function DictionaryEntryCard({
         )}
 
         {/* Footer */}
-        <div className="mt-2 flex items-center gap-2 text-[10px]">
+        <div className="mt-auto flex items-center gap-2 pt-2 text-[10px]">
           {sourceLine}
           {saveContext && <div className="ml-auto">{saveBtn()}</div>}
         </div>
