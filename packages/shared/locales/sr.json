@@ -581,7 +581,7 @@
         "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
         "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:ZEO C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": "{1:Početnik I,2:Početnik II,3:Početnik III,4:Srednji nivo I,5:Srednji nivo II,6:Napredni I,7:Napredni II}",
+        "name": "{level, select, 1{Početnik I} 2{Početnik II} 3{Početnik III} 4{Srednji nivo I} 5{Srednji nivo II} 6{Napredni I} 7{Napredni II} other{{level}}}",
         "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {

@@ -567,7 +567,7 @@
         "ielts": "{1:雅思1分,2:雅思2分,3:雅思3.5分,4:雅思5分,5:雅思6.5分,6:雅思8分,7:雅思9分}",
         "jlpt": "{1:JLPT N5級,2:JLPT N4級,3:JLPT N3級,4:JLPT N2級,5:JLPT N1級,6:JLPT N1級,7:歐標 C2級}",
         "label": "{levelName}（{examLevelName}）",
-        "name": "{1:初級一,2:初級二,3:初級三,4:中級一,5:中級二,6:高級一,7:高級二}",
+        "name": "{level, select, 1{初級一} 2{初級二} 3{初級三} 4{中級一} 5{中級二} 6{高級一} 7{高級二} other{{level}}}",
         "topik": "{1:TOPIK準1級,2:TOPIK 1級,3:TOPIK 2級,4:TOPIK 3級,5:TOPIK 4級,6:TOPIK 5級,7:TOPIK 6級}"
     },
     "log": {

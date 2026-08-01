@@ -27,16 +27,16 @@ export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSe
   const scaleId = primaryScale(l2Code);
 
   const options = useMemo(() => {
-    return Object.entries(LEVELS).map(([numericStr, info]) => {
+    return Object.entries(LEVELS).map(([numericStr]) => {
       const numeric = Number(numericStr);
       const { label: examLabel, prefix, sourceScaleId } = getLevelLabelWithFallback(
         numeric,
         scaleId,
       );
-      const label = `${prefix} ${examLabel} — ${info.category}`;
+      const label = `${prefix} ${examLabel} — ${t('level.name', { level: numeric })}`;
       return { value: numeric, label };
     });
-  }, [scaleId]);
+  }, [scaleId, t]);
 
   const currentLabel = options.find((o) => o.value === value)?.label;
 
