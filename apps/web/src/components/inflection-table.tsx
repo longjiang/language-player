@@ -106,7 +106,7 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
   // ── Loading ──
   if (loading) {
     return (
-      <div className={embedded ? 'flex justify-center py-4' : 'rounded-lg border border-border bg-card p-4'}>
+      <div className={embedded ? 'flex justify-center' : 'rounded-lg border border-border bg-card p-4'}>
         <div className="flex justify-center py-4">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>

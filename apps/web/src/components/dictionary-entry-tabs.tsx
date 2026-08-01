@@ -94,7 +94,7 @@ export function DictionaryEntryTabs({
         activeTab={tab}
         onTabChange={handleTabChange}
         className={embedded ? 'rounded-none border-0 bg-transparent' : 'shadow-sm'}
-        contentClassName={embedded ? 'px-0 pt-8' : 'p-6'}
+        contentClassName={embedded ? 'px-0 pt-4' : 'px-6 pt-4 pb-6'}
       >
         {tab === 'word' && (
           <DictionaryEntryCard

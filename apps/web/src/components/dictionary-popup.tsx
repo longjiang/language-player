@@ -240,11 +240,13 @@ export function DictionaryPopup({
           )}
 
           {/* AI Explanation — placed above dictionary entries, matching Classic */}
-          <AiExplanation
-            word={token.text}
-            contextText={context?.text}
-            entryFound={entries.length > 0}
-          />
+          <div className="mt-3">
+            <AiExplanation
+              word={token.text}
+              contextText={context?.text}
+              entryFound={entries.length > 0}
+            />
+          </div>
 
           {/* Compact image strip — one scrolling row, 3 images per query */}
           <ImageSearchResults
