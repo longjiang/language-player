@@ -114,6 +114,24 @@ export function languageName(code: string, uiLocale?: string): string {
   return LANGUAGE_NAMES[code] ?? code.toUpperCase();
 }
 
+/**
+ * Get a region-aware display name for a locale code in the user's UI locale.
+ * Handles regional variants (de-CH → "Swiss High German", pt-BR, es-419) via
+ * the platform's Intl.DisplayNames, then falls back to the curated language
+ * table for codes the platform doesn't know (e.g., tlh, sjn, lzh).
+ */
+export function displayLanguageName(code: string, uiLocale?: string): string {
+  if (uiLocale) {
+    try {
+      const name = new Intl.DisplayNames([uiLocale], { type: 'language' }).of(code);
+      if (name && name !== code) return name;
+    } catch {
+      // Some runtimes lack Intl.DisplayNames; fall through to the table.
+    }
+  }
+  return languageName(baseCode(code), uiLocale);
+}
+
 /** Strip BCP47 subtags (e.g., zh-Hans → zh) for backend compatibility.
  * The backend uses ISO 639-1 primary language codes only.
  * Re-exported from @langplayer/utils for cross-platform use. */

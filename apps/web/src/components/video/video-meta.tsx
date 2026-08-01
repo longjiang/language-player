@@ -2,6 +2,7 @@ import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { levelSubtleClass } from '@/lib/level-colors';
+import { displayLanguageName } from '@/lib/language-data';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
@@ -66,7 +67,7 @@ export function VideoMeta({ video }: VideoMetaProps) {
         </span>
         {video.locale && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            {video.locale}
+            {displayLanguageName(video.locale, l1.code)}
           </span>
         )}
         {video.category && (
