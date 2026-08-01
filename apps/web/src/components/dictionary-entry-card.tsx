@@ -48,7 +48,7 @@ function HighlightForm({ text, form }: { text: string; form?: string }) {
         <Fragment key={i}>
           {part}
           {i < parts.length - 1 && (
-            <span className="rounded bg-primary/15 font-semibold text-primary ring-1 ring-primary/30">
+            <span className="font-bold text-foreground">
               {form}
             </span>
           )}
