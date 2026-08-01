@@ -295,49 +295,119 @@ export default function WatchPage() {
     />
   );
 
-  // ── Error state ──
-  // The video may still be playing (the player renders optimistically from the
-  // URL's videoId), so keep it mounted and surface the failure where the
-  // subtitles would be — never replace the player with a full-page error.
-  if (dataError && !video) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
-        <div className="h-full">
-          <div ref={videoWrapperRef} className="pb-2">
+  // ── Stable layout ──
+  // Render the player in a fixed tree position across every mode (loading,
+  // error, subtitles/transcript, wide/narrow). Only CSS classes change when
+  // the layout toggles, so React never unmounts the YouTube iframe and
+  // playback continues uninterrupted through window resize / orientation
+  // changes. Loading/error states surface below the player, never replacing it.
+  const v = dataLoaded && !dataError && video ? video : null;
+
+  const outerClass =
+    isSubtitles && isWide
+      ? 'mx-auto h-[calc(100vh-3.5rem)] overflow-hidden'
+      : isSubtitles
+        ? 'mx-auto max-w-7xl px-4 py-6'
+        : isWide
+          ? 'mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden'
+          : 'mx-auto max-w-7xl h-[calc(100vh-3.5rem)] overflow-hidden';
+
+  const layoutClass =
+    isSubtitles && isWide
+      ? 'relative h-full'
+      : isSubtitles
+        ? ''
+        : isWide
+          ? 'grid h-full grid-cols-[1fr_320px] gap-6'
+          : 'flex h-full flex-col';
+
+  const col1Class =
+    isSubtitles && isWide
+      ? 'h-full'
+      : isSubtitles
+        ? ''
+        : isWide
+          ? 'flex-1 space-y-4 overflow-y-auto'
+          : 'shrink-0 px-4 pt-4';
+
+  const playerSlotClass =
+    isSubtitles && isWide
+      ? 'h-full'
+      : isSubtitles
+        ? 'bg-background pb-2'
+        : 'pb-2';
+
+  const videoInfo = v ? (
+    <div className="space-y-4">
+      <VideoMeta video={v} />
+      {v.channel_id && <YouTubeChannelCard channelId={v.channel_id} />}
+    </div>
+  ) : undefined;
+
+  return (
+    <div className={outerClass}>
+      <div className={layoutClass}>
+        {/* Player slot — same tree position in every mode */}
+        <div className={col1Class}>
+          <div ref={videoWrapperRef} className={playerSlotClass}>
             {playerElement}
           </div>
-          <div className="flex items-start justify-center gap-2 py-4 text-sm text-muted-foreground">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-            <span className="max-w-lg">{t(dataError)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  // ── Loading state: show player chrome immediately, subtitles/data come later ──
-  if (!dataLoaded) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
-        <div className="h-full">
-          <div ref={videoWrapperRef} className="pb-2">
-            {playerElement}
-          </div>
-          <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>{t('msg.loading')}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+          {v && !isSubtitles && (
+            <div className={`flex justify-end${isWide ? '' : ' pb-2'}`}>
+              <VideoControlBar
+                reduced
+                playerRef={playerRef}
+                currentTime={currentTime}
+                duration={duration}
+                paused={paused}
+                onPauseToggle={handlePauseToggle}
+                onPreviousLine={handlePreviousLine}
+                onNextLine={handleNextLine}
+                onPreviousVideo={playPrevious}
+                onNextVideo={playNext}
+                onTogglePanel={handleTogglePanel}
+                hasPreviousVideo={hasPrevious}
+                hasNextVideo={hasNext}
+                translatingText={translatingText}
+              />
+            </div>
+          )}
 
-  // ── Subtitles Mode: Wide ──
-  if (isSubtitles && isWide) {
-    return (
-      <div className="mx-auto h-[calc(100vh-3.5rem)] overflow-hidden">
-        <div className="relative h-full">
-          <div className="h-full">{playerElement}</div>
+          {v && !isSubtitles && isWide && videoInfo}
+
+          {v && isSubtitles && !isWide && (
+            <SubtitlesModeBand
+              overlay={false}
+              subtitleLines={displaySubtitleLines}
+              currentTime={currentTime}
+              onSeekToLine={handleSeekToLine}
+              onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
+              hasPrevVideo={hasPrevious}
+              hasNextVideo={hasNext}
+              onPrevVideo={playPrevious}
+              onNextVideo={playNext}
+              tokenCache={tokenCache}
+              tokenCacheLoaded={tokenCacheLoaded}
+              videoTitle={v.title}
+            />
+          )}
+
+          {/* Loading / error status — never replaces the player */}
+          {!v && (
+            <div className="flex items-start justify-center gap-2 py-4 text-sm text-muted-foreground">
+              {dataError ? (
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              ) : (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              <span className="max-w-lg">{dataError ? t(dataError) : t('msg.loading')}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Subtitles overlay (wide) */}
+        {v && isSubtitles && isWide && (
           <SubtitlesModeBand
             overlay
             subtitleLines={displaySubtitleLines}
@@ -350,127 +420,21 @@ export default function WatchPage() {
             onNextVideo={playNext}
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
-            videoTitle={video!.title}
+            videoTitle={v.title}
           />
-        </div>
-      </div>
-    );
-  }
+        )}
 
-  // ── Subtitles Mode: Narrow ──
-  if (isSubtitles) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <div ref={videoWrapperRef} className="bg-background pb-2">
-          {playerElement}
-        </div>
-        <SubtitlesModeBand
-          overlay={false}
-          subtitleLines={displaySubtitleLines}
-          currentTime={currentTime}
-          onSeekToLine={handleSeekToLine}
-          onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
-          hasPrevVideo={hasPrevious}
-          hasNextVideo={hasNext}
-          onPrevVideo={playPrevious}
-          onNextVideo={playNext}
-          tokenCache={tokenCache}
-          tokenCacheLoaded={tokenCacheLoaded}
-          videoTitle={video!.title}
-        />
-      </div>
-    );
-  }
-
-  const v = video!;
-
-  // ── Transcript Mode: Narrow ──
-  // The viewport is split into two regions:
-  //   1. Player + controls (shrink-0) — always visible
-  //   2. Tabbed panel (flex-1 min-h-0) — transcript / queue / info tabs, scrolls internally
-  if (!isWide) {
-    const videoInfo = (
-      <div className="space-y-4">
-        <VideoMeta video={v} />
-        {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
-      </div>
-    );
-
-    return (
-      <div className="mx-auto max-w-7xl h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
-        {/* Player + controls — fixed at top */}
-        <div className="shrink-0 px-4 pt-4">
-          <div ref={videoWrapperRef} className="pb-2">
-            {playerElement}
-          </div>
-          <div className="flex justify-end pb-2">
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={handlePauseToggle}
-              onPreviousLine={handlePreviousLine}
-              onNextLine={handleNextLine}
-              onPreviousVideo={playPrevious}
-              onNextVideo={playNext}
-              onTogglePanel={handleTogglePanel}
-              hasPreviousVideo={hasPrevious}
-              hasNextVideo={hasNext}
-              translatingText={translatingText}
+        {/* Transcript / queue panel (transcript mode) */}
+        {v && !isSubtitles && (
+          <div className={isWide ? 'min-h-0 overflow-hidden' : 'flex-1 min-h-0 px-4 pb-4'}>
+            <TranscriptQueuePanel
+              contentRef={transcriptScrollRef}
+              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
+              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+              info={isWide ? undefined : videoInfo}
             />
           </div>
-        </div>
-        {/* Tabbed panel — fills remaining space, scrolls internally */}
-        <div className="flex-1 min-h-0 px-4 pb-4">
-          <TranscriptQueuePanel
-            contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
-            queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-            info={videoInfo}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // ── Transcript Mode: Wide ──
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
-      <div className="grid h-full overflow-hidden grid-cols-[1fr_320px] gap-6">
-        <div className="flex-1 space-y-4 overflow-y-auto">
-          <div ref={videoWrapperRef} className="pb-2">
-            {playerElement}
-          </div>
-          <div className="flex justify-end">
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={handlePauseToggle}
-              onPreviousLine={handlePreviousLine}
-              onNextLine={handleNextLine}
-              onPreviousVideo={playPrevious}
-              onNextVideo={playNext}
-              onTogglePanel={handleTogglePanel}
-              hasPreviousVideo={hasPrevious}
-              hasNextVideo={hasNext}
-              translatingText={translatingText}
-            />
-          </div>
-          <VideoMeta video={v} />
-          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
-        </div>
-        <aside className="min-h-0 overflow-hidden">
-          <TranscriptQueuePanel
-            contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
-            queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-          />
-        </aside>
+        )}
       </div>
     </div>
   );
