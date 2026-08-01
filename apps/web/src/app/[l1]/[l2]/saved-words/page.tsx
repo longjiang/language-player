@@ -197,32 +197,31 @@ export default function SavedWordsPage() {
           <div className="mb-6 flex items-center gap-3">
             {/* Search/filter input */}
             <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
                 placeholder={t('placeholder.filter')}
-                className="h-8 w-full rounded-md border border-border bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             {/* Sort toggle */}
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 gap-1.5 text-xs text-muted-foreground"
+              className="gap-2 text-sm text-muted-foreground"
               onClick={() => setSortMode((m) => (m === 'newest' ? 'alpha' : 'newest'))}
             >
-              <ArrowUpDown className="h-3.5 w-3.5" />
+              <ArrowUpDown className="h-4 w-4" />
               {sortMode === 'newest' ? (
                 <>
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="h-4 w-4" />
                   {t('sort.newest')}
                 </>
               ) : (
                 <>
-                  <ArrowDownAZ className="h-3.5 w-3.5" />
+                  <ArrowDownAZ className="h-4 w-4" />
                   {t('sort.alphabetical')}
                 </>
               )}
