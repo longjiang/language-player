@@ -25,27 +25,30 @@ export function SavedWordSource({ context, date, className = '' }: SavedWordSour
   if (!context) {
     try { return <span className={className}>{new Date(date).toLocaleDateString(locale)}</span>; } catch { return null; }
   }
-  const hasVideoContext = !!(context.youtube_id && context.videoTitle);
+  const hasVideoContext = !!(context.youtube_id || context.videoTitle);
   const hasTextContext = !!context.textTitle;
   const dateStr = date ? new Date(date).toLocaleDateString(locale) : '';
 
-  if (!hasVideoContext && !hasTextContext) {
+  // Video wins when either video field is present; a title is only shown
+  // when it exists (some legacy records only store youtube_id).
+  if (hasVideoContext && context.videoTitle) {
+    return (
+      <span className={`inline-flex items-center gap-1 ${className}`}>
+        <Video className="h-3 w-3 flex-shrink-0" />
+        <span className="truncate">{context.videoTitle}</span>
+        <span>· {dateStr}</span>
+      </span>
+    );
+  }
+
+  if (!hasTextContext) {
     return <span className={className}>{dateStr}</span>;
   }
 
   return (
     <span className={`inline-flex items-center gap-1 ${className}`}>
-      {hasVideoContext ? (
-        <>
-          <Video className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{context.videoTitle}</span>
-        </>
-      ) : (
-        <>
-          <BookOpen className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{context.textTitle}</span>
-        </>
-      )}
+      <BookOpen className="h-3 w-3 flex-shrink-0" />
+      <span className="truncate">{context.textTitle}</span>
       <span>· {dateStr}</span>
     </span>
   );

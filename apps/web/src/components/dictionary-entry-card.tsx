@@ -106,7 +106,7 @@ export function DictionaryEntryCard({
     ? new Date(savedRecord.date).toLocaleDateString(l1Code ?? l1.code)
     : '';
   const contextSentence = savedCtx?.text && savedCtx.text !== entry.head ? savedCtx.text : undefined;
-  const hasVideoSource = !!(savedCtx?.youtube_id && savedCtx?.videoTitle);
+  const hasVideoSource = !!(savedCtx?.youtube_id || savedCtx?.videoTitle);
   const hasTextSource = !!savedCtx?.textTitle;
   const sourceLabel = hasVideoSource
     ? savedCtx?.videoTitle
@@ -270,15 +270,14 @@ export function DictionaryEntryCard({
               <BookmarkCheck className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
-              {sourceLabel && (
+              {(hasVideoSource || hasTextSource) && (
                 <>
                   {' · '}
                   <span className="inline-block max-w-[45%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
                     {hasVideoSource
                       ? <Video className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
                       : <BookOpen className="inline-block h-3 w-3 shrink-0 align-[-2px]" />}
-                    {' '}
-                    {sourceLabel}
+                    {sourceLabel && <> {' '}{sourceLabel}</>}
                   </span>
                 </>
               )}
@@ -451,15 +450,14 @@ export function DictionaryEntryCard({
             <BookmarkCheck className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
             {' '}
             <span className="whitespace-nowrap">{saveDateStr}</span>
-            {sourceLabel && (
+            {(hasVideoSource || hasTextSource) && (
               <>
                 {' · '}
                 <span className="inline-block max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
                   {hasVideoSource
                     ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
                     : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
-                  {' '}
-                  {sourceLabel}
+                  {sourceLabel && <> {' '}{sourceLabel}</>}
                 </span>
               </>
             )}
