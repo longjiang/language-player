@@ -18,7 +18,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -190,6 +190,7 @@ export function DictionaryPopup({
         showCloseButton={false}
         className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4 gap-1"
       >
+        <DialogTitle className="sr-only">{t('title.dictionary')}</DialogTitle>
         {/* Header */}
         <div className="mb-1 flex items-center justify-between">
           <div>

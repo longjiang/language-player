@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { languageName, pickRedirectTarget } from '@/lib/language-data';
 import { ChevronDown } from 'lucide-react';
 import { LanguagePicker } from '@/components/language-picker';
@@ -11,9 +12,11 @@ import {
   DialogTrigger,
   DialogContent,
   DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 
 export function LanguageSwitcher() {
+  const t = useT();
   const { l1, l2, setLanguagePair } = useLanguage();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -37,6 +40,7 @@ export function LanguageSwitcher() {
         className="sm:max-w-md max-h-[90vh] overflow-y-auto"
         showCloseButton={false}
       >
+        <DialogTitle className="sr-only">{t('title.select_language')}</DialogTitle>
         <LanguagePicker
           initialL1={l1.code}
           initialL2={l2.code}
