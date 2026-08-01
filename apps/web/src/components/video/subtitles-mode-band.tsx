@@ -156,7 +156,7 @@ export function SubtitlesModeBand({
               />
             </div>
             {showTranslation && activeLine.l1Line && (
-              <p className={cn('text-sm text-center mt-0.5', transClass)}>
+              <p className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}>
                 {activeLine.l1Line}
               </p>
             )}
