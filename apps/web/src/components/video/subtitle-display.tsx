@@ -209,7 +209,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             translationBelow
             loading={showTranslation && translating && !activeTranslation}
           >
-            <div className="text-xl font-medium leading-relaxed">
+            <div className="text-center text-xl font-medium leading-relaxed">
               <TokenizedText
                 text={activeLine.line}
                 l2Code={l2Code}
