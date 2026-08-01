@@ -339,7 +339,7 @@ export function DictionaryEntryCard({
 
       {/* Phonetic detail — skip keys already shown as the main pronunciation */}
       {phoneticExtras.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
+        <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
           {phoneticExtras.map(([key, value]) => (
             <span key={key}>{key}: {value}</span>
           ))}
