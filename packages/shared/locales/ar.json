@@ -663,6 +663,7 @@
         "explore_media_for": "استكشاف وسائط {l2}",
         "failed_to_load_images": "تعذر تحميل الصور.",
         "failed_to_load_note": "فشل تحميل الملاحظة",
+        "failed_to_load_transcript": "الفيديو يعمل، لكننا لم نتمكن من تحميل النص والترجمات. حدّث الصفحة أو حاول مرة أخرى بعد قليل.",
         "failed_to_load_url": "فشل تحميل الرابط",
         "failed_to_load_watch_history": "فشل تحميل سجل المشاهدة",
         "find_videos_matched": "ابحث عن فيديوهات مناسبة لمستواك",

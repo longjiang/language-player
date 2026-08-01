@@ -663,6 +663,7 @@
         "explore_media_for": "Fiosraigh Meáin {l2}",
         "failed_to_load_images": "Níorbh fhéidir na híomhánna a lódáil.",
         "failed_to_load_note": "Theip ar luchtú an nóta",
+        "failed_to_load_transcript": "Tá an físeán ag seinm, ach níorbh fhéidir linn an athscríbhinn agus na fotheidil a lódáil. Athnuaigh an leathanach nó bain triail as arís i gceann nóiméid.",
         "failed_to_load_url": "Theip ar an URL a lódáil",
         "failed_to_load_watch_history": "Theip ar stair féachana a lódáil",
         "find_videos_matched": "Aimsigh físeáin a oireann do do leibhéal",

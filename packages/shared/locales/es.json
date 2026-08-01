@@ -663,6 +663,7 @@
         "explore_media_for": "Explora {l2} Media",
         "failed_to_load_images": "No se pudieron cargar las imágenes.",
         "failed_to_load_note": "Error al cargar la nota",
+        "failed_to_load_transcript": "El video se está reproduciendo, pero no pudimos cargar la transcripción y los subtítulos. Actualiza la página o inténtalo de nuevo en un momento.",
         "failed_to_load_url": "Error al cargar la URL",
         "failed_to_load_watch_history": "Error al cargar el historial de visualización",
         "find_videos_matched": "Encuentra videos adaptados a tu nivel",

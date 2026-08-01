@@ -663,6 +663,7 @@
         "explore_media_for": "Utforsk {l2} medier",
         "failed_to_load_images": "Kunne ikke laste inn bilder.",
         "failed_to_load_note": "Kunne ikke laste notat",
+        "failed_to_load_transcript": "Videoen spilles av, men vi kunne ikke laste inn transkripsjonen og undertekstene. Oppdater siden eller prøv igjen om et øyeblikk.",
         "failed_to_load_url": "Klarte ikke å laste inn URL",
         "failed_to_load_watch_history": "Kunne ikke laste inn visningshistorikk",
         "find_videos_matched": "Finn videoer som passer ditt nivå",

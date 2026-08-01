@@ -663,6 +663,7 @@
         "explore_media_for": "{l2} média felfedezése",
         "failed_to_load_images": "A képek betöltése nem sikerült.",
         "failed_to_load_note": "A jegyzet betöltése sikertelen",
+        "failed_to_load_transcript": "A videó lejátszódik, de nem sikerült betölteni az átiratot és a feliratokat. Frissítse az oldalt, vagy próbálja újra egy pillanat múlva.",
         "failed_to_load_url": "Nem sikerült betölteni az URL-t",
         "failed_to_load_watch_history": "Nem sikerült betölteni a nézési előzményeket",
         "find_videos_matched": "Találjon a szintjének megfelelő videókat",

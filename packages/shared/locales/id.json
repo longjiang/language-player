@@ -663,6 +663,7 @@
         "explore_media_for": "Jelajahi Media {l2}",
         "failed_to_load_images": "Tidak dapat memuat gambar.",
         "failed_to_load_note": "Gagal memuat catatan",
+        "failed_to_load_transcript": "Video sedang diputar, tetapi kami tidak dapat memuat transkrip dan subtitle. Muat ulang halaman atau coba lagi sebentar lagi.",
         "failed_to_load_url": "Gagal memuat URL",
         "failed_to_load_watch_history": "Gagal memuat riwayat tontonan",
         "find_videos_matched": "Temukan video yang cocok dengan level Anda",

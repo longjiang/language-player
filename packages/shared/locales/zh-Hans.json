@@ -647,6 +647,7 @@
         "explore_media_for": "探索{l2}媒体",
         "failed_to_load_images": "无法加载图片。",
         "failed_to_load_note": "加载笔记失败",
+        "failed_to_load_transcript": "视频正在播放，但我们无法加载字幕和文稿。请刷新页面或稍后再试。",
         "failed_to_load_url": "加载 URL 失败",
         "failed_to_load_watch_history": "加载观看记录失败",
         "find_videos_matched": "找到适合您水平的视频",

@@ -53,6 +53,9 @@ export default function WatchPage() {
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  // Holds a translation key (not a raw message) — rendered through t() so it
+  // stays localized. The fetch can fail even though the YouTube player itself
+  // is playing, so this must never imply the video is missing.
   const [dataError, setDataError] = useState<string | null>(null);
   const [startTime] = useState(() => getSavedPosition(videoId));
 
@@ -117,7 +120,10 @@ export default function WatchPage() {
     const fetchVideo = async () => {
       try {
         const res = await fetch(`/api/videos/${videoId}?l2=${baseCode(l2.code)}&l1=${baseCode(l1.code)}`);
-        if (!res.ok) throw new Error('Video not found');
+        if (!res.ok) {
+          setDataError('msg.failed_to_load_transcript');
+          return;
+        }
         const data = await res.json();
         const v = data.video ?? data;
         setVideo(v);
@@ -129,8 +135,8 @@ export default function WatchPage() {
           setSubtitleLines(data.lines);
           setSubtitleStartTimes(data.lines.map((l: any) => l.starttime));
         }
-      } catch (err: any) {
-        setDataError(err.message ?? 'Failed to load video');
+      } catch {
+        setDataError('msg.failed_to_load_transcript');
       } finally {
         setDataLoaded(true);
       }
@@ -254,12 +260,21 @@ export default function WatchPage() {
   );
 
   // ── Error state ──
+  // The video may still be playing (the player renders optimistically from the
+  // URL's videoId), so keep it mounted and surface the failure where the
+  // subtitles would be — never replace the player with a full-page error.
   if (dataError && !video) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
-        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
-        <p className="mt-2 text-muted-foreground">{dataError}</p>
+      <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
+        <div className="h-full">
+          <div ref={videoWrapperRef} className="pb-2">
+            {playerElement}
+          </div>
+          <div className="flex items-start justify-center gap-2 py-4 text-sm text-muted-foreground">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+            <span className="max-w-lg">{t(dataError)}</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -424,4 +439,3 @@ export default function WatchPage() {
     </div>
   );
 }
-
