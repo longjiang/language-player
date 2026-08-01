@@ -8,9 +8,10 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
-import { TokenizedText, ZOOM_TO_REM } from '@/components/tokenized-text';
+import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
+import { useTextScale } from '@/hooks/use-text-scale';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
@@ -77,9 +78,9 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, playback, getL2, tokenizedText } = useSettingsContext();
+  const { display, playback, getL2 } = useSettingsContext();
   // Scale the design sizes by the user's text-size setting (zoom index 0 = 1×).
-  const textZoomFactor = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
+  const textZoomFactor = useTextScale();
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
@@ -270,18 +271,20 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l1Code={l1Code}
             translation={
               showTranslation && activeTranslation ? (
-                <ReactMarkdown
-                  components={{
-                    p: ({ children }) => <span>{children}</span>,
-                    strong: ({ children }) => (
-                      <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
-                        {children}
-                      </mark>
-                    ),
-                  }}
-                >
-                  {activeTranslation.line}
-                </ReactMarkdown>
+                <div style={{ fontSize: `${0.875 * textZoomFactor}rem` }}>
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <span>{children}</span>,
+                      strong: ({ children }) => (
+                        <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                          {children}
+                        </mark>
+                      ),
+                    }}
+                  >
+                    {activeTranslation.line}
+                  </ReactMarkdown>
+                </div>
               ) : undefined
             }
             translationClass="text-sm text-center"
@@ -368,7 +371,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 />
               </div>
               {showTranslation && line.l1Line && (
-                <p className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+                <p
+                  className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}
+                  style={{ fontSize: `${0.75 * textZoomFactor}rem` }}
+                >
                   {line.l1Line}
                 </p>
               )}
