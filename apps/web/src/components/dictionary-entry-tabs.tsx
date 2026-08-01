@@ -75,16 +75,16 @@ export function DictionaryEntryTabs({
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
       ]
     : [
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
         { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
       ];
 
   return (
@@ -107,6 +107,9 @@ export function DictionaryEntryTabs({
             onClick={onCardClick}
           />
         )}
+        {tab === 'deepseek' && (
+          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+        )}
         {tab === 'examples' && (
           <SubsSearchResults
             term={searchTermString}
@@ -125,9 +128,6 @@ export function DictionaryEntryTabs({
             contextText={contextText}
             contextForm={contextForm}
           />
-        )}
-        {tab === 'deepseek' && (
-          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
         )}
         {tab === 'inflections' && (
           <InflectionTable head={entry.head} l2Code={l2Code} embedded />
