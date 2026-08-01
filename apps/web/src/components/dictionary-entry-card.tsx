@@ -65,7 +65,7 @@ export function DictionaryEntryCard({
 
   const studyMaterials = entry.studyMaterials;
 
-  // ── Shared: level + POS badges ──
+  // ── Shared: level badges ──
   const badges = (
     <>
       {levelTexts.map((text, i) => (
@@ -76,11 +76,6 @@ export function DictionaryEntryCard({
           {text}
         </span>
       ))}
-      {isFull && entry.part_of_speech && (
-        <span className="rounded-md bg-muted px-2.5 py-1 text-sm font-medium text-muted-foreground">
-          {entry.part_of_speech}
-        </span>
-      )}
     </>
   );
 
