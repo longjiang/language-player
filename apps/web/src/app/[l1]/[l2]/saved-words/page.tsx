@@ -163,10 +163,10 @@ export default function SavedWordsPage() {
         </div>
       ) : (
         <>
-          {/* Toolbar: filter + sort + actions */}
-          <div className="mb-6 flex items-center gap-3">
+          {/* Toolbar: filter input + actions */}
+          <div className="mb-6 flex items-center gap-2">
             {/* Search/filter input */}
-            <div className="relative min-w-0 flex-1 max-w-xs">
+            <div className="relative min-w-0 flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
@@ -177,20 +177,13 @@ export default function SavedWordsPage() {
               />
             </div>
 
-            {/* Result count when filtering */}
-            {filterText.trim() && (
-              <span className="text-xs text-muted-foreground">
-                {words.length} / {allWords.length}
-              </span>
-            )}
-
             {/* Export / Clear All — icon-only on narrow screens */}
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Button
                 variant="outline"
                 onClick={handleExport}
                 disabled={allWords.length === 0}
-                className="gap-1.5 px-2 sm:px-4"
+                className="shrink-0 gap-1.5 px-2 sm:px-4"
                 title={t('action.export')}
                 aria-label={t('action.export')}
               >
@@ -201,7 +194,7 @@ export default function SavedWordsPage() {
                 variant="outline"
                 onClick={handleClearAll}
                 disabled={allWords.length === 0}
-                className="gap-1.5 px-2 sm:px-4"
+                className="shrink-0 gap-1.5 px-2 sm:px-4"
                 title={t('action.clear_all')}
                 aria-label={t('action.clear_all')}
               >
