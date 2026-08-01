@@ -689,21 +689,11 @@ export default function ReviewPage() {
       {/* Card */}
       <div
         className={`bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none
-          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}
-          ${showDefinition && !rated ? 'cursor-pointer' : ''}`}
-        onClick={(e) => {
-          if (!showDefinition && !rated) {
-            handleReveal();
-          } else if (showDefinition && !rated) {
-            // Left half → Again, right half → Good
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            if (x < rect.width / 2) {
-              handleRate('again');
-            } else {
-              handleRate('good');
-            }
-          }
+          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
+        onClick={() => {
+          // Tapping the card front reveals the answer. Rating is done only via
+          // the explicit buttons — no tap-to-rate zones on the card.
+          if (!showDefinition && !rated) handleReveal();
         }}
       >
         {/* Context sentence — always visible, tokenized/interactive */}
