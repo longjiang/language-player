@@ -355,10 +355,8 @@ export function DictionaryEntryCard({
       </div>
 
       {/* DeepSeek explanation — same component/props as the DictionaryEntryTabs deepseek tab (pro-gated).
-          mt-1 wrapper (4px) + AiExplanation's built-in mt-2 (8px) = 12px total above the AI block. */}
-      <div className="mt-1">
-        <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
-      </div>
+          AiExplanation's root carries mt-6 (24px) above the AI block. */}
+      <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
     </div>
   );
 }
