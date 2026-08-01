@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -45,21 +45,45 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function HighlightLine({ line, term }: { line: string; term: string }) {
-  const lowerLine = line.toLowerCase();
-  const lowerTerm = term.toLowerCase();
-  const idx = lowerLine.indexOf(lowerTerm);
-  if (idx === -1) return <span>{line}</span>;
+function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
+  const active = terms.map((t) => t.trim()).filter(Boolean);
+  if (active.length === 0) return <span>{line}</span>;
 
-  return (
-    <span>
-      {line.substring(0, idx)}
-      <mark className="rounded-sm bg-yellow-200 px-0.5 dark:bg-yellow-800">
-        {line.substring(idx, idx + term.length)}
-      </mark>
-      {line.substring(idx + term.length)}
-    </span>
-  );
+  const lowerLine = line.toLowerCase();
+  const nodes: ReactNode[] = [];
+  let pos = 0;
+
+  while (pos < line.length) {
+    // Find the earliest match of any term; prefer the longest term on ties.
+    let bestIdx = -1;
+    let bestLen = 0;
+    for (const term of active) {
+      const idx = lowerLine.indexOf(term.toLowerCase(), pos);
+      if (
+        idx !== -1 &&
+        (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
+      ) {
+        bestIdx = idx;
+        bestLen = term.length;
+      }
+    }
+    if (bestIdx === -1) {
+      nodes.push(line.slice(pos));
+      break;
+    }
+    if (bestIdx > pos) nodes.push(line.slice(pos, bestIdx));
+    nodes.push(
+      <mark
+        key={`${bestIdx}-${bestLen}`}
+        className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30"
+      >
+        {line.slice(bestIdx, bestIdx + bestLen)}
+      </mark>,
+    );
+    pos = bestIdx + bestLen;
+  }
+
+  return <span>{nodes}</span>;
 }
 
 // ── Main Component ─────────────────────────────
@@ -614,7 +638,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                       <button
                         key={`${video.id}`}
                         onClick={() => selectFromList(i)}
-                        className={`flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50 ${
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50 ${
                           isActive ? 'bg-primary/5 ring-1 ring-primary/30' : ''
                         }`}
                       >
@@ -633,38 +657,23 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                           )}
                         </div>
 
-                        {/* Info */}
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-medium">
-                            {video.title}
-                          </p>
-                          <div className="mt-0.5 space-y-0.5">
-                            {video.matchLineIndex > 0 && (
-                              <p className="line-clamp-1 text-[11px] text-muted-foreground/50">
-                                {
-                                  video.subs_l2[video.matchLineIndex - 1]
-                                    ?.line
-                                }
-                              </p>
-                            )}
-                            {ml && (
-                              <p className="line-clamp-2 text-xs">
-                                <HighlightLine
-                                  line={ml.line}
-                                  term={term}
-                                />
-                              </p>
-                            )}
-                            {video.matchLineIndex <
-                              video.subs_l2.length - 1 && (
-                              <p className="line-clamp-1 text-[11px] text-muted-foreground/50">
-                                {
-                                  video.subs_l2[video.matchLineIndex + 1]
-                                    ?.line
-                                }
-                              </p>
-                            )}
-                          </div>
+                        {/* Subtitle context — all lines joined into one
+                            horizontally scrolling row, no video title */}
+                        <div className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-base leading-snug">
+                          <HighlightTerms
+                            line={[
+                              video.matchLineIndex > 0
+                                ? video.subs_l2[video.matchLineIndex - 1]?.line
+                                : '',
+                              ml?.line ?? '',
+                              video.matchLineIndex < video.subs_l2.length - 1
+                                ? video.subs_l2[video.matchLineIndex + 1]?.line
+                                : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            terms={highlightTerms}
+                          />
                         </div>
                       </button>
                     );
