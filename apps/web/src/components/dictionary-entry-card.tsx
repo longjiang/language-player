@@ -265,18 +265,18 @@ export function DictionaryEntryCard({
 
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            <p className="line-clamp-2" lang={l2Code}>
-              <BookmarkCheck className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
+          <div className="mt-2 text-sm text-muted-foreground">
+            <p className="line-clamp-3" lang={l2Code}>
+              <BookmarkCheck className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
               {(hasVideoSource || hasTextSource) && (
                 <>
                   {' · '}
-                  <span className="inline-block max-w-[45%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                  <span className="inline-block max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
                     {hasVideoSource
-                      ? <Video className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
-                      : <BookOpen className="inline-block h-3 w-3 shrink-0 align-[-2px]" />}
+                      ? <Video className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />
+                      : <BookOpen className="inline-block h-3.5 w-3.5 shrink-0 align-[-2px]" />}
                     {sourceLabel && <> {' '}{sourceLabel}</>}
                   </span>
                 </>
@@ -446,14 +446,14 @@ export function DictionaryEntryCard({
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
         <div className="mb-6 text-sm text-muted-foreground">
-          <p className="line-clamp-2" lang={l2Code}>
+          <p className="line-clamp-3" lang={l2Code}>
             <BookmarkCheck className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
             {' '}
             <span className="whitespace-nowrap">{saveDateStr}</span>
             {(hasVideoSource || hasTextSource) && (
               <>
                 {' · '}
-                <span className="inline-block max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                <span className="inline-block max-w-[70%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
                   {hasVideoSource
                     ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
                     : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
