@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "ทั้งหมด"
   },
+  "changeLanguage": {
+    "message": "เปลี่ยนภาษา"
+  },
   "close": {
     "message": "ปิด"
   },

@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "すべて"
   },
+  "changeLanguage": {
+    "message": "言語を変更"
+  },
   "close": {
     "message": "閉じる"
   },

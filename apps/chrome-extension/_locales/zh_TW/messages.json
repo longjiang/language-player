@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "全部"
   },
+  "changeLanguage": {
+    "message": "切換語言"
+  },
   "close": {
     "message": "關閉"
   },

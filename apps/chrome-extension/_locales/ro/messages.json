@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Toate"
   },
+  "changeLanguage": {
+    "message": "Schimbă limba"
+  },
   "close": {
     "message": "Închideți"
   },

@@ -12,6 +12,55 @@
       <span id="popup-title">Language Player</span>
     </h1>
 
+    <!-- Language picker -->
+    <section id="language-section">
+      <div class="lang-header">
+        <span id="lang-title"></span>
+        <button id="lang-toggle-btn"></button>
+      </div>
+      <div id="lang-summary" class="lang-summary"></div>
+
+      <div id="lang-picker" class="hidden">
+        <div class="lpv-modal-columns">
+          <!-- L1: I speak -->
+          <div class="lpv-modal-column">
+            <div class="lpv-modal-column-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lpv-icon-primary"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+              <h3 id="lang-l1-title"></h3>
+            </div>
+            <div class="lpv-modal-search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lpv-search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="lang-l1-search" type="text" class="lpv-modal-search-input" />
+            </div>
+            <div id="lang-l1-list" class="lpv-modal-list"></div>
+          </div>
+
+          <!-- Arrow separator -->
+          <div class="lpv-modal-arrow-col">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lpv-icon-muted"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </div>
+
+          <!-- L2: I'm learning -->
+          <div class="lpv-modal-column">
+            <div class="lpv-modal-column-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lpv-icon-primary"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+              <h3 id="lang-l2-title"></h3>
+            </div>
+            <div class="lpv-modal-search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lpv-search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="lang-l2-search" type="text" class="lpv-modal-search-input" />
+            </div>
+            <div id="lang-l2-list" class="lpv-modal-list"></div>
+          </div>
+        </div>
+
+        <div class="lpv-modal-footer">
+          <span id="lang-selection" class="lpv-modal-selection"></span>
+          <button id="lang-confirm-btn" class="lpv-modal-confirm-btn"></button>
+        </div>
+      </div>
+    </section>
+
     <!-- Auth section -->
     <div id="auth-section">
       <div id="auth-logged-out">
@@ -42,6 +91,7 @@
     <p id="transcript-hint" class="hidden"></p>
 
   </div>
+  <script src="../dist/popup-options.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

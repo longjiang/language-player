@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Semua"
   },
+  "changeLanguage": {
+    "message": "Ganti bahasa"
+  },
   "close": {
     "message": "Tutup"
   },

@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Tot"
   },
+  "changeLanguage": {
+    "message": "Canviar d'idioma"
+  },
   "close": {
     "message": "Tancar"
   },

@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "전체"
   },
+  "changeLanguage": {
+    "message": "언어 변경"
+  },
   "close": {
     "message": "닫기"
   },

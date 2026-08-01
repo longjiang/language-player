@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Alles"
   },
+  "changeLanguage": {
+    "message": "Verander taal"
+  },
   "close": {
     "message": "Sluit"
   },

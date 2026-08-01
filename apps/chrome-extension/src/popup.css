@@ -254,6 +254,251 @@ h1 img {
   line-height: 1.5;
 }
 
+/* ── Language Picker ───────────────────────────────────────────────── */
+
+#language-section {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+}
+
+.lang-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#lang-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+#lang-toggle-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-bright);
+  background: transparent;
+  border: 1px solid rgba(0, 168, 225, 0.35);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+#lang-toggle-btn:hover {
+  color: #fff;
+  background: rgba(0, 168, 225, 0.2);
+}
+
+.lang-summary {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-bright);
+}
+
+#lang-picker {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.lpv-modal-columns {
+  display: flex;
+  gap: 0;
+  min-height: 0;
+}
+
+.lpv-modal-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lpv-modal-column-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.lpv-modal-column-header h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #eee;
+  white-space: nowrap;
+}
+
+.lpv-icon-primary {
+  color: #00A8E1;
+  flex-shrink: 0;
+}
+
+.lpv-icon-muted {
+  color: #555;
+}
+
+.lpv-modal-arrow-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.lpv-modal-search {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.lpv-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  pointer-events: none;
+}
+
+.lpv-modal-search-input {
+  width: 100%;
+  padding: 6px 8px 6px 26px;
+  font-size: 11px;
+  color: #ddd;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.lpv-modal-search-input:focus {
+  border-color: rgba(0, 168, 225, 0.5);
+}
+
+.lpv-modal-search-input::placeholder {
+  color: #555;
+}
+
+.lpv-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 220px;
+  min-height: 0;
+}
+
+.lpv-modal-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lpv-modal-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.lpv-modal-list-label {
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lpv-modal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #bbb;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.lpv-modal-item span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpv-modal-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.lpv-modal-item-selected {
+  background: rgba(0, 168, 225, 0.15);
+  color: #00A8E1;
+}
+
+.lpv-modal-item-code {
+  flex-shrink: 0;
+  font-size: 9px;
+  color: #666;
+  font-weight: 500;
+}
+
+.lpv-modal-item-selected .lpv-modal-item-code {
+  color: rgba(0, 168, 225, 0.6);
+}
+
+.lpv-modal-divider {
+  margin: 3px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lpv-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.lpv-modal-selection {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lpv-modal-confirm-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #00A8E1;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lpv-modal-confirm-btn:hover {
+  background: #0090c8;
+}
+
+.lpv-modal-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .hidden {
   display: none;
 }

@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Kaikki"
   },
+  "changeLanguage": {
+    "message": "Vaihda kieltä"
+  },
   "close": {
     "message": "Sulje"
   },

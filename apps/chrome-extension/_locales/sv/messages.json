@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Alla"
   },
+  "changeLanguage": {
+    "message": "Byt språk"
+  },
   "close": {
     "message": "Stäng"
   },

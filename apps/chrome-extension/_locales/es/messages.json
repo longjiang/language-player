@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Todo"
   },
+  "changeLanguage": {
+    "message": "Cambiar idioma"
+  },
   "close": {
     "message": "Cerrar"
   },

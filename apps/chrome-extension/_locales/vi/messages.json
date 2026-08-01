@@ -11,6 +11,9 @@
   "allLanguages": {
     "message": "Tất cả"
   },
+  "changeLanguage": {
+    "message": "Đổi ngôn ngữ"
+  },
   "close": {
     "message": "Đóng"
   },
