@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { ReaderPanel } from '@/components/reader/reader-panel';
@@ -35,6 +35,8 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
 
 export default function WebReaderPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const { l1, l2 } = useLanguage();
   const t = useT();
 
@@ -52,9 +54,9 @@ export default function WebReaderPage() {
   const urlParam = searchParams.get('url');
   useEffect(() => {
     if (urlParam) {
-      const decoded = decodeURIComponent(urlParam);
-      setUrl(decoded);
-      handleLoad(decoded);
+      // searchParams.get already URL-decodes the value once — don't decode again.
+      setUrl(urlParam);
+      handleLoad(urlParam);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -62,6 +64,9 @@ export default function WebReaderPage() {
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
+    // Keep the browser URL in sync so the loaded page can be shared or
+    // reopened from an external link.
+    router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
     setLoading(true);
     setError(null);
     try {
