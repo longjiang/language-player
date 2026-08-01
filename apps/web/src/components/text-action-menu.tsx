@@ -32,6 +32,8 @@ interface TextActionMenuProps {
   translation?: string;
   /** Tailwind classes for the translation element (e.g. match heading size). */
   translationClass?: string;
+  /** Always render the translation below the content, even on xl screens. */
+  translationBelow?: boolean;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
   children: ReactNode;
@@ -47,6 +49,7 @@ export function TextActionMenu({
   alwaysShow = false,
   translation,
   translationClass = '',
+  translationBelow = false,
   loading = false,
   children,
 }: TextActionMenuProps) {
@@ -148,17 +151,17 @@ export function TextActionMenu({
   return (
     <div className="group relative flex items-start gap-3 mb-4">
       {/* Content + inline translation */}
-      <div className="flex-1 min-w-0 flex flex-col gap-y-1 xl:flex-row xl:gap-4 xl:items-center">
+      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'xl:flex-row xl:gap-4 xl:items-center'}`}>
         <div className="flex-[3] min-w-0">
           {children}
         </div>
         {translation && (
-          <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed xl:pt-0 ${translationClass}`}>
+          <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'xl:pt-0'} ${translationClass}`}>
             {translation}
           </div>
         )}
         {loading && !translation && (
-          <div className={`flex-[2] min-w-0 pt-1 xl:pt-0 ${translationClass || 'text-sm'}`}>
+          <div className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'xl:pt-0'} ${translationClass || 'text-sm'}`}>
             <TranslationSkeleton text={text} />
           </div>
         )}
