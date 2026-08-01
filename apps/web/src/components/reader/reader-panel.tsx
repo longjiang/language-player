@@ -12,13 +12,24 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
+import { log, logwarn, logerr } from '@/lib/logger';
 import {
   BookOpen, Loader2, FileText, Sparkles,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
-  return md
+  const imageTagsIn = (md.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length;
+  log('[WebReader] stripMarkdown: input %d chars, %d image tag(s)', md.length, imageTagsIn);
+  // Protect image tags so the stripping regexes below can't mangle them:
+  // `_(.+?)_` eats underscores inside image URLs and `\[..\]\(..\)` turns
+  // `![alt](url)` into `!alt`. Placeholders are restored afterwards.
+  const images: string[] = [];
+  const protectedMd = md.replace(/!\[[^\]]*\]\([^)]*\)/g, m => {
+    images.push(m);
+    return `\u0000LPIMG${images.length - 1}\u0000`;
+  });
+  const out = protectedMd
     .replace(/#{1,6}\s/g, '')
     .replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1')
     .replace(/\*(.+?)\*/g, '$1').replace(/_(.+?)_/g, '$1')
@@ -26,6 +37,15 @@ function stripMarkdown(md: string): string {
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/>\s/g, '')
     .replace(/[-*+]\s/g, '').replace(/\d+\.\s/g, '')
     .replace(/\n{3,}/g, '\n\n').trim();
+  const restored = out.replace(/\u0000LPIMG(\d+)\u0000/g, (_, idx: string) => images[Number(idx)] ?? '');
+  const imageTagsOut = (restored.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length;
+  log('[WebReader] stripMarkdown: output %d chars, %d image tag(s)', restored.length, imageTagsOut);
+  log('[WebReader] stripMarkdown: first 5 lines of output:\n%s', firstLines(restored));
+  return restored;
+}
+
+function firstLines(md: string, n = 5): string {
+  return md.split('\n').slice(0, n).join('\n');
 }
 
 function blockTag(tb: TextBlock): keyof JSX.IntrinsicElements {
@@ -123,6 +143,16 @@ export function ReaderPanel({
   const prevBlocksRef = useRef(blocks);
   useEffect(() => {
     if (prevBlocksRef.current !== blocks) {
+      if (blocks) {
+        const textBlocks = blocks.filter((b): b is TextBlock => b.kind === 'text');
+        log(
+          '[WebReader] Blocks updated: %d total (%d text, %d markdown)',
+          blocks.length,
+          textBlocks.length,
+          blocks.length - textBlocks.length,
+        );
+        log('[WebReader] Blocks updated — first %d lines of text:\n%s', 5, firstLines(text));
+      }
       setBlockTranslations({});
       setTokenCache({});
       setHasMeasured(false);
@@ -167,6 +197,13 @@ export function ReaderPanel({
         setPageBreaks(breaks);
         setPage(0);
         setHasMeasured(true);
+        log(
+          '[WebReader] Measured %d blocks → %d page breaks (%d pages), maxHeight=%dpx',
+          children.length,
+          breaks.length,
+          breaks.length + 1,
+          maxHeight,
+        );
       });
     });
   }, [text, blocks, activeTab, showTranslation]);
@@ -178,6 +215,14 @@ export function ReaderPanel({
     const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
     return blocks.slice(start, end);
   })();
+
+  // Log page changes (only when page/breaks actually change, not every render)
+  useEffect(() => {
+    if (!blocks || !hasMeasured) return;
+    const start = page === 0 ? 0 : pageBreaks[page - 1];
+    const end = page < pageBreaks.length ? pageBreaks[page] : blocks.length;
+    log('[WebReader] Page %d/%d: rendering blocks %d–%d', page + 1, totalPages, start, end);
+  }, [page, pageBreaks, blocks, hasMeasured, totalPages]);
 
   // Whether all text blocks on the current page have tokens cached
   const allTokensReady = (() => {
@@ -212,6 +257,19 @@ export function ReaderPanel({
     if (first) onAnchorChange(first.text.slice(0, 40));
   }, [page, visibleBlocks, onAnchorChange]);
 
+  // Log the no-blocks fallback path (web reader before tokenize / notes reader)
+  useEffect(() => {
+    if (blocks === null && text) {
+      const stripped = stripMarkdown(text);
+      const imagesRaw = (text.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length;
+      const imagesStripped = (stripped.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length;
+      log('[WebReader] Fallback render: no blocks — one TextActionMenu + TokenizedText for %d chars', text.length);
+      log('[WebReader] Fallback render — first %d lines of text:\n%s', 5, firstLines(text));
+      log('[WebReader] Fallback render — image tags: %d before stripMarkdown → %d after', imagesRaw, imagesStripped);
+      log('[WebReader] Fallback render — first 5 lines of stripped text:\n%s', firstLines(stripped));
+    }
+  }, [blocks, text]);
+
   // ── Load tokens for the current page (lazy, per-page) ──
   useEffect(() => {
     if (!hasMeasured || !blocks || !onLemmatize) return;
@@ -233,8 +291,14 @@ export function ReaderPanel({
     tokenLoadGenRef.current += 1;
     const gen = tokenLoadGenRef.current;
     setLoadingTokens(true);
+    log('[WebReader] Lemmatize: requesting tokens for %d text block(s): %o', missing.length, missing.map(m => m.text.slice(0, 50)));
     onLemmatize(missing.map(m => m.text)).then(results => {
       if (tokenLoadGenRef.current !== gen) return;
+      log(
+        '[WebReader] Lemmatize: got %d result(s), tokens per block: %o',
+        results.length,
+        results.map(r => r.length),
+      );
       setTokenCache(prev => {
         const next = { ...prev };
         missing.forEach((m, i) => {
@@ -243,8 +307,9 @@ export function ReaderPanel({
         return next;
       });
       setLoadingTokens(false);
-    }).catch(() => {
+    }).catch(err => {
       if (tokenLoadGenRef.current !== gen) return;
+      logerr('[WebReader] Lemmatize failed:', err);
       setLoadingTokens(false);
     });
   }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache, visibleBlocks]);
@@ -280,8 +345,10 @@ export function ReaderPanel({
     translateGenerationRef.current += 1;
     const gen = translateGenerationRef.current;
     setIsAutoTranslating(true);
+    log('[WebReader] Page translate: requesting %d text block(s)', texts.length);
     onPageTranslate(texts).then(translated => {
       if (translateGenerationRef.current !== gen) return; // stale — user navigated away
+      log('[WebReader] Page translate: got %d translation(s)', translated.length);
       if (translated.length > 0) {
         const map: Record<number, string> = {};
         textBlocks.forEach((_, i) => {
@@ -289,6 +356,9 @@ export function ReaderPanel({
         });
         setBlockTranslations(map);
       }
+    }).catch(err => {
+      if (translateGenerationRef.current !== gen) return;
+      logwarn('[WebReader] Page translate failed:', err);
     }).finally(() => {
       setIsAutoTranslating(false);
     });
@@ -375,6 +445,12 @@ export function ReaderPanel({
                       </div>
                       {visibleBlocks.map((block, i) => {
                         if (block.kind === 'markdown') {
+                          log(
+                            '[WebReader] Render block %d: raw markdown (%d chars), first 5 lines:\n%s',
+                            i,
+                            block.raw.length,
+                            firstLines(block.raw),
+                          );
                           return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
                         }
                         const tb = block as TextBlock;
@@ -382,6 +458,15 @@ export function ReaderPanel({
                         // Find the original index of this block in the full blocks array
                         const globalIndex = blocks!.indexOf(block);
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
+                        const cachedTokens = tokenCache[textBlockIndex];
+                        log(
+                          '[WebReader] Render block %d: %s "%s" (%d chars)%s',
+                          globalIndex,
+                          tb.type,
+                          tb.text.slice(0, 40),
+                          tb.text.length,
+                          cachedTokens ? `, ${cachedTokens.length} cached tokens` : ', tokens pending',
+                        );
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
                             translation={showTranslation ? blockTranslations[i] : undefined}
@@ -389,7 +474,7 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[i]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={tokenCache[textBlockIndex]} />
+                                tokens={cachedTokens} />
                             </Tag>
                           </TextActionMenu>
                         );

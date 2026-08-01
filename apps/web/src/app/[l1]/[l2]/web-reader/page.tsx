@@ -10,6 +10,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { log, logwarn, logerr } from '@/lib/logger';
 
 interface VisitedSite {
   url: string;
@@ -27,6 +28,10 @@ function hostnameOf(url: string): string {
 function faviconUrl(url: string): string {
   const host = hostnameOf(url);
   return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
+}
+
+function firstLines(md: string, n = 5): string {
+  return md.split('\n').slice(0, n).join('\n');
 }
 
 function loadVisitedSites(): VisitedSite[] {
@@ -62,20 +67,28 @@ async function getTurndown() {
 }
 
 async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
+  log('[WebReader] HTML→Markdown: parsing %d chars of HTML', html.length);
   const doc = new DOMParser().parseFromString(html, 'text/html');
   // Sniff the page's real title: <title> tag, then og:title, then first h1.
   const sniffedTitle =
     doc.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim()
     || doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(/\s+/g, ' ').trim()
     || '';
-  doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
+  log('[WebReader] HTML→Markdown: sniffed title: "%s"', sniffedTitle);
+  const removed = doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata');
+  removed.forEach(el => el.remove());
+  log('[WebReader] HTML→Markdown: removed %d boilerplate nodes', removed.length);
   const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
+  if (!mainContent) logwarn('[WebReader] HTML→Markdown: no main content found, converting empty body');
   mainContent.querySelectorAll('a').forEach(el => {
     const href = el.getAttribute('href');
     if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
   });
   const td = await getTurndown();
-  return { markdown: td.turndown(mainContent.innerHTML), title: sniffedTitle };
+  const markdown = td.turndown(mainContent.innerHTML);
+  log('[WebReader] HTML→Markdown: %d chars of HTML → %d chars of markdown', html.length, markdown.length);
+  log('[WebReader] HTML→Markdown: first %d lines:\n%s', 5, firstLines(markdown));
+  return { markdown, title: sniffedTitle };
 }
 
 export default function WebReaderPage() {
@@ -117,23 +130,42 @@ export default function WebReaderPage() {
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
+    log('[WebReader] Step 1 — load started for URL:', targetUrl);
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
     router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
+      const proxyUrl = `${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`;
+      log('[WebReader] Step 2 — fetching web content via proxy:', proxyUrl);
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
+      log('[WebReader] Step 2 — proxy responded: status=%d, %d chars of HTML', res.status, raw.length);
+      log('[WebReader] Step 3 — converting HTML → markdown');
       const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
+      log('[WebReader] Step 3 — converted: title="%s", %d chars of markdown', pageTitle, md.length);
+      log('[WebReader] Step 3 — first %d lines of markdown:\n%s', 5, firstLines(md));
       setTitle(pageTitle);
       document.title = pageTitle;
       setText(md);
       setBlocks(null);
+      // Divide the markdown into blocks right away (same behavior as the notes
+      // reader) so each block renders as its own TextActionMenu + TokenizedText
+      // instead of falling into the single-menu fallback path. Image paragraphs
+      // become raw-markdown blocks and keep their image tags.
+      try {
+        const parsed = parseMarkdown(md);
+        setBlocks(parsed);
+        log('[WebReader] Step 4 — blocks parsed: %d blocks', parsed.length);
+      } catch (e) {
+        logerr('[WebReader] Step 4 — block parse failed, using fallback:', e);
+        setBlocks(null);
+      }
       // Remember the visit (most recent first, capped) in localStorage.
       setVisitedSites(prev => {
         const next = [
@@ -143,18 +175,26 @@ export default function WebReaderPage() {
         saveVisitedSites(next);
         return next;
       });
+      log('[WebReader] Step 4 — content stored, blocks pending tokenize; title="%s", text=%d chars', pageTitle, md.length);
     } catch (e: any) {
+      logerr('[WebReader] Load failed for URL:', targetUrl, e);
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
       setLoading(false);
+      log('[WebReader] Load finished (loading=false)');
     }
   }, [url, t]);
 
   const handleTokenize = useCallback(() => {
     if (!text.trim()) return;
+    log('[WebReader] Step 5 — tokenize started: %d chars of markdown', text.length);
+    log('[WebReader] Step 5 — first %d lines of markdown:\n%s', 5, firstLines(text));
     try {
-      setBlocks(parseMarkdown(text));
-    } catch {
+      const parsed = parseMarkdown(text);
+      setBlocks(parsed);
+      log('[WebReader] Step 5 — tokenize done: %d blocks', parsed.length);
+    } catch (e) {
+      logerr('[WebReader] Tokenize failed:', e);
       setBlocks(null);
     }
   }, [text]);
