@@ -3,8 +3,9 @@
 import { useT } from '@/hooks/use-t';
 import { Logo } from '@/components/ui/logo';
 import { GitBranch, Calendar, Globe, Package } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface BuildInfo {
+export interface BuildInfo {
   version: string;
   commitHash: string;
   branch: string;
@@ -36,12 +37,12 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
   );
 }
 
-export function AboutContent({ buildInfo }: { buildInfo: BuildInfo }) {
+export function AboutContent({ buildInfo, className }: { buildInfo: BuildInfo; className?: string }) {
   const t = useT();
   const { version, commitHash, branch, buildDate, environment } = buildInfo;
 
   return (
-    <div className="flex min-h-screen flex-col items-center px-4 py-12">
+    <div className={cn('flex min-h-screen flex-col items-center px-4 py-12', className)}>
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="mb-8 text-center">
