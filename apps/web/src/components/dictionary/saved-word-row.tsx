@@ -73,7 +73,7 @@ export function SavedWordRow({
         <>
           <button
             onClick={handleRemove}
-            className="shrink-0 self-start mt-0.5 text-amber-500 transition-colors hover:text-red-500"
+            className="shrink-0 self-start mt-0.5 text-destructive transition-colors hover:text-destructive/80"
             title={t('action.remove_from_saved')}
           >
             <BookmarkCheck className="h-5 w-5 fill-current" />
