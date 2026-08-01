@@ -13,6 +13,7 @@ export {
   getCacheVersion,
   subscribeToCache,
   bulkLookupWords,
+  enqueueLookupWords,
   getCachedEntryById,
   setCachedEntryById,
   getIdCacheKeys,

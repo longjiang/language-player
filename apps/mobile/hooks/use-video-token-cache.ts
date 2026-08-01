@@ -28,7 +28,16 @@ export function useVideoTokenCache(videoId: string, l2Code: string) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!videoId || !l2Code) return;
+    if (!l2Code) return;
+    // No Directus video id (imported video, not in our DB): there is nothing
+    // to pre-lemmatize, so mark the cache as loaded immediately. TokenizedText
+    // then falls through to the on-the-fly lemmatization pipeline instead of
+    // waiting forever for a cache that will never arrive.
+    if (!videoId) {
+      cache.current = new TokenCache();
+      setLoaded(true);
+      return;
+    }
 
     // Reset for new video — clear stale cache and mark as loading.
     cache.current = new TokenCache();
