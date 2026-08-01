@@ -8,7 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { logerr } from '@/lib/logger';
+import { log, logerr } from '@/lib/logger';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { bulkLookupWords } from '@/lib/dictionary-cache';
@@ -114,6 +114,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+
+  // Debug: log every TokenizedText mount (text included, so we can verify
+  // tokenization only starts after the explain stream ends).
+  useEffect(() => {
+    log('TokenizedText mounted', { chars: text.length, preview: text.slice(0, 60) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {

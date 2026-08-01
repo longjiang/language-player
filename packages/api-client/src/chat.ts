@@ -96,7 +96,12 @@ export function useStreamingExplanation(): StreamState & StreamActions {
         setError(err?.message ?? 'Failed to get AI explanation.');
       }
     } finally {
-      setLoading(false);
+      // Only the latest stream may clear loading. A superseded/aborted stream
+      // must not flip loading off while a newer stream is still in flight —
+      // doing so re-triggers fetch effects and causes restart cascades.
+      if (controllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   }, [abort]);
 
