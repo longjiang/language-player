@@ -11,6 +11,7 @@ import { AlertCircle, ChevronLeft, ChevronRight, ImageOff, Loader2 } from 'lucid
 const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
 const PAGE_SIZE = 20;
 const THUMBNAIL_TIMEOUT_MS = 5000;
+const OWNER_MAX_IMAGES = 2;
 
 interface OpenverseImage {
   id: string;
@@ -101,6 +102,32 @@ async function fetchQueryResults(query: string, signal: AbortSignal): Promise<Op
     }
   }
   return [];
+}
+
+/**
+ * Same-owner density cap: Flickr-style URLs expose the uploader account, so a
+ * single photographer's series (e.g. 13 shots from one Sky Deck visit) can
+ * otherwise dominate the grid. Keep at most OWNER_MAX_IMAGES per identifiable
+ * owner. Images with no identifiable owner are never capped.
+ */
+function ownerKey(img: OpenverseImage): string {
+  const m = img.foreign_landing_url?.match(/\/photos\/([^/]+)\/\d+/);
+  if (m) return `${img.provider}:${m[1]}`;
+  if (img.creator) return `${img.provider}:${img.creator.toLowerCase()}`;
+  return `unique:${img.id}`;
+}
+
+function capByOwner(images: OpenverseImage[]): OpenverseImage[] {
+  const counts = new Map<string, number>();
+  const out: OpenverseImage[] = [];
+  for (const img of images) {
+    const key = ownerKey(img);
+    const count = counts.get(key) ?? 0;
+    if (count >= OWNER_MAX_IMAGES) continue;
+    counts.set(key, count + 1);
+    out.push(img);
+  }
+  return out;
 }
 
 export function ImageSearchResults({
@@ -205,9 +232,13 @@ export function ImageSearchResults({
         if (merged.length === 0 && failures > 0 && failures >= searchQueries.length) {
           setError('Openverse request failed');
         } else {
-          // Prune dead thumbnails before showing the grid.
+          // Cap same-owner density, then prune dead thumbnails before showing.
+          const capped = capByOwner(merged);
+          if (capped.length < merged.length) {
+            log('[ImageSearch] Owner-capped:', merged.length - capped.length, 'images removed');
+          }
           const pruned = (
-            await Promise.all(merged.map((img) => sniffThumbnail(img, controller.signal)))
+            await Promise.all(capped.map((img) => sniffThumbnail(img, controller.signal)))
           ).filter((img): img is OpenverseImage => img !== null);
           if (!cancelled) setImages(pruned);
         }
