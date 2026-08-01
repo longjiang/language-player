@@ -9,7 +9,7 @@ import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import {
   BookOpen, Trash2, Download,
-  Loader2, Search, ArrowUpDown, Clock, ArrowDownAZ, Circle,
+  Loader2, Search, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-card';
@@ -19,8 +19,6 @@ import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 
 const STORAGE_KEY = 'zthSavedWords';
-
-type SortMode = 'newest' | 'alpha';
 
 // ── Helpers ──────────────────────────────────────
 
@@ -61,41 +59,26 @@ export default function SavedWordsPage() {
   const router = useRouter();
   const t = useT();
 
-  const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [filterText, setFilterText] = useState('');
 
   const allWords = useMemo(() => getSavedWords(l2.code), [getSavedWords, l2.code]);
 
-  // Apply filter + sort
+  // Apply filter (keeps newest-first order from getSavedWords)
   const words = useMemo(() => {
-    let result = [...allWords];
-
-    // Text filter: match against any form or instance context
-    if (filterText.trim()) {
-      const q = filterText.trim().toLowerCase();
-      result = result.filter((w) => {
-        // Check global forms
-        if (w.forms.some((f) => f.toLowerCase().includes(q))) return true;
-        // Check all instances
-        const insts = normalizeInstances(w);
-        return insts.some((i) =>
-          i.form.toLowerCase().includes(q) ||
-          i.context.text.toLowerCase().includes(q) ||
-          i.context.videoTitle?.toLowerCase().includes(q),
-        );
-      });
-    }
-
-    // Sort
-    if (sortMode === 'alpha') {
-      result.sort((a, b) => (a.forms[0] ?? '').localeCompare(b.forms[0] ?? ''));
-    } else {
-      // newest first (default)
-      result.sort((a, b) => b.date - a.date);
-    }
-
-    return result;
-  }, [allWords, filterText, sortMode]);
+    if (!filterText.trim()) return allWords;
+    const q = filterText.trim().toLowerCase();
+    return allWords.filter((w) => {
+      // Check global forms
+      if (w.forms.some((f) => f.toLowerCase().includes(q))) return true;
+      // Check all instances
+      const insts = normalizeInstances(w);
+      return insts.some((i) =>
+        i.form.toLowerCase().includes(q) ||
+        i.context.text.toLowerCase().includes(q) ||
+        i.context.videoTitle?.toLowerCase().includes(q),
+      );
+    });
+  }, [allWords, filterText]);
 
   // Group by date: today vs earlier
   const { today, earlier } = useMemo(() => {
@@ -193,26 +176,6 @@ export default function SavedWordsPage() {
                 className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-
-            {/* Sort toggle */}
-            <Button
-              variant="ghost"
-              className="gap-2 text-sm text-muted-foreground"
-              onClick={() => setSortMode((m) => (m === 'newest' ? 'alpha' : 'newest'))}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              {sortMode === 'newest' ? (
-                <>
-                  <Clock className="h-4 w-4" />
-                  {t('sort.newest')}
-                </>
-              ) : (
-                <>
-                  <ArrowDownAZ className="h-4 w-4" />
-                  {t('sort.alphabetical')}
-                </>
-              )}
-            </Button>
 
             {/* Result count when filtering */}
             {filterText.trim() && (
