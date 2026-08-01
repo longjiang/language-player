@@ -215,12 +215,6 @@ export function DictionaryPopup({
 
         {/* Body */}
         <div className="max-h-[50vh] overflow-y-auto space-y-2">
-          {loading && (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          )}
-
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle className="h-4 w-4" />
@@ -312,6 +306,12 @@ export function DictionaryPopup({
               />
             ))}
           </WordList>
+
+          {loading && (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
