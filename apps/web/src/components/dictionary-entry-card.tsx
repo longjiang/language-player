@@ -227,6 +227,12 @@ export function DictionaryEntryCard({
           </div>
         )}
 
+        {/* Footer */}
+        <div className="mt-2 flex items-center gap-2 text-[10px]">
+          {sourceLine}
+          {saveContext && <div className="ml-auto">{saveBtn()}</div>}
+        </div>
+
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
           <div className="mt-2 space-y-1 rounded-md bg-muted/40 px-2.5 py-2 text-xs text-muted-foreground">
@@ -247,12 +253,6 @@ export function DictionaryEntryCard({
             )}
           </div>
         )}
-
-        {/* Footer */}
-        <div className="mt-2 flex items-center gap-2 text-[10px]">
-          {sourceLine}
-          {saveContext && <div className="ml-auto">{saveBtn()}</div>}
-        </div>
       </div>
     );
   }
@@ -398,9 +398,17 @@ export function DictionaryEntryCard({
         </div>
       )}
 
+      {/* Footer source + save */}
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          {sourceLine}
+        </div>
+        {saveContext && saveBtn('default')}
+      </div>
+
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
-        <div className="mb-6 space-y-1.5 text-sm text-muted-foreground">
+        <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <CalendarClock className="h-4 w-4 shrink-0" />
             <span>{t('label.saved')} · {saveDateStr}</span>
@@ -418,14 +426,6 @@ export function DictionaryEntryCard({
           )}
         </div>
       )}
-
-      {/* Footer source + save */}
-      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          {sourceLine}
-        </div>
-        {saveContext && saveBtn('default')}
-      </div>
     </div>
   );
 }
