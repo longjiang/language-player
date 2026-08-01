@@ -8,7 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
-import { TokenizedText } from '@/components/tokenized-text';
+import { TokenizedText, ZOOM_TO_REM } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import type { SubtitleLine } from '@langplayer/shared';
@@ -77,7 +77,9 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, playback, getL2 } = useSettingsContext();
+  const { display, playback, getL2, tokenizedText } = useSettingsContext();
+  // Scale the design sizes by the user's text-size setting (zoom index 0 = 1×).
+  const textZoomFactor = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
@@ -290,7 +292,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               <TokenizedText
                 text={activeLine.line}
                 l2Code={l2Code}
-                textScale={1.5}
+                textScale={1.5 * textZoomFactor}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
@@ -353,7 +355,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 <TokenizedText
                   text={line.l2Line}
                   l2Code={l2Code}
-                  textScale={0.875}
+                  textScale={0.875 * textZoomFactor}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
