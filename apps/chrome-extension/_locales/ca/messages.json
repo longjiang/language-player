@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Encara no hi ha subtítols disponibles per a aquest vídeo."
   },
+  "openInLanguagePlayer": {
+    "message": "Obre a Language Player"
+  },
   "popularLanguages": {
     "message": "Populars"
   },

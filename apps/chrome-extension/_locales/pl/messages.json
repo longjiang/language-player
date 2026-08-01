@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Napisy nie są jeszcze dostępne dla tego filmu."
   },
+  "openInLanguagePlayer": {
+    "message": "Otwórz w Language Player"
+  },
   "popularLanguages": {
     "message": "Popularne"
   },

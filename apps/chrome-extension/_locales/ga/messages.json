@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Níl fotheidil ar fáil don fhíseán seo fós."
   },
+  "openInLanguagePlayer": {
+    "message": "Oscail in Language Player"
+  },
   "popularLanguages": {
     "message": "Coitianta"
   },

@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Undertekster er ikke tilgjengelige for denne videoen ennå."
   },
+  "openInLanguagePlayer": {
+    "message": "Åpne i Language Player"
+  },
   "popularLanguages": {
     "message": "Populært"
   },

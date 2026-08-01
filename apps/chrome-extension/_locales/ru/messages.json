@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Субтитры для этого видео пока недоступны."
   },
+  "openInLanguagePlayer": {
+    "message": "Открыть в Language Player"
+  },
   "popularLanguages": {
     "message": "Популярное"
   },

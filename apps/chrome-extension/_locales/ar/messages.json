@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "الترجمات غير متاحة لهذا الفيديو بعد."
   },
+  "openInLanguagePlayer": {
+    "message": "فتح في Language Player"
+  },
   "popularLanguages": {
     "message": "شائع"
   },

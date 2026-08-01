@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Manukuu bado hayapatikani kwa video hii."
   },
+  "openInLanguagePlayer": {
+    "message": "Fungua katika Language Player"
+  },
   "popularLanguages": {
     "message": "Maarufu"
   },

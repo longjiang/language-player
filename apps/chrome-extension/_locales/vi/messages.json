@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Phụ đề chưa có sẵn cho video này."
   },
+  "openInLanguagePlayer": {
+    "message": "Mở trong Language Player"
+  },
   "popularLanguages": {
     "message": "Phổ biến"
   },

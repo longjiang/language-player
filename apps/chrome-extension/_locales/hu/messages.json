@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "A feliratok még nem érhetők el ehhez a videóhoz."
   },
+  "openInLanguagePlayer": {
+    "message": "Megnyitás a Language Playerben"
+  },
   "popularLanguages": {
     "message": "Népszerű"
   },

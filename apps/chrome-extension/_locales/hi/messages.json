@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "इस वीडियो के लिए अभी उपशीर्षक उपलब्ध नहीं हैं।"
   },
+  "openInLanguagePlayer": {
+    "message": "Language Player में खोलें"
+  },
   "popularLanguages": {
     "message": "लोकप्रिय"
   },

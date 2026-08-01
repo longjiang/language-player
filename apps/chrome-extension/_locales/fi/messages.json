@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Tekstitykset eivät ole vielä saatavilla tälle videolle."
   },
+  "openInLanguagePlayer": {
+    "message": "Avaa Language Playerissä"
+  },
   "popularLanguages": {
     "message": "Suosittu"
   },

@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Onderskrifte is nog nie vir hierdie video beskikbaar nie."
   },
+  "openInLanguagePlayer": {
+    "message": "Maak oop in Language Player"
+  },
   "popularLanguages": {
     "message": "Gewild"
   },

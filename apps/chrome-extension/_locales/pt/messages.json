@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "As legendas ainda não estão disponíveis para este vídeo."
   },
+  "openInLanguagePlayer": {
+    "message": "Abrir no Language Player"
+  },
   "popularLanguages": {
     "message": "Popular"
   },

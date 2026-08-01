@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Subtitrările nu sunt disponibile încă pentru acest videoclip."
   },
+  "openInLanguagePlayer": {
+    "message": "Deschide în Language Player"
+  },
   "popularLanguages": {
     "message": "Popular"
   },
