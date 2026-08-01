@@ -5,7 +5,6 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import type { Root, PhrasingContent } from 'mdast';
-import { log } from '@/lib/logger';
 
 export interface FormatRange {
   start: number;
@@ -30,9 +29,6 @@ export interface MarkdownBlock {
 export type ReaderBlock = TextBlock | MarkdownBlock;
 
 export function parseMarkdown(md: string): ReaderBlock[] {
-  log('[ParseMarkdown] Started: parsing %d chars of markdown', md.length);
-  log('[ParseMarkdown] First %d lines of input:\n%s', 5, md.split('\n').slice(0, 5).join('\n'));
-  log('[ParseMarkdown] FULL input (%d chars):\n%s', md.length, md);
   const ast = unified().use(remarkParse).parse(md) as Root;
   const blocks: ReaderBlock[] = [];
 
@@ -45,19 +41,6 @@ export function parseMarkdown(md: string): ReaderBlock[] {
     }
   }
 
-  const typeCounts: Record<string, number> = {};
-  for (const block of blocks) {
-    const key = block.kind === 'text' ? block.type : 'markdown';
-    typeCounts[key] = (typeCounts[key] ?? 0) + 1;
-  }
-  const textBlocks = blocks.filter((b): b is TextBlock => b.kind === 'text');
-  log(
-    '[ParseMarkdown] Done: %d blocks (%d text, %d raw-markdown), breakdown: %o',
-    blocks.length,
-    textBlocks.length,
-    blocks.length - textBlocks.length,
-    typeCounts,
-  );
   return blocks;
 }
 
@@ -73,7 +56,6 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     case 'heading': {
       // If heading contains an image, render as markdown block so image is preserved
       if (hasImage(node)) {
-        log('[ParseMarkdown] heading contains image → raw markdown block');
         return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       }
       return makeTextBlock(node, 'heading', (node as any).depth);
@@ -82,7 +64,6 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     case 'paragraph': {
       // If paragraph contains an image, render as markdown block
       if (hasImage(node)) {
-        log('[ParseMarkdown] paragraph contains image → raw markdown block');
         return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       }
       return makeTextBlock(node, 'paragraph');
@@ -90,7 +71,6 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
 
     case 'blockquote': {
       if (hasImage(node)) {
-        log('[ParseMarkdown] blockquote contains image → raw markdown block');
         return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       }
       return makeTextBlock(node, 'blockquote');
@@ -101,7 +81,6 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
       for (const item of node.children) {
         if (item.type === 'listItem') {
           if (hasImage(item)) {
-            log('[ParseMarkdown] list item contains image → raw markdown block');
             items.push({ kind: 'markdown', raw: reconstructNode(item) } as MarkdownBlock);
           } else {
             const b = makeTextBlock(item, 'list-item');

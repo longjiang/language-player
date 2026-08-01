@@ -11,7 +11,7 @@ import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Tr
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { log, logwarn, logerr } from '@/lib/logger';
+import { log } from '@/lib/logger';
 
 interface VisitedSite {
   url: string;
@@ -29,10 +29,6 @@ function hostnameOf(url: string): string {
 function faviconUrl(url: string): string {
   const host = hostnameOf(url);
   return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
-}
-
-function firstLines(md: string, n = 5): string {
-  return md.split('\n').slice(0, n).join('\n');
 }
 
 function loadVisitedSites(): VisitedSite[] {
@@ -86,28 +82,76 @@ async function getTurndown() {
 }
 
 async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
-  log('[WebReader] HTML→Markdown: parsing %d chars of HTML', html.length);
   const doc = new DOMParser().parseFromString(html, 'text/html');
   // Sniff the page's real title: <title> tag, then og:title, then first h1.
   const sniffedTitle =
     doc.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim()
     || doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(/\s+/g, ' ').trim()
     || '';
-  log('[WebReader] HTML→Markdown: sniffed title: "%s"', sniffedTitle);
-  const removed = doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata');
-  removed.forEach(el => el.remove());
-  log('[WebReader] HTML→Markdown: removed %d boilerplate nodes', removed.length);
+  doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
   const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
-  if (!mainContent) logwarn('[WebReader] HTML→Markdown: no main content found, converting empty body');
+  // Some sites (e.g. Yahoo News) render the article body as raw text nodes inside
+  // a single block element, with blank lines between paragraphs. Turndown
+  // collapses text-node whitespace, which would merge the whole article into one
+  // paragraph — split blank-line-separated runs into real <p> elements first.
+  mainContent.querySelectorAll('p, div, section, article, blockquote, li').forEach(el => {
+    if (el.closest('a')) return; // keep link contents (e.g. image captions) intact
+    splitTextParagraphs(el, doc);
+  });
   mainContent.querySelectorAll('a').forEach(el => {
     const href = el.getAttribute('href');
     if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
   });
   const td = await getTurndown();
   const markdown = td.turndown(mainContent.innerHTML);
-  log('[WebReader] HTML→Markdown: %d chars of HTML → %d chars of markdown', html.length, markdown.length);
-  log('[WebReader] HTML→Markdown: first %d lines:\n%s', 5, firstLines(markdown));
   return { markdown, title: sniffedTitle };
+}
+
+/** Split blank-line-separated text runs inside a block element into <p>s.
+ *  When the container is itself a <p>, it is replaced by sibling paragraphs
+ *  (nesting <p> inside <p> is invalid HTML). */
+function splitTextParagraphs(container: Element, doc: Document): void {
+  const children = Array.from(container.childNodes);
+  if (!children.some(c => c.nodeType === Node.TEXT_NODE && /\n\s*\n/.test(c.nodeValue ?? ''))) return;
+
+  const runs: Node[][] = [];
+  let current: Node[] = [];
+  const closeRun = () => { if (current.length > 0) { runs.push(current); current = []; } };
+
+  for (const child of children) {
+    if (child.nodeType !== Node.TEXT_NODE) { current.push(child); continue; }
+    const parts = (child.nodeValue ?? '').split(/\n\s*\n/);
+    if (parts.length === 1) { current.push(child); continue; }
+    parts.forEach((part, i) => {
+      if (i === 0) {
+        if (part.trim()) current.push(doc.createTextNode(part));
+        closeRun();
+      } else if (i === parts.length - 1) {
+        if (part.trim()) current.push(doc.createTextNode(part));
+      } else if (part.trim()) {
+        current.push(doc.createTextNode(part));
+        closeRun();
+      } else {
+        closeRun();
+      }
+    });
+  }
+  closeRun();
+
+  const paragraphs = runs
+    .filter(run => run.some(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== ''))
+    .map(run => {
+      const p = doc.createElement('p');
+      run.forEach(n => p.appendChild(n));
+      return p;
+    });
+  if (paragraphs.length < 2) return;
+
+  if (container.tagName === 'P') {
+    container.replaceWith(...paragraphs);
+  } else {
+    container.replaceChildren(...paragraphs);
+  }
 }
 
 export default function WebReaderPage() {
@@ -138,26 +182,19 @@ export default function WebReaderPage() {
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
-    log('[WebReader] Step 1 — load started for URL:', targetUrl);
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
     router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
     setLoading(true);
     setError(null);
     try {
-      const proxyUrl = `${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`;
-      log('[WebReader] Step 2 — fetching web content via proxy:', proxyUrl);
-      const res = await fetch(proxyUrl);
+      const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
-      log('[WebReader] Step 2 — proxy responded: status=%d, %d chars of HTML', res.status, raw.length);
-      log('[WebReader] Step 3 — converting HTML → markdown');
       const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
-      log('[WebReader] Step 3 — converted: title="%s", %d chars of markdown', pageTitle, md.length);
-      log('[WebReader] Step 3 — first %d lines of markdown:\n%s', 5, firstLines(md));
       log('[WebReader] Step 3 — FULL markdown (%d chars):\n%s', md.length, md);
       setTitle(pageTitle);
       document.title = pageTitle;
@@ -170,9 +207,7 @@ export default function WebReaderPage() {
       try {
         const parsed = parseMarkdown(md);
         setBlocks(parsed);
-        log('[WebReader] Step 4 — blocks parsed: %d blocks', parsed.length);
-      } catch (e) {
-        logerr('[WebReader] Step 4 — block parse failed, using fallback:', e);
+      } catch {
         setBlocks(null);
       }
       // Remember the visit (most recent first, capped) in localStorage.
@@ -184,26 +219,19 @@ export default function WebReaderPage() {
         saveVisitedSites(next);
         return next;
       });
-      log('[WebReader] Step 4 — content stored, blocks pending tokenize; title="%s", text=%d chars', pageTitle, md.length);
     } catch (e: any) {
-      logerr('[WebReader] Load failed for URL:', targetUrl, e);
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
       setLoading(false);
-      log('[WebReader] Load finished (loading=false)');
     }
   }, [url, t]);
 
   const handleTokenize = useCallback(() => {
     if (!text.trim()) return;
-    log('[WebReader] Step 5 — tokenize started: %d chars of markdown', text.length);
-    log('[WebReader] Step 5 — first %d lines of markdown:\n%s', 5, firstLines(text));
     try {
       const parsed = parseMarkdown(text);
       setBlocks(parsed);
-      log('[WebReader] Step 5 — tokenize done: %d blocks', parsed.length);
-    } catch (e) {
-      logerr('[WebReader] Tokenize failed:', e);
+    } catch {
       setBlocks(null);
     }
   }, [text]);
