@@ -12,7 +12,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, bulkLookupWords } from '@langplayer/utils';
-import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord, LemmatizedToken } from '@langplayer/shared';
+import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -42,31 +42,6 @@ const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
   good: 4,
   easy: 5,
 };
-
-/** Escape regex metacharacters so a word form can be used in a RegExp safely. */
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Scripts that don't use whitespace between words. Matching a form inside these
- * can't rely on letter boundaries — e.g. Japanese particles (に, を) are letters,
- * so a "standalone word" regex would never match. Bold every exact occurrence
- * instead. Latin/Cyrillic/etc. still use boundary matching to avoid bolding
- * substrings inside other words (like "eat" inside "great").
- */
-const NON_SPACE_DELIMITED_SCRIPTS =
-  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u;
-
-/** Wrap the target form in markdown bold wherever it appears in the sentence. */
-function markTargetForm(text: string, form: string): string {
-  if (!form) return text;
-  const escaped = escapeRegExp(form);
-  const pattern = NON_SPACE_DELIMITED_SCRIPTS.test(form)
-    ? `(${escaped})`
-    : `(?<![\\p{L}\\p{N}])(${escaped})(?![\\p{L}\\p{N}])`;
-  return text.replace(new RegExp(pattern, 'gu'), '**$1**');
-}
 
 /** State saved before a rating, so the user can undo it. */
 interface UndoState {
@@ -530,32 +505,13 @@ export default function ReviewPage() {
     const fetchTranslation = async () => {
       setContextTranslating(true);
       try {
-        // Bold the target form using the same tokenization as the context
-        // sentence highlight: lemmatize the text, then wrap exactly the tokens
-        // whose text equals the form. Falls back to script-aware text matching
-        // when the lemmatizer is unavailable or doesn't match.
-        let markdownText = markTargetForm(ctxText, targetForm);
-        try {
-          const lemmaRes = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: ctxText, l2: l2Code }),
-          });
-          if (lemmaRes.ok) {
-            const lemmaData = await lemmaRes.json();
-            const tokens = lemmaData?.tokens as LemmatizedToken[] | undefined;
-            if (tokens && tokens.length > 0 && tokens.some((t) => t.text === targetForm)) {
-              markdownText = tokens
-                .map((t) => (t.text === targetForm ? `**${t.text}**` : t.text))
-                .join('');
-            }
-          }
-        } catch { /* lemmatization is best-effort — keep the markTargetForm fallback */ }
-
+        // Send the original text plus the target form — the server wraps the
+        // term in **bold** with its own tokenizer (the same one behind the
+        // sentence highlight) and preserves the markers in the translation.
         const res = await fetch(`${PYTHON_API_URL}/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: markdownText, l1: baseCode(l1.code), l2: l2Code }),
+          body: JSON.stringify({ text: ctxText, form: targetForm, l1: baseCode(l1.code), l2: l2Code }),
         });
         if (cancelled) return;
         if (!res.ok) return;
