@@ -107,8 +107,8 @@ async function fetchQueryResults(query: string, signal: AbortSignal): Promise<Op
 /**
  * Same-owner density cap: Flickr-style URLs expose the uploader account, so a
  * single photographer's series (e.g. 13 shots from one Sky Deck visit) can
- * otherwise dominate the grid. Keep at most OWNER_MAX_IMAGES per identifiable
- * owner. Images with no identifiable owner are never capped.
+ * otherwise dominate a query's results. Keep at most OWNER_MAX_IMAGES per
+ * identifiable owner. Images with no identifiable owner are never capped.
  */
 function ownerKey(img: OpenverseImage): string {
   const m = img.foreign_landing_url?.match(/\/photos\/([^/]+)\/\d+/);
@@ -208,37 +208,54 @@ export function ImageSearchResults({
       });
       setQueries(searchQueries);
 
-      // 2. Search Openverse per query; merge results and dedupe by source page.
-      const merged: OpenverseImage[] = [];
-      const seen = new Set<string>();
+      // 2. Search Openverse per query; cap same-owner density per query so no
+      //    single photographer can flood one source.
+      const perQuery = new Map<string, OpenverseImage[]>();
       let failures = 0;
 
       await Promise.all(searchQueries.map(async (q) => {
         try {
           const results = await fetchQueryResults(q, controller.signal);
-          for (const img of results) {
-            const key = (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '');
-            if (!seen.has(key)) {
-              seen.add(key);
-              merged.push({ ...img, sourceQuery: q });
-            }
+          const capped = capByOwner(results);
+          if (capped.length < results.length) {
+            log('[ImageSearch] Owner-capped:', q, results.length - capped.length, 'removed');
           }
+          perQuery.set(q, capped);
         } catch (err: any) {
           if (err?.name !== 'AbortError') failures++;
         }
       }));
 
+      // 3. Interleave round-robin — one image from each query in turn, over
+      //    and over — so the "All" tab is a genuine mixture of sources instead
+      //    of one query's entire result block followed by the next.
+      const orderedQueries = searchQueries
+        .map((q) => ({ query: q, images: perQuery.get(q) ?? [] }))
+        .filter((p) => p.images.length > 0);
+      const merged: OpenverseImage[] = [];
+      const seen = new Set<string>();
+      const total = orderedQueries.reduce((n, p) => n + p.images.length, 0);
+      let processed = 0;
+      for (let round = 0; processed < total; round++) {
+        for (const { query, images } of orderedQueries) {
+          const img = images[round];
+          if (!img) continue;
+          processed++;
+          const key = (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '');
+          if (!seen.has(key)) {
+            seen.add(key);
+            merged.push({ ...img, sourceQuery: query });
+          }
+        }
+      }
+
       if (!cancelled) {
         if (merged.length === 0 && failures > 0 && failures >= searchQueries.length) {
           setError('Openverse request failed');
         } else {
-          // Cap same-owner density, then prune dead thumbnails before showing.
-          const capped = capByOwner(merged);
-          if (capped.length < merged.length) {
-            log('[ImageSearch] Owner-capped:', merged.length - capped.length, 'images removed');
-          }
+          // Prune dead thumbnails before showing the grid.
           const pruned = (
-            await Promise.all(capped.map((img) => sniffThumbnail(img, controller.signal)))
+            await Promise.all(merged.map((img) => sniffThumbnail(img, controller.signal)))
           ).filter((img): img is OpenverseImage => img !== null);
           if (!cancelled) setImages(pruned);
         }
