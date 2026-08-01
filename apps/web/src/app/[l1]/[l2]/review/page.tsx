@@ -25,6 +25,7 @@ import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 import {
   Loader2,
   ArrowLeft,
@@ -41,6 +42,11 @@ const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
   good: 4,
   easy: 5,
 };
+
+/** Escape regex metacharacters so a word form can be used in a RegExp safely. */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /** State saved before a rating, so the user can undo it. */
 interface UndoState {
@@ -496,6 +502,19 @@ export default function ReviewPage() {
       return;
     }
 
+    // Wrap the target form in markdown bold so the LLM can carry the emphasis
+    // into the translated sentence. Match only standalone occurrences (not
+    // substrings inside other words), mirroring how the token is highlighted.
+    const targetForm = currentCard?.word.context?.form
+      ?? currentCard?.word.forms[0]
+      ?? currentCard?.word.id;
+    const markdownText = targetForm
+      ? ctxText.replace(
+          new RegExp(`(?<![\\p{L}\\p{N}])(${escapeRegExp(targetForm)})(?![\\p{L}\\p{N}])`, 'gu'),
+          '**$1**',
+        )
+      : ctxText;
+
     let cancelled = false;
     const fetchTranslation = async () => {
       setContextTranslating(true);
@@ -503,7 +522,7 @@ export default function ReviewPage() {
         const res = await fetch(`${PYTHON_API_URL}/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: ctxText, l1: baseCode(l1.code), l2: l2Code }),
+          body: JSON.stringify({ text: markdownText, l1: baseCode(l1.code), l2: l2Code }),
         });
         if (cancelled) return;
         if (!res.ok) return;
@@ -518,7 +537,7 @@ export default function ReviewPage() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showDefinition, currentCard?.word.context?.text, l2Code, l1.code]);
+  }, [showDefinition, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code]);
 
   // ── Render states ──
 
@@ -712,6 +731,7 @@ export default function ReviewPage() {
                 l2Code={l2Code}
                 highlightForm={wordCtx.form}
                 phoneticsOnHighlight={showDefinition}
+                quickGlossOnHighlight={showDefinition}
                 context={{
                   form: wordForm,
                   text: wordCtx.text,
@@ -727,9 +747,21 @@ export default function ReviewPage() {
               <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
             )}
             {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
-              <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
-                {wordCtx.translation || contextTranslation}
-              </p>
+              wordCtx.translation ? (
+                <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
+                  {wordCtx.translation}
+                </p>
+              ) : (
+                <div className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <span>{children}</span>,
+                    }}
+                  >
+                    {contextTranslation ?? ''}
+                  </ReactMarkdown>
+                </div>
+              )
             )}
           </div>
         )}
