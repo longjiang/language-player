@@ -8,7 +8,6 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { log, logerr } from '@/lib/logger';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
@@ -267,13 +266,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
 
-  // Debug: log every TokenizedText mount (text included, so we can verify
-  // tokenization only starts after the explain stream ends).
-  useEffect(() => {
-    log('TokenizedText mounted', { chars: text.length, preview: text.slice(0, 60) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
     if (hasBeenVisible) return; // already visible, no need to observe
@@ -384,7 +376,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       } catch (err: any) {
         if (err.name === 'AbortError') { loadingRef.current = false; return; }
         if (!cancelled) {
-          logerr('Tokenization error:', err);
           setError(err?.message ?? 'Tokenization failed');
           setTokens([{ text: effectiveText, lemmas: [] }]);
           setLoading(false);
