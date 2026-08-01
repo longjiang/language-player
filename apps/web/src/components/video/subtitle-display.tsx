@@ -187,7 +187,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     const activeTranslation = activeIndex >= 0 ? translatedLines[activeIndex] : null;
 
     return (
-      <div className="min-h-[5rem] px-6 py-4">
+      <div className="min-h-[5rem] py-4">
         {error && showTranslation && (
           <div className="mb-3 flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
             <span className="text-destructive">{t('msg.translation_failed')}</span>
