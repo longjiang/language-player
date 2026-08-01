@@ -202,6 +202,21 @@ export function DictionaryEntryCard({
   // ── FULL variant ──
   const HeadTag = headingLevel;
 
+  // Phonetic detail extras — skip keys already shown as the main pronunciation.
+  // Only render the row when at least one extra survives (avoids an empty spacer).
+  const phoneticExtras: Array<[string, string]> = entry.phonetic_detail && typeof entry.phonetic_detail === 'object'
+    ? Object.entries(entry.phonetic_detail).flatMap(([key, value]) => {
+        // Skip keys shown prominently in the header
+        if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return [];
+        // Skip raw representations of the already-displayed pronunciation
+        if (key === 'pinyin_numeric' || key === 'kana') return [];
+        // Skip IPA if it matches the pronunciation already shown
+        if (key === 'ipa' && value === entry.pronunciation) return [];
+        if (typeof value !== 'string' || !value) return [];
+        return [[key, value]];
+      })
+    : [];
+
   return (
     <div
       className={onClick
@@ -211,7 +226,7 @@ export function DictionaryEntryCard({
       onClick={() => onClick?.(entry)}
     >
       {/* Header: head + badges, then pronunciation row (matches mobile full) */}
-      <div className="mb-6">
+      <div className="mb-3">
         <div className="flex items-start gap-3">
           <HeadTag className="shrink-0 text-3xl font-bold" lang={l2Code}>
             {head}
@@ -323,20 +338,11 @@ export function DictionaryEntryCard({
       )}
 
       {/* Phonetic detail — skip keys already shown as the main pronunciation */}
-      {entry.phonetic_detail && typeof entry.phonetic_detail === 'object' && (
+      {phoneticExtras.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
-          {Object.entries(entry.phonetic_detail).map(([key, value]) => {
-            // Skip keys shown prominently in the header
-            if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return null;
-            // Skip raw representations of the already-displayed pronunciation
-            if (key === 'pinyin_numeric' || key === 'kana') return null;
-            // Skip IPA if it matches the pronunciation already shown
-            if (key === 'ipa' && value === entry.pronunciation) return null;
-            if (typeof value === 'string' && value) {
-              return <span key={key}>{key}: {value}</span>;
-            }
-            return null;
-          })}
+          {phoneticExtras.map(([key, value]) => (
+            <span key={key}>{key}: {value}</span>
+          ))}
         </div>
       )}
 
@@ -348,8 +354,11 @@ export function DictionaryEntryCard({
         {saveContext && saveBtn('default')}
       </div>
 
-      {/* DeepSeek explanation — same component/props as the DictionaryEntryTabs deepseek tab (pro-gated) */}
-      <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+      {/* DeepSeek explanation — same component/props as the DictionaryEntryTabs deepseek tab (pro-gated).
+          mt-1 wrapper (4px) + AiExplanation's built-in mt-2 (8px) = 12px total above the AI block. */}
+      <div className="mt-1">
+        <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+      </div>
     </div>
   );
 }
