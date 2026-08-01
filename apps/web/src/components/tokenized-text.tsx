@@ -207,7 +207,7 @@ export interface TokenizedTextProps {
  * Passes context through for word saving (video title, subtitle line, etc.).
  */
 /** Map zoom index (0–7) to rem values: 1rem (16px) to 2.25rem (36px). */
-const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
+export const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
 
 /** Leading prop → Tailwind class. 'none' = inherit from parent (no class applied). */
 const LEADING_CLASS: Record<string, string> = {
