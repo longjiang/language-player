@@ -6,8 +6,8 @@
  * Usage: npx tsx scripts/build-tokens.mts
  *
  * Reads:  packages/shared/src/tokens.ts (canonical design tokens)
- * Writes: apps/mobile-v2/tailwind.config.js (generated, do not edit manually)
- *         apps/mobile-v2/global.css (generated, do not edit manually)
+ * Writes: apps/mobile/tailwind.config.js (generated, do not edit manually)
+ *         apps/mobile/global.css (generated, do not edit manually)
  *
  * Colors use CSS custom properties (hsl(var(--xxx) / <alpha-value>)) so
  * that NativeWind can resolve them at runtime for light ↔ dark switching,
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens');
+const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens.ts');
 const {
   lightSemantic,
   darkSemantic,
@@ -90,6 +90,10 @@ ${cssVarLines(darkSemantic, '    ')}
 const colorEntries = semanticKeys.map(
   (key) => `        ${formatKey(key)}: 'hsl(var(--${kebabCase(key)}) / <alpha-value>)',`,
 );
+
+const fontFamilyEntries = (
+  Object.keys(typography.fontFamily) as (keyof typeof typography.fontFamily)[]
+).map((key) => `        ${formatKey(key)}: ['${typography.fontFamily[key]}'],`);
 
 const tailwindConfig = `/** @type {import('tailwindcss').Config} */
 // ──────────────────────────────────────────────────
@@ -160,8 +164,7 @@ ${colorEntries.join('\n')}
         full: '${borderRadius.full}',
       },
       fontFamily: {
-        sans: ['${typography.fontFamily.sans}'],
-        mono: ['${typography.fontFamily.mono}'],
+${fontFamilyEntries.join('\n')}
       },
     },
   },
@@ -171,10 +174,10 @@ ${colorEntries.join('\n')}
 
 // ── Write outputs ──
 
-const cssOutPath = path.resolve(__dirname, '../apps/mobile-v2/global.css');
+const cssOutPath = path.resolve(__dirname, '../apps/mobile/global.css');
 fs.writeFileSync(cssOutPath, globalCss, 'utf-8');
 console.log(`✓ Generated ${cssOutPath}`);
 
-const configOutPath = path.resolve(__dirname, '../apps/mobile-v2/tailwind.config.js');
+const configOutPath = path.resolve(__dirname, '../apps/mobile/tailwind.config.js');
 fs.writeFileSync(configOutPath, tailwindConfig, 'utf-8');
 console.log(`✓ Generated ${configOutPath}`);

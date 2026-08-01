@@ -173,9 +173,17 @@ export const darkSemantic: SemanticColors = {
 // ── Typography ──────────────────────────────
 
 // Typography values match Next.js (apps/web/tailwind.config.ts + Inter font).
+// On mobile the family names are the runtime-registered expo-font keys for the
+// locally vendored static weight files in apps/mobile/assets/fonts/ — each
+// weight registers under its own name (Inter_400Regular, Inter_500Medium, ...)
+// so NativeWind's `font-medium` / `font-semibold` / `font-bold` utilities
+// resolve to the correct font file on both iOS and Android.
 export const typography = {
   fontFamily: {
-    sans: 'Inter',
+    sans: 'Inter_400Regular',
+    medium: 'Inter_500Medium',
+    semibold: 'Inter_600SemiBold',
+    bold: 'Inter_700Bold',
     mono: 'JetBrains Mono',
   },
   fontSize: {
