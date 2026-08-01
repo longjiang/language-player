@@ -229,7 +229,7 @@ export function DictionaryEntryCard({
 
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
-          <div className="mt-2 space-y-1 rounded-md bg-amber-50/70 px-2.5 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
             <div className="flex items-start gap-1.5">
               <BookmarkCheck className="mt-0.5 h-3 w-3 shrink-0" />
               <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
@@ -404,7 +404,7 @@ export function DictionaryEntryCard({
 
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
-        <div className="mb-6 space-y-1.5 text-sm text-amber-700 dark:text-amber-300">
+        <div className="mb-6 space-y-1.5 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
             <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
