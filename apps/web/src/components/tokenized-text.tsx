@@ -70,6 +70,15 @@ export interface TokenizedTextProps {
    *  revealed. Defaults to true — highlighting alone does not hide a saved word's
    *  gloss. */
   quickGlossOnHighlight?: boolean;
+  /** When false, saved words are not highlighted (no yellow background).
+   *  Defaults to true — saved words highlight as usual. Used by AI explanations. */
+  highlightSaved?: boolean;
+  /** Overrides the user's quick-gloss setting when provided. */
+  quickGloss?: boolean;
+  /** Overrides the user's interlinear-definition setting when provided. */
+  showDefinition?: boolean;
+  /** Overrides the user's byeonggi (hanja/hán tự) setting when provided. */
+  byeonggi?: boolean;
 }
 
 /**
@@ -104,6 +113,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   karaokeProgress,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
+  highlightSaved,
+  quickGloss,
+  showDefinition,
+  byeonggi,
 }) => {
   // Map typeFace to Tailwind font-family class
   const fontClass =
@@ -389,12 +402,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               phoneticsMode={phoneticsShow}
               phoneticsConditions={l2Settings.tokenSpan.phonetics.conditions}
               userLevel={typeof userLevel === 'number' ? userLevel : undefined}
-              quickGloss={settingsTokenizedText.quickGloss}
-              showDefinition={l2Settings.tokenSpan.definition.show}
+              quickGloss={quickGloss ?? settingsTokenizedText.quickGloss}
+              showDefinition={showDefinition ?? l2Settings.tokenSpan.definition.show}
               mode={settingsTokenizedText.mode}
-              byeonggi={l2Settings.display.byeonggi}
+              byeonggi={byeonggi ?? l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
-              isSaved={savedFormSet.has(token.text.toLowerCase())}
+              isSaved={highlightSaved === false ? false : savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
                 (!!highlightForm && token.text === highlightForm) ||
                 (!!highlightForms && highlightForms.some((f) => f === token.text))
