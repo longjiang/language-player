@@ -131,6 +131,8 @@ cd apps/mobile && ./node_modules/.bin/tsc --noEmit
 cd apps/web && ./node_modules/.bin/tsc --noEmit
 ```
 
+**⚠️ Never run `tsc` against the root `tsconfig.json`.** The root config is a shared base config that the packages/apps extend — it has no `include`, so a bare `tsc --noEmit` (or `npx tsc`) from the repo root tries to typecheck the entire tree, including the legacy repos (`zerotohero-nuxt/`, `language-player-3/`, `apps/mobile-go-legacy/`, ~3.4 GB combined). It dies with `FATAL ERROR: Reached heap limit — JavaScript heap out of memory`. From the repo root, always use `npx turbo typecheck`; for a single package, `cd` into it and run its local binary (e.g., `cd apps/web && ./node_modules/.bin/tsc --noEmit`). Note that `apps/chrome-extension/` and `packages/docs/` have no `typecheck` script and no tsconfig of their own, so they are NOT covered by `npx turbo typecheck` — any editor errors there come from the root config being used as a fallback.
+
 **⚠️ Always check documentation for unfamiliar APIs, libraries, or CLI tools.** Do not guess syntax, parameters, or return types — verify against official docs. This applies to everything: Maestro YAML commands, Expo APIs, Directus endpoints, Flask decorators, etc. The `fetch_webpage` tool can retrieve live documentation pages.
 
 ### Test Credentials
