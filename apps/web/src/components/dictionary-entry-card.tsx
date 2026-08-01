@@ -212,41 +212,42 @@ export function DictionaryEntryCard({
       }
       onClick={() => onClick?.(entry)}
     >
-      {/* Header: head + pronunciation + badges */}
+      {/* Header: head + badges, then pronunciation row (matches mobile full) */}
       <div className="mb-6">
-        <div className="flex items-baseline gap-3">
-          <HeadTag className="text-4xl font-bold" lang={l2Code}>
+        <div className="flex items-start gap-3">
+          <HeadTag className="shrink-0 text-3xl font-bold" lang={l2Code}>
             {head}
           </HeadTag>
           {displayAlternate && (
-            <span className="text-xl text-muted-foreground" lang={l2Code}>
+            <span className="mt-2 shrink-0 text-base text-muted-foreground" lang={l2Code}>
               {displayAlternate}
             </span>
           )}
+          <div className="flex-1" />
+          {badges}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-3">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <SpeakButton text={entry.head} l2Code={l2Code ?? ''} size="default" />
           {formattedPron && (
-            <span className="flex items-center gap-1 text-lg text-muted-foreground" lang={l2Code}>
-              <SpeakButton text={entry.head} l2Code={l2Code ?? ''} size="default" />
+            <span className="text-base text-muted-foreground" lang={l2Code}>
               {formattedPron}
             </span>
           )}
-          {badges}
         </div>
       </div>
 
       {/* Definitions */}
       {entry.definitions.length > 0 && (
         <div className="mb-6 rounded-lg bg-muted/40 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t('title.definitions')}
-          </h3>
-          <ul className="space-y-2">
+          {entry.part_of_speech && (
+            <p className="mb-2 text-xs italic text-muted-foreground">{entry.part_of_speech}</p>
+          )}
+          <ul className="space-y-1.5">
             {entry.definitions.map((def, i) => (
-              <li key={i} className="flex items-start gap-2 text-base leading-relaxed">
+              <li key={i} className="flex items-start gap-2 text-sm leading-relaxed">
                 {entry.definitions.length > 1 && (
-                  <span className="mt-0.5 flex-shrink-0 text-sm text-muted-foreground">
+                  <span className="flex-shrink-0 text-sm text-muted-foreground">
                     {i + 1}.
                   </span>
                 )}
@@ -260,7 +261,7 @@ export function DictionaryEntryCard({
       {/* Classifiers */}
       {entry.classifier && entry.classifier.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {entry.classifier[0]!.kind === 'gender' ? t('title.gender') :
              entry.classifier[0]!.kind === 'measure_word' ? t('title.measure_words') :
              t('title.classifiers')}
@@ -269,7 +270,7 @@ export function DictionaryEntryCard({
             {entry.classifier.map((cl, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-sm"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-sm"
               >
                 {cl.kind === 'measure_word' ? (
                   <>
@@ -289,14 +290,14 @@ export function DictionaryEntryCard({
 
       {/* Study material coverage */}
       {studyMaterials && studyMaterials.length > 0 && (
-        <div className="mb-6 rounded-lg bg-blue-50/50 p-4 dark:bg-blue-950/20">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="mb-6 rounded-lg bg-blue-50/50 p-3 dark:bg-blue-950/20">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {t('title.textbook_appearances')}
           </h3>
           {studyMaterials.map((m, i) => (
             <div key={i} className="space-y-1.5">
-              <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
-                <BookOpen className="h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+                <BookOpen className="h-3.5 w-3.5" />
                 <span>{t('label.textbook_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
