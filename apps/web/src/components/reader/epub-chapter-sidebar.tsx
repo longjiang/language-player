@@ -1,22 +1,11 @@
 'use client';
 
-import { useT } from '@/hooks/use-t';
-import {
-  ChevronLeft, ChevronRight, X,
-} from 'lucide-react';
 import type { TocItem } from '@/components/reader/epub-upload';
 
 interface EpubChapterSidebarProps {
   toc: TocItem[];
   currentChapterHref: string | null;
-  loading: boolean;
-  /** Shown on narrow screens to close the sidebar overlay sheet. */
-  onClose?: () => void;
   onLoadChapter: (href: string) => void;
-  onPrevChapter: () => void;
-  onNextChapter: () => void;
-  hasPrevChapter: boolean;
-  hasNextChapter: boolean;
 }
 
 /** Recursively render TOC items with indentation. */
@@ -60,65 +49,23 @@ function TocTree({
   );
 }
 
+/**
+ * EPUB chapter TOC content, rendered inside the shared Sidebar primitive.
+ * Chapter navigation lives in the sidebar header; the chapter-count footer
+ * lives in the sidebar footer slot.
+ */
 export function EpubChapterSidebar({
   toc,
   currentChapterHref,
-  loading,
-  onClose,
   onLoadChapter,
-  onPrevChapter,
-  onNextChapter,
-  hasPrevChapter,
-  hasNextChapter,
 }: EpubChapterSidebarProps) {
-  const t = useT();
-
   return (
-    <>
-      {/* Chapter nav buttons */}
-      <div className="flex items-center gap-1 border-b border-border px-3 py-2">
-        <button
-          onClick={onPrevChapter}
-          disabled={!hasPrevChapter || loading}
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-          {t('action.previous_chapter')}
-        </button>
-        <button
-          onClick={onNextChapter}
-          disabled={!hasNextChapter || loading}
-          className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors ml-auto"
-        >
-          {t('action.next_chapter')}
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="ml-1 flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label={t('action.close')}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* TOC */}
-      <div className="flex-1 overflow-y-auto p-2">
-        <TocTree
-          items={toc}
-          currentHref={currentChapterHref}
-          onSelect={onLoadChapter}
-        />
-      </div>
-
-      {/* Progress */}
-      <div className="border-t border-border px-3 py-2">
-        <p className="text-xs text-muted-foreground">
-          {toc.length} {t('msg.chapters')}
-        </p>
-      </div>
-    </>
+    <div className="p-2">
+      <TocTree
+        items={toc}
+        currentHref={currentChapterHref}
+        onSelect={onLoadChapter}
+      />
+    </div>
   );
 }
