@@ -63,6 +63,24 @@ async function getTurndown() {
   if (!_turndown) {
     const Turndown = (await import('turndown')).default;
     _turndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+    // Flatten whitespace inside link text. Source pages often put block elements
+    // inside <a> (e.g. title + source name), which turndown converts to blank
+    // lines inside `[...]` — invalid CommonMark, so remark would treat the whole
+    // link as literal text (broken-apart `[` … `](url)` tokens). Icon-only links
+    // (empty after flattening) are dropped instead of leaking stray brackets.
+    _turndown.addRule('readerLink', {
+      filter: (node: any) => node.nodeName === 'A' && !!node.getAttribute('href'),
+      replacement: (content: string, node: any) => {
+        const flat = content.replace(/\s+/g, ' ').trim();
+        if (!flat) return '';
+        const href = node.getAttribute('href');
+        const escaped = href.replace(/([<>()])/g, '\\$1');
+        const destination = escaped.indexOf(' ') >= 0 ? `<${escaped}>` : escaped;
+        const title = node.getAttribute('title');
+        const titlePart = title ? ` "${String(title).replace(/"/g, '\\"')}"` : '';
+        return `[${flat}](${destination}${titlePart})`;
+      },
+    });
   }
   return _turndown;
 }
@@ -393,7 +411,7 @@ export default function WebReaderPage() {
                         />
                       ) : (
                         <button
-                          onClick={() => { setMenuUrl(null); handleLoad(site.url); }}
+                          onClick={() => { setMenuUrl(null); setMobileSidebarOpen(false); handleLoad(site.url); }}
                           title={site.url}
                           className="block w-full truncate text-left text-sm text-foreground"
                         >
