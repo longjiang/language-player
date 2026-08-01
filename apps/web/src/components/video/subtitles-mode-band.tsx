@@ -9,6 +9,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import type { SyncedLine } from '@/lib/subtitle-csv';
+import { stripSubtitleDurationPrefix } from '@/lib/subtitle-csv';
 import type { TokenCache } from '@langplayer/shared';
 
 interface SubtitlesModeBandProps {
@@ -92,6 +93,8 @@ export function SubtitlesModeBand({
   const transClass = overlay ? 'text-white/70' : 'text-muted-foreground';
   const placeholderClass = overlay ? 'text-white/50' : 'text-muted-foreground';
 
+  const activeDisplayText = activeLine ? stripSubtitleDurationPrefix(activeLine.l2Line) : '';
+
   return (
     <div className={cn(containerClass, 'min-h-[6rem] flex flex-col')}>
       <div className="flex items-center gap-0.5 px-2 py-1">
@@ -148,7 +151,7 @@ export function SubtitlesModeBand({
           <>
             <div className={cn('text-center', textClass)}>
               <TokenizedText
-                text={activeLine.l2Line}
+                text={activeDisplayText}
                 l2Code={l2.code}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}

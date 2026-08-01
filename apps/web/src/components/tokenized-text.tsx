@@ -126,6 +126,30 @@ function isSeparatorToken(text: string): boolean {
   return t === '' || /^[\p{P}]+$/u.test(t);
 }
 
+/**
+ * Rough speaking-time weight for karaoke pacing, used when we have no
+ * per-word timing data. CJK words: one unit per character (each hanzi/kana/
+ * hangul ≈ one syllable/mora). Latin/Cyrillic/Greek: one unit per vowel
+ * group. Everything else (Thai, Arabic, Hebrew, …): character count.
+ * Long words keep the highlight longer; short words flip quickly.
+ */
+function karaokeWordWeight(text: string): number {
+  const t = text.trim();
+  if (!t) return 0;
+
+  // CJK: character count is a near-exact syllable/mora proxy.
+  const cjk = t.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu);
+  if (cjk && cjk.length >= t.length * 0.5) return cjk.length;
+
+  // Latin/Cyrillic/Greek: vowel groups are a decent syllable proxy.
+  const vowelGroups = t.match(/[aeiouyà-öø-ÿаеёиоуыэюяіїєæœαεηιουωάέήίόύώϊϋΐΰ]+/giu);
+  if (vowelGroups && vowelGroups.length > 0) return Math.max(1, vowelGroups.length);
+
+  // Vowel-less scripts: fall back to character count.
+  const significant = t.replace(/[\s\p{P}]/gu, '');
+  return significant ? Math.max(1, significant.length) : 0;
+}
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
@@ -458,16 +482,22 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   return (
     <span ref={containerRef} className={fontClass}>
       <span className={leadingClass} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
-        {/* Precompute karaoke word count once, outside the per-token loop */}
+        {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {
-          let wordCount = 0;
-          let spokenWordCount = 0;
+          let totalWeight = 0;
+          const weights: number[] = [];
           if (karaokeProgress !== undefined) {
-            wordCount = tokens.filter(t => t.lemmas.length > 0).length;
-            // Use Math.floor so a word doesn't light until its time has elapsed
-            spokenWordCount = Math.floor(karaokeProgress * wordCount);
+            for (const token of tokens) {
+              if (token.lemmas.length === 0) {
+                weights.push(0);
+              } else {
+                const w = karaokeWordWeight(token.text);
+                weights.push(w);
+                totalWeight += w;
+              }
+            }
           }
-          let wordIndexSoFar = 0;
+          let cumulativeWeight = 0;
           return tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
           const nextToken = tokens[i + 1];
@@ -475,11 +505,20 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           const phoneticsShow = isPhoneticsEligible(l2Code)
             ? l2Settings.tokenSpan.phonetics.show
             : false;
-          // In karaoke mode, determine if this token has been spoken using a O(n) counter
+          // In karaoke mode, light each word once its weighted time slot begins.
           let isKaraokeSpoken: boolean | undefined;
           if (karaokeProgress !== undefined) {
-            if (token.lemmas.length > 0) wordIndexSoFar++;
-            isKaraokeSpoken = wordIndexSoFar <= spokenWordCount;
+            if (token.lemmas.length > 0) {
+              // Light a word as soon as its weighted time slot begins — the word
+              // currently being spoken — instead of waiting until it has finished.
+              isKaraokeSpoken = totalWeight > 0
+                ? karaokeProgress >= cumulativeWeight / totalWeight
+                : true;
+              cumulativeWeight += weights[i] ?? 0;
+            } else {
+              // Separators/punctuation stay fully visible in karaoke mode.
+              isKaraokeSpoken = true;
+            }
           }
           return (
             <TokenSpan

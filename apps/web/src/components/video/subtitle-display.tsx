@@ -14,7 +14,16 @@ import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
-import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
+import {
+  syncLines,
+  stripSubtitleDurationPrefix,
+  extractSubtitleDuration,
+  type SyncedLine,
+} from '@/lib/subtitle-csv';
+
+/** Karaoke lead: bias the highlight slightly ahead of the caption clock, since
+ *  caption start times often trail the audio by a few hundred milliseconds. */
+const KARAOKE_LEAD_SECONDS = 0.15;
 
 interface SubtitleDisplayProps {
   youtubeId?: string;
@@ -46,15 +55,6 @@ interface SubtitleDisplayProps {
   onTranslationProgress?: (text: string | null) => void;
 }
 
-/**
- * Strip duration prefix from subtitle text.
- * Raw format: "0.64,来" → "来"
- * Duration is a float + comma prefix, e.g. "1.08," or "0.64,"
- */
-function stripDurationPrefix(text: string): string {
-  return text.replace(/^[\d.]+,\s*/, '');
-}
-
 /** First search form that appears in this line — sent as the server-side
  *  highlight term so the emphasis lands on the right word in the translation. */
 function firstMatchingForm(line: string, terms: string[] | undefined): string | undefined {
@@ -80,9 +80,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   useEffect(() => {
     if (initialLines) {
       const l2Only = initialLines.map(l => ({
-        line: stripDurationPrefix(l.l2Line),
+        line: stripSubtitleDurationPrefix(l.l2Line),
         starttime: l.starttime,
-        duration: l.duration,
+        duration: extractSubtitleDuration(l),
       }));
       setL2Lines(l2Only);
       onLinesLoaded?.(l2Only.map(l => l.starttime));
@@ -96,9 +96,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       if (!res.ok) return;
       const data = await res.json();
       const lines = data.lines?.map((l: SyncedLine) => ({
-        line: stripDurationPrefix(l.l2Line ?? ''),
+        line: stripSubtitleDurationPrefix(l.l2Line ?? ''),
         starttime: l.starttime,
-        duration: l.duration,
+        duration: extractSubtitleDuration(l),
       })) ?? [];
       setL2Lines(lines);
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
@@ -293,7 +293,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             const lineDuration = line.duration
               ?? (syncedLines[i + 1] ? syncedLines[i + 1]!.starttime - line.starttime : 5);
             karaokeProgress = lineDuration > 0
-              ? Math.min(1, Math.max(0, (currentTime - line.starttime) / lineDuration))
+              ? Math.min(1, Math.max(0, (currentTime - line.starttime + KARAOKE_LEAD_SECONDS) / lineDuration))
               : 0;
           }
           return (
