@@ -124,7 +124,7 @@ export function DictionaryEntryCard({
 
   // ── COMPACT variant ──
   if (!isFull) {
-    const compactDefs = entry.definitions?.slice(0, 2) ?? [];
+    const compactDefs = entry.definitions ?? [];
     return (
       <Pressable
         onPress={() => { onPress?.(entry); }}
@@ -148,7 +148,7 @@ export function DictionaryEntryCard({
 
           {/* Definitions */}
           {(entry.part_of_speech || compactDefs.length > 0) && (
-            <Text className="mt-2 text-sm leading-snug text-muted-foreground" numberOfLines={4}>
+            <Text className="mt-2 text-sm leading-snug text-muted-foreground">
               {entry.part_of_speech && (
                 <Text className="italic">{entry.part_of_speech}{'  '}</Text>
               )}
