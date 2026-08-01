@@ -187,6 +187,14 @@ export default function WebReaderPage() {
     setEditingUrl(cur => cur === siteUrl ? null : cur);
   }, []);
 
+  const formatVisitedDate = useCallback((ts: number): string => {
+    try {
+      return new Date(ts).toLocaleDateString(l1.code, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return new Date(ts).toLocaleDateString();
+    }
+  }, [l1.code]);
+
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
 
   return (
@@ -317,8 +325,8 @@ export default function WebReaderPage() {
                   {isMenuOpen && (
                     <div className="fixed inset-0 z-10" onClick={() => setMenuUrl(null)} />
                   )}
-                  <div className="relative z-20 flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted transition-colors">
-                    <div className="relative h-4 w-4 flex-shrink-0">
+                  <div className="relative z-20 flex items-start gap-2 rounded-md px-2 py-1.5 hover:bg-muted transition-colors">
+                    <div className="relative mt-0.5 h-4 w-4 flex-shrink-0">
                       <Globe className="h-4 w-4 text-muted-foreground/60" />
                       {faviconUrl(site.url) && (
                         <img
@@ -330,28 +338,35 @@ export default function WebReaderPage() {
                         />
                       )}
                     </div>
-                    {isEditing ? (
-                      <input
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') commitRename(site.url);
-                          if (e.key === 'Escape') setEditingUrl(null);
-                        }}
-                        onBlur={() => commitRename(site.url)}
-                        placeholder={t('placeholder.enter_title')}
-                        className="min-w-0 flex-1 rounded border border-primary bg-background px-1.5 py-0.5 text-sm outline-none"
-                      />
-                    ) : (
-                      <button
-                        onClick={() => { setMenuUrl(null); handleLoad(site.url); }}
-                        title={site.url}
-                        className="min-w-0 flex-1 truncate text-left text-sm text-foreground"
-                      >
-                        {site.title}
-                      </button>
-                    )}
+                    <div className="min-w-0 flex-1">
+                      {isEditing ? (
+                        <input
+                          autoFocus
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitRename(site.url);
+                            if (e.key === 'Escape') setEditingUrl(null);
+                          }}
+                          onBlur={() => commitRename(site.url)}
+                          placeholder={t('placeholder.enter_title')}
+                          className="w-full rounded border border-primary bg-background px-1.5 py-0.5 text-sm outline-none"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => { setMenuUrl(null); handleLoad(site.url); }}
+                          title={site.url}
+                          className="block w-full truncate text-left text-sm text-foreground"
+                        >
+                          {site.title}
+                        </button>
+                      )}
+                      {!isEditing && site.visitedAt > 0 && (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {formatVisitedDate(site.visitedAt)}
+                        </span>
+                      )}
+                    </div>
                     {!isEditing && (
                       <button
                         onClick={() => setMenuUrl(isMenuOpen ? null : site.url)}
