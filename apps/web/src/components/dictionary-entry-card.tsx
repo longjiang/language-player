@@ -111,17 +111,6 @@ export function DictionaryEntryCard({
   const sourceLabel = hasVideoSource
     ? savedCtx?.videoTitle
     : hasTextSource ? savedCtx?.textTitle : undefined;
-  const debugJson = savedRecord
-    ? JSON.stringify(
-        {
-          form: savedCtx?.form ?? savedRecord.forms?.[0] ?? null,
-          context: savedRecord.context ?? null,
-          instances: savedRecord.instances ?? null,
-        },
-        null,
-        2,
-      )
-    : '';
 
   // ── Shared: level badges ──
   const badges = (
@@ -291,13 +280,6 @@ export function DictionaryEntryCard({
           {sourceLine}
           {saveContext && <div className="ml-auto">{saveBtn()}</div>}
         </div>
-
-        {/* Debug — raw saved-word record fields */}
-        {savedRecord && (
-          <pre className="mt-2 overflow-x-auto rounded-md bg-muted/40 p-2 font-mono text-[10px] leading-snug text-muted-foreground">
-            {debugJson}
-          </pre>
-        )}
       </div>
     );
   }
@@ -473,13 +455,6 @@ export function DictionaryEntryCard({
         </div>
         {saveContext && saveBtn('default')}
       </div>
-
-      {/* Debug — raw saved-word record fields */}
-      {savedRecord && (
-        <pre className="mt-4 overflow-x-auto rounded-md bg-muted/40 p-2 font-mono text-[10px] leading-snug text-muted-foreground">
-          {debugJson}
-        </pre>
-      )}
     </div>
   );
 }
