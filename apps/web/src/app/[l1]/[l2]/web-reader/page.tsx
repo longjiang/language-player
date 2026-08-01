@@ -7,9 +7,49 @@ import { useT } from '@/hooks/use-t';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Globe, Loader2, PanelRightClose, PanelRight } from 'lucide-react';
+import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+
+interface VisitedSite {
+  url: string;
+  title: string;
+  visitedAt: number;
+}
+
+const HISTORY_KEY = 'lp:web-reader:visited-sites:v1';
+const MAX_HISTORY = 50;
+
+function hostnameOf(url: string): string {
+  try { return new URL(url).hostname; } catch { return ''; }
+}
+
+function faviconUrl(url: string): string {
+  const host = hostnameOf(url);
+  return host ? `https://www.google.com/s2/favicons?domain=${host}&sz=32` : '';
+}
+
+function loadVisitedSites(): VisitedSite[] {
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((s: any): s is VisitedSite => !!s && typeof s.url === 'string')
+      .map((s: any) => ({
+        url: s.url,
+        title: typeof s.title === 'string' ? s.title : s.url,
+        visitedAt: typeof s.visitedAt === 'number' ? s.visitedAt : 0,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function saveVisitedSites(sites: VisitedSite[]) {
+  try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(sites)); } catch {}
+}
 
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -54,6 +94,14 @@ export default function WebReaderPage() {
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [visitedSites, setVisitedSites] = useState<VisitedSite[]>([]);
+  const [menuUrl, setMenuUrl] = useState<string | null>(null);
+  const [editingUrl, setEditingUrl] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+
+  useEffect(() => {
+    setVisitedSites(loadVisitedSites());
+  }, []);
 
   // Load from URL param on mount
   const urlParam = searchParams.get('url');
@@ -86,6 +134,15 @@ export default function WebReaderPage() {
       document.title = pageTitle;
       setText(md);
       setBlocks(null);
+      // Remember the visit (most recent first, capped) in localStorage.
+      setVisitedSites(prev => {
+        const next = [
+          { url: targetUrl, title: pageTitle, visitedAt: Date.now() },
+          ...prev.filter(s => s.url !== targetUrl),
+        ].slice(0, MAX_HISTORY);
+        saveVisitedSites(next);
+        return next;
+      });
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
@@ -101,6 +158,34 @@ export default function WebReaderPage() {
       setBlocks(null);
     }
   }, [text]);
+
+  const handleRename = useCallback((siteUrl: string) => {
+    setEditingUrl(siteUrl);
+    const site = visitedSites.find(s => s.url === siteUrl);
+    setEditValue(site?.title || siteUrl);
+    setMenuUrl(null);
+  }, [visitedSites]);
+
+  const commitRename = useCallback((siteUrl: string) => {
+    setVisitedSites(prev => {
+      const next = prev.map(s => s.url === siteUrl
+        ? { ...s, title: editValue.trim() || s.url }
+        : s);
+      saveVisitedSites(next);
+      return next;
+    });
+    setEditingUrl(null);
+  }, [editValue]);
+
+  const handleDelete = useCallback((siteUrl: string) => {
+    setVisitedSites(prev => {
+      const next = prev.filter(s => s.url !== siteUrl);
+      saveVisitedSites(next);
+      return next;
+    });
+    setMenuUrl(null);
+    setEditingUrl(cur => cur === siteUrl ? null : cur);
+  }, []);
 
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
 
@@ -210,14 +295,96 @@ export default function WebReaderPage() {
           )}
         </div>
 
-        {/* Sidebar — shared desktop panel + mobile sheet */}
+        {/* Sidebar — visited sites, shared desktop panel + mobile sheet */}
         <Sidebar
           open={mobileSidebarOpen}
           onOpenChange={setMobileSidebarOpen}
           sidebarOpen={sidebarOpen}
-          title={t('title.notes')}
+          title={t('title.visited_sites')}
           desktopClassName="w-64 ml-3"
-        />
+          emptyState={
+            <p className="px-2 py-1.5 text-sm text-muted-foreground">
+              {t('msg.no_visited_sites')}
+            </p>
+          }
+        >
+          <ul className="flex flex-col gap-0.5">
+            {visitedSites.map(site => {
+              const isEditing = editingUrl === site.url;
+              const isMenuOpen = menuUrl === site.url;
+              return (
+                <li key={site.url} className="relative">
+                  {isMenuOpen && (
+                    <div className="fixed inset-0 z-10" onClick={() => setMenuUrl(null)} />
+                  )}
+                  <div className="relative z-20 flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted transition-colors">
+                    <div className="relative h-4 w-4 flex-shrink-0">
+                      <Globe className="h-4 w-4 text-muted-foreground/60" />
+                      {faviconUrl(site.url) && (
+                        <img
+                          src={faviconUrl(site.url)}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="absolute inset-0 h-4 w-4 rounded-sm"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                    </div>
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename(site.url);
+                          if (e.key === 'Escape') setEditingUrl(null);
+                        }}
+                        onBlur={() => commitRename(site.url)}
+                        placeholder={t('placeholder.enter_title')}
+                        className="min-w-0 flex-1 rounded border border-primary bg-background px-1.5 py-0.5 text-sm outline-none"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setMenuUrl(null); handleLoad(site.url); }}
+                        title={site.url}
+                        className="min-w-0 flex-1 truncate text-left text-sm text-foreground"
+                      >
+                        {site.title}
+                      </button>
+                    )}
+                    {!isEditing && (
+                      <button
+                        onClick={() => setMenuUrl(isMenuOpen ? null : site.url)}
+                        aria-label={t('action.more')}
+                        className="flex-shrink-0 rounded p-1 text-muted-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                    )}
+                    {isMenuOpen && !isEditing && (
+                      <div className="absolute right-2 top-8 z-30 w-36 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                        <button
+                          onClick={() => handleRename(site.url)}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          {t('action.rename')}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(site.url)}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {t('action.delete')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Sidebar>
       </div>
     </div>
   );
