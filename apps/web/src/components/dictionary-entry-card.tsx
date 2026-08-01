@@ -239,18 +239,22 @@ export function DictionaryEntryCard({
             <div className="flex items-start gap-1.5">
               <BookmarkCheck className="mt-0.5 h-3 w-3 shrink-0" />
               <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
-                <span>{saveDateStr}</span>
+                <span className="whitespace-nowrap">{saveDateStr}</span>
+                {sourceLabel && (
+                  <>
+                    {' · '}
+                    <span className="inline-block max-w-[45%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                      {hasVideoSource
+                        ? <Video className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
+                        : <BookOpen className="inline-block h-3 w-3 shrink-0 align-[-2px]" />}
+                      {' '}
+                      {sourceLabel}
+                    </span>
+                  </>
+                )}
                 {contextSentence && <> · “{contextSentence}”</>}
               </p>
             </div>
-            {sourceLabel && (
-              <div className="flex items-center gap-1.5">
-                {hasVideoSource
-                  ? <Video className="h-3 w-3 shrink-0" />
-                  : <BookOpen className="h-3 w-3 shrink-0" />}
-                <span className="truncate">{sourceLabel}</span>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -412,18 +416,22 @@ export function DictionaryEntryCard({
           <div className="flex items-start gap-2">
             <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
-              <span>{saveDateStr}</span>
+              <span className="whitespace-nowrap">{saveDateStr}</span>
+              {sourceLabel && (
+                <>
+                  {' · '}
+                  <span className="inline-block max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                    {hasVideoSource
+                      ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
+                      : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
+                    {' '}
+                    {sourceLabel}
+                  </span>
+                </>
+              )}
               {contextSentence && <> · “{contextSentence}”</>}
             </p>
           </div>
-          {sourceLabel && (
-            <div className="flex items-center gap-2">
-              {hasVideoSource
-                ? <Video className="h-4 w-4 shrink-0" />
-                : <BookOpen className="h-4 w-4 shrink-0" />}
-              <span className="truncate">{sourceLabel}</span>
-            </div>
-          )}
         </div>
       )}
     </div>
