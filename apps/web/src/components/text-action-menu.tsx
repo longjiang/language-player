@@ -162,7 +162,10 @@ export function TextActionMenu({
         )}
         {loading && !translation && (
           <div className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'xl:pt-0'} ${translationClass || 'text-sm'}`}>
-            <TranslationSkeleton text={text} />
+            <TranslationSkeleton
+              text={text}
+              className={translationClass.includes('text-center') ? 'items-center' : ''}
+            />
           </div>
         )}
       </div>
