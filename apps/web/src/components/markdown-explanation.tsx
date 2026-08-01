@@ -62,11 +62,16 @@ export function MarkdownExplanation({ text, l2Code, streaming = false }: Markdow
   );
 
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={components}
-    >
-      {text}
-    </ReactMarkdown>
+    // Enforce line-height 2 (leading-loose) on every block element the
+    // markdown can produce (paragraphs inherit it, but headings/blockquotes/
+    // lists/pre set their own line-heights via the prose plugin).
+    <div className="leading-loose [&_p]:leading-loose [&_li]:leading-loose [&_h1]:leading-loose [&_h2]:leading-loose [&_h3]:leading-loose [&_h4]:leading-loose [&_h5]:leading-loose [&_h6]:leading-loose [&_blockquote]:leading-loose [&_pre]:leading-loose [&_hr]:my-3">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={components}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
   );
 }

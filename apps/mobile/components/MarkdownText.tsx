@@ -19,7 +19,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         body: {
           color: 'rgb(248 250 252)',
           fontSize: 14,
-          lineHeight: 21,
+          lineHeight: 28, // 2 × 14
         },
         paragraph: {
           marginBottom: 12,
@@ -27,6 +27,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         heading1: {
           fontSize: 18,
           fontWeight: '700',
+          lineHeight: 36, // 2 × 18
           marginBottom: 8,
           marginTop: 4,
           color: 'rgb(248 250 252)',
@@ -34,6 +35,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         heading2: {
           fontSize: 16,
           fontWeight: '700',
+          lineHeight: 32, // 2 × 16
           marginBottom: 6,
           marginTop: 4,
           color: 'rgb(248 250 252)',
@@ -41,6 +43,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         heading3: {
           fontSize: 14,
           fontWeight: '700',
+          lineHeight: 28, // 2 × 14
           marginBottom: 4,
           color: 'rgb(248 250 252)',
         },
@@ -56,6 +59,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
           paddingHorizontal: 4,
           fontFamily: 'monospace',
           fontSize: 12,
+          lineHeight: 24, // 2 × 12
         },
         code_block: {
           backgroundColor: 'rgba(148 163 184 / 0.1)',
@@ -64,6 +68,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
           marginBottom: 12,
           fontFamily: 'monospace',
           fontSize: 12,
+          lineHeight: 24, // 2 × 12
         },
         fence: {
           backgroundColor: 'rgba(148 163 184 / 0.1)',
@@ -72,6 +77,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
           marginBottom: 12,
           fontFamily: 'monospace',
           fontSize: 12,
+          lineHeight: 24, // 2 × 12
         },
         blockquote: {
           borderLeftWidth: 2,
