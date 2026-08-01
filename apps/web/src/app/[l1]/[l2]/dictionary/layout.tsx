@@ -8,7 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
-import { SavedWordRow } from '@/components/dictionary/saved-word-row';
+import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-card';
 import { WordListItem } from '@/components/dictionary/word-list';
 import { SaveButton } from '@/components/save-button';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -216,14 +216,13 @@ function SavedWordsSidebarContent({
   }
 
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-3 p-2">
       {words.map((word) => (
-        <SavedWordRow
+        <SavedWordEntryCard
           key={word.id}
           word={word}
           l1Code={l1Code}
           l2Code={l2Code}
-          compact
           onClick={() => onWordClick(word)}
         />
       ))}
