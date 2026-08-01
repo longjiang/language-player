@@ -84,6 +84,8 @@ export interface ReaderPanelProps {
   onAnchorChange?: (anchor: string) => void;
   /** If set, seek to the page containing this anchor text after blocks load. */
   initialAnchor?: string | null;
+  /** Hide the edit/read mode toggle bar (e.g. web reader, where text is always read-only). */
+  hideModeTabs?: boolean;
 }
 
 export function ReaderPanel({
@@ -99,6 +101,7 @@ export function ReaderPanel({
   onLemmatize,
   onAnchorChange,
   initialAnchor,
+  hideModeTabs = false,
 }: ReaderPanelProps) {
   const t = useT();
   const { display, updateDisplay } = useSettingsContext();
@@ -480,33 +483,35 @@ export function ReaderPanel({
   return (
     <div className="min-w-0 flex-1 flex flex-col min-h-0">
       {/* Mode toggle buttons */}
-      <div className="flex gap-1 border-b border-border px-1 pt-1 pb-[10px] mb-2">
-        <button
-          onClick={() => activeTab === 'read' ? onTabChange('edit') : undefined}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            activeTab === 'edit'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <FileText className="h-4 w-4" />
-          {t('action.edit')}
-        </button>
-        <button
-          onClick={() => {
-            if (activeTab === 'read') return;
-            onTokenize();
-          }}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            activeTab === 'read'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <BookOpen className="h-4 w-4" />
-          {t('action.read')}
-        </button>
-      </div>
+      {!hideModeTabs && (
+        <div className="flex gap-1 border-b border-border px-1 pt-1 pb-[10px] mb-2">
+          <button
+            onClick={() => activeTab === 'read' ? onTabChange('edit') : undefined}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              activeTab === 'edit'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            {t('action.edit')}
+          </button>
+          <button
+            onClick={() => {
+              if (activeTab === 'read') return;
+              onTokenize();
+            }}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              activeTab === 'read'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <BookOpen className="h-4 w-4" />
+            {t('action.read')}
+          </button>
+        </div>
+      )}
       <div className="flex-1 min-h-0 flex flex-col">
         {innerContent}
       </div>

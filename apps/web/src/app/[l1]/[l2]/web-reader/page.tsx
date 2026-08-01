@@ -168,6 +168,7 @@ export default function WebReaderPage() {
           translating={false}
           blocks={blocks}
           ctx={ctx}
+          hideModeTabs
           onTextChange={() => {}}
           onTabChange={() => {}}
           onTokenize={handleTokenize}
