@@ -76,11 +76,8 @@ export function DictionaryEntryCard({
           {text}
         </span>
       ))}
-      {entry.part_of_speech && (
-        <span className={isFull
-          ? "rounded-md bg-muted px-2.5 py-1 text-sm font-medium text-muted-foreground"
-          : "shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-        }>
+      {isFull && entry.part_of_speech && (
+        <span className="rounded-md bg-muted px-2.5 py-1 text-sm font-medium text-muted-foreground">
           {entry.part_of_speech}
         </span>
       )}
@@ -134,29 +131,33 @@ export function DictionaryEntryCard({
         onClick={() => onClick?.(entry)}
       >
         {/* Header */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold" lang={l2Code}>{head}</span>
-          {displayAlternate && (
-            <span className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</span>
-          )}
-          {formattedPron && (
-            <span className="text-xs text-muted-foreground">{formattedPron}</span>
-          )}
+        <div className="flex items-start gap-2">
+          <div className="flex-1 flex items-center gap-2 flex-wrap">
+            <span className="text-lg font-bold text-foreground" lang={l2Code}>{head}</span>
+            {displayAlternate && (
+              <span className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</span>
+            )}
+            <SpeakButton text={head} l2Code={l2Code ?? ''} size="sm" />
+            {formattedPron && (
+              <span className="text-sm text-muted-foreground">{formattedPron}</span>
+            )}
+          </div>
           {badges}
         </div>
 
         {/* Definitions */}
-        {entry.definitions.length > 0 && (
-          <div className="mt-2 space-y-1">
+        {(entry.part_of_speech || entry.definitions.length > 0) && (
+          <p className="mt-2 text-sm leading-snug text-muted-foreground">
+            {entry.part_of_speech && (
+              <span className="italic">{entry.part_of_speech}{'  '}</span>
+            )}
             {entry.definitions.map((def, i) => (
-              <p key={i} className="text-sm leading-relaxed">
-                {entry.definitions.length > 1 && (
-                  <span className="mr-1 text-xs text-muted-foreground">{i + 1}.</span>
-                )}
-                {def}
-              </p>
+              <span key={i}>
+                <span className="font-bold">{i + 1}</span>
+                {' '}{def}{i < entry.definitions.length - 1 ? '  ' : ''}
+              </span>
             ))}
-          </div>
+          </p>
         )}
 
         {/* Classifiers */}
