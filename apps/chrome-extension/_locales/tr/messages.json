@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Bu video için henüz altyazı mevcut değil."
   },
+  "openInLanguagePlayer": {
+    "message": "Language Player'de aç"
+  },
   "popularLanguages": {
     "message": "Popüler"
   },

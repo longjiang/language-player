@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Οι υπότιτλοι δεν είναι ακόμα διαθέσιμοι για αυτό το βίντεο."
   },
+  "openInLanguagePlayer": {
+    "message": "Άνοιγμα στο Language Player"
+  },
   "popularLanguages": {
     "message": "Δημοφιλή"
   },

@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "이 동영상에 아직 자막이 제공되지 않습니다."
   },
+  "openInLanguagePlayer": {
+    "message": "Language Player에서 열기"
+  },
   "popularLanguages": {
     "message": "인기"
   },

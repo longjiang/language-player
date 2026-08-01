@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "此影片尚無字幕。"
   },
+  "openInLanguagePlayer": {
+    "message": "在 Language Player 中開啟"
+  },
   "popularLanguages": {
     "message": "熱門"
   },

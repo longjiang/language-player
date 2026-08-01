@@ -31,8 +31,22 @@ document.addEventListener('DOMContentLoaded', function() {
     fillHtml('#popup-click-word', 'popupClickWord');
     fillHtml('#popup-save-words', 'popupSaveWords');
     fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
-    fillText('#transcript-btn', 'popupChecking');
+    setTranscriptChecking();
     fillHtml('#transcript-hint', 'popupCaptionsHint');
+    fillText('#open-in-web-btn', 'openInLanguagePlayer');
+  }
+
+  /** Grey-out state shown while checking for subtitles (and after locale
+   *  changes, until the next status poll resolves). */
+  function setTranscriptChecking() {
+    const btn = document.querySelector('#transcript-btn');
+    if (!btn) return;
+    const wasHidden = btn.classList.contains('hidden');
+    btn.textContent = t('popupChecking');
+    btn.className = 'lpv-btn-unavailable';
+    btn.disabled = true;
+    btn.onclick = null;
+    if (!wasHidden) btn.classList.remove('hidden');
   }
 
   // ── Language picker ──────────────────────────────────────────────────
@@ -356,23 +370,64 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Transcript Toggle ─────────────────────────────────────────────────
   const transcriptBtn = document.getElementById('transcript-btn');
   const transcriptHint = document.getElementById('transcript-hint');
+  const openInWebBtn = document.getElementById('open-in-web-btn');
+  const WEB_APP_URL = 'https://language-player.netlify.app';
+
+  /** Extract a YouTube video ID from a tab URL (mirrors content-entry.js). */
+  function getYouTubeVideoId(tabUrl) {
+    try {
+      const u = new URL(tabUrl);
+      const host = u.hostname;
+      if (host !== 'youtube.com' && !host.endsWith('.youtube.com')) return null;
+      return u.searchParams.get('v') || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Show the "Open in Language Player" button on YouTube videos and
+   *  refresh its URL with the current saved L1/L2 and video ID. */
+  function updateOpenInWebBtn(tabUrl) {
+    const videoId = tabUrl ? getYouTubeVideoId(tabUrl) : null;
+    if (videoId) {
+      openInWebBtn.dataset.url =
+        `${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/watch/${encodeURIComponent(videoId)}`;
+      openInWebBtn.classList.remove('hidden');
+    } else {
+      openInWebBtn.classList.add('hidden');
+    }
+  }
+
+  openInWebBtn.addEventListener('click', () => {
+    const url = openInWebBtn.dataset.url;
+    if (!url) return;
+    chrome.tabs.create({ url });
+    window.close();
+  });
 
   async function checkTranscriptStatus() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) { showNoTranscript(); return; }
+      if (!tab?.id) { showNoTranscript(); updateOpenInWebBtn(null); return; }
+      updateOpenInWebBtn(tab.url || null);
 
       const res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
       if (res?.cuesCount > 0) {
-        const isOpen = !!res.panelVisible;
-        transcriptBtn.textContent = isOpen ? t('hideTranscript') : t('popupShowTranscript');
-        transcriptBtn.className = 'lpv-btn-available';
-        transcriptBtn.disabled = false;
-        transcriptBtn.onclick = () => {
-          chrome.tabs.sendMessage(tab.id, { action: isOpen ? 'hideTranscript' : 'showTranscript' });
-          window.close();
-        };
         transcriptHint.classList.add('hidden');
+        if (res.panelVisible) {
+          // Panel is already open — don't show the transcript button at all
+          transcriptBtn.classList.add('hidden');
+          transcriptBtn.disabled = true;
+        } else {
+          transcriptBtn.classList.remove('hidden');
+          transcriptBtn.textContent = t('popupShowTranscript');
+          transcriptBtn.className = 'lpv-btn-available';
+          transcriptBtn.disabled = false;
+          transcriptBtn.onclick = () => {
+            chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
+            window.close();
+          };
+        }
       } else {
         showNoTranscript();
       }
@@ -383,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function showNoTranscript() {
+    transcriptBtn.classList.remove('hidden');
     transcriptBtn.textContent = t('popupNoTranscript');
     transcriptBtn.className = 'lpv-btn-unavailable';
     transcriptBtn.disabled = true;

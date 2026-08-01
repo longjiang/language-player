@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Teks untuk video ini belum tersedia."
   },
+  "openInLanguagePlayer": {
+    "message": "Buka di Language Player"
+  },
   "popularLanguages": {
     "message": "Populer"
   },

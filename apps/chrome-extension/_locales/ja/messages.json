@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "この動画にはまだ字幕がありません。"
   },
+  "openInLanguagePlayer": {
+    "message": "Language Player で開く"
+  },
   "popularLanguages": {
     "message": "人気"
   },

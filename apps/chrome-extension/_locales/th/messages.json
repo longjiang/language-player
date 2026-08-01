@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "ยังไม่มีคำบรรยายสำหรับวิดีโอนี้"
   },
+  "openInLanguagePlayer": {
+    "message": "เปิดใน Language Player"
+  },
   "popularLanguages": {
     "message": "เป็นที่นิยม"
   },

@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Subtitles are not available for this video yet."
   },
+  "openInLanguagePlayer": {
+    "message": "Open in Language Player"
+  },
   "popularLanguages": {
     "message": "Popular"
   },

@@ -81,6 +81,9 @@
   "noTranscriptFound": {
     "message": "Titlovi za ovaj video još uvek nisu dostupni."
   },
+  "openInLanguagePlayer": {
+    "message": "Отвори у Language Player-у"
+  },
   "popularLanguages": {
     "message": "Popularno"
   },
