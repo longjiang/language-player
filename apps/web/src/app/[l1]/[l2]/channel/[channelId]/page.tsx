@@ -92,7 +92,7 @@ export default function ChannelPage() {
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              View on YouTube ↗
+              {t('action.view_on_youtube')} ↗
             </a>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function ChannelPage() {
       {/* Empty */}
       {!loading && !error && videos.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
-          <p className="text-muted-foreground">No videos found in this channel.</p>
+          <p className="text-muted-foreground">{t('msg.no_videos_found')}</p>
         </div>
       )}
 
