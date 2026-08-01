@@ -732,7 +732,7 @@ export default function ReviewPage() {
 
       {/* Card */}
       <div
-        className={`bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none
+        className={`bg-card border rounded-xl p-4 sm:p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none
           ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}
           ${showDefinition && !rated ? 'cursor-pointer' : ''}`}
         onClick={(e) => {
