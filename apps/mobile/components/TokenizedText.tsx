@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View, Text, Platform, Animated } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
@@ -12,11 +12,95 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
+import { enqueueLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 import { getConverter } from '@/lib/chinese-script';
+
+// ── Queued batch lemmatization ────────────────────────────────────────
+// Visible TokenizedText instances enqueue their line; a short timer flushes
+// the queue through /lemmatize-normalized/batch in one request instead of
+// firing N per-line calls. Falls back to lemmatizeText() (server-first with
+// local tokenizer fallback) when the batch request fails.
+interface LemmatizeBatchItem {
+  key: string;
+  text: string;
+  l2Code: string;
+  resolve: (tokens: LemmatizedToken[]) => void;
+  reject: (err: unknown) => void;
+}
+
+const lemmatizeBatchQueue: LemmatizeBatchItem[] = [];
+const lemmatizeBatchPending = new Map<string, Promise<LemmatizedToken[]>>();
+const LEMMATIZE_BATCH_MAX = 12;
+const LEMMATIZE_BATCH_DELAY_MS = 60;
+let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Queue a line for batched lemmatization; resolves with its tokens. */
+function enqueueLemmatize(text: string, l2Code: string): Promise<LemmatizedToken[]> {
+  const key = `${l2Code}:${text}`;
+  const existing = lemmatizeBatchPending.get(key);
+  if (existing) return existing;
+
+  const promise = new Promise<LemmatizedToken[]>((resolve, reject) => {
+    lemmatizeBatchQueue.push({ key, text, l2Code, resolve, reject });
+  });
+  lemmatizeBatchPending.set(key, promise);
+  scheduleLemmatizeBatchFlush();
+  return promise;
+}
+
+function scheduleLemmatizeBatchFlush() {
+  if (lemmatizeBatchTimer) return;
+  lemmatizeBatchTimer = setTimeout(() => {
+    lemmatizeBatchTimer = null;
+    void flushLemmatizeBatch();
+  }, LEMMATIZE_BATCH_DELAY_MS);
+}
+
+async function flushLemmatizeBatch() {
+  const items = lemmatizeBatchQueue.splice(0, LEMMATIZE_BATCH_MAX);
+  if (items.length === 0) return;
+
+  // Batch endpoint takes one language per call — group the queue by l2.
+  const byL2 = new Map<string, LemmatizeBatchItem[]>();
+  for (const item of items) {
+    const group = byL2.get(item.l2Code);
+    if (group) group.push(item);
+    else byL2.set(item.l2Code, [item]);
+  }
+
+  for (const [l2Code, group] of byL2) {
+    try {
+      const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: group.map((g) => g.text), l2: l2Code }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const results: LemmatizedToken[][] = data?.results ?? [];
+      group.forEach((item, i) => {
+        item.resolve(results[i] ?? []);
+        lemmatizeBatchPending.delete(item.key);
+      });
+    } catch (err) {
+      // Batch failed — fall back to lemmatizeText() (server-first, then local
+      // tokenizer), preserving the offline pipeline.
+      logwarn('[LP Mobile] Batch lemmatize failed — falling back per-line:', err);
+      await Promise.allSettled(group.map(async (item) => {
+        try {
+          item.resolve(await lemmatizeText(item.text, item.l2Code));
+        } catch (lineErr) {
+          item.reject(lineErr);
+        } finally {
+          lemmatizeBatchPending.delete(item.key);
+        }
+      }));
+    }
+  }
+}
 
 // ── Word difficulty helpers for hardWords filter ──────────────────
 
@@ -100,6 +184,23 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const lastTextRef = useRef(text);
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+  // Opacity pulse shown while lemmatization is in flight.
+  const pulseAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    if (!loading) {
+      pulseAnim.setValue(0.4);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 650, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.4, duration: 650, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [loading, pulseAnim]);
 
   const { l1Lang } = useLanguage();
 
@@ -245,12 +346,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     lastTextRef.current = effectiveText;
 
     // If a video-level token cache is provided but hasn't finished loading yet,
-    // show plain text and wait — don't fall back to per-line API calls.
-    // When tokenCacheLoaded flips to true, this effect re-fires and tries the
-    // now-populated cache.
+    // keep the pulsing state — don't fall back to API calls yet. When
+    // tokenCacheLoaded flips to true, this effect re-fires and proceeds to the
+    // cache / queued-batch pipeline (imported videos are already "loaded" with
+    // an empty cache, so they skip straight to the queue).
     if (tokenCacheRef.current && tokenCacheLoaded === false) {
-      setTokens([{ text: effectiveText, lemmas: [] }]);
-      setLoading(false);
+      setLoading(true);
       return;
     }
 
@@ -275,17 +376,25 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     let cancelled = false;
     setLoading(true);
 
-    // 2. Server-first, local-fallback pipeline (SPEC-018 Phase 1)
-    //    - Tries POST /lemmatize-normalized first (3s timeout)
-    //    - Falls back to regex split + surface-as-lemma (or arabic-stem for ar)
-    //    - Handles in-memory cache + in-flight dedup internally
-    lemmatizeText(effectiveText, l2Code, controller.signal).then((result) => {
-      if (!cancelled) {
-        setTokens(result);
-        setLoading(false);
-        loadingRef.current = false;
-      }
-    });
+    // 2. Queued batch pipeline: visible lines flush together through
+    //    /lemmatize-normalized/batch, falling back to lemmatizeText()
+    //    (server-first, then local regex/stem fallback) on failure.
+    enqueueLemmatize(effectiveText, l2Code)
+      .then((result) => {
+        if (!cancelled) {
+          setTokens(result);
+          setLoading(false);
+          loadingRef.current = false;
+        }
+      })
+      .catch(() => {
+        // Batch and per-line fallback both failed — show plain text.
+        if (!cancelled) {
+          setTokens([{ text: effectiveText, lemmas: [] }]);
+          setLoading(false);
+          loadingRef.current = false;
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -330,7 +439,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       l2Code: l2Code,
     }));
 
-    bulkLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
+    // Queue with other visible lines' lemmas so one flush covers many lines
+    // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).
+    enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
   }, [tokens, loading, l2Code]);
 
   // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
@@ -594,5 +705,19 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // ── Loading / no tokens: show plain undivided text (matches Next.js) ──
   const fallbackStyle = leadingRatio ? { lineHeight: Math.round(16 * leadingRatio) } : undefined;
+
+  // ── Loading: pulsing undivided text while lemmatization is in flight ──
+  if (loading) {
+    return (
+      <Animated.Text
+        testID={testID}
+        className="text-base text-foreground"
+        style={[fallbackStyle, { opacity: pulseAnim }]}
+      >
+        {text}
+      </Animated.Text>
+    );
+  }
+
   return <Text testID={testID} className="text-base text-foreground" style={fallbackStyle}>{text}</Text>;
 }

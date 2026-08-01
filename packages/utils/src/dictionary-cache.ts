@@ -167,3 +167,94 @@ async function _doBulkLookup(
     // Silently fail — popups will fall back to individual lookup
   }
 }
+
+// ── Queued (batched) dictionary lookup ────────────────────────────────
+// TokenizedText lines enqueue their lemmas; a short timer flushes the queue
+// through bulkLookupWords() in one /dictionary/lookup-batch request instead of
+// firing one small request per subtitle line. Laziness is preserved: only
+// lines that have been lemmatized (i.e. became visible) enqueue anything.
+interface LookupQueueItem {
+  key: string;
+  text: string;
+  l2Code: string;
+  resolve: () => void;
+  reject: (err: unknown) => void;
+}
+
+const lookupQueue: LookupQueueItem[] = [];
+const lookupSeen = new Set<string>();
+let lookupTimer: ReturnType<typeof setTimeout> | null = null;
+let lookupApiUrl = '';
+const LOOKUP_BATCH_MAX = 30;
+const LOOKUP_BATCH_DELAY_MS = 80;
+
+/**
+ * Queue dictionary lookups for a set of words and resolve when they complete.
+ * Words already in the cache are skipped. Identical words queued by multiple
+ * lines are looked up once.
+ */
+export function enqueueLookupWords(
+  words: { text: string; l2Code: string }[],
+  apiUrl: string,
+): Promise<void> {
+  const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
+  if (uncached.length === 0) return Promise.resolve();
+
+  let remaining = 0;
+  let resolveAll!: () => void;
+  let rejectAll!: (err: unknown) => void;
+  const done = new Promise<void>((resolve, reject) => {
+    resolveAll = resolve;
+    rejectAll = reject;
+  });
+
+  for (const w of uncached) {
+    const key = `${w.l2Code}:${w.text}`;
+    if (lookupSeen.has(key)) continue;
+    lookupSeen.add(key);
+    remaining++;
+    lookupQueue.push({
+      key,
+      text: w.text,
+      l2Code: w.l2Code,
+      resolve: () => {
+        remaining--;
+        if (remaining === 0) resolveAll();
+      },
+      reject: rejectAll,
+    });
+  }
+
+  if (remaining === 0) return Promise.resolve();
+
+  lookupApiUrl = apiUrl;
+  scheduleLookupFlush();
+  return done;
+}
+
+function scheduleLookupFlush() {
+  if (lookupTimer) return;
+  lookupTimer = setTimeout(() => {
+    lookupTimer = null;
+    void flushLookupQueue();
+  }, LOOKUP_BATCH_DELAY_MS);
+}
+
+async function flushLookupQueue() {
+  const items = lookupQueue.splice(0, LOOKUP_BATCH_MAX);
+  if (items.length === 0) return;
+
+  // Only release the seen-markers for words actually flushed; anything left in
+  // the queue stays deduplicated until its own flush.
+  for (const item of items) lookupSeen.delete(item.key);
+
+  try {
+    await bulkLookupWords(
+      items.map((i) => ({ text: i.text, l2Code: i.l2Code })),
+      lookupApiUrl,
+    );
+    for (const item of items) item.resolve();
+  } catch (err) {
+    for (const item of items) item.reject(err);
+  }
+}
