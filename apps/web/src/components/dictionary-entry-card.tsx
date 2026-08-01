@@ -94,9 +94,10 @@ export function DictionaryEntryCard({
       <span
           key={i}
           className={isFull
-            ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-            : "shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+            ? "rounded-md px-2.5 py-1 text-sm font-medium"
+            : "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium"
           }
+          style={{ backgroundColor: `${level.hexColor}1A`, color: level.hexColor }}
         >
           {level.short}
         </span>
