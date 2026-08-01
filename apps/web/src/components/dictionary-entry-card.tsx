@@ -15,6 +15,8 @@ interface DictionaryEntryCardProps {
   variant?: 'compact' | 'full';
   /** Called when the card is clicked (navigates to entry detail page) */
   onClick?: (entry: DictionaryEntry) => void;
+  /** Optional indicator rendered beside the level badges in compact mode (e.g. SRS review dot). */
+  srsDot?: React.ReactNode;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
   saveContext?: SavedWordContext;
   /** Pre-formatted pronunciation string. Uses centralized formatPronunciation if omitted. */
@@ -33,6 +35,7 @@ export function DictionaryEntryCard({
   entry,
   variant = 'compact',
   onClick,
+  srsDot,
   saveContext,
   pronunciation,
   l2Code,
@@ -62,11 +65,11 @@ export function DictionaryEntryCard({
   const badges = (
     <>
       {levelBadges.map((level, i) => (
-        <span
+      <span
           key={i}
           className={isFull
             ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-            : "ml-auto shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+            : "shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
           }
         >
           {level.short}
@@ -144,7 +147,10 @@ export function DictionaryEntryCard({
               <span className="text-sm text-muted-foreground">{formattedPron}</span>
             )}
           </div>
-          {badges}
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {badges}
+            {srsDot}
+          </div>
         </div>
 
         {/* Definitions */}
