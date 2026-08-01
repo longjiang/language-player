@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
   Loader2, BookOpen, PenLine,
@@ -323,16 +324,11 @@ export default function ReaderPage() {
             onPageTranslate={async (texts) => {
               setTranslating(true);
               try {
-                const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
-                });
-                const data = await res.json();
-                return data?.translated_texts ?? [];
+                const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
+                return byKey;
               } catch (e: any) {
                 setError(e?.message || 'Translation failed');
-                return [];
+                return {};
               } finally {
                 setTranslating(false);
               }

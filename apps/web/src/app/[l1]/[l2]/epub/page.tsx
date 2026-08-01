@@ -6,6 +6,7 @@ import { useT } from '@/hooks/use-t';
 import type { SavedWordContext } from '@langplayer/shared';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { translateTextsKeyed } from '@/lib/translate';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -212,13 +213,9 @@ export default function EpubPage() {
               }}
               onPageTranslate={async (texts) => {
                 try {
-                  const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
-                  });
-                  const data = await res.json();
-                  return data?.translated_texts ?? [];
-                } catch { return []; }
+                  const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
+                  return byKey;
+                } catch { return {}; }
               }}
               onAnchorChange={(anchor) => epub.saveAnchor(anchor)}
               initialAnchor={anchorRef.current}
