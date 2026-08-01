@@ -2,7 +2,7 @@
 
 import type { SavedWordContext } from '@langplayer/shared';
 import { Video, BookOpen } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLanguage } from '@/providers/language-provider';
 
 interface SavedWordSourceProps {
   /** Context object from a SavedLexicalItemRecord. */
@@ -18,7 +18,9 @@ interface SavedWordSourceProps {
  *   📖 Book Title · Jul 18
  */
 export function SavedWordSource({ context, date, className = '' }: SavedWordSourceProps) {
-  const locale = useLocale();
+  // Format the date in the user's native language (L1), not the UI/browser locale.
+  const { l1 } = useLanguage();
+  const locale = l1.code;
   // Guard against legacy/corrupt records with no context
   if (!context) {
     try { return <span className={className}>{new Date(date).toLocaleDateString(locale)}</span>; } catch { return null; }
