@@ -555,8 +555,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar skeleton */}
-        <div className="flex items-center justify-between border-b border-border py-2">
-          <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+        <div className="flex items-center justify-center border-b border-border py-2">
           <div className="flex items-center gap-1">
             {formCount > 1 && (
               <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
@@ -574,9 +573,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         </div>
         {/* Controls skeleton */}
         <div className="flex items-center justify-center gap-0.5 border-b border-border px-2 py-1">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-7 w-7 animate-pulse rounded bg-muted" />
-          ))}
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-12 animate-pulse rounded bg-muted" />
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
+          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
         </div>
         {/* Subtitle skeleton — centered like the singleline display */}
         <div className="min-h-[5rem] py-4 flex flex-col items-center justify-center gap-2">
