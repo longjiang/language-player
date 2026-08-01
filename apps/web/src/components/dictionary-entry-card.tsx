@@ -326,7 +326,7 @@ export function DictionaryEntryCard({
             // Skip keys shown prominently in the header
             if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return null;
             // Skip raw representations of the already-displayed pronunciation
-            if (key === 'pinyin_numeric') return null;
+            if (key === 'pinyin_numeric' || key === 'kana') return null;
             // Skip IPA if it matches the pronunciation already shown
             if (key === 'ipa' && value === entry.pronunciation) return null;
             if (typeof value === 'string' && value) {
