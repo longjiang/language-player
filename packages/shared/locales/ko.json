@@ -581,7 +581,7 @@
         "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
         "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:CEFR C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": "{1:초급 I,2:초급 II,3:초급 III,4:중급 I,5:중급 II,6:고급 I,7:고급 II}",
+        "name": "{level, select, 1{초급 I} 2{초급 II} 3{초급 III} 4{중급 I} 5{중급 II} 6{고급 I} 7{고급 II} other{{level}}}",
         "topik": "{1:TOPIK 1급 이전,2:TOPIK 1급,3:TOPIK 2급,4:TOPIK 3급,5:TOPIK 4급,6:TOPIK 5급,7:TOPIK 6급}"
     },
     "log": {
