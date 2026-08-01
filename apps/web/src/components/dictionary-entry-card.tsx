@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, ExternalLink, Video } from 'lucide-react';
@@ -31,6 +31,31 @@ interface DictionaryEntryCardProps {
   l1Code?: string;
   /** WAI-ARIA heading level for the headword (full mode defaults to h1). */
   headingLevel?: 'h1' | 'h2' | 'h3';
+}
+
+/**
+ * Highlights every occurrence of the saved word's surface form inside the
+ * context sentence, mirroring the review page's highlightForm logic
+ * (exact-form match) and its highlight styling.
+ */
+function HighlightForm({ text, form }: { text: string; form?: string }) {
+  if (!form) return <>{text}</>;
+  const parts = text.split(form);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, i) => (
+        <Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <span className="rounded bg-primary/15 font-semibold text-primary ring-1 ring-primary/30">
+              {form}
+            </span>
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
 }
 
 /** Renders the entry details for a dictionary lookup result — compact in popups, full on detail pages.
@@ -246,7 +271,7 @@ export function DictionaryEntryCard({
                   </span>
                 </>
               )}
-              {contextSentence && <> · “{contextSentence}”</>}
+              {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
             </p>
           </div>
         )}
@@ -420,7 +445,7 @@ export function DictionaryEntryCard({
                 </span>
               </>
             )}
-            {contextSentence && <> · “{contextSentence}”</>}
+            {contextSentence && <> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</>}
           </p>
         </div>
       )}
