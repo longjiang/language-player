@@ -207,3 +207,18 @@ function _pickNextChunk(
 
   return -1; // all lookahead chunks translated
 }
+
+/**
+ * Whether a line index falls inside the translation lookahead window of the
+ * active line. Only lines inside this window are ever translated, so skeleton
+ * placeholders should match it.
+ */
+export function isLineInTranslationLookahead(
+  lineIndex: number,
+  activeIndex: number | undefined,
+): boolean {
+  const prioChunk = activeIndex !== undefined && activeIndex >= 0
+    ? Math.floor(activeIndex / CHUNK_SIZE)
+    : 0;
+  return Math.abs(Math.floor(lineIndex / CHUNK_SIZE) - prioChunk) <= LOOKAHEAD_CHUNKS;
+}
