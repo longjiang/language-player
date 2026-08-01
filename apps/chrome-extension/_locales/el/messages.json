@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Άνοιγμα στο Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Ανάγνωση στο Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Παρακολούθηση στο Language Player"
+  },
   "popularLanguages": {
     "message": "Δημοφιλή"
   },

@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Oscail in Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Léigh in Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Féach in Language Player"
+  },
   "popularLanguages": {
     "message": "Coitianta"
   },

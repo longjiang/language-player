@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Language Player में खोलें"
   },
+  "readInLanguagePlayer": {
+    "message": "Language Player में पढ़ें"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Language Player में देखें"
+  },
   "popularLanguages": {
     "message": "लोकप्रिय"
   },

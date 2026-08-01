@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Language Player'de aç"
   },
+  "readInLanguagePlayer": {
+    "message": "Language Player'de oku"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Language Player'de izle"
+  },
   "popularLanguages": {
     "message": "Popüler"
   },

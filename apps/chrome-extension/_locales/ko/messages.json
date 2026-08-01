@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Language Player에서 열기"
   },
+  "readInLanguagePlayer": {
+    "message": "Language Player에서 읽기"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Language Player에서 시청"
+  },
   "popularLanguages": {
     "message": "인기"
   },

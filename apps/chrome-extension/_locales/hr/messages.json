@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Otvori u Language Playeru"
   },
+  "readInLanguagePlayer": {
+    "message": "Čitaj u Language Playeru"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Gledaj u Language Playeru"
+  },
   "popularLanguages": {
     "message": "Popularno"
   },

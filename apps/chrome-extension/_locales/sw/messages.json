@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Fungua katika Language Player"
   },
+  "readInLanguagePlayer": {
+    "message": "Soma katika Language Player"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Tazama katika Language Player"
+  },
   "popularLanguages": {
     "message": "Maarufu"
   },

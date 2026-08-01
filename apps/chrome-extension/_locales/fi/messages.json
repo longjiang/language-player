@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "Avaa Language Playerissä"
   },
+  "readInLanguagePlayer": {
+    "message": "Lue Language Playerissä"
+  },
+  "watchInLanguagePlayer": {
+    "message": "Katso Language Playerissä"
+  },
   "popularLanguages": {
     "message": "Suosittu"
   },

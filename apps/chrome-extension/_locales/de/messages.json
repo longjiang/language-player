@@ -84,6 +84,12 @@
   "openInLanguagePlayer": {
     "message": "In Language Player öffnen"
   },
+  "readInLanguagePlayer": {
+    "message": "In Language Player lesen"
+  },
+  "watchInLanguagePlayer": {
+    "message": "In Language Player ansehen"
+  },
   "popularLanguages": {
     "message": "Beliebt"
   },
