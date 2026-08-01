@@ -26,7 +26,7 @@ interface DictionaryEntryTabsProps {
   contextText?: string;
   /** Optional inflected form of the word as it appears in contextText. */
   contextForm?: string;
-  /** Called when the embedded DictionaryEntryCard is clicked. */
+  /** Called when the embedded DictionaryEntryCard's "Open in Dictionary" button is clicked. */
   onCardClick?: (entry: DictionaryEntry) => void;
   /** Controlled mode: which tab is active. When omitted, manages state internally. */
   activeTab?: string;
