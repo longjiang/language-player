@@ -211,13 +211,7 @@ export function DictionaryEntryCard({
     : [];
 
   return (
-    <div
-      className={onClick
-        ? "cursor-pointer transition-all hover:shadow-md hover:border-primary/20"
-        : ""
-      }
-      onClick={() => onClick?.(entry)}
-    >
+    <div>
       {/* Header: head + badges, then pronunciation row (matches mobile full) */}
       <div className="mb-3">
         <div className="flex items-start gap-3">
@@ -339,12 +333,24 @@ export function DictionaryEntryCard({
         </div>
       )}
 
-      {/* Footer source + save */}
+      {/* Footer source + actions */}
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           {sourceLine}
         </div>
-        {saveContext && saveBtn('default')}
+        <div className="flex items-center gap-2">
+          {onClick && (
+            <button
+              type="button"
+              onClick={() => onClick(entry)}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              {t('action.open_in_dictionary')}
+            </button>
+          )}
+          {saveContext && saveBtn('default')}
+        </div>
       </div>
     </div>
   );
