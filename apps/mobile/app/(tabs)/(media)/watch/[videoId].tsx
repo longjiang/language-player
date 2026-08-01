@@ -169,6 +169,29 @@ export default function WatchScreen() {
           }));
         }
 
+        // Imported video (not in our DB) or DB video without saved subs: the
+        // /videos response has no lines — fetch captions from YouTube through
+        // the captions endpoint (same best-locale logic Nuxt uses).
+        if (lines.length === 0) {
+          try {
+            const captionsRes = await fetch(
+              `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Lang.code}`,
+              { signal: AbortSignal.timeout(15000) },
+            );
+            if (captionsRes.ok) {
+              const captions: any[] | null = await captionsRes.json();
+              if (Array.isArray(captions)) {
+                lines = captions.map((c: any) => ({
+                  line: c.text ?? '',
+                  starttime: c.start ?? 0,
+                }));
+              }
+            }
+          } catch {
+            // Captions fallback failed — show the video without subtitles.
+          }
+        }
+
         if (lines.length > 0) {
           const synced: SubtitleSyncedLine[] = lines.map((l) => ({
             starttime: l.starttime,
