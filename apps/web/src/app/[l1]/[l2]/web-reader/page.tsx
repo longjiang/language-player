@@ -125,13 +125,12 @@ export default function WebReaderPage() {
         className="mb-6 flex gap-2 flex-shrink-0"
       >
         <div className="relative flex-1">
-          <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder={t('placeholder.paste_url', { l2: l2.name })}
-            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <Button type="submit" size="sm" disabled={!url.trim() || loading}>

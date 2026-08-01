@@ -129,11 +129,8 @@ export default function WebReaderScreen() {
         <View className="px-4 mb-4">
           <View className="flex-row gap-2">
             <View className="flex-1 relative flex-row items-center rounded-lg border border-border bg-background">
-              <View className="pl-3">
-                <Globe size={16} color={ICON_MUTED} />
-              </View>
               <TextInput
-                className="flex-1 py-2 pr-3 text-sm text-foreground"
+                className="flex-1 px-3 py-2 text-sm text-foreground"
                 value={url}
                 onChangeText={setUrl}
                 placeholder={t('placeholder.paste_url', { l2: t(`lang.${l2Lang.code}`) })}
