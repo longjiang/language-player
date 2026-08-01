@@ -364,11 +364,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
       if (res?.cuesCount > 0) {
-        transcriptBtn.textContent = t('popupShowTranscript');
+        const isOpen = !!res.panelVisible;
+        transcriptBtn.textContent = isOpen ? t('hideTranscript') : t('popupShowTranscript');
         transcriptBtn.className = 'lpv-btn-available';
         transcriptBtn.disabled = false;
         transcriptBtn.onclick = () => {
-          chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
+          chrome.tabs.sendMessage(tab.id, { action: isOpen ? 'hideTranscript' : 'showTranscript' });
           window.close();
         };
         transcriptHint.classList.add('hidden');

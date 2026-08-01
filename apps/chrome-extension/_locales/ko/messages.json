@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "스크립트 보기"
   },
+  "hideTranscript": {
+    "message": "스크립트 숨기기"
+  },
   "popupToggleShortcut": {
     "message": "<kbd>Alt</kbd> + <kbd>T</kbd>를 눌러 패널을 표시/숨깁니다"
   },

@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Transcriptie tonen"
   },
+  "hideTranscript": {
+    "message": "Transcriptie verbergen"
+  },
   "popupToggleShortcut": {
     "message": "Druk op <kbd>Alt</kbd> + <kbd>T</kbd> om het paneel te tonen/verbergen"
   },

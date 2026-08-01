@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Afișează transcrierea"
   },
+  "hideTranscript": {
+    "message": "Ascunde transcrierea"
+  },
   "popupToggleShortcut": {
     "message": "Apăsați <kbd>Alt</kbd> + <kbd>T</kbd> pentru a comuta panoul"
   },

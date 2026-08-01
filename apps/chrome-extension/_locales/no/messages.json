@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Vis transkripsjon"
   },
+  "hideTranscript": {
+    "message": "Skjul transkripsjon"
+  },
   "popupToggleShortcut": {
     "message": "Trykk <kbd>Alt</kbd> + <kbd>T</kbd> for å vise/skjule panelet"
   },

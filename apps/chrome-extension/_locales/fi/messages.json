@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Näytä transkriptio"
   },
+  "hideTranscript": {
+    "message": "Piilota transkriptio"
+  },
   "popupToggleShortcut": {
     "message": "Paina <kbd>Alt</kbd> + <kbd>T</kbd> vaihtaaksesi paneelia"
   },

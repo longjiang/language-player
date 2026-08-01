@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "顯示字幕"
   },
+  "hideTranscript": {
+    "message": "隱藏字幕"
+  },
   "popupToggleShortcut": {
     "message": "按 <kbd>Alt</kbd> + <kbd>T</kbd> 切換面板"
   },

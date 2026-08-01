@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Mostra la transcripció"
   },
+  "hideTranscript": {
+    "message": "Amaga la transcripció"
+  },
   "popupToggleShortcut": {
     "message": "Prem <kbd>Alt</kbd> + <kbd>T</kbd> per mostrar/amagar el panell"
   },

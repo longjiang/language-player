@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "ट्रांसक्रिप्ट दिखाएं"
   },
+  "hideTranscript": {
+    "message": "ट्रांसक्रिप्ट छिपाएं"
+  },
   "popupToggleShortcut": {
     "message": "पैनल टॉगल करने के लिए <kbd>Alt</kbd> + <kbd>T</kbd> दबाएं"
   },

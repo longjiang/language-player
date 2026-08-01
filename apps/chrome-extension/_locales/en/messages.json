@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Show Transcript"
   },
+  "hideTranscript": {
+    "message": "Hide Transcript"
+  },
   "popupToggleShortcut": {
     "message": "Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel"
   },

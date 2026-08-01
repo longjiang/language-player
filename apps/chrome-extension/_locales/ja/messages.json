@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "トランスクリプトを表示"
   },
+  "hideTranscript": {
+    "message": "トランスクリプトを非表示"
+  },
   "popupToggleShortcut": {
     "message": "<kbd>Alt</kbd> + <kbd>T</kbd> でパネルの表示/非表示を切り替え"
   },

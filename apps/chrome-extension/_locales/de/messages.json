@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Transkript anzeigen"
   },
+  "hideTranscript": {
+    "message": "Transkript ausblenden"
+  },
   "popupToggleShortcut": {
     "message": "Drücke <kbd>Alt</kbd> + <kbd>T</kbd> zum Ein-/Ausblenden des Panels"
   },

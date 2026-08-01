@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Mostrar transcrição"
   },
+  "hideTranscript": {
+    "message": "Ocultar transcrição"
+  },
   "popupToggleShortcut": {
     "message": "Pressione <kbd>Alt</kbd> + <kbd>T</kbd> para mostrar/ocultar o painel"
   },

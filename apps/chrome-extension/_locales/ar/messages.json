@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "إظهار النص"
   },
+  "hideTranscript": {
+    "message": "إخفاء النص"
+  },
   "popupToggleShortcut": {
     "message": "اضغط على <kbd>Alt</kbd> + <kbd>T</kbd> لتبديل اللوحة"
   },

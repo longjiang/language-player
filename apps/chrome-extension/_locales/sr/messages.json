@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Prikaži transkript"
   },
+  "hideTranscript": {
+    "message": "Сакриј транскрипт"
+  },
   "popupToggleShortcut": {
     "message": "Pritisnite <kbd>Alt</kbd> + <kbd>T</kbd> za uključivanje/isključivanje panela"
   },

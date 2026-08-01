@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Pokaż transkrypcję"
   },
+  "hideTranscript": {
+    "message": "Ukryj transkrypcję"
+  },
   "popupToggleShortcut": {
     "message": "Naciśnij <kbd>Alt</kbd> + <kbd>T</kbd>, aby przełączyć panel"
   },
