@@ -8,7 +8,6 @@ import { languageName } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
 import { buildEntryRoute } from '@/lib/entry-route';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { formatLevel } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, AlertCircle, Clock } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { WordList } from '@/components/dictionary/word-list';
@@ -25,9 +24,6 @@ export default function DictionaryPage() {
   } = useDictionaryContext();
 
   const redirectingRef = useRef(false);
-
-  const levelLabel = (scale: string, value: string | number) =>
-    formatLevel({ scale, value }).long;
 
   const saveContext = {
     form: searchedText,
@@ -116,7 +112,6 @@ export default function DictionaryPage() {
               entry={entry}
               l2Code={l2.code}
               l1Code={l1.code}
-              levelLabel={levelLabel}
               saveContext={saveContext}
               onClick={() => handleResultClick(entry)}
             />
@@ -167,4 +162,3 @@ export default function DictionaryPage() {
     </div>
   );
 }
-
