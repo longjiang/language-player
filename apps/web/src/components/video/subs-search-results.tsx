@@ -161,8 +161,59 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   // ── Fetch ────────────────────────────────────
 
+  // Cache of the most recent all-forms search (keyed by its term string), so
+  // toggling exact-match can filter locally instead of re-querying the server.
+  const allFormVideosRef = useRef<SubsSearchVideo[]>([]);
+  const allFormTermRef = useRef('');
+
   useEffect(() => {
     if (!term) return;
+
+    const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+
+    // Exact-match switch: the all-forms results were already fetched and
+    // contain this exact form → filter them client-side, no new request.
+    // Only applies when the exact term belongs to the cached all-forms search
+    // (i.e. this is a mode toggle on the same word, not a new word search).
+    const cachedForms = allFormTermRef.current
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+    const isSameWord =
+      cachedForms.length > 0 && searchForms.every((f) => cachedForms.includes(f));
+
+    if (exactMatch && isSameWord && allFormVideosRef.current.length > 0) {
+      const exactVideos = allFormVideosRef.current
+        .filter((v) =>
+          v.subs_l2.some((l) =>
+            searchForms.some((f) => l.line.toLowerCase().includes(f)),
+          ),
+        )
+        .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, term) }));
+      if (exactVideos.length > 0) {
+        setVideos(exactVideos);
+        setCurrentIndex(0);
+        setAutoplayEnabled(true);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+    }
+
+    // Back to all forms: restore the cached all-forms results.
+    if (
+      !exactMatch &&
+      allFormTermRef.current === term &&
+      allFormVideosRef.current.length > 0
+    ) {
+      setVideos(allFormVideosRef.current);
+      setCurrentIndex(0);
+      setAutoplayEnabled(true);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -176,7 +227,6 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
       })
       .then((data: any[]) => {
         if (cancelled) return;
-        const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = (Array.isArray(data) ? data : [])
           .map((v: any) => {
             const lines = parseSubsL2(v.subs_l2 ?? '');
@@ -200,6 +250,10 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
         initialLoadRef.current = false;
         const autoplay = !firstLoad;
         setVideos(parsed);
+        if (!exactMatch) {
+          allFormVideosRef.current = parsed;
+          allFormTermRef.current = term;
+        }
         setCurrentIndex(0);
         setAutoplayEnabled(autoplay);
         setLoading(false);
@@ -214,7 +268,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     return () => {
       cancelled = true;
     };
-  }, [term, l2.code]);
+  }, [term, l2.code, exactMatch]);
 
   // ── Seek to match when video changes ─────────
   // startTime is also passed to YouTubePlayer for reliable seeking during onReady.
@@ -392,27 +446,33 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar skeleton */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-2">
+        <div className="flex items-center justify-between border-b border-border py-2">
           <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
           <div className="flex items-center gap-1">
-            <div className="h-6 w-16 animate-pulse rounded-full bg-muted" />
+            {formCount > 1 && (
+              <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
+                <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
+                <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
+              </div>
+            )}
+            <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
             <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
           </div>
         </div>
         {/* Player skeleton */}
-        <div className="aspect-video w-full bg-black/80 flex items-center justify-center">
+        <div className="aspect-video w-full bg-black flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-white/40" />
         </div>
-        {/* Subtitle skeleton */}
-        <div className="min-h-[5rem] px-6 py-4 flex flex-col items-center justify-center gap-2">
-          <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-1/2 animate-pulse rounded bg-muted/50" />
-        </div>
         {/* Controls skeleton */}
-        <div className="flex items-center justify-center gap-0.5 border-t border-border px-2 py-1">
+        <div className="flex items-center justify-center gap-0.5 border-b border-border px-2 py-1">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-7 w-7 animate-pulse rounded bg-muted" />
           ))}
+        </div>
+        {/* Subtitle skeleton — centered like the singleline display */}
+        <div className="min-h-[5rem] py-4 flex flex-col items-center justify-center gap-2">
+          <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-muted/50" />
         </div>
       </div>
     );
@@ -428,41 +488,49 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar — keep toggle accessible even when empty */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-2">
+        <div className="flex items-center justify-between border-b border-border py-2">
           <span className="text-xs text-muted-foreground">
             {t('msg.video_n_of_total', { n: 0, total: 0 })}
           </span>
           <div className="flex items-center gap-1">
             {formCount > 1 && (
-              <button
-                onClick={() => onExactToggle?.(!exactMatch)}
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  exactMatch
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                }`}
-                title={
-                  exactMatch
-                    ? t('msg.exact_match_searching_only', { term, n: formCount })
-                    : t('msg.exact_match_searching', { n: formCount })
-                }
-              >
-                {exactMatch ? term : t('msg.n_forms', { n: formCount })}
-              </button>
+              <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+                <button
+                  onClick={() => onExactToggle?.(true)}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                    exactMatch
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title={t('msg.exact_match_searching_only', { term, n: formCount })}
+                >
+                  {t('msg.this_form')}
+                </button>
+                <button
+                  onClick={() => onExactToggle?.(false)}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                    !exactMatch
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title={t('msg.exact_match_searching', { n: formCount })}
+                >
+                  {t('msg.all_forms')}
+                </button>
+              </div>
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50">
               <Play className="h-3.5 w-3.5" />
               {t('action.watch')}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1 text-xs"
+            <button
               disabled
+              onClick={() => setListOpen(true)}
+              className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50 transition-colors disabled:pointer-events-none"
             >
               <List className="h-3.5 w-3.5" />
               {t('action.list_all')}
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -480,28 +548,37 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
       {/* ── Nav bar (above video) ── */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border py-2">
         <span className="text-xs text-muted-foreground">
           {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
         </span>
         <div className="flex items-center gap-1">
           {/* Exact-match toggle — only visible when formCount > 1 */}
           {formCount > 1 && (
-            <button
-              onClick={() => onExactToggle?.(!exactMatch)}
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                exactMatch
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-muted text-muted-foreground hover:text-foreground'
-              }`}
-              title={
-                exactMatch
-                  ? t('msg.exact_match_searching_only', { term, n: formCount })
-                  : t('msg.exact_match_searching', { n: formCount })
-              }
-            >
-              {exactMatch ? term : t('msg.n_forms', { n: formCount })}
-            </button>
+            <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+              <button
+                onClick={() => onExactToggle?.(true)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  exactMatch
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={t('msg.exact_match_searching_only', { term, n: formCount })}
+              >
+                {t('msg.this_form')}
+              </button>
+              <button
+                onClick={() => onExactToggle?.(false)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  !exactMatch
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={t('msg.exact_match_searching', { n: formCount })}
+              >
+                {t('msg.all_forms')}
+              </button>
+            </div>
           )}
           {currentVideo && (
             <Link
@@ -512,15 +589,13 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               {t('action.watch')}
             </Link>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 text-xs"
+          <button
             onClick={() => setListOpen(true)}
+            className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <List className="h-3.5 w-3.5" />
             {t('action.list_all')}
-          </Button>
+          </button>
         </div>
       </div>
 

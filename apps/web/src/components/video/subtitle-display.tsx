@@ -205,7 +205,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l2Code={l2Code}
             l1Code={l1Code}
             translation={showTranslation ? activeTranslation?.line : undefined}
-            translationClass="text-sm"
+            translationClass="text-sm text-center"
             translationBelow
             loading={showTranslation && translating && !activeTranslation}
           >
