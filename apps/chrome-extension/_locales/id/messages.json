@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Tampilkan Transkrip"
   },
+  "hideTranscript": {
+    "message": "Sembunyikan Transkrip"
+  },
   "popupToggleShortcut": {
     "message": "Tekan <kbd>Alt</kbd> + <kbd>T</kbd> untuk menampilkan/menyembunyikan panel"
   },

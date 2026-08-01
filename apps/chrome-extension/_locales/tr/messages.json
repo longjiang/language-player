@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Transkripti Göster"
   },
+  "hideTranscript": {
+    "message": "Transkripti Gizle"
+  },
   "popupToggleShortcut": {
     "message": "Paneli açıp kapatmak için <kbd>Alt</kbd> + <kbd>T</kbd> tuşlarına basın"
   },

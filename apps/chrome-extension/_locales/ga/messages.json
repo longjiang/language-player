@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Taispeáin an tras-scríbhinn"
   },
+  "hideTranscript": {
+    "message": "Folaigh an tras-scríbhinn"
+  },
   "popupToggleShortcut": {
     "message": "Brúigh <kbd>Alt</kbd> + <kbd>T</kbd> chun an painéal a scoránú"
   },

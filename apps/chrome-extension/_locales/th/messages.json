@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "แสดงบทถอดความ"
   },
+  "hideTranscript": {
+    "message": "ซ่อนบทถอดความ"
+  },
   "popupToggleShortcut": {
     "message": "กด <kbd>Alt</kbd> + <kbd>T</kbd> เพื่อสลับแผง"
   },

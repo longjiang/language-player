@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Hiện bản ghi"
   },
+  "hideTranscript": {
+    "message": "Ẩn bản ghi"
+  },
   "popupToggleShortcut": {
     "message": "Nhấn <kbd>Alt</kbd> + <kbd>T</kbd> để bật/tắt bảng điều khiển"
   },

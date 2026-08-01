@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Visa transkribering"
   },
+  "hideTranscript": {
+    "message": "Dölj transkribering"
+  },
   "popupToggleShortcut": {
     "message": "Tryck på <kbd>Alt</kbd> + <kbd>T</kbd> för att visa/dölja panelen"
   },

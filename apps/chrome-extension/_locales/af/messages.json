@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Wys Transkripsie"
   },
+  "hideTranscript": {
+    "message": "Verberg Transkripsie"
+  },
   "popupToggleShortcut": {
     "message": "Druk <kbd>Alt</kbd> + <kbd>T</kbd> om die paneel te wissel"
   },

@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Εμφάνιση απομαγνητοφώνησης"
   },
+  "hideTranscript": {
+    "message": "Απόκρυψη απομαγνητοφώνησης"
+  },
   "popupToggleShortcut": {
     "message": "Πατήστε <kbd>Alt</kbd> + <kbd>T</kbd> για εναλλαγή του πίνακα"
   },

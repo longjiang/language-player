@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Onyesha Nakala"
   },
+  "hideTranscript": {
+    "message": "Ficha Nakala"
+  },
   "popupToggleShortcut": {
     "message": "Bonyeza <kbd>Alt</kbd> + <kbd>T</kbd> kufungua/kufunga paneli"
   },

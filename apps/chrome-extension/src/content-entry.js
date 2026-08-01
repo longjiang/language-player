@@ -68,6 +68,7 @@ let fetchGen = 0;
 let panelRoot = null;
 let panelContent = null;
 let statusEl = null;
+let openInWebBtn = null;
 
 // ── L2 language state ────────────────────────────────────────────────────
 
@@ -842,6 +843,7 @@ async function onL2Change(newCode) {
   try {
     chrome.storage.local.set({ l2Language: newCode });
   } catch {}
+  updateOpenInWebBtn();
 
   // For Netflix: try to load a different subtitle track from cache
   if (isNetflix && Object.keys(cachedNetflixTracks).length > 0) {
@@ -893,6 +895,7 @@ function setupYouTubeNavigationObserver() {
     if (currentId && currentId !== lastVideoId) {
       lastVideoId = currentId;
       log(`Navigated to video: ${currentId}`);
+      updateOpenInWebBtn();
       ytCaptionTracks = [];
       ytPlayerResponse = null;
       setTimeout(() => loadYouTubeSubtitles(), 1500);
@@ -917,6 +920,15 @@ function createPanelUI() {
   panelRoot = document.createElement('div');
   panelRoot.id = 'lpv-transcript-panel';
   panelRoot.classList.add('lpv-collapsed');
+
+  // "Open in Language Player" — shown in the panel header for YouTube videos
+  openInWebBtn = document.createElement('a');
+  openInWebBtn.id = 'lpv-open-web-btn';
+  openInWebBtn.target = '_blank';
+  openInWebBtn.rel = 'noopener noreferrer';
+  openInWebBtn.addEventListener('click', () => {
+    log('Open in Language Player clicked:', openInWebBtn.href);
+  });
 
   const header = document.createElement('div');
   header.id = 'lpv-panel-header';
@@ -946,6 +958,7 @@ function createPanelUI() {
     setPanelVisible(false);
   });
 
+  headerRight.appendChild(openInWebBtn);
   headerRight.appendChild(closeBtn);
 
   header.appendChild(title);
@@ -964,14 +977,39 @@ function createPanelUI() {
   document.body.appendChild(panelRoot);
 
   STATE.panelReady = true;
+  updateOpenInWebBtn();
 
   // Initial empty render
   mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
 }
 
+/** Web app watch URL: https://language-player.netlify.app/{l1}/{l2}/watch/{videoId}
+ *  Returns null on non-YouTube pages or when no video ID is available. */
+function buildWebWatchUrl() {
+  if (!isYouTube) return null;
+  const videoId = getYTVideoId();
+  if (!videoId) return null;
+  return `https://language-player.netlify.app/${encodeURIComponent(L1_CODE)}/${encodeURIComponent(savedL2Code)}/watch/${encodeURIComponent(videoId)}`;
+}
+
+/** Show/hide the "Open in Language Player" button and refresh its URL/label.
+ *  Called on panel creation, L1/L2 changes, and YouTube SPA navigation. */
+function updateOpenInWebBtn() {
+  if (!openInWebBtn) return;
+  const url = buildWebWatchUrl();
+  if (url) {
+    openInWebBtn.href = url;
+    openInWebBtn.textContent = t('openInLanguagePlayer');
+    openInWebBtn.classList.add('lpv-visible');
+  } else {
+    openInWebBtn.classList.remove('lpv-visible');
+  }
+}
+
 /** Refresh all static UI labels after a locale change.
  *  Called by onL1Change() after setLocale() loads the new messages. */
 function refreshUILabels() {
+  updateOpenInWebBtn();
   if (statusEl && STATE.cues.length === 0) {
     statusEl.textContent = '';
   }
@@ -1301,6 +1339,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     log('Opening transcript panel via popup — enabling auto-open');
     chrome.storage.sync.set({ autoOpenPanel: true });
     setPanelVisible(true);
+    sendResponse({ success: true });
+  }
+
+  if (message.action === 'hideTranscript') {
+    log('Hiding transcript panel via popup — disabling auto-open');
+    chrome.storage.sync.set({ autoOpenPanel: false });
+    setPanelVisible(false);
     sendResponse({ success: true });
   }
 

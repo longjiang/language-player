@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Átirat megjelenítése"
   },
+  "hideTranscript": {
+    "message": "Átirat elrejtése"
+  },
   "popupToggleShortcut": {
     "message": "Nyomja meg az <kbd>Alt</kbd> + <kbd>T</kbd> billentyűket a panel ki/be kapcsolásához"
   },

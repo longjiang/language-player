@@ -120,6 +120,9 @@
   "popupShowTranscript": {
     "message": "Показать транскрипт"
   },
+  "hideTranscript": {
+    "message": "Скрыть транскрипт"
+  },
   "popupToggleShortcut": {
     "message": "Нажмите <kbd>Alt</kbd> + <kbd>T</kbd> для переключения панели"
   },
