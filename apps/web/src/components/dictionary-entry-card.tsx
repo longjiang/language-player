@@ -229,26 +229,25 @@ export function DictionaryEntryCard({
 
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
-          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-            <div className="flex items-start gap-1.5">
-              <BookmarkCheck className="mt-0.5 h-3 w-3 shrink-0" />
-              <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
-                <span className="whitespace-nowrap">{saveDateStr}</span>
-                {sourceLabel && (
-                  <>
-                    {' · '}
-                    <span className="inline-block max-w-[45%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
-                      {hasVideoSource
-                        ? <Video className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
-                        : <BookOpen className="inline-block h-3 w-3 shrink-0 align-[-2px]" />}
-                      {' '}
-                      {sourceLabel}
-                    </span>
-                  </>
-                )}
-                {contextSentence && <> · “{contextSentence}”</>}
-              </p>
-            </div>
+          <div className="mt-2 text-xs text-muted-foreground">
+            <p className="line-clamp-2" lang={l2Code}>
+              <BookmarkCheck className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
+              {' '}
+              <span className="whitespace-nowrap">{saveDateStr}</span>
+              {sourceLabel && (
+                <>
+                  {' · '}
+                  <span className="inline-block max-w-[45%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                    {hasVideoSource
+                      ? <Video className="inline-block h-3 w-3 shrink-0 align-[-2px]" />
+                      : <BookOpen className="inline-block h-3 w-3 shrink-0 align-[-2px]" />}
+                    {' '}
+                    {sourceLabel}
+                  </span>
+                </>
+              )}
+              {contextSentence && <> · “{contextSentence}”</>}
+            </p>
           </div>
         )}
 
@@ -404,26 +403,25 @@ export function DictionaryEntryCard({
 
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
-        <div className="mb-6 space-y-1.5 text-sm text-muted-foreground">
-          <div className="flex items-start gap-2">
-            <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" />
-            <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
-              <span className="whitespace-nowrap">{saveDateStr}</span>
-              {sourceLabel && (
-                <>
-                  {' · '}
-                  <span className="inline-block max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
-                    {hasVideoSource
-                      ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
-                      : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
-                    {' '}
-                    {sourceLabel}
-                  </span>
-                </>
-              )}
-              {contextSentence && <> · “{contextSentence}”</>}
-            </p>
-          </div>
+        <div className="mb-6 text-sm text-muted-foreground">
+          <p className="line-clamp-2" lang={l2Code}>
+            <BookmarkCheck className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
+            {' '}
+            <span className="whitespace-nowrap">{saveDateStr}</span>
+            {sourceLabel && (
+              <>
+                {' · '}
+                <span className="inline-block max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap align-bottom">
+                  {hasVideoSource
+                    ? <Video className="inline-block h-4 w-4 shrink-0 align-[-2px]" />
+                    : <BookOpen className="inline-block h-4 w-4 shrink-0 align-[-2px]" />}
+                  {' '}
+                  {sourceLabel}
+                </span>
+              </>
+            )}
+            {contextSentence && <> · “{contextSentence}”</>}
+          </p>
         </div>
       )}
 
