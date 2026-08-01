@@ -54,6 +54,10 @@ export interface TokenizedTextProps {
   highlightForms?: string[];
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end). When undefined, karaoke is off. */
   karaokeProgress?: number;
+  /** When false, phonetics are suppressed on highlighted tokens. Used by the SRS
+   *  review page so the target word's reading stays hidden until the card is
+   *  revealed. Defaults to true — highlighting alone does not hide readings. */
+  phoneticsOnHighlight?: boolean;
 }
 
 /**
@@ -86,6 +90,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   highlightForm,
   highlightForms,
   karaokeProgress,
+  phoneticsOnHighlight = true,
 }) => {
   // Map typeFace to Tailwind font-family class
   const fontClass =
@@ -382,6 +387,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               onClick={() => handleTokenClick(token)}
               cacheVersion={cacheVersion}
               isKaraokeSpoken={isKaraokeSpoken}
+              phoneticsOnHighlight={phoneticsOnHighlight}
             />
           );
         });

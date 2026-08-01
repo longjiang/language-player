@@ -711,6 +711,7 @@ export default function ReviewPage() {
                 text={wordCtx.text}
                 l2Code={l2Code}
                 highlightForm={wordCtx.form}
+                phoneticsOnHighlight={showDefinition}
                 context={{
                   form: wordForm,
                   text: wordCtx.text,
