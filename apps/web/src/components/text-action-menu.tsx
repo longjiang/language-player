@@ -29,7 +29,7 @@ interface TextActionMenuProps {
   /** Always show the trigger (default: only on hover via group). */
   alwaysShow?: boolean;
   /** Pre-fetched translation to show inline to the right of children. */
-  translation?: string;
+  translation?: ReactNode;
   /** Tailwind classes for the translation element (e.g. match heading size). */
   translationClass?: string;
   /** Always render the translation below the content, even on xl screens. */

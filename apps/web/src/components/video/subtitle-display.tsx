@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
@@ -54,6 +55,17 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
+/** First search form that appears in this line — sent as the server-side
+ *  highlight term so the emphasis lands on the right word in the translation. */
+function firstMatchingForm(line: string, terms: string[] | undefined): string | undefined {
+  if (!terms?.length) return undefined;
+  const lower = line.toLowerCase();
+  return terms
+    .map((f) => f.trim())
+    .filter(Boolean)
+    .find((f) => lower.includes(f.toLowerCase()));
+}
+
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
@@ -94,12 +106,18 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2Code, l1Code, initialLines, isSingleline]);
 
+  const lineHighlightForms = useMemo(
+    () => l2Lines.map((l) => firstMatchingForm(l.line, highlightTerms)),
+    [l2Lines, highlightTerms],
+  );
+
   const { translatedLines, loading: translating, progress, error, retry } = useSubtitleTranslation(
     l2Lines,
     l1.code,
     l2Code,
     showTranslation,
     activeIndex,
+    lineHighlightForms,
   );
 
   const syncedLines = useMemo(() => {
@@ -204,7 +222,22 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             text={activeLine.line}
             l2Code={l2Code}
             l1Code={l1Code}
-            translation={showTranslation ? activeTranslation?.line : undefined}
+            translation={
+              showTranslation && activeTranslation ? (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => (
+                      <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                        {children}
+                      </mark>
+                    ),
+                  }}
+                >
+                  {activeTranslation.line}
+                </ReactMarkdown>
+              ) : undefined
+            }
             translationClass="text-sm text-center"
             translationBelow
             loading={showTranslation && translating && !activeTranslation}
