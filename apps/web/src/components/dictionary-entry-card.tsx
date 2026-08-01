@@ -83,6 +83,17 @@ export function DictionaryEntryCard({
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <BookOpen className="h-3 w-3" />
       <span>{displaySource}</span>
+      {isFull && onClick && (
+        <button
+          type="button"
+          onClick={() => onClick(entry)}
+          className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          title={t('action.open_in_dictionary')}
+        >
+          <ExternalLink className="h-3 w-3" />
+          <span>{t('action.open_in_dictionary')}</span>
+        </button>
+      )}
       <a
         href={googleImagesUrl}
         target="_blank"
@@ -333,24 +344,12 @@ export function DictionaryEntryCard({
         </div>
       )}
 
-      {/* Footer source + actions */}
+      {/* Footer source + save */}
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           {sourceLine}
         </div>
-        <div className="flex items-center gap-2">
-          {onClick && (
-            <button
-              type="button"
-              onClick={() => onClick(entry)}
-              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {t('action.open_in_dictionary')}
-            </button>
-          )}
-          {saveContext && saveBtn('default')}
-        </div>
+        {saveContext && saveBtn('default')}
       </div>
     </div>
   );
