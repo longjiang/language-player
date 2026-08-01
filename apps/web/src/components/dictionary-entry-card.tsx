@@ -227,15 +227,9 @@ export function DictionaryEntryCard({
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-2 flex items-center gap-2 text-[10px]">
-          {sourceLine}
-          {saveContext && <div className="ml-auto">{saveBtn()}</div>}
-        </div>
-
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
-          <div className="mt-2 space-y-1 rounded-md bg-muted/40 px-2.5 py-2 text-xs text-muted-foreground">
+          <div className="mt-2 space-y-1 rounded-md bg-amber-50/70 px-2.5 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
             <div className="flex items-start gap-1.5">
               <BookmarkCheck className="mt-0.5 h-3 w-3 shrink-0" />
               <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
@@ -257,6 +251,12 @@ export function DictionaryEntryCard({
             </div>
           </div>
         )}
+
+        {/* Footer */}
+        <div className="mt-2 flex items-center gap-2 text-[10px]">
+          {sourceLine}
+          {saveContext && <div className="ml-auto">{saveBtn()}</div>}
+        </div>
       </div>
     );
   }
@@ -402,17 +402,9 @@ export function DictionaryEntryCard({
         </div>
       )}
 
-      {/* Footer source + save */}
-      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          {sourceLine}
-        </div>
-        {saveContext && saveBtn('default')}
-      </div>
-
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
-        <div className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+        <div className="mb-6 space-y-1.5 text-sm text-amber-700 dark:text-amber-300">
           <div className="flex items-start gap-2">
             <BookmarkCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="min-w-0 flex-1 line-clamp-2" lang={l2Code}>
@@ -434,6 +426,14 @@ export function DictionaryEntryCard({
           </div>
         </div>
       )}
+
+      {/* Footer source + save */}
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          {sourceLine}
+        </div>
+        {saveContext && saveBtn('default')}
+      </div>
     </div>
   );
 }
