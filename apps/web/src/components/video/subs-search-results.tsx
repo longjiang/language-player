@@ -51,30 +51,19 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-/** Escape regex metacharacters so a word form can be used in a RegExp safely. */
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function lineHasAnyTerm(line: string, terms: string[]): boolean {
   const lower = line.toLowerCase();
   return terms.some((f) => lower.includes(f.trim().toLowerCase()));
 }
 
-/** Wrap every search term occurrence in **...** markdown (standalone matches)
- *  so the LLM carries the emphasis into the translated sentence. */
-function emphasizeTerms(text: string, terms: string[]): string {
+/** The first search form that appears in this line (used as the server-side
+ *  highlight term so the emphasis lands on the right word in the translation). */
+function firstMatchingForm(line: string, terms: string[]): string | undefined {
+  const lower = line.toLowerCase();
   return terms
     .map((f) => f.trim())
     .filter(Boolean)
-    .reduce(
-      (out, f) =>
-        out.replace(
-          new RegExp(`(?<![\\p{L}\\p{N}])(${escapeRegExp(f)})(?![\\p{L}\\p{N}])`, 'gu'),
-          '**$1**',
-        ),
-      text,
-    );
+    .find((f) => lower.includes(f.toLowerCase()));
 }
 
 function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
@@ -484,21 +473,21 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     [filteredVideos, highlightTerms],
   );
 
-  // Flat per-segment translation input (markdown emphasis on term-bearing
-  // lines) plus each row's starting index into that flat array.
+  // Flat per-segment translation input plus each row's starting index into
+  // that flat array. The matched term per line is sent as the server-side
+  // highlight form (the review page pattern), which bolds it in the output.
   const translationInput = useMemo(() => {
     const lines: SubtitleLine[] = [];
+    const forms: (string | undefined)[] = [];
     const rowStarts: number[] = [];
     for (const segs of rowSegments) {
       rowStarts.push(lines.length);
       for (const seg of segs) {
-        lines.push({
-          line: seg.hasTerm ? emphasizeTerms(seg.text, highlightTerms) : seg.text,
-          starttime: 0,
-        });
+        lines.push({ line: seg.text, starttime: 0 });
+        forms.push(seg.hasTerm ? firstMatchingForm(seg.text, highlightTerms) : undefined);
       }
     }
-    return { lines, rowStarts };
+    return { lines, forms, rowStarts };
   }, [rowSegments, highlightTerms]);
 
   // ── Modal: lazy row translations ──
@@ -545,6 +534,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     baseCode(l2.code),
     listTranslationsEnabled && translationInput.lines.length > 0,
     listFirstLineIndex,
+    translationInput.forms,
   );
 
   const selectFromList = useCallback(

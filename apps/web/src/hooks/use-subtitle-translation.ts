@@ -36,6 +36,9 @@ export function useSubtitleTranslation(
   enabled: boolean,
   /** Current active subtitle line index (0-based). Used to prioritize translation. */
   activeIndex?: number,
+  /** Optional per-line term to emphasize (parallel to l2Lines). Sent as
+   *  `forms` to /translate_array so the server bolds it in the translation. */
+  highlightForms?: (string | null | undefined)[],
 ): { translatedLines: SubtitleLine[]; loading: boolean; progress: number; error: string | null; retry: () => void } {
   const [translatedLines, setTranslatedLines] = useState<SubtitleLine[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,7 +80,14 @@ export function useSubtitleTranslation(
       const res = await fetch(`${PYTHON_URL}/translate_array`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts: chunk, l1, l2 }),
+        body: JSON.stringify({
+          texts: chunk,
+          l1,
+          l2,
+          ...(highlightForms
+            ? { forms: chunk.map((_, i) => highlightForms[start + i] ?? null) }
+            : {}),
+        }),
         signal: controller.signal,
       });
 
@@ -112,7 +122,7 @@ export function useSubtitleTranslation(
       if (err?.name === 'AbortError' || controller.signal.aborted) return 'aborted';
       return 'error';
     }
-  }, [l2Lines, l1, l2]);
+  }, [l2Lines, l1, l2, highlightForms]);
 
   // ── Watcher: restart translation when playhead moves into a new chunk region ──
   useEffect(() => {
