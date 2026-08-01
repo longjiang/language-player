@@ -21,8 +21,13 @@ async function getTurndown() {
   return _turndown;
 }
 
-async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
+async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  // Sniff the page's real title: <title> tag, then og:title, then first h1.
+  const sniffedTitle =
+    doc.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim()
+    || doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(/\s+/g, ' ').trim()
+    || '';
   doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
   const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
   mainContent.querySelectorAll('a').forEach(el => {
@@ -30,7 +35,7 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
     if (href) { try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {} }
   });
   const td = await getTurndown();
-  return td.turndown(mainContent.innerHTML);
+  return { markdown: td.turndown(mainContent.innerHTML), title: sniffedTitle };
 }
 
 export default function WebReaderPage() {
@@ -73,10 +78,12 @@ export default function WebReaderPage() {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
-      const md = await htmlToMarkdown(raw, targetUrl);
-      // Extract title from the first h1
+      const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
+      // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
-      setTitle(titleMatch?.[1]?.replace(/[#\s]/g, '') || targetUrl);
+      const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
+      setTitle(pageTitle);
+      document.title = pageTitle;
       setText(md);
       setBlocks(null);
     } catch (e: any) {
