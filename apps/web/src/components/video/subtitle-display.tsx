@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
+import { TextActionMenu } from '@/components/text-action-menu';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
@@ -62,8 +63,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const isSingleline = mode === 'singleline';
-  // In singleline mode, never show translation (lines come from subs-search, not full subtitle track)
-  const showTranslation = isSingleline ? false : display.translation;
+  const showTranslation = display.translation;
 
   useEffect(() => {
     if (initialLines) {
@@ -184,28 +184,49 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   // ── Singleline mode ──
   if (isSingleline) {
     const activeLine = activeIndex >= 0 ? l2Lines[activeIndex] : null;
+    const activeTranslation = activeIndex >= 0 ? translatedLines[activeIndex] : null;
 
     return (
-      <div className="min-h-[5rem] px-6 py-4 text-center">
-        {activeLine ? (
-          <div className="text-xl font-medium leading-relaxed text-center">
-            <TokenizedText
-              text={activeLine.line}
-              l2Code={l2Code}
-              textScale={1.5}
-              tokenCache={tokenCache}
-              tokenCacheLoaded={tokenCacheLoaded}
-              highlightForms={highlightTerms}
-              context={{
-                text: activeLine.line,
-                starttime: activeLine.starttime,
-                youtube_id: youtubeId,
-                videoTitle,
-              }}
-            />
+      <div className="min-h-[5rem] px-6 py-4">
+        {error && showTranslation && (
+          <div className="mb-3 flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
+            <span className="text-destructive">{t('msg.translation_failed')}</span>
+            <button
+              onClick={retry}
+              className="rounded-md bg-destructive/20 px-3 py-1 text-xs font-medium text-destructive hover:bg-destructive/30 transition-colors"
+            >
+              {t('action.retry')}
+            </button>
           </div>
+        )}
+        {activeLine ? (
+          <TextActionMenu
+            text={activeLine.line}
+            l2Code={l2Code}
+            l1Code={l1Code}
+            translation={showTranslation ? activeTranslation?.line : undefined}
+            translationClass="text-sm"
+            loading={showTranslation && translating && !activeTranslation}
+          >
+            <div className="text-xl font-medium leading-relaxed">
+              <TokenizedText
+                text={activeLine.line}
+                l2Code={l2Code}
+                textScale={1.5}
+                tokenCache={tokenCache}
+                tokenCacheLoaded={tokenCacheLoaded}
+                highlightForms={highlightTerms}
+                context={{
+                  text: activeLine.line,
+                  starttime: activeLine.starttime,
+                  youtube_id: youtubeId,
+                  videoTitle,
+                }}
+              />
+            </div>
+          </TextActionMenu>
         ) : (
-          <p className="text-sm text-muted-foreground/50 italic">
+          <p className="text-center text-sm text-muted-foreground/50 italic">
             {t('subtitle.subtitles_unavailable')}
           </p>
         )}
