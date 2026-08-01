@@ -1,13 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
-import { BookOpen, ExternalLink } from 'lucide-react';
+import { BookOpen, CalendarClock, ExternalLink, Video } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { useLanguage } from '@/providers/language-provider';
+import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -43,6 +47,8 @@ export function DictionaryEntryCard({
   headingLevel = 'h1',
 }: DictionaryEntryCardProps) {
   const t = useT();
+  const { l1 } = useLanguage();
+  const { getSavedWords } = useSavedWordsContext();
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
@@ -60,6 +66,26 @@ export function DictionaryEntryCard({
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
   const studyMaterials = entry.studyMaterials;
+
+  // ── Saved metadata — shown when this entry is in the user's saved words ──
+  // Date + context sentence + context source (video/book) + title.
+  const savedRecord = useMemo(
+    () => (l2Code ? getSavedWords(l2Code).find((w) => w.id === entry.id) : undefined),
+    [getSavedWords, l2Code, entry.id],
+  );
+  const savedInsts = savedRecord ? normalizeInstances(savedRecord) : [];
+  const savedCtx = savedRecord
+    ? savedInsts[savedInsts.length - 1]?.context ?? savedRecord.context
+    : undefined;
+  const saveDateStr = savedRecord?.date
+    ? new Date(savedRecord.date).toLocaleDateString(l1Code ?? l1.code)
+    : '';
+  const contextSentence = savedCtx?.text && savedCtx.text !== entry.head ? savedCtx.text : undefined;
+  const hasVideoSource = !!(savedCtx?.youtube_id && savedCtx?.videoTitle);
+  const hasTextSource = !!savedCtx?.textTitle;
+  const sourceLabel = hasVideoSource
+    ? savedCtx?.videoTitle
+    : hasTextSource ? savedCtx?.textTitle : undefined;
 
   // ── Shared: level badges ──
   const badges = (
@@ -197,6 +223,27 @@ export function DictionaryEntryCard({
                 )}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Saved metadata — date, context sentence, source type + title */}
+        {savedRecord && (
+          <div className="mt-2 space-y-1 rounded-md bg-muted/40 px-2.5 py-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <CalendarClock className="h-3 w-3 shrink-0" />
+              <span className="truncate">{t('label.saved')} · {saveDateStr}</span>
+            </div>
+            {contextSentence && (
+              <p className="truncate" lang={l2Code}>“{contextSentence}”</p>
+            )}
+            {sourceLabel && (
+              <div className="flex items-center gap-1.5">
+                {hasVideoSource
+                  ? <Video className="h-3 w-3 shrink-0" />
+                  : <BookOpen className="h-3 w-3 shrink-0" />}
+                <span className="truncate">{sourceLabel}</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -347,6 +394,27 @@ export function DictionaryEntryCard({
           {phoneticExtras.map(([key, value]) => (
             <span key={key}>{key}: {value}</span>
           ))}
+        </div>
+      )}
+
+      {/* Saved metadata — date, context sentence, source type + title */}
+      {savedRecord && (
+        <div className="mb-6 space-y-1.5 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 shrink-0" />
+            <span>{t('label.saved')} · {saveDateStr}</span>
+          </div>
+          {contextSentence && (
+            <p className="truncate" lang={l2Code}>“{contextSentence}”</p>
+          )}
+          {sourceLabel && (
+            <div className="flex items-center gap-2">
+              {hasVideoSource
+                ? <Video className="h-4 w-4 shrink-0" />
+                : <BookOpen className="h-4 w-4 shrink-0" />}
+              <span className="truncate">{sourceLabel}</span>
+            </div>
+          )}
         </div>
       )}
 
