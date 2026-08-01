@@ -267,6 +267,7 @@ export function ReaderPanel({
       log('[WebReader] Fallback render — first %d lines of text:\n%s', 5, firstLines(text));
       log('[WebReader] Fallback render — image tags: %d before stripMarkdown → %d after', imagesRaw, imagesStripped);
       log('[WebReader] Fallback render — first 5 lines of stripped text:\n%s', firstLines(stripped));
+      log('[WebReader] Fallback render — FULL stripped text (%d chars):\n%s', stripped.length, stripped);
     }
   }, [blocks, text]);
 
@@ -451,7 +452,16 @@ export function ReaderPanel({
                             block.raw.length,
                             firstLines(block.raw),
                           );
-                          return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
+                          return (
+                            <div key={i}>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}
+                              >
+                                {block.raw}
+                              </ReactMarkdown>
+                            </div>
+                          );
                         }
                         const tb = block as TextBlock;
                         const Tag = blockTag(tb);
@@ -459,12 +469,19 @@ export function ReaderPanel({
                         const globalIndex = blocks!.indexOf(block);
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         const cachedTokens = tokenCache[textBlockIndex];
+                        const linkCount = tb.formats.filter(f => f.type === 'link').length;
+                        // Chevron target: first http(s) link in the block, opened
+                        // inside the web reader by TokenizedText.
+                        const blockHref = tb.formats.find(
+                          f => f.type === 'link' && /^https?:\/\//i.test(f.url ?? ''),
+                        )?.url;
                         log(
-                          '[WebReader] Render block %d: %s "%s" (%d chars)%s',
+                          '[WebReader] Render block %d: %s "%s" (%d chars, %d link(s))%s',
                           globalIndex,
                           tb.type,
                           tb.text.slice(0, 40),
                           tb.text.length,
+                          linkCount,
                           cachedTokens ? `, ${cachedTokens.length} cached tokens` : ', tokens pending',
                         );
                         return (
@@ -474,7 +491,7 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[i]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={cachedTokens} />
+                                tokens={cachedTokens} href={blockHref} />
                             </Tag>
                           </TextActionMenu>
                         );
@@ -524,7 +541,12 @@ export function ReaderPanel({
               if (block.kind === 'markdown') {
                 return (
                   <div key={i} className="mb-4">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}
+                    >
+                      {block.raw}
+                    </ReactMarkdown>
                     {showTranslation && <div className="h-6" />}
                   </div>
                 );

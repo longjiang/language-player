@@ -32,6 +32,7 @@ export type ReaderBlock = TextBlock | MarkdownBlock;
 export function parseMarkdown(md: string): ReaderBlock[] {
   log('[ParseMarkdown] Started: parsing %d chars of markdown', md.length);
   log('[ParseMarkdown] First %d lines of input:\n%s', 5, md.split('\n').slice(0, 5).join('\n'));
+  log('[ParseMarkdown] FULL input (%d chars):\n%s', md.length, md);
   const ast = unified().use(remarkParse).parse(md) as Root;
   const blocks: ReaderBlock[] = [];
 
@@ -58,6 +59,13 @@ export function parseMarkdown(md: string): ReaderBlock[] {
     typeCounts,
   );
   return blocks;
+}
+
+/** Wrap a markdown destination in angle brackets when it contains characters
+ *  that would break re-parsing (spaces or parentheses) — e.g. image URLs like
+ *  `![](<https://x/logo (1).png>)` must keep their brackets on reconstruction. */
+function mdDestination(url: string): string {
+  return /[\s()]/.test(url) ? `<${url}>` : url;
 }
 
 function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
@@ -256,7 +264,7 @@ function reconstructNode(node: any): string {
     case 'image': {
       const img = node as any;
       const title = img.title ? ` "${img.title}"` : '';
-      return `![${img.alt ?? ''}](${img.url ?? ''}${title})`;
+      return `![${img.alt ?? ''}](${mdDestination(img.url ?? '')}${title})`;
     }
     default:
       return '';
@@ -282,11 +290,11 @@ function reconstructChildren(node: any): string {
         out += '`' + child.value + '`';
         break;
       case 'link':
-        out += '[' + reconstructChildren(child) + '](' + (child.url ?? '') + ')';
+        out += '[' + reconstructChildren(child) + '](' + mdDestination(child.url ?? '') + ')';
         break;
       case 'image': {
         const title = child.title ? ` "${child.title}"` : '';
-        out += `![${child.alt ?? ''}](${child.url ?? ''}${title})`;
+        out += `![${child.alt ?? ''}](${mdDestination(child.url ?? '')}${title})`;
         break;
       }
       case 'break':
