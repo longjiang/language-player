@@ -134,7 +134,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Pro gate — free user (skip the gate while still loading — show the button optimistically)
   if (subLoaded && !isPro && (showAi || autoLoad)) {
     return (
-      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
+      <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
         <p className="text-sm text-amber-700 dark:text-amber-300">
           <Sparkles className="mr-1 inline h-3.5 w-3.5" />
           {t('msg.ai_pro_feature')}
@@ -146,7 +146,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Waiting for subscription check after user clicked — show spinner
   if (!subLoaded && (showAi || autoLoad)) {
     return (
-      <div className="mt-2 rounded-lg border bg-muted/30 p-4">
+      <div className="mt-6 rounded-lg border bg-muted/30 p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           {t('msg.getting_ai_response')}
@@ -158,7 +158,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Not yet toggled — always show the button (don't wait for subscription check)
   if (!showAi && !autoLoad) {
     return (
-      <div className="mt-2">
+      <div className="mt-6">
         <Button
           variant="outline"
           size="sm"
@@ -175,7 +175,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Loading (no tokens yet)
   if (loading && !explanation) {
     return (
-      <div className="mt-2 rounded-lg border bg-muted/30 p-4">
+      <div className="mt-6 rounded-lg border bg-muted/30 p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           {t('msg.getting_ai_response')}
@@ -187,7 +187,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Error
   if (error && !explanation) {
     return (
-      <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+      <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
         <div className="mb-2 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
           <AlertCircle className="h-4 w-4" />
           {error}
@@ -202,7 +202,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Streaming or complete — always show the explanation card
   if (explanation || loading || error) {
     return (
-      <div className="mt-2 rounded-lg border bg-muted/30 p-4">
+      <div className="mt-6 rounded-lg border bg-muted/30 p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           {t('label.ai_says')}
