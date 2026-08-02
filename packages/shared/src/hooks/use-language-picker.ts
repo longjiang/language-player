@@ -27,6 +27,10 @@ export interface UseLanguagePickerOptions {
   supportedL2s: readonly string[];
   /** Languages to show in the "popular" section. */
   popularLanguages: readonly string[];
+  /** Optional resolver for L1 names (defaults to getName). Use to show self-names. */
+  getNameL1?: (code: string) => string;
+  /** Optional resolver for L2 names (defaults to getName). */
+  getNameL2?: (code: string) => string;
   /** Label for the popular section (localized). Defaults to 'Popular'. */
   popularTitle?: string;
   /** Label for the all-languages section (localized). Defaults to 'All'. */
@@ -111,6 +115,8 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
 } {
   const {
     getName,
+    getNameL1 = getName,
+    getNameL2 = getName,
     supportedL1s,
     supportedL2s,
     popularLanguages,
@@ -135,11 +141,11 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
         supportedL1s,
         popularLanguages,
         searchL1,
-        getName,
+        getNameL1,
         popularTitle,
         allTitle,
       ),
-    [supportedL1s, popularLanguages, searchL1, getName, popularTitle, allTitle],
+    [supportedL1s, popularLanguages, searchL1, getNameL1, popularTitle, allTitle],
   );
 
   const filteredL2 = useMemo(
@@ -148,11 +154,11 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
         supportedL2s,
         popularLanguages,
         searchL2,
-        getName,
+        getNameL2,
         popularTitle,
         allTitle,
       ),
-    [supportedL2s, popularLanguages, searchL2, getName, popularTitle, allTitle],
+    [supportedL2s, popularLanguages, searchL2, getNameL2, popularTitle, allTitle],
   );
 
   // ── Derived ──

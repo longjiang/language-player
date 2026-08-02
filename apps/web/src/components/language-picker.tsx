@@ -66,7 +66,10 @@ export function LanguagePicker({
   const t = useT();
   const { getL2, updateL2 } = useSettingsContext();
 
-  // Platform-specific getName callback
+  // L1 list: show each language's self-name (Français, Deutsch, 中文（简体）…)
+  const getNameL1 = useCallback((code: string) => languageName(code), []);
+
+  // L2 list: localized into the current UI locale
   const getName = useCallback(
     (code: string) => languageName(code, locale),
     [locale],
@@ -77,6 +80,8 @@ export function LanguagePicker({
     initialL1,
     initialL2: initialL2 || undefined,
     getName,
+    getNameL1,
+    getNameL2: getName,
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: SUPPORTED_L2S,
     popularLanguages: POPULAR_LANGUAGES,
@@ -133,6 +138,7 @@ export function LanguagePicker({
     showClose,
     onDismiss,
     getName,
+    getNameL1,
   };
 
   if (useWide) {
@@ -142,6 +148,7 @@ export function LanguagePicker({
         onConfirm={handleConfirm}
         showTitle={showTitle}
         getName={getName}
+        getNameL1={getNameL1}
       />
     );
   }

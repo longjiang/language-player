@@ -23,6 +23,8 @@ interface LanguagePickerWideProps extends UseLanguagePickerReturn {
   onConfirm: () => void;
   showTitle?: boolean;
   getName: (code: string) => string;
+  /** Resolver for L1 names (self-names). */
+  getNameL1: (code: string) => string;
 }
 
 // ── Panel sub-component ───────────────────────
@@ -129,6 +131,7 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
     onConfirm,
     showTitle,
     getName,
+    getNameL1,
   } = props;
 
   const t = useT();
@@ -156,7 +159,7 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
             selectedCode={selectedL1}
             onSelect={setSelectedL1}
             accentColor="primary"
-            getName={getName}
+            getName={getNameL1}
           />
 
           {/* L2 panel */}
@@ -182,7 +185,7 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
             <div className="rounded-full border border-border bg-muted px-4 py-1.5 text-sm">
               <span className="text-muted-foreground">{t('title.i_speak')}: </span>
               <span className="font-bold text-foreground">
-                {selectedL1 ? getName(selectedL1) : '?'}
+                {selectedL1 ? getNameL1(selectedL1) : '?'}
               </span>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
