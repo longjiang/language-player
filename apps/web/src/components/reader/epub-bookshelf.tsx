@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useT } from '@/hooks/use-t';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { BookOpen, Loader2, MoreVertical, Trash2 } from 'lucide-react';
+import { BookOpen, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
 import type { EpubSummary } from '@/lib/epub-store';
 import type { EpubUploadResult } from '@/components/reader/epub-upload';
 
@@ -20,6 +21,46 @@ interface EpubBookshelfProps {
   openingId: string | null;
   /** Error message to display (e.g. parse failure from parent). */
   error?: string | null;
+}
+
+/** "..." action menu for a book card: Remove + Cancel. */
+function BookActionsMenu({ onRemove }: { onRemove: () => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={t('action.more')}
+          title={t('action.more')}
+          onClick={(e) => e.stopPropagation()}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <MoreVertical className="h-3.5 w-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 p-1">
+        <button
+          type="button"
+          onClick={() => { setOpen(false); onRemove(); }}
+          className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-muted"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          {t('action.remove')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted"
+        >
+          <X className="h-3.5 w-3.5" />
+          {t('action.cancel')}
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function EpubBookshelf({
@@ -54,75 +95,61 @@ export function EpubBookshelf({
               return (
                 <div
                   key={book.id}
-                  className="group relative flex flex-col items-start gap-2 rounded-lg p-2 transition-colors hover:bg-muted/60"
+                  role="button"
+                  tabIndex={0}
+                  aria-disabled={openingId !== null}
+                  title={book.fileName}
+                  onClick={() => { if (openingId === null) onOpenBook(book.id); }}
+                  onKeyDown={(e) => {
+                    if (openingId !== null) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onOpenBook(book.id);
+                    }
+                  }}
+                  className={`group flex cursor-pointer flex-col items-start gap-2 rounded-lg p-2 transition-colors hover:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${openingId !== null ? 'opacity-70' : ''}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => onOpenBook(book.id)}
-                    disabled={openingId !== null}
-                    title={book.fileName}
-                    className="flex w-full flex-col items-start gap-2 rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-70"
-                  >
-                    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md border border-border bg-muted">
-                      {book.coverUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={book.coverUrl}
-                          alt={book.fileName}
-                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <BookOpen className="h-8 w-8 text-muted-foreground/50" />
-                        </div>
-                      )}
-                      {openingId === book.id && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                      )}
-                    </div>
-                    <span className="w-full truncate text-sm font-medium text-foreground">
+                  <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md border border-border bg-muted">
+                    {book.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={book.coverUrl}
+                        alt={book.fileName}
+                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <BookOpen className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    {openingId === book.id && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Title + "..." action menu */}
+                  <div className="flex w-full items-center gap-1">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                       {displayName}
                     </span>
-                    {pct !== null && (
-                      <span className="w-full">
-                        <span className="mb-1 block text-xs text-muted-foreground">
-                          {t('msg.epub_progress', { pct })}
-                        </span>
-                        <span className="block h-1 w-full overflow-hidden rounded-full bg-muted">
-                          <span
-                            className="block h-full rounded-full bg-primary"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </span>
-                      </span>
-                    )}
-                  </button>
+                    <BookActionsMenu onRemove={() => onRemoveBook(book.id)} />
+                  </div>
 
-                  {/* "..." action menu */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label={t('action.more')}
-                        title={t('action.more')}
-                        className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-md bg-background/70 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        <MoreVertical className="h-3.5 w-3.5" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent align="end" className="w-44 p-1">
-                      <button
-                        type="button"
-                        onClick={() => onRemoveBook(book.id)}
-                        className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-muted"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        {t('action.remove')}
-                      </button>
-                    </PopoverContent>
-                  </Popover>
+                  {pct !== null && (
+                    <span className="w-full">
+                      <span className="mb-1 block text-xs text-muted-foreground">
+                        {t('msg.epub_progress', { pct })}
+                      </span>
+                      <span className="block h-1 w-full overflow-hidden rounded-full bg-muted">
+                        <span
+                          className="block h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                    </span>
+                  )}
                 </div>
               );
             })}
