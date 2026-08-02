@@ -346,6 +346,10 @@ export function ReaderPanel({
   useEffect(() => {
     if (activeTab !== 'read') return;
     const onKey = (e: KeyboardEvent) => {
+      // Don't hijack keys while typing in an input/textarea/select or
+      // contenteditable (e.g. the sidebar search box).
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
     };

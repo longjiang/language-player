@@ -128,6 +128,8 @@ Uploads never open a book — dropping or selecting one or more `.epub` files ju
 
 Hyperlinks inside chapters are tokenized like the rest of the text; tapping a linked word opens the dictionary popup with an "Open in Reader" action. Internal EPUB links (chapter files, `#anchor` fragments) navigate within the book — loading the target chapter and seeking to the anchor's text — while external `http(s)` links open in the web reader.
 
+The side panel has two tabs: **Chapters** (the TOC) and **Search**. Search runs against a per-book plain-text index (built once per book in the background and cached in a separate IndexedDB store), showing up to 30 matches with a two-line snippet (term highlighted) and the muted chapter label. Clicking a result loads that chapter and seeks to the match's page via the same text-anchor mechanism used for bookmarks; recent searches are kept in `localStorage`.
+
 ### Cover State
 
 ```

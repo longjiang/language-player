@@ -12,9 +12,12 @@ import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
+import { EpubSearchPanel } from '@/components/reader/epub-search-panel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEpub } from '@/hooks/use-epub';
 import { Sidebar } from '@/components/ui/sidebar';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
+import type { EpubSearchResult } from '@/hooks/use-epub';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
@@ -43,14 +46,20 @@ export default function EpubPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load chapter text into state and tokenize
-  const handleLoadChapter = useCallback(async (href: string) => {
+  // Load chapter text into state and tokenize. An optional anchor (text
+  // snippet) makes the reader seek to the page containing it.
+  const handleLoadChapter = useCallback(async (href: string, anchor?: string | null) => {
     setMobileSidebarOpen(false);
-    const result = await epub.loadChapter(href);
+    const result = await epub.loadChapter(href, anchor ? { anchor } : undefined);
     setText(result.markdown);
     setBlocks(null);
     anchorRef.current = result.anchor;
   }, [epub]);
+
+  // Navigate to a search result's chapter + page (via its text snippet).
+  const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
+    void handleLoadChapter(result.chapterHref, result.anchor);
+  }, [handleLoadChapter]);
 
   // "Open Link" from the token dictionary popup — navigate within the book
   // for internal links, or open external URLs in the web reader.
@@ -287,7 +296,7 @@ export default function EpubPage() {
             open={mobileSidebarOpen}
             onOpenChange={setMobileSidebarOpen}
             sidebarOpen={sidebarOpen}
-            title={t('msg.chapters')}
+            title={t('title.epub_reader')}
             desktopClassName="w-64 ml-3"
             headerActions={
               <>
@@ -317,11 +326,25 @@ export default function EpubPage() {
               </div>
             }
           >
-            <EpubChapterSidebar
-              toc={epub.toc}
-              currentChapterHref={epub.chapterHref}
-              onLoadChapter={handleLoadChapter}
-            />
+            <Tabs defaultValue="chapters" className="flex h-full min-h-0 flex-col gap-2">
+              <TabsList className="mx-2 mt-2 grid w-[calc(100%-1rem)] grid-cols-2">
+                <TabsTrigger value="chapters">{t('title.chapters')}</TabsTrigger>
+                <TabsTrigger value="search">{t('action.search')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="chapters" className="min-h-0 flex-1 overflow-y-auto">
+                <EpubChapterSidebar
+                  toc={epub.toc}
+                  currentChapterHref={epub.chapterHref}
+                  onLoadChapter={handleLoadChapter}
+                />
+              </TabsContent>
+              <TabsContent value="search" className="min-h-0 flex-1 overflow-y-auto">
+                <EpubSearchPanel
+                  onSearch={epub.searchBook}
+                  onNavigate={handleSearchNavigate}
+                />
+              </TabsContent>
+            </Tabs>
           </Sidebar>
         )}
       </div>
