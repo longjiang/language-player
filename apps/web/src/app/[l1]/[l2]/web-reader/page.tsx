@@ -11,7 +11,6 @@ import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Tr
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { log } from '@/lib/logger';
 
 interface VisitedSite {
   url: string;
@@ -195,7 +194,6 @@ export default function WebReaderPage() {
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
-      log('[WebReader] Step 3 — FULL markdown (%d chars):\n%s', md.length, md);
       setTitle(pageTitle);
       document.title = pageTitle;
       setText(md);
