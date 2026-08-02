@@ -571,11 +571,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         <button
           type="button"
           onClick={openInWebReader}
-          aria-label={t('action.open_in_reader')}
           title={href}
-          className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-md align-middle text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+          className="ml-1.5 inline-flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5 align-middle text-xs text-muted-foreground transition-colors hover:bg-muted/80 hover:text-primary"
         >
-          <ChevronRight className="h-4 w-4" />
+          {t('action.open')}
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       )}
       </span>
