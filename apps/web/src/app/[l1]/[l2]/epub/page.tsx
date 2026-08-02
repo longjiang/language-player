@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import type { SavedWordContext } from '@langplayer/shared';
@@ -21,6 +22,7 @@ import {
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const router = useRouter();
   const epub = useEpub();
 
   const [text, setText] = useState('');
@@ -44,11 +46,24 @@ export default function EpubPage() {
   // Load chapter text into state and tokenize
   const handleLoadChapter = useCallback(async (href: string) => {
     setMobileSidebarOpen(false);
-    anchorRef.current = null;
-    const md = await epub.loadChapter(href);
-    setText(md);
+    const result = await epub.loadChapter(href);
+    setText(result.markdown);
     setBlocks(null);
+    anchorRef.current = result.anchor;
   }, [epub]);
+
+  // "Open Link" from the token dictionary popup — navigate within the book
+  // for internal links, or open external URLs in the web reader.
+  const handleOpenLink = useCallback((href: string) => {
+    if (/^https?:\/\//i.test(href)) {
+      router.push(`/${l1.code}/${l2.code}/web-reader?url=${encodeURIComponent(href)}`);
+      return;
+    }
+    if (!href || href === '#') return;
+    // Same-chapter fragments resolve against the current chapter.
+    const target = href.startsWith('#') && epub.chapterHref ? `${epub.chapterHref}${href}` : href;
+    void handleLoadChapter(target);
+  }, [handleLoadChapter, router, l1.code, l2.code, epub.chapterHref]);
 
   // Open a stored book at its saved chapter/page
   const handleOpenBook = useCallback(async (id: string) => {
@@ -246,6 +261,7 @@ export default function EpubPage() {
               }}
               onAnchorChange={(anchor) => epub.saveAnchor(anchor)}
               initialAnchor={anchorRef.current}
+              onOpenLink={handleOpenLink}
             />
           ) : epub.loading ? (
             <div className="flex min-h-[40vh] items-center justify-center">

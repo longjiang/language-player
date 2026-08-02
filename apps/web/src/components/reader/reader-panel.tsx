@@ -97,6 +97,9 @@ export interface ReaderPanelProps {
   onAnchorChange?: (anchor: string) => void;
   /** If set, seek to the page containing this anchor text after blocks load. */
   initialAnchor?: string | null;
+  /** Custom handler for the dictionary popup's link action (e.g. EPUB chapter
+   *  navigation). When set, links of any scheme are offered. */
+  onOpenLink?: (href: string) => void;
   /** Hide the edit/read mode toggle bar (e.g. web reader, where text is always read-only). */
   hideModeTabs?: boolean;
 }
@@ -114,6 +117,7 @@ export function ReaderPanel({
   onLemmatize,
   onAnchorChange,
   initialAnchor,
+  onOpenLink,
   hideModeTabs = false,
 }: ReaderPanelProps) {
   const t = useT();
@@ -292,12 +296,16 @@ export function ReaderPanel({
     });
   }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache, visibleBlocks]);
 
-  // Seek to initialAnchor on first blocks load
-  const initialAnchorSeen = useRef(false);
+  // Seek to initialAnchor whenever it changes (book open, in-book link nav).
+  const lastAnchorRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!initialAnchor || !blocks || !allTokensReady) return;
-    if (initialAnchorSeen.current) return;
-    initialAnchorSeen.current = true;
+    if (!initialAnchor) {
+      lastAnchorRef.current = null;
+      return;
+    }
+    if (!blocks || !allTokensReady) return;
+    if (lastAnchorRef.current === initialAnchor) return;
+    lastAnchorRef.current = initialAnchor;
     // Find which page contains the anchor text
     if (pageBreaks.length === 0) return;
     for (let p = 0; p <= pageBreaks.length; p++) {
@@ -436,10 +444,11 @@ export function ReaderPanel({
                         const globalIndex = blocks!.indexOf(block);
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         const cachedTokens = tokenCache[textBlockIndex];
-                        // First http(s) link in the block — surfaced as an
+                        // First link in the block — surfaced as an
                         // "Open in Reader" action in the token dictionary popup.
+                        // Without a custom handler, only http(s) links qualify.
                         const blockHref = tb.formats.find(
-                          f => f.type === 'link' && /^https?:\/\//i.test(f.url ?? ''),
+                          f => f.type === 'link' && (onOpenLink ? true : /^https?:\/\//i.test(f.url ?? '')),
                         )?.url;
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
@@ -448,7 +457,7 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[blockKey]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={cachedTokens} formats={tb.formats} href={blockHref} />
+                                tokens={cachedTokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink} />
                             </Tag>
                           </TextActionMenu>
                         );

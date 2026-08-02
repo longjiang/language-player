@@ -126,6 +126,8 @@ The home screen shows a grid of stored books sorted by `lastReadAt` descending. 
 
 Uploads never open a book — dropping or selecting one or more `.epub` files just adds them to the shelf (the reader stays on the home screen). Valid files are imported even when some fail; files that fail validation or parsing are skipped and reported in an "Import Issues" dialog listing each file's name, size, and the reason it was rejected. When the shelf is empty the drop zone renders as a full-width row; once books exist it becomes an inline dashed "add book" slot tile after the last book card.
 
+Hyperlinks inside chapters are tokenized like the rest of the text; tapping a linked word opens the dictionary popup with an "Open in Reader" action. Internal EPUB links (chapter files, `#anchor` fragments) navigate within the book — loading the target chapter and seeking to the anchor's text — while external `http(s)` links open in the web reader.
+
 ### Cover State
 
 ```

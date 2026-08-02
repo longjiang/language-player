@@ -30,6 +30,9 @@ interface DictionaryPopupProps {
   /** Optional link from the block this token belongs to — offered as the first
    *  action in the popup so users can open the source page in the web reader. */
   linkUrl?: string;
+  /** Custom handler for the link action (e.g. navigate inside an EPUB).
+   *  Defaults to opening the URL in the web reader. */
+  onOpenLink?: (href: string) => void;
   onClose: () => void;
 }
 
@@ -40,6 +43,7 @@ export function DictionaryPopup({
   l2Code,
   context,
   linkUrl,
+  onOpenLink,
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
@@ -223,7 +227,10 @@ export function DictionaryPopup({
           {linkUrl && (
             <button
               type="button"
-              onClick={() => router.push(`/${l1Code}/${l2Code}/web-reader?url=${encodeURIComponent(linkUrl)}`)}
+              onClick={() => {
+                if (onOpenLink) onOpenLink(linkUrl);
+                else router.push(`/${l1Code}/${l2Code}/web-reader?url=${encodeURIComponent(linkUrl)}`);
+              }}
               className="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
             >
               <ExternalLink className="h-4 w-4" />

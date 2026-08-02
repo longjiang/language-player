@@ -182,11 +182,12 @@ export interface UseEpubReturn {
   addBook: (data: ArrayBuffer, fileName: string) => Promise<{ id: string } | null>;
   /** Load a file from an ArrayBuffer into the reader (opens the book). */
   loadFile: (data: ArrayBuffer, fileName: string) => Promise<LoadFileResult | null>;
-  /** Load a chapter by href. Returns the markdown text. */
+  /** Load a chapter by href. Returns the markdown text plus an anchor text
+   *  snippet to seek to (from the href's fragment, or the restore position). */
   loadChapter: (
     href: string,
     opts?: { anchorOffset?: number; anchor?: string | null },
-  ) => Promise<string>;
+  ) => Promise<{ markdown: string; anchor: string | null }>;
   /** Go to the next chapter. */
   nextChapter: () => Promise<void>;
   /** Go to the previous chapter. */
@@ -354,9 +355,9 @@ export function useEpub(): UseEpubReturn {
   const loadChapter = useCallback(async (
     href: string,
     opts?: { anchorOffset?: number; anchor?: string | null },
-  ): Promise<string> => {
+  ): Promise<{ markdown: string; anchor: string | null }> => {
     const b = bookRef.current;
-    if (!b) return '';
+    if (!b) return { markdown: '', anchor: null };
     setLoading(true);
     setChapterHref(href);
     chapterHrefRef.current = href;
@@ -432,6 +433,18 @@ export function useEpub(): UseEpubReturn {
       // Normalized plain text — used to map anchors to character offsets.
       chapterPlainTextRef.current = normalizeText(doc.body.textContent ?? '');
 
+      // Anchor text for in-book link navigation: resolve the href's fragment
+      // to the targeted element's text, which ReaderPanel can seek to.
+      let seekAnchor: string | null = opts?.anchor ?? null;
+      const fragment = href.split('#')[1];
+      if (!seekAnchor && fragment) {
+        const el = doc.getElementById(fragment);
+        if (el) {
+          const anchorText = normalizeText(el.textContent ?? '');
+          if (anchorText) seekAnchor = anchorText.slice(0, 40);
+        }
+      }
+
       // Store spine links for interception
       const spineHrefs = new Set(
         (spine.items as any[]).map((s: any) => s.href.split('#')[0]),
@@ -464,11 +477,11 @@ export function useEpub(): UseEpubReturn {
         });
       }
 
-      return md;
+      return { markdown: md, anchor: seekAnchor };
     } catch (err) {
       logerr('Error loading chapter:', err);
       setError('msg.epub_chapter_error');
-      return '';
+      return { markdown: '', anchor: null };
     } finally {
       setLoading(false);
     }
@@ -494,11 +507,11 @@ export function useEpub(): UseEpubReturn {
     if (!result) return null;
     const target = stored.meta.lastChapterHref ?? result.firstChapterHref;
     if (!target) return { markdown: '', anchor: null };
-    const md = await loadChapter(target, {
+    const { markdown, anchor } = await loadChapter(target, {
       anchorOffset: stored.meta.lastAnchorOffset ?? 0,
       anchor: stored.meta.lastAnchor ?? null,
     });
-    return { markdown: md, anchor: stored.meta.lastAnchor ?? null };
+    return { markdown, anchor };
   }, [loadFile, loadChapter]);
 
   /** Close book and return to the bookshelf. The stored handle is kept. */

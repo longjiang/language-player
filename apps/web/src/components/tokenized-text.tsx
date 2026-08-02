@@ -188,6 +188,9 @@ export interface TokenizedTextProps {
    * "Open in Reader" action that navigates to this URL.
    */
   href?: string;
+  /** Custom handler for the popup's link action. When set, `href` may be any
+   *  scheme (e.g. an internal EPUB chapter/anchor link). */
+  onOpenLink?: (href: string) => void;
   /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
   highlightForm?: string;
   /** Multiple word forms to highlight (e.g. search terms in subs-search). Any token
@@ -244,6 +247,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokens: preloadedTokens,
   formats,
   href,
+  onOpenLink,
   highlightForm,
   highlightForms,
   karaokeProgress,
@@ -616,7 +620,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             form: selectedToken.text,
             text: selectedContextText ?? text,
           }}
-          linkUrl={href && /^https?:\/\//i.test(href) ? href : undefined}
+          linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
+          onOpenLink={onOpenLink}
           onClose={() => setSelectedToken(null)}
         />
       )}
