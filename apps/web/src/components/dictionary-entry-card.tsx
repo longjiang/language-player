@@ -58,8 +58,8 @@ function HighlightForm({ text, form }: { text: string; form?: string }) {
   );
 }
 
-/** Cap a video title to 5 space-delimited words or 15 characters, whichever is shorter. */
-function capVideoTitle(title: string): string {
+/** Cap a source title to 5 space-delimited words or 15 characters, whichever is shorter. */
+function capSourceTitle(title: string): string {
   const trimmed = title.trim();
   const words = trimmed.split(/\s+/).slice(0, 5).join(' ');
   const chars = trimmed.slice(0, 15);
@@ -119,8 +119,8 @@ export function DictionaryEntryCard({
   const hasVideoSource = !!(savedCtx?.youtube_id || savedCtx?.videoTitle);
   const hasTextSource = !!savedCtx?.textTitle;
   const sourceLabel = hasVideoSource
-    ? (savedCtx?.videoTitle ? capVideoTitle(savedCtx.videoTitle) : undefined)
-    : hasTextSource ? savedCtx?.textTitle : undefined;
+    ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
+    : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
 
   // ── Shared: level badges ──
   const badges = (
