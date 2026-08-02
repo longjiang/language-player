@@ -390,7 +390,12 @@ export function ReaderPanel({
                             <div key={i}>
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
-                                components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}
+                                components={{
+                                  // react-markdown passes a `node` hast object to
+                                  // custom components — destructure it out so it
+                                  // doesn't leak onto the DOM as node="[object Object]".
+                                  a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
+                                }}
                               >
                                 {block.raw}
                               </ReactMarkdown>
@@ -471,7 +476,9 @@ export function ReaderPanel({
                   <div key={i} className="mb-4">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{ a: (props) => <a {...props} target="_blank" rel="noreferrer" /> }}
+                      components={{
+                        a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
+                      }}
                     >
                       {block.raw}
                     </ReactMarkdown>
