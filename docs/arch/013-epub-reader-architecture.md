@@ -12,6 +12,8 @@
 
 The EPUB Reader lets users upload `.epub` ebooks, navigate their table of contents, and read chapters with interactive word lookup (lemmatization + dictionary popup) and optional translation — the same language-learning features available for video subtitles and web articles. Both web and mobile share identical UX and parsing logic, differing only in the I/O layer (epubjs + DOMParser on web; JSZip + hand-rolled XML parser on mobile).
 
+Every book the user opens gets its own persistent handle on web (an IndexedDB record keyed by a SHA-256 hash of the file), so returning to the reader shows a **bookshelf** of covers sorted by last read, each with a percentage-completed indicator derived from character counts. Opening a book resumes at its saved chapter and page instead of reopening the same book automatically. Mobile still stores a single `epub_state.json` — the bookshelf is a web-only feature for now.
+
 ---
 
 ## Wireframes
@@ -97,6 +99,33 @@ The sidebar (not shown) is a slide-over panel from the right, toggled by the ☰
 
 The dashed border is a drop zone. On web, users can drag-and-drop `.epub` files onto this area. On mobile, tapping "Browse" opens the system document picker filtered to `.epub` files.
 
+### Bookshelf (Home Screen)
+
+```
+┌───────────────────────────────────────────────┐
+│  EPUB Reader                             [✕]  │
+│                                               │
+│  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐   │
+│  │        Drop an EPUB file here,         │   │
+│  │        or click to browse   [ Browse ] │   │
+│  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘   │
+│                                               │
+│  My Books                                     │
+│  ┌────────┐ ┌────────┐ ┌────────┐            │
+│  │        │ │        │ │        │            │
+│  │ Cover  │ │ Cover  │ │ Cover  │            │
+│  │        │ │        │ │        │            │
+│  │ 42% ▓▓ │ │ 18% ▓▓ │ │  7% ▓▓ │            │
+│  └────────┘ └────────┘ └────────┘            │
+│   book-a.epub  book-b.epub  book-c.epub      │
+│   (most recently read first)                 │
+└───────────────────────────────────────────────┘
+```
+
+The home screen shows a grid of stored books sorted by `lastReadAt` descending. Each card shows the stored cover (or a placeholder), the file name, and a progress bar with a percentage. Covers are persisted as base64 data URLs — epubjs's `coverUrl()` returns a `blob:` URL that is invalidated on page refresh, so it is converted before saving and any leftover `blob:` values are treated as missing. Progress is computed as `readChars / totalChars` where both values come from the book's plain-text character counts: the hook loads each chapter once in the background, caches per-chapter counts in IndexedDB, and updates `readChars` as the user pages through chapters (prefix of completed chapters + the anchor offset within the current chapter). Closing a book keeps its handle; tapping a card reopens it at the saved chapter/page.
+
+Uploads never open a book — dropping or selecting one or more `.epub` files just adds them to the shelf (the reader stays on the home screen). When the shelf is empty the drop zone renders as a full-width row; once books exist it becomes an inline dashed "add book" slot tile after the last book card.
+
 ### Cover State
 
 ```
@@ -129,43 +158,37 @@ The cover is shown full-frame (mobile) or centered (web). Tapping anywhere on th
                     └────────────┬────────────┘
                                  │
                     ┌────────────▼────────────┐
-                    │ Has last EPUB stored?    │
+                    │ Show bookshelf:         │
+                    │ covers + progress,      │
+                    │ upload drop zone        │
                     └───┬────────────────┬────┘
-                        │ Yes            │ No
-                        ▼                ▼
-               ┌──────────────┐   ┌──────────────┐
-               │ Restore EPUB │   │ Show Upload  │
-               │ → last chap  │   │ screen       │
-               └──────┬───────┘   └──────┬───────┘
-                      │                  │
-                      │          ┌───────▼───────┐
-                      │          │ User taps     │
-                      │          │ Browse /      │
-                      │          │ drops file    │
-                      │          └───────┬───────┘
-                      │                  │
-                      │          ┌───────▼───────┐
-                      │          │ Pick .epub    │
-                      │          │ file          │
-                      │          └───────┬───────┘
-                      │                  │
-                      │          ┌───────▼───────┐
-                      │          │ Parse EPUB:   │
-                      │          │ TOC, spine,   │
-                      │          │ cover         │
-                      │          └───────┬───────┘
-                      │                  │
-                      │          ┌───────▼───────┐
-                      │          │ Show Cover    │
-                      │          │ screen        │
-                      │          └───────┬───────┘
-                      │                  │
-                      │          ┌───────▼───────┐
-                      │          │ User taps     │
-                      │          │ cover         │
-                      │          └───────┬───────┘
-                      │                  │
-                      └────────┬─────────┘
+                        │                │
+             ┌──────────▼──────┐  ┌──────▼──────────┐
+             │ Tap a book card │  │ Upload new file │
+             └──────────┬──────┘  └──────┬──────────┘
+                        │                │
+                        │         ┌──────▼───────┐
+                        │         │ Pick .epub   │
+                        │         │ file         │
+                        │         └──────┬───────┘
+                        │                │
+                        │         ┌──────▼───────┐
+                        │         │ Parse EPUB:  │
+                        │         │ TOC, spine,  │
+                        │         │ cover        │
+                        │         └──────┬───────┘
+                        │                │
+                        │         ┌──────▼───────┐
+                        │         │ Show Cover   │
+                        │         │ screen       │
+                        │         └──────┬───────┘
+                        │                │
+                        │         ┌──────▼───────┐
+                        │         │ User taps    │
+                        │         │ cover        │
+                        │         └──────┬───────┘
+                        │                │
+                        └───────┬────────┘
                                │
                     ┌──────────▼──────────┐
                     │  loadChapter()      │
@@ -186,10 +209,10 @@ The cover is shown full-frame (mobile) or centered (web). Tapping anywhere on th
   └───────┬──────┘   └────────┬────────┘   └───────┬──────┘  └────┬───┘ │
           │                    │                    │              │     │
   ┌───────▼──────┐   ┌────────▼────────┐   ┌───────▼──────┐  ┌───▼────┐│
-  │ Dictionary   │   │ loadChapter()   │   │ Clear trans  │  │ Reset  ││
-  │ popup: defs, │   │ → concat spine  │   │ → re-fetch   │  │ zip,   ││
-  │ pron, examples│   │ → tokenize      │   │ tokens +     │  │ cache, ││
-  └──────────────┘   │ → translate    │   │ trans        │  │ storage││
+  │ Dictionary   │   │ loadChapter()   │   │ Clear trans  │  │ Close  ││
+  │ popup: defs, │   │ → concat spine  │   │ → re-fetch   │  │ → back ││
+  │ pron, examples│   │ → tokenize      │   │ tokens +     │  │ to     ││
+  └──────────────┘   │ → translate    │   │ trans        │  │ shelf  ││
                      └────────┬────────┘   └───────┬──────┘  └───┬────┘│
                               │                    │              │     │
                               └────────────────────┴──────────────┘     │

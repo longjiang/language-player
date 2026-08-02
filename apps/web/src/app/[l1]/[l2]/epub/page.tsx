@@ -8,12 +8,12 @@ import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-mar
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { ReaderPanel } from '@/components/reader/reader-panel';
-import { EpubUpload } from '@/components/reader/epub-upload';
+import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { useEpub } from '@/hooks/use-epub';
 import { Sidebar } from '@/components/ui/sidebar';
 import {
-  BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight, X,
+  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
 
 export default function EpubPage() {
@@ -26,16 +26,13 @@ export default function EpubPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const anchorRef = useRef<string | null>(null);
 
-  // Restore from IndexedDB on mount
+  // Load the bookshelf on mount — books are opened explicitly, not auto-resumed.
   useEffect(() => {
     (async () => {
-      const result = await epub.restoreFromStorage();
-      if (result?.markdown) {
-        setText(result.markdown);
-        anchorRef.current = result.anchor ?? null;
-      }
+      await epub.refreshBooks();
       setInitialized(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,18 +41,42 @@ export default function EpubPage() {
   // Load chapter text into state and tokenize
   const handleLoadChapter = useCallback(async (href: string) => {
     setMobileSidebarOpen(false);
+    anchorRef.current = null;
     const md = await epub.loadChapter(href);
     setText(md);
     setBlocks(null);
   }, [epub]);
 
-  // Handle file upload
-  const handleFileLoaded = useCallback(async (data: ArrayBuffer, fileName: string) => {
-    const result = await epub.loadFile(data, fileName);
-    if (result?.firstChapterHref) {
-      await handleLoadChapter(result.firstChapterHref);
+  // Open a stored book at its saved chapter/page
+  const handleOpenBook = useCallback(async (id: string) => {
+    setOpeningId(id);
+    try {
+      const result = await epub.openBook(id);
+      if (result?.markdown) {
+        setText(result.markdown);
+        anchorRef.current = result.anchor ?? null;
+      } else {
+        anchorRef.current = null;
+      }
+    } finally {
+      setOpeningId(null);
     }
-  }, [epub, handleLoadChapter]);
+  }, [epub]);
+
+  // Handle file upload(s) — add to the shelf without opening
+  const handleFilesLoaded = useCallback(async (files: Array<{ data: ArrayBuffer; fileName: string }>) => {
+    for (const file of files) {
+      await epub.addBook(file.data, file.fileName);
+    }
+  }, [epub]);
+
+  // Close the book and return to the bookshelf (the handle is kept)
+  const handleClose = useCallback(async () => {
+    await epub.close();
+    setText('');
+    setBlocks(null);
+    anchorRef.current = null;
+  }, [epub]);
 
   // Parse markdown when text changes
   useEffect(() => {
@@ -102,22 +123,24 @@ export default function EpubPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Title bar ── */}
       <div className="mb-4 flex items-center gap-3 flex-shrink-0">
-        <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
+        {epub.openBookId ? (
+          /* Back to bookshelf */
+          <button
+            onClick={handleClose}
+            aria-label={t('action.back')}
+            title={t('action.back')}
+            className="flex-shrink-0 rounded-md p-1 text-foreground transition-colors hover:bg-muted"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+        ) : (
+          <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
+        )}
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">
             {epub.chapterTitle || epub.fileName || t('title.epub_reader')}
           </h1>
         </div>
-        {/* Close EPUB — always visible when a file is loaded */}
-        {epub.fileName && (
-          <button
-            onClick={epub.close}
-            className="flex-shrink-0 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
-          >
-            <X className="h-3.5 w-3.5" />
-            {t('action.close')}
-          </button>
-        )}
         {/* Sidebar toggles — only when EPUB loaded */}
         {epub.toc.length > 0 && (
           <>
@@ -144,13 +167,20 @@ export default function EpubPage() {
 
         {/* Content area */}
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
-          {epub.toc.length === 0 && !epub.fileName ? (
-            /* ── Upload zone ── */
-            <EpubUpload
-              onFileLoaded={handleFileLoaded}
-              fileName={epub.fileName}
+          {!epub.openBookId ? (
+            /* ── Bookshelf home ── */
+            <EpubBookshelf
+              books={epub.books}
+              onOpenBook={handleOpenBook}
+              onFilesLoaded={handleFilesLoaded}
+              openingId={openingId}
               error={epub.error ? t(epub.error) : null}
             />
+          ) : openingId ? (
+            /* ── Opening a book — spinner until the chapter loads ── */
+            <div className="flex min-h-[40vh] items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
           ) : epub.toc.length > 0 && !epub.coverTapped && epub.coverUrl ? (
             /* ── Cover ── */
             <div className="flex items-center justify-center min-h-[60vh]">
@@ -170,6 +200,7 @@ export default function EpubPage() {
           ) : epub.coverTapped && text ? (
             /* ── Reader ── */
             <ReaderPanel
+              key={epub.openBookId}
               l2={l2} l1={l1}
               text={text}
               loading={epub.loading}
@@ -209,7 +240,7 @@ export default function EpubPage() {
             <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
               <p className="text-sm text-destructive">{t(epub.error)}</p>
               <button
-                onClick={epub.close}
+                onClick={handleClose}
                 className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 {t('action.close')}
