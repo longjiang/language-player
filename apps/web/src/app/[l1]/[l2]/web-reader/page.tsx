@@ -67,7 +67,13 @@ async function getTurndown() {
     _turndown.addRule('readerLink', {
       filter: (node: any) => node.nodeName === 'A' && !!node.getAttribute('href'),
       replacement: (content: string, node: any) => {
-        const flat = content.replace(/\s+/g, ' ').trim();
+        // Block-level markers (e.g. `## ` from an <h2> nested inside the link)
+        // render as literal text inside a link label — strip them so readers
+        // never see raw markdown syntax.
+        const flat = content
+          .replace(/\s+/g, ' ')
+          .replace(/(^|\s)#{1,6}(?=\s|$)/g, '$1')
+          .trim();
         if (!flat) return '';
         const href = node.getAttribute('href');
         const escaped = href.replace(/([<>()])/g, '\\$1');
