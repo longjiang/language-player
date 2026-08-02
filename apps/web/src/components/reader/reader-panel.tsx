@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { md5 } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -116,8 +117,36 @@ export function ReaderPanel({
   hideModeTabs = false,
 }: ReaderPanelProps) {
   const t = useT();
+  const router = useRouter();
   const { display, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
+
+  // Markdown-block links (images, tables, raw-markdown fallbacks) open inside
+  // the web reader instead of sending the user to the original site in a new
+  // tab — matching how links behave in tokenized text.
+  const openLinkInReader = useCallback((href: string) => {
+    router.push(`/${l1.code}/${l2.code}/web-reader?url=${encodeURIComponent(href)}`);
+  }, [router, l1.code, l2.code]);
+
+  const markdownComponents = useMemo(() => ({
+    a: ({ node: _node, href, children, ...props }: any) => {
+      if (href && /^https?:\/\//i.test(href)) {
+        return (
+          <a
+            href={href}
+            onClick={(e) => {
+              e.preventDefault();
+              openLinkInReader(href);
+            }}
+            {...props}
+          >
+            {children}
+          </a>
+        );
+      }
+      return <a href={href} {...props}>{children}</a>;
+    },
+  }), [openLinkInReader]);
   const measureRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
@@ -390,12 +419,7 @@ export function ReaderPanel({
                             <div key={i}>
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
-                                components={{
-                                  // react-markdown passes a `node` hast object to
-                                  // custom components — destructure it out so it
-                                  // doesn't leak onto the DOM as node="[object Object]".
-                                  a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
-                                }}
+                                components={markdownComponents}
                               >
                                 {block.raw}
                               </ReactMarkdown>
@@ -476,9 +500,7 @@ export function ReaderPanel({
                   <div key={i} className="mb-4">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" />,
-                      }}
+                      components={markdownComponents}
                     >
                       {block.raw}
                     </ReactMarkdown>

@@ -22,6 +22,7 @@
     "action": {
         "all_results": "所有結果",
         "back": "返回",
+        "back_to_home_page": "返回首頁",
         "back_to_login": "返回登入",
         "browse": "瀏覽",
         "cancel": "取消",

@@ -22,6 +22,7 @@
     "action": {
         "all_results": "모든 결과",
         "back": "뒤로",
+        "back_to_home_page": "홈페이지로 돌아가기",
         "back_to_login": "로그인으로 돌아가기",
         "browse": "찾아보기",
         "cancel": "취소",

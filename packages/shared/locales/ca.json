@@ -22,6 +22,7 @@
     "action": {
         "all_results": "Tots els resultats",
         "back": "Tornar",
+        "back_to_home_page": "Tornar a la pàgina d'inici",
         "back_to_login": "Tornar a l'inici de sessió",
         "browse": "Navega",
         "cancel": "Cancel·lar",

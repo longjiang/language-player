@@ -22,6 +22,7 @@
     "action": {
         "all_results": "ผลลัพธ์ทั้งหมด",
         "back": "กลับ",
+        "back_to_home_page": "กลับไปหน้าแรก",
         "back_to_login": "กลับไปเข้าสู่ระบบ",
         "browse": "เรียกดู",
         "cancel": "ยกเลิก",
