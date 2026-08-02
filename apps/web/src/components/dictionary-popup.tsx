@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
@@ -27,6 +27,9 @@ interface DictionaryPopupProps {
   position?: { x: number; y: number };
   /** Context for word saving (subtitle line, video title, etc.) */
   context?: SavedWordContext;
+  /** Optional link from the block this token belongs to — offered as the first
+   *  action in the popup so users can open the source page in the web reader. */
+  linkUrl?: string;
   onClose: () => void;
 }
 
@@ -36,6 +39,7 @@ export function DictionaryPopup({
   l1Code,
   l2Code,
   context,
+  linkUrl,
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
@@ -216,6 +220,17 @@ export function DictionaryPopup({
 
         {/* Body */}
         <div className="max-h-[50vh] overflow-y-auto space-y-2">
+          {linkUrl && (
+            <button
+              type="button"
+              onClick={() => router.push(`/${l1Code}/${l2Code}/web-reader?url=${encodeURIComponent(linkUrl)}`)}
+              className="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-muted"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t('action.open_in_reader')}
+            </button>
+          )}
+
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle className="h-4 w-4" />
