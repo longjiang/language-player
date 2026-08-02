@@ -28,8 +28,23 @@ export interface MarkdownBlock {
 
 export type ReaderBlock = TextBlock | MarkdownBlock;
 
+/**
+ * CommonMark's flanking rules refuse to close `**…**` / `*…*` when the marked
+ * text ends in punctuation immediately followed by more non-space text — e.g.
+ * `**調理時間：**20分` (the closing `**` is preceded by `：` and followed by a
+ * digit, so it can't right-flank and remark keeps the asterisks literal).
+ * Turndown emits exactly this shape for CJK pages. Repair by moving the
+ * trailing punctuation after the closing delimiter: the plain text is
+ * unchanged, only the punctuation's boldness differs.
+ */
+function repairDelimiters(md: string): string {
+  return md
+    .replace(/\*\*([^*\n]+?)([\p{P}]+)\*\*(?=[^\s\p{P}])/gu, '**$1**$2')
+    .replace(/(?<!\*)\*([^*\n]+?)([\p{P}]+)\*(?!\*)(?=[^\s\p{P}])/gu, '*$1*$2');
+}
+
 export function parseMarkdown(md: string): ReaderBlock[] {
-  const ast = unified().use(remarkParse).parse(md) as Root;
+  const ast = unified().use(remarkParse).parse(repairDelimiters(md)) as Root;
   const blocks: ReaderBlock[] = [];
 
   for (const node of ast.children) {
@@ -56,7 +71,7 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     case 'heading': {
       // If heading contains an image, render as markdown block so image is preserved
       if (hasImage(node)) {
-        return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
+        return toMarkdownBlock(node);
       }
       return makeTextBlock(node, 'heading', (node as any).depth);
     }
@@ -64,14 +79,14 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     case 'paragraph': {
       // If paragraph contains an image, render as markdown block
       if (hasImage(node)) {
-        return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
+        return toMarkdownBlock(node);
       }
       return makeTextBlock(node, 'paragraph');
     }
 
     case 'blockquote': {
       if (hasImage(node)) {
-        return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
+        return toMarkdownBlock(node);
       }
       return makeTextBlock(node, 'blockquote');
     }
@@ -81,7 +96,8 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
       for (const item of node.children) {
         if (item.type === 'listItem') {
           if (hasImage(item)) {
-            items.push({ kind: 'markdown', raw: reconstructNode(item) } as MarkdownBlock);
+            const block = toMarkdownBlock(item);
+            if (block) items.push(block);
           } else {
             const b = makeTextBlock(item, 'list-item');
             if (b) items.push(b);
@@ -100,6 +116,27 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     default:
       return null;
   }
+}
+
+/**
+ * Reconstruct a node as a raw-markdown block, or null when the result has no
+ * visible content — e.g. lazy-load placeholder images (1×1 data-URI GIFs) or
+ * icon-only links that collapse to an empty list marker. Rendering those would
+ * produce empty bullets with no text.
+ */
+function toMarkdownBlock(node: any): MarkdownBlock | null {
+  const raw = reconstructNode(node);
+  if (isEmptyMarkdown(raw)) return null;
+  return { kind: 'markdown', raw };
+}
+
+/** True when a reconstructed markdown block has no visible content. */
+function isEmptyMarkdown(raw: string): boolean {
+  return raw
+    .replace(/!\[[^\]]*\]\(\s*\)/g, '') // empty images
+    .replace(/^\s*[-*+]\s+/, '')        // list marker
+    .replace(/[\[\]()*_`>#\s]/g, '')    // remaining markdown punctuation
+    .length === 0;
 }
 
 /** Check if a node tree contains an image (recursive). */
@@ -259,6 +296,13 @@ function reconstructChildren(node: any): string {
       case 'text':
         out += child.value;
         break;
+      // remark wraps list-item/blockquote content in paragraph nodes — recurse
+      // so image-bearing list items reconstruct their full markdown instead of
+      // collapsing to an empty bullet.
+      case 'paragraph':
+      case 'blockquote':
+        out += reconstructChildren(child);
+        break;
       case 'strong':
         out += '**' + reconstructChildren(child) + '**';
         break;
@@ -272,6 +316,8 @@ function reconstructChildren(node: any): string {
         out += '[' + reconstructChildren(child) + '](' + mdDestination(child.url ?? '') + ')';
         break;
       case 'image': {
+        // No source → would render as <img src="">; skip it entirely.
+        if (!child.url) break;
         const title = child.title ? ` "${child.title}"` : '';
         out += `![${child.alt ?? ''}](${mdDestination(child.url ?? '')}${title})`;
         break;
