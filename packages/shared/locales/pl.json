@@ -22,6 +22,7 @@
     "action": {
         "all_results": "Wszystkie wyniki",
         "back": "Wstecz",
+        "back_to_home_page": "Wróć do strony głównej",
         "back_to_login": "Powrót do logowania",
         "browse": "Przeglądaj",
         "cancel": "Anuluj",

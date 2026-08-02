@@ -22,6 +22,7 @@
     "action": {
         "all_results": "सभी परिणाम",
         "back": "वापस",
+        "back_to_home_page": "होम पेज पर वापस जाएँ",
         "back_to_login": "लॉगिन पर वापस जाएं",
         "browse": "ब्राउज़ करें",
         "cancel": "रद्द करें",

@@ -22,6 +22,7 @@
     "action": {
         "all_results": "すべての結果",
         "back": "戻る",
+        "back_to_home_page": "ホームページに戻る",
         "back_to_login": "ログインに戻る",
         "browse": "参照",
         "cancel": "キャンセル",

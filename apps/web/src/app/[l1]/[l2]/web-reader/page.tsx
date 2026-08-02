@@ -9,7 +9,7 @@ import { READING_CATEGORIES, getReadingSuggestions } from '@langplayer/shared';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2 } from 'lucide-react';
+import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
@@ -26,6 +26,16 @@ const MAX_HISTORY = 50;
 
 function hostnameOf(url: string): string {
   try { return new URL(url).hostname; } catch { return ''; }
+}
+
+/** True when the URL points at a site's root (pathname empty or "/"). */
+function isSiteRoot(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.pathname === '' || u.pathname === '/';
+  } catch {
+    return false;
+  }
 }
 
 function faviconUrl(url: string): string {
@@ -90,7 +100,6 @@ async function getTurndown() {
 }
 
 async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
-  log('WebReader: htmlToMarkdown start', { htmlChars: html.length, baseUrl });
   const doc = new DOMParser().parseFromString(html, 'text/html');
   // Sniff the page's real title: <title> tag, then og:title, then first h1.
   const sniffedTitle =
@@ -120,11 +129,18 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
     el.replaceWith(...Array.from(el.childNodes));
   });
   const mainContent = articleContent || doc.body;
-  log('WebReader: content source', {
-    source: articleContent
-      ? (articleContent.id ? `#${articleContent.id}` : articleContent.tagName.toLowerCase())
-      : 'whole-page (no article)',
-    bodyChildren: doc.body?.children.length ?? 0,
+  // Lazy-loaded images: many sites ship a 1×1 placeholder in src and the real
+  // URL in data-src — promote it so the actual image renders. Images left with
+  // no usable source would convert to ![alt]() and render as <img src="">.
+  mainContent.querySelectorAll('img').forEach(el => {
+    const real = el.getAttribute('data-src')
+      || el.getAttribute('data-original')
+      || el.getAttribute('data-lazy-src');
+    if (real) el.setAttribute('src', real);
+    const src = el.getAttribute('src') ?? '';
+    if (!src || /^data:image\/gif;base64,R0lGODlhAQAB/i.test(src)) {
+      el.remove();
+    }
   });
   // Some sites (e.g. Yahoo News) render the article body as raw text nodes inside
   // a single block element, with blank lines between paragraphs. Turndown
@@ -140,7 +156,6 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
   });
   const td = await getTurndown();
   const markdown = td.turndown(mainContent.innerHTML);
-  log('WebReader: markdown output', { chars: markdown.length, head: markdown.slice(0, 120) });
   return { markdown, title: sniffedTitle };
 }
 
@@ -218,6 +233,19 @@ export default function WebReaderPage() {
   // `?url=` instead of the live input value, so editing the address bar never
   // trips the param-sync effect and snaps the input back.
   const loadedUrlRef = useRef<string | null>(null);
+  // Stable refs so the param-sync effect only re-fires when the ?url= param
+  // actually changes. handleLoad's identity changes whenever the URL input
+  // changes (useCallback dep), and re-running this effect on that churn would
+  // race searchParams: it can still see the OLD param, differ from the URL we
+  // just loaded, and reload the previous page (e.g. after "back to site home").
+  const tRef = useRef(t);
+  tRef.current = t;
+  const showHomeButton = !!url.trim() && !isSiteRoot(url);
+
+  // Debug: report when the back-to-home button appears or disappears.
+  useEffect(() => {
+    log('WebReader: back-to-home visibility', { show: showHomeButton, url });
+  }, [showHomeButton]);
   // Incremented on every load/reset so stale fetch responses can't repopulate
   // the reader after the user navigated back to the home page.
   const loadSeqRef = useRef(0);
@@ -234,7 +262,6 @@ export default function WebReaderPage() {
     // visited-site link was clicked with an empty address bar).
     setUrl(targetUrl);
     const seq = ++loadSeqRef.current;
-    log('WebReader: load start', { targetUrl });
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
     router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
@@ -243,13 +270,10 @@ export default function WebReaderPage() {
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
       if (seq !== loadSeqRef.current) return;
-      log('WebReader: proxy response', { status: res.status, ok: res.ok });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
-      log('WebReader: raw html', { chars: raw.length });
       const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
       if (seq !== loadSeqRef.current) return;
-      log('WebReader: converted markdown', { chars: md.length });
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
@@ -264,10 +288,8 @@ export default function WebReaderPage() {
       try {
         const parsed = parseMarkdown(md);
         setBlocks(parsed);
-        log('WebReader: blocks parsed', { count: parsed.length });
       } catch {
         setBlocks(null);
-        logwarn('WebReader: parseMarkdown failed');
       }
       if (seq !== loadSeqRef.current) return;
       // Remember the visit (most recent first, capped) in localStorage.
@@ -286,6 +308,9 @@ export default function WebReaderPage() {
       if (seq === loadSeqRef.current) setLoading(false);
     }
   }, [url, t]);
+
+  const handleLoadRef = useRef(handleLoad);
+  handleLoadRef.current = handleLoad;
 
   const handleTokenize = useCallback(() => {
     if (!text.trim()) return;
@@ -314,7 +339,7 @@ export default function WebReaderPage() {
         setError(null);
         setUrl('');
         setLoading(false);
-        document.title = t('title.web_reader');
+        document.title = tRef.current('title.web_reader');
       }
       return;
     }
@@ -324,8 +349,8 @@ export default function WebReaderPage() {
     loadedUrlRef.current = urlParam;
     // searchParams.get already URL-decodes the value once — don't decode again.
     setUrl(urlParam);
-    handleLoad(urlParam);
-  }, [urlParam, handleLoad, t]);
+    handleLoadRef.current(urlParam);
+  }, [urlParam]);
 
   const handleRename = useCallback((siteUrl: string) => {
     setEditingUrl(siteUrl);
@@ -405,6 +430,41 @@ export default function WebReaderPage() {
         onSubmit={(e) => { e.preventDefault(); handleLoad(); }}
         className="mb-6 flex gap-2 flex-shrink-0"
       >
+        {/* Site favicon — click to return to the site's home page; hidden when
+         * already on the site root (or on the reader home). */}
+        {url.trim() && !isSiteRoot(url) && (
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                // Domain root only — strips every path, query, and hash.
+                const rootUrl = new URL(url).origin + '/';
+                log('WebReader: back-to-home clicked', { fromUrl: url, rootUrl });
+                handleLoad(rootUrl);
+              } catch (e) {
+                logwarn('WebReader: back-to-home could not parse URL', { url, error: e });
+              }
+            }}
+            aria-label={t('action.back_to_home_page')}
+            title={t('action.back_to_home_page')}
+            className="flex h-9 flex-shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2 transition-colors hover:border-primary hover:bg-muted"
+          >
+            <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+            {faviconUrl(url) && (
+              <img
+                src={faviconUrl(url)}
+                alt=""
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="h-4 w-4 rounded-sm"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            )}
+            <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
+              {t('action.back_to_home_page')}
+            </span>
+          </button>
+        )}
         <div className="relative flex-1">
           <input
             type="url"

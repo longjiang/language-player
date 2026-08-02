@@ -22,6 +22,7 @@
     "action": {
         "all_results": "All Results",
         "back": "Back",
+        "back_to_home_page": "Back to Home Page",
         "back_to_login": "Back to login",
         "browse": "Browse",
         "cancel": "Cancel",

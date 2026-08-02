@@ -22,6 +22,7 @@
     "action": {
         "all_results": "Kaikki tulokset",
         "back": "Takaisin",
+        "back_to_home_page": "Takaisin etusivulle",
         "back_to_login": "Takaisin kirjautumiseen",
         "browse": "Selaa",
         "cancel": "Peruuta",
