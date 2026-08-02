@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { READING_CATEGORIES, getReadingSuggestions } from '@langplayer/shared';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/ui/sidebar';
@@ -106,6 +108,17 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
     // markdown), keep everything else.
     doc.querySelectorAll('script, style').forEach(el => el.remove());
   }
+  // Nav menus are site chrome, never reading content — strip them on every
+  // page, including the whole-page fallback path.
+  doc.querySelectorAll('nav').forEach(el => el.remove());
+  // Ruby annotations (e.g. furigana on Japanese pages) are reading aids, not
+  // content — Turndown would leak the <rt> readings into the markdown as plain
+  // text and pollute tokenization. Drop the readings and unwrap <ruby> so only
+  // the base characters remain.
+  doc.querySelectorAll('rt, rp').forEach(el => el.remove());
+  doc.querySelectorAll('ruby').forEach(el => {
+    el.replaceWith(...Array.from(el.childNodes));
+  });
   const mainContent = articleContent || doc.body;
   log('WebReader: content source', {
     source: articleContent
@@ -186,6 +199,7 @@ export default function WebReaderPage() {
   const pathname = usePathname();
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const suggestions = getReadingSuggestions(l2.code);
 
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
@@ -204,6 +218,9 @@ export default function WebReaderPage() {
   // `?url=` instead of the live input value, so editing the address bar never
   // trips the param-sync effect and snaps the input back.
   const loadedUrlRef = useRef<string | null>(null);
+  // Incremented on every load/reset so stale fetch responses can't repopulate
+  // the reader after the user navigated back to the home page.
+  const loadSeqRef = useRef(0);
 
   useEffect(() => {
     setVisitedSites(loadVisitedSites());
@@ -213,6 +230,10 @@ export default function WebReaderPage() {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
     loadedUrlRef.current = targetUrl;
+    // Reflect the loaded URL in the input (e.g. when a suggestion card or
+    // visited-site link was clicked with an empty address bar).
+    setUrl(targetUrl);
+    const seq = ++loadSeqRef.current;
     log('WebReader: load start', { targetUrl });
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
@@ -221,11 +242,13 @@ export default function WebReaderPage() {
     setError(null);
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
+      if (seq !== loadSeqRef.current) return;
       log('WebReader: proxy response', { status: res.status, ok: res.ok });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
       log('WebReader: raw html', { chars: raw.length });
       const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
+      if (seq !== loadSeqRef.current) return;
       log('WebReader: converted markdown', { chars: md.length });
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
@@ -246,6 +269,7 @@ export default function WebReaderPage() {
         setBlocks(null);
         logwarn('WebReader: parseMarkdown failed');
       }
+      if (seq !== loadSeqRef.current) return;
       // Remember the visit (most recent first, capped) in localStorage.
       setVisitedSites(prev => {
         const next = [
@@ -256,9 +280,10 @@ export default function WebReaderPage() {
         return next;
       });
     } catch (e: any) {
+      if (seq !== loadSeqRef.current) return;
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) setLoading(false);
     }
   }, [url, t]);
 
@@ -276,14 +301,31 @@ export default function WebReaderPage() {
   // link inside a block navigates to another article while already here).
   const urlParam = searchParams.get('url');
   useEffect(() => {
+    // Navigating to the web reader home (no ?url= param) must show the home
+    // page, not the last opened article — clear any loaded content and
+    // invalidate in-flight loads so a stale response can't repopulate it.
+    if (!urlParam) {
+      if (loadedUrlRef.current) {
+        loadedUrlRef.current = null;
+        loadSeqRef.current++;
+        setText('');
+        setTitle('');
+        setBlocks(null);
+        setError(null);
+        setUrl('');
+        setLoading(false);
+        document.title = t('title.web_reader');
+      }
+      return;
+    }
     // Only react to a param that differs from the URL we already loaded. The
     // manual submit path updates the ref itself, so it can't double-load here.
-    if (!urlParam || urlParam === loadedUrlRef.current) return;
+    if (urlParam === loadedUrlRef.current) return;
     loadedUrlRef.current = urlParam;
     // searchParams.get already URL-decodes the value once — don't decode again.
     setUrl(urlParam);
     handleLoad(urlParam);
-  }, [urlParam, handleLoad]);
+  }, [urlParam, handleLoad, t]);
 
   const handleRename = useCallback((siteUrl: string) => {
     setEditingUrl(siteUrl);
@@ -327,7 +369,15 @@ export default function WebReaderPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Header ── */}
       <div className="mb-4 flex items-center gap-3 flex-shrink-0">
-        <Globe className="h-6 w-6 flex-shrink-0 text-primary" />
+        {/* Clicking the globe returns to the reader home (clears any ?url= param). */}
+        <Link
+          href={pathname}
+          aria-label={t('title.web_reader')}
+          title={t('title.web_reader')}
+          className="flex-shrink-0 text-primary transition-opacity hover:opacity-80"
+        >
+          <Globe className="h-6 w-6" />
+        </Link>
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">{title || t('title.web_reader')}</h1>
         </div>
@@ -412,14 +462,53 @@ export default function WebReaderPage() {
         />
       )}
 
-          {/* ── Empty state ── */}
+          {/* ── Empty state: suggested reading fills the space ── */}
           {!text && !loading && (
-            <div className="flex min-h-[40vh] flex-col items-center justify-center text-center flex-1">
-              <Globe className="mb-3 h-12 w-12 text-muted-foreground/40" />
-              <h2 className="text-lg font-semibold text-muted-foreground">{t('title.web_reader')}</h2>
-              <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                {t('msg.web_reader_empty_state', { l2: l2.name })}
-              </p>
+            <div className="flex w-full min-h-0 flex-1 flex-col">
+              {suggestions && (
+                <div className="min-h-0 w-full flex-1 overflow-y-auto pb-2 pr-1">
+                  <p className="text-sm font-semibold text-muted-foreground">{t('title.suggested_reading')}</p>
+                  <div className="mt-4 space-y-6">
+                    {READING_CATEGORIES.map((category) => {
+                      const items = suggestions[category];
+                      if (!items?.length) return null;
+                      return (
+                        <section key={category}>
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {t(`title.${category}` as any)}
+                          </h3>
+                          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                            {items.map((item) => {
+                              const favicon = faviconUrl(item.url);
+                              return (
+                                <button
+                                  key={item.url}
+                                  type="button"
+                                  onClick={() => handleLoad(item.url)}
+                                  title={item.url}
+                                  className="flex w-full items-center gap-2 rounded-lg border border-border bg-card p-2.5 text-left text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+                                >
+                                  {favicon && (
+                                    <img
+                                      src={favicon}
+                                      alt=""
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                      className="h-4 w-4 flex-shrink-0 rounded-sm"
+                                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                  )}
+                                  <span className="truncate">{item.title}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </section>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

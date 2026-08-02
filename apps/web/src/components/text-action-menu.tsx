@@ -18,6 +18,39 @@ import {
 } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
+/**
+ * Render a translation string with the inline markdown the translate backend
+ * emits (it bolds highlighted terms with `**…**`). Without this, the raw
+ * asterisks show up in the reader. Handles **bold**, *italic*, and `code`;
+ * anything else passes through untouched.
+ */
+function renderInlineMarkdown(text: string): ReactNode {
+  const parts: ReactNode[] = [];
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const token = m[0];
+    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
+      parts.push(<strong key={key}>{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      parts.push(
+        <code key={key} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">
+          {token.slice(1, -1)}
+        </code>,
+      );
+    } else {
+      parts.push(<em key={key}>{token.slice(1, -1)}</em>);
+    }
+    last = m.index + token.length;
+    key++;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
 interface TextActionMenuProps {
   /** Plain text of the block/line. */
   text: string;
@@ -159,7 +192,7 @@ export function TextActionMenu({
         </div>
         {translation && (
           <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'xl:pt-0'} ${translationClass}`}>
-            {translation}
+            {typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
         {loading && !translation && (
@@ -255,7 +288,7 @@ export function TextActionMenu({
               className="text-sm whitespace-pre-wrap leading-relaxed"
               style={{ fontSize: `${0.875 * textZoomFactor}rem` }}
             >
-              {translateText}
+              {renderInlineMarkdown(translateText ?? '')}
             </div>
           )}
         </div>

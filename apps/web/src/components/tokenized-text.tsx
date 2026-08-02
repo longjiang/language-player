@@ -16,6 +16,7 @@ import { TokenSpan } from './token-span';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { ChevronRight } from 'lucide-react';
+import type { FormatRange } from '@/lib/parse-markdown';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -181,6 +182,11 @@ export interface TokenizedTextProps {
   /** Pre-loaded tokens — when set, skips the API call entirely. */
   tokens?: LemmatizedToken[];
   /**
+   * Markdown formatting ranges (bold/italic/code) from parseMarkdown, used to
+   * style individual tokens without breaking their interactivity.
+   */
+  formats?: FormatRange[];
+  /**
    * When set, renders a chevron button after the tokenized text that
    * navigates to the web reader for this URL (http/https links only).
    */
@@ -239,6 +245,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokenCache,
   tokenCacheLoaded,
   tokens: preloadedTokens,
+  formats,
   href,
   highlightForm,
   highlightForms,
@@ -279,6 +286,33 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+
+  // Map markdown format ranges onto token indices by reconstructing character
+  // offsets from the surface tokens (they concatenate back to `text`). Bails
+  // out entirely when the reconstruction doesn't match, so formatting can
+  // never corrupt token alignment.
+  const tokenFormatStyles = useMemo(() => {
+    if (!formats?.length) return null;
+    const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return null;
+    let pos = 0;
+    const out: Array<'bold' | 'italic' | 'code' | null> = [];
+    for (const token of tokens) {
+      let fmt: 'bold' | 'italic' | 'code' | null = null;
+      for (const f of formats) {
+        // Links are handled separately (chevron navigation), so they don't
+        // contribute token-level styling — but bold/italic inside a link still
+        // does.
+        if (pos < f.end && pos + token.text.length > f.start && f.type !== 'link') {
+          fmt = f.type;
+          break;
+        }
+      }
+      out.push(fmt);
+      pos += token.text.length;
+    }
+    return out;
+  }, [tokens, formats, text]);
 
   // Open a block's linked URL inside the web reader instead of leaving the app.
   const openInWebReader = useCallback(() => {
@@ -538,7 +572,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isKaraokeSpoken = true;
             }
           }
-          return (
+          const tokenSpan = (
             <TokenSpan
               key={i}
               token={token}
@@ -565,6 +599,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               quickGlossOnHighlight={quickGlossOnHighlight}
             />
           );
+          const fmt = tokenFormatStyles?.[i] ?? null;
+          if (fmt === 'bold') return <strong key={i} className="font-semibold">{tokenSpan}</strong>;
+          if (fmt === 'italic') return <em key={i}>{tokenSpan}</em>;
+          if (fmt === 'code') {
+            return <code key={i} className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>;
+          }
+          return tokenSpan;
         });
       })()}
       {href && /^https?:\/\//i.test(href) && (
