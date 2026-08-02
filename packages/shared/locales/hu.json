@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "A fiókja törlésre került. Sajnáljuk, hogy elmegy.",
+        "add_book": "Könyv hozzáadása",
         "ai_pro_feature": "Pro funkció: Szavak kontextusban való értelmezésének lekérése MI segítségével.",
         "all_done_desc": "Átnéztél minden esedékes kártyát. Gyere vissza később további ismétlésekért, vagy nézz videókat új szavak mentéséhez.",
         "all_done_for_now": "Minden kész most!",

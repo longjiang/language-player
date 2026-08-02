@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Tài khoản của bạn đã bị xóa. Chúng tôi rất tiếc khi thấy bạn rời đi.",
+        "add_book": "Thêm sách",
         "ai_pro_feature": "Tính năng Pro: Nhận giải thích từ ngữ trong ngữ cảnh bằng AI.",
         "all_done_desc": "Bạn đã ôn hết các thẻ hiện đến hạn. Hãy quay lại sau để ôn thêm, hoặc khám phá video để lưu từ mới.",
         "all_done_for_now": "Tạm thời đã xong!",

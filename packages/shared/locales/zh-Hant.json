@@ -584,6 +584,7 @@
     },
     "msg": {
         "account_deleted": "您的帳戶已刪除。很遺憾看到您離開。",
+        "add_book": "新增圖書",
         "ai_pro_feature": "專業版功能：取得單字的 AI 上下文解釋。",
         "all_done_desc": "你已複習完所有待處理的卡片。稍後再回來，或探索影片以儲存新單字。",
         "all_done_for_now": "全部完成！",

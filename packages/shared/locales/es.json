@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Tu cuenta ha sido eliminada. Lamentamos verte ir.",
+        "add_book": "Añadir libro",
         "ai_pro_feature": "Función Pro: Obtén explicaciones de IA sobre palabras en contexto.",
         "all_done_desc": "Has repasado todas las tarjetas pendientes. Vuelve más tarde para más repasos, o explora videos para guardar nuevas palabras.",
         "all_done_for_now": "¡Todo listo por ahora!",

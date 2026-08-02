@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Ihr Konto wurde gelöscht. Es tut uns leid, Sie gehen zu sehen.",
+        "add_book": "Buch hinzufügen",
         "ai_pro_feature": "Profi-Funktion: KI-Erklärungen für Wörter im Kontext erhalten.",
         "all_done_desc": "Du hast alle fälligen Karten wiederholt. Komm später für weitere Wiederholungen zurück oder entdecke Videos, um neue Wörter zu speichern.",
         "all_done_for_now": "Für jetzt ist alles erledigt!",

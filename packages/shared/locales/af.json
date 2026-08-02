@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Jou rekening is uitgevee. Ons is jammer om jou te sien gaan.",
+        "add_book": "Voeg boek by",
         "ai_pro_feature": "Pro-funksie: Kry KI-verduidelikings van woorde in konteks.",
         "all_done_desc": "你已複習完所有待處理的卡片。稍後再回來，或探索影片以儲存新單字。",
         "all_done_for_now": "Alles klaar vir nou!",

@@ -584,6 +584,7 @@
     },
     "msg": {
         "account_deleted": "您的账户已删除。很遗憾看到您离开。",
+        "add_book": "添加图书",
         "ai_pro_feature": "Pro 功能：获取单词在上下文中的 AI 解释。",
         "all_done_desc": "您已复习完所有到期卡片。稍后再来进行更多复习，或浏览视频收藏新单词。",
         "all_done_for_now": "暂时全部完成！",

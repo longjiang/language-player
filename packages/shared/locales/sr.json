@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Ваш налог је обрисан. Жао нам је што одлазите.",
+        "add_book": "Додај књигу",
         "ai_pro_feature": "Pro funkcija: Dobijte AI objašnjenja reči u kontekstu.",
         "all_done_desc": "Pregledali ste sve kartice koje su bile na redu. Vratite se kasnije za više pregleda ili istražujte video zapise da sačuvate nove reči.",
         "all_done_for_now": "Sve gotovo za sada!",

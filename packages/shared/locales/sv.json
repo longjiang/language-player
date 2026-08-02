@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Ditt konto har tagits bort. Vi är ledsna att se dig gå.",
+        "add_book": "Lägg till bok",
         "ai_pro_feature": "Pro-funktion: Få AI-förklaringar av ord i sitt sammanhang.",
         "all_done_desc": "Du har granskat alla förfallna kort. Kom tillbaka senare för fler granskningar, eller utforska videor för att spara nya ord.",
         "all_done_for_now": "Klart för nu!",
