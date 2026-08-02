@@ -46,19 +46,35 @@ export default function EpubPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Apply loaded chapter text + its seek anchor, parsing blocks synchronously
+  // so the reader never falls into the no-blocks fallback (even when the new
+  // text is identical to the current one).
+  const applyChapterText = useCallback((md: string, anchor: string | null) => {
+    anchorRef.current = anchor;
+    setText(md);
+    try {
+      const parsed = parseMarkdown(md);
+      setBlocks(parsed);
+    } catch {
+      setBlocks(null);
+    }
+  }, []);
+
   // Load chapter text into state and tokenize. An optional anchor (text
   // snippet) makes the reader seek to the page containing it.
-  const handleLoadChapter = useCallback(async (href: string, anchor?: string | null) => {
+  const handleLoadChapter = useCallback(async (
+    href: string,
+    anchor?: string | null,
+    anchorOffset?: number,
+  ) => {
     setMobileSidebarOpen(false);
-    const result = await epub.loadChapter(href, anchor ? { anchor } : undefined);
-    setText(result.markdown);
-    setBlocks(null);
-    anchorRef.current = result.anchor;
+    const result = await epub.loadChapter(href, anchor ? { anchor, anchorOffset } : undefined);
+    applyChapterText(result.markdown, result.anchor);
   }, [epub]);
 
   // Navigate to a search result's chapter + page (via its text snippet).
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
-    void handleLoadChapter(result.chapterHref, result.anchor);
+    void handleLoadChapter(result.chapterHref, result.anchor, result.anchorOffset);
   }, [handleLoadChapter]);
 
   // "Open Link" from the token dictionary popup — navigate within the book
@@ -80,8 +96,7 @@ export default function EpubPage() {
     try {
       const result = await epub.openBook(id);
       if (result?.markdown) {
-        setText(result.markdown);
-        anchorRef.current = result.anchor ?? null;
+        applyChapterText(result.markdown, result.anchor);
       } else {
         anchorRef.current = null;
       }
@@ -116,13 +131,6 @@ export default function EpubPage() {
   const handleRemoveBook = useCallback(async (id: string) => {
     await epub.removeBook(id);
   }, [epub]);
-
-  // Parse markdown when text changes
-  useEffect(() => {
-    if (!text.trim()) { setBlocks(null); return; }
-    try { setBlocks(parseMarkdown(text)); }
-    catch { setBlocks(null); }
-  }, [text]);
 
   // Internal link interceptor
   useEffect(() => {

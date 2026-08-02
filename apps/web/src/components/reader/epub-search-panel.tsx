@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useT } from '@/hooks/use-t';
-import { log } from '@/lib/logger';
 import { Clock, Loader2, Search } from 'lucide-react';
 import type { EpubSearchResult } from '@/hooks/use-epub';
 
@@ -53,17 +52,11 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
   const runSearch = useCallback(async (raw: string) => {
     const q = raw.trim();
     if (!q) return;
-    log('EPUB search submitted:', q);
     setQuery(q);
     setSearching(true);
     setResults(null);
     try {
       const res = await onSearch(q);
-      log('EPUB search results fed to UI:', {
-        query: q,
-        count: res.length,
-        sample: res.slice(0, 3).map(r => ({ chapter: r.chapterTitle, snippet: r.snippet })),
-      });
       setResults(res);
       setSearchedQuery(q);
       setRecent(prev => {
