@@ -18,7 +18,7 @@ import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { bulkLookupWords } from '@/lib/dictionary-cache';
+import { enqueueLookupWords } from '@/lib/dictionary-cache';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -290,7 +290,7 @@ export default function ReviewScreen() {
   // ── Pre-warm the current card's dictionary entry ──
   useEffect(() => {
     if (!wordForm) return;
-    bulkLookupWords(
+    enqueueLookupWords(
       [{ text: wordForm, l2Code }],
       PYTHON_API_URL,
     );
@@ -306,7 +306,7 @@ export default function ReviewScreen() {
           tokens.flatMap(t => t.lemmas.map(l => l.lemma).filter(Boolean))
         )];
         if (uniqueLemmas.length > 0) {
-          bulkLookupWords(
+          enqueueLookupWords(
             uniqueLemmas.map(text => ({ text, l2Code: ctx.l2Code })),
             PYTHON_API_URL,
           );

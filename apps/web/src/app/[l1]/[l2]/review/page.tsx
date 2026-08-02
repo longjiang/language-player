@@ -11,7 +11,7 @@ import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
-import { getCachedEntries, bulkLookupWords } from '@langplayer/utils';
+import { getCachedEntries, enqueueLookupWords } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -167,7 +167,8 @@ export default function ReviewPage() {
 
   // ── Pre-fetch dictionary entries for all due cards ──
   // This ensures entries are in the cache before the user reveals a card,
-  // avoiding a misleading "no definition" flash.
+  // avoiding a misleading "no definition" flash. Routes through the shared
+  // lazy batch queue so every caller dedupes against the same flush.
   // Batch lookup returns English-only definitions for speed.
   // Per-card L1 translation (if needed) happens on reveal below.
   useEffect(() => {
@@ -176,7 +177,7 @@ export default function ReviewPage() {
       text: dc.word.forms[0] || dc.word.id,
       l2Code,
     }));
-    bulkLookupWords(words, PYTHON_API_URL);
+    enqueueLookupWords(words, PYTHON_API_URL);
   }, [dueCards, l2Code]);
 
   // ── Derive entry for the current card from the reactive cache ──
