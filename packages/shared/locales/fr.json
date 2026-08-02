@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Votre compte a été supprimé. Nous sommes désolés de vous voir partir.",
+        "add_book": "Ajouter un livre",
         "ai_pro_feature": "Fonctionnalité Pro : Obtenez des explications IA des mots en contexte.",
         "all_done_desc": "Vous avez révisé toutes les cartes dues. Revenez plus tard pour d'autres révisions, ou explorez des vidéos pour enregistrer de nouveaux mots.",
         "all_done_for_now": "Tout est terminé pour l'instant !",

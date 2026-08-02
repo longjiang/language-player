@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Kontoen din er slettet. Vi er lei for å se deg gå.",
+        "add_book": "Legg til bok",
         "ai_pro_feature": "Pro-funksjon: Få AI-forklaringer av ord i kontekst.",
         "all_done_desc": "Du har gjennomgått alle forfalte kort. Kom tilbake senere for flere gjennomganger, eller utforsk videoer for å lagre nye ord.",
         "all_done_for_now": "Alt ferdig for nå!",

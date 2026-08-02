@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "El teu compte s'ha eliminat. Lamentem veure't marxar.",
+        "add_book": "Afegeix un llibre",
         "ai_pro_feature": "Funció Pro: Obtén explicacions amb IA de paraules en context.",
         "all_done_desc": "Has revisat totes les targetes pendents. Torna més tard per a més repassos, o explora vídeos per desar paraules noves.",
         "all_done_for_now": "Tot fet per ara!",

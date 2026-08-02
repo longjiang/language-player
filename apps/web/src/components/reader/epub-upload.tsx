@@ -99,45 +99,50 @@ export function EpubUpload({
 
   if (slot) {
     return (
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={t('action.browse')}
-        onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onClick={() => fileInputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
-        className={`
-          flex min-h-[150px] h-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-3 text-center transition-all
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
-          ${dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/30'}
-        `}
-      >
-        <Upload className="h-6 w-6 text-muted-foreground/50" />
-        <p className="text-xs leading-snug text-muted-foreground">
-          {t('msg.drop_epub_here')}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            fileInputRef.current?.click();
+      <div className="flex h-full flex-col items-start gap-2 p-2">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={t('action.browse')}
+          onDrop={handleDrop}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
           }}
+          className={`
+            flex aspect-[2/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-3 text-center transition-all
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+            ${dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/30'}
+          `}
         >
-          <FileText className="mr-1.5 h-4 w-4" />
-          {t('action.browse')}
-        </Button>
-        {input}
-        {error && (
-          <p className="text-xs text-destructive">{error}</p>
-        )}
+          <Upload className="h-6 w-6 text-muted-foreground/50" />
+          <p className="my-3 text-xs leading-snug text-muted-foreground">
+            {t('msg.drop_epub_here')}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+          >
+            <FileText className="mr-1.5 h-4 w-4" />
+            {t('action.browse')}
+          </Button>
+          {input}
+          {error && (
+            <p className="text-xs text-destructive">{error}</p>
+          )}
+        </div>
+        <span className="w-full truncate text-sm font-medium text-muted-foreground">
+          {t('msg.add_book')}
+        </span>
       </div>
     );
   }

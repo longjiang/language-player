@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Contul tău a fost șters. Ne pare rău să te vedem plecând.",
+        "add_book": "Adaugă carte",
         "ai_pro_feature": "Funcție premium: Obține explicații AI ale cuvintelor în context.",
         "all_done_desc": "Ai revizuit toate cardurile restante. Revino mai târziu pentru alte recenzii sau explorează videoclipuri pentru a salva cuvinte noi.",
         "all_done_for_now": "Totul s-a terminat pentru moment!",

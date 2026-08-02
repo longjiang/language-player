@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Twoje konto zostało usunięte. Przykro nam, że odchodzisz.",
+        "add_book": "Dodaj książkę",
         "ai_pro_feature": "Funkcja Pro: Uzyskaj wyjaśnienia słów w kontekście za pomocą AI.",
         "all_done_desc": "Przejrzałeś wszystkie karty do powtórki. Wróć później, aby kontynuować, lub odkrywaj filmy, aby zapisać nowe słowa.",
         "all_done_for_now": "Na razie wszystko gotowe!",

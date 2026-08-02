@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Hesabınız silindi. Sizi uğurladığımız için üzgünüz.",
+        "add_book": "Kitap ekle",
         "ai_pro_feature": "Profesyonel özellik: Kelimelerin bağlam içindeki yapay zeka açıklamalarını alın.",
         "all_done_desc": "Tüm gecikmiş kartları gözden geçirdiniz. Daha fazla tekrar için daha sonra gelin veya yeni kelimeler kaydetmek için videoları keşfedin.",
         "all_done_for_now": "Şimdilik Her Şey Tamamlandı!",

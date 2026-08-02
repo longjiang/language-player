@@ -598,6 +598,7 @@
     },
     "msg": {
         "account_deleted": "Sua conta foi excluída. Lamentamos vê-lo partir.",
+        "add_book": "Adicionar livro",
         "ai_pro_feature": "Recurso premium: Obtenha explicações com IA para palavras no contexto.",
         "all_done_desc": "Você revisou todos os cartões pendentes. Volte mais tarde para mais revisões ou explore vídeos para salvar novas palavras.",
         "all_done_for_now": "Tudo pronto por agora!",
