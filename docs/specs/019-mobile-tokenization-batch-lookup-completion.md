@@ -36,19 +36,20 @@ This spec tracks the remaining mobile gaps and provides a phased implementation 
 
 ---
 
-### ❌ Critical Bug — Video Token Cache Not Wired
+### ✅ Critical Bug — Video Token Cache Not Wired (fixed)
 
-**Status**: 🔴 Not yet fixed
+**Status**: ✅ Fixed 2026-07-28 — `tokenCache` + `tokenCacheLoaded` are now
+passed through `SubtitleDisplay` → `TokenizedText` on the watch page, and
+`TokenizedText` checks the video cache before falling back to per-line
+lemmatization. See ARCH-017 → "Mobile: Video Cache Wiring (2026-07-28 Fix)".
 
-**Symptom**: The mobile watch page fetches `tokenCache` and `tokenCacheLoaded` from `useVideoTokenCache()` but does **not** pass them to `SubtitleDisplay` → `TokenizedText`. Every subtitle line triggers a separate `POST /lemmatize-normalized` call.
-
-**Impact**: 500+ API calls per video transcript instead of 1 (the in-memory lemmatize cache mitigates this somewhat after the first line is tokenized, but the initial pass still makes N calls).
-
-**Fix**: Pass `tokenCache` and `tokenCacheLoaded` props through `SubtitleDisplay` to `TokenizedText` in the watch page.
-
-**Files**: `apps/mobile/app/(tabs)/(media)/watch/[videoId].tsx`, `apps/mobile/components/video/SubtitleDisplay.tsx`
-
-**Reference**: ARCH-017 → "Mobile: Missing Video Cache Wiring" section
+**Follow-up (2026-08-02)**: Both platforms now route batch dictionary lookup
+through the shared queued pipeline in `packages/utils/src/dictionary-cache.ts`
+(`enqueueLookupWords`, 80ms flush, 30-word chunks, content-based in-flight
+dedup, per-word fallback on batch failure). Mobile's `TokenizedText` lookup
+effect is aligned with web (same lemma/surface collection, `baseCode` cache
+keys), and the lemmatize queue drains beyond its 12-line cap instead of
+stranding lines.
 
 ---
 

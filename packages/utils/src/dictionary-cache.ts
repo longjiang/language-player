@@ -119,15 +119,36 @@ export async function bulkLookupWords(
   const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
   if (uncached.length === 0) return;
 
-  // Deduplicate: if an identical batch is already in-flight, reuse its promise.
-  const batchKey = uncached.length === 1
-    ? `1:${uncached[0]!.l2Code}:${uncached[0]!.text}`
-    : `N:${uncached.length}:${uncached[0]!.l2Code}`;
+  // The batch endpoint takes one language per request — group by l2Code so
+  // mixed-language queues can't misattribute results (results are keyed by
+  // text only, not text+l2).
+  const byL2 = new Map<string, { text: string; l2Code: string }[]>();
+  for (const w of uncached) {
+    const group = byL2.get(w.l2Code);
+    if (group) group.push(w);
+    else byL2.set(w.l2Code, [w]);
+  }
 
+  await Promise.all([...byL2.values()].map((group) => _dedupedBulkLookup(group, apiUrl)));
+}
+
+/**
+ * Deduplicate in-flight requests by the exact word set (not just count+l2,
+ * which could collide and silently drop a second batch with different words).
+ * Identical batches share one request; different batches never collide.
+ */
+function _dedupedBulkLookup(
+  group: { text: string; l2Code: string }[],
+  apiUrl: string,
+): Promise<void> {
+  const batchKey = group
+    .map((w) => `${w.l2Code}:${w.text}`)
+    .sort()
+    .join('\u0000');
   const existing = _inflightRequests.get(batchKey);
   if (existing) return existing;
 
-  const promise = _doBulkLookup(uncached, apiUrl).finally(() => {
+  const promise = _doBulkLookup(group, apiUrl).finally(() => {
     _inflightRequests.delete(batchKey);
   });
   _inflightRequests.set(batchKey, promise);
@@ -139,32 +160,43 @@ async function _doBulkLookup(
   apiUrl: string,
 ): Promise<void> {
   try {
-    const res = await fetch(`${apiUrl}/dictionary/lookup-batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        words: uncached.map((w) => ({ text: w.text, l2: w.l2Code })),
-      }),
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const results: Record<string, DictionaryEntry[]> = data.results ?? {};
-
-    for (const [text, entries] of Object.entries(results)) {
-      const l2 = uncached[0]?.l2Code ?? '';
-      if (entries.length > 0) {
-        textCache.set(`${l2}:${text}`, entries);
-        for (const entry of entries) {
-          if (entry.id) {
-            idCache.set(`${l2}:${entry.id}`, entry);
-          }
-        }
-        _cacheVersion++;
-        notify();
-      }
-    }
+    await _postBulkLookup(uncached, apiUrl);
   } catch {
-    // Silently fail — popups will fall back to individual lookup
+    // Batch failed — retry per word so one bad word (or a transient error)
+    // can't silently drop the rest of the batch. Popups still fall back to
+    // individual lookup if these also fail.
+    await Promise.allSettled(uncached.map((w) => _postBulkLookup([w], apiUrl)));
+  }
+}
+
+async function _postBulkLookup(
+  words: { text: string; l2Code: string }[],
+  apiUrl: string,
+): Promise<void> {
+  const res = await fetch(`${apiUrl}/dictionary/lookup-batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      words: words.map((w) => ({ text: w.text, l2: w.l2Code })),
+    }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const results: Record<string, DictionaryEntry[]> = data.results ?? {};
+
+  // A group is single-language by construction (see bulkLookupWords).
+  const l2 = words[0]?.l2Code ?? '';
+  for (const [text, entries] of Object.entries(results)) {
+    if (entries.length > 0) {
+      textCache.set(`${l2}:${text}`, entries);
+      for (const entry of entries) {
+        if (entry.id) {
+          idCache.set(`${l2}:${entry.id}`, entry);
+        }
+      }
+      _cacheVersion++;
+      notify();
+    }
   }
 }
 
@@ -241,20 +273,24 @@ function scheduleLookupFlush() {
 }
 
 async function flushLookupQueue() {
-  const items = lookupQueue.splice(0, LOOKUP_BATCH_MAX);
-  if (items.length === 0) return;
+  // Drain the whole queue in chunks — words beyond LOOKUP_BATCH_MAX that
+  // enqueued before this flush must not be stranded until a later enqueue.
+  while (lookupQueue.length > 0) {
+    const items = lookupQueue.splice(0, LOOKUP_BATCH_MAX);
+    if (items.length === 0) break;
 
-  // Only release the seen-markers for words actually flushed; anything left in
-  // the queue stays deduplicated until its own flush.
-  for (const item of items) lookupSeen.delete(item.key);
+    // Only release the seen-markers for words actually flushed; anything left
+    // in the queue stays deduplicated until its own flush.
+    for (const item of items) lookupSeen.delete(item.key);
 
-  try {
-    await bulkLookupWords(
-      items.map((i) => ({ text: i.text, l2Code: i.l2Code })),
-      lookupApiUrl,
-    );
-    for (const item of items) item.resolve();
-  } catch (err) {
-    for (const item of items) item.reject(err);
+    try {
+      await bulkLookupWords(
+        items.map((i) => ({ text: i.text, l2Code: i.l2Code })),
+        lookupApiUrl,
+      );
+      for (const item of items) item.resolve();
+    } catch (err) {
+      for (const item of items) item.reject(err);
+    }
   }
 }

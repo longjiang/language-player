@@ -147,9 +147,12 @@ Each word is looked up independently via `_lookup_word()`:
 
 ### Client-Side Cache
 
-**Files:** `apps/web/src/lib/dictionary-cache.ts`, `apps/mobile/lib/dictionary-cache.ts`
+**File:** `packages/utils/src/dictionary-cache.ts` (shared source of truth).
+The platform files (`apps/web/src/lib/dictionary-cache.ts`,
+`apps/mobile/lib/dictionary-cache.ts`) are thin re-exports so existing
+imports keep working.
 
-Both platforms use an identical shared cache module:
+Both platforms use this identical cache module:
 
 ```typescript
 // In-memory cache: l2Code:text → DictionaryEntry[]
@@ -159,10 +162,18 @@ let _cacheVersion = 0;  // monotonic counter for invalidation
 export function getCachedEntries(l2Code: string, text: string): DictionaryEntry[] | undefined
 export function setCachedEntries(l2Code: string, text: string, entries: DictionaryEntry[]): void
 export function getCacheVersion(): number
-export async function bulkLookupWords(words: { text, l2Code, l1Code }[]): Promise<void>
+export async function bulkLookupWords(words: { text, l2Code }[], apiUrl): Promise<void>
+export function enqueueLookupWords(words: { text, l2Code }[], apiUrl): Promise<void>
 ```
 
 **Cache key:** `${l2Code}:${text}` — lemma text is language-specific since the same string can mean different things in different languages.
+
+**Queued (batched) lookup:** `TokenizedText` lines call `enqueueLookupWords()`
+after their tokens arrive. A short timer (80ms) flushes the queue through
+`bulkLookupWords()` in one `/dictionary/lookup-batch` request (max 30 words per
+request, draining the whole queue in chunks so words beyond the cap are never
+stranded). Words already in the cache are skipped, and identical words queued
+by multiple lines are looked up once.
 
 ### In-Flight Request Deduplication
 
@@ -171,15 +182,20 @@ const _inflightRequests = new Map<string, Promise<void>>();
 
 // When many TokenizedText instances mount simultaneously with the same lemmas,
 // only one request is made — subsequent callers reuse the in-flight promise.
-const batchKey = uncached.length === 1
-  ? `1:${l2Code}:${text}`    // single word
-  : `N:${count}:${l2Code}`;  // multi-word batch
+// Batches are grouped by l2Code (the endpoint is single-language) and keyed by
+// the exact word set — never by count+l2, which would silently drop a second
+// batch with the same size and language but different words.
+const batchKey = group.map(w => `${w.l2Code}:${w.text}`).sort().join('\u0000');
 
 const existing = _inflightRequests.get(batchKey);
 if (existing) return existing;  // reuse
 ```
 
 This is critical in transcript mode where 500+ `TokenizedText` instances all try to pre-populate the same dictionary cache with the same set of unique words.
+
+If a batch request fails, the words are retried one per request so a single
+bad word (or a transient error) can't silently drop the rest of the batch.
+Popups still fall back to individual lookup if those also fail.
 
 ### DictionaryEntry Shape (for rendering)
 
@@ -281,17 +297,18 @@ When a `TokenizedText` instance mounts:
 After tokens are loaded (any path above):
 
 ```
-7. GATHER UNIQUE LEMMAS ──→ Extract all lemma.lemma + token.text
+7. GATHER UNIQUE LEMMAS ──→ Extract all lemma.lemma + token.text (punctuation filtered)
      │
      ▼
-8. FILTER UNCACHED ──→ Remove words already in dictionary cache
+8. ENQUEUE (enqueueLookupWords) ──→ Filter already-cached, dedupe in queue
      │
      ▼
-9. IN-FLIGHT DEDUP ──hit──→ Reuse existing Promise<void>
+9. FLUSH (80ms, ≤30 words) ──→ Group by l2, dedupe identical in-flight batches
      │
      miss
      ▼
 10. POST /dictionary/lookup-batch ──→ Populate dictionary cache, increment cacheVersion
+    (batch failure → per-word retry)
 ```
 
 ### cacheVersion Propagation
@@ -598,13 +615,14 @@ The only remaining structural gap between web and mobile is **lazy loading**. Re
 | `zerotohero-python-server/routes/dictionary.py` | Backend | ~200 | `/dictionary/lookup-batch` endpoint |
 | `apps/web/src/components/tokenized-text.tsx` | Web | ~375 | Container: lazy loading, caching, batch lookup (conversion moved to TokenSpan per ADR-0019) |
 | `apps/web/src/components/token-span.tsx` | Web | ~290 | Individual token: ruby, Chinese script conversion, byeonggi, quiz, gloss, hardWords, karaoke |
-| `apps/web/src/lib/dictionary-cache.ts` | Web | 83 | Client-side dict cache + `bulkLookupWords()` |
+| `packages/utils/src/dictionary-cache.ts` | Shared | ~280 | Client-side dict cache + `bulkLookupWords()` + queued `enqueueLookupWords()` |
+| `apps/web/src/lib/dictionary-cache.ts` | Web | 12 | Re-exports the shared cache module |
 | `apps/web/src/hooks/use-subtitle-translation.ts` | Web | 209 | Chunked L1 translation for video subtitles |
 | `apps/web/src/hooks/use-video-token-cache.ts` | Web | ~30 | Fetch + populate TokenCache from /lemmatize-video-normalized |
 | `apps/web/src/lib/chinese-script.ts` | Web | ~50 | OpenCC Simplified→Traditional conversion |
 | `apps/mobile/components/TokenizedText.tsx` | Mobile | ~550 | Single-file: lemmatization, caching, batch lookup, inline token rendering (no TokenSpan) |
 | `apps/mobile/lib/tokenizer.ts` | Mobile | ~780 | `lemmatizeText()` — server-first, local-fallback pipeline: kuromoji, dict segmentation, lemma tables, snowball, arabic-stem |
-| `apps/mobile/lib/dictionary-cache.ts` | Mobile | 83 | Identical to web — shared cache + `bulkLookupWords()` |
+| `apps/mobile/lib/dictionary-cache.ts` | Mobile | 24 | Re-exports the shared cache module |
 | `apps/mobile/lib/chinese-script.ts` | Mobile | ~50 | OpenCC simplified→traditional (same lib, RN-compatible) |
 | `apps/mobile/hooks/use-epub-pagination.ts` | Mobile | ~200 | EPUB reader batch lemmatization via `/lemmatize-normalized/batch` |
 | `apps/mobile/hooks/use-video-token-cache.ts` | Mobile | ~45 | Fetch + populate TokenCache, AbortController-based, resets on videoId change |

@@ -63,46 +63,50 @@ function scheduleLemmatizeBatchFlush() {
 }
 
 async function flushLemmatizeBatch() {
-  const items = lemmatizeBatchQueue.splice(0, LEMMATIZE_BATCH_MAX);
-  if (items.length === 0) return;
+  // Drain the whole queue in chunks — lines beyond LEMMATIZE_BATCH_MAX that
+  // enqueued before this flush must not be stranded until a later enqueue.
+  while (lemmatizeBatchQueue.length > 0) {
+    const items = lemmatizeBatchQueue.splice(0, LEMMATIZE_BATCH_MAX);
+    if (items.length === 0) break;
 
-  // Batch endpoint takes one language per call — group the queue by l2.
-  const byL2 = new Map<string, LemmatizeBatchItem[]>();
-  for (const item of items) {
-    const group = byL2.get(item.l2Code);
-    if (group) group.push(item);
-    else byL2.set(item.l2Code, [item]);
-  }
+    // Batch endpoint takes one language per call — group the queue by l2.
+    const byL2 = new Map<string, LemmatizeBatchItem[]>();
+    for (const item of items) {
+      const group = byL2.get(item.l2Code);
+      if (group) group.push(item);
+      else byL2.set(item.l2Code, [item]);
+    }
 
-  for (const [l2Code, group] of byL2) {
-    try {
-      const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts: group.map((g) => g.text), l2: baseCode(l2Code) }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const results: LemmatizedToken[][] = data?.results ?? [];
-      group.forEach((item, i) => {
-        const tokens = results[i] ?? [];
-        lemmatizeCache.set(item.key, tokens);
-        item.resolve(tokens);
-        lemmatizeBatchPending.delete(item.key);
-      });
-    } catch (err) {
-      // Batch request failed — fall back to per-line requests so nothing is lost.
-      await Promise.allSettled(group.map(async (item) => {
-        try {
-          const tokens = await fetchLemmatizeLine(item.text, item.l2Code);
+    for (const [l2Code, group] of byL2) {
+      try {
+        const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texts: group.map((g) => g.text), l2: baseCode(l2Code) }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const results: LemmatizedToken[][] = data?.results ?? [];
+        group.forEach((item, i) => {
+          const tokens = results[i] ?? [];
           lemmatizeCache.set(item.key, tokens);
           item.resolve(tokens);
-        } catch (lineErr) {
-          item.reject(lineErr);
-        } finally {
           lemmatizeBatchPending.delete(item.key);
-        }
-      }));
+        });
+      } catch (err) {
+        // Batch request failed — fall back to per-line requests so nothing is lost.
+        await Promise.allSettled(group.map(async (item) => {
+          try {
+            const tokens = await fetchLemmatizeLine(item.text, item.l2Code);
+            lemmatizeCache.set(item.key, tokens);
+            item.resolve(tokens);
+          } catch (lineErr) {
+            item.reject(lineErr);
+          } finally {
+            lemmatizeBatchPending.delete(item.key);
+          }
+        }));
+      }
     }
   }
 }
@@ -469,7 +473,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     // Queue with other visible lines' lemmas so one flush covers many lines
     // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).
     enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
-  }, [tokens, loading, error, l2Code, l1.code]);
+  }, [tokens, loading, error, l2Code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
