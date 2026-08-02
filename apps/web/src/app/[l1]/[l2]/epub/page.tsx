@@ -9,9 +9,11 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
+import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { useEpub } from '@/hooks/use-epub';
 import { Sidebar } from '@/components/ui/sidebar';
+import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
@@ -27,6 +29,7 @@ export default function EpubPage() {
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [importFailures, setImportFailures] = useState<EpubFileError[]>([]);
   const anchorRef = useRef<string | null>(null);
 
   // Load the bookshelf on mount — books are opened explicitly, not auto-resumed.
@@ -63,11 +66,18 @@ export default function EpubPage() {
     }
   }, [epub]);
 
-  // Handle file upload(s) — add to the shelf without opening
-  const handleFilesLoaded = useCallback(async (files: Array<{ data: ArrayBuffer; fileName: string }>) => {
+  // Handle file upload(s) — add to the shelf without opening; collect any
+  // files that failed (up-front validation or parse errors) for the dialog.
+  const handleFilesProcessed = useCallback(async ({ files, failures }: EpubUploadResult) => {
+    const failed: EpubFileError[] = [...failures];
     for (const file of files) {
-      await epub.addBook(file.data, file.fileName);
+      const added = await epub.addBook(file.data, file.fileName);
+      if (!added) {
+        failed.push({ fileName: file.fileName, fileSize: file.fileSize, reasonKey: 'msg.epub_parse_error' });
+      }
     }
+    epub.clearError();
+    setImportFailures(failed);
   }, [epub]);
 
   // Close the book and return to the bookshelf (the handle is kept)
@@ -76,6 +86,11 @@ export default function EpubPage() {
     setText('');
     setBlocks(null);
     anchorRef.current = null;
+  }, [epub]);
+
+  // Remove a book from the shelf
+  const handleRemoveBook = useCallback(async (id: string) => {
+    await epub.removeBook(id);
   }, [epub]);
 
   // Parse markdown when text changes
@@ -172,7 +187,8 @@ export default function EpubPage() {
             <EpubBookshelf
               books={epub.books}
               onOpenBook={handleOpenBook}
-              onFilesLoaded={handleFilesLoaded}
+              onRemoveBook={handleRemoveBook}
+              onFilesProcessed={handleFilesProcessed}
               openingId={openingId}
               error={epub.error ? t(epub.error) : null}
             />
@@ -293,6 +309,12 @@ export default function EpubPage() {
           </Sidebar>
         )}
       </div>
+
+      {/* Import failure dialog */}
+      <EpubImportDialog
+        failures={importFailures}
+        onClose={() => setImportFailures([])}
+      />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   saveEpub,
   loadEpub,
   updateEpubMeta,
+  deleteEpub,
   listEpubs,
   sha256Hex,
   type EpubSummary,
@@ -175,6 +176,8 @@ export interface UseEpubReturn {
   refreshBooks: () => Promise<EpubSummary[]>;
   /** Open a stored book and resume at its saved chapter/page. */
   openBook: (id: string) => Promise<{ markdown: string; anchor: string | null } | null>;
+  /** Remove a stored book from the bookshelf (deletes its handle). */
+  removeBook: (id: string) => Promise<void>;
   /** Add a file to the bookshelf without opening it. */
   addBook: (data: ArrayBuffer, fileName: string) => Promise<{ id: string } | null>;
   /** Load a file from an ArrayBuffer into the reader (opens the book). */
@@ -190,6 +193,8 @@ export interface UseEpubReturn {
   prevChapter: () => Promise<void>;
   /** Close the book and return to the bookshelf (the handle is kept). */
   close: () => Promise<void>;
+  /** Clear the current error message (e.g. after showing an import dialog). */
+  clearError: () => void;
   /** Update the last anchor (reading position) in IndexedDB. */
   saveAnchor: (anchor: string) => Promise<void>;
 }
@@ -519,6 +524,18 @@ export function useEpub(): UseEpubReturn {
     await refreshBooks();
   }, [refreshBooks]);
 
+  /** Clear the current error message. */
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  /** Remove a stored book from the bookshelf. */
+  const removeBook = useCallback(async (id: string) => {
+    await deleteEpub(id);
+    if (currentBookIdRef.current === id) currentBookIdRef.current = null;
+    await refreshBooks();
+  }, [refreshBooks]);
+
   /** Save anchor (reading position within the current chapter). */
   const saveAnchor = useCallback(async (anchor: string) => {
     const id = currentBookIdRef.current;
@@ -564,11 +581,13 @@ export function useEpub(): UseEpubReturn {
     refreshBooks,
     openBook,
     addBook,
+    removeBook,
     loadFile,
     loadChapter,
     nextChapter,
     prevChapter,
     close,
+    clearError,
     saveAnchor,
   };
 }

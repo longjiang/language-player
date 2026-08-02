@@ -7,6 +7,25 @@ import {
   Upload, FileText,
 } from 'lucide-react';
 
+/** A successfully read .epub file, ready to be stored. */
+export interface EpubFileInput {
+  data: ArrayBuffer;
+  fileName: string;
+  fileSize: number;
+}
+
+/** A file that could not be imported, with the reason as a translation key. */
+export interface EpubFileError {
+  fileName: string;
+  fileSize: number;
+  reasonKey: string;
+}
+
+export interface EpubUploadResult {
+  files: EpubFileInput[];
+  failures: EpubFileError[];
+}
+
 export interface TocItem {
   href: string;
   label: string;
@@ -14,9 +33,9 @@ export interface TocItem {
 }
 
 interface EpubUploadProps {
-  /** Called with the decoded contents of every valid .epub file dropped/selected. */
-  onFilesLoaded: (files: Array<{ data: ArrayBuffer; fileName: string }>) => void;
-  /** Error message to display (e.g. parse failure from parent). */
+  /** Called with readable .epub files plus any files that failed up front. */
+  onFilesProcessed: (result: EpubUploadResult) => void;
+  /** Global error message to display (e.g. parse failure from parent). */
   error?: string | null;
   /** Compact variant for embedding above the bookshelf. */
   compact?: boolean;
@@ -25,7 +44,7 @@ interface EpubUploadProps {
 }
 
 export function EpubUpload({
-  onFilesLoaded,
+  onFilesProcessed,
   error,
   compact = false,
   slot = false,
@@ -33,25 +52,30 @@ export function EpubUpload({
   const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
-    const epubFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.epub'));
-    if (epubFiles.length === 0) {
-      setLocalError(t('msg.epub_not_supported'));
-      return;
+    const list = Array.from(files);
+    const failures: EpubFileError[] = [];
+    const epubFiles: File[] = [];
+    for (const f of list) {
+      if (f.name.toLowerCase().endsWith('.epub')) {
+        epubFiles.push(f);
+      } else {
+        failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_not_supported' });
+      }
     }
-    setLocalError(null);
-    try {
-      const loaded = await Promise.all(epubFiles.map(async (file) => ({
-        data: await file.arrayBuffer(),
-        fileName: file.name,
-      })));
-      onFilesLoaded(loaded);
-    } catch {
-      setLocalError(t('msg.epub_file_unreadable'));
+
+    const loaded: EpubFileInput[] = [];
+    for (const file of epubFiles) {
+      try {
+        const data = await file.arrayBuffer();
+        loaded.push({ data, fileName: file.name, fileSize: file.size });
+      } catch {
+        failures.push({ fileName: file.name, fileSize: file.size, reasonKey: 'msg.epub_file_unreadable' });
+      }
     }
-  }, [onFilesLoaded, t]);
+    onFilesProcessed({ files: loaded, failures });
+  }, [onFilesProcessed]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -111,8 +135,8 @@ export function EpubUpload({
           {t('action.browse')}
         </Button>
         {input}
-        {(localError || error) && (
-          <p className="text-xs text-destructive">{localError || error}</p>
+        {error && (
+          <p className="text-xs text-destructive">{error}</p>
         )}
       </div>
     );
@@ -143,8 +167,8 @@ export function EpubUpload({
           {t('action.browse')}
         </Button>
         {input}
-        {(localError || error) && (
-          <p className="mt-4 text-sm text-destructive">{localError || error}</p>
+        {error && (
+          <p className="mt-4 text-sm text-destructive">{error}</p>
         )}
       </div>
     </div>
