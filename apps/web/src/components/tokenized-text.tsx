@@ -13,9 +13,6 @@ import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
 import { isPhoneticsEligible, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
-import { useRouter } from 'next/navigation';
-import { useT } from '@/hooks/use-t';
-import { ChevronRight } from 'lucide-react';
 import type { FormatRange } from '@/lib/parse-markdown';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
@@ -187,8 +184,8 @@ export interface TokenizedTextProps {
    */
   formats?: FormatRange[];
   /**
-   * When set, renders a chevron button after the tokenized text that
-   * navigates to the web reader for this URL (http/https links only).
+   * When set (http/https only), the token dictionary popup offers an
+   * "Open in Reader" action that navigates to this URL.
    */
   href?: string;
   /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
@@ -263,8 +260,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     typeFace === 'sans-serif' ? 'font-sans' : '';
   const leadingClass = LEADING_CLASS[leading] ?? '';
   const { l1 } = useLanguage();
-  const router = useRouter();
-  const t = useT();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
@@ -296,16 +291,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return null;
     let pos = 0;
-    const out: Array<'bold' | 'italic' | 'code' | null> = [];
+    const out: Array<'bold' | 'italic' | 'code' | 'link' | null> = [];
     for (const token of tokens) {
-      let fmt: 'bold' | 'italic' | 'code' | null = null;
+      let fmt: 'bold' | 'italic' | 'code' | 'link' | null = null;
       for (const f of formats) {
-        // Links are handled separately (chevron navigation), so they don't
-        // contribute token-level styling — but bold/italic inside a link still
-        // does.
-        if (pos < f.end && pos + token.text.length > f.start && f.type !== 'link') {
-          fmt = f.type;
-          break;
+        if (pos < f.end && pos + token.text.length > f.start) {
+          // Link styling wins over bold/italic/code so linked tokens always
+          // read as links (their action lives in the dictionary popup).
+          if (f.type === 'link') { fmt = 'link'; break; }
+          if (fmt === null) fmt = f.type;
         }
       }
       out.push(fmt);
@@ -313,12 +307,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     }
     return out;
   }, [tokens, formats, text]);
-
-  // Open a block's linked URL inside the web reader instead of leaving the app.
-  const openInWebReader = useCallback(() => {
-    if (!href || !/^https?:\/\//i.test(href)) return;
-    router.push(`/${l1.code}/${l2Code}/web-reader?url=${encodeURIComponent(href)}`);
-  }, [href, l1.code, l2Code, router]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -605,20 +593,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           if (fmt === 'code') {
             return <code key={i} className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>;
           }
+          if (fmt === 'link') {
+            return (
+              <span key={i} className="text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary">
+                {tokenSpan}
+              </span>
+            );
+          }
           return tokenSpan;
         });
       })()}
-      {href && /^https?:\/\//i.test(href) && (
-        <button
-          type="button"
-          onClick={openInWebReader}
-          title={href}
-          className="ml-1.5 inline-flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5 align-middle text-xs text-muted-foreground transition-colors hover:bg-muted/80 hover:text-primary"
-        >
-          {t('action.open')}
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
-      )}
       </span>
 
       {/* Dictionary popup */}
@@ -632,6 +616,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             form: selectedToken.text,
             text: selectedContextText ?? text,
           }}
+          linkUrl={href && /^https?:\/\//i.test(href) ? href : undefined}
           onClose={() => setSelectedToken(null)}
         />
       )}

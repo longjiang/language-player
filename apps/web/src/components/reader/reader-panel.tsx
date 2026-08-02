@@ -412,8 +412,8 @@ export function ReaderPanel({
                         const globalIndex = blocks!.indexOf(block);
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         const cachedTokens = tokenCache[textBlockIndex];
-                        // Chevron target: first http(s) link in the block, opened
-                        // inside the web reader by TokenizedText.
+                        // First http(s) link in the block — surfaced as an
+                        // "Open in Reader" action in the token dictionary popup.
                         const blockHref = tb.formats.find(
                           f => f.type === 'link' && /^https?:\/\//i.test(f.url ?? ''),
                         )?.url;
