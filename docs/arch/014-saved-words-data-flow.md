@@ -232,9 +232,10 @@ The `context: SavedWordContext` is assembled at the point where the user clicks 
 
 | Context | context fields populated |
 |---|---|
-| **Video player** | `form`, `text` (subtitle line), `starttime`, `youtube_id`, `videoTitle` |
-| **EPUB reader** | `form`, `text` (surrounding sentence), `textTitle` (book title) |
-| **Notes reader** | `form`, `text`, `textTitle` (note title) |
+| **Any tokenized text** | `form`, `text` — always derived by `TokenizedText` from the clicked token and the **sentence** containing it (`Intl.Segmenter`, UAX #29); callers cannot override them |
+| **Video player** | caller adds `starttime`, `youtube_id`, `videoTitle` |
+| **EPUB reader** | caller adds `textTitle` (book title) |
+| **Notes reader** | caller adds `textTitle` (note title) |
 
 ### 2. Store — Client-Side Persistence
 

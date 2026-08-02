@@ -43,26 +43,6 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
 const READER_TEXT_KEY = 'lp_reader_text';
 const READER_TITLE_KEY = 'lp_reader_title';
 
-function stripMarkdown(md: string): string {
-  // Protect image tags so the stripping regexes below can't mangle them:
-  // `_(.+?)_` eats underscores inside image URLs and `\[..\]\(..\)` turns
-  // `![alt](url)` into `!alt`. Placeholders are restored afterwards.
-  const images: string[] = [];
-  const protectedMd = md.replace(/!\[[^\]]*\]\([^)]*\)/g, m => {
-    images.push(m);
-    return `\u0000LPIMG${images.length - 1}\u0000`;
-  });
-  const out = protectedMd
-    .replace(/#{1,6}\s/g, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1').replace(/_(.+?)_/g, '$1')
-    .replace(/```[\s\S]*?```/g, '').replace(/`(.+?)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/>\s/g, '')
-    .replace(/[-*+]\s/g, '').replace(/\d+\.\s/g, '')
-    .replace(/\n{3,}/g, '\n\n').trim();
-  return out.replace(/\u0000LPIMG(\d+)\u0000/g, (_, idx: string) => images[Number(idx)] ?? '');
-}
-
 export default function ReaderPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -238,7 +218,7 @@ export default function ReaderPage() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const ctx: Partial<SavedWordContext> = { text: stripMarkdown(text).slice(0, 200), textTitle: title || 'Reader' };
+  const ctx: Partial<SavedWordContext> = { textTitle: title || 'Reader' };
 
   if (loading && !text) {
     return (

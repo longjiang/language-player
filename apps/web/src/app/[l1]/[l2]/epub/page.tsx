@@ -16,26 +16,6 @@ import {
   BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight, X,
 } from 'lucide-react';
 
-function stripMarkdown(md: string): string {
-  // Protect image tags so the stripping regexes below can't mangle them:
-  // `_(.+?)_` eats underscores inside image URLs and `\[..\]\(..\)` turns
-  // `![alt](url)` into `!alt`. Placeholders are restored afterwards.
-  const images: string[] = [];
-  const protectedMd = md.replace(/!\[[^\]]*\]\([^)]*\)/g, m => {
-    images.push(m);
-    return `\u0000LPIMG${images.length - 1}\u0000`;
-  });
-  const out = protectedMd
-    .replace(/#{1,6}\s/g, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1').replace(/_(.+?)_/g, '$1')
-    .replace(/```[\s\S]*?```/g, '').replace(/`(.+?)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/>\s/g, '')
-    .replace(/[-*+]\s/g, '').replace(/\d+\.\s/g, '')
-    .replace(/\n{3,}/g, '\n\n').trim();
-  return out.replace(/\u0000LPIMG(\d+)\u0000/g, (_, idx: string) => images[Number(idx)] ?? '');
-}
-
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -104,7 +84,6 @@ export default function EpubPage() {
   }, [epub.chapterLinks, epub.book, handleLoadChapter]);
 
   const ctx: Partial<SavedWordContext> = {
-    text: stripMarkdown(text).slice(0, 200),
     textTitle: epub.chapterTitle || epub.fileName || 'EPUB Reader',
   };
 
