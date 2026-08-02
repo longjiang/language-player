@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -173,6 +173,10 @@ export default function WebReaderPage() {
   const [menuUrl, setMenuUrl] = useState<string | null>(null);
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  // Last URL that was loaded (or synced from the query string). Compared against
+  // `?url=` instead of the live input value, so editing the address bar never
+  // trips the param-sync effect and snaps the input back.
+  const loadedUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     setVisitedSites(loadVisitedSites());
@@ -181,6 +185,7 @@ export default function WebReaderPage() {
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
+    loadedUrlRef.current = targetUrl;
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
     router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
@@ -238,14 +243,14 @@ export default function WebReaderPage() {
   // link inside a block navigates to another article while already here).
   const urlParam = searchParams.get('url');
   useEffect(() => {
-    if (!urlParam) return;
-    // Guard against double-loading when the form submit already replaced the
-    // URL (the input state matches the param by the time this effect fires).
-    if (urlParam === url) return;
+    // Only react to a param that differs from the URL we already loaded. The
+    // manual submit path updates the ref itself, so it can't double-load here.
+    if (!urlParam || urlParam === loadedUrlRef.current) return;
+    loadedUrlRef.current = urlParam;
     // searchParams.get already URL-decodes the value once — don't decode again.
     setUrl(urlParam);
     handleLoad(urlParam);
-  }, [urlParam, url, handleLoad]);
+  }, [urlParam, handleLoad]);
 
   const handleRename = useCallback((siteUrl: string) => {
     setEditingUrl(siteUrl);
