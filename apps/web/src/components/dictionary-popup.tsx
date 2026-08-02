@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
@@ -24,7 +24,9 @@ interface DictionaryPopupProps {
   token: LemmatizedToken;
   l1Code: string;
   l2Code: string;
-  position?: { x: number; y: number };
+  /** Viewport rect of the token that opened the popup — the dialog's enter
+   *  animation originates from this span. */
+  position?: { x: number; y: number; width?: number; height?: number };
   /** Context for word saving (subtitle line, video title, etc.) */
   context?: SavedWordContext;
   /** Optional link from the block this token belongs to — offered as the first
@@ -41,6 +43,7 @@ export function DictionaryPopup({
   token,
   l1Code,
   l2Code,
+  position,
   context,
   linkUrl,
   onOpenLink,
@@ -54,6 +57,21 @@ export function DictionaryPopup({
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
   const [dialogOpen, setDialogOpen] = useState(true);
+
+  // Spawn-point animation: pin the enter transform so the dialog's center
+  // starts at the clicked token's center, then settles into viewport center
+  // (the shared DialogContent already pins -50% translate for a plain fade).
+  const enterOriginStyle = useMemo<CSSProperties | undefined>(() => {
+    if (!position || typeof window === 'undefined') return undefined;
+    const cx = position.x + (position.width ?? 0) / 2;
+    const cy = position.y + (position.height ?? 0) / 2;
+    return {
+      '--tw-enter-translate-x': `${cx - window.innerWidth / 2}px`,
+      '--tw-enter-translate-y': `${cy - window.innerHeight / 2}px`,
+      '--tw-enter-scale': '0.9',
+      animationDuration: '200ms',
+    } as CSSProperties;
+  }, [position]);
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
     try {
@@ -193,10 +211,11 @@ export function DictionaryPopup({
   };
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { setDialogOpen(false); setTimeout(onClose, 150); } }}>
+    <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { setDialogOpen(false); setTimeout(onClose, 200); } }}>
       <DialogContent
         showCloseButton={false}
         className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4 gap-1"
+        style={enterOriginStyle}
       >
         <DialogTitle className="sr-only">{t('title.dictionary')}</DialogTitle>
         {/* Header */}

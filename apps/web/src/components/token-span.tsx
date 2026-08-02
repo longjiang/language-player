@@ -79,7 +79,9 @@ export interface TokenSpanProps {
   mode: 'normal' | 'quiz';
   /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
   byeonggi: boolean;
-  onClick: () => void;
+  /** Called when the token is clicked; passes the clicked span's bounding
+   *  rect so callers can anchor popups to the word (e.g. spawn animations). */
+  onClick: (rect?: DOMRect) => void;
   /** Monotonically incremented by TokenizedText when bulk dictionary lookup completes.
    *  TokenSpan reads this to know when cached entries may have updated. */
   cacheVersion: number;
@@ -352,12 +354,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   }
 
   // ── Handle click: in quiz mode, reveal blank first; otherwise open popup ──
-  const handleClick = () => {
+  const handleClick = (rect?: DOMRect) => {
     if (isQuizBlanking) {
       setQuizRevealed(true);
       return;
     }
-    onClick();
+    onClick(rect);
   };
 
   // ── Wrapper that combines wordContent + byeonggi + optional quick gloss for both layout variants ──
@@ -382,7 +384,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} title={title}>
         <span className="inline-flex flex-col items-center">
           {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -395,7 +397,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} title={title}>
       {wordWithGloss}
     </span>
   );
