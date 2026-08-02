@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
 import {
-  BookOpen, Loader2, FileText, Sparkles,
+  BookOpen, Loader2, FileText, Sparkles, Plus, PanelRight,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
@@ -102,6 +102,14 @@ export interface ReaderPanelProps {
   onOpenLink?: (href: string) => void;
   /** Hide the edit/read mode toggle bar (e.g. web reader, where text is always read-only). */
   hideModeTabs?: boolean;
+  /** Whether the user has any notes (shows the "My Notes" empty-state button). */
+  hasNotes?: boolean;
+  /** Whether the notes sidebar is already visible (hides the "My Notes" button). */
+  sidebarVisible?: boolean;
+  /** Create a new note (same action as the sidebar's New Note button). */
+  onNewNote?: () => void;
+  /** Open the notes sidebar from the empty state. */
+  onOpenSidebar?: () => void;
 }
 
 export function ReaderPanel({
@@ -119,6 +127,10 @@ export function ReaderPanel({
   initialAnchor,
   onOpenLink,
   hideModeTabs = false,
+  hasNotes = false,
+  sidebarVisible = false,
+  onNewNote,
+  onOpenSidebar,
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
@@ -572,14 +584,23 @@ export function ReaderPanel({
           {/* Empty state */}
           {activeTab === 'read' && !text && !loading && (
             <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
-              <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
+              <FileText className="mb-3 h-12 w-12 text-muted-foreground/40" />
               <h2 className="text-lg font-semibold text-muted-foreground">{t('title.notes_reader')}</h2>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                {t('msg.reader_empty_state', { l2: l2.name })}
+                {t('msg.reader_empty_state')}
               </p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => onTabChange('edit')}>
-                <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}
-              </Button>
+              <div className="mt-4 flex gap-2">
+                {hasNotes && onOpenSidebar && !sidebarVisible && (
+                  <Button variant="outline" size="sm" onClick={onOpenSidebar}>
+                    <PanelRight className="mr-1 h-4 w-4" />{t('action.my_notes')}
+                  </Button>
+                )}
+                {onNewNote && (
+                  <Button variant="outline" size="sm" onClick={onNewNote}>
+                    <Plus className="mr-1 h-4 w-4" />{t('action.new_note')}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
