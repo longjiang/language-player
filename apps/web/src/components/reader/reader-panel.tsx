@@ -165,11 +165,20 @@ export function ReaderPanel({
   const [tokenCache, setTokenCache] = useState<Record<number, LemmatizedToken[]>>({});
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenLoadGenRef = useRef(0);
+  // Incremented whenever blocks change (content reset); the seek only runs
+  // once a measurement for the current blocks has completed.
+  const blocksGenRef = useRef(0);
+  const measuredGenRef = useRef(0);
+  // Dedupes the anchor seek by anchor + content identity. Cleared on content
+  // reset so a fresh measurement always re-seeks.
+  const lastSeekKeyRef = useRef<string | null>(null);
 
   // Clear translations and token cache when blocks change (new note / re-tokenize)
   const prevBlocksRef = useRef(blocks);
   useEffect(() => {
     if (prevBlocksRef.current !== blocks) {
+      blocksGenRef.current += 1;
+      lastSeekKeyRef.current = null;
       setBlockTranslations({});
       setTokenCache({});
       setHasMeasured(false);
@@ -193,7 +202,10 @@ export function ReaderPanel({
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const children = Array.from(container.children) as HTMLElement[];
-        if (children.length === 0) { setPageBreaks([]); setPage(0); setHasMeasured(true); return; }
+        if (children.length === 0) {
+          measuredGenRef.current = blocksGenRef.current;
+          setPageBreaks([]); setPage(0); setHasMeasured(true); return;
+        }
 
         const maxHeight = container.clientHeight || window.innerHeight - 200;
         const breaks: number[] = [];
@@ -211,6 +223,7 @@ export function ReaderPanel({
           }
         }
 
+        measuredGenRef.current = blocksGenRef.current;
         setPageBreaks(breaks);
         setPage(0);
         setHasMeasured(true);
@@ -297,25 +310,40 @@ export function ReaderPanel({
   }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache, visibleBlocks]);
 
   // Seek to initialAnchor whenever it changes (book open, in-book link nav).
-  const lastAnchorRef = useRef<string | null>(null);
   useEffect(() => {
     if (!initialAnchor) {
-      lastAnchorRef.current = null;
+      lastSeekKeyRef.current = null;
       return;
     }
     if (!blocks || !allTokensReady) return;
-    if (lastAnchorRef.current === initialAnchor) return;
-    lastAnchorRef.current = initialAnchor;
+    // Never seek against stale page breaks from a previous blocks set.
+    if (measuredGenRef.current !== blocksGenRef.current) return;
     // Find which page contains the anchor text
     if (pageBreaks.length === 0) return;
-    for (let p = 0; p <= pageBreaks.length; p++) {
-      const start = p === 0 ? 0 : pageBreaks[p - 1]!;
-      const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
-      const pageBlocks = blocks.slice(start, end);
-      const hasAnchor = pageBlocks.some((b): b is TextBlock =>
-        b.kind === 'text' && b.text.includes(initialAnchor)
-      );
-      if (hasAnchor) { setPage(p); break; }
+    const seekKey = `${initialAnchor}\u0000${blocks.length}\u0000${pageBreaks.length}`;
+    if (lastSeekKeyRef.current === seekKey) return;
+    // Search anchors can span paragraph boundaries (a snippet built from
+    // concatenated chapter text), so fall back to shorter prefixes until one
+    // fits inside a single block.
+    const probes = [initialAnchor.length, 40, 30, 20, 15, 10];
+    let foundPage = -1;
+    for (const len of probes) {
+      if (len < 5 || len > initialAnchor.length) continue;
+      const probe = initialAnchor.slice(0, len);
+      for (let p = 0; p <= pageBreaks.length; p++) {
+        const start = p === 0 ? 0 : pageBreaks[p - 1]!;
+        const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
+        const pageBlocks = blocks.slice(start, end);
+        const hasAnchor = pageBlocks.some((b): b is TextBlock =>
+          b.kind === 'text' && b.text.includes(probe)
+        );
+        if (hasAnchor) { foundPage = p; break; }
+      }
+      if (foundPage >= 0) break;
+    }
+    if (foundPage >= 0) {
+      lastSeekKeyRef.current = seekKey;
+      setPage(foundPage);
     }
   }, [initialAnchor, blocks, allTokensReady, pageBreaks]);
 

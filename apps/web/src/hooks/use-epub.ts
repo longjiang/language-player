@@ -22,7 +22,7 @@ import {
   type EpubSummary,
 } from '@/lib/epub-store';
 import type { TocItem } from '@/components/reader/epub-upload';
-import { log, logwarn, logerr } from '@/lib/logger';
+import { logerr } from '@/lib/logger';
 
 let _turndown: any = null;
 async function getTurndown() {
@@ -159,6 +159,8 @@ export interface EpubSearchResult {
   snippet: string;
   /** Exact text slice for seeking to the match's page. */
   anchor: string;
+  /** Character offset of the match within the chapter (≡ lastAnchorOffset). */
+  anchorOffset: number;
 }
 
 /** Internal result of parsing + storing a book, before reader state is touched. */
@@ -276,21 +278,11 @@ export function useEpub(): UseEpubReturn {
   const computeAndPersistIndex = useCallback(async (b: any, id: string, toc: TocItem[]) => {
     // Dedupe concurrent builds for the same book (background + search on demand).
     const inFlight = indexingRef.current.get(id);
-    if (inFlight) {
-      log('EPUB search index build already in flight, joining:', id);
-      return inFlight;
-    }
-    log('EPUB search index build start:', { id, chapters: toc.length });
+    if (inFlight) return inFlight;
     const run = (async () => {
       try {
         const { counts, texts } = await computeChapterTextsAndCounts(b, toc);
         const totalChars = Object.values(counts).reduce((a, c) => a + c, 0);
-        log('EPUB search index build done:', {
-          id,
-          chapters: Object.keys(texts).length,
-          totalChars,
-          sampleChapter: Object.keys(texts)[0],
-        });
         charCountsRef.current = counts;
         chapterTextsRef.current = texts;
         await saveChapterTexts(id, texts);
@@ -426,28 +418,18 @@ export function useEpub(): UseEpubReturn {
     const q = normalizeText(query).toLowerCase();
     if (!q) return [];
 
-    log('EPUB search start:', {
-      id,
-      query: q,
-      chaptersInToc: flatTocRef.current.length,
-      textsInRef: Object.keys(chapterTextsRef.current).length,
-    });
-
     let texts = chapterTextsRef.current;
     if (!texts || Object.keys(texts).length === 0) {
       const cached = await loadChapterTexts(id);
       if (cached && Object.keys(cached).length > 0) {
         texts = cached;
         chapterTextsRef.current = cached;
-        log('EPUB search texts loaded from IndexedDB cache:', Object.keys(cached).length, 'chapters');
       } else if (bookRef.current && flatTocRef.current.length > 0) {
-        log('EPUB search no cached texts — building index on demand');
         await computeAndPersistIndex(bookRef.current, id, flatTocRef.current);
         texts = chapterTextsRef.current;
       }
     }
     if (!texts || Object.keys(texts).length === 0) {
-      logwarn('EPUB search aborted — no chapter texts available:', { id, query: q });
       return [];
     }
 
@@ -468,19 +450,12 @@ export function useEpub(): UseEpubReturn {
           chapterTitle: item.label,
           chapterIndex: i + 1,
           snippet: buildSnippet(text, idx, q.length),
-          anchor: text.slice(Math.max(0, idx - 20), Math.min(text.length, idx + q.length + 30)),
-        });
-        log('EPUB search match:', {
-          query: q,
-          chapter: item.label,
-          href: item.href,
-          snippet: buildSnippet(text, idx, q.length),
+          anchor: text.slice(idx, Math.min(text.length, idx + q.length + 30)),
+          anchorOffset: idx,
         });
         from = idx + q.length;
       }
     }
-    const searchedChars = toc.reduce((sum, item) => sum + (texts[item.href]?.length ?? 0), 0);
-    log('EPUB search done:', { query: q, results: results.length, searchedChars });
     return results;
   }, [computeAndPersistIndex]);
 
