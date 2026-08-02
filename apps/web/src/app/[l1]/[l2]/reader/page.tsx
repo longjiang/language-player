@@ -11,7 +11,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
-  Loader2, BookOpen, PenLine,
+  Loader2, FileText, PenLine,
   PanelRightClose, PanelRight,
 } from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
@@ -71,6 +71,7 @@ export default function ReaderPage() {
   const [notesError, setNotesError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
   const [currentNoteId, setCurrentNoteId] = useState<number | null>(
     noteIdParam ? Number(noteIdParam) : null,
   );
@@ -181,6 +182,21 @@ export default function ReaderPage() {
 
   const handleTokenize = useCallback(async () => { await saveNow(); setActiveTab('read'); }, [saveNow]);
 
+  // Track the sidebar breakpoint (lg = 1024px, matching the Sidebar component)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  // Open the notes sidebar (desktop panel + mobile sheet)
+  const handleOpenSidebar = useCallback(() => {
+    if (isDesktop) setSidebarOpen(true);
+    else setMobileSidebarOpen(true);
+  }, [isDesktop]);
+
   // Parse markdown — Chinese script conversion is handled per-token
   // by TokenSpan (ADR-0019), so we parse the original text directly.
   useEffect(() => {
@@ -232,7 +248,7 @@ export default function ReaderPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Full-width title bar ── */}
       <div className="mb-4 flex items-center gap-3 flex-shrink-0">
-        <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
+        <FileText className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           {isEditingTitle ? (
             <input
@@ -288,6 +304,11 @@ export default function ReaderPage() {
             translating={translating}
             blocks={blocks}
             ctx={ctx}
+            hideModeTabs={currentNoteId == null}
+            hasNotes={notes.length > 0}
+            sidebarVisible={isDesktop ? sidebarOpen : mobileSidebarOpen}
+            onNewNote={handleNewNote}
+            onOpenSidebar={handleOpenSidebar}
             onTextChange={handleTextChange}
             onTabChange={setActiveTab}
             onTokenize={handleTokenize}
