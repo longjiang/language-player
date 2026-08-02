@@ -419,7 +419,7 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[blockKey]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={cachedTokens} href={blockHref} />
+                                tokens={cachedTokens} formats={tb.formats} href={blockHref} />
                             </Tag>
                           </TextActionMenu>
                         );
