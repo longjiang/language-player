@@ -222,17 +222,24 @@ export function ReaderPanel({
         const maxHeight = container.clientHeight || window.innerHeight - 200;
         const breaks: number[] = [];
         let accumulated = 0;
+        let prevBottom = 0;
 
         for (let i = 0; i < children.length; i++) {
           const el = children[i]!;
-          const style = getComputedStyle(el);
-          const h = el.offsetHeight + parseFloat(style.marginTop || '0') + parseFloat(style.marginBottom || '0');
-          if (accumulated + h > maxHeight && accumulated > 0) {
+          const top = el.offsetTop;
+          const h = el.offsetHeight;
+          // Real vertical gap to the previous block (collapsed margins included)
+          // — measured from geometry instead of per-block getComputedStyle,
+          // which forced a style recalc for every block of the chapter.
+          const gap = i === 0 ? 0 : Math.max(0, top - prevBottom);
+          const blockHeight = h + gap;
+          if (accumulated + blockHeight > maxHeight && accumulated > 0) {
             breaks.push(i);
-            accumulated = h;
+            accumulated = blockHeight;
           } else {
-            accumulated += h;
+            accumulated += blockHeight;
           }
+          prevBottom = top + h;
         }
 
         measuredGenRef.current = blocksGenRef.current;

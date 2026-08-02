@@ -14,12 +14,16 @@ const SheetTrigger = DialogPrimitive.Trigger
 const SheetPortal = DialogPrimitive.Portal
 const SheetClose = DialogPrimitive.Close
 
-function SheetOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+// forwardRef is required: Radix DialogPortal clones every child (including the
+// overlay) with a ref, so a plain function component here triggers React's
+// "Function components cannot be given refs" warning on every sheet open.
+const SheetOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(function SheetOverlay({ className, ...props }, ref) {
   return (
     <DialogPrimitive.Overlay
+      ref={ref}
       data-slot="sheet-overlay"
       className={cn(
         "fixed inset-0 isolate z-50 bg-black/10 duration-200 supports-backdrop-filter:backdrop-blur-xs data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
@@ -28,7 +32,7 @@ function SheetOverlay({
       {...props}
     />
   )
-}
+})
 
 const sheetContentVariants = cva(
   "fixed z-50 flex flex-col bg-background text-foreground shadow-lg ring-1 ring-foreground/10 outline-none duration-200",
