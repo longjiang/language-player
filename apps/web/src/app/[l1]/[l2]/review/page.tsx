@@ -712,8 +712,6 @@ export default function ReviewPage() {
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
                 context={{
-                  form: wordForm,
-                  text: wordCtx.text,
                   youtube_id: wordCtx.youtube_id,
                   videoTitle: wordCtx.videoTitle,
                 }}

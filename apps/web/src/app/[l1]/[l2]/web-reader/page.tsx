@@ -285,7 +285,7 @@ export default function WebReaderPage() {
     }
   }, [l1.code]);
 
-  const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
+  const ctx = { textTitle: title || 'Web Reader' };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">

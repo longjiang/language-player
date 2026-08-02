@@ -11,7 +11,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
-import { isPhoneticsEligible } from '@langplayer/utils';
+import { isPhoneticsEligible, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
@@ -168,7 +168,10 @@ export interface TokenizedTextProps {
    * Pass 'none' to inherit from the parent container.
    */
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
-  /** Contextual info for word saving (subtitle line, video title, etc.) */
+  /** Extra contextual info for word saving (video title, timestamp, book title, etc.).
+   *  `text` and `form` cannot be overridden — `form` is the clicked surface
+   *  form, and `text` is the sentence (Intl.Segmenter) the clicked token
+   *  appears in, derived from this component's own text. */
   context?: Partial<SavedWordContext>;
   /** Pre-populated token cache from /lemmatize-video-normalized */
   tokenCache?: TokenCache;
@@ -446,6 +449,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     setSelectedToken(prev => prev === token ? null : token);
   }, []);
 
+  // Sentence containing the selected token — limits the saved context (and the
+  // AI/image-search context) to the sentence the word was clicked in.
+  const selectedContextText = useMemo(() => {
+    if (!selectedToken) return null;
+    return sentenceForToken(text, tokens, selectedToken, baseCode(l2Code));
+  }, [selectedToken, text, tokens, l2Code]);
+
   // Build a set of saved word forms for quick lookup
   const savedFormSet = useMemo(() => {
     const words = savedWords[l2Code] ?? [];
@@ -577,9 +587,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           l1Code={l1.code}
           l2Code={l2Code}
           context={{
-            form: selectedToken.text,
-            text: text,
             ...externalContext,
+            form: selectedToken.text,
+            text: selectedContextText ?? text,
           }}
           onClose={() => setSelectedToken(null)}
         />
