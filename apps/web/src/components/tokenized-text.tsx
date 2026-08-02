@@ -281,6 +281,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0);
   const containerRef = useRef<HTMLSpanElement>(null);
@@ -475,8 +476,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
   }, [tokens, loading, error, l2Code]);
 
-  const handleTokenClick = useCallback((token: LemmatizedToken) => {
+  const handleTokenClick = useCallback((token: LemmatizedToken, rect?: DOMRect) => {
     setSelectedToken(prev => prev === token ? null : token);
+    if (rect) {
+      setPopupPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+    }
   }, []);
 
   // Sentence containing the selected token — limits the saved context (and the
@@ -588,7 +592,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
                 (!!highlightForms && highlightForms.some((f) => f === token.text))
               }
               nextTokenIsSeparator={nextTokenIsSeparator}
-              onClick={() => handleTokenClick(token)}
+              onClick={(rect) => handleTokenClick(token, rect)}
               cacheVersion={cacheVersion}
               isKaraokeSpoken={isKaraokeSpoken}
               phoneticsOnHighlight={phoneticsOnHighlight}
@@ -624,6 +628,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             form: selectedToken.text,
             text: selectedContextText ?? text,
           }}
+          position={popupPosition ?? undefined}
           linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
           onOpenLink={onOpenLink}
           onClose={() => setSelectedToken(null)}
