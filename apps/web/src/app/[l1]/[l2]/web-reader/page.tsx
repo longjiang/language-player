@@ -11,6 +11,7 @@ import { Globe, Loader2, MoreHorizontal, PanelRightClose, PanelRight, Pencil, Tr
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { log, logwarn } from '@/lib/logger';
 
 interface VisitedSite {
   url: string;
@@ -81,14 +82,31 @@ async function getTurndown() {
 }
 
 async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown: string; title: string }> {
+  log('WebReader: htmlToMarkdown start', { htmlChars: html.length, baseUrl });
   const doc = new DOMParser().parseFromString(html, 'text/html');
   // Sniff the page's real title: <title> tag, then og:title, then first h1.
   const sniffedTitle =
     doc.querySelector('title')?.textContent?.replace(/\s+/g, ' ').trim()
     || doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(/\s+/g, ' ').trim()
     || '';
-  doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
-  const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
+  // Article pages: strip site chrome (nav, header, footer, aside, …) so only the
+  // article body is converted. Pages without an article (homepages, indexes,
+  // link pages) keep the whole page — there the header/nav often IS the content.
+  const articleContent = doc.querySelector('#mw-content-text') || doc.querySelector('article');
+  if (articleContent) {
+    doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
+  } else {
+    // Whole-page fallback: only drop script/style (they'd leak raw text into
+    // markdown), keep everything else.
+    doc.querySelectorAll('script, style').forEach(el => el.remove());
+  }
+  const mainContent = articleContent || doc.body;
+  log('WebReader: content source', {
+    source: articleContent
+      ? (articleContent.id ? `#${articleContent.id}` : articleContent.tagName.toLowerCase())
+      : 'whole-page (no article)',
+    bodyChildren: doc.body?.children.length ?? 0,
+  });
   // Some sites (e.g. Yahoo News) render the article body as raw text nodes inside
   // a single block element, with blank lines between paragraphs. Turndown
   // collapses text-node whitespace, which would merge the whole article into one
@@ -103,6 +121,7 @@ async function htmlToMarkdown(html: string, baseUrl: string): Promise<{ markdown
   });
   const td = await getTurndown();
   const markdown = td.turndown(mainContent.innerHTML);
+  log('WebReader: markdown output', { chars: markdown.length, head: markdown.slice(0, 120) });
   return { markdown, title: sniffedTitle };
 }
 
@@ -137,14 +156,16 @@ function splitTextParagraphs(container: Element, doc: Document): void {
   }
   closeRun();
 
-  const paragraphs = runs
-    .filter(run => run.some(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== ''))
-    .map(run => {
-      const p = doc.createElement('p');
-      run.forEach(n => p.appendChild(n));
-      return p;
-    });
-  if (paragraphs.length < 2) return;
+  const contentRuns = runs.filter(run => run.some(n => n.nodeType !== Node.TEXT_NODE || (n.nodeValue ?? '').trim() !== ''));
+  // Guard BEFORE moving nodes into <p>s — the map() below detaches children
+  // from the container, so an early return here would drop them entirely.
+  if (contentRuns.length < 2) return;
+
+  const paragraphs = contentRuns.map(run => {
+    const p = doc.createElement('p');
+    run.forEach(n => p.appendChild(n));
+    return p;
+  });
 
   if (container.tagName === 'P') {
     container.replaceWith(...paragraphs);
@@ -186,6 +207,7 @@ export default function WebReaderPage() {
     const targetUrl = loadUrl || url;
     if (!targetUrl.trim()) return;
     loadedUrlRef.current = targetUrl;
+    log('WebReader: load start', { targetUrl });
     // Keep the browser URL in sync so the loaded page can be shared or
     // reopened from an external link.
     router.replace(`${pathname}?url=${encodeURIComponent(targetUrl)}`, { scroll: false });
@@ -193,9 +215,12 @@ export default function WebReaderPage() {
     setError(null);
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
+      log('WebReader: proxy response', { status: res.status, ok: res.ok });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
+      log('WebReader: raw html', { chars: raw.length });
       const { markdown: md, title: sniffedTitle } = await htmlToMarkdown(raw, targetUrl);
+      log('WebReader: converted markdown', { chars: md.length });
       // Fall back to the first h1, then the raw URL.
       const titleMatch = md.match(/^#\s+(.+)$/m);
       const pageTitle = sniffedTitle || titleMatch?.[1]?.trim() || targetUrl;
@@ -210,8 +235,10 @@ export default function WebReaderPage() {
       try {
         const parsed = parseMarkdown(md);
         setBlocks(parsed);
+        log('WebReader: blocks parsed', { count: parsed.length });
       } catch {
         setBlocks(null);
+        logwarn('WebReader: parseMarkdown failed');
       }
       // Remember the visit (most recent first, capped) in localStorage.
       setVisitedSites(prev => {
