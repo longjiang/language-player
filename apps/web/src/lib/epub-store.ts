@@ -7,8 +7,12 @@
  */
 
 const DB_NAME = 'lp-epub-store';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'epubs';
+/** Per-book chapter plain text, used by the in-reader search index. */
+const TEXTS_STORE_NAME = 'chapter-texts';
+/** Bump when the search index format changes — stale caches are rebuilt. */
+const SEARCH_INDEX_VERSION = 1;
 /** Key used by the previous single-book version — migrated to a per-book key. */
 const LEGACY_KEY = 'current';
 
@@ -16,7 +20,9 @@ function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
-      req.result.createObjectStore(STORE_NAME);
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+      if (!db.objectStoreNames.contains(TEXTS_STORE_NAME)) db.createObjectStore(TEXTS_STORE_NAME);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -218,6 +224,48 @@ export async function deleteEpub(id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+/** Store per-chapter plain text (search index) keyed by book id. */
+export async function saveChapterTexts(id: string, texts: Record<string, string>): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TEXTS_STORE_NAME, 'readwrite');
+    tx.objectStore(TEXTS_STORE_NAME).put({ v: SEARCH_INDEX_VERSION, texts }, id);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+/** Load a book's chapter texts, or null if not indexed yet. */
+export async function loadChapterTexts(id: string): Promise<Record<string, string> | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TEXTS_STORE_NAME, 'readonly');
+    const req = tx.objectStore(TEXTS_STORE_NAME).get(id);
+    req.onsuccess = () => {
+      const rec = req.result as { v?: number; texts?: Record<string, string> } | null;
+      db.close();
+      if (!rec || rec.v !== SEARCH_INDEX_VERSION) { resolve(null); return; }
+      const texts = rec.texts ?? {};
+      // Ignore caches that extracted no text (e.g. from the body bug) so they
+      // get rebuilt instead of poisoning searches.
+      if (!Object.values(texts).some(t => t.length > 0)) { resolve(null); return; }
+      resolve(texts);
+    };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+
+/** Remove a book's search index. */
+export async function deleteChapterTexts(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(TEXTS_STORE_NAME, 'readwrite');
+    tx.objectStore(TEXTS_STORE_NAME).delete(id);
     tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => { db.close(); reject(tx.error); };
   });
