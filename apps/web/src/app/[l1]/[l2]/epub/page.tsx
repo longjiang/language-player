@@ -181,6 +181,7 @@ export default function EpubPage() {
               onTabChange={() => {}}
               onTokenize={() => {}}
               onFillSample={() => {}}
+              hideModeTabs
               onLemmatize={async (texts) => {
                 const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
                   method: 'POST',
