@@ -25,6 +25,8 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
   showClose?: boolean;
   onDismiss?: () => void;
   getName: (code: string) => string;
+  /** Resolver for L1 names (self-names). Defaults to getName. */
+  getNameL1?: (code: string) => string;
 }
 
 // ── Helpers ───────────────────────────────────
@@ -58,6 +60,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
     showClose,
     onDismiss,
     getName,
+    getNameL1,
   } = props;
 
   const t = useT();
@@ -69,6 +72,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
   const selectedCode = isL1 ? selectedL1 : selectedL2;
   const accentBg = isL1 ? 'bg-primary' : 'bg-accent';
   const accentText = 'text-primary-foreground';
+  const resolveName = (code: string) => (isL1 ? getNameL1 ?? getName : getName)(code);
 
   const handleSelect = (code: string) => {
     if (isL1) {
@@ -159,7 +163,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
                     }`}
                     dir={isRTL(code) ? 'rtl' : 'ltr'}
                   >
-                    <span>{getName(code)}</span>
+                    <span>{resolveName(code)}</span>
                     <span className={`text-xs ${isSelected ? 'opacity-70' : 'text-muted-foreground'}`}>
                       {code.toUpperCase()}
                     </span>
