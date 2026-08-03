@@ -211,7 +211,7 @@ export function EpubReaderPanel({
   }, [tokenCache, blockTranslations, showTranslation, l2.code, l1.code, ctx, onOpenLink]);
 
   return (
-    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+    <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
       <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto">
         <div
           className="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
