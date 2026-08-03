@@ -74,7 +74,7 @@ export interface UseEpubReturn {
   /** Reload the bookshelf list from IndexedDB. */
   refreshBooks: () => Promise<EpubSummary[]>;
   /** Open a stored book; returns the location to resume at (or null). */
-  openBook: (id: string) => Promise<BookLocation | null>;
+  openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
   /** Search the open book's whole text, returning located snippets. */
   searchBook: (query: string) => Promise<EpubSearchResult[]>;
   /** Add a file to the bookshelf without opening it. */
@@ -296,7 +296,10 @@ export function useEpub(): UseEpubReturn {
   }, [computeAndPersistIndex]);
 
   /** Open a stored book, resuming at its saved location (with migration). */
-  const openBook = useCallback(async (id: string): Promise<BookLocation | null> => {
+  const openBook = useCallback(async (
+    id: string,
+    opts?: { skipCover?: boolean },
+  ): Promise<BookLocation | null> => {
     const stored = await loadEpub(id);
     if (!stored) return null;
     const parsed = await parseAndStore(stored.data, stored.meta.fileName);
@@ -317,7 +320,7 @@ export function useEpub(): UseEpubReturn {
     }
     if (!start) start = { spineIndex: 0, blockIndex: 0, offset: 0 };
     epubLog(`openBook "${stored.meta.fileName}" → resume spine=${start.spineIndex} block=${start.blockIndex} offset=${start.offset}`);
-    setCoverTapped(!b.coverUrl);
+    setCoverTapped(opts?.skipCover || !b.coverUrl);
     await updateEpubMeta(id, {
       lastLocation: start,
       locationFormatVersion: 1,
