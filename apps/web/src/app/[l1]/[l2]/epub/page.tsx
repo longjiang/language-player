@@ -38,6 +38,9 @@ export default function EpubPage() {
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [jumpNonce, setJumpNonce] = useState(0);
   const pendingStartRef = useRef<BookLocation | null>(null);
+  /** Locations to return to via Back — pushed on in-book jumps (TOC clicks,
+   *  search results, internal links), never on plain page turns. */
+  const historyRef = useRef<BookLocation[]>([]);
 
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
@@ -46,6 +49,25 @@ export default function EpubPage() {
     setLocation(loc);
     setJumpNonce(n => n + 1);
   }, []);
+
+  /** Remember the current page so Back can return to it after a jump. */
+  const pushHistory = useCallback((loc: BookLocation | null) => {
+    if (!loc) return;
+    const stack = historyRef.current;
+    const last = stack[stack.length - 1];
+    if (last && last.spineIndex === loc.spineIndex &&
+        last.blockIndex === loc.blockIndex && last.offset === loc.offset) {
+      return; // same page — don't grow the stack
+    }
+    historyRef.current = [...stack, loc].slice(-50);
+  }, []);
+
+  /** Jump from a user action, remembering the page they came from. */
+  const navigateTo = useCallback((loc: BookLocation | null) => {
+    if (!loc) return;
+    pushHistory(location);
+    gotoLocation(loc);
+  }, [pushHistory, gotoLocation, location]);
 
   // Load the bookshelf on mount — books are opened explicitly, not auto-resumed.
   useEffect(() => {
@@ -131,13 +153,14 @@ export default function EpubPage() {
   const handleLoadChapter = useCallback((href: string) => {
     setMobileSidebarOpen(false);
     log(`[LP Web] EPUB TOC chapter click: href="${href}"`);
+    pushHistory(location);
     void epub.resolveHref(href).then(gotoLocation);
-  }, [epub, gotoLocation]);
+  }, [epub, gotoLocation, pushHistory, location]);
 
   // Search result → jump to its location.
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
-    gotoLocation(result.location);
-  }, [gotoLocation]);
+    navigateTo(result.location);
+  }, [navigateTo]);
 
   // Internal / external links from the dictionary popup.
   const handleOpenLink = useCallback((href: string) => {
@@ -147,8 +170,9 @@ export default function EpubPage() {
     }
     if (!href || href === '#') return;
     log(`[LP Web] EPUB internal link click: href="${href}" (from "${currentSpineHref}")`);
+    pushHistory(location);
     void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
-  }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation]);
+  }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation, pushHistory, location]);
 
   // File upload(s) — add to the shelf without opening.
   const handleFilesProcessed = useCallback(async ({ files, failures }: EpubUploadResult) => {
@@ -168,7 +192,19 @@ export default function EpubPage() {
     await epub.close();
     setLocation(null);
     pendingStartRef.current = null;
+    historyRef.current = [];
   }, [epub]);
+
+  // Back: undo the last in-book jump (e.g. a footnote link); when there is
+  // nothing to return to, close the book and go back to the bookshelf.
+  const handleBack = useCallback(() => {
+    const prev = historyRef.current.pop();
+    if (prev) {
+      gotoLocation(prev);
+    } else {
+      void handleClose();
+    }
+  }, [gotoLocation, handleClose]);
 
   // Remove a book from the shelf.
   const handleRemoveBook = useCallback(async (id: string) => {
@@ -204,7 +240,7 @@ export default function EpubPage() {
       <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         {epub.openBookId ? (
           <button
-            onClick={handleClose}
+            onClick={handleBack}
             aria-label={t('action.back')}
             title={t('action.back')}
             className="flex-shrink-0 rounded-md p-1 text-foreground transition-colors hover:bg-muted"
@@ -328,7 +364,7 @@ export default function EpubPage() {
             headerActions={
               <>
                 <button
-                  onClick={() => chapterNav.prev && gotoLocation(chapterNav.prev.location)}
+                  onClick={() => navigateTo(chapterNav.prev?.location ?? null)}
                   disabled={!chapterNav.prev || !readerActive}
                   className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
                 >
@@ -336,7 +372,7 @@ export default function EpubPage() {
                   {t('action.previous_chapter')}
                 </button>
                 <button
-                  onClick={() => chapterNav.next && gotoLocation(chapterNav.next.location)}
+                  onClick={() => navigateTo(chapterNav.next?.location ?? null)}
                   disabled={!chapterNav.next || !readerActive}
                   className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
                 >

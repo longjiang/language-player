@@ -114,6 +114,19 @@ export function fullTocHref(node: { href: string; fragment?: string }): string {
 }
 
 /**
+ * Canonicalize an in-content link href against the containing spine item's
+ * canonical href. Unlike resolvePath, this keeps the #fragment — a relative
+ * link like "notesch1.html#ch01en01" must resolve to the anchor block, not
+ * the top of the spine item.
+ */
+export function resolveLinkHref(fromHref: string, href: string): string {
+  if (href.startsWith('#')) return `${splitFragment(fromHref).path}${href}`;
+  const { path: hrefPath, fragment: hrefFragment } = splitFragment(href);
+  const canonical = resolvePath(dirname(fromHref), hrefPath);
+  return hrefFragment ? `${canonical}#${hrefFragment}` : canonical;
+}
+
+/**
  * Primary language subtag, lowercased ("ja", "ja-JP", "JA_JP" → "ja").
  * Returns null for empty/missing values.
  */
@@ -521,11 +534,10 @@ export class EpubBook {
     const run = (async (): Promise<BookLocation | null> => {
       if (!href || href === '#') return null;
       if (/^[a-z][a-z0-9+.-]*:\/\//i.test(href)) return null;
-      const canonical = fromHref
-        ? (href.startsWith('#')
-          ? `${splitFragment(fromHref).path}${href}`
-          : resolvePath(dirname(fromHref), href))
-        : href;
+      let canonical = href;
+      if (fromHref) {
+        canonical = resolveLinkHref(fromHref, href);
+      }
       const hashIdx = canonical.indexOf('#');
       const path = hashIdx === -1 ? canonical : canonical.slice(0, hashIdx);
       const fragment = hashIdx === -1 ? undefined : canonical.slice(hashIdx + 1);
@@ -539,14 +551,32 @@ export class EpubBook {
         return { spineIndex, blockIndex: 0, offset: 0 };
       }
       const blocks = await this.getBlocks(spineIndex);
-      for (let i = 0; i < blocks.length; i++) {
-        if (blocks[i]!.srcElementId === fragment) {
-          return { spineIndex, blockIndex: i, offset: 0 };
+      const findFragment = (frag: string): BookLocation | null => {
+        for (let i = 0; i < blocks.length; i++) {
+          if (blocks[i]!.srcElementId === frag) {
+            return { spineIndex, blockIndex: i, offset: 0 };
+          }
         }
+        for (let i = 0; i < blocks.length; i++) {
+          const anchor = blocks[i]!.anchors.find(a => a.id === frag);
+          if (anchor) return { spineIndex, blockIndex: i, offset: anchor.offset };
+        }
+        return null;
+      };
+      // Exact match first, then tolerate the publisher "i"-prefix convention
+      // (markers like id="ifw01en01" linked as "#fw01en01"): try the fragment
+      // without a leading "i", then with one.
+      let location = findFragment(fragment);
+      if (!location && fragment.startsWith('i')) {
+        location = findFragment(fragment.slice(1));
       }
-      for (let i = 0; i < blocks.length; i++) {
-        const anchor = blocks[i]!.anchors.find(a => a.id === fragment);
-        if (anchor) return { spineIndex, blockIndex: i, offset: anchor.offset };
+      if (!location) {
+        const prefixed = `i${fragment}`;
+        if (prefixed !== fragment) location = findFragment(prefixed);
+      }
+      if (location) {
+        log(`[LP Web] EPUB resolveHref "${href}" → spine ${location.spineIndex} block ${location.blockIndex} offset ${location.offset} (fragment "#${fragment}")`);
+        return location;
       }
       logwarn(`[LP Web] EPUB resolveHref "${href}": fragment "#${fragment}" not found in spine ${spineIndex} — falling back to block 0`);
       return { spineIndex, blockIndex: 0, offset: 0 };
