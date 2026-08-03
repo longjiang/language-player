@@ -166,6 +166,18 @@ export function ImageSearchResults({
   const [page, setPage] = useState(0);
   const [cols, setCols] = useState(3);
   const [error, setError] = useState<string | null>(null);
+  const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
+
+  // Broken thumbnails are removed from the pool, so the next good image from
+  // the query's results slides in to fill the gap.
+  const markBroken = (id: string) => {
+    setBrokenIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -175,6 +187,7 @@ export function ImageSearchResults({
     setQueries([]);
     setActiveQuery(null);
     setPage(0);
+    setBrokenIds(new Set());
 
     const run = async () => {
       const originalQuery = buildImageQuery(term, l2Code);
@@ -192,7 +205,9 @@ export function ImageSearchResults({
         }
         if (!cancelled) {
           // A strip of 10 thumbnails is enough for a visual idea in the popup.
-          setImages(results.slice(0, 10).map((img) => ({ ...img, sourceQuery: originalQuery })));
+          // Keep a reserve pool so broken tiles can be replaced with good
+          // ones (10 are shown at a time).
+          setImages(results.slice(0, 20).map((img) => ({ ...img, sourceQuery: originalQuery })));
         }
         return;
       }
@@ -334,19 +349,21 @@ export function ImageSearchResults({
   }
 
   if (isCompact) {
-    return images.length === 0 ? (
+    const good = images.filter((img) => !brokenIds.has(img.id)).slice(0, 10);
+    return good.length === 0 ? (
       <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
         <ImageOff className="h-6 w-6 text-muted-foreground/50" />
         <p className="text-xs text-muted-foreground">{t('msg.no_images_found', { term })}</p>
       </div>
     ) : (
       <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {images.map((image) => (
+        {good.map((image) => (
           <ImageTile
             key={image.id}
             image={image}
             term={term}
             className="h-24 w-24 flex-shrink-0 sm:h-28 sm:w-28"
+            onBroken={() => markBroken(image.id)}
           />
         ))}
       </div>
@@ -356,9 +373,10 @@ export function ImageSearchResults({
   const visibleImages = activeQuery
     ? images.filter((img) => img.sourceQuery === activeQuery)
     : images;
-  const pageCount = Math.max(1, Math.ceil(visibleImages.length / pageSize));
+  const goodImages = visibleImages.filter((img) => !brokenIds.has(img.id));
+  const pageCount = Math.max(1, Math.ceil(goodImages.length / pageSize));
   const safePage = Math.min(page, pageCount - 1);
-  const pageImages = visibleImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
+  const pageImages = goodImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
   // Always render a full three rows — muted placeholders fill the gaps so the
   // grid never shifts between pages or states.
   const gridCells: (SearchImage | null)[] = Array.from(
@@ -403,6 +421,7 @@ export function ImageSearchResults({
                 image={image}
                 term={term}
                 className="aspect-square"
+                onBroken={() => markBroken(image.id)}
               />
             ) : (
               <div
@@ -538,10 +557,12 @@ function ImageTile({
   image,
   term,
   className,
+  onBroken,
 }: {
   image: SearchImage;
   term: string;
   className?: string;
+  onBroken: () => void;
 }) {
   return (
     <a
@@ -560,6 +581,10 @@ function ImageTile({
           src={image.thumbnail ?? image.url}
           alt={image.title || term}
           loading="lazy"
+          // Backend results are unfiltered, so some thumbnails 403/404 —
+          // report the failure so the parent can drop this tile and fill
+          // the slot with the next good image.
+          onError={onBroken}
           className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
         />
       ) : (
