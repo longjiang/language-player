@@ -11,7 +11,6 @@ import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 // Bing image search goes through the Flask gateway so every client shares one
 // backend, one cache, and one source of truth (see ADR-0024).
 const IMAGE_SEARCH_URL = `${PYTHON_API_URL}/images/`;
-const THUMBNAIL_TIMEOUT_MS = 5000;
 // ── Caches (in-memory + sessionStorage) ──
 // Bing results, LLM queries and thumbnail liveness are stable within a
 // session. The Maps make repeat lookups instant; sessionStorage backs them so
@@ -19,7 +18,6 @@ const THUMBNAIL_TIMEOUT_MS = 5000;
 // session ends (no stale-data TTL needed).
 const searchCache = new Map<string, SearchImage[]>();
 const llmQueryCache = new Map<string, string[]>();
-const thumbnailCache = new Map<string, boolean>(); // URL → alive
 
 const STORAGE_PREFIX = 'lp:imageSearch:';
 
@@ -64,18 +62,6 @@ function setLlmCache(key: string, queries: string[]) {
   storageSet(`${STORAGE_PREFIX}queries:${key}`, queries);
 }
 
-function getThumbnailStatus(url: string): boolean | undefined {
-  if (thumbnailCache.has(url)) return thumbnailCache.get(url);
-  const stored = storageGet<boolean>(`${STORAGE_PREFIX}thumb:${url}`);
-  if (stored !== undefined) thumbnailCache.set(url, stored);
-  return stored;
-}
-
-function setThumbnailStatus(url: string, alive: boolean) {
-  thumbnailCache.set(url, alive);
-  storageSet(`${STORAGE_PREFIX}thumb:${url}`, alive);
-}
-
 interface SearchImage {
   id: string;
   title: string;
@@ -101,45 +87,6 @@ const NON_LATIN_RE = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u
 function buildImageQuery(term: string, l2Code: string): string {
   if (baseCode(l2Code) === 'en' || NON_LATIN_RE.test(term)) return term;
   return `${term} ${languageName(l2Code)}`;
-}
-
-/**
- * Dead-thumbnail sniffing: verify a thumbnail actually returns an image before
- * rendering. Uses HEAD so it's cheap and parallel. Anything non-2xx is pruned
- * — except 429 (rate limit is retryable, not dead). Hosts that block CORS are
- * kept as-is: an <img> tag can still load them even when fetch can't inspect
- * the response.
- */
-async function sniffThumbnail(
-  img: SearchImage,
-  signal: AbortSignal,
-): Promise<SearchImage | null> {
-  const target = img.thumbnail ?? img.url;
-  if (!target) return img;
-
-  const cached = getThumbnailStatus(target);
-  if (cached !== undefined) return cached ? img : null;
-
-  const timedOut: Promise<null> = new Promise((resolve) => {
-    setTimeout(() => resolve(null), THUMBNAIL_TIMEOUT_MS);
-  });
-
-  try {
-    const res = await Promise.race([
-      fetch(target, { method: 'HEAD', signal }),
-      timedOut,
-    ]);
-    if (res === null) return img; // timed out — keep rather than risk a false drop
-    if (!res.ok && res.status !== 429) {
-      setThumbnailStatus(target, false);
-      log('[ImageSearch] Thumbnail dead, filtered:', img.title, target, `HTTP ${res.status}`);
-      return null;
-    }
-    setThumbnailStatus(target, true);
-    return img;
-  } catch {
-    return img; // CORS/network error — can't verify, keep (img tag may still load it)
-  }
 }
 
 /**
@@ -230,9 +177,41 @@ export function ImageSearchResults({
     setPage(0);
 
     const run = async () => {
-      // 1. Ask the backend for LLM-rewritten queries (cached server-side).
-      //    Fall back to a direct search if the LLM step is unavailable.
+      const originalQuery = buildImageQuery(term, l2Code);
       const llmCacheKey = [l2Code, term, l1Code, definition ?? '', contextText ?? '', contextForm ?? ''].join('|');
+
+      if (isCompact) {
+        // Popup dictionary: search the original term only — no LLM queries,
+        // no pills. A small strip of thumbnails is enough for a visual idea.
+        setQueries([originalQuery]);
+        let results: SearchImage[] = [];
+        try {
+          results = await fetchQueryResults(originalQuery, l2Code, controller.signal);
+        } catch (err: any) {
+          if (err?.name !== 'AbortError') setError('Bing image search failed');
+        }
+        if (!cancelled) {
+          // A strip of 10 thumbnails is enough for a visual idea in the popup.
+          setImages(results.slice(0, 10).map((img) => ({ ...img, sourceQuery: originalQuery })));
+        }
+        return;
+      }
+
+      // Grid (dictionary tabs): load the original term's results first so the
+      // grid paints immediately, then polyfill with the LLM-rewritten queries.
+      setQueries([originalQuery]);
+      let original: SearchImage[] = [];
+      try {
+        original = await fetchQueryResults(originalQuery, l2Code, controller.signal);
+      } catch {
+        // Original query failed — the LLM queries may still succeed below.
+      }
+      if (cancelled) return;
+
+      const taggedOriginal = original.map((img) => ({ ...img, sourceQuery: originalQuery }));
+      if (taggedOriginal.length > 0) setImages(taggedOriginal);
+
+      // Ask the backend for LLM-rewritten queries (cached server-side).
       let searchQueries = getLlmCache(llmCacheKey) ?? [];
       if (searchQueries.length === 0) {
         try {
@@ -259,74 +238,52 @@ export function ImageSearchResults({
             }
           }
         } catch {
-          // LLM unavailable — fall through to the direct search below.
+          // LLM unavailable — the original-term results stand on their own.
         }
       }
       if (cancelled) return;
 
-      // Always include the default direct-search term (the headword, with the
-      // language hint for Latin-script terms) as the first pill.
-      searchQueries = [buildImageQuery(term, l2Code), ...searchQueries];
       // Dedupe case-insensitively (the LLM may echo the original term).
-      const seenQuery = new Set<string>();
-      searchQueries = searchQueries.filter((q) => {
+      const seenQuery = new Set([originalQuery.toLowerCase()]);
+      const llmQueries = searchQueries.filter((q) => {
         const lower = q.toLowerCase();
         if (seenQuery.has(lower)) return false;
         seenQuery.add(lower);
         return true;
       });
-      setQueries(searchQueries);
+      if (llmQueries.length > 0) setQueries([originalQuery, ...llmQueries]);
 
-      // 2. Search Bing per query (through Flask).
-      const perQuery = new Map<string, SearchImage[]>();
+      // Polyfill: fetch the LLM queries in parallel and append only results
+      // that aren't already shown, so the original term stays first.
+      const extra: SearchImage[] = [];
+      const seen = new Set(
+        taggedOriginal.map((img) => (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '')),
+      );
       let failures = 0;
 
-      await Promise.all(searchQueries.map(async (q) => {
+      await Promise.all(llmQueries.map(async (q) => {
         try {
           const results = await fetchQueryResults(q, l2Code, controller.signal);
-          if (isCompact) {
-            // Compact: 3 per query, no owner cap — the query mix is the diversity.
-            perQuery.set(q, results.slice(0, 3));
-          } else {
-            perQuery.set(q, results);
+          for (const img of results) {
+            const key = (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '');
+            if (!seen.has(key)) {
+              seen.add(key);
+              extra.push({ ...img, sourceQuery: q });
+            }
           }
         } catch (err: any) {
           if (err?.name !== 'AbortError') failures++;
         }
       }));
+      if (cancelled) return;
 
-      // 3. Interleave round-robin — one image from each query in turn, over
-      //    and over — so the "All" tab is a genuine mixture of sources instead
-      //    of one query's entire result block followed by the next.
-      const orderedQueries = searchQueries
-        .map((q) => ({ query: q, images: perQuery.get(q) ?? [] }))
-        .filter((p) => p.images.length > 0);
-      const merged: SearchImage[] = [];
-      const seen = new Set<string>();
-      const total = orderedQueries.reduce((n, p) => n + p.images.length, 0);
-      let processed = 0;
-      for (let round = 0; processed < total; round++) {
-        for (const { query, images } of orderedQueries) {
-          const img = images[round];
-          if (!img) continue;
-          processed++;
-          const key = (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '');
-          if (!seen.has(key)) {
-            seen.add(key);
-            merged.push({ ...img, sourceQuery: query });
-          }
-        }
-      }
-
-      if (!cancelled) {
-        if (merged.length === 0 && failures > 0 && failures >= searchQueries.length) {
+      if (extra.length > 0) {
+        setImages([...taggedOriginal, ...extra]);
+      } else if (taggedOriginal.length === 0) {
+        if (llmQueries.length > 0 && failures > 0 && failures >= llmQueries.length) {
           setError('Bing image search failed');
         } else {
-          // Prune dead thumbnails before showing the grid.
-          const pruned = (
-            await Promise.all(merged.map((img) => sniffThumbnail(img, controller.signal)))
-          ).filter((img): img is SearchImage => img !== null);
-          if (!cancelled) setImages(pruned);
+          setImages([]); // nothing found for any query
         }
       }
     };
