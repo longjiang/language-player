@@ -20,7 +20,7 @@
 1. `useSelectionPopup` listens for `mouseup` / `keyup` (Shift + arrows, Home/End/PgUp/PgDn) on `document` and reads `window.getSelection()`.
 2. A selection is captured only when it is non-collapsed and its `commonAncestorContainer` is inside the `TokenizedText` container; the captured payload is the selected string plus the range's viewport rect.
 3. `TokenizedText` renders `DictionaryPopup` with a lemma-less token (`{ text: <selection>, lemmas: [] }`), the selection rect as the spawn origin, and the block text as context.
-4. Dismissal: the popup's close button/overlay/Escape (Radix Dialog) or a token click closes it; `clear()` also collapses the native selection so a dismissed popup cannot re-open on a stray click. The hook's `selectionchange` listener hides the popup if the selection collapses or moves outside the container.
+4. Dismissal: the popup's close button/overlay/Escape (Radix Dialog) or a token click closes it; `clear()` also collapses the native selection so a dismissed popup cannot re-open on a stray click. There is no `selectionchange` auto-close — clicking or dragging inside the dialog collapses/replaces the underlying selection, and that must not unmount the popup mid-interaction.
 
 ### Components
 - `use-selection-popup.ts` — native-selection capture + dismissal; returns `{ containerRef, selection, clear }`.
