@@ -321,7 +321,6 @@ export default function EpubPage() {
               jumpNonce={jumpNonce}
               l2={l2} l1={l1}
               ctx={ctx}
-              chapterLabel={chapterLabel}
               onLemmatize={async (texts) => {
                 const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
                   method: 'POST',

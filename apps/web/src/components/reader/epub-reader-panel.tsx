@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { usePaginatedBook, type PageBlock } from '@/hooks/use-paginated-book';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubTextBlock } from '@/lib/epub-book-types';
-import { ChevronLeft, ChevronRight, Loader2, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 function blockTag(tb: EpubTextBlock): keyof JSX.IntrinsicElements {
   switch (tb.type) {
@@ -58,8 +58,6 @@ interface EpubReaderPanelProps {
   l2: { code: string; name: string; direction?: string };
   l1: { code: string; name: string };
   ctx: Partial<SavedWordContext>;
-  /** Chapter label of the current page (for the header). */
-  chapterLabel: string | null;
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
   /** Called whenever the visible page changes (persists the position). */
@@ -75,7 +73,6 @@ export function EpubReaderPanel({
   l2,
   l1,
   ctx,
-  chapterLabel,
   onLemmatize,
   onPageTranslate,
   onLocationChange,
@@ -212,17 +209,8 @@ export function EpubReaderPanel({
     );
   }, [tokenCache, blockTranslations, showTranslation, l2.code, l1.code, ctx, onOpenLink]);
 
-  const allTokensReady = pageBlocks.every(p =>
-    p.block.kind === 'image' || tokenCache[`${p.loc.spineIndex}:${p.loc.blockIndex}`],
-  );
-
   return (
     <div className="min-w-0 flex-1 flex flex-col min-h-0">
-      {chapterLabel && (
-        <div className="flex-shrink-0 px-1 pb-2 text-xs font-medium text-muted-foreground truncate">
-          {chapterLabel}
-        </div>
-      )}
       <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto">
         <div
           className="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
@@ -244,11 +232,6 @@ export function EpubReaderPanel({
               {loadingTokens && pageBlocks.length > 0 && (
                 <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
-                </div>
-              )}
-              {!loadingTokens && allTokensReady && pageBlocks.length > 0 && (
-                <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
                 </div>
               )}
               {pageBlocks.map(renderBlock)}
