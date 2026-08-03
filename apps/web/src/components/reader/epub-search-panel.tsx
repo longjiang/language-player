@@ -32,7 +32,7 @@ function HighlightSnippet({ snippet, term }: { snippet: string; term: string }) 
   return (
     <>
       {snippet.slice(0, idx)}
-      <mark className="rounded-sm bg-primary/20 px-0.5 text-foreground">
+      <mark className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
         {snippet.slice(idx, idx + term.length)}
       </mark>
       {snippet.slice(idx + term.length)}

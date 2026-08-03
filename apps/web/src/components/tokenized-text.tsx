@@ -305,15 +305,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return null;
     let pos = 0;
-    const out: Array<'bold' | 'italic' | 'code' | 'link' | null> = [];
+    const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | null> = [];
     for (const token of tokens) {
-      let fmt: 'bold' | 'italic' | 'code' | 'link' | null = null;
+      let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
           // Link styling wins over bold/italic/code so linked tokens always
           // read as links (their action lives in the dictionary popup).
           if (f.type === 'link') { fmt = 'link'; break; }
-          if (fmt === null) fmt = f.type;
+          // Search matches outrank bold/italic/code, but not links.
+          if (f.type === 'highlight' || fmt === null) fmt = f.type;
         }
       }
       out.push(fmt);
@@ -615,6 +616,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           const fmt = tokenFormatStyles?.[i] ?? null;
           if (fmt === 'bold') return <strong key={i} className="font-semibold">{tokenSpan}</strong>;
           if (fmt === 'italic') return <em key={i}>{tokenSpan}</em>;
+          if (fmt === 'highlight') {
+            return (
+              <mark key={i} className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+                {tokenSpan}
+              </mark>
+            );
+          }
           if (fmt === 'code') {
             return <code key={i} className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>;
           }

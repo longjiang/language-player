@@ -17,7 +17,7 @@ import { useEpub, markerForLocation } from '@/hooks/use-epub';
 import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
 import { Sidebar } from '@/components/ui/sidebar';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
-import type { EpubSearchResult } from '@/hooks/use-epub';
+import type { EpubSearchMatch, EpubSearchResult } from '@/hooks/use-epub';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
@@ -36,6 +36,8 @@ export default function EpubPage() {
   const openingIdRef = useRef<string | null>(null);
   const [importFailures, setImportFailures] = useState<EpubFileError[]>([]);
   const [location, setLocation] = useState<BookLocation | null>(null);
+  /** Active search-match highlight (block + char range), if any. */
+  const [highlight, setHighlight] = useState<EpubSearchMatch | null>(null);
   const [jumpNonce, setJumpNonce] = useState(0);
   const pendingStartRef = useRef<BookLocation | null>(null);
   /** Locations to return to via Back — pushed on in-book jumps (TOC clicks,
@@ -152,6 +154,7 @@ export default function EpubPage() {
   // TOC entry click → resolve + jump.
   const handleLoadChapter = useCallback((href: string) => {
     setMobileSidebarOpen(false);
+    setHighlight(null);
     epubLog(`TOC chapter click: href="${href}"`);
     pushHistory(location);
     void epub.resolveHref(href).then(gotoLocation);
@@ -160,6 +163,13 @@ export default function EpubPage() {
   // Search result → jump to its location.
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
     navigateTo(result.location);
+    if (result.match) {
+      setHighlight({
+        spineIndex: result.location.spineIndex,
+        blockIndex: result.location.blockIndex,
+        ...result.match,
+      });
+    }
   }, [navigateTo]);
 
   // Internal / external links from the dictionary popup.
@@ -169,6 +179,7 @@ export default function EpubPage() {
       return;
     }
     if (!href || href === '#') return;
+    setHighlight(null);
     epubLog(`internal link click: href="${href}" (from "${currentSpineHref}")`);
     pushHistory(location);
     void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
@@ -200,6 +211,7 @@ export default function EpubPage() {
   const handleBack = useCallback(() => {
     const prev = historyRef.current.pop();
     if (prev) {
+      setHighlight(null);
       gotoLocation(prev);
     } else {
       void handleClose();
@@ -321,6 +333,8 @@ export default function EpubPage() {
               jumpNonce={jumpNonce}
               l2={l2} l1={l1}
               ctx={ctx}
+              highlight={highlight}
+              onHighlightDismiss={() => setHighlight(null)}
               onLemmatize={async (texts) => {
                 const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
                   method: 'POST',

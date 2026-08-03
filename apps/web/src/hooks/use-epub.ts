@@ -32,6 +32,16 @@ export interface EpubSearchResult {
   chapterLabel: string;
   /** Display snippet around the match (may be truncated with …). */
   snippet: string;
+  /** Char range of the match inside the target block's text. */
+  match: { start: number; end: number };
+}
+
+/** Highlight target: a char range inside a specific block. */
+export interface EpubSearchMatch {
+  spineIndex: number;
+  blockIndex: number;
+  start: number;
+  end: number;
 }
 
 export interface UseEpubReturn {
@@ -334,16 +344,18 @@ export function useEpub(): UseEpubReturn {
         const idx = lower.indexOf(q, from);
         if (idx === -1) break;
         const blockIndex = blockIndexForOffset(rec.starts, idx);
+        const blockStart = rec.starts[blockIndex] ?? 0;
         const location: BookLocation = {
           spineIndex: rec.spineIndex,
           blockIndex,
-          offset: idx - (rec.starts[blockIndex] ?? 0),
+          offset: idx - blockStart,
         };
         const label = markerForLocation(markersList, location)?.node.label ?? '';
         results.push({
           location,
           chapterLabel: label,
           snippet: buildSnippet(rec.text, idx, q.length),
+          match: { start: idx - blockStart, end: idx - blockStart + q.length },
         });
         from = idx + q.length;
       }

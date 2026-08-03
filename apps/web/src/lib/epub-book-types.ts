@@ -40,7 +40,7 @@ export interface BookLocation {
 export interface EpubFormatRange {
   start: number;
   end: number;
-  type: 'bold' | 'italic' | 'code' | 'link';
+  type: 'bold' | 'italic' | 'code' | 'link' | 'highlight';
   url?: string;
 }
 
