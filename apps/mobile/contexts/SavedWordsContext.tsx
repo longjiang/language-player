@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './AuthContext';
-import { useCloudUserData } from './UserDataContext';
 import { useSavedWordApi } from '@langplayer/api-client';
 import { enqueuePendingOp, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
 import {
@@ -13,11 +12,9 @@ import {
   type SavedWordContext,
 } from '@langplayer/shared';
 import { logwarn } from '@/lib/logger';
-import { savedWordsRowApiEnabled } from '@/lib/saved-words-feature';
 
 const STORAGE_KEY = 'zthSavedWords';
 const PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
-const SYNC_DEBOUNCE_MS = 2000;
 
 export interface SavedWordMeta {
   id: string;
@@ -33,17 +30,6 @@ export interface SavedWordMeta {
 }
 
 type SavedWordsStore = Record<string, SavedWordMeta[]>;
-
-function mergeSavedWords(local: SavedWordsStore, cloud: SavedWordsStore): SavedWordsStore {
-  const merged = { ...local };
-  for (const [lang, words] of Object.entries(cloud)) {
-    const existing = merged[lang] ?? [];
-    const existingIds = new Set(existing.map((w) => w.id));
-    const newWords = words.filter((w) => !existingIds.has(w.id));
-    merged[lang] = [...existing, ...newWords];
-  }
-  return merged;
-}
 
 /** Map a mobile SavedWordMeta to the server's SavedLexicalItemRecord shape. */
 function toServerRecord(meta: SavedWordMeta): SavedLexicalItemRecord {
@@ -93,13 +79,9 @@ const SavedWordsContext = createContext<SavedWordsContextValue | null>(null);
 
 export function SavedWordsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const { getSavedWords: fetchSavedWordRows, putSavedWord, deleteSavedWord } = useSavedWordApi();
-  const rowApi = savedWordsRowApiEnabled();
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
-  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
 
@@ -135,11 +117,9 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as SavedWordsStore;
-          if (!cancelled) {
-            setSavedWords(parsed);
-          }
+          if (!cancelled) setSavedWords(parsed);
         }
-        if (rowApi) savePendingOps(await loadPendingOps());
+        savePendingOps(await loadPendingOps());
       } catch (err) {
         logwarn('[SavedWordsContext] error loading from SecureStore:', err);
       } finally {
@@ -147,7 +127,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [rowApi, savePendingOps, loadPendingOps]);
+  }, [savePendingOps, loadPendingOps]);
 
   const flushPending = useCallback(async () => {
     if (!user) return;
@@ -158,9 +138,9 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     savePendingOps(remaining);
   }, [user, putSavedWord, deleteSavedWord, savePendingOps]);
 
-  // Row API: hydrate from the server (after replaying pending ops)
+  // Hydrate from the server (after replaying pending ops)
   useEffect(() => {
-    if (!rowApi || !user || !loaded) return;
+    if (!user || !loaded) return;
     if (hydratedUserId.current === user.id) return;
     hydratedUserId.current = user.id;
     let cancelled = false;
@@ -173,45 +153,11 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         setSavedWords(local);
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(local)).catch(() => {});
       } catch (err) {
-        logwarn('[SavedWordsContext] Row-API hydration failed:', err);
+        logwarn('[SavedWordsContext] Hydration failed:', err);
       }
     })();
     return () => { cancelled = true; };
-  }, [rowApi, user, loaded, flushPending, fetchSavedWordRows]);
-
-  // Legacy path: merge cloud data
-  useEffect(() => {
-    if (rowApi) return;
-    if (!user || !loaded || !cloudLoaded || !cloudData?.saved_words) return;
-    try {
-      const cloud = JSON.parse(cloudData.saved_words) as SavedWordsStore;
-      setSavedWords((prev) => {
-        const merged = mergeSavedWords(prev, cloud);
-        if (merged === prev) return prev;
-        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
-        return merged;
-      });
-    } catch (err) {
-      logwarn('[SavedWordsContext] error parsing cloud data:', err);
-    }
-  }, [rowApi, user, loaded, cloudLoaded, cloudData]);
-
-  const scheduleSync = useCallback((words: SavedWordsStore) => {
-    if (!user) return;
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      if (isSyncing.current) return;
-      isSyncing.current = true;
-      try {
-        const { apiClient } = await import('@langplayer/api-client');
-        await apiClient.post('/user-data/sync', { saved_words: JSON.stringify(words) });
-      } catch (err) {
-        logwarn('[SavedWordsContext] Cloud sync failed:', err);
-      } finally {
-        isSyncing.current = false;
-      }
-    }, SYNC_DEBOUNCE_MS);
-  }, [user]);
+  }, [user, loaded, flushPending, fetchSavedWordRows]);
 
   const queueRowOp = useCallback((op: PendingSavedWordOp) => {
     if (!user) return;
@@ -226,23 +172,19 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       if (langWords.some((w) => w.id === meta.id)) return prev;
       const next = { ...prev, [l2Code]: [...langWords, { ...meta, savedAt }] };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      if (!rowApi) scheduleSync(next);
       return next;
     });
-    if (rowApi) {
-      queueRowOp({ type: 'put', l2: l2Code, wordId: meta.id, word: toServerRecord({ ...meta, savedAt }), updatedAt: Date.now() });
-    }
-  }, [scheduleSync, rowApi, queueRowOp]);
+    queueRowOp({ type: 'put', l2: l2Code, wordId: meta.id, word: toServerRecord({ ...meta, savedAt }), updatedAt: Date.now() });
+  }, [queueRowOp]);
 
   const removeWord = useCallback((l2Code: string, wordId: string) => {
     setSavedWords((prev) => {
       const next = { ...prev, [l2Code]: (prev[l2Code] ?? []).filter((w) => w.id !== wordId) };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      if (!rowApi) scheduleSync(next);
       return next;
     });
-    if (rowApi) queueRowOp({ type: 'delete', l2: l2Code, wordId, updatedAt: Date.now() });
-  }, [scheduleSync, rowApi, queueRowOp]);
+    queueRowOp({ type: 'delete', l2: l2Code, wordId, updatedAt: Date.now() });
+  }, [queueRowOp]);
 
   const hasWord = useCallback((l2Code: string, wordId: string): boolean => {
     return (savedWords[l2Code] ?? []).some((w) => w.id === wordId);
@@ -253,15 +195,12 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     setSavedWords((prev) => {
       const next = { ...prev, [l2Code]: [] };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      if (!rowApi) scheduleSync(next);
       return next;
     });
-    if (rowApi) {
-      for (const w of current) {
-        queueRowOp({ type: 'delete', l2: l2Code, wordId: w.id, updatedAt: Date.now() });
-      }
+    for (const w of current) {
+      queueRowOp({ type: 'delete', l2: l2Code, wordId: w.id, updatedAt: Date.now() });
     }
-  }, [scheduleSync, rowApi, queueRowOp, savedWords]);
+  }, [queueRowOp, savedWords]);
 
   const refreshEntry = useCallback(async (l2Code: string, wordId: string) => {
     const words = savedWords[l2Code] ?? [];
