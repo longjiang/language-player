@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { usePaginatedBook, type PageBlock } from '@/hooks/use-paginated-book';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubTextBlock } from '@/lib/epub-book-types';
+import type { EpubSearchMatch } from '@/hooks/use-epub';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 function blockTag(tb: EpubTextBlock): keyof JSX.IntrinsicElements {
@@ -59,6 +60,10 @@ interface EpubReaderPanelProps {
   l2: { code: string; name: string; direction?: string };
   l1: { code: string; name: string };
   ctx: Partial<SavedWordContext>;
+  /** Active search-match highlight (block + char range), if any. */
+  highlight?: EpubSearchMatch | null;
+  /** Called when the user pages away from the highlighted block. */
+  onHighlightDismiss?: () => void;
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
   /** Called whenever the visible page changes (persists the position). */
@@ -74,6 +79,8 @@ export function EpubReaderPanel({
   l2,
   l1,
   ctx,
+  highlight,
+  onHighlightDismiss,
   onLemmatize,
   onPageTranslate,
   onLocationChange,
@@ -110,6 +117,16 @@ export function EpubReaderPanel({
     hasPrev,
     hasNext,
   } = usePaginatedBook(book, { chromeHeight: 40, measureNonce });
+
+  // Paging away from the highlighted search result dismisses the highlight.
+  const handlePrevPage = useCallback(() => {
+    onHighlightDismiss?.();
+    prevPage();
+  }, [prevPage, onHighlightDismiss]);
+  const handleNextPage = useCallback(() => {
+    onHighlightDismiss?.();
+    nextPage();
+  }, [nextPage, onHighlightDismiss]);
 
   const [tokenCache, setTokenCache] = useState<Record<string, LemmatizedToken[]>>({});
   const [blockTranslations, setBlockTranslations] = useState<Record<string, string>>({});
@@ -187,15 +204,15 @@ export function EpubReaderPanel({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevPage();
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') handlePrevPage();
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
         e.preventDefault();
-        nextPage();
+        handleNextPage();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [prevPage, nextPage]);
+  }, [handlePrevPage, handleNextPage]);
 
   const renderBlock = useCallback((p: PageBlock) => {
     const { loc, block } = p;
@@ -210,6 +227,17 @@ export function EpubReaderPanel({
     const Tag = blockTag(tb);
     const tokens = tokenCache[blockKey];
     const href = tb.formats.find(f => f.type === 'link')?.url;
+    // Append the search-match highlight range when this block contains it.
+    let formats = tb.formats;
+    if (
+      highlight &&
+      highlight.spineIndex === loc.spineIndex &&
+      highlight.blockIndex === loc.blockIndex
+    ) {
+      const start = Math.max(0, Math.min(highlight.start, tb.text.length));
+      const end = Math.max(start, Math.min(highlight.end, tb.text.length));
+      if (end > start) formats = [...tb.formats, { start, end, type: 'highlight' as const }];
+    }
     return (
       <TextActionMenu key={blockKey} text={tb.text} l2Code={l2.code} l1Code={l1.code}
         translation={showTranslation ? blockTranslations[key] : undefined}
@@ -218,11 +246,11 @@ export function EpubReaderPanel({
         loading={showTranslation && !blockTranslations[key]}>
         <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
           <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-            tokens={tokens} formats={tb.formats} href={href} onOpenLink={onOpenLink} />
+            tokens={tokens} formats={formats} href={href} onOpenLink={onOpenLink} />
         </Tag>
       </TextActionMenu>
     );
-  }, [tokenCache, blockTranslations, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink]);
+  }, [tokenCache, blockTranslations, showTranslation, textZoom, highlight, l2.code, l1.code, ctx, onOpenLink]);
 
   return (
     <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -257,7 +285,7 @@ export function EpubReaderPanel({
 
       {/* Page navigation + translation */}
       <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
-        <button onClick={prevPage} disabled={!hasPrev || measuring}
+        <button onClick={handlePrevPage} disabled={!hasPrev || measuring}
           aria-label={t('action.previous_chapter')}
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronLeft className="h-4 w-4" />
@@ -266,7 +294,7 @@ export function EpubReaderPanel({
           {pageNumber}
           {totalPagesEstimate > 0 ? ` / ${totalPagesEstimate}` : ''}
         </span>
-        <button onClick={nextPage} disabled={!hasNext || measuring}
+        <button onClick={handleNextPage} disabled={!hasNext || measuring}
           aria-label={t('action.next_chapter')}
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronRight className="h-4 w-4" />

@@ -9,7 +9,7 @@ import type { Root, PhrasingContent } from 'mdast';
 export interface FormatRange {
   start: number;
   end: number;
-  type: 'bold' | 'italic' | 'code' | 'link';
+  type: 'bold' | 'italic' | 'code' | 'link' | 'highlight';
   url?: string;
 }
 
