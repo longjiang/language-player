@@ -128,6 +128,36 @@ server's `code_by_lang_id()` logic (`data/languages.csv`):
 - The throwaway loader lives at `tmp/supabase-test/supabase-migrate.py`
   (run with the project's `python3.10` venv).
 
+### Metadata embeddings for vector recommendation
+
+All 1,045,422 videos across 216 languages now carry a metadata embedding in a
+dedicated `video_embeddings` table (pgvector), providing the content-similarity
+foundation for the next-phase vector recommender and a future replacement for
+subtitle FULLTEXT search.
+
+- **Model**: Google `gemini-embedding-2` at **1024 dimensions** (Matryoshka
+  reducible; 512 is derivable by slicing the stored vectors, no re-embed
+  needed). Model + dims are recorded per row (`gemini-embedding-2@1024`), so a
+  provider or dimension change is a clean, versioned re-embed.
+- **Input text**: title, tags, topic, YouTube category name, channel title,
+  locale, level, type — metadata only. Subtitle embeddings are a separate,
+  later phase.
+- **Storage**: `video_embeddings(video_id, model, kind='metadata',
+  embedding vector(1024))` with an HNSW cosine index. ~13 GB (vectors + index)
+  on the 50 GB disk.
+- **Coverage**: 100% of videos embedded (1,045,422/1,045,422), zero missing
+  languages; verified by count and similarity spot-checks (e.g., Chinese drama
+  episodes cluster at 0.96+ cosine similarity).
+- **Provider choice**: OpenAI embedding models are not enabled on the project's
+  API key (only chat models), so the backfill used the existing `GEMINI_API_KEY`.
+  Gemini is ~10× OpenAI's per-token price; the one-time backfill cost ~CA$30,
+  and a later OpenAI `text-embedding-3-small` re-embed (~USD $3, ~$1.50 via the
+  Batch API) stays cheap because the `model` column isolates versions.
+- **Backfill mechanics**: per-language batches (100 inputs per
+  `batchEmbedContents` call), idempotent upserts, `--skip-done` resume, a fresh
+  Postgres connection per language, and a quota-aware abort with resume. Loader:
+  `tmp/supabase-test/supabase-embed-metadata.py`.
+
 ## Consequences
 
 ### Positive
@@ -146,6 +176,10 @@ server's `code_by_lang_id()` logic (`data/languages.csv`):
   `lang_id_by_code()` translation step.
 - **Storage reduction**: dropping `subs_l1` roughly halves the video data; the
   consolidated table is ~6.6 GB, comfortably inside the 50 GB disk.
+- **Full embedding coverage**: every video in every language has a content
+  vector, so the vector recommender can serve any `(l2, level)` combination —
+  the ja test recommender implements difficulty-band widening and pool-size
+  tiering for thin bands and tiny languages.
 
 ### Negative / trade-offs
 
@@ -162,6 +196,11 @@ server's `code_by_lang_id()` logic (`data/languages.csv`):
   American Sign Language), so callers must not assume two-letter codes.
 - **Subtitle FULLTEXT search is not replicated.** `/subs-search` behavior needs
   a replacement (pg_trgm or embedding-based) before Directus can be retired.
+- **Provider/cost**: the embedding backfill ran on Gemini (~CA$30 one-time,
+  ~10× OpenAI per token) because embedding models aren't enabled on the OpenAI
+  project key; switching later costs ~USD $3 to re-embed.
+- **Storage**: embeddings + HNSW index add ~13 GB; slicing to 512 dims can
+  halve that if disk pressure appears.
 - **IDs are large (~10^10-scale).** Code paths that assume small integer IDs or
   use 32-bit `INT` types must move to `BIGINT`.
 - The migration transferred ~18 GB over the internet; large re-runs are slow but
