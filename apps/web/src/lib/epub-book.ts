@@ -25,7 +25,7 @@ import type {
   TocMarker,
   TocNode,
 } from './epub-book-types';
-import { log, logwarn } from '@/lib/logger';
+import { epubLog, epubWarn } from '@/lib/epub-log';
 
 // ── Pure path helpers ──────────────────────────────────────────────────────
 
@@ -480,18 +480,18 @@ export class EpubBook {
     const run = (async (): Promise<EpubBlock[]> => {
       const item = this.spine[spineIndex];
       if (!item) return [];
-      log(`[LP Web] EPUB getBlocks spine ${spineIndex} (${item.hrefRaw}) — loading section…`);
+      epubLog(`getBlocks spine ${spineIndex} (${item.hrefRaw}) — loading section…`);
       try {
         const section = this.spineRaw.get(item.hrefRaw);
         if (!section) {
-          logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex}: section not found — returning []`);
+          epubWarn(`getBlocks spine ${spineIndex}: section not found — returning []`);
           return [];
         }
         const contents = await section.load(this.book.load.bind(this.book));
         const body: Element | null =
           contents.querySelector('body') ?? contents;
         if (!body) {
-          logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex}: no <body> — returning []`);
+          epubWarn(`getBlocks spine ${spineIndex}: no <body> — returning []`);
           return [];
         }
 
@@ -511,10 +511,10 @@ export class EpubBook {
         });
 
         const blocks = convertDocument(body);
-        log(`[LP Web] EPUB getBlocks spine ${spineIndex}: ${blocks.length} blocks`);
+        epubLog(`getBlocks spine ${spineIndex}: ${blocks.length} blocks`);
         return blocks;
       } catch (err) {
-        logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex} failed — returning []`, err);
+        epubWarn(`getBlocks spine ${spineIndex} failed — returning []`, err);
         return [];
       }
     })();
@@ -543,11 +543,11 @@ export class EpubBook {
       const fragment = hashIdx === -1 ? undefined : canonical.slice(hashIdx + 1);
       const spineIndex = findSpineIndex(this.spine, path);
       if (spineIndex === -1) {
-        logwarn(`[LP Web] EPUB resolveHref "${href}": no spine item for path "${path}" — returning null`);
+        epubWarn(`resolveHref "${href}": no spine item for path "${path}" — returning null`);
         return null;
       }
       if (!fragment) {
-        log(`[LP Web] EPUB resolveHref "${href}" → spine ${spineIndex} block 0`);
+        epubLog(`resolveHref "${href}" → spine ${spineIndex} block 0`);
         return { spineIndex, blockIndex: 0, offset: 0 };
       }
       const blocks = await this.getBlocks(spineIndex);
@@ -575,10 +575,10 @@ export class EpubBook {
         if (prefixed !== fragment) location = findFragment(prefixed);
       }
       if (location) {
-        log(`[LP Web] EPUB resolveHref "${href}" → spine ${location.spineIndex} block ${location.blockIndex} offset ${location.offset} (fragment "#${fragment}")`);
+        epubLog(`resolveHref "${href}" → spine ${location.spineIndex} block ${location.blockIndex} offset ${location.offset} (fragment "#${fragment}")`);
         return location;
       }
-      logwarn(`[LP Web] EPUB resolveHref "${href}": fragment "#${fragment}" not found in spine ${spineIndex} — falling back to block 0`);
+      epubWarn(`resolveHref "${href}": fragment "#${fragment}" not found in spine ${spineIndex} — falling back to block 0`);
       return { spineIndex, blockIndex: 0, offset: 0 };
     })();
     this.hrefCache.set(key, run);
