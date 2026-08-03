@@ -114,7 +114,6 @@ async function fetchQueryResults(query: string, l2Code: string, signal: AbortSig
       log('[ImageSearch] Pre-relaxed:', query, '→', candidate);
     }
     const url = `${IMAGE_SEARCH_URL}${encodeURIComponent(candidate)}/${baseCode(l2Code)}`;
-    log('[ImageSearch] Bing fetch (via Flask):', candidate, url);
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json() as { src: string; url?: string; title?: string }[];

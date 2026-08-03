@@ -207,13 +207,6 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     reset();
   }, [reset]);
 
-  // Debug: track streaming lifecycle — per-chunk updates and stream end
-  useEffect(() => {
-    if (loading && explanation) {
-      log('AI explain streaming', { chars: explanation.length });
-    }
-  }, [explanation, loading]);
-
   // Mirror the streaming hook's text into the assistant message being streamed
   useEffect(() => {
     if (streamingId === null) return;
