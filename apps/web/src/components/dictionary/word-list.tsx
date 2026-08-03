@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 // ── WordListItem ─────────────────────────────────
 
@@ -93,15 +94,17 @@ export interface WordListProps {
   count?: number;
   /** Rendered word rows. */
   children: ReactNode;
+  /** Extra classes for the row list (overrides default spacing). */
+  className?: string;
 }
 
 /**
  * A group of word items, optionally with a labeled heading and count badge.
  * When `label` is omitted, renders a bare vertical list with no header.
  */
-export function WordList({ label, count, children }: WordListProps) {
+export function WordList({ label, count, children, className }: WordListProps) {
   if (!label) {
-    return <div className="space-y-1">{children}</div>;
+    return <div className={cn('space-y-1', className)}>{children}</div>;
   }
   return (
     <div>
@@ -111,7 +114,7 @@ export function WordList({ label, count, children }: WordListProps) {
           {count ?? 0}
         </span>
       </div>
-      <div className="space-y-1">{children}</div>
+      <div className={cn('space-y-1', className)}>{children}</div>
     </div>
   );
 }
