@@ -52,3 +52,4 @@ export { stripMarkdown } from './strip-markdown';
 export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
 export { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
 export type { SentenceSegment } from './sentence';
+export { mergePhraseTokens } from './merge-phrase-tokens';
