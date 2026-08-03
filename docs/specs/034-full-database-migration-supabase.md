@@ -214,9 +214,13 @@ revisions are truncated.
 
 #### Backfill
 
-Pagination script (`zerotohero-python-server/tmp/supabase-saved-words-migrate.py`,
-`python3.10` + psycopg2) — idempotent upsert, count verification, second run
-no-op check. Add `psycopg2` to `requirements.txt`.
+Idempotent backfill script (`zerotohero-python-server/tmp/supabase-saved-words-migrate.py`,
+`python3.10` + psycopg2) — upsert, count verification, second-run no-op check.
+Add `psycopg2` to `requirements.txt`. The script defaults to streaming blobs
+directly from the source MySQL (`DB_*` creds, ID-chunked connections — the
+ADR-0021 pattern) with a Directus API fallback (`--source api`), and supports
+`--limit` smoke runs, `--reset`, per-user checksum skipping for idempotent
+reruns, and `--verify` (global count delta + Mary/Bob word-set diff).
 
 ### WS-1 — Auth & Users (ADR-0023)
 
