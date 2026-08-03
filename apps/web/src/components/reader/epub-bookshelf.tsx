@@ -146,11 +146,6 @@ export function EpubBookshelf({
                         <BookOpen className="h-8 w-8 text-muted-foreground/50" />
                       </div>
                     )}
-                    {book.language && (
-                      <span className="absolute left-1.5 top-1.5 rounded bg-background/85 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        {book.language}
-                      </span>
-                    )}
                     {openingId === book.id && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/60">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />

@@ -21,7 +21,7 @@ import type { EpubSearchResult } from '@/hooks/use-epub';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
-import { log } from '@/lib/logger';
+import { epubLog } from '@/lib/epub-log';
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
@@ -45,7 +45,7 @@ export default function EpubPage() {
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
     if (!loc) return;
-    log(`[LP Web] EPUB gotoLocation spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
+    epubLog(`gotoLocation spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
     setLocation(loc);
     setJumpNonce(n => n + 1);
   }, []);
@@ -152,7 +152,7 @@ export default function EpubPage() {
   // TOC entry click → resolve + jump.
   const handleLoadChapter = useCallback((href: string) => {
     setMobileSidebarOpen(false);
-    log(`[LP Web] EPUB TOC chapter click: href="${href}"`);
+    epubLog(`TOC chapter click: href="${href}"`);
     pushHistory(location);
     void epub.resolveHref(href).then(gotoLocation);
   }, [epub, gotoLocation, pushHistory, location]);
@@ -169,7 +169,7 @@ export default function EpubPage() {
       return;
     }
     if (!href || href === '#') return;
-    log(`[LP Web] EPUB internal link click: href="${href}" (from "${currentSpineHref}")`);
+    epubLog(`internal link click: href="${href}" (from "${currentSpineHref}")`);
     pushHistory(location);
     void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
   }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation, pushHistory, location]);
