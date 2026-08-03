@@ -123,7 +123,8 @@ export default function EpubPage() {
     openingIdRef.current = id;
     setOpeningId(id);
     try {
-      const start = await epub.openBook(id);
+      // Bookshelf clicks go straight to the content — skip the cover tap.
+      const start = await epub.openBook(id, { skipCover: true });
       pendingStartRef.current = start;
       // Resume is applied reactively: immediately when there is no cover,
       // or on cover tap otherwise.

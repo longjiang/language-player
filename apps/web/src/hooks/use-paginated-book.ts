@@ -55,6 +55,10 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
   const widthRef = useRef(0);
   const pageHeightRef = useRef(600);
   const charsPerPageRef = useRef(400);
+  /** Layout identity the chars-per-page divisor was derived for. */
+  const charsPerPageLayoutRef = useRef<string | null>(null);
+  /** Jump location awaiting a page-number estimate after the first measure. */
+  const pendingEstimateRef = useRef<BookLocation | null>(null);
   const totalCharsRef = useRef(0);
   const genRef = useRef(0);
   const fetchRef = useRef(0); // guards against stale async fetches
@@ -92,6 +96,9 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     setPageBlocks([]);
     setWindow([]);
     totalCharsRef.current = 0;
+    charsPerPageRef.current = 400;
+    charsPerPageLayoutRef.current = null;
+    pendingEstimateRef.current = null;
     setTotalPagesEstimate(0);
     setMeasuring(true);
     if (book) {
@@ -175,7 +182,10 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
 
   const estimatePageNumber = useCallback(async (loc: BookLocation) => {
     const before = await charsBefore(loc);
-    return Math.max(1, Math.floor(before / Math.max(1, charsPerPageRef.current)) + 1);
+    const divisor = Math.max(1, charsPerPageRef.current);
+    const n = Math.max(1, Math.floor(before / divisor) + 1);
+    epubLog(`estimatePageNumber spine=${loc.spineIndex} block=${loc.blockIndex} → charsBefore=${before} charsPerPage=${divisor} page=${n}`);
+    return n;
   }, [charsBefore]);
 
   // ── Measure the current window and derive the page ──
@@ -233,18 +243,53 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         const pageChars = window
           .slice(0, endIdx)
           .reduce((n, p) => n + (p.block.kind === 'text' ? p.block.text.length : 0), 0);
-        if (pageChars > 0) {
-          charsPerPageRef.current = (charsPerPageRef.current * 3 + pageChars) / 4;
+        const layout = `${viewport.w}:${measureNonce}`;
+        if (charsPerPageLayoutRef.current !== layout) {
+          // Derive the chars-per-page divisor from up to 3 page breaks inside
+          // THIS rendered window (no extra DOM renders), then freeze it for
+          // the layout — so the estimate is accurate immediately and never
+          // drifts on later page turns. Re-derived only when the book,
+          // viewport, or display settings change.
+          charsPerPageLayoutRef.current = layout;
+          const breaks: number[] = [];
+          let acc = 0;
+          for (let i = 0; i < children.length && breaks.length < 3; i++) {
+            const h = children[i]!.offsetHeight;
+            if (acc + h > pageHeight && acc > 0) {
+              breaks.push(i);
+              acc = 0;
+            }
+            acc += h;
+          }
+          const pageStarts = [0, ...breaks];
+          const pageEnds = [...breaks, children.length];
+          const sampleCount = Math.min(3, pageStarts.length);
+          let sampleChars = 0;
+          for (let k = 0; k < sampleCount; k++) {
+            for (let j = pageStarts[k]!; j < pageEnds[k]!; j++) {
+              const b = window[j]!.block;
+              if (b.kind === 'text') sampleChars += b.text.length;
+            }
+          }
+          if (sampleChars > 0) charsPerPageRef.current = sampleChars / sampleCount;
         }
         if (totalCharsRef.current > 0) {
-          setTotalPagesEstimate(Math.max(1, Math.ceil(totalCharsRef.current / charsPerPageRef.current)));
+          setTotalPagesEstimate(Math.max(1, Math.ceil(totalCharsRef.current / Math.max(1, charsPerPageRef.current))));
         }
+        epubLog(`measure forward: pageChars=${pageChars} → charsPerPage=${charsPerPageRef.current} totalPagesEstimate=${totalPagesEstimate}`);
         const page = window.slice(0, endIdx);
         epubLog(`measured forward: ${children.length} children → ${page.length} page blocks (spine ${start.spineIndex} block ${start.blockIndex})`);
         setPageBlocks(page);
-        void estimatePageNumber(start).then(n => {
-          if (gen === genRef.current) setPageNumber(n);
-        });
+        const target = pendingEstimateRef.current;
+        if (target) {
+          pendingEstimateRef.current = null;
+          void estimatePageNumber(target).then(n => {
+            if (gen === genRef.current) {
+              epubLog(`measure-applied estimate: page=${n} (spine=${target.spineIndex} block=${target.blockIndex})`);
+              setPageNumber(n);
+            }
+          });
+        }
       } else {
         // Backward: walk from the end; prevStart = first block that fits
         // together with everything after it.
@@ -279,9 +324,6 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         const page = window.slice(prevStart);
         epubLog(`measured backward: ${children.length} children → ${page.length} page blocks (spine ${start.spineIndex} block ${start.blockIndex})`);
         setPageBlocks(page);
-        void estimatePageNumber(start).then(n => {
-          if (gen === genRef.current) setPageNumber(n);
-        });
       }
       setMeasuring(false);
     };
@@ -290,8 +332,12 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     return () => cancelAnimationFrame(id);
   }, [window, viewport, fetchWindow, estimatePageNumber, measureNonce]);
 
-  /** Jump to a location (TOC, search, links, restore). */
-  const jumpTo = useCallback((loc: BookLocation) => {
+  /**
+   * Jump to a location (TOC, search, links, restore). Page turns pass
+   * `keepPageNumber` so the session page counter steps ±1 instead of
+   * re-estimating.
+   */
+  const jumpTo = useCallback((loc: BookLocation, opts?: { keepPageNumber?: boolean }) => {
     if (!book) return;
     epubLog(`jumpTo spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
     genRef.current += 1;
@@ -309,24 +355,40 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
       // Empty result (no content after this location) must not leave the
       // spinner up forever — the measure effect can't run on an empty
       // window, so clear the measuring flag here.
-      if (entries.length === 0) setMeasuring(false);
+      if (entries.length === 0) {
+        setMeasuring(false);
+        const target = pendingEstimateRef.current;
+        if (target) {
+          pendingEstimateRef.current = null;
+          void estimatePageNumber(target).then(n => {
+            if (gen === genRef.current) {
+              epubLog(`jumpTo estimate applied (empty window): page=${n} (spine=${target.spineIndex} block=${target.blockIndex})`);
+              setPageNumber(n);
+            }
+          });
+        }
+      }
       setWindow(entries);
     });
-    void estimatePageNumber(loc).then(n => {
-      if (gen === genRef.current) setPageNumber(n);
-    });
+    if (!opts?.keepPageNumber) {
+      pendingEstimateRef.current = loc;
+    }
   }, [book, fetchWindow, estimatePageNumber]);
 
   const nextPage = useCallback(() => {
     const end = pageEndRef.current;
-    if (end) jumpTo(end);
+    if (!end) return;
+    setPageNumber(n => n + 1);
+    epubLog(`nextPage → page counter +1 → jump to spine=${end.spineIndex} block=${end.blockIndex} offset=${end.offset}`);
+    jumpTo(end, { keepPageNumber: true });
   }, [jumpTo]);
 
   const prevPage = useCallback(() => {
     if (!book) return;
     const base = pageStartRef.current;
     if (!base) return;
-    epubLog(`prevPage → spine=${base.spineIndex} block=${base.blockIndex} offset=${base.offset}`);
+    setPageNumber(n => Math.max(1, n - 1));
+    epubLog(`prevPage → walk backward from spine=${base.spineIndex} block=${base.blockIndex} offset=${base.offset}`);
     genRef.current += 1;
     const gen = genRef.current;
     modeRef.current = 'backward';
