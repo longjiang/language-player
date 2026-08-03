@@ -4,6 +4,8 @@ export { useVideos } from './videos';
 export { useDictionary } from './dictionary';
 export { useUserData } from './user-data';
 export type { UserDataResponse } from './user-data';
+export { useSavedWordApi } from './saved-words';
+export type { SavedWordsResponse, SavedWordUpsertResponse } from './saved-words';
 export { useNotes } from './notes';
 export { useInflection } from './inflection';
 export { useStreamingExplanation } from './chat';

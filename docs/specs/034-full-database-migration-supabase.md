@@ -190,7 +190,7 @@ create index on user_saved_words (user_id, updated_at);
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/saved-words?l2=zh` | GET | Rows reassembled into `SavedLexicalItemRecord[]`; lazy-reconciles the user (scaffolding) |
+| `/saved-words?l2=zh` | GET | Rows grouped by L2 into `{ words: SavedLexicalItemStore }`; lazy-reconciles the user (scaffolding) |
 | `/saved-words` | PUT | Upsert word: union `forms`, append/merge instance, `first_saved_at` = min, `updated_at` = max |
 | `/saved-words/{l2}/{wordId}` | DELETE | Hard-delete word row (instances cascade) |
 | `/saved-words/reconcile` | POST | Internal (scaffolding): reconcile one user |

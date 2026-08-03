@@ -3,63 +3,145 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemInstance } from '@langplayer/shared';
-import { useUserData } from '@langplayer/api-client';
+import { useUserData, useSavedWordApi } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
+import { savedWordsRowApiEnabled, mergeAnonymousSavedWordsEnabled } from '@/lib/saved-words-feature';
 import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
+const PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
+const ANON_MERGED_KEY = 'lpSavedWordsAnonMerged';
 const SYNC_DEBOUNCE_MS = 2000;
 
 /**
  * Hook for managing saved words with localStorage + cloud sync.
  *
- * - Read/write localStorage immediately (offline-first)
- * - If authenticated, sync the full blob to Directus via Flask /user-data/sync
- * - On login, hydrate from cloud data (cloud is source of truth)
- * - Last-writer-wins on sync: local state is the user's intent (saves + deletes)
+ * Legacy path (NEXT_PUBLIC_SAVED_WORDS_ROW_API off): full-blob sync to Directus
+ * via Flask /user-data/sync; cloud blob merge on login; last-writer-wins.
+ *
+ * Row path (flag on): per-word PUT/DELETE on /saved-words (Supabase via Flask).
+ * Local changes are optimistic + queued in localStorage; failed ops are retried
+ * on the next mutation/hydration. On login the server rows replace local state
+ * (optionally after a one-time anonymous-local merge).
  */
 export function useSavedWords() {
   const { data: session, status } = useSession();
   const { syncSavedWords } = useUserData();
+  const { getSavedWords: fetchSavedWordRows, putSavedWord, deleteSavedWord } = useSavedWordApi();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const rowApi = savedWordsRowApiEnabled();
+  const mergeAnon = mergeAnonymousSavedWordsEnabled();
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
+  const hydratedUserId = useRef<string | null>(null);
+  const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
+
+  const readLocalStore = useCallback((): SavedLexicalItemStore => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch { /* corrupted data */ }
+    return {};
+  }, []);
+
+  const writeLocalStore = useCallback((words: SavedLexicalItemStore) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+    } catch { /* quota exceeded — ignore */ }
+  }, []);
+
+  const loadPendingOps = useCallback((): PendingSavedWordOp[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(PENDING_OPS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(
+        (op): op is PendingSavedWordOp =>
+          !!op && (op.type === 'put' || op.type === 'delete')
+          && typeof op.l2 === 'string' && typeof op.wordId === 'string',
+      );
+    } catch { /* corrupted queue — start fresh */ }
+    return [];
+  }, []);
+
+  const savePendingOps = useCallback((ops: PendingSavedWordOp[]) => {
+    pendingOpsRef.current = ops;
+    try {
+      localStorage.setItem(PENDING_OPS_KEY, JSON.stringify(ops));
+    } catch { /* quota exceeded — queue stays in memory */ }
+  }, []);
 
   // ── On mount: load from localStorage (offline-first, both anonymous & authed) ──
-  // LocalStorage is always read first so that the latest local changes (saves,
-  // unsaves) survive an immediate refresh — including the unsave-not-yet-synced
-  // case, where cloud still holds a word the user just deleted. Cloud data is
-  // then merged in (see below) without resurrecting locally-deleted words.
   useEffect(() => {
     if (loaded) return;
     if (status === 'loading') return; // still loading auth state
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed === 'object' && parsed !== null) {
-          sanitizeStore(parsed);
-          setSavedWords(parsed);
-        }
-      }
-    } catch { /* corrupted data */ }
-
+    const parsed = readLocalStore();
+    sanitizeStore(parsed);
+    setSavedWords(parsed);
+    if (rowApi) savePendingOps(loadPendingOps());
     setLoaded(true);
-  }, [status, loaded]);
+  }, [status, loaded, rowApi, readLocalStore, savePendingOps, loadPendingOps]);
 
-  // ── On cloud load, merge cloud data (local deletes win) ──
-  // Cloud is a source of truth for words saved on OTHER devices, but it must
-  // not resurrect a word the user deleted locally. We merge by only adding cloud
-  // words that are not already present in local state (keyed by `id`). This
-  // preserves local unsaves across a refresh while still importing new saves.
-  //
-  // Note: a cross-device delete where BOTH devices still have the word in
-  // memory is a known limitation (addressed by the debounced sync updating
-  // cloud). This prioritizes the far more common single-device refresh case.
+  // ── Row API: flush pending ops, then hydrate from the server ──
+  const flushPending = useCallback(async () => {
+    if (!session) return;
+    const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
+    savePendingOps(remaining);
+  }, [session, putSavedWord, deleteSavedWord, savePendingOps]);
+
   useEffect(() => {
+    if (!rowApi) return;
+    if (status === 'loading' || !loaded) return;
+    if (status !== 'authenticated' || !session?.user?.id) return;
+    if (hydratedUserId.current === session.user.id) return;
+    hydratedUserId.current = session.user.id;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        await flushPending();
+        let res = await fetchSavedWordRows();
+        if (cancelled) return;
+        let next: SavedLexicalItemStore = res.words ?? {};
+
+        // Optional one-time merge of anonymous localStorage words into the account.
+        if (mergeAnon && typeof window !== 'undefined' && !localStorage.getItem(ANON_MERGED_KEY)) {
+          const local = readLocalStore();
+          const toMerge = collectMissingLocalWords(next, local);
+          if (toMerge.length > 0) {
+            await Promise.all(toMerge.map(({ l2, word }) => putSavedWord(l2, word)));
+            res = await fetchSavedWordRows();
+            if (cancelled) return;
+            next = res.words ?? {};
+          }
+          try { localStorage.setItem(ANON_MERGED_KEY, '1'); } catch { /* ignore */ }
+        }
+
+        sanitizeStore(next);
+        setSavedWords(next);
+        writeLocalStore(next);
+      } catch (err) {
+        logwarn('[savedWords] Row-API hydration failed:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [
+    rowApi, status, loaded, session, mergeAnon,
+    flushPending, fetchSavedWordRows, putSavedWord,
+    readLocalStore, writeLocalStore,
+  ]);
+
+  // ── Legacy path: cloud blob merge (local deletes win) ──
+  useEffect(() => {
+    if (rowApi) return;
     if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
     if (!cloudData) return;
 
@@ -70,8 +152,6 @@ export function useSavedWords() {
       sanitizeStore(cloud);
 
       setSavedWords((prev) => {
-        // Build the merged store, preserving locally-deleted words by never
-        // re-adding a cloud word whose id already exists in local state.
         const next: SavedLexicalItemStore = { ...prev };
         for (const [l2, cloudWords] of Object.entries(cloud)) {
           const merged = [...(prev[l2] ?? [])];
@@ -84,18 +164,15 @@ export function useSavedWords() {
           }
           next[l2] = merged;
         }
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+        writeLocalStore(next);
         return next;
       });
     } catch (err) {
       logwarn('[savedWords] Could not parse cloud data:', err);
     }
-  }, [status, loaded, cloudLoaded, cloudData]);
+  }, [rowApi, status, loaded, cloudLoaded, cloudData, writeLocalStore]);
 
-  // ── Debounced cloud sync (write local state directly) ──
-  // Last-writer-wins: the local state represents the user's intent (saves + deletes).
-  // Merging cloud data back in would re-add words the user deleted on another device,
-  // making deletions non-propagating.
+  // ── Legacy path: debounced full-blob sync ──
   const scheduleSync = useCallback((words: SavedLexicalItemStore) => {
     if (!session) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
@@ -106,8 +183,6 @@ export function useSavedWords() {
         await syncSavedWords(JSON.stringify(words));
       } catch (err) {
         logwarn('[savedWords] Sync failed — will retry:', err);
-        // Retry after a delay so a transient failure doesn't silently drop a
-        // save/unsave (which would let an unsaved word come back on refresh).
         syncTimer.current = setTimeout(() => {
           isSyncing.current = false;
           scheduleSync(words);
@@ -120,11 +195,15 @@ export function useSavedWords() {
 
   // ── Persist to localStorage + schedule sync ──
   const persist = useCallback((words: SavedLexicalItemStore) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
-    } catch { /* quota exceeded — ignore */ }
-    scheduleSync(words);
-  }, [scheduleSync]);
+    writeLocalStore(words);
+    if (!rowApi) scheduleSync(words);
+  }, [writeLocalStore, rowApi, scheduleSync]);
+
+  const queueRowOp = useCallback((op: PendingSavedWordOp) => {
+    if (!session) return;
+    savePendingOps(enqueuePendingOp(pendingOpsRef.current, op));
+    void flushPending();
+  }, [session, savePendingOps, flushPending]);
 
   // ── Public API ──
 
@@ -133,7 +212,6 @@ export function useSavedWords() {
       const langWords = [...(prev[l2Code] ?? [])];
       const existing = langWords.find(w => w.id === word.id);
       if (existing) {
-        // Word already saved — append new instances, merge forms
         const existingInsts = normalizeInstances(existing);
         const newInsts = normalizeInstances(word);
         const seen = new Set(existingInsts.map(i => `${i.timestamp}|${i.form}|${i.context.text}`));
@@ -147,10 +225,8 @@ export function useSavedWords() {
         existing.instances = existingInsts;
         existing.forms = [...new Set([...(existing.forms ?? []), ...(word.forms ?? [])])];
         existing.date = Math.max(existing.date, word.date);
-        // Keep legacy context in sync (= latest instance)
         existing.context = existingInsts[existingInsts.length - 1]!.context;
       } else {
-        // New word — ensure instances array is populated
         if (!word.instances || word.instances.length === 0) {
           word.instances = normalizeInstances(word);
         }
@@ -161,7 +237,8 @@ export function useSavedWords() {
       persist(next);
       return next;
     });
-  }, [persist]);
+    if (rowApi) queueRowOp({ type: 'put', l2: l2Code, wordId: word.id, word, updatedAt: Date.now() });
+  }, [persist, rowApi, queueRowOp]);
 
   const removeSavedWord = useCallback((l2Code: string, wordId: string) => {
     setSavedWords(prev => {
@@ -170,24 +247,30 @@ export function useSavedWords() {
       persist(next);
       return next;
     });
-  }, [persist]);
+    if (rowApi) queueRowOp({ type: 'delete', l2: l2Code, wordId, updatedAt: Date.now() });
+  }, [persist, rowApi, queueRowOp]);
 
   const hasSavedWord = useCallback((l2Code: string, wordId: string): boolean => {
     return (savedWords[l2Code] ?? []).some(w => w.id === wordId);
   }, [savedWords]);
 
   const getSavedWords = useCallback((l2Code: string): SavedLexicalItemRecord[] => {
-    // Return newest first
     return [...(savedWords[l2Code] ?? [])].sort((a, b) => b.date - a.date);
   }, [savedWords]);
 
   const clearSavedWords = useCallback((l2Code: string) => {
+    const current = savedWords[l2Code] ?? [];
     setSavedWords(prev => {
       const next = { ...prev, [l2Code]: [] };
       persist(next);
       return next;
     });
-  }, [persist]);
+    if (rowApi) {
+      for (const w of current) {
+        queueRowOp({ type: 'delete', l2: l2Code, wordId: w.id, updatedAt: Date.now() });
+      }
+    }
+  }, [persist, rowApi, queueRowOp, savedWords]);
 
   return {
     savedWords,
@@ -200,15 +283,90 @@ export function useSavedWords() {
   };
 }
 
+// ── Pending-op queue (row API) ──────────────────────────
+
+export interface PendingSavedWordOp {
+  type: 'put' | 'delete';
+  l2: string;
+  wordId: string;
+  word?: SavedLexicalItemRecord;
+  updatedAt: number;
+}
+
+export interface SavedWordRowApi {
+  putSavedWord: (l2: string, word: SavedLexicalItemRecord) => Promise<unknown>;
+  deleteSavedWord: (l2: string, wordId: string) => Promise<unknown>;
+}
+
+export function pendingOpKey(op: PendingSavedWordOp): string {
+  return `${op.l2}\u0000${op.wordId}`;
+}
+
+/** Add an op, replacing any older op for the same (l2, wordId). */
+export function enqueuePendingOp(queue: PendingSavedWordOp[], op: PendingSavedWordOp): PendingSavedWordOp[] {
+  const key = pendingOpKey(op);
+  return [...queue.filter(q => pendingOpKey(q) !== key), op];
+}
+
+/** Keep only the newest op per (l2, wordId), in timestamp order. */
+export function reducePendingOps(queue: PendingSavedWordOp[]): PendingSavedWordOp[] {
+  const latest = new Map<string, PendingSavedWordOp>();
+  for (const op of queue) latest.set(pendingOpKey(op), op);
+  return [...latest.values()].sort((a, b) => a.updatedAt - b.updatedAt);
+}
+
+/** Replay ops in order; stop at the first failure so ordering is preserved. */
+export async function flushPendingOps(
+  queue: PendingSavedWordOp[],
+  api: SavedWordRowApi,
+): Promise<PendingSavedWordOp[]> {
+  const ops = reducePendingOps(queue);
+  const remaining: PendingSavedWordOp[] = [];
+  for (let i = 0; i < ops.length; i++) {
+    const op = ops[i]!;
+    try {
+      if (op.type === 'put' && op.word) {
+        await api.putSavedWord(op.l2, op.word);
+      } else {
+        await api.deleteSavedWord(op.l2, op.wordId);
+      }
+    } catch (err) {
+      logwarn('[savedWords] Pending op failed; will retry:', err);
+      // Keep the failed op and everything after it for the next retry, so a
+      // transient failure can't silently drop later ops.
+      remaining.push(...ops.slice(i));
+      break;
+    }
+  }
+  return remaining;
+}
+
+/** Local words absent from the server store (for the one-time anonymous merge). */
+export function collectMissingLocalWords(
+  server: SavedLexicalItemStore,
+  local: SavedLexicalItemStore,
+): { l2: string; word: SavedLexicalItemRecord }[] {
+  const out: { l2: string; word: SavedLexicalItemRecord }[] = [];
+  for (const [l2, words] of Object.entries(local)) {
+    const serverIds = new Set((server[l2] ?? []).map(w => w.id));
+    for (const w of words) {
+      if (w.id && !serverIds.has(w.id)) {
+        sanitizeForms(w);
+        sanitizeContext(w);
+        out.push({ l2, word: w });
+      }
+    }
+  }
+  return out;
+}
+
 // ── Instance Helpers ──────────────────────────
 
-/** Normalize a record to its instances array, handling legacy single-context records.
- *  Ensures every record can be treated uniformly as having `instances[]`. */
+/** Normalize a record to its instances array, handling legacy single-context records. */
 export function normalizeInstances(record: SavedLexicalItemRecord): SavedLexicalItemInstance[] {
   if (record.instances && record.instances.length > 0) {
     return record.instances;
   }
-  // Legacy record with only the flat `context` field
   if (record.context) {
     return [{
       timestamp: record.date,
@@ -238,7 +396,6 @@ function sanitizeContext(record: SavedLexicalItemRecord): void {
 function sanitizeStore(store: SavedLexicalItemStore): void {
   for (const [l2, words] of Object.entries(store)) {
     store[l2] = words.filter(w => {
-      // Drop records that are completely unrecoverable (no id, no forms, no context)
       if (!w.id) return false;
       sanitizeForms(w);
       sanitizeContext(w);
@@ -278,13 +435,11 @@ export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexica
     for (const cw of cloudWords) {
       const lw = localById.get(cw.id);
       if (!lw) {
-        // Sanitize cloud-only words before adding — they may have missing forms/context
         sanitizeForms(cw);
         sanitizeContext(cw);
         if (typeof cw.date !== 'number') cw.date = Date.now();
         localWords.push(cw);
       } else {
-        // Merge instances from both, dedup
         lw.instances = mergeInstances(normalizeInstances(lw), normalizeInstances(cw));
         lw.forms = [...new Set([...(lw.forms ?? []), ...(cw.forms ?? [])])];
         lw.date = Math.max(lw.date, cw.date);
