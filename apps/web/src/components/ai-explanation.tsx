@@ -21,6 +21,16 @@ const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
   { kind: 'syntax', labelKey: 'action.syntax' },
 ];
 
+interface ChatMessage {
+  id: number;
+  role: 'user' | 'assistant';
+  text: string;
+  /** Translated label shown in the user bubble (follow-up buttons only). */
+  label?: string;
+  /** The exact prompt that produced this assistant message (for regenerate). */
+  prompt?: string;
+}
+
 interface AiExplanationProps {
   /** The word being looked up (lemma/dictionary form). */
   word: string;
@@ -49,10 +59,23 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const { isPro, loaded: subLoaded } = useSubscriptionContext();
 
   const [showAi, setShowAi] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [activeFollowUp, setActiveFollowUp] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [streamingId, setStreamingId] = useState<number | null>(null);
+  const [usedFollowUps, setUsedFollowUps] = useState<Set<FollowUpKind>>(new Set());
+  const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
+
+  const appendMessage = useCallback((message: Omit<ChatMessage, 'id'>) => {
+    const id = messageIdRef.current++;
+    setMessages((prev) => [...prev, { ...message, id }]);
+    return id;
+  }, []);
+
+  const updateMessage = useCallback((id: number, patch: Partial<ChatMessage>) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  }, []);
 
   // Build the prompt: succinct explanation of the word in context, then 2
   // examples with translations. The backtick instruction is appended so L2
@@ -87,17 +110,28 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
-    setActiveFollowUp(null);
+    // Reuse an empty assistant placeholder (e.g. retry after an error) instead
+    // of stacking a new message.
+    const last = messages[messages.length - 1];
+    const targetId =
+      last && last.role === 'assistant' && !last.text
+        ? last.id
+        : appendMessage({ role: 'assistant', text: '', prompt });
+    updateMessage(targetId, { text: '', prompt });
+    setStreamingId(targetId);
     log('AI explain stream start', { word });
     stream(prompt);
-  }, [stream, buildPrompt, word]);
+  }, [stream, buildPrompt, word, messages, appendMessage, updateMessage]);
 
-  const handleRegenerate = useCallback(() => {
-    const prompt = buildPrompt();
-    setActiveFollowUp(null);
-    log('AI explain stream start (regenerate)', { word });
+  const handleRegenerate = useCallback((messageId: number) => {
+    const target = messages.find((m) => m.id === messageId);
+    if (!target) return;
+    const prompt = target.prompt ?? buildPrompt();
+    updateMessage(messageId, { text: '', prompt });
+    setStreamingId(messageId);
+    log('AI explain stream start (regenerate)', { word, messageId });
     stream(prompt, { regenerate: true });
-  }, [stream, buildPrompt, word]);
+  }, [stream, buildPrompt, word, messages, updateMessage]);
 
   const buildFollowUpPrompt = useCallback((kind: FollowUpKind): string => {
     const l2Name = languageName(l2.code, l1.code);
@@ -134,23 +168,36 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const handleFollowUp = useCallback((kind: FollowUpKind) => {
     const followUp = FOLLOW_UPS.find((f) => f.kind === kind);
-    setActiveFollowUp(followUp?.labelKey ?? null);
     const prompt = buildFollowUpPrompt(kind);
+    setUsedFollowUps((prev) => {
+      const next = new Set(prev);
+      next.add(kind);
+      return next;
+    });
+    const userId = appendMessage({
+      role: 'user',
+      text: '',
+      label: followUp ? t(followUp.labelKey) : '',
+    });
+    const aiId = appendMessage({ role: 'assistant', text: '', prompt });
+    setStreamingId(aiId);
     log('AI explain follow-up stream start', { word, kind });
     stream(prompt);
-  }, [buildFollowUpPrompt, stream, word]);
+  }, [buildFollowUpPrompt, stream, word, appendMessage, t]);
 
-  const handleCopy = useCallback(async () => {
-    if (!explanation) return;
+  const handleCopy = useCallback(async (messageId: number) => {
+    const target = messages.find((m) => m.id === messageId);
+    const text = target?.text;
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(explanation);
-      setCopied(true);
+      await navigator.clipboard.writeText(text);
+      setCopiedId(messageId);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+      copyTimerRef.current = setTimeout(() => setCopiedId(null), 1500);
     } catch (err) {
       log('AI explain copy failed', { error: err });
     }
-  }, [explanation]);
+  }, [messages]);
 
   // Abort the in-flight stream when the component unmounts (also neutralizes
   // React StrictMode's double-mounted effect: the first fetch is aborted before
@@ -167,6 +214,12 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
   }, [explanation, loading]);
 
+  // Mirror the streaming hook's text into the assistant message being streamed
+  useEffect(() => {
+    if (streamingId === null) return;
+    updateMessage(streamingId, { text: explanation });
+  }, [explanation, streamingId, updateMessage]);
+
   const wasLoadingRef = useRef(false);
   useEffect(() => {
     if (loading) {
@@ -176,6 +229,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     if (wasLoadingRef.current) {
       log('AI explain stream finished', { chars: explanation.length, error: error ?? undefined });
       wasLoadingRef.current = false;
+      setStreamingId(null);
     }
   }, [loading, explanation, error]);
 
@@ -201,7 +255,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Waiting for subscription check after user clicked — show spinner
   if (!subLoaded && (showAi || autoLoad)) {
     return (
-      <div className="rounded-lg border bg-muted/30 p-4">
+      <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           {t('msg.getting_ai_response')}
@@ -227,10 +281,10 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     );
   }
 
-  // Loading (no tokens yet)
-  if (loading && !explanation) {
+  // Loading (no tokens yet) — only before the first assistant placeholder exists
+  if (loading && !explanation && messages.length === 0) {
     return (
-      <div className="rounded-lg border bg-muted/30 p-4">
+      <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           {t('msg.getting_ai_response')}
@@ -239,74 +293,88 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     );
   }
 
-  // Error
-  if (error && !explanation) {
+  // Streaming or complete — show the chat transcript
+  if (messages.length > 0 || loading || error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-        <div className="mb-2 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
-          <AlertCircle className="h-4 w-4" />
-          {error}
-        </div>
-        <Button variant="ghost" size="sm" onClick={fetchExplanation}>
-          <RefreshCw className="mr-1 h-3 w-3" /> {t('action.retry')}
-        </Button>
-      </div>
-    );
-  }
-
-  // Streaming or complete — always show the explanation card
-  if (explanation || loading || error) {
-    return (
-      <div className="rounded-lg border bg-muted/30 p-4">
+      <div>
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           {t('label.ai_says')}
-          {activeFollowUp && <> · {t(activeFollowUp)}</>}
           {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
         </div>
-        <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
-          <MarkdownExplanation text={explanation} l2Code={l2.code} streaming={loading} />
+
+        <div className="space-y-3">
+          {messages.map((message) =>
+            message.role === 'user' ? (
+              <div key={message.id} className="flex justify-end">
+                <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                  {message.label}
+                </div>
+              </div>
+            ) : (
+              <div key={message.id} className="flex justify-start">
+                <div className="max-w-[95%]">
+                  <div className="rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
+                    {loading && message.id === streamingId && !message.text ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    ) : (
+                      <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
+                        <MarkdownExplanation
+                          text={message.text}
+                          l2Code={l2.code}
+                          streaming={loading && message.id === streamingId}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1 pl-1">
+                    <button
+                      type="button"
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                      aria-label={t('action.regenerate')}
+                      title={t('action.regenerate')}
+                      disabled={loading}
+                      onClick={() => handleRegenerate(message.id)}
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                      aria-label={t('action.copy')}
+                      title={t('action.copy')}
+                      disabled={loading}
+                      onClick={() => handleCopy(message.id)}
+                    >
+                      {copiedId === message.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ),
+          )}
         </div>
+
         {error && (
           <div className="mt-2 flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
             <AlertCircle className="h-3 w-3" />
             {error}
           </div>
         )}
-        {!loading && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
+          {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).map((followUp) => (
             <Button
-              variant="ghost"
+              key={followUp.kind}
+              variant="secondary"
               size="sm"
-              className="px-2"
-              aria-label={t('action.regenerate')}
-              title={t('action.regenerate')}
-              onClick={handleRegenerate}
+              className="rounded-lg rounded-br-none border border-border shadow-sm"
+              disabled={loading}
+              onClick={() => handleFollowUp(followUp.kind)}
             >
-              <RefreshCw className="h-4 w-4" />
+              {t(followUp.labelKey)}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-2"
-              aria-label={t('action.copy')}
-              title={t('action.copy')}
-              onClick={handleCopy}
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-            {FOLLOW_UPS.map((followUp) => (
-              <Button
-                key={followUp.kind}
-                variant="outline"
-                size="sm"
-                onClick={() => handleFollowUp(followUp.kind)}
-              >
-                {t(followUp.labelKey)}
-              </Button>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     );
   }
