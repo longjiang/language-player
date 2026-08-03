@@ -4,13 +4,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import type { SavedLexicalItemStore, SavedLexicalItemRecord } from '@langplayer/shared';
+import { enqueuePendingOp, reducePendingOps, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
 import {
   mergeSavedWords,
-  enqueuePendingOp,
-  reducePendingOps,
-  flushPendingOps,
   collectMissingLocalWords,
-  type PendingSavedWordOp,
 } from './use-saved-words';
 
 function makeWord(id: string, l2: string, date: number): SavedLexicalItemRecord {

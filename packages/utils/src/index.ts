@@ -49,6 +49,13 @@ export { parseSubtitles, detectSubtitleFormat } from './subtitle-parser';
 export { QueueManager, getGlobalQueueManager } from './queue-manager';
 export type { QueueState, QueueType } from './queue-manager';
 export { stripMarkdown } from './strip-markdown';
+export {
+  pendingOpKey,
+  enqueuePendingOp,
+  reducePendingOps,
+  flushPendingOps,
+} from './saved-words-sync';
+export type { PendingSavedWordOp, SavedWordRowApi } from './saved-words-sync';
 export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
 export { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
 export type { SentenceSegment } from './sentence';

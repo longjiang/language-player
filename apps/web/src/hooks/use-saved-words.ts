@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemInstance } from '@langplayer/shared';
 import { useUserData, useSavedWordApi } from '@langplayer/api-client';
+import { enqueuePendingOp, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import { savedWordsRowApiEnabled, mergeAnonymousSavedWordsEnabled } from '@/lib/saved-words-feature';
 import { logwarn } from '@/lib/logger';
@@ -94,6 +95,9 @@ export function useSavedWords() {
   const flushPending = useCallback(async () => {
     if (!session) return;
     const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
+    if (remaining.length > 0) {
+      logwarn('[savedWords] Pending ops remain after flush:', remaining.length);
+    }
     savePendingOps(remaining);
   }, [session, putSavedWord, deleteSavedWord, savePendingOps]);
 
@@ -281,64 +285,6 @@ export function useSavedWords() {
     getSavedWords,
     clearSavedWords,
   };
-}
-
-// ── Pending-op queue (row API) ──────────────────────────
-
-export interface PendingSavedWordOp {
-  type: 'put' | 'delete';
-  l2: string;
-  wordId: string;
-  word?: SavedLexicalItemRecord;
-  updatedAt: number;
-}
-
-export interface SavedWordRowApi {
-  putSavedWord: (l2: string, word: SavedLexicalItemRecord) => Promise<unknown>;
-  deleteSavedWord: (l2: string, wordId: string) => Promise<unknown>;
-}
-
-export function pendingOpKey(op: PendingSavedWordOp): string {
-  return `${op.l2}\u0000${op.wordId}`;
-}
-
-/** Add an op, replacing any older op for the same (l2, wordId). */
-export function enqueuePendingOp(queue: PendingSavedWordOp[], op: PendingSavedWordOp): PendingSavedWordOp[] {
-  const key = pendingOpKey(op);
-  return [...queue.filter(q => pendingOpKey(q) !== key), op];
-}
-
-/** Keep only the newest op per (l2, wordId), in timestamp order. */
-export function reducePendingOps(queue: PendingSavedWordOp[]): PendingSavedWordOp[] {
-  const latest = new Map<string, PendingSavedWordOp>();
-  for (const op of queue) latest.set(pendingOpKey(op), op);
-  return [...latest.values()].sort((a, b) => a.updatedAt - b.updatedAt);
-}
-
-/** Replay ops in order; stop at the first failure so ordering is preserved. */
-export async function flushPendingOps(
-  queue: PendingSavedWordOp[],
-  api: SavedWordRowApi,
-): Promise<PendingSavedWordOp[]> {
-  const ops = reducePendingOps(queue);
-  const remaining: PendingSavedWordOp[] = [];
-  for (let i = 0; i < ops.length; i++) {
-    const op = ops[i]!;
-    try {
-      if (op.type === 'put' && op.word) {
-        await api.putSavedWord(op.l2, op.word);
-      } else {
-        await api.deleteSavedWord(op.l2, op.wordId);
-      }
-    } catch (err) {
-      logwarn('[savedWords] Pending op failed; will retry:', err);
-      // Keep the failed op and everything after it for the next retry, so a
-      // transient failure can't silently drop later ops.
-      remaining.push(...ops.slice(i));
-      break;
-    }
-  }
-  return remaining;
 }
 
 /** Local words absent from the server store (for the one-time anonymous merge). */
