@@ -59,13 +59,12 @@ Latin-script queries; that mechanism is retained.
 6. **Disambiguation stays at query-build time.** No engine-side language
    filtering is attempted; the target-language-name hint for Latin-script
    terms remains the mechanism for same-word-different-meaning cases.
-7. **Index-phase liveness filter.** Before results are cached, each candidate
-   `src` is pre-sniffed through the same `image.php` proxy path that `/img`
-   uses (concurrent, first-chunk check) and URLs the proxy cannot deliver
-   (200 + empty body) are dropped. This guarantees `/img/<term>/<i>/<lang>`
-   serves working images instead of empty 200s. Cached results carry a
-   version marker, so stale pre-filter or pre-thumbnail caches are never
-   trusted (currently `v3`).
+7. **No index-phase filtering.** Candidates are returned as-is. `/img` fetches
+   the source URL directly (browser UA, source-page referer when available)
+   and tunnels the upstream status (403/404/502) to the client, which is
+   responsible for handling broken tiles. Cached results carry a version
+   marker, so stale pre-filter or pre-thumbnail caches are never trusted
+   (currently `v4`).
 8. **Thumbnail-first results.** `src` is Bing's `turl` thumbnail when Bing
    provides one (typically ~30 KB vs ~400 KB full-size), falling back to the
    full-size `murl`; the full-size URL is preserved as `full` for future
@@ -84,9 +83,9 @@ Latin-script queries; that mechanism is retained.
   languages, versus DDG's slower downloads and rate limits.
 - **Classic compatibility**: `word-photos.js` keeps working with no client
   changes.
-- **No empty images**: the index-phase pre-sniff filters proxy-undeliverable
-  URLs, so `/img/...` requests only ever see working images (first index call
-  per term costs ~6s; later calls hit the filtered cache).
+- **Fast cold index**: no pre-sniff, so a first `/images/<term>/<lang>` call
+  is roughly one Bing fetch (~1–2s) instead of ~18s of proxy probing; later
+  calls hit the cache.
 - **Smaller payloads**: thumbnail-first `src` (~30 KB) instead of full-size
   images (~400 KB) for most results.
 
@@ -96,6 +95,9 @@ Latin-script queries; that mechanism is retained.
   and could change or start bot-flagging, like Google's did. Mitigation: the
   scraping logic is small, cached, and isolated in `app_images.py` behind
   Flask, so a future swap is cheap.
+- **Broken thumbnails reach clients**: unfiltered results mean some `/img`
+  requests come back 403/404. The web widget swaps failed tiles for a muted
+  placeholder; other clients see the tunneled status and can handle it.
 - **No license metadata**: Openverse provided Creative-Commons licensing;
   Bing results carry none. Word photos are illustrative links to their source
   pages, not licensed assets, and the UI already links back to the source.
