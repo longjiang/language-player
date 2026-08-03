@@ -686,6 +686,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           position={textSelection.rect}
           linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
           onOpenLink={onOpenLink}
+          extractPhrases
           onClose={clearTextSelection}
         />
       )}

@@ -15,6 +15,7 @@ import { removeCardFromStorage } from '@/hooks/use-srs';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logwarn } from '@/lib/logger';
 import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -35,6 +36,10 @@ interface DictionaryPopupProps {
   /** Custom handler for the link action (e.g. navigate inside an EPUB).
    *  Defaults to opening the URL in the web reader. */
   onOpenLink?: (href: string) => void;
+  /** When true (text-selection popup), also call /extract-phrases on the token
+   *  text and render canonical dictionary cards for each extracted phrase,
+   *  alongside whatever the standard lookup returns. */
+  extractPhrases?: boolean;
   onClose: () => void;
 }
 
@@ -47,6 +52,7 @@ export function DictionaryPopup({
   context,
   linkUrl,
   onOpenLink,
+  extractPhrases = false,
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
@@ -88,6 +94,82 @@ export function DictionaryPopup({
       return [];
     }
   }, [l1Code, l2Code]);
+
+  // ── Phrase extraction (selection popup) ──
+  // Ask the LLM for the canonical forms of the main words/phrases in the
+  // selected snippet, then look each phrase up through the standard dictionary
+  // lookup and render entry cards for whatever comes back.
+  const [phraseCards, setPhraseCards] = useState<DictionaryEntry[]>([]);
+  const [phraseLoading, setPhraseLoading] = useState(false);
+  const [phrasePronunciation, setPhrasePronunciation] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!extractPhrases || !token.text.trim()) return;
+    let cancelled = false;
+    const controller = new AbortController();
+    setPhraseLoading(true);
+
+    const run = async () => {
+      try {
+        const res = await fetch(`${PYTHON_API_URL}/extract-phrases`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: token.text, lang: baseCode(l2Code) }),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+
+        const phrases = Array.isArray(data?.phrases)
+          ? (data.phrases as unknown[]).filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
+          : [];
+        if (typeof data?.pronunciation === 'string' && data.pronunciation.trim()) {
+          setPhrasePronunciation(data.pronunciation);
+        }
+        if (phrases.length === 0) return;
+
+        const results: DictionaryEntry[] = [];
+        for (const phrase of phrases) {
+          if (cancelled) break;
+          const cached = getCachedEntries(l2Code, phrase);
+          if (cached && cached.length > 0) {
+            results.push(...cached);
+            continue;
+          }
+          const found = await lookupWord(phrase, controller.signal);
+          if (cancelled) break;
+          if (found.length > 0) {
+            setCachedEntries(l2Code, phrase, found);
+            results.push(...found);
+          }
+        }
+
+        if (!cancelled) {
+          const seen = new Set<string>();
+          setPhraseCards(
+            results.filter((e) => {
+              if (seen.has(e.id)) return false;
+              seen.add(e.id);
+              return true;
+            }),
+          );
+        }
+      } catch (err: any) {
+        if (!cancelled && err?.name !== 'AbortError') {
+          logwarn('Phrase extraction failed', { text: token.text.slice(0, 80), error: err?.message ?? String(err) });
+        }
+      } finally {
+        if (!cancelled) setPhraseLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [extractPhrases, token.text, l2Code, lookupWord]);
 
   useEffect(() => {
     let cancelled = false;
@@ -206,6 +288,13 @@ export function DictionaryPopup({
     });
   }, [savedWords, l2Code, entries, token.text, loading, error]);
 
+  // Phrase cards that aren't duplicates of the standard lookup results.
+  const mainEntryIds = useMemo(() => new Set(entries.map((e) => e.id)), [entries]);
+  const visiblePhraseCards = useMemo(
+    () => phraseCards.filter((e) => !mainEntryIds.has(e.id)),
+    [phraseCards, mainEntryIds],
+  );
+
   const handleEntryClick = (entry: DictionaryEntry) => {
     router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id));
   };
@@ -225,6 +314,11 @@ export function DictionaryPopup({
             {token.pronunciation && (
               <span className="ml-2 text-sm text-muted-foreground">
                 [{token.pronunciation}]
+              </span>
+            )}
+            {!token.pronunciation && phrasePronunciation && (
+              <span className="ml-2 text-sm text-muted-foreground">
+                [{phrasePronunciation}]
               </span>
             )}
             {token.lemmas.length > 0 && token.lemmas[0]!.lemma !== token.text && (
@@ -264,7 +358,7 @@ export function DictionaryPopup({
             </div>
           )}
 
-          {!loading && !error && entries.length === 0 && (
+          {!loading && !error && entries.length === 0 && visiblePhraseCards.length === 0 && (
             <div className="py-8 text-center text-sm text-muted-foreground">
               <p>{t('msg.no_dictionary_entry', { word: token.text })}</p>
               {token.lemmas.length > 0 && (
@@ -292,6 +386,30 @@ export function DictionaryPopup({
             contextText={context?.text}
             contextForm={context?.form ?? token.text}
           />
+
+          {/* Canonical phrase cards from /extract-phrases (selection popup) */}
+          {extractPhrases && (phraseLoading || visiblePhraseCards.length > 0) && (
+            <div className="pt-1">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">{t('label.phrases')}</span>
+                {phraseLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+              </div>
+              {!phraseLoading && (
+                <WordList>
+                  {visiblePhraseCards.map((entry) => (
+                    <DictionaryEntryCard
+                      key={entry.id}
+                      entry={entry}
+                      onClick={handleEntryClick}
+                      saveContext={context}
+                      pronunciation={formatPronunciation(entry, l2Code)}
+                      l2Code={l2Code}
+                    />
+                  ))}
+                </WordList>
+              )}
+            </div>
+          )}
 
           {/* Unrecognized saved words (Tier 2 — legacy data) */}
           {!loading && unmatchedSavedWords.length > 0 && unmatchedSavedWords.map((sw) => (
