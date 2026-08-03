@@ -641,6 +641,7 @@
         "epub_file_unreadable": "无法读取此文件。可能处于离线状态或无法访问。",
         "epub_import_failures": "以下文件无法导入：",
         "epub_library_empty": "您的书架还是空的。上传一本书开始阅读吧。",
+        "epub_no_books_in_language": "还没有{language}书籍。上传一本开始阅读吧。",
         "epub_not_supported": "仅支持 .epub 文件。",
         "epub_parse_error": "无法打开此 EPUB 文件。",
         "epub_progress": "已读 {pct}%",

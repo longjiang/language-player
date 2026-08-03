@@ -656,6 +656,7 @@
         "epub_file_unreadable": "تعذرت قراءة هذا الملف. قد يكون غير متصل أو غير قابل للوصول.",
         "epub_import_failures": "تعذر استيراد الملفات التالية:",
         "epub_library_empty": "مكتبتك فارغة. ارفع كتابًا لبدء القراءة.",
+        "epub_no_books_in_language": "لا توجد كتب {language} بعد. ارفع كتابًا لبدء القراءة.",
         "epub_not_supported": "يتم دعم ملفات .epub فقط.",
         "epub_parse_error": "تعذر فتح ملف EPUB هذا.",
         "epub_progress": "تمت قراءة {pct}٪",

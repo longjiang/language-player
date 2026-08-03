@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Tätä tiedostoa ei voitu lukea. Se saattaa olla offline-tilassa tai ei käytettävissä.",
         "epub_import_failures": "Seuraavia tiedostoja ei voitu tuoda:",
         "epub_library_empty": "Kirjastosi on tyhjä. Lataa kirja aloittaaksesi lukemisen.",
+        "epub_no_books_in_language": "Ei vielä {language}-kielisiä kirjoja. Lataa kirja aloittaaksesi lukemisen.",
         "epub_not_supported": "Vain .epub-tiedostoja tuetaan.",
         "epub_parse_error": "Tätä EPUB-tiedostoa ei voitu avata.",
         "epub_progress": "{pct}% luettu",

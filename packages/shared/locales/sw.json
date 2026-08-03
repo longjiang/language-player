@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Haikuweza kusoma faili hii. Inaweza kuwa nje ya mtandao au haipatikani.",
         "epub_import_failures": "Faili zifuatazo hazikuweza kuingizwa:",
         "epub_library_empty": "Maktaba yako haina vitabu. Pakia kitabu kuanza kusoma.",
+        "epub_no_books_in_language": "Hakuna vitabu vya {language} bado. Pakia kitabu kuanza kusoma.",
         "epub_not_supported": "Faili za .epub pekee ndizo zinazotumika.",
         "epub_parse_error": "Haikuweza kufungua faili hii ya EPUB.",
         "epub_progress": "{pct}% imesomwa",

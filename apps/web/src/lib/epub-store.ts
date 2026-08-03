@@ -36,6 +36,8 @@ export interface EpubMeta {
   id: string;
   fileName: string;
   fileSize: number;
+  /** Primary language subtag from the OPF metadata (e.g. "ja"), or null. */
+  language: string | null;
   /** Cover image as a data URL — shown on the bookshelf without reopening the book. */
   coverUrl: string | null;
   /** Last reading position in the book-model block stream. */
@@ -93,6 +95,7 @@ function baseMeta(id: string, fileName: string, fileSize: number): EpubMeta {
     id,
     fileName,
     fileSize,
+    language: null,
     coverUrl: null,
     lastLocation: null,
     locationFormatVersion: 1,

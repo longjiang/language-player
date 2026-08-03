@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Nie można odczytać tego pliku. Może być offline lub niedostępny.",
         "epub_import_failures": "Nie można było zaimportować następujących plików:",
         "epub_library_empty": "Twoja biblioteka jest pusta. Prześlij książkę, aby rozpocząć czytanie.",
+        "epub_no_books_in_language": "Nie ma jeszcze książek po {language}. Prześlij jedną, aby rozpocząć czytanie.",
         "epub_not_supported": "Obsługiwane są tylko pliki .epub.",
         "epub_parse_error": "Nie można otworzyć tego pliku EPUB.",
         "epub_progress": "przeczytano {pct}%",

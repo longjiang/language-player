@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Kan dit bestand niet lezen. Het is mogelijk offline of ontoegankelijk.",
         "epub_import_failures": "De volgende bestanden konden niet worden geïmporteerd:",
         "epub_library_empty": "Je bibliotheek is leeg. Upload een boek om te beginnen met lezen.",
+        "epub_no_books_in_language": "Nog geen {language}-boeken. Upload er een om te beginnen met lezen.",
         "epub_not_supported": "Alleen .epub-bestanden worden ondersteund.",
         "epub_parse_error": "Kan dit EPUB-bestand niet openen.",
         "epub_progress": "{pct}% gelezen",

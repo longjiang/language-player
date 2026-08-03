@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Kunne ikke lese denne filen. Den kan være frakoblet eller utilgjengelig.",
         "epub_import_failures": "Følgende filer kunne ikke importeres:",
         "epub_library_empty": "Biblioteket ditt er tomt. Last opp en bok for å begynne å lese.",
+        "epub_no_books_in_language": "Ingen {language}-bøker ennå. Last opp en for å begynne å lese.",
         "epub_not_supported": "Kun .epub-filer støttes.",
         "epub_parse_error": "Kunne ikke åpne denne EPUB-filen.",
         "epub_progress": "{pct}% lest",

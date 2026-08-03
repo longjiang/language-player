@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import JSZip from 'jszip';
-import { findSpineIndex, fullTocHref, resolveNavDir, resolvePath, splitFragment } from './epub-book';
+import {
+  findSpineIndex,
+  fullTocHref,
+  normalizeLanguageCode,
+  resolveNavDir,
+  resolvePath,
+  splitFragment,
+} from './epub-book';
 import type { EpubSpineItem } from './epub-book-types';
 
 function dirname(p: string): string {
@@ -94,6 +101,21 @@ describe('fullTocHref (fragment re-attachment)', () => {
   it('passes fragment-less hrefs through unchanged', () => {
     expect(fullTocHref({ href: 'OEBPS/text00001.html' }))
       .toBe('OEBPS/text00001.html');
+  });
+});
+
+describe('normalizeLanguageCode', () => {
+  it('reduces language codes to their primary subtag', () => {
+    expect(normalizeLanguageCode('ja')).toBe('ja');
+    expect(normalizeLanguageCode('ja-JP')).toBe('ja');
+    expect(normalizeLanguageCode('ZH_CN')).toBe('zh');
+    expect(normalizeLanguageCode(' en-US ')).toBe('en');
+  });
+
+  it('returns null for missing or empty values', () => {
+    expect(normalizeLanguageCode(undefined)).toBeNull();
+    expect(normalizeLanguageCode('')).toBeNull();
+    expect(normalizeLanguageCode(null)).toBeNull();
   });
 });
 

@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Kon nie hierdie lêer lees nie. Dit is dalk vanlyn of ontoeganklik.",
         "epub_import_failures": "Die volgende lêers kon nie ingevoer word nie:",
         "epub_library_empty": "Jou biblioteek is leeg. Laai 'n boek op om te begin lees.",
+        "epub_no_books_in_language": "Nog geen {language}-boeke nie. Laai een op om te begin lees.",
         "epub_not_supported": "Slegs .epub-lêers word ondersteun.",
         "epub_parse_error": "Kon nie hierdie EPUB-lêer oopmaak nie.",
         "epub_progress": "{pct}% gelees",

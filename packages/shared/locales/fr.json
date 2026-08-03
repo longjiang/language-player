@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Impossible de lire ce fichier. Il est peut-être hors ligne ou inaccessible.",
         "epub_import_failures": "Les fichiers suivants n'ont pas pu être importés :",
         "epub_library_empty": "Votre bibliothèque est vide. Importez un livre pour commencer à lire.",
+        "epub_no_books_in_language": "Pas encore de livres en {language}. Importez-en un pour commencer à lire.",
         "epub_not_supported": "Seuls les fichiers .epub sont pris en charge.",
         "epub_parse_error": "Impossible d'ouvrir ce fichier EPUB.",
         "epub_progress": "{pct}% lu",

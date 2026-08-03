@@ -113,6 +113,35 @@ export function fullTocHref(node: { href: string; fragment?: string }): string {
   return node.fragment ? `${node.href}#${node.fragment}` : node.href;
 }
 
+/**
+ * Primary language subtag, lowercased ("ja", "ja-JP", "JA_JP" → "ja").
+ * Returns null for empty/missing values.
+ */
+export function normalizeLanguageCode(code: string | null | undefined): string | null {
+  if (!code) return null;
+  const primary = code.trim().split(/[-_]/)[0]?.toLowerCase();
+  return primary || null;
+}
+
+/**
+ * Lightweight language extraction from the OPF metadata only — avoids the
+ * spine/nav/cover work of `EpubBook.open`, for backfilling stored books.
+ */
+export async function readEpubLanguage(data: ArrayBuffer): Promise<string | null> {
+  try {
+    const ePub = (await import('epubjs')).default;
+    const book: any = ePub(data);
+    // Timeout so a pathological book can't hang the bookshelf backfill.
+    const metadata = await Promise.race([
+      book.loaded.metadata,
+      new Promise(resolve => setTimeout(resolve, 5000)),
+    ]);
+    return normalizeLanguageCode(metadata?.language);
+  } catch {
+    return null;
+  }
+}
+
 function flattenToc(toc: TocNode[]): { node: TocNode; depth: number; order: number }[] {
   const out: { node: TocNode; depth: number; order: number }[] = [];
   const walk = (nodes: TocNode[], depth: number) => {
@@ -330,6 +359,8 @@ interface EpubjsTocItem {
 export class EpubBook {
   readonly title: string;
   readonly author: string;
+  /** Primary language subtag from the OPF metadata (e.g. "ja"), or null. */
+  readonly language: string | null;
   readonly coverUrl: string | null;
   readonly pageProgressionDir: 'ltr' | 'rtl';
   readonly spine: EpubSpineItem[];
@@ -359,6 +390,7 @@ export class EpubBook {
     this.pageProgressionDir = pageProgressionDir;
     this.title = book?.package?.metadata?.title ?? '';
     this.author = book?.package?.metadata?.creator ?? '';
+    this.language = normalizeLanguageCode(book?.package?.metadata?.language);
   }
 
   static async open(data: ArrayBuffer): Promise<EpubBook> {

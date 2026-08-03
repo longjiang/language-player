@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Diese Datei konnte nicht gelesen werden. Sie ist möglicherweise offline oder nicht zugänglich.",
         "epub_import_failures": "Die folgenden Dateien konnten nicht importiert werden:",
         "epub_library_empty": "Deine Bibliothek ist leer. Lade ein Buch hoch, um mit dem Lesen zu beginnen.",
+        "epub_no_books_in_language": "Noch keine {language}-Bücher. Lade ein Buch hoch, um mit dem Lesen zu beginnen.",
         "epub_not_supported": "Es werden nur .epub-Dateien unterstützt.",
         "epub_parse_error": "Diese EPUB-Datei konnte nicht geöffnet werden.",
         "epub_progress": "{pct}% gelesen",
