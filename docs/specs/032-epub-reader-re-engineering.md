@@ -100,13 +100,19 @@ Audited 2026-08-02 against the fixtures in `tmp/testing-assets/epub/` (same book
 
 | Book | Spine items | TOC entries | TOC entries sharing a spine item | Spine items with no TOC entry | TOC depth |
 |---|---|---|---|---|---|
-| 坊っちゃん (Botchan, ja) | 4 | 11 | **10** | 3 | 2 (NCX) |
-| 雪国 (Snow Country, ja) | 12 | 4 | 0 | **8** | 2 (NCX) |
-| 白夜行 (Midnight Sun, ja) | 33 | 14 | 0 | **19** | 2 (NCX) |
-| 1Q84 BOOK1 (ja) | 33 | 28 | 0 | 5 | 2 (NCX) |
-| 秘密 (ja) | 11 | 2 | 0 | 9 | 2 (NCX) |
-| Engels, Condition of the Working Class (en) | 67 | 68 | 4 | 3 | **4** (NCX) |
-| Kant, Was ist Aufklärung (de) | 5 | 3 | 0 | 2 | 2 (NCX) |
+| 坊っちゃん (Botchan, ja) | 4 | 11 | **10** | 3 | 1 (NCX) |
+| 雪国 (Snow Country, ja) | 12 | 4 | 0 | **8** | 1 (NCX) |
+| 白夜行 (Midnight Sun, ja) | 33 | 14 | 0 | **19** | 1 (NCX) |
+| 1Q84 BOOK1 (ja) | 33 | 28 | 0 | 5 | 1 (NCX) |
+| 秘密 (ja) | 11 | 2 | 0 | 9 | 1 (NCX) |
+| Engels, Condition of the Working Class (en) | 67 | 68 | 4 | 3 | **3** (NCX) |
+| Kant, Was ist Aufklärung (de) | 5 | 3 | 0 | 2 | 1 (NCX) |
+
+TOC depth counts actual tree levels only (navPoint / `<li>` nesting), *not*
+the enclosing container: `navMap` (NCX) / `<nav epub:type="toc">` (EPUB 3)
+is level 0, so a flat chapter list is depth 1 and matches the indentation the
+sidebar renders. The NCX `<docTitle>` (e.g. Botchan's "UnKnown") is not a TOC
+node and is excluded.
 
 ### Failure modes
 
@@ -389,7 +395,7 @@ Run against the fixtures in `tmp/testing-assets/epub/`:
 - **Invariants**: every linear spine item appears exactly once in the flow; every TOC entry resolves to a `BookLocation`; total plain-text chars are monotonic across locations.
 - **Botchan regression**: the 10 fragment-shared TOC entries land on 10 distinct positions (previously identical content); search for a chapter title returns no duplicates; `totalChars` matches single-pass text length.
 - **Snow Country / Midnight Sun**: search finds strings inside untoc'd spine items (previously missed).
-- **Engels**: TOC renders 4 levels deep; ancestor highlighting works at depth 4.
+- **Engels**: TOC renders 3 levels deep; ancestor highlighting works at depth 3.
 - **Restore**: open, read to a mid-spine fragment, close, reopen — lands on the same block/offset without any text-anchor seek.
 - **Pagination**: page count continuous across spine boundaries; resize invalidates and recomputes without jumping away from the current block.
 - Type-check web (`cd apps/web && ./node_modules/.bin/tsc --noEmit`) and the new package before merging.
