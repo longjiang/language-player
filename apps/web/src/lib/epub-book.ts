@@ -174,6 +174,10 @@ async function toStableCoverUrl(url: string | null): Promise<string | null> {
   try {
     const res = await fetch(url);
     const blob = await res.blob();
+    // Only image covers can be rendered with <img>. Some books use an XHTML
+    // cover PAGE (e.g. Engels: <item href="cover.html" …/>) — a data URL of
+    // that HTML would render as a broken image, so treat it as no cover.
+    if (!blob.type.startsWith('image/')) return null;
     return await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);

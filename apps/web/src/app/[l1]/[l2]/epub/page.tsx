@@ -111,10 +111,15 @@ export default function EpubPage() {
 
   // Resume once the book is open (no cover) or the cover has been dismissed.
   useEffect(() => {
+    // The effect must also re-run when opening finishes: pendingStartRef is
+    // only set after openBook resolves (past the last coverTapped change),
+    // so without openingId in the deps the jump never fires for cover-less
+    // books and the reader stays blank.
+    if (openingId !== null) return;
     if (epub.coverTapped && pendingStartRef.current && !location) {
       gotoLocation(pendingStartRef.current);
     }
-  }, [epub.coverTapped, location, gotoLocation]);
+  }, [epub.coverTapped, location, gotoLocation, openingId]);
 
   // Cover tap → enter the reader at the resume location.
   const handleCoverTap = useCallback(() => {
@@ -264,6 +269,12 @@ export default function EpubPage() {
                 className="max-h-[70vh] max-w-full cursor-pointer rounded-lg shadow-xl transition-transform hover:scale-[1.02]"
                 onClick={handleCoverTap}
               />
+            </div>
+          ) : epub.book && !location ? (
+            /* Book open but the resume jump hasn't landed yet — never a
+               blank page. */
+            <div className="flex min-h-[40vh] items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : epub.book && location ? (
             /* ── Reader ── */
