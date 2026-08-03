@@ -25,17 +25,26 @@ interface EpubSearchPanelProps {
   onNavigate: (result: EpubSearchResult) => void;
 }
 
-/** Highlight the searched term inside a snippet. */
-function HighlightSnippet({ snippet, term }: { snippet: string; term: string }) {
-  const idx = term ? snippet.toLowerCase().indexOf(term.toLowerCase()) : -1;
-  if (idx === -1) return <>{snippet}</>;
+/** Highlight the exact matched range inside a snippet. */
+function HighlightSnippet({
+  snippet,
+  matchStart,
+  matchLen,
+}: {
+  snippet: string;
+  matchStart: number;
+  matchLen: number;
+}) {
+  if (matchLen <= 0 || matchStart < 0 || matchStart + matchLen > snippet.length) {
+    return <>{snippet}</>;
+  }
   return (
     <>
-      {snippet.slice(0, idx)}
+      {snippet.slice(0, matchStart)}
       <mark className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
-        {snippet.slice(idx, idx + term.length)}
+        {snippet.slice(matchStart, matchStart + matchLen)}
       </mark>
-      {snippet.slice(idx + term.length)}
+      {snippet.slice(matchStart + matchLen)}
     </>
   );
 }
@@ -45,7 +54,6 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>(loadRecent);
   const [results, setResults] = useState<EpubSearchResult[] | null>(null);
-  const [searchedQuery, setSearchedQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,7 +66,6 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
     try {
       const res = await onSearch(q);
       setResults(res);
-      setSearchedQuery(q);
       setRecent(prev => {
         const next = [q, ...prev.filter(r => r.toLowerCase() !== q.toLowerCase())].slice(0, MAX_RECENT);
         try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
@@ -153,7 +160,11 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
                   className="w-full rounded-md px-2 py-2 text-left transition-colors hover:bg-muted"
                 >
                   <p className="line-clamp-2 text-sm text-foreground">
-                    <HighlightSnippet snippet={r.snippet} term={searchedQuery} />
+                    <HighlightSnippet
+                      snippet={r.snippet}
+                      matchStart={r.snippetMatchStart}
+                      matchLen={r.snippetMatchLen}
+                    />
                   </p>
                   {r.chapterLabel && (
                     <p className="mt-1 text-xs text-muted-foreground">{r.chapterLabel}</p>
