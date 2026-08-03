@@ -8,17 +8,16 @@ import { cn } from '@/lib/utils';
 import { log } from '@/lib/logger';
 import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 
-const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
-const PAGE_SIZE = 20;
+// Bing image search goes through the Flask gateway so every client shares one
+// backend, one cache, and one source of truth (see ADR-0024).
+const IMAGE_SEARCH_URL = `${PYTHON_API_URL}/images/`;
 const THUMBNAIL_TIMEOUT_MS = 5000;
-const OWNER_MAX_IMAGES = 2;
-
 // ── Caches (in-memory + sessionStorage) ──
-// Openverse results, LLM queries and thumbnail liveness are stable within a
+// Bing results, LLM queries and thumbnail liveness are stable within a
 // session. The Maps make repeat lookups instant; sessionStorage backs them so
 // reloads don't redo work either, while expiring naturally when the tab
 // session ends (no stale-data TTL needed).
-const searchCache = new Map<string, OpenverseImage[]>();
+const searchCache = new Map<string, SearchImage[]>();
 const llmQueryCache = new Map<string, string[]>();
 const thumbnailCache = new Map<string, boolean>(); // URL → alive
 
@@ -41,14 +40,14 @@ function storageSet(key: string, value: unknown) {
   }
 }
 
-function getSearchCache(query: string): OpenverseImage[] | undefined {
+function getSearchCache(query: string): SearchImage[] | undefined {
   if (searchCache.has(query)) return searchCache.get(query);
-  const stored = storageGet<OpenverseImage[]>(`${STORAGE_PREFIX}results:${query}`);
+  const stored = storageGet<SearchImage[]>(`${STORAGE_PREFIX}results:${query}`);
   if (stored !== undefined) searchCache.set(query, stored);
   return stored;
 }
 
-function setSearchCache(query: string, results: OpenverseImage[]) {
+function setSearchCache(query: string, results: SearchImage[]) {
   searchCache.set(query, results);
   storageSet(`${STORAGE_PREFIX}results:${query}`, results);
 }
@@ -77,7 +76,7 @@ function setThumbnailStatus(url: string, alive: boolean) {
   storageSet(`${STORAGE_PREFIX}thumb:${url}`, alive);
 }
 
-interface OpenverseImage {
+interface SearchImage {
   id: string;
   title: string;
   thumbnail: string | null;
@@ -90,16 +89,12 @@ interface OpenverseImage {
   sourceQuery?: string;
 }
 
-interface OpenverseResponse {
-  results: OpenverseImage[];
-}
-
 /**
- * Openverse has no language filter, so for Latin-script terms we append the
- * target language's native name to the query to disambiguate (e.g. "chat" →
- * French cat vs English small talk). Terms already in a non-Latin script
- * (CJK, Cyrillic, Arabic…) are language-specific as-is and would lose results
- * if we appended anything.
+ * Bing's mkt flag is a market bias, not a strict language filter, so for
+ * Latin-script terms we append the target language's native name to the query
+ * to disambiguate (e.g. "chat" → French cat vs English small talk). Terms
+ * already in a non-Latin script (CJK, Cyrillic, Arabic…) are language-specific
+ * as-is and would lose results if we appended anything.
  */
 const NON_LATIN_RE = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u;
 
@@ -110,16 +105,15 @@ function buildImageQuery(term: string, l2Code: string): string {
 
 /**
  * Dead-thumbnail sniffing: verify a thumbnail actually returns an image before
- * rendering. Uses HEAD so it's cheap and parallel. Openverse returns 424
- * "Failed Dependency" for records whose upstream image is gone, so anything
- * non-2xx is pruned — except 429 (rate limit is retryable, not dead). Hosts
- * that block CORS are kept as-is: an <img> tag can still load them even when
- * fetch can't inspect the response.
+ * rendering. Uses HEAD so it's cheap and parallel. Anything non-2xx is pruned
+ * — except 429 (rate limit is retryable, not dead). Hosts that block CORS are
+ * kept as-is: an <img> tag can still load them even when fetch can't inspect
+ * the response.
  */
 async function sniffThumbnail(
-  img: OpenverseImage,
+  img: SearchImage,
   signal: AbortSignal,
-): Promise<OpenverseImage | null> {
+): Promise<SearchImage | null> {
   const target = img.thumbnail ?? img.url;
   if (!target) return img;
 
@@ -150,12 +144,12 @@ async function sniffThumbnail(
 
 /**
  * Fetch results for a query, progressively relaxing it when it comes back
- * empty. Openverse matches metadata literally, so poetic multi-word queries
- * ("Mount Fuji painting shining brilliantly") often return nothing — dropping
- * trailing words ("Mount Fuji painting" → "Mount Fuji") finds real matches.
- * Relaxed results are still tagged with the original query for the pills.
+ * empty. LLM-generated queries are often poetic ("Mount Fuji painting shining
+ * brilliantly"), so dropping trailing words ("Mount Fuji painting" →
+ * "Mount Fuji") finds real matches. Relaxed results are still tagged with the
+ * original query for the pills.
  */
-async function fetchQueryResults(query: string, signal: AbortSignal): Promise<OpenverseImage[]> {
+async function fetchQueryResults(query: string, l2Code: string, signal: AbortSignal): Promise<SearchImage[]> {
   const words = query.split(/\s+/).filter(Boolean);
   // Try the relaxed variant first: LLM queries often end in words like
   // "substance" or "compound" that rarely appear in captions, so the full
@@ -172,12 +166,21 @@ async function fetchQueryResults(query: string, signal: AbortSignal): Promise<Op
     if (i === start && start < words.length) {
       log('[ImageSearch] Pre-relaxed:', query, '→', candidate);
     }
-    const url = `${OPENVERSE_IMAGES_URL}?q=${encodeURIComponent(candidate)}&page_size=${PAGE_SIZE}&filter_dead=true`;
-    log('[ImageSearch] Openverse fetch:', candidate, url);
+    const url = `${IMAGE_SEARCH_URL}${encodeURIComponent(candidate)}/${baseCode(l2Code)}`;
+    log('[ImageSearch] Bing fetch (via Flask):', candidate, url);
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json() as OpenverseResponse;
-    const results = data.results ?? [];
+    const data = await res.json() as { src: string; url?: string; title?: string }[];
+    const results = data.map((item, idx): SearchImage => ({
+      id: `${item.src}#${idx}`,
+      title: item.title || candidate,
+      thumbnail: item.src,
+      url: item.src,
+      foreign_landing_url: item.url || null,
+      creator: null,
+      provider: 'bing',
+      attribution: '',
+    }));
     setSearchCache(candidate, results);
     if (results.length > 0) {
       if (candidate !== query) log('[ImageSearch] Query relaxed:', query, '→', candidate);
@@ -185,32 +188,6 @@ async function fetchQueryResults(query: string, signal: AbortSignal): Promise<Op
     }
   }
   return [];
-}
-
-/**
- * Same-owner density cap: Flickr-style URLs expose the uploader account, so a
- * single photographer's series (e.g. 13 shots from one Sky Deck visit) can
- * otherwise dominate a query's results. Keep at most OWNER_MAX_IMAGES per
- * identifiable owner. Images with no identifiable owner are never capped.
- */
-function ownerKey(img: OpenverseImage): string {
-  const m = img.foreign_landing_url?.match(/\/photos\/([^/]+)\/\d+/);
-  if (m) return `${img.provider}:${m[1]}`;
-  if (img.creator) return `${img.provider}:${img.creator.toLowerCase()}`;
-  return `unique:${img.id}`;
-}
-
-function capByOwner(images: OpenverseImage[]): OpenverseImage[] {
-  const counts = new Map<string, number>();
-  const out: OpenverseImage[] = [];
-  for (const img of images) {
-    const key = ownerKey(img);
-    const count = counts.get(key) ?? 0;
-    if (count >= OWNER_MAX_IMAGES) continue;
-    counts.set(key, count + 1);
-    out.push(img);
-  }
-  return out;
 }
 
 export function ImageSearchResults({
@@ -236,7 +213,7 @@ export function ImageSearchResults({
 }) {
   const t = useT();
   const isCompact = variant === 'compact';
-  const [images, setImages] = useState<OpenverseImage[] | null>(null);
+  const [images, setImages] = useState<SearchImage[] | null>(null);
   const [queries, setQueries] = useState<string[]>([]);
   const [activeQuery, setActiveQuery] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -300,23 +277,18 @@ export function ImageSearchResults({
       });
       setQueries(searchQueries);
 
-      // 2. Search Openverse per query; cap same-owner density per query so no
-      //    single photographer can flood one source.
-      const perQuery = new Map<string, OpenverseImage[]>();
+      // 2. Search Bing per query (through Flask).
+      const perQuery = new Map<string, SearchImage[]>();
       let failures = 0;
 
       await Promise.all(searchQueries.map(async (q) => {
         try {
-          const results = await fetchQueryResults(q, controller.signal);
+          const results = await fetchQueryResults(q, l2Code, controller.signal);
           if (isCompact) {
             // Compact: 3 per query, no owner cap — the query mix is the diversity.
             perQuery.set(q, results.slice(0, 3));
           } else {
-            const capped = capByOwner(results);
-            if (capped.length < results.length) {
-              log('[ImageSearch] Owner-capped:', q, results.length - capped.length, 'removed');
-            }
-            perQuery.set(q, capped);
+            perQuery.set(q, results);
           }
         } catch (err: any) {
           if (err?.name !== 'AbortError') failures++;
@@ -329,7 +301,7 @@ export function ImageSearchResults({
       const orderedQueries = searchQueries
         .map((q) => ({ query: q, images: perQuery.get(q) ?? [] }))
         .filter((p) => p.images.length > 0);
-      const merged: OpenverseImage[] = [];
+      const merged: SearchImage[] = [];
       const seen = new Set<string>();
       const total = orderedQueries.reduce((n, p) => n + p.images.length, 0);
       let processed = 0;
@@ -348,12 +320,12 @@ export function ImageSearchResults({
 
       if (!cancelled) {
         if (merged.length === 0 && failures > 0 && failures >= searchQueries.length) {
-          setError('Openverse request failed');
+          setError('Bing image search failed');
         } else {
           // Prune dead thumbnails before showing the grid.
           const pruned = (
             await Promise.all(merged.map((img) => sniffThumbnail(img, controller.signal)))
-          ).filter((img): img is OpenverseImage => img !== null);
+          ).filter((img): img is SearchImage => img !== null);
           if (!cancelled) setImages(pruned);
         }
       }
@@ -432,7 +404,7 @@ export function ImageSearchResults({
   const pageImages = visibleImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
   // Always render a full three rows — muted placeholders fill the gaps so the
   // grid never shifts between pages or states.
-  const gridCells: (OpenverseImage | null)[] = Array.from(
+  const gridCells: (SearchImage | null)[] = Array.from(
     { length: pageSize },
     (_, i) => pageImages[i] ?? null,
   );
@@ -610,7 +582,7 @@ function ImageTile({
   term,
   className,
 }: {
-  image: OpenverseImage;
+  image: SearchImage;
   term: string;
   className?: string;
 }) {
@@ -626,8 +598,7 @@ function ImageTile({
       )}
     >
       {image.thumbnail ?? image.url ? (
-        // Openverse serves a proxied thumbnail designed for embedding;
-        // clicking opens the image's source page.
+        // The backend returns direct image URLs; clicking opens the source page.
         <img
           src={image.thumbnail ?? image.url}
           alt={image.title || term}
