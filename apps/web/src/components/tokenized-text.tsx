@@ -11,7 +11,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
-import { isPhoneticsEligible, sentenceForToken } from '@langplayer/utils';
+import { isPhoneticsEligible, sentenceContaining, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup } from '@/hooks/use-selection-popup';
@@ -518,6 +518,22 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return sentenceForToken(text, tokens, selectedToken, baseCode(l2Code));
   }, [selectedToken, text, tokens, l2Code]);
 
+  // Sentence containing the selection — mirrors the token path so arbitrary
+  // text selections get the same immediate-sentence context (Intl.Segmenter)
+  // instead of the whole block.
+  const selectedTextContext = useMemo(() => {
+    if (!textSelection) return null;
+    const offset = textSelection.startOffset;
+    if (offset !== null && text.slice(offset, offset + textSelection.text.length) === textSelection.text) {
+      return sentenceContaining(text, offset, baseCode(l2Code));
+    }
+    // Offset mapping fell through (e.g. converted script or phonetics-replaced
+    // display) — locate the selection by substring search, like sentenceForToken.
+    const hit = text.indexOf(textSelection.text);
+    if (hit !== -1) return sentenceContaining(text, hit, baseCode(l2Code));
+    return text;
+  }, [textSelection, text, l2Code]);
+
   // Build a set of saved word forms for quick lookup
   const savedFormSet = useMemo(() => {
     const words = savedWords[l2Code] ?? [];
@@ -681,7 +697,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           context={{
             ...externalContext,
             form: textSelection.text,
-            text,
+            text: selectedTextContext ?? text,
           }}
           position={textSelection.rect}
           linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
