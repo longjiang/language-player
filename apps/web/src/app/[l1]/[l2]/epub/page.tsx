@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import type { SavedWordContext } from '@langplayer/shared';
-import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { translateTextsKeyed } from '@/lib/translate';
-import { ReaderPanel } from '@/components/reader/reader-panel';
+import { EpubReaderPanel } from '@/components/reader/epub-reader-panel';
 import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/epub-search-panel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEpub } from '@/hooks/use-epub';
+import { useEpub, markerForLocation } from '@/hooks/use-epub';
+import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
 import { Sidebar } from '@/components/ui/sidebar';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
 import type { EpubSearchResult } from '@/hooks/use-epub';
@@ -28,14 +28,21 @@ export default function EpubPage() {
   const router = useRouter();
   const epub = useEpub();
 
-  const [text, setText] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [importFailures, setImportFailures] = useState<EpubFileError[]>([]);
-  const anchorRef = useRef<string | null>(null);
+  const [location, setLocation] = useState<BookLocation | null>(null);
+  const [jumpNonce, setJumpNonce] = useState(0);
+  const pendingStartRef = useRef<BookLocation | null>(null);
+
+  /** Jump the reader to a location (TOC, search, links, restore). */
+  const gotoLocation = useCallback((loc: BookLocation | null) => {
+    if (!loc) return;
+    setLocation(loc);
+    setJumpNonce(n => n + 1);
+  }, []);
 
   // Load the bookshelf on mount — books are opened explicitly, not auto-resumed.
   useEffect(() => {
@@ -46,67 +53,88 @@ export default function EpubPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Apply loaded chapter text + its seek anchor, parsing blocks synchronously
-  // so the reader never falls into the no-blocks fallback (even when the new
-  // text is identical to the current one).
-  const applyChapterText = useCallback((md: string, anchor: string | null) => {
-    anchorRef.current = anchor;
-    setText(md);
-    try {
-      const parsed = parseMarkdown(md);
-      setBlocks(parsed);
-    } catch {
-      setBlocks(null);
-    }
-  }, []);
+  // Chapter label for the header: nearest preceding TOC entry.
+  const chapterLabel = useMemo(() => {
+    if (!epub.markers || !location) return null;
+    return markerForLocation(epub.markers, location)?.node.label ?? null;
+  }, [epub.markers, location]);
 
-  // Load chapter text into state and tokenize. An optional anchor (text
-  // snippet) makes the reader seek to the page containing it.
-  const handleLoadChapter = useCallback(async (
-    href: string,
-    anchor?: string | null,
-    anchorOffset?: number,
-  ) => {
-    setMobileSidebarOpen(false);
-    const result = await epub.loadChapter(href, anchor ? { anchor, anchorOffset } : undefined);
-    applyChapterText(result.markdown, result.anchor);
+  // Canonical href of the current spine item — base for in-content links.
+  const currentSpineHref = useMemo(() => {
+    if (!epub.book || !location) return undefined;
+    return epub.book.spine[location.spineIndex]?.href;
+  }, [epub.book, location]);
+
+  // Prev/next chapter over the flattened TOC (markers in document order).
+  const chapterNav = useMemo(() => {
+    if (!epub.markers || !location) return { prev: null as TocMarker | null, next: null as TocMarker | null };
+    const idx = epub.markers.findIndex(m => {
+      const a = m.location;
+      const b = location;
+      return a.spineIndex === b.spineIndex && a.blockIndex === b.blockIndex && a.offset === b.offset;
+    });
+    if (idx === -1) {
+      const current = markerForLocation(epub.markers, location);
+      const ci = current ? epub.markers.indexOf(current) : -1;
+      return {
+        prev: ci > 0 ? epub.markers[ci - 1] ?? null : null,
+        next: ci >= 0 && ci < epub.markers.length - 1 ? epub.markers[ci + 1] ?? null : null,
+      };
+    }
+    return {
+      prev: idx > 0 ? epub.markers[idx - 1] ?? null : null,
+      next: idx < epub.markers.length - 1 ? epub.markers[idx + 1] ?? null : null,
+    };
+  }, [epub.markers, location]);
+
+  // Open a stored book; returns the location to resume at.
+  const handleOpenBook = useCallback(async (id: string) => {
+    setOpeningId(id);
+    try {
+      const start = await epub.openBook(id);
+      pendingStartRef.current = start;
+      // Resume is applied reactively: immediately when there is no cover,
+      // or on cover tap otherwise.
+    } finally {
+      setOpeningId(null);
+    }
   }, [epub]);
 
-  // Navigate to a search result's chapter + page (via its text snippet).
-  const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
-    void handleLoadChapter(result.chapterHref, result.anchor, result.anchorOffset);
-  }, [handleLoadChapter]);
+  // Resume once the book is open (no cover) or the cover has been dismissed.
+  useEffect(() => {
+    if (epub.coverTapped && pendingStartRef.current && !location) {
+      gotoLocation(pendingStartRef.current);
+    }
+  }, [epub.coverTapped, location, gotoLocation]);
 
-  // "Open Link" from the token dictionary popup — navigate within the book
-  // for internal links, or open external URLs in the web reader.
+  // Cover tap → enter the reader at the resume location.
+  const handleCoverTap = useCallback(() => {
+    epub.dismissCover();
+    gotoLocation(pendingStartRef.current);
+  }, [epub, gotoLocation]);
+
+  // TOC entry click → resolve + jump.
+  const handleLoadChapter = useCallback((href: string) => {
+    setMobileSidebarOpen(false);
+    void epub.resolveHref(href).then(gotoLocation);
+  }, [epub, gotoLocation]);
+
+  // Search result → jump to its location.
+  const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
+    gotoLocation(result.location);
+  }, [gotoLocation]);
+
+  // Internal / external links from the dictionary popup.
   const handleOpenLink = useCallback((href: string) => {
     if (/^https?:\/\//i.test(href)) {
       router.push(`/${l1.code}/${l2.code}/web-reader?url=${encodeURIComponent(href)}`);
       return;
     }
     if (!href || href === '#') return;
-    // Same-chapter fragments resolve against the current chapter.
-    const target = href.startsWith('#') && epub.chapterHref ? `${epub.chapterHref}${href}` : href;
-    void handleLoadChapter(target);
-  }, [handleLoadChapter, router, l1.code, l2.code, epub.chapterHref]);
+    void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
+  }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation]);
 
-  // Open a stored book at its saved chapter/page
-  const handleOpenBook = useCallback(async (id: string) => {
-    setOpeningId(id);
-    try {
-      const result = await epub.openBook(id);
-      if (result?.markdown) {
-        applyChapterText(result.markdown, result.anchor);
-      } else {
-        anchorRef.current = null;
-      }
-    } finally {
-      setOpeningId(null);
-    }
-  }, [epub]);
-
-  // Handle file upload(s) — add to the shelf without opening; collect any
-  // files that failed (up-front validation or parse errors) for the dialog.
+  // File upload(s) — add to the shelf without opening.
   const handleFilesProcessed = useCallback(async ({ files, failures }: EpubUploadResult) => {
     const failed: EpubFileError[] = [...failures];
     for (const file of files) {
@@ -119,43 +147,29 @@ export default function EpubPage() {
     setImportFailures(failed);
   }, [epub]);
 
-  // Close the book and return to the bookshelf (the handle is kept)
+  // Close the book and return to the bookshelf (the handle is kept).
   const handleClose = useCallback(async () => {
     await epub.close();
-    setText('');
-    setBlocks(null);
-    anchorRef.current = null;
+    setLocation(null);
+    pendingStartRef.current = null;
   }, [epub]);
 
-  // Remove a book from the shelf
+  // Remove a book from the shelf.
   const handleRemoveBook = useCallback(async (id: string) => {
     await epub.removeBook(id);
   }, [epub]);
 
-  // Internal link interceptor
-  useEffect(() => {
-    if (!epub.chapterLinks.size || !epub.book) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const link = target.closest('a');
-      if (!link) return;
-      const href = link.getAttribute('href');
-      if (!href || href === '#' || href.startsWith('http')) return;
-      const hrefBase = href.split('#')[0] || '';
-      if (epub.chapterLinks.has(hrefBase)) {
-        e.preventDefault();
-        handleLoadChapter(href);
-      }
-    };
-    document.addEventListener('click', handler, true);
-    return () => document.removeEventListener('click', handler, true);
-  }, [epub.chapterLinks, epub.book, handleLoadChapter]);
+  // Page turns keep header + sidebar in sync and persist the position.
+  const handleLocationChange = useCallback((loc: BookLocation) => {
+    setLocation(loc);
+    void epub.saveLocation(loc);
+  }, [epub]);
 
   const ctx: Partial<SavedWordContext> = {
-    textTitle: epub.chapterTitle || epub.fileName || 'EPUB Reader',
+    textTitle: chapterLabel || epub.fileName || 'EPUB Reader',
   };
 
-  // Loading state while restoring from storage
+  // Loading state while restoring from storage.
   if (!initialized) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6">
@@ -166,12 +180,13 @@ export default function EpubPage() {
     );
   }
 
+  const readerActive = epub.openBookId !== null && epub.coverTapped && epub.book && location;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Title bar ── */}
       <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         {epub.openBookId ? (
-          /* Back to bookshelf */
           <button
             onClick={handleClose}
             aria-label={t('action.back')}
@@ -185,7 +200,7 @@ export default function EpubPage() {
         )}
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">
-            {epub.chapterTitle || epub.fileName || t('title.epub_reader')}
+            {chapterLabel || epub.fileName || t('title.epub_reader')}
           </h1>
         </div>
         {/* Sidebar toggles — only when EPUB loaded */}
@@ -215,7 +230,6 @@ export default function EpubPage() {
         {/* Content area */}
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
           {!epub.openBookId ? (
-            /* ── Bookshelf home ── */
             <EpubBookshelf
               books={epub.books}
               onOpenBook={handleOpenBook}
@@ -225,11 +239,10 @@ export default function EpubPage() {
               error={epub.error ? t(epub.error) : null}
             />
           ) : openingId ? (
-            /* ── Opening a book — spinner until the chapter loads ── */
             <div className="flex min-h-[40vh] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : epub.toc.length > 0 && !epub.coverTapped && epub.coverUrl ? (
+          ) : !epub.coverTapped && epub.coverUrl && epub.book ? (
             /* ── Cover ── */
             <div className="flex items-center justify-center min-h-[60vh]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -237,30 +250,19 @@ export default function EpubPage() {
                 src={epub.coverUrl}
                 alt={t('label.cover')}
                 className="max-h-[70vh] max-w-full cursor-pointer rounded-lg shadow-xl transition-transform hover:scale-[1.02]"
-                onClick={() => {
-                  // Mark cover tapped and load first chapter if not already loaded
-                  if (epub.flatToc.length > 0) {
-                    handleLoadChapter(epub.flatToc[0]!.href);
-                  }
-                }}
+                onClick={handleCoverTap}
               />
             </div>
-          ) : epub.coverTapped && text ? (
+          ) : epub.book && location ? (
             /* ── Reader ── */
-            <ReaderPanel
+            <EpubReaderPanel
               key={epub.openBookId}
+              book={epub.book}
+              location={location}
+              jumpNonce={jumpNonce}
               l2={l2} l1={l1}
-              text={text}
-              loading={epub.loading}
-              activeTab="read"
-              translating={false}
-              blocks={blocks}
               ctx={ctx}
-              onTextChange={() => {}}
-              onTabChange={() => {}}
-              onTokenize={() => {}}
-              onFillSample={() => {}}
-              hideModeTabs
+              chapterLabel={chapterLabel}
               onLemmatize={async (texts) => {
                 const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
                   method: 'POST',
@@ -276,16 +278,10 @@ export default function EpubPage() {
                   return byKey;
                 } catch { return {}; }
               }}
-              onAnchorChange={(anchor) => epub.saveAnchor(anchor)}
-              initialAnchor={anchorRef.current}
+              onLocationChange={handleLocationChange}
               onOpenLink={handleOpenLink}
             />
-          ) : epub.loading ? (
-            <div className="flex min-h-[40vh] items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
           ) : epub.error ? (
-            /* ── Parse / load error ── */
             <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
               <p className="text-sm text-destructive">{t(epub.error)}</p>
               <button
@@ -309,16 +305,16 @@ export default function EpubPage() {
             headerActions={
               <>
                 <button
-                  onClick={epub.prevChapter}
-                  disabled={!epub.prevHref || epub.loading}
+                  onClick={() => chapterNav.prev && gotoLocation(chapterNav.prev.location)}
+                  disabled={!chapterNav.prev || !readerActive}
                   className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                   {t('action.previous_chapter')}
                 </button>
                 <button
-                  onClick={epub.nextChapter}
-                  disabled={!epub.nextHref || epub.loading}
+                  onClick={() => chapterNav.next && gotoLocation(chapterNav.next.location)}
+                  disabled={!chapterNav.next || !readerActive}
                   className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
                 >
                   {t('action.next_chapter')}
@@ -329,7 +325,7 @@ export default function EpubPage() {
             footer={
               <div className="px-3 py-2">
                 <p className="text-xs text-muted-foreground">
-                  {epub.toc.length} {t('msg.chapters')}
+                  {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
                 </p>
               </div>
             }
@@ -342,7 +338,8 @@ export default function EpubPage() {
               <TabsContent value="chapters" className="min-h-0 flex-1 overflow-y-auto">
                 <EpubChapterSidebar
                   toc={epub.toc}
-                  currentChapterHref={epub.chapterHref}
+                  markers={epub.markers}
+                  activeLocation={location}
                   onLoadChapter={handleLoadChapter}
                 />
               </TabsContent>

@@ -10,7 +10,9 @@
 
 ## Overview
 
-The EPUB Reader lets users upload `.epub` ebooks, navigate their table of contents, and read chapters with interactive word lookup (lemmatization + dictionary popup) and optional translation — the same language-learning features available for video subtitles and web articles. Both web and mobile share identical UX and parsing logic, differing only in the I/O layer (epubjs + DOMParser on web; JSZip + hand-rolled XML parser on mobile).
+The EPUB Reader lets users upload `.epub` ebooks, navigate their table of contents, and read chapters with interactive word lookup (lemmatization + dictionary popup) and optional translation — the same language-learning features available for video subtitles and web articles. Both web and mobile share identical UX and a common book model (spine flow + TOC bookmarks + block locations), differing only in the I/O layer: web layers the whole-book model on `epubjs` (SPEC-032, ADR-0022); mobile uses JSZip + a hand-rolled XML parser (ADR-0012).
+
+> **SPEC-032 (2026-08-02)** — The web reader was re-engineered from "chapter at a time" to the whole-book model: TOC entries are bookmarks into the spine flow, every navigation/search/restore action resolves to a `BookLocation { spineIndex, blockIndex, offset }`, and pagination is continuous across the entire book. The spine-range concatenation algorithm below is **obsolete on web** (kept for historical context; mobile still uses it).
 
 Every book the user opens gets its own persistent handle on web (an IndexedDB record keyed by a SHA-256 hash of the file), so returning to the reader shows a **bookshelf** of covers sorted by last read, each with a percentage-completed indicator derived from character counts. Opening a book resumes at its saved chapter and page instead of reopening the same book automatically. Mobile still stores a single `epub_state.json` — the bookshelf is a web-only feature for now.
 
@@ -246,7 +248,9 @@ The cover is shown full-frame (mobile) or centered (web). Tapping anywhere on th
 
 ## EPUB Parsing Pipeline
 
-### Web: epubjs → turndown Pipeline
+### Web: epubjs + Whole-Book Model (SPEC-032)
+
+`epubjs` parses the package (spine, TOC, cover, archive); `EpubBook` (`lib/epub-book.ts`) layers the book model on top:
 
 ```
 ArrayBuffer
@@ -254,26 +258,33 @@ ArrayBuffer
   ▼
 epubjs: ePub(arrayBuffer)
   │
-  ├─ b.loaded.navigation.toc  →  TocItem[] (nested chapters)
-  ├─ b.loaded.spine            →  Spine (ordered content docs)
-  ├─ b.coverUrl()              →  data:image/... URL
-  └─ b.package.metadata        →  page-progression-direction
+  ├─ loaded.navigation.toc    →  nested TOC → TocNode tree
+  ├─ loaded.spine             →  ordered content docs
+  ├─ coverUrl()               →  stable data: URL
+  └─ package.metadata         →  page-progression-direction
   │
   ▼
-loadChapter(href)
-  │
-  ├─ Find spine range: [startIdx, endIdx) from TOC boundaries
-  ├─ Concatenate: for each spine item → item.load() → contents.innerHTML
-  ├─ DOMParser: parse combined HTML
-  ├─ Image resolution: b.path.resolve() → archive.urlCache
-  ├─ Ruby stripping: remove <rt>/<rtc>, keep base text
-  └─ turndown: HTML → Markdown
+EpubBook.open()
+  ├─ Canonical hrefs: resolve spine hrefs vs OPF dir AND TOC hrefs vs
+  │   nav/NCX doc dir → zip-relative paths that actually match
+  │   (fixes epubjs's never-aligned TOC hrefs)
   │
   ▼
-parseMarkdownBlocks(md) → TextBlock[]
+getBlocks(spineIndex)
+  ├─ section.load() → content document
+  ├─ Image resolution: book.path.resolve() → archive.urlCache (blob URLs)
+  └─ Browser-DOM walker → EpubBlock[] with source mapping
+      (srcElementId per block, inline anchors with char offsets, ruby stripped)
   │
   ▼
-ReaderPanel → TokenizedText → word tap → dictionary
+BookLocation { spineIndex, blockIndex, offset }
+  ├─ TOC entries / internal links / search hits / saved positions
+  │   all resolve to a location (no text-anchor heuristics)
+  │
+  ▼
+usePaginatedBook → whole-book page breaks (lazy, viewport-aware)
+  ▼
+EpubReaderPanel → TokenizedText → word tap → dictionary
 ```
 
 ### Mobile: JSZip → hand-rolled Parser Pipeline
@@ -373,52 +384,11 @@ interface LemmatizedToken {
 
 ---
 
-## Spine Concatenation Algorithm
+## Spine Concatenation Algorithm (obsolete on web)
 
-This is the most architecturally significant logic. Many EPUBs split a logical chapter across multiple spine items (content documents). For example:
+The previous web implementation treated TOC entries as chapters and concatenated spine ranges between TOC boundaries. This was architecturally wrong: TOC entries are bookmarks, not units of content. Real books (e.g. 坊っちゃん: 11 TOC entries, 4 spine items) load the same spine range for every fragment-shared entry, duplicating pages, search results, and progress.
 
-```
-TOC:
-  "Chapter 1" → ch1.xhtml
-  "Chapter 2" → ch2.xhtml
-
-Spine:
-  [0] cover.xhtml         (not in TOC)
-  [1] ch1.xhtml           (TOC: Chapter 1)
-  [2] ch1-continued.xhtml (not in TOC — belongs to Chapter 1)
-  [3] ch2.xhtml           (TOC: Chapter 2)
-```
-
-When the user loads "Chapter 1", the algorithm:
-
-1. Finds `startIdx = 1` (where `ch1.xhtml` appears in spine)
-2. Finds `endIdx = 3` (where the next TOC entry, `ch2.xhtml`, appears)
-3. Concatenates all spine items in `[1, 3)` → `ch1.xhtml + ch1-continued.xhtml`
-
-Both web and mobile implement this identically:
-
-```typescript
-// Build set of TOC hrefs as chapter boundaries
-const tocHrefs = new Set(
-  flatToc.map(t => t.href.split('#')[0])
-);
-
-// Locate this chapter in the spine
-const startIdx = spine.findIndex(s => s.href === cleanHref);
-
-// Find the next TOC boundary
-let endIdx = spine.findIndex(
-  (s, i) => i > startIdx && tocHrefs.has(s.href)
-);
-if (endIdx === -1) endIdx = spine.length;  // last chapter → include all remaining
-
-// Concatenate
-for (let i = startIdx; i < endIdx; i++) {
-  combinedText += loadSpineItem(spine[i].href);
-}
-```
-
-**Edge case:** The first spine item may not be a TOC entry (cover page, frontmatter). When `openFromCover` is called, it passes the first spine item's href to `loadChapter`. The algorithm finds `startIdx = 0` and `endIdx` at the first TOC entry — so cover/frontmatter HTML is included at the start of the first chapter. This is intentional (matches web behavior).
+**SPEC-032 replaces this on web.** Each spine item is converted once; TOC entries resolve to `BookLocation` via canonical hrefs + `#fragment` → element id mapping. Mobile still concatenates ranges and is a follow-up migration target.
 
 ---
 
@@ -508,12 +478,15 @@ To avoid unnecessary API calls, only the visible page's text blocks are sent for
 ```
 src/
 ├── app/[l1]/[l2]/epub/page.tsx          ← Route: EPUB reader page
-├── hooks/use-epub.ts                     ← Core hook (epubjs, turndown, spine concat)
-├── lib/epub-store.ts                     ← IndexedDB persistence
+├── hooks/use-epub.ts                     ← Book-lifecycle hook (open/add/remove, search, saveLocation)
+├── hooks/use-paginated-book.ts           ← Whole-book lazy pagination engine
+├── lib/epub-book.ts                      ← EpubBook: epubjs + whole-book model (canonical hrefs, converter, locations)
+├── lib/epub-book-types.ts                ← Shared book-model types (TocNode, BookLocation, EpubBlock, …)
+├── lib/epub-store.ts                     ← IndexedDB persistence (v3: lastLocation + per-spine search index)
 └── components/reader/
     ├── epub-upload.tsx                    ← Drag-and-drop UI
-    ├── epub-chapter-sidebar.tsx           ← TOC tree + prev/next nav
-    ├── reader-panel.tsx                   ← Shared reading pane (text + dictionary)
+    ├── epub-chapter-sidebar.tsx           ← TOC tree with hierarchy + ancestor highlighting
+    ├── epub-reader-panel.tsx              ← Block-driven reading pane (whole-book pages, tokens, translation)
     └── reader-sidebar.tsx                 ← Shared responsive sidebar shell
 ```
 
@@ -562,9 +535,10 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 ## Known Limitations
 
 1. **No image support on mobile** — Images in EPUB content are not rendered. The regex-based HTML-to-text extraction strips all tags including `<img>`.
-2. **No RTL support on mobile** — The web app detects `page-progression-direction="rtl"` from OPF metadata; mobile does not.
+2. **No RTL support on mobile** — The web app detects `page-progression-direction="rtl"` from OPF metadata (reversed page-turn semantics); mobile does not.
 3. **No ruby preservation** — Both platforms strip furigana/ruby annotations. This is intentional for language learning (user sees only base text, not pronunciation helpers), but means annotated Japanese texts lose furigana.
-4. **Position restore matches web** — On re-opening an EPUB, the mobile app now restores both the last chapter and the last-read page within that chapter (via a ~40-char text anchor), matching the web app behavior.
-5. **Single EPUB at a time** — Both platforms store only one EPUB. Opening a new one replaces the old.
-6. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
-7. **No CSS/formatting preservation** — Rich formatting (bold, italic, colors, alignment) is lost. The reader renders everything as plain text with markdown-level structure (headings, paragraphs, lists, blockquotes).
+4. **Position restore (web: locations; mobile: text anchors)** — Web (SPEC-032) restores via `lastLocation { spineIndex, blockIndex, offset }`, no text guessing. Mobile still restores via a ~40-char text anchor and remains a migration target.
+5. **epubjs TOC parsing gaps (web)** — epubjs never resolves nav-document hrefs against the nav doc's directory (fixed by `EpubBook`'s canonical hrefs) and drops TOC entries whose `<a>` isn't a direct `<li>` child (rare).
+6. **Whole-book pagination is lazy** — Page breaks are computed around the current page; the displayed total is an estimate until the full pagination pass runs (background).
+7. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
+8. **No CSS/formatting preservation** — Rich formatting (bold, italic, colors, alignment) is largely lost; the reader renders text-flow blocks with markdown-level structure (headings, paragraphs, lists, blockquotes).
