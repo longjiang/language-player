@@ -103,6 +103,16 @@ export function findSpineIndex(spine: EpubSpineItem[], path: string): number {
   return matches.length === 1 ? matches[0]!.i : -1;
 }
 
+/**
+ * TOC href with its fragment re-attached. Canonical TOC hrefs are stored
+ * fragment-less (resolvePath strips the `#fragment`, which lives separately
+ * on the node); navigation and markers must resolve with it or every entry
+ * sharing a spine item collapses to block 0.
+ */
+export function fullTocHref(node: { href: string; fragment?: string }): string {
+  return node.fragment ? `${node.href}#${node.fragment}` : node.href;
+}
+
 function flattenToc(toc: TocNode[]): { node: TocNode; depth: number; order: number }[] {
   const out: { node: TocNode; depth: number; order: number }[] = [];
   const walk = (nodes: TocNode[], depth: number) => {
@@ -509,7 +519,7 @@ export class EpubBook {
     this.markersPromise = (async () => {
       const markers: TocMarker[] = [];
       for (const { node, order } of flattenToc(this.toc)) {
-        const location = await this.resolveHref(node.href);
+        const location = await this.resolveHref(fullTocHref(node));
         if (!location) continue;
         markers.push({ node, path: buildPath(this.toc, node), location, order });
       }

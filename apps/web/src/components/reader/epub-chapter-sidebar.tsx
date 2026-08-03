@@ -2,6 +2,7 @@
 
 import type { TocMarker, TocNode } from '@/lib/epub-book-types';
 import { markerForLocation } from '@/hooks/use-epub';
+import { fullTocHref } from '@/lib/epub-book';
 
 interface EpubChapterSidebarProps {
   toc: TocNode[];
@@ -32,7 +33,7 @@ function TocTree({
         return (
           <div key={item.id ?? `${depth}-${i}`}>
             <button
-              onClick={() => onSelect(item.href)}
+              onClick={() => onSelect(fullTocHref(item))}
               className={`block w-full text-left rounded px-3 py-1.5 text-sm transition-colors hover:bg-muted ${
                 isCurrent
                   ? 'bg-primary/10 text-primary font-medium'

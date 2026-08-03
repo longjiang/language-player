@@ -284,14 +284,15 @@ export function EpubReaderPanel({
         </label>
       </div>
 
-      {/* Hidden measuring container — mirrors the current window exactly. */}
+      {/* Hidden measuring container — mirrors the current window exactly.
+          Blocks must be DIRECT children of measureRef: the paginator reads
+          measureRef.children as one element per block to compute page
+          breaks (a wrapper div makes it measure a single child → 1-block
+          pages). */}
       <div
         ref={measureRef}
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none"
-      >
-        <div
-          className="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
+        className="absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
           [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
           [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
           [&_p]:mb-0 [&_p]:leading-relaxed
@@ -299,19 +300,18 @@ export function EpubReaderPanel({
           [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
           [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
           [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
-          lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
-        >
-          {measureWindow.map((p, i) =>
-            p.block.kind === 'image'
-              // eslint-disable-next-line @next/next/no-img-element
-              ? <img key={i} src={p.block.imageUri} alt="" className="max-w-full h-auto rounded-lg my-4" />
-              : (() => {
-                  const tb = p.block as EpubTextBlock;
-                  const Tag = blockTag(tb);
-                  return <Tag key={i} className={blockClass(tb)}>{tb.text}</Tag>;
-                })(),
-          )}
-        </div>
+        lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
+      >
+        {measureWindow.map((p, i) =>
+          p.block.kind === 'image'
+            // eslint-disable-next-line @next/next/no-img-element
+            ? <img key={i} src={p.block.imageUri} alt="" className="max-w-full h-auto rounded-lg my-4" />
+            : (() => {
+                const tb = p.block as EpubTextBlock;
+                const Tag = blockTag(tb);
+                return <Tag key={i} className={blockClass(tb)}>{tb.text}</Tag>;
+              })(),
+        )}
       </div>
     </div>
   );
