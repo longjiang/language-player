@@ -15,7 +15,7 @@ import { removeCardFromStorage } from '@/hooks/use-srs';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -63,6 +63,14 @@ export function DictionaryPopup({
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
   const [dialogOpen, setDialogOpen] = useState(true);
+
+  // Diagnostic: log the inputs whenever a dictionary popup opens, so lookup /
+  // saved-word ID mismatches can be traced from the console.
+  useEffect(() => {
+    log('Dictionary popup opened', { text: token.text, token, context, l2Code });
+    // Mount-only: the popup's inputs are fixed for its lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Spawn-point animation: pin the enter transform so the dialog's center
   // starts at the clicked token's center, then settles into viewport center
