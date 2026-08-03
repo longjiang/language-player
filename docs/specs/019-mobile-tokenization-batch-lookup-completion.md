@@ -45,11 +45,13 @@ lemmatization. See ARCH-017 → "Mobile: Video Cache Wiring (2026-07-28 Fix)".
 
 **Follow-up (2026-08-02)**: Both platforms now route batch dictionary lookup
 through the shared queued pipeline in `packages/utils/src/dictionary-cache.ts`
-(`enqueueLookupWords`, 80ms flush, 30-word chunks, content-based in-flight
+(`enqueueLookupWords`, 80ms flush, 100-word chunks, content-based in-flight
 dedup, per-word fallback on batch failure). Mobile's `TokenizedText` lookup
 effect is aligned with web (same lemma/surface collection, `baseCode` cache
 keys), and the lemmatize queue drains beyond its 12-line cap instead of
-stranding lines.
+stranding lines. Reader-panel pages (`ReaderPanel`) also mark their lines as
+`deferTokenization` so the panel's own per-page lemmatization isn't duplicated
+by every `TokenizedText` instance.
 
 ---
 

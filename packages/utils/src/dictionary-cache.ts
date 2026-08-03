@@ -217,7 +217,7 @@ const lookupQueue: LookupQueueItem[] = [];
 const lookupSeen = new Set<string>();
 let lookupTimer: ReturnType<typeof setTimeout> | null = null;
 let lookupApiUrl = '';
-const LOOKUP_BATCH_MAX = 30;
+const LOOKUP_BATCH_MAX = 100;
 const LOOKUP_BATCH_DELAY_MS = 80;
 
 /**

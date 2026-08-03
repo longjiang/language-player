@@ -177,6 +177,11 @@ export function ReaderPanel({
   const [tokenCache, setTokenCache] = useState<Record<number, LemmatizedToken[]>>({});
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenLoadGenRef = useRef(0);
+  // Text-block indices already requested for the current blocks generation.
+  // ReaderPanel re-runs its token effect as page breaks settle, and without
+  // this, a re-run could re-request blocks while the first request is still
+  // in flight (duplicating lemmatization of the visible page).
+  const requestedTokensRef = useRef<Set<string>>(new Set());
   // Incremented whenever blocks change (content reset); the seek only runs
   // once a measurement for the current blocks has completed.
   const blocksGenRef = useRef(0);
@@ -191,6 +196,7 @@ export function ReaderPanel({
     if (prevBlocksRef.current !== blocks) {
       blocksGenRef.current += 1;
       lastSeekKeyRef.current = null;
+      requestedTokensRef.current = new Set();
       setBlockTranslations({});
       setTokenCache({});
       setHasMeasured(false);
@@ -302,7 +308,7 @@ export function ReaderPanel({
     for (const tb of textBlocks) {
       const globalIndex = blocks.indexOf(tb);
       const tbi = blocks.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
-      if (!(tbi in tokenCache)) {
+      if (!(tbi in tokenCache) && !requestedTokensRef.current.has(String(tbi))) {
         missing.push({ textBlockIndex: tbi, text: tb.text });
       }
     }
@@ -311,6 +317,7 @@ export function ReaderPanel({
 
     tokenLoadGenRef.current += 1;
     const gen = tokenLoadGenRef.current;
+    for (const m of missing) requestedTokensRef.current.add(String(m.textBlockIndex));
     setLoadingTokens(true);
     onLemmatize(missing.map(m => m.text)).then(results => {
       if (tokenLoadGenRef.current !== gen) return;
@@ -324,6 +331,8 @@ export function ReaderPanel({
       setLoadingTokens(false);
     }).catch(() => {
       if (tokenLoadGenRef.current !== gen) return;
+      // Allow a later effect run to retry the failed blocks.
+      for (const m of missing) requestedTokensRef.current.delete(String(m.textBlockIndex));
       setLoadingTokens(false);
     });
   }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache, visibleBlocks]);
@@ -508,7 +517,8 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[blockKey]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={cachedTokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink} />
+                                tokens={cachedTokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
+                                deferTokenization={!!onLemmatize} />
                             </Tag>
                           </TextActionMenu>
                         );

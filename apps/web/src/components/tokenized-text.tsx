@@ -180,6 +180,10 @@ export interface TokenizedTextProps {
   /** Whether the token cache has finished loading. When false and tokenCache
    *  is provided, the component shows plain text without calling the API. */
   tokenCacheLoaded?: boolean;
+  /** When true, skip the lazy batch-lemmatize pipeline entirely — the parent
+   *  (e.g. ReaderPanel) is the lemmatization authority and supplies tokens via
+   *  the `tokens` prop. Prevents duplicate lemmatization of the same lines. */
+  deferTokenization?: boolean;
   /** Pre-loaded tokens — when set, skips the API call entirely. */
   tokens?: LemmatizedToken[];
   /**
@@ -248,6 +252,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
+  deferTokenization = false,
   tokens: preloadedTokens,
   formats,
   href,
@@ -364,6 +369,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       return;
     }
 
+    // Parent-driven lemmatization (reader pagination): don't start our own
+    // queue request — the parent's onLemmatize covers every line on the page
+    // and hands tokens back through the `tokens` prop.
+    if (deferTokenization) {
+      setLoading(true);
+      return;
+    }
+
     // Skip if we already have tokens for this text in cache AND state
     const cacheKey = `${l2Code}:${effectiveText}`;
     const cached = lemmatizeCache.get(cacheKey);
@@ -441,7 +454,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       controller.abort();
       loadingRef.current = false;
     };
-  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, hasBeenVisible]);
+  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, deferTokenization, hasBeenVisible]);
 
   // ── Bulk dictionary lookup: pre-fetch entries for all unique lemmas ──
   useEffect(() => {
