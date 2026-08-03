@@ -6,6 +6,7 @@ import {
   fullTocHref,
   normalizeLanguageCode,
   resolveNavDir,
+  resolveLinkHref,
   resolvePath,
   splitFragment,
 } from './epub-book';
@@ -39,6 +40,22 @@ describe('resolvePath (canonical href resolution)', () => {
 
   it('passes external URLs through untouched', () => {
     expect(resolvePath('OEBPS', 'https://example.com/x')).toBe('https://example.com/x');
+  });
+});
+
+describe('resolveLinkHref (in-content link canonicalization)', () => {
+  it('keeps the fragment of a relative link', () => {
+    expect(resolveLinkHref('OEBPS/html/frontm1.html', 'frontm1.html#fw01en01'))
+      .toBe('OEBPS/html/frontm1.html#fw01en01');
+    expect(resolveLinkHref('OEBPS/html/chapter01.html', 'notesch1.html#ch01en01'))
+      .toBe('OEBPS/html/notesch1.html#ch01en01');
+  });
+
+  it('resolves same-document and fragment-less links', () => {
+    expect(resolveLinkHref('OEBPS/html/chapter01.html', '#ich01en01'))
+      .toBe('OEBPS/html/chapter01.html#ich01en01');
+    expect(resolveLinkHref('OEBPS/html/chapter01.html', 'chapter02.html'))
+      .toBe('OEBPS/html/chapter02.html');
   });
 });
 
