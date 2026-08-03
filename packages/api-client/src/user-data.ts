@@ -16,11 +16,6 @@ export interface UserDataResponse {
 const _getUserData = () =>
   apiClient.get<UserDataResponse>('/user-data');
 
-const _syncSavedWords = (savedWords: string) =>
-  apiClient.post<{ success: boolean }>('/user-data/sync', {
-    saved_words: savedWords,
-  });
-
 const _syncProgress = (progress: string) =>
   apiClient.post<{ success: boolean }>('/user-data/sync', {
     progress,
@@ -33,7 +28,6 @@ const _syncSrsProgress = (srsProgress: string) =>
 
 const _stableReturn = {
   getUserData: _getUserData,
-  syncSavedWords: _syncSavedWords,
   syncProgress: _syncProgress,
   syncSrsProgress: _syncSrsProgress,
 } as const;

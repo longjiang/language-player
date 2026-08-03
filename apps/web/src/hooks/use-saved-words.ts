@@ -3,39 +3,29 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemInstance } from '@langplayer/shared';
-import { useUserData, useSavedWordApi } from '@langplayer/api-client';
+import { useSavedWordApi } from '@langplayer/api-client';
 import { enqueuePendingOp, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
-import { useCloudUserData } from '@/providers/user-data-provider';
-import { savedWordsRowApiEnabled, mergeAnonymousSavedWordsEnabled } from '@/lib/saved-words-feature';
+import { mergeAnonymousSavedWordsEnabled } from '@/lib/saved-words-feature';
 import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
 const PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
 const ANON_MERGED_KEY = 'lpSavedWordsAnonMerged';
-const SYNC_DEBOUNCE_MS = 2000;
 
 /**
- * Hook for managing saved words with localStorage + cloud sync.
+ * Hook for managing saved words (SPEC-034 row API).
  *
- * Legacy path (NEXT_PUBLIC_SAVED_WORDS_ROW_API off): full-blob sync to Directus
- * via Flask /user-data/sync; cloud blob merge on login; last-writer-wins.
- *
- * Row path (flag on): per-word PUT/DELETE on /saved-words (Supabase via Flask).
- * Local changes are optimistic + queued in localStorage; failed ops are retried
- * on the next mutation/hydration. On login the server rows replace local state
- * (optionally after a one-time anonymous-local merge).
+ * Every save/delete is a per-word PUT/DELETE on /saved-words (Supabase via
+ * Flask). Local changes are optimistic + queued in localStorage; failed ops
+ * are retried on the next mutation/hydration. On login the server rows replace
+ * local state (optionally after a one-time anonymous-local merge).
  */
 export function useSavedWords() {
   const { data: session, status } = useSession();
-  const { syncSavedWords } = useUserData();
   const { getSavedWords: fetchSavedWordRows, putSavedWord, deleteSavedWord } = useSavedWordApi();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
-  const rowApi = savedWordsRowApiEnabled();
   const mergeAnon = mergeAnonymousSavedWordsEnabled();
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loaded, setLoaded] = useState(false);
-  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
 
@@ -87,11 +77,11 @@ export function useSavedWords() {
     const parsed = readLocalStore();
     sanitizeStore(parsed);
     setSavedWords(parsed);
-    if (rowApi) savePendingOps(loadPendingOps());
+    savePendingOps(loadPendingOps());
     setLoaded(true);
-  }, [status, loaded, rowApi, readLocalStore, savePendingOps, loadPendingOps]);
+  }, [status, loaded, readLocalStore, savePendingOps, loadPendingOps]);
 
-  // ── Row API: flush pending ops, then hydrate from the server ──
+  // ── Flush pending ops, then hydrate from the server ──
   const flushPending = useCallback(async () => {
     if (!session) return;
     const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
@@ -102,7 +92,6 @@ export function useSavedWords() {
   }, [session, putSavedWord, deleteSavedWord, savePendingOps]);
 
   useEffect(() => {
-    if (!rowApi) return;
     if (status === 'loading' || !loaded) return;
     if (status !== 'authenticated' || !session?.user?.id) return;
     if (hydratedUserId.current === session.user.id) return;
@@ -133,75 +122,19 @@ export function useSavedWords() {
         setSavedWords(next);
         writeLocalStore(next);
       } catch (err) {
-        logwarn('[savedWords] Row-API hydration failed:', err);
+        logwarn('[savedWords] Hydration failed:', err);
       }
     })();
     return () => { cancelled = true; };
   }, [
-    rowApi, status, loaded, session, mergeAnon,
+    status, loaded, session, mergeAnon,
     flushPending, fetchSavedWordRows, putSavedWord,
     readLocalStore, writeLocalStore,
   ]);
 
-  // ── Legacy path: cloud blob merge (local deletes win) ──
-  useEffect(() => {
-    if (rowApi) return;
-    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
-    if (!cloudData) return;
-
-    try {
-      const cloud = cloudData.saved_words
-        ? (JSON.parse(cloudData.saved_words) as SavedLexicalItemStore)
-        : {};
-      sanitizeStore(cloud);
-
-      setSavedWords((prev) => {
-        const next: SavedLexicalItemStore = { ...prev };
-        for (const [l2, cloudWords] of Object.entries(cloud)) {
-          const merged = [...(prev[l2] ?? [])];
-          const localIds = new Set(merged.map((w) => w.id));
-          for (const cw of cloudWords) {
-            if (!localIds.has(cw.id)) {
-              merged.push(cw);
-              localIds.add(cw.id);
-            }
-          }
-          next[l2] = merged;
-        }
-        writeLocalStore(next);
-        return next;
-      });
-    } catch (err) {
-      logwarn('[savedWords] Could not parse cloud data:', err);
-    }
-  }, [rowApi, status, loaded, cloudLoaded, cloudData, writeLocalStore]);
-
-  // ── Legacy path: debounced full-blob sync ──
-  const scheduleSync = useCallback((words: SavedLexicalItemStore) => {
-    if (!session) return;
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      if (isSyncing.current) return;
-      isSyncing.current = true;
-      try {
-        await syncSavedWords(JSON.stringify(words));
-      } catch (err) {
-        logwarn('[savedWords] Sync failed — will retry:', err);
-        syncTimer.current = setTimeout(() => {
-          isSyncing.current = false;
-          scheduleSync(words);
-        }, 10_000);
-      } finally {
-        isSyncing.current = false;
-      }
-    }, SYNC_DEBOUNCE_MS);
-  }, [session, syncSavedWords]);
-
-  // ── Persist to localStorage + schedule sync ──
   const persist = useCallback((words: SavedLexicalItemStore) => {
     writeLocalStore(words);
-    if (!rowApi) scheduleSync(words);
-  }, [writeLocalStore, rowApi, scheduleSync]);
+  }, [writeLocalStore]);
 
   const queueRowOp = useCallback((op: PendingSavedWordOp) => {
     if (!session) return;
@@ -241,8 +174,8 @@ export function useSavedWords() {
       persist(next);
       return next;
     });
-    if (rowApi) queueRowOp({ type: 'put', l2: l2Code, wordId: word.id, word, updatedAt: Date.now() });
-  }, [persist, rowApi, queueRowOp]);
+    queueRowOp({ type: 'put', l2: l2Code, wordId: word.id, word, updatedAt: Date.now() });
+  }, [persist, queueRowOp]);
 
   const removeSavedWord = useCallback((l2Code: string, wordId: string) => {
     setSavedWords(prev => {
@@ -251,8 +184,8 @@ export function useSavedWords() {
       persist(next);
       return next;
     });
-    if (rowApi) queueRowOp({ type: 'delete', l2: l2Code, wordId, updatedAt: Date.now() });
-  }, [persist, rowApi, queueRowOp]);
+    queueRowOp({ type: 'delete', l2: l2Code, wordId, updatedAt: Date.now() });
+  }, [persist, queueRowOp]);
 
   const hasSavedWord = useCallback((l2Code: string, wordId: string): boolean => {
     return (savedWords[l2Code] ?? []).some(w => w.id === wordId);
@@ -269,12 +202,10 @@ export function useSavedWords() {
       persist(next);
       return next;
     });
-    if (rowApi) {
-      for (const w of current) {
-        queueRowOp({ type: 'delete', l2: l2Code, wordId: w.id, updatedAt: Date.now() });
-      }
+    for (const w of current) {
+      queueRowOp({ type: 'delete', l2: l2Code, wordId: w.id, updatedAt: Date.now() });
     }
-  }, [persist, rowApi, queueRowOp, savedWords]);
+  }, [persist, queueRowOp, savedWords]);
 
   return {
     savedWords,

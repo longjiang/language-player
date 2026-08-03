@@ -17,12 +17,18 @@ saved words, progress, SRS, settings, watch history, likes, playlists, and notes
 Classic is edited to call Flask instead of Directus APIs, and Directus is
 decommissioned **30 days after the switch** (T-switch + 30).
 
-The migration is workstream-based and feature-flagged. Saved words is the pilot:
+The migration is workstream-based. Saved words is the pilot:
 it proves the row-level pattern, the blob mirror/reconciler scaffolding, and the
 client switch mechanics on one feature before the rest of the user data follows
 the same playbook. Flask remains the single API gateway for all three apps
 (web, mobile, Classic), and Supabase Auth (GoTrue) is proxied through Flask per
 ADR-0023.
+
+The row API is **unconditional**: web and mobile are pre-launch, so there are no
+client-side feature flags — both apps always use `/saved-words`, and the legacy
+full-blob sync path has been removed from their code. Classic's new bundle also
+uses the row API (Phase 4); the Directus blob mirror + reconciler exist only to
+cover old Classic bundles during rollout.
 
 ## Decisions
 
@@ -386,23 +392,25 @@ Supabase and Directus.
 
 ### Phase 1 — Flask Saved-Words Backend + Scaffolding (2–3 days)
 
-WS-0 endpoints, row↔record mapping, mirror, reconciler, `SAVED_WORDS_SUPABASE`
-flag (default 0), mocked-Directus unit tests. No frontend changes.
+WS-0 endpoints (always on, no flag), row↔record mapping, mirror, reconciler,
+mocked-Directus unit tests. No frontend changes.
 
-**Acceptance**: flag-on writes land in Supabase + blob; simulated old-Classic
-blob writes reconcile within one sweep interval; flag-off restores today's
-behavior.
+**Acceptance**: writes land in Supabase + blob; simulated old-Classic blob
+writes reconcile within one sweep interval.
+
+**Rollback:** revert the Flask deploy; no client depends on the row API until
+Phase 2 ships.
 
 ### Phase 2 — Web Saved-Words Switch (1 day)
 
 `packages/api-client` row methods; `use-saved-words.ts` per-op PUT/DELETE;
 provider stops hydrating `saved_words` from `/user-data`; optional anonymous-
-merge flag; `NEXT_PUBLIC_SAVED_WORDS_ROW_API` gate.
+merge env toggle; legacy full-blob sync path removed.
 
 ### Phase 3 — Mobile Saved-Words Switch (1 day)
 
 `SavedWordsContext.tsx` per-op PUT/DELETE; SecureStore cache; optional offline
-queue; `EXPO_PUBLIC_SAVED_WORDS_ROW_API` gate.
+queue; legacy full-blob sync path removed.
 
 ### Phase 4 — Classic Saved-Words Edit (1–2 days; completes T-switch)
 
@@ -432,8 +440,7 @@ All workstreams run in parallel with these ordering constraints:
 
 **Acceptance per sub-phase**: data counts match between Directus and Supabase
 (idempotent backfill, second-run no-op), the affected app features pass Mary/Bob
-regression, and the old code path is flag-disabled before the new path goes
-live.
+regression, and the old code path is removed before the new path goes live.
 
 **Sunset readiness checklist (all must pass by T+30):**
 
@@ -489,7 +496,7 @@ live.
    T+30 with an archived final backup.
 4. Saved-words guarantee holds everywhere: add once → added everywhere, delete
    once → deleted everywhere.
-5. Zero planned downtime; every phase rolls back with a flag or a revert.
+5. Zero planned downtime; every phase rolls back with a revert (no feature flags).
 
 ## Dependencies
 

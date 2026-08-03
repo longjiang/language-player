@@ -25,9 +25,8 @@ const _deleteSavedWord = (l2: string, wordId: string) =>
   );
 
 /**
- * Row-level saved-words API (SPEC-034 Phase 1/2). Backed by Supabase via Flask;
- * replaces the full-blob /user-data/sync upload for saved words once the
- * NEXT_PUBLIC_SAVED_WORDS_ROW_API flag is on.
+ * Row-level saved-words API (SPEC-034). Backed by Supabase via Flask;
+ * replaces the full-blob /user-data/sync upload for saved words.
  */
 export function useSavedWordApi() {
   return {
