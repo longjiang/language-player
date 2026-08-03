@@ -6,9 +6,12 @@ The DeepSeek explanation card (dictionary popup and dictionary entry page) gets 
 
 ## Behavior
 
-- The buttons appear in the explanation card's action row once an explanation has loaded, alongside the icon-only regenerate and copy buttons.
-- Clicking a follow-up streams a new explanation, replacing the current one in the same card.
-- While a follow-up is active, the card header shows which aspect is being explained (e.g. "AI says · Inflection").
+- Each assistant reply has icon-only regenerate and copy buttons beneath it. They stay visible while a reply is streaming but are disabled until it finishes.
+- Follow-up buttons are styled as rounded boxes with a sharp bottom-right corner and stay pinned at the bottom of the card.
+- Once a follow-up button is pressed, it disappears from the list for the rest of the conversation (each follow-up can be used once per transcript).
+- The card renders as a chat transcript. The initial explanation appears as the first assistant bubble on the left.
+- Clicking a follow-up appends a user chat bubble on the right (labelled with the button, e.g. "Inflection"), then streams the DeepSeek reply into a new assistant bubble below it.
+- Regenerate re-runs that reply's prompt in place (cache bypassed); copy copies that reply's text.
 - Follow-up prompts reuse the same backtick formatting instruction as the main prompt, so L2 words and examples stay tokenized and clickable.
 - When there is a context sentence, it is included in the prompt; the dictionary entry page (no context) uses the generic variants.
 
