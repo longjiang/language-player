@@ -64,7 +64,13 @@ Latin-script queries; that mechanism is retained.
    uses (concurrent, first-chunk check) and URLs the proxy cannot deliver
    (200 + empty body) are dropped. This guarantees `/img/<term>/<i>/<lang>`
    serves working images instead of empty 200s. Cached results carry a
-   version marker (`v2`), so stale pre-filter caches are never trusted.
+   version marker, so stale pre-filter or pre-thumbnail caches are never
+   trusted (currently `v3`).
+8. **Thumbnail-first results.** `src` is Bing's `turl` thumbnail when Bing
+   provides one (typically ~30 KB vs ~400 KB full-size), falling back to the
+   full-size `murl`; the full-size URL is preserved as `full` for future
+   clients. The web widget and `/img` proxy therefore transfer small images
+   only — enough to get a visual idea of a word.
 
 ## Consequences
 
@@ -81,6 +87,8 @@ Latin-script queries; that mechanism is retained.
 - **No empty images**: the index-phase pre-sniff filters proxy-undeliverable
   URLs, so `/img/...` requests only ever see working images (first index call
   per term costs ~6s; later calls hit the filtered cache).
+- **Smaller payloads**: thumbnail-first `src` (~30 KB) instead of full-size
+  images (~400 KB) for most results.
 
 ### Accepted
 
