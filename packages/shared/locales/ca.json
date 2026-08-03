@@ -941,14 +941,14 @@
         "explain_word_context_form": "Explica breument la paraula en {l2Name} \"{word}\" (forma flexionada: {contextForm}) dins de \"{context}\" i, a continuació, dona 2 exemples amb traduccions.",
         "explain_word_examples": "Dona també 2 exemples d'ús habitual de la paraula.",
         "explain_word_examples_context": "Dona també 2 exemples de com s'utilitza la paraula amb el mateix sentit que en el context proporcionat.",
-        "followup_etymology": "Explica l'etimologia i l'origen de la paraula en {l2Name} \"{word}\".",
+        "followup_etymology": "Dona l'etimologia de la paraula en {l2Name} \"{word}\".",
         "followup_inflection": "Explica el lema (forma de diccionari) de la paraula en {l2Name} \"{word}\", com es flexiona i el significat de la forma flexionada.",
         "followup_inflection_context": "Explica el lema (forma de diccionari) de la paraula en {l2Name} \"{word}\", com es flexiona en \"{context}\" i el significat de la forma flexionada.",
         "followup_inflection_context_form": "Explica el lema (forma de diccionari) de la paraula en {l2Name} \"{word}\" (forma flexionada: {contextForm}), com es flexiona en \"{context}\" i el significat de la forma flexionada.",
         "followup_morphemes": "Explica si la paraula en {l2Name} \"{word}\" es pot descompondre en parts semàntiques (morfemes) i assenyala les interpretacions literals de la paraula.",
         "followup_morphemes_context": "Explica si la paraula en {l2Name} \"{word}\" a \"{context}\" es pot descompondre en parts semàntiques (morfemes) i assenyala les interpretacions literals de la paraula.",
-        "followup_syntax": "Explica el paper i el comportament sintàctics de la paraula en {l2Name} \"{word}\".",
-        "followup_syntax_context": "Explica el paper i el comportament sintàctics de la paraula en {l2Name} \"{word}\" a \"{context}\"."
+        "followup_syntax": "Explica si la paraula en {l2Name} \"{word}\" funciona com a element sintàctic i explica quina és l'estructura sintàctica (p. ex. estructura de l'oració, part d'una frase, un fenomen gramatical concret, etc.).",
+        "followup_syntax_context": "Explica si la paraula en {l2Name} \"{word}\" a \"{context}\" funciona com a element sintàctic i explica quina és l'estructura sintàctica (p. ex. estructura de l'oració, part d'una frase, un fenomen gramatical concret, etc.)."
     },
     "review": {
         "again": "De nou",

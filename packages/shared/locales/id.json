@@ -941,14 +941,14 @@
         "explain_word_context_form": "Jelaskan secara singkat kata {l2Name} \"{word}\" (bentuk infleksi: {contextForm}) dalam \"{context}\", lalu berikan 2 contoh dengan terjemahan.",
         "explain_word_examples": "Berikan juga 2 contoh bagaimana kata tersebut biasanya digunakan.",
         "explain_word_examples_context": "Berikan juga 2 contoh bagaimana kata tersebut digunakan dalam makna yang sama seperti pada konteks yang diberikan.",
-        "followup_etymology": "Jelaskan etimologi dan asal-usul kata {l2Name} \"{word}\".",
+        "followup_etymology": "Berikan etimologi kata {l2Name} \"{word}\".",
         "followup_inflection": "Jelaskan lemma (bentuk kamus) dari kata {l2Name} \"{word}\", bagaimana kata itu berinfleksi, dan arti bentuk infleksinya.",
         "followup_inflection_context": "Jelaskan lemma (bentuk kamus) dari kata {l2Name} \"{word}\", bagaimana kata itu berinfleksi dalam \"{context}\", dan arti bentuk infleksinya.",
         "followup_inflection_context_form": "Jelaskan lemma (bentuk kamus) dari kata {l2Name} \"{word}\" (bentuk infleksi: {contextForm}), bagaimana kata itu berinfleksi dalam \"{context}\", dan arti bentuk infleksinya.",
         "followup_morphemes": "Jelaskan apakah kata {l2Name} \"{word}\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
         "followup_morphemes_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
-        "followup_syntax": "Jelaskan peran dan perilaku sintaksis dari kata {l2Name} \"{word}\".",
-        "followup_syntax_context": "Jelaskan peran dan perilaku sintaksis dari kata {l2Name} \"{word}\" dalam \"{context}\"."
+        "followup_syntax": "Jelaskan apakah kata {l2Name} \"{word}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
+        "followup_syntax_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.)."
     },
     "review": {
         "again": "Lagi",

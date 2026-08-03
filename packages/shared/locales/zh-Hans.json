@@ -903,14 +903,14 @@
         "explain_word_context_form": "请简洁地解释{l2Name}单词\"{word}\"（屈折形式：{contextForm}）在\"{context}\"中的含义，然后给出2个带翻译的示例。",
         "explain_word_examples": "再给出2个该单词典型用法的示例。",
         "explain_word_examples_context": "再给出2个示例，说明该词在与所提供语境相同的含义下如何使用。",
-        "followup_etymology": "请解释{l2Name}单词\"{word}\"的词源和起源。",
+        "followup_etymology": "请给出{l2Name}单词\"{word}\"的词源。",
         "followup_inflection": "请解释{l2Name}单词\"{word}\"的词元（词典形式）、该词的屈折变化方式，以及屈折形式的意义。",
         "followup_inflection_context": "请解释{l2Name}单词\"{word}\"的词元（词典形式）、该词在\"{context}\"中的屈折变化方式，以及屈折形式的意义。",
         "followup_inflection_context_form": "请解释{l2Name}单词\"{word}\"（屈折形式：{contextForm}）的词元（词典形式）、该词在\"{context}\"中的屈折变化方式，以及屈折形式的意义。",
         "followup_morphemes": "请解释{l2Name}单词\"{word}\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
         "followup_morphemes_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
-        "followup_syntax": "请解释{l2Name}单词\"{word}\"的句法作用和语法行为。",
-        "followup_syntax_context": "请解释\"{context}\"中{l2Name}单词\"{word}\"的句法作用和语法行为。"
+        "followup_syntax": "请解释{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
+        "followup_syntax_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。"
     },
     "review": {
         "again": "重来",

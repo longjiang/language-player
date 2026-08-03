@@ -941,14 +941,14 @@
         "explain_word_context_form": "Explique brevemente a palavra em {l2Name} \"{word}\" (forma flexionada: {contextForm}) em \"{context}\" e, em seguida, dê 2 exemplos com traduções.",
         "explain_word_examples": "Dá também 2 exemplos de como a palavra é normalmente usada.",
         "explain_word_examples_context": "Dá também 2 exemplos de como a palavra é usada com o mesmo sentido que no contexto fornecido.",
-        "followup_etymology": "Explica a etimologia e a origem da palavra em {l2Name} \"{word}\".",
+        "followup_etymology": "Dá a etimologia da palavra em {l2Name} \"{word}\".",
         "followup_inflection": "Explica o lema (forma de dicionário) da palavra em {l2Name} \"{word}\", como a palavra se flexiona e o significado da forma flexionada.",
         "followup_inflection_context": "Explica o lema (forma de dicionário) da palavra em {l2Name} \"{word}\", como a palavra se flexiona em \"{context}\" e o significado da forma flexionada.",
         "followup_inflection_context_form": "Explica o lema (forma de dicionário) da palavra em {l2Name} \"{word}\" (forma flexionada: {contextForm}), como a palavra se flexiona em \"{context}\" e o significado da forma flexionada.",
         "followup_morphemes": "Explica se a palavra em {l2Name} \"{word}\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
         "followup_morphemes_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
-        "followup_syntax": "Explica o papel e o comportamento sintáticos da palavra em {l2Name} \"{word}\".",
-        "followup_syntax_context": "Explica o papel e o comportamento sintáticos da palavra em {l2Name} \"{word}\" em \"{context}\"."
+        "followup_syntax": "Explica se a palavra em {l2Name} \"{word}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
+        "followup_syntax_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.)."
     },
     "review": {
         "again": "Novamente",

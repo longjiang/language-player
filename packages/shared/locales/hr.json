@@ -941,14 +941,14 @@
         "explain_word_context_form": "Ukratko objasni {l2Name} riječ \"{word}\" (flektirani oblik: {contextForm}) u \"{context}\", a zatim navedi 2 primjera s prijevodima.",
         "explain_word_examples": "Navedi i 2 primjera kako se riječ obično koristi.",
         "explain_word_examples_context": "Navedi i 2 primjera kako se riječ koristi u istom značenju kao u navedenom kontekstu.",
-        "followup_etymology": "Objasni etimologiju i podrijetlo {l2Name} riječi \"{word}\".",
+        "followup_etymology": "Navedi etimologiju {l2Name} riječi \"{word}\".",
         "followup_inflection": "Objasni lemu (rječnički oblik) {l2Name} riječi \"{word}\", kako se riječ flektira i značenje flektiranog oblika.",
         "followup_inflection_context": "Objasni lemu (rječnički oblik) {l2Name} riječi \"{word}\", kako se riječ flektira u \"{context}\" i značenje flektiranog oblika.",
         "followup_inflection_context_form": "Objasni lemu (rječnički oblik) {l2Name} riječi \"{word}\" (flektirani oblik: {contextForm}), kako se riječ flektira u \"{context}\" i značenje flektiranog oblika.",
         "followup_morphemes": "Objasni može li se {l2Name} riječ \"{word}\" rastaviti na semantičke dijelove (morfeme) i navedi doslovna tumačenja riječi.",
         "followup_morphemes_context": "Objasni može li se {l2Name} riječ \"{word}\" u \"{context}\" rastaviti na semantičke dijelove (morfeme) i navedi doslovna tumačenja riječi.",
-        "followup_syntax": "Objasni sintaktičku ulogu i ponašanje {l2Name} riječi \"{word}\".",
-        "followup_syntax_context": "Objasni sintaktičku ulogu i ponašanje {l2Name} riječi \"{word}\" u \"{context}\"."
+        "followup_syntax": "Objasni funkcionira li {l2Name} riječ \"{word}\" kao sintaktički element i objasni kakva je sintaktička struktura (npr. struktura rečenice, dio fraze, određeni gramatički fenomen itd.).",
+        "followup_syntax_context": "Objasni funkcionira li {l2Name} riječ \"{word}\" u \"{context}\" kao sintaktički element i objasni kakva je sintaktička struktura (npr. struktura rečenice, dio fraze, određeni gramatički fenomen itd.)."
     },
     "review": {
         "again": "Ponovno",

@@ -941,14 +941,14 @@
         "explain_word_context_form": "Kérlek, röviden magyarázd el a(z) {l2Name} \"{word}\" szót (ragozott alak: {contextForm}) a következő szövegben: \"{context}\", majd adj 2 példát fordításokkal.",
         "explain_word_examples": "Adj 2 példát is a szó tipikus használatára.",
         "explain_word_examples_context": "Adj 2 példát is arra, hogyan használják a szót a megadott szövegkörnyezetben szereplő azonos jelentésben.",
-        "followup_etymology": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó etimológiáját és eredetét.",
+        "followup_etymology": "Kérlek, add meg a(z) {l2Name} \"{word}\" szó etimológiáját.",
         "followup_inflection": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó lemmáját (szótári alakját), hogyan ragozódik a szó, és a ragozott alak jelentését.",
         "followup_inflection_context": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó lemmáját (szótári alakját), hogyan ragozódik a szó a(z) \"{context}\" szövegben, és a ragozott alak jelentését.",
         "followup_inflection_context_form": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó lemmáját (szótári alakját) (ragozott alak: {contextForm}), hogyan ragozódik a szó a(z) \"{context}\" szövegben, és a ragozott alak jelentését.",
         "followup_morphemes": "Magyarázd el, hogy a(z) {l2Name} \"{word}\" szó felbontható-e jelentéses részekre (morfémákra), és említsd meg a szó szó szerinti értelmezéseit.",
         "followup_morphemes_context": "Magyarázd el, hogy a(z) {l2Name} \"{word}\" szó a(z) \"{context}\" szövegben felbontható-e jelentéses részekre (morfémákra), és említsd meg a szó szó szerinti értelmezéseit.",
-        "followup_syntax": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó szintaktikai szerepét és viselkedését.",
-        "followup_syntax_context": "Kérlek, magyarázd el a(z) {l2Name} \"{word}\" szó szintaktikai szerepét és viselkedését a(z) \"{context}\" szövegben."
+        "followup_syntax": "Kérlek, magyarázd el, hogy a(z) {l2Name} \"{word}\" szó szintaktikai elemként működik-e, és magyarázd el, mi a szintaktikai szerkezet (pl. mondatszerkezet, kifejezés része, bizonyos nyelvtani jelenség stb.).",
+        "followup_syntax_context": "Kérlek, magyarázd el, hogy a(z) {l2Name} \"{word}\" szó a(z) \"{context}\" szövegben szintaktikai elemként működik-e, és magyarázd el, mi a szintaktikai szerkezet (pl. mondatszerkezet, kifejezés része, bizonyos nyelvtani jelenség stb.)."
     },
     "review": {
         "again": "Újra",

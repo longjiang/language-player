@@ -941,14 +941,14 @@
         "explain_word_context_form": "Mínigh go gonta focal {l2Name} \"{word}\" (foirm infhillte: {contextForm}) in \"{context}\", ansin tabhair 2 shampla le haistriúcháin.",
         "explain_word_examples": "Tabhair 2 shampla freisin de conas a úsáidtear an focal de ghnáth.",
         "explain_word_examples_context": "Tabhair 2 shampla freisin de conas a úsáidtear an focal sa chiall chéanna agus atá sa chomhthéacs a soláthraíodh.",
-        "followup_etymology": "Mínigh sanasaíocht agus bunús fhocal {l2Name} \"{word}\".",
+        "followup_etymology": "Tabhair sanasaíocht fhocal {l2Name} \"{word}\".",
         "followup_inflection": "Mínigh an lema (foirm foclóra) d'fhocal {l2Name} \"{word}\", conas a infhilltear an focal agus brí na foirme infhillte.",
         "followup_inflection_context": "Mínigh an lema (foirm foclóra) d'fhocal {l2Name} \"{word}\", conas a infhilltear an focal in \"{context}\" agus brí na foirme infhillte.",
         "followup_inflection_context_form": "Mínigh an lema (foirm foclóra) d'fhocal {l2Name} \"{word}\" (foirm infhillte: {contextForm}), conas a infhilltear an focal in \"{context}\" agus brí na foirme infhillte.",
         "followup_morphemes": "Mínigh an féidir focal {l2Name} \"{word}\" a bhriseadh síos ina chodanna séimeantacha (moirféimí), agus tabhair faoi deara aon léirmhínithe litriúla ar an bhfocal.",
         "followup_morphemes_context": "Mínigh an féidir focal {l2Name} \"{word}\" in \"{context}\" a bhriseadh síos ina chodanna séimeantacha (moirféimí), agus tabhair faoi deara aon léirmhínithe litriúla ar an bhfocal.",
-        "followup_syntax": "Mínigh ról agus iompar comhréireach fhocal {l2Name} \"{word}\".",
-        "followup_syntax_context": "Mínigh ról agus iompar comhréireach fhocal {l2Name} \"{word}\" in \"{context}\"."
+        "followup_syntax": "Mínigh an bhfeidhmíonn focal {l2Name} \"{word}\" mar ghné chomhréireach, agus mínigh cad é an struchtúr comhréireach (m.sh. struchtúr abairte, cuid d'fhrása, feiniméan gramadaí áirithe, srl.).",
+        "followup_syntax_context": "Mínigh an bhfeidhmíonn focal {l2Name} \"{word}\" in \"{context}\" mar ghné chomhréireach, agus mínigh cad é an struchtúr comhréireach (m.sh. struchtúr abairte, cuid d'fhrása, feiniméan gramadaí áirithe, srl.)."
     },
     "review": {
         "again": "Arís",

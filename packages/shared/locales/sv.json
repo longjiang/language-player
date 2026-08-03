@@ -941,14 +941,14 @@
         "explain_word_context_form": "Förklara kortfattat ordet på {l2Name} \"{word}\" (böjd form: {contextForm}) i \"{context}\" och ge sedan 2 exempel med översättningar.",
         "explain_word_examples": "Ge också 2 exempel på hur ordet vanligtvis används.",
         "explain_word_examples_context": "Ge också 2 exempel på hur ordet används i samma betydelse som i den angivna kontexten.",
-        "followup_etymology": "Förklara etymologin och ursprunget för ordet på {l2Name} \"{word}\".",
+        "followup_etymology": "Ge etymologin för ordet på {l2Name} \"{word}\".",
         "followup_inflection": "Förklara lemmat (ordboksformen) för ordet på {l2Name} \"{word}\", hur ordet böjs och betydelsen av den böjda formen.",
         "followup_inflection_context": "Förklara lemmat (ordboksformen) för ordet på {l2Name} \"{word}\", hur ordet böjs i \"{context}\" och betydelsen av den böjda formen.",
         "followup_inflection_context_form": "Förklara lemmat (ordboksformen) för ordet på {l2Name} \"{word}\" (böjd form: {contextForm}), hur ordet böjs i \"{context}\" och betydelsen av den böjda formen.",
         "followup_morphemes": "Förklara om ordet på {l2Name} \"{word}\" kan delas upp i semantiska delar (morfem) och ange eventuella bokstavliga tolkningar av ordet.",
         "followup_morphemes_context": "Förklara om ordet på {l2Name} \"{word}\" i \"{context}\" kan delas upp i semantiska delar (morfem) och ange eventuella bokstavliga tolkningar av ordet.",
-        "followup_syntax": "Förklara den syntaktiska rollen och beteendet för ordet på {l2Name} \"{word}\".",
-        "followup_syntax_context": "Förklara den syntaktiska rollen och beteendet för ordet på {l2Name} \"{word}\" i \"{context}\"."
+        "followup_syntax": "Förklara om ordet på {l2Name} \"{word}\" fungerar som ett syntaktiskt element och förklara vad den syntaktiska strukturen är (t.ex. meningsstruktur, del av en fras, ett visst grammatiskt fenomen osv.).",
+        "followup_syntax_context": "Förklara om ordet på {l2Name} \"{word}\" i \"{context}\" fungerar som ett syntaktiskt element och förklara vad den syntaktiska strukturen är (t.ex. meningsstruktur, del av en fras, ett visst grammatiskt fenomen osv.)."
     },
     "review": {
         "again": "Igen",

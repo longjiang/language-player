@@ -941,14 +941,14 @@
         "explain_word_context_form": "\"{context}\"에서 {l2Name} 단어 \"{word}\"(굴절형: {contextForm})를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.",
         "explain_word_examples": "단어가 일반적으로 어떻게 사용되는지 예 2개도 제시하세요.",
         "explain_word_examples_context": "제공된 맥락과 같은 의미로 단어가 어떻게 사용되는지 예 2개도 제시하세요.",
-        "followup_etymology": "{l2Name} 단어 \"{word}\"의 어원과 기원을 설명하세요.",
+        "followup_etymology": "{l2Name} 단어 \"{word}\"의 어원을 알려주세요.",
         "followup_inflection": "{l2Name} 단어 \"{word}\"의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
         "followup_inflection_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
         "followup_inflection_context_form": "\"{context}\"에서 {l2Name} 단어 \"{word}\"(굴절형: {contextForm})의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
         "followup_morphemes": "{l2Name} 단어 \"{word}\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
         "followup_morphemes_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
-        "followup_syntax": "{l2Name} 단어 \"{word}\"의 통사적 역할과 행동을 설명하세요.",
-        "followup_syntax_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"의 통사적 역할과 행동을 설명하세요."
+        "followup_syntax": "{l2Name} 단어 \"{word}\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등).",
+        "followup_syntax_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등)."
     },
     "review": {
         "again": "다시",

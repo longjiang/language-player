@@ -941,14 +941,14 @@
         "explain_word_context_form": "\"{context}\"における{l2Name}の単語\"{word}\"（屈折形：{contextForm}）を簡潔に説明し、翻訳付きの例を2つ挙げてください。",
         "explain_word_examples": "また、その単語が通常どのように使われるかの例を2つ示してください。",
         "explain_word_examples_context": "また、提供された文脈と同じ意味でその単語がどのように使われるかの例を2つ示してください。",
-        "followup_etymology": "{l2Name}の単語\"{word}\"の語源と由来を説明してください。",
+        "followup_etymology": "{l2Name}の単語\"{word}\"の語源を挙げてください。",
         "followup_inflection": "{l2Name}の単語\"{word}\"の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。",
         "followup_inflection_context": "\"{context}\"における{l2Name}の単語\"{word}\"の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。",
         "followup_inflection_context_form": "\"{context}\"における{l2Name}の単語\"{word}\"（屈折形：{contextForm}）の見出し語（辞書形）、その語の活用の仕方、および活用形の意味を説明してください。",
         "followup_morphemes": "{l2Name}の単語\"{word}\"を意味のある部分（形態素）に分解できるか説明し、その単語の文字通りの解釈があれば指摘してください。",
         "followup_morphemes_context": "\"{context}\"における{l2Name}の単語\"{word}\"を意味のある部分（形態素）に分解できるか説明し、その単語の文字通りの解釈があれば指摘してください。",
-        "followup_syntax": "{l2Name}の単語\"{word}\"の統語的役割と振る舞いを説明してください。",
-        "followup_syntax_context": "\"{context}\"における{l2Name}の単語\"{word}\"の統語的役割と振る舞いを説明してください。"
+        "followup_syntax": "{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。",
+        "followup_syntax_context": "\"{context}\"における{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。"
     },
     "review": {
         "again": "もう一度",

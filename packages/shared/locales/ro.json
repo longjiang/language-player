@@ -941,14 +941,14 @@
         "explain_word_context_form": "Explică pe scurt cuvântul în {l2Name} \"{word}\" (formă flexionată: {contextForm}) din \"{context}\", apoi dă 2 exemple cu traduceri.",
         "explain_word_examples": "Dă și 2 exemple despre cum este folosit cuvântul în mod obișnuit.",
         "explain_word_examples_context": "Dă și 2 exemple despre cum este folosit cuvântul cu același sens ca în contextul oferit.",
-        "followup_etymology": "Explică etimologia și originea cuvântului în {l2Name} \"{word}\".",
+        "followup_etymology": "Dă etimologia cuvântului în {l2Name} \"{word}\".",
         "followup_inflection": "Explică lema (forma de dicționar) a cuvântului în {l2Name} \"{word}\", cum se flexionază cuvântul și sensul formei flexionate.",
         "followup_inflection_context": "Explică lema (forma de dicționar) a cuvântului în {l2Name} \"{word}\", cum se flexionază cuvântul în \"{context}\" și sensul formei flexionate.",
         "followup_inflection_context_form": "Explică lema (forma de dicționar) a cuvântului în {l2Name} \"{word}\" (formă flexionată: {contextForm}), cum se flexionază cuvântul în \"{context}\" și sensul formei flexionate.",
         "followup_morphemes": "Explică dacă cuvântul în {l2Name} \"{word}\" poate fi descompus în părți semantice (morfeme) și menționează orice interpretări literale ale cuvântului.",
         "followup_morphemes_context": "Explică dacă cuvântul în {l2Name} \"{word}\" din \"{context}\" poate fi descompus în părți semantice (morfeme) și menționează orice interpretări literale ale cuvântului.",
-        "followup_syntax": "Explică rolul și comportamentul sintactic ale cuvântului în {l2Name} \"{word}\".",
-        "followup_syntax_context": "Explică rolul și comportamentul sintactic ale cuvântului în {l2Name} \"{word}\" din \"{context}\"."
+        "followup_syntax": "Explică dacă cuvântul în {l2Name} \"{word}\" funcționează ca element sintactic și explică care este structura sintactică (de ex. structura propoziției, parte a unei fraze, un anumit fenomen gramatical etc.).",
+        "followup_syntax_context": "Explică dacă cuvântul în {l2Name} \"{word}\" din \"{context}\" funcționează ca element sintactic și explică care este structura sintactică (de ex. structura propoziției, parte a unei fraze, un anumit fenomen gramatical etc.)."
     },
     "review": {
         "again": "Din nou",
