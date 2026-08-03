@@ -21,6 +21,7 @@ import type { EpubSearchResult } from '@/hooks/use-epub';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
+import { log } from '@/lib/logger';
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
@@ -32,6 +33,7 @@ export default function EpubPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const openingIdRef = useRef<string | null>(null);
   const [importFailures, setImportFailures] = useState<EpubFileError[]>([]);
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [jumpNonce, setJumpNonce] = useState(0);
@@ -40,6 +42,7 @@ export default function EpubPage() {
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
     if (!loc) return;
+    log(`[LP Web] EPUB gotoLocation spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
     setLocation(loc);
     setJumpNonce(n => n + 1);
   }, []);
@@ -89,6 +92,11 @@ export default function EpubPage() {
 
   // Open a stored book; returns the location to resume at.
   const handleOpenBook = useCallback(async (id: string) => {
+    // Ref guard (not just state) so rapid double-clicks can't open the same
+    // book twice — two EpubBook instances would race and the paginator would
+    // drop one fetch, leaving the spinner up forever.
+    if (openingIdRef.current !== null) return;
+    openingIdRef.current = id;
     setOpeningId(id);
     try {
       const start = await epub.openBook(id);
@@ -96,6 +104,7 @@ export default function EpubPage() {
       // Resume is applied reactively: immediately when there is no cover,
       // or on cover tap otherwise.
     } finally {
+      openingIdRef.current = null;
       setOpeningId(null);
     }
   }, [epub]);
@@ -116,6 +125,7 @@ export default function EpubPage() {
   // TOC entry click → resolve + jump.
   const handleLoadChapter = useCallback((href: string) => {
     setMobileSidebarOpen(false);
+    log(`[LP Web] EPUB TOC chapter click: href="${href}"`);
     void epub.resolveHref(href).then(gotoLocation);
   }, [epub, gotoLocation]);
 
@@ -131,6 +141,7 @@ export default function EpubPage() {
       return;
     }
     if (!href || href === '#') return;
+    log(`[LP Web] EPUB internal link click: href="${href}" (from "${currentSpineHref}")`);
     void epub.resolveHref(href, currentSpineHref).then(gotoLocation);
   }, [router, l1.code, l2.code, epub, currentSpineHref, gotoLocation]);
 
