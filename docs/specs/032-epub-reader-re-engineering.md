@@ -5,6 +5,7 @@
 - **Feature**: Re-engineer the web EPUB reader around the book model (spine flow + TOC bookmarks + whole-book pagination)
 - **Status**: draft
 - **Created**: 2026-08-02
+- **Revised**: 2026-08-02 — web keeps `epubjs` + `turndown`; the whole-book model is built on top of epubjs instead of a new shared parser package (see "Proposed architecture")
 - **ROADMAP Phase**: Phase 4 (Reading)
 - **See also**: [EPUB Reader Architecture](../arch/013-epub-reader-architecture.md), [ADR-0012 (Custom EPUB Parser)](../adr/0012-custom-epub-parser-mobile.md), [SPEC-012 (EPUB Images)](012-epub-image-rendering.md)
 
@@ -14,7 +15,7 @@ The web EPUB reader currently treats **TOC entries as chapters**: clicking a TOC
 
 This spec replaces the chapter-at-a-time model with a **whole-book model**:
 
-1. A shared, platform-agnostic EPUB parser (`packages/epub`) that parses container/OPF/manifest/spine and the TOC (EPUB 3 nav document **or** EPUB 2 NCX) into a book object with **full TOC hierarchy**.
+1. A **book-model layer** on top of `epubjs` (web): spine + TOC parsed into a book object with **full TOC hierarchy**, TOC hrefs canonically resolved (fixing an epubjs gap), and each content document converted once into a block stream.
 2. A **continuous book flow**: every linear spine item is converted once into content blocks; the blocks form one global stream in spine order. TOC entries, internal links, search results, and saved positions are all resolved to **locations** (`spineIndex` → `blockIndex` → char `offset`) in that stream.
 3. **Whole-book pagination**: page breaks are computed over the global block stream (viewport-aware, lazy), so page numbers are continuous across the entire book and "next/previous" turn real pages, not chapters.
 4. **Whole-book search**: an index built per spine item (not per TOC entry) so results cover the entire book with no duplicates and navigate by location.
@@ -130,38 +131,37 @@ Audited 2026-08-02 against the fixtures in `tmp/testing-assets/epub/` (same book
 - A TOC sidebar that renders the real hierarchy and highlights the current entry (including ancestors).
 - Whole-book search that covers every spine item exactly once and navigates to precise locations.
 - Reliable position restore (no text-anchor heuristics).
-- One platform-agnostic parser shared by web and mobile (mobile adopts it in a follow-up phase).
-- Drop `epubjs` and `turndown` from web.
+- Keep `epubjs` for package parsing and `turndown` for the article reader — no new parser dependencies.
+- Fix the epubjs TOC gap (hrefs never resolved against the nav document's directory) with a small canonical-href layer.
 
 ## Non-goals
 
 - Rendering original EPUB CSS/layout, embedded fonts, or fixed-layout EPUBs (the reader is intentionally a text-flow reader).
 - Full CFI support (we define our own simpler location over our block stream; see below).
 - RTL mirror-layout (v1 reverses next/prev semantics only — same as today).
-- Mobile migration in this phase (shared package is built for it, but only web switches over here).
+- Mobile keeps its own hand-rolled parser (ADR-0012) for now; unifying the parsers is a future, separate effort.
 
 ## Proposed architecture
 
-### 1. Shared parser package — `packages/epub` (new)
+### 1. Book-model layer on `epubjs` — `apps/web/src/lib/epub-book.ts` (new)
 
-A pure-TypeScript, platform-agnostic package (`@langplayer/epub`) that replaces `epubjs` + `turndown` on web and eventually the hand-rolled parser on mobile. Dependencies: `jszip` (already used by mobile; pure JS) and `parse5` (zero-dependency HTML parser that runs in browsers and React Native) — both satisfy the "shared packages are platform-agnostic" rule.
+`epubjs` keeps doing what it is good at: opening the ZIP, parsing the OPF (manifest/spine/cover), loading nav/NCX documents, and reading content documents. A new ~350-line `EpubBook` wrapper adds the parts epubjs lacks:
 
 ```
-parseEpub(ArrayBuffer)
-  ├─ container.xml          → OPF path
-  ├─ OPF                   → metadata, manifest, spine[], cover
-  ├─ nav doc (EPUB 3) or
-  │  NCX (EPUB 2)          → TocNode tree (full hierarchy, resolved hrefs)
-  └─ content documents     → convertXhtml() → EpubBlock[] per spine item
+EpubBook.open(ArrayBuffer)
+  ├─ epubjs                 → spine[], TOC, cover, metadata (as today)
+  ├─ canonical hrefs        → resolve spine hrefs vs OPF dir AND TOC hrefs vs
+  │                           the nav/NCX document's dir, so they match
+  ├─ TocNode tree           → epubjs nested TOC mapped to the shared shape
+  └─ getBlocks(spineIndex)  → DOM converter → EpubBlock[] with source mapping
 ```
 
 Responsibilities:
 
-- **Correct href resolution everywhere**: nav hrefs against the nav doc's own directory, NCX/OPF hrefs against the OPF directory, `./`/`../` normalization, percent-decoding, fragment stripping for manifest lookup while preserving the fragment for navigation.
-- **TOC parsing**: `<nav epub:type="toc">` with arbitrary nesting (any tag wrapping, `<ol>` or `<ul>`), NCX `navMap` fallback with `playOrder`, and a spine-derived flat TOC when neither exists.
-- **Spine parsing**: ordered `itemref`s with `linear` flags and `page-progression-direction`.
-- **Cover extraction**: `properties="cover-image"` (EPUB 3), `<meta name="cover">`/`property="cover"` (EPUB 2), guide fallback — returned as a stable data URL (fixes the blob-URL invalidation hack in `epub-store.ts`).
-- **Validation**: typed, user-displayable errors (bad zip, missing container/OPF, empty spine) for the existing import dialog.
+- **Canonical href resolution**: `spine.items[].href` is the raw OPF-relative string and `navigation.toc[].href` is the raw nav-document-relative string — epubjs never aligns them, which is the root cause of "empty chapter / search misses" books. `EpubBook` resolves both to a canonical zip-relative path (own `resolvePath`, ~20 lines) so matching is deterministic.
+- **TOC mapping**: epubjs's nested `toc` → `TocNode` tree (`subitems` → `children`), preserving hierarchy.
+- **Content conversion**: each spine document → `EpubBlock[]` via a browser-DOM walker (no turndown on this path — we need element ids for fragment resolution). Images keep the existing epubjs `urlCache` blob-URL resolution (session-lifetime only).
+- **Cover**: unchanged `toStableCoverUrl` conversion to a data URL (fixes blob-URL invalidation in `epub-store.ts`).
 
 ### 2. Content conversion with source mapping
 
@@ -224,13 +224,13 @@ The search index is rebuilt per **spine item** (each exactly once, in spine orde
 - **Header**: current chapter label (nearest preceding TOC entry), page `n / ~N`, progress unchanged; prev/next controls become whole-book page turns (the sidebar keeps prev/next chapter).
 - **Search**: same UI, new backend (locations, no duplicates, whole-book coverage).
 - **Internal links**: handled inside blocks (link format → `resolveHref` → `goToLocation`), so the global document-level click interceptor (`chapterLinks` hack in `page.tsx`) is deleted.
-- **Cover flow**: unchanged, but the cover URL now comes from the shared parser as a stable data URL.
+- **Cover flow**: unchanged, but the cover URL now comes from the epubjs-backed book layer as a stable data URL.
 - The markdown-based shared `ReaderPanel` (used by the article web-reader) is untouched; the EPUB reader gets its own block-driven panel built on `usePaginatedBlocks`, keeping per-page tokenization/translation (existing pattern).
 
 ## Data structures
 
 ```ts
-// packages/epub
+// apps/web/src/lib/epub-book.ts
 interface EpubSpineItem {
   index: number;
   idref: string;
@@ -266,7 +266,7 @@ interface EpubBook {
   coverUrl: string | null;         // stable data URL
   pageProgressionDir: 'ltr' | 'rtl';
   getBlocks(spineIndex: number): Promise<EpubBlock[]>;
-  resolveHref(href: string): BookLocation | null;
+  resolveHref(href: string, baseDir?: string): Promise<BookLocation | null>;
 }
 
 // web hook (use-epub.ts → useEpubBook)
@@ -287,14 +287,10 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 
 ## Implementation plan
 
-### Phase A — `packages/epub` parser + converter
+### Phase A — `EpubBook` book-model layer (web)
 
-1. Scaffold `packages/epub` (workspace entry in root `package.json`, tsconfig extending the root base).
-2. `parseEpub()`: zip → container → OPF → manifest/spine/metadata/cover; typed errors.
-3. `toc.ts`: nav-document parser (arbitrary nesting, any wrapper tags) + NCX fallback + spine fallback; resolve hrefs per-document-directory.
-4. `convert.ts`: XHTML → `EpubBlock[]` with source mapping, ruby stripping, image resolution to data URLs (reuse the `resolvePath` logic from `apps/mobile/lib/epub-parser.ts`).
-5. `locate.ts`: `resolveHref`, global offsets, chapter-label assignment.
-6. Fixture tests against `tmp/testing-assets/epub/` — assertions in the Verification section.
+1. `apps/web/src/lib/epub-book.ts`: canonical href resolution (spine vs nav-dir), `TocNode` mapping, DOM converter → `EpubBlock[]` with source mapping (element ids + char offsets), `resolveHref`, TOC markers, per-spine plain text, chapter labels.
+2. Fixture smoke tests against `tmp/testing-assets/epub/` (Node + jsdom-free: verify canonical spine/TOC matching and conversions with the browser-less DOM unavailable — run the assertions in-browser or with a lightweight DOM shim; see Verification).
 
 ### Phase B — swap the web hook to the book model
 
@@ -315,15 +311,15 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 
 ### Phase E — cleanup + mobile follow-up
 
-1. Remove `epubjs`, `turndown`, `@types/turndown` from `apps/web`.
-2. Update ARCH-013; add an ADR for the shared parser (superseding the web half of ADR-0012's reasoning); mark this spec complete.
-3. Follow-up (separate task): migrate `apps/mobile/lib/epub-parser.ts` to `@langplayer/epub` so both platforms share one parser and location model.
+1. No dependency changes on web — `epubjs` and `turndown` stay.
+2. Update ARCH-013; add an ADR recording the decision to keep epubjs and layer the book model on top (web) while mobile keeps its hand-rolled parser; mark this spec complete.
+3. Follow-up (separate task): evaluate unifying web (epubjs) and mobile (hand-rolled) on one parser — explicitly out of scope here.
 
 ## Files changed
 
 | File | Change |
 |---|---|
-| `packages/epub/**` (new) | Parser, TOC, converter, locations, types |
+| `apps/web/src/lib/epub-book.ts` (new) | Book model on epubjs: canonical hrefs, TOC, converter, locations |
 | `apps/web/src/hooks/use-epub.ts` | Rewritten as `useEpubBook` (book model) |
 | `apps/web/src/lib/epub-store.ts` | Schema v3 (`lastLocation`, index v2, migration) |
 | `apps/web/src/components/reader/reader-panel.tsx` | Extract `usePaginatedBlocks` (markdown reader path untouched) |
@@ -331,7 +327,7 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 | `apps/web/src/components/reader/epub-chapter-sidebar.tsx` | `TocNode` hierarchy + ancestor highlight |
 | `apps/web/src/components/reader/epub-search-panel.tsx` | Location-based results (UX unchanged) |
 | `apps/web/src/app/[l1]/[l2]/epub/page.tsx` | New hook wiring, page-level navigation, remove link interceptor |
-| `apps/web/package.json` | Remove `epubjs`, `turndown`, `@types/turndown` |
+| `apps/web/package.json` | No change (`epubjs`, `turndown` stay) |
 | `docs/arch/013-epub-reader-architecture.md`, `docs/adr/` | Updated/new ADR after implementation |
 
 ## Edge cases
@@ -349,13 +345,13 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 
 ## Dependencies
 
-- `jszip` (already a workspace dep via mobile), `parse5` (new, pure JS) — both platform-agnostic.
+- No new dependencies — `epubjs` stays for parsing; `turndown` stays for the article reader.
 - ARCH-013 (supersedes), ADR-0012 (web half superseded), SPEC-012 (image pipeline aligns), SPEC-009 (reader layout).
 - New translation keys (all 31 locales, via `scripts/add-translation-key.mjs`): `msg.page_of` ("Page {current} of {total}"), `msg.building_book_index` ("Building book index…"), `msg.jump_to_chapter` (if a "jump to chapter" affordance is added).
 
 ## Open questions
 
-1. **parse5 vs htmlparser2** for the converter — decide at implementation (both pure JS; parse5 is spec-compliant HTML5, htmlparser2 is faster and lighter; neither matters to the API).
+1. **Converter host** — the browser-DOM walker used by `EpubBook` works in the browser only; keep it web-local (mobile's regex pipeline stays as-is).
 2. **Non-linear items** — include in the flow vs standalone-only; v1 default is standalone-only, but a book with *only* non-linear content should fall back to including them.
 3. **Total page count** — estimate (`n / ~N`) while the background pagination job runs; acceptable, or should the header hide the total until exact?
 4. **RTL scope** — reversed arrows only (v1) vs full mirrored pagination; confirm this matches user expectations for Japanese/Chinese books that are LTR anyway.

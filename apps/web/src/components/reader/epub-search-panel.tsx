@@ -146,7 +146,7 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
         ) : (
           <ul className="flex flex-col gap-1">
             {results.map((r, i) => (
-              <li key={`${r.chapterHref}-${i}`}>
+              <li key={`${r.location.spineIndex}:${r.location.blockIndex}-${i}`}>
                 <button
                   type="button"
                   onClick={() => onNavigate(r)}
@@ -155,9 +155,9 @@ export function EpubSearchPanel({ onSearch, onNavigate }: EpubSearchPanelProps) 
                   <p className="line-clamp-2 text-sm text-foreground">
                     <HighlightSnippet snippet={r.snippet} term={searchedQuery} />
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {r.chapterTitle || `#${r.chapterIndex}`}
-                  </p>
+                  {r.chapterLabel && (
+                    <p className="mt-1 text-xs text-muted-foreground">{r.chapterLabel}</p>
+                  )}
                 </button>
               </li>
             ))}

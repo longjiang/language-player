@@ -6,13 +6,15 @@
  * same handle instead of creating a duplicate.
  */
 
+import type { BookLocation } from '@/lib/epub-book-types';
+
 const DB_NAME = 'lp-epub-store';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = 'epubs';
-/** Per-book chapter plain text, used by the in-reader search index. */
-const TEXTS_STORE_NAME = 'chapter-texts';
+/** Per-book whole-book search index (one record per spine item). */
+const INDEX_STORE_NAME = 'book-index';
 /** Bump when the search index format changes — stale caches are rebuilt. */
-const SEARCH_INDEX_VERSION = 1;
+const SEARCH_INDEX_VERSION = 2;
 /** Key used by the previous single-book version — migrated to a per-book key. */
 const LEGACY_KEY = 'current';
 
@@ -22,7 +24,7 @@ function openDB(): Promise<IDBDatabase> {
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
-      if (!db.objectStoreNames.contains(TEXTS_STORE_NAME)) db.createObjectStore(TEXTS_STORE_NAME);
+      if (!db.objectStoreNames.contains(INDEX_STORE_NAME)) db.createObjectStore(INDEX_STORE_NAME);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -36,14 +38,15 @@ export interface EpubMeta {
   fileSize: number;
   /** Cover image as a data URL — shown on the bookshelf without reopening the book. */
   coverUrl: string | null;
+  /** Last reading position in the book-model block stream. */
+  lastLocation: BookLocation | null;
+  /** Bump when the location model changes — stale positions are re-resolved. */
+  locationFormatVersion: number;
+  /** Legacy fields — kept for migration of pre-v3 handles. */
   lastChapterHref: string | null;
   lastChapterTitle: string | null;
-  /** Text snippet from the first visible block on the last page. */
   lastAnchor: string | null;
-  /** Characters read within the current chapter (anchor offset). */
   lastAnchorOffset: number;
-  /** Plain-text character count per TOC href — used to compute progress. */
-  chapterCharCounts: Record<string, number>;
   /** Total plain-text characters in the book. */
   totalChars: number;
   /** Characters read so far (prefix of chapters + current offset). */
@@ -62,6 +65,15 @@ export interface StoredEpub {
 
 /** Bookshelf view — metadata only, no binary data. */
 export type EpubSummary = EpubMeta;
+
+/** Whole-book search index record — one per spine item. */
+export interface SpineIndexRecord {
+  spineIndex: number;
+  /** Normalized plain text of the spine item (blocks joined with '\n'). */
+  text: string;
+  /** Char offset of each text block's start inside `text`. */
+  starts: number[];
+}
 
 /** SHA-256 hex digest of an ArrayBuffer. */
 export async function sha256Hex(data: ArrayBuffer): Promise<string> {
@@ -82,11 +94,12 @@ function baseMeta(id: string, fileName: string, fileSize: number): EpubMeta {
     fileName,
     fileSize,
     coverUrl: null,
+    lastLocation: null,
+    locationFormatVersion: 1,
     lastChapterHref: null,
     lastChapterTitle: null,
     lastAnchor: null,
     lastAnchorOffset: 0,
-    chapterCharCounts: {},
     totalChars: 0,
     readChars: 0,
     lastReadAt: now,
@@ -173,8 +186,9 @@ export async function listEpubs(): Promise<EpubSummary[]> {
           id,
           fileName: old.fileName ?? 'book.epub',
           coverUrl: old.coverUrl ?? null,
+          lastLocation: old.lastLocation ?? null,
+          locationFormatVersion: old.locationFormatVersion ?? 1,
           lastAnchorOffset: old.lastAnchorOffset ?? 0,
-          chapterCharCounts: old.chapterCharCounts ?? {},
           totalChars: old.totalChars ?? 0,
           readChars: old.readChars ?? 0,
           lastReadAt: old.lastReadAt ?? Date.now(),
@@ -229,43 +243,42 @@ export async function deleteEpub(id: string): Promise<void> {
   });
 }
 
-/** Store per-chapter plain text (search index) keyed by book id. */
-export async function saveChapterTexts(id: string, texts: Record<string, string>): Promise<void> {
+/** Store the whole-book search index keyed by book id. */
+export async function saveBookIndex(id: string, spine: SpineIndexRecord[]): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(TEXTS_STORE_NAME, 'readwrite');
-    tx.objectStore(TEXTS_STORE_NAME).put({ v: SEARCH_INDEX_VERSION, texts }, id);
+    const tx = db.transaction(INDEX_STORE_NAME, 'readwrite');
+    tx.objectStore(INDEX_STORE_NAME).put({ v: SEARCH_INDEX_VERSION, spine }, id);
     tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => { db.close(); reject(tx.error); };
   });
 }
 
-/** Load a book's chapter texts, or null if not indexed yet. */
-export async function loadChapterTexts(id: string): Promise<Record<string, string> | null> {
+/** Load a book's whole-book search index, or null if not indexed yet. */
+export async function loadBookIndex(id: string): Promise<SpineIndexRecord[] | null> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(TEXTS_STORE_NAME, 'readonly');
-    const req = tx.objectStore(TEXTS_STORE_NAME).get(id);
+    const tx = db.transaction(INDEX_STORE_NAME, 'readonly');
+    const req = tx.objectStore(INDEX_STORE_NAME).get(id);
     req.onsuccess = () => {
-      const rec = req.result as { v?: number; texts?: Record<string, string> } | null;
+      const rec = req.result as { v?: number; spine?: SpineIndexRecord[] } | null;
       db.close();
-      if (!rec || rec.v !== SEARCH_INDEX_VERSION) { resolve(null); return; }
-      const texts = rec.texts ?? {};
-      // Ignore caches that extracted no text (e.g. from the body bug) so they
-      // get rebuilt instead of poisoning searches.
-      if (!Object.values(texts).some(t => t.length > 0)) { resolve(null); return; }
-      resolve(texts);
+      if (!rec || rec.v !== SEARCH_INDEX_VERSION || !rec.spine?.length) {
+        resolve(null);
+        return;
+      }
+      resolve(rec.spine);
     };
     req.onerror = () => { db.close(); reject(req.error); };
   });
 }
 
 /** Remove a book's search index. */
-export async function deleteChapterTexts(id: string): Promise<void> {
+export async function deleteBookIndex(id: string): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(TEXTS_STORE_NAME, 'readwrite');
-    tx.objectStore(TEXTS_STORE_NAME).delete(id);
+    const tx = db.transaction(INDEX_STORE_NAME, 'readwrite');
+    tx.objectStore(INDEX_STORE_NAME).delete(id);
     tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => { db.close(); reject(tx.error); };
   });

@@ -26,12 +26,6 @@ export interface EpubUploadResult {
   failures: EpubFileError[];
 }
 
-export interface TocItem {
-  href: string;
-  label: string;
-  subitems?: TocItem[];
-}
-
 interface EpubUploadProps {
   /** Called with readable .epub files plus any files that failed up front. */
   onFilesProcessed: (result: EpubUploadResult) => void;
