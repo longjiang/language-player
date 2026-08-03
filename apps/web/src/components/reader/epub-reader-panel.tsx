@@ -106,14 +106,21 @@ export function EpubReaderPanel({
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenGenRef = useRef(0);
 
-  // Apply external jumps (restore / TOC / search / links).
+  // Apply external jumps (restore / TOC / search / links). Also re-applies
+  // when the book instance changes: a re-open swaps the EpubBook and the
+  // paginator reset invalidates any in-flight fetch, so the new book needs
+  // its own jump (otherwise the window stays empty and the spinner never
+  // clears).
   const lastNonceRef = useRef<number | null>(null);
+  const lastJumpBookRef = useRef<EpubBook | null>(null);
   useEffect(() => {
-    if (lastNonceRef.current === jumpNonce) return;
+    if (!location) return;
+    if (lastNonceRef.current === jumpNonce && lastJumpBookRef.current === book) return;
     lastNonceRef.current = jumpNonce;
+    lastJumpBookRef.current = book;
     jumpTo(location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jumpNonce]);
+  }, [jumpNonce, book, location]);
 
   // Persist the current page start whenever it changes.
   const lastSavedKeyRef = useRef<string | null>(null);

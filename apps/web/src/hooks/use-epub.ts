@@ -23,7 +23,7 @@ import {
   type EpubSummary,
   type SpineIndexRecord,
 } from '@/lib/epub-store';
-import { logerr } from '@/lib/logger';
+import { log, logwarn, logerr } from '@/lib/logger';
 
 /** A single in-book search hit, located in the book flow. */
 export interface EpubSearchResult {
@@ -154,6 +154,7 @@ export function useEpub(): UseEpubReturn {
     const inFlight = indexingRef.current.get(id);
     if (inFlight) return inFlight;
     const run = (async () => {
+      log(`[LP Web] EPUB building search index for book ${id} (${b.spine.length} spines)…`);
       const records: SpineIndexRecord[] = [];
       let totalChars = 0;
       for (let i = 0; i < b.spine.length; i++) {
@@ -163,6 +164,7 @@ export function useEpub(): UseEpubReturn {
       }
       indexRef.current = records;
       await saveBookIndex(id, records);
+      log(`[LP Web] EPUB search index complete: ${records.length} spines, ${totalChars} chars`);
       const stored = await loadEpub(id);
       if (stored) {
         const meta = stored.meta;
@@ -261,6 +263,7 @@ export function useEpub(): UseEpubReturn {
       start = await b.resolveHref(meta.lastChapterHref);
     }
     if (!start) start = { spineIndex: 0, blockIndex: 0, offset: 0 };
+    log(`[LP Web] EPUB openBook "${stored.meta.fileName}" → resume spine=${start.spineIndex} block=${start.blockIndex} offset=${start.offset}`);
     setCoverTapped(!b.coverUrl);
     await updateEpubMeta(id, {
       lastLocation: start,
@@ -327,8 +330,17 @@ export function useEpub(): UseEpubReturn {
   /** Resolve an href (TOC entry or in-content link) to a location. */
   const resolveHref = useCallback(async (href: string, fromHref?: string) => {
     const b = bookRef.current;
-    if (!b) return null;
-    return b.resolveHref(href, fromHref);
+    if (!b) {
+      logwarn(`[LP Web] EPUB resolveHref "${href}": no open book — returning null`);
+      return null;
+    }
+    const loc = await b.resolveHref(href, fromHref);
+    if (loc) {
+      log(`[LP Web] EPUB resolveHref "${href}" → spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
+    } else {
+      logwarn(`[LP Web] EPUB resolveHref "${href}" → null (unresolved)`);
+    }
+    return loc;
   }, []);
 
   /** Persist the current reading location + progress. */

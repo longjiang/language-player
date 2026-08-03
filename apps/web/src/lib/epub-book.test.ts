@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import JSZip from 'jszip';
-import { resolvePath, splitFragment } from './epub-book';
+import { findSpineIndex, resolveNavDir, resolvePath, splitFragment } from './epub-book';
+import type { EpubSpineItem } from './epub-book-types';
 
 function dirname(p: string): string {
   const i = p.lastIndexOf('/');
@@ -31,6 +32,56 @@ describe('resolvePath (canonical href resolution)', () => {
 
   it('passes external URLs through untouched', () => {
     expect(resolvePath('OEBPS', 'https://example.com/x')).toBe('https://example.com/x');
+  });
+});
+
+describe('resolveNavDir (nav/NCX directory canonicalization)', () => {
+  it('resolves raw OPF-relative nav hrefs against the OPF directory', () => {
+    // EPUB 2 book: OPF at OEBPS/content.opf, NCX at OEBPS/toc.ncx — epubjs
+    // reports ncxPath as "toc.ncx", so the nav dir must become "OEBPS" or
+    // every TOC href ("text00002.html") fails to match a spine
+    // ("OEBPS/text00002.html").
+    expect(resolveNavDir('OEBPS', 'toc.ncx')).toBe('OEBPS');
+    expect(resolveNavDir('OEBPS', 'nav.xhtml')).toBe('OEBPS');
+    expect(resolveNavDir('OEBPS', 'Text/nav.xhtml')).toBe('OEBPS/Text');
+  });
+
+  it('falls back to the OPF directory when no nav/NCX path exists', () => {
+    expect(resolveNavDir('OEBPS', '')).toBe('OEBPS');
+  });
+
+  it('does not double-prefix an already-canonical nav path', () => {
+    expect(resolveNavDir('OEBPS', 'OEBPS/nav.xhtml')).toBe('OEBPS');
+  });
+});
+
+describe('findSpineIndex (loose TOC↔spine matching)', () => {
+  const spine: EpubSpineItem[] = [
+    { index: 0, idref: 'a', href: 'OEBPS/text00000.html', hrefRaw: 'text00000.html', linear: true },
+    { index: 1, idref: 'b', href: 'OEBPS/text00001.html', hrefRaw: 'text00001.html', linear: true },
+    { index: 2, idref: 'c', href: 'OEBPS/Text/ch1.html', hrefRaw: 'Text/ch1.html', linear: true },
+  ];
+
+  it('matches canonical paths exactly', () => {
+    expect(findSpineIndex(spine, 'OEBPS/text00001.html')).toBe(1);
+  });
+
+  it('falls back to raw OPF hrefs (nav doc outside the OPF directory)', () => {
+    expect(findSpineIndex(spine, 'text00001.html')).toBe(1);
+  });
+
+  it('falls back to a unique basename match', () => {
+    expect(findSpineIndex(spine, 'ch1.html')).toBe(2);
+  });
+
+  it('returns -1 for unknown paths and ambiguous basenames', () => {
+    expect(findSpineIndex(spine, 'missing.html')).toBe(-1);
+    const amb: EpubSpineItem[] = [
+      { index: 0, idref: 'a', href: 'OEBPS/a/ch1.html', hrefRaw: 'a/ch1.html', linear: true },
+      { index: 1, idref: 'b', href: 'OEBPS/b/ch1.html', hrefRaw: 'b/ch1.html', linear: true },
+    ];
+    expect(findSpineIndex(amb, 'ch1.html')).toBe(-1);
+    expect(findSpineIndex(amb, 'b/ch1.html')).toBe(1); // raw href match wins
   });
 });
 

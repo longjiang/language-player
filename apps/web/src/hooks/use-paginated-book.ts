@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubBlock } from '@/lib/epub-book-types';
+import { log, logwarn } from '@/lib/logger';
 
 export interface PageBlock {
   loc: BookLocation;
@@ -49,6 +50,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
   const totalCharsRef = useRef(0);
   const genRef = useRef(0);
   const fetchRef = useRef(0); // guards against stale async fetches
+  const prevBookRef = useRef<EpubBook | null>(null);
 
   // ── Viewport measurement (resize invalidates page breaks) ──
   useEffect(() => {
@@ -66,7 +68,13 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
   }, []);
 
   // ── Reset on book change ──
+  // Guard with prevBookRef: React 18 dev StrictMode double-invokes mount
+  // effects, and a second reset would bump gen/fetch and invalidate the only
+  // in-flight fetchWindow (whose result is dropped by the stale guard below),
+  // leaving measuring=true forever — the infinite spinner.
   useEffect(() => {
+    if (prevBookRef.current === book) return;
+    prevBookRef.current = book;
     genRef.current += 1;
     fetchRef.current += 1;
     heightsRef.current.clear();
@@ -105,6 +113,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     limit: number,
   ): Promise<PageBlock[]> => {
     if (!book) return [];
+    log(`[LP Web] EPUB fetchWindow start spine=${from.spineIndex} block=${from.blockIndex} dir=${dir} limit=${limit}`);
     const out: PageBlock[] = [];
     if (dir === 'forward') {
       let s = from.spineIndex;
@@ -137,6 +146,11 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         }
       }
     }
+    if (out.length === 0) {
+      logwarn(`[LP Web] EPUB fetchWindow returned 0 blocks (dir=${dir}, from spine ${from.spineIndex}) — the page will not render`);
+    } else {
+      log(`[LP Web] EPUB fetchWindow done: ${out.length} blocks (dir=${dir})`);
+    }
     return out;
   }, [book]);
 
@@ -158,7 +172,15 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
 
   // ── Measure the current window and derive the page ──
   useEffect(() => {
-    if (!window.length || !measureRef.current) return;
+    if (!window.length || !measureRef.current) {
+      if (!window.length) {
+        // Spinner hangs when this stays true: either the fetch is still in
+        // flight (see "fetchWindow start" without "done") or it returned 0
+        // blocks (see the fetchWindow warning).
+        logwarn('[LP Web] EPUB measure skipped: window is empty — measuring stays true');
+      }
+      return;
+    }
     const gen = genRef.current;
     const mode = modeRef.current;
     const base = baseRef.current;
@@ -175,6 +197,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
       if (contentWidth > 0) measureEl.style.width = `${contentWidth}px`;
       const children = Array.from(measureEl.children) as HTMLElement[];
       if (children.length === 0) {
+        log('[LP Web] EPUB measure: container has no children yet — clearing measuring');
         setMeasuring(false);
         return;
       }
@@ -208,7 +231,9 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         if (totalCharsRef.current > 0) {
           setTotalPagesEstimate(Math.max(1, Math.ceil(totalCharsRef.current / charsPerPageRef.current)));
         }
-        setPageBlocks(window.slice(0, endIdx));
+        const page = window.slice(0, endIdx);
+        log(`[LP Web] EPUB measured forward: ${children.length} children → ${page.length} page blocks (spine ${start.spineIndex} block ${start.blockIndex})`);
+        setPageBlocks(page);
         void estimatePageNumber(start).then(n => {
           if (gen === genRef.current) setPageNumber(n);
         });
@@ -228,8 +253,14 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         if (prevStart === 0 && children.length === WINDOW_LIMIT) {
           // Window wasn't enough — extend backward and retry.
           const b = base ?? window[0]!.loc;
+          log(`[LP Web] EPUB measure backward: window too small (${children.length} children) — extending backward`);
           void fetchWindow(b, 'backward', WINDOW_LIMIT * 2).then(entries => {
-            if (gen === genRef.current) setWindow(entries);
+            if (gen !== genRef.current) {
+              logwarn(`[LP Web] EPUB backward-extension fetch dropped (stale: gen=${gen} vs genRef=${genRef.current})`);
+              return;
+            }
+            if (entries.length === 0) setMeasuring(false);
+            setWindow(entries);
           });
           return;
         }
@@ -237,7 +268,9 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
         const end = base;
         pageStartRef.current = start;
         pageEndRef.current = end;
-        setPageBlocks(window.slice(prevStart));
+        const page = window.slice(prevStart);
+        log(`[LP Web] EPUB measured backward: ${children.length} children → ${page.length} page blocks (spine ${start.spineIndex} block ${start.blockIndex})`);
+        setPageBlocks(page);
         void estimatePageNumber(start).then(n => {
           if (gen === genRef.current) setPageNumber(n);
         });
@@ -252,6 +285,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
   /** Jump to a location (TOC, search, links, restore). */
   const jumpTo = useCallback((loc: BookLocation) => {
     if (!book) return;
+    log(`[LP Web] EPUB jumpTo spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
     genRef.current += 1;
     const gen = genRef.current;
     modeRef.current = 'forward';
@@ -260,7 +294,15 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     setPageBlocks([]);
     const fetchGen = ++fetchRef.current;
     void fetchWindow(loc, 'forward', WINDOW_LIMIT).then(entries => {
-      if (fetchGen === fetchRef.current && gen === genRef.current) setWindow(entries);
+      if (fetchGen !== fetchRef.current || gen !== genRef.current) {
+        logwarn(`[LP Web] EPUB fetchWindow result dropped (stale: fetchGen=${fetchGen} vs fetchRef=${fetchRef.current}, gen=${gen} vs genRef=${genRef.current}) — a newer jump/reset superseded it`);
+        return;
+      }
+      // Empty result (no content after this location) must not leave the
+      // spinner up forever — the measure effect can't run on an empty
+      // window, so clear the measuring flag here.
+      if (entries.length === 0) setMeasuring(false);
+      setWindow(entries);
     });
     void estimatePageNumber(loc).then(n => {
       if (gen === genRef.current) setPageNumber(n);
@@ -276,6 +318,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     if (!book) return;
     const base = pageStartRef.current;
     if (!base) return;
+    log(`[LP Web] EPUB prevPage → spine=${base.spineIndex} block=${base.blockIndex} offset=${base.offset}`);
     genRef.current += 1;
     const gen = genRef.current;
     modeRef.current = 'backward';
@@ -284,7 +327,12 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
     setPageBlocks([]);
     const fetchGen = ++fetchRef.current;
     void fetchWindow(base, 'backward', WINDOW_LIMIT).then(entries => {
-      if (fetchGen === fetchRef.current && gen === genRef.current) setWindow(entries);
+      if (fetchGen !== fetchRef.current || gen !== genRef.current) {
+        logwarn(`[LP Web] EPUB backward fetch result dropped (stale: fetchGen=${fetchGen} vs fetchRef=${fetchRef.current}, gen=${gen} vs genRef=${genRef.current}) — a newer jump/reset superseded it`);
+        return;
+      }
+      if (entries.length === 0) setMeasuring(false);
+      setWindow(entries);
     });
   }, [book, fetchWindow]);
 

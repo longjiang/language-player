@@ -25,6 +25,7 @@ import type {
   TocMarker,
   TocNode,
 } from './epub-book-types';
+import { log, logwarn } from '@/lib/logger';
 
 // ── Pure path helpers ──────────────────────────────────────────────────────
 
@@ -62,10 +63,44 @@ function dirname(path: string): string {
   return i === -1 ? '' : path.slice(0, i);
 }
 
+/**
+ * Directory of the nav/NCX document, canonicalized into the same path space
+ * as spine hrefs. epubjs exposes navPath/ncxPath as raw OPF-relative hrefs
+ * (e.g. "toc.ncx"); taking dirname() of the raw value drops the OPF
+ * directory (e.g. "OEBPS"), so TOC hrefs end up as "text00002.html" while
+ * spine hrefs canonicalize to "OEBPS/text00002.html" — and every TOC entry
+ * fails to resolve. Resolve the nav href against the OPF dir first, the
+ * same way all other manifest hrefs are resolved.
+ */
+export function resolveNavDir(opfDir: string, navPath: string): string {
+  if (!navPath) return opfDir;
+  if (navPath === opfDir || navPath.startsWith(`${opfDir}/`)) return dirname(navPath);
+  return dirname(resolvePath(opfDir, navPath));
+}
+
 function locLte(a: BookLocation, b: BookLocation): boolean {
   return a.spineIndex < b.spineIndex ||
     (a.spineIndex === b.spineIndex && a.blockIndex < b.blockIndex) ||
     (a.spineIndex === b.spineIndex && a.blockIndex === b.blockIndex && a.offset <= b.offset);
+}
+
+/**
+ * Find the spine item for a path. Exact canonical match first, then the raw
+ * OPF href, then a unique basename match — some books resolve their TOC
+ * against a different base than the OPF (e.g. a nav doc outside the OPF
+ * directory), producing hrefs like "text00002.html" instead of
+ * "OEBPS/text00002.html". Basename matching is only used when unambiguous.
+ */
+export function findSpineIndex(spine: EpubSpineItem[], path: string): number {
+  const exact = spine.findIndex(s => s.href === path);
+  if (exact !== -1) return exact;
+  const raw = spine.findIndex(s => s.hrefRaw === path);
+  if (raw !== -1) return raw;
+  const base = path.split('/').pop();
+  const matches = spine
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => s.href.split('/').pop() === base);
+  return matches.length === 1 ? matches[0]!.i : -1;
 }
 
 function flattenToc(toc: TocNode[]): { node: TocNode; depth: number; order: number }[] {
@@ -325,7 +360,7 @@ export class EpubBook {
     const opfPath = book.container?.packagePath ?? '';
     const opfDir = dirname(opfPath);
     const navPath = book.packaging?.navPath || book.packaging?.ncxPath || '';
-    const navDir = dirname(navPath);
+    const navDir = resolveNavDir(opfDir, navPath);
 
     const spine: EpubSpineItem[] = (spineRaw.items as any[]).map((s: any, index: number) => ({
       index,
@@ -380,13 +415,20 @@ export class EpubBook {
     const run = (async (): Promise<EpubBlock[]> => {
       const item = this.spine[spineIndex];
       if (!item) return [];
+      log(`[LP Web] EPUB getBlocks spine ${spineIndex} (${item.hrefRaw}) — loading section…`);
       try {
         const section = this.spineRaw.get(item.hrefRaw);
-        if (!section) return [];
+        if (!section) {
+          logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex}: section not found — returning []`);
+          return [];
+        }
         const contents = await section.load(this.book.load.bind(this.book));
         const body: Element | null =
           contents.querySelector('body') ?? contents;
-        if (!body) return [];
+        if (!body) {
+          logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex}: no <body> — returning []`);
+          return [];
+        }
 
         // Resolve images to session blob URLs via the epubjs archive cache.
         const urlCache = this.book.archive?.urlCache ?? {};
@@ -403,8 +445,11 @@ export class EpubBook {
           if (resolved && urlCache[resolved]) img.setAttribute('xlink:href', urlCache[resolved]);
         });
 
-        return convertDocument(body);
-      } catch {
+        const blocks = convertDocument(body);
+        log(`[LP Web] EPUB getBlocks spine ${spineIndex}: ${blocks.length} blocks`);
+        return blocks;
+      } catch (err) {
+        logwarn(`[LP Web] EPUB getBlocks spine ${spineIndex} failed — returning []`, err);
         return [];
       }
     })();
@@ -432,9 +477,15 @@ export class EpubBook {
       const hashIdx = canonical.indexOf('#');
       const path = hashIdx === -1 ? canonical : canonical.slice(0, hashIdx);
       const fragment = hashIdx === -1 ? undefined : canonical.slice(hashIdx + 1);
-      const spineIndex = this.spine.findIndex(s => s.href === path);
-      if (spineIndex === -1) return null;
-      if (!fragment) return { spineIndex, blockIndex: 0, offset: 0 };
+      const spineIndex = findSpineIndex(this.spine, path);
+      if (spineIndex === -1) {
+        logwarn(`[LP Web] EPUB resolveHref "${href}": no spine item for path "${path}" — returning null`);
+        return null;
+      }
+      if (!fragment) {
+        log(`[LP Web] EPUB resolveHref "${href}" → spine ${spineIndex} block 0`);
+        return { spineIndex, blockIndex: 0, offset: 0 };
+      }
       const blocks = await this.getBlocks(spineIndex);
       for (let i = 0; i < blocks.length; i++) {
         if (blocks[i]!.srcElementId === fragment) {
@@ -445,6 +496,7 @@ export class EpubBook {
         const anchor = blocks[i]!.anchors.find(a => a.id === fragment);
         if (anchor) return { spineIndex, blockIndex: i, offset: anchor.offset };
       }
+      logwarn(`[LP Web] EPUB resolveHref "${href}": fragment "#${fragment}" not found in spine ${spineIndex} — falling back to block 0`);
       return { spineIndex, blockIndex: 0, offset: 0 };
     })();
     this.hrefCache.set(key, run);
