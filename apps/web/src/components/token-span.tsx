@@ -345,7 +345,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         {rubySegments
           ? rubySegments.map((seg, j) =>
               seg.reading
-                ? <ruby key={j}>{seg.text}<rt>{seg.reading}</rt></ruby>
+                ? <ruby key={j}>{seg.text}<rt className="select-none">{seg.reading}</rt></ruby>
                 : <React.Fragment key={j}>{seg.text}</React.Fragment>
             )
           : displayText}

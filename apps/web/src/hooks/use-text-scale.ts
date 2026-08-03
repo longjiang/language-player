@@ -1,7 +1,7 @@
 'use client';
 
 import { useSettingsContext } from '@/providers/settings-provider';
-import { ZOOM_TO_REM } from '@/components/tokenized-text';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
 
 /**
  * Multiplier for the user's text-size setting (Settings → Display → Text Size).
