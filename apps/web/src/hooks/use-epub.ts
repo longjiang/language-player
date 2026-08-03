@@ -32,6 +32,10 @@ export interface EpubSearchResult {
   chapterLabel: string;
   /** Display snippet around the match (may be truncated with …). */
   snippet: string;
+  /** Char offset of the match inside `snippet` (after any leading …). */
+  snippetMatchStart: number;
+  /** Length of the matched text inside `snippet`. */
+  snippetMatchLen: number;
   /** Char range of the match inside the target block's text. */
   match: { start: number; end: number };
 }
@@ -89,14 +93,29 @@ export interface UseEpubReturn {
   resolveHref: (href: string, fromHref?: string) => Promise<BookLocation | null>;
 }
 
-/** Build a display snippet around a match (truncated with … when needed). */
-function buildSnippet(text: string, matchIdx: number, matchLen: number): string {
-  const start = Math.max(0, matchIdx - 40);
-  const end = Math.min(text.length, matchIdx + matchLen + 60);
+/**
+ * Build a display snippet around a match (truncated with … when needed).
+ *
+ * The match is placed near the START of the snippet (short lead-in, generous
+ * tail) so it stays inside the results' two-line clamp — with CJK text the
+ * sidebar fits only ~17 chars per line, so a 40-char lead-in pushed the
+ * match past the clip.
+ */
+function buildSnippet(
+  text: string,
+  matchIdx: number,
+  matchLen: number,
+): { snippet: string; matchStart: number } {
+  const start = Math.max(0, matchIdx - 12);
+  const end = Math.min(text.length, matchIdx + matchLen + 64);
   let snippet = text.slice(start, end);
-  if (start > 0) snippet = `…${snippet}`;
+  let matchStart = matchIdx - start;
+  if (start > 0) {
+    snippet = `…${snippet}`;
+    matchStart += 1;
+  }
   if (end < text.length) snippet = `${snippet}…`;
-  return snippet;
+  return { snippet, matchStart };
 }
 
 /** Find the block containing a char offset (starts are sorted ascending). */
@@ -351,10 +370,13 @@ export function useEpub(): UseEpubReturn {
           offset: idx - blockStart,
         };
         const label = markerForLocation(markersList, location)?.node.label ?? '';
+        const { snippet, matchStart } = buildSnippet(rec.text, idx, q.length);
         results.push({
           location,
           chapterLabel: label,
-          snippet: buildSnippet(rec.text, idx, q.length),
+          snippet,
+          snippetMatchStart: matchStart,
+          snippetMatchLen: q.length,
           match: { start: idx - blockStart, end: idx - blockStart + q.length },
         });
         from = idx + q.length;
