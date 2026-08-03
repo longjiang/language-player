@@ -25,10 +25,18 @@ const WINDOW_LIMIT = 240;
 interface UsePaginatedBookOptions {
   /** Fixed chrome height (page nav, padding) subtracted from the viewport. */
   chromeHeight?: number;
+  /**
+   * Re-measure page breaks whenever this value changes. Pass a value derived
+   * from display settings that change rendered block heights (translation
+   * column, phonetics/ruby), so cached heights never outlive the layout they
+   * were measured for.
+   */
+  measureNonce?: string | number;
 }
 
 export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookOptions) {
   const chromeHeight = opts?.chromeHeight ?? 150;
+  const measureNonce = opts?.measureNonce ?? 0;
   const viewportRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
 
@@ -280,7 +288,7 @@ export function usePaginatedBook(book: EpubBook | null, opts?: UsePaginatedBookO
 
     const id = requestAnimationFrame(() => requestAnimationFrame(run));
     return () => cancelAnimationFrame(id);
-  }, [window, viewport, fetchWindow, estimatePageNumber]);
+  }, [window, viewport, fetchWindow, estimatePageNumber, measureNonce]);
 
   /** Jump to a location (TOC, search, links, restore). */
   const jumpTo = useCallback((loc: BookLocation) => {
