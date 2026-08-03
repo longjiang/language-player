@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Nu s-a putut citi acest fișier. Este posibil să fie offline sau inaccesibil.",
         "epub_import_failures": "Următoarele fișiere nu au putut fi importate:",
         "epub_library_empty": "Biblioteca ta este goală. Încarcă o carte pentru a începe să citești.",
+        "epub_no_books_in_language": "Încă nu există cărți în {language}. Încarcă una pentru a începe să citești.",
         "epub_not_supported": "Sunt acceptate doar fișierele .epub.",
         "epub_parse_error": "Nu s-a putut deschide acest fișier EPUB.",
         "epub_progress": "{pct}% citit",

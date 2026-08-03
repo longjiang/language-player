@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Bu dosya okunamadı. Çevrimdışı veya erişilemez olabilir.",
         "epub_import_failures": "Aşağıdaki dosyalar içe aktarılamadı:",
         "epub_library_empty": "Kitaplığınız boş. Okumaya başlamak için bir kitap yükleyin.",
+        "epub_no_books_in_language": "Henüz {language} kitapları yok. Okumaya başlamak için bir kitap yükleyin.",
         "epub_not_supported": "Yalnızca .epub dosyaları desteklenir.",
         "epub_parse_error": "Bu EPUB dosyası açılamadı.",
         "epub_progress": "%{pct} okundu",

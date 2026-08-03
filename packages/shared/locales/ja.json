@@ -656,6 +656,7 @@
         "epub_file_unreadable": "このファイルを読み取れませんでした。オフラインまたはアクセスできない可能性があります。",
         "epub_import_failures": "次のファイルをインポートできませんでした：",
         "epub_library_empty": "ライブラリが空です。読書を始めるには本をアップロードしてください。",
+        "epub_no_books_in_language": "{language}の本はまだありません。読書を始めるには一冊アップロードしてください。",
         "epub_not_supported": ".epubファイルのみ対応しています。",
         "epub_parse_error": "このEPUBファイルを開けませんでした。",
         "epub_progress": "{pct}%読了",

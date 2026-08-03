@@ -243,6 +243,7 @@ export default function EpubPage() {
           {!epub.openBookId ? (
             <EpubBookshelf
               books={epub.books}
+              l2Code={l2.code}
               onOpenBook={handleOpenBook}
               onRemoveBook={handleRemoveBook}
               onFilesProcessed={handleFilesProcessed}

@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Kunde inte läsa denna fil. Den kan vara offline eller otillgänglig.",
         "epub_import_failures": "Följande filer kunde inte importeras:",
         "epub_library_empty": "Ditt bibliotek är tomt. Ladda upp en bok för att börja läsa.",
+        "epub_no_books_in_language": "Inga {language}-böcker ännu. Ladda upp en för att börja läsa.",
         "epub_not_supported": "Endast .epub-filer stöds.",
         "epub_parse_error": "Kunde inte öppna denna EPUB-fil.",
         "epub_progress": "{pct}% läst",

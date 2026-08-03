@@ -1,16 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BookOpen, Loader2, MoreVertical, Trash2, X } from 'lucide-react';
 import type { EpubSummary } from '@/lib/epub-store';
 import type { EpubUploadResult } from '@/components/reader/epub-upload';
+import { normalizeLanguageCode } from '@/lib/epub-book';
+import { displayLanguageName } from '@/lib/language-data';
 
 interface EpubBookshelfProps {
   /** Stored books (metadata only), sorted by last read. */
   books: EpubSummary[];
+  /** Current target-language code — the shelf only shows books in it. */
+  l2Code: string;
   /** Open a stored book at its saved chapter/page. */
   onOpenBook: (id: string) => void;
   /** Remove a book from the shelf (deletes its stored handle). */
@@ -65,6 +70,7 @@ function BookActionsMenu({ onRemove }: { onRemove: () => void }) {
 
 export function EpubBookshelf({
   books,
+  l2Code,
   onOpenBook,
   onRemoveBook,
   onFilesProcessed,
@@ -72,6 +78,16 @@ export function EpubBookshelf({
   error,
 }: EpubBookshelfProps) {
   const t = useT();
+  const locale = useLocale();
+  const l2Primary = normalizeLanguageCode(l2Code);
+  // Localized name in the current UI locale (e.g. 英语 for zh-Hans), so the
+  // empty state never shows "No English books" inside a Chinese UI.
+  const l2LocalizedName = displayLanguageName(l2Code, locale);
+  // Books without a detected language are shown in every language so they
+  // can never silently disappear from the shelf.
+  const visibleBooks = books.filter(
+    b => !b.language || normalizeLanguageCode(b.language) === l2Primary,
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-auto">
@@ -83,11 +99,19 @@ export function EpubBookshelf({
             {t('msg.epub_library_empty')}
           </p>
         </>
+      ) : visibleBooks.length === 0 ? (
+        <>
+          {/* Books exist, but none match the current learning language */}
+          <EpubUpload onFilesProcessed={onFilesProcessed} error={error} compact />
+          <p className="text-center text-sm text-muted-foreground">
+            {t('msg.epub_no_books_in_language', { language: l2LocalizedName })}
+          </p>
+        </>
       ) : (
         <section>
           <h2 className="mb-3 text-lg font-semibold text-foreground">{t('title.my_books')}</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-            {books.map(book => {
+            {visibleBooks.map(book => {
               const pct = book.totalChars > 0
                 ? Math.min(100, Math.round((book.readChars / book.totalChars) * 100))
                 : null;
@@ -121,6 +145,11 @@ export function EpubBookshelf({
                       <div className="flex h-full w-full items-center justify-center">
                         <BookOpen className="h-8 w-8 text-muted-foreground/50" />
                       </div>
+                    )}
+                    {book.language && (
+                      <span className="absolute left-1.5 top-1.5 rounded bg-background/85 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {book.language}
+                      </span>
                     )}
                     {openingId === book.id && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/60">

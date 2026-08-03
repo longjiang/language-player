@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Níorbh fhéidir an comhad seo a léamh. D'fhéadfadh sé a bheith as líne nó dorochtana.",
         "epub_import_failures": "Níorbh fhéidir na comhaid seo a leanas a iompórtáil:",
         "epub_library_empty": "Tá do leabharlann folamh. Uaslódáil leabhar chun tús a chur le léitheoireacht.",
+        "epub_no_books_in_language": "Níl leabhair {language} ann go fóill. Uaslódáil ceann chun tús a chur le léitheoireacht.",
         "epub_not_supported": "Ní ghlactar ach le comhaid .epub.",
         "epub_parse_error": "Níorbh fhéidir an comhad EPUB seo a oscailt.",
         "epub_progress": "{pct}% léite",

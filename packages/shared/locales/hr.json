@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Nije moguće pročitati ovu datoteku. Možda je izvan mreže ili nedostupna.",
         "epub_import_failures": "Sljedeće datoteke nije bilo moguće uvesti:",
         "epub_library_empty": "Vaša je knjižnica prazna. Prenesite knjigu da biste počeli čitati.",
+        "epub_no_books_in_language": "Još nema knjiga na {language}. Prenesite jednu da biste počeli čitati.",
         "epub_not_supported": "Podržane su samo .epub datoteke.",
         "epub_parse_error": "Nije moguće otvoriti ovu EPUB datoteku.",
         "epub_progress": "pročitano {pct}%",

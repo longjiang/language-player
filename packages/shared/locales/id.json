@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Tidak dapat membaca file ini. Mungkin sedang offline atau tidak dapat diakses.",
         "epub_import_failures": "File berikut tidak dapat diimpor:",
         "epub_library_empty": "Pustaka Anda kosong. Unggah buku untuk mulai membaca.",
+        "epub_no_books_in_language": "Belum ada buku {language}. Unggah satu untuk mulai membaca.",
         "epub_not_supported": "Hanya file .epub yang didukung.",
         "epub_parse_error": "Tidak dapat membuka file EPUB ini.",
         "epub_progress": "{pct}% dibaca",

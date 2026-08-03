@@ -656,6 +656,7 @@
         "epub_file_unreadable": "Không thể đọc tệp này. Có thể tệp đang ngoại tuyến hoặc không thể truy cập.",
         "epub_import_failures": "Không thể nhập các tệp sau:",
         "epub_library_empty": "Thư viện của bạn trống. Hãy tải lên một cuốn sách để bắt đầu đọc.",
+        "epub_no_books_in_language": "Chưa có sách {language}. Hãy tải lên một cuốn để bắt đầu đọc.",
         "epub_not_supported": "Chỉ hỗ trợ tệp .epub.",
         "epub_parse_error": "Không thể mở tệp EPUB này.",
         "epub_progress": "Đã đọc {pct}%",
