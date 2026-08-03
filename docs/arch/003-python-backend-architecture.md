@@ -56,7 +56,7 @@ register_routes(MyApp)       # 10 blueprints
 |---|---|---|---|
 | `/` | GET | Health check / index | — |
 | `/chatgpt` | GET/POST | DeepSeek AI chat (cached). Params: `prompt`, `max_tokens`, `cache`. | 60/min |
-| `/images/<term>` | GET | Google Images search for a word. Returns image URLs. | — |
+| `/images/<term>` | GET | Bing image search for a word (see ADR-0024). Returns `{src, url, title}` objects. | — |
 | `/img/<term>/<index>` | GET | Proxy a specific image (by index). | — |
 | `/timedtext` | GET | YouTube captions. Params: `v` (video ID), `type=list`, `name`, `lang`, `tlangs`. | — |
 | `/get_best_l1_subs` | GET | Best available L1 subtitles for a video. Params: `v`, `l1`, `l2`. | — |
