@@ -932,9 +932,9 @@
         "explain_morphology": "Fornisci la pronuncia e la morfologia (o l'etimologia se appropriato). Se flessa, fornisci il lemma e la flessione; altrimenti non menzionare flessione o lemma.",
         "explain_text_label": "Testo",
         "explain_ticks": "Racchiudi ogni parola, espressione o intera frase in {l2Name} tra apici singoli inversi (`). Racchiudi le frasi d'esempio intere come un unico blocco, ad es. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, non solo la parola bersaglio. Non annidare gli apici.",
-        "explain_word": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\". Fornisci la pronuncia. Se è flessa o coniugata, menziona la forma del dizionario e la flessione; altrimenti non menzionare la flessione.",
-        "explain_word_context": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\" nella frase: \"{context}\". Fornisci la pronuncia. Se è flessa o coniugata, menziona la forma del dizionario e la flessione; altrimenti non menzionare la flessione.",
-        "explain_word_context_form": "Spiega in {l1Name} cosa significa la parola {l2Name} \"{word}\" (forma flessa: {contextForm}) nella frase: \"{context}\". Fornisci la pronuncia. Menziona la forma del dizionario e la flessione.",
+        "explain_word": "Spiega brevemente la parola {l2Name} \"{word}\", poi fornisci 2 esempi con traduzioni.",
+        "explain_word_context": "Spiega brevemente la parola {l2Name} \"{word}\" in \"{context}\", poi fornisci 2 esempi con traduzioni.",
+        "explain_word_context_form": "Spiega brevemente la parola {l2Name} \"{word}\" (forma flessa: {contextForm}) in \"{context}\", poi fornisci 2 esempi con traduzioni.",
         "explain_word_examples": "Fornisci anche 2 esempi di come la parola viene solitamente usata.",
         "explain_word_examples_context": "Fornisci anche 2 esempi di come la parola viene usata con lo stesso significato del contesto fornito."
     },

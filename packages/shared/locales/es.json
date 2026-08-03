@@ -932,9 +932,9 @@
         "explain_morphology": "Da su pronunciación y morfología (o etimología si corresponde). Si está flexionada, da su lema y flexión; de lo contrario, no menciones flexión ni lema.",
         "explain_text_label": "Texto",
         "explain_ticks": "Envuelve cada palabra, frase u oración completa en {l2Name} con comillas invertidas simples (`). Envuelve las oraciones de ejemplo completas como un solo bloque, p. ej. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, no solo la palabra objetivo. No anides comillas.",
-        "explain_word": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\". Da su pronunciación. Si está flexionada o conjugada, menciona su forma de diccionario y la flexión; de lo contrario, no menciones la flexión.",
-        "explain_word_context": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\" en la frase: \"{context}\". Da su pronunciación. Si está flexionada o conjugada, menciona su forma de diccionario y la flexión; de lo contrario, no menciones la flexión.",
-        "explain_word_context_form": "Explica en {l1Name} qué significa la palabra {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Da su pronunciación. Menciona su forma de diccionario y la flexión.",
+        "explain_word": "Explica brevemente la palabra en {l2Name} \"{word}\" y luego da 2 ejemplos con traducciones.",
+        "explain_word_context": "Explica brevemente la palabra en {l2Name} \"{word}\" en \"{context}\" y luego da 2 ejemplos con traducciones.",
+        "explain_word_context_form": "Explica brevemente la palabra en {l2Name} \"{word}\" (forma flexionada: {contextForm}) en \"{context}\" y luego da 2 ejemplos con traducciones.",
         "explain_word_examples": "Da también 2 ejemplos de cómo se usa habitualmente la palabra.",
         "explain_word_examples_context": "Da también 2 ejemplos de cómo se usa la palabra con el mismo sentido que en el contexto proporcionado."
     },

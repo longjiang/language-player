@@ -932,9 +932,9 @@
         "explain_morphology": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.",
         "explain_text_label": "Texte",
         "explain_ticks": "Encadre chaque mot, expression ou phrase entière en {l2Name} par des accents graves simples (`). Encadre les phrases d'exemple entières comme un seul bloc, p. ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, pas seulement le mot cible. N'imbrique pas les accents graves.",
-        "explain_word": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
-        "explain_word_context": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" dans la phrase : \"{context}\". Donnez sa prononciation. S'il est fléchi ou conjugué, mentionnez sa forme dictionnairique et la flexion ; sinon, ne mentionnez pas la flexion.",
-        "explain_word_context_form": "Explique en {l1Name} ce que signifie le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans la phrase : \"{context}\". Donnez sa prononciation. Mentionnez sa forme dictionnairique et la flexion.",
+        "explain_word": "Expliquez brièvement le mot {l2Name} \"{word}\", puis donnez 2 exemples avec traductions.",
+        "explain_word_context": "Expliquez brièvement le mot {l2Name} \"{word}\" dans \"{context}\", puis donnez 2 exemples avec traductions.",
+        "explain_word_context_form": "Expliquez brièvement le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans \"{context}\", puis donnez 2 exemples avec traductions.",
         "explain_word_examples": "Donne aussi 2 exemples d'utilisation typique du mot.",
         "explain_word_examples_context": "Donne aussi 2 exemples de la façon dont le mot est utilisé dans le même sens que dans le contexte fourni."
     },

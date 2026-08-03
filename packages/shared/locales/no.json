@@ -932,9 +932,9 @@
         "explain_morphology": "Oppgi uttalen og morfologien (eller etymologien hvis passende). Hvis bøyd, oppgi lemmaet og bøyningen; ellers, ikke nevn bøyning eller lemma.",
         "explain_text_label": "Tekst",
         "explain_ticks": "Sett hvert {l2Name}-ord, hver frase eller hele setninger i enkle backticks (`). Sett hele eksempelsetninger som én backtickblokk, f.eks. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, ikke bare målordet. Ikke nest backticks.",
-        "explain_word": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr. Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
-        "explain_word_context": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" betyr i setningen: \"{context}\". Oppgi uttalen. Hvis det er bøyd eller konjugert, nevn ordbokformen og bøyningen; ellers, ikke nevn bøyning.",
-        "explain_word_context_form": "Forklar på {l1Name} hva {l2Name}-ordet \"{word}\" (bøyd form: {contextForm}) betyr i setningen: \"{context}\". Oppgi uttalen. Nevn ordbokformen og bøyningen.",
+        "explain_word": "Forklar kort {l2Name}-ordet \"{word}\", og gi deretter 2 eksempler med oversettelser.",
+        "explain_word_context": "Forklar kort {l2Name}-ordet \"{word}\" i \"{context}\", og gi deretter 2 eksempler med oversettelser.",
+        "explain_word_context_form": "Forklar kort {l2Name}-ordet \"{word}\" (bøyd form: {contextForm}) i \"{context}\", og gi deretter 2 eksempler med oversettelser.",
         "explain_word_examples": "Gi også 2 eksempler på hvordan ordet vanligvis brukes.",
         "explain_word_examples_context": "Gi også 2 eksempler på hvordan ordet brukes i samme betydning som i den gitte sammenhengen."
     },

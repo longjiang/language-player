@@ -932,9 +932,9 @@
         "explain_morphology": "Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma.",
         "explain_text_label": "Văn bản",
         "explain_ticks": "Bọc mọi từ, cụm từ hoặc cả câu tiếng {l2Name} trong dấu backtick đơn (`). Bọc toàn bộ câu ví dụ thành một khối backtick, ví dụ `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, không chỉ riêng từ mục tiêu. Không lồng backtick.",
-        "explain_word": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\". Cho biết cách phát âm. Nếu là dạng biến cách hoặc chia động từ, hãy nêu dạng từ điển và biến cách; nếu không, đừng đề cập đến biến cách.",
-        "explain_word_context": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\" trong cụm từ: \"{context}\". Cho biết cách phát âm. Nếu là dạng biến cách hoặc chia động từ, hãy nêu dạng từ điển và biến cách; nếu không, đừng đề cập đến biến cách.",
-        "explain_word_context_form": "Giải thích bằng {l1Name} nghĩa của từ {l2Name} \"{word}\" (dạng biến cách: {contextForm}) trong cụm từ: \"{context}\". Cho biết cách phát âm. Nêu dạng từ điển và biến cách.",
+        "explain_word": "Vui lòng giải thích ngắn gọn từ tiếng {l2Name} \"{word}\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
+        "explain_word_context": "Vui lòng giải thích ngắn gọn từ tiếng {l2Name} \"{word}\" trong \"{context}\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
+        "explain_word_context_form": "Vui lòng giải thích ngắn gọn từ tiếng {l2Name} \"{word}\" (dạng biến cách: {contextForm}) trong \"{context}\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
         "explain_word_examples": "Cũng đưa ra 2 ví dụ về cách từ này thường được dùng.",
         "explain_word_examples_context": "Cũng đưa ra 2 ví dụ về cách từ này được dùng với cùng nghĩa như trong ngữ cảnh đã cho."
     },

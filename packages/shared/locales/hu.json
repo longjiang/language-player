@@ -932,9 +932,9 @@
         "explain_morphology": "Add meg a kiejtését és morfológiáját (vagy etimológiáját, ha van). Ha ragozott, add meg a lemmát és a ragozást; egyébként ne említs ragozást vagy lemmát.",
         "explain_text_label": "Szöveg",
         "explain_ticks": "Tegyél minden {l2Name} szót, kifejezést vagy egész mondatot egyetlen backtickbe (`). Az egész példamondatot egy backtick-blokkba tedd, pl. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, ne csak a célpont szót. Ne ágyazz backticket backtickbe.",
-        "explain_word": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó. Add meg a kiejtését. Ha ragozott vagy konjugált alak, említsd meg a szótári alakját és a ragozást; egyébként ne említs ragozást.",
-        "explain_word_context": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó a következő kifejezésben: \"{context}\". Add meg a kiejtését. Ha ragozott vagy konjugált alak, említsd meg a szótári alakját és a ragozást; egyébként ne említs ragozást.",
-        "explain_word_context_form": "Magyarázd el {l1Name} nyelven, hogy mit jelent a(z) {l2Name} \"{word}\" szó (ragozott alak: {contextForm}) a következő kifejezésben: \"{context}\". Add meg a kiejtését. Említsd meg a szótári alakját és a ragozást.",
+        "explain_word": "Kérlek, röviden magyarázd el a(z) {l2Name} \"{word}\" szót, majd adj 2 példát fordításokkal.",
+        "explain_word_context": "Kérlek, röviden magyarázd el a(z) {l2Name} \"{word}\" szót a következő szövegben: \"{context}\", majd adj 2 példát fordításokkal.",
+        "explain_word_context_form": "Kérlek, röviden magyarázd el a(z) {l2Name} \"{word}\" szót (ragozott alak: {contextForm}) a következő szövegben: \"{context}\", majd adj 2 példát fordításokkal.",
         "explain_word_examples": "Adj 2 példát is a szó tipikus használatára.",
         "explain_word_examples_context": "Adj 2 példát is arra, hogyan használják a szót a megadott szövegkörnyezetben szereplő azonos jelentésben."
     },

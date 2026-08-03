@@ -932,9 +932,9 @@
         "explain_morphology": "Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie.",
         "explain_text_label": "Teks",
         "explain_ticks": "Omring elke {l2Name}-woord, -frase of hele sin met enkel terugkwotasies (`). Draai hele voorbeeldsinne as een terugkwotasie-groep, bv. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, nie net die doelwoord nie. Moenie terugkwotasies nes nie.",
-        "explain_word": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken. Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
-        "explain_word_context": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" beteken in die frase: \"{context}\". Gee die uitspraak. As dit verbuig of vervoeg is, noem die woordeboekvorm en die verbuiging; andersins, moenie verbuiging noem nie.",
-        "explain_word_context_form": "Verduidelik in {l1Name} wat die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) beteken in die frase: \"{context}\". Gee die uitspraak. Noem die woordeboekvorm en die verbuiging.",
+        "explain_word": "Verduidelik asseblief kortliks die {l2Name}-woord \"{word}\", gee dan 2 voorbeelde met vertalings.",
+        "explain_word_context": "Verduidelik asseblief kortliks die {l2Name}-woord \"{word}\" in \"{context}\", gee dan 2 voorbeelde met vertalings.",
+        "explain_word_context_form": "Verduidelik asseblief kortliks die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) in \"{context}\", gee dan 2 voorbeelde met vertalings.",
         "explain_word_examples": "Gee ook 2 voorbeelde van hoe die woord tipies gebruik word.",
         "explain_word_examples_context": "Gee ook 2 voorbeelde van hoe die woord in dieselfde betekenis as in die verskafde konteks gebruik word."
     },

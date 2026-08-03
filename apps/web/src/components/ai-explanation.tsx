@@ -32,7 +32,7 @@ interface AiExplanationProps {
  * Matches Classic + GO behaviour:
  * - Free users see an upgrade prompt
  * - Pro users get an AI explanation of the word in context
- * - The prompt follows the Classic format: succinctly explain the word in L1
+ * - The prompt asks for a succinct explanation plus 2 translated examples
  */
 export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false }: AiExplanationProps) {
   const { data: session } = useSession();
@@ -50,9 +50,10 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     router.push(`/${l1.code}/${l2.code}/reader`);
   };
 
-  // Build the prompt matching Classic's chatGPTPrompt logic
+  // Build the prompt: succinct explanation of the word in context, then 2
+  // examples with translations. The backtick instruction is appended so L2
+  // strings render as interactive tokenized text in MarkdownExplanation.
   const buildPrompt = useCallback((): string => {
-    const l1Name = l1.name;
     // L2 name in the L1 language (e.g., "Japanese" for en, "日语" for zh-Hans)
     const l2Name = languageName(l2.code, l1.code);
 
@@ -61,24 +62,18 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
     let prompt: string;
     if (cleanContext && contextForm && contextForm !== word) {
-      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, word, contextForm, context: cleanContext });
+      prompt = t('prompt.explain_word_context_form', { l2Name, word, contextForm, context: cleanContext });
     } else if (cleanContext) {
-      prompt = t('prompt.explain_word_context', { l1Name, l2Name, word, context: cleanContext });
+      prompt = t('prompt.explain_word_context', { l2Name, word, context: cleanContext });
     } else {
-      prompt = t('prompt.explain_word', { l1Name, l2Name, word });
+      prompt = t('prompt.explain_word', { l2Name, word });
     }
 
-    // Ask for two usage examples — same sense as the provided context when available,
-    // otherwise typical usage (e.g. the entry detail page has no surrounding context).
-    const examplesPrompt = cleanContext
-      ? t('prompt.explain_word_examples_context')
-      : t('prompt.explain_word_examples');
     // L2 strings are backticked so they render as interactive tokenized text
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return `${prompt}\n\n${examplesPrompt}\n\n${ticksPrompt}`;
+    return `${prompt}\n\n${ticksPrompt}`;
   }, [
     t,
-    l1.name,
     l1.code,
     l2.code,
     word,
