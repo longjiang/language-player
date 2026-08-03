@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
@@ -11,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
-import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, RefreshCw, Check, Copy } from 'lucide-react';
 
 interface AiExplanationProps {
   /** The word being looked up (lemma/dictionary form). */
@@ -36,19 +35,14 @@ interface AiExplanationProps {
  */
 export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false }: AiExplanationProps) {
   const { data: session } = useSession();
-  const router = useRouter();
   const { l1, l2 } = useLanguage();
   const t = useT();
   const { isPro, loaded: subLoaded } = useSubscriptionContext();
 
   const [showAi, setShowAi] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
-
-  const openInReader = () => {
-    localStorage.setItem('lp_reader_text', explanation ?? '');
-    localStorage.setItem('lp_reader_title', `${t('label.ai_says')}: ${word}`);
-    router.push(`/${l1.code}/${l2.code}/reader`);
-  };
 
   // Build the prompt: succinct explanation of the word in context, then 2
   // examples with translations. The backtick instruction is appended so L2
@@ -93,10 +87,23 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     stream(prompt, { regenerate: true });
   }, [stream, buildPrompt, word]);
 
+  const handleCopy = useCallback(async () => {
+    if (!explanation) return;
+    try {
+      await navigator.clipboard.writeText(explanation);
+      setCopied(true);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      log('AI explain copy failed', { error: err });
+    }
+  }, [explanation]);
+
   // Abort the in-flight stream when the component unmounts (also neutralizes
   // React StrictMode's double-mounted effect: the first fetch is aborted before
   // the second runs, so only one stream proceeds).
   useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     reset();
   }, [reset]);
 
@@ -214,11 +221,25 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         )}
         {!loading && (
           <div className="mt-3 flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleRegenerate}>
-              <RefreshCw className="mr-1 h-3 w-3" /> {t('action.regenerate')}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2"
+              aria-label={t('action.regenerate')}
+              title={t('action.regenerate')}
+              onClick={handleRegenerate}
+            >
+              <RefreshCw className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={openInReader}>
-              <BookOpen className="mr-1 h-3 w-3" /> {t('action.open_in_reader')}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2"
+              aria-label={t('action.copy')}
+              title={t('action.copy')}
+              onClick={handleCopy}
+            >
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
         )}
