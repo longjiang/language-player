@@ -102,6 +102,7 @@ export function EpubReaderPanel({
   const [blockTranslations, setBlockTranslations] = useState<Record<string, string>>({});
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenGenRef = useRef(0);
+  const translateGenRef = useRef(0);
 
   // Apply external jumps (restore / TOC / search / links). Also re-applies
   // when the book instance changes: a re-open swaps the EpubBook and the
@@ -154,8 +155,8 @@ export function EpubReaderPanel({
 
   // Auto-translate the page when the toggle is on (cleared on page change).
   useEffect(() => {
+    const gen = ++translateGenRef.current;
     if (!showTranslation || !pageBlocks.length) return;
-    const gen = tokenGenRef.current;
     const texts = pageBlocks
       .filter((p): p is PageBlock & { block: EpubTextBlock } => p.block.kind === 'text')
       .map(p => p.block.text);
@@ -163,7 +164,7 @@ export function EpubReaderPanel({
     const missing = texts.filter(t => !blockTranslations[md5(t)]);
     if (!missing.length) return;
     void onPageTranslate(missing).then(byKey => {
-      if (gen !== tokenGenRef.current) return;
+      if (gen !== translateGenRef.current) return;
       setBlockTranslations(prev => ({ ...prev, ...byKey }));
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
