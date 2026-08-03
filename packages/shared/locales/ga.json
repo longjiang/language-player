@@ -932,9 +932,9 @@
         "explain_morphology": "Tabhair a fhuaimniú agus a mhoirfeolaíocht (nó a fhréamhfhocal más cuí). Má tá sé infhillte, tabhair an lemma agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh ná lemma.",
         "explain_text_label": "Téacs",
         "explain_ticks": "Cuir gach focal, frása nó abairt iomlán i {l2Name} idir comharthaí camóg cúil aonair (`). Cuir abairtí samplacha iomlána mar aon bhloc, m.sh. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, ní hamháin an focal sprice. Ná neadaigh comharthaí.",
-        "explain_word": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\". Tabhair a fhuaimniú. Má tá sé infhillte nó réimnithe, luaigh a fhoirm foclóra agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh.",
-        "explain_word_context": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\" san fhrása: \"{context}\". Tabhair a fhuaimniú. Má tá sé infhillte nó réimnithe, luaigh a fhoirm foclóra agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh.",
-        "explain_word_context_form": "Mínigh i {l1Name} cad a chiallaíonn an focal {l2Name} \"{word}\" (foirm infhillte: {contextForm}) san fhrása: \"{context}\". Tabhair a fhuaimniú. Luaigh a fhoirm foclóra agus an t-infhilleadh.",
+        "explain_word": "Mínigh go gonta focal {l2Name} \"{word}\", ansin tabhair 2 shampla le haistriúcháin.",
+        "explain_word_context": "Mínigh go gonta focal {l2Name} \"{word}\" in \"{context}\", ansin tabhair 2 shampla le haistriúcháin.",
+        "explain_word_context_form": "Mínigh go gonta focal {l2Name} \"{word}\" (foirm infhillte: {contextForm}) in \"{context}\", ansin tabhair 2 shampla le haistriúcháin.",
         "explain_word_examples": "Tabhair 2 shampla freisin de conas a úsáidtear an focal de ghnáth.",
         "explain_word_examples_context": "Tabhair 2 shampla freisin de conas a úsáidtear an focal sa chiall chéanna agus atá sa chomhthéacs a soláthraíodh."
     },

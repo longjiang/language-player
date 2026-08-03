@@ -932,9 +932,9 @@
         "explain_morphology": "Ange dess uttal och morfologi (eller etymologi om lämpligt). Om böjt, ange dess lemma och böjning; annars, nämn inte böjning eller lemma.",
         "explain_text_label": "Text",
         "explain_ticks": "Sätt varje {l2Name}-ord, fras eller hela meningar inom enkla backticks (`). Sätt hela exempelmeningar som ett backtickblock, t.ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, inte bara målordet. Nästla inte backticks.",
-        "explain_word": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" betyder. Ange uttalet. Om det är böjt eller konjugerat, nämn ordboksformen och böjningen; annars, nämn inte böjning.",
-        "explain_word_context": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" betyder i meningen: \"{context}\". Ange uttalet. Om det är böjt eller konjugerat, nämn ordboksformen och böjningen; annars, nämn inte böjning.",
-        "explain_word_context_form": "Förklara på {l1Name} vad {l2Name}-ordet \"{word}\" (böjd form: {contextForm}) betyder i meningen: \"{context}\". Ange uttalet. Nämn ordboksformen och böjningen.",
+        "explain_word": "Förklara kortfattat ordet på {l2Name} \"{word}\" och ge sedan 2 exempel med översättningar.",
+        "explain_word_context": "Förklara kortfattat ordet på {l2Name} \"{word}\" i \"{context}\" och ge sedan 2 exempel med översättningar.",
+        "explain_word_context_form": "Förklara kortfattat ordet på {l2Name} \"{word}\" (böjd form: {contextForm}) i \"{context}\" och ge sedan 2 exempel med översättningar.",
         "explain_word_examples": "Ge också 2 exempel på hur ordet vanligtvis används.",
         "explain_word_examples_context": "Ge också 2 exempel på hur ordet används i samma betydelse som i den angivna kontexten."
     },

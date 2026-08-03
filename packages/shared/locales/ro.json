@@ -932,9 +932,9 @@
         "explain_morphology": "Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema.",
         "explain_text_label": "Text",
         "explain_ticks": "Încadrează fiecare cuvânt, expresie sau propoziție întreagă în {l2Name} între backtick-uri simple (`). Încadrează propozițiile exemplu întregi ca un singur bloc, de ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, nu doar cuvântul țintă. Nu îmbrica backtick-urile.",
-        "explain_word": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
-        "explain_word_context": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" în expresia: \"{context}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
-        "explain_word_context_form": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" (formă flexionată: {contextForm}) în expresia: \"{context}\". Dă pronunția. Menționează forma de dicționar și flexiunea.",
+        "explain_word": "Explică pe scurt cuvântul în {l2Name} \"{word}\", apoi dă 2 exemple cu traduceri.",
+        "explain_word_context": "Explică pe scurt cuvântul în {l2Name} \"{word}\" din \"{context}\", apoi dă 2 exemple cu traduceri.",
+        "explain_word_context_form": "Explică pe scurt cuvântul în {l2Name} \"{word}\" (formă flexionată: {contextForm}) din \"{context}\", apoi dă 2 exemple cu traduceri.",
         "explain_word_examples": "Dă și 2 exemple despre cum este folosit cuvântul în mod obișnuit.",
         "explain_word_examples_context": "Dă și 2 exemple despre cum este folosit cuvântul cu același sens ca în contextul oferit."
     },

@@ -932,9 +932,9 @@
         "explain_morphology": "Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne spominji fleksiju ni lemu.",
         "explain_text_label": "Tekst",
         "explain_ticks": "Stavi svaku {l2Name} riječ, frazu ili cijelu rečenicu u pojedinačne backtickove (`). Stavi cijele primjerne rečenice kao jedan blok, npr. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, ne samo ciljanu riječ. Ne ugnježđuj backtickove.",
-        "explain_word": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rječnički oblik i fleksiju; inače ne spominji fleksiju.",
-        "explain_word_context": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\" u izrazu: \"{context}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rječnički oblik i fleksiju; inače ne spominji fleksiju.",
-        "explain_word_context_form": "Objasni na {l1Name} što znači {l2Name} riječ \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rječnički oblik i fleksiju.",
+        "explain_word": "Ukratko objasni {l2Name} riječ \"{word}\", a zatim navedi 2 primjera s prijevodima.",
+        "explain_word_context": "Ukratko objasni {l2Name} riječ \"{word}\" u \"{context}\", a zatim navedi 2 primjera s prijevodima.",
+        "explain_word_context_form": "Ukratko objasni {l2Name} riječ \"{word}\" (flektirani oblik: {contextForm}) u \"{context}\", a zatim navedi 2 primjera s prijevodima.",
         "explain_word_examples": "Navedi i 2 primjera kako se riječ obično koristi.",
         "explain_word_examples_context": "Navedi i 2 primjera kako se riječ koristi u istom značenju kao u navedenom kontekstu."
     },

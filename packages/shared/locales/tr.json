@@ -932,9 +932,9 @@
         "explain_morphology": "Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme.",
         "explain_text_label": "Metin",
         "explain_ticks": "{l2Name} dilindeki her kelimeyi, ifadeyi veya tüm cümleyi tek backtick (`) içine al. Örnek cümlelerin tamamını tek backtick bloğu olarak al, örn. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, sadece hedef kelimeyi değil. Backtick iç içe kullanma.",
-        "explain_word": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün ne anlama geldiğini açıkla. Telaffuzunu ver. Eğer çekimli veya konjuge ise, sözlük biçimini ve çekimini belirt; değilse çekimden bahsetme.",
-        "explain_word_context": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün \"{context}\" ifadesinde ne anlama geldiğini açıkla. Telaffuzunu ver. Eğer çekimli veya konjuge ise, sözlük biçimini ve çekimini belirt; değilse çekimden bahsetme.",
-        "explain_word_context_form": "{l1Name} dilinde, {l2Name} kelimesi olan \"{word}\"ün (çekimli biçimi: {contextForm}) \"{context}\" ifadesinde ne anlama geldiğini açıkla. Telaffuzunu ver. Sözlük biçimini ve çekimini belirt.",
+        "explain_word": "Lütfen {l2Name} dilindeki \"{word}\" kelimesini kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
+        "explain_word_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesini \"{context}\" içinde kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
+        "explain_word_context_form": "Lütfen {l2Name} dilindeki \"{word}\" kelimesini (çekimli biçimi: {contextForm}) \"{context}\" içinde kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
         "explain_word_examples": "Ayrıca kelimenin tipik olarak nasıl kullanıldığına dair 2 örnek ver.",
         "explain_word_examples_context": "Ayrıca kelimenin verilen bağlamdakiyle aynı anlamda nasıl kullanıldığına dair 2 örnek ver."
     },

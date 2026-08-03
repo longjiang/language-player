@@ -885,9 +885,9 @@
         "explain_morphology": "給出其發音。如果是屈折或變位形式，給出其原形並說明屈折變化。如果不是屈折形式，則不要提及屈折或詞元。",
         "explain_text_label": "文本",
         "explain_ticks": "將每個{l2Name}單詞、短語或整個句子都用單個反引號（`）括起來。整個例句要作為一個反引號整體，例如`その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`，而不是只括目標詞。不要嵌套反引號。",
-        "explain_word": "用{l1Name}解釋{l2Name}單詞\"{word}\"的含義。給出其發音。如果是屈折或變位形式，提及原形和屈折變化；如果不是，不要提及屈折或詞元。",
-        "explain_word_context": "用{l1Name}解釋{l2Name}單詞\"{word}\"在\"{context}\"這段話中的含義。給出其發音。如果是屈折或變位形式，提及原形和屈折變化；如果不是，不要提及屈折或詞元。",
-        "explain_word_context_form": "用{l1Name}解釋{l2Name}單詞\"{word}\"（屈折形式：{contextForm}）在\"{context}\"這段話中的含義。給出其發音。提及原形和屈折變化。",
+        "explain_word": "請簡潔地解釋{l2Name}單詞\"{word}\"，然後給出2個帶翻譯的示例。",
+        "explain_word_context": "請簡潔地解釋{l2Name}單詞\"{word}\"在\"{context}\"中的含義，然後給出2個帶翻譯的示例。",
+        "explain_word_context_form": "請簡潔地解釋{l2Name}單詞\"{word}\"（屈折形式：{contextForm}）在\"{context}\"中的含義，然後給出2個帶翻譯的示例。",
         "explain_word_examples": "再給出2個該單詞典型用法的示例。",
         "explain_word_examples_context": "再給出2個示例，說明該詞在與所提供語境相同的含義下如何使用。"
     },

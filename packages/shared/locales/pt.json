@@ -932,9 +932,9 @@
         "explain_morphology": "Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema.",
         "explain_text_label": "Texto",
         "explain_ticks": "Coloca cada palavra, expressão ou frase completa em {l2Name} entre acentos graves simples (`). Coloca as frases de exemplo completas como um único bloco, por ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, não apenas a palavra-alvo. Não aninhes acentos graves.",
-        "explain_word": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\". Dá a sua pronúncia. Se for flexionada ou conjugada, menciona a forma de dicionário e a flexão; caso contrário, não menciones flexão.",
-        "explain_word_context": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\" na frase: \"{context}\". Dá a sua pronúncia. Se for flexionada ou conjugada, menciona a forma de dicionário e a flexão; caso contrário, não menciones flexão.",
-        "explain_word_context_form": "Explica em {l1Name} o que significa a palavra {l2Name} \"{word}\" (forma flexionada: {contextForm}) na frase: \"{context}\". Dá a sua pronúncia. Menciona a forma de dicionário e a flexão.",
+        "explain_word": "Explique brevemente a palavra em {l2Name} \"{word}\" e, em seguida, dê 2 exemplos com traduções.",
+        "explain_word_context": "Explique brevemente a palavra em {l2Name} \"{word}\" em \"{context}\" e, em seguida, dê 2 exemplos com traduções.",
+        "explain_word_context_form": "Explique brevemente a palavra em {l2Name} \"{word}\" (forma flexionada: {contextForm}) em \"{context}\" e, em seguida, dê 2 exemplos com traduções.",
         "explain_word_examples": "Dá também 2 exemplos de como a palavra é normalmente usada.",
         "explain_word_examples_context": "Dá também 2 exemplos de como a palavra é usada com o mesmo sentido que no contexto fornecido."
     },
