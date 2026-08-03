@@ -11,7 +11,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords } from '@/lib/dictionary-cache';
-import { isPhoneticsEligible, sentenceContaining, sentenceForToken } from '@langplayer/utils';
+import { isPhoneticsEligible, mergePhraseTokens, sentenceContaining, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup } from '@/hooks/use-selection-popup';
@@ -303,17 +303,46 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
 
+  // Saved phrase candidates — every saved form (head + inflections) that could
+  // span multiple tokens. The merge below collapses exact token-boundary
+  // matches into one atomic token so multi-token phrases highlight as saved.
+  const savedPhraseCandidates = useMemo(() => {
+    const words = savedWords[l2Code] ?? [];
+    const out: string[] = [];
+    const seen = new Set<string>();
+    const add = (form: string) => {
+      const key = form.toLowerCase();
+      if (!form.trim() || seen.has(key)) return;
+      seen.add(key);
+      out.push(form);
+    };
+    for (const w of words) {
+      for (const f of w.forms) add(f);
+      if (w.context?.form) add(w.context.form);
+      for (const inst of w.instances ?? []) if (inst.form) add(inst.form);
+    }
+    return out;
+  }, [savedWords, l2Code]);
+
+  // Tokens with saved multi-token phrases merged into single atomic tokens
+  // (pure client-side retokenization — total length is preserved, so format
+  // offsets, karaoke pacing, and sentence context stay aligned).
+  const displayTokens = useMemo(
+    () => mergePhraseTokens(text, tokens, savedPhraseCandidates),
+    [text, tokens, savedPhraseCandidates],
+  );
+
   // Map markdown format ranges onto token indices by reconstructing character
   // offsets from the surface tokens (they concatenate back to `text`). Bails
   // out entirely when the reconstruction doesn't match, so formatting can
   // never corrupt token alignment.
   const tokenFormatStyles = useMemo(() => {
     if (!formats?.length) return null;
-    const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
+    const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return null;
     let pos = 0;
     const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | null> = [];
-    for (const token of tokens) {
+    for (const token of displayTokens) {
       let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
@@ -328,7 +357,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       pos += token.text.length;
     }
     return out;
-  }, [tokens, formats, text]);
+  }, [displayTokens, formats, text]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -466,10 +495,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   // ── Bulk dictionary lookup: pre-fetch entries for all unique lemmas ──
   useEffect(() => {
-    if (loading || error || tokens.length === 0) return;
+    if (loading || error || displayTokens.length === 0) return;
 
     const uniqueLemmas = new Map<string, string>(); // text → part_of_speech
-    for (const token of tokens) {
+    for (const token of displayTokens) {
       for (const lemma of token.lemmas) {
         const t = lemma.lemma.trim();
         // Skip whitespace, punctuation, and single-char non-word tokens
@@ -495,7 +524,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     // Queue with other visible lines' lemmas so one flush covers many lines
     // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).
     enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
-  }, [tokens, loading, error, l2Code]);
+  }, [displayTokens, loading, error, l2Code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken, rect?: DOMRect) => {
     setSelectedToken(prev => prev === token ? null : token);
@@ -515,8 +544,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // AI/image-search context) to the sentence the word was clicked in.
   const selectedContextText = useMemo(() => {
     if (!selectedToken) return null;
-    return sentenceForToken(text, tokens, selectedToken, baseCode(l2Code));
-  }, [selectedToken, text, tokens, l2Code]);
+    return sentenceForToken(text, displayTokens, selectedToken, baseCode(l2Code));
+  }, [selectedToken, text, displayTokens, l2Code]);
 
   // Sentence containing the selection — mirrors the token path so arbitrary
   // text selections get the same immediate-sentence context (Intl.Segmenter)
@@ -584,7 +613,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           let totalWeight = 0;
           const weights: number[] = [];
           if (karaokeProgress !== undefined) {
-            for (const token of tokens) {
+            for (const token of displayTokens) {
               if (token.lemmas.length === 0) {
                 weights.push(0);
               } else {
@@ -595,9 +624,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             }
           }
           let cumulativeWeight = 0;
-          return tokens.map((token, i) => {
+          return displayTokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
-          const nextToken = tokens[i + 1];
+          const nextToken = displayTokens[i + 1];
           const nextTokenIsSeparator = nextToken ? isSeparatorToken(nextToken.text) : true;
           const phoneticsShow = isPhoneticsEligible(l2Code)
             ? l2Settings.tokenSpan.phonetics.show
