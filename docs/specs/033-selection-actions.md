@@ -19,7 +19,7 @@
 ### Data Flow
 1. `useSelectionPopup` listens for `mouseup` / `keyup` (Shift + arrows, Home/End/PgUp/PgDn) on `document` and reads `window.getSelection()`.
 2. A selection is captured only when it is non-collapsed and its `commonAncestorContainer` is inside the `TokenizedText` container; the captured payload is the selected string plus the range's viewport rect.
-3. `TokenizedText` renders `DictionaryPopup` with a lemma-less token (`{ text: <selection>, lemmas: [] }`), the selection rect as the spawn origin, and the block text as context.
+3. `TokenizedText` renders `DictionaryPopup` with a lemma-less token (`{ text: <selection>, lemmas: [] }`), the selection rect as the spawn origin, and the immediate sentence containing the selection as context — the hook computes the selection's character offset in the source text (skipping `select-none` annotations) and reuses the same `sentenceContaining`/Intl.Segmenter path as token clicks, so arbitrary selections and tokens get consistent sentence context.
 4. With `extractPhrases` (selection only), the popup also POSTs the selection to `/extract-phrases`, looks each returned canonical phrase up through the standard `/dictionary/lookup`, and renders a "Phrases" section of entry cards (deduplicated against the standard results) with the LLM pronunciation shown next to the header.
 5. Dismissal: the popup's close button/overlay/Escape (Radix Dialog) or a token click closes it; `clear()` also collapses the native selection so a dismissed popup cannot re-open on a stray click. There is no `selectionchange` auto-close — clicking or dragging inside the dialog collapses/replaces the underlying selection, and that must not unmount the popup mid-interaction.
 
