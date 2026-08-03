@@ -322,9 +322,15 @@ function convertDocument(body: Element): EpubBlock[] {
     // Inline element.
     if (id) anchors.push({ id, offset: text.length });
     if (tag === 'a') {
-      activeFormats.push({ type: 'link', url: el.getAttribute('href') ?? undefined });
+      // Anchor-only elements (fragment targets like <a id="ch04"/> or
+      // <a name="…"/>) have no href and must NOT become links — in HTML-parsed
+      // content docs their self-closing form opens a real anchor that can
+      // swallow following blocks until the next </a>, which would render
+      // whole paragraphs as hyperlinks. Still walk children so text is kept.
+      const linkHref = el.getAttribute('href');
+      if (linkHref) activeFormats.push({ type: 'link', url: linkHref });
       for (const child of Array.from(el.childNodes)) walkNode(child);
-      activeFormats.pop();
+      if (linkHref) activeFormats.pop();
     } else if (tag === 'b' || tag === 'strong') {
       activeFormats.push({ type: 'bold' });
       for (const child of Array.from(el.childNodes)) walkNode(child);
