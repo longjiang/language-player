@@ -15,9 +15,14 @@ export interface TextSelectionInfo {
  * non-collapsed selections as `selection` (with the range's viewport rect so a
  * popup can be anchored to it).
  *
- * The selection is cleared automatically when it collapses or moves outside
- * the container. `clear()` also collapses the browser selection so a dismissed
- * popup cannot be re-triggered by a stray click on the old highlight.
+ * The popup owns its own dismissal (close button / overlay / Escape), so the
+ * selection is only cleared explicitly via `clear()` — which also collapses
+ * the browser selection so a dismissed popup cannot be re-triggered by a
+ * stray click on the old highlight.
+ *
+ * There is deliberately no selectionchange auto-close: clicking or dragging
+ * inside the popup dialog collapses/replaces the underlying text selection,
+ * which would otherwise unmount the popup mid-interaction.
  */
 export function useSelectionPopup<T extends Element>() {
   const containerRef = useRef<T | null>(null);
@@ -61,26 +66,12 @@ export function useSelectionPopup<T extends Element>() {
       }
     };
 
-    // Keep the popup honest: if the selection collapses or moves outside this
-    // container, hide the menu.
-    const onSelectionChange = () => {
-      setSelection((prev) => {
-        if (!prev) return prev;
-        const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
-        const range = sel.getRangeAt(0);
-        return container.contains(range.commonAncestorContainer) ? prev : null;
-      });
-    };
-
     document.addEventListener('mouseup', onPointerUp);
     document.addEventListener('keyup', onKeyUp);
-    document.addEventListener('selectionchange', onSelectionChange);
 
     return () => {
       document.removeEventListener('mouseup', onPointerUp);
       document.removeEventListener('keyup', onKeyUp);
-      document.removeEventListener('selectionchange', onSelectionChange);
     };
   }, []);
 
