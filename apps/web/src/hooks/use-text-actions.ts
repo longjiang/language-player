@@ -112,13 +112,6 @@ export function useTextActions({ text, l2Code, l1Code, context }: UseTextActions
     }
   }, [text, l2Code, effectiveL1, t]);
 
-  // Debug: track the streaming lifecycle — per-chunk updates and stream end.
-  useEffect(() => {
-    if (explainLoading && explainText) {
-      log('AI explain streaming', { chars: explainText.length });
-    }
-  }, [explainText, explainLoading]);
-
   const wasLoadingRef = useRef(false);
   useEffect(() => {
     if (explainLoading) {
