@@ -189,13 +189,13 @@ export function TextActionMenu({
   return (
     <div className="group relative flex items-start gap-3 mb-4">
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'xl:flex-row xl:gap-4 xl:items-center'}`}>
+      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4 lg:items-center'}`}>
         <div className="flex-[3] min-w-0">
           {children}
         </div>
         {translation && (
           <div
-            className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'xl:pt-0'} ${translationClass}`}
+            className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
             style={{ zoom: translationZoom }}
           >
             {typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
@@ -203,7 +203,7 @@ export function TextActionMenu({
         )}
         {loading && !translation && (
           <div
-            className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'xl:pt-0'} ${translationClass || 'text-sm'}`}
+            className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
             style={{ zoom: translationZoom }}
           >
             <TranslationSkeleton

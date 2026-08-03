@@ -340,7 +340,7 @@ export function EpubReaderPanel({
                 const Tag = blockTag(tb);
                 return (
                   <div key={i} className="mb-4 flex items-start gap-3">
-                    <div className="flex-1 min-w-0 flex flex-col gap-y-1 xl:flex-row xl:gap-4 xl:items-center">
+                    <div className="flex-1 min-w-0 flex flex-col gap-y-1 lg:flex-row lg:gap-4 lg:items-center">
                       <div className="flex-[3] min-w-0">
                         <Tag
                           className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
@@ -351,7 +351,7 @@ export function EpubReaderPanel({
                       </div>
                       {showTranslation && (
                         <div
-                          className={`flex-[2] min-w-0 pt-1 xl:pt-0 ${translationClass(tb)}`}
+                          className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
                           style={{ zoom: textZoom }}
                         >
                           <div className="flex flex-col gap-y-1.5">
