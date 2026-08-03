@@ -27,7 +27,8 @@ lemmatized-subs cache, so it is the natural overflow target.
 - Keep hot cache data on the Flask server's local disk for speed.
 - Use the shared host as a remote fallback and as the destination for cold
   cache data.
-- Automatically offload files not used recently so the local disk stays small.
+- Automatically offload the oldest files when a bucket exceeds its size cap
+  so the local disk stays small ("new one in, old one out").
 - Move all existing cache buckets, not just `lemmatized_subs`.
 
 ## Non-Goals
@@ -74,7 +75,6 @@ New module `remote_cache.py`:
 - `local_path(bucket, key)` — maps a bucket/key pair to `cache/{bucket}/{key}`.
 - `get(bucket, key)` — local first, then remote GET.
 - `set(bucket, key, data)` — local write only.
-- `mget(bucket, keys)` — batched remote GET for text caches.
 - `offload(bucket, key, data)` — remote save used by the offload job.
 
 `utils_cache.py` is rewritten so every `load_from_*` / `save_to_*` function
@@ -93,36 +93,43 @@ cache miss and the request continues to compute locally.
 
 ## Offload Job
 
-`offload_cache.py` runs on the Flask VPS (cron, default nightly):
+`prune_cache.py` runs on the Flask VPS via cron (every 6 hours) and keeps
+each bucket under its size cap:
 
-- Walk each bucket under `cache/`.
-- For every file older than `CACHE_OFFLOAD_DAYS` (default 30):
-  1. Upload raw bytes to `save-flask-cache.php`.
-  2. Delete the local file only after the remote save returns success.
-  3. Prune empty directories.
-- Logs to `logs/cache_offload.log`.
+- `lemmatization` is capped at 2G; every other bucket is capped at 1G.
+- Sizes are measured in allocated blocks (`st_blocks * 512`), so the caps
+  reflect real disk usage even with millions of tiny files.
+- When a bucket is over its cap, files are sorted by mtime (oldest first) and
+  offloaded to `save-flask-cache.php` until the bucket fits.
+- A local file is deleted only after the remote save succeeds. If the shared
+  host is unavailable, the file is kept locally and retried on the next run.
+- Empty directories are pruned after offloading.
+- Logs to `logs/cache_prune.log`.
 
-### "Last read" caveat
+### Cutoff heuristic
 
 The VPS `/home` mount is `noatime`, so the filesystem does not track reads.
-The 30-day rule therefore uses **mtime (last write)** as the coldness signal.
-This is documented rather than fixed because a true read index would add
-write overhead to every cache hit.
+The prune job uses **mtime (last write)** as the coldness signal and computes
+the cutoff dynamically: it offloads the oldest files until the bucket fits,
+then reports the mtime of the last offloaded file as the cutoff date.
 
-## Initial Migration
+## Initial Migration (Postponed)
 
-Existing files are almost all older than 30 days, so they qualify for offload
-immediately. The initial copy is a server-to-server `tar`/`rsync` stream from
-the VPS to `~/zerotohero-server-flask-cache/` (same DreamHost datacenter),
-followed by spot verification and local deletion.
+The one-time bulk copy of the existing 39G cache was postponed. Instead, the
+existing cache was pruned to the size caps immediately (lemmatization cleared,
+other buckets trimmed), and the shared host is populated incrementally by the
+offload job as new cache entries arrive.
 
 ## Rollout
 
 1. Deploy PHP endpoints to the shared host and commit to `zerotohero-server`.
 2. Deploy the Python layer to the VPS and syntax-check.
-3. Bulk-migrate existing cache files, verify counts/samples, delete local.
+3. Clear/prune existing local caches to the new caps.
 4. Install the cron offload job.
 5. Restart Flask (user action) and smoke-test a few endpoints.
+
+Bulk migration of the old cache is deferred until the shared host is healthy
+enough for a large server-to-server transfer.
 
 ## Risks
 
