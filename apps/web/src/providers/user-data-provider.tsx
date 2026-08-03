@@ -15,9 +15,11 @@ const UserDataContext = createContext<UserDataContextValue>({ data: null, loaded
 
 /**
  * Fetches GET /user-data ONCE when the user is authenticated, then
- * distributes the result via React Context. All downstream hooks
- * (useSavedWords, useSrs, useSettings) read from this context instead
- * of calling getUserData() independently.
+ * distributes the result via React Context. Downstream hooks (useSrs,
+ * useSettings, useProgress) read from this context instead of calling
+ * getUserData() independently. Saved words only use this context on the legacy
+ * blob path; with NEXT_PUBLIC_SAVED_WORDS_ROW_API enabled, useSavedWords
+ * hydrates from GET /saved-words instead.
  *
  * Re-fetches automatically when the user ID changes (login/logout/switch).
  */
