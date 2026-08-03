@@ -941,14 +941,14 @@
         "explain_word_context_form": "Verduidelik asseblief kortliks die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}) in \"{context}\", gee dan 2 voorbeelde met vertalings.",
         "explain_word_examples": "Gee ook 2 voorbeelde van hoe die woord tipies gebruik word.",
         "explain_word_examples_context": "Gee ook 2 voorbeelde van hoe die woord in dieselfde betekenis as in die verskafde konteks gebruik word.",
-        "followup_etymology": "Verduidelik asseblief die etimologie en oorsprong van die {l2Name}-woord \"{word}\".",
+        "followup_etymology": "Gee asseblief die etimologie van die {l2Name}-woord \"{word}\".",
         "followup_inflection": "Verduidelik asseblief die lemma (woordeboekvorm) van die {l2Name}-woord \"{word}\", hoe die woord verbuig, en die betekenis van die verbuigde vorm.",
         "followup_inflection_context": "Verduidelik asseblief die lemma (woordeboekvorm) van die {l2Name}-woord \"{word}\", hoe die woord in \"{context}\" verbuig, en die betekenis van die verbuigde vorm.",
         "followup_inflection_context_form": "Verduidelik asseblief die lemma (woordeboekvorm) van die {l2Name}-woord \"{word}\" (verbuigde vorm: {contextForm}), hoe die woord in \"{context}\" verbuig, en die betekenis van die verbuigde vorm.",
         "followup_morphemes": "Verduidelik asseblief of die {l2Name}-woord \"{word}\" in semantiese dele (morfeme) opgebreek kan word, en noem enige letterlike interpretasies van die woord.",
         "followup_morphemes_context": "Verduidelik asseblief of die {l2Name}-woord \"{word}\" in \"{context}\" in semantiese dele (morfeme) opgebreek kan word, en noem enige letterlike interpretasies van die woord.",
-        "followup_syntax": "Verduidelik asseblief die sintaktiese rol en gedrag van die {l2Name}-woord \"{word}\".",
-        "followup_syntax_context": "Verduidelik asseblief die sintaktiese rol en gedrag van die {l2Name}-woord \"{word}\" in \"{context}\"."
+        "followup_syntax": "Verduidelik asseblief of die {l2Name}-woord \"{word}\" as 'n sintaktiese element funksioneer, en verduidelik wat die sintaktiese struktuur is (bv. sinstruktuur, deel van 'n frase, 'n sekere grammatikale verskynsel, ens.).",
+        "followup_syntax_context": "Verduidelik asseblief of die {l2Name}-woord \"{word}\" in \"{context}\" as 'n sintaktiese element funksioneer, en verduidelik wat die sintaktiese struktuur is (bv. sinstruktuur, deel van 'n frase, 'n sekere grammatikale verskynsel, ens.)."
     },
     "review": {
         "again": "Weer",

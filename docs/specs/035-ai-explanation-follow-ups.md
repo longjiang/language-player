@@ -16,8 +16,8 @@ The DeepSeek explanation card (dictionary popup and dictionary entry page) gets 
 
 - **Inflection** — explain what the lemma (dictionary form) is, how the word is inflecting in the given context (including the inflected form when known), and the meaning of the inflected form.
 - **Morphemes** — explain whether the word can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.
-- **Etymology** — explain the etymology and origin of the word.
-- **Syntax** — explain the syntactic role and behavior of the word in the given context.
+- **Etymology** — give the etymology of the word.
+- **Syntax** — explain whether the word is functioning as a syntactic element in the given context, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).
 
 ## i18n
 

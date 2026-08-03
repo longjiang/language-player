@@ -941,14 +941,14 @@
         "explain_word_context_form": "Expliquez brièvement le mot {l2Name} \"{word}\" (forme fléchie : {contextForm}) dans \"{context}\", puis donnez 2 exemples avec traductions.",
         "explain_word_examples": "Donne aussi 2 exemples d'utilisation typique du mot.",
         "explain_word_examples_context": "Donne aussi 2 exemples de la façon dont le mot est utilisé dans le même sens que dans le contexte fourni.",
-        "followup_etymology": "Expliquez l'étymologie et l'origine du mot {l2Name} \"{word}\".",
+        "followup_etymology": "Donnez l'étymologie du mot {l2Name} \"{word}\".",
         "followup_inflection": "Expliquez le lemme (forme de dictionnaire) du mot {l2Name} \"{word}\", comment le mot se fléchit et le sens de la forme fléchie.",
         "followup_inflection_context": "Expliquez le lemme (forme de dictionnaire) du mot {l2Name} \"{word}\", comment le mot se fléchit dans \"{context}\" et le sens de la forme fléchie.",
         "followup_inflection_context_form": "Expliquez le lemme (forme de dictionnaire) du mot {l2Name} \"{word}\" (forme fléchie : {contextForm}), comment le mot se fléchit dans \"{context}\" et le sens de la forme fléchie.",
         "followup_morphemes": "Expliquez si le mot {l2Name} \"{word}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
         "followup_morphemes_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
-        "followup_syntax": "Expliquez le rôle et le comportement syntaxiques du mot {l2Name} \"{word}\".",
-        "followup_syntax_context": "Expliquez le rôle et le comportement syntaxiques du mot {l2Name} \"{word}\" dans \"{context}\"."
+        "followup_syntax": "Expliquez si le mot {l2Name} \"{word}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
+        "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.)."
     },
     "review": {
         "again": "Encore",

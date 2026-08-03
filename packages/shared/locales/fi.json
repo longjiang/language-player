@@ -941,14 +941,14 @@
         "explain_word_context_form": "Selitä lyhyesti {l2Name}-kielen sana \"{word}\" (taivutusmuoto: {contextForm}) lauseessa \"{context}\" ja anna sitten 2 esimerkkiä käännöksineen.",
         "explain_word_examples": "Anna myös 2 esimerkkiä sanan tyypillisestä käytöstä.",
         "explain_word_examples_context": "Anna myös 2 esimerkkiä siitä, miten sanaa käytetään samassa merkityksessä kuin annetussa asiayhteydessä.",
-        "followup_etymology": "Selitä {l2Name}-kielen sanan \"{word}\" etymologia ja alkuperä.",
+        "followup_etymology": "Anna {l2Name}-kielen sanan \"{word}\" etymologia.",
         "followup_inflection": "Selitä {l2Name}-kielen sanan \"{word}\" lemma (sanakirjamuoto), miten sana taipuu ja taivutusmuodon merkitys.",
         "followup_inflection_context": "Selitä {l2Name}-kielen sanan \"{word}\" lemma (sanakirjamuoto), miten sana taipuu lauseessa \"{context}\" ja taivutusmuodon merkitys.",
         "followup_inflection_context_form": "Selitä {l2Name}-kielen sanan \"{word}\" lemma (sanakirjamuoto) (taivutusmuoto: {contextForm}), miten sana taipuu lauseessa \"{context}\" ja taivutusmuodon merkitys.",
         "followup_morphemes": "Selitä, voidaanko {l2Name}-kielen sana \"{word}\" jakaa merkitysosiin (morfeemeihin), ja mainitse sanan mahdolliset kirjaimelliset tulkinnat.",
         "followup_morphemes_context": "Selitä, voidaanko {l2Name}-kielen sana \"{word}\" lauseessa \"{context}\" jakaa merkitysosiin (morfeemeihin), ja mainitse sanan mahdolliset kirjaimelliset tulkinnat.",
-        "followup_syntax": "Selitä {l2Name}-kielen sanan \"{word}\" syntaktinen rooli ja käyttäytyminen.",
-        "followup_syntax_context": "Selitä {l2Name}-kielen sanan \"{word}\" syntaktinen rooli ja käyttäytyminen lauseessa \"{context}\"."
+        "followup_syntax": "Selitä, toimiiko {l2Name}-kielen sana \"{word}\" syntaktisena elementtinä, ja selitä, mikä syntaktinen rakenne on kyseessä (esim. lauserakenne, osa lauseketta, tietty kieliopillinen ilmiö jne.).",
+        "followup_syntax_context": "Selitä, toimiiko {l2Name}-kielen sana \"{word}\" lauseessa \"{context}\" syntaktisena elementtinä, ja selitä, mikä syntaktinen rakenne on kyseessä (esim. lauserakenne, osa lauseketta, tietty kieliopillinen ilmiö jne.)."
     },
     "review": {
         "again": "Uudelleen",

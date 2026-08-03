@@ -941,14 +941,14 @@
         "explain_word_context_form": "Leg kort uit wat het {l2Name}-woord \"{word}\" (verbuigingsvorm: {contextForm}) betekent in \"{context}\" en geef daarna 2 voorbeelden met vertalingen.",
         "explain_word_examples": "Geef ook 2 voorbeelden van hoe het woord doorgaans wordt gebruikt.",
         "explain_word_examples_context": "Geef ook 2 voorbeelden van hoe het woord in dezelfde betekenis als in de gegeven context wordt gebruikt.",
-        "followup_etymology": "Leg de etymologie en herkomst uit van het {l2Name}-woord \"{word}\".",
+        "followup_etymology": "Geef de etymologie van het {l2Name}-woord \"{word}\".",
         "followup_inflection": "Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord \"{word}\", hoe het woord verbuigt en de betekenis van de verbogen vorm.",
         "followup_inflection_context": "Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord \"{word}\", hoe het woord in \"{context}\" verbuigt en de betekenis van de verbogen vorm.",
         "followup_inflection_context_form": "Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord \"{word}\" (verbuigingsvorm: {contextForm}), hoe het woord in \"{context}\" verbuigt en de betekenis van de verbogen vorm.",
         "followup_morphemes": "Leg uit of het {l2Name}-woord \"{word}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
         "followup_morphemes_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
-        "followup_syntax": "Leg de syntactische rol en het gedrag uit van het {l2Name}-woord \"{word}\".",
-        "followup_syntax_context": "Leg de syntactische rol en het gedrag uit van het {l2Name}-woord \"{word}\" in \"{context}\"."
+        "followup_syntax": "Leg uit of het {l2Name}-woord \"{word}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
+        "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.)."
     },
     "review": {
         "again": "Opnieuw",

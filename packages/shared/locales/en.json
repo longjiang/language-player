@@ -941,14 +941,14 @@
         "explain_word_context_form": "Please succinctly explain the {l2Name} word \"{word}\" (inflected form: {contextForm}) in \"{context}\", then give 2 examples with translations.",
         "explain_word_examples": "Also give 2 examples of how the word is typically used.",
         "explain_word_examples_context": "Also give 2 examples of how the word is used in the same sense as in the context provided.",
-        "followup_etymology": "Please explain the etymology and origin of the {l2Name} word \"{word}\".",
+        "followup_etymology": "Please give the etymology of the {l2Name} word \"{word}\".",
         "followup_inflection": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\", how the word is inflecting, and the meaning of the inflected form.",
         "followup_inflection_context": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\", how the word is inflecting in \"{context}\", and the meaning of the inflected form.",
         "followup_inflection_context_form": "Please explain the lemma (dictionary form) of the {l2Name} word \"{word}\" (inflected form: {contextForm}), how the word is inflecting in \"{context}\", and the meaning of the inflected form.",
         "followup_morphemes": "Please explain whether the {l2Name} word \"{word}\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
         "followup_morphemes_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
-        "followup_syntax": "Please explain the syntactic role and behavior of the {l2Name} word \"{word}\".",
-        "followup_syntax_context": "Please explain the syntactic role and behavior of the {l2Name} word \"{word}\" in \"{context}\"."
+        "followup_syntax": "Please explain whether the {l2Name} word \"{word}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
+        "followup_syntax_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc)."
     },
     "review": {
         "again": "Again",

@@ -941,14 +941,14 @@
         "explain_word_context_form": "Vui lòng giải thích ngắn gọn từ tiếng {l2Name} \"{word}\" (dạng biến cách: {contextForm}) trong \"{context}\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
         "explain_word_examples": "Cũng đưa ra 2 ví dụ về cách từ này thường được dùng.",
         "explain_word_examples_context": "Cũng đưa ra 2 ví dụ về cách từ này được dùng với cùng nghĩa như trong ngữ cảnh đã cho.",
-        "followup_etymology": "Vui lòng giải thích từ nguyên và nguồn gốc của từ tiếng {l2Name} \"{word}\".",
+        "followup_etymology": "Vui lòng cung cấp từ nguyên của từ tiếng {l2Name} \"{word}\".",
         "followup_inflection": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} \"{word}\", cách từ đó biến cách và ý nghĩa của dạng biến cách.",
         "followup_inflection_context": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} \"{word}\", cách từ đó biến cách trong \"{context}\" và ý nghĩa của dạng biến cách.",
         "followup_inflection_context_form": "Vui lòng giải thích lemma (dạng từ điển) của từ tiếng {l2Name} \"{word}\" (dạng biến cách: {contextForm}), cách từ đó biến cách trong \"{context}\" và ý nghĩa của dạng biến cách.",
         "followup_morphemes": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
         "followup_morphemes_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
-        "followup_syntax": "Vui lòng giải thích vai trò và hành vi cú pháp của từ tiếng {l2Name} \"{word}\".",
-        "followup_syntax_context": "Vui lòng giải thích vai trò và hành vi cú pháp của từ tiếng {l2Name} \"{word}\" trong \"{context}\"."
+        "followup_syntax": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
+        "followup_syntax_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.)."
     },
     "review": {
         "again": "Lại nữa",

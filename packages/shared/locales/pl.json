@@ -941,14 +941,14 @@
         "explain_word_context_form": "Krótko wyjaśnij słowo w języku {l2Name} \"{word}\" (forma odmieniona: {contextForm}) w zdaniu \"{context}\", a następnie podaj 2 przykłady z tłumaczeniami.",
         "explain_word_examples": "Podaj również 2 przykłady typowego użycia słowa.",
         "explain_word_examples_context": "Podaj również 2 przykłady użycia słowa w tym samym znaczeniu co w podanym kontekście.",
-        "followup_etymology": "Wyjaśnij etymologię i pochodzenie słowa w języku {l2Name} \"{word}\".",
+        "followup_etymology": "Podaj etymologię słowa w języku {l2Name} \"{word}\".",
         "followup_inflection": "Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} \"{word}\", jak słowo się odmienia oraz znaczenie formy odmienionej.",
         "followup_inflection_context": "Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} \"{word}\", jak słowo odmienia się w zdaniu \"{context}\" oraz znaczenie formy odmienionej.",
         "followup_inflection_context_form": "Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} \"{word}\" (forma odmieniona: {contextForm}), jak słowo odmienia się w zdaniu \"{context}\" oraz znaczenie formy odmienionej.",
         "followup_morphemes": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
         "followup_morphemes_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
-        "followup_syntax": "Wyjaśnij rolę składniową i zachowanie słowa w języku {l2Name} \"{word}\".",
-        "followup_syntax_context": "Wyjaśnij rolę składniową i zachowanie słowa w języku {l2Name} \"{word}\" w zdaniu \"{context}\"."
+        "followup_syntax": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
+        "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.)."
     },
     "review": {
         "again": "Ponownie",
