@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
-import { md5 } from '@langplayer/utils';
+import { md5, isPhoneticsEligible } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -79,8 +80,20 @@ export function EpubReaderPanel({
   onOpenLink,
 }: EpubReaderPanelProps) {
   const t = useT();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, getL2 } = useSettingsContext();
   const showTranslation = display.translation;
+  // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
+  // factor. Applied to every block so headings keep their relative sizes.
+  const textZoom = useTextScale();
+  // Ruby/furigana/pinyin estimate for pagination: when phonetics are shown
+  // above words, every annotated line is taller than the raw text line.
+  const phonetics = getL2(l2.code).tokenSpan.phonetics;
+  const phoneticsEstimate = isPhoneticsEligible(l2.code) && phonetics.show === 'ruby'
+    ? (phonetics.conditions === 'always' ? 'measure-ruby-all' : 'measure-ruby-hard')
+    : '';
+  // Re-measure page breaks whenever a display setting that changes rendered
+  // block heights changes (text scale, translation column, ruby estimate).
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}`;
 
   const {
     viewportRef,
@@ -96,7 +109,7 @@ export function EpubReaderPanel({
     prevPage,
     hasPrev,
     hasNext,
-  } = usePaginatedBook(book, { chromeHeight: 40 });
+  } = usePaginatedBook(book, { chromeHeight: 40, measureNonce });
 
   const [tokenCache, setTokenCache] = useState<Record<string, LemmatizedToken[]>>({});
   const [blockTranslations, setBlockTranslations] = useState<Record<string, string>>({});
@@ -201,14 +214,15 @@ export function EpubReaderPanel({
       <TextActionMenu key={blockKey} text={tb.text} l2Code={l2.code} l1Code={l1.code}
         translation={showTranslation ? blockTranslations[key] : undefined}
         translationClass={translationClass(tb)}
+        translationZoom={textZoom}
         loading={showTranslation && !blockTranslations[key]}>
-        <Tag className={blockClass(tb)}>
+        <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
           <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
             tokens={tokens} formats={tb.formats} href={href} onOpenLink={onOpenLink} />
         </Tag>
       </TextActionMenu>
     );
-  }, [tokenCache, blockTranslations, showTranslation, l2.code, l1.code, ctx, onOpenLink]);
+  }, [tokenCache, blockTranslations, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink]);
 
   return (
     <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -268,11 +282,13 @@ export function EpubReaderPanel({
         </label>
       </div>
 
-      {/* Hidden measuring container — mirrors the current window exactly.
-          Blocks must be DIRECT children of measureRef: the paginator reads
-          measureRef.children as one element per block to compute page
-          breaks (a wrapper div makes it measure a single child → 1-block
-          pages). */}
+      {/* Hidden measuring container — mirrors the current window exactly,
+          including per-block spacing, the translation column (when on) and
+          the text-zoom + ruby/furigana height estimates. Each block must be
+          ONE direct child of measureRef: the paginator reads
+          measureRef.children as one element per block to compute page breaks
+          (one wrapper around all blocks would measure a single child →
+          1-block pages). */}
       <div
         ref={measureRef}
         aria-hidden="true"
@@ -283,7 +299,8 @@ export function EpubReaderPanel({
           [&_li]:mb-0 [&_li]:leading-relaxed
           [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
           [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
-          [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
+          [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
+          [&_.measure-ruby-all]:leading-[2.25] [&_.measure-ruby-hard]:leading-[2]"
         lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
       >
         {measureWindow.map((p, i) =>
@@ -293,7 +310,34 @@ export function EpubReaderPanel({
             : (() => {
                 const tb = p.block as EpubTextBlock;
                 const Tag = blockTag(tb);
-                return <Tag key={i} className={blockClass(tb)}>{tb.text}</Tag>;
+                return (
+                  <div key={i} className="mb-4 flex items-start gap-3">
+                    <div className="flex-1 min-w-0 flex flex-col gap-y-1 xl:flex-row xl:gap-4 xl:items-center">
+                      <div className="flex-[3] min-w-0">
+                        <Tag
+                          className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
+                          style={{ zoom: textZoom }}
+                        >
+                          {tb.text}
+                        </Tag>
+                      </div>
+                      {showTranslation && (
+                        <div
+                          className={`flex-[2] min-w-0 pt-1 xl:pt-0 ${translationClass(tb)}`}
+                          style={{ zoom: textZoom }}
+                        >
+                          <div className="flex flex-col gap-y-1.5">
+                            {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
+                              <div key={li} className="h-3.5" />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {/* Mirrors the action-menu button column's minimum height. */}
+                    <div className="mt-1 h-6 w-6 shrink-0" />
+                  </div>
+                );
               })(),
         )}
       </div>

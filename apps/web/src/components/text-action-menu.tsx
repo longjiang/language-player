@@ -68,6 +68,8 @@ interface TextActionMenuProps {
   translationClass?: string;
   /** Always render the translation below the content, even on xl screens. */
   translationBelow?: boolean;
+  /** Scale factor for the inline translation column (matches L2 text zoom). */
+  translationZoom?: number;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
   children: ReactNode;
@@ -84,6 +86,7 @@ export function TextActionMenu({
   translation,
   translationClass = '',
   translationBelow = false,
+  translationZoom = 1,
   loading = false,
   children,
 }: TextActionMenuProps) {
@@ -191,12 +194,18 @@ export function TextActionMenu({
           {children}
         </div>
         {translation && (
-          <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'xl:pt-0'} ${translationClass}`}>
+          <div
+            className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'xl:pt-0'} ${translationClass}`}
+            style={{ zoom: translationZoom }}
+          >
             {typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
         {loading && !translation && (
-          <div className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'xl:pt-0'} ${translationClass || 'text-sm'}`}>
+          <div
+            className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'xl:pt-0'} ${translationClass || 'text-sm'}`}
+            style={{ zoom: translationZoom }}
+          >
             <TranslationSkeleton
               text={text}
               className={translationClass.includes('text-center') ? 'items-center' : ''}
