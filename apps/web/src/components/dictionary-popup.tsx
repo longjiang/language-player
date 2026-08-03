@@ -274,7 +274,12 @@ export function DictionaryPopup({
   const unmatchedSavedWords = useMemo(() => {
     if (loading || error) return [];
     const langWords = savedWords[l2Code] ?? [];
-    const entryIds = new Set(entries.map((e) => e.id));
+    // Include phrase-card entries: a word saved from the /extract-phrases
+    // "Phrases" section carries the ID of its canonical phrase entry, which
+    // only appears in phraseCards — not in the standard lookup results for the
+    // selected surface form. Without it, freshly saved phrase words would be
+    // flagged as unrecognized legacy data.
+    const entryIds = new Set([...entries, ...phraseCards].map((e) => e.id));
 
     return langWords.filter((sw) => {
       // Check if this saved word's forms include the token text
@@ -286,7 +291,24 @@ export function DictionaryPopup({
       if (entryIds.has(sw.id)) return false;
       return true;
     });
-  }, [savedWords, l2Code, entries, token.text, loading, error]);
+  }, [savedWords, l2Code, entries, phraseCards, token.text, loading, error]);
+
+  // Diagnostic: when a saved word is flagged as unrecognized, log the ID sets
+  // involved so an ID-scheme mismatch can be traced (saved id vs. the ids the
+  // standard lookup and phrase extraction loaded for this token).
+  useEffect(() => {
+    if (unmatchedSavedWords.length === 0) return;
+    logwarn('Unmatched saved word vs loaded entries', {
+      tokenText: token.text,
+      saved: unmatchedSavedWords.map((sw) => ({
+        id: sw.id,
+        forms: sw.forms,
+        formMatch: sw.forms.some((f) => f.toLowerCase() === token.text.toLowerCase()),
+      })),
+      standardEntryIds: entries.map((e) => e.id),
+      phraseCardIds: phraseCards.map((e) => e.id),
+    });
+  }, [unmatchedSavedWords, token.text, entries, phraseCards]);
 
   // Phrase cards that aren't duplicates of the standard lookup results.
   const mainEntryIds = useMemo(() => new Set(entries.map((e) => e.id)), [entries]);

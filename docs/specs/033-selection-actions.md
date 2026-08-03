@@ -28,7 +28,7 @@
 - `use-text-actions.ts` — shared copy/speak/explain/translate handlers for `TextActionMenu` (single source for the AI-explain prompt builder and `/translate` call).
 - `text-action-panels.tsx` — shared `ExplainPanel`, `TranslatePanel`, and `renderInlineMarkdown` for `TextActionMenu`.
 - `tokenized-text.tsx` — new opt-in `selectionDictionary` prop; renders `DictionaryPopup` with the selected text as a lemma-less token and coordinates the two popups.
-- `dictionary-popup.tsx` — optional `extractPhrases` prop (selection popup): calls `/extract-phrases`, looks up each phrase, and renders a "Phrases" card section with a loading spinner; shows the LLM pronunciation next to the header.
+- `dictionary-popup.tsx` — optional `extractPhrases` prop (selection popup): calls `/extract-phrases`, looks up each phrase, and renders a "Phrases" card section with a loading spinner; shows the LLM pronunciation next to the header. Saved-word matching includes phrase-card entry IDs (plus a diagnostic log on mismatch) so words saved from the Phrases section aren't flagged as unrecognized.
 - `token-span.tsx` — ruby `<rt>` readings are `select-none` so `selection.toString()` matches the source text.
 
 ### States
