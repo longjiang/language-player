@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import JSZip from 'jszip';
-import { findSpineIndex, resolveNavDir, resolvePath, splitFragment } from './epub-book';
+import { findSpineIndex, fullTocHref, resolveNavDir, resolvePath, splitFragment } from './epub-book';
 import type { EpubSpineItem } from './epub-book-types';
 
 function dirname(p: string): string {
@@ -82,6 +82,18 @@ describe('findSpineIndex (loose TOC↔spine matching)', () => {
     ];
     expect(findSpineIndex(amb, 'ch1.html')).toBe(-1);
     expect(findSpineIndex(amb, 'b/ch1.html')).toBe(1); // raw href match wins
+  });
+});
+
+describe('fullTocHref (fragment re-attachment)', () => {
+  it('re-attaches the stored fragment to the canonical href', () => {
+    expect(fullTocHref({ href: 'OEBPS/text00002.html', fragment: 'a00752_0004_n0002' }))
+      .toBe('OEBPS/text00002.html#a00752_0004_n0002');
+  });
+
+  it('passes fragment-less hrefs through unchanged', () => {
+    expect(fullTocHref({ href: 'OEBPS/text00001.html' }))
+      .toBe('OEBPS/text00001.html');
   });
 });
 
