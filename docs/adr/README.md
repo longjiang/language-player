@@ -30,3 +30,5 @@ NNNN-title-with-dashes.md
 | 0013 | App Store strategy | proposed | 2026-07-25 |
 | 0014 | Interaction primitives strategy — headless UI for web + mobile | proposed | 2026-07-25 |
 | 0021 | Migrate video content from Directus MySQL to Supabase Postgres | accepted | 2026-08-02 |
+| 0022 | Keep epubjs on Web — layer the whole-book model on top | accepted | 2026-08-02 |
+| 0023 | Proxy Supabase Auth (GoTrue) through Flask | accepted | 2026-08-03 |
