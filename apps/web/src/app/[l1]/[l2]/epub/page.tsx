@@ -163,6 +163,9 @@ export default function EpubPage() {
 
   // Search result → jump to its location.
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
+    // Dismiss the sidebar so the matched content gets the full reader width.
+    setMobileSidebarOpen(false);
+    setSidebarOpen(false);
     navigateTo(result.location);
     if (result.match) {
       setHighlight({
