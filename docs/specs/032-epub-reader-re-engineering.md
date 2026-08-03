@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-032
 - **Feature**: Re-engineer the web EPUB reader around the book model (spine flow + TOC bookmarks + whole-book pagination)
-- **Status**: draft
+- **Status**: implemented (2026-08-02; commits `78134763`, `7e79aa2d`, `4de46c5d`)
 - **Created**: 2026-08-02
 - **Revised**: 2026-08-02 — web keeps `epubjs` + `turndown`; the whole-book model is built on top of epubjs instead of a new shared parser package (see "Proposed architecture")
 - **ROADMAP Phase**: Phase 4 (Reading)
@@ -199,7 +199,7 @@ Page breaks are computed over the **global block stream** (all linear spine item
 - The hook keeps: measured block heights (cache in memory), a sorted list of page-start block indices, and the viewport size (`clientWidth`, `clientHeight`, font-size settings from `SettingsContext`).
 - Breaks are computed **lazily**: to find the page containing a location, measure forward/backward from the nearest known page start in chunks (double-rAF per chunk, the pattern the reader already uses). Page breaks between spine items are not forced — a page may span a spine boundary, exactly like a real continuous reader.
 - On resize/font change: invalidate breaks and heights; recompute lazily from the current location.
-- **Total page count**: an idle-time, chunked full-pagination job builds the complete break list; until it finishes, the header shows `n / ~N` (estimated from characters per page). Bookshelf progress stays character-based, so it never depends on the viewport.
+- **Total page count**: as built, the header always shows an estimate (`n / ~N`) from a moving chars-per-page average — the planned idle-time full-pagination job for an exact count was not implemented (deferred; see Open questions). Bookshelf progress stays character-based, so it never depends on the viewport.
 
 ### 5. Whole-book search
 
@@ -242,8 +242,8 @@ interface EpubSpineItem {
 interface TocNode {
   id?: string;
   label: string;
-  href: string;            // resolved, fragment preserved
-  fragment?: string;
+  href: string;            // resolved zip path, fragment STRIPPED
+  fragment?: string;       // kept separately; re-attach via fullTocHref()
   children: TocNode[];
 }
 
@@ -269,7 +269,7 @@ interface EpubBook {
   resolveHref(href: string, baseDir?: string): Promise<BookLocation | null>;
 }
 
-// web hook (use-epub.ts → useEpubBook)
+// web hook (use-epub.ts → useEpub)
 interface BookLocation {
   spineIndex: number;
   blockIndex: number;
@@ -294,15 +294,15 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 
 ### Phase B — swap the web hook to the book model
 
-1. `use-epub.ts` → `useEpubBook`: `openBook/addBook/removeBook/searchBook` kept; `loadChapter/nextChapter/prevChapter` replaced by `goToLocation`, `nextPage`, `prevPage`, `resolveHref`.
+1. `use-epub.ts` → `useEpub`: `openBook/addBook/removeBook/searchBook` kept; `loadChapter/nextChapter/prevChapter` replaced by `goToLocation`, `nextPage`, `prevPage`, `resolveHref`.
 2. `epub-store.ts` v3: `lastLocation` + migration path; search index v2 per spine item.
 3. `page.tsx` rewire; delete the document-level link interceptor.
 
 ### Phase C — whole-book pagination + reader panel
 
-1. Extract measurement/page-break logic from `ReaderPanel` into `usePaginatedBlocks` (lazy forward/backward break computation, height cache, viewport invalidation).
+1. New `use-paginated-book.ts` hook (whole-book paginator; the markdown `ReaderPanel` path is untouched): lazy forward/backward break computation, height cache, viewport invalidation.
 2. New `EpubReaderPanel` consuming `EpubBlock[]` from the current location; per-page tokenization + translation (existing caching pattern keyed by global block index).
-3. Idle-time full pagination job for the exact total page count.
+3. Idle-time full pagination job for the exact total page count — deferred; v1 ships estimate-only (`n / ~N`, see section 4 and Open questions).
 
 ### Phase D — search + sidebar
 
@@ -315,14 +315,40 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 2. Update ARCH-013; add an ADR recording the decision to keep epubjs and layer the book model on top (web) while mobile keeps its hand-rolled parser; mark this spec complete.
 3. Follow-up (separate task): evaluate unifying web (epubjs) and mobile (hand-rolled) on one parser — explicitly out of scope here.
 
+## Implementation notes (as-built)
+
+Bugs found and fixed while validating the fixture books; future readers of this
+spec should treat these as requirements, not accidents:
+
+1. **Nav/NCX directory canonicalization** — epubjs reports `navPath`/`ncxPath`
+   as raw OPF-relative hrefs (`toc.ncx`). `dirname()` of the raw value drops
+   the OPF directory, so EPUB-2 books with the NCX beside the OPF (e.g.
+   Botchan) ended up with TOC hrefs (`text00002.html`) that never matched
+   spine hrefs (`OEBPS/text00002.html`) and every TOC entry resolved to null.
+   `resolveNavDir()` resolves the nav href against the OPF dir first.
+2. **Fragments are stored, not embedded** — `resolvePath` strips `#fragment`
+   from canonical hrefs; the fragment lives on `TocNode.fragment`. Both TOC
+   chapter clicks and `tocMarkers()` must resolve via `fullTocHref()` or every
+   entry sharing a spine item collapses to block 0 (Botchan: all 11 chapters
+   → spine 2 block 0, with the last marker always highlighted).
+3. **Measure-container children** — the paginator reads `measureRef.children`
+   as one element per block. The hidden measuring container must render blocks
+   as direct children; an inner wrapper div makes it measure a single child
+   and produce one-block pages.
+4. **Paginator generation races** — React dev StrictMode double-invokes the
+   reset effect, bumping the fetch generation after `jumpTo` captured it, so
+   the only in-flight fetch result is dropped and the spinner never clears.
+   Guards: skip the reset when the book instance is unchanged, re-jump when
+   the book instance changes, and ref-guard `openBook` against double-clicks.
+
 ## Files changed
 
 | File | Change |
 |---|---|
 | `apps/web/src/lib/epub-book.ts` (new) | Book model on epubjs: canonical hrefs, TOC, converter, locations |
-| `apps/web/src/hooks/use-epub.ts` | Rewritten as `useEpubBook` (book model) |
+| `apps/web/src/hooks/use-epub.ts` | Rewritten as `useEpub` (book model) |
 | `apps/web/src/lib/epub-store.ts` | Schema v3 (`lastLocation`, index v2, migration) |
-| `apps/web/src/components/reader/reader-panel.tsx` | Extract `usePaginatedBlocks` (markdown reader path untouched) |
+| `apps/web/src/hooks/use-paginated-book.ts` (new) | Whole-book paginator (markdown `ReaderPanel` untouched) |
 | `apps/web/src/components/reader/epub-reader-panel.tsx` (new) | Block-driven, location-based reading pane |
 | `apps/web/src/components/reader/epub-chapter-sidebar.tsx` | `TocNode` hierarchy + ancestor highlight |
 | `apps/web/src/components/reader/epub-search-panel.tsx` | Location-based results (UX unchanged) |
@@ -353,7 +379,7 @@ Note: the web `TocItem` (`subitems`) and mobile `TocItem` (`children`) converge 
 
 1. **Converter host** — the browser-DOM walker used by `EpubBook` works in the browser only; keep it web-local (mobile's regex pipeline stays as-is).
 2. **Non-linear items** — include in the flow vs standalone-only; v1 default is standalone-only, but a book with *only* non-linear content should fall back to including them.
-3. **Total page count** — estimate (`n / ~N`) while the background pagination job runs; acceptable, or should the header hide the total until exact?
+3. **Total page count** — resolved for v1: estimate-only (`n / ~N`) via chars-per-page average; an exact idle-time full-pagination job remains a possible follow-up.
 4. **RTL scope** — reversed arrows only (v1) vs full mirrored pagination; confirm this matches user expectations for Japanese/Chinese books that are LTR anyway.
 
 ## Verification plan
