@@ -170,7 +170,7 @@ describe('enqueueLookupWords', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const words = Array.from({ length: 35 }, (_, i) => ({
+    const words = Array.from({ length: 120 }, (_, i) => ({
       text: `overflow-${i}`,
       l2Code: 'ja',
     }));
@@ -178,9 +178,9 @@ describe('enqueueLookupWords', () => {
     await new Promise((r) => setTimeout(r, 300));
     await done;
 
-    // 30-word cap → two requests: 30 + 5. The overflow must not strand.
+    // 100-word cap → two requests: 100 + 20. The overflow must not strand.
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(getCachedEntries('ja', 'overflow-0')).toBeDefined();
-    expect(getCachedEntries('ja', 'overflow-34')).toBeDefined();
+    expect(getCachedEntries('ja', 'overflow-119')).toBeDefined();
   });
 });

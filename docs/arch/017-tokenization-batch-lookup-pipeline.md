@@ -170,7 +170,7 @@ export function enqueueLookupWords(words: { text, l2Code }[], apiUrl): Promise<v
 
 **Queued (batched) lookup:** `TokenizedText` lines call `enqueueLookupWords()`
 after their tokens arrive. A short timer (80ms) flushes the queue through
-`bulkLookupWords()` in one `/dictionary/lookup-batch` request (max 30 words per
+`bulkLookupWords()` in one `/dictionary/lookup-batch` request (max 100 words per
 request, draining the whole queue in chunks so words beyond the cap are never
 stranded). Words already in the cache are skipped, and identical words queued
 by multiple lines are looked up once.
