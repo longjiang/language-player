@@ -299,7 +299,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
-                selectionMenu
+                selectionDictionary
                 context={{
                   starttime: activeLine.starttime,
                   youtube_id: youtubeId,
@@ -362,7 +362,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
-                  selectionMenu
+                  selectionDictionary
                   context={{
                     starttime: line.starttime,
                     youtube_id: youtubeId,

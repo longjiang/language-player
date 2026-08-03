@@ -26,9 +26,8 @@ export interface UseTextActionsOptions {
 }
 
 /**
- * Shared copy / speak / AI-explain / translate logic, used by both
- * TextActionMenu (the per-block ⋯ menu) and SelectionActionMenu (the popup
- * anchored to a native text selection).
+ * Shared copy / speak / AI-explain / translate logic for TextActionMenu
+ * (the per-block ⋯ menu).
  */
 export function useTextActions({ text, l2Code, l1Code, context }: UseTextActionsOptions) {
   const { l1 } = useLanguage();

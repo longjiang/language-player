@@ -518,7 +518,7 @@ export function ReaderPanel({
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                                 tokens={cachedTokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
-                                deferTokenization={!!onLemmatize} selectionMenu />
+                                deferTokenization={!!onLemmatize} selectionDictionary />
                             </Tag>
                           </TextActionMenu>
                         );
@@ -528,7 +528,7 @@ export function ReaderPanel({
                   {/* State 3: no blocks yet — fallback */}
                   {!blocks && text && (
                     <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
-                      <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} selectionMenu />
+                      <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} selectionDictionary />
                     </TextActionMenu>
                   )}
                 </div>

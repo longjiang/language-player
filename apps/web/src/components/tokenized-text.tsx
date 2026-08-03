@@ -15,7 +15,6 @@ import { isPhoneticsEligible, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup } from '@/hooks/use-selection-popup';
-import { SelectionActionMenu } from '@/components/selection-action-menu';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 
 // Re-exported for callers that imported the constant from this component
@@ -231,10 +230,9 @@ export interface TokenizedTextProps {
   showDefinition?: boolean;
   /** Overrides the user's byeonggi (hanja/hán tự) setting when provided. */
   byeonggi?: boolean;
-  /** When true, a native text selection inside the tokenized text shows a popup
-   *  with the TextActionMenu actions (copy / speak / AI explain / translate)
-   *  applied to the selected substring. */
-  selectionMenu?: boolean;
+  /** When true, selecting text inside the tokenized text opens the dictionary
+   *  popup with the selected substring fed in as the lookup term (no lemma). */
+  selectionDictionary?: boolean;
 }
 
 /**
@@ -274,7 +272,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   quickGloss,
   showDefinition,
   byeonggi,
-  selectionMenu = false,
+  selectionDictionary = false,
 }) => {
   // Map typeFace to Tailwind font-family class
   const fontClass =
@@ -298,7 +296,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0);
-  const { containerRef, menuRef, selection: textSelection, clear: clearTextSelection } = useSelectionPopup<HTMLSpanElement>();
+  const { containerRef, selection: textSelection, clear: clearTextSelection } = useSelectionPopup<HTMLSpanElement>();
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
   const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
@@ -674,22 +672,21 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       )}
       </span>
 
-      {/* Selection action popup */}
-      {selectionMenu && textSelection && (
-        <SelectionActionMenu
-          text={textSelection.text}
-          l2Code={l2Code}
+      {/* Selection dictionary popup — the selected text becomes the lookup term */}
+      {selectionDictionary && textSelection && (
+        <DictionaryPopup
+          token={{ text: textSelection.text, lemmas: [] }}
           l1Code={l1.code}
-          context={text}
+          l2Code={l2Code}
+          context={{
+            ...externalContext,
+            form: textSelection.text,
+            text,
+          }}
           position={textSelection.rect}
-          menuRef={menuRef}
-          renderOriginal={(loading) =>
-            loading ? (
-              <span className="text-muted-foreground/80">{textSelection.text}</span>
-            ) : (
-              <TokenizedText text={textSelection.text} l2Code={l2Code} textScale={0} />
-            )
-          }
+          linkUrl={href && (onOpenLink || /^https?:\/\//i.test(href)) ? href : undefined}
+          onOpenLink={onOpenLink}
+          onClose={clearTextSelection}
         />
       )}
     </>
