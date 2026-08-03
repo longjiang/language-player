@@ -242,7 +242,7 @@ export function DictionaryPopup({
         </div>
 
         {/* Body */}
-        <div className="max-h-[50vh] overflow-y-auto space-y-2">
+        <div className="max-h-[50vh] overflow-y-auto space-y-3">
           {linkUrl && (
             <button
               type="button"
@@ -276,13 +276,11 @@ export function DictionaryPopup({
           )}
 
           {/* AI Explanation — placed above dictionary entries, matching Classic */}
-          <div className="mt-3">
-            <AiExplanation
-              word={token.text}
-              contextText={context?.text}
-              entryFound={entries.length > 0}
-            />
-          </div>
+          <AiExplanation
+            word={token.text}
+            contextText={context?.text}
+            entryFound={entries.length > 0}
+          />
 
           {/* Compact image strip — one scrolling row, 3 images per query */}
           <ImageSearchResults
@@ -336,7 +334,7 @@ export function DictionaryPopup({
             </div>
           ))}
 
-          <WordList>
+          <WordList className="space-y-3">
             {entries.map((entry) => (
               <DictionaryEntryCard
                 key={entry.id}

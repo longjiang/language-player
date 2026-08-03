@@ -361,7 +361,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
             {error}
           </div>
         )}
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap justify-end gap-2">
           {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).map((followUp) => (
             <Button
               key={followUp.kind}
