@@ -12,6 +12,15 @@ import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, Check, Copy } from 'lucide-react';
 
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax';
+
+const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
+  { kind: 'inflection', labelKey: 'action.inflection' },
+  { kind: 'morphemes', labelKey: 'action.morphemes' },
+  { kind: 'etymology', labelKey: 'action.etymology' },
+  { kind: 'syntax', labelKey: 'action.syntax' },
+];
+
 interface AiExplanationProps {
   /** The word being looked up (lemma/dictionary form). */
   word: string;
@@ -41,6 +50,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const [showAi, setShowAi] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeFollowUp, setActiveFollowUp] = useState<string | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
 
@@ -77,15 +87,58 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
+    setActiveFollowUp(null);
     log('AI explain stream start', { word });
     stream(prompt);
   }, [stream, buildPrompt, word]);
 
   const handleRegenerate = useCallback(() => {
     const prompt = buildPrompt();
+    setActiveFollowUp(null);
     log('AI explain stream start (regenerate)', { word });
     stream(prompt, { regenerate: true });
   }, [stream, buildPrompt, word]);
+
+  const buildFollowUpPrompt = useCallback((kind: FollowUpKind): string => {
+    const l2Name = languageName(l2.code, l1.code);
+
+    // Strip trailing punctuation from context to avoid doubled periods
+    const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
+
+    const wordParams = { l2Name, word };
+    let prompt: string;
+    if (kind === 'inflection') {
+      if (cleanContext && contextForm && contextForm !== word) {
+        prompt = t('prompt.followup_inflection_context_form', { ...wordParams, contextForm, context: cleanContext });
+      } else if (cleanContext) {
+        prompt = t('prompt.followup_inflection_context', { ...wordParams, context: cleanContext });
+      } else {
+        prompt = t('prompt.followup_inflection', wordParams);
+      }
+    } else if (kind === 'morphemes') {
+      prompt = cleanContext
+        ? t('prompt.followup_morphemes_context', { ...wordParams, context: cleanContext })
+        : t('prompt.followup_morphemes', wordParams);
+    } else if (kind === 'etymology') {
+      prompt = t('prompt.followup_etymology', wordParams);
+    } else {
+      prompt = cleanContext
+        ? t('prompt.followup_syntax_context', { ...wordParams, context: cleanContext })
+        : t('prompt.followup_syntax', wordParams);
+    }
+
+    // L2 strings are backticked so they render as interactive tokenized text
+    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+    return `${prompt}\n\n${ticksPrompt}`;
+  }, [t, l1.code, l2.code, word, contextText, contextForm]);
+
+  const handleFollowUp = useCallback((kind: FollowUpKind) => {
+    const followUp = FOLLOW_UPS.find((f) => f.kind === kind);
+    setActiveFollowUp(followUp?.labelKey ?? null);
+    const prompt = buildFollowUpPrompt(kind);
+    log('AI explain follow-up stream start', { word, kind });
+    stream(prompt);
+  }, [buildFollowUpPrompt, stream, word]);
 
   const handleCopy = useCallback(async () => {
     if (!explanation) return;
@@ -208,6 +261,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           {t('label.ai_says')}
+          {activeFollowUp && <> · {t(activeFollowUp)}</>}
           {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
@@ -220,7 +274,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
           </div>
         )}
         {!loading && (
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -241,6 +295,16 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
+            {FOLLOW_UPS.map((followUp) => (
+              <Button
+                key={followUp.kind}
+                variant="outline"
+                size="sm"
+                onClick={() => handleFollowUp(followUp.kind)}
+              >
+                {t(followUp.labelKey)}
+              </Button>
+            ))}
           </div>
         )}
       </div>
