@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCloudUserData } from '@/contexts/UserDataContext';
+import { useUserDataColumns } from '@langplayer/api-client';
 import { logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
@@ -15,25 +15,25 @@ import type {
   ReviewSettings,
   L2Settings,
 } from '@langplayer/shared';
-import { useUserData } from '@langplayer/api-client';
 
 const STORAGE_KEY = 'lp_settings';
 const SYNC_DEBOUNCE_MS = 3000;
 
 /**
- * Unified settings hook — ported from apps/web/src/hooks/use-settings.ts.
- *   - SecureStore replaces localStorage
- *   - useAuth() replaces useSession()
- *   - Cloud sync via read-merge-write (same as web)
+ * Unified settings hook (SPEC-039 5.2 row API).
+ *
+ * - SecureStore replaces localStorage
+ * - Authenticated: hydrate from GET /user-settings (settings_v2, ts-based LWW)
+ * - Changes: SecureStore immediately + debounced PUT /user-settings
  */
 export function useSettings() {
   const { user } = useAuth();
-  const { getUserData } = useUserData();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const { getUserSettings, putUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
+  const cloudLoaded = useRef(false);
 
   // ── Load from SecureStore ──
   useEffect(() => {
@@ -49,25 +49,31 @@ export function useSettings() {
     })();
   }, []);
 
-  // ── Merge cloud settings on load ──
+  // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (!user || !loaded || !cloudLoaded || !cloudData?.settings_v2) return;
-    try {
-      const cloud = JSON.parse(cloudData.settings_v2) as SettingsV2;
-      if (cloud.v === 2) {
+    if (!user || !loaded || cloudLoaded.current) return;
+    cloudLoaded.current = true;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getUserSettings();
+        if (cancelled) return;
+        const cloud = res.settings_v2;
+        if (!cloud || cloud.v !== 2) return;
         setSettings((prev) => {
-          if (cloud.ts > prev.ts) {
-            const merged = { ...cloud, ...prev, v: 2 as const, ts: new Date().toISOString() };
-            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
-            return merged;
-          }
-          return prev;
+          if (cloud.ts <= prev.ts) return prev;
+          const merged = { ...cloud, ...prev, v: 2 as const, ts: new Date().toISOString() };
+          SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
+          return merged;
         });
+      } catch (err) {
+        logwarn('[settings] Could not load from server:', err);
       }
-    } catch { /* ignore parse errors */ }
-  }, [user, loaded, cloudLoaded, cloudData]);
+    })();
+    return () => { cancelled = true; };
+  }, [user, loaded, getUserSettings]);
 
-  // ── Persist + cloud sync ──
+  // ── Persist + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
     SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(s)).catch(() => {});
 
@@ -77,23 +83,14 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        const { apiClient } = await import('@langplayer/api-client');
-        const cloudResp = await getUserData();
-        if (cloudResp?.settings_v2) {
-          const cloud = JSON.parse(cloudResp.settings_v2) as SettingsV2;
-          if (cloud.v === 2 && cloud.ts > s.ts) {
-            s = { ...cloud, ...s, v: 2, ts: new Date().toISOString() };
-            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(s)).catch(() => {});
-          }
-        }
-        await apiClient.post('/user-data/sync', { settings_v2: JSON.stringify(s) });
+        await putUserSettings({ settings_v2: s });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [user, getUserData]);
+  }, [user, putUserSettings]);
 
   // ── SSR-safe updates (write-through) ──
   const update = useCallback(

@@ -1,14 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserData } from '@langplayer/api-client';
-import { useCloudUserData } from '@/contexts/UserDataContext';
+import { deleteSrsCard, useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
-const SYNC_DEBOUNCE_MS = 3000;
 
 function mergeSrsCards(local: Record<string, SrsFields>, cloud: Record<string, SrsFields>): Record<string, SrsFields> {
   const merged = { ...local };
@@ -21,14 +19,20 @@ function mergeSrsCards(local: Record<string, SrsFields>, cloud: Record<string, S
   return merged;
 }
 
+/**
+ * SRS hook (SPEC-039 5.2 row API).
+ *
+ * - SecureStore first (offline-capable)
+ * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
+ * - updateCard → PUT /srs/cards; removeCard → DELETE /srs/cards;
+ *   setDailyLimit → PUT /srs/settings
+ */
 export function useSrs() {
   const { user } = useAuth();
-  const { getUserData } = useUserData();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const { getSrs, putSrsCard, putSrsSettings } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
-  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
+  const cloudLoaded = useRef(false);
 
   useEffect(() => {
     if (loaded) return;
@@ -37,76 +41,84 @@ export function useSrs() {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          setStore({ settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) }, cards: parsed.cards ?? {} });
+          setStore({
+            settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
+            cards: parsed.cards ?? {},
+          });
         }
       } catch {}
       setLoaded(true);
     })();
   }, [loaded]);
 
+  // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (!user || !loaded || !cloudLoaded || !cloudData?.srs_progress) return;
-    try {
-      const cloud = JSON.parse(cloudData.srs_progress) as SrsProgressStore;
-      setStore((prev) => {
-        const cards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
-        for (const [lang, cloudCards] of Object.entries(cloud.cards ?? {})) {
-          cards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cloudCards);
-        }
-        const merged = { settings: { ...prev.settings, ...cloud.settings }, cards };
-        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
-        return merged;
-      });
-    } catch {}
-  }, [user, loaded, cloudLoaded, cloudData]);
-
-  const scheduleSync = useCallback((s: SrsProgressStore) => {
-    if (!user) return;
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      if (isSyncing.current) return;
-      isSyncing.current = true;
+    if (!user || !loaded || cloudLoaded.current) return;
+    cloudLoaded.current = true;
+    let cancelled = false;
+    (async () => {
       try {
-        const { apiClient } = await import('@langplayer/api-client');
-        await apiClient.post('/user-data/sync', { srs_progress: JSON.stringify(s) });
+        const res = await getSrs();
+        if (cancelled) return;
+        const cloud = {
+          settings: res.settings ?? { dailyNewLimit: 20 },
+          cards: res.cards ?? {},
+        };
+        setStore((prev) => {
+          const cards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
+          for (const [lang, cloudCards] of Object.entries(cloud.cards)) {
+            cards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cloudCards);
+          }
+          const merged = { settings: { ...prev.settings, ...cloud.settings }, cards };
+          SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
+          return merged;
+        });
       } catch (err) {
-        logwarn('[srs] Cloud sync failed:', err);
-      } finally {
-        isSyncing.current = false;
+        logwarn('[srs] Could not load from server:', err);
       }
-    }, SYNC_DEBOUNCE_MS);
-  }, [user]);
+    })();
+    return () => { cancelled = true; };
+  }, [user, loaded, getSrs]);
 
   const updateCard = useCallback((lang: string, wordId: string, fields: Partial<SrsFields>) => {
     setStore((prev) => {
       const langCards = { ...(prev.cards[lang] ?? {}) };
-      langCards[wordId] = { ...(langCards[wordId] ?? { ease: 2.5, interval: 0, repetitions: 0, lastReview: '', nextReview: '' }), ...fields };
+      langCards[wordId] = {
+        ...(langCards[wordId] ?? { ease: 2.5, interval: 0, repetitions: 0, lastReview: '', nextReview: '' }),
+        ...fields,
+      };
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
-      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      scheduleSync(next);
+      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      putSrsCard(lang, wordId, langCards[wordId]).catch((err) => {
+        logwarn('[srs] Card sync failed:', err);
+      });
       return next;
     });
-  }, [scheduleSync]);
+  }, [putSrsCard]);
 
   const removeCard = useCallback((lang: string, wordId: string) => {
     setStore((prev) => {
       const langCards = { ...(prev.cards[lang] ?? {}) };
       delete langCards[wordId];
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
-      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      scheduleSync(next);
+      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      deleteSrsCard(lang, wordId).catch((err) => {
+        logwarn('[srs] Card delete failed:', err);
+      });
       return next;
     });
-  }, [scheduleSync]);
+  }, []);
 
   const setDailyLimit = useCallback((limit: number) => {
     setStore((prev) => {
       const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
-      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
-      scheduleSync(next);
+      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      putSrsSettings(limit).catch((err) => {
+        logwarn('[srs] Settings sync failed:', err);
+      });
       return next;
     });
-  }, [scheduleSync]);
+  }, [putSrsSettings]);
 
   const dailyNewLimit = store.settings.dailyNewLimit;
 
