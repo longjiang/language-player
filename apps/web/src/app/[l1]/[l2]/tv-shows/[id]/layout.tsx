@@ -16,11 +16,12 @@ async function getShow(id: number): Promise<TvShow | null> {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { l1: string; l2: string; id: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ l1: string; l2: string; id: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const showId = Number(params.id);
   const { l1, l2 } = params;
   const show = !isNaN(showId) ? await getShow(showId) : null;

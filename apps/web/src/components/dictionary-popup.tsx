@@ -190,7 +190,7 @@ export function DictionaryPopup({
         token.text,
       ].filter((t, i, a) => a.indexOf(t) === i);
 
-      let allEntries: DictionaryEntry[] = [];
+      const allEntries: DictionaryEntry[] = [];
       let cacheHit = false;
 
       // ── Check cache first ──

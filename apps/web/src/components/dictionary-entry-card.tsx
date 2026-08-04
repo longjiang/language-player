@@ -398,7 +398,7 @@ export function DictionaryEntryCard({
             <div key={i} className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-300">
                 <BookOpen className="h-3.5 w-3.5" />
-                <span>{t('label.textbook_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
+                <span>{t('label.textbook_format', { material: m.material, book: m.location?.book ?? '', lesson: m.location?.lesson ?? '' })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
                 <p className="text-sm" lang={l2Code}>{m.example}</p>

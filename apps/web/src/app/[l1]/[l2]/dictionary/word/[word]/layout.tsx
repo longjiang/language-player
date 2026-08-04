@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { word: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ word: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const word = decodeURIComponent(params.word ?? '');
   const title = word ? `${word} — Dictionary` : 'Dictionary';
 

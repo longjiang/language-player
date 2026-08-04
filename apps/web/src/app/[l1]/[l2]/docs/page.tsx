@@ -186,10 +186,11 @@ function walkDocs(dir: string, basePath: string, out: DocEntry[]) {
 }
 
 interface Props {
-  params: { l1: string; l2: string };
+  params: Promise<{ l1: string; l2: string }>;
 }
 
-export default function DocsPage({ params }: Props) {
+export default async function DocsPage(props: Props) {
+  const params = await props.params;
   const { l1, l2 } = params;
   const docs = getDocs(l1);
   const searchIndex = getSearchIndex(l1);

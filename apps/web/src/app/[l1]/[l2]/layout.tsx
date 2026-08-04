@@ -6,13 +6,18 @@ import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { Header } from '@/components/layout/header';
 
-export default function LanguageLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { l1: string; l2: string };
-}) {
+export default async function LanguageLayout(
+  props: {
+    children: React.ReactNode;
+    params: Promise<{ l1: string; l2: string }>;
+  }
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   // Validate language codes server-side
   if (
     !SUPPORTED_L1S.includes(params.l1 as any) ||

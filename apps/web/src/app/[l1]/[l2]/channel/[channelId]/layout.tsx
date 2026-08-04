@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { channelId: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ channelId: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const channelId = params.channelId ?? '';
   const title = channelId ? `Channel: ${channelId}` : 'Channel';
 
