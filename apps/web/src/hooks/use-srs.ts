@@ -2,42 +2,34 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { useUserData } from '@langplayer/api-client';
-import { useCloudUserData } from '@/providers/user-data-provider';
+import { deleteSrsCard, useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore, getLanguageCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
-const SYNC_DEBOUNCE_MS = 3000;
 
 /**
- * Remove a single SRS card from localStorage directly, without needing the
- * full useSrs() hook. This is a lightweight operation — just reads the store,
- * deletes the card, and writes back. It does NOT sync to cloud (that will
- * happen during the next normal useSrs sync cycle, and pruneOrphans serves
- * as the safety net).
- *
- * Use this in components that only need to delete cards (SavedWordRow,
- * SaveButton, dictionary-popup) instead of calling useSrs() which creates
- * a full state machine with cloud sync timers per instance.
+ * Remove a single SRS card from localStorage AND the server (row API).
+ * Safe to call from components without the full useSrs hook.
  */
 export function removeCardFromStorage(l2Code: string, wordId: string): void {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const store = JSON.parse(raw);
-    if (store?.cards?.[l2Code]?.[wordId]) {
-      delete store.cards[l2Code][wordId];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    if (raw) {
+      const store = JSON.parse(raw);
+      if (store?.cards?.[l2Code]?.[wordId]) {
+        delete store.cards[l2Code][wordId];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      }
     }
   } catch { /* ignore */ }
+  deleteSrsCard(l2Code, wordId).catch((err) => {
+    logwarn('[SRS] Card delete failed:', err);
+  });
 }
 
-/**
- * Merge two SRS card records (per-language: wordId → SrsFields).
- * Newer lastReview wins per card.
- */
+/** Merge two SRS card records (per-language: wordId → SrsFields). Newer lastReview wins. */
 function mergeSrsCards(
   local: Record<string, SrsFields>,
   cloud: Record<string, SrsFields>,
@@ -53,39 +45,26 @@ function mergeSrsCards(
 }
 
 /**
- * Hook for managing SRS (spaced repetition) progress.
+ * SRS hook (SPEC-039 5.2 row API).
  *
- * Store shape (nested by language):
- *   {
- *     settings: { dailyNewLimit: 20 },
- *     cards: { "zh": { "cedict-0": {...}, ... }, "ja": {...} }
- *   }
- *
- * - Read/write localStorage immediately (offline-first)
- * - If authenticated, sync to Directus via Flask /user-data/sync
- * - On login, load from cloud
- * - Settings are embedded in the same store so they sync across devices
+ * - localStorage first (offline-capable)
+ * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
+ * - updateCard → PUT /srs/cards; removeCard/pruneOrphans → DELETE /srs/cards;
+ *   updateSettings → PUT /srs/settings
  */
 export function useSrs() {
   const { data: session, status } = useSession();
-  const { getUserData, syncSrsProgress } = useUserData();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const { getSrs, putSrsSettings, putSrsCard } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
-  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
-  /** Ref to hold the latest store for the sync timer callback (avoids stale closure). */
+  const cloudLoaded = useRef(false);
   const storeRef = useRef<SrsProgressStore>(store);
   storeRef.current = store;
 
   // ── Load from localStorage (always, for both logged-in and anonymous users) ──
-  // LocalStorage is always read first so that settings changes survive page
-  // reloads even when the cloud sync hasn't completed yet (3s debounce).
   useEffect(() => {
     if (loaded) return;
-    if (status === 'loading') return; // still loading auth state
-
-    // Always try localStorage first — offline-first principle
+    if (status === 'loading') return;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -99,184 +78,112 @@ export function useSrs() {
           setStore(restored);
         }
       }
-    } catch { /* corrupted localStorage — use defaults */ }
-
+    } catch { /* corrupted localStorage — defaults */ }
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On cloud load, merge cloud data (newer lastReview wins per card) ──
+  // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
-    if (!cloudData?.srs_progress) return;
-
-    try {
-      const cloud: SrsProgressStore = JSON.parse(cloudData.srs_progress);
-      log('[SRS] Cloud data arrived — merging with local (cloud has %d languages)',
-        Object.keys(cloud.cards ?? {}).length);
-
-      setStore((prev) => {
-        const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
-        for (const [l2, cloudLangCards] of Object.entries(cloud.cards ?? {})) {
-          const before = Object.keys(prev.cards[l2] ?? {}).length;
-          mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
-          const after = Object.keys(mergedCards[l2] ?? {}).length;
-          if (before !== after) {
-            log('[SRS] Cloud merge: l2=%s added %d card(s) from cloud', l2, after - before);
-          }
-        }
-        const merged: SrsProgressStore = {
-          settings: { ...prev.settings, ...(cloud.settings ?? {}) },
-          cards: mergedCards,
-        };
-        return merged;
-      });
-    } catch (err) {
-      logwarn('[SRS] Could not parse cloud SRS data:', err);
-    }
-  }, [status, loaded, cloudLoaded, cloudData]);
-
-  // ── Debounced cloud sync (read-merge-write) ──
-  // Uses storeRef to always read the latest state, avoiding stale closures.
-  const scheduleSync = useCallback(() => {
-    if (!session) return;
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      if (isSyncing.current) return;
-      isSyncing.current = true;
+    if (status !== 'authenticated' || !loaded || cloudLoaded.current) return;
+    cloudLoaded.current = true;
+    let cancelled = false;
+    (async () => {
       try {
-        // Read the latest store from the ref (not from the closure)
-        const latest = storeRef.current;
-        // Read-merge-write: avoid overwriting changes from other devices
-        const cloudResp = await getUserData();
-        let toSync = latest;
-        if (cloudResp?.srs_progress) {
-          const cloud = JSON.parse(cloudResp.srs_progress) as SrsProgressStore;
-          const mergedCards: Record<string, Record<string, SrsFields>> = { ...latest.cards };
-          for (const [l2, cloudLangCards] of Object.entries(cloud.cards ?? {})) {
-            mergedCards[l2] = mergeSrsCards(latest.cards[l2] ?? {}, cloudLangCards);
+        const res = await getSrs();
+        if (cancelled) return;
+        const cloud = {
+          settings: res.settings ?? { dailyNewLimit: 20 },
+          cards: res.cards ?? {},
+        };
+        log('[SRS] Server data arrived — merging with local (server has %d languages)',
+          Object.keys(cloud.cards).length);
+        setStore((prev) => {
+          const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
+          for (const [l2, cloudLangCards] of Object.entries(cloud.cards)) {
+            mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
           }
-          toSync = { settings: latest.settings, cards: mergedCards };
-        }
-        log('[SRS] Syncing SRS to cloud (%d languages, %d total cards)',
-          Object.keys(toSync.cards).length,
-          Object.values(toSync.cards).reduce((sum, c) => sum + Object.keys(c).length, 0));
-        await syncSrsProgress(JSON.stringify(toSync));
+          return {
+            settings: { ...prev.settings, ...cloud.settings },
+            cards: mergedCards,
+          };
+        });
       } catch (err) {
-        logwarn('[SRS] Cloud sync failed — will retry on next change:', err);
-        // Retry after a delay in case of transient network error
-        syncTimer.current = setTimeout(() => {
-          isSyncing.current = false;
-          scheduleSync();
-        }, 10_000);
-      } finally {
-        isSyncing.current = false;
+        logwarn('[SRS] Could not load from server:', err);
       }
-    }, SYNC_DEBOUNCE_MS);
-  }, [session, getUserData, syncSrsProgress]);
+    })();
+    return () => { cancelled = true; };
+  }, [status, loaded, getSrs]);
 
-  // ── Persist to localStorage + schedule cloud sync ──
-  // Called from useEffect, not from inside setStore updaters.
-  const persist = useCallback(() => {
+  // ── Persist to localStorage whenever the store changes (no full-blob sync) ──
+  useEffect(() => {
+    if (!loaded) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(storeRef.current));
     } catch { /* quota exceeded */ }
-    scheduleSync();
-  }, [scheduleSync]);
-
-  // ── Persist store to localStorage + schedule cloud sync whenever it changes ──
-  // This fires AFTER every state update is committed, ensuring localStorage &
-  // cloud are always in sync with the latest React state.
-  // Guard: skip the initial empty store (loaded=false).
-  useEffect(() => {
-    if (!loaded) return;
-    persist();
-  }, [store, loaded, persist]);
+  }, [store, loaded]);
 
   // ── Card API (per-language) ──
 
-  /** Get all cards for a language. */
   const getCards = useCallback((l2Code: string): Record<string, SrsFields> => {
     return getLanguageCards(store, l2Code);
   }, [store]);
 
-  /** Update a single card for a language. */
   const updateCard = useCallback((l2Code: string, wordId: string, fields: SrsFields) => {
     log('[SRS] updateCard: l2=%s wordId=%s reps=%d nextReview=%s',
       l2Code, wordId, fields.repetitions,
       new Date(fields.nextReview).toISOString().slice(0, 16));
     setStore((prev) => {
       const prevCard = prev.cards[l2Code]?.[wordId];
-      const next: SrsProgressStore = {
+      if (prevCard && prevCard.repetitions > 0 && fields.repetitions === 0) {
+        logwarn('[SRS] Card %s/%s reset from reps=%d to 0 — possible data loss!',
+          l2Code, wordId, prevCard.repetitions);
+      }
+      return {
         settings: { ...prev.settings },
         cards: {
           ...prev.cards,
           [l2Code]: { ...(prev.cards[l2Code] ?? {}), [wordId]: fields },
         },
       };
-      // Detect potential data loss: a card going from reviewed → new
-      if (prevCard && prevCard.repetitions > 0 && fields.repetitions === 0) {
-        logwarn('[SRS] Card %s/%s reset from reps=%d to 0 — possible data loss!',
-          l2Code, wordId, prevCard.repetitions);
-      }
-      return next;
     });
-  }, []);
+    putSrsCard(l2Code, wordId, fields).catch((err) => {
+      logwarn('[SRS] Card sync failed:', err);
+    });
+  }, [putSrsCard]);
 
-  /** Remove a card for a language. Updates local state + localStorage. */
   const removeCard = useCallback((l2Code: string, wordId: string) => {
     log('[SRS] removeCard: l2=%s wordId=%s', l2Code, wordId);
-    // Write through to localStorage immediately so non-useSrs consumers
-    // (SavedWordRow, SaveButton) see the removal even if this component
-    // hasn't synced yet.
     removeCardFromStorage(l2Code, wordId);
     setStore((prev) => {
       const langCards = { ...(prev.cards[l2Code] ?? {}) };
       delete langCards[wordId];
-      const next: SrsProgressStore = {
+      return {
         settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: langCards },
       };
-      return next;
     });
   }, []);
 
-  /**
-   * Remove SRS cards for words that are no longer saved.
-   *
-   * An SRS card is only meaningful for a word that's in the user's vocabulary
-   * list. When a word is unsaved through any path, its card can linger in
-   * srs_progress and "come back" later (reused as a stale, sometimes
-   * repetitions:0 "new" card) if the word is re-encountered. This method
-   * prunes orphaned cards so the SRS deck only ever contains saved words.
-   *
-   * Safe to call on every render/effect — it no-ops when there's nothing to prune.
-   *
-   * @param l2Code Language code (base).
-   * @param savedWordIds Set of word ids currently saved for that language.
-   */
   const pruneOrphans = useCallback((l2Code: string, savedWordIds: Set<string>) => {
     setStore((prev) => {
       const langCards = prev.cards[l2Code] ?? {};
-      const hasOrphan = Object.keys(langCards).some((id) => !savedWordIds.has(id));
-      if (!hasOrphan) return prev; // nothing to prune
+      const orphans = Object.keys(langCards).filter((id) => !savedWordIds.has(id));
+      if (orphans.length === 0) return prev;
       const prunedCards = { ...langCards };
-      let removed = 0;
-      for (const id of Object.keys(prunedCards)) {
-        if (!savedWordIds.has(id)) {
-          delete prunedCards[id];
-          removed++;
-        }
+      for (const id of orphans) delete prunedCards[id];
+      log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, orphans.length);
+      for (const id of orphans) {
+        deleteSrsCard(l2Code, id).catch((err) => {
+          logwarn('[SRS] Orphan card delete failed:', err);
+        });
       }
-      log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, removed);
-      const next: SrsProgressStore = {
+      return {
         settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: prunedCards },
       };
-      return next;
     });
   }, []);
 
-  /** Get a single card for a language. */
   const getCard = useCallback((l2Code: string, wordId: string): SrsFields | undefined => {
     return store.cards[l2Code]?.[wordId];
   }, [store]);
@@ -287,13 +194,15 @@ export function useSrs() {
 
   const updateSettings = useCallback((partial: Partial<SrsProgressStore['settings']>) => {
     setStore((prev) => {
-      const next: SrsProgressStore = {
-        settings: { ...prev.settings, ...partial },
-        cards: prev.cards,
-      };
-      return next;
+      const nextSettings = { ...prev.settings, ...partial };
+      if (partial.dailyNewLimit != null) {
+        putSrsSettings(partial.dailyNewLimit).catch((err) => {
+          logwarn('[SRS] Settings sync failed:', err);
+        });
+      }
+      return { settings: nextSettings, cards: prev.cards };
     });
-  }, []);
+  }, [putSrsSettings]);
 
   return {
     store,

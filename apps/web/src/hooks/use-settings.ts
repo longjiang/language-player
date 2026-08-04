@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { useUserData, type UserDataResponse } from '@langplayer/api-client';
-import { useCloudUserData } from '@/providers/user-data-provider';
+import { useUserDataColumns } from '@langplayer/api-client';
 import { logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
@@ -26,26 +25,22 @@ const STORAGE_KEY = 'lp_settings';
 const SYNC_DEBOUNCE_MS = 3000;
 
 /**
- * Unified settings hook.
+ * Unified settings hook (SPEC-039 5.2 row API).
  *
- * Store shape: SettingsV2 (see @langplayer/shared)
  * - localStorage key: `lp_settings`
- * - Cloud field: `user_data.settings_v2`
- *
- * Migrates from legacy keys (lp_show_translation, lp_use_traditional,
- * lp_show_phonetics, zthSpeechSettings, zthSrsProgress.settings)
- * on first load if lp_settings (v2) is not present.
+ * - Authenticated: hydrate from GET /user-settings (settings_v2, ts-based LWW)
+ * - Changes: localStorage immediately + debounced PUT /user-settings
  */
 export function useSettings() {
   const { data: session, status } = useSession();
-  const { getUserData } = useUserData();
-  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const { getUserSettings, putUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
+  const cloudLoaded = useRef(false);
 
-  // ── Helper: persist to localStorage + schedule cloud sync (read-merge-write) ──
+  // ── Helper: persist to localStorage + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -57,58 +52,31 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        // Read-merge-write: avoid overwriting settings from other devices
-        const { apiClient } = await import('@langplayer/api-client');
-        const cloudResp = await getUserData();
-        if (cloudResp?.settings_v2) {
-          const cloud = JSON.parse(cloudResp.settings_v2) as SettingsV2;
-          if (cloud.v === 2 && cloud.ts > s.ts) {
-            // Cloud has newer changes — use cloud as base, apply our local on top
-            s = { ...cloud, ...s, v: 2, ts: new Date().toISOString() };
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
-          }
-        }
-        await apiClient.post('/user-data/sync', {
-          settings_v2: JSON.stringify(s),
-        });
+        await putUserSettings({ settings_v2: s });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [session, getUserData]);
+  }, [session, putUserSettings]);
 
-  // ── Migrate from legacy keys ──
+  // ── Migrate from legacy keys (unchanged) ──
   const migrateFromLegacy = useCallback((): SettingsV2 | null => {
     try {
       const newSettings = createSettingsV2();
-
-      // lp_show_translation → display.translation
       const oldTranslation = localStorage.getItem('lp_show_translation');
       if (oldTranslation !== null) {
-        try {
-          newSettings.display.translation = JSON.parse(oldTranslation) as boolean;
-        } catch {}
+        try { newSettings.display.translation = JSON.parse(oldTranslation) as boolean; } catch {}
       }
-
-      // lp_show_phonetics → l2 tokenSpan phonetics (per-L2, stash for later)
       const oldPhonetics = localStorage.getItem('lp_show_phonetics');
       if (oldPhonetics !== null) {
-        try {
-          (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean;
-        } catch {}
+        try { (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean; } catch {}
       }
-
-      // lp_use_traditional → l2 display.traditional (per-L2, stash for later)
       const oldTraditional = localStorage.getItem('lp_use_traditional');
       if (oldTraditional !== null) {
-        try {
-          (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean;
-        } catch {}
+        try { (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean; } catch {}
       }
-
-      // zthSrsProgress.settings.dailyNewLimit → review.dailyNewLimit
       const oldSrs = localStorage.getItem('zthSrsProgress');
       if (oldSrs) {
         try {
@@ -118,30 +86,25 @@ export function useSettings() {
           }
         } catch {}
       }
-
-      // zthSpeechSettings → l2 speech (migrate to current L2 only)
       const oldSpeech = localStorage.getItem('zthSpeechSettings');
       if (oldSpeech) {
         try {
           const parsed = JSON.parse(oldSpeech);
-          // Will be applied when we know the L2 code
           if (parsed.voiceURI || parsed.rate != null) {
-            // Stash for later per-L2 migration
             (newSettings as any).__migratedSpeech = parsed;
           }
         } catch {}
       }
-
       return newSettings;
     } catch {
       return null;
     }
   }, []);
 
-  // ── Load from localStorage on mount ──
+  // ── Load from localStorage on mount (with legacy migration) ──
   useEffect(() => {
     if (loaded) return;
-    if (status === 'loading') return; // still loading auth
+    if (status === 'loading') return;
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -153,45 +116,42 @@ export function useSettings() {
           return;
         }
       }
-
-      // Try migration from legacy keys
       const migrated = migrateFromLegacy();
       if (migrated) {
         setSettings(migrated);
         persist(migrated);
       }
-    } catch {
-      // corrupted — use defaults
-    }
-
+    } catch { /* corrupted — defaults */ }
     setLoaded(true);
   }, [status, loaded, migrateFromLegacy, persist]);
 
-  // ── On cloud load, merge cloud data ──
+  // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
-    if (!cloudData?.settings_v2) return;
-
-    try {
-      const cloud: SettingsV2 = JSON.parse(cloudData.settings_v2);
-      if (cloud.v !== 2) return;
-
-      setSettings((prev) => {
-        // Merge: local is base, cloud overlays.
-        // Compare timestamps — newer wins.
-        const merged: SettingsV2 = {
-          ...prev,
-          ...(cloud.ts > prev.ts ? cloud : {}),
-          v: 2,
-          ts: new Date().toISOString(),
-        };
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
-        return merged;
-      });
-    } catch (err) {
-      logwarn('[settings] Could not parse cloud data:', err);
-    }
-  }, [status, loaded, cloudLoaded, cloudData]);
+    if (status !== 'authenticated' || !loaded || cloudLoaded.current) return;
+    cloudLoaded.current = true;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getUserSettings();
+        if (cancelled) return;
+        const cloud = res.settings_v2;
+        if (!cloud || cloud.v !== 2) return;
+        setSettings((prev) => {
+          const merged: SettingsV2 = {
+            ...prev,
+            ...(cloud.ts > prev.ts ? cloud : {}),
+            v: 2,
+            ts: new Date().toISOString(),
+          };
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
+          return merged;
+        });
+      } catch (err) {
+        logwarn('[settings] Could not load from server:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [status, loaded, getUserSettings]);
 
   // ── Global setters ──
 
@@ -266,8 +226,6 @@ export function useSettings() {
     });
   }, [persist]);
 
-  // ── Convenience: ensure L2 entry exists (called on language switch) ──
-
   const ensureL2 = useCallback((l2Code: string) => {
     setSettings((prev) => {
       if (prev.l2[l2Code]) return prev;
@@ -285,7 +243,6 @@ export function useSettings() {
     settings,
     loaded,
 
-    // Global
     tokenizedText: settings.tokenizedText,
     updateTokenizedText,
     display: settings.display,
@@ -295,7 +252,6 @@ export function useSettings() {
     review: settings.review,
     updateReview,
 
-    // Per-L2
     getL2: (code: string): L2Settings => settings.l2[code] ?? L2_DEFAULTS,
     updateL2,
     ensureL2,

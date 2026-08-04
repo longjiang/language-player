@@ -6,6 +6,22 @@ export { useUserData } from './user-data';
 export type { UserDataResponse } from './user-data';
 export { useSavedWordApi } from './saved-words';
 export type { SavedWordsResponse, SavedWordUpsertResponse } from './saved-words';
+export {
+  getProgress,
+  putProgress,
+  getSrs,
+  putSrsSettings,
+  putSrsCard,
+  deleteSrsCard,
+  getUserSettings,
+  putUserSettings,
+  useUserDataColumns,
+} from './user-data-columns';
+export type {
+  ProgressResponse,
+  SrsResponse,
+  UserSettingsResponse,
+} from './user-data-columns';
 export { useNotes } from './notes';
 export { useInflection } from './inflection';
 export { useStreamingExplanation } from './chat';
