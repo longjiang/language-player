@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Spec ID**: SPEC-034
-- **Feature**: Migrate the entire Directus-backed database and every API path that touches it to Supabase, using saved words as the pilot workstream, with a hard Directus sunset 30 days after the all-apps switch
+- **Feature**: Migrate the entire Directus-backed database and every API path that touches it to Supabase, using saved words as the pilot workstream, with a Directus sunset 30 days after the full migration is transferred and thoroughly tested
 - **Status**: draft
 - **Created**: 2026-08-02
 - **Updated**: 2026-08-03 — expanded from saved-words-only to full-database migration; auth decision resolved by ADR-0023 (proxy GoTrue through Flask)
@@ -15,7 +15,9 @@ Everything that currently lives in Directus 8 (MySQL) moves to Supabase
 read-path cutover), auth/users, subscriptions, and every user-data table —
 saved words, progress, SRS, settings, watch history, likes, playlists, and notes.
 Classic is edited to call Flask instead of Directus APIs, and Directus is
-decommissioned **30 days after the switch** (T-switch + 30).
+decommissioned **30 days after the full migration is transferred and thoroughly
+tested** (T-complete + 30 — the sunset window is an observation period, not a
+countdown from the saved-words switch).
 
 The migration is workstream-based. Saved words is the pilot:
 it proves the row-level pattern, the blob mirror/reconciler scaffolding, and the
@@ -36,10 +38,12 @@ cover old Classic bundles during rollout.
    for `zerotohero-nuxt/` is lifted for this migration. Classic's saved-words
    store is changed first (pilot), and the rest of Classic's Directus surface is
    migrated within the sunset window (WS-7).
-2. **Directus sunset = T-switch + 30 days.** T-switch is the release where all
-   three apps read and write saved words exclusively through Flask/Supabase and
-   no app writes the Directus `saved_words` blob anymore. The remaining
-   workstreams in this spec must all complete by T+30.
+2. **Directus sunset = T-complete + 30 days.** T-switch (all three apps on the
+   saved-words row API) is a milestone but does **not** start the clock.
+   T-complete is the point where every Phase 5 workstream has been migrated
+   **and** the full cross-app test cycle passes; the 30-day sunset window is an
+   observation period (stability, zero Directus traffic, final backup) before
+   decommission.
 3. **Auth = Supabase Auth (GoTrue) proxied through Flask** (ADR-0023). Flask
    forwards login/refresh/account flows to GoTrue and verifies the Supabase JWT
    signature on every request. Clients never call GoTrue directly and do not
@@ -122,7 +126,7 @@ structure.
 
 ## Target Architecture
 
-### Transition (T-switch → T+30)
+### Transition (T-switch → T-complete)
 
 ```text
 apps/web ──┐
@@ -139,7 +143,7 @@ Classic ──────────────┘
   old-Classic bundles still writing the saved-words blob, and any path not yet
   cut over.
 
-### Permanent (after T+30)
+### Permanent (after decommission at T+30)
 
 ```text
 apps/web ──┐
@@ -360,8 +364,11 @@ Full audit (files verified in the repo):
 ### Definitions
 
 - **T-switch** = release where web, mobile, and Classic all read/write saved
-  words through Flask/Supabase only (Phases 0–4 complete).
-- **T+30** = Directus decommission deadline.
+  words through Flask/Supabase only (Phases 0–4 complete). A milestone, not a
+  deadline — it does not start the sunset clock.
+- **T-complete** = every Phase 5 workstream migrated AND the full cross-app
+  test cycle passed. The 30-day sunset window starts here.
+- **T+30** = Directus decommission deadline = T-complete + 30 days.
 
 ### When each piece is implemented
 
@@ -372,14 +379,15 @@ Full audit (files verified in the repo):
 | Web saved-words switch | 2 | WS-0 |
 | Mobile saved-words switch | 3 | WS-0 |
 | Classic saved-words edit → **T-switch** | 4 | WS-0, WS-7 (saved-words only) |
-| Auth & users | 5.1 (start day 1) | WS-1 |
+| Auth investigation + import prep (bcrypt test, `user_id_map`) | 5.1 | WS-1 |
 | Remaining user-data columns | 5.2 | WS-2 |
 | Watch history / likes / playlists | 5.3 | WS-3 |
 | Notes | 5.4 | WS-4 |
 | Subscriptions & payments | 5.5 | WS-5 |
-| Content read-path cutover | 5.6 (can start in parallel with Phases 2–4) | WS-6 |
-| Classic Directus consolidation | 5.7 | WS-7 |
-| Scaffolding teardown + decommission | 5.8 (T+28 → T+30) | WS-8 |
+| Content read-path cutover | 5.6 (can start immediately) | WS-6 |
+| Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | 5.7 | WS-1 |
+| Classic Directus consolidation | 5.8 | WS-7 |
+| Full test cycle → 30-day window → teardown + decommission | 5.9 | WS-8 |
 | Post-sunset | 6 | — |
 
 ### Phase 0 — Saved-Words Schema + Backfill (no downtime; ~1 day)
@@ -421,38 +429,44 @@ stay until WS-2). Roll out immediately; scaffolding covers old bundles.
 **Acceptance**: save/delete in any app converges everywhere; Mary/Bob regression
 passes.
 
-**At this point T-switch has occurred — the 30-day sunset clock starts.**
+**At this point T-switch has occurred** (saved words fully on the row API).
+The sunset clock does **not** start here — it starts at **T-complete** once
+Phase 5 is fully migrated and tested.
 
-### Phase 5 — Full-Database Window (T-switch → T+30)
+### Phase 5 — Full-Database Migration + Test Window (T-switch → T-complete)
 
-All workstreams run in parallel with these ordering constraints:
+There is no fixed calendar: workstreams run in parallel and the sunset
+countdown starts only after T-complete. Ordering constraints:
 
 | Sub-phase | Workstream | Timing | Dependency |
 |---|---|---|---|
-| 5.1 | Auth & users | Day 1 → ~T+14 | None (start immediately) |
-| 5.2 | Remaining user-data columns | ~T+3 → T+21 | 5.1 (user ids) — can start against mapping table |
-| 5.3 | Watch history / likes / playlists | ~T+3 → T+21 | 5.1 |
-| 5.4 | Notes | ~T+3 → T+14 | 5.1 |
-| 5.5 | Subscriptions & payments | ~T+7 → T+21 | 5.1 (must finish before sunset; Pro gating risk) |
-| 5.6 | Content read-path cutover | Can start during Phases 2–4 | None (no auth dependency) |
-| 5.7 | Classic Directus consolidation | ~T+14 → T+25 | 5.1 + 5.6 |
-| 5.8 | Scaffolding teardown + decommission | T+28 → T+30 | All of the above; zero-traffic check starts ~T+23 |
+| 5.1 | Auth investigation + import prep (bcrypt `$2y$` test, `user_id_map`) | Early, parallel | None |
+| 5.2 | Remaining user-data columns | Parallel | None (Directus ids during transition; remapped at 5.7) |
+| 5.3 | Watch history / likes / playlists | Parallel | None (same) |
+| 5.4 | Notes | Parallel | None (same) |
+| 5.5 | Subscriptions & payments | Parallel; before T-complete | None (same; Pro gating verified before decommission) |
+| 5.6 | Content read-path cutover | Parallel, can start immediately | None |
+| 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After data migrations; before T-complete | 5.1, 5.2–5.6 |
+| 5.8 | Classic Directus consolidation | Late | 5.7 + 5.6 |
+| 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
 
 **Acceptance per sub-phase**: data counts match between Directus and Supabase
 (idempotent backfill, second-run no-op), the affected app features pass Mary/Bob
 regression, and the old code path is removed before the new path goes live.
 
-**Sunset readiness checklist (all must pass by T+30):**
+**Sunset readiness checklist (all must pass during the 30-day sunset window,
+T-complete → T+30):**
 
 - [ ] All three apps authenticate through Flask → GoTrue (no Directus auth).
 - [ ] Every table in the migration inventory exists in Supabase with matching
   counts.
+- [ ] Full cross-app test cycle passed (Mary/Bob + regression on all three apps).
 - [ ] Zero `DIRECTUS_URL` / `directusvps` references in any app source.
 - [ ] Zero Directus traffic in access logs for 7 consecutive days.
 - [ ] Saved-words scaffolding removed (`user_saved_word_sync` dropped).
 - [ ] Final Directus backup archived off-box; credentials removed from `.env`.
 
-### Phase 6 — Post-Sunset Work (after T+30)
+### Phase 6 — Post-Sunset Work (after T+30 / decommission)
 
 - Embedding-based video search/recommendation (pgvector).
 - Optional RLS defense-in-depth (separate ADR).
@@ -471,16 +485,16 @@ regression, and the old code path is removed before the new path goes live.
 | Video-ID remap | `new_id = prefix(l2) * 10^10 + old_id`; invertible; validate zero collisions and zero unmapped l2 codes |
 | User-id remap | Every user table joins through `user_id_map`; orphan check after each backfill (count rows with unmapped user ids = 0) |
 | NUL bytes / longtext | Strip NULs during COPY (ADR-0021 pattern) |
-| Directus down before T+30 | Saved words fine (Supabase authoritative); auth is the true dependency — complete WS-1 early |
+| Directus down before T+30 | Saved words fine (Supabase authoritative); auth is the true dependency — WS-1 must complete before decommission; run the bcrypt investigation early |
 
 ## Risks & Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| T+30 too short for the full inventory | Medium | High | Saved-words pilot first; WS-1 and WS-6 start early (no dependency chain); escalate at T+14 checkpoint |
+| Migration drags on / testing gaps | Medium | High | Workstreams run in parallel; T-complete is gated on the full test cycle, so there is no fixed calendar to slip — only the 30-day window shortens |
 | Auth import breaks passwords (bcrypt `$2y$` vs GoTrue) | Medium | High | Compatibility test first; forced-reset flow for incompatible hashes; keep `user_id_map` for recovery |
-| Payments/Pro gating broken at sunset | Low | High | WS-5 completes by T+21; regression: free vs Pro behavior across all apps |
-| Video-ID remap errors (likes/watch history/playlists) | Medium | Medium | Deterministic prefix function; count/join verification; keep old-id mapping view until T+30 |
+| Payments/Pro gating broken at sunset | Low | High | WS-5 completes before T-complete; regression: free vs Pro behavior across all apps |
+| Video-ID remap errors (likes/watch history/playlists) | Medium | Medium | Deterministic prefix function; count/join verification; keep old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; per-store switches with flags; Mary/Bob regression per sub-phase |
 | Subs-search replacement not ready | Medium | Medium | pg_trgm interim; ship before WS-7 retires Classic's searchCaptions |
 | Old Classic bundles linger | Medium | Low–Medium | Scaffolding covers the window; monitor blob PATCH traffic |
@@ -492,8 +506,8 @@ regression, and the old code path is removed before the new path goes live.
    and zero orphaned user ids.
 2. All three apps authenticate, save words, SRS/progress/settings, watch
    history, likes, playlists, notes, and subscriptions work through Flask.
-3. Zero Directus traffic for 7 consecutive days; Directus decommissioned by
-   T+30 with an archived final backup.
+3. Zero Directus traffic for 7 consecutive days; Directus decommissioned at
+   T+30 (30 days after T-complete) with an archived final backup.
 4. Saved-words guarantee holds everywhere: add once → added everywhere, delete
    once → deleted everywhere.
 5. Zero planned downtime; every phase rolls back with a revert (no feature flags).

@@ -6,8 +6,9 @@
 
 ## Context
 
-Directus is being sunset 30 days after the saved-words switch (SPEC-034, T+30),
-which means auth must leave Directus on the same deadline. Today:
+Directus is being sunset 30 days after the full migration is transferred and
+thoroughly tested (SPEC-034: T-complete + 30 days), which means auth must leave
+Directus before that decommission. Today:
 
 - **Web** (NextAuth) and **mobile** (AuthContext) already log in through Flask's
   `/auth/login`, which proxies Directus and returns `{ token, user }` with a
@@ -21,7 +22,8 @@ which means auth must leave Directus on the same deadline. Today:
 - The monorepo rule (and SPEC-024) is that clients never construct vendor URLs —
   Flask is the single API gateway, and tests mock one target.
 
-The auth migration must fit inside the 30-day sunset window, support all three
+The auth migration must complete before the sunset window begins (the window is
+a post-migration observation period, not deadline pressure), support all three
 apps, and not orphan the user ids used by `user_saved_words` and the other
 migrating user-data tables.
 
@@ -98,11 +100,12 @@ Flask remains the only endpoint any client calls.
    revocation, and email flows — significant security code for a 30-day
    migration — and lose the OAuth/MFA path. Revisit only if the product decides
    to leave Supabase entirely.
-3. **Keep Directus auth**: rejected — Directus is sunset at T+30.
+3. **Keep Directus auth**: rejected — Directus is sunset at T-complete + 30 days.
 
 ## References
 
-- SPEC-034 Phase 5.1 (auth workstream) and the sunset readiness checklist
+- SPEC-034 Phase 5, sub-phases 5.1 (auth investigation) and 5.7 (auth cutover),
+  and the sunset readiness checklist
 - SPEC-024 (all vendor calls through Flask; single mock target)
 - Supabase Auth (GoTrue) REST API — `/auth/v1/token`, admin user APIs
 - Directus 8 `directus_users` schema (bcrypt hashes for import)
