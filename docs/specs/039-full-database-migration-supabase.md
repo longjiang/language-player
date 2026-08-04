@@ -161,6 +161,22 @@ Follow the SPEC-034 row pattern:
 `GET /user-data` / `POST /user-data/sync` stay alive until every field moves;
 each field is removed from `_USER_DATA_SYNC_FIELDS` as its client switch lands.
 
+**Progress (2026-08-04):**
+
+- ✅ Schema created (7 tables) and **full backfill applied + verified**:
+  `user_progress` 53,024, `user_settings` 39,705, `user_saved_phrases` 61,295,
+  `user_history` 16,790, `user_bookshelf` 2,019, `user_srs_cards` 573,
+  `user_srs_settings` 2. Mary spot-check passed (settings row + 3 progress
+  rows).
+- Tool: `zerotohero-python-server/tmp/supabase-user-data-migrate.py`
+  (idempotent, dry-run/apply/verify; dedupes in-batch duplicates, coerces
+  bigint-safe numerics, md5 functional index on phrases for >1KB entries).
+- **Known loss (source-side)**: users 19015, 35423, 35424, 35428 have Classic
+  `settings` truncated at the MySQL TEXT limit (65,528 chars → invalid JSON in
+  Directus itself); not recoverable from the source.
+- `saved_hits` / `saved_collocations`: zero data in production — not migrated.
+- ⏳ Flask row endpoints + client switches remain.
+
 ### WS-3 — Watch History, Likes, Playlists, Channel Preferences
 
 All carry old per-shard video ids and need the SPEC-038 remap:
