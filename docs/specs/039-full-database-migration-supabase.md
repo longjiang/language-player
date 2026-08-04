@@ -326,6 +326,14 @@ language id; `owner` = Directus user id until the 5.7 remap).
    `zerotohero-python-server/tmp/supabase-subs-search-index.sql`. Until built,
    caption searches are full scans (~seconds for common terms) — acceptable for
    admin use, but should be indexed before decommission.
+8. ✅ **Vector recommendations switched on (2026-08-04).** `/recommend-videos`
+   and `/recommend-music-entertainment` use the pgvector pipeline
+   (`video_embeddings`, `gemini-embedding-2@1024`, HNSW cosine) ported from the
+   `tmp/supabase-test/recommend.py` prototype: user preference vector from
+   likes/watch history (Supabase), difficulty-band widening via
+   `DIFFICULTY_PROFILE`, pool-size tiering, per-channel cap, cold-start seeds
+   per category mode. The legacy SQL pipeline is retained as a fallback; the
+   old pipeline can be restored by flipping the wrapper functions.
 
 ### WS-6 — Subscriptions & Payments
 
