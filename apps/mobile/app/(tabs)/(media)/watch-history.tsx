@@ -90,20 +90,18 @@ export default function WatchHistoryScreen() {
     setLoading(true);
     setError(null);
 
-    fetch(`${PYTHON_API_URL}/user-watch-history`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: user.id, l2: l2Lang.code }),
+    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Lang.code)}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
     })
       .then((res) => {
         if (res.status === 404) return [];
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: WatchHistoryItem[]) => {
+      .then((data: { history?: WatchHistoryItem[] }) => {
         if (cancelled) return;
         const seen = new Set<string>();
-        const unique = (Array.isArray(data) ? data : [])
+        const unique = (data?.history ?? [])
           .filter((item) => {
             if (seen.has(item.youtube_id)) return false;
             seen.add(item.youtube_id);
@@ -120,7 +118,7 @@ export default function WatchHistoryScreen() {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id, l2Lang?.code]);
+  }, [user?.id, token, l2Lang?.code]);
 
   // ── Date grouping ──
   const sections = useMemo((): HistorySection[] => {
@@ -172,13 +170,11 @@ export default function WatchHistoryScreen() {
             try {
               // Delete items one by one via Flask proxy
               for (const item of items) {
-                await fetch(`${PYTHON_API_URL}/watch-history/delete`, {
+                await fetch(`${PYTHON_API_URL}/watch-history/${item.id}`, {
                   method: 'DELETE',
                   headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ entryId: item.id }),
                 });
               }
               setItems([]);

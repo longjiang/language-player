@@ -89,7 +89,7 @@ function LevelPicker({ l2Code, value, onChange, t }: {
 }
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const { l1Lang, l2Lang } = useLanguage();
   const { savedWords: allSaved } = useSavedWords();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2Lang.code));
@@ -108,17 +108,16 @@ export default function ProfileScreen() {
   const [histLoading, setHistLoading] = useState(true);
   useEffect(() => {
     if (!user?.id) { setHistLoading(false); return; }
-    fetch(`${PYTHON_API_URL}/user-watch-history`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: user.id, l2: l2Code }),
+    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Code)}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
     })
       .then((r) => r.ok ? r.json() : [])
-      .then((d: WatchHistoryItem[]) => {
+      .then((d: { history?: WatchHistoryItem[] }) => {
         const seen = new Set<string>();
-        setHistory((Array.isArray(d) ? d : []).filter((i) => seen.has(i.youtube_id) ? false : (seen.add(i.youtube_id), true)).slice(0, 5));
+        setHistory((d?.history ?? []).filter((i) => seen.has(i.youtube_id) ? false : (seen.add(i.youtube_id), true)).slice(0, 5));
       })
       .catch(() => {}).finally(() => setHistLoading(false));
-  }, [user?.id, l2Code]);
+  }, [user?.id, token, l2Code]);
 
   // ── Subscription ──
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
