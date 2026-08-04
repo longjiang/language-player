@@ -259,6 +259,12 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
   on web, mobile, and Classic** (`channelId` key, JWT auth, PUT to save);
   legacy `/user-channel-preferences` + `/save-channel-preference` routes
   deleted (Migration Rule 1 & 3).
+- ✅ **WS-3 `l2` normalization (2026-08-04)**: the backfill stored Directus
+  language ids as text (`'1824'`, `'2780'`) in `user_likes` (7,170 rows),
+  `user_playlists` (2,609), and `user_channel_preferences` (179). All three
+  were converted to ISO codes so code-keyed APIs (recommendations'
+  not-interested/subscribed filtering, likes, playlists) match. Defensive
+  numeric-id handling added to the data layer for any stragglers.
 - ⏳ Legacy watch/likes GET routes (`/user-watch-history`, `/user-likes`)
   remain with old-id projections until WS-5 (Rule 2); web/mobile recorder +
   watch-history pages still use `/save-watch-history` and
