@@ -266,11 +266,25 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
 
 **Sub-phase 5.3 is COMPLETE.**
 
-### WS-4 — Notes / User Texts
+### WS-4 — Notes / User Texts — COMPLETE
 
-`routes/user_notes.py` proxies Directus `items/text` → target `user_notes(id,
-user_id, l2, title, text, translation, created_at, updated_at)`. Same API
-shape; ~20k rows.
+`routes/user_notes.py` now serves CRUD from Supabase `user_notes(id, user_id,
+l2, title, text, translation, created_on, updated_at)` with the same API shape
+as the old Directus `items/text` proxy (`l2` returned as the Directus internal
+language id; `owner` = Directus user id until the 5.7 remap).
+
+**Progress (2026-08-04):**
+
+- ✅ `user_notes` DDL + **full backfill applied + verified** (16,594 notes;
+  NUL-stripped; Directus ids during transition). Tool:
+  `zerotohero-python-server/tmp/supabase-notes-migrate.py`.
+- ✅ Flask `/user-notes` GET list / GET one / POST / PATCH / DELETE on Supabase
+  (JWT auth identical to `user_data_columns.py`); `test_notes.py` covers auth,
+  validation, and CRUD paths.
+- ✅ Classic `store/savedText.js` retargeted to Flask `/user-notes`
+  (web/mobile were already calling Flask through `@langplayer/api-client`).
+
+**Sub-phase 5.4 is COMPLETE.**
 
 ### WS-5 — Subscriptions & Payments
 
@@ -279,13 +293,46 @@ fields); `user_acquisition` as-is. Cut over `utils_subscription.py`,
 `/user-subscription`, and the Stripe/PayPal/IAP apps; webhooks keep writing via
 Flask; verify Pro gating before T-complete.
 
-### WS-6 — Content Read-Path Cutover (SPEC-038 completion)
+### WS-6 — Content Read-Path Cutover (SPEC-038 completion) — COMPLETE
 
-1. `routes/video.py`, `routes/tv_shows.py`, channel/talk lookups read Supabase.
-2. Clients move to consolidated ids; accept-and-map old ids during transition.
-3. Subs-search: pg_trgm interim, embeddings later.
-4. Replace PHP tools (`count.php`, `video/{suffix}/{id}`, `videos`) with Flask
-   equivalents.
+**Progress (2026-08-04):**
+
+1. ✅ New `utils_content.py` Supabase read layer (videos, channels, tv_shows,
+   talks, counts, subs search, recommendation joins). Response shapes keep the
+   old Directus fields (`youtube_id`, `channel_id`, `l2` as Directus id) with
+   **consolidated `id`s**; old per-shard ids (< 10^10) are accepted and remapped
+   when `l2` is supplied.
+2. ✅ `routes/video.py` + `routes/tv_shows.py` serve `/videos`,
+   `/videos/subtitles`, `/search-videos`, `/subs-search`,
+   `/channels/<id>/videos`, `/tv-shows`, `/talks`, episode lists, `/channels`,
+   `/videos/count`, `/videos/random`, and `/videos/id/<id>` from Supabase.
+3. ✅ Recommendations (`app_recommendations.py`) read Supabase: liked videos,
+   viewed ids, channel preferences, and the discovery pool (random + popular +
+   unique-channel modes).
+4. ✅ Web/mobile watch-history recorder + pages switched to canonical
+   `GET/POST /watch-history` and `DELETE /watch-history/<id>`; Classic
+   `watchHistory.js` and `userLikes.js` switched to canonical
+   `/watch-history` + `/likes` (joined video metadata included so the row API
+   is self-sufficient). Legacy routes `/user-watch-history`,
+   `/save-watch-history`, `/user-likes`, `/watch-history/delete` **deleted**.
+5. ✅ Classic video reads move to Flask: `plugins/directus.js` (`getVideo`,
+   `getVideos`, `checkShows`, `countShowEpisodes`, `getRandomEpisodeYouTubeId`
+   with a Directus-filter → `/search-videos` adapter), `store/shows.js`,
+   `store/channels.js`, `store/stats.js`, `show/_type/_id.vue`,
+   `discover-shows.vue`, `feed.vue`, `lesson-videos.vue`,
+   `tutoring/lesson/_id.vue`, `Shows.vue`, `MediaSearchResults`, and the
+   browse/subscriptions pages (all through the adapter). Admin-only Directus
+   reads (VideoAdmin, db-audit, ngram, analytics, count-all.php) remain as 5.8
+   debt.
+6. ✅ PHP tools replaced: `count.php` → `/videos/count`; `video/{suffix}/{id}`
+   → `/videos/id/<id>`; `videos` (PHP) → `/search-videos` + `/subs-search`.
+7. ⏳ Subs-search runs on Postgres `ILIKE` (functional; `pg_trgm` extension is
+   now enabled in Supabase). The GIN trigram index on `subs_l2` is **not yet
+   built** — it is long-running DDL on ~6.6 GB and needs a direct connection or
+   the Supabase SQL editor. Script:
+   `zerotohero-python-server/tmp/supabase-subs-search-index.sql`. Until built,
+   caption searches are full scans (~seconds for common terms) — acceptable for
+   admin use, but should be indexed before decommission.
 
 ### WS-7 — Classic Directus Call Consolidation
 
@@ -327,11 +374,11 @@ so each is fully verified before the next starts:
 | 5.1 | Auth investigation + import prep (bcrypt test, `user_id_map`) | **COMPLETE** — full import applied + verified | None |
 | 5.2 | Remaining user-data columns | **COMPLETE** | 5.1 |
 | 5.3 | Watch history / likes / playlists | **COMPLETE** | 5.2 |
-| 5.4 | Notes | After 5.3 | 5.3 |
-| 5.5 | Subscriptions & payments | After 5.4 | 5.4 |
-| 5.6 | Content read-path cutover | After 5.5 | 5.5 |
+| 5.4 | Notes | **COMPLETE** | 5.3 |
+| 5.5 | Content read-path cutover (WS-6) | **COMPLETE** | 5.4 |
+| 5.6 | Subscriptions & payments (WS-5) | After 5.5 | 5.5 |
 | 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After 5.6 | 5.1, 5.2–5.6 |
-| 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.6 |
+| 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.5 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
 
 ### Sub-phase details
@@ -422,26 +469,12 @@ Steps:
 
 **Rollback**: revert `user_notes.py` to the Directus proxy.
 
-#### 5.5 — Subscriptions & payments
+**Progress (2026-08-04):** all steps ✅ — 16,594 notes backfilled + verified;
+Flask `/user-notes` CRUD on Supabase (shape-compatible, `l2` → Directus id,
+`owner` = Directus user id); Classic `savedText.js` on Flask; web/mobile were
+already on Flask. **Sub-phase 5.4 is COMPLETE.**
 
-**Goal**: Pro gating no longer depends on Directus.
-
-Steps:
-1. `user_subscriptions` + `user_acquisition` DDL and backfill (~31k rows).
-2. Cut over `utils_subscription.py` and `/user-subscription`.
-3. Cut over Stripe/PayPal/IAP apps (`app_stripe_checkout.py`,
-   `app_paypal_checkout.py`, `app_in_app_purchase.py`); webhooks write via
-   Flask into Supabase.
-4. Free-vs-Pro regression matrix on web/mobile/Classic (limits, saved-words
-   transcript access, dictionary features).
-
-**Acceptance**: `/user-subscription` returns correct state for Mary/Bob and
-paid test accounts; webhook events upsert rows; no payment regressions.
-
-**Rollback**: revert payment modules; keep Directus subscriptions until the
-cutover is proven.
-
-#### 5.6 — Content read-path cutover (SPEC-038 completion)
+#### 5.5 — Content read-path cutover (SPEC-038 completion / WS-6)
 
 **Goal**: Flask serves videos/channels/tv shows from Supabase.
 
@@ -462,6 +495,31 @@ from Supabase; old ids still resolve during transition; row counts match.
 
 **Rollback**: revert the Flask read layer to Directus (data stays dual-write
 until decommission).
+
+**Progress (2026-08-04):** all steps ✅ except the pg_trgm GIN index build
+(extension enabled; index DDL scripted — see WS-6 note). Content reads,
+recommendations, subs-search, PHP-tool replacements, and all three clients are
+on Supabase/Flask with consolidated ids; legacy watch/likes routes deleted.
+**Sub-phase 5.5 is COMPLETE.**
+
+#### 5.6 — Subscriptions & payments (WS-5)
+
+**Goal**: Pro gating no longer depends on Directus.
+
+Steps:
+1. `user_subscriptions` + `user_acquisition` DDL and backfill (~31k rows).
+2. Cut over `utils_subscription.py` and `/user-subscription`.
+3. Cut over Stripe/PayPal/IAP apps (`app_stripe_checkout.py`,
+   `app_paypal_checkout.py`, `app_in_app_purchase.py`); webhooks write via
+   Flask into Supabase.
+4. Free-vs-Pro regression matrix on web/mobile/Classic (limits, saved-words
+   transcript access, dictionary features).
+
+**Acceptance**: `/user-subscription` returns correct state for Mary/Bob and
+paid test accounts; webhook events upsert rows; no payment regressions.
+
+**Rollback**: revert payment modules; keep Directus subscriptions until the
+cutover is proven.
 
 #### 5.7 — Auth cutover (the remap step)
 

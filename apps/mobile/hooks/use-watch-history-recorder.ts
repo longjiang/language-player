@@ -7,7 +7,7 @@ const SAVE_INTERVAL_MS = 15_000;
 
 /**
  * Periodically saves the user's current playback position to watch history
- * via POST /save-watch-history.
+ * via POST /watch-history (SPEC-039 5.5).
  *
  * Ported from apps/web/src/hooks/use-watch-history-recorder.ts.
  */
@@ -42,15 +42,16 @@ export function useWatchHistoryRecorder(
 
       lastSavedRef.current = { time, videoId };
 
-      fetch(`${PYTHON_API_URL}/save-watch-history`, {
+      fetch(`${PYTHON_API_URL}/watch-history`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          id: userId,
+          videoId: Number(videoId),
           l2,
-          video_id: parseInt(videoId, 10),
-          last_position: Math.round(time),
-          token,
+          lastPosition: Math.round(time),
         }),
       }).catch(() => {
         // Silently ignore save failures

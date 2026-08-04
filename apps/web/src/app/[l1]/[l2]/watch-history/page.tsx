@@ -69,6 +69,7 @@ export default function WatchHistoryPage() {
   const { playVideo } = useVideoPlayer();
   const t = useT();
   const userId = session?.user?.id;
+  const token = (session?.user as any)?.directusToken as string | undefined;
 
   const [items, setItems] = useState<WatchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,10 +88,8 @@ export default function WatchHistoryPage() {
     setLoading(true);
     setError(null);
 
-    fetch(`${PYTHON_API_URL}/user-watch-history`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: userId, l2: baseCode(l2.code) }),
+    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(baseCode(l2.code))}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
     })
       .then((res) => {
         // 404 = no history yet (not an error)
@@ -98,10 +97,10 @@ export default function WatchHistoryPage() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data: WatchHistoryItem[]) => {
+      .then((data: { history?: WatchHistoryItem[] }) => {
         if (cancelled) return;
         const seen = new Set<string>();
-        const unique = (Array.isArray(data) ? data : []).filter((item) => {
+        const unique = (data?.history ?? []).filter((item) => {
           if (seen.has(item.youtube_id)) return false;
           seen.add(item.youtube_id);
           return true;
@@ -117,7 +116,7 @@ export default function WatchHistoryPage() {
       });
 
     return () => { cancelled = true; };
-  }, [userId, l2.code, sessionStatus]);
+  }, [userId, token, l2.code, sessionStatus]);
 
   const handlePlay = (item: WatchHistoryItem, idx: number) => {
     const queue: YouTubeVideo[] = items.map((i) => ({
