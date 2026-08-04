@@ -71,6 +71,11 @@ function selectionStartOffset(container: Node, range: Range): number | null {
  * There is deliberately no selectionchange auto-close: clicking or dragging
  * inside the popup dialog collapses/replaces the underlying text selection,
  * which would otherwise unmount the popup mid-interaction.
+ *
+ * Touch devices (iPhone/iPad Safari): iOS selects text by long-press +
+ * selection handles and does not reliably fire `mouseup` afterwards, so touch
+ * detection uses a debounced `selectionchange` (plus `touchend` as a fallback
+ * trigger) and waits for the selection to settle before opening the popup.
  */
 export function useSelectionPopup<T extends Element>() {
   const containerRef = useRef<T | null>(null);
@@ -115,12 +120,33 @@ export function useSelectionPopup<T extends Element>() {
       }
     };
 
-    document.addEventListener('mouseup', onPointerUp);
-    document.addEventListener('keyup', onKeyUp);
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    let touchTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleTouchCapture = () => {
+      if (touchTimer) clearTimeout(touchTimer);
+      // Wait for the selection to settle — while the user drags the selection
+      // handles, selectionchange keeps firing and resets this timer.
+      touchTimer = window.setTimeout(capture, 400);
+    };
+
+    if (isTouch) {
+      document.addEventListener('selectionchange', scheduleTouchCapture);
+      document.addEventListener('touchend', scheduleTouchCapture);
+    } else {
+      document.addEventListener('mouseup', onPointerUp);
+      document.addEventListener('keyup', onKeyUp);
+    }
 
     return () => {
-      document.removeEventListener('mouseup', onPointerUp);
-      document.removeEventListener('keyup', onKeyUp);
+      if (touchTimer) clearTimeout(touchTimer);
+      if (isTouch) {
+        document.removeEventListener('selectionchange', scheduleTouchCapture);
+        document.removeEventListener('touchend', scheduleTouchCapture);
+      } else {
+        document.removeEventListener('mouseup', onPointerUp);
+        document.removeEventListener('keyup', onKeyUp);
+      }
     };
   }, []);
 
