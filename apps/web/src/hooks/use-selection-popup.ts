@@ -74,8 +74,10 @@ function selectionStartOffset(container: Node, range: Range): number | null {
  *
  * Touch devices (iPhone/iPad Safari): iOS selects text by long-press +
  * selection handles and does not reliably fire `mouseup` afterwards, so touch
- * detection uses a debounced `selectionchange` (plus `touchend` as a fallback
- * trigger) and waits for the selection to settle before opening the popup.
+ * detection tracks active touches (`touchstart`/`touchend`/`touchcancel`) and
+ * only captures once every finger is off the screen AND the selection has been
+ * quiet for a short settle window. `selectionchange` events that arrive while
+ * a finger is still down (mid-gesture) are ignored.
  */
 export function useSelectionPopup<T extends Element>() {
   const containerRef = useRef<T | null>(null);
@@ -123,16 +125,44 @@ export function useSelectionPopup<T extends Element>() {
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     let touchTimer: ReturnType<typeof setTimeout> | null = null;
+    let activeTouches = 0;
+
     const scheduleTouchCapture = () => {
       if (touchTimer) clearTimeout(touchTimer);
-      // Wait for the selection to settle — while the user drags the selection
-      // handles, selectionchange keeps firing and resets this timer.
-      touchTimer = window.setTimeout(capture, 400);
+      touchTimer = window.setTimeout(() => {
+        touchTimer = null;
+        // Only open once every finger is off the screen — the quiet timer can
+        // expire during a stationary hold on a selection handle, and opening a
+        // modal then would interrupt the gesture.
+        if (activeTouches > 0) return;
+        capture();
+      }, 400);
+    };
+
+    const onTouchStart = () => {
+      activeTouches++;
+    };
+    const onTouchEnd = () => {
+      if (activeTouches > 0) activeTouches--;
+      // Finger is up — start the settle window for the final selection.
+      scheduleTouchCapture();
+    };
+    const onTouchCancel = () => {
+      if (activeTouches > 0) activeTouches--;
+      scheduleTouchCapture();
+    };
+    const onSelectionChange = () => {
+      // Ignore changes while a finger is down (mid-gesture); the touchend
+      // handler starts the settle timer once the finger lifts.
+      if (activeTouches > 0) return;
+      scheduleTouchCapture();
     };
 
     if (isTouch) {
-      document.addEventListener('selectionchange', scheduleTouchCapture);
-      document.addEventListener('touchend', scheduleTouchCapture);
+      document.addEventListener('touchstart', onTouchStart);
+      document.addEventListener('touchend', onTouchEnd);
+      document.addEventListener('touchcancel', onTouchCancel);
+      document.addEventListener('selectionchange', onSelectionChange);
     } else {
       document.addEventListener('mouseup', onPointerUp);
       document.addEventListener('keyup', onKeyUp);
@@ -141,8 +171,10 @@ export function useSelectionPopup<T extends Element>() {
     return () => {
       if (touchTimer) clearTimeout(touchTimer);
       if (isTouch) {
-        document.removeEventListener('selectionchange', scheduleTouchCapture);
-        document.removeEventListener('touchend', scheduleTouchCapture);
+        document.removeEventListener('touchstart', onTouchStart);
+        document.removeEventListener('touchend', onTouchEnd);
+        document.removeEventListener('touchcancel', onTouchCancel);
+        document.removeEventListener('selectionchange', onSelectionChange);
       } else {
         document.removeEventListener('mouseup', onPointerUp);
         document.removeEventListener('keyup', onKeyUp);
