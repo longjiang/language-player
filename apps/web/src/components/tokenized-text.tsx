@@ -606,7 +606,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <>
-      <span ref={containerRef} className={fontClass}>
+      <span ref={containerRef} className={`${fontClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
       <span className={leadingClass} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {
