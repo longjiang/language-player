@@ -233,10 +233,13 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
   sites are unchanged.
 - ✅ Classic `watchHistory.js` and `userLikes.js` switched to the row
   endpoints (old per-shard ids remapped server-side).
-- ⏳ Classic playlist UI/components still read/write Directus `items/playlists`
-  directly — switch at 5.8 if not picked up here.
+- ✅ Classic `store/playlists.js` switched to Flask `/playlists` (l2-filtered
+  GET, create/update/delete, single-playlist GET; videos are JSONB arrays —
+  CSV↔JSON conversion dropped).
 - ⏳ Canonical api-client methods for the new endpoints (optional; legacy
   routes already serve current clients).
+
+**Sub-phase 5.3 is COMPLETE.**
 
 ### WS-4 — Notes / User Texts
 
@@ -298,7 +301,7 @@ so each is fully verified before the next starts:
 |---|---|---|---|
 | 5.1 | Auth investigation + import prep (bcrypt test, `user_id_map`) | **COMPLETE** — full import applied + verified | None |
 | 5.2 | Remaining user-data columns | **COMPLETE** | 5.1 |
-| 5.3 | Watch history / likes / playlists | After 5.2 | 5.2 |
+| 5.3 | Watch history / likes / playlists | **COMPLETE** | 5.2 |
 | 5.4 | Notes | After 5.3 | 5.3 |
 | 5.5 | Subscriptions & payments | After 5.4 | 5.4 |
 | 5.6 | Content read-path cutover | After 5.5 | 5.5 |
