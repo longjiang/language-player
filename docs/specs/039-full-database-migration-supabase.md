@@ -175,7 +175,15 @@ each field is removed from `_USER_DATA_SYNC_FIELDS` as its client switch lands.
   `settings` truncated at the MySQL TEXT limit (65,528 chars → invalid JSON in
   Directus itself); not recoverable from the source.
 - `saved_hits` / `saved_collocations`: zero data in production — not migrated.
-- ⏳ Flask row endpoints + client switches remain.
+- ✅ Flask row endpoints (progress/SRS/settings/phrases/bookshelf/history)
+  deployed; web, mobile, and Classic all hydrate/write through them; `meta`
+  jsonb preserves Classic's full phrase objects; `_USER_DATA_SYNC_FIELDS`
+  trimmed to `("saved_words",)`.
+- ✅ Classic history + bookshelf stores switched to Flask (their data was
+  already backfilled). `saved_hits`/`saved_collocations` remain Directus-only
+  (zero data in production) and are dropped/deferred at 5.8.
+
+**Sub-phase 5.2 is COMPLETE.**
 
 ### WS-3 — Watch History, Likes, Playlists, Channel Preferences
 
@@ -269,7 +277,7 @@ so each is fully verified before the next starts:
 | Sub-phase | Workstream | Timing | Dependency |
 |---|---|---|---|
 | 5.1 | Auth investigation + import prep (bcrypt test, `user_id_map`) | **COMPLETE** — full import applied + verified | None |
-| 5.2 | Remaining user-data columns | **In progress** — next up | 5.1 |
+| 5.2 | Remaining user-data columns | **COMPLETE** | 5.1 |
 | 5.3 | Watch history / likes / playlists | After 5.2 | 5.2 |
 | 5.4 | Notes | After 5.3 | 5.3 |
 | 5.5 | Subscriptions & payments | After 5.4 | 5.4 |
