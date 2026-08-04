@@ -50,7 +50,7 @@ countdown from the saved-words switch.
    is updated to match — legacy duplicate endpoints are deleted once all
    clients are on the canonical route. Remaining legacy routes
    (`/user-watch-history`, `/save-watch-history`, `/user-likes`,
-   `/watch-history/delete`) are deprecated and removed with WS-6/WS-8.
+   `/watch-history/delete`) are deprecated and removed with WS-5/WS-8.
 2. **Consolidated video ids everywhere.** `new_video_id = prefix(l2) *
    10^10 + old_video_id` is used consistently across APIs and clients; the
    only exception is the Flask video-lemmatization cache loader, which rebinds
@@ -59,7 +59,7 @@ countdown from the saved-words switch.
    web, mobile, and Classic (JWT auth, `channelId` key).
 4. **Classic never reads Directus directly.** Every Classic data access goes
    through Flask; remaining Directus reads in Classic are migration debt and
-   are removed by WS-6/WS-7/5.8 (currently videos/channels/tv shows/subs search
+   are removed by WS-5/WS-7/5.8 (currently videos/channels/tv shows/subs search
    + the zero-data saved-hits/collocations stores).
 
 ## Migration Scope (Remaining)
@@ -73,8 +73,8 @@ countdown from the saved-words switch.
 | `playlists` | ~3.2k | `user_playlists` (CSV → jsonb, video-id remap) | WS-3 |
 | `user_channel_preferences` | ~176 | `user_channel_preferences` (user-id remap) | WS-3 |
 | `text` (user notes) | ~20k | `user_notes` | WS-4 |
-| `subscriptions` | ~31k | `user_subscriptions` | WS-5 |
-| `user_acquisition` | small | `user_acquisition` | WS-5 |
+| `subscriptions` | ~31k | `user_subscriptions` | WS-6 |
+| `user_acquisition` | small | `user_acquisition` | WS-6 |
 | `email_verification` | — | replaced by GoTrue email flows | WS-1 |
 
 Already in Supabase: video content family (SPEC-038) and saved words
@@ -260,9 +260,9 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
   legacy `/user-channel-preferences` + `/save-channel-preference` routes
   deleted (Migration Rule 1 & 3).
 - ⏳ Legacy watch/likes GET routes (`/user-watch-history`, `/user-likes`)
-  remain with old-id projections until WS-6 (Rule 2); web/mobile recorder +
+  remain with old-id projections until WS-5 (Rule 2); web/mobile recorder +
   watch-history pages still use `/save-watch-history` and
-  `/watch-history/delete` until WS-6.
+  `/watch-history/delete` until WS-5.
 
 **Sub-phase 5.3 is COMPLETE.**
 
@@ -286,14 +286,7 @@ language id; `owner` = Directus user id until the 5.7 remap).
 
 **Sub-phase 5.4 is COMPLETE.**
 
-### WS-5 — Subscriptions & Payments
-
-`subscriptions` (~31k rows) gates Pro features → `user_subscriptions` (same
-fields); `user_acquisition` as-is. Cut over `utils_subscription.py`,
-`/user-subscription`, and the Stripe/PayPal/IAP apps; webhooks keep writing via
-Flask; verify Pro gating before T-complete.
-
-### WS-6 — Content Read-Path Cutover (SPEC-038 completion) — COMPLETE
+### WS-5 — Content Read-Path Cutover (SPEC-038 completion) — COMPLETE
 
 **Progress (2026-08-04):**
 
@@ -333,6 +326,13 @@ Flask; verify Pro gating before T-complete.
    `zerotohero-python-server/tmp/supabase-subs-search-index.sql`. Until built,
    caption searches are full scans (~seconds for common terms) — acceptable for
    admin use, but should be indexed before decommission.
+
+### WS-6 — Subscriptions & Payments
+
+`subscriptions` (~31k rows) gates Pro features → `user_subscriptions` (same
+fields); `user_acquisition` as-is. Cut over `utils_subscription.py`,
+`/user-subscription`, and the Stripe/PayPal/IAP apps; webhooks keep writing via
+Flask; verify Pro gating before T-complete.
 
 ### WS-7 — Classic Directus Call Consolidation
 
@@ -375,8 +375,8 @@ so each is fully verified before the next starts:
 | 5.2 | Remaining user-data columns | **COMPLETE** | 5.1 |
 | 5.3 | Watch history / likes / playlists | **COMPLETE** | 5.2 |
 | 5.4 | Notes | **COMPLETE** | 5.3 |
-| 5.5 | Content read-path cutover (WS-6) | **COMPLETE** | 5.4 |
-| 5.6 | Subscriptions & payments (WS-5) | After 5.5 | 5.5 |
+| 5.5 | Content read-path cutover (WS-5) | **COMPLETE** | 5.4 |
+| 5.6 | Subscriptions & payments (WS-6) | After 5.5 | 5.5 |
 | 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After 5.6 | 5.1, 5.2–5.6 |
 | 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.5 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
@@ -474,7 +474,7 @@ Flask `/user-notes` CRUD on Supabase (shape-compatible, `l2` → Directus id,
 `owner` = Directus user id); Classic `savedText.js` on Flask; web/mobile were
 already on Flask. **Sub-phase 5.4 is COMPLETE.**
 
-#### 5.5 — Content read-path cutover (SPEC-038 completion / WS-6)
+#### 5.5 — Content read-path cutover (SPEC-038 completion / WS-5)
 
 **Goal**: Flask serves videos/channels/tv shows from Supabase.
 
@@ -497,12 +497,12 @@ from Supabase; old ids still resolve during transition; row counts match.
 until decommission).
 
 **Progress (2026-08-04):** all steps ✅ except the pg_trgm GIN index build
-(extension enabled; index DDL scripted — see WS-6 note). Content reads,
+(extension enabled; index DDL scripted — see WS-5 note). Content reads,
 recommendations, subs-search, PHP-tool replacements, and all three clients are
 on Supabase/Flask with consolidated ids; legacy watch/likes routes deleted.
 **Sub-phase 5.5 is COMPLETE.**
 
-#### 5.6 — Subscriptions & payments (WS-5)
+#### 5.6 — Subscriptions & payments (WS-6)
 
 **Goal**: Pro gating no longer depends on Directus.
 
@@ -622,7 +622,7 @@ legacy columns and old-id accept-and-map code.
 |---|---|---|---|
 | Migration drags on / testing gaps | Medium | High | Parallel workstreams; T-complete gated on the test cycle; no fixed calendar |
 | Auth import breaks passwords | Low (tested) | High | `$2y$` verified compatible; `user_id_map` for recovery; smoke import applied |
-| Payments/Pro gating broken at sunset | Low | High | WS-5 before T-complete; free-vs-Pro regression across apps |
+| Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; free-vs-Pro regression across apps |
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; Mary/Bob regression per sub-phase |
 | Subs-search replacement not ready | Medium | Medium | pg_trgm interim; ship before WS-8 |

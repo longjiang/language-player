@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-038
 - **Feature**: Migrate the video content family from Directus 8 (MySQL, 14 shards) to one consolidated Supabase Postgres table with stable collision-free IDs
-- **Status**: complete (2026-08-04) — data migration loaded and verified; the Flask read-path cutover is tracked separately in SPEC-039 (WS-6)
+- **Status**: complete (2026-08-04) — data migration loaded and verified; the Flask read-path cutover is tracked separately in SPEC-039 (WS-5)
 - **Created**: 2026-08-04 (split out of ADR-0021)
 - **ROADMAP Phase**: Phase 9: Backend Consolidation
 - **See also**: [ADR-0021 (Migrate Video Content)](../adr/0021-migrate-video-content-to-supabase.md), [SPEC-039 (Full Database Migration)](039-full-database-migration-supabase.md)
@@ -92,7 +92,7 @@ Loader: `tmp/supabase-test/supabase-migrate.py` (project `python3.10` venv).
 
 ### Outstanding (tracked in SPEC-039)
 
-- **Flask read-path cutover (WS-6)**: `routes/video.py`, `tv_shows.py`, and
+- **Flask read-path cutover (WS-5)**: `routes/video.py`, `tv_shows.py`, and
   channel/talk lookups still read Directus; the data is in Supabase but not yet
   served from it.
 - **Subs-search replacement** (pg_trgm interim / embeddings later).
