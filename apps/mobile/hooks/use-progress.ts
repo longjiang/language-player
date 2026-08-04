@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { invalidateLevelCache } from './use-progress-level';
-import { useCloudUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserDataColumns } from '@langplayer/api-client';
+import { logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthProgress'; // match Classic for migration compatibility
+const SYNC_DEBOUNCE_MS = 3000;
 
 interface L2Progress {
   level?: number | string;
@@ -24,19 +27,42 @@ function parseLevel(raw: unknown): number | undefined {
 }
 
 /**
- * Hook for managing per-L2 learning progress (level, time, etc.).
+ * Per-L2 learning progress (SPEC-039 5.2 row API).
  *
- * Data flow:
- *   1. Load from SecureStore on mount (instant, offline-capable)
- *   2. If authenticated, merge cloud user_data.progress into SecureStore
- *      (reads from UserDataContext — no additional API call)
- *   3. On setLevel, persist to SecureStore immediately
+ * - SecureStore first (offline-capable)
+ * - Authenticated: hydrate from GET /progress (server wins for level, max time)
+ * - Changes: SecureStore immediately + debounced PUT /progress for this L2
  */
 export function useProgress(l2Code: string) {
+  const { user } = useAuth();
+  const { getProgress, putProgress } = useUserDataColumns();
   const [progress, setProgress] = useState<L2Progress>({});
   const [loaded, setLoaded] = useState(false);
+  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSyncing = useRef(false);
   const cloudLoaded = useRef(false);
-  const { data: cloudUserData, loaded: cloudReady } = useCloudUserData();
+
+  const syncToCloud = useCallback(async () => {
+    if (isSyncing.current) return;
+    isSyncing.current = true;
+    try {
+      const raw = await SecureStore.getItemAsync(STORAGE_KEY);
+      if (!raw) return;
+      const store: ProgressStore = JSON.parse(raw);
+      const entry = store[l2Code];
+      if (entry) {
+        await putProgress(l2Code, {
+          level: parseLevel(entry.level),
+          time: entry.time,
+          weeklyHours: entry.weeklyHours,
+        });
+      }
+    } catch (err) {
+      logwarn('[progress] Cloud sync failed:', err);
+    } finally {
+      isSyncing.current = false;
+    }
+  }, [l2Code, putProgress]);
 
   // ── Load from SecureStore on mount ──
   useEffect(() => {
@@ -55,27 +81,18 @@ export function useProgress(l2Code: string) {
     })();
   }, [l2Code]);
 
-  // ── On login, merge cloud progress into SecureStore ──
-  // Reads from UserDataContext (fetched once by UserDataProvider) instead
-  // of making an independent /user-data call.
+  // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (cloudLoaded.current || !cloudReady) return;
-
-    const cloudProgressStr = cloudUserData?.progress;
-    if (!cloudProgressStr) {
-      cloudLoaded.current = true;
-      return;
-    }
-
+    if (!user || !loaded || cloudLoaded.current) return;
+    cloudLoaded.current = true;
+    let cancelled = false;
     (async () => {
       try {
-        const cloud: ProgressStore = JSON.parse(cloudProgressStr);
-        if (!cloud[l2Code]) { cloudLoaded.current = true; return; }
-
-        // Merge cloud data into SecureStore (cloud wins for level, local wins for time)
+        const res = await getProgress();
+        if (cancelled) return;
+        const cloud = res.progress ?? {};
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         const local: ProgressStore = raw ? JSON.parse(raw) : {};
-
         const merged: ProgressStore = { ...local };
         for (const [code, cloudEntry] of Object.entries(cloud)) {
           if (!cloudEntry) continue;
@@ -86,18 +103,19 @@ export function useProgress(l2Code: string) {
             weeklyHours: cloudEntry.weeklyHours ?? localEntry?.weeklyHours,
           };
         }
-
         await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
-
         const currentEntry = merged[l2Code];
         if (currentEntry) {
           setProgress({ ...currentEntry, level: parseLevel(currentEntry.level) });
         }
-      } catch { /* ignore */ }
-      cloudLoaded.current = true;
+      } catch (err) {
+        logwarn('[progress] Could not load from server:', err);
+      }
     })();
-  }, [l2Code, cloudUserData, cloudReady]);
+    return () => { cancelled = true; };
+  }, [user, l2Code, loaded, getProgress]);
 
+  // ── Persist to SecureStore + debounced row sync ──
   const persist = useCallback((updates: Partial<L2Progress>) => {
     (async () => {
       try {
@@ -108,7 +126,11 @@ export function useProgress(l2Code: string) {
         setProgress((prev) => ({ ...prev, ...updates }));
       } catch {}
     })();
-  }, [l2Code]);
+
+    if (!user) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(syncToCloud, SYNC_DEBOUNCE_MS);
+  }, [l2Code, user, syncToCloud]);
 
   const setLevel = useCallback((level: number | undefined) => {
     if (level !== undefined) {

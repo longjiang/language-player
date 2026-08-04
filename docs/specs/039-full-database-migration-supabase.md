@@ -53,7 +53,7 @@ countdown from the saved-words switch.
 | `user_likes` | ~7.7k | `user_likes` (remap) | WS-3 |
 | `playlists` | ~3.2k | `user_playlists` (CSV → jsonb, video-id remap) | WS-3 |
 | `user_channel_preferences` | ~176 | `user_channel_preferences` (user-id remap) | WS-3 |
-| `text` (user notes) | ~20k | `user_texts` | WS-4 |
+| `text` (user notes) | ~20k | `user_notes` | WS-4 |
 | `subscriptions` | ~31k | `user_subscriptions` | WS-5 |
 | `user_acquisition` | small | `user_acquisition` | WS-5 |
 | `email_verification` | — | replaced by GoTrue email flows | WS-1 |
@@ -212,7 +212,7 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
 
 ### WS-4 — Notes / User Texts
 
-`routes/user_notes.py` proxies Directus `items/text` → target `user_texts(id,
+`routes/user_notes.py` proxies Directus `items/text` → target `user_notes(id,
 user_id, l2, title, text, translation, created_at, updated_at)`. Same API
 shape; ~20k rows.
 
@@ -356,7 +356,7 @@ Steps:
 **Goal**: point the notes feature at Supabase.
 
 Steps:
-1. `user_texts` DDL; backfill ~20k rows from Directus `text` (Directus ids
+1. `user_notes` DDL; backfill ~20k rows from Directus `text` (Directus ids
    during transition).
 2. Point `routes/user_notes.py` CRUD at Supabase with the same API shape.
 3. Classic `store/savedText.js` retargets to Flask.
