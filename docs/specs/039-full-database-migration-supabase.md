@@ -43,6 +43,25 @@ countdown from the saved-words switch.
 5. **PostgREST/RLS is not used during the migration** — Flask uses the
    service-role key; RLS later is a separate ADR.
 
+### Migration Rules (2026-08-04)
+
+1. **No legacy Flask endpoints for shape compatibility.** When the canonical
+   API shape (e.g. `channelId`, new video ids) is what web/mobile use, Classic
+   is updated to match — legacy duplicate endpoints are deleted once all
+   clients are on the canonical route. Remaining legacy routes
+   (`/user-watch-history`, `/save-watch-history`, `/user-likes`,
+   `/watch-history/delete`) are deprecated and removed with WS-6/WS-8.
+2. **Consolidated video ids everywhere.** `new_video_id = prefix(l2) *
+   10^10 + old_video_id` is used consistently across APIs and clients; the
+   only exception is the Flask video-lemmatization cache loader, which rebinds
+   old cache keys via the deterministic transform (ADR-0021 / SPEC-038).
+3. **Channel preferences are saved with `PUT /channel-preferences`** across
+   web, mobile, and Classic (JWT auth, `channelId` key).
+4. **Classic never reads Directus directly.** Every Classic data access goes
+   through Flask; remaining Directus reads in Classic are migration debt and
+   are removed by WS-6/WS-7/5.8 (currently videos/channels/tv shows/subs search
+   + the zero-data saved-hits/collocations stores).
+
 ## Migration Scope (Remaining)
 
 | Source (Directus) | Rows (approx.) | Target (Supabase) | Workstream |
@@ -236,8 +255,14 @@ Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
 - ✅ Classic `store/playlists.js` switched to Flask `/playlists` (l2-filtered
   GET, create/update/delete, single-playlist GET; videos are JSONB arrays —
   CSV↔JSON conversion dropped).
-- ⏳ Canonical api-client methods for the new endpoints (optional; legacy
-  routes already serve current clients).
+- ✅ **Channel preferences moved to canonical `GET/PUT /channel-preferences`
+  on web, mobile, and Classic** (`channelId` key, JWT auth, PUT to save);
+  legacy `/user-channel-preferences` + `/save-channel-preference` routes
+  deleted (Migration Rule 1 & 3).
+- ⏳ Legacy watch/likes GET routes (`/user-watch-history`, `/user-likes`)
+  remain with old-id projections until WS-6 (Rule 2); web/mobile recorder +
+  watch-history pages still use `/save-watch-history` and
+  `/watch-history/delete` until WS-6.
 
 **Sub-phase 5.3 is COMPLETE.**
 
