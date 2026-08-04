@@ -2,12 +2,12 @@
 
 **Date**: 2026-08-03
 **Status**: accepted
-**See also**: [SPEC-034 (Full Database Migration)](../specs/034-full-database-migration-supabase.md), [SPEC-024 (Consolidate Directus Calls)](../specs/024-consolidate-directus-calls.md), [ADR-0021 (Video Content to Supabase)](0021-migrate-video-content-to-supabase.md), [ADR-0004 (Directus User Data Token Strategy)](0004-directus-user-data-token-strategy.md), [ARCH-014 (Saved Words Data Flow)](../arch/014-saved-words-data-flow.md)
+**See also**: [SPEC-034 (Saved Words, complete)](../specs/034-saved-words-supabase-migration.md), [SPEC-039 (Full Database Migration)](../specs/039-full-database-migration-supabase.md), [SPEC-024 (Consolidate Directus Calls)](../specs/024-consolidate-directus-calls.md), [ADR-0021 (Video Content to Supabase)](0021-migrate-video-content-to-supabase.md), [ADR-0004 (Directus User Data Token Strategy)](0004-directus-user-data-token-strategy.md), [ARCH-014 (Saved Words Data Flow)](../arch/014-saved-words-data-flow.md)
 
 ## Context
 
 Directus is being sunset 30 days after the full migration is transferred and
-thoroughly tested (SPEC-034: T-complete + 30 days), which means auth must leave
+thoroughly tested (SPEC-039: T-complete + 30 days), which means auth must leave
 Directus before that decommission. Today:
 
 - **Web** (NextAuth) and **mobile** (AuthContext) already log in through Flask's
@@ -104,7 +104,7 @@ Flask remains the only endpoint any client calls.
 
 ## References
 
-- SPEC-034 Phase 5, sub-phases 5.1 (auth investigation) and 5.7 (auth cutover),
+- SPEC-039 Phase 5, sub-phases 5.1 (auth investigation) and 5.7 (auth cutover),
   and the sunset readiness checklist
 - SPEC-024 (all vendor calls through Flask; single mock target)
 - Supabase Auth (GoTrue) REST API — `/auth/v1/token`, admin user APIs
