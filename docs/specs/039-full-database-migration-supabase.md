@@ -218,6 +218,26 @@ Targets:
 Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
 `/playlists` CRUD.
 
+**Progress (2026-08-04):**
+
+- ✅ Schema + **full backfill applied + verified**: `user_watch_history`
+  204,368 (deduped to latest per user+video), `user_likes` 7,170,
+  `user_playlists` 2,609 (CSV → JSONB, ids remapped; 1,062 legacy entries with
+  missing ids preserved as null), `user_channel_preferences` 179.
+- ✅ Flask endpoints (`/watch-history`, `/likes`, `/playlists`,
+  `/channel-preferences`) with legacy-id remap (ids < 10^10 remapped via
+  `prefix(l2) * 10^10 + old_id`); the existing client-facing routes
+  (`/user-watch-history`, `/save-watch-history`, `/user-likes`,
+  `/user-channel-preferences`, `/save-channel-preference`,
+  `/watch-history/delete`) are **repointed at Supabase**, so web/mobile call
+  sites are unchanged.
+- ✅ Classic `watchHistory.js` and `userLikes.js` switched to the row
+  endpoints (old per-shard ids remapped server-side).
+- ⏳ Classic playlist UI/components still read/write Directus `items/playlists`
+  directly — switch at 5.8 if not picked up here.
+- ⏳ Canonical api-client methods for the new endpoints (optional; legacy
+  routes already serve current clients).
+
 ### WS-4 — Notes / User Texts
 
 `routes/user_notes.py` proxies Directus `items/text` → target `user_notes(id,
