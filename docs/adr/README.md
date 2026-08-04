@@ -32,3 +32,4 @@ NNNN-title-with-dashes.md
 | 0021 | Migrate video content from Directus MySQL to Supabase Postgres | accepted | 2026-08-02 |
 | 0022 | Keep epubjs on Web — layer the whole-book model on top | accepted | 2026-08-02 |
 | 0023 | Proxy Supabase Auth (GoTrue) through Flask | accepted | 2026-08-03 |
+| 0025 | Next.js 14 App Router → Next.js 16.3 (Turbopack + React 19.2) | accepted | 2026-08-04 |
