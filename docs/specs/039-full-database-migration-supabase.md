@@ -118,6 +118,17 @@ sweep scaffolding remains until WS-8.
   (auth.users = identities = user_id_map = 50). **Full import applied
   (2026-08-04): 75,177 users, counts match Directus; Mary/Bob login through
   GoTrue with existing passwords verified (200 + access token).**
+- **Email-uniqueness audit (complete)**: 75,177 emails, zero case-insensitive
+  duplicates; `auth.users` distinct count matches exactly.
+- **Draft-user UX (decided)**: GoTrue rejects unconfirmed logins
+  (`email_not_confirmed`); Flask surfaces that error and clients show a
+  "verify your email" state with resend; Supabase email template/SMTP config is
+  a 5.7 prerequisite.
+- **`is_admin` consumption (decided)**: Flask `@admin_required` reads
+  `app_metadata.is_admin` from the verified Supabase JWT; `/auth/login`
+  includes `isAdmin` in the user payload for Classic `VideoAdmin.vue`.
+
+**Sub-phase 5.1 is COMPLETE.**
 
 **Cutover work (5.7):**
 
@@ -216,18 +227,19 @@ See SPEC-034. T-switch achieved 2026-08-04.
 
 ### Phase 5 — Remaining Workstreams (T-switch → T-complete)
 
-No fixed calendar; ordering constraints:
+No fixed calendar, and workstreams run **sequentially** (5.1 → 5.2 → … → 5.9)
+so each is fully verified before the next starts:
 
 | Sub-phase | Workstream | Timing | Dependency |
 |---|---|---|---|
-| 5.1 | Auth investigation + import prep (bcrypt test, `user_id_map`) | Early, parallel | None — **in progress** |
-| 5.2 | Remaining user-data columns | Parallel | None (Directus ids during transition; remapped at 5.7) |
-| 5.3 | Watch history / likes / playlists | Parallel | None (same) |
-| 5.4 | Notes | Parallel | None (same) |
-| 5.5 | Subscriptions & payments | Parallel; before T-complete | None (same; Pro gating verified before decommission) |
-| 5.6 | Content read-path cutover | Parallel, can start immediately | None |
-| 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After data migrations; before T-complete | 5.1, 5.2–5.6 |
-| 5.8 | Classic Directus consolidation | Late | 5.7 + 5.6 |
+| 5.1 | Auth investigation + import prep (bcrypt test, `user_id_map`) | **COMPLETE** — full import applied + verified | None |
+| 5.2 | Remaining user-data columns | **In progress** — next up | 5.1 |
+| 5.3 | Watch history / likes / playlists | After 5.2 | 5.2 |
+| 5.4 | Notes | After 5.3 | 5.3 |
+| 5.5 | Subscriptions & payments | After 5.4 | 5.4 |
+| 5.6 | Content read-path cutover | After 5.5 | 5.5 |
+| 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After 5.6 | 5.1, 5.2–5.6 |
+| 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.6 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
 
 ### Sub-phase details
