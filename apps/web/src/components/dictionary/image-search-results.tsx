@@ -8,14 +8,16 @@ import { cn } from '@/lib/utils';
 import { log } from '@/lib/logger';
 import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 
-// Bing image search goes through the Flask gateway so every client shares one
-// backend, one cache, and one source of truth (see ADR-0024).
-const IMAGE_SEARCH_URL = `${PYTHON_API_URL}/images/`;
+// Openverse is the direct image source for the web app (see ADR-0024): it has
+// a stable JSON API, CC-license metadata, and server-side dead-thumbnail
+// filtering. LLM-generated query polyfill still runs through Flask.
+const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
+const PAGE_SIZE = 20;
+const OWNER_MAX_IMAGES = 2;
 // ── Caches (in-memory + sessionStorage) ──
-// Bing results, LLM queries and thumbnail liveness are stable within a
-// session. The Maps make repeat lookups instant; sessionStorage backs them so
-// reloads don't redo work either, while expiring naturally when the tab
-// session ends (no stale-data TTL needed).
+// Openverse results and LLM queries are stable within a session. The Maps
+// make repeat lookups instant; sessionStorage backs them so reloads don't
+// redo work either, while expiring naturally when the tab session ends.
 const searchCache = new Map<string, SearchImage[]>();
 const llmQueryCache = new Map<string, string[]>();
 
@@ -76,11 +78,11 @@ interface SearchImage {
 }
 
 /**
- * Bing's mkt flag is a market bias, not a strict language filter, so for
- * Latin-script terms we append the target language's native name to the query
- * to disambiguate (e.g. "chat" → French cat vs English small talk). Terms
- * already in a non-Latin script (CJK, Cyrillic, Arabic…) are language-specific
- * as-is and would lose results if we appended anything.
+ * Openverse has no language filter, so for Latin-script terms we append the
+ * target language's native name to the query to disambiguate (e.g. "chat" →
+ * French cat vs English small talk). Terms already in a non-Latin script
+ * (CJK, Cyrillic, Arabic…) are language-specific as-is and would lose results
+ * if we appended anything.
  */
 const NON_LATIN_RE = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u;
 
@@ -90,13 +92,39 @@ function buildImageQuery(term: string, l2Code: string): string {
 }
 
 /**
- * Fetch results for a query, progressively relaxing it when it comes back
- * empty. LLM-generated queries are often poetic ("Mount Fuji painting shining
- * brilliantly"), so dropping trailing words ("Mount Fuji painting" →
- * "Mount Fuji") finds real matches. Relaxed results are still tagged with the
- * original query for the pills.
+ * Same-owner density cap: Flickr-style URLs expose the uploader account, so a
+ * single photographer's series (e.g. 13 shots from one Sky Deck visit) can
+ * otherwise dominate a query's results. Keep at most OWNER_MAX_IMAGES per
+ * identifiable owner. Images with no identifiable owner are never capped.
  */
-async function fetchQueryResults(query: string, l2Code: string, signal: AbortSignal): Promise<SearchImage[]> {
+function ownerKey(img: SearchImage): string {
+  const m = img.foreign_landing_url?.match(/\/photos\/([^/]+)\/\d+/);
+  if (m) return `${img.provider}:${m[1]}`;
+  if (img.creator) return `${img.provider}:${img.creator.toLowerCase()}`;
+  return `unique:${img.id}`;
+}
+
+function capByOwner(images: SearchImage[]): SearchImage[] {
+  const counts = new Map<string, number>();
+  const out: SearchImage[] = [];
+  for (const img of images) {
+    const key = ownerKey(img);
+    const count = counts.get(key) ?? 0;
+    if (count >= OWNER_MAX_IMAGES) continue;
+    counts.set(key, count + 1);
+    out.push(img);
+  }
+  return out;
+}
+
+/**
+ * Fetch results for a query, progressively relaxing it when it comes back
+ * empty. Openverse matches metadata literally, so poetic multi-word queries
+ * ("Mount Fuji painting shining brilliantly") often return nothing — dropping
+ * trailing words ("Mount Fuji painting" → "Mount Fuji") finds real matches.
+ * Relaxed results are still tagged with the original query for the pills.
+ */
+async function fetchQueryResults(query: string, signal: AbortSignal): Promise<SearchImage[]> {
   const words = query.split(/\s+/).filter(Boolean);
   // Try the relaxed variant first: LLM queries often end in words like
   // "substance" or "compound" that rarely appear in captions, so the full
@@ -113,20 +141,12 @@ async function fetchQueryResults(query: string, l2Code: string, signal: AbortSig
     if (i === start && start < words.length) {
       log('[ImageSearch] Pre-relaxed:', query, '→', candidate);
     }
-    const url = `${IMAGE_SEARCH_URL}${encodeURIComponent(candidate)}/${baseCode(l2Code)}`;
+    const url = `${OPENVERSE_IMAGES_URL}?q=${encodeURIComponent(candidate)}&page_size=${PAGE_SIZE}&filter_dead=true`;
+    log('[ImageSearch] Openverse fetch:', candidate, url);
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json() as { src: string; url?: string; title?: string }[];
-    const results = data.map((item, idx): SearchImage => ({
-      id: `${item.src}#${idx}`,
-      title: item.title || candidate,
-      thumbnail: item.src,
-      url: item.src,
-      foreign_landing_url: item.url || null,
-      creator: null,
-      provider: 'bing',
-      attribution: '',
-    }));
+    const data = await res.json() as { results?: SearchImage[] };
+    const results = data.results ?? [];
     setSearchCache(candidate, results);
     if (results.length > 0) {
       if (candidate !== query) log('[ImageSearch] Query relaxed:', query, '→', candidate);
@@ -154,7 +174,8 @@ export function ImageSearchResults({
   /** Inflected form of the word as it appears in contextText. */
   contextForm?: string;
   /** 'grid' = full experience (pills, pagination); 'compact' = one
-   *  horizontally scrolling row, 3 images per query, no pills. */
+   *  horizontally scrolling row of 10 thumbnails, original term only,
+   *  no pills. */
   variant?: 'grid' | 'compact';
 }) {
   const t = useT();
@@ -198,15 +219,15 @@ export function ImageSearchResults({
         setQueries([originalQuery]);
         let results: SearchImage[] = [];
         try {
-          results = await fetchQueryResults(originalQuery, l2Code, controller.signal);
+          results = await fetchQueryResults(originalQuery, controller.signal);
         } catch (err: any) {
-          if (err?.name !== 'AbortError') setError('Bing image search failed');
+          if (err?.name !== 'AbortError') setError('Openverse image search failed');
         }
         if (!cancelled) {
           // A strip of 10 thumbnails is enough for a visual idea in the popup.
           // Keep a reserve pool so broken tiles can be replaced with good
           // ones (10 are shown at a time).
-          setImages(results.slice(0, 20).map((img) => ({ ...img, sourceQuery: originalQuery })));
+          setImages(capByOwner(results).slice(0, 20).map((img) => ({ ...img, sourceQuery: originalQuery })));
         }
         return;
       }
@@ -216,13 +237,13 @@ export function ImageSearchResults({
       setQueries([originalQuery]);
       let original: SearchImage[] = [];
       try {
-        original = await fetchQueryResults(originalQuery, l2Code, controller.signal);
+        original = await fetchQueryResults(originalQuery, controller.signal);
       } catch {
         // Original query failed — the LLM queries may still succeed below.
       }
       if (cancelled) return;
 
-      const taggedOriginal = original.map((img) => ({ ...img, sourceQuery: originalQuery }));
+      const taggedOriginal = capByOwner(original).map((img) => ({ ...img, sourceQuery: originalQuery }));
       if (taggedOriginal.length > 0) setImages(taggedOriginal);
 
       // Ask the backend for LLM-rewritten queries (cached server-side).
@@ -277,8 +298,8 @@ export function ImageSearchResults({
 
       await Promise.all(llmQueries.map(async (q) => {
         try {
-          const results = await fetchQueryResults(q, l2Code, controller.signal);
-          for (const img of results) {
+          const results = await fetchQueryResults(q, controller.signal);
+          for (const img of capByOwner(results)) {
             const key = (img.foreign_landing_url ?? img.url ?? img.id).replace(/[?#].*$/, '');
             if (!seen.has(key)) {
               seen.add(key);
@@ -295,7 +316,7 @@ export function ImageSearchResults({
         setImages([...taggedOriginal, ...extra]);
       } else if (taggedOriginal.length === 0) {
         if (llmQueries.length > 0 && failures > 0 && failures >= llmQueries.length) {
-          setError('Bing image search failed');
+          setError('Openverse image search failed');
         } else {
           setImages([]); // nothing found for any query
         }

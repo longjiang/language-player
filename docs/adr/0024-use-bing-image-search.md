@@ -72,6 +72,47 @@ as the backend engine from production; DDG is used instead.
 
 ## Consequences
 
+### 2026-08-04 amendment: apps/web reverts to Openverse
+
+After production confirmed that **Bing soft-blocks the datacenter IP by
+returning HTTP 200 with unrelated/trending images** (and that DDG's image
+results are Bing-sourced anyway, `provider = "bing"` in `ddgs` 9.14.4), the
+web app reverted its dictionary image widget to the pre-Bing setup:
+
+- `apps/web/src/components/dictionary/image-search-results.tsx` queries the
+  Openverse API directly again (`api.openverse.org/v1/images/`), with the
+  original term searched first and LLM-rewritten queries used as a polyfill.
+- Compact popup dictionary: original term only, 10 thumbnails, no LLM queries.
+- Openverse-specific density caps (`OWNER_MAX_IMAGES = 2`) are restored so a
+  single photographer cannot flood the grid.
+- The Flask `/images/<term>/<lang>` gateway and DDG backend remain in place
+  for the Classic app and other non-web clients; the web app no longer routes
+  through it.
+- Broken thumbnails are still hidden at render time and replaced from the
+  reserve pool, preserving the post-Bing UX improvements.
+
+### Backend: Flask `/images` and `/img` re-enabled on Openverse
+
+The Flask endpoints were shut down as an immediate fix during the
+soft-block incident (410 → silent empty results). They are re-enabled with
+Openverse as the sole provider:
+
+- `routes/core.py` again calls `app_images.get_images(...)` for
+  `/images/<term>/<lang>` and proxies the selected thumbnail via
+  `app_images.proxy_image(...)` for `/img/<term>/<index>/<lang>`, tunneling
+  upstream 403/404 statuses to the client.
+- `app_images.py` fetches from the Openverse API
+  (`api.openverse.org/v1/images/`, `filter_dead=true`, page size 20) and maps
+  results to the classic `[{src, url, title, full}]` contract (`src` =
+  thumbnail, `url` = source page, `full` = full-size image).
+- Cache payloads are now **v6** so any poisoned v5 (DDG-era) entries are
+  ignored and rebuilt from Openverse.
+- **Rate limits**: anonymous Openverse access is 5 req/hour / 100 req/day per
+  IP, which is unusable for a production gateway. Set `OPENVERSE_API_KEY` to
+  a free registered key (standard tier: 100 req/min / 10,000 req/day, 500
+  thumbnails/min) before deploying; the per-term/lang cache keeps API calls
+  to roughly one per unique word.
+
 ### Gained
 
 - **Working endpoint again**: ~35 correct results per query/language from the
