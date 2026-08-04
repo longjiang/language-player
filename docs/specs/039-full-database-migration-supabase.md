@@ -102,7 +102,12 @@ sweep scaffolding remains until WS-8.
 - `public.user_id_map(directus_user_id bigint PK, auth_user_id uuid UNIQUE,
   email, imported_at)` created.
 - Schema notes: `auth.users.confirmed_at` and `auth.identities.email` are
-  generated columns; `auth.users` requires only `id`.
+  generated columns; `auth.users` requires only `id` — but GoTrue scans
+  `confirmation_token`, `recovery_token`, `email_change_token_new`, and
+  `email_change` as strings, so they must be `''`, not NULL, or login fails
+  with "Database error querying schema". `auth.identities.provider_id` is the
+  user id (not the email), and `identity_data` should include
+  `email_verified`/`phone_verified`.
 - **Import policy resolved:** draft → `email_confirmed_at = NULL` (must verify
   before login); active → confirmed; inactive/suspended →
   `banned_until = 'infinity'`; admin = Directus role 1 (4 users) →
@@ -110,7 +115,9 @@ sweep scaffolding remains until WS-8.
   is superseded by subscriptions).
 - Importer: `zerotohero-python-server/tmp/supabase-auth-import.py` — dry-run by
   default, idempotent, bulk inserts; 50-user smoke import applied and verified
-  (auth.users = identities = user_id_map = 50).
+  (auth.users = identities = user_id_map = 50). **Full import applied
+  (2026-08-04): 75,177 users, counts match Directus; Mary/Bob login through
+  GoTrue with existing passwords verified (200 + access token).**
 
 **Cutover work (5.7):**
 
