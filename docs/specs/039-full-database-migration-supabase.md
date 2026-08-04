@@ -67,15 +67,16 @@ countdown from the saved-words switch.
 | Source (Directus) | Rows (approx.) | Target (Supabase) | Workstream |
 |---|---|---|---|
 | `directus_users` | 75,176 | `auth.users` + `auth.identities` (GoTrue) + `user_id_map` | WS-1 |
+| `email_verification` | — | replaced by GoTrue email flows | WS-1 |
 | `user_data` remaining columns (`progress`, `srs_progress`, `settings_v2`, `settings`, `saved_phrases`, `saved_hits`, `saved_collocations`, `bookshelf`, `history`) | ~106k rows | `user_progress`, `user_srs_cards`, `user_settings`, `user_saved_phrases`, etc. | WS-2 |
 | `user_watch_history` | ~256k | `user_watch_history` (video-ID remap) | WS-3 |
 | `user_likes` | ~7.7k | `user_likes` (remap) | WS-3 |
 | `playlists` | ~3.2k | `user_playlists` (CSV → jsonb, video-id remap) | WS-3 |
 | `user_channel_preferences` | ~176 | `user_channel_preferences` (user-id remap) | WS-3 |
 | `text` (user notes) | ~20k | `user_notes` | WS-4 |
+| `youtube_videos` + `video_embeddings` (already in Supabase, SPEC-038) | 1,045,422 each | read path switched from Directus to Supabase (no row migration) | WS-5 |
 | `subscriptions` | ~31k | `user_subscriptions` | WS-6 |
 | `user_acquisition` | small | `user_acquisition` | WS-6 |
-| `email_verification` | — | replaced by GoTrue email flows | WS-1 |
 
 Already in Supabase: video content family (SPEC-038) and saved words
 (SPEC-034). Directus system tables (`directus_*`) are dropped at decommission.
