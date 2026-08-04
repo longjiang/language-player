@@ -124,7 +124,7 @@ export function useSelectionPopup<T extends Element>() {
 
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    let touchTimer: ReturnType<typeof setTimeout> | null = null;
+    let touchTimer: number | null = null;
     let activeTouches = 0;
 
     const scheduleTouchCapture = () => {
