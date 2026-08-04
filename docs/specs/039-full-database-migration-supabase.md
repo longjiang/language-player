@@ -332,7 +332,10 @@ language id; `owner` = Directus user id until the 5.7 remap).
    the Supabase SQL editor. Script:
    `zerotohero-python-server/tmp/supabase-subs-search-index.sql`. Until built,
    caption searches are full scans (~seconds for common terms) — acceptable for
-   admin use, but should be indexed before decommission.
+   admin use, but should be indexed before decommission. While the index is
+   pending, **Classic uses `/subs-search-classic`** (the exact pre-5.5 MySQL
+   ngram FULLTEXT path) and web/mobile keep using `/subs-search` (Postgres);
+   Classic flips back to `/subs-search` once the index exists.
 8. ✅ **Vector recommendations switched on (2026-08-04).** `/recommend-videos`
    and `/recommend-music-entertainment` use the pgvector pipeline
    (`video_embeddings`, `gemini-embedding-2@1024`, HNSW cosine) ported from the
