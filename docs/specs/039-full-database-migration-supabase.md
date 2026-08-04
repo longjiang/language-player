@@ -51,7 +51,7 @@ countdown from the saved-words switch.
 | `user_data` remaining columns (`progress`, `srs_progress`, `settings_v2`, `settings`, `saved_phrases`, `saved_hits`, `saved_collocations`, `bookshelf`, `history`) | ~106k rows | `user_progress`, `user_srs_cards`, `user_settings`, `user_saved_phrases`, etc. | WS-2 |
 | `user_watch_history` | ~256k | `user_watch_history` (video-ID remap) | WS-3 |
 | `user_likes` | ~7.7k | `user_likes` (remap) | WS-3 |
-| `playlists` | ~3.2k | `user_playlists` (remap) | WS-3 |
+| `playlists` | ~3.2k | `user_playlists` (CSV → jsonb, video-id remap) | WS-3 |
 | `user_channel_preferences` | ~176 | `user_channel_preferences` (user-id remap) | WS-3 |
 | `text` (user notes) | ~20k | `user_texts` | WS-4 |
 | `subscriptions` | ~31k | `user_subscriptions` | WS-5 |
@@ -179,16 +179,36 @@ each field is removed from `_USER_DATA_SYNC_FIELDS` as its client switch lands.
 
 ### WS-3 — Watch History, Likes, Playlists, Channel Preferences
 
-All carry old per-shard video ids and need the SPEC-038 remap:
+`user_watch_history` and `user_likes` carry old per-shard video ids and need
+the SPEC-038 remap:
 
 ```text
 new_video_id = prefix(l2) * 10^10 + old_video_id
 ```
 
-Targets: `user_watch_history` (unique user+video), `user_likes` (unique
-user+video), `user_playlists` (remap ids inside `videos`), 
-`user_channel_preferences` (unique user+channel+l2). Flask endpoints:
-`/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET, `/playlists` CRUD.
+Targets:
+
+- `user_watch_history` — `(user_id, video_id bigint remapped, last_position,
+  date, unique(user_id, video_id))`.
+- `user_likes` — `(user_id, video_id bigint remapped, l2 text, created_on,
+  unique(user_id, video_id))`.
+- `user_playlists` — `(user_id, title, l2 text, videos jsonb, created_on)`.
+  The Directus `videos` column is **not a plain id CSV** — it is a header CSV
+  (`id,youtube_id,title,duration`, CRLF, RFC4180-quoted titles, one row per
+  video, verified on 2,605 playlists). Backfill parses it with the Python `csv`
+  module into a JSONB array of `{ id, youtube_id, title, duration }`, remapping
+  `id` via the SPEC-038 formula when numeric (missing ids stay `null`).
+  Classic's playlist store gets a CSV↔JSON adapter at WS-7; the Flask
+  `/playlists` endpoint speaks JSONB.
+- `user_channel_preferences` — `(user_id, channel_id text, l2 text, status,
+  unique(user_id, channel_id, l2))`. **No video-ID remap**: `channel_id` is a
+  YouTube channel handle string (e.g. `UCzXjPL7zo0bxhOYDxLJ9YEg`), not a
+  `youtube_channels.id` — stored as-is. (Note: `youtube_channels` itself was
+  copied with original IDs per SPEC-038 — it is **not** id-prefixed — so any
+  genuine channel-id references need no transformation either.)
+
+Flask endpoints: `/watch-history` GET/POST/DELETE, `/likes` PUT/DELETE/GET,
+`/playlists` CRUD.
 
 ### WS-4 — Notes / User Texts
 

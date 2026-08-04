@@ -49,10 +49,14 @@ watch/likes/playlists remap rely on.
 - `subs_l2` copied as-is (TOASTed, deliberately unindexed); MySQL ngram
   FULLTEXT search is not portable — embedding-based search is the intended
   replacement (SPEC-039).
-- Small tables copied with original IDs: `phrasebooks`, `youtube_channels`,
-  `talks`, `tv_shows`, `articles`, `resources`, `pages`, `heroes`, `drills`,
-  `exams`, `reading`, `communities`, `subreddits`, `tutoring_kit`,
-  `unavailable_videos`, `languages`.
+- Small tables copied with **original IDs** — only `youtube_videos` is
+  id-prefixed: `phrasebooks`, `youtube_channels`, `talks`, `tv_shows`,
+  `articles`, `resources`, `pages`, `heroes`, `drills`, `exams`, `reading`,
+  `communities`, `subreddits`, `tutoring_kit`, `unavailable_videos`,
+  `languages`. References to channel ids (e.g. `youtube_videos.channel_id`)
+  therefore need no transformation. The prefix exists **solely because 14
+  shards with colliding auto-increment ids were concatenated into one table**;
+  no single-source table requires it.
 - **User-data tables were not migrated** (old per-shard video IDs; tracked in
   SPEC-039 with the remap).
 - **Dictionaries stay on local SQLite** in the Flask server.
