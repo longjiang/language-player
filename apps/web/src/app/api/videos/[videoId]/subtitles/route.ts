@@ -4,10 +4,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { logerr } from '@/lib/logger';
 
 /** GET /api/videos/[videoId]/subtitles?l2=ja */
-export async function GET(
-  request: Request,
-  { params }: { params: { videoId: string } },
-) {
+export async function GET(request: Request, props: { params: Promise<{ videoId: string }> }) {
+  const params = await props.params;
   const { searchParams } = new URL(request.url);
   const l2 = searchParams.get('l2') ?? 'en';
   // Pass through clean_generated (e.g. '0') so the initial subtitle load can

@@ -17,10 +17,8 @@ function parseDuration(iso: string | number | undefined): number | undefined {
 }
 
 /** GET /api/videos/[videoId]?l2=ja — video metadata + subtitles via Flask backend */
-export async function GET(
-  request: Request,
-  { params }: { params: { videoId: string } },
-) {
+export async function GET(request: Request, props: { params: Promise<{ videoId: string }> }) {
+  const params = await props.params;
   try {
     const { searchParams } = new URL(request.url);
     const l2 = searchParams.get('l2') ?? 'en';

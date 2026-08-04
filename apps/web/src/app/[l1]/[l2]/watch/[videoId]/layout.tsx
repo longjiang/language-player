@@ -11,11 +11,12 @@ import type { Metadata } from 'next';
  * Social crawlers see "Watch Video" as the title and a YouTube thumbnail
  * as the OG image. See docs/arch/010-video-loading-pipeline.md for the full rationale.
  */
-export async function generateMetadata({
-  params,
-}: {
-  params: { l1: string; l2: string; videoId: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ l1: string; l2: string; videoId: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const { videoId } = params;
 
   const title = 'Watch Video';

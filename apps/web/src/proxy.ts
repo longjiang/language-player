@@ -29,7 +29,7 @@ function detectLocale(request: NextRequest): string | null {
   return null;
 }
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow static assets, auth API, public API routes, and OG image

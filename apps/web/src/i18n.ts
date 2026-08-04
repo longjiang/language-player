@@ -29,7 +29,7 @@ function deepMerge(base: Messages, override: Messages): Messages {
 async function resolveLocale(): Promise<string> {
   // 1. If URL is /[l1]/[l2]/..., use l1 immediately (no cookie delay)
   try {
-    const headersList = headers();
+    const headersList = await headers();
     const pathname = headersList.get('x-invoke-path') ?? headersList.get('x-pathname') ?? '';
     const segments = pathname.split('/').filter(Boolean);
     const l1 = segments[0];
@@ -37,7 +37,7 @@ async function resolveLocale(): Promise<string> {
   } catch { /* headers() may throw during static generation */ }
 
   // 2. Fall back to NEXT_LOCALE cookie (set by middleware from browser Accept-Language)
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const rawLocale = cookieStore.get('NEXT_LOCALE')?.value ?? 'en';
   return SUPPORTED_L1S.includes(rawLocale as any) ? rawLocale : 'en';
 }

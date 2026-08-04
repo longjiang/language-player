@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { md5, isPhoneticsEligible } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';

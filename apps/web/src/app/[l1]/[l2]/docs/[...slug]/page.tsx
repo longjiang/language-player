@@ -9,10 +9,11 @@ import Link from 'next/link';
 import { DocSidebar } from '../doc-sidebar';
 
 interface Props {
-  params: { l1: string; l2: string; slug: string[] };
+  params: Promise<{ l1: string; l2: string; slug: string[] }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const doc = getDoc(params.l1, params.slug);
   if (!doc) return { title: 'Not Found' };
   const match = doc.content.match(/^# (.+)$/m);
@@ -225,7 +226,8 @@ function extractToc(markdown: string): TocItem[] {
   return headings;
 }
 
-export default function DocPage({ params }: Props) {
+export default async function DocPage(props0: Props) {
+  const params = await props0.params;
   const { l1, l2, slug } = params;
   const doc = getDoc(l1, slug);
   const docs = getAllDocs(l1);

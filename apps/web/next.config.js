@@ -5,11 +5,6 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // When BUILD_CHECK=1, output to a separate directory so the build
-  // doesn't corrupt the dev server's .next/ cache.  This lets you run
-  // `npx turbo build` to check for errors while `npx turbo dev` is
-  // running without conflicts.
-  distDir: process.env.BUILD_CHECK === '1' ? '.next-check' : '.next',
   transpilePackages: [
     '@langplayer/shared',
     '@langplayer/api-client',
