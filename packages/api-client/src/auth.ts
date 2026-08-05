@@ -20,6 +20,10 @@ export function useAuth() {
     /** Get the current user profile. */
     me: () => apiClient.get<User>('/auth/me'),
 
+    /** Permanently delete the authenticated user's account. */
+    deleteAccount: () =>
+      apiClient.delete<{ success: boolean }>('/auth/delete-account'),
+
     /** Update user preferences. */
     updatePreferences: (prefs: Partial<User['preferences']>) =>
       apiClient.put<User>('/auth/preferences', prefs),
