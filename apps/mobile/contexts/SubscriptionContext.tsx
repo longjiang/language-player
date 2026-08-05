@@ -78,7 +78,7 @@ function computeState(sub: SubscriptionRecord | null): Omit<SubscriptionState, '
 // ── Provider ──
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [sub, setSub] = useState<SubscriptionRecord | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +92,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
     try {
       const res = await fetch(
-        `${PYTHON_API_URL}/user-subscription?user_id=${user.id}`,
+        `${PYTHON_API_URL}/user-subscription`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        },
       );
       const data = res.ok ? await res.json() : null;
       setSub(data?.id ? data : null);

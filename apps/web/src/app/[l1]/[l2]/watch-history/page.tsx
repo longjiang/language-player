@@ -69,7 +69,7 @@ export default function WatchHistoryPage() {
   const { playVideo } = useVideoPlayer();
   const t = useT();
   const userId = session?.user?.id;
-  const token = (session?.user as any)?.directusToken as string | undefined;
+  const token = (session?.user as any)?.accessToken as string | undefined;
 
   const [items, setItems] = useState<WatchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);

@@ -66,7 +66,7 @@ export function useChannelPreference(channelId: string | undefined) {
   const { data: session } = useSession();
   const { l2 } = useLanguage();
   const userId = session?.user?.id;
-  const token = (session?.user as any)?.directusToken as string | undefined;
+  const token = (session?.user as any)?.accessToken as string | undefined;
   const code = baseCode(l2.code);
 
   const [pref, setPref] = useState<ChannelPref>('neutral');

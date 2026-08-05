@@ -27,12 +27,15 @@ export default function GoProSuccessPage() {
     }
 
     const userId = session.user.id!;
+    const token = (session?.user as any)?.accessToken as string | undefined;
     let attempts = 0;
     const maxAttempts = 10;
 
     const check = async () => {
       try {
-        const res = await fetch(`${PYTHON_API_URL}/user-subscription?user_id=${userId}`);
+        const res = await fetch(`${PYTHON_API_URL}/user-subscription`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         if (res.ok) {
           const data = await res.json();
           if (data?.type && data.type !== 'free') {

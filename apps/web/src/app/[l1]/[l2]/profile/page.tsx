@@ -87,7 +87,7 @@ export default function ProfilePage() {
   }, [status, router]);
 
   const userId = session?.user?.id;
-  const token = (session?.user as any)?.directusToken as string | undefined;
+  const token = (session?.user as any)?.accessToken as string | undefined;
   const userEmail = session?.user?.email;
   const userName = session?.user?.name;
 
@@ -133,7 +133,9 @@ export default function ProfilePage() {
     if (!userId) { setSubLoading(false); return; }
     let cancelled = false;
     setSubLoading(true);
-    fetch(`${PYTHON_API_URL}/user-subscription?user_id=${userId}`)
+    fetch(`${PYTHON_API_URL}/user-subscription`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled) return;
@@ -142,7 +144,7 @@ export default function ProfilePage() {
       })
       .catch(() => { if (!cancelled) setSubLoading(false); });
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, token]);
 
   const planType = sub?.type ?? 'free';
   const isFree = !sub || planType === 'free';
