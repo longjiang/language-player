@@ -213,6 +213,10 @@
         "currency": "2. Tüm para birimleri ABD doları (USD) cinsindendir.",
         "lifetime_assumption": "1. 2,4 yıldan fazla yaşayacağınızı varsayarak."
     },
+    "interval": {
+        "annual": "/yıl",
+        "monthly": "/ay"
+    },
     "label": {
         "ai_generated": "Yapay Zeka Tarafından Oluşturuldu",
         "ai_says": "DeepSeek diyor ki:",
@@ -904,9 +908,15 @@
         "verification_code": "Doğrulama kodu"
     },
     "plan": {
+        "all_pro_features": "Tüm Pro özellikleri",
         "annual": "Yıllık",
+        "annual_desc": "Yıllık faturalandırma. %25 tasarruf edin.",
+        "full_transcripts": "Tam transkriptler",
         "lifetime": "Ömür boyu",
-        "monthly": "Aylık"
+        "lifetime_desc": "Tek seferlik ödeme. Ömür boyu erişim.",
+        "monthly": "Aylık",
+        "monthly_desc": "Aylık faturalandırma. İstediğiniz zaman iptal edin.",
+        "unlimited_examples": "Sınırsız kelime örneği"
     },
     "player": {
         "next_subtitle_line": "Sonraki altyazı satırı",

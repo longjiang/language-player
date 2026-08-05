@@ -213,6 +213,10 @@
         "currency": "2. すべての通貨は米ドル (USD) です。",
         "lifetime_assumption": "1. あなたが2.4年以上生きることを前提としています。"
     },
+    "interval": {
+        "annual": "/年",
+        "monthly": "/月"
+    },
     "label": {
         "ai_generated": "AI生成",
         "ai_says": "DeepSeekは言う：",
@@ -904,9 +908,15 @@
         "verification_code": "確認コード"
     },
     "plan": {
+        "all_pro_features": "Proの全機能",
         "annual": "年間",
+        "annual_desc": "毎年請求。25%お得。",
+        "full_transcripts": "完全なトランスクリプト",
         "lifetime": "生涯",
-        "monthly": "月額"
+        "lifetime_desc": "一括払い。生涯アクセス。",
+        "monthly": "月額",
+        "monthly_desc": "毎月請求。いつでも解約可能。",
+        "unlimited_examples": "無制限の単語例"
     },
     "player": {
         "next_subtitle_line": "次の字幕行",

@@ -205,6 +205,10 @@
         "currency": "2. 所有價格都是美金喔。",
         "lifetime_assumption": "1. 假設你活得比2.4年還久啦。"
     },
+    "interval": {
+        "annual": "/年",
+        "monthly": "/月"
+    },
     "label": {
         "ai_generated": "AI 產生",
         "ai_says": "DeepSeek 說明：",
@@ -870,6 +874,17 @@
         "select_language": "選擇一種語言",
         "select_level": "選擇你的等級...",
         "verification_code": "驗證碼"
+    },
+    "plan": {
+        "all_pro_features": "所有 Pro 功能",
+        "annual": "年繳",
+        "annual_desc": "按年計費。省下 25%。",
+        "full_transcripts": "完整逐字稿",
+        "lifetime": "終身",
+        "lifetime_desc": "一次性付款。終身使用。",
+        "monthly": "月繳",
+        "monthly_desc": "按月計費。可隨時取消。",
+        "unlimited_examples": "不限數量的單字範例"
     },
     "player": {
         "next_subtitle_line": "下一行字幕",

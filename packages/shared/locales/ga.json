@@ -213,6 +213,10 @@
         "currency": "2. Gach airgeadra i ndollair SAM (USD).",
         "lifetime_assumption": "1. Ag glacadh leis go mairfidh tú níos faide ná 2.4 bliain."
     },
+    "interval": {
+        "annual": "/bliain",
+        "monthly": "/mí"
+    },
     "label": {
         "ai_generated": "Ginte ag AI",
         "ai_says": "Deir DeepSeek:",
@@ -904,9 +908,15 @@
         "verification_code": "Cód fíorúcháin"
     },
     "plan": {
+        "all_pro_features": "Gach gné Pro",
         "annual": "Bliantúil",
+        "annual_desc": "Billeáiltear go bliantúil. Sábháil 25%.",
+        "full_transcripts": "Athscríbhinní iomlána",
         "lifetime": "Saoil",
-        "monthly": "Míosúil"
+        "lifetime_desc": "Íocaíocht aonuaire. Rochtain ar feadh an tsaoil.",
+        "monthly": "Míosúil",
+        "monthly_desc": "Billeáiltear go míosúil. Cealaigh am ar bith.",
+        "unlimited_examples": "Samplaí focal gan teorainn"
     },
     "player": {
         "next_subtitle_line": "An chéad líne fotheideal eile",

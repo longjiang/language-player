@@ -213,6 +213,10 @@
         "currency": "2. جميع العملات بالدولار الأمريكي (USD).",
         "lifetime_assumption": "1. بافتراض أنك ستعيش أكثر من 2.4 سنة."
     },
+    "interval": {
+        "annual": "/سنة",
+        "monthly": "/شهر"
+    },
     "label": {
         "ai_generated": "مُنشأ بالذكاء الاصطناعي",
         "ai_says": "DeepSeek يقول:",
@@ -904,9 +908,15 @@
         "verification_code": "رمز التحقق"
     },
     "plan": {
+        "all_pro_features": "جميع ميزات Pro",
         "annual": "سنوي",
+        "annual_desc": "يتم الفوترة سنويًا. وفّر 25%.",
+        "full_transcripts": "نصوص كاملة",
         "lifetime": "مدى الحياة",
-        "monthly": "شهري"
+        "lifetime_desc": "دفع لمرة واحدة. وصول مدى الحياة.",
+        "monthly": "شهري",
+        "monthly_desc": "يتم الفوترة شهريًا. يمكن الإلغاء في أي وقت.",
+        "unlimited_examples": "أمثلة كلمات غير محدودة"
     },
     "player": {
         "next_subtitle_line": "سطر الترجمة التالي",

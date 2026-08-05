@@ -213,6 +213,10 @@
         "currency": "2. Sve valute su u američkim dolarima (USD).",
         "lifetime_assumption": "1. Pod pretpostavkom da ćeš živeti duže od 2,4 godine."
     },
+    "interval": {
+        "annual": "/год",
+        "monthly": "/мес"
+    },
     "label": {
         "ai_generated": "AI-generisano",
         "ai_says": "DeepSeek каже:",
@@ -904,9 +908,15 @@
         "verification_code": "Верификациони код"
     },
     "plan": {
+        "all_pro_features": "Све Pro функције",
         "annual": "Godišnje",
+        "annual_desc": "Годишња наплата. Уштедите 25%.",
+        "full_transcripts": "Комплетни транскрипти",
         "lifetime": "Doživotno",
-        "monthly": "Mesečno"
+        "lifetime_desc": "Једнократно плаћање. Доживотни приступ.",
+        "monthly": "Mesečno",
+        "monthly_desc": "Месечна наплата. Откажите у било ком тренутку.",
+        "unlimited_examples": "Неограничени примери речи"
     },
     "player": {
         "next_subtitle_line": "Следећи ред титла",

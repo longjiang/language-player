@@ -205,6 +205,10 @@
         "currency": "2. 所有货币均以美元（USD）计。",
         "lifetime_assumption": "1. 假设你的寿命超过2.4年。"
     },
+    "interval": {
+        "annual": "/年",
+        "monthly": "/月"
+    },
     "label": {
         "ai_generated": "AI 生成",
         "ai_says": "DeepSeek 说：",
@@ -879,6 +883,17 @@
         "select_language": "选择语言",
         "select_level": "选择你的等级...",
         "verification_code": "验证码"
+    },
+    "plan": {
+        "all_pro_features": "所有 Pro 功能",
+        "annual": "年度",
+        "annual_desc": "按年计费。节省 25%。",
+        "full_transcripts": "完整字幕",
+        "lifetime": "终身",
+        "lifetime_desc": "一次性支付。终身访问。",
+        "monthly": "月度",
+        "monthly_desc": "按月计费。可随时取消。",
+        "unlimited_examples": "无限单词示例"
     },
     "player": {
         "next_subtitle_line": "下一行字幕",

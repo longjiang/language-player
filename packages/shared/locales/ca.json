@@ -213,6 +213,10 @@
         "currency": "2. Totes les monedes en dòlars americans (USD).",
         "lifetime_assumption": "1. Suposant que viuràs més de 2,4 anys."
     },
+    "interval": {
+        "annual": "/any",
+        "monthly": "/mes"
+    },
     "label": {
         "ai_generated": "Generat per IA",
         "ai_says": "DeepSeek diu:",
@@ -904,9 +908,15 @@
         "verification_code": "Codi de verificació"
     },
     "plan": {
+        "all_pro_features": "Totes les funcions Pro",
         "annual": "Anual",
+        "annual_desc": "Facturació anual. Estalvia un 25%.",
+        "full_transcripts": "Transcripcions completes",
         "lifetime": "De per vida",
-        "monthly": "Mensual"
+        "lifetime_desc": "Pagament únic. Accés vitalici.",
+        "monthly": "Mensual",
+        "monthly_desc": "Facturació mensual. Cancel·la quan vulguis.",
+        "unlimited_examples": "Exemples de paraules il·limitats"
     },
     "player": {
         "next_subtitle_line": "Línia de subtítol següent",

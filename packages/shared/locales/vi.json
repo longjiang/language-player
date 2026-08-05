@@ -213,6 +213,10 @@
         "currency": "2. Tất cả tiền tệ tính bằng đô la Mỹ (USD).",
         "lifetime_assumption": "1. Giả định rằng bạn sẽ sống lâu hơn 2,4 năm."
     },
+    "interval": {
+        "annual": "/năm",
+        "monthly": "/tháng"
+    },
     "label": {
         "ai_generated": "Do AI Tạo ra",
         "ai_says": "DeepSeek nói:",
@@ -904,9 +908,15 @@
         "verification_code": "Mã xác minh"
     },
     "plan": {
+        "all_pro_features": "Tất cả tính năng Pro",
         "annual": "Hàng năm",
+        "annual_desc": "Thanh toán hàng năm. Tiết kiệm 25%.",
+        "full_transcripts": "Bản ghi đầy đủ",
         "lifetime": "Trọn đời",
-        "monthly": "Hàng tháng"
+        "lifetime_desc": "Thanh toán một lần. Truy cập trọn đời.",
+        "monthly": "Hàng tháng",
+        "monthly_desc": "Thanh toán hàng tháng. Hủy bất cứ lúc nào.",
+        "unlimited_examples": "Ví dụ từ không giới hạn"
     },
     "player": {
         "next_subtitle_line": "Dòng phụ đề tiếp theo",

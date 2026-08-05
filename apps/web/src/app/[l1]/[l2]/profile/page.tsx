@@ -50,25 +50,25 @@ interface SubscriptionInfo {
 
 const PLANS = [
   {
-    name: 'Monthly',
+    nameKey: 'plan.monthly',
     price: '$10',
-    interval: '/mo',
-    desc: 'Billed monthly. Cancel anytime.',
-    benefits: ['Full transcripts', 'Unlimited word examples', 'All Pro features'],
+    intervalKey: 'interval.monthly',
+    descKey: 'plan.monthly_desc',
+    benefitKeys: ['plan.full_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features'],
   },
   {
-    name: 'Annual',
+    nameKey: 'plan.annual',
     price: '$90',
-    interval: '/yr',
-    desc: 'Billed annually. Save 25%.',
-    benefits: ['Full transcripts', 'Unlimited word examples', 'All Pro features', 'Best value'],
+    intervalKey: 'interval.annual',
+    descKey: 'plan.annual_desc',
+    benefitKeys: ['plan.full_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features', 'title.best_value'],
   },
   {
-    name: 'Lifetime',
+    nameKey: 'plan.lifetime',
     price: '$169',
-    interval: '',
-    desc: 'One-time payment. Lifetime access.',
-    benefits: ['Full transcripts', 'Unlimited word examples', 'All Pro features', 'Pay once, forever'],
+    intervalKey: null,
+    descKey: 'plan.lifetime_desc',
+    benefitKeys: ['plan.full_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features', 'msg.pay_once_forever'],
   },
 ];
 
@@ -261,13 +261,16 @@ export default function ProfilePage() {
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {PLANS.map((plan) => (
-                <div key={plan.name} className="rounded-lg border border-border p-4 text-center">
-                  <p className="text-lg font-bold">{plan.name}</p>
-                  <p className="mt-1 text-2xl font-bold">{plan.price}<span className="text-sm font-normal text-muted-foreground">{plan.interval}</span></p>
-                  <p className="mt-1 text-xs text-muted-foreground">{plan.desc}</p>
+                <div key={plan.nameKey} className="rounded-lg border border-border p-4 text-center">
+                  <p className="text-lg font-bold">{t(plan.nameKey)}</p>
+                  <p className="mt-1 text-2xl font-bold">
+                    {plan.price}
+                    {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t(plan.descKey)}</p>
                   <ul className="mt-3 space-y-1 text-left text-xs text-muted-foreground">
-                    {plan.benefits.map((b) => (
-                      <li key={b} className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> {b}</li>
+                    {plan.benefitKeys.map((key) => (
+                      <li key={key} className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> {t(key)}</li>
                     ))}
                   </ul>
                 </div>

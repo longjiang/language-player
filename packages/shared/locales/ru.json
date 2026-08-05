@@ -213,6 +213,10 @@
         "currency": "2. Все валюты указаны в долларах США (USD).",
         "lifetime_assumption": "1. Предполагается, что вы проживете более 2,4 лет."
     },
+    "interval": {
+        "annual": "/год",
+        "monthly": "/мес"
+    },
     "label": {
         "ai_generated": "AI-Generated",
         "ai_says": "DeepSeek говорит:",
@@ -904,9 +908,15 @@
         "verification_code": "Код подтверждения"
     },
     "plan": {
+        "all_pro_features": "Все функции Pro",
         "annual": "Годовая",
+        "annual_desc": "Ежегодная оплата. Экономия 25%.",
+        "full_transcripts": "Полные расшифровки",
         "lifetime": "Пожизненная",
-        "monthly": "Ежемесячная"
+        "lifetime_desc": "Разовый платёж. Пожизненный доступ.",
+        "monthly": "Ежемесячная",
+        "monthly_desc": "Ежемесячная оплата. Отмена в любое время.",
+        "unlimited_examples": "Неограниченное количество примеров слов"
     },
     "player": {
         "next_subtitle_line": "Следующая строка субтитров",

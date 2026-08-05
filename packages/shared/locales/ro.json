@@ -213,6 +213,10 @@
         "currency": "2. Toate valutele sunt în dolari americani (USD).",
         "lifetime_assumption": "1. Presupunând că vei trăi mai mult de 2,4 ani."
     },
+    "interval": {
+        "annual": "/an",
+        "monthly": "/lună"
+    },
     "label": {
         "ai_generated": "Generat de AI",
         "ai_says": "DeepSeek spune:",
@@ -904,9 +908,15 @@
         "verification_code": "Cod de verificare"
     },
     "plan": {
+        "all_pro_features": "Toate funcțiile Pro",
         "annual": "Anual",
+        "annual_desc": "Facturare anuală. Economisești 25%.",
+        "full_transcripts": "Transcrieri complete",
         "lifetime": "Pe viață",
-        "monthly": "Lunar"
+        "lifetime_desc": "Plată unică. Acces pe viață.",
+        "monthly": "Lunar",
+        "monthly_desc": "Facturare lunară. Anulare oricând.",
+        "unlimited_examples": "Exemple de cuvinte nelimitate"
     },
     "player": {
         "next_subtitle_line": "Următoarea linie de subtitrare",
