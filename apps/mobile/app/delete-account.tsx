@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 
@@ -29,11 +30,10 @@ export default function DeleteAccountScreen() {
 
       // Delete account via Flask proxy — user ID is extracted from JWT token server-side.
       // No request body needed; the Authorization header identifies the user.
-      const res = await fetch(`${PYTHON_API_URL}/auth/delete-account`, {
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/auth/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
         },
       });
 

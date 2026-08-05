@@ -5,6 +5,7 @@ import { CheckCircle, Loader2, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 /**
  * Top-level success page redirected to by the Python backend after a
@@ -12,7 +13,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
  * Python backend uses a fixed URL: {host}/go-pro-success
  */
 export default function GoProSuccessPage() {
-  const { user, token, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const t = useT();
 
   const [checking, setChecking] = useState(true);
@@ -30,12 +31,7 @@ export default function GoProSuccessPage() {
 
     const check = async () => {
       try {
-        const res = await fetch(
-          `${PYTHON_API_URL}/user-subscription`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-          },
-        );
+        const res = await authenticatedFetch(`${PYTHON_API_URL}/user-subscription`);
         if (res.ok) {
           const data = await res.json();
           if (data?.type && data.type !== 'free') {

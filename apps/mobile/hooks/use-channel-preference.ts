@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 export type ChannelPref = 'subscribed' | 'not_interested' | 'neutral';
 
@@ -23,7 +24,7 @@ function _getCacheKey(userId: string, l2: string): string {
   return `${userId}:${l2}`;
 }
 
-async function _fetchPreferences(userId: string, token: string | null, l2: string): Promise<any[]> {
+async function _fetchPreferences(userId: string, l2: string): Promise<any[]> {
   const key = _getCacheKey(userId, l2);
   const cached = _cache.get(key);
 
@@ -37,12 +38,9 @@ async function _fetchPreferences(userId: string, token: string | null, l2: strin
     return cached.promise;
   }
 
-  const promise = fetch(`${PYTHON_API_URL}/channel-preferences?l2=${encodeURIComponent(l2)}`, {
+  const promise = authenticatedFetch(`${PYTHON_API_URL}/channel-preferences?l2=${encodeURIComponent(l2)}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    headers: { 'Content-Type': 'application/json' },
   })
     .then((res) => (res.ok ? res.json() : []))
     .then((data: any) => {
@@ -70,7 +68,7 @@ async function _fetchPreferences(userId: string, token: string | null, l2: strin
  * and language contexts instead of Next.js session/language providers.
  */
 export function useChannelPreference(channelId: string | undefined) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const { l2Lang } = useLanguage();
   const userId = user?.id;
   const code = l2Lang.code;
@@ -83,7 +81,7 @@ export function useChannelPreference(channelId: string | undefined) {
     if (!userId || !channelId) return;
     let cancelled = false;
 
-    _fetchPreferences(userId, token, code)
+    _fetchPreferences(userId, code)
       .then((data: any[]) => {
         if (cancelled) return;
         const match = data.find((p: any) => p.channelId === channelId);
@@ -93,7 +91,7 @@ export function useChannelPreference(channelId: string | undefined) {
       .catch(() => { if (!cancelled) setLoaded(true); });
 
     return () => { cancelled = true; };
-  }, [userId, token, channelId, code]);
+  }, [userId, channelId, code]);
 
   // Save preference — busts cache so next fetch picks up the change
   const savePref = useCallback(
@@ -102,12 +100,9 @@ export function useChannelPreference(channelId: string | undefined) {
       setPref(status);
       // Optimistically bust cache for this user+l2 pair
       _cache.delete(_getCacheKey(userId, code));
-      fetch(`${PYTHON_API_URL}/channel-preferences`, {
+      authenticatedFetch(`${PYTHON_API_URL}/channel-preferences`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channelId,
           l2: code,
@@ -115,7 +110,7 @@ export function useChannelPreference(channelId: string | undefined) {
         }),
       }).catch(() => {});
     },
-    [userId, token, channelId, code],
+    [userId, channelId, code],
   );
 
   return { pref, loaded, savePref };

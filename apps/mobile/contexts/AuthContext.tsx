@@ -6,8 +6,22 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 // ── API Client Singleton ────────────────────
 
 let initialized = false;
+let onTokenRefreshed: ((token: string) => void) | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
+/** Decode the JWT `exp` claim (ms) for boot-time staleness checks. */
+function tokenExpiresAt(token: string): number {
+  try {
+    const payload = token.split('.')[1]!;
+    const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4);
+    const decoded = JSON.parse(atob(padded.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof decoded.exp === 'number' ? decoded.exp * 1000 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function doRefreshAccessToken(): Promise<string | null> {
   try {
     const refreshToken = await SecureStore.getItemAsync('authRefreshToken');
     if (!refreshToken) return null;
@@ -23,10 +37,25 @@ async function refreshAccessToken(): Promise<string | null> {
     if (data.refreshToken) {
       await SecureStore.setItemAsync('authRefreshToken', data.refreshToken);
     }
+    // Keep useAuth().token consumers (raw fetches, gating) on the fresh token.
+    onTokenRefreshed?.(data.token);
     return data.token;
   } catch {
     return null;
   }
+}
+
+/**
+ * Single-flight refresh: concurrent callers (axios 401 interceptor,
+ * authenticatedFetch, boot-time check) share one GoTrue refresh-token grant,
+ * because Supabase refresh tokens rotate and a second concurrent grant with
+ * the same token would 401.
+ */
+export function refreshAccessToken(): Promise<string | null> {
+  refreshPromise ??= doRefreshAccessToken().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
 }
 
 export function initApiClient() {
@@ -126,10 +155,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+          // Boot-time staleness check (mirrors Classic's auth-guard.js): if the
+          // stored access token already expired, refresh before the first batch
+          // of requests fires; a dead refresh token means a clean logout.
+          const expiresAt = tokenExpiresAt(storedToken);
+          if (expiresAt > 0 && expiresAt <= Date.now()) {
+            const newToken = await refreshAccessToken();
+            if (!newToken) {
+              await SecureStore.deleteItemAsync('authToken');
+              await SecureStore.deleteItemAsync('authRefreshToken');
+              await SecureStore.deleteItemAsync('userInfo');
+              setToken(null);
+              setUser(null);
+            }
+          }
         }
       } catch { /* ignore */ }
       setLoading(false);
     })();
+  }, []);
+
+  // Keep the context token in sync whenever the apiClient refreshes it.
+  useEffect(() => {
+    onTokenRefreshed = (newToken) => setToken(newToken);
+    return () => { onTokenRefreshed = null; };
   }, []);
 
   const applySession = useCallback(async (token: string, refreshToken: string | null, user: User) => {

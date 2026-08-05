@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { Loader2, AlertCircle, Clock, Play } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -88,9 +89,7 @@ export default function WatchHistoryPage() {
     setLoading(true);
     setError(null);
 
-    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(baseCode(l2.code))}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(baseCode(l2.code))}`)
       .then((res) => {
         // 404 = no history yet (not an error)
         if (res.status === 404) return [];

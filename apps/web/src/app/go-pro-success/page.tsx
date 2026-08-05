@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/hooks/use-t';
@@ -27,15 +28,12 @@ export default function GoProSuccessPage() {
     }
 
     const userId = session.user.id!;
-    const token = (session?.user as any)?.accessToken as string | undefined;
     let attempts = 0;
     const maxAttempts = 10;
 
     const check = async () => {
       try {
-        const res = await fetch(`${PYTHON_API_URL}/user-subscription`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
+        const res = await authenticatedFetch(`${PYTHON_API_URL}/user-subscription`);
         if (res.ok) {
           const data = await res.json();
           if (data?.type && data.type !== 'free') {

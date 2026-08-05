@@ -135,7 +135,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' as const },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, trigger, session }) {
+      // Client-pushed refresh: ApiClientProvider calls update() after
+      // POST /auth/refresh, which lands here with trigger === 'update'.
+      // Persist the rotated pair so useSession consumers see it immediately.
+      if (trigger === 'update' && session && typeof (session as any)?.accessToken === 'string') {
+        const s = session as any;
+        if (s.accessToken) token.accessToken = s.accessToken;
+        if (typeof s.refreshToken === 'string') token.refreshToken = s.refreshToken;
+        if (typeof s.tokenExpiresAt === 'number') token.tokenExpiresAt = s.tokenExpiresAt;
+      }
       // Persist the Supabase access token from authorize() into the JWT
       if (user && 'accessToken' in user) {
         const u = user as any;
