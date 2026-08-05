@@ -4,8 +4,7 @@
   base = "/"
 
 [build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps"
+  NODE_VERSION = "22"
 
 [[redirects]]
   from = "/api/python/*"
