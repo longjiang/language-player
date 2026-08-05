@@ -409,7 +409,7 @@ so each is fully verified before the next starts:
 | 5.4 | Notes | **COMPLETE** | 5.3 |
 | 5.5 | Content read-path cutover (WS-5) | **COMPLETE** | 5.4 |
 | 5.6 | Subscriptions & payments (WS-6) | **COMPLETE** | 5.5 |
-| 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After 5.6 | 5.1, 5.2–5.6 |
+| 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | **COMPLETE** | 5.1, 5.2–5.6 |
 | 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.5 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
 
@@ -568,10 +568,13 @@ Steps:
 1. Prereq: full import complete (5.1).
 2. Flask `/auth/login|register|password-*|verify-email|delete-account` →
    GoTrue (same `{ token, user }` shape).
-3. PyJWT middleware: verify Supabase JWT signature (HS256,
-   `SUPABASE_JWT_SECRET`) + `exp` on every authenticated request; remove the
-   base64-decode-without-verify pattern from `user_data.py`, `auth.py`,
-   `user_notes.py`.
+3. PyJWT middleware: verify the Supabase JWT signature + `exp` on every
+   authenticated request. This project's Auth tokens are **ES256** signed by
+   Supabase's JWT signing keys, so verification uses the GoTrue JWKS endpoint
+   (`/auth/v1/.well-known/jwks.json`); the legacy HS256/`SUPABASE_JWT_SECRET`
+   path is kept as a fallback. The base64-decode-without-verify pattern is
+   removed from `user_data.py`, `auth.py`, `user_notes.py`, and every other
+   authenticated route.
 4. Clients: web NextAuth (same Flask URL), mobile AuthContext (same Flask
    URL), Classic nuxt-auth retargeted to Flask.
 5. **One-time remap**: `UPDATE user_saved_words` and every WS-2/3/4/5 table
@@ -582,6 +585,27 @@ Steps:
 **Acceptance**: login/register/reset/verify/delete work on all apps; Mary/Bob
 see their existing saved words after the remap; old Directus tokens are
 rejected by Flask.
+
+**Progress (2026-08-04):**
+
+- ✅ Full import re-run through 75,203 users (Directus = auth.users =
+  identities = user_id_map; stragglers re-imported before the remap).
+- ✅ Flask `/auth/*` proxies GoTrue (login/register/password/verify/refresh/
+  logout/delete/resend); clients return `{ token, refreshToken, user }`.
+- ✅ ES256 JWT verification via GoTrue JWKS (HS256 fallback) live; legacy
+  base64 decode removed from all authenticated routes; old Directus tokens
+  rejected (unit + live verified).
+- ✅ Web NextAuth, mobile AuthContext, and Classic nuxt-auth retargeted to
+  Flask → GoTrue; refresh-token handling added to web + mobile; Classic
+  registration/verify/password/delete flows on Flask.
+- ✅ One-time remap applied: all WS-0/2/3/4/5 user tables re-keyed from
+  Directus numeric ids to `auth.users.id` via `user_id_map` (columns widened
+  to text so unmapped legacy ids survive; 980 orphan rows remain by decision,
+  reported by `tmp/supabase-user-remap.py --verify`).
+- ✅ Mary/Bob login + `/user-settings`, `/progress`, `/saved-words`,
+  `/user-subscription`, `/user-notes` verified 200 after the remap.
+
+**Sub-phase 5.7 is COMPLETE.**
 
 **Rollback**: revert Flask auth + client token sources; remap is reversible via
 `user_id_map` (map back to Directus ids).
