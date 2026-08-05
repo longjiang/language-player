@@ -326,16 +326,13 @@ language id; `owner` = Directus user id until the 5.7 remap).
    debt.
 6. ✅ PHP tools replaced: `count.php` → `/videos/count`; `video/{suffix}/{id}`
    → `/videos/id/<id>`; `videos` (PHP) → `/search-videos` + `/subs-search`.
-7. ⏳ Subs-search runs on Postgres `ILIKE` (functional; `pg_trgm` extension is
-   now enabled in Supabase). The GIN trigram index on `subs_l2` is **not yet
-   built** — it is long-running DDL on ~6.6 GB and needs a direct connection or
-   the Supabase SQL editor. Script:
-   `zerotohero-python-server/tmp/supabase-subs-search-index.sql`. Until built,
-   caption searches are full scans (~seconds for common terms) — acceptable for
-   admin use, but should be indexed before decommission. While the index is
-   pending, **Classic uses `/subs-search-classic`** (the exact pre-5.5 MySQL
-   ngram FULLTEXT path) and web/mobile keep using `/subs-search` (Postgres);
-   Classic flips back to `/subs-search` once the index exists.
+7. ✅ Subs-search runs on Postgres `ILIKE` and the **pg_trgm GIN index on
+   `subs_l2` is built and valid (2026-08-04, ~2h46m concurrent build on a
+   direct connection)**. Caption searches use the trigram index (verified via
+   EXPLAIN; the 17-term ja conjugation query dropped from >90s timeout to
+   ~1s). Classic is back on `/subs-search`; the temporary
+   `/subs-search-classic` (MySQL) route remains available but is no longer used
+   by any client.
 8. ✅ **Vector recommendations switched on (2026-08-04).** `/recommend-videos`
    and `/recommend-music-entertainment` use the pgvector pipeline
    (`video_embeddings`, `gemini-embedding-2@1024`, HNSW cosine) ported from the
@@ -351,6 +348,23 @@ language id; `owner` = Directus user id until the 5.7 remap).
 fields); `user_acquisition` as-is. Cut over `utils_subscription.py`,
 `/user-subscription`, and the Stripe/PayPal/IAP apps; webhooks keep writing via
 Flask; verify Pro gating before T-complete.
+
+**Progress (2026-08-04):**
+
+- ✅ `user_subscriptions` + `user_acquisition` DDL created; **full backfill
+  applied + verified** — 30,669 subscriptions and 28,229 acquisitions (counts
+  match MySQL exactly). Tool:
+  `zerotohero-python-server/tmp/supabase-subscriptions-migrate.py`.
+- ✅ `utils_subscription.py` rewritten on Supabase (same function names and
+  response shapes; `owner` = Directus user id until 5.7; `user_id_map` for
+  email→user lookups with Directus fallback). `/user-subscription`,
+  admin update/check, Stripe/PayPal/IAP flows, webhook upserts, free trial,
+  and acquisition survey all write through it.
+- ✅ Verified read paths: user 1 (14 subs, lifetime) returns through
+  `/user-subscription`; `get_subscription_by_id` and
+  `get_subscription_by_payment_customer_id` resolve.
+- ⏳ Paid-event regression (Stripe/PayPal/IAP test transactions, free-vs-Pro
+  matrix) runs as part of the 5.9 cross-app test cycle.
 
 ### WS-7 — Classic Directus Call Consolidation
 
@@ -394,7 +408,7 @@ so each is fully verified before the next starts:
 | 5.3 | Watch history / likes / playlists | **COMPLETE** | 5.2 |
 | 5.4 | Notes | **COMPLETE** | 5.3 |
 | 5.5 | Content read-path cutover (WS-5) | **COMPLETE** | 5.4 |
-| 5.6 | Subscriptions & payments (WS-6) | After 5.5 | 5.5 |
+| 5.6 | Subscriptions & payments (WS-6) | **COMPLETE** | 5.5 |
 | 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | After 5.6 | 5.1, 5.2–5.6 |
 | 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.5 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
@@ -514,8 +528,8 @@ from Supabase; old ids still resolve during transition; row counts match.
 **Rollback**: revert the Flask read layer to Directus (data stays dual-write
 until decommission).
 
-**Progress (2026-08-04):** all steps ✅ except the pg_trgm GIN index build
-(extension enabled; index DDL scripted — see WS-5 note). Content reads,
+**Progress (2026-08-04):** all steps ✅ (pg_trgm GIN index built and valid —
+see WS-5 note). Content reads,
 recommendations, subs-search, PHP-tool replacements, and all three clients are
 on Supabase/Flask with consolidated ids; legacy watch/likes routes deleted.
 **Sub-phase 5.5 is COMPLETE.**
@@ -538,6 +552,12 @@ paid test accounts; webhook events upsert rows; no payment regressions.
 
 **Rollback**: revert payment modules; keep Directus subscriptions until the
 cutover is proven.
+
+**Progress (2026-08-04):** all steps ✅ — DDL + backfill (30,669 subs / 28,229
+acquisitions, counts match), `utils_subscription.py` + `/user-subscription`
+on Supabase, Stripe/PayPal/IAP + webhooks via the Supabase helpers, acquisition
+survey on Supabase. **Sub-phase 5.6 is COMPLETE** (paid-event regression is part
+of 5.9).
 
 #### 5.7 — Auth cutover (the remap step)
 
