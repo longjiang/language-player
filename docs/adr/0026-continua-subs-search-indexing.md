@@ -23,6 +23,24 @@ dictionary lookups — are barely indexable by trigrams.** pg_trgm extracts
 character trigrams, so a 2-character pattern has only one real content
 trigram and a 1-character pattern has none.
 
+For readers unfamiliar with the table columns below: Postgres's **query
+planner** decides how to run each SQL statement — which indexes to use,
+whether to sort, how to combine filters — by estimating how many rows will
+match and what each strategy costs. When those estimates are wrong, it can
+pick a plan that scans far more data than necessary.
+
+The app's search runs in two phases: **phase 1** is a lightweight query that
+returns only the matching video ids, ordered by views and limited to 100;
+**phase 2** fetches the full rows (including the multi-KB subtitle blobs)
+for just those ids. All measurements below are phase-1 queries.
+
+**Forced `(l2, views)` walk** is a diagnostic: we ran the same phase-1 query
+with Postgres's sort step disabled (`enable_sort = off`), which forces the
+planner to walk the `(l2, views DESC NULLS LAST)` index in views order and
+stop after 100 matches. It shows what the query costs when the planner makes
+the "early-stop walk" choice — the fast path SPEC-044 was designed around —
+instead of scanning and sorting the whole language subset.
+
 Verified against the live Supabase database on 2026-08-05
 (`public.youtube_videos`, 1,045,422 rows, ~13 GB total, `subs_l2` TOASTed at
 3–116 KB/row):
@@ -129,9 +147,13 @@ order by views desc nulls last
 limit 100;
 ```
 
-Keep ILIKE/trigram for wildcards and terms ≥ 3 chars (optionally extend the
-tokens to trigrams if common 3-char terms like `对不起` also need to be fast).
-Keep the existing `_reduce_subs_to_context` recheck for exact line matching.
+Terms of 3+ characters are queried as the AND of their overlapping bigrams —
+e.g. `对不起` becomes `对不` AND `不起`, `相形见绌` becomes `相形` AND `形见`
+AND `见绌` — so long common terms get the same early-stop walk and rare terms
+use the GIN bitmap, with no trigram tokens needed. ILIKE/trigram is kept only
+for wildcard searches and terms containing spaces. The existing
+`_reduce_subs_to_context` recheck still filters to lines containing the full
+literal term.
 
 **Initial cost**
 
@@ -149,9 +171,10 @@ Keep the existing `_reduce_subs_to_context` recheck for exact line matching.
 - Pros: tokens come from the `line` column only, so CSV metadata can never
   produce candidates; the existing line recheck keeps exact-substring
   semantics identical to today for plain terms.
-- Cons: char n-grams ignore spaces, so multi-word phrases containing spaces
-  would not match via the token index — fall back to ILIKE for such terms.
-  3+ char terms need the trigram/ILIKE path (or trigram tokens).
+- Cons: char n-grams ignore spaces, so a term containing whitespace would not
+  match via the token index. This does not affect zh/ja/th (no word spaces);
+  only space-using continua languages (`my`, `bo`, `dz`) or hand-entered
+  phrases need the ILIKE fallback.
 
 **Performance**
 
@@ -184,8 +207,8 @@ limit 100;
 
 **Result quality**
 
-- Same as Option B (line-derived tokens + exact recheck), with the same
-  phrase/3+ char caveats.
+- Same as Option B (line-derived tokens + exact recheck); only
+  space-containing terms need the ILIKE fallback.
 
 **Performance**
 
@@ -207,8 +230,8 @@ query with `subs_bigrams @> array['中国']`.
 
 **Result quality**
 
-- Same as Options B/C (line-derived tokens + exact recheck), with the same
-  phrase/3+ char caveats.
+- Same as Options B/C (line-derived tokens + exact recheck); only
+  space-containing terms need the ILIKE fallback.
 
 **Performance**
 
@@ -252,12 +275,35 @@ create index youtube_videos_subs_l2_pgroonga
 - Cons: query syntax changes (`&@~` or PGroonga-aware LIKE); index size and
   maintenance characteristics on a 13 GB table are unmeasured here.
 
+## Other options considered and rejected
+
+- **pg_bigm** — a bigram index would be the natural fit for 1–2 char CJK
+  search, but it is not available on this Supabase project
+  (`pg_available_extensions` has no entry).
+- **zhparser / pg_jieba** — Chinese/Japanese segmentation extensions are not
+  available on Supabase; segmentation also does not help monogram searches.
+- **pg_hint_plan** — forcing the planner onto the `(l2, views)` walk would fix
+  common terms but not rare 1–2 char scans, and the extension is not
+  available here.
+- **Dropping `idx_youtube_videos_l2`** to force the walk — too risky; the
+  plain `l2` index serves many other queries (14k+ index scans observed).
+- **Separate subtitle-lines table with a trigram index** — still suffers the
+  same short-pattern trigram limitation as today.
+- **Space-inclusive n-grams** (treating spaces as characters) — would let one
+  index handle spaced phrases, but adds noise and storage for no benefit on
+  zh/ja/th; the ILIKE fallback is simpler.
+- **Explicit term-frequency routing** (estimating a term's frequency in
+  Python before choosing walk vs GIN) — a refinement of Option A's safety
+  net, not a standalone indexing approach.
+- **Hash-based gram keys** (int4 instead of text) — a sizing optimization for
+  Option C, not a distinct approach.
+
 ## Comparison summary
 
 | Option | Initial cost | Result quality | Performance |
 |---|---|---|---|
 | A — Status quo + safety net | Low | Same as today | Fast common terms; rare 1–2 char terms remain slow |
-| B — N-gram tsvector | Medium (backfill + ~7–10 GB) | Same for plain terms; phrase/3+ char fallbacks needed | Exact lexeme estimates; prototype 0.06–0.9 ms; needs full-scale validation |
+| B — N-gram tsvector | Medium (backfill + ~7–10 GB) | Same for plain terms; space-term fallback only | Exact lexeme estimates; prototype 0.06–0.9 ms; needs full-scale validation |
 | C — Posting table | High (~25 GB, hours-long build) | Same as B | Guaranteed 1–2 ms index-only walks |
 | D — `text[]` GIN | Medium storage, slow GIN build | Same as B | Likely fast; planner behavior unverified |
 | E — PGroonga | Low-to-medium (extension + big index) | Same as today, one index for all lengths | Promising; unmeasured on this corpus |
