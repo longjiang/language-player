@@ -25,41 +25,37 @@ const STRIPE_PUBLISHABLE_KEY = 'pk_live_9lnc7wrGHtcFdPKIWZdy9p17'; // TODO: use 
 const APP_HOST = typeof window !== 'undefined' ? window.location.origin : 'https://languageplayer.io';
 
 interface PlanCard {
-  name: string;
-  label: string;
+  nameKey: 'plan.monthly' | 'plan.annual' | 'plan.lifetime';
   price: string;
-  interval: string;
-  desc: string;
-  benefits: string[];
+  intervalKey: 'interval.monthly' | 'interval.annual' | null;
+  descKey: 'plan.monthly_desc' | 'plan.annual_desc' | 'plan.lifetime_desc';
+  benefitKeys: string[];
   planKey: string;
 }
 
 const PLANS: PlanCard[] = [
   {
-    name: 'Monthly',
-    label: 'Monthly',
+    nameKey: 'plan.monthly',
     price: '$10',
-    interval: '/mo',
-    desc: 'Billed monthly. Cancel anytime.',
-    benefits: ['Full interactive transcripts', 'Unlimited word examples', 'All Pro features'],
+    intervalKey: 'interval.monthly',
+    descKey: 'plan.monthly_desc',
+    benefitKeys: ['plan.interactive_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features'],
     planKey: 'monthly',
   },
   {
-    name: 'Annual',
-    label: 'Annual',
+    nameKey: 'plan.annual',
     price: '$90',
-    interval: '/yr',
-    desc: 'Billed annually. Save 25%.',
-    benefits: ['Full interactive transcripts', 'Unlimited word examples', 'All Pro features', 'Best value'],
+    intervalKey: 'interval.annual',
+    descKey: 'plan.annual_desc',
+    benefitKeys: ['plan.interactive_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features', 'title.best_value'],
     planKey: 'annual',
   },
   {
-    name: 'Lifetime',
-    label: 'Lifetime',
+    nameKey: 'plan.lifetime',
     price: '$169',
-    interval: '',
-    desc: 'One-time payment. Lifetime access.',
-    benefits: ['Full interactive transcripts', 'Unlimited word examples', 'All Pro features', 'Pay once, forever'],
+    intervalKey: null,
+    descKey: 'plan.lifetime_desc',
+    benefitKeys: ['plan.interactive_transcripts', 'plan.unlimited_examples', 'plan.all_pro_features', 'msg.pay_once_forever'],
     planKey: 'lifetime',
   },
 ];
@@ -182,17 +178,17 @@ export default function GoProPage() {
                   : 'border-border bg-card hover:border-primary/30'
               }`}
             >
-              <p className="text-lg font-bold">{plan.label}</p>
+              <p className="text-lg font-bold">{t(plan.nameKey)}</p>
               <p className="mt-1 text-2xl font-bold">
                 {plan.price}
-                <span className="text-sm font-normal text-muted-foreground">{plan.interval}</span>
+                {plan.intervalKey && <span className="text-sm font-normal text-muted-foreground">{t(plan.intervalKey)}</span>}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">{plan.desc}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t(plan.descKey)}</p>
               <ul className="mt-3 space-y-1">
-                {plan.benefits.map((b) => (
-                  <li key={b} className="flex items-center gap-1 text-xs text-muted-foreground">
+                {plan.benefitKeys.map((key) => (
+                  <li key={key} className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Check className="h-3 w-3 shrink-0 text-green-500" />
-                    {b}
+                    {t(key)}
                   </li>
                 ))}
               </ul>
@@ -226,7 +222,7 @@ export default function GoProPage() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <span className="flex items-center gap-1 text-sm opacity-70">
-                    {selectedPlanData.price} {selectedPlanData.interval}
+                    {selectedPlanData.price}{selectedPlanData.intervalKey ? ` ${t(selectedPlanData.intervalKey)}` : ''}
                     <ArrowRight className="h-3 w-3" />
                   </span>
                 )}
