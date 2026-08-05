@@ -385,6 +385,13 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 - Update `docs/specs/` if you implement a new feature or change behavior
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
+- `package-lock.json` must keep cross-platform optional binaries. npm 10 prunes
+  non-current-platform native packages (`@parcel/watcher-*`, `@next/swc-*`,
+  `@img/sharp-*`, `@turbo/*`, etc.) when the lockfile is regenerated from
+  scratch on macOS. If you regenerate it, verify entries like
+  `node_modules/@parcel/watcher-linux-x64-glibc`,
+  `node_modules/@next/swc-linux-x64-gnu`, and `node_modules/@turbo/linux-64`
+  are still present before committing, or Netlify's Linux build will fail.
 - Never edit files in `zerotohero-nuxt/`, `language-player-3/`, or `apps/mobile-go-legacy/` — they are reference-only
 - Always do a type check with `npx turbo typecheck` and build check with `npm run build:check -w apps/web` before committing. Never push.
 
