@@ -15,6 +15,8 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  Heart,
+  Bookmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -48,6 +50,13 @@ interface VideoControlBarProps {
   reduced?: boolean;
   /** Optional translation progress text shown inline in reduced mode (e.g. "Translating 5/120"). */
   translatingText?: string | null;
+  /** Like state + handler. When omitted, the heart button is hidden. */
+  liked?: boolean;
+  onToggleLike?: () => void;
+  likeDisabled?: boolean;
+  /** Opens the "save to playlist" dialog. When omitted, the bookmark is hidden. */
+  onSaveToPlaylist?: () => void;
+  playlistDisabled?: boolean;
 }
 
 export function VideoControlBar({
@@ -71,6 +80,11 @@ export function VideoControlBar({
   className,
   reduced = false,
   translatingText,
+  liked = false,
+  onToggleLike,
+  likeDisabled = false,
+  onSaveToPlaylist,
+  playlistDisabled = false,
 }: VideoControlBarProps) {
   const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -160,6 +174,34 @@ export function VideoControlBar({
             title={t('a11y.video_info')}
           >
             <PanelRightClose className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        {onToggleLike && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30',
+              liked && 'text-destructive hover:text-destructive',
+            )}
+            onClick={onToggleLike}
+            disabled={likeDisabled}
+            title={liked ? t('action.unlike_video') : t('action.like_video')}
+            aria-pressed={liked}
+          >
+            <Heart className={cn('h-3.5 w-3.5', liked && 'fill-current')} />
+          </Button>
+        )}
+        {onSaveToPlaylist && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
+            onClick={onSaveToPlaylist}
+            disabled={playlistDisabled}
+            title={t('action.add_to_playlist')}
+          >
+            <Bookmark className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>
@@ -301,6 +343,38 @@ export function VideoControlBar({
         >
           <SkipForward className="h-4 w-4" />
         </Button>
+
+        {/* Like */}
+        {onToggleLike && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30',
+              liked && 'text-destructive hover:text-destructive',
+            )}
+            onClick={onToggleLike}
+            disabled={likeDisabled}
+            title={liked ? t('action.unlike_video') : t('action.like_video')}
+            aria-pressed={liked}
+          >
+            <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+          </Button>
+        )}
+
+        {/* Save to playlist */}
+        {onSaveToPlaylist && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
+            onClick={onSaveToPlaylist}
+            disabled={playlistDisabled}
+            title={t('action.add_to_playlist')}
+          >
+            <Bookmark className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

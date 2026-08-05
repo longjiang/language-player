@@ -36,6 +36,41 @@ export interface YouTubeVideo {
   channel_id?: string;
 }
 
+/** A video the user has liked, as returned by GET /likes. */
+export interface LikedVideo {
+  /** Legacy/per-shard video id — this is also the id used by the API. */
+  id: string | number;
+  /** Row id of the like itself. */
+  likeId?: string | number;
+  video_id?: string | number;
+  videoId?: string | number;
+  /** Directus/internal language id (legacy) or language code. */
+  l2?: string | number;
+  l2Code?: string;
+  youtube_id: string;
+  title?: string;
+  tags?: string;
+  created_on?: string | null;
+  createdOn?: string | null;
+}
+
+/** A video stored inside a user playlist's JSONB `videos` array. */
+export interface PlaylistVideo {
+  id?: string | number;
+  youtube_id: string;
+  title?: string;
+  duration?: number | string;
+}
+
+/** A user playlist returned by the Flask /playlists endpoints. */
+export interface Playlist {
+  id: string | number;
+  title: string;
+  l2?: string | number;
+  videos: PlaylistVideo[];
+  createdOn?: string | null;
+}
+
 export interface SubtitleLine {
   line: string;
   starttime: number;
