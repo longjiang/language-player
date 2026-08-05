@@ -41,10 +41,7 @@ Flask remains the only endpoint any client calls.
    delete-account continue through Flask and proxy to GoTrue (or call the
    admin API with the service-role key where GoTrue requires it).
 3. **JWT verification**: Flask verifies the Supabase JWT signature and `exp` on
-   every authenticated request (PyJWT). Tokens issued by this project are
-   **ES256** and signed by Supabase's JWT signing keys, so Flask verifies them
-   against the GoTrue JWKS endpoint (`/auth/v1/.well-known/jwks.json`); the
-   legacy HS256/`SUPABASE_JWT_SECRET` path remains as a fallback. The
+   every authenticated request (PyJWT, HS256, `SUPABASE_JWT_SECRET`). The
    decode-without-verify shortcut is removed everywhere.
 4. **No client SDKs**: clients do not import `supabase-js`, construct GoTrue
    URLs, or touch PostgREST during the transition. The only planned exception is

@@ -152,17 +152,26 @@ sweep scaffolding remains until WS-8.
 
 **Cutover work (5.7):**
 
-1. Full user import (`--apply`), then `--verify` (counts + Mary/Bob login).
-2. Flask `/auth/*` endpoints forward to GoTrue (keep `{ token, user }` shape).
-3. PyJWT verification middleware (HS256, `SUPABASE_JWT_SECRET`, `exp`) — remove
+1. ✅ Full user import (`--apply`), then `--verify` (counts + Mary/Bob login).
+2. ✅ Flask `/auth/*` endpoints forward to GoTrue (keep `{ token, user }` shape).
+3. ✅ PyJWT verification middleware (HS256, `SUPABASE_JWT_SECRET`, `exp`) — remove
    the base64-decode-without-verify pattern from `user_data.py`, `auth.py`,
    `user_notes.py`.
-4. Clients: web keeps NextAuth; mobile keeps AuthContext; Classic retargets
+4. ✅ Clients: web keeps NextAuth; mobile keeps AuthContext; Classic retargets
    nuxt-auth to Flask.
-5. **One-time user-id remap** of `user_saved_words` and all WS-2/3/4/5 tables
+5. ✅ **One-time user-id remap** of `user_saved_words` and all WS-2/3/4/5 tables
    from Directus ids to `auth.users.id` via `user_id_map`.
-6. Email verification flows → GoTrue; delete-account → GoTrue admin delete +
+6. ✅ Email verification flows → GoTrue; delete-account → GoTrue admin delete +
    cascade.
+
+**Progress (2026-08-05):** All six cutover steps are done. The one-time remap
+is **applied and verified** — `mapped_numeric = 0` on every user table; only
+980 legacy orphan rows remain (deleted users, `owner=0`, users with no
+`auth.users` row), which are preserved intentionally. The saved-words
+sweep/reconciler now resolves Directus owner ids → auth UUIDs via
+`user_id_map` before writing `user_saved_words`/`user_saved_word_sync`, so no
+new numeric-keyed rows appear after the Flask server is restarted with the
+patched code. **Sub-phase 5.7 is COMPLETE.**
 
 ### WS-2 — Remaining User-Data Columns
 
@@ -565,47 +574,39 @@ of 5.9).
 user-data row is re-keyed to `auth.users.id`.
 
 Steps:
-1. Prereq: full import complete (5.1).
-2. Flask `/auth/login|register|password-*|verify-email|delete-account` →
+1. ✅ Prereq: full import complete (5.1).
+2. ✅ Flask `/auth/login|register|password-*|verify-email|delete-account` →
    GoTrue (same `{ token, user }` shape).
-3. PyJWT middleware: verify the Supabase JWT signature + `exp` on every
-   authenticated request. This project's Auth tokens are **ES256** signed by
-   Supabase's JWT signing keys, so verification uses the GoTrue JWKS endpoint
-   (`/auth/v1/.well-known/jwks.json`); the legacy HS256/`SUPABASE_JWT_SECRET`
-   path is kept as a fallback. The base64-decode-without-verify pattern is
-   removed from `user_data.py`, `auth.py`, `user_notes.py`, and every other
-   authenticated route.
-4. Clients: web NextAuth (same Flask URL), mobile AuthContext (same Flask
+3. ✅ PyJWT middleware: verify Supabase JWT signature (HS256,
+   `SUPABASE_JWT_SECRET`) + `exp` on every authenticated request; remove the
+   base64-decode-without-verify pattern from `user_data.py`, `auth.py`,
+   `user_notes.py`.
+4. ✅ Clients: web NextAuth (same Flask URL), mobile AuthContext (same Flask
    URL), Classic nuxt-auth retargeted to Flask.
-5. **One-time remap**: `UPDATE user_saved_words` and every WS-2/3/4/5 table
+5. ✅ **One-time remap**: `UPDATE user_saved_words` and every WS-2/3/4/5 table
    `user_id` → `auth_user_id` via `user_id_map`; orphan check (0 unmapped).
-6. Email verification flows → GoTrue; delete-account → GoTrue admin delete +
+6. ✅ Email verification flows → GoTrue; delete-account → GoTrue admin delete +
    cascade; `is_admin` gating live.
 
 **Acceptance**: login/register/reset/verify/delete work on all apps; Mary/Bob
 see their existing saved words after the remap; old Directus tokens are
 rejected by Flask.
 
-**Progress (2026-08-04):**
-
-- ✅ Full import re-run through 75,203 users (Directus = auth.users =
-  identities = user_id_map; stragglers re-imported before the remap).
-- ✅ Flask `/auth/*` proxies GoTrue (login/register/password/verify/refresh/
-  logout/delete/resend); clients return `{ token, refreshToken, user }`.
-- ✅ ES256 JWT verification via GoTrue JWKS (HS256 fallback) live; legacy
-  base64 decode removed from all authenticated routes; old Directus tokens
-  rejected (unit + live verified).
-- ✅ Web NextAuth, mobile AuthContext, and Classic nuxt-auth retargeted to
-  Flask → GoTrue; refresh-token handling added to web + mobile; Classic
-  registration/verify/password/delete flows on Flask.
-- ✅ One-time remap applied: all WS-0/2/3/4/5 user tables re-keyed from
-  Directus numeric ids to `auth.users.id` via `user_id_map` (columns widened
-  to text so unmapped legacy ids survive; 980 orphan rows remain by decision,
-  reported by `tmp/supabase-user-remap.py --verify`).
-- ✅ Mary/Bob login + `/user-settings`, `/progress`, `/saved-words`,
-  `/user-subscription`, `/user-notes` verified 200 after the remap.
-
-**Sub-phase 5.7 is COMPLETE.**
+**Progress (2026-08-05):** all steps ✅. The remap ran with the
+`tmp/supabase-user-remap.py` tool (dry-run → apply → verify): 2,312
+Directus-keyed `user_saved_words` duplicates were merged into their existing
+UUID twins (forms/instances unioned with the production merge semantics) and
+deleted, 1 `user_watch_history` duplicate was dropped (newer date/position
+pulled into the twin), stale `user_saved_word_sync` rows with PK conflicts
+were removed, and every remaining mapped row was re-keyed to `auth.users.id`.
+`--verify` reports `mapped_numeric = 0` on all 16 tables; the 980 remaining
+numeric rows are unmapped legacy owners (deleted users / `owner=0`) with no
+`auth.users` row and are intentionally preserved. Mary/Bob spot-check:
+saved words all UUID-keyed (Mary 2,186, Bob 4). Subscription/email lookups in
+`utils_subscription.py` now return auth UUIDs (with an `auth.users` fallback
+for post-GoTrue registrations) and tolerate legacy numeric ids. The saved-words
+sweep/reconciler resolves Directus owners → UUIDs before writing, closing the
+post-remap orphan gap. **Sub-phase 5.7 is COMPLETE.**
 
 **Rollback**: revert Flask auth + client token sources; remap is reversible via
 `user_id_map` (map back to Directus ids).
