@@ -45,21 +45,12 @@ export function useInflectedSearchTerms(
   entry: {
     head: string;
     alternate?: string | null;
-    pronunciation?: string;
     han_script?: {
       simplified?: string;
       traditional?: string;
       kanji?: string | null;
       hanja?: string | null;
       hangul?: string;
-    } | null;
-    phonetic_detail?: {
-      pinyin?: string;
-      kana?: string;
-      romaji?: string;
-      jyutping?: string;
-      hangul?: string;
-      romanization?: string;
     } | null;
   } | null,
   l2Code: string,
@@ -79,13 +70,13 @@ export function useInflectedSearchTerms(
     async function expand() {
       setLoading(true);
 
-      // 1. Script variants from the entry itself
+      // 1. Written-form variants from the entry itself.
+      //    Search subtitles by how the word is WRITTEN — never by pronunciation.
+      //    Fields like `pronunciation` and `phonetic_detail` are IPA/Latin
+      //    phonetic guides (e.g. "spaʊt, spʌʊt") that don't appear in subs.
       const variants: string[] = [e.head];
       if (e.alternate && e.alternate !== e.head) {
         variants.push(e.alternate);
-      }
-      if (e.pronunciation) {
-        variants.push(e.pronunciation);
       }
 
       const hs = e.han_script;
@@ -93,16 +84,6 @@ export function useInflectedSearchTerms(
         if (hs.simplified && hs.simplified !== e.head) variants.push(hs.simplified);
         if (hs.traditional && hs.traditional !== e.head) variants.push(hs.traditional);
         if (hs.hangul) variants.push(hs.hangul);
-      }
-
-      const pd = e.phonetic_detail;
-      if (pd) {
-        if (pd.kana) variants.push(pd.kana);
-        if (pd.romaji) variants.push(pd.romaji);
-        if (pd.pinyin) variants.push(pd.pinyin);
-        if (pd.jyutping) variants.push(pd.jyutping);
-        if (pd.hangul) variants.push(pd.hangul);
-        if (pd.romanization) variants.push(pd.romanization);
       }
 
       // 2. Inflected forms from Python backend
@@ -115,8 +96,16 @@ export function useInflectedSearchTerms(
           );
           if (res.ok) {
             const data = await res.json();
-            // Response shape: [{ table, field, form }, ...] or just string[]
+            // Response shape: [{ table, field, form }, ...] or just string[].
+            // Drop error rows (e.g. table === 'error' → "Unsupported language")
+            // so backend failure modes never leak into the search terms.
             inflected = (Array.isArray(data) ? data : [])
+              .filter((f: any) => {
+                if (!f) return false;
+                const form = typeof f === 'string' ? f : (f.form as string);
+                if (typeof f !== 'string' && f.table === 'error') return false;
+                return form !== 'Unsupported language';
+              })
               .map((f: any) => (typeof f === 'string' ? f : (f.form as string)))
               .filter((f: string) => f && f.length > 1 && f !== e.head);
           }
@@ -142,7 +131,7 @@ export function useInflectedSearchTerms(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry?.head, entry?.alternate, entry?.pronunciation, base]);
+  }, [entry?.head, entry?.alternate, base]);
 
   return {
     allTerms: allTerms.length > 0 ? allTerms : headTerm ? [headTerm] : [],
