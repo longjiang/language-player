@@ -166,7 +166,7 @@ export default function SavedWordsPage() {
             {t('msg.no_saved_words')}
           </p>
           <p className="mt-1 text-sm text-muted-foreground/70">
-            Click the bookmark icon next to any word to save it.
+            {t('msg.save_word_hint')}
           </p>
         </div>
       ) : (

@@ -7,7 +7,7 @@
  */
 import { readFileSync, readdirSync } from 'fs';
 
-const dir = 'apps/web/messages/';
+const dir = 'packages/shared/locales/';
 const files = readdirSync(dir).filter(f => f.endsWith('.json')).sort();
 const en = JSON.parse(readFileSync(dir + 'en.json', 'utf8'));
 
