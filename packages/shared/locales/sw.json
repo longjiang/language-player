@@ -213,6 +213,10 @@
         "currency": "2. Fedha zote ziko katika dola za Marekani (USD).",
         "lifetime_assumption": "1. Ukidhani utaishi zaidi ya miaka 2.4."
     },
+    "interval": {
+        "annual": "/mwaka",
+        "monthly": "/mwezi"
+    },
     "label": {
         "ai_generated": "Iliyotengenezwa na AI",
         "ai_says": "DeepSeek inasema:",
@@ -904,9 +908,15 @@
         "verification_code": "Nambari ya uthibitishaji"
     },
     "plan": {
+        "all_pro_features": "Vipengele vyote vya Pro",
         "annual": "Kila mwaka",
+        "annual_desc": "Utozwa kila mwaka. Okoa 25%.",
+        "full_transcripts": "Nakala kamili",
         "lifetime": "Maisha yote",
-        "monthly": "Kila mwezi"
+        "lifetime_desc": "Malipo ya mara moja. Ufikiaji wa maisha.",
+        "monthly": "Kila mwezi",
+        "monthly_desc": "Utozwa kila mwezi. Ghairi wakati wowote.",
+        "unlimited_examples": "Mifano ya maneno isiyo na kikomo"
     },
     "player": {
         "next_subtitle_line": "Mstari unaofuata wa manukuu",

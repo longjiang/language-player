@@ -213,6 +213,10 @@
         "currency": "2. सभी मुद्राएँ अमेरिकी डॉलर (USD) में।",
         "lifetime_assumption": "1. मान लें कि आप 2.4 वर्षों से अधिक जीवित रहेंगे।"
     },
+    "interval": {
+        "annual": "/वर्ष",
+        "monthly": "/माह"
+    },
     "label": {
         "ai_generated": "एआई-जनरेटेड",
         "ai_says": "डीपसीक कहता है:",
@@ -904,9 +908,15 @@
         "verification_code": "सत्यापन कोड"
     },
     "plan": {
+        "all_pro_features": "सभी Pro सुविधाएँ",
         "annual": "वार्षिक",
+        "annual_desc": "वार्षिक बिलिंग। 25% बचाएं।",
+        "full_transcripts": "पूर्ण ट्रांसक्रिप्ट",
         "lifetime": "आजीवन",
-        "monthly": "मासिक"
+        "lifetime_desc": "एकमुश्त भुगतान। आजीवन पहुंच।",
+        "monthly": "मासिक",
+        "monthly_desc": "मासिक बिलिंग। कभी भी रद्द करें।",
+        "unlimited_examples": "असीमित शब्द उदाहरण"
     },
     "player": {
         "next_subtitle_line": "अगली उपशीर्षक पंक्ति",

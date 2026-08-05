@@ -213,6 +213,10 @@
         "currency": "2. Alle Währungen in US-Dollar (USD).",
         "lifetime_assumption": "1. Angenommen, Sie leben länger als 2,4 Jahre."
     },
+    "interval": {
+        "annual": "/Jahr",
+        "monthly": "/Monat"
+    },
     "label": {
         "ai_generated": "KI-generiert",
         "ai_says": "DeepSeek sagt:",
@@ -904,9 +908,15 @@
         "verification_code": "Bestätigungscode"
     },
     "plan": {
+        "all_pro_features": "Alle Pro-Funktionen",
         "annual": "Jährlich",
+        "annual_desc": "Jährliche Abrechnung. Sparen Sie 25%.",
+        "full_transcripts": "Vollständige Transkripte",
         "lifetime": "Lebenslang",
-        "monthly": "Monatlich"
+        "lifetime_desc": "Einmalige Zahlung. Lebenslanger Zugang.",
+        "monthly": "Monatlich",
+        "monthly_desc": "Monatliche Abrechnung. Jederzeit kündbar.",
+        "unlimited_examples": "Unbegrenzte Wortbeispiele"
     },
     "player": {
         "next_subtitle_line": "Nächste Untertitelzeile",

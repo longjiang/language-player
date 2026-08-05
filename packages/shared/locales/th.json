@@ -213,6 +213,10 @@
         "currency": "2. สกุลเงินทั้งหมดเป็นดอลลาร์สหรัฐ (USD)",
         "lifetime_assumption": "1. สมมติว่าคุณจะมีชีวิตอยู่นานกว่า 2.4 ปี"
     },
+    "interval": {
+        "annual": "/ปี",
+        "monthly": "/เดือน"
+    },
     "label": {
         "ai_generated": "สร้างโดย AI",
         "ai_says": "DeepSeek กล่าวว่า:",
@@ -904,9 +908,15 @@
         "verification_code": "รหัสยืนยัน"
     },
     "plan": {
+        "all_pro_features": "ฟีเจอร์ Pro ทั้งหมด",
         "annual": "รายปี",
+        "annual_desc": "คิดค่าบริการรายปี ประหยัด 25%",
+        "full_transcripts": "บทถอดเสียงแบบเต็ม",
         "lifetime": "ตลอดชีพ",
-        "monthly": "รายเดือน"
+        "lifetime_desc": "จ่ายครั้งเดียว เข้าถึงตลอดชีพ",
+        "monthly": "รายเดือน",
+        "monthly_desc": "คิดค่าบริการรายเดือน ยกเลิกได้ทุกเมื่อ",
+        "unlimited_examples": "ตัวอย่างคำศัพท์ไม่จำกัด"
     },
     "player": {
         "next_subtitle_line": "บรรทัดคำบรรยายถัดไป",

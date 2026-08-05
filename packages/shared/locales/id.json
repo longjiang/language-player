@@ -213,6 +213,10 @@
         "currency": "2. Semua mata uang dalam dolar AS (USD).",
         "lifetime_assumption": "1. Menganggap Anda akan hidup lebih dari 2,4 tahun."
     },
+    "interval": {
+        "annual": "/tahun",
+        "monthly": "/bulan"
+    },
     "label": {
         "ai_generated": "Buatan AI",
         "ai_says": "DeepSeek berkata:",
@@ -904,9 +908,15 @@
         "verification_code": "Kode verifikasi"
     },
     "plan": {
+        "all_pro_features": "Semua fitur Pro",
         "annual": "Tahunan",
+        "annual_desc": "Ditagih tahunan. Hemat 25%.",
+        "full_transcripts": "Transkrip lengkap",
         "lifetime": "Seumur hidup",
-        "monthly": "Bulanan"
+        "lifetime_desc": "Pembayaran sekali. Akses seumur hidup.",
+        "monthly": "Bulanan",
+        "monthly_desc": "Ditagih bulanan. Batalkan kapan saja.",
+        "unlimited_examples": "Contoh kata tanpa batas"
     },
     "player": {
         "next_subtitle_line": "Baris subtitle berikutnya",

@@ -213,6 +213,10 @@
         "currency": "2. Minden pénznem amerikai dollárban (USD).",
         "lifetime_assumption": "1. Feltételezve, hogy 2,4 évnél tovább él."
     },
+    "interval": {
+        "annual": "/év",
+        "monthly": "/hó"
+    },
     "label": {
         "ai_generated": "AI-generált",
         "ai_says": "DeepSeek azt mondja:",
@@ -904,9 +908,15 @@
         "verification_code": "Megerősítő kód"
     },
     "plan": {
+        "all_pro_features": "Minden Pro funkció",
         "annual": "Éves",
+        "annual_desc": "Éves számlázás. Takarítson meg 25%-ot.",
+        "full_transcripts": "Teljes átiratok",
         "lifetime": "Élethosszig",
-        "monthly": "Havi"
+        "lifetime_desc": "Egyszeri fizetés. Élethosszig tartó hozzáférés.",
+        "monthly": "Havi",
+        "monthly_desc": "Havi számlázás. Bármikor lemondható.",
+        "unlimited_examples": "Korlátlan szópéldák"
     },
     "player": {
         "next_subtitle_line": "Következő feliratsor",

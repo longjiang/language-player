@@ -213,6 +213,10 @@
         "currency": "2. Alle geldeenhede in Amerikaanse dollar (USD).",
         "lifetime_assumption": "1. Aangeneem dat jy langer as 2.4 jaar sal leef."
     },
+    "interval": {
+        "annual": "/jr",
+        "monthly": "/md"
+    },
     "label": {
         "ai_generated": "KI-gegenereer",
         "ai_says": "DeepSeek sê:",
@@ -904,9 +908,15 @@
         "verification_code": "Verifikasiekode"
     },
     "plan": {
+        "all_pro_features": "Alle Pro-kenmerke",
         "annual": "Jaarliks",
+        "annual_desc": "Jaarliks gefaktureer. Bespaar 25%.",
+        "full_transcripts": "Volledige transkripsies",
         "lifetime": "Lewenslank",
-        "monthly": "Maandeliks"
+        "lifetime_desc": "Eenmalige betaling. Lewenslange toegang.",
+        "monthly": "Maandeliks",
+        "monthly_desc": "Maandeliks gefaktureer. Kanselleer enige tyd.",
+        "unlimited_examples": "Onbeperkte woordvoorbeelde"
     },
     "player": {
         "next_subtitle_line": "Volgende onderskriflyn",

@@ -213,6 +213,10 @@
         "currency": "2. Kaikki valuutat Yhdysvaltain dollareina (USD).",
         "lifetime_assumption": "1. Olettaen, että elät pidempään kuin 2,4 vuotta."
     },
+    "interval": {
+        "annual": "/vuosi",
+        "monthly": "/kk"
+    },
     "label": {
         "ai_generated": "Tekoälyn luoma",
         "ai_says": "DeepSeek sanoo:",
@@ -904,9 +908,15 @@
         "verification_code": "Vahvistuskoodi"
     },
     "plan": {
+        "all_pro_features": "Kaikki Pro-ominaisuudet",
         "annual": "Vuosittainen",
+        "annual_desc": "Laskutus vuosittain. Säästä 25%.",
+        "full_transcripts": "Täydelliset transkriptiot",
         "lifetime": "Elinikäinen",
-        "monthly": "Kuukausittainen"
+        "lifetime_desc": "Kertamaksu. Elinikäinen pääsy.",
+        "monthly": "Kuukausittainen",
+        "monthly_desc": "Laskutus kuukausittain. Peruuta milloin tahansa.",
+        "unlimited_examples": "Rajattomasti sanuesimerkkejä"
     },
     "player": {
         "next_subtitle_line": "Seuraava tekstitysrivi",

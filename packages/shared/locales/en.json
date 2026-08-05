@@ -213,6 +213,10 @@
         "currency": "2. All currencies in US dollars (USD).",
         "lifetime_assumption": "1. Assuming you will live longer than 2.4 years."
     },
+    "interval": {
+        "annual": "/yr",
+        "monthly": "/mo"
+    },
     "label": {
         "ai_generated": "AI-Generated",
         "ai_says": "DeepSeek says:",
@@ -904,9 +908,15 @@
         "verification_code": "Verification code"
     },
     "plan": {
+        "all_pro_features": "All Pro features",
         "annual": "Annual",
+        "annual_desc": "Billed annually. Save 25%.",
+        "full_transcripts": "Full transcripts",
         "lifetime": "Lifetime",
-        "monthly": "Monthly"
+        "lifetime_desc": "One-time payment. Lifetime access.",
+        "monthly": "Monthly",
+        "monthly_desc": "Billed monthly. Cancel anytime.",
+        "unlimited_examples": "Unlimited word examples"
     },
     "player": {
         "next_subtitle_line": "Next subtitle line",

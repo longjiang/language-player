@@ -213,6 +213,10 @@
         "currency": "2. 모든 통화는 미국 달러(USD)로 표시됩니다.",
         "lifetime_assumption": "1. 2.4년 이상 살 것이라고 가정합니다."
     },
+    "interval": {
+        "annual": "/년",
+        "monthly": "/월"
+    },
     "label": {
         "ai_generated": "AI 생성",
         "ai_says": "딥시크가 말합니다:",
@@ -904,9 +908,15 @@
         "verification_code": "인증 코드"
     },
     "plan": {
+        "all_pro_features": "모든 Pro 기능",
         "annual": "연간",
+        "annual_desc": "연간 청구. 25% 절약.",
+        "full_transcripts": "전체 대본",
         "lifetime": "평생",
-        "monthly": "월간"
+        "lifetime_desc": "일회성 결제. 평생 이용권.",
+        "monthly": "월간",
+        "monthly_desc": "월별 청구. 언제든 취소 가능.",
+        "unlimited_examples": "무제한 단어 예시"
     },
     "player": {
         "next_subtitle_line": "다음 자막 줄",

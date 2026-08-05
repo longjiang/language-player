@@ -213,6 +213,10 @@
         "currency": "2. Tutte le valute sono in dollari USA (USD).",
         "lifetime_assumption": "1. Supponendo che vivrai più di 2,4 anni."
     },
+    "interval": {
+        "annual": "/anno",
+        "monthly": "/mese"
+    },
     "label": {
         "ai_generated": "Generato dall'IA",
         "ai_says": "DeepSeek dice:",
@@ -904,9 +908,15 @@
         "verification_code": "Codice di verifica"
     },
     "plan": {
+        "all_pro_features": "Tutte le funzionalità Pro",
         "annual": "Annuale",
+        "annual_desc": "Fatturazione annuale. Risparmia il 25%.",
+        "full_transcripts": "Trascrizioni complete",
         "lifetime": "A vita",
-        "monthly": "Mensile"
+        "lifetime_desc": "Pagamento unico. Accesso a vita.",
+        "monthly": "Mensile",
+        "monthly_desc": "Fatturazione mensile. Annulla quando vuoi.",
+        "unlimited_examples": "Esempi di parole illimitati"
     },
     "player": {
         "next_subtitle_line": "Riga del sottotitolo successiva",

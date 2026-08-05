@@ -213,6 +213,10 @@
         "currency": "2. Alle valutaer i amerikanske dollar (USD).",
         "lifetime_assumption": "1. Forutsatt at du lever lenger enn 2,4 år."
     },
+    "interval": {
+        "annual": "/år",
+        "monthly": "/mnd"
+    },
     "label": {
         "ai_generated": "AI-generert",
         "ai_says": "DeepSeek sier:",
@@ -904,9 +908,15 @@
         "verification_code": "Bekreftelseskode"
     },
     "plan": {
+        "all_pro_features": "Alle Pro-funksjoner",
         "annual": "Årlig",
+        "annual_desc": "Årlig fakturering. Spar 25%.",
+        "full_transcripts": "Fullstendige transkripsjoner",
         "lifetime": "Livstid",
-        "monthly": "Månedlig"
+        "lifetime_desc": "Engangsbetaling. Livstidstilgang.",
+        "monthly": "Månedlig",
+        "monthly_desc": "Månedlig fakturering. Avbestill når som helst.",
+        "unlimited_examples": "Ubegrensede ordeksempler"
     },
     "player": {
         "next_subtitle_line": "Neste undertekstlinje",
