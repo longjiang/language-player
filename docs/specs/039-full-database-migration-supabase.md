@@ -174,7 +174,7 @@ new numeric-keyed rows appear after the Flask server is restarted with the
 patched code. **Sub-phase 5.7 is COMPLETE.**
 
 **Email-verification UX (2026-08-05):** Supabase's "Confirm signup" template
-can include both `{{ .ConfirmationURL }}` and `{{ .Token }}` (the 6-digit OTP)
+can include both `{{ .ConfirmationURL }}` and `{{ .Token }}` (the 8-digit OTP)
 in the same email. Web now has `/auth/confirm`, which accepts a custom
 `token_hash` link or a Supabase redirect session, exchanges it through Flask,
 and logs the user in directly via NextAuth instead of landing on the home page.

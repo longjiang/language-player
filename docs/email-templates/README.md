@@ -1,7 +1,7 @@
 # Confirm signup email template
 
 Ready-to-paste HTML for Supabase's **Confirm signup** email template. It shows
-both the one-click confirmation link and the 6-digit verification code.
+both the one-click confirmation link and the 8-digit verification code.
 
 ## How to use
 
@@ -19,7 +19,7 @@ The template uses these Supabase variables:
 |---|---|
 | `{{ .SiteURL }}` | App origin for the confirmation link |
 | `{{ .TokenHash }}` | Hashed token for the `/auth/confirm` custom link |
-| `{{ .Token }}` | 6-digit code shown as a fallback |
+| `{{ .Token }}` | 8-digit code shown as a fallback |
 
 ## Logo
 
