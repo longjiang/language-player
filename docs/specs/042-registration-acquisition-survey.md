@@ -24,10 +24,15 @@ screen** (not the email-verification screen).
 
 ## How It Works in Classic (Nuxt)
 
-- `zerotohero-nuxt/pages/verify-email.vue` renders a required `<select>` with
-  the same option values (`word_of_mouth`, `instagram`, `bilibili`,
-  `google_ads`, `hsk_courses`, `app_store`, `google_play`, `google_search`,
-  `youtube`, `other`) plus a "Please specify" input when **Other** is chosen.
+- `zerotohero-nuxt/pages/register.vue` renders the required `<select>` on the
+  registration form with the same option values (`word_of_mouth`, `instagram`,
+  `bilibili`, `google_ads`, `hsk_courses`, `app_store`, `google_play`,
+  `google_search`, `youtube`, `other`) plus a "Please specify" input when
+  **Other** is chosen. After `/auth/register` succeeds it posts the answer to
+  `/acquisition_survey` with the returned user id. (Moved here from
+  `verify-email.vue` in 2026-08-05; the old verify-email flow also dropped the
+  fields from the request during the SPEC-039 5.7 GoTrue migration, so Classic
+  had stopped persisting answers until this change.)
 
 ## Implementation (Next.js + Mobile)
 
