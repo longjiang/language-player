@@ -677,6 +677,47 @@ Classic falls back to no image for those two legacy pages. The `$directus`
 injection name and `plugins/directus.js` filename are kept as legacy naming
 (zero `DIRECTUS_URL`/`directusvps` references in source).
 
+**Regression & follow-up fixes (2026-08-05, verified live on local dev +
+production):**
+
+- **Production `PYTHON_SERVER` regression**: a local-dev `127.0.0.1:5001`
+  override from the 5.8 working tree was shipped, breaking every user-data
+  call with loopback/CORS errors. Fixed by making `PYTHON_SERVER`
+  environment-overridable with the production default
+  (`lib/utils/servers.js` + nuxt.config `env`); local dev sets it in a
+  gitignored `.env`.
+- **Expired access-token storm**: restored sessions 401'd on every user-data
+  call because stores/adapter used plain `axios` with a manual token,
+  bypassing `@nuxtjs/auth-next`'s refresh interceptor. All authenticated
+  calls now go through `$nuxt.$axios`/`app.$axios` (token auto-attached,
+  expired tokens auto-refreshed from the stored refresh token). Plain axios
+  remains only for public endpoints.
+- **User name display**: Flask's GoTrue user shape only had camelCase
+  `firstName`/`lastName`; Classic reads snake_case `first_name`/`last_name`
+  (profile, top bar, dashboard, welcome toast). Both spellings are now
+  returned, and `plugins/auth-user.js` (registered under `auth.plugins` so it
+  runs after auth init) self-heals restored sessions from JWT `user_metadata`.
+- **Logout links** in the top bar/cogwheel were gated on
+  `$auth.user.first_name` existing — now gated on `loggedIn` only.
+- **Notes rename/delete**: TextCard's action menu compared
+  `Number($auth.user.id) === text.owner` (NaN for UUIDs) — now a string
+  compare; same pattern fixed in Playlist.vue.
+- **`user_notes_id_seq` drift**: the 5.4 backfill inserted explicit Directus
+  ids, leaving the identity sequence at ~3 vs max(id)=20393, so note creation
+  failed with a PK collision. One-time `setval(max(id))` applied; the backfill
+  script now syncs the sequence. Audited all sequence-backed tables — only
+  `user_notes` was affected.
+
+**Verification status (2026-08-05):** grep gate clean (zero
+`DIRECTUS_URL`/`directusvps`/`items/…`/raw `$directus` calls in Classic, web,
+mobile source); endpoints exercised via Flask test client (admin gate 401/403,
+video/phrasebook/show CRUD round-trips, stats, content wrapper, classic
+dictionary, feedback, tag cloud); live regression on local dev + production —
+login, profile (name display), notes CRUD incl. rename, watch history,
+subscription check, explore-media page loads. Remaining for full acceptance:
+admin-page browser regression (VideoAdmin, db-audit, ngram, phrase-survey,
+assign-lesson-videos, phrasebook admin) and the formal 5.9 cross-app matrix.
+
 #### 5.9 — Test cycle → 30-day sunset window → teardown + decommission
 
 **Goal**: prove the migration, observe it, then turn Directus off.
