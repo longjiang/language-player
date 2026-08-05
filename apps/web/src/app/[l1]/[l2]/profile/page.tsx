@@ -1,43 +1,26 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
-import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { normalizeInstances } from '@/hooks/use-saved-words';
-import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { youtubeThumbnail } from '@/lib/video-service';
 import {
   User,
   Mail,
-  Clock,
   BookOpen,
   Loader2,
-  Play,
   ArrowRight,
   Crown,
-  AlertCircle,
   Check,
   Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { YouTubeVideo } from '@langplayer/shared';
-
-interface WatchHistoryItem {
-  id: number;
-  title?: string;
-  youtube_id: string;
-  duration?: number;
-  date?: string;
-  last_position?: number;
-}
 
 interface SubscriptionInfo {
   id?: number;
@@ -76,8 +59,6 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { l1, l2 } = useLanguage();
-  const { getSavedWords } = useSavedWordsContext();
-  const { playVideo } = useVideoPlayer();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
   const t = useT();
 
@@ -90,39 +71,6 @@ export default function ProfilePage() {
   const token = (session?.user as any)?.accessToken as string | undefined;
   const userEmail = session?.user?.email;
   const userName = session?.user?.name;
-
-  // ── Watch history ──
-  const [history, setHistory] = useState<WatchHistoryItem[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-
-  useEffect(() => {
-    if (!userId) { setHistoryLoading(false); return; }
-    let cancelled = false;
-    setHistoryLoading(true);
-
-    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(baseCode(l2.code))}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then((res) => (res.status === 404 ? [] : res.ok ? res.json() : []))
-      .then((data: { history?: WatchHistoryItem[] }) => {
-        if (cancelled) return;
-        const seen = new Set<string>();
-        const unique = (data?.history ?? [])
-          .filter((item) => {
-            if (seen.has(item.youtube_id)) return false;
-            seen.add(item.youtube_id);
-            return true;
-          })
-          .slice(0, 5);
-        setHistory(unique);
-        setHistoryLoading(false);
-      })
-      .catch(() => { if (!cancelled) setHistoryLoading(false); });
-    return () => { cancelled = true; };
-  }, [userId, token, l2.code]);
-
-  // ── Saved words ──
-  const savedWords = useMemo(() => getSavedWords(l2.code).slice(0, 10), [getSavedWords, l2.code]);
 
   // ── Subscription ──
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
@@ -171,33 +119,6 @@ export default function ProfilePage() {
     } catch {} finally {
       setCancelling(false);
     }
-  };
-
-  // ── Helpers ──
-  const formatDuration = (d: number | string | undefined): string => {
-    if (d == null || d === '') return '';
-    let num: number;
-    if (typeof d === 'string') {
-      const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
-      num = m ? (parseInt(m[1] ?? '0') * 3600 + parseInt(m[2] ?? '0') * 60 + parseFloat(m[3] ?? '0')) : parseFloat(d);
-      if (isNaN(num)) return '';
-    } else {
-      num = d;
-    }
-    const mins = Math.floor(num / 60);
-    const secs = Math.floor(num % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handlePlayHistory = (item: WatchHistoryItem) => {
-    const queue: YouTubeVideo[] = history.map((i) => ({
-      youtube_id: i.youtube_id,
-      title: i.title,
-      id: String(i.id),
-      duration: i.duration,
-    }));
-    const video = queue.find((v) => v.youtube_id === item.youtube_id);
-    if (video) playVideo(video, queue, 'recommended');
   };
 
   // ── Render ──
@@ -360,132 +281,6 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Watch History */}
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <Clock className="h-5 w-5 text-primary" />
-              {t('title.watch_history')}
-            </h2>
-            {history.length > 0 && (
-              <Link
-                href={`/${l1.code}/${l2.code}/watch-history`}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t('action.see_all')} <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </div>
-          {historyLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : history.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              {t('msg.no_videos_watched')}
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {history.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handlePlayHistory(item)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50 group"
-                >
-                  <div className="relative h-12 w-20 flex-shrink-0 overflow-hidden rounded bg-muted">
-                    <img
-                      src={youtubeThumbnail(item.youtube_id)}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                      <Play className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium group-hover:text-primary transition-colors">
-                      {item.title ?? t('label.untitled_video')}
-                    </p>
-                    {item.duration && (
-                      <p className="text-xs text-muted-foreground">
-                        {formatDuration(item.duration)}
-                      </p>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Saved Words */}
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <BookOpen className="h-5 w-5 text-primary" />
-              {t('title.saved_words')}
-            </h2>
-            {savedWords.length > 0 && (
-              <Link
-                href={`/${l1.code}/${l2.code}/saved-words`}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t('action.see_all')} <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </div>
-          {savedWords.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              {t('msg.no_words_saved')}
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {savedWords.map((word) => (
-                <Link
-                  key={word.id}
-                  href={`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
-                >
-                  {/* Word */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base font-semibold">{word.forms[0] ?? '?'}</span>
-                      {word.forms.length > 1 && (
-                        <span className="text-xs text-muted-foreground">
-                          {word.forms.slice(1).join(', ')}
-                        </span>
-                      )}
-                    </div>
-                    {/* Context — use latest instance */}
-                    {(() => {
-                      const insts = normalizeInstances(word);
-                      const ctx = insts[insts.length - 1]?.context ?? word.context;
-                      if (ctx?.videoTitle) {
-                        return (
-                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            <Play className="mr-1 inline h-3 w-3" />
-                            {ctx.videoTitle}
-                          </p>
-                        );
-                      }
-                      if (ctx?.text && !ctx.videoTitle) {
-                        return (
-                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {ctx.text}
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
     </div>
   );
 }
