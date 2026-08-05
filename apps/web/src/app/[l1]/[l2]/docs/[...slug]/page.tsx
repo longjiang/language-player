@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { DocSidebar } from '../doc-sidebar';
 
 interface Props {
@@ -228,6 +229,7 @@ function extractToc(markdown: string): TocItem[] {
 
 export default async function DocPage(props0: Props) {
   const params = await props0.params;
+  const t = await getTranslations();
   const { l1, l2, slug } = params;
   const doc = getDoc(l1, slug);
   const docs = getAllDocs(l1);
@@ -277,7 +279,7 @@ export default async function DocPage(props0: Props) {
           href={`/${l1}/${l2}/docs`}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to Documentation
+          ← {t('action.back_to_documentation')}
         </Link>
       </article>
 

@@ -98,7 +98,7 @@ export default function VerifyEmailScreen() {
             {t('title.check_email')}
           </Text>
           <Text className="text-muted-foreground text-sm text-center mt-2">
-            {email}
+            {t('msg.verification_code_sent', { email: email ?? '' })}
           </Text>
           <Pressable
             className="mt-6 bg-primary px-6 py-3 rounded-lg"
