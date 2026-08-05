@@ -242,7 +242,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setError(null);
 
     fetch(
-      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=500&context=3`,
+      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=100&context=3`,
     )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
