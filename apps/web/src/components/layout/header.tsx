@@ -9,9 +9,9 @@ import { UserMenu } from './user-menu';
 import { Logo } from '@/components/ui/logo';
 import {
   Menu, X, ChevronDown, Search,
-  Compass, Music, Tv, Clapperboard, History, Upload,
+  Compass, Music, Tv, Clapperboard, Upload,
   BookOpen, Globe, BookMarked,
-  Bookmark, RotateCcw, FileText,
+  RotateCcw, FileText,
 } from 'lucide-react';
 
 interface NavGroup {
@@ -27,7 +27,6 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.music_and_entertainment', href: 'music' },
       { key: 'title.live_tv', href: 'live-tv' },
       { key: 'title.tv_shows', href: 'tv-shows' },
-      { key: 'title.watch_history', href: 'watch-history' },
       { key: 'title.local_media', href: 'local-media' },
     ],
   },
@@ -43,7 +42,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Vocab',
     links: [
       { key: 'title.dictionary', href: 'dictionary' },
-      { key: 'title.saved_words', href: 'saved-words' },
       { key: 'title.review', href: 'review' },
     ],
   },
@@ -54,12 +52,10 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   music: <Music className="h-4 w-4" />,
   'live-tv': <Tv className="h-4 w-4" />,
   'tv-shows': <Clapperboard className="h-4 w-4" />,
-  'watch-history': <History className="h-4 w-4" />,
   reader: <FileText className="h-4 w-4" />,
   'web-reader': <Globe className="h-4 w-4" />,
   epub: <BookOpen className="h-4 w-4" />,
   dictionary: <BookMarked className="h-4 w-4" />,
-  'saved-words': <Bookmark className="h-4 w-4" />,
   review: <RotateCcw className="h-4 w-4" />,
   'local-media': <Upload className="h-4 w-4" />,
 };

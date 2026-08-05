@@ -5,7 +5,18 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
-import { User, LogOut, Settings, Info, BookOpen, LogIn } from 'lucide-react';
+import {
+  User,
+  LogOut,
+  Settings,
+  Info,
+  BookOpen,
+  LogIn,
+  History,
+  ListVideo,
+  Heart,
+  Bookmark,
+} from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { AboutDialog } from '@/components/about/about-dialog';
 
@@ -51,6 +62,34 @@ export function UserMenu() {
             >
               <BookOpen className="h-4 w-4" /> {t('title.docs')}
             </Link>
+            <Link
+              href={`/${l1.code}/${l2.code}/watch-history`}
+              onClick={close}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
+              <History className="h-4 w-4" /> {t('title.watch_history')}
+            </Link>
+            <Link
+              href={`/${l1.code}/${l2.code}/playlists`}
+              onClick={close}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
+              <ListVideo className="h-4 w-4" /> {t('title.playlists')}
+            </Link>
+            <Link
+              href={`/${l1.code}/${l2.code}/liked-videos`}
+              onClick={close}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
+              <Heart className="h-4 w-4" /> {t('title.liked_videos')}
+            </Link>
+            <Link
+              href={`/${l1.code}/${l2.code}/saved-words`}
+              onClick={close}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
+              <Bookmark className="h-4 w-4" /> {t('title.saved_words')}
+            </Link>
             <button
               type="button"
               onClick={() => { close(); setAboutOpen(true); }}
@@ -86,6 +125,34 @@ export function UserMenu() {
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Settings className="h-4 w-4" /> {t('title.settings')}
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/watch-history`}
+            onClick={close}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <History className="h-4 w-4" /> {t('title.watch_history')}
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/playlists`}
+            onClick={close}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <ListVideo className="h-4 w-4" /> {t('title.playlists')}
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/liked-videos`}
+            onClick={close}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <Heart className="h-4 w-4" /> {t('title.liked_videos')}
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/saved-words`}
+            onClick={close}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <Bookmark className="h-4 w-4" /> {t('title.saved_words')}
           </Link>
           <Link
             href={`/${l1.code}/${l2.code}/docs`}

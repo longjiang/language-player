@@ -3,6 +3,7 @@ import { LanguageProvider } from '@/providers/language-provider';
 import { VideoPlayerProvider } from '@/providers/video-player-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
 import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
+import { UserLibraryProvider } from '@/providers/user-library-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { Header } from '@/components/layout/header';
 
@@ -28,16 +29,18 @@ export default async function LanguageLayout(
 
   return (
     <LanguageProvider l1={params.l1} l2={params.l2}>
-      <SettingsProvider>
-        <ExploreCacheProvider>
-          <VideoPlayerProvider>
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
-          </VideoPlayerProvider>
-        </ExploreCacheProvider>
-      </SettingsProvider>
+      <UserLibraryProvider>
+        <SettingsProvider>
+          <ExploreCacheProvider>
+            <VideoPlayerProvider>
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+              </div>
+            </VideoPlayerProvider>
+          </ExploreCacheProvider>
+        </SettingsProvider>
+      </UserLibraryProvider>
     </LanguageProvider>
   );
 }

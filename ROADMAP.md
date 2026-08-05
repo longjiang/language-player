@@ -84,6 +84,7 @@
 ## Phase 6: User Features
 
 - ✅ Watch history
+- ✅ Video likes + playlist management (SPEC-040)
 - ✅ Go Pro / Subscription management
 
 ## Phase 7: Mobile Integration ✅ (pivoted)

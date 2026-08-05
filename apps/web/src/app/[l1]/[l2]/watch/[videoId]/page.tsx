@@ -26,6 +26,8 @@ import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
+import { AddToPlaylistDialog } from '@/components/video/add-to-playlist-dialog';
+import { useUserLibraryContext } from '@/providers/user-library-provider';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
 const SAVE_POS_INTERVAL = 5000;
@@ -55,7 +57,9 @@ export default function WatchPage() {
   const t = useT();
   const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
+  const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const videoId = params.videoId;
+  const l2Code = baseCode(l2.code);
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -79,6 +83,7 @@ export default function WatchPage() {
   const isWideRef = useRef(isWide);
   isWideRef.current = isWide;
   const [translatingText, setTranslatingText] = useState<string | null>(null);
+  const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
 
   useWatchHistoryRecorder(video?.id, currentTime);
 
@@ -126,7 +131,7 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await fetch(`/api/videos/${videoId}?l2=${baseCode(l2.code)}&l1=${baseCode(l1.code)}`);
+        const res = await fetch(`/api/videos/${videoId}?l2=${l2Code}&l1=${baseCode(l1.code)}`);
         if (!res.ok) {
           setDataError('msg.failed_to_load_transcript');
           return;
@@ -150,7 +155,7 @@ export default function WatchPage() {
       }
     };
     fetchVideo();
-  }, [videoId, l1, l2]);
+  }, [videoId, l1, l2, l2Code]);
 
   const handleTimeUpdate = useCallback((time: number) => { setCurrentTime(time); }, []);
   const handleDuration = useCallback((d: number) => { setDuration(d); }, []);
@@ -173,7 +178,7 @@ export default function WatchPage() {
   const activeSubtitleIndex = findActiveLineIndex(subtitleStartTimes, currentTime);
   const { normalizedLines: captionOverlay } = useCaptionNormalization({
     youtubeId: video?.youtube_id,
-    l2Code: baseCode(l2.code),
+    l2Code,
     lines: rawL2Lines,
     enabled: isGenerated && subtitleLines.length > 0,
     activeIndex: activeSubtitleIndex,
@@ -246,6 +251,10 @@ export default function WatchPage() {
   const handleTogglePanel = useCallback(() => {
     updatePlayback({ transcriptMode: isSubtitles ? 'transcript' : 'subtitles' });
   }, [updatePlayback, isSubtitles]);
+
+  const handleToggleLike = useCallback(() => {
+    if (video) void toggleLike(video);
+  }, [toggleLike, video]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -370,6 +379,11 @@ export default function WatchPage() {
                 hasPreviousVideo={hasPrevious}
                 hasNextVideo={hasNext}
                 translatingText={translatingText}
+                liked={!!video && isLiked(l2Code, video)}
+                onToggleLike={handleToggleLike}
+                likeDisabled={!isSignedIn || !video?.id}
+                onSaveToPlaylist={() => setPlaylistDialogOpen(true)}
+                playlistDisabled={!isSignedIn}
               />
             </div>
           )}
@@ -390,6 +404,11 @@ export default function WatchPage() {
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
               videoTitle={v.title}
+              liked={isLiked(l2Code, v)}
+              onToggleLike={handleToggleLike}
+              likeDisabled={!isSignedIn || !v.id}
+              onSaveToPlaylist={() => setPlaylistDialogOpen(true)}
+              playlistDisabled={!isSignedIn}
             />
           )}
 
@@ -421,6 +440,11 @@ export default function WatchPage() {
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
             videoTitle={v.title}
+            liked={isLiked(l2Code, v)}
+            onToggleLike={handleToggleLike}
+            likeDisabled={!isSignedIn || !v.id}
+            onSaveToPlaylist={() => setPlaylistDialogOpen(true)}
+            playlistDisabled={!isSignedIn}
           />
         )}
 
@@ -436,6 +460,11 @@ export default function WatchPage() {
           </div>
         )}
       </div>
+      <AddToPlaylistDialog
+        open={playlistDialogOpen}
+        onOpenChange={setPlaylistDialogOpen}
+        video={video}
+      />
     </div>
   );
 }

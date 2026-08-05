@@ -1,7 +1,15 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, SkipBack, SkipForward, PanelRightOpen } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  SkipBack,
+  SkipForward,
+  PanelRightOpen,
+  Heart,
+  Bookmark,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useLanguage } from '@/providers/language-provider';
@@ -26,6 +34,11 @@ interface SubtitlesModeBandProps {
   tokenCacheLoaded?: boolean;
   videoTitle?: string;
   overlay?: boolean;
+  liked?: boolean;
+  onToggleLike?: () => void;
+  likeDisabled?: boolean;
+  onSaveToPlaylist?: () => void;
+  playlistDisabled?: boolean;
 }
 
 export function SubtitlesModeBand({
@@ -41,6 +54,11 @@ export function SubtitlesModeBand({
   tokenCacheLoaded,
   videoTitle,
   overlay = true,
+  liked = false,
+  onToggleLike,
+  likeDisabled = false,
+  onSaveToPlaylist,
+  playlistDisabled = false,
 }: SubtitlesModeBandProps) {
   const { l2 } = useLanguage();
   const { display } = useSettingsContext();
@@ -133,6 +151,35 @@ export function SubtitlesModeBand({
           <SkipForward className="h-4 w-4" />
         </Button>
         <div className="flex-1" />
+        {onToggleLike && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'h-8 w-8',
+              btnColorClass,
+              liked && 'text-destructive hover:text-destructive',
+            )}
+            onClick={onToggleLike}
+            disabled={likeDisabled}
+            title={liked ? t('action.unlike_video') : t('action.like_video')}
+            aria-pressed={liked}
+          >
+            <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+          </Button>
+        )}
+        {onSaveToPlaylist && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={onSaveToPlaylist}
+            disabled={playlistDisabled}
+            title={t('action.add_to_playlist')}
+          >
+            <Bookmark className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           variant="ghost" size="icon"
           className={cn('h-8 w-8', btnColorClass)}

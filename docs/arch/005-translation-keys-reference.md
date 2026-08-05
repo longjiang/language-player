@@ -33,6 +33,8 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `a11y.speed` | Speed (M) |
 | `a11y.video_info` | Video info |
 | `a11y.video_thumbnail` | Video thumbnail |
+| `action.add` | Add |
+| `action.add_to_playlist` | Add to Playlist |
 | `action.all_results` | All Results |
 | `action.back` | Back |
 | `action.back_to_login` | Back to login |
@@ -49,8 +51,10 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.contact_us` | Contact us |
 | `action.continue` | Continue |
 | `action.copy` | Copy |
+| `action.create` | Create |
 | `action.create_account` | Create Account |
 | `action.delete` | Delete |
+| `action.delete_playlist` | Delete Playlist |
 | `action.edit` | Edit |
 | `action.email_support` | Email Support |
 | `action.expand_sidebar` | Expand sidebar |
@@ -63,6 +67,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.keep_subscription` | Keep Subscription |
 | `action.let_ai_explain` | Let DeepSeek Explain |
 | `action.let_chatgpt_explain` | Ask AI |
+| `action.like_video` | Like video |
 | `action.list_all` | List All |
 | `action.load` | Load |
 | `action.load_more` | Load More |
@@ -72,6 +77,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.logout` | Logout |
 | `action.more` | More |
 | `action.new_note` | New Note |
+| `action.new_playlist` | New Playlist |
 | `action.next` | Next |
 | `action.next_chapter` | Next |
 | `action.not_interested` | Not Interested |
@@ -81,13 +87,16 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.regenerate` | Regenerate |
 | `action.register` | Register |
 | `action.remove_and_resave` | Remove & re-save |
+| `action.remove_from_playlist` | Remove from playlist |
 | `action.remove_from_saved` | Remove from saved words |
 | `action.remove_not_interested` | Remove "Not Interested" |
 | `action.rename` | Rename |
+| `action.rename_playlist` | Rename Playlist |
 | `action.renew` | Renew |
 | `action.resend` | Resend |
 | `action.resend_code` | Resend Code |
 | `action.retry` | Retry |
+| `action.save` | Save |
 | `action.save_word` | Save word |
 | `action.search` | Search |
 | `action.search_images` | Search images |
@@ -111,6 +120,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.try_again` | Try Again |
 | `action.tv_shows` | TV Shows |
 | `action.unsubscribe` | Unsubscribe |
+| `action.unlike_video` | Unlike video |
 | `action.upgrade` | Upgrade |
 | `action.upgrade_to_lifetime` | Upgrade to Lifetime |
 | `action.upgrade_to_pro` | Upgrade to Pro |
@@ -197,6 +207,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `label.images` | Images |
 | `label.karaoke` | Karaoke Mode |
 | `label.key_vocabulary` | Key Vocabulary |
+| `label.playlist_name` | Playlist name |
 | `label.l2_voices` | {l2} Voices |
 | `label.lifetime_one_time` | Lifetime — $169 one-time |
 | `label.measure_word` | Measure: |
@@ -283,7 +294,9 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.choose_languages` | Choose your languages to get started |
 | `msg.confirm_cancel_subscription` | Are you sure you want to cancel your subscription? |
 | `msg.confirm_clear_words` | Are you sure you want to remove all saved words? |
+| `msg.confirm_delete_playlist` | Delete {title}? This cannot be undone. |
 | `msg.confirm_delete_note` | Are you sure you want to delete this note? |
+| `msg.confirm_remove_video` | Remove this video from the playlist? |
 | `msg.contact_support` | If you have encountered issues, please contact support. |
 | `msg.contact_support_if_delayed` | If your subscription doesn't appear within a few minutes, please contact support. |
 | `msg.content_tailored` | Content Tailored to You |
@@ -303,6 +316,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.end_of_list` | You've reached the end of the list. |
 | `msg.enrich_your_language_learning_journey` | Enrich your language-learning journey |
 | `msg.enter_email_for_reset` | Enter your email and we'll send you a reset link. |
+| `msg.enter_playlist_name` | Enter a name for the playlist |
 | `msg.enter_verification_code` | Please enter the verification code sent to the email |
 | `msg.everything_you_need` | Everything you need to learn |
 | `msg.existing_subscription_warning` | You currently have an active {planType} plan that will auto-renew. To avoid duplicate charges, you must cancel your existing subscription before purchasing a new one. Would you like to cancel your existing {planType} subscription? |
@@ -355,7 +369,9 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.no_dictionary_entry` | No dictionary entry found for "{word}" |
 | `msg.no_episodes` | No episodes found for this show. |
 | `msg.no_more_videos` | No more videos |
+| `msg.no_liked_videos` | No liked videos yet. |
 | `msg.no_notes_yet` | No notes yet. Create one to get started. |
+| `msg.no_playlists` | You haven't created any playlists yet. |
 | `msg.no_results` | No results found. |
 | `msg.no_saved_words` | No words saved yet |
 | `msg.no_shows_found` | No TV shows found for this language. |
@@ -363,6 +379,12 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.no_videos_found` | No videos found. Try a different level or check back later. |
 | `msg.no_videos_watched` | No videos watched yet. |
 | `msg.no_watch_history` | No watch history yet. |
+| `msg.liked_videos_description` | Videos you have liked. |
+| `msg.playlist_empty` | This playlist is empty. |
+| `msg.playlist_name_required` | Please enter a playlist name. |
+| `msg.playlist_not_found` | Playlist not found. |
+| `msg.playlist_video_count` | Videos: {count} |
+| `msg.playlists_description` | Manage your saved video playlists. |
 | `msg.no_words_saved` | No words saved yet. |
 | `msg.no_words_to_review` | No Words to Review |
 | `msg.not_authenticated` | Not authenticated |
@@ -614,6 +636,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `title.length` | Length |
 | `title.lifetime` | Lifetime |
 | `title.likes` | Likes |
+| `title.liked_videos` | Liked Videos |
 | `title.live_tv` | Live TV |
 | `title.loading_dictionary` | Loading {language} Dictionary |
 | `title.login` | Login |
@@ -627,6 +650,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `title.only_lifetime_available` | Only the Lifetime Plan is available in the App Store |
 | `title.password` | Password |
 | `title.payment_issue` | Payment Issue |
+| `title.playlists` | Playlists |
 | `title.popularity` | Popularity |
 | `title.privacy_policy` | Privacy Policy |
 | `title.pro_feature` | Pro Feature |
