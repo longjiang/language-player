@@ -24,6 +24,10 @@ export default function LoginScreen() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.replace('/(tabs)/(media)' as any);
     } catch (e: any) {
+      if (e?.code === 'email_not_confirmed') {
+        router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+        return;
+      }
       setError(e.message || t('error.login'));
     } finally {
       setLoading(false);

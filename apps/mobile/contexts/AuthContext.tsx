@@ -55,6 +55,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<User>;
+  applySession: (token: string, refreshToken: string | null, user: User) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -76,7 +77,10 @@ async function flaskAuthLogin(email: string, password: string): Promise<{ token:
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.errors?.[0]?.message || '');
+    const message = err?.errors?.[0]?.message || '';
+    const error = new Error(message) as Error & { code?: string };
+    error.code = err?.errors?.[0]?.code;
+    throw error;
   }
   const json = await res.json();
   return {
@@ -128,8 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { token, refreshToken, user } = await flaskAuthLogin(email, password);
+  const applySession = useCallback(async (token: string, refreshToken: string | null, user: User) => {
     await SecureStore.setItemAsync('authToken', token);
     if (refreshToken) await SecureStore.setItemAsync('authRefreshToken', refreshToken);
     await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
@@ -137,6 +140,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(user);
     initApiClient();
   }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const { token, refreshToken, user } = await flaskAuthLogin(email, password);
+    await applySession(token, refreshToken, user);
+  }, [applySession]);
 
   const register = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
     // GoTrue requires email confirmation before login (mailer_autoconfirm=false).
@@ -153,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, applySession, logout }}>
       {children}
     </AuthContext.Provider>
   );

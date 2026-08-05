@@ -186,7 +186,20 @@ the project's **URL Configuration → Redirect URLs**. The default
 `{{ .ConfirmationURL }}` link is also supported when the project's redirect
 target is `/auth/confirm`: it lands there with a session fragment that the
 page exchanges for a login. A ready-to-paste branded template is in
-`docs/email-templates/confirm-signup.html`.
+`docs/email-templates/confirm-signup.html`. Unverified logins now redirect to
+the same 8-digit code verification screen on web and mobile instead of showing
+a generic "invalid credentials" error.
+
+**Supabase signup vs Directus (2026-08-05):** GoTrue does not treat an
+unverified email as occupied. `POST /auth/v1/signup` with an existing
+unconfirmed email returns 200 with the original user (`identities` intact), so
+Flask's `email_already_registered` 409 only fires for confirmed duplicates —
+the same email can be "registered" again before verification. The stored
+password remains the first one, even if the second signup used a different
+password. This is different from Directus, where an unverified email still
+blocked re-registration. Unconfirmed login attempts still return
+`email_not_confirmed`, so the login redirect to the verify screen remains
+necessary.
 
 ### WS-2 — Remaining User-Data Columns
 
