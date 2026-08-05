@@ -21,5 +21,5 @@ export const PYTHON_API_URL: string =
   (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_API_URL) ||
   LOCAL_DEFAULT;
 
-// DIRECTUS_URL removed per SPEC-024 — all Directus calls go through Flask backend.
+// All backend calls go through the Flask API (SPEC-024).
 // The Flask server uses DIRECTUS_TOKEN (admin token) internally.

@@ -382,6 +382,14 @@ Auth (`nuxt.config.js`), user-data stores (`savedPhrases`, `settings`,
 components (`MediaSearchResults`, `YouTubeVideoCard`, `VideoAdmin`, `stats`),
 subscriptions, and `delete-account` — each retargets to Flask.
 
+**Progress (2026-08-05) — WS-7/5.8 COMPLETE:** Classic no longer calls
+Directus. The `$directus` plugin is now a Flask-only adapter; every `items/…`
+call site was retargeted to the new Supabase-backed Flask endpoints, the
+Directus blob machinery (`fetchOrCreateUserData`, `dataId`, `users/me`) was
+removed, `delete-account` goes through Flask → GoTrue, and
+`DIRECTUS_URL`/`DIRECTUS_API_URL`/`LP_DIRECTUS_TOOLS_URL` were deleted from
+Classic. See the 5.8 sub-phase for the endpoint inventory.
+
 ### WS-8 — Scaffolding Teardown & Decommission
 
 1. After no old-Classic bundles remain and all workstreams are live: stop
@@ -419,7 +427,7 @@ so each is fully verified before the next starts:
 | 5.5 | Content read-path cutover (WS-5) | **COMPLETE** | 5.4 |
 | 5.6 | Subscriptions & payments (WS-6) | **COMPLETE** | 5.5 |
 | 5.7 | Auth cutover (GoTrue tokens in all apps; one-time user-data remap) | **COMPLETE** | 5.1, 5.2–5.6 |
-| 5.8 | Classic Directus consolidation | After 5.7 | 5.7 + 5.5 |
+| 5.8 | Classic Directus consolidation | **COMPLETE** | 5.7 + 5.5 |
 | 5.9 | Full test cycle → 30-day sunset window → scaffolding teardown + decommission | Last | All of the above |
 
 ### Sub-phase details
@@ -630,6 +638,44 @@ Steps:
 regression passes.
 
 **Rollback**: revert the individual store/component.
+
+**Progress (2026-08-05) — COMPLETE:**
+
+New Flask endpoints (all Supabase, `is_admin`-gated except the public stats
+and content reads):
+
+- `routes/admin.py` — `GET/POST /admin/videos`, `PATCH/DELETE
+  /admin/videos/<id>` (Directus-shaped rows, `tv_show`/`talk` objects,
+  `filter[l2][eq]`/`[tv_show][eq]`/`[talk][eq]`/`[nnull]` filters),
+  `POST/PATCH/DELETE /admin/tv-shows` + `/admin/talks`. Replaces VideoAdmin,
+  YouTubeVideoCard admin actions, db-audit, ngram, phrase-survey,
+  assign-lesson-videos, shows.js CRUD, ShowCard toggles.
+- `routes/content.py` — Directus-compatible wrapper over the SPEC-038 content
+  tables (`phrasebooks`, `resources`, `exams`, `pages`, `tutoring_kit`,
+  `reading`, `drills`, `articles`, `subreddits`) with `filter[field][op]`,
+  `sort`, `fields=*,tv_show`, `meta=filter_count`, `{ data: […] }` shapes, and
+  admin-gated phrasebook CRUD.
+- `routes/stats.py` — `GET /stats/video-counts` (`{ langCounts }`, replaces
+  `count-all.php` for StatsComp) and `GET /stats/content-counts?l2=`
+  (analytics page counts incl. Music/Movies/News).
+- `routes/classic.py` — `/classic/dictionary/{edict,kengdic,hsk_cedict,wiktionary}`
+  serving Directus-shaped rows from the local SQLite `dictionaries.db` (the
+  same source the web/mobile dictionary API uses), and `/classic/feedback`
+  storing the feedback form in a new `public.feedback` table.
+- `/video-tags` was ported from Directus to `youtube_videos.tags` (search tag
+  cloud on all three apps).
+
+Classic side: the `$directus` adapter is Flask-only (content/classicDict/stats/
+adminVideo*/createShow/patchShow/deleteShow/postFeedback/deleteAccount helpers,
+Flask-retargeted password reset); raw `get/post/patch/delete`, blob machinery,
+`youtubeVideosTable*` helpers and `LP_DIRECTUS_TOOLS_URL` removed; every call
+site updated; `directus_id` route/prop renamed to `db_id`.
+
+**Known limitations (documented):** SPEC-038 did not migrate Directus *file*
+assets, so `resources.thumbnail`/`drills.file` remain numeric file ids —
+Classic falls back to no image for those two legacy pages. The `$directus`
+injection name and `plugins/directus.js` filename are kept as legacy naming
+(zero `DIRECTUS_URL`/`directusvps` references in source).
 
 #### 5.9 — Test cycle → 30-day sunset window → teardown + decommission
 
