@@ -58,5 +58,11 @@ export {
 export type { PendingSavedWordOp, SavedWordRowApi } from './saved-words-sync';
 export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
 export { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
+export {
+  writtenFormVariants,
+  minimalSearchTerms,
+  reduceSearchTerms,
+} from './search-terms';
+export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms';
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';

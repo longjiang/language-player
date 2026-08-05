@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { baseCode } from '@/lib/language-data';
-import { dedupeSearchTerms } from '@/lib/mutually-exclusive';
+import {
+  reduceSearchTerms,
+  writtenFormVariants,
+  type WrittenFormEntry,
+} from '@langplayer/utils';
 
 export interface UseInflectedSearchTermsResult {
   /** All non-redundant search terms (head + variants + inflected forms) */
@@ -42,17 +46,7 @@ function inflectionEndpoint(l2Code: string): string | null {
  * We extract the `form` field from each and deduplicate with script variants.
  */
 export function useInflectedSearchTerms(
-  entry: {
-    head: string;
-    alternate?: string | null;
-    han_script?: {
-      simplified?: string;
-      traditional?: string;
-      kanji?: string | null;
-      hanja?: string | null;
-      hangul?: string;
-    } | null;
-  } | null,
+  entry: WrittenFormEntry | null,
   l2Code: string,
 ): UseInflectedSearchTermsResult {
   const [allTerms, setAllTerms] = useState<string[]>([]);
@@ -70,21 +64,9 @@ export function useInflectedSearchTerms(
     async function expand() {
       setLoading(true);
 
-      // 1. Written-form variants from the entry itself.
-      //    Search subtitles by how the word is WRITTEN — never by pronunciation.
-      //    Fields like `pronunciation` and `phonetic_detail` are IPA/Latin
-      //    phonetic guides (e.g. "spaʊt, spʌʊt") that don't appear in subs.
-      const variants: string[] = [e.head];
-      if (e.alternate && e.alternate !== e.head) {
-        variants.push(e.alternate);
-      }
-
-      const hs = e.han_script;
-      if (hs) {
-        if (hs.simplified && hs.simplified !== e.head) variants.push(hs.simplified);
-        if (hs.traditional && hs.traditional !== e.head) variants.push(hs.traditional);
-        if (hs.hangul) variants.push(hs.hangul);
-      }
+      // 1. Written forms only (head, alternate script, ja kana, zh scripts).
+      //    Never pronunciation/phonetic guides — IPA doesn't appear in subs.
+      const variants = writtenFormVariants(e, base);
 
       // 2. Inflected forms from Python backend
       let inflected: string[] = [];
@@ -116,11 +98,10 @@ export function useInflectedSearchTerms(
 
       if (cancelled) return;
 
-      // 3. Deduplicate and remove redundant (substring) terms
-      const all = dedupeSearchTerms(
-        [...variants, ...inflected],
-        e.head.length - 1,
-      );
+      // 3. Always search the exact head; drop forms the head already captures
+      //    ("running" → "run") and keep the rest ("made" from "make",
+      //    食べた from 食べる). Never search a partial like "ma" or 食.
+      const all = reduceSearchTerms(e.head, { variants, inflected });
 
       setAllTerms(all);
       setLoading(false);
@@ -131,7 +112,7 @@ export function useInflectedSearchTerms(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry?.head, entry?.alternate, base]);
+  }, [entry?.head, entry?.alternate, entry?.han_script, entry?.phonetic_detail?.kana, base]);
 
   return {
     allTerms: allTerms.length > 0 ? allTerms : headTerm ? [headTerm] : [],
