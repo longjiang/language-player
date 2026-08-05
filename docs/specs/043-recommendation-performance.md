@@ -24,9 +24,9 @@ for 20 videos, dominated by two things:
 
 This spec defines a two-phase plan: **Phase A** — behavior-neutral performance fixes
 (denormalize `l2`, cache fallback neighbors, keep-warm), and **Phase B** — quality fixes
-that change feed behavior and are therefore **gated on product decisions** (ef tuning,
-level-band widening, and the discovery/category mismatch that is the *root cause* of both
-jon's fallback and his empty high-level feeds).
+that change feed behavior and are therefore **gated on product decisions** (ef tuning, and
+the discovery/category mismatch that is the *root cause* of both jon's fallback and his
+empty high-level feeds).
 
 All numbers below were verified against the live database on 2026-08-05
 (`verify_recommendation_assessment.py`, `verify_fallback_source.py`, and prior
@@ -54,6 +54,12 @@ All numbers below were verified against the live database on 2026-08-05
 - **jon's all-levels feed comes from the fallback** (cold-start-seed neighborhood,
   160 survivors), not his own preference vector (6 survivors). "Vector rec works" today
   only because the fallback rescues music-heavy users.
+- **The mode-scoped preference vector rescues this** (verified 2026-08-05): building the
+  vector from only the user's non-music signal flips jon's neighborhood to 0–4 % music
+  (190–198 discovery survivors) and gives 145–160 L7 survivors. Generalizes: 3/5 sampled
+  heavy users were starved (97–100 % music → 0–5 survivors) and were rescued (11–18 %
+  music → 158–177 survivors) with no regression for already-healthy users. 74 % of
+  EN-signal users have ≥1 non-music video; 23 % have ≥3. See R6.
 - **Level 7 = empty vector feed.** jon's vector: 0 discovery survivors at L7
   (band `difficulty >= 0.00807`); fallback seed: 16 (< 50) → feed is 9 vector + 11 random
   fill (100 % fill on the paginated page-6 path where growing excludes exhaust even the
@@ -121,22 +127,59 @@ fallback** — his neighborhood is ~96 % music, so discovery mode still filters 
 ef. Raise `ef` only after R3 (keep-warm) tames the cold cost, and gate on a survivor-count /
 recall measurement (see verification).
 
-### R5 — Fix the high-level band → random fill *(quality, product-gated)*
-Confirmed: strict band (L7 = `difficulty >= 0.00807`) rejects jon's neighbors → empty
-vector feed at high levels. "Widen the band" reverses `6ab1aaf`; a **controlled widening**
-is safer: include adjacent levels in the candidate filter and let the existing
-`_rerank_vector` `diff_penalty` (0.04 × `_band_distance`) order them, rather than removing
-the filter. Note two prior causes must also be fixed or L7 still leans on the fallback:
-the category mismatch (R6) and the ef cap (R4).
+### R5 — High-level band widening *(rejected — product decision 2026-08-05)*
+The strict difficulty band empties high-level feeds when a user's neighborhood has no
+in-band content (jon at L7: 0 survivors → random fill). Widening the band to admit
+adjacent-level videos would fix that, but it makes level-scoped feeds show videos from
+other levels — cards labeled below the requested level — which product decided would be
+**confusing level filters**. **R5 is rejected**: the strict band (commit `6ab1aaf`) stays.
+High-level feeds keep the strict band; remaining protection comes from R6 (mode-scoped
+vectors already put jon's L7 feed fully in-band — 145–160 L7 survivors) and, if needed,
+R4 (a larger `ef` neighbor pool gives the band more in-band candidates).
 
-### R6 — Fix the discovery/category mismatch *(quality, product-gated — root cause)*
-The real reason jon's first pass fails: a music-heavy preference signal in discovery mode
-finds a ~96 % music neighborhood, and the hard `not (category = any(10,24))` filter empties
-it. Proposal: in discovery mode, retrieve neighbors **without** the hard music exclusion
-and move music de-prioritization into `_rerank_vector` as a soft category penalty. Keeps
-the feed user-signal-driven (instead of seed-driven) and cuts fallback frequency (synergy
-with R1). This is a visible product change — music videos would appear in discovery feeds
-for music-heavy users — so it needs product sign-off.
+### R6 — Mode-scoped preference vector: fix the discovery/category mismatch
+*(quality, product-gated — root cause)*
+
+The root cause: the preference vector is built from the user's *entire* signal
+(`_preference_vector` uses likes first, then watch history), so a music-heavy user's
+vector lands in a ~96 % music neighborhood, and discovery mode's hard
+`not (category = any(10,24))` filter empties it (jon: 6 survivors < 50 → fallback →
+seed-driven feed). The metadata embeddings separate music from non-music cleanly, and
+most users have a latent non-music signal the likes-first rule ignores.
+
+**Primary approach — build the vector from mode-appropriate signal only:**
+- Discovery mode (`music_mode=0`): mean embedding of the user's **non-music** likes +
+  recent non-music watch history.
+- Music mode (`music_mode=1`): mean embedding of the user's **music** signal (symmetric).
+- The HNSW neighborhood is then naturally on-mode; the hard `_filter_neighbors` category
+  filter stays as a cheap safety net. Feed stays user-signal-driven; fallback frequency
+  drops; no "music in discovery" product change.
+
+Verified live (ef=200, discovery, all levels — `tmp/test_r6_generalize.py`):
+
+| User (signal) | current music-nbrs / survivors | non-music vector music-nbrs / survivors |
+|---|---|---|
+| jon (8 likes, 73 nm) | 96 % / 6 (fallback) | 0–4 % / 190–198 |
+| 291561140@qq (hist 21) | 97 % / 5 | 11 % / 177 |
+| tachinethieril (hist 63) | 100 % / 0 | 18 % / 158 |
+| mirceacostache6 (hist 21) | 100 % / 1 | 16 % / 165 |
+| alikaya.1990 (hist 109) | 5 % / 183 | 4 % / 184 (no regression) |
+| 1711239010@qq (hist 35) | 0 % / 204 | 0 % / 206 (no regression) |
+
+Rescues starved users, no regression for healthy ones, and yields high-difficulty
+neighbors (jon: 145–160 L7 survivors vs 0) — covering the high-level band starvation that
+R5 was originally meant to fix. Breadth: 74 % of EN-signal users have ≥1 non-music video;
+23 % have ≥3.
+
+**Fallback for no-signal users**: < N (e.g., 3) non-music videos → no vector → keep the
+current all-signal path (which itself falls back to the seed). The earlier soft-penalty
+variant (retrieve all neighbors, de-prioritize music in `_rerank_vector`) remains a
+product option if discovery should surface ranked-down music for pure-music users instead
+of the seed.
+
+Implementation: add `category` to the likes JSON in `get_user_recommendation_context` +
+one category lookup for viewed ids; in `_vector_recommend_core`, filter the signal by mode
+before `_preference_vector` (with the ≥3 threshold + fallback).
 
 ---
 
@@ -237,26 +280,24 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
 
 ### Phase B — Quality (product-gated)
 
-#### Step 4 — R6: discovery/category mismatch (root-cause quality fix)
-1. Product decision: allow music videos into discovery feeds for music-heavy users, ranked
-   below non-music by a soft penalty.
-2. Implement: `_hnsw_neighbors`/`_filter_neighbors` drop the hard music exclusion in
-   discovery mode; add a category penalty term in `_rerank_vector` (only for
-   `music_mode=0`).
-3. **Verify**: jon's first pass now returns > 50 survivors (feed from his own signal, not
-   the seed); fallback frequency drops. Review a sample of discovery feeds for non-music
-   users to confirm non-music still dominates.
-4. This also materially reduces the value split of R1 (fewer fallback hits) — still keep R1.
+#### Step 4 — R6: mode-scoped preference vector (root-cause quality fix)
+1. Product decision: users with ≥3 non-music videos get a user-signal-driven non-music
+   discovery feed; pure-music users keep the seed fallback. (Optional variant: soft music
+   penalty in `_rerank_vector` instead of the fallback.)
+2. Implement: add `category` to the likes JSON in `get_user_recommendation_context` + one
+   category lookup for viewed ids; in `_vector_recommend_core`, filter the signal by mode
+   before `_preference_vector` (discovery → non-music, music → music) with a ≥3 threshold
+   falling back to the current path; keep the hard `_filter_neighbors` category filter as
+   a safety net.
+3. **Verify**: re-run `tmp/test_r6_generalize.py` — starved users flip from < 50 survivors
+   to > 150; jon's feed becomes his non-music taste (tech/educational) instead of the
+   seed; sample discovery feeds stay topically coherent. Re-run
+   `tmp/profiling_recommendations_full_jon.py` (fallback frequency should drop).
+4. This also reduces R1's fallback hits (still keep R1), and the naturally higher
+   difficulty of non-music neighborhoods covers the high-level case R5 was meant to
+   address (R5 is rejected — see R5).
 
-#### Step 5 — R5: controlled high-level band widening
-1. Product decision on which adjacent levels to include per requested level.
-2. Implement: widen the band bounds used by `_filter_neighbors` (candidate retrieval) only;
-   leave `_rerank_vector`'s strict `_band_distance` penalty intact so ordering still favors
-   in-band videos.
-3. **Verify**: jon at level=7 → vector-scored, topically-relevant videos instead of random
-   fill; measure in-band vs adjacent distribution in the feed.
-
-#### Step 6 — R4: `ef_search` tuning (after keep-warm is live)
+#### Step 5 — R4: `ef_search` tuning (after keep-warm is live)
 1. Sweep `ef` (200/500/1000) via `profiling_recommendations_ef.py`: report survivor counts
    per user class (like-signal, history-signal) and warm/cold latency.
 2. Raise `ef` only if recall gains justify the cold cost (keep-warm should have tamed it).
@@ -267,9 +308,11 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
 - **Feed-identity guardrail (Phase A)**: pure-perf changes must not change the returned
   feed for a fixed user/settings (jon, all levels; a like-signal user; a history-signal
   user). Diff titles+ids, ignoring random fill.
-- **Profiling**: `profiling_recommendations_full_jon.py` (per-substep), `profiling_hnsw_jon.py`
-  (HNSW cold/warm), `profiling_recommendations_ef.py` (ef sweep), `verify_recommendation_assessment.py`
-  (schema + survivor checks). Re-run after each step; record before/after in
+- **Profiling** (scripts live in `tmp/`, gitignored): `tmp/profiling_recommendations_full_jon.py`
+  (per-substep), `tmp/profiling_hnsw_jon.py` (HNSW cold/warm), `tmp/profiling_recommendations_ef.py`
+  (ef sweep), `tmp/verify_recommendation_assessment.py` (schema + survivor checks),
+  `tmp/test_r6_signal_idea.py` (non-music vector vs current, jon), `tmp/test_r6_generalize.py`
+  (multi-user R6 sweep). Re-run after each step; record before/after in
   `/memories/repo/recommendations-performance.md`.
 - **EXPLAIN**: user_context before (Nested Loop + 4188 Memoize) vs after (index scan ~143).
 - **Load**: after Phase A, cold first-request for jon should go ~8.4 s → ~0.5 s (one warm
@@ -287,16 +330,18 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
   (single worker role or cron) and tolerate it being best-effort.
 - **R4 cold cost**: ef=500 cold ≈ 4.3–8.6 s — do not raise ef before R3, and never on the
   request path.
-- **R5/R6 are reversals of `6ab1aaf` and the discovery contract**: they change what users
-  see; ship behind the product decision and review sample feeds before rollout.
+- **R6 changes feed content** (not a reversal of the "discovery = no music" contract —
+  the hard filter stays): users with enough non-music signal get their own non-music taste
+  instead of the seed's. Pure-music users still fall back to the seed. Ship behind the
+  product decision and review sample feeds before rollout.
 
 ## Open Questions
 
-1. Does product want music videos in discovery feeds for music-heavy users (R6)?
-2. Which adjacent levels should a high-level feed include (R5)?
-3. Is `ef=500` acceptable once keep-warm is live (R4)?
-4. Which languages should keep-warm prioritize (R3) — request-volume-driven or static list?
-5. Should R1's cache also cover the *first-pass* HNSW for anonymous/no-signal users
+1. For users with < 3 non-music videos, should discovery fall back to the seed (primary
+   R6) or to the soft-penalty variant that surfaces ranked-down music (product option)?
+2. Is `ef=500` acceptable once keep-warm is live (R4)?
+3. Which languages should keep-warm prioritize (R3) — request-volume-driven or static list?
+4. Should R1's cache also cover the *first-pass* HNSW for anonymous/no-signal users
    (same seed vector), or is the fallback path enough?
 
 ## References
@@ -309,6 +354,7 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
 - `routes/user_data_columns.py` — `POST /watch-history` (489)
 - `routes/video.py` — `GET /recommend-videos` (213)
 - Commits: `6ab1aaf` (strict band), `8de919c` (ef 200), `d018954` (random fill)
-- Profilers: `profiling_recommendations_full_jon.py`, `profiling_recommendations_ef.py`,
-  `profiling_hnsw_jon.py`, `verify_recommendation_assessment.py`, `verify_fallback_source.py`
+- Profilers (in `tmp/`, gitignored): `profiling_recommendations_full_jon.py`,
+  `profiling_recommendations_ef.py`, `profiling_hnsw_jon.py`, `verify_recommendation_assessment.py`,
+  `verify_fallback_source.py`, `test_r6_signal_idea.py`, `test_r6_generalize.py`
 - ADR-0021 (video content → Supabase) — context for the `user_watch_history` schema
