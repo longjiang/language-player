@@ -54,6 +54,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.create` | Create |
 | `action.create_account` | Create Account |
 | `action.delete` | Delete |
+| `action.delete_account_permanently` | Permanently Delete Account |
 | `action.delete_playlist` | Delete Playlist |
 | `action.edit` | Edit |
 | `action.email_support` | Email Support |
@@ -305,6 +306,11 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.days_remaining` | {n} {n, plural, one {day} other {days}} remaining |
 | `msg.default_value` | {n} (default) |
 | `msg.delete_confirmation` | Are you sure you want to permanently delete your account? You will lose all your saved words and progress. This action cannot be undone. |
+| `msg.delete_account_cancel_subscription_first` | Cancel your active subscription before you can delete your account. |
+| `msg.delete_account_error` | Could not delete your account. Please try again. |
+| `msg.delete_account_irreversible` | This is permanent and cannot be undone. |
+| `msg.delete_account_permanent_warning` | This will permanently delete your account and all of your data, including saved words, playlists, watch history, liked videos, progress, and subscription information. |
+| `msg.delete_account_type_to_confirm` | Type DELETE to confirm. |
 | `msg.dictionary_empty_state` | Search for a word in {l2} to see definitions, pronunciation, and more. |
 | `msg.didnt_receive_code` | Didn't receive a code? |
 | `msg.discover_the_power_of_comprehensible_input` | Discover the power of Comprehensible Input through hundreds of thousands of videos in over 100 languages. |

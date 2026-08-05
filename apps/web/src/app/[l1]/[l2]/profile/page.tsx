@@ -2,14 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@langplayer/api-client';
 import { useLanguage } from '@/providers/language-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   User,
   Mail,
@@ -19,6 +28,9 @@ import {
   Crown,
   Check,
   Star,
+  AlertTriangle,
+  Trash2,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -60,6 +72,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { l1, l2 } = useLanguage();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
+  const { deleteAccount } = useAuth();
   const t = useT();
 
   // Redirect unauthenticated users
@@ -76,6 +89,10 @@ export default function ProfilePage() {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
   const [subLoading, setSubLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
 
   useEffect(() => {
     if (!userId) { setSubLoading(false); return; }
@@ -101,6 +118,7 @@ export default function ProfilePage() {
   const isExpired = expiresOn ? expiresOn < new Date() : false;
   const isActive = isLifetime || (expiresOn && !isExpired);
   const willAutoRenew = ['monthly', 'annual'].includes(planType) && !!sub?.payment_customer_id && isActive;
+  const hasRenewingSubscription = willAutoRenew;
   const daysLeft = expiresOn && isActive
     ? Math.max(0, Math.ceil((expiresOn.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
@@ -121,6 +139,31 @@ export default function ProfilePage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE' || deleting || hasRenewingSubscription) return;
+    setDeleting(true);
+    setDeleteError(false);
+    try {
+      await deleteAccount();
+    } catch {
+      setDeleteError(true);
+      setDeleting(false);
+      return;
+    }
+    try {
+      localStorage.removeItem('zthSavedWords');
+      localStorage.removeItem('zthSavedWordsPendingOps');
+      localStorage.removeItem('lpSavedWordsAnonMerged');
+    } catch { /* ignore */ }
+    await signOut({ callbackUrl: '/' });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteOpen(false);
+    setDeleteConfirm('');
+    setDeleteError(false);
+  };
+
   // ── Render ──
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -136,6 +179,13 @@ export default function ProfilePage() {
               <Mail className="h-3.5 w-3.5" />
               {userEmail}
             </p>
+            <Link
+              href={`/${l1.code}/${l2.code}/docs/privacy-policy`}
+              className="mt-2 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {t('title.privacy_policy')}
+            </Link>
           </div>
         </div>
       </section>
@@ -280,6 +330,88 @@ export default function ProfilePage() {
           </div>
         )}
       </section>
+
+      {/* Delete Account */}
+      <section className="rounded-xl border border-destructive/40 bg-destructive/5 p-6">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-destructive">
+          <Trash2 className="h-5 w-5" />
+          {t('title.delete_account')}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t('msg.delete_account_permanent_warning')}
+        </p>
+        {subLoading ? (
+          <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {t('msg.loading')}
+          </p>
+        ) : hasRenewingSubscription ? (
+          <p className="mt-3 text-sm font-medium text-destructive">
+            {t('msg.delete_account_cancel_subscription_first')}
+          </p>
+        ) : (
+          <Button
+            variant="destructive"
+            className="mt-4"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('action.delete_account_permanently')}
+          </Button>
+        )}
+      </section>
+
+      <Dialog open={deleteOpen} onOpenChange={(open) => { if (!open) closeDeleteDialog(); }}>
+        <DialogContent className="border-destructive/40 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              {t('title.delete_account')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('msg.delete_account_permanent_warning')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            {t('msg.delete_account_irreversible')}
+          </div>
+
+          <label className="space-y-1.5">
+            <span className="text-sm font-medium">{t('msg.delete_account_type_to_confirm')}</span>
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={(e) => {
+                setDeleteConfirm(e.target.value);
+                setDeleteError(false);
+              }}
+              placeholder="DELETE"
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-ring"
+              autoFocus
+            />
+          </label>
+
+          {deleteError && (
+            <p className="text-sm text-destructive">{t('msg.delete_account_error')}</p>
+          )}
+
+          <DialogFooter showCloseButton>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== 'DELETE' || deleting}
+            >
+              {deleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              {t('action.delete_account_permanently')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

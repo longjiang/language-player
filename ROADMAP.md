@@ -86,6 +86,7 @@
 - ✅ Watch history
 - ✅ Video likes + playlist management (SPEC-040)
 - ✅ Go Pro / Subscription management
+- ✅ Delete account (SPEC-041)
 
 ## Phase 7: Mobile Integration ✅ (pivoted)
 

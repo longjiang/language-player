@@ -937,29 +937,29 @@ Your watch history is private. It's only visible to you when you're signed in. I
 ` },
   { path: 'privacy-policy', title: 'Privacy Policy', category: '', content: `# Privacy Policy
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website:  [https://languageplayer.io](https://languageplayer.io) , including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Introduction**
 
 The Terms of Use, along with our Privacy Policy published below, and other posted guidelines or policies within our Website (collectively "Legal Terms"), constitute the entire and only agreement between you and us, and supersede all other agreements, representations, warranties and understandings with respect to our Website and the subject matter contained herein. We may amend our Legal Terms at any time without specific notice to you. The latest copies of our Legal Terms will be posted on our Website, and you should review all Legal Terms prior to using our Website. After any revisions to our Legal Terms are posted, you agree to be bound to any such changes to them. Therefore, it is important for you to periodically review our Legal Terms to make sure you still agree to them.
 
-By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website. 
+By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website.
 
 **Other Defined Terms On Our Website**
 
-This Website incorporates terms defined throughout this page as well as these other defined terms: 
+This Website incorporates terms defined throughout this page as well as these other defined terms:
 
 The terms "us" and "we" refer to Zero to Hero as the owner of the Website. "Content" includes any and all text, information, graphics, audio, video, and other data posted, offered or made available through our Website.
 
 A "visitor" or "you" are collective identifiers that refer to you as a browser of our Website, whether or not you complete a purchase of our products.
 
-"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data.  It may also include a person's credit card information when presented for payment purposes.
+"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data. It may also include a person's credit card information when presented for payment purposes.
 
 **TERMS OF USE**
 
 **Intellectual Property**
 
-Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein.  The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
+Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein. The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
 
 **Limitation of Liability**
 
@@ -971,49 +971,67 @@ Our Legal Terms shall be treated as though it were executed and performed in the
 
 **Third Party Links**
 
-When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements.  Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
+When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements. Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
 
 **PRIVACY POLICY**
 
-At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors.   This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
+At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors. This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
 
-**Collection of Information**
+**Information We Collect**
 
-We may collect personal information for any one or more of the following purposes:
+**Information you provide directly:**
 
-*   to establish and maintain relationships with visitors;
-*   to provide requested and ongoing products and services;
-*   to notify you of changes to our products and services;
-*   to obtain a better understanding of our visitors their requirements and preferences;
-*   to develop, enhance, improve and/or market our products and services;
-*   to monitor the usage of our Website;
-*   to manage and improve our business and operations; and
-*   to meet legal and regulatory requirements.
+* Account information: your name, email address, password, language preferences and learning level.
+* Learning data: saved words, phrases, review progress, notes, playlists, liked videos, watch history, books and reading progress.
+* Content you upload or create: custom media, EPUB files, and text you ask us to translate or explain.
+* Payment information: when you purchase a subscription, payment is processed by Stripe, PayPal or the Apple App Store. We receive confirmation and subscription details, but we generally do not store your full card number.
 
-**  
-What Do We Do With Your Information?**
+**Information collected automatically:**
 
-When you purchase something through our online ordering system, as part of the buying and selling process, we collect your personal information.
+* Usage data: pages and features you visit, including Explore Media, Music & Entertainment, Live TV, TV Shows, Search, Dictionary, Saved Words, Review, Reader, Web Reader, EPUB Reader, Local Media, Watch History, Playlists and Liked Videos; videos you watch; interactions; and timestamps.
+* Device and network information: IP address, browser type, operating system, device type and approximate location derived from your IP address.
+* Analytics: we use Google Analytics to understand how visitors use the Website. Google Analytics may use cookies and collect usage data on our behalf. Google's use of that data is governed by [Google's Privacy Policy](https://policies.google.com/privacy).
+* Local storage: we use cookies, \`localStorage\`, \`sessionStorage\` and IndexedDB to keep you signed in, remember your language, store your settings, progress and saved words, and cache content locally.
 
-When you browse our Website, we also automatically receive your computer's internet protocol (IP) address in order to provide us with information that helps us learn about your browser and operating system.
+**What Do We Do With Your Information?**
 
-Permitted direct marketing (if applicable): With your permission, we may send you newsletters or emails to advertise about our stores, new products and other updates.
+We use the information we collect to:
+
+* provide, maintain and improve the Website and its features;
+* create and manage your account, verify your identity and keep you signed in;
+* personalize recommendations based on your language, level and learning history;
+* sync your data across devices;
+* process subscriptions, payments and renewals;
+* send transactional emails such as verification codes, password resets and payment receipts;
+* send marketing communications if you have given us permission to do so;
+* analyze usage with Google Analytics to understand how visitors use the Website and to improve our products;
+* meet legal and regulatory requirements and protect our rights and the rights of our users.
+
+We do not sell your personal information.
+
+**Sharing and Disclosure**
+
+We share personal information only with service providers who help us operate the Website, including:
+
+* hosting and database providers, including Supabase;
+* payment processors, including Stripe, PayPal and the Apple App Store;
+* translation and AI providers, including DeepSeek, when you use translation or AI explanation features;
+* analytics providers, including Google Analytics;
+* video platforms, including YouTube and Google, when you watch embedded videos.
+
+We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law, or you violate our Terms of Use.
 
 **Consent**
 
 _How do you get my consent?_
 
-When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, or post or pin any information or photos to our social media site, we infer that you consent to our collecting it and using it for that specific reason only.
+When you provide us with personal information to create an account, complete a transaction, verify your payment, place an order, or use our products and services, we infer that you consent to our collecting it and using it for that specific reason only.
 
 If we ask for your personal information for a secondary reason, like marketing, we will either ask you directly for your expressed consent, or provide you with an opportunity to say no.
 
 _How do I withdraw my consent?_
 
-If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at anytime, by notifying us.
-
-**Disclosure**
-
-We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law or you violate our Terms of Use.
+If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at any time, by notifying us.
 
 **Protection**
 
@@ -1023,9 +1041,22 @@ We will protect personal information by following industry best practices and im
 
 To protect your personal information, we take reasonable precautions and follow industry best practices to make sure it is not inappropriately lost, misused, accessed, disclosed, altered or destroyed.
 
-**Cookies**
+**Cookies and Similar Technologies**
 
-Our Website does not use cookies.
+Our Website uses cookies and similar technologies.
+
+* **Essential cookies:** we use cookies to keep you signed in, remember your selected languages, and manage guest navigation limits.
+* **Analytics:** we use Google Analytics, which may set its own cookies and collect usage information.
+* **Local storage:** we use \`localStorage\`, \`sessionStorage\` and IndexedDB to store settings, saved words, progress, reading content and custom media on your device.
+* **Embedded content:** videos are embedded from YouTube. YouTube and Google may set their own cookies when you watch a video, which are governed by their privacy policies.
+
+You can block or delete cookies through your browser settings. Please note that some parts of the Website may not work correctly if you disable cookies.
+
+**Data Retention and Deletion**
+
+We retain personal information for as long as your account is active, or as long as needed to provide the Website, comply with legal obligations, resolve disputes and enforce our agreements.
+
+You can delete your account at any time from the Profile page using the Delete Account option, or by contacting us at the address below. When you delete your account, we will remove or anonymize your personal information, subject to records we are required to keep for legal, payment, tax or security purposes.
 
 **Changes To This Privacy Policy**
 
@@ -1033,7 +1064,8 @@ We reserve the right to modify this privacy policy at any time, so please review
 
 **Questions And Contact Information**
 
-If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at  [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) .` },
+If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).
+` },
   { path: 'reading/epub', title: 'EPUB Reader', category: 'reading', content: `# EPUB Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
@@ -2422,102 +2454,134 @@ Jou kykgeskiedenis is privaat. Dit is slegs vir jou sigbaar wanneer jy aangeteke
 - Jou geskiedenis is beperk tot jou huidige L2 — jy sal nie Japannese-video's sien wanneer jy in Koreaanse-modus is nie` },
     { path: 'privacy-policy', title: 'Privaatheidsbeleid', category: 'privacy-policy', content: `# Privaatheidsbeleid
 
-Hierdie webblad verteenwoordig 'n regsdokument wat dien as ons Gebruiksvoorwaardes en Privaatheidsbeleid en wat die gebruik van ons webwerf reguleer: [https://languageplayer.io](https://languageplayer.io), insluitend bladsye daarop gevind en alle subdomeine en toepassings (gesamentlik "Webwerf"), soos besit en bestuur deur ons, Zero to Hero Education, Kanada. ("Zero to Hero").
+Hierdie webblad verteenwoordig 'n regsdokument wat dien as ons Gebruiksvoorwaardes en Privaatheidsbeleid en dit beheer die gebruik van ons webwerf: [https://languageplayer.io](https://languageplayer.io), insluitend bladsye wat daarop gevind word en alle subdomeine en toepassings (gesamentlik, "Webwerf"), soos besit en bedryf deur ons, Zero to Hero Education, Kanada. ("Zero to Hero").
 
 **Inleiding**
 
-Die Gebruiksvoorwaardes, tesame met ons Privaatheidsbeleid hieronder gepubliseer, en ander geplaasde riglyne of beleide binne ons Webwerf (gesamentlik "Regstermyn"), vorm die enigste en volledige ooreenkoms tussen u en ons, en vervang alle ander ooreenkomste, verklarings, waarborge en begrippe met betrekking tot ons Webwerf en die onderwerp hierin vervat. Ons kan ons Regstermyn te eniger tyd wysig sonder spesifieke kennisgewing aan u. Die jongste afskrifte van ons Regstermyn sal op ons Webwerf geplaas word, en u moet alle Regstermyn hersien voordat u ons Webwerf gebruik. Nadat enige hersienings van ons Regstermyn geplaas is, stem u in om gebonde te wees aan enige sodanige veranderinge daaraan. Daarom is dit vir u belangrik om ons Regstermyn periodiek te hersien om seker te maak u stem steeds daartoe in.
+Die Gebruiksvoorwaardes, tesame met ons Privaatheidsbeleid wat hieronder gepubliseer word, en ander gepubliseerde riglyne of beleide binne ons Webwerf (gesamentlik "Regsvoorwaardes"), vorm die volledige en enigste ooreenkoms tussen jou en ons, en vervang alle ander ooreenkomste, verteenwoordigings, waarborge en verstandhoudings met betrekking tot ons Webwerf en die onderwerp wat hierin vervat is. Ons mag ons Regsvoorwaardes te eniger tyd wysig sonder spesifieke kennisgewing aan jou. Die nuutste kopieë van ons Regsvoorwaardes sal op ons Webwerf geplaas word, en jy behoort alle Regsvoorwaardes te hersien voordat jy ons Webwerf gebruik. Nadat enige hersienings van ons Regsvoorwaardes geplaas is, stem jy in om gebonde te wees aan enige sodanige veranderinge daaraan. Daarom is dit belangrik vir jou om ons Regsvoorwaardes periodiek te hersien om seker te maak jy stem steeds daarmee saam.
 
-Deur ons Webwerf te gebruik, stem u in om volledig te voldoen aan en gebonde te wees aan ons Regstermyn. Hersien dit asseblief noukeurig. Indien u nie ons Regstermyn aanvaar nie, moenie toegang tot ons Webwerf verkry en dit gebruik nie. Indien u reeds toegang tot ons Webwerf verkry het en nie ons Regstermyn aanvaar nie, is u nie meer gemagtig om dit te gebruik nie en moet u onmiddellik ophou om ons Webwerf te gebruik.
+Deur ons Webwerf te gebruik, stem jy in om ten volle te voldoen aan en gebonde te wees aan ons Regsvoorwaardes. Hersien dit asseblief sorgvuldig. As jy nie ons Regsvoorwaardes aanvaar nie, moenie toegang tot ons Webwerf verkry en dit gebruik nie. As jy reeds toegang tot ons Webwerf verkry het en nie ons Regsvoorwaardes aanvaar nie, is jy nie meer gemagtig om dit te gebruik nie en moet jy onmiddellik ophou om ons Webwerf te gebruik.
 
 **Ander Gedefinieerde Terme Op Ons Webwerf**
 
-Hierdie Webwerf inkorporeer terme wat deurgaans op hierdie bladsy gedefinieer word, sowel as hierdie ander gedefinieerde terme:
+Hierdie Webwerf inkorporeer terme wat deur hierdie bladsy gedefinieer word sowel as hierdie ander gedefinieerde terme:
 
-Die terme "ons" verwys na Zero to Hero as die eienaar van die Webwerf. "Inhoud" sluit enige en alle teks, inligting, grafika, klank, video en ander data in wat deur ons Webwerf geplaas, aangebied of beskikbaar gestel word.
+Die terme "ons" en "ons" verwys na Zero to Hero as die eienaar van die Webwerf. "Inhoud" sluit enige en alle teks, inligting, grafika, klank, video en ander data in wat deur ons Webwerf geplaas, aangebied of beskikbaar gestel word.
 
-'n "Besoeker" of "u" is gesamentlike identifiseerders wat na u verwys as 'n blaaier van ons Webwerf, of u nou 'n aankoop van ons produkte voltooi al dan nie.
+'n "besoeker" of "jy" is kollektiewe identifiseerders wat na jou verwys as 'n blaaier van ons Webwerf, of jy nou 'n aankoop van ons produkte voltooi of nie.
 
-"Persoonlike inligting" beteken inligting oor 'n identifiseerbare persoon, wat 'n persoon se naam, residensiële adres, fakturadres, afleweringsadres, telefoonnommer, e-posadres en ander soortgelyke kontakinligting, sowel as webwerfgebruiksgeskiedenisdata kan insluit. Dit kan ook 'n persoon se kredietkaartinligting insluit wanneer dit vir betalingsdoeleindes aangebied word.
+"Persoonlike inligting" beteken inligting oor 'n identifiseerbare persoon, wat 'n persoon se naam, residensiële adres, faktuur-adres, afleweringsadres, telefoonnommer, e-posadres en ander soortgelyke kontakinligting kan insluit, sowel as webwerfgebruiksgeskiedenisdata. Dit kan ook 'n persoon se kredietkaartinligting insluit wanneer dit vir betalingsdoeleindes aangebied word.
 
 **GEBRUIKSVOORWAARDES**
 
 **Intellektuele Eiendom**
 
-Ons Webwerf mag ons diensmerke of handelsmerke bevat, sowel as dié van ons geaffilieerdes of ander persone of maatskappye, in die vorm van woorde, grafika en logo's. U gebruik van ons Webwerf vorm geen reg of lisensie vir u om sodanige diensmerke/handelsmerke te gebruik nie, sonder die vooraf skriftelike magtiging van die ooreenstemmende diensmerk/handelsmerkeienaar. Ons Webwerf, insluitend die inhoud, word ook beskerm onder Kanadese en internasionale kopieregwette. U gebruik van ons Webwerf of die inhoud verleen geen eienaarskapregte van enige aard aan u nie. Die kopiëring, herverspreiding, gebruik of publikasie deur u van enige gedeelte van ons Webwerf of inhoud is streng verbode en mag dus nie gekopieer of gereproduseer word sonder om eers ons skriftelike magtiging te verkry nie.
+Ons Webwerf mag ons diensmerke of handelsmerke bevat sowel as dié van ons geaffilieerdes of ander persone of maatskappye, in die vorm van woorde, grafika en logo's. Jou gebruik van ons Webwerf behels nie enige reg of lisensie vir jou om sodanige diensmerke/handelsmerke te gebruik nie, sonder die voorafgeskrewe skriftelike magtiging van die ooreenstemmende diensmerk/handelsmerkeienaar. Ons Webwerf insluitend die inhoud word ook beskerm onder Kanadese en internasionale kopieregwette. Jou gebruik van ons Webwerf of die inhoud verleen nie aan jou eiendomsreg van enige aard daarin nie. Die kopiëring, herverspreiding, gebruik of publikasie deur jou van enige gedeelte van ons Webwerf of inhoud is streng verbode en mag dus nie gekopieer of gereproduseer word sonder om eers ons skriftelike magtiging te verkry nie.
 
 **Beperking van Aanspreeklikheid**
 
-In geen omstandighede sal ons, of ons beamptes of werknemers, verantwoordelik of aanspreeklik wees vir enige verlies of skade hoegenaamd, insluitend (sonder om die algemeenheid van die voorafgaande te beperk) enige direkte, indirekte, insidentele, spesiale, strafmaatreël- of gevolglike skade, wat voortspruit uit of in verband met u gebruik van, toegang tot of u vertroue op, of u onvermoë om te gebruik of toegang te verkry tot, hierdie Webwerf, die aanlynbestellingstelsel of enige inhoud.
+Onder geen omstandighede sal ons, of ons beamptes of werknemers, verantwoordelik of aanspreeklik wees vir enige verlies of skade hoegenaamd, insluitend (sonder om die algemeenheid van die voorafgaande te beperk) enige direkte, indirekte, toevallige, insidentele, spesiale, straf- of gevolglike skade, wat voortspruit uit of in verband met jou gebruik van, toegang tot of jou vertroue op, of jou onvermoë om hierdie Webwerf, die aanlynbestelstelsel of enige inhoud te gebruik of te betree.
 
 **Algemene Voorwaardes**
 
-Ons Regstermyn sal behandel word asof dit in die Provinsie Brits-Columbië, Kanada uitgevoer en uitgevoer is, en sal beheer word deur en uitgelê word in ooreenstemming met die wette van daardie streek sonder inagneming van botsing van regsbeginsels. Daarbenewens stem u in om te onderwerp aan die persoonlike jurisdiksie en plek van die howe binne daardie streek. Enige saak van aksie deur u met betrekking tot ons Webwerf moet binne een (1) jaar nadat die saak van aksie ontstaan het, ingestel word, of vir ewig kwytgeskeld en geblokkeer word. Indien enige deel van ons Regstermyn ongeldig of onafdwingbaar gehou word, sal daardie gedeelte uitgelê word in ooreenstemming met toepaslike wetgewing en die oorblywende gedeeltes sal ten volle van krag bly. In die mate dat enige inhoud bots of onversoenbaar is met ons Regstermyn, sal ons Regstermyn die konstruksie daarvan gesamentlik oorheers en oppermagtig wees. Ons versuim om enige bepaling van ons Regstermyn af te dwing, sal nie beskou word as 'n afstanddoening van sodanige bepaling nie, nóg van die reg om sodanige bepaling af te dwing. Ons regte onder ons Regstermyn sal die beëindiging van ons Regstermyn oorleef.
+Ons Regsvoorwaardes sal behandel word asof dit uitgevoer en uitgevoer is in die Provinsie Brits-Columbië, Kanada en sal beheer word deur en uitgelê word in ooreenstemming met die wette van daardie streek sonder inagneming van konflik van wetsbeginsels. Daarbenewens stem jy in om jou te onderwerp aan die persoonlike jurisdiksie en venue van die howe binne daardie streek. Enige eisoorsaak deur jou met betrekking tot ons Webwerf moet ingestel word binne een (1) jaar nadat die eisoorsaak ontstaan het of sal vir ewig kwytgeskeld en geblokkeer word. Indien enige deel van ons Regsvoorwaardes ongeldig of onafdwingbaar gehou word, sal daardie gedeelte uitgelê word in ooreenstemming met toepaslike wetgewing en die oorblywende gedeeltes sal ten volle van krag bly. In die mate dat enige inhoud konflik of onversoenbaar is met ons Regsvoorwaardes, sal ons Regsvoorwaardes oorheers en opperste wees in die uitleg daarvan saam. Ons versuim om enige bepaling van ons Regsvoorwaardes af te dwing, sal nie beskou word as 'n kwytskelding van sodanige bepaling nie, nóg van die reg om sodanige bepaling af te dwing nie. Ons regte onder ons Regsvoorwaardes sal die beëindiging van ons Regsvoorwaardes oorleef.
 
-**Derde Party Skakels**
+**Derdeparty-skakels**
 
-Wanneer u op skakels op ons Webwerf klik, kan hulle u weg van ons Webwerf af lei na 'n ander webwerf wat deur 'n derde party besit en bestuur word. Ons is nie verantwoordelik vir die privaatheidspraktyke van ander derdeparty-webwerwe nie en moedig u aan om hul gebruiksvoorwaardes en privaatheidverklarings te lees. Sodra u ons Webwerf verlaat of na 'n derdeparty-webwerf of -toepassing herlei word, word u nie meer deur ons Regstermyn beheer nie.
+Wanneer jy op skakels op ons Webwerf klik, mag hulle jou weg van ons Webwerf na 'n ander webwerf stuur wat deur 'n derde party besit en bedryf word. Ons is nie verantwoordelik vir die privaatheids praktyke van ander derdeparty-webwerwe nie en moedig jou aan om hul gebruiksvoorwaardes en privaatheidverklarings te lees. Sodra jy ons Webwerf verlaat of na 'n derdeparty-webwerf of -toepassing herlei word, word jy nie meer deur ons Regsvoorwaardes beheer nie.
 
 **PRIVAATHEIDSBELEID**
 
-By Zero to Hero beskou ons privaatheid as 'n baie belangrike saak en daarom is ons daartoe verbind om die privaatheid van die persoonlike inligting van alle besoekers te beskerm. Hierdie Privaatheidsbeleid inkorporeer die toepaslike gedeeltes van die Wet op Beskerming van Persoonlike Inligting en Elektroniese Dokumente (Kanada), die Wet op Beskerming van Persoonlike Inligting (Alberta) en die tien beginsels uiteengesit in die Kanadese Standaarde Vereniging (CSA) Modelkode vir die Beskerming van Persoonlike Inligting (gesamentlik, die "toepaslike privaatheidswette").
+By Zero to Hero beskou ons privaatheid as 'n baie belangrike saak en as sodanig is ons daartoe verbind om die privaatheid van die persoonlike inligting van alle besoekers te beskerm. Hierdie Privaatheidsbeleid inkorporeer die toepaslike gedeeltes van die Wet op die Beskerming van Persoonlike Inligting en Elektroniese Dokumente (Kanada), die Wet op die Beskerming van Persoonlike Inligting (Alberta) en die tien beginsels uiteengesit in die Kanadese Standaarde Vereniging (CSA) Modelkode vir die Beskerming van Persoonlike Inligting (gesamentlik, die "toepaslike privaatheidswette").
 
-**Insameling van Inligting**
+**Inligting Wat Ons Insamel**
 
-Ons mag persoonlike inligting insamel vir enige een of meer van die volgende doeleindes:
+**Inligting wat jy direk verskaf:**
 
-*   om verhoudings met besoekers te vestig en in stand te hou;
-*   om aangevraagde en deurlopende produkte en dienste te verskaf;
-*   om u in kennis te stel van veranderinge aan ons produkte en dienste;
-*   om 'n beter begrip van ons besoekers, hul vereistes en voorkeure te verkry;
-*   om ons produkte en dienste te ontwikkel, te verbeter, te bevorder en/of te bemark;
-*   om die gebruik van ons Webwerf te monitor;
-*   om ons besigheid en bedrywighede te bestuur en te verbeter; en
-*   om aan wetlike en regulatoriese vereistes te voldoen.
+* Rekeninginligting: jou naam, e-posadres, wagwoord, taalvoorkeure en leervlak.
+* Leerdata: gestoorde woorde, frases, vorderingshersiening, notas, snitlyste, gelaaikte video's, kykgeskiedenis, boeke en leesvordering.
+* Inhoud wat jy oplaai of skep: pasgemaakte media, EPUB-lêers, en teks wat jy vra dat ons vertaal of verduidelik.
+* Betalingsinligting: wanneer jy 'n intekening koop, word betaling verwerk deur Stripe, PayPal of die Apple App Store. Ons ontvang bevestiging en intekeningbesonderhede, maar ons stoor oor die algemeen nie jou volle kaartnommer nie.
 
-**Wat Doen Ons Met U Inligting?**
+**Inligting wat outomaties ingesamel word:**
 
-Wanneer u iets deur ons aanlynbestellingstelsel koop, as deel van die koop- en verkoopproses, samel ons u persoonlike inligting in.
+* Gebruiksdata: bladsye en funksies wat jy besoek, insluitend Verken media, Musiek en Vermaak, Regstreekse TV, TV-programme, Soek, Woordeboek, Gestoorde woorde, Hersien, Leesprogram, Webleser, EPUB-leser, Plaaslike Media, Kykgeskiedenis, Snitlyste en Gelaaikte video's; video's wat jy kyk; interaksies; en tydstempels.
+* Toestel- en netwerkinligting: IP-adres, blaaiertipe, bedryfstelsel, toesteltipe en benaderde ligging afgelei van jou IP-adres.
+* Analise: ons gebruik Google Analytics om te verstaan hoe besoekers die Webwerf gebruik. Google Analytics mag koekies gebruik en gebruiksdata namens ons insamel. Google se gebruik van daardie data word beheer deur [Google se Privaatheidsbeleid](https://policies.google.com/privacy).
+* Plaaslike berging: ons gebruik koekies, \`localStorage\`, \`sessionStorage\` en IndexedDB om jou aangemeld te hou, jou taal te onthou, jou instellings, vordering en gestoorde woorde te stoor, en inhoud plaaslik te kas.
 
-Wanneer u ons Webwerf blaai, ontvang ons ook outomaties u rekenaar se internetprotokol (IP)-adres om ons inligting te verskaf wat ons help om oor u blaaier en bedryfstelsel te leer.
+**Wat Doen Ons Met Jou Inligting?**
 
-Toegelate direkte bemarking (indien van toepassing): Met u toestemming kan ons u nuusbriewe of e-posse stuur om oor ons winkels, nuwe produkte en ander opdaterings te adverteer.
+Ons gebruik die inligting wat ons insamel om:
+
+* die Webwerf en sy funksies te verskaf, onderhou en verbeter;
+* jou rekening te skep en te bestuur, jou identiteit te verifieer en jou aangemeld te hou;
+* aanbevelings te personaliseer gebaseer op jou taal, vlak en leergeskiedenis;
+* jou data oor toestelle te sinkroniseer;
+* intekeninge, betalings en hernuwings te verwerk;
+* transaksionele e-posse te stuur soos verifikasiekodes, wagwoordherstellings en betalingskwitansies;
+* bemarkingskommunikasie te stuur as jy ons toestemming daarvoor gegee het;
+* gebruik met Google Analytics te ontleed om te verstaan hoe besoekers die Webwerf gebruik en om ons produkte te verbeter;
+* aan wetlike en regulatoriese vereistes te voldoen en ons regte en die regte van ons gebruikers te beskerm.
+
+Ons verkoop nie jou persoonlike inligting nie.
+
+**Deling en Bekendmaking**
+
+Ons deel persoonlike inligting slegs met diensverskaffers wat ons help om die Webwerf te bedryf, insluitend:
+
+* gasheer- en databasisverskaffers, insluitend Supabase;
+* betalingsverwerkers, insluitend Stripe, PayPal en die Apple App Store;
+* vertaal- en KI-verskaffers, insluitend DeepSeek, wanneer jy vertaal- of KI-verduidelikingsfunksies gebruik;
+* analiseverskaffers, insluitend Google Analytics;
+* videoplatforms, insluitend YouTube en Google, wanneer jy ingebedde video's kyk.
+
+Ons sal nie persoonlike inligting gebruik of openbaar maak vir doeleindes anders as waarvoor dit ingesamel is nie, tensy dit met jou toestemming is, as dit deur die wet toegelaat of vereis word, of jy ons Gebruiksvoorwaardes oortree.
 
 **Toestemming**
 
-_Hoe verkry u my toestemming?_
+_Hoe verkry jy my toestemming?_
 
-Wanneer u vir ons persoonlike inligting verskaf om 'n transaksie te voltooi, u kredietkaart te verifieer, 'n bestelling te plaas, 'n aflewering te reël of 'n aankoop terug te stuur, of enige inligting of foto's op ons sosiale media-webwerf te plaas of vas te pen, neem ons aan dat u instem tot ons insameling daarvan en gebruik daarvan vir daardie spesifieke rede alleen.
+Wanneer jy ons persoonlike inligting verskaf om 'n rekening te skep, 'n transaksie te voltooi, jou betaling te verifieer, 'n bestelling te plaas, of ons produkte en dienste te gebruik, neem ons aan dat jy toestemming gee vir ons om dit in te samel en dit vir daardie spesifieke rede alleen te gebruik.
 
-Indien ons u persoonlike inligting vir 'n sekondêre rede vra, soos bemarking, sal ons u óf direk vra vir u uitdruklike toestemming, óf u 'n geleentheid gee om nee te sê.
+As ons jou persoonlike inligting vir 'n sekondêre rede vra, soos bemarking, sal ons jou óf direk vra vir jou uitdruklike toestemming, óf jou die geleentheid bied om nee te sê.
 
-_Hoe trek ek my toestemming in?_
+_Hoe trek ek my toestemming terug?_
 
-Indien u na u aanmelding van plan verander, kan u u toestemming vir ons om u te kontak, vir die voortgesette insameling, gebruik of openbaarmaking van u inligting, te eniger tyd intrek deur ons in kennis te stel.
-
-**Openbaarmaking**
-
-Ons sal nie persoonlike inligting gebruik of openbaar maak vir doeleindes anders as dié waarvoor dit ingesamel is nie, tensy dit met u toestemming is, indien dit deur wetgewing toegelaat of vereis word, of u ons Gebruiksvoorwaardes oortree.
+As jy ná jou aanmelding van plan verander, mag jy jou toestemming vir ons om jou te kontak, vir die voortgesette insameling, gebruik of openbaarmaking van jou inligting, te eniger tyd terugtrek deur ons in kennis te stel.
 
 **Beskerming**
 
-Ons sal persoonlike inligting beskerm deur industriële beste praktyke te volg en sodanige redelike waarborge te implementeer as wat toepaslik mag wees vir die sensitiwiteit van die inligting; ons sal redelike pogings aanwend om persoonlike inligting te beskerm teen verlies of diefstal, sowel as ongemagtigde toegang, openbaarmaking, kopiëring, gebruik of wysiging, ongeag die formaat waarin dit gehou word. Die wetgewing laat ons ook toe, vir wetlike of besigheidsdoeleindes, om persoonlike inligting te behou so lank as wat redelik is en mits u nie u toestemming herroep het nie.
+Ons sal persoonlike inligting beskerm deur industriële beste praktyke te volg en sodanige redelike waarborge te implementeer as wat toepaslik mag wees vir die sensitiwiteit van die inligting; ons sal redelike pogings aanwend om persoonlike inligting teen verlies of diefstal te beskerm, sowel as teen ongemagtigde toegang, openbaarmaking, kopiëring, gebruik of wysiging ongeag die formaat waarin dit gehou word. Die wetgewing laat ons ook toe, vir wetlike of besigheidsdoeleindes, om persoonlike inligting te behou solank as wat redelik is en op voorwaarde dat jy nie jou toestemming herroep het nie.
 
 **Sekuriteit**
 
-Om u persoonlike inligting te beskerm, neem ons redelike voorsorgmaatreëls en volg ons industriële beste praktyke om seker te maak dit word nie onvanpas verlore, misbruik, toegang verkry, openbaar gemaak, verander of vernietig nie.
+Om jou persoonlike inligting te beskerm, neem ons redelike voorsorgmaatreëls en volg ons industriële beste praktyke om seker te maak dat dit nie onvanpas verlore, misbruik, verkry, openbaar gemaak, verander of vernietig word nie.
 
-**Koekies**
+**Koekies en Soortgelyke Tegnologieë**
 
-Ons Webwerf gebruik nie koekies nie.
+Ons Webwerf gebruik koekies en soortgelyke tegnologieë.
+
+* **Noodsaaklike koekies:** ons gebruik koekies om jou aangemeld te hou, jou gekose tale te onthou, en gasnavigasieperke te bestuur.
+* **Analise:** ons gebruik Google Analytics, wat sy eie koekies mag stel en gebruiks inligting insamel.
+* **Plaaslike berging:** ons gebruik \`localStorage\`, \`sessionStorage\` en IndexedDB om instellings, gestoorde woorde, vordering, leesinhoud en pasgemaakte media op jou toestel te stoor.
+* **Ingebedde inhoud:** video's word van YouTube ingebed. YouTube en Google mag hul eie koekies stel wanneer jy 'n video kyk, wat deur hul privaatheidsbeleide beheer word.
+
+Jy kan koekies deur jou blaaiersinstellings blokkeer of uitvee. Let asseblief daarop dat sommige dele van die Webwerf dalk nie korrek werk as jy koekies deaktiveer nie.
+
+**Databewaring en -uitvee**
+
+Ons behou persoonlike inligting solank jou rekening aktief is, of solank as wat nodig is om die Webwerf te verskaf, aan wetlike verpligtinge te voldoen, geskille op te los en ons ooreenkomste af te dwing.
+
+Jy kan jou rekening te eniger tyd vanaf die Profiel-bladsy uitvee deur die Skrap Rekening-opsie te gebruik, of deur ons by die onderstaande adres te kontak. Wanneer jy jou rekening uitvee, sal ons jou persoonlike inligting verwyder of anonimiseer, onderworpe aan rekords wat ons wetlik, vir betalings-, belasting- of sekuriteitsdoeleindes moet behou.
 
 **Veranderinge Aan Hierdie Privaatheidsbeleid**
 
-Ons behou die reg voor om hierdie privaatheidsbeleid te eniger tyd te wysig, so hersien dit asseblief gereeld. Veranderinge en verduidelikings sal onmiddellik in werking tree na hul plasing op die Webwerf. Indien ons wesenlike veranderinge aan hierdie beleid aanbring, sal ons u hier in kennis stel dat dit opgedateer is, sodat u bewus is van watter inligting ons insamel, hoe ons dit gebruik, en onder watter omstandighede, indien enige, ons dit gebruik en/of openbaar maak.
+Ons behou die reg voor om hierdie privaatheidsbeleid te eniger tyd te wysig, so hersien dit asseblief gereeld. Veranderinge en verduidelikings sal onmiddellik in werking tree by hul plasing op die Webwerf. As ons wesenlike veranderinge aan hierdie beleid aanbring, sal ons jou hier in kennis stel dat dit opgedateer is, sodat jy bewus is van watter inligting ons insamel, hoe ons dit gebruik, en onder watter omstandighede, indien enige, ons dit gebruik en/of openbaar maak.
 
 **Vrae En Kontakinligting**
 
-Indien u wil: toegang verkry tot, korrigeer, wysig of enige persoonlike inligting wat ons oor u het, verwyder, 'n klagte indien, of bloot meer inligting wil hê, kontak ons by [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+As jy wil: toegang verkry tot, korrigeer, wysig of enige persoonlike inligting wat ons oor jou het uitvee, 'n klagte registreer, of bloot meer inligting wil hê, kontak ons by [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-leser', category: 'reading', content: `# EPUB-leser
 
 Lees EPUB-e-boeke met interaktiewe woordopsoek, per-blok-vertaling en vordering wat oor sessies heen behoue bly.
@@ -3888,102 +3952,134 @@ Language Player يبث البرامج المباشرة من القنوات ال�
 - سجل مشاهداتك مقتصر على لغتك الثانية الحالية — لن ترى مقاطع فيديو اليابانية عندما تكون في وضع الكورية` },
     { path: 'privacy-policy', title: 'سياسة الخصوصية', category: 'privacy-policy', content: `# سياسة الخصوصية
 
-تمثل صفحة الويب هذه وثيقة قانونية تُعد بمثابة شروط الاستخدام وسياسة الخصوصية لدينا، وتنظم استخدام موقعنا الإلكتروني: [https://languageplayer.io](https://languageplayer.io)، بما في ذلك الصفحات الموجودة عليه وجميع النطاقات الفرعية والتطبيقات (يُشار إليها مجتمعة باسم "الموقع")، والتي تملكها وتديرها شركتنا، Zero to Hero Education، كندا. ("Zero to Hero").
+تصف هذه الصفحة الإلكترونية وثيقة قانونية تمثل اتفاقية الاستخدام وسياسة الخصوصية الخاصة بنا، وهي تحكم استخدام موقعنا الإلكتروني: [https://languageplayer.io](https://languageplayer.io)، بما في ذلك الصفحات الموجودة عليه وجميع النطاقات الفرعية والتطبيقات (يُشار إليها collectively باسم "الموقع الإلكتروني")، والتي تملكها وتشغّلها شركتنا Zero to Hero Education، كندا. ("Zero to Hero").
 
 **مقدمة**
 
-تشكل شروط الاستخدام، إلى جانب سياسة الخصوصية المنشورة أدناه، والإرشادات أو السياسات الأخرى المنشورة على موقعنا (يُشار إليها مجتمعة باسم "الشروط القانونية")، الاتفاقية الكاملة والوحيدة بينك وبيننا، وتحل محل جميع الاتفاقيات والتمثيلات والضمانات والتفاهمات الأخرى المتعلقة بموقعنا والموضوع الوارد فيه. يجوز لنا تعديل شروطنا القانونية في أي وقت دون إشعار محدد لك. سيتم نشر أحدث نسخ من شروطنا القانونية على موقعنا، ويجب عليك مراجعة جميع الشروط القانونية قبل استخدام موقعنا. بعد نشر أي تنقيحات لشروطنا القانونية، فإنك توافق على الالتزام بأي تغييرات تطرأ عليها. لذلك، من المهم بالنسبة لك مراجعة شروطنا القانونية بشكل دوري للتأكد من أنك لا تزال توافق عليها.
+تشكل اتفاقية الاستخدام، إلى جانب سياسة الخصوصية المنشورة أدناه، والإرشادات أو السياسات الأخرى المنشورة على موقعنا الإلكتروني (يُشار إليها collectively باسم "الشروط القانونية")، الاتفاقية الكاملة والوحيدة بينك وبيننا، وتحل محل جميع الاتفاقيات والتمثيلات والضمانات والتفاهمات الأخرى المتعلقة بموقعنا الإلكتروني والموضوع الوارد فيه. يجوز لنا تعديل شروطنا القانونية في أي وقت دون إشعار محدد لك. سيتم نشر أحدث نسخ من شروطنا القانونية على موقعنا الإلكتروني، ويجب عليك مراجعة جميع الشروط القانونية قبل استخدام موقعنا الإلكتروني. بعد نشر أي تنقيحات على شروطنا القانونية، فإنك توافق على الالتزام بأي تغييرات من هذا القبيل. لذلك، من المهم أن تراجع شروطنا القانونية بشكل دوري للتأكد من أنك ما زلت توافق عليها.
 
-باستخدامك لموقعنا، فإنك توافق على الامتثال الكامل لشروطنا القانونية والالتزام بها. يرجى مراجعتها بعناية. إذا كنت لا تقبل شروطنا القانونية، فلا تدخل إلى موقعنا أو تستخدمه. إذا كنت قد دخلت بالفعل إلى موقعنا ولا تقبل شروطنا القانونية، فلم يعد لديك الإذن باستخدامه ويجب عليك التوقف فورًا عن استخدام موقعنا.
+باستخدامك لموقعنا الإلكتروني، فإنك توافق على الامتثال الكامل لشروطنا القانونية والالتزام بها. يرجى مراجعتها بعناية. إذا كنت لا تقبل شروطنا القانونية، فلا تقم بالوصول إلى موقعنا الإلكتروني أو استخدامه. إذا كنت قد وصلت بالفعل إلى موقعنا الإلكتروني ولا تقبل شروطنا القانونية، فأنت لم تعد مخولاً لاستخدامه ويجب عليك التوقف فوراً عن استخدام موقعنا الإلكتروني.
 
-**مصطلحات محددة أخرى على موقعنا**
+**مصطلحات أخرى محددة على موقعنا الإلكتروني**
 
-يتضمن هذا الموقع مصطلحات محددة في جميع أنحاء هذه الصفحة بالإضافة إلى هذه المصطلحات المحددة الأخرى:
+يتضمن هذا الموقع الإلكتروني مصطلحات محددة في جميع أنحاء هذه الصفحة بالإضافة إلى هذه المصطلحات المحددة الأخرى:
 
-يشير المصطلحان "نحن" و"إيانا" إلى Zero to Hero بصفتها مالكة الموقع. تشمل "المحتوى" جميع النصوص والمعلومات والرسومات والصوت والفيديو والبيانات الأخرى المنشورة أو المقدمة أو المتاحة من خلال موقعنا.
+يشير المصطلحان "نحن" و"إيانا" إلى Zero to Hero بصفتها المالكة للموقع الإلكتروني. تشمل "المحتوى" جميع النصوص والمعلومات والرسومات والصوت والفيديو والبيانات الأخرى المنشورة أو المعروضة أو المتاحة من خلال موقعنا الإلكتروني.
 
-"الزائر" أو "أنت" هما معرفان جماعيان يشيران إليك كمتصفح لموقعنا، سواء أكملت شراء منتجاتنا أم لا.
+يشير مصطلح "زائر" أو "أنت" إلى المعرفات الجماعية التي تشير إليك كمتصفح لموقعنا الإلكتروني، سواء أكملت شراء منتجاتنا أم لا.
 
-تعني "المعلومات الشخصية" المعلومات المتعلقة بشخص يمكن التعرف عليه، والتي قد تشمل اسم الشخص وعنوان السكن وعنوان الفواتير وعنوان التوصيل ورقم الهاتف وعنوان البريد الإلكتروني ومعلومات الاتصال المماثلة الأخرى، بالإضافة إلى بيانات تاريخ استخدام الموقع. وقد تشمل أيضًا معلومات بطاقة الائتمان الخاصة بالشخص عند تقديمها لأغراض الدفع.
+تعني "المعلومات الشخصية" المعلومات المتعلقة بشخص يمكن تحديد هويته، والتي قد تشمل اسم الشخص وعنوان السكن وعنوان الفوترة وعنوان التسليم ورقم الهاتف وعنوان البريد الإلكتروني وغيرها من معلومات الاتصال المماثلة، بالإضافة إلى بيانات تاريخ استخدام الموقع الإلكتروني. وقد تشمل أيضاً معلومات بطاقة الائتمان الخاصة بالشخص عند تقديمها لأغراض الدفع.
 
-**شروط الاستخدام**
+**اتفاقية الاستخدام**
 
 **الملكية الفكرية**
 
-قد يحتوي موقعنا على علامات الخدمة أو العلامات التجارية الخاصة بنا بالإضافة إلى تلك الخاصة بالشركات التابعة لنا أو أشخاص أو شركات أخرى، في شكل كلمات ورسومات وشعارات. لا يشكل استخدامك لموقعنا أي حق أو ترخيص لك لاستخدام علامات الخدمة/العلامات التجارية هذه، دون الحصول على إذن كتابي مسبق من مالك علامة الخدمة/العلامة التجارية المقابلة. موقعنا بما في ذلك المحتوى محمي أيضًا بموجب قوانين حقوق النشر الكندية والدولية. لا يمنحك استخدام موقعنا أو المحتوى حقوق ملكية من أي نوع فيه. يُحظر بشدة نسخ أو إعادة توزيع أو استخدام أو نشر أي جزء من موقعنا أو محتواه بواسطتك، وبالتالي لا يجوز نسخه أو استنساخه دون الحصول على إذننا الكتابي أولاً.
+قد يحتوي موقعنا الإلكتروني على علامات الخدمة أو العلامات التجارية الخاصة بنا بالإضافة إلى تلك الخاصة بالشركات التابعة لنا أو أشخاص أو شركات أخرى، في شكل كلمات ورسومات وشعارات. لا يشكل استخدامك لموقعنا الإلكتروني أي حق أو ترخيص لك لاستخدام علامات الخدمة/العلامات التجارية هذه، دون الحصول على إذن كتابي مسبق من مالك علامة الخدمة/العلامة التجارية المقابلة. موقعنا الإلكتروني بما في ذلك المحتوى محمي أيضاً بموجب قوانين حقوق النشر الكندية والدولية. لا يمنحك استخدامك لموقعنا الإلكتروني أو المحتوى حقوق ملكية بأي شكل من الأشكال. نسخ أو إعادة توزيع أو استخدام أو نشر أي جزء من موقعنا الإلكتروني أو محتواه من قبلك محظور تماماً وبالتالي لا يجوز نسخه أو إعادة إنتاجه دون الحصول أولاً على إذن كتابي منا.
 
-**الحد من المسؤولية**
+**تحديد المسؤولية**
 
-لا نكون نحن أو مسؤولونا أو موظفونا، تحت أي ظرف من الظروف، مسؤولين أو ملزمين عن أي خسارة أو أضرار مهما كانت، بما في ذلك (دون الحد من عمومية ما سبق) أي أضرار مباشرة أو غير مباشرة أو عرضية أو خاصة أو عقابية أو تبعية، تنشأ عن أو تتعلق باستخدامك لهذا الموقع أو الوصول إليه أو اعتمادك عليه، أو عدم قدرتك على استخدامه أو الوصول إليه، أو نظام الطلب عبر الإنترنت أو أي محتوى.
+لا يجوز لنا بأي حال من الأحوال، أو لموظفينا، أن نكون مسؤولين أو ملزمين عن أي خسارة أو أضرار مهما كانت، بما في ذلك (دون الحد من عمومية ما سبق) أي أضرار مباشرة أو غير مباشرة أو عرضية أو خاصة أو عقابية أو تبعية، تنشأ عن أو فيما يتعلق باستخدامك أو وصولك إلى أو اعتمادك على، أو عدم قدرتك على استخدام أو الوصول إلى، هذا الموقع الإلكتروني أو نظام الطلب عبر الإنترنت أو أي محتوى.
 
 **شروط عامة**
 
-يُعتبر أن شروطنا القانونية قد تم تنفيذها وأدائها في مقاطعة كولومبيا البريطانية، كندا، وسيتم تفسيرها وفقًا لقوانين تلك المنطقة بغض النظر عن مبادئ تضارب القوانين. بالإضافة إلى ذلك، فإنك توافق على الخضوع للاختصاص القضائي الشخصي والمكاني للمحاكم داخل تلك المنطقة. يجب رفع أي دعوى قضائية من قبلك فيما يتعلق بموقعنا في غضون سنة (1) واحدة من تاريخ نشوء سبب الدعوى، وإلا فإنها تُعتبر متنازلاً عنها وممنوعة إلى الأبد. إذا تم اعتبار أي جزء من شروطنا القانونية غير صالح أو غير قابل للتنفيذ، فسيتم تفسير ذلك الجزء وفقًا للقانون المعمول به وستظل الأجزاء المتبقية سارية المفعول بشكل كامل. إلى الحد الذي يتعارض فيه أي محتوى مع شروطنا القانونية أو يكون غير متسق معها، تسود شروطنا القانونية وتكون لها الأسبقية في تفسيرها معًا. لا يُعتبر فشلنا في إنفاذ أي حكم من شروطنا القانونية تنازلاً عن هذا الحكم أو عن الحق في إنفاذه. تستمر حقوقنا بموجب شروطنا القانونية بعد إنهائها.
+يجب التعامل مع شروطنا القانونية كما لو تم تنفيذها وأداؤها في مقاطعة كولومبيا البريطانية، كندا، وتخضع للقوانين وتفسر وفقاً لقوانين تلك المنطقة دون اعتبار لمبادئ تنازع القوانين. بالإضافة إلى ذلك، فإنك توافق على الخضوع للاختصاص الشخصي والمكاني للمحاكم داخل تلك المنطقة. يجب رفع أي دعوى قضائية من قبلك فيما يتعلق بموقعنا الإلكتروني خلال سنة (1) واحدة من نشوء سبب الدعوى أو يتم التنازل عنها ومنعها نهائياً. إذا تم اعتبار أي جزء من شروطنا القانونية باطلاً أو غير قابل للتنفيذ، فسيتم تفسير هذا الجزء بما يتوافق مع القانون المعمول به وتبقى الأجزاء المتبقية سارية المفعول بالكامل. إلى الحد الذي يتعارض فيه أي محتوى أو يتنافى مع شروطنا القانونية، تسود شروطنا القانونية وتكون لها الأولوية في تفسيرها معاً. لا يعتبر عدم قيامنا بإنفاذ أي حكم من شروطنا القانونية تنازلاً عن هذا الحكم ولا عن الحق في إنفاذ هذا الحكم. تستمر حقوقنا بموجب شروطنا القانونية بعد إنهاء شروطنا القانونية.
 
 **روابط الأطراف الثالثة**
 
-عند النقر على الروابط الموجودة على موقعنا، قد توجهك بعيدًا عن موقعنا إلى موقع ويب آخر مملوك ومدار من قبل طرف ثالث. لسنا مسؤولين عن ممارسات الخصوصية لمواقع الويب الأخرى التابعة لجهات خارجية ونشجعك على قراءة شروط الاستخدام وبيانات الخصوصية الخاصة بها. بمجرد مغادرتك موقعنا أو إعادة توجيهك إلى موقع ويب أو تطبيق تابع لجهة خارجية، لن تخضع بعد الآن لشروطنا القانونية.
+عند النقر على الروابط الموجودة على موقعنا الإلكتروني، فقد توجهك بعيداً عن موقعنا الإلكتروني إلى موقع آخر مملوك ومدار من قبل طرف ثالث. نحن لسنا مسؤولين عن ممارسات الخصوصية لمواقع الأطراف الثالثة الأخرى ونشجعك على قراءة شروط الاستخدام وبيانات الخصوصية الخاصة بها. بمجرد مغادرتك موقعنا الإلكتروني أو إعادة توجيهك إلى موقع ويب أو تطبيق تابع لطرف ثالث، فأنت لم تعد خاضعاً لشروطنا القانونية.
 
 **سياسة الخصوصية**
 
-في Zero to Hero، نعتبر الخصوصية مسألة مهمة جدًا، وعلى هذا النحو، نحن ملتزمون بحماية خصوصية المعلومات الشخصية لجميع الزوار. تتضمن سياسة الخصوصية هذه الأجزاء المنطبقة من قانون حماية المعلومات الشخصية والوثائق الإلكترونية (كندا)، وقانون حماية المعلومات الشخصية (ألبرتا) والمبادئ العشرة المنصوص عليها في المدونة النموذجية للجمعية الكندية للمعايير (CSA) لحماية المعلومات الشخصية (معًا، "قوانين الخصوصية المعمول بها").
+في Zero to Hero نعتبر الخصوصية مسألة مهمة جداً، وعلى هذا النحو نحن ملتزمون بحماية خصوصية المعلومات الشخصية لجميع الزوار. تتضمن سياسة الخصوصية هذه الأجزاء المعمول بها من قانون حماية المعلومات الشخصية والوثائق الإلكترونية (كندا)، وقانون حماية المعلومات الشخصية (ألبرتا) والمبادئ العشرة المنصوص عليها في مدونة النموذج الكندي لحماية المعلومات الشخصية (مجتمعة، "قوانين الخصوصية المعمول بها").
 
-**جمع المعلومات**
+**المعلومات التي نجمعها**
 
-يجوز لنا جمع المعلومات الشخصية لأي غرض أو أكثر من الأغراض التالية:
+**المعلومات التي تقدمها مباشرة:**
 
-*   لإنشاء والحفاظ على العلاقات مع الزوار؛
-*   لتقديم المنتجات والخدمات المطلوبة والمستمرة؛
-*   لإخطارك بالتغييرات التي تطرأ على منتجاتنا وخدماتنا؛
-*   للحصول على فهم أفضل لزوارنا ومتطلباتهم وتفضيلاتهم؛
-*   لتطوير وتعزيز وتحسين و/أو تسويق منتجاتنا وخدماتنا؛
-*   لمراقبة استخدام موقعنا؛
-*   لإدارة وتحسين أعمالنا وعملياتنا؛ و
-*   للوفاء بالمتطلبات القانونية والتنظيمية.
+* معلومات الحساب: اسمك وعنوان بريدك الإلكتروني وكلمة المرور وتفضيلات اللغة ومستوى التعلم.
+* بيانات التعلم: الكلمات والعبارات المحفوظة والتقدم والحواشي وقوائم التشغيل والفيديوهات المعجب بها وسجل المشاهدة والكتب وتقدم القراءة.
+* المحتوى الذي ترفعه أو تنشئه: الوسائط المخصصة وملفات EPUB والنصوص التي تطلب منا ترجمتها أو شرحها.
+* معلومات الدفع: عند شراء اشتراك، تتم معالجة الدفع عبر Stripe أو PayPal أو Apple App Store. نتلقى تأكيداً وتفاصيل الاشتراك، لكننا لا نخزن بشكل عام رقم بطاقتك الكامل.
+
+**المعلومات التي يتم جمعها تلقائياً:**
+
+* بيانات الاستخدام: الصفحات والميزات التي تزورها، بما في ذلك استكشاف الوسائط والموسيقى والترفيه وتلفزيون مباشر والبرامج التلفزيونية وبحث والقاموس والكلمات المحفوظة ومراجعة والقارئ وقارئ الويب وقارئ EPUB ووسائط محلية وسجل المشاهدة وقوائم التشغيل والفيديوهات المعجب بها؛ والفيديوهات التي تشاهدها؛ والتفاعلات؛ والطوابع الزمنية.
+* معلومات الجهاز والشبكة: عنوان IP ونوع المتصفح ونظام التشغيل ونوع الجهاز والموقع التقريبي المستمد من عنوان IP الخاص بك.
+* التحليلات: نستخدم Google Analytics لفهم كيفية استخدام الزوار للموقع الإلكتروني. قد يستخدم Google Analytics ملفات تعريف الارتباط ويجمع بيانات الاستخدام نيابة عنا. يخضع استخدام Google لتلك البيانات [لسياسة خصوصية Google](https://policies.google.com/privacy).
+* التخزين المحلي: نستخدم ملفات تعريف الارتباط و\`localStorage\` و\`sessionStorage\` وIndexedDB لإبقائك مسجلاً للدخول وتذكر لغتك وتخزين إعداداتك وتقدمك وكلماتك المحفوظة وتخزين المحتوى محلياً مؤقتاً.
 
 **ماذا نفعل بمعلوماتك؟**
 
-عندما تشتري شيئًا من خلال نظام الطلب عبر الإنترنت الخاص بنا، وكجزء من عملية البيع والشراء، نقوم بجمع معلوماتك الشخصية.
+نستخدم المعلومات التي نجمعها من أجل:
 
-عندما تتصفح موقعنا، نتلقى أيضًا تلقائيًا عنوان بروتوكول الإنترنت (IP) لجهاز الكمبيوتر الخاص بك لتزويدنا بمعلومات تساعدنا في التعرف على متصفحك ونظام التشغيل لديك.
+* توفير الموقع الإلكتروني وميزاته وصيانتها وتحسينها؛
+* إنشاء حسابك وإدارته والتحقق من هويتك وإبقائك مسجلاً للدخول؛
+* تخصيص التوصيات بناءً على لغتك ومستواك وتاريخ تعلمك؛
+* مزامنة بياناتك عبر الأجهزة؛
+* معالجة الاشتراكات والمدفوعات والتجديدات؛
+* إرسال رسائل المعاملات مثل رموز التحقق وإعادة تعيين كلمة المرور وإيصالات الدفع؛
+* إرسال اتصالات تسويقية إذا منحتنا الإذن بذلك؛
+* تحليل الاستخدام باستخدام Google Analytics لفهم كيفية استخدام الزوار للموقع الإلكتروني وتحسين منتجاتنا؛
+* تلبية المتطلبات القانونية والتنظيمية وحماية حقوقنا وحقوق مستخدمينا.
 
-التسويق المباشر المسموح به (إن وجد): بإذن منك، قد نرسل لك رسائل إخبارية أو رسائل بريد إلكتروني للإعلان عن متاجرنا ومنتجاتنا الجديدة والتحديثات الأخرى.
+نحن لا نبيع معلوماتك الشخصية.
+
+**المشاركة والإفصاح**
+
+نشارك المعلومات الشخصية فقط مع مقدمي الخدمات الذين يساعدوننا في تشغيل الموقع الإلكتروني، بما في ذلك:
+
+* مقدمو الاستضافة وقواعد البيانات، بما في ذلك Supabase؛
+* معالجو الدفع، بما في ذلك Stripe وPayPal وApple App Store؛
+* مقدمو الترجمة والذكاء الاصطناعي، بما في ذلك DeepSeek، عند استخدام ميزات الترجمة أو شرح الذكاء الاصطناعي؛
+* مقدمو التحليلات، بما في ذلك Google Analytics؛
+* منصات الفيديو، بما في ذلك YouTube وGoogle، عند مشاهدة مقاطع الفيديو المضمنة.
+
+لن نستخدم أو نكشف عن المعلومات الشخصية لأغراض أخرى غير تلك التي تم جمعها من أجلها، إلا بموافقتك، أو إذا كان ذلك مسموحاً أو مطلوباً بموجب القانون، أو إذا انتهكت اتفاقية الاستخدام الخاصة بنا.
 
 **الموافقة**
 
-_كيف تحصل على موافقتي؟_
+_كيف أحصل على موافقتك؟_
 
-عندما تزودنا بمعلومات شخصية لإتمام معاملة، أو التحقق من بطاقة الائتمان الخاصة بك، أو تقديم طلب، أو ترتيب توصيل أو إرجاع عملية شراء، أو نشر أو تثبيت أي معلومات أو صور على موقعنا للتواصل الاجتماعي، فإننا نستنتج أنك توافق على جمعنا لها واستخدامها لهذا الغرض المحدد فقط.
+عندما تزودنا بمعلومات شخصية لإنشاء حساب أو إكمال معاملة أو التحقق من دفعتك أو تقديم طلب أو استخدام منتجاتنا وخدماتنا، فإننا نستنتج أنك توافق على جمعنا لها واستخدامها لهذا السبب المحدد فقط.
 
-إذا طلبنا معلوماتك الشخصية لسبب ثانوي، مثل التسويق، فسنطلب منك إما موافقتك الصريحة مباشرة، أو نمنحك فرصة للرفض.
+إذا طلبنا معلوماتك الشخصية لسبب ثانوي، مثل التسويق، فسوف نطلب منك مباشرة موافقتك الصريحة، أو نوفر لك الفرصة للرفض.
 
 _كيف أسحب موافقتي؟_
 
-إذا غيرت رأيك بعد الاشتراك، فيمكنك سحب موافقتنا على الاتصال بك، أو الاستمرار في جمع معلوماتك أو استخدامها أو الكشف عنها، في أي وقت، عن طريق إخطارنا.
-
-**الإفصاح**
-
-لن نستخدم أو نكشف عن المعلومات الشخصية لأغراض غير تلك التي تم جمعها من أجلها، إلا بموافقتك، أو إذا كان ذلك مسموحًا به أو مطلوبًا بموجب القانون، أو إذا انتهكت شروط الاستخدام الخاصة بنا.
+إذا غيّرت رأيك بعد اختيار الاشتراك، يمكنك سحب موافقتك على تواصلنا معك، أو على الاستمرار في جمع معلوماتك أو استخدامها أو الكشف عنها، في أي وقت، عن طريق إخطارنا.
 
 **الحماية**
 
-سنحمي المعلومات الشخصية باتباع أفضل ممارسات الصناعة وتنفيذ الضمانات المعقولة التي قد تكون مناسبة لحساسية المعلومات؛ وسنبذل جهودًا معقولة لحماية المعلومات الشخصية من الفقدان أو السرقة، وكذلك من الوصول غير المصرح به أو الإفصاح أو النسخ أو الاستخدام أو التعديل بغض النظر عن الشكل الذي تحفظ به. يسمح لنا التشريع أيضًا، لأغراض قانونية أو تجارية، بالاحتفاظ بالمعلومات الشخصية للمدة التي تكون معقولة وطالما أنك لم تسحب موافقتك.
+سنحمي المعلومات الشخصية باتباع أفضل الممارسات الصناعية وتنفيذ الضمانات المعقولة التي قد تكون مناسبة لحساسية المعلومات؛ وسنبذل جهوداً معقولة لحماية المعلومات الشخصية من الفقدان أو السرقة، وكذلك من الوصول غير المصرح به أو الإفصاح أو النسخ أو الاستخدام أو التعديل بغض النظر عن الشكل الذي تُحفظ به. يسمح لنا التشريع أيضاً، لأغراض قانونية أو تجارية، بالاحتفاظ بالمعلومات الشخصية للمدة المعقولة وبشرط ألا تكون قد سحبت موافقتك.
 
 **الأمان**
 
-لحماية معلوماتك الشخصية، نتخذ الاحتياطات المعقولة ونتبع أفضل ممارسات الصناعة للتأكد من عدم فقدانها أو إساءة استخدامها أو الوصول إليها أو الكشف عنها أو تغييرها أو تدميرها بشكل غير مناسب.
+لحماية معلوماتك الشخصية، نتخذ احتياطات معقولة ونتبع أفضل الممارسات الصناعية للتأكد من عدم فقدانها أو إساءة استخدامها أو الوصول إليها أو الكشف عنها أو تغييرها أو إتلافها بشكل غير مناسب.
 
-**ملفات تعريف الارتباط (الكوكيز)**
+**ملفات تعريف الارتباط والتقنيات المشابهة**
 
-لا يستخدم موقعنا ملفات تعريف الارتباط.
+يستخدم موقعنا الإلكتروني ملفات تعريف الارتباط والتقنيات المشابهة.
 
-**التغييرات على سياسة الخصوصية هذه**
+* **ملفات تعريف الارتباط الأساسية:** نستخدم ملفات تعريف الارتباط لإبقائك مسجلاً للدخول وتذكر اللغات المحددة لديك وإدارة حدود التنقل للزوار.
+* **التحليلات:** نستخدم Google Analytics، الذي قد يضع ملفات تعريف الارتباط الخاصة به ويجمع معلومات الاستخدام.
+* **التخزين المحلي:** نستخدم \`localStorage\` و\`sessionStorage\` وIndexedDB لتخزين الإعدادات والكلمات المحفوظة والتقدم ومحتوى القراءة والوسائط المخصصة على جهازك.
+* **المحتوى المضمن:** يتم تضمين مقاطع الفيديو من YouTube. قد يضع YouTube وGoogle ملفات تعريف الارتباط الخاصة بهما عند مشاهدة مقطع فيديو، وتخضع هذه لسياسات الخصوصية الخاصة بهما.
 
-نحتفظ بالحق في تعديل سياسة الخصوصية هذه في أي وقت، لذا يرجى مراجعتها بشكل متكرر. ستدخل التغييرات والتوضيحات حيز التنفيذ فور نشرها على الموقع. إذا أجرينا تغييرات جوهرية على هذه السياسة، فسنخطرك هنا بأنه تم تحديثها، حتى تكون على دراية بالمعلومات التي نجمعها، وكيف نستخدمها، وتحت أي ظروف، إن وجدت، نستخدمها و/أو نكشف عنها.
+يمكنك حظر أو حذف ملفات تعريف الارتباط من خلال إعدادات المتصفح الخاص بك. يرجى ملاحظة أن بعض أجزاء الموقع الإلكتروني قد لا تعمل بشكل صحيح إذا قمت بتعطيل ملفات تعريف الارتباط.
+
+**الاحتفاظ بالبيانات وحذفها**
+
+نحتفظ بالمعلومات الشخصية طالما كان حسابك نشطاً، أو طالما كان ذلك ضرورياً لتقديم الموقع الإلكتروني، أو الامتثال للالتزامات القانونية، أو حل النزاعات، أو إنفاذ اتفاقياتنا.
+
+يمكنك حذف حسابك في أي وقت من صفحة الملف الشخصي باستخدام خيار حذف الحساب، أو عن طريق الاتصال بنا على العنوان أدناه. عند حذف حسابك، سنقوم بإزالة أو إخفاء هوية معلوماتك الشخصية، مع مراعاة السجلات التي يُطلب منا الاحتفاظ بها لأغراض قانونية أو تتعلق بالدفع أو الضرائب أو الأمان.
+
+**تغييرات على سياسة الخصوصية هذه**
+
+نحتفظ بالحق في تعديل سياسة الخصوصية هذه في أي وقت، لذا يرجى مراجعتها بشكل متكرر. ستصبح التغييرات والتوضيحات نافذة فور نشرها على الموقع الإلكتروني. إذا أجرينا تغييرات جوهرية على هذه السياسة، فسنخطرك هنا بأنها تم تحديثها، حتى تكون على دراية بالمعلومات التي نجمعها وكيف نستخدمها وتحت أي ظروف، إن وجدت، نستخدمها و/أو نكشف عنها.
 
 **الأسئلة ومعلومات الاتصال**
 
-إذا كنت ترغب في: الوصول إلى أي معلومات شخصية لدينا عنك أو تصحيحها أو تعديلها أو حذفها، أو تسجيل شكوى، أو ببساطة تريد مزيدًا من المعلومات، اتصل بنا على [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+إذا كنت ترغب في: الوصول إلى أي معلومات شخصية لدينا عنك أو تصحيحها أو تعديلها أو حذفها، أو تسجيل شكوى، أو ببساطة الحصول على مزيد من المعلومات، تواصل معنا على [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'قارئ EPUB', category: 'reading', content: `# قارئ EPUB
 
 اقرأ كتب EPUB الإلكترونية مع بحث تفاعلي عن الكلمات، وترجمة لكل كتلة، وتتبع للتقدم عبر جلسات العمل المتعددة.
@@ -5354,102 +5450,134 @@ El teu historial de visualització és privat. Només és visible per a tu quan 
 - El teu historial està limitat al teu L2 actual: no veuràs vídeos en Japonès quan estiguis en mode Coreà` },
     { path: 'privacy-policy', title: 'Política de privadesa', category: 'privacy-policy', content: `# Política de privadesa
 
-Aquesta pàgina web representa un document legal que serveix com a Termes d'Ús i Política de Privacitat i regula l'ús del nostre lloc web: [https://languageplayer.io](https://languageplayer.io), incloent-hi les pàgines que s'hi troben i tots els subdominis i aplicacions (col·lectivament, "Lloc Web"), propietat i operat per nosaltres, Zero to Hero Education, Canadà. ("Zero to Hero").
+Aquesta pàgina web representa un document legal que serveix com a els nostres Termes d'Ús i Política de Privadesa i regula l'ús del nostre lloc web: [https://languageplayer.io](https://languageplayer.io), incloses les pàgines que s'hi troben i tots els subdominis i aplicacions (col·lectivament, "Lloc Web"), propietat i operat per nosaltres, Zero to Hero Education, Canadà. ("Zero to Hero").
 
 **Introducció**
 
-Els Termes d'Ús, juntament amb la nostra Política de Privacitat publicada a continuació, i altres directrius o polítiques publicades al nostre Lloc Web (col·lectivament, "Termes Legals"), constitueixen l'acord complet i exclusiu entre vostè i nosaltres, i substitueixen tots els altres acords, representacions, garanties i enteniments relacionats amb el nostre Lloc Web i la matèria que s'hi conté. Podem modificar els nostres Termes Legals en qualsevol moment sense notificació específica a vostè. Les últimes còpies dels nostres Termes Legals es publicaran al nostre Lloc Web, i hauríeu de revisar tots els Termes Legals abans d'utilitzar el nostre Lloc Web. Després de qualsevol revisió dels nostres Termes Legals, accepteu estar vinculat a qualsevol d'aquests canvis. Per tant, és important que reviseu periòdicament els nostres Termes Legals per assegurar-vos que encara hi esteu d'acord.
+Els Termes d'Ús, juntament amb la nostra Política de Privadesa publicada a continuació, i altres directrius o polítiques publicades dins del nostre Lloc Web (col·lectivament "Termes Legals"), constitueixen l'acord complet i exclusiu entre vostè i nosaltres, i substitueixen tots els altres acords, representacions, garanties i enteniments respecte al nostre Lloc Web i la matèria que s'hi conté. Podem modificar els nostres Termes Legals en qualsevol moment sense notificació específica a vostè. Les còpies més recents dels nostres Termes Legals es publicaran al nostre Lloc Web, i haureu de revisar tots els Termes Legals abans d'utilitzar el nostre Lloc Web. Després que es publiquin qualsevol revisió dels nostres Termes Legals, accepteu estar subjectes a aquests canvis. Per tant, és important que reviseu periòdicament els nostres Termes Legals per assegurar-vos que hi esteu d'acord.
 
-En utilitzar el nostre Lloc Web, accepteu complir plenament i estar vinculat pels nostres Termes Legals. Si us plau, reviseu-los acuradament. Si no accepteu els nostres Termes Legals, no accediu ni utilitzeu el nostre Lloc Web. Si ja heu accedit al nostre Lloc Web i no accepteu els nostres Termes Legals, ja no teniu autorització per utilitzar-lo i hauríeu de deixar d'utilitzar el nostre Lloc Web immediatament.
+En utilitzar el nostre Lloc Web, accepteu complir plenament i estar subjectes als nostres Termes Legals. Si us plau, reviseu-los acuradament. Si no accepteu els nostres Termes Legals, no accediu ni utilitzeu el nostre Lloc Web. Si ja heu accedit al nostre Lloc Web i no accepteu els nostres Termes Legals, ja no esteu autoritzats a utilitzar-lo i hauríeu de discontinuar immediatament l'ús del nostre Lloc Web.
 
 **Altres Termes Definits al Nostre Lloc Web**
 
-Aquest Lloc Web incorpora termes definits al llarg d'aquesta pàgina, així com aquests altres termes definits:
+Aquest Lloc Web incorpora termes definits al llarg d'aquesta pàgina així com aquests altres termes definits:
 
-Els termes "nosaltres" ens referim a Zero to Hero com a propietari del Lloc Web. "Contingut" inclou qualsevol text, informació, gràfics, àudio, vídeo i altres dades publicats, oferts o disponibles a través del nostre Lloc Web.
+Els termes "nosaltres" es refereixen a Zero to Hero com a propietari del Lloc Web. "Contingut" inclou qualsevol i tot text, informació, gràfics, àudio, vídeo i altres dades publicades, ofertes o disponibles a través del nostre Lloc Web.
 
-Un "visitant" o "vostè" són identificadors col·lectius que es refereixen a vostè com a navegant del nostre Lloc Web, tant si completa una compra dels nostres productes com si no.
+Un "visitant" o "vostè" són identificadors col·lectius que es refereixen a vostè com a usuari del nostre Lloc Web, tant si completeu una compra dels nostres productes com si no.
 
-"Informació personal" significa informació sobre una persona identificable, que pot incloure el nom d'una persona, adreça residencial, adreça de facturació, adreça d'enviament, número de telèfon, adreça de correu electrònic i altra informació de contacte similar, així com dades de l'historial d'ús del Lloc Web. També pot incloure informació de la targeta de crèdit d'una persona quan es presenta per a finalitats de pagament.
+"Informació personal" significa informació sobre una persona identificable, que pot incloure el nom d'una persona, adreça residencial, adreça de facturació, adreça de lliurament, número de telèfon, adreça de correu electrònic i altra informació de contacte similar, així com dades d'historial d'ús del Lloc Web. També pot incloure la informació de targeta de crèdit d'una persona quan es presenta per a finalitats de pagament.
 
 **TERMES D'ÚS**
 
 **Propietat Intel·lectual**
 
-El nostre Lloc Web pot contenir les nostres marques de servei o marques comercials, així com les dels nostres afiliats o altres persones o empreses, en forma de paraules, gràfics i logotips. El vostre ús del nostre Lloc Web no constitueix cap dret o llicència per utilitzar aquestes marques de servei/marques comercials, sense l'autorització prèvia per escrit del propietari corresponent de la marca de servei/marca comercial. El nostre Lloc Web, inclòs el contingut, també està protegit per les lleis de drets d'autor canadenques i internacionals. El vostre ús del nostre Lloc Web o del contingut no us concedeix drets de propietat de cap mena. La còpia, redistribució, ús o publicació per part vostra de qualsevol part del nostre Lloc Web o contingut està estrictament prohibida i, per tant, no es pot copiar o reproduir sense obtenir primer la nostra autorització per escrit.
+El nostre Lloc Web pot contenir les nostres marques de servei o marques comercials així com les dels nostres afiliats o altres persones o empreses, en forma de paraules, gràfics i logotips. El vostre ús del nostre Lloc Web no constitueix cap dret o llicència per utilitzar aquestes marques de servei/marques comercials, sense l'autorització escrita prèvia del propietari corresponent de la marca de servei/marca comercial. El nostre Lloc Web incloent el contingut també està protegit per les lleis de drets d'autor canadenques i internacionals. El vostre ús del nostre Lloc Web o del contingut no us atorga drets de propietat de cap tipus sobre aquest. La còpia, redistribució, ús o publicació per part vostra de qualsevol part del nostre Lloc Web o contingut està estrictament prohibida i, per tant, no es pot copiar ni reproduir sense obtenir primer la nostra autorització escrita.
 
 **Limitació de Responsabilitat**
 
-En cap circumstància nosaltres, ni els nostres directius o empleats, serem responsables de cap pèrdua o dany, incloent (sense limitar la generalitat de l'anterior) qualsevol dany directe, indirecte, incidental, especial, punitiu o conseqüent, derivat o relacionat amb el vostre ús, accés o confiança en aquest Lloc Web, el sistema de comandes en línia o qualsevol contingut, o la vostra incapacitat d'utilitzar-lo o accedir-hi.
+En cap circumstància nosaltres, o els nostres directius o empleats, serem responsables o estarem obligats per qualsevol pèrdua o dany de qualsevol tipus, incloent (sense limitar la generalitat de l'anterior) qualsevol dany directe, indirecte, incidental, especial, punitiu o conseqüent, derivat de o en connexió amb el vostre ús, accés o confiança en, o la vostra incapacitat d'utilitzar o accedir, a aquest Lloc Web, el sistema de comandes en línia o qualsevol contingut.
 
 **Termes Generals**
 
-Els nostres Termes Legals es tractaran com si haguessin estat executats i realitzats a la Província de Colúmbia Britànica, Canadà, i es regiran i interpretaran d'acord amb les lleis d'aquesta regió, sense tenir en compte els principis de conflicte de lleis. A més, accepteu sotmetre-us a la jurisdicció personal i el lloc dels tribunals dins d'aquesta regió. Qualsevol causa d'acció per part vostra respecte al nostre Lloc Web s'ha d'iniciar dins d'un (1) any des que va sorgir la causa d'acció, o quedarà per sempre renunciada i prohibida. Si alguna part dels nostres Termes Legals es considera invàlida o inaplicable, aquesta part es interpretarà d'acord amb la llei aplicable i les parts restants romandran en ple vigor i efecte. En la mesura que qualsevol contingut entri en conflicte o sigui inconsistent amb els nostres Termes Legals, els nostres Termes Legals prevaldran i seran predominants en la seva interpretació conjunta. La nostra manca d'aplicació de qualsevol disposició dels nostres Termes Legals no es considerarà una renúncia a aquesta disposició ni al dret d'aplicar-la. Els nostres drets segons els nostres Termes Legals sobreviuran a la terminació dels nostres Termes Legals.
+Els nostres Termes Legals es tractaran com si haguessin estat executats i realitzats a la Província de Colúmbia Britànica, Canadà, i es regiran i interpretaran d'acord amb les lleis d'aquesta regió sense tenir en compte els principis de conflicte de lleis. A més, accepteu sotmetre-us a la jurisdicció personal i el lloc dels tribunals dins d'aquesta regió. Qualsevol acció legal per part vostra respecte al nostre Lloc Web ha d'iniciar-se dins d'un (1) any després que sorgeixi la causa d'acció o es considerarà renunciada i barrera permanentment. Si qualsevol part dels nostres Termes Legals es considera invàlida o inexecutable, aquesta porció s'interpretarà d'acord amb la llei aplicable i les porcions restants romandran en ple vigor i efecte. En la mesura que qualsevol contingut entri en conflicte o sigui inconsistent amb els nostres Termes Legals, els nostres Termes Legals prevaldran i seran suprems en la seva interpretació conjunta. El nostre incompliment en fer complir qualsevol disposició dels nostres Termes Legals no es considerarà una renúncia a aquesta disposició ni del dret a fer complir aquesta disposició. Els nostres drets segons els nostres Termes Legals sobreviuran a la terminació dels nostres Termes Legals.
 
-**Enllaços a Tercers**
+**Enllaços de Tercers**
 
-Quan feu clic a enllaços al nostre Lloc Web, us poden dirigir fora del nostre Lloc Web a un altre lloc web propietat i operat per un tercer. No som responsables de les pràctiques de privacitat d'altres llocs web de tercers i us animem a llegir els seus termes d'ús i declaracions de privacitat. Un cop sortiu del nostre Lloc Web o sigueu redirigits a un lloc web o aplicació de tercers, ja no esteu regits pels nostres Termes Legals.
+Quan feu clic en enllaços del nostre Lloc Web, aquests poden dirigir-vos fora del nostre Lloc Web a un altre lloc web propietat i operat per un tercer. No som responsables de les pràctiques de privadesa d'altres llocs web de tercers i us encoratgem a llegir els seus termes d'ús i declaracions de privadesa. Un cop sortiu del nostre Lloc Web o sereu redirigits a un lloc web o aplicació de tercers, ja no esteu subjectes als nostres Termes Legals.
 
-**POLÍTICA DE PRIVACITAT**
+**POLÍTICA DE PRIVADESA**
 
-A Zero to Hero considerem la privacitat com un assumpte molt important i, com a tal, estem compromesos a protegir la privacitat de la informació personal de tots els visitants. Aquesta Política de Privacitat incorpora les parts aplicables de la Llei de Protecció d'Informació Personal i Documents Electrònics (Canadà), la Llei de Protecció d'Informació Personal (Alberta) i els deu principis establerts al Codi Model de l'Associació Canadenca d'Estàndards (CSA) per a la Protecció d'Informació Personal (conjuntament, les "lleis de privacitat aplicables").
+A Zero to Hero considerem la privadesa com un assumpte molt important i, com a tal, estem compromesos a protegir la privadesa de la informació personal de tots els visitants. Aquesta Política de Privadesa incorpora les porcions aplicables de la Llei de Protecció de la Informació Personal i Documents Electrònics (Canadà), la Llei de Protecció de la Informació Personal (Alberta) i els deu principis establerts en el Codi Model de l'Associació Canadenca d'Estàndards (CSA) per a la Protecció de la Informació Personal (conjuntament, les "lleis de privadesa aplicables").
 
-**Recollida d'Informació**
+**Informació Que Recollim**
 
-Podem recollir informació personal per a una o més de les finalitats següents:
+**Informació que proporcioneu directament:**
 
-*   establir i mantenir relacions amb els visitants;
-*   proporcionar productes i serveis sol·licitats i continus;
-*   notificar-vos canvis als nostres productes i serveis;
-*   obtenir una millor comprensió dels nostres visitants, els seus requisits i preferències;
-*   desenvolupar, millorar, perfeccionar i/o comercialitzar els nostres productes i serveis;
-*   controlar l'ús del nostre Lloc Web;
-*   gestionar i millorar el nostre negoci i operacions; i
-*   complir amb els requisits legals i regulatoris.
+* Informació del compte: el vostre nom, adreça de correu electrònic, contrasenya, preferències d'idioma i nivell d'aprenentatge.
+* Dades d'aprenentatge: paraules desades, frases, progrés de repàs, notes, llistes de reproducció, vídeos que us agraden, historial de visualització, llibres i progrés de lectura.
+* Contingut que pugeu o creeu: mitjans personalitzats, fitxers EPUB i text que ens demaneu traduir o explicar.
+* Informació de pagament: quan compreu una subscripció, el pagament es processa mitjançant Stripe, PayPal o l'Apple App Store. Rebem confirmació i detalls de la subscripció, però generalment no emmagatzemem el número complet de la vostra targeta.
+
+**Informació recollida automàticament:**
+
+* Dades d'ús: pàgines i funcions que visiteu, incloent Explorar contingut, Música i Entreteniment, TV en directe, Programes de TV, Cerca, Diccionari, Paraules guardades, Revisió, Lector, Lector web, Lector EPUB, Multimèdia Local, Historial de visualització, Llistes de reproducció i Vídeos que t'agraden; vídeos que mireu; interaccions; i marques de temps.
+* Informació del dispositiu i xarxa: adreça IP, tipus de navegador, sistema operatiu, tipus de dispositiu i ubicació aproximada derivada de la vostra adreça IP.
+* Anàlisi: utilitzem Google Analytics per entendre com els visitants utilitzen el Lloc Web. Google Analytics pot utilitzar cookies i recollir dades d'ús en nom nostre. L'ús d'aquestes dades per part de Google es regeix per la [Política de Privadesa de Google](https://policies.google.com/privacy).
+* Emmagatzematge local: utilitzem cookies, \`localStorage\`, \`sessionStorage\` i IndexedDB per mantenir-vos connectat, recordar el vostre idioma, emmagatzemar la vostra configuració, progrés i paraules desades, i emmagatzemar contingut en memòria cau localment.
 
 **Què Fem Amb La Vostra Informació?**
 
-Quan compreu alguna cosa a través del nostre sistema de comandes en línia, com a part del procés de compra i venda, recollim la vostra informació personal.
+Utilitzem la informació que recollim per:
 
-Quan navegueu pel nostre Lloc Web, també rebem automàticament l'adreça de protocol d'internet (IP) del vostre ordinador per proporcionar-nos informació que ens ajuda a aprendre sobre el vostre navegador i sistema operatiu.
+* proporcionar, mantenir i millorar el Lloc Web i les seves funcions;
+* crear i gestionar el vostre compte, verificar la vostra identitat i mantenir-vos connectat;
+* personalitzar recomanacions basades en el vostre idioma, nivell i historial d'aprenentatge;
+* sincronitzar les vostres dades entre dispositius;
+* processar subscripcions, pagaments i renovacions;
+* enviar correus electrònics transaccionals com codis de verificació, restabliments de contrasenya i rebuts de pagament;
+* enviar comunicacions de màrqueting si ens heu donat permís per fer-ho;
+* analitzar l'ús amb Google Analytics per entendre com els visitants utilitzen el Lloc Web i millorar els nostres productes;
+* complir amb requisits legals i reguladors i protegir els nostres drets i els drets dels nostres usuaris.
 
-Màrqueting directe permès (si escau): Amb el vostre permís, us podem enviar butlletins o correus electrònics per anunciar les nostres botigues, nous productes i altres actualitzacions.
+No venem la vostra informació personal.
+
+**Compartició i Divulgació**
+
+Compartim informació personal només amb proveïdors de serveis que ens ajuden a operar el Lloc Web, incloent:
+
+* proveïdors d'allotjament i bases de dades, incloent Supabase;
+* processadors de pagament, incloent Stripe, PayPal i l'Apple App Store;
+* proveïdors de traducció i IA, incloent DeepSeek, quan utilitzeu funcions de traducció o explicació amb IA;
+* proveïdors d'anàlisi, incloent Google Analytics;
+* plataformes de vídeo, incloent YouTube i Google, quan mireu vídeos incrustats.
+
+No utilitzarem ni divulgarem informació personal per a finalitats diferents d'aquelles per a les quals es va recollir, tret que sigui amb el vostre consentiment, si és permès o requerit per llei, o si violeu els nostres Termes d'Ús.
 
 **Consentiment**
 
 _Com obteniu el meu consentiment?_
 
-Quan ens proporcioneu informació personal per completar una transacció, verificar la vostra targeta de crèdit, fer una comanda, organitzar un lliurament o tornar una compra, o publicar o fixar qualsevol informació o foto al nostre lloc de xarxes socials, inferim que doneu el vostre consentiment perquè la recollim i l'utilitzem només per a aquesta raó específica.
+Quan ens proporcioneu informació personal per crear un compte, completar una transacció, verificar el vostre pagament, fer una comanda o utilitzar els nostres productes i serveis, inferim que accepteu que la recollim i l'utilitzem només per a aquesta raó específica.
 
-Si us demanem la vostra informació personal per a una raó secundària, com ara màrqueting, us demanarem directament el vostre consentiment exprés o us donarem l'oportunitat de dir que no.
+Si demanem la vostra informació personal per a una raó secundària, com màrqueting, us demanarem directament el vostre consentiment exprés o us donarem l'oportunitat de dir que no.
 
 _Com retiro el meu consentiment?_
 
-Si després d'haver-vos subscrit, canvieu d'opinió, podeu retirar el vostre consentiment perquè us contactem, per a la recollida, ús o divulgació continuada de la vostra informació, en qualsevol moment, notificant-nos-ho.
-
-**Divulgació**
-
-No utilitzarem ni divulgarem informació personal per a finalitats diferents d'aquelles per a les quals es va recollir, tret que sigui amb el vostre consentiment, si ho permet o requereix la llei, o si violeu els nostres Termes d'Ús.
+Si després d'haver-vos registrat, canvieu d'opinió, podeu retirar el vostre consentiment perquè us contactem, per a la recollida contínua, ús o divulgació de la vostra informació, en qualsevol moment, notificant-nos-ho.
 
 **Protecció**
 
-Protegirem la informació personal seguint les millors pràctiques del sector i implementant les salvaguardes raonables que puguin ser apropiades per a la sensibilitat de la informació; farem esforços raonables per protegir la informació personal contra pèrdua o robatori, així com contra accés, divulgació, còpia, ús o modificació no autoritzats, independentment del format en què es mantingui. La legislació també ens permet, per a fins legals o comercials, retenir informació personal durant el temps que sigui raonable i sempre que no hàgiu revocat el vostre consentiment.
+Protegirem la informació personal seguint les millors pràctiques de la indústria i implementant les salvaguardes raonables que siguin apropiades a la sensibilitat de la informació; farem esforços raonables per protegir la informació personal contra pèrdua o robatori, així com contra accés, divulgació, còpia, ús o modificació no autoritzats, independentment del format en què es mantingui. La legislació també ens permet, per a finalitats legals o comercials, retenir la informació personal durant el temps que sigui raonable i sempre que no hàgiu revocat el vostre consentiment.
 
 **Seguretat**
 
-Per protegir la vostra informació personal, prenem precaucions raonables i seguim les millors pràctiques del sector per assegurar-nos que no es perdi, utilitzi malament, accedeixi, divulgi, alteri o destrueixi de manera inadequada.
+Per protegir la vostra informació personal, prenem precaucions raonables i seguim les millors pràctiques de la indústria per assegurar-nos que no es perdi, s'utilitzi indegudament, s'accedeixi, es divulgi, s'alteri o es destrueixi de manera inadequada.
 
-**Cookies**
+**Cookies i Tecnologies Similars**
 
-El nostre Lloc Web no utilitza cookies.
+El nostre Lloc Web utilitza cookies i tecnologies similars.
 
-**Canvis a Aquesta Política de Privacitat**
+* **Cookies essencials:** utilitzem cookies per mantenir-vos connectat, recordar els vostres idiomes seleccionats i gestionar els límits de navegació dels convidats.
+* **Anàlisi:** utilitzem Google Analytics, que pot establir les seves pròpies cookies i recollir informació d'ús.
+* **Emmagatzematge local:** utilitzem \`localStorage\`, \`sessionStorage\` i IndexedDB per emmagatzemar configuració, paraules desades, progrés, contingut de lectura i mitjans personalitzats al vostre dispositiu.
+* **Contingut incrustat:** els vídeos s'incrusten des de YouTube. YouTube i Google poden establir les seves pròpies cookies quan mireu un vídeo, que es regeixen per les seves polítiques de privadesa.
 
-Ens reservem el dret de modificar aquesta política de privacitat en qualsevol moment, per tant, reviseu-la freqüentment. Els canvis i aclariments tindran efecte immediatament després de la seva publicació al Lloc Web. Si fem canvis materials a aquesta política, us notificarem aquí que s'ha actualitzat, perquè estigueu al corrent de quina informació recollim, com l'utilitzem i en quines circumstàncies, si escau, l'utilitzem i/o divulguem.
+Podeu bloquejar o eliminar cookies mitjançant la configuració del vostre navegador. Tingueu en compte que algunes parts del Lloc Web poden no funcionar correctament si desactiveu les cookies.
 
-**Preguntes i Informació de Contacte**
+**Retenció i Eliminació de Dades**
 
-Si voleu: accedir, corregir, modificar o eliminar qualsevol informació personal que tinguem sobre vostè, presentar una queixa, o simplement voleu més informació, contacteu-nos a [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Conservem la informació personal mentre el vostre compte estigui actiu, o durant el temps necessari per proporcionar el Lloc Web, complir amb obligacions legals, resoldre disputes i fer complir els nostres acords.
+
+Podeu eliminar el vostre compte en qualsevol moment des de la pàgina de Perfil utilitzant l'opció d'Eliminar Compte, o contactant-nos a l'adreça següent. Quan elimineu el vostre compte, eliminarem o anonimitzarem la vostra informació personal, subjecte als registres que estem obligats a conservar per a finalitats legals, de pagament, fiscals o de seguretat.
+
+**Canvis En Aquesta Política De Privadesa**
+
+Ens reservem el dret de modificar aquesta política de privadesa en qualsevol moment, per tant, reviseu-la amb freqüència. Els canvis i aclariments entraran en vigor immediatament després de la seva publicació al Lloc Web. Si fem canvis materials en aquesta política, us notificarem aquí que s'ha actualitzat, perquè sigueu conscients de quina informació recollim, com l'utilitzem i en quines circumstàncies, si n'hi ha, l'utilitzem i/o divulguem.
+
+**Preguntes I Informació De Contacte**
+
+Si voleu: accedir, corregir, esmenar o eliminar qualsevol informació personal que tinguem sobre vostè, presentar una queixa o simplement voleu més informació, contacteu-nos a [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Lector EPUB', category: 'reading', content: `# Lector EPUB
 
 Llegiu llibres electrònics EPUB amb cerca interactiva de paraules, traducció per blocs i progrés que persisteix entre sessions.
@@ -6820,102 +6948,134 @@ Dein Wiedergabeverlauf ist privat. Er ist nur für dich sichtbar, wenn du angeme
 - Dein Verlauf ist auf deine aktuelle L2 beschränkt – du siehst keine Japanisch-Videos, wenn du im Koreanisch-Modus bist` },
     { path: 'privacy-policy', title: 'Datenschutzrichtlinie', category: 'privacy-policy', content: `# Datenschutzrichtlinie
 
-Diese Webseite stellt ein rechtliches Dokument dar, das unsere Nutzungsbedingungen und Datenschutzrichtlinie umfasst und die Nutzung unserer Website regelt: [https://languageplayer.io](https://languageplayer.io) , einschließlich der darauf befindlichen Seiten sowie aller Subdomains und Apps (zusammenfassend "Website"), die von uns, Zero to Hero Education, Kanada ("Zero to Hero"), betrieben wird.
+Diese Webseite stellt ein rechtliches Dokument dar, das unsere Nutzungsbedingungen und Datenschutzrichtlinie umfasst und die Nutzung unserer Website regelt: [https://languageplayer.io](https://languageplayer.io), einschließlich aller dort befindlichen Seiten sowie aller Unterdomänen und Apps (gemeinsam als „Website“ bezeichnet), die von uns, Zero to Hero Education, Kanada („Zero to Hero“), betrieben und verwaltet wird.
 
 **Einleitung**
 
-Die Nutzungsbedingungen zusammen mit unserer unten veröffentlichten Datenschutzrichtlinie und anderen auf unserer Website veröffentlichten Richtlinien (zusammenfassend "Rechtliche Bedingungen") stellen die vollständige und einzige Vereinbarung zwischen Ihnen und uns dar und ersetzen alle anderen Vereinbarungen, Zusicherungen, Gewährleistungen und Vereinbarungen bezüglich unserer Website und des darin enthaltenen Gegenstands. Wir können unsere Rechtlichen Bedingungen jederzeit ohne spezifische Benachrichtigung an Sie ändern. Die aktuellsten Kopien unserer Rechtlichen Bedingungen werden auf unserer Website veröffentlicht, und Sie sollten alle Rechtlichen Bedingungen vor der Nutzung unserer Website überprüfen. Nachdem Änderungen an unseren Rechtlichen Bedingungen veröffentlicht wurden, erklären Sie sich damit einverstanden, an diese Änderungen gebunden zu sein. Daher ist es wichtig, dass Sie unsere Rechtlichen Bedingungen regelmäßig überprüfen, um sicherzustellen, dass Sie ihnen weiterhin zustimmen.
+Die Nutzungsbedingungen zusammen mit unserer unten veröffentlichten Datenschutzrichtlinie und anderen auf unserer Website veröffentlichten Richtlinien oder Leitlinien (gemeinsam als „rechtliche Bedingungen“ bezeichnet) stellen die vollständige und einzige Vereinbarung zwischen Ihnen und uns dar und ersetzen alle anderen Vereinbarungen, Zusicherungen, Gewährleistungen und Verständigungen in Bezug auf unsere Website und den hierin enthaltenen Gegenstand. Wir können unsere rechtlichen Bedingungen jederzeit ohne besondere Benachrichtigung an Sie ändern. Die neuesten Kopien unserer rechtlichen Bedingungen werden auf unserer Website veröffentlicht, und Sie sollten alle rechtlichen Bedingungen vor der Nutzung unserer Website überprüfen. Nachdem Überarbeitungen unserer rechtlichen Bedingungen veröffentlicht wurden, erklären Sie sich damit einverstanden, an alle derartigen Änderungen gebunden zu sein. Daher ist es wichtig, dass Sie unsere rechtlichen Bedingungen regelmäßig überprüfen, um sicherzustellen, dass Sie ihnen weiterhin zustimmen.
 
-Durch die Nutzung unserer Website erklären Sie sich damit einverstanden, unsere Rechtlichen Bedingungen vollständig einzuhalten und an sie gebunden zu sein. Bitte überprüfen Sie sie sorgfältig. Wenn Sie unsere Rechtlichen Bedingungen nicht akzeptieren, greifen Sie nicht auf unsere Website zu und nutzen Sie sie nicht. Wenn Sie bereits auf unsere Website zugegriffen haben und unsere Rechtlichen Bedingungen nicht akzeptieren, sind Sie nicht mehr berechtigt, sie zu nutzen, und sollten die Nutzung unserer Website sofort einstellen.
+Durch die Nutzung unserer Website erklären Sie sich damit einverstanden, unsere rechtlichen Bedingungen vollständig einzuhalten und an sie gebunden zu sein. Bitte überprüfen Sie sie sorgfältig. Wenn Sie unsere rechtlichen Bedingungen nicht akzeptieren, greifen Sie nicht auf unsere Website zu und nutzen Sie sie nicht. Wenn Sie bereits auf unsere Website zugegriffen haben und unsere rechtlichen Bedingungen nicht akzeptieren, sind Sie nicht mehr berechtigt, sie zu nutzen, und Sie sollten die Nutzung unserer Website sofort einstellen.
 
 **Weitere definierte Begriffe auf unserer Website**
 
-Diese Website enthält auf dieser Seite definierte Begriffe sowie die folgenden weiteren definierten Begriffe:
+Diese Website enthält Begriffe, die auf dieser Seite sowie diese weiteren definierten Begriffe umfasst:
 
-Die Begriffe "uns" und "wir" beziehen sich auf Zero to Hero als Eigentümer der Website. "Inhalt" umfasst jegliche Texte, Informationen, Grafiken, Audio, Video und andere Daten, die auf unserer Website veröffentlicht, angeboten oder bereitgestellt werden.
+Die Begriffe „uns“ und „wir“ beziehen sich auf Zero to Hero als Eigentümer der Website. „Inhalte“ umfassen sämtliche Texte, Informationen, Grafiken, Audio-, Video- und andere Daten, die über unsere Website veröffentlicht, angeboten oder verfügbar gemacht werden.
 
-Ein "Besucher" oder "Sie" sind zusammenfassende Bezeichnungen, die sich auf Sie als Betrachter unserer Website beziehen, unabhängig davon, ob Sie einen Kauf unserer Produkte tätigen.
+Ein „Besucher“ oder „Sie“ sind kollektive Bezeichnungen, die sich auf Sie als Betrachter unserer Website beziehen, unabhängig davon, ob Sie einen Kauf unserer Produkte abschließen.
 
-"Persönliche Informationen" bedeuten Informationen über eine identifizierbare Person, die deren Namen, Wohnadresse, Rechnungsadresse, Lieferadresse, Telefonnummer, E-Mail-Adresse und andere ähnliche Kontaktinformationen sowie Nutzungsverlaufsdaten der Website umfassen können. Sie können auch Kreditkarteninformationen einer Person umfassen, wenn diese zu Zahlungszwecken vorgelegt werden.
+„Personenbezogene Daten“ bedeutet Informationen über eine identifizierbare Person, die den Namen, die Wohnadresse, die Rechnungsadresse, die Lieferadresse, die Telefonnummer, die E-Mail-Adresse und ähnliche Kontaktinformationen einer Person sowie Nutzungsverlaufsdaten der Website umfassen können. Sie können auch Kreditkarteninformationen einer Person umfassen, wenn diese zu Zahlungszwecken angegeben werden.
 
 **NUTZUNGSBEDINGUNGEN**
 
 **Geistiges Eigentum**
 
-Unsere Website kann unsere Dienstleistungsmarken oder Handelsmarken sowie die unserer Partner oder anderer Personen oder Unternehmen in Form von Wörtern, Grafiken und Logos enthalten. Ihre Nutzung unserer Website begründet kein Recht oder keine Lizenz zur Nutzung solcher Dienstleistungsmarken/Handelsmarken ohne vorherige schriftliche Genehmigung des entsprechenden Inhabers der Dienstleistungsmarke/Handelsmarke. Unsere Website einschließlich des Inhalts ist auch durch kanadische und internationale Urheberrechtsgesetze geschützt. Ihre Nutzung unserer Website oder des Inhalts gewährt Ihnen keinerlei Eigentumsrechte daran. Das Kopieren, die Weiterverteilung, Nutzung oder Veröffentlichung von Teilen unserer Website oder des Inhalts durch Sie ist strengstens untersagt und darf daher ohne vorherige schriftliche Genehmigung nicht kopiert oder reproduziert werden.
+Unsere Website kann unsere Dienstleistungsmarken oder Warenzeichen sowie die unserer verbundenen Unternehmen oder anderer Personen oder Unternehmen in Form von Wörtern, Grafiken und Logos enthalten. Ihre Nutzung unserer Website begründet kein Recht oder keine Lizenz zur Nutzung solcher Dienstleistungsmarken/Warenzeichen ohne vorherige schriftliche Genehmigung des jeweiligen Inhabers der Dienstleistungsmarke/des Warenzeichens. Unsere Website einschließlich der Inhalte ist auch durch kanadische und internationale Urheberrechtsgesetze geschützt. Ihre Nutzung unserer Website oder der Inhalte gewährt Ihnen keinerlei Eigentumsrechte daran. Das Kopieren, Weiterverbreiten, Verwenden oder Veröffentlichen von Teilen unserer Website oder unserer Inhalte durch Sie ist strengstens untersagt und darf daher ohne vorherige schriftliche Genehmigung von uns nicht kopiert oder reproduziert werden.
 
 **Haftungsbeschränkung**
 
-Unter keinen Umständen haften wir oder unsere leitenden Angestellten oder Mitarbeiter für Verluste oder Schäden jeglicher Art, einschließlich (ohne die Allgemeinheit des Vorstehenden einzuschränken) direkter, indirekter, zufälliger, besonderer, strafender oder Folgeschäden, die sich aus oder im Zusammenhang mit Ihrer Nutzung, Ihrem Zugriff auf oder Ihrem Vertrauen auf diese Website, das Online-Bestellsystem oder jeglichen Inhalt ergeben, oder aus Ihrer Unfähigkeit, diese zu nutzen oder darauf zuzugreifen.
+In keinem Fall haften wir oder unsere leitenden Angestellten oder Mitarbeiter für Verluste oder Schäden jeglicher Art, einschließlich (ohne die Allgemeinheit des Vorstehenden einzuschränken) direkter, indirekter, zufälliger, besonderer, strafender oder Folgeschäden, die aus oder im Zusammenhang mit Ihrer Nutzung, Ihrem Zugriff auf oder Ihrem Vertrauen auf diese Website, das Online-Bestellsystem oder Inhalte entstehen, oder Ihrer Unfähigkeit, diese zu nutzen oder darauf zuzugreifen.
 
-**Allgemeine Bestimmungen**
+**Allgemeine Bedingungen**
 
-Unsere Rechtlichen Bedingungen gelten als in der Provinz British Columbia, Kanada, ausgeführt und erfüllt und unterliegen den Gesetzen dieser Region und werden nach diesen ausgelegt, ohne Rücksicht auf Kollisionsnormen. Darüber hinaus stimmen Sie zu, sich der persönlichen Gerichtsbarkeit und dem Gerichtsstand der Gerichte dieser Region zu unterwerfen. Klagegründe Ihrerseits bezüglich unserer Website müssen innerhalb eines (1) Jahres nach Entstehung des Klagegrundes geltend gemacht werden, andernfalls sind sie unwiderruflich verwirkt und ausgeschlossen. Sollte ein Teil unserer Rechtlichen Bedingungen für ungültig oder nicht durchsetzbar befunden werden, wird dieser Teil im Einklang mit dem geltenden Recht ausgelegt, und die übrigen Teile bleiben in voller Kraft und Wirksamkeit. Soweit Inhalte mit unseren Rechtlichen Bedingungen in Konflikt stehen oder inkonsistent sind, haben unsere Rechtlichen Bedingungen Vorrang und sind bei der gemeinsamen Auslegung maßgeblich. Die Nichtdurchsetzung einer Bestimmung unserer Rechtlichen Bedingungen durch uns gilt nicht als Verzicht auf diese Bestimmung oder auf das Recht, diese Bestimmung durchzusetzen. Unsere Rechte aus unseren Rechtlichen Bedingungen bestehen auch nach Beendigung unserer Rechtlichen Bedingungen fort.
+Unsere rechtlichen Bedingungen sind so zu behandeln, als wären sie in der Provinz British Columbia, Kanada, ausgeführt und erfüllt worden, und unterliegen den Gesetzen dieser Region und sind entsprechend auszulegen, ohne Berücksichtigung der Grundsätze des Kollisionsrechts. Darüber hinaus erklären Sie sich damit einverstanden, sich der persönlichen Gerichtsbarkeit und dem Gerichtsstand der Gerichte dieser Region zu unterwerfen. Jede Klage Ihrerseits in Bezug auf unsere Website muss innerhalb eines (1) Jahres nach Entstehung des Klagegrundes erhoben werden, ansonsten wird sie dauerhaft verwirkt und ausgeschlossen. Sollte ein Teil unserer rechtlichen Bedingungen für ungültig oder nicht durchsetzbar befunden werden, ist dieser Teil in Übereinstimmung mit dem anwendbaren Recht auszulegen, und die übrigen Teile bleiben in voller Kraft und Wirkung. Soweit Inhalte mit unseren rechtlichen Bedingungen in Konflikt stehen oder inkonsistent sind, haben unsere rechtlichen Bedingungen Vorrang und sind bei ihrer gemeinsamen Auslegung maßgeblich. Die Nichtdurchsetzung einer Bestimmung unserer rechtlichen Bedingungen durch uns gilt nicht als Verzicht auf diese Bestimmung oder auf das Recht, diese Bestimmung durchzusetzen. Unsere Rechte aus unseren rechtlichen Bedingungen überdauern die Beendigung unserer rechtlichen Bedingungen.
 
 **Links zu Dritten**
 
-Wenn Sie auf Links auf unserer Website klicken, können diese Sie von unserer Website weg zu einer anderen Website führen, die von einem Dritten betrieben wird. Wir sind nicht für die Datenschutzpraktiken anderer Websites Dritter verantwortlich und empfehlen Ihnen, deren Nutzungsbedingungen und Datenschutzerklärungen zu lesen. Sobald Sie unsere Website verlassen oder zu einer Website oder Anwendung eines Dritten weitergeleitet werden, unterliegen Sie nicht mehr unseren Rechtlichen Bedingungen.
+Wenn Sie auf Links auf unserer Website klicken, können diese Sie von unserer Website weg zu einer anderen Website führen, die von einem Dritten betrieben und verwaltet wird. Wir sind nicht für die Datenschutzpraktiken anderer Websites Dritter verantwortlich und empfehlen Ihnen, deren Nutzungsbedingungen und Datenschutzerklärungen zu lesen. Sobald Sie unsere Website verlassen oder auf eine Website oder Anwendung eines Dritten weitergeleitet werden, unterliegen Sie nicht mehr unseren rechtlichen Bedingungen.
 
 **DATENSCHUTZRICHTLINIE**
 
-Bei Zero to Hero betrachten wir den Datenschutz als sehr wichtiges Anliegen und verpflichten uns daher, die Privatsphäre der persönlichen Informationen aller Besucher zu schützen. Diese Datenschutzrichtlinie enthält die anwendbaren Teile des Personal Information Protection and Electronic Documents Act (Kanada), des Personal Information Protection Act (Alberta) und der zehn Grundsätze des Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (zusammen die "anwendbaren Datenschutzgesetze").
+Bei Zero to Hero betrachten wir den Datenschutz als ein sehr wichtiges Anliegen und verpflichten uns daher, die Privatsphäre der personenbezogenen Daten aller Besucher zu schützen. Diese Datenschutzrichtlinie umfasst die anwendbaren Teile des Gesetzes zum Schutz personenbezogener Informationen und elektronischer Dokumente (Kanada), des Gesetzes zum Schutz personenbezogener Informationen (Alberta) und die zehn Grundsätze des Modellkodex der Canadian Standards Association (CSA) zum Schutz personenbezogener Informationen (zusammen die „anwendbaren Datenschutzgesetze“).
 
-**Erhebung von Informationen**
+**Informationen, die wir sammeln**
 
-Wir können personenbezogene Daten für einen oder mehrere der folgenden Zwecke erheben:
+**Informationen, die Sie direkt bereitstellen:**
 
-*   zur Aufnahme und Pflege von Beziehungen zu Besuchern;
-*   zur Bereitstellung angeforderter und laufender Produkte und Dienstleistungen;
-*   um Sie über Änderungen unserer Produkte und Dienstleistungen zu informieren;
-*   um ein besseres Verständnis unserer Besucher, ihrer Anforderungen und Präferenzen zu erlangen;
-*   zur Entwicklung, Verbesserung, Optimierung und/oder Vermarktung unserer Produkte und Dienstleistungen;
-*   zur Überwachung der Nutzung unserer Website;
-*   zur Verwaltung und Verbesserung unseres Geschäfts und unserer Betriebsabläufe; und
-*   zur Erfüllung gesetzlicher und regulatorischer Anforderungen.
+* Kontoinformationen: Ihr Name, Ihre E-Mail-Adresse, Ihr Passwort, Ihre Spracheinstellungen und Ihr Lernniveau.
+* Lerndaten: gespeicherte Wörter, Phrasen, Fortschritt, Notizen, Playlists, gelikte Videos, Wiedergabeverlauf, Bücher und Lesefortschritt.
+* Inhalte, die Sie hochladen oder erstellen: benutzerdefinierte Medien, EPUB-Dateien und Texte, die Sie uns zur Übersetzung oder Erklärung bitten.
+* Zahlungsinformationen: Wenn Sie ein Abonnement erwerben, wird die Zahlung von Stripe, PayPal oder dem Apple App Store abgewickelt. Wir erhalten eine Bestätigung und Abonnementdetails, aber wir speichern Ihre vollständige Kartennummer in der Regel nicht.
+
+**Automatisch gesammelte Informationen:**
+
+* Nutzungsdaten: Seiten und Funktionen, die Sie besuchen, einschließlich Medien entdecken, Musik & Unterhaltung, Live-TV, Fernsehsendungen, Suche, Wörterbuch, Gespeicherte Wörter, Wiederholung, Leser, Web-Reader, EPUB-Reader, Lokale Medien, Verlauf ansehen, Wiedergabelisten und Gefällt-mir-Videos; Videos, die Sie ansehen; Interaktionen; und Zeitstempel.
+* Geräte- und Netzwerkinformationen: IP-Adresse, Browsertyp, Betriebssystem, Gerätetyp und ungefährer Standort, der aus Ihrer IP-Adresse abgeleitet wird.
+* Analyse: Wir verwenden Google Analytics, um zu verstehen, wie Besucher die Website nutzen. Google Analytics kann Cookies verwenden und Nutzungsdaten in unserem Auftrag sammeln. Die Verwendung dieser Daten durch Google unterliegt der [Datenschutzrichtlinie von Google](https://policies.google.com/privacy).
+* Lokaler Speicher: Wir verwenden Cookies, \`localStorage\`, \`sessionStorage\` und IndexedDB, um Sie angemeldet zu halten, Ihre Sprache zu speichern, Ihre Einstellungen, Ihren Fortschritt und gespeicherte Wörter zu speichern und Inhalte lokal zwischenzuspeichern.
 
 **Was machen wir mit Ihren Informationen?**
 
-Wenn Sie etwas über unser Online-Bestellsystem kaufen, erheben wir im Rahmen des Kauf- und Verkaufsprozesses Ihre personenbezogenen Daten.
+Wir verwenden die von uns gesammelten Informationen, um:
 
-Wenn Sie auf unserer Website surfen, erhalten wir automatisch Ihre Internetprotokolladresse (IP-Adresse) Ihres Computers, um uns Informationen zu liefern, die uns helfen, Ihren Browser und Ihr Betriebssystem zu verstehen.
+* die Website und ihre Funktionen bereitzustellen, zu warten und zu verbessern;
+* Ihr Konto zu erstellen und zu verwalten, Ihre Identität zu überprüfen und Sie angemeldet zu halten;
+* Empfehlungen basierend auf Ihrer Sprache, Ihrem Niveau und Ihrem Lernverlauf zu personalisieren;
+* Ihre Daten geräteübergreifend zu synchronisieren;
+* Abonnements, Zahlungen und Verlängerungen zu verarbeiten;
+* transaktionale E-Mails wie Verifizierungscodes, Passwortzurücksetzungen und Zahlungsbelege zu senden;
+* Marketingmitteilungen zu senden, wenn Sie uns die Erlaubnis dazu gegeben haben;
+* die Nutzung mit Google Analytics zu analysieren, um zu verstehen, wie Besucher die Website nutzen, und um unsere Produkte zu verbessern;
+* gesetzliche und regulatorische Anforderungen zu erfüllen und unsere Rechte und die Rechte unserer Nutzer zu schützen.
 
-Erlaubtes Direktmarketing (falls zutreffend): Mit Ihrer Erlaubnis können wir Ihnen Newsletter oder E-Mails senden, um für unsere Geschäfte, neue Produkte und andere Neuigkeiten zu werben.
+Wir verkaufen Ihre personenbezogenen Daten nicht.
+
+**Weitergabe und Offenlegung**
+
+Wir geben personenbezogene Daten nur an Dienstleister weiter, die uns beim Betrieb der Website helfen, einschließlich:
+
+* Hosting- und Datenbankanbieter, einschließlich Supabase;
+* Zahlungsabwickler, einschließlich Stripe, PayPal und Apple App Store;
+* Übersetzungs- und KI-Anbieter, einschließlich DeepSeek, wenn Sie Übersetzungs- oder KI-Erklärungsfunktionen nutzen;
+* Analyseanbieter, einschließlich Google Analytics;
+* Videoplattformen, einschließlich YouTube und Google, wenn Sie eingebettete Videos ansehen.
+
+Wir verwenden oder offenbaren personenbezogene Daten nicht für andere Zwecke als die, für die sie gesammelt wurden, es sei denn, dies erfolgt mit Ihrer Einwilligung, ist gesetzlich erlaubt oder erforderlich, oder Sie verstoßen gegen unsere Nutzungsbedingungen.
 
 **Einwilligung**
 
-_Wie erhalten Sie meine Einwilligung?_
+_Wie erhalten wir Ihre Einwilligung?_
 
-Wenn Sie uns personenbezogene Daten zur Durchführung einer Transaktion, zur Überprüfung Ihrer Kreditkarte, zur Aufgabe einer Bestellung, zur Vereinbarung einer Lieferung oder Rücksendung eines Kaufs oder zum Posten oder Anheften von Informationen oder Fotos auf unserer Social-Media-Seite zur Verfügung stellen, gehen wir davon aus, dass Sie in die Erhebung und Nutzung dieser Daten nur für diesen spezifischen Zweck einwilligen.
+Wenn Sie uns personenbezogene Daten zur Erstellung eines Kontos, zur Durchführung einer Transaktion, zur Überprüfung Ihrer Zahlung, zur Aufgabe einer Bestellung oder zur Nutzung unserer Produkte und Dienstleistungen bereitstellen, gehen wir davon aus, dass Sie in die Erhebung und Verwendung dieser Daten nur für diesen spezifischen Zweck einwilligen.
 
-Wenn wir Ihre personenbezogenen Daten aus einem sekundären Grund, wie z. B. Marketing, anfordern, werden wir Sie entweder direkt um Ihre ausdrückliche Einwilligung bitten oder Ihnen die Möglichkeit geben, diese zu verweigern.
+Wenn wir Ihre personenbezogenen Daten aus einem sekundären Grund, z. B. für Marketing, anfordern, werden wir Sie entweder direkt um Ihre ausdrückliche Einwilligung bitten oder Ihnen die Möglichkeit geben, abzulehnen.
 
 _Wie widerrufe ich meine Einwilligung?_
 
-Wenn Sie Ihre Meinung nach dem Opt-In ändern, können Sie Ihre Einwilligung, dass wir Sie kontaktieren, für die fortlaufende Erhebung, Nutzung oder Offenlegung Ihrer Informationen jederzeit durch Benachrichtigung widerrufen.
-
-**Offenlegung**
-
-Wir werden personenbezogene Daten nicht für andere Zwecke als die, für die sie erhoben wurden, verwenden oder offenlegen, es sei denn, Sie haben eingewilligt, es ist gesetzlich erlaubt oder vorgeschrieben oder Sie verstoßen gegen unsere Nutzungsbedingungen.
+Wenn Sie Ihre Meinung nach dem Opt-in ändern, können Sie Ihre Einwilligung zur Kontaktaufnahme durch uns, zur fortlaufenden Erhebung, Verwendung oder Offenlegung Ihrer Informationen jederzeit durch Mitteilung an uns widerrufen.
 
 **Schutz**
 
-Wir schützen personenbezogene Daten durch Befolgung bewährter Branchenpraktiken und durch die Implementierung angemessener Sicherheitsvorkehrungen, die der Sensibilität der Informationen entsprechen; wir werden angemessene Anstrengungen unternehmen, um personenbezogene Daten vor Verlust oder Diebstahl sowie vor unbefugtem Zugriff, Offenlegung, Kopieren, Nutzung oder Veränderung zu schützen, unabhängig vom Format, in dem sie gespeichert sind. Das Gesetz erlaubt uns auch, personenbezogene Daten aus rechtlichen oder geschäftlichen Gründen so lange aufzubewahren, wie dies angemessen ist, sofern Sie Ihre Einwilligung nicht widerrufen haben.
+Wir schützen personenbezogene Daten, indem wir bewährte Branchenpraktiken befolgen und angemessene Sicherheitsvorkehrungen implementieren, die der Sensibilität der Informationen entsprechen; wir werden angemessene Anstrengungen unternehmen, um personenbezogene Daten vor Verlust oder Diebstahl sowie vor unbefugtem Zugriff, unbefugter Offenlegung, Vervielfältigung, Verwendung oder Modifizierung zu schützen, unabhängig vom Format, in dem sie aufbewahrt werden. Die Gesetzgebung erlaubt es uns auch, personenbezogene Daten aus rechtlichen oder geschäftlichen Gründen so lange aufzubewahren, wie dies angemessen ist, sofern Sie Ihre Einwilligung nicht widerrufen haben.
 
 **Sicherheit**
 
-Zum Schutz Ihrer personenbezogenen Daten ergreifen wir angemessene Vorsichtsmaßnahmen und befolgen bewährte Branchenpraktiken, um sicherzustellen, dass diese nicht unangemessen verloren gehen, missbraucht, abgerufen, offengelegt, verändert oder zerstört werden.
+Zum Schutz Ihrer personenbezogenen Daten ergreifen wir angemessene Vorsichtsmaßnahmen und befolgen bewährte Branchenpraktiken, um sicherzustellen, dass sie nicht unangemessen verloren gehen, missbraucht, abgerufen, offengelegt, verändert oder zerstört werden.
 
-**Cookies**
+**Cookies und ähnliche Technologien**
 
-Unsere Website verwendet keine Cookies.
+Unsere Website verwendet Cookies und ähnliche Technologien.
+
+* **Notwendige Cookies:** Wir verwenden Cookies, um Sie angemeldet zu halten, Ihre ausgewählten Sprachen zu speichern und Gastnavigationsbeschränkungen zu verwalten.
+* **Analyse:** Wir verwenden Google Analytics, das eigene Cookies setzen und Nutzungsinformationen sammeln kann.
+* **Lokaler Speicher:** Wir verwenden \`localStorage\`, \`sessionStorage\` und IndexedDB, um Einstellungen, gespeicherte Wörter, Fortschritt, Lesematerial und benutzerdefinierte Medien auf Ihrem Gerät zu speichern.
+* **Eingebettete Inhalte:** Videos sind von YouTube eingebettet. YouTube und Google können eigene Cookies setzen, wenn Sie ein Video ansehen, die deren Datenschutzrichtlinien unterliegen.
+
+Sie können Cookies über Ihre Browsereinstellungen blockieren oder löschen. Bitte beachten Sie, dass einige Teile der Website möglicherweise nicht ordnungsgemäß funktionieren, wenn Sie Cookies deaktivieren.
+
+**Datenaufbewahrung und -löschung**
+
+Wir bewahren personenbezogene Daten so lange auf, wie Ihr Konto aktiv ist, oder solange dies erforderlich ist, um die Website bereitzustellen, gesetzlichen Verpflichtungen nachzukommen, Streitigkeiten zu lösen und unsere Vereinbarungen durchzusetzen.
+
+Sie können Ihr Konto jederzeit über die Seite Profil mit der Option „Konto löschen“ löschen oder uns unter der unten angegebenen Adresse kontaktieren. Wenn Sie Ihr Konto löschen, entfernen oder anonymisieren wir Ihre personenbezogenen Daten, vorbehaltlich Aufzeichnungen, die wir aus rechtlichen, Zahlungs-, Steuer- oder Sicherheitsgründen aufbewahren müssen.
 
 **Änderungen dieser Datenschutzrichtlinie**
 
-Wir behalten uns das Recht vor, diese Datenschutzrichtlinie jederzeit zu ändern. Bitte überprüfen Sie sie daher regelmäßig. Änderungen und Klarstellungen werden mit ihrer Veröffentlichung auf der Website sofort wirksam. Wenn wir wesentliche Änderungen an dieser Richtlinie vornehmen, werden wir Sie hier darüber informieren, dass sie aktualisiert wurde, damit Sie wissen, welche Informationen wir sammeln, wie wir sie verwenden und unter welchen Umständen, falls überhaupt, wir sie verwenden und/oder offenlegen.
+Wir behalten uns das Recht vor, diese Datenschutzrichtlinie jederzeit zu ändern. Bitte überprüfen Sie sie daher regelmäßig. Änderungen und Klarstellungen werden mit ihrer Veröffentlichung auf der Website sofort wirksam. Wenn wir wesentliche Änderungen an dieser Richtlinie vornehmen, werden wir Sie hier darüber informieren, dass sie aktualisiert wurde, damit Sie wissen, welche Informationen wir sammeln, wie wir sie verwenden und unter welchen Umständen, falls vorhanden, wir sie verwenden und/oder offenlegen.
 
 **Fragen und Kontaktinformationen**
 
-Wenn Sie personenbezogene Daten, die wir von Ihnen haben, einsehen, korrigieren, ändern oder löschen, eine Beschwerde einreichen oder einfach weitere Informationen wünschen, kontaktieren Sie uns unter [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Wenn Sie personenbezogene Daten, die wir über Sie haben, einsehen, korrigieren, ändern oder löschen möchten, eine Beschwerde einreichen möchten oder einfach mehr Informationen wünschen, kontaktieren Sie uns unter [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-Reader', category: 'reading', content: `# EPUB-Reader
 
 Lesen Sie EPUB-E-Books mit interaktiver Wortsuche, blockweiser Übersetzung und Fortschritt, der über Sitzungen hinweg erhalten bleibt.
@@ -8286,103 +8446,134 @@ Schalten Sie **Exakte Übereinstimmung** um, um die Ergebnisse nur auf das Wört
 - Το ιστορικό σας περιορίζεται στην τρέχουσα L2 σας — δεν θα βλέπετε βίντεο Ιαπωνικά όταν βρίσκεστε σε λειτουργία Κορεατικά` },
     { path: 'privacy-policy', title: 'Πολιτική απορρήτου', category: 'privacy-policy', content: `# Πολιτική απορρήτου
 
-Αυτή η ιστοσελίδα αποτελεί ένα νομικό έγγραφο που λειτουργεί ως οι Όροι Χρήσης και η Πολιτική Απορρήτου μας και διέπει τη χρήση του ιστότοπού μας: [https://languageplayer.io](https://languageplayer.io), συμπεριλαμβανομένων των σελίδων που βρίσκονται σε αυτόν και όλων των υποτομέων και εφαρμογών (συλλογικά, "Ιστότοπος"), όπως ανήκει και λειτουργεί από εμάς, την Zero to Hero Education, Καναδάς. ("Zero to Hero").
+Αυτή η ιστοσελίδα αποτελεί ένα νομικό έγγραφο που λειτουργεί ως οι Όροι Χρήσης μας και η Πολιτική Απορρήτου μας και διέπει τη χρήση του ιστότοπού μας: [https://languageplayer.io](https://languageplayer.io), συμπεριλαμβανομένων των σελίδων που βρίσκονται σε αυτόν και όλων των υποτομέων και εφαρμογών (συλλογικά, "Ιστότοπος"), όπως ανήκει και λειτουργεί από εμάς, την Zero to Hero Education, Καναδάς. ("Zero to Hero").
 
 **Εισαγωγή**
 
-Οι Όροι Χρήσης, μαζί με την Πολιτική Απορρήτου που δημοσιεύεται παρακάτω, και άλλες δημοσιευμένες οδηγίες ή πολιτικές εντός του Ιστότοπού μας (συλλογικά "Νομικοί Όροι"), αποτελούν τη μοναδική και πλήρη συμφωνία μεταξύ εσάς και εμάς, και υπερισχύουν όλων των άλλων συμφωνιών, δηλώσεων, εγγυήσεων και κατανοήσεων σχετικά με τον Ιστότοπό μας και το θέμα που περιέχεται εδώ. Ενδέχεται να τροποποιήσουμε τους Νομικούς μας Όρους ανά πάσα στιγμή χωρίς ειδική ειδοποίηση προς εσάς. Τα τελευταία αντίγραφα των Νομικών μας Όρων θα αναρτώνται στον Ιστότοπό μας και θα πρέπει να εξετάζετε όλους τους Νομικούς Όρους πριν από τη χρήση του Ιστότοπού μας. Μετά από οποιεσδήποτε αναθεωρήσεις των Νομικών μας Όρων, συμφωνείτε να δεσμεύεστε από οποιεσδήποτε τέτοιες αλλαγές. Επομένως, είναι σημαντικό να εξετάζετε περιοδικά τους Νομικούς μας Όρους για να βεβαιωθείτε ότι εξακολουθείτε να συμφωνείτε με αυτούς.
+Οι Όροι Χρήσης, μαζί με την Πολιτική Απορρήτου που δημοσιεύεται παρακάτω, και άλλες δημοσιευμένες κατευθυντήριες γραμμές ή πολιτικές εντός του Ιστότοπού μας (συλλογικά "Νομικοί Όροι"), αποτελούν τη συνολική και μοναδική συμφωνία μεταξύ εσάς και εμάς, και υπερισχύουν όλων των άλλων συμφωνιών, δηλώσεων, εγγυήσεων και κατανοήσεων σχετικά με τον Ιστότοπό μας και το θέμα που περιέχεται σε αυτόν. Ενδέχεται να τροποποιήσουμε τους Νομικούς Όρους μας ανά πάσα στιγμή χωρίς ειδική ειδοποίηση προς εσάς. Τα τελευταία αντίγραφα των Νομικών Όρων μας θα αναρτώνται στον Ιστότοπό μας, και θα πρέπει να εξετάζετε όλους τους Νομικούς Όρους πριν από τη χρήση του Ιστότοπού μας. Μετά από οποιεσδήποτε αναθεωρήσεις των Νομικών Όρων μας αναρτηθούν, συμφωνείτε να δεσμεύεστε από οποιεσδήποτε τέτοιες αλλαγές. Επομένως, είναι σημαντικό να εξετάζετε περιοδικά τους Νομικούς Όρους μας για να βεβαιωθείτε ότι εξακολουθείτε να συμφωνείτε με αυτούς.
 
-Χρησιμοποιώντας τον Ιστότοπό μας, συμφωνείτε να συμμορφώνεστε πλήρως με τους Νομικούς μας Όρους και να δεσμεύεστε από αυτούς. Παρακαλούμε εξετάστε τους προσεκτικά. Εάν δεν αποδέχεστε τους Νομικούς μας Όρους, μην έχετε πρόσβαση και μην χρησιμοποιείτε τον Ιστότοπό μας. Εάν έχετε ήδη αποκτήσει πρόσβαση στον Ιστότοπό μας και δεν αποδέχεστε τους Νομικούς μας Όρους, δεν έχετε πλέον δικαίωμα να τον χρησιμοποιείτε και θα πρέπει να διακόψετε αμέσως τη χρήση του Ιστότοπού μας.
+Χρησιμοποιώντας τον Ιστότοπό μας, συμφωνείτε να συμμορφώνεστε πλήρως με και να δεσμεύεστε από τους Νομικούς Όρους μας. Παρακαλείστε να τους εξετάσετε προσεκτικά. Εάν δεν αποδέχεστε τους Νομικούς Όρους μας, μην αποκτάτε πρόσβαση και μην χρησιμοποιείτε τον Ιστότοπό μας. Εάν έχετε ήδη αποκτήσει πρόσβαση στον Ιστότοπό μας και δεν αποδέχεστε τους Νομικούς Όρους μας, δεν είστε πλέον εξουσιοδοτημένοι να τον χρησιμοποιείτε και θα πρέπει να διακόψετε αμέσως τη χρήση του Ιστότοπού μας.
 
 **Άλλοι Καθορισμένοι Όροι Στον Ιστότοπό Μας**
 
-Αυτός ο Ιστότοπος ενσωματώνει όρους που ορίζονται σε ολόκληρη αυτή τη σελίδα, καθώς και αυτούς τους άλλους καθορισμένους όρους:
+Αυτός ο Ιστότοπος ενσωματώνει όρους που καθορίζονται σε όλη αυτή τη σελίδα καθώς και αυτούς τους άλλους καθορισμένους όρους:
 
-Οι όροι "εμείς" και "μας" αναφέρονται στην Zero to Hero ως κάτοχο του Ιστότοπου. "Περιεχόμενο" περιλαμβάνει οποιοδήποτε και όλο το κείμενο, πληροφορίες, γραφικά, ήχο, βίντεο και άλλα δεδομένα που αναρτώνται, προσφέρονται ή διατίθενται μέσω του Ιστότοπού μας.
+Οι όροι "εμάς" και "εμείς" αναφέρονται στη Zero to Hero ως τον ιδιοκτήτη του Ιστότοπου. "Περιεχόμενο" περιλαμβάνει οποιοδήποτε και όλο το κείμενο, πληροφορίες, γραφικά, ήχο, βίντεο και άλλα δεδομένα που αναρτώνται, προσφέρονται ή καθίστανται διαθέσιμα μέσω του Ιστότοπού μας.
 
-Ένας "επισκέπτης" ή "εσείς" είναι συλλογικοί αναγνωριστικοί όροι που αναφέρονται σε εσάς ως χρήστη του Ιστότοπού μας, είτε ολοκληρώνετε μια αγορά των προϊόντων μας είτε όχι.
+Ένας "επισκέπτης" ή "εσείς" είναι συλλογικοί προσδιορισμοί που αναφέρονται σε εσάς ως χρήστη του Ιστότοπού μας, είτε ολοκληρώνετε μια αγορά των προϊόντων μας είτε όχι.
 
-"Προσωπικές πληροφορίες" σημαίνει πληροφορίες σχετικά με ένα αναγνωρίσιμο άτομο, οι οποίες μπορεί να περιλαμβάνουν το όνομα ενός ατόμου, τη διεύθυνση κατοικίας, τη διεύθυνση χρέωσης, τη διεύθυνση παράδοσης, τον αριθμό τηλεφώνου, τη διεύθυνση ηλεκτρονικού ταχυδρομείου και άλλες παρόμοιες πληροφορίες επικοινωνίας, καθώς και δεδομένα ιστορικού χρήσης του Ιστότοπου. Μπορεί επίσης να περιλαμβάνει πληροφορίες πιστωτικής κάρτας ενός ατόμου όταν παρουσιάζονται για σκοπούς πληρωμής.
+"Προσωπικές πληροφορίες" σημαίνει πληροφορίες σχετικά με ένα αναγνωρίσιμο άτομο, οι οποίες μπορεί να περιλαμβάνουν το όνομα ενός ατόμου, τη διεύθυνση κατοικίας, τη διεύθυνση χρέωσης, τη διεύθυνση παράδοσης, τον αριθμό τηλεφώνου, τη διεύθυνση ηλεκτρονικού ταχυδρομείου και άλλα παρόμοια στοιχεία επικοινωνίας, καθώς και δεδομένα ιστορικού χρήσης του Ιστότοπου. Μπορεί επίσης να περιλαμβάνουν τα στοιχεία πιστωτικής κάρτας ενός ατόμου όταν παρουσιάζονται για σκοπούς πληρωμής.
 
 **ΟΡΟΙ ΧΡΗΣΗΣ**
 
 **Πνευματική Ιδιοκτησία**
 
-Ο Ιστότοπός μας μπορεί να περιέχει τα σήματα υπηρεσιών ή εμπορικά σήματά μας, καθώς και αυτά των συνεργατών μας ή άλλων προσώπων ή εταιρειών, με τη μορφή λέξεων, γραφικών και λογότυπων. Η χρήση του Ιστότοπού μας δεν συνιστά οποιοδήποτε δικαίωμα ή άδεια για εσάς να χρησιμοποιείτε τέτοια σήματα υπηρεσιών/εμπορικά σήματα, χωρίς την προηγούμενη γραπτή άδεια του αντίστοιχου κατόχου του σήματος υπηρεσίας/εμπορικού σήματος. Ο Ιστότοπός μας, συμπεριλαμβανομένου του περιεχομένου, προστατεύεται επίσης από την καναδική και διεθνή νομοθεσία περί πνευματικών δικαιωμάτων. Η χρήση του Ιστότοπού μας ή του περιεχομένου δεν σας παρέχει δικαιώματα ιδιοκτησίας οποιουδήποτε είδους σε αυτό. Η αντιγραφή, αναδιανομή, χρήση ή δημοσίευση από εσάς οποιουδήποτε μέρους του Ιστότοπού μας ή του περιεχομένου απαγορεύεται αυστηρά και επομένως δεν μπορεί να αντιγραφεί ή να αναπαραχθεί χωρίς πρώτα να λάβετε τη γραπτή άδειά μας.
+Ο Ιστότοπός μας μπορεί να περιέχει σήματα υπηρεσιών ή εμπορικά σήματά μας καθώς και εκείνα των συνεργατών μας ή άλλων προσώπων ή εταιρειών, με τη μορφή λέξεων, γραφικών και λογότυπων. Η χρήση του Ιστότοπού μας δεν συνιστά οποιοδήποτε δικαίωμα ή άδεια για εσάς να χρησιμοποιείτε τέτοια σήματα υπηρεσιών/εμπορικά σήματα, χωρίς την προηγούμενη γραπτή εξουσιοδότηση του αντίστοιχου κατόχου του σήματος υπηρεσίας/εμπορικού σήματος. Ο Ιστότοπός μας, συμπεριλαμβανομένου του περιεχομένου, προστατεύεται επίσης από τους καναδικούς και διεθνείς νόμους περί πνευματικών δικαιωμάτων. Η χρήση του Ιστότοπού μας ή του περιεχομένου δεν σας παρέχει δικαιώματα ιδιοκτησίας οποιουδήποτε είδους σε αυτά. Η αντιγραφή, αναδιανομή, χρήση ή δημοσίευση από εσάς οποιουδήποτε τμήματος του Ιστότοπού μας ή του περιεχομένου απαγορεύεται αυστηρά και επομένως δεν επιτρέπεται να αντιγραφεί ή να αναπαραχθεί χωρίς να λάβετε πρώτα τη γραπτή εξουσιοδότησή μας.
 
 **Περιορισμός Ευθύνης**
 
-Σε καμία περίπτωση δεν θα θεωρηθούμε υπεύθυνοι εμείς, ή οι υπάλληλοί μας, για οποιαδήποτε απώλεια ή ζημίες οποιουδήποτε είδους, συμπεριλαμβανομένων (χωρίς περιορισμό της γενικότητας των προηγουμένων) οποιωνδήποτε άμεσων, έμμεσων, τυχαίων, ειδικών, τιμωρητικών ή επακόλουθων ζημιών, που προκύπτουν από ή σε σχέση με τη χρήση σας, την πρόσβασή σας ή την εξάρτησή σας, ή την αδυναμία σας να χρησιμοποιήσετε ή να αποκτήσετε πρόσβαση σε αυτόν τον Ιστότοπο, το σύστημα ηλεκτρονικής παραγγελίας ή οποιοδήποτε περιεχόμενο.
+Σε καμία περίπτωση δεν θα είμαστε εμείς, ή οι αξιωματούχοι ή οι υπάλληλοί μας, υπεύθυνοι ή υπόχρεοι για οποιαδήποτε απώλεια ή ζημίες οποιουδήποτε είδους, συμπεριλαμβανομένων (χωρίς περιορισμό της γενικότητας των προηγουμένων) οποιωνδήποτε άμεσων, έμμεσων, παρεπόμενων, ειδικών, τιμωρητικών ή επακόλουθων ζημιών, που προκύπτουν από ή σε σχέση με τη χρήση, την πρόσβαση ή την εξάρτησή σας από, ή την αδυναμία σας να χρησιμοποιήσετε ή να αποκτήσετε πρόσβαση σε, αυτόν τον Ιστότοπο, το σύστημα ηλεκτρονικών παραγγελιών ή οποιοδήποτε περιεχόμενο.
 
 **Γενικοί Όροι**
 
-Οι Νομικοί μας Όροι θα αντιμετωπίζονται σαν να είχαν εκτελεστεί και εκτελεστεί στην Επαρχία της Βρετανικής Κολομβίας, Καναδάς και θα διέπονται και θα ερμηνεύονται σύμφωνα με τους νόμους αυτής της περιοχής χωρίς να λαμβάνονται υπόψη οι αρχές σύγκρουσης νόμων. Επιπλέον, συμφωνείτε να υποβάλλεστε στην προσωπική δικαιοδοσία και τον τόπο διεξαγωγής των δικαστηρίων εντός αυτής της περιοχής. Οποιαδήποτε αγωγή από εσάς σχετικά με τον Ιστότοπό μας πρέπει να ασκηθεί εντός ενός (1) έτους από τη γέννηση του δικαιώματος ή θα παραιτηθεί οριστικά και θα αποκλειστεί. Εάν κάποιο μέρος των Νομικών μας Όρων θεωρηθεί άκυρο ή ανεκτέλεστο, αυτό το τμήμα θα ερμηνεύεται σύμφωνα με την ισχύουσα νομοθεσία και τα υπόλοιπα τμήματα θα παραμείνουν σε πλήρη ισχύ. Στο βαθμό που οποιοδήποτε περιεχόμενο έρχεται σε σύγκρουση ή είναι ασυνεπές με τους Νομικούς μας Όρους, οι Νομικοί μας Όροι θα υπερισχύουν και θα έχουν πρωτοκαθεδρία στην από κοινού ερμηνεία τους. Η παράλειψή μας να επιβάλουμε οποιαδήποτε διάταξη των Νομικών μας Όρων δεν θα θεωρείται παραίτηση από αυτή τη διάταξη ούτε από το δικαίωμα επιβολής αυτής της διάταξης. Τα δικαιώματά μας βάσει των Νομικών μας Όρων θα επιβιώνουν μετά τη λήξη των Νομικών μας Όρων.
+Οι Νομικοί Όροι μας θα αντιμετωπίζονται ως εάν είχαν εκτελεστεί και εκπληρωθεί στην Επαρχία της Βρετανικής Κολομβίας, του Καναδά και θα διέπονται και θα ερμηνεύονται σύμφωνα με τους νόμους αυτής της περιοχής χωρίς αναφορά στις αρχές σύγκρουσης νόμων. Επιπλέον, συμφωνείτε να υποβάλλεστε στην προσωπική δικαιοδοσία και τον τόπο διεξαγωγής των δικαστηρίων εντός αυτής της περιοχής. Οποιαδήποτε αιτία αγωγής από εσάς σχετικά με τον Ιστότοπό μας πρέπει να ασκηθεί εντός ενός (1) έτους από τη στιγμή που προέκυψε η αιτία αγωγής ή θα παραιτηθεί και θα αποκλειστεί οριστικά. Εάν οποιοδήποτε μέρος των Νομικών Όρων μας κριθεί άκυρο ή ανεκτέλεστο, αυτό το τμήμα θα ερμηνεύεται σύμφωνα με το ισχύον δίκαιο και τα υπόλοιπα τμήματα θα παραμείνουν σε πλήρη ισχύ και αποτέλεσμα. Στο βαθμό που οποιοδήποτε περιεχόμενο συγκρούεται ή είναι ασυνεπές με τους Νομικούς Όρους μας, οι Νομικοί Όροι μας θα υπερισχύουν και θα είναι κυρίαρχοι στην ερμηνεία τους από κοινού. Η αποτυχία μας να επιβάλουμε οποιαδήποτε διάταξη των Νομικών Όρων μας δεν θεωρείται παραίτηση από αυτή τη διάταξη ούτε από το δικαίωμα επιβολής αυτής της διάταξης. Τα δικαιώματά μας βάσει των Νομικών Όρων μας θα επιβιώνουν μετά τη λήξη των Νομικών Όρων μας.
 
 **Σύνδεσμοι Τρίτων Μερών**
 
-Όταν κάνετε κλικ σε συνδέσμους στον Ιστότοπό μας, μπορεί να σας κατευθύνουν μακριά από τον Ιστότοπό μας σε έναν άλλο ιστότοπο που ανήκει και λειτουργεί από τρίτο μέρος. Δεν είμαστε υπεύθυνοι για τις πρακτικές απορρήτου άλλων ιστότοπων τρίτων και σας ενθαρρύνουμε να διαβάσετε τους όρους χρήσης και τις δηλώσεις απορρήτου τους. Μόλις εγκαταλείψετε τον Ιστότοπό μας ή ανακατευθυνθείτε σε ιστότοπο ή εφαρμογή τρίτου μέρους, δεν διέπεστε πλέον από τους Νομικούς μας Όρους.
+Όταν κάνετε κλικ σε συνδέσμους στον Ιστότοπό μας, αυτοί μπορεί να σας κατευθύνουν μακριά από τον Ιστότοπό μας σε άλλο ιστότοπο που ανήκει και λειτουργεί από τρίτο μέρος. Δεν είμαστε υπεύθυνοι για τις πρακτικές απορρήτου άλλων ιστότοπων τρίτων και σας ενθαρρύνουμε να διαβάσετε τους όρους χρήσης και τις δηλώσεις απορρήτου τους. Μόλις φύγετε από τον Ιστότοπό μας ή ανακατευθυνθείτε σε ιστότοπο ή εφαρμογή τρίτου μέρους, δεν διέπεστε πλέον από τους Νομικούς Όρους μας.
 
 **ΠΟΛΙΤΙΚΗ ΑΠΟΡΡΗΤΟΥ**
 
-Στην Zero to Hero θεωρούμε το απόρρητο πολύ σημαντικό θέμα και ως εκ τούτου δεσμευόμαστε να προστατεύουμε το απόρρητο των προσωπικών πληροφοριών όλων των επισκεπτών. Αυτή η Πολιτική Απορρήτου ενσωματώνει τα εφαρμοστέα μέρη του Νόμου για την Προστασία των Προσωπικών Πληροφοριών και των Ηλεκτρονικών Εγγράφων (Καναδάς), του Νόμου για την Προστασία των Προσωπικών Πληροφοριών (Αλμπέρτα) και των δέκα αρχών που ορίζονται στον Πρότυπο Κώδικα του Καναδικού Οργανισμού Τυποποίησης (CSA) για την Προστασία των Προσωπικών Πληροφοριών (από κοινού, οι "εφαρμοστέοι νόμοι απορρήτου").
+Στη Zero to Hero θεωρούμε το απόρρητο ως ένα πολύ σημαντικό θέμα και ως εκ τούτου δεσμευόμαστε να προστατεύουμε το απόρρητο των προσωπικών πληροφοριών όλων των επισκεπτών. Αυτή η Πολιτική Απορρήτου ενσωματώνει τα εφαρμοστέα τμήματα του Νόμου για την Προστασία των Προσωπικών Πληροφοριών και των Ηλεκτρονικών Εγγράφων (Καναδάς), του Νόμου για την Προστασία των Προσωπικών Πληροφοριών (Αλμπέρτα) και τις δέκα αρχές που ορίζονται στον Κώδικα Προτύπων της Καναδικής Ένωσης Προτύπων (CSA) για την Προστασία των Προσωπικών Πληροφοριών (μαζί, οι "εφαρμοστέοι νόμοι περί απορρήτου").
 
-**Συλλογή Πληροφοριών**
+**Πληροφορίες Που Συλλέγουμε**
 
-Ενδέχεται να συλλέγουμε προσωπικές πληροφορίες για έναν ή περισσότερους από τους ακόλουθους σκοπούς:
+**Πληροφορίες που παρέχετε απευθείας:**
 
-*   για τη δημιουργία και διατήρηση σχέσεων με επισκέπτες·
-*   για την παροχή ζητούμενων και συνεχιζόμενων προϊόντων και υπηρεσιών·
-*   για να σας ειδοποιούμε για αλλαγές στα προϊόντα και τις υπηρεσίες μας·
-*   για την καλύτερη κατανόηση των επισκεπτών μας, των απαιτήσεων και των προτιμήσεών τους·
-*   για την ανάπτυξη, βελτίωση, ενίσχυση και/ή εμπορία των προϊόντων και υπηρεσιών μας·
-*   για την παρακολούθηση της χρήσης του Ιστότοπού μας·
-*   για τη διαχείριση και βελτίωση της επιχείρησης και των λειτουργιών μας· και
-*   για την εκπλήρωση νομικών και κανονιστικών απαιτήσεων.
+* Στοιχεία λογαριασμού: το όνομά σας, η διεύθυνση ηλεκτρονικού ταχυδρομείου, ο κωδικός πρόσβασης, οι γλωσσικές προτιμήσεις και το επίπεδο εκμάθησης.
+* Δεδομένα εκμάθησης: αποθηκευμένες λέξεις, φράσεις, πρόοδος επανάληψης, σημειώσεις, λίστες αναπαραγωγής, βίντεο με "μου αρέσει", ιστορικό παρακολούθησης, βιβλία και πρόοδος ανάγνωσης.
+* Περιεχόμενο που ανεβάζετε ή δημιουργείτε: προσαρμοσμένα μέσα, αρχεία EPUB και κείμενο που μας ζητάτε να μεταφράσουμε ή να εξηγήσουμε.
+* Στοιχεία πληρωμής: όταν αγοράζετε μια συνδρομή, η πληρωμή διεκπεραιώνεται από την Stripe, το PayPal ή το Apple App Store. Λαμβάνουμε επιβεβαίωση και λεπτομέρειες συνδρομής, αλλά γενικά δεν αποθηκεύουμε τον πλήρη αριθμό της κάρτας σας.
 
-**  
-Τι Κάνουμε Με Τις Πληροφορίες Σας;**
+**Πληροφορίες που συλλέγονται αυτόματα:**
 
-Όταν αγοράζετε κάτι μέσω του συστήματος ηλεκτρονικής παραγγελίας μας, ως μέρος της διαδικασίας αγοράς και πώλησης, συλλέγουμε τα προσωπικά σας στοιχεία.
+* Δεδομένα χρήσης: σελίδες και λειτουργίες που επισκέπτεστε, συμπεριλαμβανομένων των Εξερεύνηση πολυμέσων, Μουσική και Ψυχαγωγία, Ζωντανή TV, Τηλεοπτικές Εκπομπές, Αναζήτηση, Λεξικό, Αποθηκευμένες λέξεις, Ανασκόπηση, Αναγνώστης, Αναγνώστης ιστού, Αναγνώστης EPUB, Τοπικά Μέσα, Ιστορικό προβολών, Λίστες αναπαραγωγής και Βίντεο που μου αρέσουν· βίντεο που παρακολουθείτε· αλληλεπιδράσεις· και χρονικές σημάνσεις.
+* Πληροφορίες συσκευής και δικτύου: διεύθυνση IP, τύπος προγράμματος περιήγησης, λειτουργικό σύστημα, τύπος συσκευής και κατά προσέγγιση τοποθεσία που προκύπτει από τη διεύθυνση IP σας.
+* Αναλυτικά στοιχεία: χρησιμοποιούμε το Google Analytics για να κατανοήσουμε πώς οι επισκέπτες χρησιμοποιούν τον Ιστότοπο. Το Google Analytics μπορεί να χρησιμοποιεί cookies και να συλλέγει δεδομένα χρήσης για λογαριασμό μας. Η χρήση αυτών των δεδομένων από την Google διέπεται από την [Πολιτική Απορρήτου της Google](https://policies.google.com/privacy).
+* Τοπική αποθήκευση: χρησιμοποιούμε cookies, \`localStorage\`, \`sessionStorage\` και IndexedDB για να σας κρατάμε συνδεδεμένους, να θυμόμαστε τη γλώσσα σας, να αποθηκεύουμε τις ρυθμίσεις, την πρόοδο και τις αποθηκευμένες λέξεις σας και να αποθηκεύουμε περιεχόμενο προσωρινά τοπικά.
 
-Όταν περιηγείστε στον Ιστότοπό μας, λαμβάνουμε επίσης αυτόματα τη διεύθυνση πρωτοκόλλου διαδικτύου (IP) του υπολογιστή σας για να μας παρέχει πληροφορίες που μας βοηθούν να μάθουμε για το πρόγραμμα περιήγησης και το λειτουργικό σας σύστημα.
+**Τι Κάνουμε Με Τις Πληροφορίες Σας;**
 
-Επιτρεπόμενο άμεσο μάρκετινγκ (εάν ισχύει): Με την άδειά σας, ενδέχεται να σας στείλουμε ενημερωτικά δελτία ή email για να διαφημίσουμε τα καταστήματά μας, νέα προϊόντα και άλλες ενημερώσεις.
+Χρησιμοποιούμε τις πληροφορίες που συλλέγουμε για να:
 
-**Συναίνεση**
+* παρέχουμε, διατηρούμε και βελτιώνουμε τον Ιστότοπο και τις λειτουργίες του·
+* δημιουργούμε και διαχειριζόμαστε τον λογαριασμό σας, επαληθεύουμε την ταυτότητά σας και σας κρατάμε συνδεδεμένους·
+* εξατομικεύουμε συστάσεις με βάση τη γλώσσα, το επίπεδο και το ιστορικό εκμάθησής σας·
+* συγχρονίζουμε τα δεδομένα σας σε συσκευές·
+* επεξεργαζόμαστε συνδρομές, πληρωμές και ανανεώσεις·
+* στέλνουμε συναλλακτικά email όπως κωδικούς επαλήθευσης, επαναφορά κωδικού πρόσβασης και αποδείξεις πληρωμής·
+* στέλνουμε επικοινωνίες μάρκετινγκ εάν μας έχετε δώσει την άδειά σας για αυτό·
+* αναλύουμε τη χρήση με το Google Analytics για να κατανοήσουμε πώς οι επισκέπτες χρησιμοποιούν τον Ιστότοπο και να βελτιώσουμε τα προϊόντα μας·
+* πληρούμε νομικές και κανονιστικές απαιτήσεις και προστατεύουμε τα δικαιώματά μας και τα δικαιώματα των χρηστών μας.
+
+Δεν πωλούμε τις προσωπικές σας πληροφορίες.
+
+**Κοινοποίηση και Γνωστοποίηση**
+
+Κοινοποιούμε προσωπικές πληροφορίες μόνο σε παρόχους υπηρεσιών που μας βοηθούν να λειτουργούμε τον Ιστότοπο, συμπεριλαμβανομένων:
+
+* παρόχων φιλοξενίας και βάσεων δεδομένων, συμπεριλαμβανομένης της Supabase·
+* επεξεργαστών πληρωμών, συμπεριλαμβανομένων των Stripe, PayPal και Apple App Store·
+* παρόχων μετάφρασης και τεχνητής νοημοσύνης, συμπεριλαμβανομένης της DeepSeek, όταν χρησιμοποιείτε λειτουργίες μετάφρασης ή εξήγησης με τεχνητή νοημοσύνη·
+* παρόχων αναλυτικών στοιχείων, συμπεριλαμβανομένου του Google Analytics·
+* πλατφορμών βίντεο, συμπεριλαμβανομένων των YouTube και Google, όταν παρακολουθείτε ενσωματωμένα βίντεο.
+
+Δεν θα χρησιμοποιήσουμε ή θα γνωστοποιήσουμε προσωπικές πληροφορίες για σκοπούς άλλους από εκείνους για τους οποίους συλλέχθηκαν, εκτός εάν είναι με τη συγκατάθεσή σας, εάν επιτρέπεται ή απαιτείται από το νόμο, ή εάν παραβιάζετε τους Όρους Χρήσης μας.
+
+**Συγκατάθεση**
 
 _Πώς λαμβάνετε τη συγκατάθεσή μου;_
 
-Όταν μας παρέχετε προσωπικές πληροφορίες για να ολοκληρώσετε μια συναλλαγή, να επαληθεύσετε την πιστωτική σας κάρτα, να τοποθετήσετε μια παραγγελία, να κανονίσετε μια παράδοση ή να επιστρέψετε μια αγορά, ή να δημοσιεύσετε ή να καρφιτσώσετε οποιεσδήποτε πληροφορίες ή φωτογραφίες στον ιστότοπο κοινωνικής δικτύωσής μας, θεωρούμε ότι συναινείτε στη συλλογή και χρήση τους για αυτόν τον συγκεκριμένο λόγο μόνο.
+Όταν μας παρέχετε προσωπικές πληροφορίες για να δημιουργήσετε λογαριασμό, να ολοκληρώσετε μια συναλλαγή, να επαληθεύσετε την πληρωμή σας, να τοποθετήσετε μια παραγγελία ή να χρησιμοποιήσετε τα προϊόντα και τις υπηρεσίες μας, θεωρούμε ότι συναινείτε στη συλλογή τους και στη χρήση τους για αυτόν τον συγκεκριμένο λόγο μόνο.
 
-Εάν ζητήσουμε τα προσωπικά σας στοιχεία για δευτερεύοντα λόγο, όπως το μάρκετινγκ, είτε θα σας ζητήσουμε απευθείας τη ρητή συγκατάθεσή σας είτε θα σας δώσουμε την ευκαιρία να αρνηθείτε.
+Εάν ζητήσουμε τις προσωπικές σας πληροφορίες για δευτερεύοντα λόγο, όπως το μάρκετινγκ, θα σας ζητήσουμε είτε απευθείας τη ρητή συγκατάθεσή σας είτε θα σας δώσουμε την ευκαιρία να πείτε όχι.
 
 _Πώς αποσύρω τη συγκατάθεσή μου;_
 
-Εάν αφού συμφωνήσετε, αλλάξετε γνώμη, μπορείτε να αποσύρετε τη συγκατάθεσή σας για να επικοινωνήσουμε μαζί σας, για τη συνεχή συλλογή, χρήση ή αποκάλυψη των πληροφοριών σας, ανά πάσα στιγμή, ειδοποιώντας μας.
-
-**Γνωστοποίηση**
-
-Δεν θα χρησιμοποιήσουμε ή θα αποκαλύψουμε προσωπικές πληροφορίες για σκοπούς άλλους από εκείνους για τους οποίους συλλέχθηκαν, εκτός εάν γίνει με τη συγκατάθεσή σας, εάν επιτρέπεται ή απαιτείται από το νόμο ή εάν παραβιάζετε τους Όρους Χρήσης μας.
+Εάν μετά την εγγραφή σας αλλάξετε γνώμη, μπορείτε να αποσύρετε τη συγκατάθεσή σας για να επικοινωνούμε μαζί σας, για τη συνεχή συλλογή, χρήση ή γνωστοποίηση των πληροφοριών σας, ανά πάσα στιγμή, ενημερώνοντάς μας.
 
 **Προστασία**
 
-Θα προστατεύουμε τις προσωπικές πληροφορίες ακολουθώντας τις βέλτιστες πρακτικές του κλάδου και εφαρμόζοντας τέτοιες εύλογες διασφαλίσεις που μπορεί να είναι κατάλληλες για την ευαισθησία των πληροφοριών· θα καταβάλλουμε εύλογες προσπάθειες για την προστασία των προσωπικών πληροφοριών από απώλεια ή κλοπή, καθώς και από μη εξουσιοδοτημένη πρόσβαση, αποκάλυψη, αντιγραφή, χρήση ή τροποποίηση, ανεξάρτητα από τη μορφή στην οποία διατηρούνται. Η νομοθεσία μας επιτρέπει επίσης, για νομικούς ή επιχειρηματικούς σκοπούς, να διατηρούμε προσωπικές πληροφορίες για όσο διάστημα είναι εύλογο και εφόσον δεν έχετε αποσύρει τη συγκατάθεσή σας.
+Θα προστατεύουμε τις προσωπικές πληροφορίες ακολουθώντας τις βέλτιστες πρακτικές του κλάδου και εφαρμόζοντας τέτοιες εύλογες διασφαλίσεις που μπορεί να είναι κατάλληλες για την ευαισθησία των πληροφοριών· θα καταβάλλουμε εύλογες προσπάθειες για την προστασία των προσωπικών πληροφοριών από απώλεια ή κλοπή, καθώς και από μη εξουσιοδοτημένη πρόσβαση, γνωστοποίηση, αντιγραφή, χρήση ή τροποποίηση ανεξάρτητα από τη μορφή στην οποία τηρούνται. Η νομοθεσία επίσης μας επιτρέπει, για νομικούς ή επιχειρηματικούς σκοπούς, να διατηρούμε προσωπικές πληροφορίες για όσο διάστημα είναι εύλογο και εφόσον δεν έχετε ανακαλέσει τη συγκατάθεσή σας.
 
 **Ασφάλεια**
 
-Για την προστασία των προσωπικών σας πληροφοριών, λαμβάνουμε εύλογες προφυλάξεις και ακολουθούμε τις βέλτιστες πρακτικές του κλάδου για να διασφαλίσουμε ότι δεν χάνονται, κακοποιούνται, αποκτώνται, αποκαλύπτονται, αλλοιώνονται ή καταστρέφονται ακατάλληλα.
+Για την προστασία των προσωπικών σας πληροφοριών, λαμβάνουμε εύλογες προφυλάξεις και ακολουθούμε τις βέλτιστες πρακτικές του κλάδου για να διασφαλίσουμε ότι δεν χάνονται, κακοποιούνται, αποκτούνται, γνωστοποιούνται, αλλοιώνονται ή καταστρέφονται ακατάλληλα.
 
-**Cookies**
+**Cookies και Παρόμοιες Τεχνολογίες**
 
-Ο Ιστότοπός μας δεν χρησιμοποιεί cookies.
+Ο Ιστότοπός μας χρησιμοποιεί cookies και παρόμοιες τεχνολογίες.
+
+* **Απαραίτητα cookies:** χρησιμοποιούμε cookies για να σας κρατάμε συνδεδεμένους, να θυμόμαστε τις επιλεγμένες γλώσσες σας και να διαχειριζόμαστε τα όρια πλοήγησης επισκεπτών.
+* **Αναλυτικά στοιχεία:** χρησιμοποιούμε το Google Analytics, το οποίο μπορεί να ορίσει τα δικά του cookies και να συλλέγει πληροφορίες χρήσης.
+* **Τοπική αποθήκευση:** χρησιμοποιούμε \`localStorage\`, \`sessionStorage\` και IndexedDB για να αποθηκεύουμε ρυθμίσεις, αποθηκευμένες λέξεις, πρόοδο, περιεχόμενο ανάγνωσης και προσαρμοσμένα μέσα στη συσκευή σας.
+* **Ενσωματωμένο περιεχόμενο:** τα βίντεο ενσωματώνονται από το YouTube. Το YouTube και η Google μπορεί να ορίσουν τα δικά τους cookies όταν παρακολουθείτε ένα βίντεο, τα οποία διέπονται από τις πολιτικές απορρήτου τους.
+
+Μπορείτε να αποκλείσετε ή να διαγράψετε τα cookies μέσω των ρυθμίσεων του προγράμματος περιήγησής σας. Σημειώστε ότι ορισμένα μέρη του Ιστότοπου μπορεί να μην λειτουργούν σωστά εάν απενεργοποιήσετε τα cookies.
+
+**Διατήρηση και Διαγραφή Δεδομένων**
+
+Διατηρούμε προσωπικές πληροφορίες για όσο διάστημα ο λογαριασμός σας είναι ενεργός ή για όσο διάστημα χρειάζεται για την παροχή του Ιστότοπου, τη συμμόρφωση με νομικές υποχρεώσεις, την επίλυση διαφορών και την επιβολή των συμφωνιών μας.
+
+Μπορείτε να διαγράψετε τον λογαριασμό σας ανά πάσα στιγμή από τη σελίδα Προφίλ χρησιμοποιώντας την επιλογή Διαγραφή Λογαριασμού ή επικοινωνώντας μαζί μας στη διεύθυνση παρακάτω. Όταν διαγράφετε τον λογαριασμό σας, θα αφαιρέσουμε ή θα ανωνυμοποιήσουμε τις προσωπικές σας πληροφορίες, με την επιφύλαξη αρχείων που υποχρεούμαστε να διατηρούμε για νομικούς, πληρωμών, φορολογικούς ή σκοπούς ασφάλειας.
 
 **Αλλαγές Σε Αυτήν Την Πολιτική Απορρήτου**
 
-Διατηρούμε το δικαίωμα να τροποποιούμε αυτήν την πολιτική απορρήτου ανά πάσα στιγμή, γι' αυτό παρακαλούμε να την εξετάζετε συχνά. Οι αλλαγές και οι διευκρινίσεις θα τεθούν σε ισχύ αμέσως μόλις αναρτηθούν στον Ιστότοπο. Εάν κάνουμε ουσιαστικές αλλαγές σε αυτήν την πολιτική, θα σας ειδοποιήσουμε εδώ ότι έχει ενημερωθεί, ώστε να γνωρίζετε ποιες πληροφορίες συλλέγουμε, πώς τις χρησιμοποιούμε και υπό ποιες συνθήκες, εάν υπάρχουν, τις χρησιμοποιούμε και/ή τις αποκαλύπτουμε.
+Διατηρούμε το δικαίωμα να τροποποιήσουμε αυτήν την πολιτική απορρήτου ανά πάσα στιγμή, γι' αυτό παρακαλείστε να την εξετάζετε συχνά. Οι αλλαγές και οι διευκρινίσεις θα τεθούν σε ισχύ αμέσως μόλις αναρτηθούν στον Ιστότοπο. Εάν κάνουμε ουσιαστικές αλλαγές σε αυτήν την πολιτική, θα σας ειδοποιήσουμε εδώ ότι έχει ενημερωθεί, ώστε να γνωρίζετε ποιες πληροφορίες συλλέγουμε, πώς τις χρησιμοποιούμε και υπό ποιες περιστάσεις, εάν υπάρχουν, τις χρησιμοποιούμε και/ή τις γνωστοποιούμε.
 
 **Ερωτήσεις Και Στοιχεία Επικοινωνίας**
 
-Εάν θέλετε να: αποκτήσετε πρόσβαση, διορθώσετε, τροποποιήσετε ή διαγράψετε οποιεσδήποτε προσωπικές πληροφορίες έχουμε για εσάς, να υποβάλετε παράπονο ή απλά θέλετε περισσότερες πληροφορίες, επικοινωνήστε μαζί μας στο [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Εάν θέλετε να: αποκτήσετε πρόσβαση, διορθώσετε, τροποποιήσετε ή διαγράψετε οποιεσδήποτε προσωπικές πληροφορίες έχουμε για εσάς, να καταχωρίσετε παράπονο ή απλώς θέλετε περισσότερες πληροφορίες, επικοινωνήστε μαζί μας στο [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Αναγνώστης EPUB', category: 'reading', content: `# Αναγνώστης EPUB
 
 Διαβάστε ηλεκτρονικά βιβλία EPUB με διαδραστική αναζήτηση λέξεων, μετάφραση ανά μπλοκ και πρόοδο που διατηρείται μεταξύ συνεδριών.
@@ -9862,29 +10053,29 @@ Your watch history is private. It's only visible to you when you're signed in. I
     { path: 'navigation/language-switcher', title: 'language-switcher', category: 'navigation', content: `` },
     { path: 'privacy-policy', title: 'Privacy Policy', category: 'privacy-policy', content: `# Privacy Policy
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website:  [https://languageplayer.io](https://languageplayer.io) , including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Introduction**
 
 The Terms of Use, along with our Privacy Policy published below, and other posted guidelines or policies within our Website (collectively "Legal Terms"), constitute the entire and only agreement between you and us, and supersede all other agreements, representations, warranties and understandings with respect to our Website and the subject matter contained herein. We may amend our Legal Terms at any time without specific notice to you. The latest copies of our Legal Terms will be posted on our Website, and you should review all Legal Terms prior to using our Website. After any revisions to our Legal Terms are posted, you agree to be bound to any such changes to them. Therefore, it is important for you to periodically review our Legal Terms to make sure you still agree to them.
 
-By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website. 
+By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website.
 
 **Other Defined Terms On Our Website**
 
-This Website incorporates terms defined throughout this page as well as these other defined terms: 
+This Website incorporates terms defined throughout this page as well as these other defined terms:
 
 The terms "us" and "we" refer to Zero to Hero as the owner of the Website. "Content" includes any and all text, information, graphics, audio, video, and other data posted, offered or made available through our Website.
 
 A "visitor" or "you" are collective identifiers that refer to you as a browser of our Website, whether or not you complete a purchase of our products.
 
-"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data.  It may also include a person's credit card information when presented for payment purposes.
+"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data. It may also include a person's credit card information when presented for payment purposes.
 
 **TERMS OF USE**
 
 **Intellectual Property**
 
-Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein.  The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
+Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein. The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
 
 **Limitation of Liability**
 
@@ -9896,49 +10087,67 @@ Our Legal Terms shall be treated as though it were executed and performed in the
 
 **Third Party Links**
 
-When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements.  Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
+When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements. Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
 
 **PRIVACY POLICY**
 
-At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors.   This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
+At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors. This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
 
-**Collection of Information**
+**Information We Collect**
 
-We may collect personal information for any one or more of the following purposes:
+**Information you provide directly:**
 
-*   to establish and maintain relationships with visitors;
-*   to provide requested and ongoing products and services;
-*   to notify you of changes to our products and services;
-*   to obtain a better understanding of our visitors their requirements and preferences;
-*   to develop, enhance, improve and/or market our products and services;
-*   to monitor the usage of our Website;
-*   to manage and improve our business and operations; and
-*   to meet legal and regulatory requirements.
+* Account information: your name, email address, password, language preferences and learning level.
+* Learning data: saved words, phrases, review progress, notes, playlists, liked videos, watch history, books and reading progress.
+* Content you upload or create: custom media, EPUB files, and text you ask us to translate or explain.
+* Payment information: when you purchase a subscription, payment is processed by Stripe, PayPal or the Apple App Store. We receive confirmation and subscription details, but we generally do not store your full card number.
 
-**  
-What Do We Do With Your Information?**
+**Information collected automatically:**
 
-When you purchase something through our online ordering system, as part of the buying and selling process, we collect your personal information.
+* Usage data: pages and features you visit, including Explore Media, Music & Entertainment, Live TV, TV Shows, Search, Dictionary, Saved Words, Review, Reader, Web Reader, EPUB Reader, Local Media, Watch History, Playlists and Liked Videos; videos you watch; interactions; and timestamps.
+* Device and network information: IP address, browser type, operating system, device type and approximate location derived from your IP address.
+* Analytics: we use Google Analytics to understand how visitors use the Website. Google Analytics may use cookies and collect usage data on our behalf. Google's use of that data is governed by [Google's Privacy Policy](https://policies.google.com/privacy).
+* Local storage: we use cookies, \`localStorage\`, \`sessionStorage\` and IndexedDB to keep you signed in, remember your language, store your settings, progress and saved words, and cache content locally.
 
-When you browse our Website, we also automatically receive your computer's internet protocol (IP) address in order to provide us with information that helps us learn about your browser and operating system.
+**What Do We Do With Your Information?**
 
-Permitted direct marketing (if applicable): With your permission, we may send you newsletters or emails to advertise about our stores, new products and other updates.
+We use the information we collect to:
+
+* provide, maintain and improve the Website and its features;
+* create and manage your account, verify your identity and keep you signed in;
+* personalize recommendations based on your language, level and learning history;
+* sync your data across devices;
+* process subscriptions, payments and renewals;
+* send transactional emails such as verification codes, password resets and payment receipts;
+* send marketing communications if you have given us permission to do so;
+* analyze usage with Google Analytics to understand how visitors use the Website and to improve our products;
+* meet legal and regulatory requirements and protect our rights and the rights of our users.
+
+We do not sell your personal information.
+
+**Sharing and Disclosure**
+
+We share personal information only with service providers who help us operate the Website, including:
+
+* hosting and database providers, including Supabase;
+* payment processors, including Stripe, PayPal and the Apple App Store;
+* translation and AI providers, including DeepSeek, when you use translation or AI explanation features;
+* analytics providers, including Google Analytics;
+* video platforms, including YouTube and Google, when you watch embedded videos.
+
+We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law, or you violate our Terms of Use.
 
 **Consent**
 
 _How do you get my consent?_
 
-When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, or post or pin any information or photos to our social media site, we infer that you consent to our collecting it and using it for that specific reason only.
+When you provide us with personal information to create an account, complete a transaction, verify your payment, place an order, or use our products and services, we infer that you consent to our collecting it and using it for that specific reason only.
 
 If we ask for your personal information for a secondary reason, like marketing, we will either ask you directly for your expressed consent, or provide you with an opportunity to say no.
 
 _How do I withdraw my consent?_
 
-If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at anytime, by notifying us.
-
-**Disclosure**
-
-We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law or you violate our Terms of Use.
+If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at any time, by notifying us.
 
 **Protection**
 
@@ -9948,9 +10157,22 @@ We will protect personal information by following industry best practices and im
 
 To protect your personal information, we take reasonable precautions and follow industry best practices to make sure it is not inappropriately lost, misused, accessed, disclosed, altered or destroyed.
 
-**Cookies**
+**Cookies and Similar Technologies**
 
-Our Website does not use cookies.
+Our Website uses cookies and similar technologies.
+
+* **Essential cookies:** we use cookies to keep you signed in, remember your selected languages, and manage guest navigation limits.
+* **Analytics:** we use Google Analytics, which may set its own cookies and collect usage information.
+* **Local storage:** we use \`localStorage\`, \`sessionStorage\` and IndexedDB to store settings, saved words, progress, reading content and custom media on your device.
+* **Embedded content:** videos are embedded from YouTube. YouTube and Google may set their own cookies when you watch a video, which are governed by their privacy policies.
+
+You can block or delete cookies through your browser settings. Please note that some parts of the Website may not work correctly if you disable cookies.
+
+**Data Retention and Deletion**
+
+We retain personal information for as long as your account is active, or as long as needed to provide the Website, comply with legal obligations, resolve disputes and enforce our agreements.
+
+You can delete your account at any time from the Profile page using the Delete Account option, or by contacting us at the address below. When you delete your account, we will remove or anonymize your personal information, subject to records we are required to keep for legal, payment, tax or security purposes.
 
 **Changes To This Privacy Policy**
 
@@ -9958,7 +10180,8 @@ We reserve the right to modify this privacy policy at any time, so please review
 
 **Questions And Contact Information**
 
-If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at  [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) .` },
+If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).
+` },
     { path: 'reading/epub', title: 'EPUB Reader', category: 'reading', content: `# EPUB Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
@@ -11337,102 +11560,134 @@ Tu historial de visualización es privado. Solo es visible para ti cuando has in
 - Tu historial está limitado a tu L2 actual: no verás videos de Japonés cuando estés en modo Coreano` },
     { path: 'privacy-policy', title: 'Política de privacidad', category: 'privacy-policy', content: `# Política de privacidad
 
-Esta página web representa un documento legal que sirve como nuestros Términos de Uso y Política de Privacidad y rige el uso de nuestro sitio web: [https://languageplayer.io](https://languageplayer.io), incluyendo las páginas que se encuentran en él y todos los subdominios y aplicaciones (colectivamente, "Sitio Web"), propiedad y operados por nosotros, Zero to Hero Education, Canadá. ("Zero to Hero").
+Esta página web representa un documento legal que sirve como nuestros Términos de Uso y Política de Privacidad y rige el uso de nuestro sitio web: [https://languageplayer.io](https://languageplayer.io), incluidas las páginas que se encuentran en él y todos los subdominios y aplicaciones (colectivamente, "Sitio Web"), según es operado por nosotros, Zero to Hero Education, Canadá. ("Zero to Hero").
 
 **Introducción**
 
-Los Términos de Uso, junto con nuestra Política de Privacidad publicada a continuación, y otras pautas o políticas publicadas en nuestro Sitio Web (colectivamente, "Términos Legales"), constituyen el acuerdo completo y exclusivo entre usted y nosotros, y reemplazan todos los demás acuerdos, representaciones, garantías y entendimientos con respecto a nuestro Sitio Web y el tema contenido en el mismo. Podemos modificar nuestros Términos Legales en cualquier momento sin previo aviso específico. Las copias más recientes de nuestros Términos Legales se publicarán en nuestro Sitio Web, y usted debe revisar todos los Términos Legales antes de usar nuestro Sitio Web. Después de que se publiquen las revisiones de nuestros Términos Legales, usted acepta estar sujeto a dichos cambios. Por lo tanto, es importante que revise periódicamente nuestros Términos Legales para asegurarse de que aún está de acuerdo con ellos.
+Los Términos de Uso, junto con nuestra Política de Privacidad publicada a continuación, y otras pautas o políticas publicadas dentro de nuestro Sitio Web (colectivamente, "Términos Legales"), constituyen el acuerdo completo y exclusivo entre usted y nosotros, y reemplazan todos los demás acuerdos, representaciones, garantías y entendimientos con respecto a nuestro Sitio Web y el tema contenido en el presente documento. Podemos modificar nuestros Términos Legales en cualquier momento sin notificación específica a usted. Las copias más recientes de nuestros Términos Legales se publicarán en nuestro Sitio Web, y usted debe revisar todos los Términos Legales antes de utilizar nuestro Sitio Web. Después de que se publiquen cualesquiera revisiones a nuestros Términos Legales, usted acepta quedar sujeto a dichos cambios. Por lo tanto, es importante que revise periódicamente nuestros Términos Legales para asegurarse de que aún está de acuerdo con ellos.
 
-Al usar nuestro Sitio Web, usted acepta cumplir plenamente con nuestros Términos Legales y estar sujeto a ellos. Revíselos cuidadosamente. Si no acepta nuestros Términos Legales, no acceda ni use nuestro Sitio Web. Si ya ha accedido a nuestro Sitio Web y no acepta nuestros Términos Legales, ya no está autorizado a usarlo y debe suspender de inmediato el uso de nuestro Sitio Web.
+Al utilizar nuestro Sitio Web, usted acepta cumplir plenamente y quedar sujeto a nuestros Términos Legales. Por favor, revíselos cuidadosamente. Si no acepta nuestros Términos Legales, no acceda ni utilice nuestro Sitio Web. Si ya ha accedido a nuestro Sitio Web y no acepta nuestros Términos Legales, ya no está autorizado a utilizarlo y debe suspender inmediatamente el uso de nuestro Sitio Web.
 
-**Otros Términos Definidos en Nuestro Sitio Web**
+**Otros Términos Definidos En Nuestro Sitio Web**
 
-Este Sitio Web incorpora términos definidos en toda esta página, así como estos otros términos definidos:
+Este Sitio Web incorpora términos definidos a lo largo de esta página, así como estos otros términos definidos:
 
-Los términos "nosotros" y "nos" se refieren a Zero to Hero como propietario del Sitio Web. "Contenido" incluye cualquier texto, información, gráficos, audio, video y otros datos publicados, ofrecidos o puestos a disposición a través de nuestro Sitio Web.
+Los términos "nosotros" y "nos" se refieren a Zero to Hero como propietario del Sitio Web. "Contenido" incluye todo texto, información, gráficos, audio, video y otros datos publicados, ofrecidos o puestos a disposición a través de nuestro Sitio Web.
 
-Un "visitante" o "usted" son identificadores colectivos que se refieren a usted como navegador de nuestro Sitio Web, ya sea que complete o no una compra de nuestros productos.
+Un "visitante" o "usted" son identificadores colectivos que se refieren a usted como navegante de nuestro Sitio Web, ya sea que complete o no una compra de nuestros productos.
 
-"Información personal" significa información sobre una persona identificable, que puede incluir el nombre de una persona, dirección residencial, dirección de facturación, dirección de entrega, número de teléfono, dirección de correo electrónico y otra información de contacto similar, así como datos del historial de uso del Sitio Web. También puede incluir la información de la tarjeta de crédito de una persona cuando se presenta para fines de pago.
+"Información personal" significa información sobre una persona identificable, que puede incluir el nombre de una persona, dirección residencial, dirección de facturación, dirección de entrega, número de teléfono, dirección de correo electrónico y otra información de contacto similar, así como datos del historial de uso del Sitio Web. También puede incluir la información de tarjeta de crédito de una persona cuando se presenta para fines de pago.
 
 **TÉRMINOS DE USO**
 
 **Propiedad Intelectual**
 
-Nuestro Sitio Web puede contener nuestras marcas de servicio o marcas comerciales, así como las de nuestros afiliados u otras personas o empresas, en forma de palabras, gráficos y logotipos. Su uso de nuestro Sitio Web no constituye ningún derecho o licencia para usar dichas marcas de servicio/marcas comerciales, sin la autorización previa por escrito del propietario correspondiente de la marca de servicio/marca comercial. Nuestro Sitio Web, incluido el contenido, también está protegido por las leyes de derechos de autor canadienses e internacionales. Su uso de nuestro Sitio Web o del contenido no le otorga derechos de propiedad de ningún tipo sobre el mismo. La copia, redistribución, uso o publicación por su parte de cualquier parte de nuestro Sitio Web o contenido está estrictamente prohibida y, por lo tanto, no puede ser copiada o reproducida sin obtener primero nuestra autorización por escrito.
+Nuestro Sitio Web puede contener nuestras marcas de servicio o marcas comerciales, así como las de nuestros afiliados u otras personas o empresas, en forma de palabras, gráficos y logotipos. Su uso de nuestro Sitio Web no constituye ningún derecho o licencia para que usted use dichas marcas de servicio/marcas comerciales, sin la autorización escrita previa del propietario correspondiente de la marca de servicio/marca comercial. Nuestro Sitio Web, incluido el contenido, también está protegido por las leyes de derechos de autor canadienses e internacionales. Su uso de nuestro Sitio Web o del contenido no le otorga derechos de propiedad de ningún tipo sobre el mismo. La copia, redistribución, uso o publicación por su parte de cualquier porción de nuestro Sitio Web o contenido está estrictamente prohibida y, por lo tanto, no puede ser copiada o reproducida sin obtener primero nuestra autorización por escrito.
 
 **Limitación de Responsabilidad**
 
-En ninguna circunstancia nosotros, ni nuestros funcionarios o empleados, seremos responsables por cualquier pérdida o daño de cualquier tipo, incluyendo (sin limitar la generalidad de lo anterior) cualquier daño directo, indirecto, incidental, especial, punitivo o consecuencial, que surja o esté relacionado con su uso, acceso o confianza en, o su incapacidad para usar o acceder, este Sitio Web, el sistema de pedidos en línea o cualquier contenido.
+En ninguna circunstancia nosotros, ni nuestros funcionarios o empleados, seremos responsables de ninguna pérdida o daño de ningún tipo, incluida (sin limitar la generalidad de lo anterior) cualquier daño directo, indirecto, incidental, especial, punitivo o consecuente, que surja o esté relacionado con su uso, acceso o confianza en, o su incapacidad de usar o acceder a, este Sitio Web, el sistema de pedidos en línea o cualquier contenido.
 
 **Términos Generales**
 
-Nuestros Términos Legales se considerarán como si se hubieran ejecutado y realizado en la Provincia de Columbia Británica, Canadá, y se regirán e interpretarán de acuerdo con las leyes de esa región, sin tener en cuenta los principios de conflicto de leyes. Además, usted acepta someterse a la jurisdicción personal y al lugar de los tribunales dentro de esa región. Cualquier causa de acción por su parte con respecto a nuestro Sitio Web debe iniciarse dentro del año (1) posterior a que surja la causa de acción o quedará renunciada y prohibida para siempre. Si alguna parte de nuestros Términos Legales se considera inválida o inejecutable, esa parte se interpretará de conformidad con la ley aplicable y las partes restantes permanecerán en pleno vigor y efecto. En la medida en que cualquier contenido entre en conflicto o sea inconsistente con nuestros Términos Legales, nuestros Términos Legales prevalecerán y serán determinantes en su interpretación conjunta. Nuestra falta de hacer cumplir cualquier disposición de nuestros Términos Legales no se considerará una renuncia a dicha disposición ni al derecho de hacer cumplir dicha disposición. Nuestros derechos bajo nuestros Términos Legales sobrevivirán a la terminación de nuestros Términos Legales.
+Nuestros Términos Legales se tratarán como si hubieran sido ejecutados y realizados en la Provincia de Columbia Británica, Canadá, y se regirán e interpretarán de acuerdo con las leyes de esa región sin considerar principios de conflicto de leyes. Además, usted acepta someterse a la jurisdicción personal y al fuero de los tribunales dentro de esa región. Cualquier acción legal por su parte con respecto a nuestro Sitio Web debe iniciarse dentro de un (1) año después de que surja la causa de acción o quedará renunciada y bloqueada para siempre. Si cualquier parte de nuestros Términos Legales se considera inválida o inaplicable, esa porción se interpretará de manera consistente con la ley aplicable y las porciones restantes permanecerán en pleno vigor y efecto. En la medida en que cualquier contenido entre en conflicto o sea inconsistente con nuestros Términos Legales, nuestros Términos Legales prevalecerán y serán supremos en su interpretación conjunta. Nuestra falta de hacer cumplir cualquier disposición de nuestros Términos Legales no se considerará una renuncia a dicha disposición ni al derecho de hacer cumplir dicha disposición. Nuestros derechos bajo nuestros Términos Legales sobrevivirán a la terminación de nuestros Términos Legales.
 
 **Enlaces de Terceros**
 
-Cuando hace clic en enlaces en nuestro Sitio Web, estos pueden dirigirlo fuera de nuestro Sitio Web a otro sitio web propiedad y operado por un tercero. No somos responsables de las prácticas de privacidad de otros sitios web de terceros y le recomendamos que lea sus términos de uso y declaraciones de privacidad. Una vez que abandone nuestro Sitio Web o sea redirigido a un sitio web o aplicación de terceros, ya no estará sujeto a nuestros Términos Legales.
+Cuando hace clic en enlaces de nuestro Sitio Web, estos pueden dirigirlo fuera de nuestro Sitio Web a otro sitio web propiedad y operado por un tercero. No somos responsables de las prácticas de privacidad de otros sitios web de terceros y le recomendamos que lea sus términos de uso y declaraciones de privacidad. Una vez que salga de nuestro Sitio Web o sea redirigido a un sitio web o aplicación de terceros, ya no estará sujeto a nuestros Términos Legales.
 
 **POLÍTICA DE PRIVACIDAD**
 
-En Zero to Hero consideramos que la privacidad es un asunto muy importante y, como tal, estamos comprometidos a proteger la privacidad de la información personal de todos los visitantes. Esta Política de Privacidad incorpora las partes aplicables de la Ley de Protección de Información Personal y Documentos Electrónicos (Canadá), la Ley de Protección de Información Personal (Alberta) y los diez principios establecidos en el Código Modelo de la Asociación Canadiense de Normas (CSA) para la Protección de la Información Personal (juntos, las "leyes de privacidad aplicables").
+En Zero to Hero consideramos que la privacidad es un asunto muy importante y, como tal, estamos comprometidos a proteger la privacidad de la información personal de todos los visitantes. Esta Política de Privacidad incorpora las porciones aplicables de la Ley de Protección de Información Personal y Documentos Electrónicos (Canadá), la Ley de Protección de Información Personal (Alberta) y los diez principios establecidos en el Código Modelo de la Asociación Canadiense de Normas (CSA) para la Protección de Información Personal (en conjunto, las "leyes de privacidad aplicables").
 
-**Recopilación de Información**
+**Información Que Recopilamos**
 
-Podemos recopilar información personal para uno o más de los siguientes fines:
+**Información que usted proporciona directamente:**
 
-*   establecer y mantener relaciones con los visitantes;
-*   proporcionar productos y servicios solicitados y continuos;
-*   notificarle sobre cambios en nuestros productos y servicios;
-*   obtener una mejor comprensión de nuestros visitantes, sus requisitos y preferencias;
-*   desarrollar, mejorar, perfeccionar y/o comercializar nuestros productos y servicios;
-*   monitorear el uso de nuestro Sitio Web;
-*   gestionar y mejorar nuestro negocio y operaciones; y
-*   cumplir con requisitos legales y reglamentarios.
+* Información de la cuenta: su nombre, dirección de correo electrónico, contraseña, preferencias de idioma y nivel de aprendizaje.
+* Datos de aprendizaje: palabras guardadas, frases, progreso de repaso, notas, listas de reproducción, videos que le gustan, historial de visualización, libros y progreso de lectura.
+* Contenido que usted sube o crea: medios personalizados, archivos EPUB y texto que nos pide traducir o explicar.
+* Información de pago: cuando compra una suscripción, el pago es procesado por Stripe, PayPal o Apple App Store. Recibimos confirmación y detalles de la suscripción, pero generalmente no almacenamos el número completo de su tarjeta.
+
+**Información recopilada automáticamente:**
+
+* Datos de uso: páginas y funciones que visita, incluidos Explorar contenido, Música y Entretenimiento, TV en vivo, Programas de TV, Buscar, Diccionario, Palabras guardadas, Repaso, Lector, Lector web, Lector EPUB, Multimedia Local, Historial de visualización, Listas de reproducción y Videos que te gustan; videos que ve; interacciones; y marcas de tiempo.
+* Información del dispositivo y red: dirección IP, tipo de navegador, sistema operativo, tipo de dispositivo y ubicación aproximada derivada de su dirección IP.
+* Análisis: utilizamos Google Analytics para comprender cómo los visitantes usan el Sitio Web. Google Analytics puede utilizar cookies y recopilar datos de uso en nuestro nombre. El uso que Google hace de esos datos se rige por la [Política de Privacidad de Google](https://policies.google.com/privacy).
+* Almacenamiento local: utilizamos cookies, \`localStorage\`, \`sessionStorage\` e IndexedDB para mantener su sesión iniciada, recordar su idioma, almacenar sus configuraciones, progreso y palabras guardadas, y almacenar contenido localmente en caché.
 
 **¿Qué Hacemos Con Su Información?**
 
-Cuando compra algo a través de nuestro sistema de pedidos en línea, como parte del proceso de compra y venta, recopilamos su información personal.
+Utilizamos la información que recopilamos para:
 
-Cuando navega por nuestro Sitio Web, también recibimos automáticamente la dirección de protocolo de internet (IP) de su computadora para proporcionarnos información que nos ayuda a conocer su navegador y sistema operativo.
+* proporcionar, mantener y mejorar el Sitio Web y sus funciones;
+* crear y gestionar su cuenta, verificar su identidad y mantener su sesión iniciada;
+* personalizar recomendaciones según su idioma, nivel e historial de aprendizaje;
+* sincronizar sus datos entre dispositivos;
+* procesar suscripciones, pagos y renovaciones;
+* enviar correos electrónicos transaccionales como códigos de verificación, restablecimientos de contraseña y recibos de pago;
+* enviar comunicaciones de marketing si nos ha dado permiso para hacerlo;
+* analizar el uso con Google Analytics para comprender cómo los visitantes usan el Sitio Web y mejorar nuestros productos;
+* cumplir con requisitos legales y regulatorios y proteger nuestros derechos y los derechos de nuestros usuarios.
 
-Marketing directo permitido (si corresponde): Con su permiso, podemos enviarle boletines informativos o correos electrónicos para anunciar nuestras tiendas, nuevos productos y otras actualizaciones.
+No vendemos su información personal.
+
+**Compartición y Divulgación**
+
+Compartimos información personal solo con proveedores de servicios que nos ayudan a operar el Sitio Web, incluidos:
+
+* proveedores de alojamiento y bases de datos, incluido Supabase;
+* procesadores de pago, incluidos Stripe, PayPal y Apple App Store;
+* proveedores de traducción e IA, incluido DeepSeek, cuando utiliza funciones de traducción o explicación con IA;
+* proveedores de análisis, incluido Google Analytics;
+* plataformas de video, incluidas YouTube y Google, cuando ve videos incrustados.
+
+No utilizaremos ni divulgaremos información personal para fines distintos de aquellos para los que fue recopilada, a menos que sea con su consentimiento, si está permitido o requerido por la ley, o si usted viola nuestros Términos de Uso.
 
 **Consentimiento**
 
 _¿Cómo obtengo su consentimiento?_
 
-Cuando nos proporciona información personal para completar una transacción, verificar su tarjeta de crédito, realizar un pedido, organizar una entrega o devolver una compra, o publicar o fijar cualquier información o foto en nuestro sitio de redes sociales, inferimos que usted acepta que la recopilemos y la usemos solo para ese propósito específico.
+Cuando nos proporciona información personal para crear una cuenta, completar una transacción, verificar su pago, realizar un pedido o utilizar nuestros productos y servicios, inferimos que usted da su consentimiento para que la recopilemos y la usemos solo para ese propósito específico.
 
-Si solicitamos su información personal para una razón secundaria, como marketing, le pediremos directamente su consentimiento explícito o le brindaremos la oportunidad de negarse.
+Si solicitamos su información personal para un propósito secundario, como marketing, le pediremos directamente su consentimiento expreso o le brindaremos la oportunidad de decir que no.
 
 _¿Cómo retiro mi consentimiento?_
 
-Si después de aceptar cambia de opinión, puede retirar su consentimiento para que lo contactemos, para la recopilación, uso o divulgación continua de su información, en cualquier momento, notificándonos.
-
-**Divulgación**
-
-No usaremos ni divulgaremos información personal para fines distintos de aquellos para los que fue recopilada, a menos que sea con su consentimiento, que esté permitido o requerido por la ley, o que usted viole nuestros Términos de Uso.
+Si después de optar por participar, cambia de opinión, puede retirar su consentimiento para que lo contactemos, para la recopilación, uso o divulgación continua de su información, en cualquier momento, notificándonos.
 
 **Protección**
 
-Protegeremos la información personal siguiendo las mejores prácticas de la industria e implementando las salvaguardas razonables que puedan ser apropiadas para la sensibilidad de la información; haremos esfuerzos razonables para proteger la información personal contra pérdida o robo, así como contra acceso no autorizado, divulgación, copia, uso o modificación, independientemente del formato en que se encuentre. La legislación también nos permite, con fines legales o comerciales, retener información personal durante el tiempo que sea razonable y siempre que usted no haya revocado su consentimiento.
+Protegeremos la información personal siguiendo las mejores prácticas de la industria e implementando las salvaguardas razonables que sean apropiadas según la sensibilidad de la información; haremos esfuerzos razonables para proteger la información personal contra pérdida o robo, así como contra acceso, divulgación, copia, uso o modificación no autorizados, independientemente del formato en que se mantenga. La legislación también nos permite, con fines legales o comerciales, retener información personal durante el tiempo que sea razonable y siempre que usted no haya revocado su consentimiento.
 
 **Seguridad**
 
 Para proteger su información personal, tomamos precauciones razonables y seguimos las mejores prácticas de la industria para asegurarnos de que no se pierda, use indebidamente, acceda, divulgue, altere o destruya de manera inapropiada.
 
-**Cookies**
+**Cookies y Tecnologías Similares**
 
-Nuestro Sitio Web no utiliza cookies.
+Nuestro Sitio Web utiliza cookies y tecnologías similares.
+
+* **Cookies esenciales:** utilizamos cookies para mantener su sesión iniciada, recordar sus idiomas seleccionados y gestionar los límites de navegación de invitados.
+* **Análisis:** utilizamos Google Analytics, que puede establecer sus propias cookies y recopilar información de uso.
+* **Almacenamiento local:** utilizamos \`localStorage\`, \`sessionStorage\` e IndexedDB para almacenar configuraciones, palabras guardadas, progreso, contenido de lectura y medios personalizados en su dispositivo.
+* **Contenido incrustado:** los videos se incrustan desde YouTube. YouTube y Google pueden establecer sus propias cookies cuando usted ve un video, las cuales se rigen por sus políticas de privacidad.
+
+Puede bloquear o eliminar cookies a través de la configuración de su navegador. Tenga en cuenta que algunas partes del Sitio Web pueden no funcionar correctamente si deshabilita las cookies.
+
+**Retención y Eliminación de Datos**
+
+Retenemos información personal mientras su cuenta esté activa, o durante el tiempo que sea necesario para proporcionar el Sitio Web, cumplir con obligaciones legales, resolver disputas y hacer cumplir nuestros acuerdos.
+
+Puede eliminar su cuenta en cualquier momento desde la página de Perfil usando la opción Eliminar Cuenta, o contactándonos en la dirección a continuación. Cuando elimina su cuenta, eliminaremos o anonimizaremos su información personal, sujeto a los registros que estamos obligados a conservar por motivos legales, de pago, fiscales o de seguridad.
 
 **Cambios a Esta Política de Privacidad**
 
-Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento, por lo tanto, revísela con frecuencia. Los cambios y aclaraciones entrarán en vigor inmediatamente después de su publicación en el Sitio Web. Si realizamos cambios sustanciales a esta política, le notificaremos aquí que se ha actualizado, para que esté al tanto de qué información recopilamos, cómo la usamos y bajo qué circunstancias, si las hay, la usamos y/o divulgamos.
+Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento, por lo que le pedimos que la revise con frecuencia. Los cambios y aclaraciones entrarán en vigor inmediatamente después de su publicación en el Sitio Web. Si realizamos cambios sustanciales a esta política, le notificaremos aquí que ha sido actualizada, para que usted sepa qué información recopilamos, cómo la usamos y bajo qué circunstancias, si las hay, la usamos y/o divulgamos.
 
-**Preguntas e Información de Contacto**
+**Preguntas E Información De Contacto**
 
-Si desea: acceder, corregir, modificar o eliminar cualquier información personal que tengamos sobre usted, presentar una queja, o simplemente desea más información, contáctenos en [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Si desea: acceder, corregir, modificar o eliminar cualquier información personal que tengamos sobre usted, registrar una queja, o simplemente desea más información, contáctenos en [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Lector EPUB', category: 'reading', content: `# Lector EPUB
 
 Lea libros electrónicos EPUB con búsqueda interactiva de palabras, traducción por bloque y progreso que persiste entre sesiones.
@@ -12803,102 +13058,134 @@ Katseluhistoriasi on yksityinen. Se näkyy vain sinulle, kun olet kirjautunut si
 - Historiasi on rajattu nykyiseen kohdekieleesi — et näe Japani-videoita, kun olet Korea-tilassa` },
     { path: 'privacy-policy', title: 'Tietosuojakäytäntö', category: 'privacy-policy', content: `# Tietosuojakäytäntö
 
-Tämä verkkosivu edustaa oikeudellista asiakirjaa, joka toimii käyttöehtoinamme ja tietosuojakäytäntönämme ja joka säätelee verkkosivustomme käyttöä: [https://languageplayer.io](https://languageplayer.io), mukaan lukien siellä olevat sivut sekä kaikki aliverkkotunnukset ja sovellukset (yhteisesti "Verkkosivusto"), jonka omistavat ja jota ylläpitävät me, Zero to Hero Education, Kanada. ("Zero to Hero").
+Tämä verkkosivu edustaa oikeudellista asiakirjaa, joka toimii käyttöehtoinamme ja tietosuojakäytäntönämme, ja se säätelee verkkosivustomme käyttöä: [https://languageplayer.io](https://languageplayer.io), mukaan lukien sivut, jotka löytyvät sieltä, sekä kaikki aliverkkotunnukset ja sovellukset (yhteisesti "Verkkosivusto"), jonka omistavat ja operoivat me, Zero to Hero Education, Kanada. ("Zero to Hero").
 
 **Johdanto**
 
-Käyttöehdot yhdessä alla julkaistun tietosuojakäytäntömme sekä muiden Verkkosivustollamme julkaistujen ohjeiden tai käytäntöjen (yhteisesti "Oikeudelliset ehdot") muodostavat koko ja ainoan sopimuksen sinun ja meidän välillämme ja syrjäyttävät kaikki muut sopimukset, edustukset, takuut ja ymmärrykset koskien Verkkosivustoamme ja tässä olevaa aihetta. Voimme muuttaa Oikeudellisia ehtojamme milloin tahansa ilman erillistä ilmoitusta sinulle. Uusimmat kopiot Oikeudellisista ehdoistamme julkaistaan Verkkosivustollamme, ja sinun tulee tarkistaa kaikki Oikeudelliset ehdot ennen Verkkosivustomme käyttöä. Kun Oikeudellisiin ehtoihimme on tehty tarkistuksia ja ne on julkaistu, sitoudut noudattamaan niihin tehtyjä muutoksia. Siksi on tärkeää, että tarkistat Oikeudelliset ehtomme säännöllisesti varmistaaksesi, että hyväksyt ne edelleen.
+Käyttöehdot yhdessä alla julkaistun tietosuojakäytäntömme sekä muiden Verkkosivustollamme julkaistujen ohjeiden tai käytäntöjen kanssa (yhteisesti "Oikeudelliset ehdot") muodostavat koko ja ainoan sopimuksen sinun ja meidän välillämme ja korvaavat kaikki muut sopimukset, edustukset, takuut ja yhteisymmärrykset, jotka koskevat Verkkosivustoamme ja tässä käsiteltyä aihetta. Voimme muuttaa Oikeudellisia ehtojamme milloin tahansa ilman erillistä ilmoitusta sinulle. Viimeisimmät kopiot Oikeudellisista ehdoistamme julkaistaan Verkkosivustollamme, ja sinun tulisi tarkastella kaikkia Oikeudellisia ehtoja ennen Verkkosivustomme käyttöä. Kun Oikeudellisiin ehtoihimme tehdyt tarkistukset on julkaistu, sitoudut noudattamaan niihin tehtyjä muutoksia. Siksi on tärkeää, että tarkistat Oikeudellisia ehtojamme säännöllisesti varmistaaksesi, että hyväksyt ne edelleen.
 
-Käyttämällä Verkkosivustoamme hyväksyt noudattavasi täysin Oikeudellisia ehtojamme ja sitoudut niihin. Lue ne huolellisesti. Jos et hyväksy Oikeudellisia ehtojamme, älä käytä Verkkosivustoamme. Jos olet jo käyttänyt Verkkosivustoamme etkä hyväksy Oikeudellisia ehtojamme, sinulla ei ole enää oikeutta käyttää sitä, ja sinun tulee välittömästi lopettaa Verkkosivustomme käyttö.
+Käyttämällä Verkkosivustoamme sitoudut noudattamaan täysin Oikeudellisia ehtojamme ja olet niiden sitoma. Tarkista ne huolellisesti. Jos et hyväksy Oikeudellisia ehtojamme, älä käytä Verkkosivustoamme. Jos olet jo käyttänyt Verkkosivustoamme etkä hyväksy Oikeudellisia ehtojamme, sinulla ei ole enää oikeutta käyttää sitä, ja sinun tulee lopettaa Verkkosivustomme käyttö välittömästi.
 
 **Muut määritellyt termit Verkkosivustollamme**
 
 Tämä Verkkosivusto sisältää tällä sivulla määritellyt termit sekä seuraavat muut määritellyt termit:
 
-Termit "me" ja "meitä" viittaavat Zero to Hero -yritykseen Verkkosivuston omistajana. "Sisältö" sisältää kaiken tekstin, tiedot, grafiikan, äänen, videon ja muut tiedot, jotka on julkaistu, tarjottu tai saataville asetettu Verkkosivustomme kautta.
+Termit "me" ja "meidän" viittaavat Zero to Hero -yritykseen Verkkosivuston omistajana. "Sisältö" sisältää kaikki tekstit, tiedot, grafiikat, äänet, videot ja muut tiedot, jotka on julkaistu, tarjottu tai saataville asetettu Verkkosivustomme kautta.
 
-"Vierailija" tai "sinä" ovat yhteisiä tunnisteita, jotka viittaavat sinuun Verkkosivustomme selailijana, riippumatta siitä, teetkö ostoksen tuotteistamme vai et.
+"Kävijä" tai "sinä" ovat yhteisiä tunnisteita, jotka viittaavat sinuun Verkkosivustomme selailijana riippumatta siitä, teetkö ostoksen tuotteistamme vai et.
 
-"Henkilötiedot" tarkoittaa tietoja tunnistettavasta henkilöstä, joka voi sisältää henkilön nimen, kotiosoitteen, laskutusosoitteen, toimitusosoitteen, puhelinnumeron, sähköpostiosoitteen ja muut vastaavat yhteystiedot sekä Verkkosivuston käyttöhistoriatiedot. Se voi sisältää myös henkilön luottokorttitiedot, kun ne esitetään maksutarkoituksessa.
+"Henkilötiedot" tarkoittaa tunnistettavissa olevaa henkilöä koskevia tietoja, jotka voivat sisältää henkilön nimen, asuinosoitteen, laskutusosoitteen, toimitusosoitteen, puhelinnumeron, sähköpostiosoitteen ja muita vastaavia yhteystietoja sekä Verkkosivuston käyttöhistoriatietoja. Se voi sisältää myös henkilön luottokorttitiedot, kun ne esitetään maksutarkoituksiin.
 
 **KÄYTTÖEHDOT**
 
 **Immateriaalioikeudet**
 
-Verkkosivustomme voi sisältää palvelumerkkejämme tai tavaramerkkejämme sekä yhteistyökumppaneidemme tai muiden henkilöiden tai yritysten merkkejä sanojen, grafiikan ja logojen muodossa. Verkkosivustomme käyttö ei anna sinulle oikeutta tai lupaa käyttää tällaisia palvelumerkkejä/tavaramerkkejä ilman kyseisen palvelumerkin/tavaramerkin omistajan etukäteen antamaa kirjallista valtuutusta. Verkkosivustomme sisältöineen on suojattu myös Kanadan ja kansainvälisten tekijänoikeuslakien nojalla. Verkkosivustomme tai sisällön käyttö ei anna sinulle omistusoikeuksia niihin millään tavalla. Minkä tahansa osan kopiointi, uudelleenjakelu, käyttö tai julkaiseminen Verkkosivustoltamme tai sisällöstä on ehdottomasti kielletty, eikä sitä saa kopioida tai jäljentää ilman kirjallista lupaamme.
+Verkkosivustomme voi sisältää palvelumerkkejämme tai tavaramerkkejämme sekä yhteistyökumppaneidemme tai muiden henkilöiden tai yritysten merkkejä sanojen, grafiikoiden ja logojen muodossa. Verkkosivustomme käyttö ei anna sinulle oikeutta tai lupaa käyttää tällaisia palvelumerkkejä/tavaramerkkejä ilman vastaavan palvelumerkin/tavaramerkin omistajan etukäteen antamaa kirjallista valtuutusta. Verkkosivustomme, mukaan lukien sisältö, on myös suojattu Kanadan ja kansainvälisten tekijänoikeuslakien mukaisesti. Verkkosivustomme tai sisällön käyttö ei anna sinulle minkäänlaista omistusoikeutta niihin. Minkään osan Verkkosivustostamme tai sisällöstä kopioiminen, edelleenjakelu, käyttö tai julkaiseminen on ehdottomasti kiellettyä, eikä sitä saa kopioida tai jäljentää ilman etukäteen hankittua kirjallista valtuutustamme.
 
 **Vastuunrajoitus**
 
-Emme missään olosuhteissa, eivätkä virkailijamme tai työntekijämme, ole vastuussa mistään menetyksistä tai vahingoista, mukaan lukien (rajoittamatta edellä olevan yleisyyttä) mitkään suorat, epäsuorat, satunnaiset, erityiset, rankaisevat tai välilliset vahingot, jotka johtuvat tai liittyvät tämän Verkkosivuston, verkkotilausjärjestelmän tai minkään sisällön käyttöön, pääsyyn tai luottamukseen taikka kyvyttömyyteen käyttää tai päästä niihin.
+Missään olosuhteissa me tai virkailijamme tai työntekijämme emme ole vastuussa mistään menetyksestä tai vahingoista, mukaan lukien (rajoittamatta edellä olevan yleisyyttä) mitkä tahansa välittömät, välilliset, satunnaiset, erityiset, rankaisevat tai seuraamukselliset vahingot, jotka johtuvat tai liittyvät Verkkosivustomme, verkkotilausjärjestelmän tai minkä tahansa sisällön käyttöön, käyttöön pääsyyn, niihin luottamiseen tai kyvyttömyyteesi käyttää tai päästä niihin.
 
 **Yleiset ehdot**
 
-Oikeudellisia ehtojamme käsitellään ikään kuin ne olisi toteutettu ja suoritettu Brittiläisen Kolumbian provinssissa, Kanadassa, ja niitä hallitaan ja tulkitaan kyseisen alueen lakien mukaisesti ilman lainvalintaperiaatteita. Lisäksi hyväksyt henkilökohtaisen lainkäyttövallan ja oikeuspaikan kyseisen alueen tuomioistuimissa. Kaikki sinun Verkkosivustoamme koskevat kanteet on nostettava yhden (1) vuoden kuluessa kanteen syntymisestä tai ne menetetään pysyvästi. Jos jokin osa Oikeudellisista ehdoistamme todetaan pätemättömäksi tai täytäntöönpanokelvottomaksi, kyseistä osaa tulkitaan soveltuvan lain mukaisesti, ja jäljellä olevat osat pysyvät täysimääräisesti voimassa. Siinä määrin kuin jokin sisältö on ristiriidassa Oikeudellisten ehtojemme kanssa, Oikeudelliset ehtomme ovat ensisijaisia ja hallitsevia niiden yhteisessä tulkinnassa. Epäonnistumisemme panna täytäntöön jotakin Oikeudellisten ehtojemme määräystä ei katsota luopumiseksi kyseisestä määräyksestä eikä oikeudesta panna se täytäntöön. Oikeutemme Oikeudellisten ehtojemme nojalla ovat voimassa Oikeudellisten ehtojemme päättymisen jälkeen.
+Oikeudellisia ehtojamme käsitellään ikään kuin ne olisi laadittu ja suoritettu Brittiläisen Kolumbian provinssissa Kanadassa, ja niitä säätelevät ja tulkitaan kyseisen alueen lakien mukaisesti ottamatta huomioon lainvalintaperiaatteita. Lisäksi hyväksyt alistuvasi kyseisen alueen tuomioistuinten henkilökohtaiseen toimivaltaan ja paikalliseen toimivaltaan. Kaikki sinun Verkkosivustoamme koskevat kanteet on nostettava yhden (1) vuoden kuluessa siitä, kun kanneperuste syntyi, tai ne menetetään ja estetään pysyvästi. Jos jokin osa Oikeudellisista ehdoistamme todetaan pätemättömäksi tai täytäntöönpanokelvottomaksi, kyseistä osaa tulkitaan sovellettavan lain mukaisesti, ja jäljellä olevat osat pysyvät täysimääräisesti voimassa. Siinä määrin kuin jokin sisältö on ristiriidassa Oikeudellisten ehtojemme kanssa tai on epäjohdonmukainen niiden kanssa, Oikeudelliset ehtomme ovat ensisijaisia ja määrääviä niiden yhteistulkinnassa. Se, ettemme pane täytäntöön jotakin Oikeudellisten ehtojemme määräystä, ei ole katsottava kyseisen määräyksen tai sen täytäntöönpano-oikeuden luopumiseksi. Oikeudellisten ehtojemme mukaiset oikeutemme ovat voimassa myös Oikeudellisten ehtojen päättymisen jälkeen.
 
 **Kolmannen osapuolen linkit**
 
-Kun napsautat linkkejä Verkkosivustollamme, ne saattavat ohjata sinut pois Verkkosivustoltamme toiselle kolmannen osapuolen omistamalle ja ylläpitämälle verkkosivustolle. Emme ole vastuussa muiden kolmannen osapuolen verkkosivustojen tietosuojakäytännöistä ja suosittelemme lukemaan niiden käyttöehdot ja tietosuojaselosteet. Kun poistut Verkkosivustoltamme tai sinut ohjataan kolmannen osapuolen verkkosivustolle tai sovellukseen, Oikeudelliset ehtomme eivät enää koske sinua.
+Kun klikkaat linkkejä Verkkosivustollamme, ne voivat ohjata sinut pois Verkkosivustoltamme toiselle verkkosivustolle, jonka omistaa ja operoi kolmas osapuoli. Emme ole vastuussa muiden kolmannen osapuolen verkkosivustojen tietosuojakäytännöistä ja kehotamme sinua lukemaan niiden käyttöehdot ja tietosuojaselosteet. Kun poistut Verkkosivustoltamme tai sinut ohjataan kolmannen osapuolen verkkosivustolle tai sovellukseen, Oikeudelliset ehtomme eivät enää koske sinua.
 
 **TIETOSUOJAKÄYTÄNTÖ**
 
-Zero to Herolla pidämme yksityisyyttä erittäin tärkeänä asiana, ja siksi olemme sitoutuneet suojaamaan kaikkien vierailijoiden henkilötietojen yksityisyyttä. Tämä tietosuojakäytäntö sisältää soveltuvat osat henkilötietojen suojaa ja sähköisiä asiakirjoja koskevasta laista (Kanada), henkilötietojen suojalaista (Alberta) ja Kanadan standardiliiton (CSA) henkilötietojen suojan mallikoodin kymmenestä periaatteesta (yhdessä "soveltuvat tietosuojalait").
+Zero to Hero -yrityksessä pidämme yksityisyyttä erittäin tärkeänä asiana ja olemme siksi sitoutuneet suojaamaan kaikkien kävijöiden henkilötietojen yksityisyyttä. Tämä tietosuojakäytäntö sisältää soveltuvat osat henkilötietojen suojaa ja sähköisiä asiakirjoja koskevasta laista (Kanada), henkilötietojen suojalaista (Alberta) sekä Kanadan standardointiyhdistyksen (CSA) henkilötietojen suojelua koskevan mallisäännöstön kymmenen periaatetta (yhteisesti "sovellettavat tietosuojalait").
 
-**Tietojen kerääminen**
+**Tiedot, joita keräämme**
 
-Voimme kerätä henkilötietoja yhteen tai useampaan seuraavista tarkoituksista:
+**Tiedot, jotka annat suoraan:**
 
-*   yhteyksien luomiseen ja ylläpitämiseen vierailijoiden kanssa;
-*   pyydettyjen ja jatkuvien tuotteiden ja palveluiden tarjoamiseen;
-*   ilmoittaaksemme sinulle muutoksista tuotteisiimme ja palveluihimme;
-*   saadaksemme paremman käsityksen vierailijoistamme, heidän vaatimuksistaan ja mieltymyksistään;
-*   tuotteidemme ja palveluidemme kehittämiseen, parantamiseen, edistämiseen ja/tai markkinointiin;
-*   Verkkosivustomme käytön seurantaan;
-*   liiketoimintamme ja toimintojemme hallintaan ja parantamiseen; ja
-*   laki- ja sääntelyvaatimusten täyttämiseen.
+* Tilitiedot: nimesi, sähköpostiosoitteesi, salasanasi, kieliasetuksesi ja oppimistasosi.
+* Oppimistiedot: tallennetut sanat, lauseet, kertausten edistyminen, muistiinpanot, soittolistat, tykätyt videot, katseluhistoria, kirjat ja lukemisen edistyminen.
+* Sisältö, jonka lataat tai luot: mukautettu media, EPUB-tiedostot ja tekstit, joita pyydät meitä kääntämään tai selittämään.
+* Maksutiedot: kun ostat tilauksen, maksun käsittelee Stripe, PayPal tai Apple App Store. Saamme vahvistuksen ja tilauksen tiedot, mutta emme yleensä tallenna täyttä korttinumeroasi.
+
+**Automaattisesti kerätyt tiedot:**
+
+* Käyttötiedot: sivut ja ominaisuudet, joita vierailet, mukaan lukien Tutki mediaa, Musiikki ja Viihde, Suora TV, TV-ohjelmat, Haku, Sanakirja, Tallennetut sanat, Katsaus, Lukija, Verkkosivulukija, EPUB-lukija, Paikallinen Media, Katseluhistoria, Soittolistat ja Tykätyt videot; videot, joita katsot; vuorovaikutukset; ja aikaleimat.
+* Laite- ja verkkotiedot: IP-osoite, selaintyyppi, käyttöjärjestelmä, laitetyyppi ja IP-osoitteestasi johdettu likimääräinen sijainti.
+* Analytiikka: käytämme Google Analyticsia ymmärtääksemme, miten kävijät käyttävät Verkkosivustoa. Google Analytics voi käyttää evästeitä ja kerätä käyttötietoja puolestamme. Googlen tietojen käyttöä säätelee [Googlen tietosuojakäytäntö](https://policies.google.com/privacy).
+* Paikallinen tallennus: käytämme evästeitä, \`localStorage\`a, \`sessionStorage\`a ja IndexedDB:tä pitääksemme sinut kirjautuneena, muistaaksemme kielet, tallentaaksemme asetuksesi, edistymisesi ja tallennetut sanat sekä välimuistittaaksemme sisältöä paikallisesti.
 
 **Mitä teemme tiedoillasi?**
 
-Kun ostat jotain verkkotilausjärjestelmämme kautta, osana osto- ja myyntiprosessia keräämme henkilötietosi.
+Käytämme keräämiämme tietoja:
 
-Kun selaat Verkkosivustoamme, vastaanotamme automaattisesti tietokoneesi internetprotokollaosoitteen (IP-osoite) saadaksemme tietoa, joka auttaa meitä oppimaan selaimestasi ja käyttöjärjestelmästäsi.
+* Verkkosivuston ja sen ominaisuuksien tarjoamiseen, ylläpitämiseen ja parantamiseen;
+* tilisi luomiseen ja hallintaan, henkilöllisyytesi vahvistamiseen ja sinut kirjautuneena pitämiseen;
+* suositusten personointiin kielesi, tasonsi ja oppimishistoriasi perusteella;
+* tietojesi synkronoimiseen laitteiden välillä;
+* tilausten, maksujen ja uusimisten käsittelyyn;
+* tapahtumasähköpostien, kuten vahvistuskoodien, salasanan palautusten ja maksukuittien lähettämiseen;
+* markkinointiviestien lähettämiseen, jos olet antanut siihen luvan;
+* käytön analysointiin Google Analyticsin avulla ymmärtääksemme, miten kävijät käyttävät Verkkosivustoa ja parantaaksemme tuotteitamme;
+* lakisääteisten ja sääntelyvaatimusten täyttämiseen sekä oikeuksiemme ja käyttäjiemme oikeuksien suojaamiseen.
 
-Sallittu suoramarkkinointi (jos sovellettavissa): Luvallasi saatamme lähettää sinulle uutiskirjeitä tai sähköposteja mainostaaksemme myymälöitämme, uusia tuotteita ja muita päivityksiä.
+Emme myy henkilötietojasi.
+
+**Jakaminen ja luovuttaminen**
+
+Jaamme henkilötietoja vain palveluntarjoajille, jotka auttavat meitä Verkkosivuston operoinnissa, mukaan lukien:
+
+* hosting- ja tietokantapalveluntarjoajat, mukaan lukien Supabase;
+* maksunkäsittelijät, mukaan lukien Stripe, PayPal ja Apple App Store;
+* käännös- ja tekoälypalveluntarjoajat, mukaan lukien DeepSeek, kun käytät käännös- tai tekoälyselitysominaisuuksia;
+* analytiikkapalveluntarjoajat, mukaan lukien Google Analytics;
+* videoalustat, mukaan lukien YouTube ja Google, kun katsot upotettuja videoita.
+
+Emme käytä tai luovuta henkilötietoja muihin tarkoituksiin kuin siihen, mihin ne on kerätty, ellei sinulla ole antanut suostumustasi, ellei laki sitä salli tai vaadi, tai jos rikot käyttöehtojamme.
 
 **Suostumus**
 
-_Miten saan suostumuksesi?_
+_Miten saan sinun suostumuksesi?_
 
-Kun annat meille henkilötietoja suorittaaksesi tapahtuman, vahvistaaksesi luottokorttisi, tehdäksesi tilauksen, järjestääksesi toimituksen tai palauttaaksesi ostoksen tai julkaistessasi tai kiinnittäessäsi tietoja tai valokuvia sosiaalisen median sivustollemme, oletamme, että suostut niiden keräämiseen ja käyttöön vain tähän tarkoitukseen.
+Kun annat meille henkilötietoja tilin luomiseksi, tapahtuman suorittamiseksi, maksusi vahvistamiseksi, tilauksen tekemiseksi tai tuotteidemme ja palveluidemme käyttämiseksi, oletamme, että suostut niiden keräämiseen ja käyttämiseen vain tähän nimenomaiseen tarkoitukseen.
 
-Jos pyydämme henkilötietojasi toissijaiseen tarkoitukseen, kuten markkinointiin, pyydämme sinulta joko suoraan nimenomaista suostumusta tai annamme sinulle mahdollisuuden kieltäytyä.
+Jos pyydämme henkilötietojasi toissijaiseen tarkoitukseen, kuten markkinointiin, kysymme joko suoraan nimenomaista suostumustasi tai annamme sinulle mahdollisuuden kieltäytyä.
 
 _Miten peruutan suostumukseni?_
 
-Jos muutat mieltäsi suostumuksen jälkeen, voit peruuttaa suostumuksesi siihen, että otamme sinuun yhteyttä, jatkamme tietojesi keräämistä, käyttöä tai luovuttamista milloin tahansa ilmoittamalla siitä meille.
-
-**Luovuttaminen**
-
-Emme käytä tai luovuta henkilötietoja muihin tarkoituksiin kuin mihin ne on kerätty, ellei se tapahdu suostumuksellasi, jos laki sallii tai vaatii sitä tai jos rikot Käyttöehtojamme.
+Jos muutat mieltäsi rekisteröitymisen jälkeen, voit peruuttaa suostumuksesi meidän yhteydenottoomme, tietojesi jatkuvaan keräämiseen, käyttöön tai luovuttamiseen milloin tahansa ilmoittamalla meille.
 
 **Suojaus**
 
-Suojaamme henkilötietoja noudattamalla alan parhaita käytäntöjä ja toteuttamalla kohtuullisia suojatoimia, jotka ovat sopivia tiedon arkaluontoisuuteen nähden; ponnistelemme kohtuudella suojellaksemme henkilötietoja katoamiselta tai varkaudelta sekä luvattomalta käytöltä, luovuttamiselta, kopioimiselta, käytöltä tai muuttamiselta riippumatta siitä, missä muodossa niitä säilytetään. Lainsäädäntö sallii meidän myös laki- tai liiketoimintasyistä säilyttää henkilötietoja niin kauan kuin on kohtuullista ja edellyttäen, että et ole peruuttanut suostumustasi.
+Suojaamme henkilötietoja noudattamalla toimialan parhaita käytäntöjä ja toteuttamalla sellaisia kohtuullisia suojatoimia, jotka ovat asianmukaisia tietojen arkaluonteisuuteen nähden; pyrimme kohtuullisesti suojaamaan henkilötietoja häviämiseltä tai varkaudelta sekä luvattomalta käytöltä, luovuttamiselta, kopioinnilta, käytöltä tai muuttamiselta riippumatta siitä, missä muodossa niitä säilytetään. Lainsäädäntö sallii myös meille oikeudellisista tai liiketoiminnallisista syistä säilyttää henkilötietoja niin kauan kuin on kohtuullista ja edellyttäen, että et ole peruuttanut suostumustasi.
 
 **Turvallisuus**
 
-Suojellaksemme henkilötietojasi, otamme käyttöön kohtuulliset varotoimet ja noudatamme alan parhaita käytäntöjä varmistaaksemme, ettei niitä menetetä, käytetä väärin, päästä käsiksi, luovuteta, muuteta tai tuhota asianmukaisesti.
+Suojataksemme henkilötietojasi noudatamme kohtuullisia varotoimia ja toimialan parhaita käytäntöjä varmistaaksemme, ettei niitä katoa asianmattomasti, käytetä väärin, päästä käsiksi, luovuteta, muuteta tai tuhota.
 
-**Evästeet**
+**Evästeet ja vastaavat teknologiat**
 
-Verkkosivustomme ei käytä evästeitä.
+Verkkosivustomme käyttää evästeitä ja vastaavia teknologioita.
+
+* **Välttämättömät evästeet:** käytämme evästeitä pitääksemme sinut kirjautuneena, muistaaksemme valitsemasi kielet ja hallitaksemme vierailijoiden navigointirajoja.
+* **Analytiikka:** käytämme Google Analyticsia, joka voi asettaa omia evästeitään ja kerätä käyttötietoja.
+* **Paikallinen tallennus:** käytämme \`localStorage\`a, \`sessionStorage\`a ja IndexedDB:tä tallentaaksemme asetukset, tallennetut sanat, edistymisen, lukusisällön ja mukautetun median laitteellesi.
+* **Upotettu sisältö:** videot on upotettu YouTubesta. YouTube ja Google voivat asettaa omia evästeitään, kun katsot videota, ja niitä säätelevät niiden tietosuojakäytännöt.
+
+Voit estää tai poistaa evästeet selaimen asetusten kautta. Huomaa, että jotkin Verkkosivuston osat eivät välttämättä toimi oikein, jos poistat evästeet käytöstä.
+
+**Tietojen säilytys ja poisto**
+
+Säilytämme henkilötietoja niin kauan kuin tilisi on aktiivinen tai niin kauan kuin on tarpeen Verkkosivuston tarjoamiseksi, lakisääteisten velvoitteiden noudattamiseksi, riitojen ratkaisemiseksi ja sopimustemme täytäntöönpanemiseksi.
+
+Voit poistaa tilisi milloin tahansa Profiili-sivulta Poista tili -vaihtoehdolla tai ottamalla meihin yhteyttä alla olevaan osoitteeseen. Kun poistat tilisi, poistamme tai anonymisoimme henkilötietosi, lukuun ottamatta tietoja, jotka meidän on säilytettävä laillisista, maksu-, vero- tai turvallisuussyistä.
 
 **Muutokset tähän tietosuojakäytäntöön**
 
-Pidätämme oikeuden muuttaa tätä tietosuojakäytäntöä milloin tahansa, joten tarkista se usein. Muutokset ja selvennykset tulevat voimaan välittömästi niiden julkaisemisen jälkeen Verkkosivustolla. Jos teemme olennaisia muutoksia tähän käytäntöön, ilmoitamme sinulle täällä, että sitä on päivitetty, jotta tiedät, mitä tietoja keräämme, miten käytämme niitä ja missä olosuhteissa, jos missään, käytämme ja/tai luovutamme niitä.
+Pidätämme oikeuden muuttaa tätä tietosuojakäytäntöä milloin tahansa, joten tarkista se usein. Muutokset ja selvennykset tulevat voimaan välittömästi, kun ne on julkaistu Verkkosivustolla. Jos teemme tähän käytäntöön olennaisia muutoksia, ilmoitamme sinulle täällä, että sitä on päivitetty, jotta tiedät, mitä tietoja keräämme, miten käytämme niitä ja missä olosuhteissa, jos missään, käytämme ja/tai luovutamme niitä.
 
 **Kysymykset ja yhteystiedot**
 
-Jos haluat: tarkastella, korjata, muuttaa tai poistaa henkilötietojasi, jotka meillä on sinusta, tehdä valituksen tai haluat vain lisätietoja, ota meihin yhteyttä osoitteessa [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Jos haluat: käyttää, korjata, muuttaa tai poistaa henkilötietoja, joita meillä on sinusta, tehdä valituksen tai haluat vain lisätietoja, ota meihin yhteyttä osoitteessa [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-lukija', category: 'reading', content: `# EPUB-lukija
 
 Lue EPUB-verkkokirjoja interaktiivisella sanahakutoiminnolla, lohkokohtaisella käännöksellä ja istuntojen välillä säilyvällä edistymisellä.
@@ -14269,102 +14556,134 @@ Votre historique de visionnage est privé. Il n'est visible que par vous lorsque
 - Votre historique est limité à votre L2 actuelle — vous ne verrez pas de vidéos Japonais lorsque vous êtes en mode Coréen` },
     { path: 'privacy-policy', title: 'Politique de confidentialité', category: 'privacy-policy', content: `# Politique de confidentialité
 
-Cette page web représente un document juridique qui constitue nos Conditions d'utilisation et notre Politique de confidentialité et régit l'utilisation de notre site web : [https://languageplayer.io](https://languageplayer.io), y compris les pages qui s'y trouvent ainsi que tous les sous-domaines et applications (collectivement, le « Site web »), détenu et exploité par nous, Zero to Hero Education, Canada. (« Zero to Hero »).
+Cette page web représente un document juridique qui constitue nos conditions d'utilisation et notre politique de confidentialité et qui régit l'utilisation de notre site web : [https://languageplayer.io](https://languageplayer.io), y compris les pages qui s'y trouvent ainsi que tous les sous-domaines et applications (collectivement, le « Site web »), dont nous sommes propriétaires et exploitants, Zero to Hero Education, Canada. (« Zero to Hero »).
 
 **Introduction**
 
-Les Conditions d'utilisation, ainsi que notre Politique de confidentialité publiée ci-dessous, et autres directives ou politiques affichées sur notre Site web (collectivement, les « Conditions juridiques »), constituent l'intégralité et la seule entente entre vous et nous, et remplacent toutes autres ententes, représentations, garanties et ententes concernant notre Site web et l'objet qui y est contenu. Nous pouvons modifier nos Conditions juridiques à tout moment sans avis spécifique de votre part. Les copies les plus récentes de nos Conditions juridiques seront affichées sur notre Site web, et vous devez examiner toutes les Conditions juridiques avant d'utiliser notre Site web. Après toute révision de nos Conditions juridiques affichée, vous acceptez d'être lié par ces modifications. Par conséquent, il est important pour vous de consulter périodiquement nos Conditions juridiques pour vous assurer que vous y adhérez toujours.
+Les conditions d'utilisation, ainsi que notre politique de confidentialité publiée ci-dessous et les autres directives ou politiques affichées sur notre Site web (collectivement, les « conditions juridiques »), constituent l'intégralité et la seule entente entre vous et nous, et remplacent toutes les autres ententes, représentations, garanties et understandings concernant notre Site web et le sujet qui y est traité. Nous pouvons modifier nos conditions juridiques à tout moment sans avis spécifique de votre part. Les copies les plus récentes de nos conditions juridiques seront affichées sur notre Site web, et vous devez examiner toutes les conditions juridiques avant d'utiliser notre Site web. Après l'affichage de toute révision de nos conditions juridiques, vous acceptez d'être lié par ces modifications. Par conséquent, il est important que vous examiniez périodiquement nos conditions juridiques pour vous assurer que vous y adhérez toujours.
 
-En utilisant notre Site web, vous acceptez de vous conformer pleinement à nos Conditions juridiques et d'être lié par celles-ci. Veuillez les examiner attentivement. Si vous n'acceptez pas nos Conditions juridiques, n'accédez pas et n'utilisez pas notre Site web. Si vous avez déjà accédé à notre Site web et n'acceptez pas nos Conditions juridiques, vous n'êtes plus autorisé à l'utiliser et vous devez immédiatement cesser d'utiliser notre Site web.
+En utilisant notre Site web, vous acceptez de vous conformer pleinement à nos conditions juridiques et d'être lié par celles-ci. Veuillez les examiner attentivement. Si vous n'acceptez pas nos conditions juridiques, n'accédez pas à notre Site web et ne l'utilisez pas. Si vous avez déjà accédé à notre Site web et que vous n'acceptez pas nos conditions juridiques, vous n'êtes plus autorisé à l'utiliser et vous devez immédiatement cesser d'utiliser notre Site web.
 
 **Autres termes définis sur notre Site web**
 
-Ce Site web intègre les termes définis dans cette page ainsi que ces autres termes définis :
+Ce Site web intègre les termes définis tout au long de cette page ainsi que ces autres termes définis :
 
-Les termes « nous » et « notre » désignent Zero to Hero en tant que propriétaire du Site web. « Contenu » comprend tout texte, information, graphique, audio, vidéo et autres données publiés, offerts ou mis à disposition via notre Site web.
+Les termes « nous » et « notre » désignent Zero to Hero en tant que propriétaire du Site web. Le « contenu » comprend tout texte, toute information, tout graphique, tout fichier audio, toute vidéo et toutes autres données affichés, proposés ou rendus disponibles par l'intermédiaire de notre Site web.
 
-Un « visiteur » ou « vous » sont des identifiants collectifs qui vous désignent en tant que navigateur de notre Site web, que vous effectuiez ou non un achat de nos produits.
+Un « visiteur » ou « vous » sont des identifiants collectifs qui désignent toute personne qui consulte notre Site web, qu'elle effectue ou non un achat de nos produits.
 
-« Renseignements personnels » désigne des informations concernant une personne identifiable, qui peuvent inclure le nom, l'adresse résidentielle, l'adresse de facturation, l'adresse de livraison, le numéro de téléphone, l'adresse électronique et d'autres informations de contact similaires, ainsi que les données d'historique d'utilisation du Site web. Cela peut également inclure les informations de carte de crédit d'une personne lorsqu'elles sont présentées à des fins de paiement.
+« Renseignements personnels » désigne les renseignements concernant une personne identifiable, qui peuvent inclure le nom, l'adresse résidentielle, l'adresse de facturation, l'adresse de livraison, le numéro de téléphone, l'adresse électronique et d'autres coordonnées similaires, ainsi que les données sur l'historique d'utilisation du Site web. Cela peut également inclure les informations de carte de crédit d'une personne lorsqu'elles sont présentées à des fins de paiement.
 
 **CONDITIONS D'UTILISATION**
 
 **Propriété intellectuelle**
 
-Notre Site web peut contenir nos marques de service ou marques de commerce ainsi que celles de nos affiliés ou d'autres personnes ou sociétés, sous forme de mots, graphiques et logos. Votre utilisation de notre Site web ne constitue aucun droit ou licence pour utiliser ces marques de service/marques de commerce, sans l'autorisation écrite préalable du propriétaire correspondant de la marque de service/marque de commerce. Notre Site web, y compris le contenu, est également protégé par les lois canadiennes et internationales sur le droit d'auteur. Votre utilisation de notre Site web ou du contenu ne vous confère aucun droit de propriété de quelque nature que ce soit sur celui-ci. La copie, la redistribution, l'utilisation ou la publication par vous de toute partie de notre Site web ou de son contenu est strictement interdite et ne peut donc être copiée ou reproduite sans avoir obtenu au préalable notre autorisation écrite.
+Notre Site web peut contenir nos marques de service ou marques de commerce ainsi que celles de nos affiliés ou d'autres personnes ou sociétés, sous forme de mots, de graphiques et de logos. Votre utilisation de notre Site web ne constitue aucun droit ni licence pour utiliser ces marques de service/marques de commerce, sans l'autorisation écrite préalable du propriétaire correspondant de la marque de service/marque de commerce. Notre Site web, y compris le contenu, est également protégé par les lois canadiennes et internationales sur le droit d'auteur. Votre utilisation de notre Site web ou du contenu ne vous confère aucun droit de propriété de quelque nature que ce soit. La copie, la redistribution, l'utilisation ou la publication par vous de toute partie de notre Site web ou de notre contenu est strictement interdite et ne peut donc pas être copiée ou reproduite sans avoir obtenu au préalable notre autorisation écrite.
 
 **Limitation de responsabilité**
 
-En aucun cas, nous, ou nos dirigeants ou employés, ne serons responsables ou tenus responsables de toute perte ou dommage quelconque, y compris (sans limiter la généralité de ce qui précède) tout dommage direct, indirect, accessoire, spécial, punitif ou consécutif, découlant de ou en relation avec votre utilisation, accès à ou votre confiance en, ou votre incapacité à utiliser ou accéder à, ce Site web, le système de commande en ligne ou tout contenu.
+En aucun cas, nous, ou nos dirigeants ou employés, ne serons responsables ou tenus responsables de toute perte ou de tout dommage, y compris (sans limiter la généralité de ce qui précède) tout dommage direct, indirect, accessoire, spécial, punitif ou consécutif, découlant de ou lié à votre utilisation, à votre accès ou à votre confiance envers, ou à votre incapacité à utiliser ou à accéder à ce Site web, au système de commande en ligne ou à tout contenu.
 
 **Conditions générales**
 
-Nos Conditions juridiques seront considérées comme ayant été exécutées et conclues dans la province de Colombie-Britannique, Canada, et seront régies et interprétées conformément aux lois de cette région sans égard aux principes de conflit de lois. De plus, vous acceptez de vous soumettre à la juridiction personnelle et au lieu des tribunaux de cette région. Toute action en justice de votre part concernant notre Site web doit être intentée dans un délai d'un (1) an après la survenance de la cause de l'action, faute de quoi elle sera irrévocablement abandonnée et prescrite. Si une partie de nos Conditions juridiques est jugée invalide ou inapplicable, cette partie sera interprétée conformément à la loi applicable et les parties restantes resteront en pleine vigueur et effet. Dans la mesure où tout contenu entre en conflit ou est incompatible avec nos Conditions juridiques, nos Conditions juridiques prévaudront et primeront dans leur interprétation conjointe. Le fait que nous ne appliquions pas une disposition de nos Conditions juridiques ne sera pas considéré comme une renonciation à cette disposition ni au droit de l'appliquer. Nos droits en vertu de nos Conditions juridiques survivront à la résiliation de nos Conditions juridiques.
+Nos conditions juridiques seront considérées comme ayant été exécutées et réalisées dans la province de la Colombie-Britannique, au Canada, et seront régies et interprétées conformément aux lois de cette région, sans égard aux principes de conflit de lois. En outre, vous acceptez de vous soumettre à la compétence personnelle et au lieu des tribunaux de cette région. Toute action en justice de votre part concernant notre Site web doit être intentée dans un délai d'un (1) an après la naissance de la cause d'action, sous peine d'être à jamais abandonnée et prescrite. Si une partie de nos conditions juridiques est jugée invalide ou inapplicable, cette partie sera interprétée conformément à la loi applicable et les parties restantes resteront pleinement en vigueur. Dans la mesure où un contenu est en conflit ou incompatible avec nos conditions juridiques, nos conditions juridiques prévaudront et primeront sur leur interprétation conjointe. Le fait que nous ne fassions pas respecter une disposition de nos conditions juridiques ne sera pas considéré comme une renonciation à cette disposition ni au droit de faire respecter cette disposition. Nos droits en vertu de nos conditions juridiques survivront à la résiliation de nos conditions juridiques.
 
 **Liens vers des tiers**
 
-Lorsque vous cliquez sur des liens sur notre Site web, ils peuvent vous rediriger hors de notre Site web vers un autre site web détenu et exploité par un tiers. Nous ne sommes pas responsables des pratiques de confidentialité des autres sites web tiers et vous encourageons à lire leurs conditions d'utilisation et leurs déclarations de confidentialité. Une fois que vous quittez notre Site web ou êtes redirigé vers un site web ou une application tiers, vous n'êtes plus régi par nos Conditions juridiques.
+Lorsque vous cliquez sur des liens sur notre Site web, ils peuvent vous diriger hors de notre Site web vers un autre site web détenu et exploité par un tiers. Nous ne sommes pas responsables des pratiques de confidentialité d'autres sites web tiers et nous vous encourageons à lire leurs conditions d'utilisation et leurs déclarations de confidentialité. Une fois que vous quittez notre Site web ou que vous êtes redirigé vers un site web ou une application tiers, vous n'êtes plus régi par nos conditions juridiques.
 
 **POLITIQUE DE CONFIDENTIALITÉ**
 
-Chez Zero to Hero, nous considérons la confidentialité comme une question très importante et, à ce titre, nous nous engageons à protéger la confidentialité des renseignements personnels de tous les visiteurs. Cette Politique de confidentialité intègre les dispositions applicables de la Loi sur la protection des renseignements personnels et les documents électroniques (Canada), de la Loi sur la protection des renseignements personnels (Alberta) et des dix principes énoncés dans le Code type de l'Association canadienne de normalisation (CSA) pour la protection des renseignements personnels (ensemble, les « lois applicables en matière de confidentialité »).
+Chez Zero to Hero, nous considérons la confidentialité comme une question très importante et, à ce titre, nous nous engageons à protéger la confidentialité des renseignements personnels de tous les visiteurs. La présente politique de confidentialité intègre les dispositions applicables de la Loi sur la protection des renseignements personnels et les documents électroniques (Canada), de la Personal Information Protection Act (Alberta) et les dix principes énoncés dans le Code type sur la protection des renseignements personnels de l'Association canadienne de normalisation (CSA) (ensemble, les « lois applicables en matière de confidentialité »).
 
-**Collecte de renseignements**
+**Renseignements que nous collectons**
 
-Nous pouvons collecter des renseignements personnels pour l'un ou plusieurs des objectifs suivants :
+**Renseignements que vous fournissez directement :**
 
-*   établir et maintenir des relations avec les visiteurs ;
-*   fournir les produits et services demandés et en cours ;
-*   vous informer des modifications apportées à nos produits et services ;
-*   mieux comprendre nos visiteurs, leurs exigences et préférences ;
-*   développer, améliorer, perfectionner et/ou commercialiser nos produits et services ;
-*   surveiller l'utilisation de notre Site web ;
-*   gérer et améliorer notre entreprise et nos opérations ; et
-*   respecter les exigences légales et réglementaires.
+* Informations de compte : votre nom, votre adresse électronique, votre mot de passe, vos préférences linguistiques et votre niveau d'apprentissage.
+* Données d'apprentissage : mots sauvegardés, expressions, progression de révision, notes, listes de lecture, vidéos aimées, historique de visionnage, livres et progression de lecture.
+* Contenu que vous téléversez ou créez : médias personnalisés, fichiers EPUB et texte que vous nous demandez de traduire ou d'expliquer.
+* Informations de paiement : lorsque vous achetez un abonnement, le paiement est traité par Stripe, PayPal ou l'App Store d'Apple. Nous recevons une confirmation et des détails sur l'abonnement, mais nous ne stockons généralement pas votre numéro de carte complet.
 
-**Que faisons-nous de vos informations ?**
+**Renseignements collectés automatiquement :**
 
-Lorsque vous achetez quelque chose via notre système de commande en ligne, dans le cadre du processus d'achat et de vente, nous collectons vos renseignements personnels.
+* Données d'utilisation : pages et fonctionnalités que vous visitez, y compris Explorer les médias, Musique et Divertissement, TV en direct, Émissions TV, Rechercher, Dictionnaire, Mots enregistrés, Révision, Lecteur, Lecteur web, Lecteur EPUB, Média Local, Historique des visionnages, Listes de lecture et Vidéos aimées ; vidéos que vous regardez ; interactions ; et horodatages.
+* Informations sur l'appareil et le réseau : adresse IP, type de navigateur, système d'exploitation, type d'appareil et emplacement approximatif dérivé de votre adresse IP.
+* Analyses : nous utilisons Google Analytics pour comprendre comment les visiteurs utilisent le Site web. Google Analytics peut utiliser des cookies et collecter des données d'utilisation en notre nom. L'utilisation de ces données par Google est régie par la [politique de confidentialité de Google](https://policies.google.com/privacy).
+* Stockage local : nous utilisons des cookies, \`localStorage\`, \`sessionStorage\` et IndexedDB pour vous garder connecté, mémoriser votre langue, stocker vos paramètres, votre progression et vos mots sauvegardés, et mettre en cache le contenu localement.
 
-Lorsque vous naviguez sur notre Site web, nous recevons également automatiquement l'adresse de protocole Internet (IP) de votre ordinateur afin de nous fournir des informations qui nous aident à en savoir plus sur votre navigateur et votre système d'exploitation.
+**Que faisons-nous avec vos renseignements ?**
 
-Marketing direct autorisé (le cas échéant) : Avec votre permission, nous pouvons vous envoyer des lettres d'information ou des courriels pour faire la publicité de nos magasins, nouveaux produits et autres mises à jour.
+Nous utilisons les renseignements que nous collectons pour :
+
+* fournir, maintenir et améliorer le Site web et ses fonctionnalités ;
+* créer et gérer votre compte, vérifier votre identité et vous garder connecté ;
+* personnaliser les recommandations en fonction de votre langue, de votre niveau et de votre historique d'apprentissage ;
+* synchroniser vos données sur plusieurs appareils ;
+* traiter les abonnements, les paiements et les renouvellements ;
+* envoyer des courriels transactionnels tels que des codes de vérification, des réinitialisations de mot de passe et des reçus de paiement ;
+* envoyer des communications marketing si vous nous avez donné la permission de le faire ;
+* analyser l'utilisation avec Google Analytics pour comprendre comment les visiteurs utilisent le Site web et améliorer nos produits ;
+* satisfaire aux exigences légales et réglementaires et protéger nos droits et ceux de nos utilisateurs.
+
+Nous ne vendons pas vos renseignements personnels.
+
+**Partage et divulgation**
+
+Nous partageons les renseignements personnels uniquement avec les fournisseurs de services qui nous aident à exploiter le Site web, y compris :
+
+* les fournisseurs d'hébergement et de bases de données, y compris Supabase ;
+* les processeurs de paiement, y compris Stripe, PayPal et l'App Store d'Apple ;
+* les fournisseurs de traduction et d'IA, y compris DeepSeek, lorsque vous utilisez les fonctionnalités de traduction ou d'explication par IA ;
+* les fournisseurs d'analyses, y compris Google Analytics ;
+* les plateformes vidéo, y compris YouTube et Google, lorsque vous regardez des vidéos intégrées.
+
+Nous n'utiliserons ni ne divulguerons les renseignements personnels à des fins autres que celles pour lesquelles ils ont été collectés, sauf avec votre consentement, si cela est permis ou exigé par la loi, ou si vous violez nos conditions d'utilisation.
 
 **Consentement**
 
 _Comment obtenez-vous mon consentement ?_
 
-Lorsque vous nous fournissez des renseignements personnels pour effectuer une transaction, vérifier votre carte de crédit, passer une commande, organiser une livraison ou retourner un achat, ou publier ou épingler des informations ou des photos sur notre site de médias sociaux, nous considérons que vous consentez à ce que nous les collections et les utilisions uniquement à cette fin spécifique.
+Lorsque vous nous fournissez des renseignements personnels pour créer un compte, effectuer une transaction, vérifier votre paiement, passer une commande ou utiliser nos produits et services, nous en déduisons que vous consentez à ce que nous les collections et les utilisions à cette fin spécifique uniquement.
 
-Si nous demandons vos renseignements personnels pour une raison secondaire, comme le marketing, nous vous demanderons soit directement votre consentement explicite, soit vous offrirons la possibilité de refuser.
+Si nous vous demandons vos renseignements personnels pour une raison secondaire, comme le marketing, nous vous demanderons directement votre consentement exprès ou nous vous offrirons la possibilité de refuser.
 
-_Comment puis-je retirer mon consentement ?_
+_Comment retirer mon consentement ?_
 
-Si, après avoir accepté, vous changez d'avis, vous pouvez retirer votre consentement à ce que nous vous contactions, pour la collecte, l'utilisation ou la divulgation continue de vos informations, à tout moment, en nous en informant.
-
-**Divulgation**
-
-Nous n'utiliserons ni ne divulguerons des renseignements personnels à des fins autres que celles pour lesquelles ils ont été collectés, sauf avec votre consentement, si la loi le permet ou l'exige, ou si vous violez nos Conditions d'utilisation.
+Si après avoir adhéré, vous changez d'avis, vous pouvez retirer votre consentement à ce que nous vous contactions, à la collecte, à l'utilisation ou à la divulgation continue de vos renseignements, à tout moment, en nous en avisant.
 
 **Protection**
 
-Nous protégerons les renseignements personnels en suivant les meilleures pratiques du secteur et en mettant en œuvre des garanties raisonnables appropriées à la sensibilité des informations ; nous ferons des efforts raisonnables pour protéger les renseignements personnels contre la perte ou le vol, ainsi que contre tout accès, divulgation, copie, utilisation ou modification non autorisés, quel que soit le format sous lequel ils sont détenus. La législation nous autorise également, pour des raisons juridiques ou commerciales, à conserver les renseignements personnels aussi longtemps que cela est raisonnable et à condition que vous n'ayez pas révoqué votre consentement.
+Nous protégerons les renseignements personnels en suivant les meilleures pratiques de l'industrie et en mettant en œuvre des garanties raisonnables appropriées à la sensibilité des renseignements ; nous ferons des efforts raisonnables pour protéger les renseignements personnels contre la perte ou le vol, ainsi que contre l'accès, la divulgation, la copie, l'utilisation ou la modification non autorisés, quel que soit le format sous lequel ils sont détenus. La législation nous permet également, à des fins juridiques ou commerciales, de conserver les renseignements personnels aussi longtemps que cela est raisonnable et à condition que vous n'ayez pas révoqué votre consentement.
 
 **Sécurité**
 
-Pour protéger vos renseignements personnels, nous prenons des précautions raisonnables et suivons les meilleures pratiques du secteur pour nous assurer qu'ils ne sont pas perdus, mal utilisés, consultés, divulgués, modifiés ou détruits de manière inappropriée.
+Pour protéger vos renseignements personnels, nous prenons des précautions raisonnables et suivons les meilleures pratiques de l'industrie pour nous assurer qu'ils ne sont pas perdus, mal utilisés, consultés, divulgués, modifiés ou détruits de manière inappropriée.
 
-**Cookies**
+**Témoins et technologies similaires**
 
-Notre Site web n'utilise pas de cookies.
+Notre Site web utilise des témoins et des technologies similaires.
 
-**Modifications de cette Politique de confidentialité**
+* **Témoins essentiels :** nous utilisons des témoins pour vous garder connecté, mémoriser vos langues sélectionnées et gérer les limites de navigation des invités.
+* **Analyses :** nous utilisons Google Analytics, qui peut définir ses propres témoins et collecter des informations d'utilisation.
+* **Stockage local :** nous utilisons \`localStorage\`, \`sessionStorage\` et IndexedDB pour stocker les paramètres, les mots sauvegardés, la progression, le contenu de lecture et les médias personnalisés sur votre appareil.
+* **Contenu intégré :** les vidéos sont intégrées à partir de YouTube. YouTube et Google peuvent définir leurs propres témoins lorsque vous regardez une vidéo, lesquels sont régis par leurs politiques de confidentialité.
 
-Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment, veuillez donc la consulter fréquemment. Les modifications et clarifications prendront effet immédiatement après leur publication sur le Site web. Si nous apportons des modifications importantes à cette politique, nous vous en informerons ici, afin que vous sachiez quelles informations nous collectons, comment nous les utilisons et dans quelles circonstances, le cas échéant, nous les utilisons et/ou les divulguons.
+Vous pouvez bloquer ou supprimer les témoins via les paramètres de votre navigateur. Veuillez noter que certaines parties du Site web peuvent ne pas fonctionner correctement si vous désactivez les témoins.
+
+**Conservation et suppression des données**
+
+Nous conservons les renseignements personnels aussi longtemps que votre compte est actif, ou aussi longtemps que nécessaire pour fournir le Site web, respecter les obligations légales, résoudre les litiges et faire respecter nos ententes.
+
+Vous pouvez supprimer votre compte à tout moment à partir de la page Profil en utilisant l'option Supprimer le compte, ou en nous contactant à l'adresse ci-dessous. Lorsque vous supprimez votre compte, nous supprimons ou anonymisons vos renseignements personnels, sous réserve des dossiers que nous sommes tenus de conserver à des fins juridiques, de paiement, fiscales ou de sécurité.
+
+**Modifications de cette politique de confidentialité**
+
+Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment. Veuillez donc la consulter fréquemment. Les modifications et clarifications prendront effet immédiatement dès leur publication sur le Site web. Si nous apportons des modifications importantes à cette politique, nous vous en aviserons ici afin que vous sachiez quelles informations nous collectons, comment nous les utilisons et dans quelles circonstances, le cas échéant, nous les utilisons et/ou les divulguons.
 
 **Questions et coordonnées**
 
-Si vous souhaitez : accéder, corriger, modifier ou supprimer tout renseignement personnel que nous avons sur vous, déposer une plainte, ou simplement obtenir plus d'informations, contactez-nous à [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Si vous souhaitez : accéder à vos renseignements personnels que nous détenons, les corriger, les modifier ou les supprimer, déposer une plainte, ou simplement obtenir plus d'informations, contactez-nous à [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Lecteur EPUB', category: 'reading', content: `# Lecteur EPUB
 
 Lisez des livres électroniques EPUB avec recherche interactive de mots, traduction par bloc et progression persistante entre les sessions.
@@ -15735,102 +16054,134 @@ Tá do stair faire príobháideach. Ní fheiceann ach tusa é nuair atá tú sí
 - Tá do stair teoranta do do L2 reatha – ní fheicfidh tú físeáin Seapáinis nuair atá tú i mód Cóiréis` },
     { path: 'privacy-policy', title: 'Polasaí príobháideachta', category: 'privacy-policy', content: `# Polasaí príobháideachta
 
-Léiríonn an leathanach gréasáin seo doiciméad dlíthiúil a fheidhmíonn mar ár dTéarmaí Úsáide agus Beartas Príobháideachta agus a rialaíonn úsáid ár suíomh gréasáin: [https://languageplayer.io](https://languageplayer.io), lena n-áirítear leathanaigh a fhaightear air agus gach fó-dhomhan agus aipeanna (le chéile, "Suíomh Gréasáin"), mar atá faoi úinéireacht agus á oibriú againne, Zero to Hero Education, Ceanada. ("Zero to Hero").
+Is doiciméad dlíthiúil é an leathanach gréasáin seo a fheidhmíonn mar ár dTéarmaí Úsáide agus mar ár mBeartas Príobháideachta agus rialaíonn sé úsáid ár suíomh gréasáin: [https://languageplayer.io](https://languageplayer.io), lena n-áirítear leathanaigh a fhaightear air agus gach fó-dhomhain agus aip (le chéile, "Suíomh Gréasáin"), ar le húinéir agus oibreoir é Zero to Hero Education, Ceanada. ("Zero to Hero").
 
 **Réamhrá**
 
-Is ionann na Téarmaí Úsáide, mar aon lenár mBeartas Príobháideachta a fhoilsítear thíos, agus treoirlínte nó beartais eile a phostáiltear inár Suíomh Gréasáin (le chéile "Téarmaí Dlíthiúla"), an t-aon chomhaontú iomlán idir tusa agus muidne, agus cuireann siad thar ceal gach comhaontú, ráiteas, barántas agus tuiscint eile maidir lenár Suíomh Gréasáin agus an t-ábhar atá ann. Féadfaimid ár dTéarmaí Dlíthiúla a leasú ag am ar bith gan fógra sonrach a thabhairt duit. Postálfar na cóipeanna is déanaí dár dTéarmaí Dlíthiúla ar ár Suíomh Gréasáin, agus ba cheart duit athbhreithniú a dhéanamh ar gach Téarma Dlíthiúil sula n-úsáideann tú ár Suíomh Gréasáin. Tar éis aon athbhreithnithe ar ár dTéarmaí Dlíthiúla a phostáil, aontaíonn tú a bheith faoi cheangal ag aon athruithe den sórt sin orthu. Dá bhrí sin, tá sé tábhachtach duit athbhreithniú tréimhsiúil a dhéanamh ar ár dTéarmaí Dlíthiúla lena chinntiú go n-aontaíonn tú leo fós.
+Is iad na Téarmaí Úsáide, mar aon lenár mBeartas Príobháideachta a fhoilsítear thíos, agus treoirlínte nó polasaithe eile a phostáiltear ár Suíomh Gréasáin (le chéile "Téarmaí Dlíthiúla"), an t-aon chomhaontú iomlán idir tusa agus muidne, agus cuirtear in ionad gach comhaontú, léiriú, barántas agus tuiscint eile iad maidir lenár Suíomh Gréasáin agus an t-ábhar atá ansin. Féadfaimid ár dTéarmaí Dlíthiúla a leasú am ar bith gan fógra ar leith a thabhairt duit. Postálfar na cóipeanna is déanaí dár dTéarmaí Dlíthiúla ar ár Suíomh Gréasáin, agus ba cheart duit athbhreithniú a dhéanamh ar na Téarmaí Dlíthiúla ar fad sula n-úsáideann tú ár Suíomh Gréasáin. Tar éis aon athbhreithnithe ar ár dTéarmaí Dlíthiúla a phostáil, aontaíonn tú a bheith ceangailte ag aon athruithe den sórt sin orthu. Dá bhrí sin, tá sé tábhachtach duit athbhreithniú tréimhsiúil a dhéanamh ar ár dTéarmaí Dlíthiúla le cinntiú go n-aontaíonn tú leo fós.
 
-Trí úsáid a bhaint as ár Suíomh Gréasáin, aontaíonn tú cloí go hiomlán lenár dTéarmaí Dlíthiúla agus a bheith faoi cheangal acu. Déan athbhreithniú cúramach orthu. Mura nglacann tú lenár dTéarmaí Dlíthiúla, ná rochtain ná ná húsáid ár Suíomh Gréasáin. Má tá rochtain faighte agat cheana ar ár Suíomh Gréasáin agus mura nglacann tú lenár dTéarmaí Dlíthiúla, níl tú údaraithe a thuilleadh é a úsáid agus ba cheart duit úsáid ár Suíomh Gréasáin a scor láithreach.
+Trí úsáid a bhaint as ár Suíomh Gréasáin, aontaíonn tú cloí go hiomlán lenár dTéarmaí Dlíthiúla agus a bheith ceangailte acu. Déan athbhreithniú cúramach orthu, le do thoil. Mura nglacann tú lenár dTéarmaí Dlíthiúla, ná faigh rochtain ar ár Suíomh Gréasáin agus ná húsáid é. Má tá rochtain faighte agat cheana ar ár Suíomh Gréasáin agus mura nglacann tú lenár dTéarmaí Dlíthiúla, níl tú údaraithe a thuilleadh é a úsáid agus ba cheart duit scor d'úsáid ár Suíomh Gréasáin láithreach.
 
 **Téarmaí Sainithe Eile Ar Ár Suíomh Gréasáin**
 
-Ionchorpraíonn an Suíomh Gréasáin seo téarmaí atá sainithe ar fud an leathanaigh seo chomh maith leis na téarmaí sainithe seo a leanas:
+Ionchorpraíonn an Suíomh Gréasáin seo téarmaí a shainmhínítear ar fud an leathanaigh seo chomh maith leis na téarmaí sainithe eile seo:
 
-Tagraíonn na téarmaí "muidne" agus "muid" do Zero to Hero mar úinéir an tSuímh Ghréasáin. Áiríonn "Ábhar" aon téacs, faisnéis, grafaicí, clos, físeán, agus sonraí eile a phostáiltear, a thairgtear nó a chuirtear ar fáil trínár Suíomh Gréasáin.
+Tagraíonn na téarmaí "muidne" agus "sinn" do Zero to Hero mar úinéir an tSuímh Ghréasáin. Áirítear le "Ábhar" aon téacs, faisnéis, grafaicí, fuaim, físeán, agus sonraí eile a phostáiltear, a thairgtear nó a chuirtear ar fáil trínár Suíomh Gréasáin.
 
-Is sainaithneoirí comhchoiteanna iad "cuairteoir" nó "tusa" a thagraíonn duit mar bhrabhsálaí ar ár Suíomh Gréasáin, cibé an gcríochnaíonn tú ceannach dár dtáirgí nó nach gcríochnaíonn.
+Is aitheantóirí comhchoiteanna iad "cuairteoir" nó "tusa" a thagraíonn duit mar bhrabhsálaí ar ár Suíomh Gréasáin, cibé acu a chríochnaíonn tú ceannachán dár dtáirgí nó nach gcriochnaíonn.
 
-Ciallaíonn "faisnéis phearsanta" faisnéis faoi dhuine inaitheanta, a d'fhéadfadh ainm duine, seoladh cónaithe, seoladh billeála, seoladh seachadta, uimhir theileafóin, seoladh ríomhphoist agus faisnéis teagmhála chomhchosúil eile, chomh maith le sonraí stair úsáide Suímh Ghréasáin a áireamh. D'fhéadfadh sé faisnéis chárta creidmheasa duine a áireamh freisin nuair a chuirtear i láthair é chun críocha íocaíochta.
+Ciallaíonn "faisnéis phearsanta" faisnéis faoi dhuine inaitheanta, a bhféadfadh ainm duine, seoladh cónaithe, seoladh billeála, seoladh seachadta, uimhir ghutháin, seoladh ríomhphoist agus faisnéis teagmhála chomhchosúil eile a áireamh, chomh maith le sonraí stair úsáide Suímh Ghréasáin. Féadfaidh sé faisnéis chárta creidmheasa duine a áireamh freisin nuair a chuirtear i láthair é chun críocha íocaíochta.
 
 **TÉARMAÍ ÚSÁIDE**
 
-**Maolntacht Intleachtúil**
+**Maoin Intleachtúil**
 
-D'fhéadfadh ár marcanna seirbhíse nó trádmharcanna a bheith inár Suíomh Gréasáin chomh maith le cinn dár gcleamhnaithe nó daoine nó cuideachtaí eile, i bhfoirm focal, grafaicí, agus lógónna. Ní comhdhéanann d'úsáid dár Suíomh Gréasáin aon cheart ná ceadúnas duit marcanna seirbhíse/trádmharcanna den sórt sin a úsáid, gan údarú i scríbhinn roimh ré ó úinéir an mharc seirbhíse/trádmhairc chomhfhreagraigh. Tá ár Suíomh Gréasáin lena n-áirítear an t-ábhar cosanta freisin faoi dhlíthe cóipchirt Cheanada agus idirnáisiúnta. Ní thugann d'úsáid dár Suíomh Gréasáin nó an ábhair cearta úinéireachta ar bith de chineál ar bith duit ann. Tá cóipeáil, athdháileadh, úsáid nó foilsiú aon chuid dár Suíomh Gréasáin nó dár n-ábhar agat toirmiscthe go docht agus dá bhrí sin ní fhéadfar é a chóipeáil nó a atáirgeadh gan ár n-údarú i scríbhinn a fháil ar dtús.
+Féadfaidh ár Suíomh Gréasáin ár marcanna seirbhíse nó trádmharcanna a bheith ann chomh maith le cinn ár gcomhpháirtithe nó daoine nó cuideachtaí eile, i bhfoirm focal, grafaicí, agus lógónna. Ní dhéanann d'úsáid as ár Suíomh Gréasáin aon cheart nó ceadúnas duit marcanna seirbhíse/trádmharcanna den sórt sin a úsáid, gan údarú i scríbhinn roimh ré ó úinéir an mharc seirbhíse/trádmhairc chomhfhreagraigh. Tá ár Suíomh Gréasáin lena n-áirítear an t-ábhar cosanta freisin faoi dhlíthe cóipchirt Cheanada agus idirnáisiúnta. Ní thugann d'úsáid as ár Suíomh Gréasáin nó an t-ábhar cearta úinéireachta ar bith duit ann. Tá cóipeáil, athdháileadh, úsáid nó foilsiú aon chuid dár Suíomh Gréasáin nó dár n-ábhar agat toirmiscthe go docht agus dá bhrí sin ní fhéadfar é a chóipeáil nó a atáirgeadh gan ár n-údarú i scríbhinn a fháil ar dtús.
 
-**Teorainn ar Dhliteanas**
+**Teorannú Dliteanais**
 
-In imthosca ar bith, ní bheidh muidne, ná ár n-oifigigh nó ár bhfostaithe, freagrach ná faoi dhliteanas i leith aon chaillteanais nó damáistí de chineál ar bith, lena n-áirítear (gan teorainn a chur le ginearálacht an méid thuas) aon damáistí díreacha, indíreacha, teagmhasacha, speisialta, pionósacha nó iarmhartacha, a eascraíonn as nó i ndáil le d'úsáid, rochtain nó do bhrath ar, nó do neamhábaltacht úsáid nó rochtain a fháil ar, an Suíomh Gréasáin seo, an córas ordaithe ar líne nó aon ábhar.
+In imthosca ar bith ní bheidh muidne, ná ár n-oifigigh nó ár bhfostaithe, freagrach ná faoi dhliteanas i leith aon chaillteanais nó damáistí dá laghad, lena n-áirítear (gan teorainn a chur le ginearálacht an méid sin roimhe seo) aon damáistí díreacha, indíreacha, teagmhasacha, speisialta, pionósacha nó iarmhartacha, a eascraíonn as nó i ndáil le d'úsáid, do rochtain ar nó do bheith ag brath ar, nó do neamhábaltacht an Suíomh Gréasáin seo, an córas ordaithe ar líne nó aon ábhar a úsáid nó a rochtain.
 
 **Téarmaí Ginearálta**
 
-Caithfear lenár dTéarmaí Dlíthiúla amhail is dá mba rud é gur cuireadh i gcrích agus i gcomhlíonadh iad i gCúige Bhriotanáin Theas, Ceanada agus rialófar agus léireofar iad de réir dhlíthe an réigiúin sin gan aird ar phrionsabail choinbhleachta dlí. Ina theannta sin, aontaíonn tú a bheith faoi réir dhlínse phearsanta agus ionaid na gcúirteanna laistigh den réigiún sin. Ní mór aon chúis ghnímh agatsa maidir lenár Suíomh Gréasáin a thionscnamh laistigh de bhliain (1) amháin tar éis gur eascair an chúis ghnímh nó beidh sí thar ceal agus bactha go deo. Dá mba rud é go measfaí go bhfuil aon chuid dár dTéarmaí Dlíthiúla neamhbhailí nó do-fhorfheidhmithe, déanfar an chuid sin a fhorléiriú i gcomhréir leis an dlí is infheidhme agus fanfaidh na codanna eile i bhfeidhm go hiomlán. Sa mhéid go mbíonn aon ábhar in aghaidh nó neamh-chomhsheasmhach lenár dTéarmaí Dlíthiúla, beidh ár dTéarmaí Dlíthiúla thar ceal agus uachtarach ar fhorléiriú le chéile iad. Ní mheasfar gur thar ceal d'fhoráil ar bith dár dTéarmaí Dlíthiúla é ár mainneachtain foráil ar bith a fhorfheidhmiú ná an ceart chun an fhoráil sin a fhorfheidhmiú. Tiocfaidh deireadh lenár gcearta faoi ár dTéarmaí Dlíthiúla ar fhoirceannadh ár dTéarmaí Dlíthiúla.
+Caithfear le hár dTéarmaí Dlíthiúla amhail is dá mbeidís curtha i gcrích agus feidhmithe i gCúige British Columbia, Ceanada agus rialóidh dlíthe an réigiúin sin iad agus léireofar iad de réir na ndlíthe sin gan aird ar phrionsabail choinbhleachta dlí. Ina theannta sin, aontaíonn tú aighneacht a dhéanamh do dhlínse phearsanta agus ionad na gcúirteanna laistigh den réigiún sin. Ní mór aon chúis ghnímh agatsa maidir lenár Suíomh Gréasáin a thionscnamh laistigh de bhliain (1) amháin tar éis don chúis ghnímh teacht chun cinn nó déanfar é a tharscaoileadh agus a chosc go deo. Má dheimhnítear go bhfuil aon chuid dár dTéarmaí Dlíthiúla neamhbhailí nó neamh-infheidhmithe, léireofar an chuid sin de réir an dlí is infheidhme agus fanfaidh na codanna eile i bhfeidhm agus in éifeacht iomlán. Sa mhéid go bhfuil aon ábhar i gcoimhlint nó contrártha lenár dTéarmaí Dlíthiúla, beidh ár dTéarmaí Dlíthiúla i réim agus beidh siad uachtaracha ina léiriú le chéile. Ní mheasfar gur tarscaoileadh ar fhoráil ná ar cheart foráil den sórt sin a fhorfheidhmiú é ár mainneachtain aon fhoráil dár dTéarmaí Dlíthiúla a fhorfheidhmiú. Maireann ár gcearta faoinár dTéarmaí Dlíthiúla tar éis fhoirceannadh ár dTéarmaí Dlíthiúla.
 
 **Naisc Tríú Páirtí**
 
-Nuair a chliceálann tú ar naisc ar ár Suíomh Gréasáin, d'fhéadfaidís tú a threorú amach ó ár Suíomh Gréasáin go suíomh gréasáin eile atá faoi úinéireacht agus á oibriú ag tríú páirtí. Nílimid freagrach as cleachtais phríobháideachta suíomhanna gréasáin eile tríú páirtí agus spreagaimid thú a dtéarmaí úsáide agus a ráitis phríobháideachta a léamh. Nuair a fhágann tú ár Suíomh Gréasáin nó má atreoraítear chuig suíomh gréasáin nó feidhmchlár tríú páirtí thú, níl tú faoi rialú ár dTéarmaí Dlíthiúla a thuilleadh.
+Nuair a chliceálann tú ar naisc ar ár Suíomh Gréasáin, féadfaidh siad tú a atreorú ar shiúl ó ár Suíomh Gréasáin chuig suíomh gréasáin eile ar le tríú páirtí úinéir agus oibreoir é. Níl muidne freagrach as cleachtais phríobháideachta suíomhanna gréasáin tríú páirtí eile agus spreagaimid thú a dtéarmaí úsáide agus a ráitis phríobháideachta a léamh. Nuair a fhágann tú ár Suíomh Gréasáin nó nuair a atreoraítear tú chuig suíomh gréasáin nó feidhmchlár tríú páirtí, níl tú faoi réir ár dTéarmaí Dlíthiúla a thuilleadh.
 
 **BEARTAS PRÍOBHÁIDEACHTA**
 
-Ag Zero to Hero measaimid gur ábhar an-tábhachtach é an phríobháideacht agus dá réir sin táimid tiomanta do phríobháideacht na faisnéise pearsanta de gach cuairteoir a chosaint. Ionchorpraíonn an Beartas Príobháideachta seo na codanna infheidhme den Acht um Chosaint Faisnéise Pearsanta agus Doiciméid Leictreonacha (Ceanada), den Acht um Chosaint Faisnéise Pearsanta (Alberta) agus na deich bprionsabal atá leagtha amach i gCód Múnla Chumann Caighdeánach Cheanada (CSA) um Chosaint Faisnéise Pearsanta (le chéile, na "dlíthe príobháideachta is infheidhme").
+Ag Zero to Hero measaimid gur ábhar an-tábhachtach é an phríobháideacht agus mar sin táimid tiomanta do phríobháideacht fhaisnéis phearsanta na gcuairteoirí ar fad a chosaint. Ionchorpraíonn an Beartas Príobháideachta seo na codanna is infheidhme den Acht um Chosaint Faisnéise Pearsanta agus Doiciméid Leictreonacha (Ceanada), den Acht um Chosaint Faisnéise Pearsanta (Alberta) agus na deich bprionsabal atá leagtha amach i gCód Múnla Chomhlachas Caighdeán Cheanada (CSA) um Chosaint Faisnéise Pearsanta (le chéile, na "dlíthe príobháideachta is infheidhme").
 
-**Bailiú Faisnéise**
+**Faisnéis a Bhailímid**
 
-Féadfaimid faisnéis phearsanta a bhailiú ar mhaithe le haon chuspóir amháin nó níos mó díobh seo a leanas:
+**Faisnéis a sholáthraíonn tú go díreach:**
 
-*   caidrimh le cuairteoirí a bhunú agus a chothabháil;
-*   táirgí agus seirbhísí a iarrtar agus a bheidh ar siúl a sholáthar;
-*   tú a chur ar an eolas faoi athruithe ar ár dtáirgí agus seirbhísí;
-*   tuiscint níos fearr a fháil ar chuairteoirí, a gcuid riachtanas agus roghanna;
-*   ár dtáirgí agus seirbhísí a fhorbairt, a fheabhsú, a uasghrádú agus/nó a mhargú;
-*   monatóireacht a dhéanamh ar úsáid ár Suíomh Gréasáin;
-*   ár ngnó agus ár n-oibríochtaí a bhainistiú agus a fheabhsú; agus
-*   ceanglais dhlíthiúla agus rialála a chomhlíonadh.
+* Faisnéis chuntais: d'ainm, do sheoladh ríomhphoist, do phasfhocal, do roghanna teanga agus do leibhéal foghlama.
+* Sonraí foghlama: focail, frásaí sábháilte, dul chun cinn athbhreithnithe, nótaí, seinmliostaí, físeáin is maith leat, stair féachana, leabhair agus dul chun cinn léitheoireachta.
+* Ábhar a uaslódálann nó a chruthaíonn tú: meáin shaincheaptha, comhaid EPUB, agus téacs a iarrann tú orainn a aistriú nó a mhíniú.
+* Faisnéis íocaíochta: nuair a cheannaíonn tú síntiús, próiseálann Stripe, PayPal nó an Apple App Store an íocaíocht. Faighimid dearbhú agus sonraí síntiúis, ach go ginearálta ní stórálaimid d'uimhir iomlán chárta.
+
+**Faisnéis a bhailítear go huathoibríoch:**
+
+* Sonraí úsáide: leathanaigh agus gnéithe a dtugann tú cuairt orthu, lena n-áirítear Fiosraigh na meáin, Ceol agus Siamsaíocht, Teilifís Bheo, Cláir Theilifíse, Cuardaigh, Foclóir, Focail shábháilte, Athbhreithniú, Léitheoir, Léitheoir gréasáin, Léitheoir EPUB, Meáin Áitiúla, Stair féachana, Seinmliostaí agus Físeáin is maith leat; físeáin a bhreathnaíonn tú; idirghníomhaíochtaí; agus stampaí ama.
+* Faisnéis gléis agus líonra: seoladh IP, cineál brabhsálaí, córas oibriúcháin, cineál gléis agus suíomh neasach a dhíorthaítear ó do sheoladh IP.
+* Anailísíocht: úsáidimid Google Analytics chun tuiscint a fháil ar an gcaoi a n-úsáideann cuairteoirí an Suíomh Gréasáin. Féadfaidh Google Analytics fianáin a úsáid agus sonraí úsáide a bhailiú ar ár son. Rialaítear úsáid Google as na sonraí sin ag [Beartas Príobháideachta Google](https://policies.google.com/privacy).
+* Stóráil áitiúil: úsáidimid fianáin, \`localStorage\`, \`sessionStorage\` agus IndexedDB chun tú a choinneáil sínithe isteach, do theanga a mheabhrú, do shocruithe, do dhul chun cinn agus d'fhocail shábháilte a stóráil, agus ábhar a thaisceadh go háitiúil.
 
 **Cad a Dhéanaimid Le Do Chuid Faisnéise?**
 
-Nuair a cheannaíonn tú rud éigin trínár gcóras ordaithe ar líne, mar chuid den phróiseas ceannaigh agus díola, bailímid do chuid faisnéise pearsanta.
+Úsáidimid an fhaisnéis a bhailímid chun:
 
-Nuair a bhrabhsálann tú ár Suíomh Gréasáin, faighimid freisin seoladh prótacal idirlín (IP) do ríomhaire go huathoibríoch chun faisnéis a sholáthar dúinn a chabhraíonn linn foghlaim faoi do bhrabhsálaí agus do chóras oibriúcháin.
+* an Suíomh Gréasáin agus a ghnéithe a sholáthar, a chothabháil agus a fheabhsú;
+* do chuntas a chruthú agus a bhainistiú, d'aitheantas a fhíorú agus tú a choinneáil sínithe isteach;
+* moltaí a phearsantú bunaithe ar do theanga, ar do leibhéal agus ar do stair foghlama;
+* do shonraí a shioncronú trasna gléasanna;
+* síntiúis, íocaíochtaí agus athnuachana a phróiseáil;
+* ríomhphoist idirbheartacha a sheoladh ar nós cóid fíoraithe, athshocruithe pasfhocail agus admhálacha íocaíochta;
+* cumarsáid mhargaíochta a sheoladh má thug tú cead dúinn é sin a dhéanamh;
+* úsáid a anailísiú le Google Analytics chun tuiscint a fháil ar an gcaoi a n-úsáideann cuairteoirí an Suíomh Gréasáin agus chun ár dtáirgí a fheabhsú;
+* ceanglais dhlíthiúla agus rialála a chomhlíonadh agus ár gcearta agus cearta ár n-úsáideoirí a chosaint.
 
-Margú díreach ceadaithe (má bhaineann sé): Le do chead, féadfaimid nuachtlitreacha nó ríomhphoist a sheoladh chugat chun fógra a thabhairt faoi ár siopaí, táirgí nua agus nuashonruithe eile.
+Ní dhíolaimid d'fhaisnéis phearsanta.
+
+**Comhroinnt agus Nochtadh**
+
+Comhroinnimid faisnéis phearsanta ach amháin le soláthraithe seirbhíse a chabhraíonn linn an Suíomh Gréasáin a oibriú, lena n-áirítear:
+
+* soláthraithe óstála agus bunachair shonraí, lena n-áirítear Supabase;
+* próiseálaithe íocaíochta, lena n-áirítear Stripe, PayPal agus an Apple App Store;
+* soláthraithe aistriúcháin agus AI, lena n-áirítear DeepSeek, nuair a úsáideann tú gnéithe aistriúcháin nó míniúcháin AI;
+* soláthraithe anailísíochta, lena n-áirítear Google Analytics;
+* ardáin físe, lena n-áirítear YouTube agus Google, nuair a bhreathnaíonn tú ar fhíseáin leabaithe.
+
+Ní úsáidfimid ná ní nochtfaimid faisnéis phearsanta chun críocha seachas na críocha ar bailíodh í, mura bhfuil sé le do thoiliú, má cheadaítear nó má cheanglaítear le dlí é, nó má sháraíonn tú ár dTéarmaí Úsáide.
 
 **Toiliú**
 
-_Conas a gheobhaidh tú mo thoiliú?_
+_Conas a fhaigheann tú mo thoiliú?_
 
-Nuair a sholáthraíonn tú faisnéis phearsanta dúinn chun idirbheart a chríochnú, do chárta creidmheasa a fhíorú, ordú a chur, seachadadh a shocrú nó ceannach a thabhairt ar ais, nó aon fhaisnéis nó grianghraif a phostáil nó a phionnáil ar ár suíomh meán sóisialta, tuigimid go dtoilíonn tú lena bailiú agus lena húsáid chun na críche sonraí sin amháin.
+Nuair a sholáthraíonn tú faisnéis phearsanta dúinn chun cuntas a chruthú, idirbheart a chríochnú, d'íocaíocht a fhíorú, ordú a dhéanamh, nó ár dtáirgí agus ár seirbhísí a úsáid, tuigimid go dtugann tú do thoiliú di a bhailiú agus a úsáid chun na críche sonraí sin amháin.
 
-Má iarrann tú do chuid faisnéise pearsanta ar chúis thánaisteach, cosúil le margaíocht, iarrfaimid ort go díreach do thoiliú sainráite, nó tabharfaimid deis duit a rá nach dtoilíonn tú.
+Má iarraimid d'fhaisnéis phearsanta ar chúis thánaisteach, cosúil le margaíocht, iarfaidh muid ort go díreach le do thoiliú sainráite, nó tabharfaimid deis duit "ní hea" a rá.
 
 _Conas a tharraingím siar mo thoiliú?_
 
-Má athraíonn tú d'intinn tar éis duit rogha a dhéanamh, féadfaidh tú do thoiliú a tharraingt siar linn teagmháil a dhéanamh leat, le haghaidh bailiú, úsáid nó nochtadh leanúnach do chuid faisnéise, tráth ar bith, trí chur in iúl dúinn.
-
-**Nochtadh**
-
-Ní úsáidfimid ná ní nochtfaimid faisnéis phearsanta chun críocha seachas an ceann ar bailíodh í ina leith, mura rud é go bhfuil sé le do thoiliú, má cheadaítear nó má éilíonn an dlí é nó má sháraíonn tú ár dTéarmaí Úsáide.
+Más rud é tar éis duit rogha a dhéanamh, go n-athraíonn tú d'intinn, féadfaidh tú do thoiliú a tharraingt siar chun muid a chur in iúl duit, le haghaidh bhailiú, úsáid nó nochtadh leanúnach d'fhaisnéise, am ar bith, trí chur in iúl dúinn.
 
 **Cosaint**
 
-Cosnóimid faisnéis phearsanta trí dhea-chleachtais tionscail a leanúint agus trí chosaintí réasúnacha den sórt sin a chur i bhfeidhm a d'fhéadfadh a bheith oiriúnach d'íogaireacht na faisnéise; déanfaimid iarrachtaí réasúnacha faisnéis phearsanta a chosaint ar chaillteanas nó ghoid, chomh maith le rochtain neamhúdaraithe, nochtadh, cóipeáil, úsáid nó modhnú beag beann ar an bhformáid ina gcoinnítear í. Ceadaíonn an reachtaíocht dúinn freisin, ar chúiseanna dlíthiúla nó gnó, faisnéis phearsanta a choinneáil chomh fada agus is réasúnach agus ar choinníoll nár tharraing tú siar do thoiliú.
+Cosnóimid faisnéis phearsanta trí dhea-chleachtais tionscail a leanúint agus trí choimircí réasúnacha a chur i bhfeidhm a bheidh oiriúnach d'íogaireacht na faisnéise; déanfaimid iarrachtaí réasúnacha faisnéis phearsanta a chosaint ar chailliúint nó ar ghoid, chomh maith le rochtain, nochtadh, cóipeáil, úsáid nó athrú neamhúdaraithe, beag beann ar an bhformáid ina gcoinnítear í. Ceadaíonn an reachtaíocht dúinn freisin, chun críocha dlíthiúla nó gnó, faisnéis phearsanta a choinneáil chomh fada agus is réasúnach agus ar an gcoinníoll nár tharraing tú siar do thoiliú.
 
 **Slándáil**
 
-Chun do chuid faisnéise pearsanta a chosaint, glacaimid réamhchúraimí réasúnacha agus leanaimid dea-chleachtais tionscail lena chinntiú nach gcailltear, mí-úsáidtear, rochtain, nochtar, athraítear nó scriostar go míchuí í.
+Chun d'fhaisnéis phearsanta a chosaint, glacaimid réamhchúraimí réasúnacha agus leanaimid dea-chleachtais tionscail lena chinntiú nach gcailltear, nach mí-úsáidtear, nach bhfaightear rochtain uirthi, nach nochtar, nach n-athraítear ná nach scriostar go míchuí í.
 
-**Fianáin**
+**Fianáin agus Teicneolaíochtaí Comhchosúla**
 
-Ní úsáideann ár Suíomh Gréasáin fianáin.
+Úsáideann ár Suíomh Gréasáin fianáin agus teicneolaíochtaí comhchosúla.
 
-**Athruithe Ar An mBeartas Príobháideachta Seo**
+* **Fianáin riachtanacha:** úsáidimid fianáin chun tú a choinneáil sínithe isteach, do theangacha roghnaithe a mheabhrú, agus teorainneacha nascleanúna aoi a bhainistiú.
+* **Anailísíocht:** úsáidimid Google Analytics, a fhéadfaidh a chuid fianán féin a shocrú agus faisnéis úsáide a bhailiú.
+* **Stóráil áitiúil:** úsáidimid \`localStorage\`, \`sessionStorage\` agus IndexedDB chun socruithe, focail shábháilte, dul chun cinn, ábhar léitheoireachta agus meáin shaincheaptha a stóráil ar do ghléas.
+* **Ábhar leabaithe:** leabaítear físeáin ó YouTube. Féadfaidh YouTube agus Google a bhfianáin féin a shocrú nuair a bhreathnaíonn tú ar fhíseán, agus rialaítear iad sin ag a mbeartais phríobháideachta.
 
-Coinnímid an ceart an beartas príobháideachta seo a mhodhnú tráth ar bith, mar sin déan athbhreithniú go minic air. Tiocfaidh athruithe agus soiléirithe i bhfeidhm láithreach tar éis iad a phostáil ar an Suíomh Gréasáin. Má dhéanaimid athruithe ábhartha ar an mbeartas seo, cuirfimid in iúl duit anseo go bhfuil sé nuashonraithe, ionas go mbeidh tú ar an eolas faoin bhfaisnéis a bhailímid, conas a úsáidimid í, agus faoi na cúinsí, más ann dóibh, ina n-úsáidimid agus/nó a nochtfaimid í.
+Féadfaidh tú fianáin a bhlocáil nó a scriosadh trí shocruithe do bhrabhsálaí. Tabhair faoi deara go bhféadfadh sé nach n-oibreoidh codanna áirithe den Suíomh Gréasáin i gceart má dhíchumasaíonn tú fianáin.
 
-**Ceisteanna Agus Eolas Teagmhála**
+**Coimeád agus Scriosadh Sonraí**
 
-Más mian leat: rochtain a fháil ar, ceartú, leasú nó scriosadh a dhéanamh ar aon fhaisnéis phearsanta atá againn fút, gearán a chlárú, nó más mian leat tuilleadh eolais, déan teagmháil linn ag [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Coinnímid faisnéis phearsanta chomh fada agus a bhíonn do chuntas gníomhach, nó chomh fada agus is gá chun an Suíomh Gréasáin a sholáthar, oibleagáidí dlíthiúla a chomhlíonadh, díospóidí a réiteach agus ár gcomhaontuithe a fhorfheidhmiú.
+
+Féadfaidh tú do chuntas a scriosadh am ar bith ón leathanach Próifíl agus an rogha Scrios Cuntas á húsáid agat, nó trí theagmháil a dhéanamh linn ag an seoladh thíos. Nuair a scriosann tú do chuntas, bainfimid nó dhéanfaimid d'fhaisnéis phearsanta gan ainm, faoi réir taifid a cheanglaítear orainn a choinneáil chun críocha dlíthiúla, íocaíochta, cánach nó slándála.
+
+**Athruithe ar an mBeartas Príobháideachta Seo**
+
+Coinnímid an ceart an beartas príobháideachta seo a mhodhnú am ar bith, mar sin déan athbhreithniú air go minic, le do thoil. Beidh éifeacht láithreach ag athruithe agus soiléirithe nuair a phostáiltear iad ar an Suíomh Gréasáin. Má dhéanaimid athruithe ábhartha ar an mbeartas seo, cuirfimid in iúl duit anseo go bhfuil sé nuashonraithe, ionas go mbeidh a fhios agat cén fhaisnéis a bhailímid, conas a úsáidimid í, agus faoi na cúinsí, más ann dóibh, a úsáidimid agus/nó a nochtfaimid í.
+
+**Ceisteanna agus Faisnéis Teagmhála**
+
+Más mian leat: rochtain, ceartú, leasú nó scriosadh a dhéanamh ar aon fhaisnéis phearsanta atá againn fút, gearán a chlárú, nó go simplí tuilleadh eolais a fháil, déan teagmháil linn ag [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Léitheoir EPUB', category: 'reading', content: `# Léitheoir EPUB
 
 Léigh ríomhleabhair EPUB le cuardach idirghníomhach focal, aistriúchán de réir bhloc, agus dul chun cinn a mhaireann thar sheisiúin.
@@ -17201,102 +17552,134 @@ Cuir **Meaitseáil Chruinn** air chun torthaí a theorannú d'fhocal ceann an fh
 - आपका इतिहास आपकी वर्तमान L2 तक सीमित है — जब आप कोरियाई मोड में होंगे तो आपको जापानी वीडियो नहीं दिखेंगे` },
     { path: 'privacy-policy', title: 'गोपनीयता नीति', category: 'privacy-policy', content: `# गोपनीयता नीति
 
-यह वेब पेज एक कानूनी दस्तावेज़ है जो हमारी उपयोग की शर्तों और गोपनीयता नीति के रूप में कार्य करता है और हमारी वेबसाइट: [https://languageplayer.io](https://languageplayer.io) के उपयोग को नियंत्रित करता है, जिसमें उस पर पाए जाने वाले पृष्ठ और सभी उप-डोमेन और ऐप्स (सामूहिक रूप से, "वेबसाइट") शामिल हैं, जिसका स्वामित्व और संचालन हम, जीरो टू हीरो एजुकेशन, कनाडा ("जीरो टू हीरो") द्वारा किया जाता है।
+यह वेब पेज एक कानूनी दस्तावेज़ है जो हमारी उपयोग की शर्तों और गोपनीयता नीति के रूप में कार्य करता है और यह हमारी वेबसाइट: [https://languageplayer.io](https://languageplayer.io) के उपयोग को नियंत्रित करता है, जिसमें उस पर पाए जाने वाले पृष्ठ और सभी उप-डोमेन और ऐप्स (सामूहिक रूप से, "वेबसाइट") शामिल हैं, जिसका स्वामित्व और संचालन हमारे द्वारा किया जाता है, ज़ीरो टू हीरो एजुकेशन, कनाडा। ("ज़ीरो टू हीरो")।
 
 **परिचय**
 
-उपयोग की शर्तें, नीचे प्रकाशित हमारी गोपनीयता नीति के साथ, और हमारी वेबसाइट के भीतर अन्य पोस्ट किए गए दिशानिर्देश या नीतियां (सामूहिक रूप से "कानूनी शर्तें"), आपके और हमारे बीच संपूर्ण और एकमात्र समझौते का गठन करती हैं, और हमारी वेबसाइट और इसमें निहित विषय वस्तु के संबंध में सभी अन्य समझौतों, प्रतिनिधित्वों, वारंटियों और समझौतों को ओवरराइड करती हैं। हम बिना किसी विशिष्ट सूचना के किसी भी समय अपनी कानूनी शर्तों में संशोधन कर सकते हैं। हमारी कानूनी शर्तों की नवीनतम प्रतियां हमारी वेबसाइट पर पोस्ट की जाएंगी, और आपको हमारी वेबसाइट का उपयोग करने से पहले सभी कानूनी शर्तों की समीक्षा करनी चाहिए। हमारी कानूनी शर्तों में किसी भी संशोधन के पोस्ट होने के बाद, आप उनमें ऐसे किसी भी परिवर्तन से बंधे रहने के लिए सहमत होते हैं। इसलिए, यह सुनिश्चित करने के लिए कि आप अभी भी उनसे सहमत हैं, समय-समय पर हमारी कानूनी शर्तों की समीक्षा करना आपके लिए महत्वपूर्ण है।
+उपयोग की शर्तें, नीचे प्रकाशित हमारी गोपनीयता नीति के साथ, और हमारी वेबसाइट के भीतर पोस्ट किए गए अन्य दिशानिर्देश या नीतियां (सामूहिक रूप से "कानूनी शर्तें"), आपके और हमारे बीच संपूर्ण और एकमात्र समझौते का निर्माण करती हैं, और हमारी वेबसाइट और इसमें निहित विषय वस्तु के संबंध में अन्य सभी समझौतों, प्रतिनिधित्वों, वारंटियों और समझों का स्थान लेती हैं। हम किसी भी समय आपको विशिष्ट सूचना दिए बिना अपनी कानूनी शर्तों में संशोधन कर सकते हैं। हमारी कानूनी शर्तों की नवीनतम प्रतियां हमारी वेबसाइट पर पोस्ट की जाएंगी, और आपको हमारी वेबसाइट का उपयोग करने से पहले सभी कानूनी शर्तों की समीक्षा करनी चाहिए। हमारी कानूनी शर्तों में किसी भी संशोधन के पोस्ट होने के बाद, आप उनमें किसी भी ऐसे परिवर्तन से बंधे होने के लिए सहमत होते हैं। इसलिए, यह सुनिश्चित करने के लिए कि आप अभी भी उनसे सहमत हैं, आपके लिए समय-समय पर हमारी कानूनी शर्तों की समीक्षा करना महत्वपूर्ण है।
 
-हमारी वेबसाइट का उपयोग करके, आप हमारी कानूनी शर्तों का पूरी तरह से पालन करने और उनसे बंधे रहने के लिए सहमत होते हैं। कृपया उनकी सावधानीपूर्वक समीक्षा करें। यदि आप हमारी कानूनी शर्तों को स्वीकार नहीं करते हैं, तो हमारी वेबसाइट तक न पहुंचें और न ही इसका उपयोग करें। यदि आप पहले से ही हमारी वेबसाइट तक पहुंच चुके हैं और हमारी कानूनी शर्तों को स्वीकार नहीं करते हैं, तो आप अब इसका उपयोग करने के लिए अधिकृत नहीं हैं और आपको तुरंत हमारी वेबसाइट का उपयोग बंद कर देना चाहिए।
+हमारी वेबसाइट का उपयोग करके, आप हमारी कानूनी शर्तों का पूरी तरह से पालन करने और उनसे बंधे होने के लिए सहमत होते हैं। कृपया उनकी ध्यान से समीक्षा करें। यदि आप हमारी कानूनी शर्तों को स्वीकार नहीं करते हैं, तो हमारी वेबसाइट तक पहुंच न बनाएं और उसका उपयोग न करें। यदि आप पहले से ही हमारी वेबसाइट तक पहुंच चुके हैं और हमारी कानूनी शर्तों को स्वीकार नहीं करते हैं, तो आप इसका उपयोग करने के लिए अधिकृत नहीं हैं और आपको तुरंत हमारी वेबसाइट का उपयोग बंद कर देना चाहिए।
 
 **हमारी वेबसाइट पर अन्य परिभाषित शर्तें**
 
-यह वेबसाइट इस पृष्ठ पर परिभाषित शर्तों के साथ-साथ इन अन्य परिभाषित शर्तों को भी शामिल करती है:
+यह वेबसाइट इस पृष्ठ पर परिभाषित शर्तों के साथ-साथ इन अन्य परिभाषित शर्तों को शामिल करती है:
 
-"हम" और "हमें" शब्द वेबसाइट के मालिक के रूप में जीरो टू हीरो को संदर्भित करते हैं। "सामग्री" में हमारी वेबसाइट के माध्यम से पोस्ट किया गया, पेश किया गया या उपलब्ध कराया गया कोई भी और सभी पाठ, जानकारी, ग्राफिक्स, ऑडियो, वीडियो और अन्य डेटा शामिल है।
+शर्तें "हम" और "हमें" ज़ीरो टू हीरो को वेबसाइट के स्वामी के रूप में संदर्भित करती हैं। "सामग्री" में हमारी वेबसाइट के माध्यम से पोस्ट किया गया, पेश किया गया या उपलब्ध कराया गया कोई भी और सभी पाठ, जानकारी, ग्राफिक्स, ऑडियो, वीडियो और अन्य डेटा शामिल है।
 
-"आगंतुक" या "आप" सामूहिक पहचानकर्ता हैं जो हमारी वेबसाइट के ब्राउज़र के रूप में आपको संदर्भित करते हैं, चाहे आप हमारे उत्पादों की खरीदारी पूरी करें या नहीं।
+एक "आगंतुक" या "आप" सामूहिक पहचानकर्ता हैं जो आपको हमारी वेबसाइट के ब्राउज़र के रूप में संदर्भित करते हैं, चाहे आप हमारे उत्पादों की खरीद पूरी करें या नहीं।
 
-"व्यक्तिगत जानकारी" का अर्थ है किसी पहचान योग्य व्यक्ति के बारे में जानकारी, जिसमें किसी व्यक्ति का नाम, आवासीय पता, बिलिंग पता, डिलीवरी पता, फोन नंबर, ईमेल पता और अन्य समान संपर्क जानकारी, साथ ही वेबसाइट उपयोग इतिहास डेटा शामिल हो सकता है। इसमें भुगतान उद्देश्यों के लिए प्रस्तुत करने पर किसी व्यक्ति की क्रेडिट कार्ड जानकारी भी शामिल हो सकती है।
+"व्यक्तिगत जानकारी" का अर्थ है एक पहचान योग्य व्यक्ति के बारे में जानकारी, जिसमें किसी व्यक्ति का नाम, आवासीय पता, बिलिंग पता, डिलीवरी पता, फोन नंबर, ईमेल पता और अन्य समान संपर्क जानकारी, साथ ही वेबसाइट उपयोग इतिहास डेटा शामिल हो सकता है। इसमें भुगतान उद्देश्यों के लिए प्रस्तुत किए जाने पर किसी व्यक्ति की क्रेडिट कार्ड जानकारी भी शामिल हो सकती है।
 
 **उपयोग की शर्तें**
 
 **बौद्धिक संपदा**
 
-हमारी वेबसाइट में हमारे सेवा चिह्न या ट्रेडमार्क के साथ-साथ हमारे सहयोगियों या अन्य व्यक्तियों या कंपनियों के भी शब्दों, ग्राफिक्स और लोगो के रूप में हो सकते हैं। हमारी वेबसाइट का आपका उपयोग संबंधित सेवा चिह्न/ट्रेडमार्क स्वामी के पूर्व लिखित प्राधिकरण के बिना ऐसे सेवा चिह्नों/ट्रेडमार्कों का उपयोग करने का कोई अधिकार या लाइसेंस नहीं बनाता है। सामग्री सहित हमारी वेबसाइट कनाडाई और अंतर्राष्ट्रीय कॉपीराइट कानूनों के तहत भी संरक्षित है। हमारी वेबसाइट या सामग्री का आपका उपयोग आपको किसी भी प्रकार का स्वामित्व अधिकार नहीं देता है। हमारी वेबसाइट या सामग्री के किसी भी भाग की आपके द्वारा प्रतिलिपि बनाना, पुनर्वितरण, उपयोग या प्रकाशन सख्त वर्जित है और इसलिए हमारी लिखित प्राधिकरण प्राप्त किए बिना इसे कॉपी या पुनरुत्पादित नहीं किया जा सकता है।
+हमारी वेबसाइट में हमारे सेवा चिह्न या ट्रेडमार्क के साथ-साथ हमारे सहयोगियों या अन्य व्यक्तियों या कंपनियों के, शब्दों, ग्राफिक्स और लोगो के रूप में शामिल हो सकते हैं। हमारी वेबसाइट का आपका उपयोग संबंधित सेवा चिह्न/ट्रेडमार्क स्वामी के पूर्व लिखित प्राधिकरण के बिना, ऐसे सेवा चिह्नों/ट्रेडमार्क का उपयोग करने के लिए कोई अधिकार या लाइसेंस नहीं बनाता है। हमारी वेबसाइट सहित सामग्री कनाडाई और अंतर्राष्ट्रीय कॉपीराइट कानूनों के तहत भी संरक्षित है। हमारी वेबसाइट या सामग्री का आपका उपयोग आपको उसमें किसी भी प्रकार के स्वामित्व अधिकार नहीं प्रदान करता है। हमारी वेबसाइट या सामग्री के किसी भी भाग की आपके द्वारा प्रतिलिपि बनाना, पुनर्वितरण, उपयोग या प्रकाशन सख्ती से निषिद्ध है और इसलिए हमारी लिखित प्राधिकरण प्राप्त किए बिना इसे कॉपी या पुनरुत्पादित नहीं किया जा सकता है।
 
 **देयता की सीमा**
 
-किसी भी परिस्थिति में हम, या हमारे अधिकारी या कर्मचारी, किसी भी हानि या क्षति के लिए उत्तरदायी या जिम्मेदार नहीं होंगे, जिसमें (पूर्वगामी की सामान्यता को सीमित किए बिना) कोई भी प्रत्यक्ष, अप्रत्यक्ष, आकस्मिक, विशेष, दंडात्मक या परिणामी क्षति शामिल है, जो इस वेबसाइट, ऑनलाइन ऑर्डरिंग सिस्टम या किसी भी सामग्री के आपके उपयोग, उस तक पहुंच या उस पर आपकी निर्भरता, या उपयोग या एक्सेस करने में आपकी असमर्थता से उत्पन्न या उसके संबंध में होती है।
+किसी भी परिस्थिति में हम, या हमारे अधिकारी या कर्मचारी, किसी भी नुकसान या क्षति के लिए जिम्मेदार या उत्तरदायी नहीं होंगे, जिसमें (पूर्वगामी की व्यापकता को सीमित किए बिना) कोई भी प्रत्यक्ष, अप्रत्यक्ष, आकस्मिक, विशेष, दंडात्मक या परिणामी क्षति शामिल है, जो इस वेबसाइट, ऑनलाइन ऑर्डरिंग प्रणाली या किसी भी सामग्री के आपके उपयोग, उस तक पहुंच या उस पर आपके भरोसे, या उपयोग या पहुंच करने में आपकी असमर्थता से उत्पन्न या उसके संबंध में हो।
 
 **सामान्य शर्तें**
 
-हमारी कानूनी शर्तों को ऐसे माना जाएगा जैसे कि वे कनाडा के ब्रिटिश कोलंबिया प्रांत में निष्पादित और प्रदर्शित की गई हों और कानून के टकराव के सिद्धांतों की परवाह किए बिना उस क्षेत्र के कानूनों द्वारा शासित और व्याख्या की जाएंगी। इसके अलावा, आप उस क्षेत्र के भीतर अदालतों के व्यक्तिगत क्षेत्राधिकार और स्थान के अधीन होने के लिए सहमत हैं। हमारी वेबसाइट के संबंध में आपके द्वारा कोई भी कार्रवाई का कारण कार्रवाई के उत्पन्न होने के एक (1) वर्ष के भीतर शुरू किया जाना चाहिए या हमेशा के लिए माफ और वर्जित कर दिया जाएगा। यदि हमारी कानूनी शर्तों का कोई भाग अमान्य या अप्रवर्तनीय पाया जाता है, तो उस भाग की व्याख्या लागू कानून के अनुसार की जाएगी और शेष भाग पूर्ण प्रभाव में रहेंगे। इस हद तक कि कोई भी सामग्री हमारी कानूनी शर्तों से टकराती है या असंगत है, हमारी कानूनी शर्तें प्रबल होंगी और उनकी एक साथ व्याख्या में सर्वोपरि होंगी। हमारी कानूनी शर्तों के किसी भी प्रावधान को लागू करने में हमारी विफलता को ऐसे प्रावधान की छूट या ऐसे प्रावधान को लागू करने के अधिकार की छूट नहीं माना जाएगा। हमारी कानूनी शर्तों के तहत हमारे अधिकार हमारी कानूनी शर्तों की समाप्ति पर भी बने रहेंगे।
+हमारी कानूनी शर्तों को ऐसे माना जाएगा जैसे कि उन्हें कनाडा के ब्रिटिश कोलंबिया प्रांत में निष्पादित और प्रदर्शित किया गया था और कानून के संघर्ष सिद्धांतों की परवाह किए बिना उस क्षेत्र के कानूनों के अनुसार शासित और व्याख्या की जाएगी। इसके अलावा, आप उस क्षेत्र के भीतर अदालतों के व्यक्तिगत क्षेत्राधिकार और स्थान के अधीन होने के लिए सहमत हैं। हमारी वेबसाइट के संबंध में आपके द्वारा कोई भी कार्रवाई का कारण कार्रवाई के कारण उत्पन्न होने के एक (1) वर्ष के भीतर दायर किया जाना चाहिए या हमेशा के लिए माफ और वर्जित कर दिया जाएगा। यदि हमारी कानूनी शर्तों का कोई भी भाग अमान्य या अप्रवर्तनीय पाया जाता है, तो उस भाग की व्याख्या लागू कानून के अनुसार की जाएगी और शेष भाग पूर्ण प्रभाव में रहेंगे। जहां तक कोई सामग्री हमारी कानूनी शर्तों के साथ संघर्ष करती है या असंगत है, हमारी कानूनी शर्तें प्रबल होंगी और उनकी संयुक्त व्याख्या में सर्वोपरि होंगी। हमारी कानूनी शर्तों के किसी भी प्रावधान को लागू करने में हमारी विफलता को ऐसे प्रावधान की छूट या ऐसे प्रावधान को लागू करने के अधिकार की छूट नहीं माना जाएगा। हमारी कानूनी शर्तों के तहत हमारे अधिकार हमारी कानूनी शर्तों की समाप्ति के बाद भी बने रहेंगे।
 
 **तृतीय पक्ष लिंक**
 
-जब आप हमारी वेबसाइट पर लिंक पर क्लिक करते हैं, तो वे आपको हमारी वेबसाइट से दूर किसी तीसरे पक्ष के स्वामित्व और संचालित किसी अन्य वेबसाइट पर ले जा सकते हैं। हम अन्य तृतीय-पक्ष वेबसाइटों की गोपनीयता प्रथाओं के लिए जिम्मेदार नहीं हैं और आपको उनकी उपयोग की शर्तों और गोपनीयता वक्तव्यों को पढ़ने के लिए प्रोत्साहित करते हैं। एक बार जब आप हमारी वेबसाइट छोड़ देते हैं या किसी तृतीय-पक्ष वेबसाइट या एप्लिकेशन पर पुनर्निर्देशित हो जाते हैं, तो आप अब हमारी कानूनी शर्तों द्वारा शासित नहीं होते हैं।
+जब आप हमारी वेबसाइट पर लिंक पर क्लिक करते हैं, तो वे आपको हमारी वेबसाइट से दूर किसी तीसरे पक्ष के स्वामित्व और संचालन वाली किसी अन्य वेबसाइट पर निर्देशित कर सकते हैं। हम अन्य तृतीय-पक्ष वेबसाइटों की गोपनीयता प्रथाओं के लिए जिम्मेदार नहीं हैं और आपको उनकी उपयोग की शर्तों और गोपनीयता कथनों को पढ़ने के लिए प्रोत्साहित करते हैं। एक बार जब आप हमारी वेबसाइट छोड़ देते हैं या किसी तृतीय-पक्ष वेबसाइट या एप्लिकेशन पर पुनर्निर्देशित हो जाते हैं, तो आप अब हमारी कानूनी शर्तों से बंधे नहीं होते हैं।
 
 **गोपनीयता नीति**
 
-जीरो टू हीरो में हम गोपनीयता को एक बहुत ही महत्वपूर्ण मामला मानते हैं और इस तरह हम सभी आगंतुकों की व्यक्तिगत जानकारी की गोपनीयता की रक्षा करने के लिए प्रतिबद्ध हैं। यह गोपनीयता नीति व्यक्तिगत सूचना संरक्षण और इलेक्ट्रॉनिक दस्तावेज़ अधिनियम (कनाडा), व्यक्तिगत सूचना संरक्षण अधिनियम (अल्बर्टा) और व्यक्तिगत जानकारी के संरक्षण के लिए कनाडाई मानक संघ (सीएसए) मॉडल कोड में निर्धारित दस सिद्धांतों (एक साथ, "लागू गोपनीयता कानून") के लागू भागों को शामिल करती है।
+ज़ीरो टू हीरो में हम गोपनीयता को एक बहुत ही महत्वपूर्ण मामला मानते हैं और इस प्रकार हम सभी आगंतुकों की व्यक्तिगत जानकारी की गोपनीयता की रक्षा करने के लिए प्रतिबद्ध हैं। यह गोपनीयता नीति व्यक्तिगत सूचना संरक्षण और इलेक्ट्रॉनिक दस्तावेज़ अधिनियम (कनाडा), व्यक्तिगत सूचना संरक्षण अधिनियम (अल्बर्टा) और कनाडाई मानक संघ (सीएसए) मॉडल कोड फॉर द प्रोटेक्शन ऑफ पर्सनल इनफॉर्मेशन में निर्धारित दस सिद्धांतों (सामूहिक रूप से, "लागू गोपनीयता कानून") के लागू भागों को शामिल करती है।
 
-**जानकारी का संग्रह**
+**हम जो जानकारी एकत्र करते हैं**
 
-हम निम्नलिखित में से किसी एक या अधिक उद्देश्यों के लिए व्यक्तिगत जानकारी एकत्र कर सकते हैं:
+**आपके द्वारा सीधे प्रदान की गई जानकारी:**
 
-*   आगंतुकों के साथ संबंध स्थापित करने और बनाए रखने के लिए;
-*   अनुरोधित और चालू उत्पादों और सेवाओं को प्रदान करने के लिए;
-*   आपको हमारे उत्पादों और सेवाओं में परिवर्तनों के बारे में सूचित करने के लिए;
-*   हमारे आगंतुकों, उनकी आवश्यकताओं और प्राथमिकताओं की बेहतर समझ प्राप्त करने के लिए;
-*   हमारे उत्पादों और सेवाओं को विकसित करने, बढ़ाने, सुधारने और/या विपणन करने के लिए;
-*   हमारी वेबसाइट के उपयोग की निगरानी करने के लिए;
-*   हमारे व्यवसाय और संचालन का प्रबंधन और सुधार करने के लिए; और
-*   कानूनी और नियामक आवश्यकताओं को पूरा करने के लिए।
+* खाता जानकारी: आपका नाम, ईमेल पता, पासवर्ड, भाषा प्राथमिकताएं और सीखने का स्तर।
+* सीखने का डेटा: सहेजे गए शब्द, वाक्यांश, समीक्षा प्रगति, नोट्स, प्लेलिस्ट, पसंद किए गए वीडियो, देखने का इतिहास, किताबें और पढ़ने की प्रगति।
+* आपके द्वारा अपलोड या निर्मित सामग्री: कस्टम मीडिया, EPUB फ़ाइलें, और वह पाठ जिसे आप हमसे अनुवाद या समझाने के लिए कहते हैं।
+* भुगतान जानकारी: जब आप सदस्यता खरीदते हैं, तो भुगतान स्ट्राइप, पेपाल या ऐप्पल ऐप स्टोर द्वारा संसाधित किया जाता है। हमें पुष्टि और सदस्यता विवरण प्राप्त होते हैं, लेकिन हम आम तौर पर आपका पूरा कार्ड नंबर संग्रहीत नहीं करते हैं।
+
+**स्वचालित रूप से एकत्र की गई जानकारी:**
+
+* उपयोग डेटा: आपके द्वारा देखे जाने वाले पृष्ठ और सुविधाएं, जिनमें मीडिया अन्वेषण करें, संगीत और मनोरंजन, लाइव टीवी, टीवी शो, खोज, शब्दकोश, सहेजे गए शब्द, समीक्षा, पाठक, वेब रीडर, EPUB रीडर, स्थानीय मीडिया, देखने का इतिहास, प्लेलिस्ट और पसंदीदा वीडियो शामिल हैं; आपके द्वारा देखे जाने वाले वीडियो; इंटरैक्शन; और टाइमस्टैम्प।
+* डिवाइस और नेटवर्क जानकारी: आईपी पता, ब्राउज़र प्रकार, ऑपरेटिंग सिस्टम, डिवाइस प्रकार और आपके आईपी पते से प्राप्त अनुमानित स्थान।
+* एनालिटिक्स: हम यह समझने के लिए Google Analytics का उपयोग करते हैं कि आगंतुक वेबसाइट का उपयोग कैसे करते हैं। Google Analytics हमारी ओर से कुकीज़ का उपयोग कर सकता है और उपयोग डेटा एकत्र कर सकता है। Google द्वारा उस डेटा का उपयोग [Google की गोपनीयता नीति](https://policies.google.com/privacy) द्वारा शासित है।
+* स्थानीय भंडारण: हम आपको साइन इन रखने, आपकी भाषा याद रखने, आपकी सेटिंग्स, प्रगति और सहेजे गए शब्दों को संग्रहीत करने और सामग्री को स्थानीय रूप से कैश करने के लिए कुकीज़, \`localStorage\`, \`sessionStorage\` और IndexedDB का उपयोग करते हैं।
 
 **हम आपकी जानकारी के साथ क्या करते हैं?**
 
-जब आप हमारी ऑनलाइन ऑर्डरिंग प्रणाली के माध्यम से कुछ खरीदते हैं, तो खरीद और बिक्री प्रक्रिया के भाग के रूप में, हम आपकी व्यक्तिगत जानकारी एकत्र करते हैं।
+हम अपने द्वारा एकत्र की गई जानकारी का उपयोग निम्न के लिए करते हैं:
 
-जब आप हमारी वेबसाइट ब्राउज़ करते हैं, तो हम आपके कंप्यूटर का इंटरनेट प्रोटोकॉल (आईपी) पता भी स्वचालित रूप से प्राप्त करते हैं ताकि हमें ऐसी जानकारी प्रदान की जा सके जो हमें आपके ब्राउज़र और ऑपरेटिंग सिस्टम के बारे में जानने में मदद करती है।
+* वेबसाइट और उसकी सुविधाओं को प्रदान करना, बनाए रखना और सुधारना;
+* आपका खाता बनाना और प्रबंधित करना, आपकी पहचान सत्यापित करना और आपको साइन इन रखना;
+* आपकी भाषा, स्तर और सीखने के इतिहास के आधार पर अनुशंसाओं को वैयक्तिकृत करना;
+* आपके डेटा को विभिन्न डिवाइसों पर सिंक करना;
+* सदस्यता, भुगतान और नवीनीकरण संसाधित करना;
+* सत्यापन कोड, पासवर्ड रीसेट और भुगतान रसीदें जैसे लेनदेन संबंधी ईमेल भेजना;
+* यदि आपने हमें अनुमति दी है तो विपणन संचार भेजना;
+* यह समझने के लिए Google Analytics के साथ उपयोग का विश्लेषण करना कि आगंतुक वेबसाइट का उपयोग कैसे करते हैं और हमारे उत्पादों को बेहतर बनाना;
+* कानूनी और नियामक आवश्यकताओं को पूरा करना और हमारे अधिकारों और हमारे उपयोगकर्ताओं के अधिकारों की रक्षा करना।
 
-अनुमत प्रत्यक्ष विपणन (यदि लागू हो): आपकी अनुमति से, हम आपको हमारे स्टोर, नए उत्पादों और अन्य अपडेट के बारे में विज्ञापन देने के लिए न्यूज़लेटर या ईमेल भेज सकते हैं।
+हम आपकी व्यक्तिगत जानकारी नहीं बेचते हैं।
+
+**साझा करना और खुलासा**
+
+हम व्यक्तिगत जानकारी केवल सेवा प्रदाताओं के साथ साझा करते हैं जो वेबसाइट संचालित करने में हमारी सहायता करते हैं, जिनमें शामिल हैं:
+
+* होस्टिंग और डेटाबेस प्रदाता, जिनमें Supabase शामिल है;
+* भुगतान प्रोसेसर, जिनमें स्ट्राइप, पेपाल और ऐप्पल ऐप स्टोर शामिल हैं;
+* अनुवाद और एआई प्रदाता, जिनमें DeepSeek शामिल है, जब आप अनुवाद या एआई व्याख्या सुविधाओं का उपयोग करते हैं;
+* एनालिटिक्स प्रदाता, जिनमें Google Analytics शामिल है;
+* वीडियो प्लेटफ़ॉर्म, जिनमें YouTube और Google शामिल हैं, जब आप एम्बेडेड वीडियो देखते हैं।
+
+हम व्यक्तिगत जानकारी का उपयोग या खुलासा उस उद्देश्य के अलावा अन्य उद्देश्यों के लिए नहीं करेंगे जिसके लिए इसे एकत्र किया गया था, जब तक कि यह आपकी सहमति से न हो, यदि यह कानून द्वारा अनुमत या आवश्यक हो, या आप हमारी उपयोग की शर्तों का उल्लंघन करते हैं।
 
 **सहमति**
 
 _आप मेरी सहमति कैसे प्राप्त करते हैं?_
 
-जब आप लेन-देन पूरा करने, अपने क्रेडिट कार्ड को सत्यापित करने, ऑर्डर देने, डिलीवरी की व्यवस्था करने या खरीदारी वापस करने, या हमारी सोशल मीडिया साइट पर कोई जानकारी या फ़ोटो पोस्ट या पिन करने के लिए हमें व्यक्तिगत जानकारी प्रदान करते हैं, तो हम यह मान लेते हैं कि आप इसे एकत्र करने और केवल उस विशिष्ट कारण के लिए इसका उपयोग करने के लिए सहमति देते हैं।
+जब आप खाता बनाने, लेनदेन पूरा करने, अपना भुगतान सत्यापित करने, ऑर्डर देने, या हमारे उत्पादों और सेवाओं का उपयोग करने के लिए हमें व्यक्तिगत जानकारी प्रदान करते हैं, तो हम अनुमान लगाते हैं कि आप हमारे द्वारा इसे एकत्र करने और केवल उस विशिष्ट कारण के लिए उपयोग करने के लिए सहमत हैं।
 
-यदि हम किसी द्वितीयक कारण, जैसे विपणन, के लिए आपकी व्यक्तिगत जानकारी मांगते हैं, तो हम या तो सीधे आपसे आपकी स्पष्ट सहमति मांगेंगे, या आपको मना करने का अवसर प्रदान करेंगे।
+यदि हम किसी द्वितीयक कारण से आपकी व्यक्तिगत जानकारी मांगते हैं, जैसे विपणन, तो हम या तो सीधे आपसे आपकी स्पष्ट सहमति मांगेंगे, या आपको ना कहने का अवसर प्रदान करेंगे।
 
-_मैं अपनी सहमति कैसे वापस ले सकता हूं?_
+_मैं अपनी सहमति कैसे वापस ले सकता/सकती हूं?_
 
-यदि आप ऑप्ट-इन करने के बाद अपना मन बदलते हैं, तो आप किसी भी समय हमें सूचित करके, आपसे संपर्क करने, आपकी जानकारी के निरंतर संग्रह, उपयोग या प्रकटीकरण के लिए अपनी सहमति वापस ले सकते हैं।
-
-**प्रकटीकरण**
-
-हम व्यक्तिगत जानकारी का उपयोग या खुलासा उस उद्देश्य के अलावा अन्य उद्देश्यों के लिए नहीं करेंगे जिसके लिए इसे एकत्र किया गया था, जब तक कि यह आपकी सहमति से न हो, यदि यह कानून द्वारा अनुमत या आवश्यक हो या आप हमारी उपयोग की शर्तों का उल्लंघन करते हैं।
+यदि आप ऑप्ट-इन करने के बाद अपना विचार बदलते हैं, तो आप हमें सूचित करके किसी भी समय हमारे द्वारा आपसे संपर्क करने, आपकी जानकारी के निरंतर संग्रह, उपयोग या खुलासे के लिए अपनी सहमति वापस ले सकते हैं।
 
 **संरक्षण**
 
-हम उद्योग की सर्वोत्तम प्रथाओं का पालन करके और सूचना की संवेदनशीलता के लिए उपयुक्त ऐसी उचित सुरक्षा उपायों को लागू करके व्यक्तिगत जानकारी की रक्षा करेंगे; हम व्यक्तिगत जानकारी को हानि या चोरी के साथ-साथ अनधिकृत पहुंच, प्रकटीकरण, प्रतिलिपि, उपयोग या संशोधन से बचाने के लिए उचित प्रयास करेंगे, चाहे वह किसी भी प्रारूप में रखी गई हो। कानून हमें कानूनी या व्यावसायिक उद्देश्यों के लिए, जब तक उचित हो, व्यक्तिगत जानकारी बनाए रखने की अनुमति देता है, बशर्ते आपने अपनी सहमति वापस नहीं ली हो।
+हम उद्योग की सर्वोत्तम प्रथाओं का पालन करके और जानकारी की संवेदनशीलता के लिए उपयुक्त ऐसी उचित सुरक्षा उपायों को लागू करके व्यक्तिगत जानकारी की रक्षा करेंगे; हम नुकसान या चोरी के साथ-साथ अनधिकृत पहुंच, खुलासे, प्रतिलिपि, उपयोग या संशोधन के खिलाफ व्यक्तिगत जानकारी की रक्षा के लिए उचित प्रयास करेंगे, चाहे वह किसी भी प्रारूप में रखी गई हो। कानून हमें कानूनी या व्यावसायिक उद्देश्यों के लिए, जब तक उचित हो, व्यक्तिगत जानकारी बनाए रखने की अनुमति देता है, बशर्ते आपने अपनी सहमति वापस नहीं ली हो।
 
 **सुरक्षा**
 
-आपकी व्यक्तिगत जानकारी की सुरक्षा के लिए, हम उचित सावधानी बरतते हैं और यह सुनिश्चित करने के लिए उद्योग की सर्वोत्तम प्रथाओं का पालन करते हैं कि यह अनुचित रूप से खोई, दुरुपयोग, एक्सेस, प्रकट, परिवर्तित या नष्ट न हो।
+आपकी व्यक्तिगत जानकारी की सुरक्षा के लिए, हम उचित सावधानियां बरतते हैं और उद्योग की सर्वोत्तम प्रथाओं का पालन करते हैं ताकि यह सुनिश्चित किया जा सके कि यह अनुचित रूप से खोई, दुरुपयोग, एक्सेस, खुलासा, परिवर्तित या नष्ट न हो।
 
-**कुकीज़**
+**कुकीज़ और समान प्रौद्योगिकियां**
 
-हमारी वेबसाइट कुकीज़ का उपयोग नहीं करती है।
+हमारी वेबसाइट कुकीज़ और समान तकनीकों का उपयोग करती है।
+
+* **आवश्यक कुकीज़:** हम आपको साइन इन रखने, आपकी चयनित भाषाओं को याद रखने और अतिथि नेविगेशन सीमाओं का प्रबंधन करने के लिए कुकीज़ का उपयोग करते हैं।
+* **एनालिटिक्स:** हम Google Analytics का उपयोग करते हैं, जो अपनी स्वयं की कुकीज़ सेट कर सकता है और उपयोग जानकारी एकत्र कर सकता है।
+* **स्थानीय भंडारण:** हम आपके डिवाइस पर सेटिंग्स, सहेजे गए शब्दों, प्रगति, पढ़ने की सामग्री और कस्टम मीडिया को संग्रहीत करने के लिए \`localStorage\`, \`sessionStorage\` और IndexedDB का उपयोग करते हैं।
+* **एम्बेडेड सामग्री:** वीडियो YouTube से एम्बेडेड हैं। जब आप वीडियो देखते हैं तो YouTube और Google अपनी स्वयं की कुकीज़ सेट कर सकते हैं, जो उनकी गोपनीयता नीतियों द्वारा शासित होती हैं।
+
+आप अपने ब्राउज़र सेटिंग्स के माध्यम से कुकीज़ को ब्लॉक या हटा सकते हैं। कृपया ध्यान दें कि यदि आप कुकीज़ अक्षम करते हैं तो वेबसाइट के कुछ हिस्से ठीक से काम नहीं कर सकते हैं।
+
+**डेटा प्रतिधारण और विलोपन**
+
+हम व्यक्तिगत जानकारी को तब तक बनाए रखते हैं जब तक आपका खाता सक्रिय है, या जब तक वेबसाइट प्रदान करने, कानूनी दायित्वों का पालन करने, विवादों को हल करने और हमारे समझौतों को लागू करने के लिए आवश्यक है।
+
+आप किसी भी समय प्रोफ़ाइल पृष्ठ से खाता हटाएं विकल्प का उपयोग करके या नीचे दिए गए पते पर हमसे संपर्क करके अपना खाता हटा सकते हैं। जब आप अपना खाता हटाते हैं, तो हम आपकी व्यक्तिगत जानकारी को हटा देंगे या गुमनाम कर देंगे, उन रिकॉर्डों के अधीन जिन्हें हमें कानूनी, भुगतान, कर या सुरक्षा उद्देश्यों के लिए रखना आवश्यक है।
 
 **इस गोपनीयता नीति में परिवर्तन**
 
-हम किसी भी समय इस गोपनीयता नीति को संशोधित करने का अधिकार सुरक्षित रखते हैं, इसलिए कृपया इसे बार-बार देखें। परिवर्तन और स्पष्टीकरण वेबसाइट पर पोस्ट होने के तुरंत बाद प्रभावी होंगे। यदि हम इस नीति में महत्वपूर्ण परिवर्तन करते हैं, तो हम आपको यहां सूचित करेंगे कि इसे अपडेट कर दिया गया है, ताकि आपको पता चले कि हम कौन सी जानकारी एकत्र करते हैं, हम इसका उपयोग कैसे करते हैं, और किन परिस्थितियों में, यदि कोई हों, हम इसका उपयोग और/या खुलासा करते हैं।
+हम किसी भी समय इस गोपनीयता नीति को संशोधित करने का अधिकार सुरक्षित रखते हैं, इसलिए कृपया इसे बार-बार समीक्षा करें। परिवर्तन और स्पष्टीकरण वेबसाइट पर पोस्ट होने पर तुरंत प्रभावी होंगे। यदि हम इस नीति में महत्वपूर्ण परिवर्तन करते हैं, तो हम आपको यहां सूचित करेंगे कि इसे अद्यतन किया गया है, ताकि आपको पता चले कि हम कौन सी जानकारी एकत्र करते हैं, हम इसका उपयोग कैसे करते हैं, और किन परिस्थितियों में, यदि कोई हों, हम इसका उपयोग और/या खुलासा करते हैं।
 
 **प्रश्न और संपर्क जानकारी**
 
-यदि आप: हमारे पास मौजूद किसी भी व्यक्तिगत जानकारी तक पहुंचना, उसे सुधारना, संशोधित करना या हटाना चाहते हैं, कोई शिकायत दर्ज करना चाहते हैं, या बस अधिक जानकारी चाहते हैं, तो हमसे [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) पर संपर्क करें।` },
+यदि आप चाहते हैं: हमारे पास मौजूद किसी भी व्यक्तिगत जानकारी तक पहुंच, उसे सही करना, संशोधित करना या हटाना, शिकायत दर्ज करना, या बस अधिक जानकारी चाहते हैं, तो हमसे [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) पर संपर्क करें।` },
     { path: 'reading/epub', title: 'EPUB रीडर', category: 'reading', content: `# EPUB रीडर
 
 इंटरैक्टिव वर्ड लुकअप, प्रति-ब्लॉक अनुवाद और सत्रों में बने रहने वाली प्रगति के साथ EPUB ई-पुस्तकें पढ़ें।
@@ -18667,98 +19050,130 @@ Vaša povijest gledanja je privatna. Vidljiva je samo vama kada ste prijavljeni.
 - Vaša povijest je ograničena na vaš trenutni L2 — nećete vidjeti Japanski videozapise dok ste u Korejski načinu rada` },
     { path: 'privacy-policy', title: 'Pravila privatnosti', category: 'privacy-policy', content: `# Pravila privatnosti
 
-Ova web stranica predstavlja pravni dokument koji služi kao naši Uvjeti korištenja i Politika privatnosti te uređuje korištenje naše web stranice: [https://languageplayer.io](https://languageplayer.io), uključujući stranice koje se na njoj nalaze te sve poddomene i aplikacije (zajednički nazvane "Web stranica"), u vlasništvu i pod upravljanjem nas, Zero to Hero Education, Kanada. ("Zero to Hero").
+Ova web stranica predstavlja pravni dokument koji služi kao naši Uvjeti korištenja i Politika privatnosti te uređuje korištenje naše web stranice: [https://languageplayer.io](https://languageplayer.io), uključujući stranice koje se na njoj nalaze te sve poddomene i aplikacije (zajedno, "Web stranica"), koju posjedujemo i upravljamo mi, Zero to Hero Education, Kanada. ("Zero to Hero").
 
 **Uvod**
 
-Uvjeti korištenja, zajedno s našom Politikom privatnosti objavljenom u nastavku te drugim objavljenim smjernicama ili politikama unutar naše Web stranice (zajednički nazvani "Pravni uvjeti"), čine jedini i potpuni sporazum između vas i nas te zamjenjuju sve druge sporazume, izjave, jamstva i dogovore u vezi s našom Web stranicom i predmetom sadržanim u ovom dokumentu. Naše Pravne uvjete možemo izmijeniti u bilo kojem trenutku bez posebne obavijesti vama. Najnovije kopije naših Pravnih uvjeta bit će objavljene na našoj Web stranici, a vi biste trebali pregledati sve Pravne uvjete prije korištenja naše Web stranice. Nakon što su bilo kakve izmjene naših Pravnih uvjeta objavljene, pristajete biti vezani tim izmjenama. Stoga je važno da povremeno pregledavate naše Pravne uvjete kako biste bili sigurni da se i dalje s njima slažete.
+Uvjeti korištenja, zajedno s našom Politikom privatnosti objavljenom u nastavku, te drugim objavljenim smjernicama ili politikama unutar naše Web stranice (zajedno "Pravni uvjeti"), čine cjelokupni i jedini ugovor između vas i nas te zamjenjuju sve druge ugovore, izjave, jamstva i sporazume u vezi s našom Web stranicom i sadržajem koji je ovdje naveden. Naše Pravne uvjete možemo izmijeniti u bilo kojem trenutku bez posebne obavijesti vama. Najnovije kopije naših Pravnih uvjeta bit će objavljene na našoj Web stranici te biste trebali pregledati sve Pravne uvjete prije korištenja naše Web stranice. Nakon što su bilo kakve revizije naših Pravnih uvjeta objavljene, pristajete biti vezani tim izmjenama. Stoga je važno da povremeno pregledavate naše Pravne uvjete kako biste bili sigurni da se i dalje s njima slažete.
 
-Korištenjem naše Web stranice pristajete na potpunu usklađenost s našim Pravnim uvjetima i obvezujete se njima. Molimo vas da ih pažljivo pregledate. Ako ne prihvaćate naše Pravne uvjete, nemojte pristupati našoj Web stranici niti je koristiti. Ako ste već pristupili našoj Web stranici i ne prihvaćate naše Pravne uvjete, više niste ovlašteni za njezino korištenje i trebali biste odmah prestati s korištenjem naše Web stranice.
+Korištenjem naše Web stranice pristajete u potpunosti poštivati i biti vezani našim Pravnim uvjetima. Molimo vas da ih pažljivo pregledate. Ako ne prihvaćate naše Pravne uvjete, nemojte pristupati i koristiti našu Web stranicu. Ako ste već pristupili našoj Web stranici i ne prihvaćate naše Pravne uvjete, više niste ovlašteni za njezino korištenje te biste odmah trebali prestati koristiti našu Web stranicu.
 
 **Drugi definirani pojmovi na našoj Web stranici**
 
 Ova Web stranica uključuje pojmove definirane na ovoj stranici kao i ove druge definirane pojmove:
 
-Pojmovi "nas" i "mi" odnose se na Zero to Hero kao vlasnika Web stranice. "Sadržaj" uključuje bilo koji i sav tekst, informacije, grafike, audio, video i druge podatke objavljene, ponuđene ili dostupne putem naše Web stranice.
+Pojmovi "nas" i "mi" odnose se na Zero to Hero kao vlasnika Web stranice. "Sadržaj" uključuje sav tekst, informacije, grafike, audio, video i druge podatke objavljene, ponuđene ili dostupne putem naše Web stranice.
 
-"Posjetitelj" ili "vi" zajednički su identifikatori koji se odnose na vas kao preglednika naše Web stranice, bez obzira jeste li izvršili kupnju naših proizvoda.
+"Posjetitelj" ili "vi" zajednički su identifikatori koji se odnose na vas kao korisnika naše Web stranice, bez obzira na to dovršite li kupnju naših proizvoda.
 
-"Osobni podaci" znače informacije o prepoznatljivoj osobi, koje mogu uključivati ime osobe, adresu stanovanja, adresu za naplatu, adresu za dostavu, broj telefona, adresu e-pošte i druge slične kontakt informacije, kao i podatke o povijesti korištenja Web stranice. Također mogu uključivati podatke o kreditnoj kartici osobe kada se dostave u svrhu plaćanja.
+"Osobni podaci" znači informacije o identificiranoj osobi, koje mogu uključivati ime osobe, adresu stanovanja, adresu za naplatu, adresu za dostavu, broj telefona, adresu e-pošte i druge slične kontaktne podatke, kao i podatke o povijesti korištenja Web stranice. Također mogu uključivati podatke o kreditnoj kartici osobe kada se dostave u svrhu plaćanja.
 
 **UVJETI KORIŠTENJA**
 
 **Intelektualno vlasništvo**
 
-Naša Web stranica može sadržavati naše oznake usluga ili zaštitne znakove, kao i one naših povezanih društava ili drugih osoba ili tvrtki, u obliku riječi, grafika i logotipa. Vaše korištenje naše Web stranice ne predstavlja nikakvo pravo ili licencu za korištenje tih oznaka usluga/zaštitnih znakova bez prethodnog pisanog odobrenja odgovarajućeg vlasnika oznake usluge/zaštitnog znaka. Naša Web stranica uključujući sadržaj također je zaštićena kanadskim i međunarodnim zakonima o autorskim pravima. Vaše korištenje naše Web stranice ili sadržaja ne daje vam vlasnička prava bilo koje vrste. Kopiranje, redistribucija, korištenje ili objavljivanje bilo kojeg dijela naše Web stranice ili sadržaja od strane vas strogo je zabranjeno i stoga se ne smije kopirati ili reproducirati bez prethodnog pribavljanja našeg pisanog odobrenja.
+Naša Web stranica može sadržavati naše uslužne znakove ili zaštitne znakove, kao i znakove naših partnera ili drugih osoba ili tvrtki, u obliku riječi, grafika i logotipa. Vaše korištenje naše Web stranice ne predstavlja nikakvo pravo ili licenciju za korištenje takvih uslužnih znakova/zaštitnih znakova, bez prethodnog pisanog odobrenja odgovarajućeg vlasnika uslužnog znaka/zaštitnog znaka. Naša Web stranica, uključujući sadržaj, također je zaštićena kanadskim i međunarodnim zakonima o autorskim pravima. Vaše korištenje naše Web stranice ili sadržaja ne daje vam vlasnička prava bilo koje vrste nad njima. Kopiranje, redistribucija, korištenje ili objavljivanje bilo kojeg dijela naše Web stranice ili sadržaja od strane vas strogo je zabranjeno te se ne smije kopirati ili reproducirati bez prethodnog pisanog odobrenja.
 
 **Ograničenje odgovornosti**
 
-Ni u kojim okolnostima mi, ili naši dužnosnici ili zaposlenici, nećemo biti odgovorni za bilo kakav gubitak ili štetu bilo koje vrste, uključujući (bez ograničenja općenitosti prethodnog) bilo kakve izravne, neizravne, slučajne, posebne, kaznene ili posljedične štete, koje proizlaze iz ili su u vezi s vašim korištenjem, pristupom ili oslanjanjem na, ili vašom nemogućnošću korištenja ili pristupa, ovoj Web stranici, sustavu za online naručivanje ili bilo kojem sadržaju.
+Ni u kojim okolnostima mi, naši dužnosnici ili zaposlenici nećemo biti odgovorni za bilo kakav gubitak ili štetu, uključujući (bez ograničavanja općenitosti prethodnog) bilo kakvu izravnu, neizravnu, slučajnu, posebnu, kaznenu ili posljedičnu štetu, koja proizlazi iz ili je u vezi s vašim korištenjem, pristupom ili oslanjanjem na, ili vašom nemogućnošću korištenja ili pristupa ovoj Web stranici, sustavu za online naručivanje ili bilo kojem sadržaju.
 
 **Opći uvjeti**
 
-Naši Pravni uvjeti tretirat će se kao da su izvršeni i provedeni u Pokrajini Britanska Kolumbija, Kanada i bit će uređeni i tumačeni u skladu sa zakonima te regije bez obzira na načela sukoba zakona. Osim toga, pristajete na osobnu jurisdikciju i mjesnu nadležnost sudova unutar te regije. Bilo kakav tužbeni zahtjev s vaše strane u vezi s našom Web stranicom mora biti pokrenut u roku od jedne (1) godine nakon što je tužbeni zahtjev nastao ili će biti zauvijek odbačen i onemogućen. Ako se bilo koji dio naših Pravnih uvjeta smatra nevažećim ili neprovedivim, taj dio će se tumačiti u skladu s primjenjivim zakonom, a preostali dijelovi ostat će u punoj snazi i na snazi. U mjeri u kojoj bilo koji sadržaj proturječi ili nije u skladu s našim Pravnim uvjetima, naši Pravni uvjeti imaju prednost i bit će nadređeni u njihovom zajedničkom tumačenju. Naš propust da provedemo bilo koju odredbu naših Pravnih uvjeta neće se smatrati odricanjem od te odredbe niti od prava na provedbu te odredbe. Naša prava prema našim Pravnim uvjetima preživjet će prestanak naših Pravnih uvjeta.
+Naši Pravni uvjeti smatrat će se kao da su izvršeni i provedeni u pokrajini Britanska Kolumbija, Kanada, te će se njima upravljati i tumačiti u skladu sa zakonima te regije bez obzira na načela sukoba zakona. Osim toga, pristajete podvrgnuti se osobnoj nadležnosti i mjestu nadležnosti sudova unutar te regije. Svaki tužbeni zahtjev s vaše strane u vezi s našom Web stranicom mora biti pokrenut u roku od jedne (1) godine nakon što je uzrok tužbe nastao ili će biti zauvijek odbijen i onemogućen. Ako bilo koji dio naših Pravnih uvjeta bude proglašen nevažećim ili neprovedivim, taj dio tumačit će se u skladu s primjenjivim zakonom, a preostali dijelovi ostat će u punoj snazi i učinku. U mjeri u kojoj je bilo koji sadržaj u sukobu ili neskladu s našim Pravnim uvjetima, naši Pravni uvjeti imat će prednost i bit će nadređeni pri njihovom zajedničkom tumačenju. Naš propust da provedemo bilo koju odredbu naših Pravnih uvjeta neće se smatrati odricanjem od te odredbe niti od prava na provedbu te odredbe. Naša prava prema našim Pravnim uvjetima preživjet će prestanak naših Pravnih uvjeta.
 
 **Veze trećih strana**
 
-Kada kliknete na veze na našoj Web stranici, one vas mogu preusmjeriti s naše Web stranice na drugu web stranicu u vlasništvu i pod upravljanjem treće strane. Nismo odgovorni za prakse privatnosti drugih web stranica trećih strana i potičemo vas da pročitate njihove uvjete korištenja i izjave o privatnosti. Nakon što napustite našu Web stranicu ili budete preusmjereni na web stranicu ili aplikaciju treće strane, više vas ne uređuju naši Pravni uvjeti.
+Kada kliknete na veze na našoj Web stranici, one vas mogu usmjeriti s naše Web stranice na drugu web stranicu koju posjeduje i upravlja treća strana. Nismo odgovorni za prakse privatnosti drugih web stranica trećih strana te vas potičemo da pročitate njihove uvjete korištenja i izjave o privatnosti. Nakon što napustite našu Web stranicu ili budete preusmjereni na web stranicu ili aplikaciju treće strane, više vas ne uređuju naši Pravni uvjeti.
 
 **POLITIKA PRIVATNOSTI**
 
-U Zero to Hero smatramo privatnost vrlo važnim pitanjem i kao takvi predani smo zaštiti privatnosti osobnih podataka svih posjetitelja. Ova Politika privatnosti uključuje primjenjive dijelove Zakona o zaštiti osobnih podataka i elektroničkim dokumentima (Kanada), Zakona o zaštiti osobnih podataka (Alberta) i deset načela navedenih u Kanadskom modelu kodeksa Udruge za standarde (CSA) za zaštitu osobnih podataka (zajedno, "primjenjivi zakoni o privatnosti").
+U Zero to Hero privatnost smatramo vrlo važnim pitanjem te smo kao takvi predani zaštiti privatnosti osobnih podataka svih posjetitelja. Ova Politika privatnosti uključuje primjenjive dijelove Zakona o zaštiti osobnih podataka i elektroničkih dokumenata (Kanada), Zakona o zaštiti osobnih podataka (Alberta) i deset načela utvrđenih u Model kodeksu Kanadske udruge za standarde (CSA) za zaštitu osobnih podataka (zajedno, "primjenjivi zakoni o privatnosti").
 
-**Prikupljanje informacija**
+**Informacije koje prikupljamo**
 
-Možemo prikupljati osobne podatke za bilo koju jednu ili više sljedećih svrha:
+**Informacije koje nam dajete izravno:**
 
-*   uspostavljanje i održavanje odnosa s posjetiteljima;
-*   pružanje traženih i tekućih proizvoda i usluga;
-*   obavještavanje o promjenama naših proizvoda i usluga;
-*   bolje razumijevanje naših posjetitelja, njihovih zahtjeva i preferencija;
-*   razvoj, poboljšanje, unaprjeđenje i/ili marketing naših proizvoda i usluga;
-*   praćenje korištenja naše Web stranice;
-*   upravljanje i poboljšanje našeg poslovanja i operacija; i
-*   ispunjavanje zakonskih i regulatornih zahtjeva.
+* Podaci o računu: vaše ime, adresa e-pošte, lozinka, jezične preferencije i razina učenja.
+* Podaci o učenju: spremljene riječi, fraze, napredak, bilješke, popisi za reprodukciju, lajkani videozapisi, povijest gledanja, knjige i napredak u čitanju.
+* Sadržaj koji prenosite ili kreirate: prilagođeni mediji, EPUB datoteke i tekst koji nas tražite da prevedemo ili objasnimo.
+* Podaci o plaćanju: kada kupite pretplatu, plaćanje obrađuje Stripe, PayPal ili Apple App Store. Primamo potvrdu i detalje o pretplati, ali općenito ne pohranjujemo vaš puni broj kartice.
+
+**Informacije prikupljene automatski:**
+
+* Podaci o korištenju: stranice i značajke koje posjećujete, uključujući Istraži medije, Glazba i Zabava, TV uživo, TV emisije, Pretraži, Rječnik, Spremljene riječi, Pregled, Čitač, Web čitač, EPUB čitač, Lokalni Mediji, Povijest gledanja, Popisi za reprodukciju i Videozapisi koji vam se sviđaju; videozapisi koje gledate; interakcije; i vremenske oznake.
+* Podaci o uređaju i mreži: IP adresa, vrsta preglednika, operativni sustav, vrsta uređaja i približna lokacija izvedena iz vaše IP adrese.
+* Analitika: koristimo Google Analytics kako bismo razumjeli kako posjetitelji koriste Web stranicu. Google Analytics može koristiti kolačiće i prikupljati podatke o korištenju u naše ime. Googleovo korištenje tih podataka uređeno je [Googleovom Politikom privatnosti](https://policies.google.com/privacy).
+* Lokalna pohrana: koristimo kolačiće, \`localStorage\`, \`sessionStorage\` i IndexedDB kako bismo vas održali prijavljenima, zapamtili vaš jezik, pohranili vaše postavke, napredak i spremljene riječi te lokalno predmemorirali sadržaj.
 
 **Što radimo s vašim informacijama?**
 
-Kada kupite nešto putem našeg sustava za online naručivanje, kao dio procesa kupnje i prodaje, prikupljamo vaše osobne podatke.
+Informacije koje prikupljamo koristimo za:
 
-Kada pregledavate našu Web stranicu, također automatski primamo IP adresu vašeg računala kako bismo dobili informacije koje nam pomažu da saznamo više o vašem pregledniku i operativnom sustavu.
+* pružanje, održavanje i poboljšanje Web stranice i njezinih značajki;
+* kreiranje i upravljanje vašim računom, provjeru vašeg identiteta i održavanje vaše prijave;
+* personalizaciju preporuka na temelju vašeg jezika, razine i povijesti učenja;
+* sinkronizaciju vaših podataka na različitim uređajima;
+* obradu pretplata, plaćanja i obnova;
+* slanje transakcijskih e-poruka kao što su verifikacijski kodovi, resetiranje lozinke i potvrde o plaćanju;
+* slanje marketinških komunikacija ako ste nam dali dopuštenje za to;
+* analizu korištenja putem Google Analytics kako bismo razumjeli kako posjetitelji koriste Web stranicu i poboljšali naše proizvode;
+* ispunjavanje zakonskih i regulatornih zahtjeva te zaštitu naših prava i prava naših korisnika.
 
-Dopušteni izravni marketing (ako je primjenjivo): Uz vašu dozvolu, možemo vam slati biltene ili e-poruke za oglašavanje naših trgovina, novih proizvoda i drugih novosti.
+Ne prodajemo vaše osobne podatke.
+
+**Dijeljenje i otkrivanje**
+
+Osobne podatke dijelimo samo s pružateljima usluga koji nam pomažu u upravljanju Web stranicom, uključujući:
+
+* pružatelje hostinga i baza podataka, uključujući Supabase;
+* pružatelje plaćanja, uključujući Stripe, PayPal i Apple App Store;
+* pružatelje prijevoda i umjetne inteligencije, uključujući DeepSeek, kada koristite značajke prijevoda ili AI objašnjenja;
+* pružatelje analitike, uključujući Google Analytics;
+* video platforme, uključujući YouTube i Google, kada gledate ugrađene videozapise.
+
+Nećemo koristiti ili otkrivati osobne podatke u svrhe koje nisu one za koje su prikupljeni, osim uz vaš pristanak, ako je to dopušteno ili zahtijevano zakonom, ili ako prekršite naše Uvjete korištenja.
 
 **Pristanak**
 
-_Kako dobivam vaš pristanak?_
+_Kako dobivamo vaš pristanak?_
 
-Kada nam dostavite osobne podatke za dovršetak transakcije, provjeru vaše kreditne kartice, naručivanje, dogovor o dostavi ili povratu kupnje, ili objavite ili prikačite bilo kakve informacije ili fotografije na našu stranicu društvenih medija, smatramo da pristajete na naše prikupljanje i korištenje istih isključivo u tu svrhu.
+Kada nam date osobne podatke za kreiranje računa, dovršetak transakcije, provjeru plaćanja, narudžbu ili korištenje naših proizvoda i usluga, pretpostavljamo da pristajete na njihovo prikupljanje i korištenje samo za tu konkretnu svrhu.
 
-Ako zatražimo vaše osobne podatke za sekundarni razlog, poput marketinga, izravno ćemo vas pitati za vaš izričiti pristanak ili ćemo vam pružiti priliku da odbijete.
+Ako tražimo vaše osobne podatke za sekundarnu svrhu, poput marketinga, izravno ćemo vas pitati za vaš izričiti pristanak ili ćemo vam dati priliku da odbijete.
 
 _Kako mogu povući svoj pristanak?_
 
-Ako se nakon što ste se prijavili predomislite, možete povući svoj pristanak da vas kontaktiramo, za nastavak prikupljanja, korištenja ili otkrivanja vaših informacija, u bilo kojem trenutku, obavještavanjem nas.
-
-**Otkrivanje**
-
-Nećemo koristiti niti otkrivati osobne podatke u svrhe koje nisu one za koje su prikupljeni, osim uz vaš pristanak, ako je to dopušteno ili zahtijevano zakonom ili ako prekršite naše Uvjete korištenja.
+Ako se nakon što ste se prijavili predomislite, možete u bilo kojem trenutku povući svoj pristanak da vas kontaktiramo, za nastavak prikupljanja, korištenja ili otkrivanja vaših informacija, tako da nas obavijestite.
 
 **Zaštita**
 
-Štitit ćemo osobne podatke slijedeći najbolje prakse u industriji i provodeći razumne zaštitne mjere koje mogu biti primjerene osjetljivosti informacija; uložit ćemo razumne napore da zaštitimo osobne podatke od gubitka ili krađe, kao i od neovlaštenog pristupa, otkrivanja, kopiranja, korištenja ili izmjene bez obzira na format u kojem se čuvaju. Zakonodavstvo nam također dopušta, u pravne ili poslovne svrhe, zadržavanje osobnih podataka onoliko dugo koliko je razumno i pod uvjetom da niste povukli svoj pristanak.
+Štitit ćemo osobne podatke slijedeći najbolje prakse u industriji i primjenjujući razumne zaštitne mjere primjerene osjetljivosti informacija; uložit ćemo razumne napore za zaštitu osobnih podataka od gubitka ili krađe, kao i neovlaštenog pristupa, otkrivanja, kopiranja, korištenja ili izmjene bez obzira na format u kojem se čuvaju. Zakonodavstvo nam također dopušta, za pravne ili poslovne svrhe, zadržavanje osobnih podataka onoliko dugo koliko je razumno i pod uvjetom da niste povukli svoj pristanak.
 
 **Sigurnost**
 
-Kako bismo zaštitili vaše osobne podatke, poduzimamo razumne mjere opreza i slijedimo najbolje prakse u industriji kako bismo osigurali da nisu neprimjereno izgubljeni, zlouporabljeni, pristupljeni, otkriveni, izmijenjeni ili uništeni.
+Za zaštitu vaših osobnih podataka poduzimamo razumne mjere opreza i slijedimo najbolje prakse u industriji kako bismo osigurali da ne budu neprimjereno izgubljeni, zlouporabljeni, pristupljeni, otkriveni, izmijenjeni ili uništeni.
 
-**Kolačići**
+**Kolačići i slične tehnologije**
 
-Naša Web stranica ne koristi kolačiće.
+Naša Web stranica koristi kolačiće i slične tehnologije.
+
+* **Osnovni kolačići:** koristimo kolačiće kako bismo vas održali prijavljenima, zapamtili vaše odabrane jezike i upravljali ograničenjima navigacije za goste.
+* **Analitika:** koristimo Google Analytics, koji može postaviti vlastite kolačiće i prikupljati informacije o korištenju.
+* **Lokalna pohrana:** koristimo \`localStorage\`, \`sessionStorage\` i IndexedDB za pohranu postavki, spremljenih riječi, napretka, sadržaja za čitanje i prilagođenih medija na vašem uređaju.
+* **Ugrađeni sadržaj:** videozapisi su ugrađeni s YouTubea. YouTube i Google mogu postaviti vlastite kolačiće kada gledate videozapis, a njima upravljaju njihove politike privatnosti.
+
+Kolačiće možete blokirati ili izbrisati putem postavki preglednika. Imajte na umu da neki dijelovi Web stranice možda neće raditi ispravno ako onemogućite kolačiće.
+
+**Zadržavanje i brisanje podataka**
+
+Zadržavamo osobne podatke dok je vaš račun aktivan ili onoliko dugo koliko je potrebno za pružanje Web stranice, ispunjavanje pravnih obveza, rješavanje sporova i provedbu naših ugovora.
+
+Svoj račun možete izbrisati u bilo kojem trenutku sa stranice Profil pomoću opcije Izbriši račun ili nas kontaktirajte na adresu navedenu u nastavku. Kada izbrišete svoj račun, uklonit ćemo ili anonimizirati vaše osobne podatke, podložno evidencijama koje smo dužni čuvati u pravne, platne, porezne ili sigurnosne svrhe.
 
 **Izmjene ove Politike privatnosti**
 
-Zadržavamo pravo izmjene ove politike privatnosti u bilo kojem trenutku, stoga je često pregledavajte. Izmjene i pojašnjenja stupaju na snagu odmah nakon objave na Web stranici. Ako napravimo materijalne promjene ove politike, obavijestit ćemo vas ovdje da je ažurirana, kako biste bili svjesni koje informacije prikupljamo, kako ih koristimo i pod kojim okolnostima, ako ih ima, koristimo i/ili otkrivamo.
+Zadržavamo pravo izmjene ove politike privatnosti u bilo kojem trenutku, stoga je često pregledavajte. Izmjene i pojašnjenja stupit će na snagu odmah nakon objave na Web stranici. Ako unesemo materijalne izmjene ove politike, obavijestit ćemo vas ovdje da je ažurirana, kako biste bili svjesni koje informacije prikupljamo, kako ih koristimo i pod kojim okolnostima, ako ih ima, koristimo i/ili otkrivamo.
 
 **Pitanja i kontakt informacije**
 
@@ -20133,102 +20548,134 @@ A nézési előzményeid privátak. Csak te látod őket, amikor be vagy jelentk
 - Az előzményeid a jelenlegi L2 nyelvedhez kötődnek – nem fogsz Japán videókat látni, amikor Koreai módban vagy` },
     { path: 'privacy-policy', title: 'Adatvédelmi irányelvek', category: 'privacy-policy', content: `# Adatvédelmi irányelvek
 
-Ez a weboldal egy jogi dokumentumot képvisel, amely Felhasználási Feltételeinkként és Adatvédelmi Szabályzatunkként szolgál, és szabályozza weboldalunk használatát: [https://languageplayer.io](https://languageplayer.io), beleértve az azon található oldalakat, valamint az összes aldomaint és alkalmazást (együttesen "Weboldal"), amelyeket mi, a Zero to Hero Education, Kanada ("Zero to Hero") üzemeltetünk és tulajdonolunk.
+Ez a weboldal olyan jogi dokumentumot képvisel, amely Felhasználási feltételeinket és Adatvédelmi szabályzatunkat tartalmazza, és szabályozza weboldalunk: [https://languageplayer.io](https://languageplayer.io) használatát, beleértve az ott található oldalakat, valamint az összes aldomainet és alkalmazást (együttesen: "Weboldal"), amelyet mi, a Zero to Hero Education, Kanada ("Zero to Hero") üzemeltetünk.
 
 **Bevezetés**
 
-A Felhasználási Feltételek, az alább közzétett Adatvédelmi Szabályzatunkkal, valamint a Weboldalunkon közzétett egyéb irányelvekkel vagy szabályzatokkal együtt (együttesen "Jogi Feltételek") képezik a teljes és kizárólagos megállapodást Ön és közöttünk, és felülírják a Weboldalunkkal és az abban foglalt tárggyal kapcsolatos összes egyéb megállapodást, képviseletet, szavatosságot és megértést. Jogi Feltételeinket bármikor módosíthatjuk anélkül, hogy erről külön értesítést küldenénk Önnek. Jogi Feltételeink legfrissebb példányai a Weboldalunkon lesznek közzétéve, és Önnek át kell tekintenie az összes Jogi Feltételt a Weboldalunk használata előtt. Miután Jogi Feltételeink bármely módosítása közzétételre kerül, Ön elfogadja, hogy kötve van azok bármely ilyen változásához. Ezért fontos, hogy időről időre áttekintse Jogi Feltételeinket, hogy megbizonyosodjon arról, hogy továbbra is egyetért azokkal.
+A Felhasználási feltételek az alábbiakban közzétett Adatvédelmi szabályzatunkkal, valamint a Weboldalunkon közzétett egyéb irányelvekkel vagy szabályzatokkal (együttesen: "Jogi feltételek") együtt teljes és kizárólagos megállapodást képeznek Ön és közöttünk, és felváltanak minden más, a Weboldalunkkal és az itt foglalt tárgykörrel kapcsolatos megállapodást, képviseletet, szavatosságot és megértést. Jogi feltételeinket bármikor módosíthatjuk az Ön külön értesítése nélkül. Jogi feltételeink legfrissebb példányai Weboldalunkon kerülnek közzétételre, és Önnek át kell tekintenie az összes Jogi feltételt a Weboldalunk használata előtt. Miután Jogi feltételeink módosításai közzétételre kerültek, Ön elfogadja, hogy kötik Önt az ilyen változások. Ezért fontos, hogy időszakosan áttekintse Jogi feltételeinket, hogy megbizonyosodjon arról, hogy továbbra is elfogadja azokat.
 
-A Weboldalunk használatával Ön elfogadja, hogy teljes mértékben megfelel Jogi Feltételeinknek, és azok kötelező érvényűek Önre nézve. Kérjük, figyelmesen olvassa el azokat. Ha nem fogadja el Jogi Feltételeinket, ne lépjen be és ne használja a Weboldalunkat. Ha már belépett a Weboldalunkra, és nem fogadja el Jogi Feltételeinket, akkor Ön már nem jogosult annak használatára, és azonnal abba kell hagynia a Weboldalunk használatát.
+A Weboldalunk használatával Ön elfogadja, hogy teljes mértékben megfelel Jogi feltételeinknek, és azok kötik Önt. Kérjük, figyelmesen tekintse át azokat. Ha nem fogadja el Jogi feltételeinket, ne lépjen be Weboldalunkra, és ne használja azt. Ha már belépett Weboldalunkra, és nem fogadja el Jogi feltételeinket, Ön már nem jogosult annak használatára, és azonnal abba kell hagynia Weboldalunk használatát.
 
-**További Meghatározott Kifejezések Weboldalunkon**
+**További meghatározott kifejezések weboldalunkon**
 
-Ez a Weboldal tartalmazza az ezen az oldalon meghatározott kifejezéseket, valamint az alábbi további meghatározott kifejezéseket:
+Ez a Weboldal magában foglalja az ezen az oldalon meghatározott kifejezéseket, valamint az alábbi további meghatározott kifejezéseket:
 
-A "mi" és "minket" kifejezések a Zero to Hero-ra utalnak, mint a Weboldal tulajdonosára. "Tartalom" magában foglal minden szöveget, információt, grafikát, hangot, videót és egyéb adatot, amelyet a Weboldalunkon keresztül tesznek közzé, kínálnak vagy tesznek elérhetővé.
+A "minket" és "mi" kifejezések a Zero to Hero-ra utalnak, mint a Weboldal tulajdonosára. "Tartalom" magában foglal minden szöveget, információt, grafikát, hangot, videót és egyéb adatot, amelyet Weboldalunkon keresztül közzétesznek, kínálnak vagy elérhetővé tesznek.
 
-Egy "látogató" vagy "Ön" olyan gyűjtőazonosítók, amelyek Önre, mint a Weboldalunk böngészőjére utalnak, függetlenül attól, hogy Ön befejezi-e termékeink megvásárlását.
+Egy "látogató" vagy "Ön" olyan gyűjtőfogalom, amely Önre, mint Weboldalunk böngészőjére utal, függetlenül attól, hogy vásárol-e termékeinkből.
 
-"Személyes információ" azonosítható személyre vonatkozó információt jelent, amely magában foglalhatja a személy nevét, lakcímét, számlázási címét, szállítási címét, telefonszámát, e-mail címét és egyéb hasonló kapcsolattartási adatokat, valamint a Weboldal használati előzményeinek adatait. Tartalmazhatja továbbá a személy bankkártyaadatit is, ha azokat fizetési célból adják meg.
+"Személyes adat" azonosítható személyre vonatkozó információt jelent, amely tartalmazhatja a személy nevét, lakcímét, számlázási címét, szállítási címét, telefonszámát, e-mail címét és más hasonló elérhetőségi adatait, valamint a Weboldal használati előzményeit. Tartalmazhatja továbbá a személy bankkártyaadatait, ha azokat fizetési célból adja meg.
 
 **FELHASZNÁLÁSI FELTÉTELEK**
 
-**Szellemi Tulajdon**
+**Szellemi tulajdon**
 
-Weboldalunk tartalmazhatja a szolgáltatási védjegyeinket vagy védjegyeinket, valamint partnereink vagy más személyek vagy vállalatok védjegyeit, szavak, grafikák és logók formájában. A Weboldalunk használata nem biztosít Önnek semmilyen jogot vagy licencet az ilyen szolgáltatási védjegyek/védjegyek használatára a megfelelő szolgáltatási védjegy/védjegy tulajdonosának előzetes írásbeli engedélye nélkül. Weboldalunk, beleértve a tartalmat is, kanadai és nemzetközi szerzői jogi törvények védelme alatt áll. A Weboldalunk vagy a tartalom használata nem ruházza át Önre a tulajdonjogokat semmilyen formában. A Weboldalunk vagy a tartalom bármely részének másolása, újraelosztása, használata vagy közzététele szigorúan tilos, és ezért nem másolható vagy reprodukálható az írásbeli engedélyünk megszerzése nélkül.
+Weboldalunk szolgáltatási védjegyeket vagy védjegyeket tartalmazhat, valamint partnereink vagy más személyek, illetve vállalatok védjegyeit, szavak, grafikák és logók formájában. Weboldalunk használata nem jelent semmilyen jogot vagy licencet az ilyen szolgáltatási védjegyek/védjegyek használatára, a megfelelő szolgáltatási védjegy/védjegy tulajdonos előzetes írásbeli engedélye nélkül. Weboldalunk a tartalommal együtt kanadai és nemzetközi szerzői jogi törvények védelme alatt áll. Weboldalunk vagy a tartalom használata nem ruház Önre semmilyen tulajdonjogot. Weboldalunk vagy tartalmunk bármely részének másolása, újraelosztása, használata vagy publikálása szigorúan tilos, ezért az nem másolható vagy reprodukálható írásbeli engedélyünk megszerzése nélkül.
 
-**Felelősség Korlátozása**
+**Felelősség korlátozása**
 
-Semmilyen körülmények között nem vállalunk felelősséget, sem mi, sem tisztségviselőink vagy alkalmazottaink, semmilyen veszteségért vagy kárért, beleértve (az általánosság korlátozása nélkül) bármely közvetlen, közvetett, véletlenszerű, különleges, büntető jellegű vagy következményes kárt, amely a Weboldal, az online rendelési rendszer vagy bármely tartalom használatából, eléréséből, az arra való hagyatkozásból, vagy a használat vagy elérés képtelenségéből ered vagy azzal kapcsolatos.
+Semmilyen körülmények között nem tartozunk felelősséggel mi, illetve tisztségviselőink vagy alkalmazottaink semmilyen veszteségért vagy kárért, beleértve (a fentiek általánosságának korlátozása nélkül) bármely közvetlen, közvetett, járulékos, speciális, büntető vagy következményes kárért, amely Weboldalunk, az online rendelési rendszer vagy bármely tartalom használatából, eléréséből, az arra való támaszkodásból, vagy a használatának vagy elérésének képtelenségéből ered vagy azzal kapcsolatos.
 
-**Általános Feltételek**
+**Általános feltételek**
 
-Jogi Feltételeinket úgy kell kezelni, mintha azokat Kanada Brit Kolumbia tartományában hajtották volna végre és teljesítették volna, és azokat a jogi összeütközés elveinek figyelembevétele nélkül e régió törvényei szerint kell értelmezni és szabályozni. Ezenkívül Ön elfogadja, hogy aláveti magát az e régióban található bíróságok személyi joghatóságának és illetékességének. Az Ön által a Weboldalunkkal kapcsolatban indított bármely keresetet a kereset okának felmerülésétől számított egy (1) éven belül kell megindítani, ellenkező esetben az örökre elévül és elveszik. Ha Jogi Feltételeink bármely része érvénytelennek vagy végrehajthatatlannak bizonyul, azt a részt az alkalmazandó joggal összhangban kell értelmezni, a fennmaradó részek pedig teljes hatályban maradnak. Amennyiben bármely tartalom ütközik vagy ellentmond Jogi Feltételeinknek, Jogi Feltételeink felülírják és elsőbbséget élveznek azok együttes értelmezésében. Az, hogy Jogi Feltételeink bármely rendelkezését nem érvényesítjük, nem minősül az adott rendelkezésről való lemondásnak, sem pedig az adott rendelkezés érvényesítéséhez való jogról való lemondásnak. A Jogi Feltételeink szerinti jogaink túlélik Jogi Feltételeink megszűnését.
+Jogi feltételeinket úgy kell tekinteni, mintha Kanada British Columbia tartományában kötötték volna és hajtották volna végre, és azokat a jogösszeütközési elvek figyelembevétele nélkül az adott régió törvényei szabályozzák és azok szerint kell értelmezni. Ezenkívül Ön elfogadja, hogy aláveti magát az adott régió bíróságai személyes joghatóságának és illetékességének. A Weboldalunkkal kapcsolatos bármely keresetindítási okot egy (1) éven belül kell megindítani a keresetindítási ok keletkezését követően, ellenkező esetben az örökre elévül és kizárt. Ha Jogi feltételeink bármely része érvénytelennek vagy végrehajthatatlannak bizonyul, azt a részt a hatályos jogszabályokkal összhangban kell értelmezni, a fennmaradó részek pedig teljes hatályukban maradnak. Amennyiben bármely tartalom ütközik vagy ellentmond Jogi feltételeinknek, Jogi feltételeink elsőbbséget élveznek és elsődlegesek azok együttes értelmezésében. Az, hogy nem érvényesítjük Jogi feltételeink bármely rendelkezését, nem minősül az adott rendelkezésről való lemondásnak, sem pedig az adott rendelkezés érvényesítéséhez való jogról való lemondásnak. Jogi feltételeink szerinti jogaink túlélik Jogi feltételeink megszűnését.
 
-**Harmadik Fél Hivatkozásai**
+**Harmadik félre mutató hivatkozások**
 
-Amikor a Weboldalunkon található hivatkozásokra kattint, azok elirányíthatják Önt a Weboldalunktól egy másik, harmadik fél által üzemeltetett weboldalra. Nem vagyunk felelősek más harmadik fél weboldalainak adatvédelmi gyakorlataiért, és javasoljuk, hogy olvassa el azok felhasználási feltételeit és adatvédelmi nyilatkozatait. Amint elhagyja a Weboldalunkat, vagy átirányítják egy harmadik fél weboldalára vagy alkalmazásába, Önre már nem vonatkoznak Jogi Feltételeink.
+Amikor a Weboldalunkon található hivatkozásokra kattint, azok elvezethetik Önt Weboldalunktól egy másik, harmadik fél által üzemeltetett weboldalra. Nem vagyunk felelősek más harmadik féltől származó weboldalak adatvédelmi gyakorlataiért, és javasoljuk, hogy olvassa el azok felhasználási feltételeit és adatvédelmi nyilatkozatait. Amint elhagyja Weboldalunkat, vagy átirányítják egy harmadik fél weboldalára vagy alkalmazására, Önre többé nem vonatkoznak Jogi feltételeink.
 
 **ADATVÉDELMI SZABÁLYZAT**
 
-A Zero to Hero-nál a magánéletet nagyon fontos kérdésnek tekintjük, és ennek megfelelően elkötelezettek vagyunk az összes látogató személyes adatainak védelme iránt. Ez az Adatvédelmi Szabályzat tartalmazza a Személyes Információk Védelméről és az Elektronikus Dokumentumokról szóló törvény (Kanada), a Személyes Információk Védelméről szóló törvény (Alberta) és a Kanadai Szabványügyi Szövetség (CSA) Személyes Információk Védelmére vonatkozó Modellkódexében meghatározott tíz alapelv alkalmazandó részeit (együttesen "alkalmazandó adatvédelmi törvények").
+A Zero to Hero-nál az adatvédelem nagyon fontos kérdésnek számít, ezért elkötelezettek vagyunk az összes látogató személyes adatainak védelme iránt. Ez az Adatvédelmi szabályzat magában foglalja a Személyes adatok védelméről és az elektronikus dokumentumokról szóló törvény (Kanada), a Személyes adatok védelméről szóló törvény (Alberta) alkalmazandó részeit, valamint a Kanadai Szabványügyi Szövetség (CSA) a személyes adatok védelmére vonatkozó mintakódexében meghatározott tíz elvet (együttesen: "alkalmazandó adatvédelmi törvények").
 
-**Információk Gyűjtése**
+**Milyen információkat gyűjtünk**
 
-Személyes információkat gyűjthetünk az alábbi célok egyikére vagy többre:
+**Az Ön által közvetlenül megadott információk:**
 
-*   kapcsolatok létesítése és fenntartása a látogatókkal;
-*   kért és folyamatos termékek és szolgáltatások biztosítása;
-*   termékeinkben és szolgáltatásainkban bekövetkező változásokról való értesítés;
-*   látogatóink, igényeik és preferenciáik jobb megértése;
-*   termékeink és szolgáltatásaink fejlesztése, bővítése, javítása és/vagy marketingje;
-*   Weboldalunk használatának figyelemmel kísérése;
-*   üzletünk és műveleteink irányítása és fejlesztése; valamint
-*   jogi és szabályozási követelmények teljesítése.
+* Fiókinformációk: az Ön neve, e-mail címe, jelszava, nyelvi preferenciái és tanulási szintje.
+* Tanulási adatok: mentett szavak, kifejezések, haladási előrehaladás, jegyzetek, lejátszási listák, kedvelt videók, megtekintési előzmények, könyvek és olvasási előrehaladás.
+* Az Ön által feltöltött vagy létrehozott tartalom: egyéni média, EPUB-fájlok és szövegek, amelyek fordítását vagy magyarázatát kéri tőlünk.
+* Fizetési információk: ha előfizetést vásárol, a fizetést a Stripe, a PayPal vagy az Apple App Store dolgozza fel. Visszaigazolást és előfizetési adatokat kapunk, de általában nem tároljuk az Ön teljes kártyaszámát.
 
-**Mit Csinálunk Az Ön Információival?**
+**Automatikusan gyűjtött információk:**
 
-Amikor valamit vásárol az online rendelési rendszerünkön keresztül, a vételi és eladási folyamat részeként összegyűjtjük az Ön személyes adatait.
+* Használati adatok: az Ön által látogatott oldalak és funkciók, beleértve a Média felfedezése, Zene és Szórakozás, Élő TV, TV-műsorok, Keresés, Szótár, Mentett szavak, Áttekintés, Olvasó, Webolvasó, EPUB-olvasó, Helyi Média, Nézési előzmények, Lejátszási listák és Kedvelt videók elemeket; a megtekintett videók; interakciók; és időbélyegek.
+* Eszköz- és hálózati információk: IP-cím, böngésző típusa, operációs rendszer, eszköztípus és az IP-címéből származtatott hozzávetőleges tartózkodási hely.
+* Analitika: Google Analyticset használunk annak megértésére, hogy a látogatók hogyan használják a Weboldalt. A Google Analytics cookie-kat használhat, és használati adatokat gyűjthet a nevünkben. A Google adatfelhasználására a [Google Adatvédelmi szabályzata](https://policies.google.com/privacy) vonatkozik.
+* Helyi tárolás: cookie-kat, \`localStorage\`-t, \`sessionStorage\`-t és IndexedDB-t használunk annak érdekében, hogy bejelentkezve tartsuk Önt, megjegyezzük nyelvét, tároljuk beállításait, előrehaladását és mentett szavait, valamint helyben gyorsítótárazzuk a tartalmat.
 
-Amikor böngészi a Weboldalunkat, automatikusan megkapjuk számítógépe internetprotokoll (IP) címét is, hogy információkat nyújtson számunkra, amelyek segítenek megismerni böngészőjét és operációs rendszerét.
+**Mit csinálunk az Ön adataival?**
 
-Engedélyezett közvetlen marketing (ha alkalmazható): Az Ön engedélyével hírleveleket vagy e-maileket küldhetünk Önnek, hogy hirdessük üzleteinket, új termékeinket és egyéb frissítéseinket.
+Az összegyűjtött információkat az alábbi célokra használjuk:
+
+* a Weboldal és funkcióinak biztosítása, karbantartása és fejlesztése;
+* fiók létrehozása és kezelése, személyazonosságának ellenőrzése és bejelentkezve tartása;
+* személyre szabott ajánlások nyújtása az Ön nyelve, szintje és tanulási előzményei alapján;
+* adatainak szinkronizálása az eszközök között;
+* előfizetések, fizetések és megújítások feldolgozása;
+* tranzakciós e-mailek küldése, például megerősítő kódok, jelszó-visszaállítások és fizetési visszaigazolások;
+* marketing kommunikáció küldése, ha Ön engedélyt adott erre;
+* a használat elemzése a Google Analytics segítségével annak megértésére, hogy a látogatók hogyan használják a Weboldalt, és termékeink fejlesztésére;
+* jogi és szabályozási követelmények teljesítése, valamint jogaink és felhasználóink jogainak védelme.
+
+Nem adjuk el az Ön személyes adatait.
+
+**Megosztás és közzététel**
+
+A személyes adatokat csak olyan szolgáltatókkal osztjuk meg, akik segítenek a Weboldal üzemeltetésében, beleértve:
+
+* tárhely- és adatbázis-szolgáltatók, beleértve a Supabase-t;
+* fizetésfeldolgozók, beleértve a Stripe-ot, a PayPalt és az Apple App Store-t;
+* fordítási és MI-szolgáltatók, beleértve a DeepSeeket, amikor fordítási vagy MI-magyarázat funkciókat használ;
+* elemzőszolgáltatók, beleértve a Google Analyticset;
+* videóplatformok, beleértve a YouTube-ot és a Google-t, amikor beágyazott videókat néz.
+
+Nem használjuk fel vagy hozzuk nyilvánosságra a személyes adatokat azoktól eltérő célokra, amelyekre azokat gyűjtöttük, kivéve, ha ehhez az Ön hozzájárulását adjuk, ha azt a törvény lehetővé teszi vagy előírja, vagy ha Ön megsérti Felhasználási feltételeinket.
 
 **Hozzájárulás**
 
-_Hogyan szerzem meg az Ön hozzájárulását?_
+_Hogyan szerzi meg a hozzájárulásomat?_
 
-Amikor személyes adatokat ad meg nekünk egy tranzakció befejezéséhez, bankkártyája ellenőrzéséhez, rendelés leadásához, szállítás megszervezéséhez vagy vásárlás visszaküldéséhez, illetve bármilyen információ vagy fénykép közzétételéhez vagy feltöltéséhez közösségi média oldalunkra, feltételezzük, hogy hozzájárul azok összegyűjtéséhez és kizárólag erre a konkrét célra történő felhasználásához.
+Amikor személyes adatokat ad meg nekünk fiók létrehozásához, tranzakció lebonyolításához, fizetésének ellenőrzéséhez, rendelés leadásához vagy termékeink és szolgáltatásaink használatához, úgy tekintjük, hogy Ön hozzájárul azok gyűjtéséhez és kizárólag az adott célra történő felhasználásához.
 
-Ha másodlagos okból, például marketing célból kérjük az Ön személyes adatait, akkor vagy közvetlenül kérjük az Ön kifejezett hozzájárulását, vagy lehetőséget biztosítunk Önnek a nemleges válaszra.
+Ha személyes adatait másodlagos célból, például marketing céljából kérjük, közvetlenül kérjük az Ön kifejezett hozzájárulását, vagy lehetőséget biztosítunk a visszautasításra.
 
 _Hogyan vonhatom vissza a hozzájárulásomat?_
 
-Ha a feliratkozás után meggondolja magát, bármikor visszavonhatja hozzájárulását ahhoz, hogy kapcsolatba lépjünk Önnel, valamint adatainak további gyűjtéséhez, felhasználásához vagy közzétételéhez, értesítve minket.
-
-**Közzététel**
-
-Nem használjuk fel vagy tesszük közzé a személyes adatokat azok gyűjtési céljától eltérő célokra, kivéve, ha az az Ön hozzájárulásával történik, ha azt a törvény lehetővé teszi vagy előírja, vagy ha Ön megsérti a Felhasználási Feltételeinket.
+Ha a feliratkozás után meggondolja magát, bármikor visszavonhatja hozzájárulását ahhoz, hogy kapcsolatba lépjünk Önnel, valamint adatainak folyamatos gyűjtéséhez, felhasználásához vagy közzétételéhez, ha értesít minket.
 
 **Védelem**
 
-Megvédjük a személyes adatokat az iparág legjobb gyakorlatainak követésével és olyan ésszerű biztosítékok bevezetésével, amelyek megfelelőek az információ érzékenységéhez; ésszerű erőfeszítéseket teszünk a személyes adatok elvesztés vagy lopás, valamint jogosulatlan hozzáférés, közzététel, másolás, felhasználás vagy módosítás elleni védelmére, függetlenül attól, hogy azt milyen formátumban tárolják. A jogszabályok azt is lehetővé teszik számunkra, hogy jogi vagy üzleti célokból a személyes adatokat ésszerű ideig megőrizzük, feltéve, hogy Ön nem vonta vissza hozzájárulását.
+A személyes adatokat az iparági legjobb gyakorlatok követésével és az adatok érzékenységének megfelelő, észszerű biztosítékok végrehajtásával védjük; észszerű erőfeszítéseket teszünk a személyes adatok elvesztése vagy ellopása, valamint a jogosulatlan hozzáférés, közzététel, másolás, felhasználás vagy módosítás ellen, függetlenül attól, hogy milyen formátumban tárolják azokat. A jogszabályok lehetővé teszik számunkra, hogy jogi vagy üzleti célokból a személyes adatokat észszerű ideig megőrizzük, feltéve, hogy Ön nem vonta vissza hozzájárulását.
 
 **Biztonság**
 
-Személyes adatainak védelme érdekében ésszerű óvintézkedéseket teszünk, és követjük az iparág legjobb gyakorlatait, hogy biztosítsuk, hogy azok ne vesszenek el, ne használják fel helytelenül, ne férjenek hozzá, ne tegyék közzé, ne változtassák meg vagy semmisítsék meg azokat nem megfelelő módon.
+Személyes adatainak védelme érdekében észszerű óvintézkedéseket teszünk és az iparági legjobb gyakorlatokat követjük annak biztosítása érdekében, hogy azok ne vesszenek el, ne éljenek vissza velük, ne férjenek hozzájuk, ne hozzák nyilvánosságra, ne változtassák meg vagy semmisítsék meg azokat nem megfelelően.
 
-**Sütik**
+**Cookie-k és hasonló technológiák**
 
-Weboldalunk nem használ sütiket.
+Weboldalunk cookie-kat és hasonló technológiákat használ.
 
-**Az Adatvédelmi Szabályzat Változásai**
+* **Alapvető cookie-k:** cookie-kat használunk arra, hogy bejelentkezve tartsuk Önt, megjegyezzük a kiválasztott nyelveket, és kezeljük a vendég navigációs korlátait.
+* **Analitika:** Google Analyticset használunk, amely saját cookie-kat helyezhet el és használati információkat gyűjthet.
+* **Helyi tárolás:** \`localStorage\`-t, \`sessionStorage\`-t és IndexedDB-t használunk a beállítások, mentett szavak, előrehaladás, olvasási tartalmak és egyéni médiák eszközén történő tárolására.
+* **Beágyazott tartalom:** a videók a YouTube-ról vannak beágyazva. A YouTube és a Google saját cookie-kat helyezhet el, amikor videót néz, amelyekre az ő adatvédelmi szabályzataik vonatkoznak.
 
-Fenntartjuk a jogot, hogy ezt az adatvédelmi szabályzatot bármikor módosítsuk, ezért kérjük, gyakran tekintse át azt. A változtatások és pontosítások a Weboldalon történő közzétételükkor azonnal hatályba lépnek. Ha lényeges változtatásokat hajtunk végre ezen a szabályzaton, itt értesítjük Önt a frissítésről, hogy tisztában legyen azzal, hogy milyen információkat gyűjtünk, hogyan használjuk fel azokat, és milyen körülmények között használjuk fel és/vagy tesszük közzé azokat.
+A cookie-kat böngészője beállításaiban letilthatja vagy törölheti. Kérjük, vegye figyelembe, hogy a Weboldal egyes részei nem működhetnek megfelelően, ha letiltja a cookie-kat.
 
-**Kérdések És Kapcsolattartási Információk**
+**Adatmegőrzés és törlés**
 
-Ha szeretné: elérni, kijavítani, módosítani vagy törölni az Önről tárolt bármely személyes adatot, panaszt tenni, vagy egyszerűen csak további információt szeretne, lépjen kapcsolatba velünk a [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) címen.` },
+A személyes adatokat addig őrizzük meg, amíg fiókja aktív, vagy ameddig a Weboldal biztosításához, jogi kötelezettségek teljesítéséhez, jogviták rendezéséhez és megállapodásaink érvényesítéséhez szükséges.
+
+Fiókját bármikor törölheti a Profil oldalon a Fiók törlése opcióval, vagy kapcsolatba léphet velünk az alábbi címen. Amikor törli fiókját, eltávolítjuk vagy anonimizáljuk személyes adatait, kivéve azokat a nyilvántartásokat, amelyeket jogi, fizetési, adó- vagy biztonsági célokból kötelesek vagyunk megőrizni.
+
+**Az Adatvédelmi szabályzat módosításai**
+
+Fenntartjuk a jogot, hogy ezt az adatvédelmi szabályzatot bármikor módosítsuk, ezért kérjük, gyakran tekintse át. A változások és pontosítások a Weboldalon történő közzétételükkel azonnal hatályba lépnek. Ha lényeges változtatásokat hajtunk végre ezen a szabályzaton, itt értesítjük Önt a frissítésről, hogy tisztában legyen azzal, milyen információkat gyűjtünk, hogyan használjuk azokat, és milyen körülmények között, ha egyáltalán, használjuk és/vagy hozzuk nyilvánosságra azokat.
+
+**Kérdések és kapcsolatfelvételi információk**
+
+Ha szeretné: elérni, helyesbíteni, módosítani vagy törölni a nálunk tárolt személyes adatait, panaszt tenni, vagy egyszerűen csak további információra van szüksége, lépjen kapcsolatba velünk a [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) címen.` },
     { path: 'reading/epub', title: 'EPUB-olvasó', category: 'reading', content: `# EPUB-olvasó
 
 Olvasson EPUB e-könyveket interaktív szókereséssel, blokkonkénti fordítással és a munkamenetek között megmaradó haladással.
@@ -21599,21 +22046,21 @@ Riwayat tontonan Anda bersifat pribadi. Hanya terlihat oleh Anda saat Anda masuk
 - Riwayat Anda terbatas pada L2 Anda saat ini — Anda tidak akan melihat video Jepang saat Anda dalam mode Korea` },
     { path: 'privacy-policy', title: 'Kebijakan Privasi', category: 'privacy-policy', content: `# Kebijakan Privasi
 
-Halaman web ini merupakan dokumen hukum yang berfungsi sebagai Ketentuan Penggunaan dan Kebijakan Privasi kami serta mengatur penggunaan situs web kami: [https://languageplayer.io](https://languageplayer.io), termasuk halaman-halaman di dalamnya serta semua sub-domain dan aplikasi (secara kolektif, "Situs Web"), yang dimiliki dan dioperasikan oleh kami, Zero to Hero Education, Kanada. ("Zero to Hero").
+Halaman web ini merupakan dokumen hukum yang berfungsi sebagai Ketentuan Penggunaan dan Kebijakan Privasi kami serta mengatur penggunaan situs web kami: [https://languageplayer.io](https://languageplayer.io), termasuk halaman-halaman yang terdapat di dalamnya serta semua sub-domain dan aplikasi (secara kolektif, "Situs Web"), yang dimiliki dan dioperasikan oleh kami, Zero to Hero Education, Kanada. ("Zero to Hero").
 
 **Pendahuluan**
 
-Ketentuan Penggunaan, bersama dengan Kebijakan Privasi kami yang diterbitkan di bawah, serta pedoman atau kebijakan lain yang diposting di dalam Situs Web kami (secara kolektif "Ketentuan Hukum"), merupakan satu-satunya dan seluruh perjanjian antara Anda dan kami, dan menggantikan semua perjanjian, pernyataan, jaminan, dan pemahaman lain sehubungan dengan Situs Web kami dan materi pokok yang tercantum di dalamnya. Kami dapat mengubah Ketentuan Hukum kami kapan saja tanpa pemberitahuan khusus kepada Anda. Salinan terbaru dari Ketentuan Hukum kami akan diposting di Situs Web kami, dan Anda harus meninjau semua Ketentuan Hukum sebelum menggunakan Situs Web kami. Setelah revisi terhadap Ketentuan Hukum kami diposting, Anda setuju untuk terikat pada perubahan tersebut. Oleh karena itu, penting bagi Anda untuk secara berkala meninjau Ketentuan Hukum kami untuk memastikan Anda masih menyetujuinya.
+Ketentuan Penggunaan, bersama dengan Kebijakan Privasi kami yang diterbitkan di bawah ini, serta pedoman atau kebijakan lain yang diposting di dalam Situs Web kami (secara kolektif "Ketentuan Hukum"), merupakan keseluruhan dan satu-satunya perjanjian antara Anda dan kami, dan menggantikan semua perjanjian, pernyataan, jaminan, dan pemahaman lainnya sehubungan dengan Situs Web kami dan materi yang tercakup di dalamnya. Kami dapat mengubah Ketentuan Hukum kami sewaktu-waktu tanpa pemberitahuan khusus kepada Anda. Salinan terbaru dari Ketentuan Hukum kami akan diposting di Situs Web kami, dan Anda harus meninjau semua Ketentuan Hukum sebelum menggunakan Situs Web kami. Setelah revisi apa pun terhadap Ketentuan Hukum kami diposting, Anda setuju untuk terikat pada perubahan tersebut. Oleh karena itu, penting bagi Anda untuk secara berkala meninjau Ketentuan Hukum kami untuk memastikan Anda masih menyetujuinya.
 
-Dengan menggunakan Situs Web kami, Anda setuju untuk sepenuhnya mematuhi dan terikat oleh Ketentuan Hukum kami. Harap tinjau dengan saksama. Jika Anda tidak menerima Ketentuan Hukum kami, jangan mengakses dan menggunakan Situs Web kami. Jika Anda sudah mengakses Situs Web kami dan tidak menerima Ketentuan Hukum kami, Anda tidak lagi berwenang untuk menggunakannya dan Anda harus segera menghentikan penggunaan Situs Web kami.
+Dengan menggunakan Situs Web kami, Anda setuju untuk sepenuhnya mematuhi dan terikat pada Ketentuan Hukum kami. Harap tinjau dengan cermat. Jika Anda tidak menerima Ketentuan Hukum kami, jangan mengakses dan menggunakan Situs Web kami. Jika Anda telah mengakses Situs Web kami dan tidak menerima Ketentuan Hukum kami, Anda tidak lagi berwenang untuk menggunakannya dan Anda harus segera menghentikan penggunaan Situs Web kami.
 
 **Istilah Lain yang Didefinisikan di Situs Web Kami**
 
-Situs Web ini mencakup istilah-istilah yang didefinisikan di seluruh halaman ini serta istilah-istilah yang didefinisikan lainnya berikut:
+Situs Web ini memuat istilah-istilah yang didefinisikan di seluruh halaman ini serta istilah-istilah lain yang didefinisikan berikut ini:
 
-Istilah "kami" merujuk pada Zero to Hero sebagai pemilik Situs Web. "Konten" mencakup semua dan setiap teks, informasi, grafik, audio, video, dan data lain yang diposting, ditawarkan, atau tersedia melalui Situs Web kami.
+Istilah "kami" merujuk pada Zero to Hero sebagai pemilik Situs Web. "Konten" mencakup semua teks, informasi, grafik, audio, video, dan data lainnya yang diposting, ditawarkan, atau disediakan melalui Situs Web kami.
 
-"Pengunjung" atau "Anda" adalah pengidentifikasi kolektif yang merujuk pada Anda sebagai penjelajah Situs Web kami, baik Anda menyelesaikan pembelian produk kami atau tidak.
+"Pengunjung" atau "Anda" adalah identifikasi kolektif yang merujuk pada Anda sebagai pengguna Situs Web kami, baik Anda menyelesaikan pembelian produk kami maupun tidak.
 
 "Informasi pribadi" berarti informasi tentang seseorang yang dapat diidentifikasi, yang dapat mencakup nama seseorang, alamat tempat tinggal, alamat penagihan, alamat pengiriman, nomor telepon, alamat email, dan informasi kontak serupa lainnya, serta data riwayat penggunaan Situs Web. Ini juga dapat mencakup informasi kartu kredit seseorang ketika disajikan untuk tujuan pembayaran.
 
@@ -21621,15 +22068,15 @@ Istilah "kami" merujuk pada Zero to Hero sebagai pemilik Situs Web. "Konten" men
 
 **Kekayaan Intelektual**
 
-Situs Web kami dapat berisi tanda jasa atau merek dagang kami serta milik afiliasi kami atau orang atau perusahaan lain, dalam bentuk kata, grafik, dan logo. Penggunaan Anda atas Situs Web kami tidak memberikan hak atau lisensi apa pun kepada Anda untuk menggunakan tanda jasa/merek dagang tersebut, tanpa otorisasi tertulis sebelumnya dari pemilik tanda jasa/merek dagang yang bersangkutan. Situs Web kami termasuk konten juga dilindungi oleh undang-undang hak cipta Kanada dan internasional. Penggunaan Anda atas Situs Web kami atau konten tidak memberikan hak kepemilikan apa pun kepada Anda di dalamnya. Menyalin, mendistribusikan kembali, menggunakan, atau mempublikasikan oleh Anda bagian mana pun dari Situs Web atau konten kami dilarang keras dan oleh karena itu tidak boleh disalin atau direproduksi tanpa memperoleh otorisasi tertulis kami terlebih dahulu.
+Situs Web kami dapat memuat tanda layanan atau merek dagang kami serta milik afiliasi kami atau orang atau perusahaan lain, dalam bentuk kata-kata, grafik, dan logo. Penggunaan Anda atas Situs Web kami tidak merupakan hak atau lisensi apa pun bagi Anda untuk menggunakan tanda layanan/merek dagang tersebut, tanpa izin tertulis sebelumnya dari pemilik tanda layanan/merek dagang yang bersangkutan. Situs Web kami termasuk kontennya juga dilindungi oleh undang-undang hak cipta Kanada dan internasional. Penggunaan Anda atas Situs Web kami atau kontennya tidak memberikan hak kepemilikan apa pun kepada Anda di dalamnya. Penyalinan, pendistribusian ulang, penggunaan, atau publikasi oleh Anda atas bagian mana pun dari Situs Web kami atau kontennya sangat dilarang dan oleh karena itu tidak boleh disalin atau direproduksi tanpa terlebih dahulu mendapatkan izin tertulis dari kami.
 
 **Batasan Tanggung Jawab**
 
-Dalam keadaan apa pun kami, atau pejabat atau karyawan kami, tidak bertanggung jawab atas kerugian atau kerusakan apa pun, termasuk (tanpa membatasi keumuman hal di atas) kerusakan langsung, tidak langsung, insidental, khusus, punitif, atau konsekuensial, yang timbul dari atau sehubungan dengan penggunaan Anda, akses ke, atau ketergantungan Anda pada, atau ketidakmampuan Anda untuk menggunakan atau mengakses, Situs Web ini, sistem pemesanan online, atau konten apa pun.
+Dalam keadaan apa pun kami, atau pejabat atau karyawan kami, tidak bertanggung jawab atas kerugian atau kerusakan apa pun, termasuk (tanpa membatasi keumuman hal tersebut) segala kerugian langsung, tidak langsung, insidental, khusus, punitif, atau konsekuensial, yang timbul dari atau sehubungan dengan penggunaan Anda, akses Anda, atau ketergantungan Anda pada, atau ketidakmampuan Anda untuk menggunakan atau mengakses, Situs Web ini, sistem pemesanan online, atau konten apa pun.
 
 **Ketentuan Umum**
 
-Ketentuan Hukum kami akan diperlakukan seolah-olah dilaksanakan dan dilakukan di Provinsi British Columbia, Kanada, dan akan diatur serta ditafsirkan sesuai dengan hukum wilayah tersebut tanpa memperhatikan prinsip konflik hukum. Selain itu, Anda setuju untuk tunduk pada yurisdiksi pribadi dan tempat pengadilan di wilayah tersebut. Setiap tindakan hukum oleh Anda sehubungan dengan Situs Web kami harus diajukan dalam waktu satu (1) tahun setelah penyebab tindakan tersebut timbul atau akan dihapuskan dan dilarang secara permanen. Jika bagian mana pun dari Ketentuan Hukum kami dinyatakan tidak sah atau tidak dapat diberlakukan, bagian tersebut akan ditafsirkan sesuai dengan hukum yang berlaku dan bagian lainnya akan tetap berlaku sepenuhnya. Sejauh ada konten yang bertentangan atau tidak konsisten dengan Ketentuan Hukum kami, Ketentuan Hukum kami akan mengesampingkan dan menjadi yang terdepan dalam penafsiran bersama. Kegagalan kami untuk menegakkan ketentuan apa pun dalam Ketentuan Hukum kami tidak akan dianggap sebagai pengabaian terhadap ketentuan tersebut maupun hak untuk menegakkan ketentuan tersebut. Hak-hak kami berdasarkan Ketentuan Hukum kami akan tetap berlaku setelah pengakhiran Ketentuan Hukum kami.
+Ketentuan Hukum kami akan diperlakukan seolah-olah dibuat dan dilaksanakan di Provinsi British Columbia, Kanada, dan akan diatur serta ditafsirkan sesuai dengan hukum wilayah tersebut tanpa memperhatikan prinsip-prinsip konflik hukum. Selain itu, Anda setuju untuk tunduk pada yurisdiksi pribadi dan tempat pengadilan di wilayah tersebut. Tuntutan hukum apa pun oleh Anda sehubungan dengan Situs Web kami harus diajukan dalam waktu satu (1) tahun setelah tuntutan tersebut timbul atau dianggap telah dilepaskan dan dilarang selamanya. Jika bagian mana pun dari Ketentuan Hukum kami dianggap tidak sah atau tidak dapat diberlakukan, bagian tersebut akan ditafsirkan sesuai dengan hukum yang berlaku dan bagian lainnya akan tetap berlaku sepenuhnya. Sejauh ada konten yang bertentangan atau tidak konsisten dengan Ketentuan Hukum kami, Ketentuan Hukum kami akan menggantikan dan menjadi yang utama dalam penafsiran keduanya. Kegagalan kami untuk menegakkan ketentuan apa pun dari Ketentuan Hukum kami tidak akan dianggap sebagai pengabaian terhadap ketentuan tersebut maupun hak untuk menegakkan ketentuan tersebut. Hak kami berdasarkan Ketentuan Hukum kami akan tetap berlaku setelah berakhirnya Ketentuan Hukum kami.
 
 **Tautan Pihak Ketiga**
 
@@ -21637,64 +22084,96 @@ Ketika Anda mengklik tautan di Situs Web kami, tautan tersebut dapat mengarahkan
 
 **KEBIJAKAN PRIVASI**
 
-Di Zero to Hero, kami menganggap privasi sebagai masalah yang sangat penting dan oleh karena itu kami berkomitmen untuk melindungi privasi informasi pribadi semua pengunjung. Kebijakan Privasi ini mencakup bagian-bagian yang berlaku dari Undang-Undang Perlindungan Informasi Pribadi dan Dokumen Elektronik (Kanada), Undang-Undang Perlindungan Informasi Pribadi (Alberta), dan sepuluh prinsip yang ditetapkan dalam Model Kode Asosiasi Standar Kanada (CSA) untuk Perlindungan Informasi Pribadi (bersama-sama, "undang-undang privasi yang berlaku").
+Di Zero to Hero, kami menganggap privasi sebagai hal yang sangat penting dan oleh karena itu kami berkomitmen untuk melindungi privasi informasi pribadi semua pengunjung. Kebijakan Privasi ini memuat bagian-bagian yang berlaku dari Undang-Undang Perlindungan Informasi Pribadi dan Dokumen Elektronik (Kanada), Undang-Undang Perlindungan Informasi Pribadi (Alberta), dan sepuluh prinsip yang ditetapkan dalam Kode Model Asosiasi Standar Kanada (CSA) untuk Perlindungan Informasi Pribadi (secara bersama-sama, "hukum privasi yang berlaku").
 
-**Pengumpulan Informasi**
+**Informasi yang Kami Kumpulkan**
 
-Kami dapat mengumpulkan informasi pribadi untuk satu atau lebih tujuan berikut:
+**Informasi yang Anda berikan secara langsung:**
 
-*   untuk membangun dan memelihara hubungan dengan pengunjung;
-*   untuk menyediakan produk dan layanan yang diminta dan berkelanjutan;
-*   untuk memberi tahu Anda tentang perubahan pada produk dan layanan kami;
-*   untuk mendapatkan pemahaman yang lebih baik tentang pengunjung, kebutuhan, dan preferensi mereka;
-*   untuk mengembangkan, meningkatkan, memperbaiki, dan/atau memasarkan produk dan layanan kami;
-*   untuk memantau penggunaan Situs Web kami;
-*   untuk mengelola dan meningkatkan bisnis dan operasi kami; dan
-*   untuk memenuhi persyaratan hukum dan peraturan.
+* Informasi akun: nama Anda, alamat email, kata sandi, preferensi bahasa, dan tingkat pembelajaran.
+* Data pembelajaran: kata-kata yang disimpan, frasa, kemajuan belajar, catatan, daftar putar, video yang disukai, riwayat menonton, buku, dan kemajuan membaca.
+* Konten yang Anda unggah atau buat: media khusus, file EPUB, dan teks yang Anda minta untuk kami terjemahkan atau jelaskan.
+* Informasi pembayaran: ketika Anda membeli langganan, pembayaran diproses oleh Stripe, PayPal, atau Apple App Store. Kami menerima konfirmasi dan detail langganan, tetapi kami umumnya tidak menyimpan nomor kartu lengkap Anda.
+
+**Informasi yang dikumpulkan secara otomatis:**
+
+* Data penggunaan: halaman dan fitur yang Anda kunjungi, termasuk Jelajahi Media, Musik dan Hiburan, TV Langsung, Acara TV, Cari, Kamus, Kata yang Disimpan, Tinjauan, Pembaca, Pembaca web, Pembaca EPUB, Media Lokal, Riwayat Tontonan, Daftar Putar, dan Video yang Disukai; video yang Anda tonton; interaksi; dan cap waktu.
+* Informasi perangkat dan jaringan: alamat IP, jenis peramban, sistem operasi, jenis perangkat, dan perkiraan lokasi yang berasal dari alamat IP Anda.
+* Analitik: kami menggunakan Google Analytics untuk memahami bagaimana pengunjung menggunakan Situs Web. Google Analytics dapat menggunakan cookie dan mengumpulkan data penggunaan atas nama kami. Penggunaan data tersebut oleh Google diatur oleh [Kebijakan Privasi Google](https://policies.google.com/privacy).
+* Penyimpanan lokal: kami menggunakan cookie, \`localStorage\`, \`sessionStorage\`, dan IndexedDB untuk menjaga Anda tetap masuk, mengingat bahasa Anda, menyimpan pengaturan Anda, kemajuan dan kata-kata yang disimpan, serta menyimpan konten secara lokal di cache.
 
 **Apa yang Kami Lakukan dengan Informasi Anda?**
 
-Ketika Anda membeli sesuatu melalui sistem pemesanan online kami, sebagai bagian dari proses jual beli, kami mengumpulkan informasi pribadi Anda.
+Kami menggunakan informasi yang kami kumpulkan untuk:
 
-Ketika Anda menjelajahi Situs Web kami, kami juga secara otomatis menerima alamat protokol internet (IP) komputer Anda untuk memberikan informasi yang membantu kami belajar tentang browser dan sistem operasi Anda.
+* menyediakan, memelihara, dan meningkatkan Situs Web dan fitur-fiturnya;
+* membuat dan mengelola akun Anda, memverifikasi identitas Anda, dan menjaga Anda tetap masuk;
+* mempersonalisasi rekomendasi berdasarkan bahasa, tingkat, dan riwayat pembelajaran Anda;
+* menyinkronkan data Anda di seluruh perangkat;
+* memproses langganan, pembayaran, dan perpanjangan;
+* mengirim email transaksional seperti kode verifikasi, reset kata sandi, dan tanda terima pembayaran;
+* mengirim komunikasi pemasaran jika Anda telah memberi kami izin untuk melakukannya;
+* menganalisis penggunaan dengan Google Analytics untuk memahami bagaimana pengunjung menggunakan Situs Web dan untuk meningkatkan produk kami;
+* memenuhi persyaratan hukum dan peraturan serta melindungi hak kami dan hak pengguna kami.
 
-Pemasaran langsung yang diizinkan (jika berlaku): Dengan izin Anda, kami dapat mengirimkan buletin atau email kepada Anda untuk mengiklankan toko kami, produk baru, dan pembaruan lainnya.
+Kami tidak menjual informasi pribadi Anda.
+
+**Berbagi dan Pengungkapan**
+
+Kami membagikan informasi pribadi hanya dengan penyedia layanan yang membantu kami mengoperasikan Situs Web, termasuk:
+
+* penyedia hosting dan basis data, termasuk Supabase;
+* pemroses pembayaran, termasuk Stripe, PayPal, dan Apple App Store;
+* penyedia terjemahan dan AI, termasuk DeepSeek, ketika Anda menggunakan fitur terjemahan atau penjelasan AI;
+* penyedia analitik, termasuk Google Analytics;
+* platform video, termasuk YouTube dan Google, ketika Anda menonton video yang disematkan.
+
+Kami tidak akan menggunakan atau mengungkapkan informasi pribadi untuk tujuan selain tujuan pengumpulannya, kecuali dengan persetujuan Anda, jika diizinkan atau diwajibkan oleh hukum, atau jika Anda melanggar Ketentuan Penggunaan kami.
 
 **Persetujuan**
 
-_Bagaimana cara mendapatkan persetujuan saya?_
+_Bagaimana Anda mendapatkan persetujuan saya?_
 
-Ketika Anda memberikan informasi pribadi kepada kami untuk menyelesaikan transaksi, memverifikasi kartu kredit Anda, melakukan pemesanan, mengatur pengiriman, atau mengembalikan pembelian, atau memposting atau menyematkan informasi atau foto ke situs media sosial kami, kami menganggap Anda menyetujui pengumpulannya dan penggunaannya untuk tujuan khusus itu saja.
+Ketika Anda memberikan informasi pribadi kepada kami untuk membuat akun, menyelesaikan transaksi, memverifikasi pembayaran Anda, melakukan pemesanan, atau menggunakan produk dan layanan kami, kami menyimpulkan bahwa Anda menyetujui pengumpulan dan penggunaannya untuk tujuan spesifik tersebut saja.
 
-Jika kami meminta informasi pribadi Anda untuk alasan sekunder, seperti pemasaran, kami akan secara langsung meminta persetujuan eksplisit Anda, atau memberi Anda kesempatan untuk menolak.
+Jika kami meminta informasi pribadi Anda untuk tujuan sekunder, seperti pemasaran, kami akan meminta persetujuan eksplisit Anda secara langsung, atau memberikan Anda kesempatan untuk menolak.
 
-_Bagaimana cara menarik persetujuan saya?_
+_Bagaimana saya menarik persetujuan saya?_
 
-Jika setelah Anda memilih, Anda berubah pikiran, Anda dapat menarik persetujuan Anda untuk kami menghubungi Anda, untuk pengumpulan, penggunaan, atau pengungkapan informasi Anda yang berkelanjutan, kapan saja, dengan memberi tahu kami.
-
-**Pengungkapan**
-
-Kami tidak akan menggunakan atau mengungkapkan informasi pribadi untuk tujuan selain dari tujuan pengumpulannya, kecuali dengan persetujuan Anda, jika diizinkan atau diwajibkan oleh hukum, atau Anda melanggar Ketentuan Penggunaan kami.
+Jika setelah Anda memilih untuk ikut serta, Anda berubah pikiran, Anda dapat menarik persetujuan Anda untuk kami menghubungi Anda, untuk kelanjutan pengumpulan, penggunaan, atau pengungkapan informasi Anda, kapan saja, dengan memberi tahu kami.
 
 **Perlindungan**
 
-Kami akan melindungi informasi pribadi dengan mengikuti praktik terbaik industri dan menerapkan pengamanan yang wajar sesuai dengan sensitivitas informasi; kami akan melakukan upaya yang wajar untuk melindungi informasi pribadi terhadap kehilangan atau pencurian, serta akses, pengungkapan, penyalinan, penggunaan, atau modifikasi tidak sah terlepas dari format penyimpanannya. Peraturan perundang-undangan juga mengizinkan kami, untuk tujuan hukum atau bisnis, untuk menyimpan informasi pribadi selama waktu yang wajar dan selama Anda tidak mencabut persetujuan Anda.
+Kami akan melindungi informasi pribadi dengan mengikuti praktik terbaik industri dan menerapkan perlindungan yang wajar dan sesuai dengan sensitivitas informasi; kami akan melakukan upaya yang wajar untuk melindungi informasi pribadi terhadap kehilangan atau pencurian, serta akses, pengungkapan, penyalinan, penggunaan, atau modifikasi yang tidak sah, terlepas dari format penyimpanannya. Undang-undang juga mengizinkan kami, untuk tujuan hukum atau bisnis, untuk menyimpan informasi pribadi selama jangka waktu yang wajar dan selama Anda belum mencabut persetujuan Anda.
 
 **Keamanan**
 
-Untuk melindungi informasi pribadi Anda, kami melakukan tindakan pencegahan yang wajar dan mengikuti praktik terbaik industri untuk memastikan informasi tersebut tidak hilang, disalahgunakan, diakses, diungkapkan, diubah, atau dihancurkan secara tidak tepat.
+Untuk melindungi informasi pribadi Anda, kami mengambil tindakan pencegahan yang wajar dan mengikuti praktik terbaik industri untuk memastikan bahwa informasi tersebut tidak hilang, disalahgunakan, diakses, diungkapkan, diubah, atau dihancurkan secara tidak tepat.
 
-**Cookie**
+**Cookie dan Teknologi Serupa**
 
-Situs Web kami tidak menggunakan cookie.
+Situs Web kami menggunakan cookie dan teknologi serupa.
+
+* **Cookie penting:** kami menggunakan cookie untuk menjaga Anda tetap masuk, mengingat bahasa yang Anda pilih, dan mengelola batasan navigasi tamu.
+* **Analitik:** kami menggunakan Google Analytics, yang dapat mengatur cookie-nya sendiri dan mengumpulkan informasi penggunaan.
+* **Penyimpanan lokal:** kami menggunakan \`localStorage\`, \`sessionStorage\`, dan IndexedDB untuk menyimpan pengaturan, kata-kata yang disimpan, kemajuan, konten bacaan, dan media khusus di perangkat Anda.
+* **Konten yang disematkan:** video disematkan dari YouTube. YouTube dan Google dapat mengatur cookie mereka sendiri ketika Anda menonton video, yang diatur oleh kebijakan privasi mereka.
+
+Anda dapat memblokir atau menghapus cookie melalui pengaturan peramban Anda. Harap dicatat bahwa beberapa bagian dari Situs Web mungkin tidak berfungsi dengan benar jika Anda menonaktifkan cookie.
+
+**Penyimpanan dan Penghapusan Data**
+
+Kami menyimpan informasi pribadi selama akun Anda aktif, atau selama yang diperlukan untuk menyediakan Situs Web, mematuhi kewajiban hukum, menyelesaikan perselisihan, dan menegakkan perjanjian kami.
+
+Anda dapat menghapus akun Anda kapan saja dari halaman Profil menggunakan opsi Hapus Akun, atau dengan menghubungi kami di alamat di bawah ini. Ketika Anda menghapus akun Anda, kami akan menghapus atau menganonimkan informasi pribadi Anda, tunduk pada catatan yang kami wajib simpan untuk tujuan hukum, pembayaran, perpajakan, atau keamanan.
 
 **Perubahan pada Kebijakan Privasi Ini**
 
-Kami berhak untuk memodifikasi kebijakan privasi ini kapan saja, jadi harap tinjau secara berkala. Perubahan dan klarifikasi akan berlaku segera setelah diposting di Situs Web. Jika kami membuat perubahan material pada kebijakan ini, kami akan memberi tahu Anda di sini bahwa kebijakan telah diperbarui, sehingga Anda mengetahui informasi apa yang kami kumpulkan, bagaimana kami menggunakannya, dan dalam keadaan apa, jika ada, kami menggunakan dan/atau mengungkapkannya.
+Kami berhak untuk memodifikasi kebijakan privasi ini kapan saja, jadi harap tinjau secara berkala. Perubahan dan klarifikasi akan berlaku segera setelah diposting di Situs Web. Jika kami membuat perubahan material pada kebijakan ini, kami akan memberi tahu Anda di sini bahwa kebijakan ini telah diperbarui, sehingga Anda mengetahui informasi apa yang kami kumpulkan, bagaimana kami menggunakannya, dan dalam keadaan apa, jika ada, kami menggunakan dan/atau mengungkapkannya.
 
 **Pertanyaan dan Informasi Kontak**
 
-Jika Anda ingin: mengakses, memperbaiki, mengubah, atau menghapus informasi pribadi yang kami miliki tentang Anda, mengajukan keluhan, atau sekadar menginginkan informasi lebih lanjut, hubungi kami di [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Jika Anda ingin: mengakses, mengoreksi, mengubah, atau menghapus informasi pribadi apa pun yang kami miliki tentang Anda, mengajukan keluhan, atau hanya ingin informasi lebih lanjut, hubungi kami di [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Pembaca EPUB', category: 'reading', content: `# Pembaca EPUB
 
 Baca e-book EPUB dengan pencarian kata interaktif, terjemahan per-blok, dan progres yang tersimpan antar sesi.
@@ -23065,102 +23544,134 @@ La tua cronologia di visione è privata. È visibile solo a te quando sei connes
 - La tua cronologia è limitata alla tua L2 corrente — non vedrai video in Giapponese quando sei in modalità Coreano` },
     { path: 'privacy-policy', title: 'Informativa sulla privacy', category: 'privacy-policy', content: `# Informativa sulla privacy
 
-Questa pagina web rappresenta un documento legale che costituisce i nostri Termini di Utilizzo e l'Informativa sulla Privacy e regola l'uso del nostro sito web: [https://languageplayer.io](https://languageplayer.io), incluse le pagine in esso contenute e tutti i sottodomini e le app (collettivamente, "Sito Web"), di proprietà e gestiti da noi, Zero to Hero Education, Canada. ("Zero to Hero").
+Questa pagina web rappresenta un documento legale che funge da nostri Termini di Utilizzo e Informativa sulla Privacy e regola l'uso del nostro sito web: [https://languageplayer.io](https://languageplayer.io), incluse le pagine ivi presenti e tutti i sottodomini e le app (collettivamente, "Sito Web"), di proprietà e gestiti da noi, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Introduzione**
 
-I Termini di Utilizzo, insieme alla nostra Informativa sulla Privacy pubblicata di seguito, e ad altre linee guida o politiche pubblicate sul nostro Sito Web (collettivamente "Termini Legali"), costituiscono l'intero e unico accordo tra voi e noi, e sostituiscono qualsiasi altro accordo, dichiarazione, garanzia e intesa riguardanti il nostro Sito Web e la materia qui contenuta. Possiamo modificare i nostri Termini Legali in qualsiasi momento senza specifico avviso a voi. Le copie più recenti dei nostri Termini Legali saranno pubblicate sul nostro Sito Web e dovrete rivedere tutti i Termini Legali prima di utilizzare il nostro Sito Web. Dopo la pubblicazione di eventuali revisioni ai nostri Termini Legali, accettate di essere vincolati a tali modifiche. Pertanto, è importante che voi rivediate periodicamente i nostri Termini Legali per assicurarvi di accettarli ancora.
+I Termini di Utilizzo, insieme alla nostra Informativa sulla Privacy pubblicata di seguito, e altre linee guida o politiche pubblicate all'interno del nostro Sito Web (collettivamente "Termini Legali"), costituiscono l'intero ed esclusivo accordo tra te e noi, e sostituiscono tutti gli altri accordi, dichiarazioni, garanzie e intese riguardanti il nostro Sito Web e l'oggetto ivi contenuto. Possiamo modificare i nostri Termini Legali in qualsiasi momento senza specifica notifica a te. Le copie più recenti dei nostri Termini Legali saranno pubblicate sul nostro Sito Web e dovresti rivedere tutti i Termini Legali prima di utilizzare il nostro Sito Web. Dopo la pubblicazione di eventuali revisioni dei nostri Termini Legali, accetti di essere vincolato a tali modifiche. Pertanto, è importante che tu riveda periodicamente i nostri Termini Legali per assicurarti di accettarli ancora.
 
-Utilizzando il nostro Sito Web, accettate di conformarvi pienamente e di essere vincolati dai nostri Termini Legali. Rivedeteli attentamente. Se non accettate i nostri Termini Legali, non accedete e non utilizzate il nostro Sito Web. Se avete già avuto accesso al nostro Sito Web e non accettate i nostri Termini Legali, non siete più autorizzati a utilizzarlo e dovreste interrompere immediatamente l'uso del nostro Sito Web.
+Utilizzando il nostro Sito Web, accetti di conformarti pienamente ai nostri Termini Legali e di esserne vincolato. Ti preghiamo di rivederli attentamente. Se non accetti i nostri Termini Legali, non accedere e non utilizzare il nostro Sito Web. Se hai già avuto accesso al nostro Sito Web e non accetti i nostri Termini Legali, non sei più autorizzato a utilizzarlo e dovresti interrompere immediatamente l'uso del nostro Sito Web.
 
 **Altri Termini Definiti Sul Nostro Sito Web**
 
-Questo Sito Web incorpora termini definiti in tutta questa pagina così come questi altri termini definiti:
+Questo Sito Web incorpora termini definiti in tutta questa pagina oltre a questi altri termini definiti:
 
-I termini "noi" e "ci" si riferiscono a Zero to Hero come proprietario del Sito Web. "Contenuto" include qualsiasi testo, informazione, grafica, audio, video e altri dati pubblicati, offerti o resi disponibili tramite il nostro Sito Web.
+I termini "noi" e "ci" si riferiscono a Zero to Hero come proprietario del Sito Web. "Contenuto" include qualsiasi e tutti i testi, informazioni, grafiche, audio, video e altri dati pubblicati, offerti o resi disponibili attraverso il nostro Sito Web.
 
-Un "visitatore" o "voi" sono identificatori collettivi che si riferiscono a voi come navigatore del nostro Sito Web, sia che completiate o meno un acquisto dei nostri prodotti.
+Un "visitatore" o "tu" sono identificatori collettivi che si riferiscono a te come utente del nostro Sito Web, sia che tu completi o meno un acquisto dei nostri prodotti.
 
-"Informazioni personali" significa informazioni relative a una persona identificabile, che possono includere nome, indirizzo residenziale, indirizzo di fatturazione, indirizzo di consegna, numero di telefono, indirizzo email e altre informazioni di contatto simili, nonché dati sulla cronologia di utilizzo del Sito Web. Può anche includere le informazioni della carta di credito di una persona quando presentate per scopi di pagamento.
+"Informazioni personali" significa informazioni relative a una persona identificabile, che possono includere nome, indirizzo di residenza, indirizzo di fatturazione, indirizzo di consegna, numero di telefono, indirizzo email e altre informazioni di contatto simili, nonché dati sulla cronologia di utilizzo del Sito Web. Può anche includere informazioni sulla carta di credito di una persona quando presentate per scopi di pagamento.
 
 **TERMINI DI UTILIZZO**
 
 **Proprietà Intellettuale**
 
-Il nostro Sito Web può contenere i nostri marchi di servizio o marchi commerciali, così come quelli dei nostri affiliati o di altre persone o società, sotto forma di parole, grafica e loghi. Il vostro utilizzo del nostro Sito Web non costituisce alcun diritto o licenza per utilizzare tali marchi di servizio/marchi commerciali, senza la previa autorizzazione scritta del corrispondente proprietario del marchio di servizio/marchio commerciale. Il nostro Sito Web, incluso il contenuto, è anche protetto dalle leggi sul copyright canadesi e internazionali. Il vostro utilizzo del nostro Sito Web o del contenuto non vi conferisce diritti di proprietà di alcun tipo. La copia, ridistribuzione, uso o pubblicazione da parte vostra di qualsiasi porzione del nostro Sito Web o contenuto è severamente vietata e pertanto non può essere copiata o riprodotta senza prima ottenere la nostra autorizzazione scritta.
+Il nostro Sito Web può contenere i nostri marchi di servizio o marchi commerciali così come quelli dei nostri affiliate o di altre persone o aziende, sotto forma di parole, grafiche e loghi. Il tuo utilizzo del nostro Sito Web non costituisce alcun diritto o licenza per l'uso di tali marchi di servizio/marchi commerciali, senza la preventiva autorizzazione scritta del rispettivo proprietario del marchio di servizio/marchio commerciale. Il nostro Sito Web, incluso il contenuto, è anche protetto dalle leggi canadesi e internazionali sul diritto d'autore. Il tuo utilizzo del nostro Sito Web o del contenuto non ti conferisce diritti di proprietà di alcun tipo. La copia, la ridistribuzione, l'uso o la pubblicazione da parte tua di qualsiasi porzione del nostro Sito Web o contenuto è severamente proibita e pertanto non può essere copiata o riprodotta senza prima ottenere la nostra autorizzazione scritta.
 
 **Limitazione di Responsabilità**
 
-In nessuna circostanza noi, o i nostri funzionari o dipendenti, saremo responsabili per qualsiasi perdita o danno di qualsiasi tipo, inclusi (senza limitare la generalità di quanto sopra) qualsiasi danno diretto, indiretto, incidentale, speciale, punitivo o consequenziale, derivante da o in connessione con il vostro utilizzo, accesso o affidamento, o la vostra incapacità di utilizzare o accedere, a questo Sito Web, al sistema di ordinazione online o a qualsiasi contenuto.
+In nessun caso noi, o i nostri funzionari o dipendenti, saremo responsabili per qualsiasi perdita o danno di qualsiasi tipo, inclusi (senza limitare la generalità di quanto sopra) qualsiasi danno diretto, indiretto, incidentale, speciale, punitivo o consequenziale, derivante da o in connessione con il tuo utilizzo, accesso o affidamento, o la tua incapacità di utilizzare o accedere, a questo Sito Web, al sistema di ordinazione online o a qualsiasi contenuto.
 
 **Termini Generali**
 
-I nostri Termini Legali saranno considerati come eseguiti e adempiuti nella Provincia della Columbia Britannica, Canada, e saranno disciplinati e interpretati in conformità con le leggi di quella regione senza riguardo ai principi di conflitto di leggi. Inoltre, accettate di sottoporvi alla giurisdizione personale e al foro competente dei tribunali di quella regione. Qualsiasi azione legale da parte vostra riguardante il nostro Sito Web deve essere intentata entro un (1) anno dal momento in cui è sorta l'azione, altrimenti sarà definitivamente rinunciata e preclusa. Se qualsiasi parte dei nostri Termini Legali dovesse essere ritenuta invalida o inapplicabile, tale parte sarà interpretata in conformità con la legge applicabile e le parti rimanenti rimarranno in pieno vigore ed effetto. Nella misura in cui qualsiasi contenuto sia in conflitto o incoerente con i nostri Termini Legali, i nostri Termini Legali prevarranno e saranno predominanti nell'interpretazione congiunta. La nostra mancata applicazione di qualsiasi disposizione dei nostri Termini Legali non sarà considerata una rinuncia a tale disposizione né al diritto di applicarla. I nostri diritti ai sensi dei nostri Termini Legali sopravviveranno alla risoluzione dei nostri Termini Legali.
+I nostri Termini Legali saranno considerati come eseguiti e realizzati nella Provincia della British Columbia, Canada, e saranno disciplinati e interpretati in conformità con le leggi di quella regione senza riguardo ai principi di conflitto di leggi. Inoltre, accetti di sottoporti alla giurisdizione personale e al foro competente dei tribunali di quella regione. Qualsiasi azione legale da parte tua riguardo al nostro Sito Web deve essere intentata entro un (1) anno dal momento in cui è sorta la causa di azione o sarà per sempre rinunciata e preclusa. Se qualsiasi parte dei nostri Termini Legali dovesse essere ritenuta invalida o inapplicabile, quella porzione sarà interpretata in modo coerente con la legge applicabile e le porzioni rimanenti rimarranno in piena forza ed effetto. Nella misura in cui qualsiasi contenuto sia in conflitto o incoerente con i nostri Termini Legali, i nostri Termini Legali prevarranno e saranno predominanti nella loro interpretazione congiunta. La nostra mancata applicazione di qualsiasi disposizione dei nostri Termini Legali non sarà considerata una rinuncia a tale disposizione né al diritto di applicare tale disposizione. I nostri diritti ai sensi dei nostri Termini Legali sopravviveranno alla risoluzione dei nostri Termini Legali.
 
-**Collegamenti a Terze Parti**
+**Link a Terze Parti**
 
-Quando cliccate su collegamenti sul nostro Sito Web, questi potrebbero indirizzarvi lontano dal nostro Sito Web verso un altro sito web di proprietà e gestito da una terza parte. Non siamo responsabili per le pratiche sulla privacy di altri siti web di terze parti e vi invitiamo a leggere i loro termini di utilizzo e le dichiarazioni sulla privacy. Una volta che lasciate il nostro Sito Web o venite reindirizzati a un sito web o applicazione di terze parti, non siete più soggetti ai nostri Termini Legali.
+Quando fai clic su link nel nostro Sito Web, questi potrebbero reindirizzarti lontano dal nostro Sito Web a un altro sito web di proprietà e gestito da una terza parte. Non siamo responsabili per le pratiche sulla privacy di altri siti web di terze parti e ti invitiamo a leggere i loro termini di utilizzo e le dichiarazioni sulla privacy. Una volta che lasci il nostro Sito Web o vieni reindirizzato a un sito web o un'applicazione di terze parti, non sei più soggetto ai nostri Termini Legali.
 
 **INFORMATIVA SULLA PRIVACY**
 
-Presso Zero to Hero consideriamo la privacy una questione molto importante e pertanto ci impegniamo a proteggere la privacy delle informazioni personali di tutti i visitatori. Questa Informativa sulla Privacy incorpora le parti applicabili del Personal Information Protection and Electronic Documents Act (Canada), del Personal Information Protection Act (Alberta) e dei dieci principi stabiliti nel Modello di Codice dell'Associazione Canadese per gli Standard (CSA) per la Protezione delle Informazioni Personali (insieme, le "leggi sulla privacy applicabili").
+Presso Zero to Hero consideriamo la privacy una questione molto importante e pertanto siamo impegnati a proteggere la privacy delle informazioni personali di tutti i visitatori. Questa Informativa sulla Privacy incorpora le porzioni applicabili della Personal Information Protection and Electronic Documents Act (Canada), della Personal Information Protection Act (Alberta) e i dieci principi stabiliti nel Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (collettivamente, le "leggi sulla privacy applicabili").
 
-**Raccolta di Informazioni**
+**Informazioni Che Raccogliamo**
 
-Possiamo raccogliere informazioni personali per uno o più dei seguenti scopi:
+**Informazioni che ci fornisci direttamente:**
 
-*   stabilire e mantenere relazioni con i visitatori;
-*   fornire prodotti e servizi richiesti e continuativi;
-*   informarvi di modifiche ai nostri prodotti e servizi;
-*   ottenere una migliore comprensione dei nostri visitatori, delle loro esigenze e preferenze;
-*   sviluppare, potenziare, migliorare e/o commercializzare i nostri prodotti e servizi;
-*   monitorare l'utilizzo del nostro Sito Web;
-*   gestire e migliorare la nostra attività e operazioni; e
-*   soddisfare requisiti legali e normativi.
+* Informazioni sull'account: nome, indirizzo email, password, preferenze linguistiche e livello di apprendimento.
+* Dati di apprendimento: parole salvate, frasi, progressi, note, playlist, video graditi, cronologia di visione, libri e progressi di lettura.
+* Contenuti che carichi o crei: contenuti multimediali personalizzati, file EPUB e testi che ci chiedi di tradurre o spiegare.
+* Informazioni di pagamento: quando acquisti un abbonamento, il pagamento viene elaborato da Stripe, PayPal o Apple App Store. Riceviamo conferma e dettagli dell'abbonamento, ma generalmente non memorizziamo il numero completo della tua carta.
 
-**Cosa Facciamo con le Vostre Informazioni?**
+**Informazioni raccolte automaticamente:**
 
-Quando acquistate qualcosa tramite il nostro sistema di ordinazione online, come parte del processo di acquisto e vendita, raccogliamo le vostre informazioni personali.
+* Dati di utilizzo: pagine e funzionalità che visiti, inclusi Esplora i media, Musica e Intrattenimento, TV in diretta, Programmi TV, Cerca, Dizionario, Parole salvate, Ripasso, Lettore, Lettore web, Lettore EPUB, Media Locale, Cronologia visualizzazioni, Playlist e Video che ti piacciono; video che guardi; interazioni; e timestamp.
+* Informazioni su dispositivo e rete: indirizzo IP, tipo di browser, sistema operativo, tipo di dispositivo e posizione approssimativa derivata dal tuo indirizzo IP.
+* Analisi: utilizziamo Google Analytics per capire come i visitatori utilizzano il Sito Web. Google Analytics può utilizzare cookie e raccogliere dati di utilizzo per nostro conto. L'uso di tali dati da parte di Google è disciplinato dall'[Informativa sulla Privacy di Google](https://policies.google.com/privacy).
+* Archiviazione locale: utilizziamo cookie, \`localStorage\`, \`sessionStorage\` e IndexedDB per mantenerti connesso, ricordare la tua lingua, memorizzare le tue impostazioni, progressi e parole salvate e memorizzare contenuti nella cache localmente.
 
-Quando navigate il nostro Sito Web, riceviamo automaticamente anche l'indirizzo di protocollo Internet (IP) del vostro computer per fornirci informazioni che ci aiutano a conoscere il vostro browser e sistema operativo.
+**Cosa Facciamo Con Le Tue Informazioni?**
 
-Marketing diretto consentito (se applicabile): Con il vostro permesso, potremmo inviarvi newsletter o email per pubblicizzare i nostri negozi, nuovi prodotti e altri aggiornamenti.
+Utilizziamo le informazioni che raccogliamo per:
+
+* fornire, mantenere e migliorare il Sito Web e le sue funzionalità;
+* creare e gestire il tuo account, verificare la tua identità e mantenerti connesso;
+* personalizzare i consigli in base alla tua lingua, livello e cronologia di apprendimento;
+* sincronizzare i tuoi dati su più dispositivi;
+* gestire abbonamenti, pagamenti e rinnovi;
+* inviare email transazionali come codici di verifica, reimpostazioni della password e ricevute di pagamento;
+* inviare comunicazioni di marketing se ci hai dato il permesso di farlo;
+* analizzare l'utilizzo con Google Analytics per capire come i visitatori utilizzano il Sito Web e migliorare i nostri prodotti;
+* soddisfare requisiti legali e normativi e proteggere i nostri diritti e quelli dei nostri utenti.
+
+Non vendiamo le tue informazioni personali.
+
+**Condivisione e Divulgazione**
+
+Condividiamo informazioni personali solo con fornitori di servizi che ci aiutano a gestire il Sito Web, inclusi:
+
+* fornitori di hosting e database, incluso Supabase;
+* processori di pagamento, inclusi Stripe, PayPal e Apple App Store;
+* fornitori di traduzione e intelligenza artificiale, incluso DeepSeek, quando utilizzi funzionalità di traduzione o spiegazione con IA;
+* fornitori di analisi, incluso Google Analytics;
+* piattaforme video, inclusi YouTube e Google, quando guardi video incorporati.
+
+Non utilizzeremo né divulgheremo informazioni personali per scopi diversi da quelli per cui sono state raccolte, a meno che non sia con il tuo consenso, se è consentito o richiesto dalla legge, o se violi i nostri Termini di Utilizzo.
 
 **Consenso**
 
-_Come si ottiene il mio consenso?_
+_Come ottengo il tuo consenso?_
 
-Quando ci fornite informazioni personali per completare una transazione, verificare la vostra carta di credito, effettuare un ordine, organizzare una consegna o restituire un acquisto, o pubblicare o appuntare qualsiasi informazione o foto sul nostro sito di social media, deduciamo che acconsentite alla loro raccolta e utilizzo solo per quello scopo specifico.
+Quando ci fornisci informazioni personali per creare un account, completare una transazione, verificare il tuo pagamento, effettuare un ordine o utilizzare i nostri prodotti e servizi, deduciamo che acconsenti alla nostra raccolta e al loro utilizzo per quello specifico scopo.
 
-Se chiediamo le vostre informazioni personali per un motivo secondario, come il marketing, vi chiederemo direttamente il vostro consenso espresso o vi forniremo l'opportunità di rifiutare.
+Se richiediamo le tue informazioni personali per un motivo secondario, come il marketing, ti chiederemo direttamente il tuo consenso espresso o ti offriremo l'opportunità di dire di no.
 
 _Come posso ritirare il mio consenso?_
 
-Se dopo aver aderito cambiate idea, potete ritirare il vostro consenso per essere contattati, per la continua raccolta, uso o divulgazione delle vostre informazioni, in qualsiasi momento, comunicandocelo.
-
-**Divulgazione**
-
-Non utilizzeremo o divulgheremo informazioni personali per scopi diversi da quelli per cui sono state raccolte, a meno che non sia con il vostro consenso, se ciò è permesso o richiesto dalla legge o se violate i nostri Termini di Utilizzo.
+Se dopo aver aderito cambi idea, puoi ritirare il tuo consenso a essere contattato, alla continua raccolta, utilizzo o divulgazione delle tue informazioni, in qualsiasi momento, contattandoci.
 
 **Protezione**
 
-Proteggeremo le informazioni personali seguendo le migliori pratiche del settore e implementando le ragionevoli salvaguardie che possono essere appropriate alla sensibilità delle informazioni; faremo sforzi ragionevoli per proteggere le informazioni personali contro perdita o furto, nonché contro accesso non autorizzato, divulgazione, copia, uso o modifica indipendentemente dal formato in cui sono conservate. La legislazione ci consente inoltre, per scopi legali o commerciali, di conservare le informazioni personali per tutto il tempo ragionevole e a condizione che non abbiate revocato il vostro consenso.
+Proteggeremo le informazioni personali seguendo le migliori pratiche del settore e implementando garanzie ragionevoli appropriate alla sensibilità delle informazioni; faremo sforzi ragionevoli per proteggere le informazioni personali contro perdita o furto, nonché accesso non autorizzato, divulgazione, copia, utilizzo o modifica indipendentemente dal formato in cui sono conservate. La legislazione ci consente anche, per scopi legali o commerciali, di conservare le informazioni personali per tutto il tempo che sia ragionevole e a condizione che tu non abbia revocato il tuo consenso.
 
 **Sicurezza**
 
-Per proteggere le vostre informazioni personali, prendiamo precauzioni ragionevoli e seguiamo le migliori pratiche del settore per assicurarci che non vengano inadeguatamente perse, utilizzate in modo improprio, accessibili, divulgate, alterate o distrutte.
+Per proteggere le tue informazioni personali, adottiamo precauzioni ragionevoli e seguiamo le migliori pratiche del settore per assicurarci che non vengano inappropriate perdute, utilizzate in modo improprio, accessibili, divulgate, alterate o distrutte.
 
-**Cookie**
+**Cookie e Tecnologie Simili**
 
-Il nostro Sito Web non utilizza cookie.
+Il nostro Sito Web utilizza cookie e tecnologie simili.
 
-**Modifiche a Questa Informativa sulla Privacy**
+* **Cookie essenziali:** utilizziamo cookie per mantenerti connesso, ricordare le lingue selezionate e gestire i limiti di navigazione degli ospiti.
+* **Analisi:** utilizziamo Google Analytics, che può impostare i propri cookie e raccogliere informazioni di utilizzo.
+* **Archiviazione locale:** utilizziamo \`localStorage\`, \`sessionStorage\` e IndexedDB per memorizzare impostazioni, parole salvate, progressi, contenuti di lettura e contenuti multimediali personalizzati sul tuo dispositivo.
+* **Contenuti incorporati:** i video sono incorporati da YouTube. YouTube e Google possono impostare i propri cookie quando guardi un video, disciplinati dalle loro informative sulla privacy.
 
-Ci riserviamo il diritto di modificare questa informativa sulla privacy in qualsiasi momento, pertanto vi invitiamo a consultarla frequentemente. Modifiche e chiarimenti entreranno in vigore immediatamente dopo la loro pubblicazione sul Sito Web. Se apportiamo modifiche sostanziali a questa informativa, vi informeremo qui che è stata aggiornata, in modo che siate a conoscenza di quali informazioni raccogliamo, come le utilizziamo e in quali circostanze, se del caso, le utilizziamo e/o divulghiamo.
+Puoi bloccare o eliminare i cookie tramite le impostazioni del tuo browser. Tieni presente che alcune parti del Sito Web potrebbero non funzionare correttamente se disabiliti i cookie.
 
-**Domande e Informazioni di Contatto**
+**Conservazione e Cancellazione dei Dati**
 
-Se desiderate: accedere, correggere, modificare o eliminare qualsiasi informazione personale che abbiamo su di voi, presentare un reclamo o semplicemente ottenere maggiori informazioni, contattateci all'indirizzo [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Conserviamo le informazioni personali per tutto il tempo in cui il tuo account è attivo, o per tutto il tempo necessario per fornire il Sito Web, adempiere agli obblighi legali, risolvere controversie e far rispettare i nostri accordi.
+
+Puoi eliminare il tuo account in qualsiasi momento dalla pagina Profilo utilizzando l'opzione Elimina Account, o contattandoci all'indirizzo di seguito. Quando elimini il tuo account, rimuoveremo o anonimizzeremo le tue informazioni personali, fatte salve le registrazioni che siamo tenuti a conservare per scopi legali, di pagamento, fiscali o di sicurezza.
+
+**Modifiche A Questa Informativa Sulla Privacy**
+
+Ci riserviamo il diritto di modificare questa informativa sulla privacy in qualsiasi momento, pertanto ti preghiamo di rivederla frequentemente. Le modifiche e i chiarimenti avranno effetto immediato al momento della loro pubblicazione sul Sito Web. Se apportiamo modifiche sostanziali a questa politica, ti notificheremo qui che è stata aggiornata, così che tu sia a conoscenza di quali informazioni raccogliamo, come le utilizziamo e in quali circostanze, se del caso, le utilizziamo e/o le divulghiamo.
+
+**Domande E Informazioni Di Contatto**
+
+Se desideri: accedere, correggere, modificare o eliminare qualsiasi informazione personale che abbiamo su di te, registrare un reclamo o semplicemente desideri maggiori informazioni, contattaci all'indirizzo [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Lettore EPUB', category: 'reading', content: `# Lettore EPUB
 
 Leggi e-book EPUB con ricerca interattiva delle parole, traduzione per blocco e progresso che persiste tra sessioni.
@@ -24531,102 +25042,134 @@ L2として中国語を選択した場合、選択後に2つの列の間に文�
 - 履歴は現在のL2に限定されます — 韓国語モード中は日本語の動画は表示されません` },
     { path: 'privacy-policy', title: 'プライバシーポリシー', category: 'privacy-policy', content: `# プライバシーポリシー
 
-このウェブページは、利用規約およびプライバシーポリシーとして機能する法的文書であり、当社（カナダに所在するZero to Hero Education）（以下「Zero to Hero」）が所有・運営するウェブサイト[https://languageplayer.io](https://languageplayer.io)（これに含まれるページ、すべてのサブドメインおよびアプリを含み、総称して「ウェブサイト」）の利用を規定するものです。
+このウェブページは、当社の利用規約およびプライバシーポリシーとして機能する法的文書であり、当社（Zero to Hero Education、カナダ）（以下「Zero to Hero」）が所有・運営するウェブサイト[https://languageplayer.io](https://languageplayer.io)（そこに含まれるページ、ならびにすべてのサブドメインおよびアプリを含み、総称して「ウェブサイト」といいます）の利用を規定するものです。
 
 **はじめに**
 
-利用規約、以下に掲載するプライバシーポリシー、およびウェブサイト内に掲載されたその他のガイドラインや方針（総称して「法的条件」）は、お客様と当社との間の完全かつ唯一の合意を構成し、ウェブサイトおよび本件に関するその他すべての契約、表明、保証および了解事項に優先します。当社は、お客様への個別の通知なしに、随時法的条件を修正することがあります。最新の法的条件はウェブサイトに掲載されますので、ウェブサイトをご利用になる前にすべての法的条件をご確認ください。法的条件の改訂後、お客様はそのような変更に拘束されることに同意したものとみなされます。そのため、定期的に法的条件を確認し、引き続き同意していることをご確認いただくことが重要です。
+利用規約は、以下に掲載されるプライバシーポリシー、および当ウェブサイト内に掲載されるその他のガイドラインやポリシー（総称して「法的条件」）とともに、お客様と当社との間の完全かつ唯一の合意を構成し、当ウェブサイトおよび本規約の対象事項に関するその他すべての合意、表明、保証および理解に優先するものとします。当社は、お客様への特定の通知なしに、いつでも法的条件を修正することができます。法的条件の最新版は当ウェブサイトに掲載されますので、当ウェブサイトを利用する前にすべての法的条件を確認してください。法的条件の改訂版が掲載された後、お客様はそのような変更に拘束されることに同意したものとみなされます。したがって、お客様が引き続き法的条件に同意していることを確認するため、定期的に法的条件を確認することが重要です。
 
-ウェブサイトをご利用になることにより、お客様は法的条件に完全に従い、これに拘束されることに同意したものとみなされます。よくお読みください。法的条件に同意されない場合は、ウェブサイトにアクセスせずご利用にならないでください。すでにウェブサイトにアクセスされ、法的条件に同意されない場合は、その後の利用は許可されず、直ちにウェブサイトの利用を中止していただく必要があります。
+当ウェブサイトを利用することにより、お客様は当社の法的条件に完全に準拠し、それに拘束されることに同意したものとみなされます。慎重にご確認ください。法的条件に同意しない場合は、当ウェブサイトにアクセスして利用しないでください。すでに当ウェブサイトにアクセスし、法的条件に同意しない場合は、利用する権限は失われたものとみなされ、直ちに当ウェブサイトの利用を中止してください。
 
-**ウェブサイトにおけるその他の定義用語**
+**当ウェブサイトにおけるその他の定義用語**
 
-本ウェブサイトには、このページで定義される用語に加え、以下の定義用語が含まれます。
+このウェブサイトには、このページ全体および以下のその他の定義用語で定義される用語が含まれます。
 
-「当社」および「私たち」とは、ウェブサイトの所有者であるZero to Heroを指します。「コンテンツ」とは、ウェブサイトを通じて投稿、提供、または利用可能とされるすべてのテキスト、情報、グラフィック、オーディオ、ビデオ、その他のデータを指します。
+「当社」「私たち」という用語は、ウェブサイトの所有者としてのZero to Heroを指します。「コンテンツ」には、当ウェブサイトを通じて投稿、提供、または利用可能とされるすべてのテキスト、情報、グラフィック、オーディオ、ビデオ、その他のデータが含まれます。
 
-「訪問者」または「お客様」とは、製品の購入の有無にかかわらず、ウェブサイトを閲覧するお客様を総称して指します。
+「訪問者」または「お客様」とは、製品の購入を完了するかどうかに関わらず、当ウェブサイトを閲覧するお客様を指す総称的な識別子です。
 
-「個人情報」とは、識別可能な個人に関する情報を意味し、氏名、住所、請求先住所、配送先住所、電話番号、メールアドレス、その他類似する連絡先情報、およびウェブサイトの利用履歴データを含む場合があります。また、支払い目的で提供される場合には、クレジットカード情報も含まれることがあります。
+「個人情報」とは、識別可能な個人に関する情報を意味し、氏名、居住住所、請求先住所、配送先住所、電話番号、メールアドレス、その他これに類する連絡先情報、およびウェブサイト利用履歴データを含む場合があります。また、支払い目的で提示されるクレジットカード情報も含まれる場合があります。
 
 **利用規約**
 
-**知的財産権**
+**知的財産**
 
-当社のウェブサイトには、当社または当社の関連会社、その他の個人や企業のサービス標章や商標が、文字、グラフィック、ロゴの形式で含まれる場合があります。ウェブサイトの利用は、対応するサービス標章/商標の所有者から事前の書面による許可を得ることなく、かかるサービス標章/商標を使用する権利またはライセンスを構成するものではありません。ウェブサイトおよびそのコンテンツは、カナダおよび国際的な著作権法によっても保護されています。ウェブサイトまたはコンテンツの利用は、お客様にいかなる所有権も付与するものではありません。ウェブサイトまたはコンテンツの一部を複製、再配布、使用、または公開することは固く禁じられており、当社の書面による許可なく複製または転載することはできません。
+当ウェブサイトには、当社のサービスマークまたは商標、ならびに当社の関連会社やその他の個人・企業のものが、言葉、グラフィック、ロゴの形で含まれる場合があります。当ウェブサイトの利用は、対応するサービスマーク/商標の所有者からの事前の書面による承認なしに、そのようなサービスマーク/商標を使用する権利またはライセンスをお客様に付与するものではありません。当ウェブサイトおよびそのコンテンツは、カナダおよび国際的な著作権法によっても保護されています。当ウェブサイトまたはコンテンツの利用は、お客様にそのいかなる所有権も付与するものではありません。当ウェブサイトまたはコンテンツの一部をお客様が複製、再配布、使用、または公開することは固く禁じられており、当社の書面による承認を得ずに複製または転載することはできません。
 
 **責任の制限**
 
-いかなる状況においても、当社または当社の役員や従業員は、本ウェブサイト、オンライン注文システム、またはいかなるコンテンツの利用、アクセス、依存、または利用・アクセス不能に起因または関連して生じる一切の損失または損害（直接的、間接的、偶発的、特別、懲罰的、または結果的損害を含むがこれに限定されない）について責任を負いません。
+いかなる状況においても、当社、当社の役員または従業員は、お客様による当ウェブサイト、オンライン注文システム、またはいかなるコンテンツの利用、アクセス、依存、または利用・アクセス不能に起因または関連して生じるいかなる損失または損害（前述の一般性を制限することなく、直接的、間接的、付随的、特別、懲罰的または結果的損害を含む）についても、責任を負わないものとします。
 
 **一般条項**
 
-法的条件は、カナダのブリティッシュコロンビア州で締結・履行されたものとして扱われ、抵触法の原則に関わらず同地域の法律に準拠し解釈されるものとします。さらに、お客様は同地域の裁判所の人的管轄権および裁判地に従うことに同意するものとします。ウェブサイトに関するお客様の訴因は、発生から1年以内に提起されなければならず、さもなければ永久に放棄され、禁止されるものとします。法的条件の一部が無効または執行不能と判断された場合、その部分は適用法に従って解釈され、残余の部分は完全に効力を保持するものとします。コンテンツが法的条件と矛盾または不一致である場合、法的条件が優先し、両者の解釈において優越するものとします。当社が法的条件の条項を執行しなかったとしても、その条項の放棄または執行権利の放棄とはみなされません。法的条件に基づく当社の権利は、法的条件の終了後も存続するものとします。
+当社の法的条件は、カナダのブリティッシュコロンビア州で実行および履行されたものとして扱われ、抵触法の原則に関係なく、その地域の法律に準拠して解釈されるものとします。さらに、お客様は、その地域の裁判所の人的管轄権および裁判地に従うことに同意するものとします。当ウェブサイトに関するお客様の訴訟原因は、訴訟原因が発生してから1年以内に提起されなければ、永久に放棄され、禁止されるものとします。当社の法的条件の一部が無効または執行不能と判断された場合、その部分は適用法に沿って解釈され、残りの部分は完全な効力を維持するものとします。コンテンツが当社の法的条件と矛盾または不一致である場合、当社の法的条件が優先し、それらの解釈において優越するものとします。当社が法的条件のいずれかの条項を執行しなかったとしても、その条項またはその条項を執行する権利の放棄とみなされないものとします。当社の法的条件に基づく権利は、法的条件の終了後も存続するものとします。
 
-**サードパーティリンク**
+**第三者のリンク**
 
-ウェブサイト上のリンクをクリックすると、当社のウェブサイトから第三者が所有・運営する別のウェブサイトに移動する場合があります。当社は他の第三者のウェブサイトのプライバシー慣行について責任を負わず、それらの利用規約およびプライバシーステートメントをお読みになることをお勧めします。ウェブサイトを離れるか、第三者のウェブサイトまたはアプリケーションにリダイレクトされると、お客様はもはや当社の法的条件の適用を受けなくなります。
+当ウェブサイト上のリンクをクリックすると、当ウェブサイトから離れて、第三者によって所有・運営される別のウェブサイトに移動する場合があります。当社は、他の第三者のウェブサイトのプライバシー慣行について責任を負わず、それらの利用規約およびプライバシーに関する声明を読むことをお勧めします。当ウェブサイトを離れるか、第三者のウェブサイトまたはアプリケーションにリダイレクトされると、お客様はもはや当社の法的条件の対象ではなくなります。
 
 **プライバシーポリシー**
 
-Zero to Heroでは、プライバシーを非常に重要な事項と考え、すべての訪問者の個人情報のプライバシー保護に努めています。本プライバシーポリシーは、カナダの個人情報保護および電子文書法、アルバータ州の個人情報保護法、およびカナダ規格協会（CSA）の個人情報保護モデルコードに定められた10の原則（総称して「該当するプライバシー法」）の該当部分を組み込んでいます。
+Zero to Heroでは、プライバシーを非常に重要な事項と考えており、すべての訪問者の個人情報のプライバシーを保護することに取り組んでいます。本プライバシーポリシーには、カナダの個人情報保護および電子文書法、アルバータ州の個人情報保護法、およびカナダ規格協会（CSA）の個人情報保護モデルコードに定められた10の原則（総称して「該当するプライバシー法」）の該当部分が組み込まれています。
 
-**情報の収集**
+**当社が収集する情報**
 
-当社は、以下の1つ以上の目的で個人情報を収集することがあります。
+**お客様が直接提供する情報：**
 
-*   訪問者との関係構築および維持
-*   要請された継続的な製品およびサービスの提供
-*   製品およびサービスの変更に関する通知
-*   訪問者の要件および嗜好のより良い理解
-*   製品およびサービスの開発、強化、改善、および/またはマーケティング
-*   ウェブサイトの利用状況の監視
-*   事業および業務の管理と改善
-*   法的および規制要件への準拠
+* アカウント情報：氏名、メールアドレス、パスワード、言語設定、学習レベル。
+* 学習データ：保存された単語、フレーズ、復習の進捗状況、メモ、プレイリスト、いいねした動画、視聴履歴、書籍、読書の進捗状況。
+* お客様がアップロードまたは作成するコンテンツ：カスタムメディア、EPUBファイル、翻訳または説明を依頼するテキスト。
+* 支払い情報：サブスクリプションを購入する際、支払いはStripe、PayPal、またはApple App Storeによって処理されます。当社は確認とサブスクリプションの詳細を受け取りますが、通常、お客様の完全なカード番号は保存しません。
 
-**お客様の情報をどう扱うか？**
+**自動的に収集される情報：**
 
-オンライン注文システムを通じて購入される場合、売買プロセスの一環として、お客様の個人情報を収集します。
+* 利用データ：お客様が訪問するページと機能（メディアを探索、音楽とエンターテイメント、ライブTV、テレビ番組、検索、辞書、保存された単語、復習、リーダー、ウェブリーダー、EPUBリーダー、ローカルメディア、閲覧履歴、プレイリスト、いいねした動画を含む）、視聴する動画、インタラクション、タイムスタンプ。
+* デバイスおよびネットワーク情報：IPアドレス、ブラウザの種類、オペレーティングシステム、デバイスの種類、IPアドレスから推定されるおおよその位置情報。
+* アナリティクス：当社はGoogle Analyticsを使用して、訪問者がウェブサイトをどのように利用しているかを把握しています。Google Analyticsは当社に代わってクッキーを使用し、利用データを収集する場合があります。Googleによるそのデータの使用は、[Googleのプライバシーポリシー](https://policies.google.com/privacy)に準拠します。
+* ローカルストレージ：当社は、クッキー、\`localStorage\`、\`sessionStorage\`、IndexedDBを使用して、ログイン状態の維持、言語の記憶、設定・進捗状況・保存された単語の保存、コンテンツのローカルキャッシュを行います。
 
-ウェブサイトを閲覧する際、お客様のコンピュータのインターネットプロトコル（IP）アドレスも自動的に受信し、ブラウザやオペレーティングシステムに関する情報を得るために利用します。
+**お客様の情報をどのように使用するのか？**
 
-許可されたダイレクトマーケティング（該当する場合）：お客様の許可を得て、当社の店舗、新製品、その他の最新情報についてのニュースレターやメールをお送りすることがあります。
+当社は収集した情報を以下の目的で使用します：
+
+* ウェブサイトとその機能の提供、維持、改善；
+* アカウントの作成と管理、本人確認、ログイン状態の維持；
+* 言語、レベル、学習履歴に基づくパーソナライズされたレコメンデーション；
+* デバイス間でのデータ同期；
+* サブスクリプション、支払い、更新の処理；
+* 認証コード、パスワードリセット、支払い領収書などの取引メールの送信；
+* お客様が許可した場合のマーケティングコミュニケーションの送信；
+* Google Analyticsによる利用状況の分析（訪問者がウェブサイトをどのように利用しているかを理解し、製品を改善するため）；
+* 法的および規制上の要件の遵守、当社および当社ユーザーの権利の保護。
+
+当社はお客様の個人情報を販売することはありません。
+
+**共有および開示**
+
+当社は、ウェブサイトの運営を支援するサービスプロバイダーとのみ個人情報を共有します。これには以下が含まれます：
+
+* Supabaseを含むホスティングおよびデータベースプロバイダー；
+* Stripe、PayPal、Apple App Storeを含む決済処理業者；
+* 翻訳およびAI機能を使用する際のDeepSeekを含む翻訳・AIプロバイダー；
+* Google Analyticsを含むアナリティクスプロバイダー；
+* 埋め込み動画を視聴する際のYouTubeやGoogleを含む動画プラットフォーム。
+
+当社は、収集された目的以外の目的で個人情報を使用または開示することはありません。ただし、お客様の同意がある場合、法律で許可または要求される場合、またはお客様が当社の利用規約に違反した場合を除きます。
 
 **同意**
 
 _どのように同意を得るのですか？_
 
-取引を完了するため、クレジットカードを確認するため、注文をするため、配送を手配するため、購入品を返品するため、またはソーシャルメディアサイトに情報や写真を投稿・ピンするために個人情報を提供された場合、当社はその特定の目的のためにのみ情報を収集し使用することに同意されたものとみなします。
+お客様がアカウント作成、取引の完了、支払いの確認、注文、または当社の製品・サービスの利用のために個人情報を提供する場合、当社はお客様が当該情報の収集とその特定の目的のみへの使用に同意したものとみなします。
 
-マーケティングなどの二次的な理由で個人情報を求める場合は、明示的な同意を直接求めるか、拒否する機会を提供します。
+マーケティングなどの二次的な目的で個人情報を求める場合、当社はお客様に明示的な同意を直接求めるか、拒否する機会を提供します。
 
-_どのように同意を撤回するのですか？_
+_同意を撤回するにはどうすればよいですか？_
 
-オプトイン後、考えが変わった場合は、いつでも当社に通知することにより、当社からの連絡、および情報の継続的な収集、使用、または開示に対する同意を撤回することができます。
-
-**開示**
-
-当社は、お客様の同意がある場合、法律で許可または要求される場合、またはお客様が利用規約に違反した場合を除き、収集された目的以外で個人情報を使用または開示しません。
+オプトインした後で考えが変わった場合、お客様はいつでも当社に通知することにより、当社からの連絡、情報の継続的な収集、使用または開示に対する同意を撤回することができます。
 
 **保護**
 
-当社は、業界のベストプラクティスに従い、情報の機密性に応じた合理的な保護措置を実施することにより個人情報を保護します。また、保有形式に関わらず、個人情報の紛失や盗難、ならびに不正アクセス、開示、複製、使用、または改ざんから保護するよう合理的な努力を行います。法律はまた、当社が法的または事業目的のために、お客様が同意を撤回しない限り、合理的な期間個人情報を保持することを許可しています。
+当社は、業界のベストプラクティスに従い、情報の機密性に応じて適切な合理的な保護措置を実施することにより、個人情報を保護します。また、保持形式に関わらず、個人情報を紛失・盗難、ならびに不正アクセス、開示、複製、使用、変更から保護するために合理的な努力を払います。法律はまた、法的または事業目的のために、お客様が同意を撤回していない限り、合理的な期間、個人情報を保持することを当社に認めています。
 
 **セキュリティ**
 
-お客様の個人情報を保護するため、当社は合理的な予防措置を講じ、業界のベストプラクティスに従い、不適切な紛失、誤用、アクセス、開示、改変、または破壊が行われないようにしています。
+お客様の個人情報を保護するため、当社は合理的な予防措置を講じ、業界のベストプラクティスに従って、不適切な紛失、誤用、アクセス、開示、改変、破棄が行われないようにしています。
 
-**クッキー**
+**クッキーおよび類似技術**
 
-当社のウェブサイトはクッキーを使用しません。
+当ウェブサイトでは、クッキーおよび類似技術を使用しています。
+
+* **必須クッキー：** ログイン状態の維持、選択した言語の記憶、ゲストの閲覧制限の管理にクッキーを使用します。
+* **アナリティクス：** Google Analyticsを使用しており、独自のクッキーを設定し、利用情報を収集する場合があります。
+* **ローカルストレージ：** \`localStorage\`、\`sessionStorage\`、IndexedDBを使用して、設定、保存された単語、進捗状況、読書コンテンツ、カスタムメディアをお客様のデバイスに保存します。
+* **埋め込みコンテンツ：** 動画はYouTubeから埋め込まれています。YouTubeおよびGoogleは、動画を視聴する際に独自のクッキーを設定する場合があり、これらはそれぞれのプライバシーポリシーに準拠します。
+
+ブラウザの設定でクッキーをブロックまたは削除できます。クッキーを無効にすると、ウェブサイトの一部が正しく機能しない場合があることにご注意ください。
+
+**データの保持と削除**
+
+当社は、お客様のアカウントがアクティブである間、またはウェブサイトの提供、法的義務の遵守、紛争の解決、契約の執行に必要な期間、個人情報を保持します。
+
+お客様は、いつでもプロフィールページの「アカウント削除」オプションを使用するか、以下の住所に連絡することにより、アカウントを削除できます。アカウントを削除すると、当社はお客様の個人情報を削除または匿名化します。ただし、法的、支払い、税務、またはセキュリティ上の目的で保持が求められる記録は除きます。
 
 **本プライバシーポリシーの変更**
 
-当社は随時本プライバシーポリシーを変更する権利を留保しますので、頻繁にご確認ください。変更および明確化は、ウェブサイトへの掲載後直ちに効力を生じます。本ポリシーに重要な変更を加えた場合、ここで更新をお知らせし、どのような情報を収集し、どのように使用し、どのような状況で使用および/または開示するかをご確認いただけます。
+当社は、いつでも本プライバシーポリシーを変更する権利を留保しますので、頻繁に確認してください。変更および明確化は、ウェブサイトに掲載された時点で直ちに有効となります。本ポリシーに重大な変更を加える場合は、ここで更新したことを通知し、当社が収集する情報、その使用方法、およびどのような状況で使用・開示するかを把握していただけるようにします。
 
-**お問い合わせ先**
+**ご質問およびお問い合わせ先**
 
-当社が保有するお客様の個人情報へのアクセス、訂正、修正、削除をご希望の場合、苦情を登録されたい場合、または詳細情報をご希望の場合は、[jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) までお問い合わせください。` },
+当社が保有するお客様の個人情報へのアクセス、訂正、修正、削除を希望される場合、苦情を登録されたい場合、または詳細な情報をご希望の場合は、[jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)までご連絡ください。` },
     { path: 'reading/epub', title: 'EPUBリーダー', category: 'reading', content: `# EPUBリーダー
 
 インタラクティブな単語検索、ブロックごとの翻訳、セッション間で保持される進捗機能を備えたEPUB電子書籍リーダーです。
@@ -25997,102 +26540,134 @@ TV 쇼 에피소드는 번호가 매겨져 있으며 시리즈별로 그룹화�
 - 시청 기록은 현재 L2 언어로 제한됩니다. 한국어 모드에서는 일본어 동영상이 표시되지 않습니다` },
     { path: 'privacy-policy', title: '개인정보 보호정책', category: 'privacy-policy', content: `# 개인정보 보호정책
 
-이 웹페이지는 당사의 이용약관 및 개인정보처리방침을 구성하는 법적 문서로서, 당사(Zero to Hero Education, Canada, 이하 "Zero to Hero")가 소유 및 운영하는 웹사이트 [https://languageplayer.io](https://languageplayer.io) 및 해당 페이지에 포함된 모든 하위 도메인과 앱(통칭 "웹사이트")의 사용을 규율합니다.
+본 웹페이지는 이용약관 및 개인정보 처리방침을 규정하는 법적 문서로서, 당사(Zero to Hero Education, Canada, 이하 "Zero to Hero")가 소유하고 운영하는 웹사이트 [https://languageplayer.io](https://languageplayer.io) 및 그 페이지, 모든 하위 도메인과 앱(통칭 "웹사이트")의 이용을 규율합니다.
 
 **서문**
 
-이용약관은 아래에 게시된 개인정보처리방침 및 당사 웹사이트 내 기타 게시된 지침이나 정책(통칭 "법적 약관")과 함께 귀하와 당사 간의 유일하고 완전한 계약을 구성하며, 당사 웹사이트 및 본 문서에 포함된 주제와 관련된 기타 모든 계약, 진술, 보증 및 이해를 대체합니다. 당사는 귀하에게 별도로 통지하지 않고 언제든지 법적 약관을 개정할 수 있습니다. 최신 법적 약관은 당사 웹사이트에 게시되며, 귀하는 웹사이트 이용 전에 모든 법적 약관을 검토해야 합니다. 법적 약관이 개정되어 게시된 후, 귀하는 해당 변경 사항에 구속되는 것에 동의합니다. 따라서 귀하는 정기적으로 법적 약관을 검토하여 여전히 동의하는지 확인하는 것이 중요합니다.
+이용약관은 아래에 게시된 개인정보 처리방침 및 웹사이트 내 게시된 기타 지침이나 정책(통칭 "법적 약관")과 함께 귀하와 당사 간의 전체적이고 유일한 계약을 구성하며, 웹사이트 및 본 약관의 주제와 관련된 모든 다른 계약, 진술, 보증 및 이해를 대체합니다. 당사는 별도의 통지 없이 언제든지 법적 약관을 개정할 수 있습니다. 법적 약관의 최신 사본은 웹사이트에 게시되며, 귀하는 웹사이트 이용 전에 모든 법적 약관을 검토해야 합니다. 법적 약관의 개정 사항이 게시된 후, 귀하는 그러한 변경 사항에 구속되는 것에 동의합니다. 따라서 귀하는 여전히 법적 약관에 동의하는지 확인하기 위해 정기적으로 법적 약관을 검토하는 것이 중요합니다.
 
-웹사이트를 이용함으로써 귀하는 법적 약관을 완전히 준수하고 이에 구속되는 것에 동의합니다. 이를 주의 깊게 검토하시기 바랍니다. 법적 약관에 동의하지 않는 경우 웹사이트에 접속하거나 이용하지 마십시오. 이미 웹사이트에 접속했으나 법적 약관에 동의하지 않는 경우, 더 이상 웹사이트를 이용할 권한이 없으며 즉시 웹사이트 이용을 중단해야 합니다.
+웹사이트를 이용함으로써 귀하는 법적 약관을 완전히 준수하고 이에 구속되는 것에 동의합니다. 법적 약관을 주의 깊게 검토하십시오. 법적 약관을 수락하지 않는 경우 웹사이트에 접속하거나 이용하지 마십시오. 이미 웹사이트에 접속했으나 법적 약관을 수락하지 않는 경우, 더 이상 웹사이트를 이용할 권한이 없으며 즉시 웹사이트 이용을 중단해야 합니다.
 
-**웹사이트 내 기타 정의된 용어**
+**웹사이트에 정의된 기타 용어**
 
-본 웹사이트는 이 페이지 전반에 걸쳐 정의된 용어와 다음의 기타 정의된 용어를 포함합니다:
+본 웹사이트는 이 페이지 전체에 걸쳐 정의된 용어와 다음의 기타 정의된 용어를 포함합니다:
 
-"당사" 및 "저희"는 웹사이트 소유자로서 Zero to Hero를 의미합니다. "콘텐츠"는 당사 웹사이트를 통해 게시, 제공 또는 이용 가능하게 된 모든 텍스트, 정보, 그래픽, 오디오, 비디오 및 기타 데이터를 포함합니다.
+"당사"와 "저희"는 웹사이트의 소유자인 Zero to Hero를 의미합니다. "콘텐츠"는 웹사이트를 통해 게시, 제공 또는 이용 가능하게 된 모든 텍스트, 정보, 그래픽, 오디오, 비디오 및 기타 데이터를 포함합니다.
 
-"방문자" 또는 "귀하"는 제품 구매 여부와 관계없이 당사 웹사이트를 탐색하는 귀하를 지칭하는 집합적 식별자입니다.
+"방문자" 또는 "귀하"는 제품 구매 여부와 관계없이 웹사이트를 탐색하는 귀하를 지칭하는 집합적 식별자입니다.
 
-"개인정보"란 식별 가능한 개인에 관한 정보로서, 개인의 이름, 거주지 주소, 청구지 주소, 배송지 주소, 전화번호, 이메일 주소 및 기타 유사한 연락처 정보와 웹사이트 이용 내역 데이터를 포함할 수 있습니다. 또한 결제 목적으로 제공되는 경우 개인의 신용카드 정보를 포함할 수 있습니다.
+"개인정보"란 식별 가능한 개인에 관한 정보를 의미하며, 개인의 이름, 주거지 주소, 청구지 주소, 배송지 주소, 전화번호, 이메일 주소 및 기타 유사한 연락처 정보, 웹사이트 이용 이력 데이터를 포함할 수 있습니다. 또한 결제 목적으로 제시된 개인의 신용카드 정보를 포함할 수 있습니다.
 
 **이용약관**
 
-**지식재산권**
+**지적재산권**
 
-당사 웹사이트에는 당사의 서비스표 또는 상표뿐만 아니라 당사 계열사 또는 기타 개인이나 회사의 서비스표 또는 상표가 단어, 그래픽 및 로고 형태로 포함될 수 있습니다. 귀하의 웹사이트 이용은 해당 서비스표/상표 소유자의 사전 서면 승인 없이 해당 서비스표/상표를 사용할 수 있는 권리나 라이선스를 부여하지 않습니다. 콘텐츠를 포함한 당사 웹사이트는 캐나다 및 국제 저작권법의 보호를 받습니다. 귀하의 웹사이트 또는 콘텐츠 이용은 어떠한 종류의 소유권도 부여하지 않습니다. 웹사이트 또는 콘텐츠의 일부를 복사, 재배포, 사용 또는 게시하는 것은 엄격히 금지되며, 당사의 서면 승인 없이 복사 또는 복제할 수 없습니다.
+웹사이트에는 당사의 서비스표 또는 상표뿐만 아니라 계열사 또는 다른 개인이나 회사의 서비스표 또는 상표가 단어, 그래픽 및 로고 형태로 포함될 수 있습니다. 귀하의 웹사이트 이용은 해당 서비스표/상표 소유자의 사전 서면 승인 없이 그러한 서비스표/상표를 사용할 권리나 라이선스를 구성하지 않습니다. 콘텐츠를 포함한 웹사이트는 캐나다 및 국제 저작권법의 보호를 받습니다. 웹사이트 또는 콘텐츠의 이용은 어떠한 종류의 소유권도 귀하에게 부여하지 않습니다. 웹사이트 또는 콘텐츠의 일부를 복사, 재배포, 사용 또는 게시하는 행위는 엄격히 금지되며, 당사의 사전 서면 승인 없이 복사 또는 복제할 수 없습니다.
 
-**책임 제한**
+**책임의 제한**
 
-어떠한 경우에도 당사 또는 당사의 임원이나 직원은 귀하의 본 웹사이트, 온라인 주문 시스템 또는 콘텐츠의 사용, 접속, 신뢰 또는 사용이나 접속 불능으로 인해 발생하거나 이와 관련된 모든 손실 또는 손해(전술한 내용을 제한하지 않고 직접, 간접, 부수적, 특별, 징벌적 또는 결과적 손해를 포함)에 대해 책임을 지지 않습니다.
+어떠한 경우에도 당사 또는 당사의 임원이나 직원은 귀하의 웹사이트 이용, 접속, 의존 또는 웹사이트, 온라인 주문 시스템 또는 콘텐츠를 이용하거나 접속할 수 없는 것과 관련하여 발생하는 직접, 간접, 우발, 특별, 징벌적 또는 결과적 손해를 포함하되 이에 국한되지 않는(전술한 내용의 일반성을 제한하지 않고) 어떠한 손실이나 손해에 대해서도 책임을 지지 않습니다.
 
 **일반 조항**
 
-당사의 법적 약관은 캐나다 브리티시컬럼비아주에서 체결 및 이행된 것으로 간주되며, 법률 충돌 원칙을 배제하고 해당 지역의 법률에 따라 규율되고 해석됩니다. 또한 귀하는 해당 지역 내 법원의 인적 관할권 및 재판적에 따르는 것에 동의합니다. 귀하의 웹사이트와 관련된 소송 사유는 발생일로부터 1년 이내에 제기되어야 하며, 그렇지 않으면 영구히 포기되고 금지됩니다. 법적 약관의 일부가 무효 또는 집행 불가능한 것으로 판명될 경우, 해당 부분은 관련 법률에 따라 해석되며 나머지 부분은 완전한 효력을 유지합니다. 콘텐츠가 법적 약관과 상충되거나 불일치하는 경우, 법적 약관이 우선하며 이를 함께 해석할 때 우선합니다. 당사가 법적 약관의 조항을 집행하지 않는 것은 해당 조항 또는 이를 집행할 권리를 포기하는 것으로 간주되지 않습니다. 법적 약관에 따른 당사의 권리는 법적 약관 종료 후에도 존속합니다.
+법적 약관은 캐나다 브리티시컬럼비아주에서 체결되고 이행된 것으로 간주되며, 법률 충돌 원칙을 고려하지 않고 해당 지역의 법률에 따라 규율되고 해석됩니다. 또한 귀하는 해당 지역 법원의 인적 관할권 및 재판지에 따르는 것에 동의합니다. 웹사이트와 관련된 귀하의 모든 청구 원인은 청구 원인이 발생한 날로부터 1년 이내에 제기되어야 하며, 그렇지 않으면 영구히 포기되고 금지됩니다. 법적 약관의 일부가 무효 또는 집행 불가능한 것으로 판단되는 경우, 해당 부분은 적용 가능한 법률에 따라 해석되고 나머지 부분은 완전한 효력을 유지합니다. 콘텐츠가 법적 약관과 충돌하거나 불일치하는 범위 내에서 법적 약관이 우선하며 함께 해석하는 데 있어 최우선합니다. 당사가 법적 약관의 조항을 집행하지 않는 것은 해당 조항 또는 해당 조항을 집행할 권리의 포기로 간주되지 않습니다. 법적 약관에 따른 당사의 권리는 법적 약관의 종료 후에도 존속합니다.
 
 **제3자 링크**
 
-귀하가 당사 웹사이트의 링크를 클릭하면 제3자가 소유 및 운영하는 다른 웹사이트로 이동할 수 있습니다. 당사는 다른 제3자 웹사이트의 개인정보 보호 관행에 대해 책임을 지지 않으며, 해당 사이트의 이용약관 및 개인정보 보호정책을 읽을 것을 권장합니다. 당사 웹사이트를 떠나거나 제3자 웹사이트 또는 애플리케이션으로 리디렉션되면 더 이상 당사의 법적 약관이 적용되지 않습니다.
+웹사이트에서 링크를 클릭하면 제3자가 소유하고 운영하는 다른 웹사이트로 이동할 수 있습니다. 당사는 다른 제3자 웹사이트의 개인정보 보호 관행에 대해 책임을 지지 않으며, 그들의 이용약관과 개인정보 보호정책을 읽을 것을 권장합니다. 웹사이트를 떠나거나 제3자 웹사이트 또는 애플리케이션으로 리디렉션되면 더 이상 법적 약관의 적용을 받지 않습니다.
 
-**개인정보처리방침**
+**개인정보 처리방침**
 
-Zero to Hero에서 개인정보는 매우 중요한 사항으로 간주되며, 이에 따라 모든 방문자의 개인정보 보호를 위해 노력하고 있습니다. 본 개인정보처리방침은 캐나다 개인정보 보호 및 전자문서법, 앨버타주 개인정보 보호법 및 캐나다 표준협회 개인정보 보호 모범 규약에 명시된 10가지 원칙(통칭 "적용 개인정보 보호법")의 해당 부분을 포함합니다.
+Zero to Hero는 개인정보 보호를 매우 중요한 사항으로 간주하며, 모든 방문자의 개인정보 보호를 위해 노력하고 있습니다. 본 개인정보 처리방침은 캐나다의 개인정보 보호 및 전자문서법, 앨버타주의 개인정보 보호법 및 캐나다 표준협회(CSA) 개인정보 보호 모델 코드에 명시된 10가지 원칙(통칭 "적용 개인정보 보호법")의 해당 부분을 포함합니다.
 
-**정보 수집**
+**수집하는 정보**
 
-당사는 다음 목적 중 하나 이상을 위해 개인정보를 수집할 수 있습니다:
+**귀하가 직접 제공하는 정보:**
 
-* 방문자와의 관계 수립 및 유지
-* 요청된 지속적인 제품 및 서비스 제공
-* 제품 및 서비스 변경 사항 통지
-* 방문자와 그들의 요구사항 및 선호도에 대한 이해 증진
-* 제품 및 서비스 개발, 강화, 개선 및/또는 마케팅
-* 웹사이트 사용 모니터링
-* 비즈니스 및 운영 관리 및 개선
-* 법적 및 규제 요구사항 충족
+* 계정 정보: 이름, 이메일 주소, 비밀번호, 언어 기본 설정 및 학습 수준.
+* 학습 데이터: 저장된 단어, 문구, 복습 진행 상황, 메모, 재생 목록, 좋아요 표시한 동영상, 시청 기록, 도서 및 독서 진행 상황.
+* 귀하가 업로드하거나 생성하는 콘텐츠: 맞춤 미디어, EPUB 파일, 번역 또는 설명을 요청한 텍스트.
+* 결제 정보: 구독을 구매할 때 결제는 Stripe, PayPal 또는 Apple App Store에서 처리됩니다. 당사는 확인 및 구독 세부 정보를 받지만 일반적으로 전체 카드 번호는 저장하지 않습니다.
 
-**귀하의 정보로 무엇을 하나요?**
+**자동으로 수집되는 정보:**
 
-귀하가 온라인 주문 시스템을 통해 무언가를 구매할 때, 매매 과정의 일부로 귀하의 개인정보를 수집합니다.
+* 사용 데이터: 방문한 페이지 및 기능(미디어 탐색, 음악 및 엔터테인먼트, 실시간 TV, TV 프로그램, 검색, 사전, 저장된 단어, 복습, 리더, 웹 리더, EPUB 리더, 로컬 미디어, 시청 기록, 재생 목록 및 좋아요한 동영상 포함), 시청한 동영상, 상호작용 및 타임스탬프.
+* 기기 및 네트워크 정보: IP 주소, 브라우저 유형, 운영 체제, 기기 유형 및 IP 주소에서 파생된 대략적인 위치.
+* 분석: 당사는 Google Analytics를 사용하여 방문자가 웹사이트를 어떻게 이용하는지 이해합니다. Google Analytics는 당사를 대신하여 쿠키를 사용하고 사용 데이터를 수집할 수 있습니다. Google의 데이터 사용은 [Google 개인정보 처리방침](https://policies.google.com/privacy)에 따라 관리됩니다.
+* 로컬 저장: 당사는 쿠키, \`localStorage\`, \`sessionStorage\` 및 IndexedDB를 사용하여 로그인 유지, 언어 기억, 설정·진행 상황·저장된 단어 저장 및 콘텐츠 로컬 캐싱을 수행합니다.
 
-귀하가 당사 웹사이트를 탐색할 때, 귀하의 브라우저와 운영 체제에 대해 학습하는 데 도움이 되는 정보를 제공하기 위해 귀하 컴퓨터의 인터넷 프로토콜(IP) 주소를 자동으로 수신합니다.
+**수집한 정보를 어떻게 사용합니까?**
 
-허용된 직접 마케팅(해당되는 경우): 귀하의 허가를 받아, 당사 매장, 신제품 및 기타 업데이트에 대해 광고하기 위해 뉴스레터나 이메일을 보낼 수 있습니다.
+당사는 수집한 정보를 다음의 목적으로 사용합니다:
+
+* 웹사이트 및 그 기능을 제공, 유지 및 개선
+* 계정 생성 및 관리, 신원 확인, 로그인 유지
+* 언어, 수준 및 학습 이력을 기반으로 추천 개인화
+* 여러 기기 간 데이터 동기화
+* 구독, 결제 및 갱신 처리
+* 인증 코드, 비밀번호 재설정, 결제 영수증과 같은 거래 이메일 발송
+* 귀하가 허용한 경우 마케팅 커뮤니케이션 발송
+* Google Analytics를 통한 사용 분석으로 방문자 이용 패턴 이해 및 제품 개선
+* 법적 및 규제 요구사항 충족 및 당사와 이용자의 권리 보호
+
+당사는 귀하의 개인정보를 판매하지 않습니다.
+
+**공유 및 공개**
+
+당사는 웹사이트 운영을 돕는 서비스 제공업체와만 개인정보를 공유합니다:
+
+* 호스팅 및 데이터베이스 제공업체(Supabase 포함)
+* 결제 처리업체(Stripe, PayPal 및 Apple App Store 포함)
+* 번역 및 AI 제공업체(DeepSeek 포함, 번역 또는 AI 설명 기능 사용 시)
+* 분석 제공업체(Google Analytics 포함)
+* 동영상 플랫폼(YouTube 및 Google 포함, 임베디드 동영상 시청 시)
+
+당사는 수집 목적 외의 용도로 개인정보를 사용하거나 공개하지 않으며, 귀하의 동의가 있거나 법률이 허용 또는 요구하거나 귀하가 이용약관을 위반한 경우에만 예외로 합니다.
 
 **동의**
 
-_어떻게 동의를 받나요?_
+_동의는 어떻게 받습니까?_
 
-귀하가 거래 완료, 신용카드 확인, 주문, 배송 준비 또는 구매 반품, 또는 소셜 미디어 사이트에 정보나 사진을 게시하거나 고정하기 위해 개인정보를 제공할 때, 귀하는 해당 특정 목적으로만 정보 수집 및 사용에 동의한 것으로 간주됩니다.
+귀하가 계정 생성, 거래 완료, 결제 확인, 주문 또는 제품 및 서비스 이용을 위해 개인정보를 제공할 때, 귀하가 당사의 정보 수집 및 해당 특정 목적을 위한 사용에 동의하는 것으로 간주합니다.
 
-마케팅과 같은 2차적 이유로 개인정보를 요청하는 경우, 귀하에게 명시적 동의를 직접 요청하거나 거부할 기회를 제공합니다.
+마케팅과 같은 이차적인 목적으로 개인정보를 요청하는 경우, 당사는 귀하에게 명시적 동의를 직접 요청하거나 거부할 기회를 제공합니다.
 
-_동의를 철회하려면 어떻게 하나요?_
+_동의를 어떻게 철회합니까?_
 
-옵트인 후 마음이 바뀌면, 언제든지 당사에 통지하여 정보의 지속적인 수집, 사용 또는 공개를 위한 연락에 대한 동의를 철회할 수 있습니다.
-
-**공개**
-
-당사는 수집된 목적 외의 다른 목적으로 개인정보를 사용하거나 공개하지 않으며, 귀하의 동의가 있거나 법률이 허용 또는 요구하거나 귀하가 이용약관을 위반한 경우는 예외입니다.
+옵트인 후 마음이 바뀌면 언제든지 당사에 통지하여 연락, 지속적인 정보 수집, 사용 또는 공개에 대한 동의를 철회할 수 있습니다.
 
 **보호**
 
-당사는 업계 모범 사례를 따르고 정보의 민감성에 적합한 합리적인 안전장치를 구현하여 개인정보를 보호합니다. 당사는 보유 형식에 관계없이 개인정보를 분실, 도난, 무단 접근, 공개, 복사, 사용 또는 수정으로부터 보호하기 위해 합리적인 노력을 기울입니다. 법률은 또한 법적 또는 비즈니스 목적으로 귀하가 동의를 철회하지 않은 한 합리적인 기간 동안 개인정보를 보유할 수 있도록 허용합니다.
+당사는 업계 모범 사례를 따르고 정보의 민감성에 적합한 합리적인 안전장치를 구현하여 개인정보를 보호합니다. 당사는 보관 형식과 관계없이 개인정보를 분실, 도난, 무단 접근, 공개, 복사, 사용 또는 변경으로부터 보호하기 위해 합리적인 노력을 기울입니다. 법률은 또한 법적 또는 사업상 목적으로 귀하가 동의를 철회하지 않은 한 합리적인 기간 동안 개인정보를 보유할 수 있도록 허용합니다.
 
 **보안**
 
-귀하의 개인정보를 보호하기 위해, 당사는 합리적인 예방 조치를 취하고 업계 모범 사례를 따라 정보가 부적절하게 분실, 오용, 접근, 공개, 변경 또는 파괴되지 않도록 합니다.
+귀하의 개인정보를 보호하기 위해 당사는 합리적인 예방 조치를 취하고 업계 모범 사례를 따라 부적절한 분실, 오용, 접근, 공개, 변경 또는 파괴를 방지합니다.
 
-**쿠키**
+**쿠키 및 유사 기술**
 
-당사 웹사이트는 쿠키를 사용하지 않습니다.
+웹사이트는 쿠키 및 유사 기술을 사용합니다.
 
-**본 개인정보처리방침의 변경**
+* **필수 쿠키:** 로그인 유지, 선택한 언어 기억, 게스트 탐색 제한 관리에 쿠키를 사용합니다.
+* **분석:** Google Analytics를 사용하며, 자체 쿠키를 설정하고 사용 정보를 수집할 수 있습니다.
+* **로컬 저장:** \`localStorage\`, \`sessionStorage\` 및 IndexedDB를 사용하여 기기에 설정, 저장된 단어, 진행 상황, 읽기 콘텐츠 및 맞춤 미디어를 저장합니다.
+* **임베디드 콘텐츠:** 동영상은 YouTube에서 임베드됩니다. YouTube와 Google은 귀하가 동영상을 시청할 때 자체 쿠키를 설정할 수 있으며, 이는 해당 개인정보 처리방침에 따라 관리됩니다.
 
-당사는 언제든지 본 개인정보처리방침을 수정할 권리를 보유하므로, 자주 검토하시기 바랍니다. 변경 및 설명은 웹사이트에 게시되는 즉시 효력이 발생합니다. 본 방침에 중대한 변경이 있는 경우, 업데이트되었음을 여기에 알려 귀하가 수집하는 정보, 사용 방법 및 어떤 상황에서 사용 및/또는 공개하는지 확인할 수 있도록 합니다.
+브라우저 설정을 통해 쿠키를 차단하거나 삭제할 수 있습니다. 쿠키를 비활성화하면 웹사이트의 일부 기능이 제대로 작동하지 않을 수 있습니다.
+
+**데이터 보유 및 삭제**
+
+당사는 계정이 활성화되어 있는 동안 또는 웹사이트 제공, 법적 의무 준수, 분쟁 해결 및 계약 집행에 필요한 기간 동안 개인정보를 보유합니다.
+
+귀하는 언제든지 프로필 페이지에서 계정 삭제 옵션을 사용하거나 아래 주소로 연락하여 계정을 삭제할 수 있습니다. 계정을 삭제하면 당사는 법적, 결제, 세무 또는 보안 목적으로 보관이 요구되는 기록을 제외하고 귀하의 개인정보를 제거하거나 익명화합니다.
+
+**본 개인정보 처리방침의 변경**
+
+당사는 언제든지 본 개인정보 처리방침을 수정할 권리를 보유하므로 자주 검토하시기 바랍니다. 변경 및 명확화 사항은 웹사이트에 게시되는 즉시 효력이 발생합니다. 본 방침에 중대한 변경이 있는 경우, 당사는 수집하는 정보, 사용 방법 및 어떤 상황에서 사용 및/또는 공개하는지 귀하가 알 수 있도록 여기에서 업데이트되었음을 통지합니다.
 
 **문의 및 연락처 정보**
 
-당사가 보유한 귀하의 개인정보에 접근, 수정, 변경 또는 삭제하거나, 불만을 등록하거나, 더 많은 정보를 원하시는 경우 [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)로 문의하시기 바랍니다.` },
+귀하에 관한 개인정보에 대한 접근, 정정, 수정 또는 삭제를 원하시거나, 불만을 제기하시거나, 더 많은 정보를 원하시면 [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)로 연락해 주십시오.` },
     { path: 'reading/epub', title: 'EPUB 리더', category: 'reading', content: `# EPUB 리더
 
 대화형 단어 검색, 블록별 번역, 세션 간에도 유지되는 진행 상황과 함께 EPUB 전자책을 읽어보세요.
@@ -27463,102 +28038,134 @@ Je kijkgeschiedenis is privé. Deze is alleen zichtbaar voor jou wanneer je bent
 - Je geschiedenis is beperkt tot je huidige L2 – je ziet geen Japans-video's wanneer je in de Koreaans-modus bent` },
     { path: 'privacy-policy', title: 'Privacybeleid', category: 'privacy-policy', content: `# Privacybeleid
 
-Deze webpagina vormt een juridisch document dat fungeert als onze Gebruiksvoorwaarden en Privacybeleid en dat het gebruik van onze website regelt: [https://languageplayer.io](https://languageplayer.io), inclusief de daarop gevonden pagina's en alle subdomeinen en apps (gezamenlijk "Website"), zoals eigendom en beheerd door ons, Zero to Hero Education, Canada. ("Zero to Hero").
+Deze webpagina vormt een juridisch document dat fungeert als onze Gebruiksvoorwaarden en Privacybeleid en dat het gebruik van onze website regelt: [https://languageplayer.io](https://languageplayer.io), inclusief pagina's die daarop te vinden zijn en alle subdomeinen en apps (gezamenlijk de "Website"), zoals eigendom en beheerd door ons, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Inleiding**
 
-De Gebruiksvoorwaarden, samen met ons hieronder gepubliceerde Privacybeleid en andere geposte richtlijnen of beleidsregels op onze Website (gezamenlijk "Juridische Voorwaarden"), vormen de volledige en enige overeenkomst tussen u en ons en vervangen alle andere overeenkomsten, verklaringen, garanties en afspraken met betrekking tot onze Website en de hierin behandelde onderwerpen. Wij kunnen onze Juridische Voorwaarden op elk moment wijzigen zonder u specifiek hiervan op de hoogte te stellen. De nieuwste exemplaren van onze Juridische Voorwaarden worden op onze Website geplaatst en u dient alle Juridische Voorwaarden te beoordelen voordat u onze Website gebruikt. Na het plaatsen van eventuele herzieningen van onze Juridische Voorwaarden gaat u ermee akkoord gebonden te zijn aan dergelijke wijzigingen. Daarom is het belangrijk dat u onze Juridische Voorwaarden periodiek beoordeelt om er zeker van te zijn dat u er nog steeds mee akkoord gaat.
+De Gebruiksvoorwaarden, samen met ons hieronder gepubliceerde Privacybeleid en andere gepubliceerde richtlijnen of beleidsregels binnen onze Website (gezamenlijk de "Juridische Voorwaarden"), vormen de volledige en enige overeenkomst tussen u en ons en vervangen alle andere overeenkomsten, verklaringen, garanties en afspraken met betrekking tot onze Website en de hierin opgenomen onderwerpen. Wij kunnen onze Juridische Voorwaarden op elk moment wijzigen zonder specifieke kennisgeving aan u. De meest recente exemplaren van onze Juridische Voorwaarden zullen op onze Website worden geplaatst en u dient alle Juridische Voorwaarden te beoordelen voordat u onze Website gebruikt. Nadat eventuele herzieningen van onze Juridische Voorwaarden zijn geplaatst, gaat u ermee akkoord gebonden te zijn aan dergelijke wijzigingen. Het is daarom belangrijk dat u onze Juridische Voorwaarden periodiek beoordeelt om ervoor te zorgen dat u het er nog steeds mee eens bent.
 
-Door gebruik te maken van onze Website gaat u ermee akkoord volledig te voldoen aan en gebonden te zijn aan onze Juridische Voorwaarden. Beoordeel deze zorgvuldig. Als u onze Juridische Voorwaarden niet accepteert, gebruikt u onze Website dan niet en heeft u er geen toegang toe. Als u al toegang heeft gehad tot onze Website en onze Juridische Voorwaarden niet accepteert, bent u niet langer gemachtigd om deze te gebruiken en dient u onmiddellijk te stoppen met het gebruik van onze Website.
+Door gebruik te maken van onze Website gaat u akkoord met volledige naleving van en gebondenheid aan onze Juridische Voorwaarden. Beoordeel ze zorgvuldig. Als u onze Juridische Voorwaarden niet accepteert, gebruik dan geen toegang tot en geen gebruik van onze Website. Als u onze Website al hebt bezocht en onze Juridische Voorwaarden niet accepteert, bent u niet langer gemachtigd om deze te gebruiken en dient u onmiddellijk te stoppen met het gebruik van onze Website.
 
-**Andere Gedefinieerde Termen Op Onze Website**
+**Andere gedefinieerde termen op onze Website**
 
 Deze Website bevat termen die op deze pagina zijn gedefinieerd, evenals deze andere gedefinieerde termen:
 
-De termen "ons" en "wij" verwijzen naar Zero to Hero als eigenaar van de Website. "Inhoud" omvat alle tekst, informatie, afbeeldingen, audio, video en andere gegevens die via onze Website worden geplaatst, aangeboden of beschikbaar gesteld.
+De termen "ons" en "wij" verwijzen naar Zero to Hero als eigenaar van de Website. "Content" omvat alle tekst, informatie, afbeeldingen, audio, video en andere gegevens die via onze Website worden geplaatst, aangeboden of beschikbaar gesteld.
 
-Een "bezoeker" of "u" zijn collectieve identificaties die naar u verwijzen als een gebruiker van onze Website, ongeacht of u een aankoop van onze producten voltooit.
+Een "bezoeker" of "u" zijn collectieve identificaties die verwijzen naar u als bezoeker van onze Website, ongeacht of u een aankoop van onze producten voltooit.
 
-"Persoonlijke informatie" betekent informatie over een identificeerbaar persoon, die de naam, woonadres, factuuradres, bezorgadres, telefoonnummer, e-mailadres en andere soortgelijke contactgegevens van een persoon kan omvatten, evenals geschiedenisgegevens van websitegebruik. Het kan ook creditcardgegevens van een persoon omvatten wanneer deze worden verstrekt voor betalingsdoeleinden.
+"Persoonlijke informatie" betekent informatie over een identificeerbaar persoon, die kan omvatten: naam, woonadres, factuuradres, bezorgadres, telefoonnummer, e-mailadres en andere soortgelijke contactgegevens, evenals gegevens over het gebruik van de Website. Het kan ook creditcardgegevens van een persoon omvatten wanneer deze worden verstrekt voor betalingsdoeleinden.
 
 **GEBRUIKSVOORWAARDEN**
 
-**Intellectueel Eigendom**
+**Intellectueel eigendom**
 
-Onze Website kan onze dienstmerken of handelsmerken bevatten, evenals die van onze gelieerde ondernemingen of andere personen of bedrijven, in de vorm van woorden, afbeeldingen en logo's. Uw gebruik van onze Website vormt geen recht of licentie voor u om dergelijke dienstmerken/handelsmerken te gebruiken, zonder de voorafgaande schriftelijke toestemming van de corresponderende eigenaar van het dienstmerk/handelsmerk. Onze Website, inclusief de inhoud, wordt ook beschermd door Canadese en internationale auteursrechtwetten. Uw gebruik van onze Website of de inhoud geeft u geen eigendomsrechten van welke aard dan ook. Het kopiëren, herdistribueren, gebruiken of publiceren door u van enig deel van onze Website of inhoud is strikt verboden en mag daarom niet worden gekopieerd of gereproduceerd zonder voorafgaande schriftelijke toestemming van ons.
+Onze Website kan onze dienstmerken of handelsmerken bevatten, evenals die van onze gelieerde partijen of andere personen of bedrijven, in de vorm van woorden, afbeeldingen en logo's. Uw gebruik van onze Website vormt geen recht of licentie voor u om dergelijke dienstmerken/handelsmerken te gebruiken, zonder voorafgaande schriftelijke toestemming van de betreffende eigenaar van het dienstmerk/handelsmerk. Onze Website, inclusief de content, is ook beschermd onder de Canadese en internationale auteursrechtwetten. Uw gebruik van onze Website of de content verleent u geen eigendomsrechten van welke aard dan ook. Het kopiëren, herdistribueren, gebruiken of publiceren door u van enig deel van onze Website of content is strikt verboden en mag daarom niet worden gekopieerd of gereproduceerd zonder voorafgaande schriftelijke toestemming van ons.
 
-**Beperking van Aansprakelijkheid**
+**Beperking van aansprakelijkheid**
 
-In geen geval zijn wij, of onze functionarissen of werknemers, verantwoordelijk of aansprakelijk voor enig verlies of schade van welke aard dan ook, inclusief (zonder beperking van het voorgaande) enige directe, indirecte, incidentele, speciale, punitieve of gevolgschade, voortvloeiend uit of in verband met uw gebruik van, toegang tot of vertrouwen op, of uw onvermogen om deze Website, het online bestelsysteem of enige inhoud te gebruiken of te openen.
+In geen geval zijn wij, of onze functionarissen of medewerkers, verantwoordelijk of aansprakelijk voor enig verlies of schade van welke aard dan ook, inclusief (zonder de algemeenheid van het voorgaande te beperken) enige directe, indirecte, incidentele, speciale, punitieve of gevolgschade, die voortvloeit uit of in verband staat met uw gebruik van, toegang tot of vertrouwen op, of uw onvermogen om te gebruiken of toegang te krijgen tot, deze Website, het online bestelsysteem of enige content.
 
-**Algemene Voorwaarden**
+**Algemene voorwaarden**
 
-Onze Juridische Voorwaarden worden behandeld alsof ze zijn uitgevoerd en nagekomen in de Provincie British Columbia, Canada en worden beheerst door en geïnterpreteerd in overeenstemming met de wetten van die regio, zonder rekening te houden met conflicterende rechtsbeginselen. Bovendien stemt u ermee in u te onderwerpen aan de persoonlijke jurisdictie en rechtsplaats van de rechtbanken in die regio. Elke rechtsvordering van u met betrekking tot onze Website moet worden ingesteld binnen één (1) jaar nadat de rechtsvordering is ontstaan, anders is deze voor altijd kwijtgescholden en uitgesloten. Mocht enig deel van onze Juridische Voorwaarden ongeldig of niet-afdwingbaar worden verklaard, dan wordt dat deel geïnterpreteerd in overeenstemming met de toepasselijke wetgeving en blijven de overige delen volledig van kracht. Voor zover enige inhoud in strijd is met of inconsistent is met onze Juridische Voorwaarden, hebben onze Juridische Voorwaarden voorrang en zijn zij leidend bij de gezamenlijke interpretatie ervan. Ons falen om een bepaling van onze Juridische Voorwaarden af te dwingen, wordt niet beschouwd als een afstand van die bepaling noch van het recht om die bepaling af te dwingen. Onze rechten onder onze Juridische Voorwaarden blijven bestaan na beëindiging van onze Juridische Voorwaarden.
+Onze Juridische Voorwaarden worden behandeld alsof ze zijn uitgevoerd en nagekomen in de provincie British Columbia, Canada, en worden beheerst door en geïnterpreteerd in overeenstemming met de wetten van die regio, zonder rekening te houden met beginselen van conflict van wetten. Bovendien gaat u ermee akkoord u te onderwerpen aan de persoonlijke jurisdictie en rechtsplaats van de rechtbanken in die regio. Elke rechtsvordering van u met betrekking tot onze Website moet worden ingesteld binnen één (1) jaar nadat de rechtsvordering is ontstaan, of wordt voor altijd kwijtgescholden en uitgesloten. Mocht enig deel van onze Juridische Voorwaarden ongeldig of niet-afdwingbaar worden geacht, dan wordt dat gedeelte geïnterpreteerd in overeenstemming met het toepasselijke recht en blijven de overige gedeelten volledig van kracht en werking. Voor zover enige content in conflict is of inconsistent is met onze Juridische Voorwaarden, prevaleren onze Juridische Voorwaarden en zijn zij doorslaggevend bij de gezamenlijke interpretatie ervan. Ons falen om enige bepaling van onze Juridische Voorwaarden te handhaven, wordt niet beschouwd als een afstand van die bepaling noch van het recht om die bepaling te handhaven. Onze rechten onder onze Juridische Voorwaarden overleven de beëindiging van onze Juridische Voorwaarden.
 
-**Links naar Derden**
+**Links naar derden**
 
-Wanneer u op links op onze Website klikt, kunnen deze u van onze Website wegleiden naar een andere website die eigendom is van en wordt beheerd door een derde partij. Wij zijn niet verantwoordelijk voor de privacypraktijken van andere websites van derden en moedigen u aan hun gebruiksvoorwaarden en privacyverklaringen te lezen. Zodra u onze Website verlaat of wordt doorgestuurd naar een website of applicatie van een derde partij, valt u niet langer onder onze Juridische Voorwaarden.
+Wanneer u op links op onze Website klikt, kunnen deze u van onze Website wegleiden naar een andere website die eigendom is van en wordt beheerd door een derde partij. Wij zijn niet verantwoordelijk voor de privacypraktijken van andere websites van derden en moedigen u aan om hun gebruiksvoorwaarden en privacyverklaringen te lezen. Zodra u onze Website verlaat of wordt doorgestuurd naar een website of applicatie van een derde partij, valt u niet langer onder onze Juridische Voorwaarden.
 
 **PRIVACYBELEID**
 
-Bij Zero to Hero beschouwen we privacy als een zeer belangrijke kwestie en als zodanig zijn we toegewijd aan het beschermen van de privacy van de persoonlijke informatie van alle bezoekers. Dit Privacybeleid bevat de toepasselijke delen van de Personal Information Protection and Electronic Documents Act (Canada), de Personal Information Protection Act (Alberta) en de tien principes uiteengezet in de Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (gezamenlijk de "toepasselijke privacywetten").
+Bij Zero to Hero beschouwen wij privacy als een zeer belangrijke zaak en daarom zijn wij toegewijd aan het beschermen van de privacy van de persoonlijke informatie van alle bezoekers. Dit Privacybeleid omvat de toepasselijke delen van de Personal Information Protection and Electronic Documents Act (Canada), de Personal Information Protection Act (Alberta) en de tien beginselen uiteengezet in de Canadian Standards Association (CSA) Model Code voor de Bescherming van Persoonlijke Informatie (gezamenlijk de "toepasselijke privacywetten").
 
-**Verzameling van Informatie**
+**Informatie die wij verzamelen**
 
-Wij kunnen persoonlijke informatie verzamelen voor een of meer van de volgende doeleinden:
+**Informatie die u rechtstreeks verstrekt:**
 
-*   om relaties met bezoekers op te bouwen en te onderhouden;
-*   om gevraagde en doorlopende producten en diensten te leveren;
-*   om u op de hoogte te stellen van wijzigingen in onze producten en diensten;
-*   om een beter begrip te krijgen van onze bezoekers, hun vereisten en voorkeuren;
-*   om onze producten en diensten te ontwikkelen, verbeteren en/of op de markt te brengen;
-*   om het gebruik van onze Website te monitoren;
-*   om onze bedrijfsvoering en activiteiten te beheren en verbeteren; en
-*   om te voldoen aan wettelijke en regelgevende vereisten.
+* Accountgegevens: uw naam, e-mailadres, wachtwoord, taalvoorkeuren en leerniveau.
+* Leergegevens: opgeslagen woorden, zinnen, voortgang van herhalingen, notities, afspeellijsten, gelikete video's, kijkgeschiedenis, boeken en leesvoortgang.
+* Content die u uploadt of creëert: aangepaste media, EPUB-bestanden en tekst die u ons vraagt te vertalen of uit te leggen.
+* Betaalinformatie: wanneer u een abonnement aanschaft, wordt de betaling verwerkt door Stripe, PayPal of de Apple App Store. Wij ontvangen een bevestiging en abonnementsgegevens, maar wij slaan doorgaans niet uw volledige kaartnummer op.
 
-**Wat Doen Wij Met Uw Informatie?**
+**Automatisch verzamelde informatie:**
 
-Wanneer u iets koopt via ons online bestelsysteem, verzamelen wij als onderdeel van het koop- en verkoopproces uw persoonlijke informatie.
+* Gebruiksgegevens: pagina's en functies die u bezoekt, waaronder Media verkennen, Muziek en Entertainment, Live TV, TV-programma's, Zoeken, Woordenboek, Opgeslagen woorden, Beoordeling, Reader, Weblezer, EPUB-lezer, Lokale Media, Kijkgeschiedenis, Afspeellijsten en Video's die je leuk vindt; video's die u bekijkt; interacties; en tijdstempels.
+* Apparaat- en netwerkinformatie: IP-adres, browsertype, besturingssysteem, apparaattype en geschatte locatie afgeleid van uw IP-adres.
+* Analyse: wij gebruiken Google Analytics om te begrijpen hoe bezoekers de Website gebruiken. Google Analytics kan cookies gebruiken en gebruiksgegevens namens ons verzamelen. Het gebruik van die gegevens door Google wordt beheerst door [Google's Privacybeleid](https://policies.google.com/privacy).
+* Lokale opslag: wij gebruiken cookies, \`localStorage\`, \`sessionStorage\` en IndexedDB om u aangemeld te houden, uw taal te onthouden, uw instellingen, voortgang en opgeslagen woorden op te slaan en content lokaal te cachen.
 
-Wanneer u op onze Website surft, ontvangen wij ook automatisch het internetprotocol (IP)-adres van uw computer om ons informatie te verschaffen die ons helpt meer te weten te komen over uw browser en besturingssysteem.
+**Wat doen wij met uw informatie?**
 
-Toegestane directe marketing (indien van toepassing): Met uw toestemming kunnen wij u nieuwsbrieven of e-mails sturen om reclame te maken voor onze winkels, nieuwe producten en andere updates.
+Wij gebruiken de informatie die wij verzamelen om:
+
+* de Website en de functies ervan te leveren, te onderhouden en te verbeteren;
+* uw account aan te maken en te beheren, uw identiteit te verifiëren en u aangemeld te houden;
+* aanbevelingen te personaliseren op basis van uw taal, niveau en leerhistorie;
+* uw gegevens te synchroniseren tussen apparaten;
+* abonnementen, betalingen en verlengingen te verwerken;
+* transactionele e-mails te verzenden, zoals verificatiecodes, wachtwoordresets en betalingsbewijzen;
+* marketingcommunicatie te verzenden als u ons daarvoor toestemming hebt gegeven;
+* gebruik te analyseren met Google Analytics om te begrijpen hoe bezoekers de Website gebruiken en om onze producten te verbeteren;
+* te voldoen aan wettelijke en regelgevende vereisten en onze rechten en de rechten van onze gebruikers te beschermen.
+
+Wij verkopen uw persoonlijke informatie niet.
+
+**Delen en openbaar maken**
+
+Wij delen persoonlijke informatie alleen met serviceproviders die ons helpen de Website te exploiteren, waaronder:
+
+* hosting- en databaseproviders, waaronder Supabase;
+* betalingsverwerkers, waaronder Stripe, PayPal en de Apple App Store;
+* vertaal- en AI-providers, waaronder DeepSeek, wanneer u gebruikmaakt van vertaal- of AI-uitlegfuncties;
+* analyseproviders, waaronder Google Analytics;
+* videoplatforms, waaronder YouTube en Google, wanneer u ingebedde video's bekijkt.
+
+Wij zullen persoonlijke informatie niet gebruiken of openbaar maken voor andere doeleinden dan waarvoor deze is verzameld, tenzij met uw toestemming, indien dit is toegestaan of vereist door de wet, of als u onze Gebruiksvoorwaarden schendt.
 
 **Toestemming**
 
-_Hoe verkrijgt u mijn toestemming?_
+_Hoe krijgt u mijn toestemming?_
 
-Wanneer u ons persoonlijke informatie verstrekt om een transactie te voltooien, uw creditcard te verifiëren, een bestelling te plaatsen, een bezorging te regelen of een aankoop te retourneren, of informatie of foto's op onze social media-site te plaatsen of te pinnen, gaan wij ervan uit dat u toestemming geeft voor het verzamelen en gebruiken ervan voor dat specifieke doel.
+Wanneer u ons persoonlijke informatie verstrekt om een account aan te maken, een transactie te voltooien, uw betaling te verifiëren, een bestelling te plaatsen of onze producten en diensten te gebruiken, gaan wij ervan uit dat u toestemming geeft voor het verzamelen en gebruiken ervan voor dat specifieke doel.
 
-Als wij om uw persoonlijke informatie vragen voor een secundaire reden, zoals marketing, vragen wij u rechtstreeks om uw uitdrukkelijke toestemming of bieden wij u de mogelijkheid om nee te zeggen.
+Als wij uw persoonlijke informatie vragen voor een secundair doel, zoals marketing, vragen wij u rechtstreeks om uw uitdrukkelijke toestemming of bieden wij u de mogelijkheid om nee te zeggen.
 
 _Hoe trek ik mijn toestemming in?_
 
-Als u van gedachten verandert nadat u zich heeft aangemeld, kunt u op elk moment uw toestemming voor ons om contact met u op te nemen, voor het voortdurend verzamelen, gebruiken of bekendmaken van uw informatie, intrekken door ons hiervan op de hoogte te stellen.
-
-**Openbaarmaking**
-
-Wij zullen persoonlijke informatie niet gebruiken of openbaar maken voor andere doeleinden dan waarvoor deze is verzameld, tenzij met uw toestemming, als dit is toegestaan of vereist door de wet, of als u onze Gebruiksvoorwaarden schendt.
+Als u na uw aanmelding van gedachten verandert, kunt u op elk moment uw toestemming voor ons om contact met u op te nemen, voor de voortdurende verzameling, het gebruik of de openbaarmaking van uw informatie, intrekken door ons op de hoogte te stellen.
 
 **Bescherming**
 
-Wij zullen persoonlijke informatie beschermen door de best practices uit de industrie te volgen en dergelijke redelijke waarborgen te implementeren als passend zijn voor de gevoeligheid van de informatie; wij zullen redelijke inspanningen leveren om persoonlijke informatie te beschermen tegen verlies of diefstal, evenals tegen ongeautoriseerde toegang, openbaarmaking, kopiëren, gebruik of wijziging, ongeacht de vorm waarin deze wordt bewaard. De wetgeving staat ons ook toe om, voor juridische of zakelijke doeleinden, persoonlijke informatie te bewaren zolang als redelijk is en op voorwaarde dat u uw toestemming niet heeft ingetrokken.
+Wij zullen persoonlijke informatie beschermen door de beste praktijken in de branche te volgen en redelijke waarborgen te implementeren die passend zijn bij de gevoeligheid van de informatie; wij zullen redelijke inspanningen leveren om persoonlijke informatie te beschermen tegen verlies of diefstal, evenals tegen ongeautoriseerde toegang, openbaarmaking, kopiëren, gebruik of wijziging, ongeacht het formaat waarin deze wordt bewaard. De wetgeving staat ons ook toe om, voor juridische of zakelijke doeleinden, persoonlijke informatie te bewaren zolang dit redelijk is en op voorwaarde dat u uw toestemming niet hebt ingetrokken.
 
 **Beveiliging**
 
-Om uw persoonlijke informatie te beschermen, nemen wij redelijke voorzorgsmaatregelen en volgen wij de best practices uit de industrie om ervoor te zorgen dat deze niet onterecht verloren gaat, misbruikt, toegankelijk wordt gemaakt, openbaar wordt gemaakt, wordt gewijzigd of vernietigd.
+Om uw persoonlijke informatie te beschermen, nemen wij redelijke voorzorgsmaatregelen en volgen wij de beste praktijken in de branche om ervoor te zorgen dat deze niet op ongepaste wijze verloren gaat, misbruikt, geopend, openbaar gemaakt, gewijzigd of vernietigd wordt.
 
-**Cookies**
+**Cookies en vergelijkbare technologieën**
 
-Onze Website gebruikt geen cookies.
+Onze Website maakt gebruik van cookies en vergelijkbare technologieën.
 
-**Wijzigingen in Dit Privacybeleid**
+* **Essentiële cookies:** wij gebruiken cookies om u aangemeld te houden, uw geselecteerde talen te onthouden en navigatielimieten voor gasten te beheren.
+* **Analyse:** wij gebruiken Google Analytics, dat zijn eigen cookies kan instellen en gebruiksinformatie kan verzamelen.
+* **Lokale opslag:** wij gebruiken \`localStorage\`, \`sessionStorage\` en IndexedDB om instellingen, opgeslagen woorden, voortgang, leescontent en aangepaste media op uw apparaat op te slaan.
+* **Ingebedde content:** video's zijn ingebed vanaf YouTube. YouTube en Google kunnen hun eigen cookies instellen wanneer u een video bekijkt, die worden beheerst door hun privacybeleid.
 
-Wij behouden ons het recht voor om dit privacybeleid op elk moment te wijzigen, dus raadpleeg het regelmatig. Wijzigingen en verduidelijkingen worden onmiddellijk van kracht na plaatsing op de Website. Als wij materiële wijzigingen in dit beleid aanbrengen, stellen wij u hier op de hoogte dat het is bijgewerkt, zodat u weet welke informatie wij verzamelen, hoe wij deze gebruiken en onder welke omstandigheden, indien van toepassing, wij deze gebruiken en/of openbaar maken.
+U kunt cookies blokkeren of verwijderen via de instellingen van uw browser. Houd er rekening mee dat sommige delen van de Website mogelijk niet correct werken als u cookies uitschakelt.
 
-**Vragen en Contactinformatie**
+**Bewaartermijn en verwijdering van gegevens**
 
-Als u: persoonlijke informatie die wij over u hebben wilt inzien, corrigeren, wijzigen of verwijderen, een klacht wilt indienen, of gewoon meer informatie wilt, neem dan contact met ons op via [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Wij bewaren persoonlijke informatie zolang uw account actief is, of zolang als nodig is om de Website te leveren, te voldoen aan wettelijke verplichtingen, geschillen op te lossen en onze overeenkomsten te handhaven.
+
+U kunt uw account op elk moment verwijderen via de Profiel-pagina met de optie Account verwijderen, of door contact met ons op te nemen via het onderstaande adres. Wanneer u uw account verwijdert, zullen wij uw persoonlijke informatie verwijderen of anonimiseren, onder voorbehoud van gegevens die wij wettelijk moeten bewaren voor juridische, betalings-, belasting- of beveiligingsdoeleinden.
+
+**Wijzigingen in dit Privacybeleid**
+
+Wij behouden ons het recht voor om dit privacybeleid op elk moment te wijzigen. Beoordeel het daarom regelmatig. Wijzigingen en verduidelijkingen worden onmiddellijk van kracht na plaatsing op de Website. Als wij materiële wijzigingen in dit beleid aanbrengen, zullen wij u hier op de hoogte stellen dat het is bijgewerkt, zodat u weet welke informatie wij verzamelen, hoe wij die gebruiken en onder welke omstandigheden, indien van toepassing, wij die gebruiken en/of openbaar maken.
+
+**Vragen en contactinformatie**
+
+Als u: toegang wilt tot, correctie, wijziging of verwijdering van persoonlijke informatie die wij over u hebben, een klacht wilt indienen, of gewoon meer informatie wilt, neem dan contact met ons op via [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-lezer', category: 'reading', content: `# EPUB-lezer
 
 Lees EPUB-e-boeken met interactieve woordopzoekfunctie, per-blokvertaling en voortgang die blijft bestaan tussen sessies.
@@ -28929,101 +29536,132 @@ Avspillingshistorikken din er privat. Den er bare synlig for deg når du er logg
 - Historikken din er avgrenset til gjeldende L2 – du vil ikke se Japansk-videoer når du er i Koreansk-modus` },
     { path: 'privacy-policy', title: 'Personvernregler', category: 'privacy-policy', content: `# Personvernregler
 
-Denne nettsiden representerer et juridisk dokument som fungerer som våre bruksvilkår og personvernerklæring, og regulerer bruken av vår nettside: [https://languageplayer.io](https://languageplayer.io), inkludert sider som finnes der, samt alle underdomener og apper (samlet kalt "Nettsiden"), som eies og drives av oss, Zero to Hero Education, Canada. ("Zero to Hero").
+Denne nettsiden representerer et juridisk dokument som fungerer som våre bruksvilkår og personvernpolicy, og den regulerer bruken av nettstedet vårt: [https://languageplayer.io](https://languageplayer.io), inkludert sider som finnes der og alle underdomener og apper (samlet kalt «Nettstedet»), som eies og drives av oss, Zero to Hero Education, Canada. («Zero to Hero»).
 
 **Introduksjon**
 
-Bruksvilkårene, sammen med vår personvernerklæring publisert nedenfor, og andre offentliggjorte retningslinjer eller policyer på vår nettside (samlet kalt "Juridiske vilkår"), utgjør den fullstendige og eneste avtalen mellom deg og oss, og erstatter alle andre avtaler, representasjoner, garantier og forståelser angående vår nettside og emnet som omhandles heri. Vi kan endre våre juridiske vilkår når som helst uten spesifikk varsling til deg. De nyeste kopiene av våre juridiske vilkår vil bli lagt ut på vår nettside, og du bør gjennomgå alle juridiske vilkår før du bruker vår nettside. Etter at eventuelle revisjoner av våre juridiske vilkår er lagt ut, godtar du å være bundet av slike endringer. Derfor er det viktig for deg å periodisk gjennomgå våre juridiske vilkår for å forsikre deg om at du fortsatt godtar dem.
+Bruksvilkårene, sammen med vår personvernpolicy publisert nedenfor, og andre publiserte retningslinjer eller policyer på Nettstedet vårt (samlet kalt «Juridiske vilkår»), utgjør hele og eneste avtale mellom deg og oss, og erstatter alle andre avtaler, representasjoner, garantier og forståelser med hensyn til Nettstedet vårt og emnet som er omhandlet heri. Vi kan endre våre juridiske vilkår når som helst uten spesifikk varsling til deg. De nyeste kopiene av våre juridiske vilkår vil bli lagt ut på Nettstedet vårt, og du bør gjennomgå alle juridiske vilkår før du bruker Nettstedet vårt. Etter at eventuelle revisjoner av våre juridiske vilkår er lagt ut, godtar du å være bundet av slike endringer. Derfor er det viktig at du jevnlig gjennomgår våre juridiske vilkår for å sikre at du fortsatt godtar dem.
 
-Ved å bruke vår nettside godtar du å fullt ut overholde og være bundet av våre juridiske vilkår. Vennligst gjennomgå dem nøye. Hvis du ikke godtar våre juridiske vilkår, skal du ikke få tilgang til eller bruke vår nettside. Hvis du allerede har fått tilgang til vår nettside og ikke godtar våre juridiske vilkår, er du ikke lenger autorisert til å bruke den, og du bør umiddelbart slutte å bruke vår nettside.
+Ved å bruke Nettstedet vårt godtar du å fullt ut overholde og være bundet av våre juridiske vilkår. Vennligst gjennomgå dem nøye. Hvis du ikke aksepterer våre juridiske vilkår, må du ikke få tilgang til og bruke Nettstedet vårt. Hvis du allerede har fått tilgang til Nettstedet vårt og ikke aksepterer våre juridiske vilkår, er du ikke lenger autorisert til å bruke det, og du bør umiddelbart slutte å bruke Nettstedet vårt.
 
-**Andre Definerte Begreper På Vår Nettside**
+**Andre definerte termer på Nettstedet vårt**
 
-Denne nettsiden inkorporerer begreper definert gjennom denne siden så vel som disse andre definerte begrepene:
+Dette Nettstedet inkluderer termer definert gjennom hele denne siden samt disse andre definerte termene:
 
-Begrepene "oss" og "vi" refererer til Zero to Hero som eier av nettsiden. "Innhold" inkluderer all tekst, informasjon, grafikk, lyd, video og andre data som er lagt ut, tilbudt eller gjort tilgjengelig gjennom vår nettside.
+Begrepene «oss» og «vi» refererer til Zero to Hero som eier av Nettstedet. «Innhold» inkluderer all tekst, informasjon, grafikk, lyd, video og andre data som er lagt ut, tilbudt eller gjort tilgjengelig gjennom Nettstedet vårt.
 
-En "besøkende" eller "deg" er kollektive identifikatorer som refererer til deg som en som surfer på vår nettside, uavhengig av om du fullfører et kjøp av våre produkter.
+En «besøkende» eller «du» er kollektive identifikatorer som refererer til deg som en som surfer på Nettstedet vårt, enten du fullfører et kjøp av produktene våre eller ikke.
 
-"Personlig informasjon" betyr informasjon om en identifiserbar person, som kan inkludere en persons navn, bostedsadresse, faktureringsadresse, leveringsadresse, telefonnummer, e-postadresse og annen lignende kontaktinformasjon, samt data om brukshistorikk på nettsiden. Det kan også inkludere en persons kredittkortinformasjon når den presenteres for betalingsformål.
+«Personlig informasjon» betyr informasjon om en identifiserbar person, som kan inkludere en persons navn, bostedsadresse, faktureringsadresse, leveringsadresse, telefonnummer, e-postadresse og annen lignende kontaktinformasjon, samt data om nettstedbrukshistorikk. Det kan også inkludere en persons kredittkortinformasjon når den presenteres for betalingsformål.
 
-**BRUKSVILLKÅR**
+**BRUKSVILKÅR**
 
-**Immaterielle Rettigheter**
+**Immaterielle rettigheter**
 
-Vår nettside kan inneholde våre tjenestemerker eller varemerker, så vel som de til våre tilknyttede selskaper eller andre personer eller selskaper, i form av ord, grafikk og logoer. Din bruk av vår nettside utgjør ingen rettighet eller lisens for deg til å bruke slike tjenestemerker/varemerker, uten forutgående skriftlig autorisasjon fra den tilsvarende eieren av tjenestemerket/varemerket. Vår nettside inkludert innholdet er også beskyttet under kanadisk og internasjonal opphavsrettslovgivning. Din bruk av vår nettside eller innholdet gir deg ikke eierrettigheter av noe slag deri. Kopiering, videreformidling, bruk eller publisering av noen del av vår nettside eller innhold fra din side er strengt forbudt, og kan derfor ikke kopieres eller reproduseres uten først å innhente vår skriftlige autorisasjon.
+Nettstedet vårt kan inneholde våre servicemerker eller varemerker samt de til våre tilknyttede selskaper eller andre personer eller selskaper, i form av ord, grafikk og logoer. Din bruk av Nettstedet vårt utgjør ikke noen rettighet eller lisens for deg til å bruke slike servicemerker/varemerker, uten forutgående skriftlig autorisasjon fra den tilsvarende eieren av servicemerket/varemerket. Nettstedet vårt inkludert innholdet er også beskyttet under kanadiske og internasjonale opphavsrettslover. Din bruk av Nettstedet vårt eller innholdet gir deg ikke eierskapsrettigheter av noe slag deri. Kopiering, redistribusjon, bruk eller publisering av deg av noen del av Nettstedet vårt eller innholdet er strengt forbudt og kan derfor ikke kopieres eller reproduseres uten først å ha innhentet vår skriftlige autorisasjon.
 
-**Ansvarsbegrensning**
+**Begrensning av ansvar**
 
-Under ingen omstendigheter skal vi, eller våre offiserer eller ansatte, være ansvarlige for tap eller skader av noe slag, inkludert (uten å begrense generelliteten av det foregående) eventuelle direkte, indirekte, tilfeldige, spesielle, straffbare eller følgeskader, som oppstår fra eller i forbindelse med din bruk av, tilgang til eller din tillit til, eller din manglende evne til å bruke eller få tilgang til, denne nettsiden, det elektroniske bestillingssystemet eller ethvert innhold.
+Under ingen omstendigheter skal vi, eller våre ledere eller ansatte, være ansvarlige for noe tap eller skader av noe slag, inkludert (uten å begrense det foregående) enhver direkte, indirekte, tilfeldig, spesiell, straffende eller følgeskade, som oppstår fra eller i forbindelse med din bruk av, tilgang til eller din avhengighet av, eller din manglende evne til å bruke eller få tilgang til, dette Nettstedet, det elektroniske bestillingssystemet eller noe innhold.
 
-**Generelle Vilkår**
+**Generelle vilkår**
 
-Våre juridiske vilkår skal behandles som om de var utført og oppfylt i provinsen British Columbia, Canada, og skal være underlagt og tolkes i samsvar med lovene i den regionen uten hensyn til lovkonfliktprinsipper. I tillegg godtar du å underlegge deg den personlige jurisdiksjonen og vernetinget til domstolene i den regionen. Ethvert søksmål fra deg angående vår nettside må anlegges innen ett (1) år etter at søksmålsgrunnlaget oppstod, eller være for alltid frafalt og avskåret. Dersom noen del av våre juridiske vilkår skulle bli ansett ugyldig eller ikke håndhevbar, skal den delen tolkes i samsvar med gjeldende lov, og de resterende delene skal forbli i full kraft og virkning. I den grad noe innhold er i konflikt med eller inkonsistent med våre juridiske vilkår, skal våre juridiske vilkår ha forrang og være overordnet i tolkningen av dem sammen. Vår unnlatelse av å håndheve noen bestemmelse i våre juridiske vilkår skal ikke anses som et frafall av slik bestemmelse eller av retten til å håndheve slik bestemmelse. Våre rettigheter under våre juridiske vilkår skal fortsette etter opphør av våre juridiske vilkår.
+Våre juridiske vilkår skal behandles som om de ble utført og gjennomført i provinsen British Columbia, Canada, og skal være underlagt og tolket i samsvar med lovene i den regionen uten hensyn til lovvalgsprinsipper. I tillegg godtar du å underkaste deg den personlige jurisdiksjonen og vernetinget til domstolene i den regionen. Enhver sak anlagt av deg med hensyn til Nettstedet vårt må reises innen ett (1) år etter at saken oppsto, ellers bortfaller den for alltid. Hvis noen del av våre juridiske vilkår holdes for å være ugyldig eller ikke håndhevbar, skal den delen tolkes i samsvar med gjeldende lov, og de gjenværende delene skal forbli i full kraft og virkning. I den grad noe innhold er i konflikt med eller inkonsistent med våre juridiske vilkår, skal våre juridiske vilkår gå foran og være overordnet ved tolkningen av dem sammen. Vår unnlatelse av å håndheve noen bestemmelse i våre juridiske vilkår skal ikke anses som et frafall av slik bestemmelse eller av retten til å håndheve slik bestemmelse. Våre rettigheter under våre juridiske vilkår skal overleve opphøret av våre juridiske vilkår.
 
 **Tredjepartslenker**
 
-Når du klikker på lenker på vår nettside, kan de lede deg bort fra vår nettside til en annen nettside eid og drevet av en tredjepart. Vi er ikke ansvarlige for personvernpraksisen til andre tredjepartsnettsider og oppfordrer deg til å lese deres bruksvilkår og personvernerklæringer. Når du forlater vår nettside eller blir omdirigert til en tredjepartsnettside eller -applikasjon, er du ikke lenger underlagt våre juridiske vilkår.
+Når du klikker på linker på Nettstedet vårt, kan de lede deg bort fra Nettstedet vårt til et annet nettsted som eies og drives av en tredjepart. Vi er ikke ansvarlige for personvernpraksisen til andre tredjepartsnettsteder og oppfordrer deg til å lese deres bruksvilkår og personvernerklæringer. Når du forlater Nettstedet vårt eller blir omdirigert til et tredjepartsnettsted eller en tredjepartsapplikasjon, er du ikke lenger underlagt våre juridiske vilkår.
 
-**PERSONVERNERKLÆRING**
+**PERSONVERNPOLICY**
 
-Hos Zero to Hero anser vi personvern som en svært viktig sak, og som sådan er vi forpliktet til å beskytte personvernet til den personlige informasjonen til alle besøkende. Denne personvernerklæringen inkorporerer de relevante delene av Personal Information Protection and Electronic Documents Act (Canada), Personal Information Protection Act (Alberta) og de ti prinsippene fastsatt i Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (samlet kalt "gjeldende personvernlover").
+Hos Zero to Hero anser vi personvern som en svært viktig sak, og vi er derfor forpliktet til å beskytte personvernet til den personlige informasjonen til alle besøkende. Denne personvernpolicyen inkluderer de relevante delene av Personal Information Protection and Electronic Documents Act (Canada), Personal Information Protection Act (Alberta) og de ti prinsippene fastsatt i Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (samlet kalt «gjeldende personvernlover»).
 
-**Innsamling av Informasjon**
+**Informasjon vi samler inn**
 
-Vi kan samle inn personlig informasjon for ett eller flere av følgende formål:
+**Informasjon du gir direkte:**
 
-*   å etablere og opprettholde relasjoner med besøkende;
-*   å levere forespurte og løpende produkter og tjenester;
-*   å varsle deg om endringer i våre produkter og tjenester;
-*   å oppnå en bedre forståelse av våre besøkende, deres krav og preferanser;
-*   å utvikle, forbedre, videreutvikle og/eller markedsføre våre produkter og tjenester;
-*   å overvåke bruken av vår nettside;
-*   å administrere og forbedre vår virksomhet og drift; og
-*   å oppfylle juridiske og regulatoriske krav.
+* Kontoinformasjon: navnet ditt, e-postadresse, passord, språkpreferanser og læringsnivå.
+* Læringsdata: lagrede ord, fraser, fremdrift, notater, spillelister, likte videoer, sehistorikk, bøker og lesefremdrift.
+* Innhold du laster opp eller oppretter: egendefinert media, EPUB-filer og tekst du ber oss om å oversette eller forklare.
+* Betalingsinformasjon: når du kjøper et abonnement, behandles betalingen av Stripe, PayPal eller Apple App Store. Vi mottar bekreftelse og abonnementsdetaljer, men vi lagrer generelt ikke ditt fullstendige kortnummer.
 
-**  
-Hva Gjør Vi Med Din Informasjon?**
+**Informasjon samlet inn automatisk:**
 
-Når du kjøper noe gjennom vårt elektroniske bestillingssystem, som en del av kjøps- og salgsprosessen, samler vi inn din personlige informasjon.
+* Bruksdata: sider og funksjoner du besøker, inkludert Utforsk medier, Musikk og Underholdning, Direkte-TV, TV-programmer, Søk, Ordbok, Lagrede ord, Gjennomgang, Leser, Nettleser, EPUB-leser, Lokale Medier, Seerhistorikk, Spillelister og Likte videoer; videoer du ser på; interaksjoner; og tidsstempler.
+* Enhets- og nettverksinformasjon: IP-adresse, nettlesertype, operativsystem, enhetstype og omtrentlig plassering utledet fra IP-adressen din.
+* Analyse: vi bruker Google Analytics for å forstå hvordan besøkende bruker Nettstedet. Google Analytics kan bruke informasjonskapsler og samle inn bruksdata på våre vegne. Googles bruk av disse dataene er underlagt [Googles personvernpolicy](https://policies.google.com/privacy).
+* Lokal lagring: vi bruker informasjonskapsler, \`localStorage\`, \`sessionStorage\` og IndexedDB for å holde deg innlogget, huske språket ditt, lagre innstillingene dine, fremgang og lagrede ord, og mellomlagre innhold lokalt.
 
-Når du surfer på vår nettside, mottar vi også automatisk datamaskinens internettprotokoll (IP)-adresse for å gi oss informasjon som hjelper oss å lære om nettleseren og operativsystemet ditt.
+**Hva gjør vi med informasjonen din?**
 
-Tillatt direkte markedsføring (hvis aktuelt): Med din tillatelse kan vi sende deg nyhetsbrev eller e-poster for å annonsere om våre butikker, nye produkter og andre oppdateringer.
+Vi bruker informasjonen vi samler inn til å:
 
-**Samtykke**
+* tilby, vedlikeholde og forbedre Nettstedet og dets funksjoner;
+* opprette og administrere kontoen din, verifisere identiteten din og holde deg innlogget;
+* personalisere anbefalinger basert på språket ditt, nivået og læringshistorikken din;
+* synkronisere dataene dine på tvers av enheter;
+* behandle abonnementer, betalinger og fornyelser;
+* sende transaksjons-e-poster som verifikasjonskoder, tilbakestilling av passord og betalingskvitteringer;
+* sende markedsføringskommunikasjon hvis du har gitt oss tillatelse til det;
+* analysere bruk med Google Analytics for å forstå hvordan besøkende bruker Nettstedet og for å forbedre produktene våre;
+* oppfylle juridiske og regulatoriske krav og beskytte våre rettigheter og rettighetene til brukerne våre.
 
-_Hvordan innhenter jeg ditt samtykke?_
+Vi selger ikke din personlige informasjon.
 
-Når du gir oss personlig informasjon for å fullføre en transaksjon, bekrefte kredittkortet ditt, legge inn en bestilling, arrangere en levering eller returnere et kjøp, eller legge ut eller feste informasjon eller bilder til vårt sosiale medieområde, antar vi at du samtykker til at vi samler inn og bruker den for det spesifikke formålet kun.
+**Deling og utlevering**
 
-Hvis vi ber om din personlige informasjon av en sekundær grunn, som markedsføring, vil vi enten spørre deg direkte om ditt uttrykte samtykke, eller gi deg en mulighet til å si nei.
+Vi deler personlig informasjon kun med tjenesteleverandører som hjelper oss med å drive Nettstedet, inkludert:
 
-_Hvordan trekker jeg tilbake mitt samtykke?_
-
-Hvis du etter at du har valgt å delta ombestemmer deg, kan du når som helst trekke tilbake ditt samtykke til at vi kontakter deg, for den fortsatte innsamlingen, bruken eller utleveringen av din informasjon, ved å varsle oss.
-
-**Utlevering**
+* verts- og databaseleverandører, inkludert Supabase;
+* betalingsbehandlere, inkludert Stripe, PayPal og Apple App Store;
+* oversettelses- og AI-leverandører, inkludert DeepSeek, når du bruker oversettelses- eller AI-forklaringsfunksjoner;
+* analyseleverandører, inkludert Google Analytics;
+* videoplattformer, inkludert YouTube og Google, når du ser på innebygde videoer.
 
 Vi vil ikke bruke eller utlevere personlig informasjon for andre formål enn det den ble samlet inn for, med mindre det er med ditt samtykke, hvis det er tillatt eller påkrevd ved lov, eller du bryter våre bruksvilkår.
 
+**Samtykke**
+
+_Hvordan får jeg samtykke fra deg?_
+
+Når du gir oss personlig informasjon for å opprette en konto, fullføre en transaksjon, verifisere betalingen din, legge inn en bestilling, eller bruke produktene og tjenestene våre, antar vi at du samtykker til at vi samler inn den og bruker den for det spesifikke formålet.
+
+Hvis vi ber om din personlige informasjon for et sekundært formål, som markedsføring, vil vi enten spørre deg direkte om ditt uttrykte samtykke, eller gi deg en mulighet til å si nei.
+
+_Hvordan trekker jeg tilbake samtykket mitt?_
+
+Hvis du etter at du har valgt å delta, ombestemmer deg, kan du når som helst trekke tilbake samtykket ditt til at vi kontakter deg, for den fortsatte innsamlingen, bruken eller utleveringen av informasjonen din, ved å varsle oss.
+
 **Beskyttelse**
 
-Vi vil beskytte personlig informasjon ved å følge bransjens beste praksis og implementere slike rimelige sikkerhetstiltak som måtte være hensiktsmessige for informasjonens sensitivitet; vi vil gjøre rimelige anstrengelser for å beskytte personlig informasjon mot tap eller tyveri, så vel som uautorisert tilgang, utlevering, kopiering, bruk eller modifikasjon uavhengig av formatet den oppbevares i. Lovgivningen tillater oss også, av juridiske eller forretningsmessige grunner, å oppbevare personlig informasjon så lenge det er rimelig og forutsatt at du ikke har trukket tilbake ditt samtykke.
+Vi vil beskytte personlig informasjon ved å følge bransjens beste praksis og implementere slike rimelige sikkerhetstiltak som måtte være hensiktsmessige for informasjonens sensitivitet; vi vil gjøre rimelige anstrengelser for å beskytte personlig informasjon mot tap eller tyveri, samt uautorisert tilgang, utlevering, kopiering, bruk eller modifisering, uavhengig av formatet den oppbevares i. Lovgivningen tillater oss også, for juridiske eller forretningsmessige formål, å oppbevare personlig informasjon så lenge det er rimelig, og forutsatt at du ikke har trukket tilbake samtykket ditt.
 
 **Sikkerhet**
 
-For å beskytte din personlige informasjon, tar vi rimelige forholdsregler og følger bransjens beste praksis for å sikre at den ikke blir upassende tapt, misbrukt, åpnet, utlevert, endret eller ødelagt.
+For å beskytte din personlige informasjon tar vi rimelige forholdsregler og følger bransjens beste praksis for å sikre at den ikke blir upassende tapt, misbrukt, åpnet, utlevert, endret eller ødelagt.
 
-**Informasjonskapsler (Cookies)**
+**Informasjonskapsler og lignende teknologier**
 
-Vår nettside bruker ikke informasjonskapsler.
+Nettstedet vårt bruker informasjonskapsler og lignende teknologier.
 
-**Endringer I Denne Personvernerklæringen**
+* **Nødvendige informasjonskapsler:** vi bruker informasjonskapsler for å holde deg innlogget, huske dine valgte språk og administrere gjestenavigeringsgrenser.
+* **Analyse:** vi bruker Google Analytics, som kan sette egne informasjonskapsler og samle inn bruksinformasjon.
+* **Lokal lagring:** vi bruker \`localStorage\`, \`sessionStorage\` og IndexedDB for å lagre innstillinger, lagrede ord, fremgang, leseinnhold og egendefinert media på enheten din.
+* **Innebygd innhold:** videoer er innebygd fra YouTube. YouTube og Google kan sette egne informasjonskapsler når du ser på en video, som er underlagt deres personvernpolicyer.
 
-Vi forbeholder oss retten til å endre denne personvernerklæringen når som helst, så vennligst gjennomgå den ofte. Endringer og avklaringer vil tre i kraft umiddelbart etter at de er lagt ut på nettsiden. Hvis vi gjør vesentlige endringer i denne policyen, vil vi varsle deg her om at den er oppdatert, slik at du er klar over hvilken informasjon vi samler inn, hvordan vi bruker den, og under hvilke omstendigheter, i så fall, vi bruker og/eller utleverer den.
+Du kan blokkere eller slette informasjonskapsler gjennom nettleserinnstillingene dine. Vær oppmerksom på at noen deler av Nettstedet kanskje ikke fungerer korrekt hvis du deaktiverer informasjonskapsler.
 
-**Spørsmål Og Kontaktinformasjon**
+**Dataoppbevaring og -sletting**
+
+Vi oppbevarer personlig informasjon så lenge kontoen din er aktiv, eller så lenge det er nødvendig for å tilby Nettstedet, overholde juridiske forpliktelser, løse tvister og håndheve avtalene våre.
+
+Du kan slette kontoen din når som helst fra Profil-siden ved å bruke alternativet Slett konto, eller ved å kontakte oss på adressen nedenfor. Når du sletter kontoen din, vil vi fjerne eller anonymisere din personlige informasjon, med forbehold om poster vi er pålagt å oppbevare av juridiske, betalings-, skatte- eller sikkerhetsmessige årsaker.
+
+**Endringer i denne personvernpolicyen**
+
+Vi forbeholder oss retten til å endre denne personvernpolicyen når som helst, så vennligst gjennomgå den jevnlig. Endringer og klargjøringer trer i kraft umiddelbart etter at de er lagt ut på Nettstedet. Hvis vi gjør vesentlige endringer i denne policyen, vil vi varsle deg her om at den er oppdatert, slik at du er klar over hvilken informasjon vi samler inn, hvordan vi bruker den, og under hvilke omstendigheter, hvis noen, vi bruker og/eller utleverer den.
+
+**Spørsmål og kontaktinformasjon**
 
 Hvis du ønsker å: få tilgang til, korrigere, endre eller slette personlig informasjon vi har om deg, registrere en klage, eller bare ønsker mer informasjon, kontakt oss på [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-leser', category: 'reading', content: `# EPUB-leser
@@ -30396,102 +31034,134 @@ Twoja historia oglądania jest prywatna. Jest widoczna tylko dla Ciebie, gdy jes
 - Twoja historia jest ograniczona do bieżącego L2 — nie zobaczysz filmów w Japoński, gdy jesteś w trybie Koreański` },
     { path: 'privacy-policy', title: 'Polityka prywatności', category: 'privacy-policy', content: `# Polityka prywatności
 
-Niniejsza strona internetowa stanowi dokument prawny będący naszymi Warunkami korzystania i Polityką prywatności i reguluje korzystanie z naszej strony internetowej: [https://languageplayer.io](https://languageplayer.io), w tym znajdujących się na niej podstron oraz wszystkich subdomen i aplikacji (łącznie zwanych „Stroną”), będących własnością i obsługiwanych przez nas, Zero to Hero Education, Kanada („Zero to Hero”).
+Ta strona internetowa stanowi dokument prawny, który służy jako nasze Warunki korzystania i Polityka prywatności i reguluje korzystanie z naszej strony internetowej: [https://languageplayer.io](https://languageplayer.io), w tym strony znajdujące się na niej oraz wszystkie poddomeny i aplikacje (łącznie zwane „Stroną"), której właścicielem i operatorem jesteśmy my, Zero to Hero Education, Kanada. („Zero to Hero").
 
 **Wprowadzenie**
 
-Warunki korzystania, wraz z opublikowaną poniżej Polityką prywatności oraz innymi opublikowanymi wytycznymi lub politykami na naszej Stronie (łącznie „Warunki prawne”), stanowią wyłączną i całą umowę między Tobą a nami oraz zastępują wszystkie inne umowy, oświadczenia, gwarancje i porozumienia dotyczące naszej Strony i przedmiotu niniejszego dokumentu. Możemy zmieniać nasze Warunki prawne w dowolnym momencie bez szczegółowego powiadomienia. Najnowsze kopie naszych Warunków prawnych będą publikowane na naszej Stronie, a przed skorzystaniem z naszej Strony należy zapoznać się ze wszystkimi Warunkami prawnymi. Po opublikowaniu jakichkolwiek poprawek do naszych Warunków prawnych, zgadzasz się być związany wszelkimi takimi zmianami. Dlatego ważne jest, aby okresowo przeglądać nasze Warunki prawne, aby upewnić się, że nadal się z nimi zgadzasz.
+Warunki korzystania, wraz z naszą Polityką prywatności opublikowaną poniżej oraz innymi opublikowanymi wytycznymi lub politykami na naszej Stronie (łącznie zwane „Warunkami prawnymi"), stanowią wyłączną i całościową umowę między Tobą a nami i zastępują wszystkie inne umowy, oświadczenia, gwarancje i porozumienia dotyczące naszej Strony i przedmiotu zawartego w niniejszym dokumencie. Możemy zmieniać nasze Warunki prawne w dowolnym czasie bez specjalnego powiadomienia Ciebie. Najnowsze kopie naszych Warunków prawnych będą publikowane na naszej Stronie, a Ty powinieneś zapoznać się ze wszystkimi Warunkami prawnymi przed korzystaniem z naszej Strony. Po opublikowaniu jakichkolwiek zmian w naszych Warunkach prawnych zgadzasz się być związany takimi zmianami. Dlatego ważne jest, abyś okresowo przeglądał nasze Warunki prawne, aby upewnić się, że nadal się z nimi zgadzasz.
 
-Korzystając z naszej Strony, zgadzasz się w pełni przestrzegać naszych Warunków prawnych i być nimi związany. Prosimy o ich dokładne zapoznanie się. Jeśli nie akceptujesz naszych Warunków prawnych, nie uzyskuj dostępu i nie korzystaj z naszej Strony. Jeśli już uzyskałeś dostęp do naszej Strony i nie akceptujesz naszych Warunków prawnych, nie masz już uprawnień do jej używania i powinieneś natychmiast zaprzestać korzystania z naszej Strony.
+Korzystając z naszej Strony, zgadzasz się w pełni przestrzegać naszych Warunków prawnych i być nimi związany. Przejrzyj je dokładnie. Jeśli nie akceptujesz naszych Warunków prawnych, nie korzystaj z naszej Strony. Jeśli już uzyskałeś dostęp do naszej Strony i nie akceptujesz naszych Warunków prawnych, nie jesteś już upoważniony do korzystania z niej i powinieneś natychmiast zaprzestać korzystania z naszej Strony.
 
 **Inne zdefiniowane terminy na naszej Stronie**
 
-Niniejsza Strona zawiera terminy zdefiniowane na tej stronie oraz następujące inne zdefiniowane terminy:
+Niniejsza Strona zawiera terminy zdefiniowane w całym dokumencie, a także następujące inne zdefiniowane terminy:
 
-Terminy „nas” i „my” odnoszą się do Zero to Hero jako właściciela Strony. „Treść” obejmuje wszelkie teksty, informacje, grafikę, audio, wideo i inne dane opublikowane, oferowane lub udostępniane za pośrednictwem naszej Strony.
+Terminy „nas" i „my" odnoszą się do Zero to Hero jako właściciela Strony. „Treści" obejmują wszelkie teksty, informacje, grafikę, audio, wideo i inne dane opublikowane, oferowane lub udostępniane za pośrednictwem naszej Strony.
 
-„Odwiedzający” lub „Ty” to zbiorcze identyfikatory odnoszące się do Ciebie jako przeglądającego naszą Stronę, niezależnie od tego, czy dokonasz zakupu naszych produktów.
+„Odwiedzający" lub „Ty" to zbiorcze identyfikatory odnoszące się do Ciebie jako przeglądającego naszą Stronę, niezależnie od tego, czy dokonujesz zakupu naszych produktów.
 
-„Dane osobowe” oznaczają informacje o możliwej do zidentyfikowania osobie, które mogą obejmować imię i nazwisko, adres zamieszkania, adres rozliczeniowy, adres dostawy, numer telefonu, adres e-mail i inne podobne dane kontaktowe, a także historię korzystania ze Strony. Mogą również obejmować dane karty kredytowej osoby podane w celu dokonania płatności.
+„Dane osobowe" oznaczają informacje o możliwej do zidentyfikowania osobie, które mogą obejmować imię i nazwisko, adres zamieszkania, adres rozliczeniowy, adres dostawy, numer telefonu, adres e-mail i inne podobne dane kontaktowe, a także historię korzystania ze Strony. Mogą również obejmować dane karty kredytowej osoby, gdy są przedstawiane do celów płatności.
 
 **WARUNKI KORZYSTANIA**
 
 **Własność intelektualna**
 
-Nasza Strona może zawierać nasze znaki usługowe lub handlowe, a także znaki naszych podmiotów stowarzyszonych lub innych osób lub firm, w formie słów, grafik i logo. Korzystanie z naszej Strony nie stanowi żadnego prawa ani licencji do używania takich znaków usługowych/handlowych bez uprzedniej pisemnej zgody odpowiedniego właściciela znaku usługowego/handlowego. Nasza Strona, w tym treści, jest również chroniona prawem autorskim Kanady i międzynarodowym. Korzystanie z naszej Strony lub treści nie przyznaje Ci żadnych praw własności w jakimkolwiek zakresie. Kopiowanie, redystrybucja, wykorzystywanie lub publikowanie przez Ciebie jakiejkolwiek części naszej Strony lub treści jest surowo zabronione i nie może być kopiowane ani reprodukowane bez uprzedniego uzyskania naszej pisemnej zgody.
+Nasza Strona może zawierać nasze znaki usługowe lub znaki towarowe, a także znaki naszych podmiotów stowarzyszonych lub innych osób lub firm, w formie słów, grafik i logo. Twoje korzystanie z naszej Strony nie stanowi żadnego prawa ani licencji do korzystania z takich znaków usługowych/znaków towarowych bez uprzedniej pisemnej zgody odpowiedniego właściciela znaku usługowego/znaku towarowego. Nasza Strona, w tym treści, jest również chroniona kanadyjskim i międzynarodowym prawem autorskim. Twoje korzystanie z naszej Strony lub treści nie przyznaje Ci żadnych praw własności do nich. Kopiowanie, redystrybucja, wykorzystywanie lub publikowanie przez Ciebie jakiejkolwiek części naszej Strony lub treści jest surowo zabronione i nie może być kopiowane ani reprodukowane bez uprzedniego uzyskania naszej pisemnej zgody.
 
 **Ograniczenie odpowiedzialności**
 
-W żadnym wypadku my ani nasi pracownicy nie ponosimy odpowiedzialności za jakiekolwiek straty lub szkody, w tym (bez ograniczania ogólności powyższego) wszelkie bezpośrednie, pośrednie, przypadkowe, szczególne, karne lub wynikowe szkody, powstałe w związku z korzystaniem z tej Strony, dostępem do niej, poleganiem na niej lub niemożnością korzystania z niej lub dostępu do niej, systemem zamówień online lub jakąkolwiek treścią.
+W żadnych okolicznościach my ani nasi pracownicy nie ponosimy odpowiedzialności za jakiekolwiek straty lub szkody, w tym (bez ograniczania ogólności powyższego) wszelkie szkody bezpośrednie, pośrednie, przypadkowe, szczególne, karne lub wtórne, wynikające z lub w związku z Twoim korzystaniem z, dostępem do lub poleganiem na, lub niemożnością korzystania z lub dostępu do tej Strony, systemu zamówień online lub jakichkolwiek treści.
 
 **Postanowienia ogólne**
 
-Nasze Warunki prawne będą traktowane tak, jakby zostały wykonane w prowincji Kolumbia Brytyjska, Kanada i będą podlegać prawu tego regionu oraz interpretowane zgodnie z nim, z pominięciem zasad kolizyjnych. Ponadto zgadzasz się poddać osobistej jurysdykcji i właściwości miejscowej sądów w tym regionie. Jakiekolwiek roszczenie z Twojej strony wobec naszej Strony musi zostać wniesione w ciągu jednego (1) roku od powstania roszczenia, w przeciwnym razie zostanie bezpowrotnie zrzeczone i wykluczone. Jeśli jakakolwiek część naszych Warunków prawnych zostanie uznana za nieważną lub niewykonalną, ta część będzie interpretowana zgodnie z obowiązującym prawem, a pozostałe części pozostaną w pełnej mocy. W zakresie, w jakim jakakolwiek treść jest sprzeczna lub niezgodna z naszymi Warunkami prawnymi, nasze Warunki prawne będą nadrzędne i wiążące przy ich łącznej interpretacji. Niewyegzekwowanie przez nas jakiegokolwiek postanowienia naszych Warunków prawnych nie będzie uznawane za zrzeczenie się tego postanowienia ani prawa do jego wyegzekwowania. Nasze prawa wynikające z naszych Warunków prawnych zachowują ważność po ich wygaśnięciu.
+Nasze Warunki prawne będą traktowane tak, jakby zostały wykonane w Prowincji Kolumbia Brytyjska w Kanadzie i będą podlegać prawu tego regionu oraz interpretowane zgodnie z nim, bez względu na zasady kolizyjne. Ponadto zgadzasz się poddać jurysdykcji osobistej i właściwości sądów w tym regionie. Jakiekolwiek powództwo z Twojej strony dotyczące naszej Strony musi być wniesione w ciągu jednego (1) roku od powstania roszczenia, w przeciwnym razie zostanie bezpowrotnie zrzeczone i wykluczone. Jeśli jakakolwiek część naszych Warunków prawnych zostanie uznana za nieważną lub niewykonalną, ta część będzie interpretowana zgodnie z obowiązującym prawem, a pozostałe części pozostaną w pełnej mocy i skuteczności. W zakresie, w jakim jakiekolwiek treści są sprzeczne lub niezgodne z naszymi Warunkami prawnymi, nasze Warunki prawne mają pierwszeństwo przy ich łącznej interpretacji. Niewykonanie przez nas jakiegokolwiek postanowienia naszych Warunków prawnych nie będzie uważane za zrzeczenie się takiego postanowienia ani prawa do jego egzekwowania. Nasze prawa wynikające z naszych Warunków prawnych przetrwają wygaśnięcie naszych Warunków prawnych.
 
 **Linki do stron trzecich**
 
-Kliknięcie linków na naszej Stronie może przekierować Cię poza naszą Stronę na inną stronę internetową będącą własnością i obsługiwaną przez osobę trzecią. Nie ponosimy odpowiedzialności za praktyki prywatności innych stron internetowych osób trzecich i zachęcamy do zapoznania się z ich warunkami korzystania i oświadczeniami o prywatności. Po opuszczeniu naszej Strony lub przekierowaniu na stronę internetową lub aplikację osoby trzeciej, nie podlegasz już naszym Warunkom prawnym.
+Po kliknięciu linków na naszej Stronie mogą one przekierować Cię poza naszą Stronę na inną stronę internetową należącą do strony trzeciej i przez nią obsługiwaną. Nie ponosimy odpowiedzialności za praktyki dotyczące prywatności innych stron internetowych osób trzecich i zachęcamy do przeczytania ich warunków korzystania i oświadczeń o prywatności. Po opuszczeniu naszej Strony lub przekierowaniu na stronę internetową lub aplikację strony trzeciej nie podlegasz już naszym Warunkom prawnym.
 
 **POLITYKA PRYWATNOŚCI**
 
-W Zero to Hero uważamy prywatność za bardzo ważną kwestię i z tego względu jesteśmy zobowiązani do ochrony prywatności danych osobowych wszystkich odwiedzających. Niniejsza Polityka prywatności zawiera odpowiednie części ustawy o ochronie danych osobowych i dokumentów elektronicznych (Kanada), ustawy o ochronie danych osobowych (Alberta) oraz dziesięć zasad określonych w Modelowym kodeksie ochrony danych osobowych Kanadyjskiego Stowarzyszenia Normalizacyjnego (CSA) (łącznie „obowiązujące przepisy o ochronie prywatności”).
+W Zero to Hero uważamy prywatność za bardzo ważną kwestię i dlatego jesteśmy zobowiązani do ochrony prywatności danych osobowych wszystkich odwiedzających. Niniejsza Polityka prywatności uwzględnia odpowiednie części Ustawy o ochronie informacji osobistych i dokumentów elektronicznych (Kanada), Ustawy o ochronie informacji osobistych (Alberta) oraz dziesięć zasad określonych w Modelowym kodeksie ochrony informacji osobistych Kanadyjskiego Stowarzyszenia Normalizacyjnego (CSA) (łącznie zwane „obowiązującymi przepisami o ochronie prywatności").
 
-**Gromadzenie informacji**
+**Informacje, które zbieramy**
 
-Możemy gromadzić dane osobowe w jednym lub kilku z następujących celów:
+**Informacje podawane bezpośrednio przez Ciebie:**
 
-*   nawiązywania i utrzymywania relacji z odwiedzającymi;
-*   świadczenia zamawianych i bieżących produktów i usług;
-*   powiadamiania o zmianach w naszych produktach i usługach;
-*   lepszego zrozumienia naszych odwiedzających, ich wymagań i preferencji;
-*   opracowywania, ulepszania, udoskonalania i/lub marketingu naszych produktów i usług;
-*   monitorowania korzystania z naszej Strony;
-*   zarządzania i ulepszania naszej działalności i operacji; oraz
-*   spełniania wymogów prawnych i regulacyjnych.
+* Dane konta: Twoje imię i nazwisko, adres e-mail, hasło, preferencje językowe i poziom nauki.
+* Dane dotyczące nauki: zapisane słowa, frazy, postępy w powtórkach, notatki, playlisty, polubione filmy, historia oglądania, książki i postępy w czytaniu.
+* Treści przesyłane lub tworzone przez Ciebie: niestandardowe media, pliki EPUB i teksty, które prosisz nas o przetłumaczenie lub wyjaśnienie.
+* Informacje o płatnościach: gdy kupujesz subskrypcję, płatność jest przetwarzana przez Stripe, PayPal lub Apple App Store. Otrzymujemy potwierdzenie i szczegóły subskrypcji, ale zazwyczaj nie przechowujemy pełnego numeru Twojej karty.
 
-**Co robimy z Twoimi danymi?**
+**Informacje zbierane automatycznie:**
 
-Kiedy dokonujesz zakupu za pośrednictwem naszego systemu zamówień online, w ramach procesu kupna-sprzedaży, gromadzimy Twoje dane osobowe.
+* Dane dotyczące korzystania: strony i funkcje, które odwiedzasz, w tym Odkrywaj media, Muzyka i Rozrywka, TV na żywo, Programy TV, Szukaj, Słownik, Zapisane słowa, Powtórka, Czytnik, Czytnik stron, Czytnik EPUB, Media Lokalne, Historia oglądania, Listy odtwarzania i Polubione filmy; filmy, które oglądasz; interakcje; i znaczniki czasu.
+* Informacje o urządzeniu i sieci: adres IP, typ przeglądarki, system operacyjny, typ urządzenia i przybliżona lokalizacja ustalona na podstawie Twojego adresu IP.
+* Analityka: używamy Google Analytics, aby zrozumieć, jak odwiedzający korzystają ze Strony. Google Analytics może używać plików cookie i zbierać dane o korzystaniu w naszym imieniu. Wykorzystywanie tych danych przez Google reguluje [Polityka prywatności Google](https://policies.google.com/privacy).
+* Pamięć lokalna: używamy plików cookie, \`localStorage\`, \`sessionStorage\` i IndexedDB, aby utrzymać Cię zalogowanym, zapamiętać Twój język, przechowywać Twoje ustawienia, postępy i zapisane słowa oraz buforować treści lokalnie.
 
-Kiedy przeglądasz naszą Stronę, automatycznie otrzymujemy adres protokołu internetowego (IP) Twojego komputera, aby dostarczyć nam informacji, które pomagają nam poznać Twoją przeglądarkę i system operacyjny.
+**Co robimy z Twoimi informacjami?**
 
-Dozwolony marketing bezpośredni (jeśli dotyczy): Za Twoją zgodą możemy wysyłać Ci newslettery lub e-maile informujące o naszych sklepach, nowych produktach i innych aktualizacjach.
+Wykorzystujemy zebrane informacje, aby:
+
+* świadczyć, utrzymywać i ulepszać Stronę i jej funkcje;
+* tworzyć i zarządzać Twoim kontem, weryfikować Twoją tożsamość i utrzymywać Cię zalogowanym;
+* personalizować rekomendacje na podstawie Twojego języka, poziomu i historii nauki;
+* synchronizować Twoje dane między urządzeniami;
+* przetwarzać subskrypcje, płatności i odnowienia;
+* wysyłać wiadomości transakcyjne, takie jak kody weryfikacyjne, resetowanie haseł i potwierdzenia płatności;
+* wysyłać komunikaty marketingowe, jeśli udzieliłeś nam na to zgody;
+* analizować korzystanie za pomocą Google Analytics, aby zrozumieć, jak odwiedzający korzystają ze Strony i ulepszać nasze produkty;
+* spełniać wymogi prawne i regulacyjne oraz chronić nasze prawa i prawa naszych użytkowników.
+
+Nie sprzedajemy Twoich danych osobowych.
+
+**Udostępnianie i ujawnianie**
+
+Udostępniamy dane osobowe wyłącznie dostawcom usług, którzy pomagają nam w obsłudze Strony, w tym:
+
+* dostawcom hostingu i baz danych, w tym Supabase;
+* procesorom płatności, w tym Stripe, PayPal i Apple App Store;
+* dostawcom tłumaczeń i AI, w tym DeepSeek, gdy korzystasz z funkcji tłumaczenia lub wyjaśnień AI;
+* dostawcom analityki, w tym Google Analytics;
+* platformom wideo, w tym YouTube i Google, gdy oglądasz osadzone filmy.
+
+Nie będziemy wykorzystywać ani ujawniać danych osobowych do celów innych niż te, dla których zostały zebrane, chyba że za Twoją zgodą, jeśli jest to dozwolone lub wymagane przez prawo, lub jeśli naruszysz nasze Warunki korzystania.
 
 **Zgoda**
 
 _Jak uzyskujemy Twoją zgodę?_
 
-Kiedy przekazujesz nam dane osobowe w celu dokonania transakcji, weryfikacji karty kredytowej, złożenia zamówienia, zorganizowania dostawy lub zwrotu zakupu, lub opublikowania lub przypięcia jakichkolwiek informacji lub zdjęć na naszej stronie w mediach społecznościowych, zakładamy, że wyrażasz zgodę na ich gromadzenie i wykorzystywanie wyłącznie w tym konkretnym celu.
+Gdy podajesz nam dane osobowe w celu utworzenia konta, dokonania transakcji, weryfikacji płatności, złożenia zamówienia lub korzystania z naszych produktów i usług, zakładamy, że zgadzasz się na ich gromadzenie i wykorzystywanie wyłącznie w tym konkretnym celu.
 
-Jeśli poprosimy o Twoje dane osobowe w celu dodatkowym, takim jak marketing, poprosimy Cię bezpośrednio o wyraźną zgodę lub damy Ci możliwość odmowy.
+Jeśli prosimy o Twoje dane osobowe w celu dodatkowym, takim jak marketing, zapytamy Cię bezpośrednio o wyraźną zgodę lub damy Ci możliwość odmowy.
 
 _Jak mogę wycofać zgodę?_
 
-Jeśli po wyrażeniu zgody zmienisz zdanie, możesz w dowolnym momencie wycofać swoją zgodę na kontaktowanie się z Tobą, dalsze gromadzenie, wykorzystywanie lub ujawnianie Twoich danych, powiadamiając nas o tym.
-
-**Ujawnianie**
-
-Nie będziemy wykorzystywać ani ujawniać danych osobowych w celach innych niż te, dla których zostały zebrane, chyba że za Twoją zgodą, jeśli jest to dozwolone lub wymagane przez prawo, lub jeśli naruszysz nasze Warunki korzystania.
+Jeśli po wyrażeniu zgody zmienisz zdanie, możesz w dowolnym momencie wycofać zgodę na kontaktowanie się z Tobą, dalsze gromadzenie, wykorzystywanie lub ujawnianie Twoich informacji, powiadamiając nas o tym.
 
 **Ochrona**
 
-Będziemy chronić dane osobowe, stosując najlepsze praktyki branżowe i wdrażając odpowiednie zabezpieczenia dostosowane do wrażliwości danych; dołożymy uzasadnionych starań, aby chronić dane osobowe przed utratą lub kradzieżą, a także nieuprawnionym dostępem, ujawnieniem, kopiowaniem, wykorzystaniem lub modyfikacją, niezależnie od formatu, w jakim są przechowywane. Przepisy zezwalają nam również, ze względów prawnych lub biznesowych, na przechowywanie danych osobowych tak długo, jak jest to uzasadnione, pod warunkiem że nie cofnąłeś swojej zgody.
+Będziemy chronić dane osobowe, przestrzegając najlepszych praktyk branżowych i wdrażając odpowiednie zabezpieczenia proporcjonalne do wrażliwości informacji; dołożymy uzasadnionych starań, aby chronić dane osobowe przed utratą lub kradzieżą, a także nieautoryzowanym dostępem, ujawnieniem, kopiowaniem, wykorzystaniem lub modyfikacją, niezależnie od formatu, w jakim są przechowywane. Przepisy prawa pozwalają nam również, do celów prawnych lub biznesowych, na przechowywanie danych osobowych tak długo, jak jest to uzasadnione i pod warunkiem, że nie wycofałeś swojej zgody.
 
 **Bezpieczeństwo**
 
-Aby chronić Twoje dane osobowe, podejmujemy uzasadnione środki ostrożności i stosujemy najlepsze praktyki branżowe, aby zapewnić, że nie zostaną one niewłaściwie utracone, niewłaściwie wykorzystane, udostępnione, ujawnione, zmienione lub zniszczone.
+Aby chronić Twoje dane osobowe, podejmujemy uzasadnione środki ostrożności i przestrzegamy najlepszych praktyk branżowych, aby zapewnić, że nie zostaną one niewłaściwie utracone, niewłaściwie wykorzystane, udostępnione, ujawnione, zmienione lub zniszczone.
 
-**Pliki cookie**
+**Pliki cookie i podobne technologie**
 
-Nasza Strona nie używa plików cookie.
+Nasza Strona używa plików cookie i podobnych technologii.
+
+* **Niezbędne pliki cookie:** używamy plików cookie, aby utrzymać Cię zalogowanym, zapamiętać wybrane języki i zarządzać limitami nawigacji dla gości.
+* **Analityka:** używamy Google Analytics, który może ustawiać własne pliki cookie i zbierać informacje o korzystaniu.
+* **Pamięć lokalna:** używamy \`localStorage\`, \`sessionStorage\` i IndexedDB do przechowywania ustawień, zapisanych słów, postępów, treści do czytania i niestandardowych mediów na Twoim urządzeniu.
+* **Treści osadzone:** filmy są osadzane z YouTube. YouTube i Google mogą ustawiać własne pliki cookie podczas oglądania filmu, które podlegają ich politykom prywatności.
+
+Możesz blokować lub usuwać pliki cookie poprzez ustawienia przeglądarki. Należy pamiętać, że niektóre części Strony mogą nie działać poprawnie, jeśli wyłączysz pliki cookie.
+
+**Przechowywanie i usuwanie danych**
+
+Przechowujemy dane osobowe tak długo, jak Twoje konto jest aktywne lub tak długo, jak jest to potrzebne do świadczenia Strony, wypełniania obowiązków prawnych, rozstrzygania sporów i egzekwowania naszych umów.
+
+Możesz usunąć swoje konto w dowolnym momencie ze strony Profil, korzystając z opcji Usuń konto, lub kontaktując się z nami pod adresem podanym poniżej. Po usunięciu konta usuniemy lub zanonimizujemy Twoje dane osobowe, z zastrzeżeniem rejestrów, które jesteśmy zobowiązani przechowywać do celów prawnych, płatniczych, podatkowych lub bezpieczeństwa.
 
 **Zmiany w niniejszej Polityce prywatności**
 
-Zastrzegamy sobie prawo do modyfikacji niniejszej polityki prywatności w dowolnym momencie, dlatego prosimy o jej częste przeglądanie. Zmiany i wyjaśnienia wchodzą w życie natychmiast po ich opublikowaniu na Stronie. Jeśli dokonamy istotnych zmian w tej polityce, poinformujemy Cię tutaj, że została zaktualizowana, abyś wiedział, jakie informacje gromadzimy, jak je wykorzystujemy oraz w jakich okolicznościach, jeśli w ogóle, je wykorzystujemy i/lub ujawniamy.
+Zastrzegamy sobie prawo do modyfikacji niniejszej polityki prywatności w dowolnym czasie, dlatego prosimy o częste jej przeglądanie. Zmiany i wyjaśnienia zaczną obowiązywać natychmiast po ich opublikowaniu na Stronie. Jeśli wprowadzimy istotne zmiany w niniejszej polityce, powiadomimy Cię tutaj o jej aktualizacji, abyś wiedział, jakie informacje zbieramy, jak je wykorzystujemy i w jakich okolicznościach, jeśli w ogóle, wykorzystujemy i/lub ujawniamy je.
 
 **Pytania i dane kontaktowe**
 
-Jeśli chcesz: uzyskać dostęp, poprawić, zmienić lub usunąć jakiekolwiek dane osobowe, które posiadamy na Twój temat, złożyć skargę lub po prostu uzyskać więcej informacji, skontaktuj się z nami pod adresem [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Jeśli chcesz: uzyskać dostęp do danych osobowych, które o Tobie posiadamy, poprawić, zmienić lub usunąć je, złożyć skargę lub po prostu uzyskać więcej informacji, skontaktuj się z nami pod adresem [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Czytnik EPUB', category: 'reading', content: `# Czytnik EPUB
 
 Czytaj e-booki EPUB z interaktywnym wyszukiwaniem słów, tłumaczeniem bloków i postępem zapisywanym między sesjami.
@@ -31862,102 +32532,134 @@ Seu histórico de visualizações é privado. Só fica visível para você quand
 - Seu histórico é limitado ao seu L2 atual — você não verá vídeos em Japonês quando estiver no modo Coreano` },
     { path: 'privacy-policy', title: 'Política de Privacidade', category: 'privacy-policy', content: `# Política de Privacidade
 
-Esta página web representa um documento legal que serve como nossos Termos de Uso e Política de Privacidade e rege o uso do nosso site: [https://languageplayer.io](https://languageplayer.io), incluindo as páginas nele encontradas e todos os subdomínios e aplicativos (coletivamente, "Site"), de propriedade e operados por nós, Zero to Hero Education, Canadá. ("Zero to Hero").
+Esta página web representa um documento legal que serve como nossos Termos de Uso e Política de Privacidade e rege o uso do nosso site: [https://languageplayer.io](https://languageplayer.io), incluindo as páginas nele encontradas e todos os subdomínios e aplicativos (coletivamente, "Site"), conforme operado por nós, Zero to Hero Education, Canadá. ("Zero to Hero").
 
 **Introdução**
 
-Os Termos de Uso, juntamente com nossa Política de Privacidade publicada abaixo, e outras diretrizes ou políticas publicadas em nosso Site (coletivamente "Termos Legais"), constituem o acordo integral e exclusivo entre você e nós, e substituem todos os outros acordos, representações, garantias e entendimentos relativos ao nosso Site e ao assunto aqui contido. Podemos alterar nossos Termos Legais a qualquer momento sem aviso específico a você. As cópias mais recentes de nossos Termos Legais serão publicadas em nosso Site, e você deve revisar todos os Termos Legais antes de usar nosso Site. Após quaisquer revisões de nossos Termos Legais serem publicadas, você concorda em ficar vinculado a quaisquer tais alterações. Portanto, é importante que você revise periodicamente nossos Termos Legais para garantir que ainda concorda com eles.
+Os Termos de Uso, juntamente com nossa Política de Privacidade publicada abaixo, e outras diretrizes ou políticas publicadas em nosso Site (coletivamente, "Termos Legais"), constituem o acordo integral e exclusivo entre você e nós, e substituem todos os outros acordos, representações, garantias e entendimentos relacionados ao nosso Site e ao assunto aqui contido. Podemos alterar nossos Termos Legais a qualquer momento sem aviso específico a você. As cópias mais recentes dos nossos Termos Legais serão publicadas em nosso Site, e você deve revisar todos os Termos Legais antes de usar nosso Site. Após quaisquer revisões dos nossos Termos Legais serem publicadas, você concorda em ficar vinculado a tais alterações. Portanto, é importante que você revise periodicamente nossos Termos Legais para garantir que ainda concorda com eles.
 
-Ao usar nosso Site, você concorda em cumprir integralmente e ficar vinculado aos nossos Termos Legais. Por favor, revise-os cuidadosamente. Se você não aceitar nossos Termos Legais, não acesse e use nosso Site. Se você já acessou nosso Site e não aceita nossos Termos Legais, você não está mais autorizado a usá-lo e deve interromper imediatamente o uso do nosso Site.
+Ao usar nosso Site, você concorda em cumprir integralmente e ficar vinculado aos nossos Termos Legais. Revise-os cuidadosamente. Se você não aceitar nossos Termos Legais, não acesse e não use nosso Site. Se você já acessou nosso Site e não aceita nossos Termos Legais, você não está mais autorizado a usá-lo e deve interromper imediatamente o uso do nosso Site.
 
-**Outros Termos Definidos em Nosso Site**
+**Outros Termos Definidos Em Nosso Site**
 
 Este Site incorpora termos definidos ao longo desta página, bem como estes outros termos definidos:
 
-Os termos "nós" e "nosso" referem-se à Zero to Hero como proprietária do Site. "Conteúdo" inclui qualquer e todo texto, informação, gráficos, áudio, vídeo e outros dados publicados, oferecidos ou disponibilizados através do nosso Site.
+Os termos "nós" referem-se à Zero to Hero como proprietária do Site. "Conteúdo" inclui qualquer e todo texto, informação, gráfico, áudio, vídeo e outros dados publicados, oferecidos ou disponibilizados através do nosso Site.
 
-Um "visitante" ou "você" são identificadores coletivos que se referem a você como navegador do nosso Site, independentemente de você concluir ou não uma compra de nossos produtos.
+Um "visitante" ou "você" são identificadores coletivos que se referem a você como navegador do nosso Site, independentemente de você concluir ou não uma compra dos nossos produtos.
 
-"Informações pessoais" significa informações sobre uma pessoa identificável, que podem incluir nome, endereço residencial, endereço de cobrança, endereço de entrega, número de telefone, endereço de e-mail e outras informações de contato similares, bem como dados de histórico de uso do Site. Pode também incluir informações de cartão de crédito de uma pessoa quando apresentadas para fins de pagamento.
+"Informações pessoais" significa informações sobre uma pessoa identificável, que podem incluir nome, endereço residencial, endereço de cobrança, endereço de entrega, número de telefone, endereço de e-mail e outras informações de contato semelhantes, bem como dados de histórico de uso do Site. Também podem incluir informações de cartão de crédito de uma pessoa quando apresentadas para fins de pagamento.
 
 **TERMOS DE USO**
 
 **Propriedade Intelectual**
 
-Nosso Site pode conter nossas marcas de serviço ou marcas registradas, bem como as de nossos afiliados ou outras pessoas ou empresas, na forma de palavras, gráficos e logotipos. Seu uso do nosso Site não constitui qualquer direito ou licença para você usar tais marcas de serviço/marcas registradas, sem a autorização prévia por escrito do respectivo proprietário da marca de serviço/marca registrada. Nosso Site, incluindo o conteúdo, também é protegido pelas leis de direitos autorais canadenses e internacionais. Seu uso do nosso Site ou do conteúdo não lhe concede direitos de propriedade de qualquer tipo. A cópia, redistribuição, uso ou publicação por você de qualquer parte do nosso Site ou conteúdo é estritamente proibida e, portanto, não pode ser copiada ou reproduzida sem obter primeiro nossa autorização por escrito.
+Nosso Site pode conter nossas marcas de serviço ou marcas comerciais, bem como as de nossos afiliados ou outras pessoas ou empresas, na forma de palavras, gráficos e logotipos. Seu uso do nosso Site não constitui qualquer direito ou licença para você usar tais marcas de serviço/marcas comerciais, sem a autorização prévia por escrito do proprietário correspondente da marca de serviço/marca comercial. Nosso Site, incluindo o conteúdo, também é protegido pelas leis de direitos autorais canadenses e internacionais. Seu uso do nosso Site ou do conteúdo não concede a você direitos de propriedade de qualquer tipo sobre ele. A cópia, redistribuição, uso ou publicação por você de qualquer parte do nosso Site ou conteúdo é estritamente proibida e, portanto, não pode ser copiada ou reproduzida sem antes obter nossa autorização por escrito.
 
 **Limitação de Responsabilidade**
 
-Em nenhuma circunstância nós, ou nossos diretores ou funcionários, seremos responsáveis por qualquer perda ou danos de qualquer natureza, incluindo (sem limitar a generalidade do exposto) quaisquer danos diretos, indiretos, incidentais, especiais, punitivos ou consequenciais, decorrentes ou em conexão com seu uso, acesso ou confiança, ou sua incapacidade de usar ou acessar, este Site, o sistema de pedidos online ou qualquer conteúdo.
+Em nenhuma circunstância nós, ou nossos diretores ou funcionários, seremos responsáveis por qualquer perda ou danos de qualquer natureza, incluindo (sem limitar a generalidade do exposto) quaisquer danos diretos, indiretos, incidentais, especiais, punitivos ou consequenciais, decorrentes ou em conexão com seu uso, acesso ou confiança, ou sua incapacidade de usar ou acessar, este Site, o sistema de pedidos on-line ou qualquer conteúdo.
 
 **Termos Gerais**
 
-Nossos Termos Legais serão tratados como se tivessem sido executados e realizados na Província da Colúmbia Britânica, Canadá, e serão regidos e interpretados de acordo com as leis dessa região, sem considerar princípios de conflito de leis. Além disso, você concorda em se submeter à jurisdição pessoal e foro dos tribunais dessa região. Qualquer causa de ação sua em relação ao nosso Site deve ser instaurada dentro de um (1) ano após o surgimento da causa de ação ou será para sempre renunciada e barrada. Se qualquer parte de nossos Termos Legais for considerada inválida ou inexequível, essa parte será interpretada de acordo com a lei aplicável e as partes restantes permanecerão em pleno vigor e efeito. Na medida em que qualquer conteúdo conflite ou seja inconsistente com nossos Termos Legais, nossos Termos Legais prevalecerão e serão preponderantes na interpretação conjunta. Nossa falha em fazer cumprir qualquer disposição de nossos Termos Legais não será considerada uma renúncia a tal disposição nem ao direito de fazê-la cumprir. Nossos direitos sob nossos Termos Legais sobreviverão à rescisão de nossos Termos Legais.
+Nossos Termos Legais serão tratados como se tivessem sido executados e cumpridos na Província da Colúmbia Britânica, Canadá, e serão regidos e interpretados de acordo com as leis dessa região, sem consideração aos princípios de conflito de leis. Além disso, você concorda em se submeter à jurisdição pessoal e foro dos tribunais dessa região. Qualquer ação judicial por você com relação ao nosso Site deve ser instaurada dentro de um (1) ano após o surgimento da causa de ação ou será permanentemente renunciada e barrada. Se qualquer parte dos nossos Termos Legais for considerada inválida ou inexequível, essa parte será interpretada de acordo com a lei aplicável e as partes restantes permanecerão em pleno vigor e efeito. Na medida em que qualquer conteúdo entre em conflito ou seja inconsistente com nossos Termos Legais, nossos Termos Legais prevalecerão e terão primazia na sua interpretação conjunta. Nossa falha em fazer cumprir qualquer disposição dos nossos Termos Legais não será considerada uma renúncia de tal disposição nem do direito de fazer cumprir tal disposição. Nossos direitos sob nossos Termos Legais sobreviverão à rescisão dos nossos Termos Legais.
 
 **Links de Terceiros**
 
-Quando você clica em links em nosso Site, eles podem direcioná-lo para fora do nosso Site para outro site de propriedade e operado por terceiros. Não somos responsáveis pelas práticas de privacidade de outros sites de terceiros e incentivamos você a ler seus termos de uso e declarações de privacidade. Uma vez que você saia do nosso Site ou seja redirecionado para um site ou aplicativo de terceiros, você não estará mais sujeito aos nossos Termos Legais.
+Quando você clica em links em nosso Site, eles podem direcioná-lo para fora do nosso Site para outro site de propriedade e operado por terceiros. Não somos responsáveis pelas práticas de privacidade de outros sites de terceiros e incentivamos você a ler seus termos de uso e declarações de privacidade. Uma vez que você deixe nosso Site ou seja redirecionado para um site ou aplicativo de terceiros, você não estará mais sujeito aos nossos Termos Legais.
 
 **POLÍTICA DE PRIVACIDADE**
 
-Na Zero to Hero, consideramos a privacidade uma questão muito importante e, como tal, estamos comprometidos em proteger a privacidade das informações pessoais de todos os visitantes. Esta Política de Privacidade incorpora as partes aplicáveis da Lei de Proteção de Informações Pessoais e Documentos Eletrônicos (Canadá), da Lei de Proteção de Informações Pessoais (Alberta) e dos dez princípios estabelecidos no Código Modelo da Associação Canadense de Normas (CSA) para a Proteção de Informações Pessoais (conjuntamente, as "leis de privacidade aplicáveis").
+Na Zero to Hero, consideramos a privacidade um assunto muito importante e, como tal, estamos comprometidos em proteger a privacidade das informações pessoais de todos os visitantes. Esta Política de Privacidade incorpora as partes aplicáveis da Lei de Proteção de Informações Pessoais e Documentos Eletrônicos (Canadá), da Lei de Proteção de Informações Pessoais (Alberta) e dos dez princípios estabelecidos no Código Modelo da Associação Canadense de Normas (CSA) para a Proteção de Informações Pessoais (em conjunto, as "leis de privacidade aplicáveis").
 
-**Coleta de Informações**
+**Informações Que Coletamos**
 
-Podemos coletar informações pessoais para um ou mais dos seguintes fins:
+**Informações que você fornece diretamente:**
 
-*   estabelecer e manter relacionamentos com visitantes;
-*   fornecer produtos e serviços solicitados e contínuos;
-*   notificá-lo sobre alterações em nossos produtos e serviços;
-*   obter uma melhor compreensão de nossos visitantes, seus requisitos e preferências;
-*   desenvolver, aprimorar, melhorar e/ou comercializar nossos produtos e serviços;
-*   monitorar o uso do nosso Site;
-*   gerenciar e melhorar nossos negócios e operações; e
-*   cumprir requisitos legais e regulatórios.
+* Informações da conta: seu nome, endereço de e-mail, senha, preferências de idioma e nível de aprendizado.
+* Dados de aprendizado: palavras salvas, frases, progresso de revisão, anotações, listas de reprodução, vídeos curtidos, histórico de visualização, livros e progresso de leitura.
+* Conteúdo que você envia ou cria: mídia personalizada, arquivos EPUB e texto que você nos pede para traduzir ou explicar.
+* Informações de pagamento: quando você compra uma assinatura, o pagamento é processado pela Stripe, PayPal ou Apple App Store. Recebemos confirmação e detalhes da assinatura, mas geralmente não armazenamos o número completo do seu cartão.
+
+**Informações coletadas automaticamente:**
+
+* Dados de uso: páginas e recursos que você visita, incluindo Explorar mídia, Música e Entretenimento, TV ao vivo, Programas de TV, Pesquisar, Dicionário, Palavras Salvas, Revisão, Leitor, Leitor web, Leitor EPUB, Mídia Local, Histórico de Visualizações, Listas de reprodução e Vídeos que você curtiu; vídeos que você assiste; interações; e carimbos de data/hora.
+* Informações de dispositivo e rede: endereço IP, tipo de navegador, sistema operacional, tipo de dispositivo e localização aproximada derivada do seu endereço IP.
+* Análises: usamos o Google Analytics para entender como os visitantes usam o Site. O Google Analytics pode usar cookies e coletar dados de uso em nosso nome. O uso desses dados pelo Google é regido pela [Política de Privacidade do Google](https://policies.google.com/privacy).
+* Armazenamento local: usamos cookies, \`localStorage\`, \`sessionStorage\` e IndexedDB para manter você conectado, lembrar seu idioma, armazenar suas configurações, progresso e palavras salvas, e armazenar conteúdo em cache localmente.
 
 **O Que Fazemos Com Suas Informações?**
 
-Quando você compra algo através do nosso sistema de pedidos online, como parte do processo de compra e venda, coletamos suas informações pessoais.
+Usamos as informações que coletamos para:
 
-Quando você navega em nosso Site, também recebemos automaticamente o endereço de protocolo de internet (IP) do seu computador para nos fornecer informações que nos ajudam a aprender sobre seu navegador e sistema operacional.
+* fornecer, manter e melhorar o Site e seus recursos;
+* criar e gerenciar sua conta, verificar sua identidade e mantê-lo conectado;
+* personalizar recomendações com base no seu idioma, nível e histórico de aprendizado;
+* sincronizar seus dados entre dispositivos;
+* processar assinaturas, pagamentos e renovações;
+* enviar e-mails transacionais, como códigos de verificação, redefinições de senha e recibos de pagamento;
+* enviar comunicações de marketing se você nos concedeu permissão para tal;
+* analisar o uso com o Google Analytics para entender como os visitantes usam o Site e melhorar nossos produtos;
+* cumprir requisitos legais e regulamentares e proteger nossos direitos e os direitos dos nossos usuários.
 
-Marketing direto permitido (se aplicável): Com sua permissão, podemos enviar-lhe newsletters ou e-mails para divulgar nossas lojas, novos produtos e outras atualizações.
+Não vendemos suas informações pessoais.
+
+**Compartilhamento e Divulgação**
+
+Compartilhamos informações pessoais apenas com provedores de serviços que nos ajudam a operar o Site, incluindo:
+
+* provedores de hospedagem e banco de dados, incluindo Supabase;
+* processadores de pagamento, incluindo Stripe, PayPal e Apple App Store;
+* provedores de tradução e IA, incluindo DeepSeek, quando você usa recursos de tradução ou explicação por IA;
+* provedores de análise, incluindo Google Analytics;
+* plataformas de vídeo, incluindo YouTube e Google, quando você assiste a vídeos incorporados.
+
+Não usaremos ou divulgaremos informações pessoais para fins diferentes daqueles para os quais foram coletadas, a menos que seja com seu consentimento, se for permitido ou exigido por lei, ou se você violar nossos Termos de Uso.
 
 **Consentimento**
 
 _Como obtenho seu consentimento?_
 
-Quando você nos fornece informações pessoais para concluir uma transação, verificar seu cartão de crédito, fazer um pedido, providenciar uma entrega ou devolver uma compra, ou publicar ou fixar qualquer informação ou fotos em nosso site de mídia social, inferimos que você concorda com a coleta e uso delas apenas para esse fim específico.
+Quando você nos fornece informações pessoais para criar uma conta, concluir uma transação, verificar seu pagamento, fazer um pedido ou usar nossos produtos e serviços, presumimos que você consente com nossa coleta e uso dessas informações apenas para essa finalidade específica.
 
-Se solicitarmos suas informações pessoais para um motivo secundário, como marketing, pediremos diretamente seu consentimento expresso ou lhe daremos a oportunidade de recusar.
+Se solicitarmos suas informações pessoais para um motivo secundário, como marketing, pediremos diretamente seu consentimento explícito ou ofereceremos a oportunidade de dizer não.
 
 _Como retiro meu consentimento?_
 
-Se, após optar, você mudar de ideia, poderá retirar seu consentimento para que entremos em contato, para a coleta, uso ou divulgação contínua de suas informações, a qualquer momento, notificando-nos.
-
-**Divulgação**
-
-Não usaremos ou divulgaremos informações pessoais para fins diferentes daqueles para os quais foram coletadas, a menos que seja com seu consentimento, se for permitido ou exigido por lei, ou se você violar nossos Termos de Uso.
+Se após optar por participar você mudar de ideia, poderá retirar seu consentimento para que entremos em contato com você, para a coleta, uso ou divulgação contínua de suas informações, a qualquer momento, notificando-nos.
 
 **Proteção**
 
-Protegemos informações pessoais seguindo as melhores práticas do setor e implementando salvaguardas razoáveis conforme apropriado à sensibilidade das informações; faremos esforços razoáveis para proteger informações pessoais contra perda ou roubo, bem como acesso não autorizado, divulgação, cópia, uso ou modificação, independentemente do formato em que são mantidas. A legislação também nos permite, para fins legais ou comerciais, reter informações pessoais pelo tempo que for razoável, desde que você não tenha revogado seu consentimento.
+Protegeremos as informações pessoais seguindo as melhores práticas do setor e implementando salvaguardas razoáveis apropriadas à sensibilidade das informações; faremos esforços razoáveis para proteger as informações pessoais contra perda ou roubo, bem como contra acesso não autorizado, divulgação, cópia, uso ou modificação, independentemente do formato em que sejam mantidas. A legislação também nos permite, para fins legais ou comerciais, reter informações pessoais pelo tempo que for razoável e desde que você não tenha revogado seu consentimento.
 
 **Segurança**
 
-Para proteger suas informações pessoais, tomamos precauções razoáveis e seguimos as melhores práticas do setor para garantir que não sejam indevidamente perdidas, mal utilizadas, acessadas, divulgadas, alteradas ou destruídas.
+Para proteger suas informações pessoais, tomamos precauções razoáveis e seguimos as melhores práticas do setor para garantir que elas não sejam indevidamente perdidas, mal utilizadas, acessadas, divulgadas, alteradas ou destruídas.
 
-**Cookies**
+**Cookies e Tecnologias Semelhantes**
 
-Nosso Site não utiliza cookies.
+Nosso Site usa cookies e tecnologias semelhantes.
 
-**Alterações a Esta Política de Privacidade**
+* **Cookies essenciais:** usamos cookies para mantê-lo conectado, lembrar seus idiomas selecionados e gerenciar limites de navegação de convidados.
+* **Análises:** usamos o Google Analytics, que pode definir seus próprios cookies e coletar informações de uso.
+* **Armazenamento local:** usamos \`localStorage\`, \`sessionStorage\` e IndexedDB para armazenar configurações, palavras salvas, progresso, conteúdo de leitura e mídia personalizada no seu dispositivo.
+* **Conteúdo incorporado:** vídeos são incorporados do YouTube. O YouTube e o Google podem definir seus próprios cookies quando você assiste a um vídeo, que são regidos por suas políticas de privacidade.
 
-Reservamo-nos o direito de modificar esta política de privacidade a qualquer momento, portanto, revise-a com frequência. Alterações e esclarecimentos entrarão em vigor imediatamente após sua publicação no Site. Se fizermos alterações materiais nesta política, notificaremos você aqui de que ela foi atualizada, para que você saiba quais informações coletamos, como as usamos e sob quais circunstâncias, se houver, as usamos e/ou divulgamos.
+Você pode bloquear ou excluir cookies por meio das configurações do seu navegador. Observe que algumas partes do Site podem não funcionar corretamente se você desabilitar cookies.
+
+**Retenção e Exclusão de Dados**
+
+Mantemos informações pessoais enquanto sua conta estiver ativa, ou pelo tempo necessário para fornecer o Site, cumprir obrigações legais, resolver disputas e fazer cumprir nossos acordos.
+
+Você pode excluir sua conta a qualquer momento na página Perfil usando a opção Excluir Conta, ou entrando em contato conosco no endereço abaixo. Quando você exclui sua conta, removemos ou anonimizamos suas informações pessoais, sujeito a registros que somos obrigados a manter para fins legais, de pagamento, fiscais ou de segurança.
+
+**Alterações Nesta Política de Privacidade**
+
+Reservamo-nos o direito de modificar esta política de privacidade a qualquer momento, portanto, revise-a com frequência. Alterações e esclarecimentos entrarão em vigor imediatamente após sua publicação no Site. Se fizermos alterações materiais nesta política, notificaremos você aqui de que ela foi atualizada, para que você esteja ciente de quais informações coletamos, como as usamos e sob quais circunstâncias, se houver, as usamos e/ou divulgamos.
 
 **Perguntas e Informações de Contato**
 
-Se você desejar: acessar, corrigir, alterar ou excluir quaisquer informações pessoais que temos sobre você, registrar uma reclamação ou simplesmente obter mais informações, entre em contato conosco pelo e-mail [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Se você desejar: acessar, corrigir, alterar ou excluir qualquer informação pessoal que temos sobre você, registrar uma reclamação ou simplesmente quiser mais informações, entre em contato conosco em [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Leitor EPUB', category: 'reading', content: `# Leitor EPUB
 
 Leia e-books EPUB com consulta interativa de palavras, tradução por bloco e progresso que persiste entre sessões.
@@ -33328,102 +34030,134 @@ Istoricul tău de vizionare este privat. Este vizibil doar pentru tine când eș
 - Istoricul tău este limitat la L2-ul tău curent — nu vei vedea videoclipuri în Japoneză când ești în modul Coreeană` },
     { path: 'privacy-policy', title: 'Politica de confidențialitate', category: 'privacy-policy', content: `# Politica de confidențialitate
 
-Această pagină web reprezintă un document legal care servește ca Termeni de Utilizare și Politică de Confidențialitate și guvernează utilizarea site-ului nostru: [https://languageplayer.io](https://languageplayer.io), inclusiv paginile găsite pe acesta și toate subdomeniile și aplicațiile (colectiv, „Site-ul web"), deținut și operat de noi, Zero to Hero Education, Canada. („Zero to Hero").
+Această pagină web reprezintă un document legal care servește drept Termenii de Utilizare și Politica de Confidențialitate și guvernează utilizarea site-ului nostru web: [https://languageplayer.io](https://languageplayer.io), inclusiv paginile găsite pe acesta și toate subdomeniile și aplicațiile (colectiv, „Website”), deținut și operat de noi, Zero to Hero Education, Canada. („Zero to Hero”).
 
 **Introducere**
 
-Termenii de Utilizare, împreună cu Politica noastră de Confidențialitate publicată mai jos și alte linii directoare sau politici postate pe Site-ul nostru web (colectiv „Termenii Legali"), constituie singurul și întregul acord între dumneavoastră și noi și înlocuiesc toate celelalte acorduri, reprezentări, garanții și înțelegeri cu privire la Site-ul nostru web și subiectul conținut în acesta. Putem modifica Termenii noștri Legali în orice moment, fără o notificare specifică către dumneavoastră. Cele mai recente copii ale Termenilor noștri Legali vor fi postate pe Site-ul nostru web și ar trebui să revizuiți toți Termenii Legali înainte de a utiliza Site-ul nostru web. După ce orice revizuiri ale Termenilor noștri Legali sunt postate, sunteți de acord să vă obligați la orice astfel de modificări ale acestora. Prin urmare, este important să revizuiți periodic Termenii noștri Legali pentru a vă asigura că sunteți încă de acord cu ei.
+Termenii de Utilizare, împreună cu Politica de Confidențialitate publicată mai jos și alte ghiduri sau politici postate pe Website-ul nostru (colectiv, „Termenii Legali”), constituie acordul integral și exclusiv dintre dumneavoastră și noi și înlocuiesc toate celelalte acorduri, reprezentări, garanții și înțelegeri cu privire la Website-ul nostru și la subiectul conținut aici. Putem modifica Termenii noștri Legali în orice moment, fără o notificare specifică către dumneavoastră. Cele mai recente copii ale Termenilor noștri Legali vor fi postate pe Website-ul nostru, iar dumneavoastră ar trebui să revizuiți toți Termenii Legali înainte de a utiliza Website-ul nostru. După ce orice revizuiri ale Termenilor noștri Legali sunt postate, sunteți de acord să fiți legat de orice astfel de modificări ale acestora. Prin urmare, este important să revizuiți periodic Termenii noștri Legali pentru a vă asigura că sunteți în continuare de acord cu ei.
 
-Prin utilizarea Site-ului nostru web, sunteți de acord să respectați pe deplin și să vă obligați la Termenii noștri Legali. Vă rugăm să îi revizuiți cu atenție. Dacă nu acceptați Termenii noștri Legali, nu accesați și nu utilizați Site-ul nostru web. Dacă ați accesat deja Site-ul nostru web și nu acceptați Termenii noștri Legali, nu mai sunteți autorizat să îl utilizați și ar trebui să încetați imediat utilizarea Site-ului nostru web.
+Prin utilizarea Website-ului nostru, sunteți de acord să vă conformați pe deplin și să fiți legat de Termenii noștri Legali. Vă rugăm să îi revizuiți cu atenție. Dacă nu acceptați Termenii noștri Legali, nu accesați și nu utilizați Website-ul nostru. Dacă ați accesat deja Website-ul nostru și nu acceptați Termenii noștri Legali, nu mai sunteți autorizat să îl utilizați și ar trebui să încetați imediat utilizarea Website-ului nostru.
 
-**Alți Termeni Definiți Pe Site-ul Nostru Web**
+**Alți Termeni Definiți Pe Website-ul Nostru**
 
-Acest Site web include termeni definiți pe parcursul acestei pagini, precum și acești alți termeni definiți:
+Acest Website încorporează termeni definiți pe parcursul acestei pagini, precum și acești alți termeni definiți:
 
-Termenii „noi" și „ne" se referă la Zero to Hero, în calitate de proprietar al Site-ului web. „Conținut" include orice și tot textul, informațiile, elementele grafice, audio, video și alte date postate, oferite sau puse la dispoziție prin intermediul Site-ului nostru web.
+Termenii „noi” și „ne” se referă la Zero to Hero ca proprietar al Website-ului. „Conținutul” include orice și toate textele, informațiile, grafica, audio, video și alte date postate, oferite sau puse la dispoziție prin intermediul Website-ului nostru.
 
-Un „vizitator" sau „dumneavoastră" sunt identificatori colectivi care se referă la dumneavoastră ca navigator al Site-ului nostru web, indiferent dacă finalizați sau nu o achiziție a produselor noastre.
+Un „vizitator” sau „dumneavoastră” sunt identificatori colectivi care se referă la dumneavoastră ca utilizator al Website-ului nostru, indiferent dacă finalizați sau nu o achiziție a produselor noastre.
 
-„Informații personale" înseamnă informații despre o persoană identificabilă, care pot include numele unei persoane, adresa de reședință, adresa de facturare, adresa de livrare, numărul de telefon, adresa de e-mail și alte informații de contact similare, precum și datele privind istoricul de utilizare a Site-ului web. Poate include, de asemenea, informațiile privind cardul de credit al unei persoane atunci când sunt prezentate în scopuri de plată.
+„Informații personale” înseamnă informații despre o persoană identificabilă, care pot include numele unei persoane, adresa de reședință, adresa de facturare, adresa de livrare, numărul de telefon, adresa de e-mail și alte informații de contact similare, precum și datele privind istoricul de utilizare a Website-ului. Pot include, de asemenea, informațiile privind cardul de credit al unei persoane atunci când sunt prezentate în scopuri de plată.
 
-**TERMENI DE UTILIZARE**
+**TERMENII DE UTILIZARE**
 
-**Proprietate Intelectuală**
+**Proprietate intelectuală**
 
-Site-ul nostru web poate conține mărcile noastre de serviciu sau mărcile comerciale, precum și pe cele ale afiliaților noștri sau ale altor persoane sau companii, sub formă de cuvinte, elemente grafice și sigle. Utilizarea Site-ului nostru web de către dumneavoastră nu constituie niciun drept sau licență pentru dumneavoastră de a utiliza astfel de mărci de serviciu/mărci comerciale, fără autorizația scrisă prealabilă a proprietarului corespunzător al mărcii de serviciu/mărcii comerciale. Site-ul nostru web, inclusiv conținutul, este protejat și de legile canadiene și internaționale privind drepturile de autor. Utilizarea Site-ului nostru web sau a conținutului de către dumneavoastră nu vă acordă drepturi de proprietate de niciun fel asupra acestora. Copierea, redistribuirea, utilizarea sau publicarea de către dumneavoastră a oricărei părți a Site-ului nostru web sau a conținutului este strict interzisă și, prin urmare, nu poate fi copiată sau reprodusă fără a obține mai întâi autorizația noastră scrisă.
+Website-ul nostru poate conține mărcile noastre de serviciu sau mărcile comerciale, precum și cele ale afiliaților noștri sau ale altor persoane sau companii, sub formă de cuvinte, grafică și sigle. Utilizarea Website-ului nostru nu constituie niciun drept sau licență pentru dumneavoastră de a utiliza astfel de mărci de serviciu/mărci comerciale, fără autorizarea scrisă prealabilă a proprietarului corespunzător al mărcii de serviciu/mărcii comerciale. Website-ul nostru, inclusiv conținutul, este protejat și de legile canadiene și internaționale privind drepturile de autor. Utilizarea de către dumneavoastră a Website-ului nostru sau a conținutului nu vă oferă drepturi de proprietate de niciun fel asupra acestora. Copierea, redistribuirea, utilizarea sau publicarea de către dumneavoastră a oricărei porțiuni din Website-ul nostru sau din conținut este strict interzisă și, prin urmare, nu poate fi copiată sau reprodusă fără obținerea în prealabil a autorizației noastre scrise.
 
-**Limitarea Răspunderii**
+**Limitarea răspunderii**
 
-În nicio circumstanță noi, sau ofițerii sau angajații noștri, nu vom fi răspunzători sau responsabili pentru orice pierdere sau daune de orice fel, inclusiv (fără a limita generalitatea celor de mai sus) orice daune directe, indirecte, incidentale, speciale, punitive sau consecvente, care decurg din sau în legătură cu utilizarea de către dumneavoastră, accesarea sau încrederea dumneavoastră în, sau incapacitatea dumneavoastră de a utiliza sau accesa, acest Site web, sistemul de comandă online sau orice conținut.
+În niciun caz noi, sau ofițerii sau angajații noștri, nu vom fi responsabili sau răspunzători pentru nicio pierdere sau daune de orice fel, inclusiv (fără a limita generalitatea celor de mai sus) orice daune directe, indirecte, incidentale, speciale, punitive sau consecvente, care decurg din sau în legătură cu utilizarea de către dumneavoastră a acestui Website, accesarea sau bazarea pe acesta, sau incapacitatea dumneavoastră de a-l utiliza sau accesa, a sistemului de comandă online sau a oricărui conținut.
 
-**Termeni Generali**
+**Termeni generali**
 
-Termenii noștri Legali vor fi tratați ca și cum ar fi fost executați și efectuați în Provincia British Columbia, Canada și vor fi guvernați și interpretați în conformitate cu legile acelei regiuni, fără a ține cont de principiile conflictului de legi. În plus, sunteți de acord să vă supuneți jurisdicției personale și locului de judecată al instanțelor din acea regiune. Orice acțiune în justiție din partea dumneavoastră cu privire la Site-ul nostru web trebuie introdusă în termen de un (1) an de la data la care a apărut cauza acțiunii, altfel va fi renunțată și blocată pentru totdeauna. În cazul în care orice parte a Termenilor noștri Legali este considerată invalidă sau neexecutorie, acea porțiune va fi interpretată în conformitate cu legea aplicabilă, iar porțiunile rămase vor rămâne în deplină vigoare și efect. În măsura în care orice conținut intră în conflict sau este inconsecvent cu Termenii noștri Legali, Termenii noștri Legali vor prevala și vor fi primordiali în interpretarea lor împreună. Neaplicarea de către noi a oricărei prevederi a Termenilor noștri Legali nu va fi considerată o renunțare la acea prevedere, nici la dreptul de a aplica acea prevedere. Drepturile noastre în temeiul Termenilor noștri Legali vor supraviețui încetării Termenilor noștri Legali.
+Termenii noștri Legali vor fi tratați ca și cum ar fi fost executați și îndepliniți în Provincia British Columbia, Canada, și vor fi guvernați și interpretați în conformitate cu legile acelei regiuni, fără a ține seama de principiile conflictului de legi. În plus, sunteți de acord să vă supuneți jurisdicției personale și competenței teritoriale a instanțelor din acea regiune. Orice acțiune în justiție din partea dumneavoastră cu privire la Website-ul nostru trebuie intentată în termen de un (1) an de la data la care a apărut cauza acțiunii sau va fi considerată renunțată și barață pentru totdeauna. În cazul în care orice parte a Termenilor noștri Legali este considerată invalidă sau inaplicabilă, acea porțiune va fi interpretată în conformitate cu legislația aplicabilă, iar porțiunile rămase vor rămâne în deplină vigoare și efect. În măsura în care orice conținut intră în conflict sau este inconsistent cu Termenii noștri Legali, Termenii noștri Legali vor prevala și vor fi primordiali în interpretarea lor împreună. Nepunerea în aplicare de către noi a oricărei prevederi a Termenilor noștri Legali nu va fi considerată o renunțare la acea prevedere, nici la dreptul de a pune în aplicare acea prevedere. Drepturile noastre în temeiul Termenilor noștri Legali vor supraviețui încetării Termenilor noștri Legali.
 
-**Link-uri Către Terți**
+**Linkuri către terți**
 
-Când dați clic pe link-uri de pe Site-ul nostru web, acestea vă pot direcționa departe de Site-ul nostru web către un alt site web deținut și operat de o terță parte. Nu suntem responsabili pentru practicile de confidențialitate ale altor site-uri web terțe și vă încurajăm să citiți termenii lor de utilizare și declarațiile de confidențialitate. Odată ce părăsiți Site-ul nostru web sau sunteți redirecționat către un site web sau o aplicație terță, nu mai sunteți guvernat de Termenii noștri Legali.
+Când faceți clic pe linkurile de pe Website-ul nostru, acestea vă pot redirecționa departe de Website-ul nostru către un alt site web deținut și operat de o terță parte. Nu suntem responsabili pentru practicile de confidențialitate ale altor site-uri web terțe și vă încurajăm să citiți termenii lor de utilizare și declarațiile de confidențialitate. Odată ce părăsiți Website-ul nostru sau sunteți redirecționat către un site web sau o aplicație terță, nu mai sunteți guvernat de Termenii noștri Legali.
 
 **POLITICA DE CONFIDENȚIALITATE**
 
-La Zero to Hero considerăm confidențialitatea o chestiune foarte importantă și, ca atare, ne angajăm să protejăm confidențialitatea informațiilor personale ale tuturor vizitatorilor. Această Politică de Confidențialitate include părțile aplicabile ale Legii privind protecția informațiilor personale și documentele electronice (Canada), Legea privind protecția informațiilor personale (Alberta) și cele zece principii stabilite în Codul model al Asociației Canadiene de Standardizare (CSA) pentru protecția informațiilor personale (împreună, „legile aplicabile privind confidențialitatea").
+La Zero to Hero considerăm confidențialitatea un aspect foarte important și, ca atare, ne angajăm să protejăm confidențialitatea informațiilor personale ale tuturor vizitatorilor. Această Politică de Confidențialitate încorporează porțiunile aplicabile din Legea privind protecția informațiilor personale și documentele electronice (Canada), Legea privind protecția informațiilor personale (Alberta) și cele zece principii stabilite în Codul model al Asociației Canadiene de Standarde (CSA) pentru protecția informațiilor personale (împreună, „legile aplicabile privind confidențialitatea”).
 
-**Colectarea Informațiilor**
+**Informațiile pe care le colectăm**
 
-Putem colecta informații personale pentru unul sau mai multe dintre următoarele scopuri:
+**Informații pe care le furnizați direct:**
 
-*   pentru a stabili și menține relații cu vizitatorii;
-*   pentru a furniza produse și servicii solicitate și continue;
-*   pentru a vă notifica cu privire la modificările aduse produselor și serviciilor noastre;
-*   pentru a obține o mai bună înțelegere a vizitatorilor noștri, a cerințelor și preferințelor acestora;
-*   pentru a dezvolta, îmbunătăți și/sau comercializa produsele și serviciile noastre;
-*   pentru a monitoriza utilizarea Site-ului nostru web;
-*   pentru a gestiona și îmbunătăți afacerea și operațiunile noastre; și
-*   pentru a îndeplini cerințele legale și de reglementare.
+* Informații despre cont: numele dumneavoastră, adresa de e-mail, parola, preferințele de limbă și nivelul de învățare.
+* Date de învățare: cuvinte salvate, expresii, progresul revizuirii, note, liste de redare, videoclipuri apreciate, istoricul de vizionare, cărți și progresul lecturii.
+* Conținut pe care îl încărcați sau îl creați: media personalizată, fișiere EPUB și text pe care ne cereți să îl traducem sau să îl explicăm.
+* Informații de plată: atunci când achiziționați un abonament, plata este procesată de Stripe, PayPal sau Apple App Store. Primim confirmarea și detaliile abonamentului, dar în general nu stocăm numărul complet al cardului dumneavoastră.
 
-**Ce Facem Cu Informațiile Dumneavoastră?**
+**Informații colectate automat:**
 
-Când achiziționați ceva prin sistemul nostru de comandă online, ca parte a procesului de cumpărare și vânzare, colectăm informațiile dumneavoastră personale.
+* Date de utilizare: paginile și funcțiile pe care le vizitați, inclusiv Explorează media, Muzică și Divertisment, TV live, Emisiuni TV, Căutare, Dicționar, Cuvinte salvate, Recenzie, Cititor, Cititor web, Cititor EPUB, Media Locală, Istoric vizionări, Liste de redare și Videoclipuri apreciate; videoclipurile pe care le vizionați; interacțiunile; și marcajele de timp.
+* Informații despre dispozitiv și rețea: adresa IP, tipul de browser, sistemul de operare, tipul de dispozitiv și locația aproximativă derivată din adresa dumneavoastră IP.
+* Analytics: folosim Google Analytics pentru a înțelege cum folosesc vizitatorii Website-ul. Google Analytics poate utiliza cookie-uri și poate colecta date de utilizare în numele nostru. Utilizarea acestor date de către Google este guvernată de [Politica de confidențialitate a Google](https://policies.google.com/privacy).
+* Stocare locală: folosim cookie-uri, \`localStorage\`, \`sessionStorage\` și IndexedDB pentru a vă menține autentificat, a ne aminti limba dumneavoastră, a stoca setările, progresul și cuvintele salvate și a stoca în cache conținutul local.
 
-Când navigați pe Site-ul nostru web, primim automat adresa de protocol internet (IP) a computerului dumneavoastră pentru a ne oferi informații care ne ajută să aflăm despre browser-ul și sistemul dumneavoastră de operare.
+**Ce facem cu informațiile dumneavoastră?**
 
-Marketing direct permis (dacă este cazul): Cu permisiunea dumneavoastră, vă putem trimite newslettere sau e-mailuri pentru a face reclamă magazinelor noastre, noilor produse și altor actualizări.
+Folosim informațiile pe care le colectăm pentru a:
 
-**Consimțământul**
+* furniza, menține și îmbunătăți Website-ul și funcțiile sale;
+* crea și gestiona contul dumneavoastră, verifica identitatea și vă menține autentificat;
+* personaliza recomandările în funcție de limba, nivelul și istoricul de învățare;
+* sincroniza datele dumneavoastră pe mai multe dispozitive;
+* procesa abonamentele, plățile și reînnoirile;
+* trimite e-mailuri tranzacționale, cum ar fi coduri de verificare, resetări de parolă și chitanțe de plată;
+* trimite comunicări de marketing dacă ne-ați acordat permisiunea;
+* analiza utilizarea cu Google Analytics pentru a înțelege cum folosesc vizitatorii Website-ul și pentru a ne îmbunătăți produsele;
+* îndeplini cerințele legale și de reglementare și a ne proteja drepturile și drepturile utilizatorilor noștri.
+
+Nu vindem informațiile dumneavoastră personale.
+
+**Partajare și divulgare**
+
+Partajăm informațiile personale doar cu furnizorii de servicii care ne ajută să operăm Website-ul, inclusiv:
+
+* furnizori de găzduire și baze de date, inclusiv Supabase;
+* procesatori de plăți, inclusiv Stripe, PayPal și Apple App Store;
+* furnizori de traducere și AI, inclusiv DeepSeek, atunci când utilizați funcțiile de traducere sau explicații AI;
+* furnizori de analiză, inclusiv Google Analytics;
+* platforme video, inclusiv YouTube și Google, atunci când vizionați videoclipuri încorporate.
+
+Nu vom utiliza sau divulga informațiile personale în alte scopuri decât cele pentru care au fost colectate, decât cu consimțământul dumneavoastră, dacă este permis sau cerut de lege, sau dacă încălcați Termenii noștri de Utilizare.
+
+**Consimțământ**
 
 _Cum obțineți consimțământul meu?_
 
-Când ne furnizați informații personale pentru a finaliza o tranzacție, a verifica cardul de credit, a plasa o comandă, a aranja o livrare sau a returna o achiziție, sau a posta sau fixa orice informații sau fotografii pe site-ul nostru de socializare, presupunem că sunteți de acord să le colectăm și să le folosim doar pentru acest scop specific.
+Atunci când ne furnizați informații personale pentru a crea un cont, a finaliza o tranzacție, a verifica plata, a plasa o comandă sau a utiliza produsele și serviciile noastre, deducem că sunteți de acord cu colectarea și utilizarea acestora doar pentru acest motiv specific.
 
-Dacă vă solicităm informațiile personale pentru un motiv secundar, cum ar fi marketingul, vă vom întreba direct pentru consimțământul dumneavoastră expres sau vă vom oferi posibilitatea de a spune nu.
+Dacă vă cerem informațiile personale pentru un motiv secundar, cum ar fi marketingul, vă vom întreba direct pentru consimțământul dumneavoastră expres sau vă vom oferi posibilitatea de a spune nu.
 
 _Cum îmi retrag consimțământul?_
 
-Dacă după ce v-ați înscris, vă răzgândiți, puteți retrage consimțământul pentru a fi contactat, pentru colectarea, utilizarea sau divulgarea continuă a informațiilor dumneavoastră, în orice moment, notificându-ne.
+Dacă după ce ați optat, vă răzgândiți, puteți să vă retrageți consimțământul pentru a vă contacta, pentru colectarea, utilizarea sau divulgarea continuă a informațiilor dumneavoastră, în orice moment, notificându-ne.
 
-**Divulgarea**
+**Protecție**
 
-Nu vom utiliza sau divulga informații personale în alte scopuri decât cele pentru care au fost colectate, decât cu consimțământul dumneavoastră, dacă este permis sau cerut de lege sau dacă încălcați Termenii noștri de Utilizare.
+Vom proteja informațiile personale urmând cele mai bune practici din industrie și implementând astfel de măsuri de siguranță rezonabile care pot fi adecvate sensibilității informațiilor; vom depune eforturi rezonabile pentru a proteja informațiile personale împotriva pierderii sau furtului, precum și împotriva accesului, divulgării, copierii, utilizării sau modificării neautorizate, indiferent de formatul în care sunt deținute. Legislația ne permite, de asemenea, din motive legale sau de afaceri, să păstrăm informațiile personale atât timp cât este rezonabil și cu condiția să nu v-ați retras consimțământul.
 
-**Protecția**
+**Securitate**
 
-Vom proteja informațiile personale urmând cele mai bune practici din industrie și implementând garanții rezonabile, după cum este adecvat sensibilității informațiilor; vom depune eforturi rezonabile pentru a proteja informațiile personale împotriva pierderii sau furtului, precum și împotriva accesului neautorizat, divulgării, copierii, utilizării sau modificării, indiferent de formatul în care sunt deținute. Legislația ne permite, de asemenea, din motive legale sau de afaceri, să păstrăm informațiile personale atât timp cât este rezonabil și cu condiția să nu vă fi retras consimțământul.
+Pentru a vă proteja informațiile personale, luăm măsuri de precauție rezonabile și urmăm cele mai bune practici din industrie pentru a ne asigura că acestea nu sunt pierdute, utilizate greșit, accesate, divulgate, alterate sau distruse în mod neadecvat.
 
-**Securitatea**
+**Cookie-uri și tehnologii similare**
 
-Pentru a vă proteja informațiile personale, luăm măsuri de precauție rezonabile și urmăm cele mai bune practici din industrie pentru a ne asigura că acestea nu sunt pierdute, utilizate greșit, accesate, divulgate, modificate sau distruse în mod necorespunzător.
+Website-ul nostru utilizează cookie-uri și tehnologii similare.
 
-**Cookie-uri**
+* **Cookie-uri esențiale:** folosim cookie-uri pentru a vă menține autentificat, a ne aminti limbile selectate și a gestiona limitele de navigare pentru vizitatori.
+* **Analiză:** folosim Google Analytics, care poate seta propriile cookie-uri și poate colecta informații de utilizare.
+* **Stocare locală:** folosim \`localStorage\`, \`sessionStorage\` și IndexedDB pentru a stoca setările, cuvintele salvate, progresul, conținutul de lectură și media personalizată pe dispozitivul dumneavoastră.
+* **Conținut încorporat:** videoclipurile sunt încorporate de pe YouTube. YouTube și Google pot seta propriile cookie-uri atunci când vizionați un videoclip, care sunt guvernate de politicile lor de confidențialitate.
 
-Site-ul nostru web nu utilizează cookie-uri.
+Puteți bloca sau șterge cookie-urile prin setările browserului. Vă rugăm să rețineți că unele părți ale Website-ului pot să nu funcționeze corect dacă dezactivați cookie-urile.
 
-**Modificări Ale Acestei Politici de Confidențialitate**
+**Păstrarea și ștergerea datelor**
 
-Ne rezervăm dreptul de a modifica această politică de confidențialitate în orice moment, așa că vă rugăm să o revizuiți frecvent. Modificările și clarificările vor intra în vigoare imediat după publicarea lor pe Site-ul web. Dacă facem modificări substanțiale ale acestei politici, vă vom notifica aici că a fost actualizată, astfel încât să fiți conștienți de ce informații colectăm, cum le folosim și în ce circumstanțe, dacă există, le folosim și/sau le divulgăm.
+Păstrăm informațiile personale atât timp cât contul dumneavoastră este activ sau atât timp cât este necesar pentru a furniza Website-ul, a respecta obligațiile legale, a soluționa disputele și a pune în aplicare acordurile noastre.
 
-**Întrebări și Informații de Contact**
+Vă puteți șterge contul în orice moment din pagina Profil folosind opțiunea Ștergere cont sau contactându-ne la adresa de mai jos. Atunci când vă ștergeți contul, vom elimina sau anonimiza informațiile dumneavoastră personale, sub rezerva înregistrărilor pe care suntem obligați să le păstrăm din motive legale, de plată, fiscale sau de securitate.
 
-Dacă doriți să: accesați, corectați, modificați sau ștergeți orice informații personale pe care le avem despre dumneavoastră, să înregistrați o reclamație sau pur și simplu doriți mai multe informații, contactați-ne la [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+**Modificări ale acestei Politici de confidențialitate**
+
+Ne rezervăm dreptul de a modifica această politică de confidențialitate în orice moment, așa că vă rugăm să o revizuiți frecvent. Modificările și clarificările vor intra în vigoare imediat după publicarea lor pe Website. Dacă facem modificări substanțiale acestei politici, vă vom notifica aici că a fost actualizată, astfel încât să fiți conștient de ce informații colectăm, cum le folosim și în ce circumstanțe, dacă există, le folosim și/sau le divulgăm.
+
+**Întrebări și informații de contact**
+
+Dacă doriți să: accesați, corectați, modificați sau ștergeți orice informație personală pe care o avem despre dumneavoastră, să înregistrați o plângere sau pur și simplu doriți mai multe informații, contactați-ne la [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Cititor EPUB', category: 'reading', content: `# Cititor EPUB
 
 Citiți cărți electronice EPUB cu căutare interactivă a cuvintelor, traducere pe blocuri și progres care persistă de la o sesiune la alta.
@@ -34794,102 +35528,134 @@ Language Player бесплатен в использовании с опцион
 - Ваша история привязана к текущему L2 — вы не увидите видео на Японский, когда находитесь в режиме Корейский` },
     { path: 'privacy-policy', title: 'Политика конфиденциальности', category: 'privacy-policy', content: `# Политика конфиденциальности
 
-Данная веб-страница представляет собой юридический документ, который является нашими Условиями использования и Политикой конфиденциальности и регулирует использование нашего веб-сайта: [https://languageplayer.io](https://languageplayer.io), включая страницы, находящиеся на нем, а также все поддомены и приложения (совместно именуемые «Веб-сайт»), принадлежащие и управляемые нами, компанией Zero to Hero Education, Канада («Zero to Hero»).
+Эта веб-страница представляет собой юридический документ, который служит нашими Условиями использования и Политикой конфиденциальности и регулирует использование нашего веб-сайта: [https://languageplayer.io](https://languageplayer.io), включая страницы, находящиеся на нём, а также все поддомены и приложения (совместно именуемые «Веб-сайт»), владельцем и оператором которого являемся мы, Zero to Hero Education, Канада. («Zero to Hero»).
 
 **Введение**
 
-Условия использования, наша Политика конфиденциальности, опубликованная ниже, а также другие опубликованные руководства или политики на нашем Веб-сайте (совместно именуемые «Юридические условия») составляют единственное и полное соглашение между вами и нами и заменяют все другие соглашения, заявления, гарантии и договоренности в отношении нашего Веб-сайта и предмета, содержащегося в нем. Мы можем вносить изменения в наши Юридические условия в любое время без специального уведомления вас. Последние копии наших Юридических условий будут опубликованы на нашем Веб-сайте, и вам следует ознакомиться со всеми Юридическими условиями перед использованием нашего Веб-сайта. После публикации любых изменений в наших Юридических условиях вы соглашаетесь соблюдать такие изменения. Поэтому важно периодически просматривать наши Юридические условия, чтобы убедиться, что вы по-прежнему согласны с ними.
+Условия использования вместе с нашей Политикой конфиденциальности, опубликованной ниже, и другими опубликованными руководствами или политиками на нашем Веб-сайте (совместно именуемые «Юридические условия») представляют собой полное и единственное соглашение между вами и нами и заменяют все другие соглашения, заявления, гарантии и договорённости в отношении нашего Веб-сайта и предмета, изложенного в них. Мы можем вносить поправки в наши Юридические условия в любое время без специального уведомления вас. Последние копии наших Юридических условий будут размещены на нашем Веб-сайте, и вы должны ознакомиться со всеми Юридическими условиями перед использованием нашего Веб-сайта. После размещения любых пересмотренных Юридических условий вы соглашаетесь соблюдать все такие изменения. Поэтому важно периодически пересматривать наши Юридические условия, чтобы убедиться, что вы по-прежнему согласны с ними.
 
-Используя наш Веб-сайт, вы соглашаетесь полностью соблюдать наши Юридические условия и быть связанным ими. Пожалуйста, внимательно ознакомьтесь с ними. Если вы не принимаете наши Юридические условия, не заходите на наш Веб-сайт и не используйте его. Если вы уже зашли на наш Веб-сайт и не принимаете наши Юридические условия, вы больше не имеете права его использовать и должны немедленно прекратить использование нашего Веб-сайта.
+Используя наш Веб-сайт, вы соглашаетесь полностью соблюдать наши Юридические условия и быть связанными ими. Пожалуйста, внимательно их просмотрите. Если вы не принимаете наши Юридические условия, не заходите на наш Веб-сайт и не используйте его. Если вы уже заходили на наш Веб-сайт и не принимаете наши Юридические условия, вы больше не имеете права использовать его, и вам следует немедленно прекратить использование нашего Веб-сайта.
 
-**Другие определенные термины на нашем Веб-сайте**
+**Другие определённые термины на нашем Веб-сайте**
 
-Настоящий Веб-сайт включает термины, определенные на этой странице, а также следующие другие определенные термины:
+Настоящий Веб-сайт включает термины, определённые на этой странице, а также следующие другие определённые термины:
 
-Термины «нас» и «мы» относятся к Zero to Hero как к владельцу Веб-сайта. «Контент» включает любые и все тексты, информацию, графику, аудио, видео и другие данные, размещенные, предлагаемые или предоставленные через наш Веб-сайт.
+Термины «мы» и «нас» относятся к Zero to Hero как к владельцу Веб-сайта. «Контент» включает любые и все тексты, информацию, графику, аудио, видео и другие данные, размещённые, предлагаемые или доступные через наш Веб-сайт.
 
 «Посетитель» или «вы» — это собирательные идентификаторы, которые относятся к вам как к пользователю нашего Веб-сайта, независимо от того, совершаете ли вы покупку наших продуктов.
 
-«Личная информация» означает информацию об идентифицируемом лице, которая может включать имя лица, домашний адрес, платежный адрес, адрес доставки, номер телефона, адрес электронной почты и другие подобные контактные данные, а также данные об истории использования Веб-сайта. Она также может включать данные кредитной карты лица при предоставлении для целей оплаты.
+«Личная информация» означает информацию об идентифицируемом лице, которая может включать имя, домашний адрес, платёжный адрес, адрес доставки, номер телефона, адрес электронной почты и другие аналогичные контактные данные, а также данные об истории использования Веб-сайта. Она также может включать информацию о кредитной карте лица при её предоставлении для целей оплаты.
 
 **УСЛОВИЯ ИСПОЛЬЗОВАНИЯ**
 
 **Интеллектуальная собственность**
 
-Наш Веб-сайт может содержать наши знаки обслуживания или товарные знаки, а также знаки наших аффилированных лиц или других лиц или компаний в виде слов, графики и логотипов. Ваше использование нашего Веб-сайта не предоставляет вам никаких прав или лицензий на использование таких знаков обслуживания/товарных знаков без предварительного письменного разрешения соответствующего владельца знака обслуживания/товарного знака. Наш Веб-сайт, включая контент, также защищен канадским и международным законодательством об авторском праве. Ваше использование нашего Веб-сайта или контента не предоставляет вам каких-либо прав собственности на них. Копирование, распространение, использование или публикация вами любой части нашего Веб-сайта или контента строго запрещены, и поэтому они не могут быть скопированы или воспроизведены без предварительного получения нашего письменного разрешения.
+Наш Веб-сайт может содержать наши знаки обслуживания или товарные знаки, а также знаки наших аффилированных лиц или других лиц или компаний, в форме слов, графики и логотипов. Ваше использование нашего Веб-сайта не предоставляет вам никаких прав или лицензий на использование таких знаков обслуживания/товарных знаков без предварительного письменного разрешения соответствующего владельца знака обслуживания/товарного знака. Наш Веб-сайт, включая контент, также защищён канадским и международным законодательством об авторском праве. Ваше использование нашего Веб-сайта или контента не предоставляет вам каких-либо прав собственности на них. Копирование, распространение, использование или публикация вами любой части нашего Веб-сайта или контента строго запрещены, и они не могут быть скопированы или воспроизведены без предварительного получения нашего письменного разрешения.
 
 **Ограничение ответственности**
 
-Ни при каких обстоятельствах мы, или наши должностные лица или сотрудники, не несем ответственности за любые убытки или ущерб любого рода, включая (без ограничения общности вышеизложенного) любые прямые, косвенные, случайные, особые, штрафные или косвенные убытки, возникающие в связи с вашим использованием, доступом к настоящему Веб-сайту, системе онлайн-заказов или любому контенту, или зависимостью от них, или вашей невозможностью использовать или получить к ним доступ.
+Ни при каких обстоятельствах мы, наши должностные лица или сотрудники не несём ответственности за какие-либо убытки или ущерб, включая (без ограничения общности вышеизложенного) любые прямые, косвенные, случайные, особые, штрафные или косвенные убытки, возникающие в связи с вашим использованием, доступом или reliance на наш Веб-сайт, или вашей неспособностью использовать или получить доступ к нему, системе онлайн-заказов или любому контенту.
 
-**Общие положения**
+**Общие условия**
 
-Наши Юридические условия должны рассматриваться так, как если бы они были исполнены и выполнены в провинции Британская Колумбия, Канада, и должны регулироваться и толковаться в соответствии с законами этого региона без учета коллизионных норм права. Кроме того, вы соглашаетесь подчиняться личной юрисдикции и месту рассмотрения дел в судах этого региона. Любой иск с вашей стороны в отношении нашего Веб-сайта должен быть подан в течение одного (1) года после возникновения основания для иска, в противном случае он будет навсегда отменен и утрачен. Если какая-либо часть наших Юридических условий будет признана недействительной или не имеющей исковой силы, эта часть должна толковаться в соответствии с применимым правом, а остальные части остаются в полной силе. В той степени, в какой какой-либо контент противоречит нашим Юридическим условиям или не соответствует им, наши Юридические условия имеют преимущественную силу и являются главенствующими при их совместном толковании. Наша неспособность обеспечить соблюдение любого положения наших Юридических условий не должна рассматриваться как отказ от такого положения или права на его обеспечение. Наши права в соответствии с нашими Юридическими условиями сохраняют силу после прекращения действия наших Юридических условий.
+Наши Юридические условия рассматриваются так, как если бы они были исполнены и совершены в провинции Британская Колумбия, Канада, и регулируются и толкуются в соответствии с законами этого региона без учёта коллизионных норм права. Кроме того, вы соглашаетесь подчиняться личной юрисдикции и подсудности судов этого региона. Любой иск с вашей стороны в отношении нашего Веб-сайта должен быть подан в течение одного (1) года с момента возникновения основания иска, в противном случае он будет навсегда отозван и отклонён. Если какая-либо часть наших Юридических условий будет признана недействительной или не имеющей силы, эта часть должна толковаться в соответствии с применимым законодательством, а остальные части остаются в полной силе и действии. В той степени, в которой какой-либо контент противоречит нашим Юридическим условиям или несовместим с ними, наши Юридические условия имеют преимущественную силу при их совместном толковании. Наша неспособность обеспечить соблюдение любого положения наших Юридических условий не должна рассматриваться как отказ от такого положения или от права обеспечивать его соблюдение. Наши права по нашим Юридическим условиям сохраняются после прекращения действия наших Юридических условий.
 
 **Ссылки на сторонние ресурсы**
 
-Когда вы нажимаете на ссылки на нашем Веб-сайте, они могут перенаправить вас с нашего Веб-сайта на другой веб-сайт, принадлежащий и управляемый третьей стороной. Мы не несем ответственности за политику конфиденциальности других сторонних веб-сайтов и рекомендуем вам прочитать их условия использования и заявления о конфиденциальности. Как только вы покидаете наш Веб-сайт или перенаправляетесь на сторонний веб-сайт или приложение, на вас больше не распространяются наши Юридические условия.
+Когда вы нажимаете на ссылки на нашем Веб-сайте, они могут перенаправлять вас с нашего Веб-сайта на другой веб-сайт, принадлежащий и управляемый третьей стороной. Мы не несём ответственности за практику обеспечения конфиденциальности других сторонних веб-сайтов и рекомендуем вам прочитать их условия использования и заявления о конфиденциальности. Как только вы покидаете наш Веб-сайт или перенаправляетесь на сторонний веб-сайт или приложение, на вас больше не распространяются наши Юридические условия.
 
 **ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ**
 
-В компании Zero to Hero мы считаем конфиденциальность очень важным вопросом и, как таковые, мы стремимся защищать конфиденциальность личной информации всех посетителей. Настоящая Политика конфиденциальности включает применимые положения Закона о защите личной информации и электронных документах (Канада), Закона о защите личной информации (Альберта) и десять принципов, изложенных в Модельном кодексе Канадской ассоциации стандартов (CSA) для защиты личной информации (совместно именуемые «применимые законы о конфиденциальности»).
+В Zero to Hero мы считаем конфиденциальность очень важным вопросом и поэтому стремимся защищать конфиденциальность личной информации всех посетителей. Настоящая Политика конфиденциальности включает применимые положения Закона о защите личной информации и электронных документах (Канада), Закона о защите личной информации (Альберта) и десять принципов, изложенных в Модельном кодексе Канадской ассоциации стандартов (CSA) для защиты личной информации (совместно именуемые «применимые законы о конфиденциальности»).
 
-**Сбор информации**
+**Информация, которую мы собираем**
 
-Мы можем собирать личную информацию для одной или нескольких из следующих целей:
+**Информация, которую вы предоставляете напрямую:**
 
-*   для установления и поддержания отношений с посетителями;
-*   для предоставления запрашиваемых и текущих продуктов и услуг;
-*   для уведомления вас об изменениях в наших продуктах и услугах;
-*   для лучшего понимания наших посетителей, их требований и предпочтений;
-*   для разработки, улучшения, совершенствования и/или продвижения наших продуктов и услуг;
-*   для мониторинга использования нашего Веб-сайта;
-*   для управления и улучшения нашего бизнеса и операций; и
-*   для выполнения юридических и нормативных требований.
+* Информация об аккаунте: ваше имя, адрес электронной почты, пароль, языковые предпочтения и уровень обучения.
+* Данные об обучении: сохранённые слова, фразы, прогресс повторения, заметки, плейлисты, понравившиеся видео, история просмотров, книги и прогресс чтения.
+* Контент, который вы загружаете или создаёте: пользовательские медиафайлы, файлы EPUB и тексты, которые вы просите нас перевести или объяснить.
+* Платёжная информация: при покупке подписки платёж обрабатывается Stripe, PayPal или Apple App Store. Мы получаем подтверждение и детали подписки, но обычно не храним полный номер вашей карты.
+
+**Информация, собираемая автоматически:**
+
+* Данные об использовании: страницы и функции, которые вы посещаете, включая Обзор медиа, Музыка и Развлечения, Прямой эфир, Телепередачи, Поиск, Словарь, Сохраненные слова, Повторение, Читатель, Веб-читатель, Читатель EPUB, Локальные Медиа, История просмотров, Плейлисты и Понравившиеся видео; видео, которые вы смотрите; взаимодействия; и временные метки.
+* Информация об устройстве и сети: IP-адрес, тип браузера, операционная система, тип устройства и приблизительное местоположение, определённое по вашему IP-адресу.
+* Аналитика: мы используем Google Analytics для понимания того, как посетители используют Веб-сайт. Google Analytics может использовать файлы cookie и собирать данные об использовании от нашего имени. Использование этих данных компанией Google регулируется [Политикой конфиденциальности Google](https://policies.google.com/privacy).
+* Локальное хранилище: мы используем файлы cookie, \`localStorage\`, \`sessionStorage\` и IndexedDB, чтобы поддерживать ваш вход в систему, запоминать ваш язык, хранить ваши настройки, прогресс и сохранённые слова, а также кэшировать контент локально.
 
 **Что мы делаем с вашей информацией?**
 
-Когда вы совершаете покупку через нашу систему онлайн-заказов, в рамках процесса купли-продажи мы собираем вашу личную информацию.
+Мы используем информацию, которую собираем, для того чтобы:
 
-Когда вы просматриваете наш Веб-сайт, мы также автоматически получаем IP-адрес вашего компьютера, чтобы предоставить нам информацию, которая помогает нам узнать о вашем браузере и операционной системе.
+* предоставлять, поддерживать и улучшать Веб-сайт и его функции;
+* создавать и управлять вашим аккаунтом, подтверждать вашу личность и поддерживать ваш вход в систему;
+* персонализировать рекомендации на основе вашего языка, уровня и истории обучения;
+* синхронизировать ваши данные между устройствами;
+* обрабатывать подписки, платежи и продления;
+* отправлять транзакционные письма, такие как коды подтверждения, сброс пароля и квитанции об оплате;
+* отправлять маркетинговые сообщения, если вы дали нам на это разрешение;
+* анализировать использование с помощью Google Analytics, чтобы понимать, как посетители используют Веб-сайт, и улучшать наши продукты;
+* выполнять юридические и нормативные требования и защищать наши права и права наших пользователей.
 
-Разрешенный прямой маркетинг (если применимо): С вашего разрешения мы можем отправлять вам новостные рассылки или электронные письма для рекламы наших магазинов, новых продуктов и других обновлений.
+Мы не продаём вашу личную информацию.
+
+**Передача и раскрытие информации**
+
+Мы передаём личную информацию только поставщикам услуг, которые помогают нам управлять Веб-сайтом, включая:
+
+* поставщиков хостинга и баз данных, включая Supabase;
+* платёжных операторов, включая Stripe, PayPal и Apple App Store;
+* поставщиков услуг перевода и ИИ, включая DeepSeek, когда вы используете функции перевода или объяснения с помощью ИИ;
+* поставщиков аналитики, включая Google Analytics;
+* видеоплатформы, включая YouTube и Google, когда вы смотрите встроенные видео.
+
+Мы не будем использовать или раскрывать личную информацию для целей, отличных от тех, для которых она была собрана, кроме случаев, когда это делается с вашего согласия, если это разрешено или требуется по закону, или если вы нарушаете наши Условия использования.
 
 **Согласие**
 
-_Как получить ваше согласие?_
+_Как вы получаете моё согласие?_
 
-Когда вы предоставляете нам личную информацию для завершения транзакции, проверки вашей кредитной карты, размещения заказа, организации доставки или возврата покупки, или размещения любой информации или фотографий на нашем сайте в социальных сетях, мы подразумеваем, что вы соглашаетесь на ее сбор и использование только для этой конкретной цели.
+Когда вы предоставляете нам личную информацию для создания аккаунта, завершения транзакции, подтверждения оплаты, размещения заказа или использования наших продуктов и услуг, мы подразумеваем, что вы соглашаетесь на её сбор и использование только для этой конкретной цели.
 
-Если мы запрашиваем вашу личную информацию для второстепенной цели, такой как маркетинг, мы либо прямо запросим ваше явное согласие, либо предоставим вам возможность отказаться.
+Если мы запрашиваем вашу личную информацию для второстепенной цели, такой как маркетинг, мы либо напрямую спросим ваше явное согласие, либо предоставим вам возможность отказаться.
 
-_Как отозвать свое согласие?_
+_Как я могу отозвать своё согласие?_
 
-Если после того, как вы дали согласие, вы передумали, вы можете в любое время отозвать свое согласие на то, чтобы мы связывались с вами, на дальнейший сбор, использование или раскрытие вашей информации, уведомив нас.
-
-**Раскрытие информации**
-
-Мы не будем использовать или раскрывать личную информацию для целей, отличных от тех, для которых она была собрана, за исключением случаев, когда это делается с вашего согласия, если это разрешено или требуется по закону, или если вы нарушаете наши Условия использования.
+Если после того как вы дали согласие, вы передумали, вы можете в любое время отозвать своё согласие на то, чтобы мы связывались с вами, на дальнейший сбор, использование или раскрытие вашей информации, уведомив нас.
 
 **Защита**
 
-Мы будем защищать личную информацию, следуя лучшим отраслевым практикам и внедряя такие разумные меры защиты, которые могут соответствовать степени конфиденциальности информации; мы будем прилагать разумные усилия для защиты личной информации от потери или кражи, а также от несанкционированного доступа, раскрытия, копирования, использования или изменения независимо от формата, в котором она хранится. Законодательство также позволяет нам в юридических или деловых целях сохранять личную информацию в течение разумного времени и при условии, что вы не отозвали свое согласие.
+Мы будем защищать личную информацию, следуя передовым отраслевым практикам и применяя разумные меры защиты, соответствующие чувствительности информации; мы приложим разумные усилия для защиты личной информации от потери или кражи, а также от несанкционированного доступа, раскрытия, копирования, использования или изменения независимо от формата, в котором она хранится. Законодательство также позволяет нам в юридических или деловых целях хранить личную информацию в течение разумного времени при условии, что вы не отозвали своё согласие.
 
 **Безопасность**
 
-Для защиты вашей личной информации мы принимаем разумные меры предосторожности и следуем лучшим отраслевым практикам, чтобы гарантировать, что она не будет неправомерно утеряна, использована, получена доступ, раскрыта, изменена или уничтожена.
+Для защиты вашей личной информации мы принимаем разумные меры предосторожности и следуем передовым отраслевым практикам, чтобы гарантировать её ненадлежащую потерю, неправильное использование, доступ, раскрытие, изменение или уничтожение.
 
-**Файлы cookie**
+**Файлы cookie и аналогичные технологии**
 
-Наш Веб-сайт не использует файлы cookie.
+Наш Веб-сайт использует файлы cookie и аналогичные технологии.
+
+* **Необходимые файлы cookie:** мы используем файлы cookie, чтобы поддерживать ваш вход в систему, запоминать выбранные вами языки и управлять лимитами навигации для гостей.
+* **Аналитика:** мы используем Google Analytics, который может устанавливать собственные файлы cookie и собирать информацию об использовании.
+* **Локальное хранилище:** мы используем \`localStorage\`, \`sessionStorage\` и IndexedDB для хранения настроек, сохранённых слов, прогресса, читаемого контента и пользовательских медиафайлов на вашем устройстве.
+* **Встроенный контент:** видео встроены с YouTube. YouTube и Google могут устанавливать собственные файлы cookie, когда вы смотрите видео, которые регулируются их политиками конфиденциальности.
+
+Вы можете заблокировать или удалить файлы cookie через настройки вашего браузера. Обратите внимание, что некоторые части Веб-сайта могут работать некорректно, если вы отключите файлы cookie.
+
+**Хранение и удаление данных**
+
+Мы храним личную информацию до тех пор, пока ваш аккаунт активен, или столько, сколько необходимо для предоставления Веб-сайта, выполнения юридических обязательств, разрешения споров и обеспечения соблюдения наших соглашений.
+
+Вы можете удалить свой аккаунт в любое время со страницы Профиль, используя опцию «Удалить аккаунт», или связавшись с нами по указанному ниже адресу. При удалении аккаунта мы удалим или анонимизируем вашу личную информацию, за исключением записей, которые мы обязаны хранить в юридических, платёжных, налоговых целях или для целей безопасности.
 
 **Изменения в настоящей Политике конфиденциальности**
 
-Мы оставляем за собой право изменять настоящую политику конфиденциальности в любое время, поэтому, пожалуйста, просматривайте ее часто. Изменения и уточнения вступают в силу немедленно после их публикации на Веб-сайте. Если мы внесем существенные изменения в настоящую политику, мы уведомим вас здесь о том, что она была обновлена, чтобы вы знали, какую информацию мы собираем, как мы ее используем и при каких обстоятельствах, если таковые имеются, мы используем и/или раскрываем ее.
+Мы оставляем за собой право изменять настоящую политику конфиденциальности в любое время, поэтому, пожалуйста, просматривайте её регулярно. Изменения и уточнения вступают в силу немедленно после их размещения на Веб-сайте. Если мы внесём существенные изменения в настоящую политику, мы уведомим вас здесь о том, что она была обновлена, чтобы вы знали, какую информацию мы собираем, как мы её используем и при каких обстоятельствах, если таковые имеются, мы используем и/или раскрываем её.
 
 **Вопросы и контактная информация**
 
-Если вы хотите: получить доступ, исправить, изменить или удалить любую личную информацию, которую мы имеем о вас, подать жалобу или просто хотите получить дополнительную информацию, свяжитесь с нами по адресу [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Если вы хотите: получить доступ, исправить, изменить или удалить любую личную информацию, которая у нас есть о вас, подать жалобу или просто получить дополнительную информацию, свяжитесь с нами по адресу [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Читатель EPUB', category: 'reading', content: `# Читатель EPUB
 
 Читайте EPUB-книги с интерактивным поиском слов, поблочным переводом и сохранением прогресса между сессиями.
@@ -36260,103 +37026,134 @@ Language Player аутоматски чува вашу историју глед
 - Ваша историја је ограничена на тренутни L2 — нећете видети Japanski видео када сте у Koreanski режиму` },
     { path: 'privacy-policy', title: 'Politika privatnosti', category: 'privacy-policy', content: `# Politika privatnosti
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website:  [https://languageplayer.io](https://languageplayer.io) , including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+Ова веб страница представља правни документ који служи као наши Услови коришћења и Политика приватности и уређује коришћење наше веб странице: [https://languageplayer.io](https://languageplayer.io), укључујући странице које се на њој налазе, као и све поддомене и апликације (заједно: „Веб страница"), у власништву и под управом компаније Zero to Hero Education, Канада. („Zero to Hero").
 
-**Introduction**
+**Увод**
 
-The Terms of Use, along with our Privacy Policy published below, and other posted guidelines or policies within our Website (collectively "Legal Terms"), constitute the entire and only agreement between you and us, and supersede all other agreements, representations, warranties and understandings with respect to our Website and the subject matter contained herein. We may amend our Legal Terms at any time without specific notice to you. The latest copies of our Legal Terms will be posted on our Website, and you should review all Legal Terms prior to using our Website. After any revisions to our Legal Terms are posted, you agree to be bound to any such changes to them. Therefore, it is important for you to periodically review our Legal Terms to make sure you still agree to them.
+Услови коришћења, заједно са нашом Политиком приватности објављеном испод, и другим објављеним смерницама или политикама у оквиру наше Веб странице (заједно: „Правни услови"), представљају једини и потпуни споразум између вас и нас, и замењују све друге споразуме, изјаве, гаранције и разумевања у вези са нашом Веб страницом и предметом који је овде садржан. Ми можемо изменити наше Правне услове у било ком тренутку без посебног обавештења вама. Најновије копије наших Правних услова биће објављене на нашој Веб страници, и требало би да прегледате све Правне услове пре коришћења наше Веб странице. Након што су било какве измене наших Правних услова објављене, сагласни сте да вас такве измене обавезују. Због тога је важно да периодично прегледате наше Правне услове како бисте били сигурни да се и даље са њима слажете.
 
-By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website. 
+Коришћењем наше Веб странице, сагласни сте да у потпуности поштујете и да сте обавезани нашим Правним условима. Молимо вас да их пажљиво прегледате. Ако не прихватате наше Правне услове, немојте приступати и користити нашу Веб страницу. Ако сте већ приступили нашој Веб страници и не прихватате наше Правне услове, више нисте овлашћени да је користите и треба одмах да престанете са коришћењем наше Веб странице.
 
-**Other Defined Terms On Our Website**
+**Други дефинисани појмови на нашој Веб страници**
 
-This Website incorporates terms defined throughout this page as well as these other defined terms: 
+Ова Веб страница укључује појмове дефинисане на овој страници, као и ове друге дефинисане појмове:
 
-The terms "us" and "we" refer to Zero to Hero as the owner of the Website. "Content" includes any and all text, information, graphics, audio, video, and other data posted, offered or made available through our Website.
+Појмови „нас" и „ми" односе се на Zero to Hero као власника Веб странице. „Садржај" укључује било који и сав текст, информације, графику, аудио, видео и друге податке који су објављени, понуђени или доступни путем наше Веб странице.
 
-A "visitor" or "you" are collective identifiers that refer to you as a browser of our Website, whether or not you complete a purchase of our products.
+„Посетилац" или „ви" су колективни идентификатори који се односе на вас као корисника наше Веб странице, без обзира на то да ли сте извршили куповину наших производа.
 
-"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data.  It may also include a person's credit card information when presented for payment purposes.
+„Лични подаци" означавају информације о идентификованој особи, које могу укључивати име особе, адресу становања, адресу за наплату, адресу за доставу, број телефона, адресу е-поште и друге сличне контакт информације, као и податке о историји коришћења Веб странице. Такође могу укључивати информације о кредитној картици особе када се доставе у сврху плаћања.
 
-**TERMS OF USE**
+**УСЛОВИ КОРИШЋЕЊА**
 
-**Intellectual Property**
+**Интелектуална својина**
 
-Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein.  The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
+Наша Веб страница може садржати наше сервисне ознаке или заштитне знакове, као и оне наших партнера или других лица или компанија, у облику речи, графике и логотипа. Ваше коришћење наше Веб странице не представља било какво право или лиценцу за коришћење таквих сервисних ознака/заштитних знакова, без претходне писане ауторизације одговарајућег власника сервисне ознаке/заштитног знака. Наша Веб страница, укључујући садржај, такође је заштићена канадским и међународним законима о ауторским правима. Ваше коришћење наше Веб странице или садржаја не даје вам право власништва било које врсте над њима. Копирање, редистрибуција, коришћење или објављивање било ког дела наше Веб странице или садржаја је строго забрањено и стога се не сме копирати или репродуковати без претходно прибављене наше писане ауторизације.
 
-**Limitation of Liability**
+**Ограничење одговорности**
 
-In no circumstances shall we, or our officers or employees, be responsible or liable for any loss or damages whatsoever, including (without limiting the generality of the foregoing) any direct, indirect, incidental, special, punitive or consequential damages, arising from or in connection with your use of, access to or your reliance on, or your inability to use or access, this Website, the online ordering system or any content.
+Ни у којим околностима ми, нити наши службеници или запослени, нећемо бити одговорни за било какав губитак или штету, укључујући (без ограничавања општости претходног) било какву директну, индиректну, случајну, посебну, казнену или последичну штету, која произилази из или је у вези са вашим коришћењем, приступом или ослањањем на, или вашом немогућношћу да користите или приступите, овој Веб страници, систему за онлајн наручивање или било ком садржају.
 
-**General Terms**
+**Опште одредбе**
 
-Our Legal Terms shall be treated as though it were executed and performed in the Province of British Columbia, Canada and shall be governed by and construed in accordance with the laws of that region without regard to conflict of law principles. In addition, you agree to submit to the personal jurisdiction and venue of the courts within that region. Any cause of action by you with respect to our Website must be instituted within one (1) year after the cause of action arose or be forever waived and barred. Should any part of our Legal Terms be held invalid or unenforceable, that portion shall be construed consistent with applicable law and the remaining portions shall remain in full force and effect. To the extent that any content conflicts or is inconsistent with our Legal Terms, our Legal Terms shall supersede and be paramount the construction of them together. Our failure to enforce any provision of our Legal Terms shall not be deemed a waiver of such provision nor of the right to enforce such provision. Our rights under our Legal Terms shall survive the termination of our Legal Terms.
+Наши Правни услови ће се сматрати као да су извршени и спроведени у Провинцији Британска Колумбија, Канада, и биће уређени и тумачени у складу са законима те регије, без обзира на принципе сукоба закона. Поред тога, сагласни сте да се подвргнете личној надлежности и месту одржавања судских поступака у оквиру те регије. Свака тужба са ваше стране у вези са нашом Веб страницом мора бити покренута у року од једне (1) године од настанка разлога за тужбу, или ће заувек бити укинута и онемогућена. Ако било који део наших Правних услова буде проглашен неважећим или непримењивим, тај део ће се тумачити у складу са применљивим законом, а остали делови ће остати у пуној снази и дејству. У мери у којој било који садржај је у сукобу или није у складу са нашим Правним условима, наши Правни услови ће имати предност и бити од пресудног значаја за њихово заједничко тумачење. Наш пропуст да спроведемо било коју одредбу наших Правних услова неће се сматрати одрицањем од такве одредбе нити од права на њено спровођење. Наша права према нашим Правним условима преживеће престанак наших Правних услова.
 
-**Third Party Links**
+**Линкови ка трећим странама**
 
-When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements.  Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
+Када кликнете на линкове на нашој Веб страници, они вас могу усмерити ван наше Веб странице на другу веб страницу коју поседује и којом управља трећа страна. Ми нисмо одговорни за праксе приватности других веб страница трећих страна и подстичемо вас да прочитате њихове услове коришћења и изјаве о приватности. Када напустите нашу Веб страницу или будете преусмерени на веб страницу или апликацију треће стране, на вас се више не примењују наши Правни услови.
 
-**PRIVACY POLICY**
+**ПОЛИТИКА ПРИВАТНОСТИ**
 
-At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors.   This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
+У компанији Zero to Hero сматрамо да је приватност веома важна ствар и као таква, посвећени смо заштити приватности личних података свих посетилаца. Ова Политика приватности укључује применљиве делове Закона о заштити личних информација и електронских докумената (Канада), Закона о заштити личних информација (Алберта) и десет принципа утврђених у Моделу законика Канадског удружења за стандарде (CSA) за заштиту личних информација (заједно: „примењиви закони о приватности").
 
-**Collection of Information**
+**Информације које прикупљамо**
 
-We may collect personal information for any one or more of the following purposes:
+**Информације које нам дајете директно:**
 
-*   to establish and maintain relationships with visitors;
-*   to provide requested and ongoing products and services;
-*   to notify you of changes to our products and services;
-*   to obtain a better understanding of our visitors their requirements and preferences;
-*   to develop, enhance, improve and/or market our products and services;
-*   to monitor the usage of our Website;
-*   to manage and improve our business and operations; and
-*   to meet legal and regulatory requirements.
+* Подаци о налогу: ваше име, адреса е-поште, лозинка, језичке преференције и ниво учења.
+* Подаци о учењу: сачуване речи, фразе, напредак, белешке, листе за репродукцију, лајковани видео снимци, историја гледања, књиге и напредак у читању.
+* Садржај који отпремате или креирате: прилагођени медији, EPUB датотеке и текст који тражите да преведемо или објаснимо.
+* Информације о плаћању: када купите претплату, плаћање обрађују Stripe, PayPal или Apple App Store. Ми примамо потврду и детаље о претплати, али генерално не чувамо пун број ваше картице.
 
-**  
-What Do We Do With Your Information?**
+**Информације прикупљене аутоматски:**
 
-When you purchase something through our online ordering system, as part of the buying and selling process, we collect your personal information.
+* Подаци о коришћењу: странице и функције које посећујете, укључујући Истражи медије, Muzika i Zabava, ТВ уживо, ТВ емисије, Претрага, Rečnik, Sačuvane reči, Pregled, Čitač, Веб читач, EPUB читач, Локални Медији, Istorija gledanja, Плејлисте и Лајковани видео снимци; видео снимци које гледате; интеракције; и временске ознаке.
+* Подаци о уређају и мрежи: IP адреса, тип прегледача, оперативни систем, тип уређаја и приближна локација утврђена на основу ваше IP адресе.
+* Аналитика: користимо Google Analytics да бисмо разумели како посетиоци користе Веб страницу. Google Analytics може користити колачиће и прикупљати податке о коришћењу у наше име. Google-ово коришћење тих података уређено је [Google-овом политиком приватности](https://policies.google.com/privacy).
+* Локално складиштење: користимо колачиће, \`localStorage\`, \`sessionStorage\` и IndexedDB да бисте остали пријављени, да запамтимо ваш језик, чувамо ваша подешавања, напредак и сачуване речи, и да кеширамо садржај локално.
 
-When you browse our Website, we also automatically receive your computer's internet protocol (IP) address in order to provide us with information that helps us learn about your browser and operating system.
+**Шта радимо са вашим информацијама?**
 
-Permitted direct marketing (if applicable): With your permission, we may send you newsletters or emails to advertise about our stores, new products and other updates.
+Користимо информације које прикупљамо да бисмо:
 
-**Consent**
+* пружали, одржавали и побољшавали Веб страницу и њене функције;
+* креирали и управљали вашим налогом, потврдили ваш идентитет и одржали вас пријављеним;
+* персонализовали препоруке на основу вашег језика, нивоа и историје учења;
+* синхронизовали ваше податке између уређаја;
+* обрађивали претплате, плаћања и обнове;
+* слали трансакционе имејлове као што су кодови за верификацију, ресетовање лозинке и признанице о плаћању;
+* слали маркетиншке комуникације ако сте нам дали дозволу за то;
+* анализирали коришћење са Google Analytics како бисмо разумели како посетиоци користе Веб страницу и побољшали наше производе;
+* испуњавали законске и регулаторне захтеве и штитили наша права и права наших корисника.
 
-_How do you get my consent?_
+Не продајемо ваше личне податке.
 
-When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, or post or pin any information or photos to our social media site, we infer that you consent to our collecting it and using it for that specific reason only.
+**Дељење и откривање**
 
-If we ask for your personal information for a secondary reason, like marketing, we will either ask you directly for your expressed consent, or provide you with an opportunity to say no.
+Личне податке делимо само са добављачима услуга који нам помажу у раду Веб странице, укључујући:
 
-_How do I withdraw my consent?_
+* провајдере хостинга и база података, укључујући Supabase;
+* обрађиваче плаћања, укључујући Stripe, PayPal и Apple App Store;
+* провајдере превођења и вештачке интелигенције, укључујући DeepSeek, када користите функције превођења или објашњења помоћу вештачке интелигенције;
+* провајдере аналитике, укључујући Google Analytics;
+* видео платформе, укључујући YouTube и Google, када гледате уграђене видео снимке.
 
-If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at anytime, by notifying us.
+Нећемо користити или откривати личне податке у сврхе које нису оне за које су прикупљени, осим ако је то уз ваш пристанак, ако је то дозвољено или захтевано законом, или ако прекршите наше Услове коришћења.
 
-**Disclosure**
+**Пристанак**
 
-We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law or you violate our Terms of Use.
+_Како добијате мој пристанак?_
 
-**Protection**
+Када нам дате личне податке ради креирања налога, обављања трансакције, потврде плаћања, наручивања или коришћења наших производа и услуга, подразумевамо да дајете пристанак на њихово прикупљање и коришћење искључиво за ту конкретну сврху.
 
-We will protect personal information by following industry best practices and implementing such reasonable safeguards as may be appropriate to the sensitivity of the information; we will make reasonable efforts to protect personal information against loss or theft, as well as unauthorized access, disclosure, copying, use or modification regardless of the format in which it is held. The legislation also allows us, for legal or business purposes, to retain personal information for as long as is reasonable and provided you have not revoked your consent.
+Ако затражимо ваше личне податке за секундарну сврху, као што је маркетинг, затражићемо од вас директно ваш изричити пристанак или ћемо вам пружити прилику да кажете не.
 
-**Security**
+_Како могу повући свој пристанак?_
 
-To protect your personal information, we take reasonable precautions and follow industry best practices to make sure it is not inappropriately lost, misused, accessed, disclosed, altered or destroyed.
+Ако након што сте се пријавили промените мишљење, можете у било ком тренутку повући свој пристанак да вас контактирамо, за наставак прикупљања, коришћења или откривања ваших информација, тако што ћете нас обавестити.
 
-**Cookies**
+**Заштита**
 
-Our Website does not use cookies.
+Штитићемо личне податке праћењем најбољих пракси у индустрији и применом разумних заштитних мера које одговарају осетљивости информација; уложићемо разумне напоре да заштитимо личне податке од губитка или крађе, као и од неовлашћеног приступа, откривања, копирања, коришћења или модификације, без обзира на формат у коме се чувају. Законодавство нам такође дозвољава да, у законске или пословне сврхе, задржимо личне податке онолико дуго колико је разумно, под условом да нисте опозвали свој пристанак.
 
-**Changes To This Privacy Policy**
+**Безбедност**
 
-We reserve the right to modify this privacy policy at any time, so please review it frequently. Changes and clarifications will take effect immediately upon their posting on the Website. If we make material changes to this policy, we will notify you here that it has been updated, so that you are aware of what information we collect, how we use it, and under what circumstances, if any, we use and/or disclose it.
+Да бисмо заштитили ваше личне податке, предузимамо разумне мере предострожности и пратимо најбоље праксе у индустрији како бисмо били сигурни да нису непрописно изгубљени, злоупотребљени, доступни, откривени, измењени или уништени.
 
-**Questions And Contact Information**
+**Колачићи и сличне технологије**
 
-If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at  [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) .` },
+Наша Веб страница користи колачиће и сличне технологије.
+
+* **Неопходни колачићи:** користимо колачиће да бисте остали пријављени, да запамтимо ваше изабране језике и управљамо ограничењима навигације за госте.
+* **Аналитика:** користимо Google Analytics, који може поставити сопствене колачиће и прикупљати информације о коришћењу.
+* **Локално складиште:** користимо \`localStorage\`, \`sessionStorage\` и IndexedDB за чување подешавања, сачуваних речи, напретка, садржаја за читање и прилагођених медија на вашем уређају.
+* **Уграђени садржај:** видео снимци су уграђени са YouTube-а. YouTube и Google могу поставити сопствене колачиће када гледате видео снимак, што је уређено њиховим политикама приватности.
+
+Можете блокирати или обрисати колачиће путем подешавања прегледача. Имајте на уму да неки делови Веб странице можда неће исправно радити ако онемогућите колачиће.
+
+**Чување и брисање података**
+
+Чувамо личне податке све док је ваш налог активан, или колико је потребно за пружање Веб странице, испуњавање законских обавеза, решавање спорова и спровођење наших уговора.
+
+Можете обрисати свој налог у било ком тренутку са странице Профил користећи опцију Обриши налог, или нас контактирати на адресу испод. Када обришете свој налог, уклонићемо или анонимизовати ваше личне податке, уз изузетак евиденција које смо у обавези да задржимо у законске, платне, пореске или безбедносне сврхе.
+
+**Измене ове Политике приватности**
+
+Задржавамо право да изменимо ову политику приватности у било ком тренутку, па је молимо често прегледавајте. Измене и појашњења ступају на снагу одмах након објављивања на Веб страници. Ако унесемо материјалне измене у ову политику, обавестићемо вас овде да је ажурирана, како бисте били свесни које информације прикупљамо, како их користимо и под којим околностима, ако их има, их користимо и/или откривамо.
+
+**Питања и контакт информације**
+
+Ако желите: да приступите, исправите, измените или обришете било које личне податке које имамо о вама, пријавите жалбу или једноставно желите више информација, контактирајте нас на [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB читач', category: 'reading', content: `# EPUB читач
 
 Читајте EPUB е-књиге са интерактивним прегледом речи, превођењем по блоку и напретком који се чува између сесија.
@@ -37727,102 +38524,134 @@ Din tittarhistorik är privat. Den är bara synlig för dig när du är inloggad
 - Din historik är begränsad till ditt nuvarande L2 — du ser inte Japanska-videor när du är i Koreanska-läge` },
     { path: 'privacy-policy', title: 'Integritetspolicy', category: 'privacy-policy', content: `# Integritetspolicy
 
-Denna webbsida utgör ett juridiskt dokument som fungerar som våra användarvillkor och integritetspolicy och reglerar användningen av vår webbplats: [https://languageplayer.io](https://languageplayer.io), inklusive sidor som finns där och alla underdomäner och appar (gemensamt "Webbplatsen"), som ägs och drivs av oss, Zero to Hero Education, Kanada ("Zero to Hero").
+Denna webbsida utgör ett juridiskt dokument som fungerar som våra användarvillkor och integritetspolicy och som styr användningen av vår webbplats: [https://languageplayer.io](https://languageplayer.io), inklusive sidor som finns där och alla underdomäner och appar (gemensamt kallade "Webbplatsen"), som ägs och drivs av oss, Zero to Hero Education, Kanada. ("Zero to Hero").
 
 **Introduktion**
 
-Användarvillkoren, tillsammans med vår integritetspolicy som publiceras nedan, samt andra publicerade riktlinjer eller policyer på vår webbplats (gemensamt "Juridiska villkor"), utgör det fullständiga och enda avtalet mellan dig och oss, och ersätter alla andra avtal, uttalanden, garantier och överenskommelser gällande vår webbplats och ämnet som behandlas här. Vi kan ändra våra juridiska villkor när som helst utan särskild underrättelse till dig. De senaste kopiorna av våra juridiska villkor kommer att publiceras på vår webbplats, och du bör granska alla juridiska villkor innan du använder vår webbplats. Efter att eventuella revideringar av våra juridiska villkor har publicerats, samtycker du till att vara bunden av sådana ändringar. Därför är det viktigt att du regelbundet granskar våra juridiska villkor för att säkerställa att du fortfarande godkänner dem.
+Användarvillkoren, tillsammans med vår integritetspolicy som publiceras nedan, och andra publicerade riktlinjer eller policyer på vår webbplats (gemensamt kallade "Juridiska villkor"), utgör det enda och fullständiga avtalet mellan dig och oss, och ersätter alla andra avtal, framställningar, garantier och överenskommelser avseende vår webbplats och det ämne som behandlas häri. Vi kan ändra våra juridiska villkor när som helst utan särskilt meddelande till dig. De senaste kopiorna av våra juridiska villkor kommer att publiceras på vår webbplats, och du bör granska alla juridiska villkor innan du använder vår webbplats. Efter att eventuella revideringar av våra juridiska villkor har publicerats, samtycker du till att vara bunden av sådana ändringar. Därför är det viktigt att du regelbundet granskar våra juridiska villkor för att säkerställa att du fortfarande godkänner dem.
 
-Genom att använda vår webbplats samtycker du till att fullt ut följa och vara bunden av våra juridiska villkor. Vänligen granska dem noggrant. Om du inte accepterar våra juridiska villkor, använd inte vår webbplats. Om du redan har besökt vår webbplats och inte accepterar våra juridiska villkor, är du inte längre behörig att använda den och du bör omedelbart upphöra med användningen av vår webbplats.
+Genom att använda vår webbplats samtycker du till att fullt ut följa och vara bunden av våra juridiska villkor. Vänligen granska dem noggrant. Om du inte godkänner våra juridiska villkor, använd inte vår webbplats. Om du redan har besökt vår webbplats och inte godkänner våra juridiska villkor, är du inte längre behörig att använda den och du bör omedelbart sluta använda vår webbplats.
 
 **Andra definierade termer på vår webbplats**
 
-Denna webbplats innehåller termer definierade på denna sida samt följande andra definierade termer:
+Denna webbplats innehåller termer som definieras på denna sida samt dessa andra definierade termer:
 
-Termerna "oss" och "vi" avser Zero to Hero som ägare av webbplatsen. "Innehåll" inkluderar all text, information, grafik, ljud, video och annan data som publiceras, erbjuds eller görs tillgänglig via vår webbplats.
+Termerna "oss" och "vi" avser Zero to Hero som ägare av webbplatsen. "Innehåll" inkluderar all text, information, grafik, ljud, video och andra data som publiceras, erbjuds eller görs tillgängliga genom vår webbplats.
 
-En "besökare" eller "du" är kollektiva identifierare som avser dig som en användare av vår webbplats, oavsett om du genomför ett köp av våra produkter.
+En "besökare" eller "du" är kollektiva identifierare som avser dig som besökare av vår webbplats, oavsett om du genomför ett köp av våra produkter.
 
-"Personlig information" avser information om en identifierbar person, vilket kan inkludera en persons namn, bostadsadress, faktureringsadress, leveransadress, telefonnummer, e-postadress och annan liknande kontaktinformation, samt webbplatsanvändningshistorik. Det kan också inkludera en persons kreditkortsinformation när den lämnas för betalningsändamål.
+"Personuppgifter" avser information om en identifierbar person, som kan inkludera en persons namn, bostadsadress, faktureringsadress, leveransadress, telefonnummer, e-postadress och annan liknande kontaktinformation, samt data om webbplatsanvändning. Det kan också inkludera en persons kreditkortsuppgifter när de presenteras för betalningsändamål.
 
 **ANVÄNDARVILLKOR**
 
-**Immateriella rättigheter**
+**Immaterialrätt**
 
-Vår webbplats kan innehålla våra servicemärken eller varumärken samt sådana som tillhör våra dotterbolag eller andra personer eller företag, i form av ord, grafik och logotyper. Din användning av vår webbplats utgör ingen rättighet eller licens för dig att använda sådana servicemärken/varumärken utan föregående skriftligt tillstånd från respektive servicemärkes-/varumärkesägare. Vår webbplats, inklusive innehållet, är också skyddad enligt kanadensisk och internationell upphovsrättslagstiftning. Din användning av vår webbplats eller innehållet ger dig inga äganderätter av något slag. Kopiering, vidaredistribution, användning eller publicering av någon del av vår webbplats eller innehåll är strängt förbjudet och får inte kopieras eller reproduceras utan att vi först gett vårt skriftliga tillstånd.
+Vår webbplats kan innehålla våra servicemärken eller varumärken samt de som tillhör våra dotterbolag eller andra personer eller företag, i form av ord, grafik och logotyper. Din användning av vår webbplats utgör ingen rättighet eller licens för dig att använda sådana servicemärken/varumärken utan föregående skriftlig auktorisation från motsvarande ägare av servicemärket/varumärket. Vår webbplats inklusive innehållet är också skyddad enligt kanadensisk och internationell upphovsrättslagstiftning. Din användning av vår webbplats eller innehållet ger dig inte äganderätt av något slag däri. Kopiering, vidaredistribution, användning eller publicering av dig av någon del av vår webbplats eller innehåll är strängt förbjuden och får därför inte kopieras eller reproduceras utan att först erhålla vår skriftliga auktorisation.
 
-**Ansvarsbegränsning**
+**Begränsning av ansvar**
 
-Under inga omständigheter ska vi, eller våra tjänstemän eller anställda, vara ansvariga för någon förlust eller skada av något slag, inklusive (utan att begränsa det föregående) direkta, indirekta, tillfälliga, särskilda, straffande eller följdskador, som uppstår i samband med din användning av, åtkomst till eller förlitande på, eller din oförmåga att använda eller få åtkomst till, denna webbplats, onlinebeställningssystemet eller något innehåll.
+Under inga omständigheter ska vi, eller våra tjänstemän eller anställda, vara ansvariga för någon förlust eller skada av något slag, inklusive (utan att begränsa det föregåendes allmänhet) direkta, indirekta, tillfälliga, särskilda, straffande eller följdskador, som uppstår från eller i samband med din användning av, åtkomst till eller förlitande på, eller din oförmåga att använda eller komma åt, denna webbplats, det onlinebaserade beställningssystemet eller något innehåll.
 
 **Allmänna villkor**
 
-Våra juridiska villkor ska behandlas som om de utfördes och verkställdes i provinsen British Columbia, Kanada, och ska regleras och tolkas i enlighet med lagarna i den regionen utan hänsyn till lagkonfliktprinciper. Dessutom samtycker du till att underkasta dig personlig jurisdiktion och forum för domstolarna inom den regionen. Varje talan från dig med avseende på vår webbplats måste väckas inom ett (1) år efter att talan uppstod eller annars vara för alltid avstådd och förhindrad. Om någon del av våra juridiska villkor skulle anses ogiltig eller ogenomförbar, ska den delen tolkas i enlighet med tillämplig lag och de återstående delarna förbli i full kraft och verkan. I den mån något innehåll strider mot eller är oförenligt med våra juridiska villkor, ska våra juridiska villkor ha företräde och vara överordnade vid tolkning av dem tillsammans. Vår underlåtenhet att verkställa någon bestämmelse i våra juridiska villkor ska inte anses vara ett avstående från sådan bestämmelse eller rätten att verkställa sådan bestämmelse. Våra rättigheter enligt våra juridiska villkor ska fortsätta att gälla efter att våra juridiska villkor upphört.
+Våra juridiska villkor ska behandlas som om de vore utförda i provinsen British Columbia, Kanada, och ska styras av och tolkas i enlighet med lagarna i den regionen utan hänsyn till lagkonfliktprinciper. Dessutom samtycker du till att underkasta dig den personliga jurisdiktionen och domstolsorten inom den regionen. Varje talan som du väcker med avseende på vår webbplats måste väckas inom ett (1) år efter att grunden för talan uppstått, annars är den för alltid avstådd och förlorad. Om någon del av våra juridiska villkor skulle hållas ogiltig eller inte verkställbar, ska den delen tolkas i enlighet med tillämplig lag och de återstående delarna ska förbli i full kraft och verkan. I den utsträckning något innehåll strider mot eller är oförenligt med våra juridiska villkor, ska våra juridiska villkor ha företräde och vara överordnade vid tolkningen av dem tillsammans. Vår underlåtenhet att genomdriva någon bestämmelse i våra juridiska villkor ska inte betraktas som ett avstående från sådan bestämmelse eller från rätten att genomdriva sådan bestämmelse. Våra rättigheter enligt våra juridiska villkor ska överleva upphörandet av våra juridiska villkor.
 
-**Tredjepartslänkar**
+**Länkar till tredje part**
 
-När du klickar på länkar på vår webbplats kan de dirigera dig bort från vår webbplats till en annan webbplats som ägs och drivs av en tredje part. Vi är inte ansvariga för sekretesspraxis hos andra tredjepartswebbplatser och uppmuntrar dig att läsa deras användarvillkor och sekretesspolicy. När du lämnar vår webbplats eller omdirigeras till en tredjepartswebbplats eller -applikation omfattas du inte längre av våra juridiska villkor.
+När du klickar på länkar på vår webbplats kan de leda dig bort från vår webbplats till en annan webbplats som ägs och drivs av en tredje part. Vi är inte ansvariga för sekretesspraxis på andra tredjepartswebbplatser och uppmuntrar dig att läsa deras användarvillkor och sekretesspolicy. När du lämnar vår webbplats eller omdirigeras till en tredjepartswebbplats eller applikation, omfattas du inte längre av våra juridiska villkor.
 
 **INTEGRITETSPOLICY**
 
-Hos Zero to Hero anser vi att integritet är en mycket viktig fråga och vi är därför engagerade i att skydda integriteten för personlig information hos alla besökare. Denna integritetspolicy innehåller de tillämpliga delarna av Personuppgiftslagen och lagen om elektronisk dokumentation (Kanada), Personuppgiftslagen (Alberta) och de tio principerna i Canadian Standards Association (CSA) modellkod för skydd av personlig information (tillsammans "tillämpliga integritetslagar").
+På Zero to Hero anser vi att integritet är en mycket viktig fråga och vi är därför engagerade i att skydda integriteten för alla besökares personuppgifter. Denna integritetspolicy inkluderar de tillämpliga delarna av Personal Information Protection and Electronic Documents Act (Kanada), Personal Information Protection Act (Alberta) och de tio principerna i Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (tillsammans "tillämpliga integritetslagar").
 
-**Insamling av information**
+**Information vi samlar in**
 
-Vi kan samla in personlig information för ett eller flera av följande syften:
+**Information du tillhandahåller direkt:**
 
-*   att etablera och upprätthålla relationer med besökare;
-*   att tillhandahålla begärda och löpande produkter och tjänster;
-*   att meddela dig om ändringar i våra produkter och tjänster;
-*   att få en bättre förståelse för våra besökares krav och preferenser;
-*   att utveckla, förbättra och/eller marknadsföra våra produkter och tjänster;
-*   att övervaka användningen av vår webbplats;
-*   att hantera och förbättra vår verksamhet; och
-*   att uppfylla juridiska och regulatoriska krav.
+* Kontouppgifter: ditt namn, e-postadress, lösenord, språkpreferenser och inlärningsnivå.
+* Inlärningsdata: sparade ord, fraser, framsteg, anteckningar, spellistor, gillade videor, visningshistorik, böcker och läsframsteg.
+* Innehåll du laddar upp eller skapar: anpassad media, EPUB-filer och text du ber oss översätta eller förklara.
+* Betalningsinformation: när du köper en prenumeration behandlas betalningen av Stripe, PayPal eller Apple App Store. Vi får bekräftelse och prenumerationsdetaljer, men vi lagrar i allmänhet inte ditt fullständiga kortnummer.
+
+**Information som samlas in automatiskt:**
+
+* Användningsdata: sidor och funktioner du besöker, inklusive Utforska media, Musik och Underhållning, Live-TV, TV-program, Sök, Ordbok, Sparade ord, Granska, Läsare, Webbläsare, EPUB-läsare, Lokala Media, Tittarhistorik, Spellistor och Gillade videor; videor du tittar på; interaktioner; och tidsstämplar.
+* Enhets- och nätverksinformation: IP-adress, webbläsartyp, operativsystem, enhetstyp och ungefärlig plats härledd från din IP-adress.
+* Analys: vi använder Google Analytics för att förstå hur besökare använder webbplatsen. Google Analytics kan använda cookies och samla in användningsdata för vår räkning. Googles användning av dessa data styrs av [Googles integritetspolicy](https://policies.google.com/privacy).
+* Lokal lagring: vi använder cookies, \`localStorage\`, \`sessionStorage\` och IndexedDB för att hålla dig inloggad, komma ihåg ditt språk, lagra dina inställningar, framsteg och sparade ord, och cachelagra innehåll lokalt.
 
 **Vad gör vi med din information?**
 
-När du köper något via vårt onlinebeställningssystem, som en del av köp- och säljprocessen, samlar vi in din personliga information.
+Vi använder informationen vi samlar in för att:
 
-När du surfar på vår webbplats får vi också automatiskt din dators internetprotokolladress (IP) för att få information som hjälper oss att lära oss om din webbläsare och ditt operativsystem.
+* tillhandahålla, underhålla och förbättra webbplatsen och dess funktioner;
+* skapa och hantera ditt konto, verifiera din identitet och hålla dig inloggad;
+* anpassa rekommendationer baserat på ditt språk, nivå och inlärningshistorik;
+* synkronisera dina data mellan enheter;
+* behandla prenumerationer, betalningar och förnyelser;
+* skicka transaktionsmeddelanden som verifieringskoder, lösenordsåterställningar och betalningskvitton;
+* skicka marknadsföringskommunikation om du har gett oss tillstånd att göra det;
+* analysera användning med Google Analytics för att förstå hur besökare använder webbplatsen och för att förbättra våra produkter;
+* uppfylla juridiska och regulatoriska krav och skydda våra rättigheter och våra användares rättigheter.
 
-Tillåten direktmarknadsföring (om tillämpligt): Med din tillåtelse kan vi skicka nyhetsbrev eller e-postmeddelanden för att annonsera om våra butiker, nya produkter och andra uppdateringar.
+Vi säljer inte dina personuppgifter.
+
+**Delning och utlämnande**
+
+Vi delar personuppgifter endast med tjänsteleverantörer som hjälper oss att driva webbplatsen, inklusive:
+
+* webbhotell- och databasleverantörer, inklusive Supabase;
+* betalningsförmedlare, inklusive Stripe, PayPal och Apple App Store;
+* översättnings- och AI-leverantörer, inklusive DeepSeek, när du använder översättnings- eller AI-förklaringsfunktioner;
+* analysleverantörer, inklusive Google Analytics;
+* videoplattformar, inklusive YouTube och Google, när du tittar på inbäddade videor.
+
+Vi kommer inte att använda eller lämna ut personuppgifter för andra ändamål än de för vilka de samlades in, om det inte är med ditt samtycke, om det är tillåtet eller krävs enligt lag, eller om du bryter mot våra användarvillkor.
 
 **Samtycke**
 
 _Hur får jag ditt samtycke?_
 
-När du ger oss personlig information för att slutföra en transaktion, verifiera ditt kreditkort, lägga en beställning, arrangera en leverans eller returnera ett köp, eller publicera eller fästa information eller foton på vår sociala medieplattform, antar vi att du samtycker till att vi samlar in den och använder den för just det specifika ändamålet.
+När du ger oss personuppgifter för att skapa ett konto, genomföra en transaktion, verifiera din betalning, lägga en order eller använda våra produkter och tjänster, antar vi att du samtycker till att vi samlar in dem och använder dem för just det specifika ändamålet.
 
-Om vi ber om din personliga information för ett sekundärt ändamål, som marknadsföring, kommer vi antingen att fråga dig direkt om ditt uttryckliga samtycke, eller ge dig en möjlighet att säga nej.
+Om vi ber om dina personuppgifter för ett sekundärt ändamål, som marknadsföring, kommer vi antingen att fråga dig direkt om ditt uttryckliga samtycke, eller ge dig möjlighet att säga nej.
 
 _Hur återkallar jag mitt samtycke?_
 
-Om du efter att du har valt att delta ändrar dig, kan du när som helst återkalla ditt samtycke till att vi kontaktar dig, för fortsatt insamling, användning eller utlämnande av din information, genom att meddela oss.
-
-**Utlämnande**
-
-Vi kommer inte att använda eller lämna ut personlig information för andra ändamål än det för vilket den samlades in, om det inte sker med ditt samtycke, om det är tillåtet eller krävs enligt lag, eller om du bryter mot våra användarvillkor.
+Om du efter att du valt att delta ångrar dig, kan du när som helst återkalla ditt samtycke till att vi kontaktar dig, till fortsatt insamling, användning eller utlämnande av din information, genom att meddela oss.
 
 **Skydd**
 
-Vi kommer att skydda personlig information genom att följa branschens bästa praxis och implementera sådana rimliga säkerhetsåtgärder som kan vara lämpliga med hänsyn till informationens känslighet; vi kommer att göra rimliga ansträngningar för att skydda personlig information mot förlust eller stöld, samt obehörig åtkomst, utlämnande, kopiering, användning eller ändring oavsett format. Lagstiftningen tillåter oss också, av juridiska eller affärsmässiga skäl, att behålla personlig information så länge det är rimligt och förutsatt att du inte har återkallat ditt samtycke.
+Vi kommer att skydda personuppgifter genom att följa branschens bästa praxis och implementera sådana rimliga skyddsåtgärder som kan vara lämpliga med hänsyn till informationens känslighet; vi kommer att göra rimliga ansträngningar för att skydda personuppgifter mot förlust eller stöld, samt obehörig åtkomst, utlämnande, kopiering, användning eller modifiering oavsett format i vilket de förvaras. Lagstiftningen tillåter oss också, för juridiska eller affärsmässiga ändamål, att behålla personuppgifter så länge som är rimligt och förutsatt att du inte har återkallat ditt samtycke.
 
 **Säkerhet**
 
-För att skydda din personliga information vidtar vi rimliga försiktighetsåtgärder och följer branschens bästa praxis för att säkerställa att den inte olämpligt förloras, missbrukas, nås, lämnas ut, ändras eller förstörs.
+För att skydda dina personuppgifter vidtar vi rimliga försiktighetsåtgärder och följer branschens bästa praxis för att säkerställa att de inte olämpligt förloras, missbrukas, nås, lämnas ut, ändras eller förstörs.
 
-**Cookies**
+**Cookies och liknande tekniker**
 
-Vår webbplats använder inte cookies.
+Vår webbplats använder cookies och liknande tekniker.
+
+* **Nödvändiga cookies:** vi använder cookies för att hålla dig inloggad, komma ihåg dina valda språk och hantera navigeringsgränser för gäster.
+* **Analys:** vi använder Google Analytics, som kan sätta egna cookies och samla in användningsinformation.
+* **Lokal lagring:** vi använder \`localStorage\`, \`sessionStorage\` och IndexedDB för att lagra inställningar, sparade ord, framsteg, läsinnehåll och anpassad media på din enhet.
+* **Inbäddat innehåll:** videor är inbäddade från YouTube. YouTube och Google kan sätta egna cookies när du tittar på en video, vilka styrs av deras sekretesspolicyer.
+
+Du kan blockera eller radera cookies genom dina webbläsarinställningar. Observera att vissa delar av webbplatsen kanske inte fungerar korrekt om du inaktiverar cookies.
+
+**Dataförvaring och radering**
+
+Vi behåller personuppgifter så länge ditt konto är aktivt, eller så länge som behövs för att tillhandahålla webbplatsen, uppfylla juridiska skyldigheter, lösa tvister och genomdriva våra avtal.
+
+Du kan när som helst radera ditt konto från sidan Profil med alternativet "Radera konto", eller genom att kontakta oss på adressen nedan. När du raderar ditt konto kommer vi att ta bort eller anonymisera dina personuppgifter, med förbehåll för register som vi är skyldiga att behålla av juridiska, betalnings-, skatte- eller säkerhetsskäl.
 
 **Ändringar av denna integritetspolicy**
 
-Vi förbehåller oss rätten att när som helst ändra denna integritetspolicy, så vänligen granska den ofta. Ändringar och förtydliganden träder i kraft omedelbart efter att de publiceras på webbplatsen. Om vi gör väsentliga ändringar av denna policy kommer vi att meddela dig här att den har uppdaterats, så att du är medveten om vilken information vi samlar in, hur vi använder den och under vilka omständigheter, om några, vi använder och/eller lämnar ut den.
+Vi förbehåller oss rätten att när som helst ändra denna integritetspolicy, så vänligen granska den ofta. Ändringar och förtydliganden träder i kraft omedelbart efter att de publicerats på webbplatsen. Om vi gör väsentliga ändringar av denna policy kommer vi att meddela dig här att den har uppdaterats, så att du är medveten om vilken information vi samlar in, hur vi använder den och under vilka omständigheter, i förekommande fall, vi använder och/eller lämnar ut den.
 
 **Frågor och kontaktinformation**
 
-Om du vill: få åtkomst till, korrigera, ändra eller radera någon personlig information vi har om dig, registrera ett klagomål, eller helt enkelt vill ha mer information, kontakta oss på [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Om du vill: komma åt, korrigera, ändra eller radera några personuppgifter vi har om dig, registrera ett klagomål, eller helt enkelt vill ha mer information, kontakta oss på [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'EPUB-läsare', category: 'reading', content: `# EPUB-läsare
 
 Läs EPUB-e-böcker med interaktiv ordsökning, blocköversättning och framsteg som sparas mellan sessioner.
@@ -39193,103 +40022,134 @@ Historia yako ya utazamaji ni ya faragha. Inaonekana kwako tu ukiwa umeingia. In
 - Historia yako ina mipaka ya L2 yako ya sasa — hutaona video za Kijapani ukiwa katika hali ya Kikorea` },
     { path: 'privacy-policy', title: 'Sera ya Faragha', category: 'privacy-policy', content: `# Sera ya Faragha
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website:  [https://languageplayer.io](https://languageplayer.io) , including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+Ukurasa huu wa wavuti unawakilisha hati ya kisheria ambayo hutumika kama Masharti ya Matumizi na Sera ya Faragha yetu na inasimamia matumizi ya tovuti yetu: [https://languageplayer.io](https://languageplayer.io), ikijumuisha kurasa zinazopatikana hapo na sub-domain zote na programu (kwa pamoja, "Tovuti"), kama inavyomilikiwa na kuendeshwa na sisi, Zero to Hero Education, Kanada. ("Zero to Hero").
 
-**Introduction**
+**Utangulizi**
 
-The Terms of Use, along with our Privacy Policy published below, and other posted guidelines or policies within our Website (collectively "Legal Terms"), constitute the entire and only agreement between you and us, and supersede all other agreements, representations, warranties and understandings with respect to our Website and the subject matter contained herein. We may amend our Legal Terms at any time without specific notice to you. The latest copies of our Legal Terms will be posted on our Website, and you should review all Legal Terms prior to using our Website. After any revisions to our Legal Terms are posted, you agree to be bound to any such changes to them. Therefore, it is important for you to periodically review our Legal Terms to make sure you still agree to them.
+Masharti ya Matumizi, pamoja na Sera yetu ya Faragha iliyochapishwa hapa chini, na miongozo au sera nyingine zilizowekwa ndani ya Tovuti yetu (kwa pamoja "Masharti ya Kisheria"), yanajumuisha makubaliano yote na ya pekee kati yako na sisi, na yanashinda makubaliano mengine yote, mawasilisho, dhamana na uelewaji kuhusu Tovuti yetu na mada iliyomo hapa. Tunaweza kurekebisha Masharti yetu ya Kisheria wakati wowote bila taarifa maalum kwako. Nakala za hivi karibuni za Masharti yetu ya Kisheria zitachapishwa kwenye Tovuti yetu, na unapaswa kukagua Masharti yote ya Kisheria kabla ya kutumia Tovuti yetu. Baada ya marekebisho yoyote ya Masharti yetu ya Kisheria kuchapishwa, unakubali kufungwa na mabadiliko hayo yoyote. Kwa hiyo, ni muhimu kwako kukagua Masharti yetu ya Kisheria mara kwa mara ili kuhakikisha bado unayakubali.
 
-By using our Website, you agree to fully comply with and be bound by our Legal Terms. Please review them carefully. If you do not accept our Legal Terms, do not access and use our Website. If you have already accessed our Website and do not accept our Legal Terms, you are no longer authorized to use it and you should immediately discontinue use of our Website. 
+Kwa kutumia Tovuti yetu, unakubali kuzingatia kikamilifu na kufungwa na Masharti yetu ya Kisheria. Tafadhali yakague kwa makini. Usipokubali Masharti yetu ya Kisheria, usifikie na kutumia Tovuti yetu. Kama tayari umefikia Tovuti yetu na hukubali Masharti yetu ya Kisheria, huna idhini tena ya kuitumia na unapaswa kuacha kuitumia mara moja.
 
-**Other Defined Terms On Our Website**
+**Masharti Mengine Yanayofafanuliwa Kwenye Tovuti Yetu**
 
-This Website incorporates terms defined throughout this page as well as these other defined terms: 
+Tovuti hii inajumuisha masharti yaliyofafanuliwa katika ukurasa huu wote pamoja na masharti haya mengine yaliyofafanuliwa:
 
-The terms "us" and "we" refer to Zero to Hero as the owner of the Website. "Content" includes any and all text, information, graphics, audio, video, and other data posted, offered or made available through our Website.
+Maneno "sisi" na "yetu" yanarejelea Zero to Hero kama mmiliki wa Tovuti. "Maudhui" yanajumuisha maandishi yote, taarifa, picha, sauti, video, na data nyingine yoyote iliyochapishwa, kutolewa au kupatikana kupitia Tovuti yetu.
 
-A "visitor" or "you" are collective identifiers that refer to you as a browser of our Website, whether or not you complete a purchase of our products.
+"Mgeni" au "wewe" ni vitambulisho vya pamoja vinavyokurejelea wewe kama mtumiaji wa Tovuti yetu, iwe unakamilisha ununuzi wa bidhaa zetu au la.
 
-"Personal information" means information about an identifiable person, which may include a person's name, residential address, billing address, delivery address, phone number, email address and other similar contact information, as well as Website usage history data.  It may also include a person's credit card information when presented for payment purposes.
+"Taarifa za kibinafsi" zinamaanisha taarifa kuhusu mtu anayeweza kutambuliwa, ambazo zinaweza kujumuisha jina la mtu, anwani ya makazi, anwani ya bili, anwani ya uwasilishaji, nambari ya simu, anwani ya barua pepe na taarifa nyingine zinazofanana za mawasiliano, pamoja na historia ya matumizi ya Tovuti. Inaweza pia kujumuisha taarifa za kadi ya mkopo ya mtu zinapowasilishwa kwa madhumuni ya malipo.
 
-**TERMS OF USE**
+**MASHARTI YA MATUMIZI**
 
-**Intellectual Property**
+**Haki Miliki**
 
-Our Website may contain our service marks or trademarks as well as those of our affiliates or other persons or companies, in the form of words, graphics, and logos. Your use of our Website does not constitute any right or license for you to use such service marks/trademarks, without the prior written authorization of the corresponding service mark/trademark owner. Our Website including the content is also protected under Canadian and international copyright laws. Your use of our Website or the content does not grant you ownership rights of any kind therein.  The copying, redistribution, use or publication by you of any portion of our Website or content is strictly prohibited and therefore may not to be copied or reproduced without first obtaining our written authorization.
+Tovuti yetu inaweza kuwa na alama za huduma au alama za biashara zetu pamoja na zile za washirika wetu au watu au makampuni mengine, kwa namna ya maneno, picha na nembo. Matumizi yako ya Tovuti yetu hayajumuishi haki yoyote au leseni kwako ya kutumia alama hizo za huduma/alama za biashara, bila idhini ya maandishi ya awali ya mmiliki husika wa alama ya huduma/alama ya biashara. Tovuti yetu ikijumuisha maudhui pia inalindwa chini ya sheria za hakimiliki za Kanada na za kimataifa. Matumizi yako ya Tovuti yetu au maudhui hayakupi haki za umiliki wa aina yoyote ndani yake. Kunakili, kusambaza upya, kutumia au kuchapisha kwako sehemu yoyote ya Tovuti yetu au maudhui kumekatazwa kabisa na kwa hiyo hairuhusiwi kunakiliwa au kurejeshwa bila kupata kwanza idhini yetu ya maandishi.
 
-**Limitation of Liability**
+**Kikomo cha Dhima**
 
-In no circumstances shall we, or our officers or employees, be responsible or liable for any loss or damages whatsoever, including (without limiting the generality of the foregoing) any direct, indirect, incidental, special, punitive or consequential damages, arising from or in connection with your use of, access to or your reliance on, or your inability to use or access, this Website, the online ordering system or any content.
+Katika hali zozote, sisi, au maafisa au wafanyakazi wetu, hatutawajibika au kuwajibika kwa hasara au uharibifu wowote, ikijumuisha (bila kupunguza ujumla wa yaliyotangulia) uharibifu wowote wa moja kwa moja, usio wa moja kwa moja, wa bahati, maalum, wa adhabu au wa matokeo, unaotokana na au kuhusiana na matumizi yako ya, ufikiaji wa au tegemeo lako kwenye, au kutoweza kwako kutumia au kufikia, Tovuti hii, mfumo wa kuagiza mtandaoni au maudhui yoyote.
 
-**General Terms**
+**Masharti ya Jumla**
 
-Our Legal Terms shall be treated as though it were executed and performed in the Province of British Columbia, Canada and shall be governed by and construed in accordance with the laws of that region without regard to conflict of law principles. In addition, you agree to submit to the personal jurisdiction and venue of the courts within that region. Any cause of action by you with respect to our Website must be instituted within one (1) year after the cause of action arose or be forever waived and barred. Should any part of our Legal Terms be held invalid or unenforceable, that portion shall be construed consistent with applicable law and the remaining portions shall remain in full force and effect. To the extent that any content conflicts or is inconsistent with our Legal Terms, our Legal Terms shall supersede and be paramount the construction of them together. Our failure to enforce any provision of our Legal Terms shall not be deemed a waiver of such provision nor of the right to enforce such provision. Our rights under our Legal Terms shall survive the termination of our Legal Terms.
+Masharti yetu ya Kisheria yatachukuliwa kana kwamba yalitekelezwa na kufanywa katika Mkoa wa British Columbia, Kanada na yataongozwa na kufasiriwa kwa mujibu wa sheria za eneo hilo bila kuzingatia kanuni za mgongano wa sheria. Kwa kuongezea, unakubali kujisalimisha kwa mamlaka ya mahakama na eneo la mahakama ndani ya eneo hilo. Hatua yoyote ya madai kwako kuhusu Tovuti yetu lazima ianzishwe ndani ya mwaka mmoja (1) baada ya sababu ya madai kutokea au itaachwa na kuzuiwa milele. Iwapo sehemu yoyote ya Masharti yetu ya Kisheria itashikiliwa kuwa batili au isiyotekelezeka, sehemu hiyo itafasiriwa kulingana na sheria inayotumika na sehemu zilizobaki zitasalia katika nguvu kamili na athari. Kwa kiwango ambacho maudhui yoyote yanakinzana au hayaoani na Masharti yetu ya Kisheria, Masharti yetu ya Kisheria yatashinda na kuwa ya juu katika ufasiri wao kwa pamoja. Kutotekeleza kwetu kipengele chochote cha Masharti yetu ya Kisheria hakutachukuliwa kama kuachana na kipengele hicho wala haki ya kutekeleza kipengele hicho. Haki zetu chini ya Masharti yetu ya Kisheria zitaendelea kutumika baada ya kukomeshwa kwa Masharti yetu ya Kisheria.
 
-**Third Party Links**
+**Viungo vya Watu Wengine**
 
-When you click on links on our Website, they may direct you away from our Website to another website owned and operated by a third party. We are not responsible for the privacy practices of other third-party websites and encourage you to read their terms of use and privacy statements.  Once you leave our Website or are redirected to a third-party website or application, you are no longer governed by our Legal Terms.
+Unapobofya viungo kwenye Tovuti yetu, vinaweza kukuelekeza mbali na Tovuti yetu kwenda kwenye tovuti nyingine inayomilikiwa na kuendeshwa na mtu mwingine. Hatujawajibika kwa mazoea ya faragha ya tovuti zingine za watu wengine na tunakuhimiza kusoma masharti yao ya matumizi na taarifa za faragha. Mara tu unapoondoka kwenye Tovuti yetu au kuelekezwa kwenye tovuti au programu ya mtu mwingine, hutawaliwa tena na Masharti yetu ya Kisheria.
 
-**PRIVACY POLICY**
+**SERA YA FARAGHA**
 
-At Zero to Hero we consider privacy to be a very important matter and as such we are committed to protecting the privacy of the personal information of all visitors.   This Privacy Policy incorporates the applicable portions of the Personal Information Protection and Electronic Documents Act (Canada), the Personal Information Protection Act (Alberta) and the ten principles set out in the Canadian Standards Association (CSA) Model Code for the Protection of Personal Information (together, the "applicable privacy laws").
+Katika Zero to Hero tunazingatia faragha kama jambo muhimu sana na kwa hiyo tumejitolea kulinda faragha ya taarifa za kibinafsi za wageni wote. Sera hii ya Faragha inajumuisha sehemu zinazotumika za Sheria ya Ulinzi wa Taarifa za Kibinafsi na Nyaraka za Kielektroniki (Kanada), Sheria ya Ulinzi wa Taarifa za Kibinafsi (Alberta) na kanuni kumi zilizowekwa katika Kanuni ya Mfano ya Chama cha Viwango cha Kanada (CSA) ya Ulinzi wa Taarifa za Kibinafsi (kwa pamoja, "sheria zinazotumika za faragha").
 
-**Collection of Information**
+**Taarifa Tunazokusanya**
 
-We may collect personal information for any one or more of the following purposes:
+**Taarifa unazotoa moja kwa moja:**
 
-*   to establish and maintain relationships with visitors;
-*   to provide requested and ongoing products and services;
-*   to notify you of changes to our products and services;
-*   to obtain a better understanding of our visitors their requirements and preferences;
-*   to develop, enhance, improve and/or market our products and services;
-*   to monitor the usage of our Website;
-*   to manage and improve our business and operations; and
-*   to meet legal and regulatory requirements.
+* Taarifa za akaunti: jina lako, anwani ya barua pepe, nenosiri, mapendeleo ya lugha na kiwango cha kujifunza.
+* Data ya kujifunza: maneno yaliyohifadhiwa, vifungu vya maneno, maendeleo ya mapitio, maelezo, orodha za kucheza, video zilizopendwa, historia ya kutazama, vitabu na maendeleo ya kusoma.
+* Maudhui unayopakia au kuunda: media maalum, faili za EPUB, na maandishi unayotuuliza kutafsiri au kuelezea.
+* Taarifa za malipo: unaponunua usajili, malipo yanachakatwa na Stripe, PayPal au Apple App Store. Tunapokea uthibitisho na maelezo ya usajili, lakini kwa ujumla hatuhifadhi nambari yako kamili ya kadi.
 
-**  
-What Do We Do With Your Information?**
+**Taarifa zinazokusanywa kiotomatiki:**
 
-When you purchase something through our online ordering system, as part of the buying and selling process, we collect your personal information.
+* Data ya matumizi: kurasa na vipengele unavyotembelea, ikijumuisha Chunguza midia, Muziki na Burudani, Runinga ya Moja kwa Moja, Vipindi vya TV, Tafuta, Kamusi, Maneno Yaliyohifadhiwa, Mapitio, Kisoma, Kisoma wavuti, Kisoma EPUB, Midia ya Ndani, Historia ya Kutazama, Orodha za Kucheza na Video Ulizozipenda; video unazotazama; mwingiliano; na mihuri ya wakati.
+* Taarifa za kifaa na mtandao: anwani ya IP, aina ya kivinjari, mfumo wa uendeshaji, aina ya kifaa na eneo la takriban linalotokana na anwani yako ya IP.
+* Takwimu: tunatumia Google Analytics kuelewa jinsi wageni wanavyotumia Tovuti. Google Analytics inaweza kutumia cookies na kukusanya data ya matumizi kwa niaba yetu. Matumizi ya Google ya data hiyo yanaongozwa na [Sera ya Faragha ya Google](https://policies.google.com/privacy).
+* Hifadhi ya ndani: tunatumia cookies, \`localStorage\`, \`sessionStorage\` na IndexedDB kukuweka umeingia katika akaunti, kukumbuka lugha yako, kuhifadhi mipangilio yako, maendeleo na maneno yaliyohifadhiwa, na kuweka maudhui kwenye akiba ya ndani.
 
-When you browse our Website, we also automatically receive your computer's internet protocol (IP) address in order to provide us with information that helps us learn about your browser and operating system.
+**Tunafanya Nini Na Taarifa Zako?**
 
-Permitted direct marketing (if applicable): With your permission, we may send you newsletters or emails to advertise about our stores, new products and other updates.
+Tunatumia taarifa tunazokusanya kwa:
 
-**Consent**
+* kutoa, kudumisha na kuboresha Tovuti na vipengele vyake;
+* kuunda na kusimamia akaunti yako, kuthibitisha utambulisho wako na kukuweka umeingia katika akaunti;
+* kubinafsisha mapendekezo kulingana na lugha yako, kiwango na historia ya kujifunza;
+* kusawazisha data yako kwenye vifaa tofauti;
+* kuchakata usajili, malipo na upyaji;
+* kutuma barua pepe za kimaamuzi kama vile nambari za uthibitisho, upyaji wa nenosiri na risiti za malipo;
+* kutuma mawasiliano ya kimasoko kama umetupa ruhusa ya kufanya hivyo;
+* kuchambua matumizi kwa Google Analytics kuelewa jinsi wageni wanavyotumia Tovuti na kuboresha bidhaa zetu;
+* kukidhi mahitaji ya kisheria na udhibiti na kulinda haki zetu na haki za watumiaji wetu.
 
-_How do you get my consent?_
+Hatutauzi taarifa zako za kibinafsi.
 
-When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, or post or pin any information or photos to our social media site, we infer that you consent to our collecting it and using it for that specific reason only.
+**Kushiriki na Ufunuo**
 
-If we ask for your personal information for a secondary reason, like marketing, we will either ask you directly for your expressed consent, or provide you with an opportunity to say no.
+Tunashiriki taarifa za kibinafsi tu na watoa huduma wanaotusaidia kuendesha Tovuti, ikijumuisha:
 
-_How do I withdraw my consent?_
+* watoa huduma za uwekaji na hifadhidata, ikijumuisha Supabase;
+* wachakataji wa malipo, ikijumuisha Stripe, PayPal na Apple App Store;
+* watoa huduma za tafsiri na AI, ikijumuisha DeepSeek, unapotumia vipengele vya tafsiri au maelezo ya AI;
+* watoa huduma za takwimu, ikijumuisha Google Analytics;
+* majukwaa ya video, ikijumuisha YouTube na Google, unapotazama video zilizopachikwa.
 
-If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued collection, use or disclosure of your information, at anytime, by notifying us.
+Hatutatumia au kufunua taarifa za kibinafsi kwa madhumuni mengine zaidi ya yale yaliyokusanywa, isipokuwa kwa ridhaa yako, ikiwa inaruhusiwa au inahitajika na sheria, au ukikiuka Masharti yetu ya Matumizi.
 
-**Disclosure**
+**Ridhaa**
 
-We will not use or disclose personal information for purposes other than that for which it was collected, unless it is with your consent, if it is permitted or required by law or you violate our Terms of Use.
+_Unapataje ridhaa yangu?_
 
-**Protection**
+Unapotupa taarifa za kibinafsi ili kuunda akaunti, kukamilisha muamala, kuthibitisha malipo yako, kuweka agizo, au kutumia bidhaa na huduma zetu, tunadhania kwamba unakubali tukusanye na kuzitumia kwa sababu hiyo maalum tu.
 
-We will protect personal information by following industry best practices and implementing such reasonable safeguards as may be appropriate to the sensitivity of the information; we will make reasonable efforts to protect personal information against loss or theft, as well as unauthorized access, disclosure, copying, use or modification regardless of the format in which it is held. The legislation also allows us, for legal or business purposes, to retain personal information for as long as is reasonable and provided you have not revoked your consent.
+Tukikuuliza taarifa zako za kibinafsi kwa sababu ya pili, kama masoko, tutakuuliza moja kwa moja kwa ridhaa yako iliyoelezwa, au tutakupa fursa ya kusema hapana.
 
-**Security**
+_Ninawezaje kuondoa ridhaa yangu?_
 
-To protect your personal information, we take reasonable precautions and follow industry best practices to make sure it is not inappropriately lost, misused, accessed, disclosed, altered or destroyed.
+Ikiwa baada ya kukubali, unabadilisha mawazo yako, unaweza kuondoa ridhaa yako kwetu kuwasiliana nawe, kwa kuendelea kukusanya, kutumia au kufunua taarifa zako, wakati wowote, kwa kutujulisha.
 
-**Cookies**
+**Ulinzi**
 
-Our Website does not use cookies.
+Tutalinda taarifa za kibinafsi kwa kufuata mazoea bora ya tasnia na kutekeleza ulinzi wenye busara kama unaweza kuwa sahihi kwa usikivu wa taarifa; tutafanya juhudi za busara kulinda taarifa za kibinafsi dhidi ya upotevu au wizi, pamoja na ufikiaji usioidhinishwa, ufunuo, kunakili, matumizi au mabadiliko bila kujali muundo unaozihifadhiwa. Sheria pia inaturuhusu, kwa madhumuni ya kisheria au ya biashara, kuhifadhi taarifa za kibinafsi kwa muda mrefu kama inavyofaa na mradi hujaondoa ridhaa yako.
 
-**Changes To This Privacy Policy**
+**Usalama**
 
-We reserve the right to modify this privacy policy at any time, so please review it frequently. Changes and clarifications will take effect immediately upon their posting on the Website. If we make material changes to this policy, we will notify you here that it has been updated, so that you are aware of what information we collect, how we use it, and under what circumstances, if any, we use and/or disclose it.
+Ili kulinda taarifa zako za kibinafsi, tunachukua tahadhari za busara na kufuata mazoea bora ya tasnia kuhakikisha hazipotei, hazitumiwi vibaya, hazifikikiwi, hazifunuliwi, hazibadilishwi au kuharibiwa isivyofaa.
 
-**Questions And Contact Information**
+**Cookies na Teknolojia Zinazofanana**
 
-If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or simply want more information contact us at  [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) .` },
+Tovuti yetu hutumia cookies na teknolojia zinazofanana.
+
+* **Cookies muhimu:** tunatumia cookies kukuweka umeingia katika akaunti, kukumbuka lugha ulizochagua, na kusimamia mipaka ya uabiri wa wageni.
+* **Takwimu:** tunatumia Google Analytics, ambayo inaweza kuweka cookies zake na kukusanya taarifa za matumizi.
+* **Hifadhi ya ndani:** tunatumia \`localStorage\`, \`sessionStorage\` na IndexedDB kuhifadhi mipangilio, maneno yaliyohifadhiwa, maendeleo, maudhui ya kusoma na media maalum kwenye kifaa chako.
+* **Maudhui yaliyopachikwa:** video zinapachikwa kutoka YouTube. YouTube na Google zinaweza kuweka cookies zao unapotazama video, ambazo zinaongozwa na sera zao za faragha.
+
+Unaweza kuzuia au kufuta cookies kupitia mipangilio ya kivinjari chako. Tafadhali kumbuka kwamba sehemu zingine za Tovuti zinaweza zisifanye kazi vizuri ukizima cookies.
+
+**Uhifadhi na Ufutaji wa Data**
+
+Tunahifadhi taarifa za kibinafsi kwa muda wote akaunti yako inapokuwa hai, au kwa muda mrefu kama inavyohitajika kutoa Tovuti, kutii wajibu wa kisheria, kutatua migogoro na kutekeleza makubaliano yetu.
+
+Unaweza kufuta akaunti yako wakati wowote kutoka ukurasa wa Wasifu kwa kutumia chaguo la Futa Akaunti, au kwa kuwasiliana nasi kwenye anwani iliyo hapa chini. Unapofuta akaunti yako, tutaondoa au kufanya taarifa zako za kibinafsi zisijulikane, kulingana na rekodi tunazotakiwa kuhifadhi kwa madhumuni ya kisheria, malipo, kodi au usalama.
+
+**Mabadiliko ya Sera Hii ya Faragha**
+
+Tunahifadhi haki ya kurekebisha sera hii ya faragha wakati wowote, kwa hiyo tafadhali ikague mara kwa mara. Mabadiliko na ufafanuzi utaanza kutumika mara moja baada ya kuchapishwa kwenye Tovuti. Tukifanya mabadiliko makubwa kwa sera hii, tutakujulisha hapa kwamba imesasishwa, ili uwe na ufahamu wa taarifa gani tunazokusanya, jinsi tunavyozitumia, na katika hali gani, ikiwa zipo, tunazitumia na/au kuzifunua.
+
+**Maswali na Taarifa za Mawasiliano**
+
+Kama ungependa: kufikia, kusahihisha, kubadilisha au kufuta taarifa zozote za kibinafsi tulizonazo kukuhusu, kuwasilisha malalamiko, au unataka tu taarifa zaidi, wasiliana nasi kwenye [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Kisoma EPUB', category: 'reading', content: `# Kisoma EPUB
 
 Soma vitabu vya EPUB vya kielektroniki kwa utafutaji wa maneno kwa mwingiliano, tafsiri kwa kila kipande, na maendeleo yanayoendelea katika vipindi.
@@ -40660,102 +41520,134 @@ Language Player จะบันทึกประวัติการรับ�
 - ประวัติของคุณจะจำกัดเฉพาะภาษา L2 ปัจจุบัน — คุณจะไม่เห็นวิดีโอ ญี่ปุ่น เมื่อคุณอยู่ในโหมด เกาหลี` },
     { path: 'privacy-policy', title: 'นโยบายความเป็นส่วนตัว', category: 'privacy-policy', content: `# นโยบายความเป็นส่วนตัว
 
-หน้าเว็บนี้เป็นเอกสารทางกฎหมายที่ทำหน้าที่เป็นข้อกำหนดในการใช้งานและนโยบายความเป็นส่วนตัวของเรา และควบคุมการใช้งานเว็บไซต์ของเรา: [https://languageplayer.io](https://languageplayer.io) รวมถึงหน้าที่พบในเว็บไซต์ดังกล่าว และโดเมนย่อยและแอปพลิเคชันทั้งหมด (รวมเรียกว่า "เว็บไซต์") ซึ่งดำเนินการและเป็นเจ้าของโดยเรา Zero to Hero Education ประเทศแคนาดา ("Zero to Hero")
+หน้านี้เป็นเอกสารทางกฎหมายที่ทำหน้าที่เป็นข้อกำหนดในการใช้งานและนโยบายความเป็นส่วนตัวของเรา และใช้ควบคุมการใช้งานเว็บไซต์ของเรา: [https://languageplayer.io](https://languageplayer.io) รวมถึงหน้าต่างๆ ที่พบในเว็บไซต์ดังกล่าว และโดเมนย่อยและแอปพลิเคชันทั้งหมด (เรียกรวมกันว่า "เว็บไซต์") ซึ่งดำเนินการและเป็นเจ้าของโดยเรา Zero to Hero Education, Canada ("Zero to Hero")
 
 **บทนำ**
 
-ข้อกำหนดในการใช้งาน พร้อมด้วยนโยบายความเป็นส่วนตัวที่เผยแพร่ด้านล่าง และแนวทางหรือนโยบายอื่นๆ ที่โพสต์ภายในเว็บไซต์ของเรา (รวมเรียกว่า "ข้อกำหนดทางกฎหมาย") ถือเป็นข้อตกลงทั้งหมดและเพียงฉบับเดียวระหว่างคุณกับเรา และแทนที่ข้อตกลง การแสดงเจตนา การรับประกัน และความเข้าใจอื่นๆ ทั้งหมดเกี่ยวกับเว็บไซต์ของเราและเนื้อหาที่เกี่ยวข้อง เราอาจแก้ไขข้อกำหนดทางกฎหมายของเราได้ตลอดเวลาโดยไม่ต้องแจ้งให้คุณทราบเป็นพิเศษ สำเนาล่าสุดของข้อกำหนดทางกฎหมายของเราจะถูกโพสต์บนเว็บไซต์ของเรา และคุณควรทบทวนข้อกำหนดทางกฎหมายทั้งหมดก่อนใช้งานเว็บไซต์ของเรา หลังจากมีการแก้ไขข้อกำหนดทางกฎหมายของเราและโพสต์แล้ว คุณตกลงที่จะผูกพันตามการเปลี่ยนแปลงดังกล่าว ดังนั้น จึงเป็นสิ่งสำคัญที่คุณจะต้องทบทวนข้อกำหนดทางกฎหมายของเราเป็นระยะเพื่อให้แน่ใจว่าคุณยังคงยอมรับข้อกำหนดเหล่านั้น
+ข้อกำหนดในการใช้งาน พร้อมด้วยนโยบายความเป็นส่วนตัวที่เผยแพร่ด้านล่างนี้ และแนวปฏิบัติหรือนโยบายอื่นๆ ที่โพสต์ภายในเว็บไซต์ของเรา (เรียกรวมกันว่า "ข้อกำหนดทางกฎหมาย") ถือเป็นข้อตกลงทั้งหมดและเพียงข้อเดียวระหว่างคุณกับเรา และแทนที่ข้อตกลง การแสดงเจตนา การรับประกัน และความเข้าใจอื่นๆ ทั้งหมดที่เกี่ยวกับเว็บไซต์ของเราและเนื้อหาที่อยู่ในเอกสารนี้ เราอาจแก้ไขข้อกำหนดทางกฎหมายของเราได้ตลอดเวลาโดยไม่ต้องแจ้งให้คุณทราบเป็นเฉพาะราย สำเนาล่าสุดของข้อกำหนดทางกฎหมายของเราจะถูกโพสต์บนเว็บไซต์ของเรา และคุณควรทบทวนข้อกำหนดทางกฎหมายทั้งหมดก่อนใช้เว็บไซต์ของเรา หลังจากการแก้ไขข้อกำหนดทางกฎหมายของเราถูกโพสต์แล้ว คุณตกลงที่จะผูกพันตามการเปลี่ยนแปลงดังกล่าวทั้งหมด ดังนั้น จึงเป็นสิ่งสำคัญที่คุณควรทบทวนข้อกำหนดทางกฎหมายของเราเป็นระยะๆ เพื่อให้แน่ใจว่าคุณยังคงยอมรับข้อกำหนดเหล่านั้น
 
-โดยการใช้เว็บไซต์ของเรา คุณตกลงที่จะปฏิบัติตามและผูกพันตามข้อกำหนดทางกฎหมายของเราอย่างครบถ้วน โปรดตรวจสอบอย่างละเอียด หากคุณไม่ยอมรับข้อกำหนดทางกฎหมายของเรา อย่าเข้าใช้และใช้งานเว็บไซต์ของเรา หากคุณได้เข้าใช้เว็บไซต์ของเราแล้วและไม่ยอมรับข้อกำหนดทางกฎหมายของเรา คุณไม่มีสิทธิ์ใช้งานอีกต่อไป และคุณควรหยุดการใช้เว็บไซต์ของเราทันที
+โดยการใช้เว็บไซต์ของเรา คุณตกลงที่จะปฏิบัติตามและผูกพันตามข้อกำหนดทางกฎหมายของเราอย่างครบถ้วน โปรดทบทวนข้อกำหนดเหล่านี้อย่างรอบคอบ หากคุณไม่ยอมรับข้อกำหนดทางกฎหมายของเรา กรุณาอย่าเข้าถึงและใช้เว็บไซต์ของเรา หากคุณได้เข้าถึงเว็บไซต์ของเราแล้วและไม่ยอมรับข้อกำหนดทางกฎหมายของเรา คุณไม่ได้รับอนุญาตให้ใช้เว็บไซต์อีกต่อไป และคุณควรหยุดใช้เว็บไซต์ของเราทันที
 
-**คำนิยามอื่นๆ ที่กำหนดบนเว็บไซต์ของเรา**
+**คำนิยามอื่นๆ ที่ใช้บนเว็บไซต์ของเรา**
 
-เว็บไซต์นี้รวมคำนิยามที่กำหนดทั่วทั้งหน้านี้ รวมถึงคำนิยามอื่นๆ เหล่านี้:
+เว็บไซต์นี้รวมคำนิยามที่กำหนดไว้ทั่วทั้งหน้านี้ รวมถึงคำนิยามอื่นๆ ดังต่อไปนี้:
 
-คำว่า "เรา" หมายถึง Zero to Hero ในฐานะเจ้าของเว็บไซต์ "เนื้อหา" รวมถึงข้อความ ข้อมูล กราฟิก เสียง วิดีโอ และข้อมูลอื่นๆ ทั้งหมดที่โพสต์ นำเสนอ หรือทำให้ใช้งานได้ผ่านเว็บไซต์ของเรา
+คำว่า "เรา" หมายถึง Zero to Hero ในฐานะเจ้าของเว็บไซต์ "เนื้อหา" หมายรวมถึงข้อความ ข้อมูล กราฟิก เสียง วิดีโอ และข้อมูลอื่นๆ ทั้งหมดที่ถูกโพสต์ นำเสนอ หรือจัดให้มีผ่านเว็บไซต์ของเรา
 
-"ผู้เยี่ยมชม" หรือ "คุณ" เป็นตัวระบุรวมที่อ้างถึงคุณในฐานะผู้เรียกดูเว็บไซต์ของเรา ไม่ว่าคุณจะซื้อสินค้าของเราหรือไม่ก็ตาม
+"ผู้เยี่ยมชม" หรือ "คุณ" เป็นตัวระบุรวมที่หมายถึงคุณในฐานะผู้เข้าชมเว็บไซต์ของเรา ไม่ว่าคุณจะซื้อผลิตภัณฑ์ของเราหรือไม่ก็ตาม
 
-"ข้อมูลส่วนบุคคล" หมายถึงข้อมูลเกี่ยวกับบุคคลที่สามารถระบุตัวตนได้ ซึ่งอาจรวมถึงชื่อ ที่อยู่ residential ที่อยู่สำหรับเรียกเก็บเงิน ที่อยู่จัดส่ง หมายเลขโทรศัพท์ ที่อยู่อีเมล และข้อมูลติดต่อที่คล้ายคลึงกันอื่นๆ รวมถึงข้อมูลประวัติการใช้งานเว็บไซต์ นอกจากนี้ยังอาจรวมถึงข้อมูลบัตรเครดิตของบุคคลเมื่อนำเสนอเพื่อวัตถุประสงค์ในการชำระเงิน
+"ข้อมูลส่วนบุคคล" หมายถึงข้อมูลเกี่ยวกับบุคคลที่สามารถระบุตัวตนได้ ซึ่งอาจรวมถึงชื่อ ที่อยู่ที่พักอาศัย ที่อยู่สำหรับเรียกเก็บเงิน ที่อยู่สำหรับจัดส่ง หมายเลขโทรศัพท์ ที่อยู่อีเมล และข้อมูลติดต่ออื่นๆ ที่คล้ายคลึงกัน รวมถึงข้อมูลประวัติการใช้งานเว็บไซต์ และอาจรวมถึงข้อมูลบัตรเครดิตของบุคคลเมื่อนำเสนอเพื่อวัตถุประสงค์ในการชำระเงิน
 
 **ข้อกำหนดในการใช้งาน**
 
 **ทรัพย์สินทางปัญญา**
 
-เว็บไซต์ของเราอาจมีเครื่องหมายบริการหรือเครื่องหมายการค้าของเรา รวมถึงของบริษัทในเครือหรือบุคคลหรือบริษัทอื่นๆ ในรูปแบบของคำ กราฟิก และโลโก้ การใช้เว็บไซต์ของเราไม่ถือเป็นสิทธิ์หรือใบอนุญาตใดๆ สำหรับคุณในการใช้เครื่องหมายบริการ/เครื่องหมายการค้าดังกล่าว โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรล่วงหน้าจากเจ้าของเครื่องหมายบริการ/เครื่องหมายการค้านั้น เว็บไซต์ของเรารวมถึงเนื้อหาได้รับการคุ้มครองภายใต้กฎหมายลิขสิทธิ์ของแคนาดาและระหว่างประเทศ การใช้เว็บไซต์หรือเนื้อหาของคุณไม่ได้ให้สิทธิ์ความเป็นเจ้าของใดๆ แก่คุณ การคัดลอก แจกจ่าย ใช้ หรือเผยแพร่เนื้อหาส่วนใดส่วนหนึ่งของเว็บไซต์หรือเนื้อหาของเราโดยคุณเป็นสิ่งต้องห้ามอย่างเคร่งครัด และไม่สามารถคัดลอกหรือทำซ้ำได้โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรจากเราก่อน
+เว็บไซต์ของเราอาจมีเครื่องหมายบริการหรือเครื่องหมายการค้าของเรา รวมถึงของบริษัทในเครือหรือบุคคลหรือบริษัทอื่นๆ ในรูปแบบของคำ กราฟิก และโลโก้ การใช้เว็บไซต์ของเราไม่ถือเป็นการให้สิทธิ์หรือใบอนุญาตใดๆ แก่คุณในการใช้เครื่องหมายบริการ/เครื่องหมายการค้าดังกล่าว โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรล่วงหน้าจากเจ้าของเครื่องหมายบริการ/เครื่องหมายการค้านั้น เว็บไซต์ของเรารวมถึงเนื้อหาได้รับการคุ้มครองภายใต้กฎหมายลิขสิทธิ์ของแคนาดาและระหว่างประเทศ การใช้เว็บไซต์หรือเนื้อหาของเราไม่ได้ให้สิทธิ์ความเป็นเจ้าของใดๆ แก่คุณในเนื้อหาดังกล่าว การคัดลอก การเผยแพร่ซ้ำ การใช้ หรือการเผยแพร่ใดๆ โดยคุณในส่วนใดส่วนหนึ่งของเว็บไซต์หรือเนื้อหาของเราเป็นสิ่งต้องห้ามอย่างเคร่งครัด และไม่สามารถคัดลอกหรือทำซ้ำได้โดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษรจากเราก่อน
 
 **ข้อจำกัดความรับผิด**
 
-ไม่ว่าในกรณีใดๆ เราหรือเจ้าหน้าที่หรือพนักงานของเราจะไม่รับผิดชอบหรือรับผิดต่อความสูญเสียหรือความเสียหายใดๆ ทั้งสิ้น รวมถึง (โดยไม่จำกัดความทั่วไปของข้อความข้างต้น) ความเสียหายโดยตรง โดยอ้อม โดยบังเอิญ พิเศษ ลงโทษ หรือเป็นผลสืบเนื่องใดๆ ที่เกิดขึ้นจากหรือเกี่ยวข้องกับการใช้งาน การเข้าถึง หรือการพึ่งพา หรือการไม่สามารถใช้หรือเข้าถึงเว็บไซต์นี้ ระบบสั่งซื้อออนไลน์ หรือเนื้อหาใดๆ
+ไม่ว่าในกรณีใดๆ เราหรือเจ้าหน้าที่หรือพนักงานของเราจะไม่รับผิดชอบหรือรับผิดต่อความสูญเสียหรือความเสียหายใดๆ ทั้งสิ้น รวมถึง (โดยไม่จำกัดความทั่วไปของสิ่งที่กล่าวมาข้างต้น) ความเสียหายทางตรง ทางอ้อม โดยบังเอิญ เป็นพิเศษ เพื่อการลงโทษ หรือเป็นผลสืบเนื่องใดๆ ที่เกิดจากหรือเกี่ยวข้องกับการใช้ การเข้าถึง หรือการพึ่งพาเว็บไซต์นี้ ระบบสั่งซื้อออนไลน์ หรือเนื้อหาใดๆ ของคุณ หรือการไม่สามารถใช้หรือเข้าถึงสิ่งเหล่านั้นได้
 
 **ข้อกำหนดทั่วไป**
 
-ข้อกำหนดทางกฎหมายของเราจะถือว่าได้ดำเนินการและปฏิบัติในจังหวัดบริติชโคลัมเบีย ประเทศแคนาดา และจะอยู่ภายใต้บังคับและตีความตามกฎหมายของภูมิภาคนั้นโดยไม่คำนึงถึงหลักการขัดกันแห่งกฎหมาย นอกจากนี้ คุณตกลงที่จะยอมรับเขตอำนาจศาลส่วนบุคคลและสถานที่พิจารณาคดีของศาลภายในภูมิภาคนั้น สาเหตุการฟ้องร้องใดๆ โดยคุณเกี่ยวกับเว็บไซต์ของเราจะต้องยื่นภายในหนึ่ง (1) ปีหลังจากสาเหตุการฟ้องร้องเกิดขึ้น มิฉะนั้นจะถูกละทิ้งและตัดสิทธิ์อย่างถาวร หากส่วนใดส่วนหนึ่งของข้อกำหนดทางกฎหมายของเราถือว่าไม่ถูกต้องหรือไม่สามารถบังคับใช้ได้ ส่วนนั้นจะถูกตีความให้สอดคล้องกับกฎหมายที่เกี่ยวข้อง และส่วนที่เหลือจะยังคงมีผลสมบูรณ์ ในขอบเขตที่เนื้อหาใดขัดแย้งหรือไม่สอดคล้องกับข้อกำหนดทางกฎหมายของเรา ข้อกำหนดทางกฎหมายของเราจะมีผลเหนือกว่าและเป็นสำคัญในการตีความร่วมกัน การที่เราไม่บังคับใช้ข้อกำหนดใดๆ ของข้อกำหนดทางกฎหมายของเราจะไม่ถือเป็นการสละสิทธิ์ในข้อกำหนดนั้นหรือสิทธิ์ในการบังคับใช้ข้อกำหนดดังกล่าว สิทธิ์ของเราภายใต้ข้อกำหนดทางกฎหมายของเราจะยังคงมีอยู่หลังจากการสิ้นสุดของข้อกำหนดทางกฎหมายของเรา
+ข้อกำหนดทางกฎหมายของเราจะถือเสมือนว่าได้ลงนามและปฏิบัติในจังหวัดบริติชโคลัมเบีย ประเทศแคนาดา และจะอยู่ภายใต้บังคับและตีความตามกฎหมายของภูมิภาคนั้นโดยไม่คำนึงถึงหลักการขัดกันแห่งกฎหมาย นอกจากนี้ คุณตกลงยอมรับเขตอำนาจศาลส่วนบุคคลและสถานที่พิจารณาคดีของศาลภายในภูมิภาคนั้น การฟ้องร้องใดๆ โดยคุณเกี่ยวกับเว็บไซต์ของเราจะต้องยื่นภายในหนึ่ง (1) ปีนับจากวันที่เกิดเหตุแห่งการฟ้องร้อง มิฉะนั้นจะถือเป็นการสละสิทธิ์และถูกตัดสิทธิ์อย่างถาวร หากข้อกำหนดทางกฎหมายส่วนใดของเราถูกพิจารณาว่าไม่สมบูรณ์หรือไม่สามารถบังคับใช้ได้ ส่วนนั้นจะถูกตีความให้สอดคล้องกับกฎหมายที่เกี่ยวข้อง และส่วนที่เหลือจะยังคงมีผลสมบูรณ์และบังคับใช้ได้ต่อไป ในกรณีที่เนื้อหาใดขัดแย้งหรือไม่สอดคล้องกับข้อกำหนดทางกฎหมายของเรา ข้อกำหนดทางกฎหมายของเราจะมีผลเหนือกว่าและมีความสำคัญสูงสุดในการตีความร่วมกัน การที่เราไม่บังคับใช้ข้อกำหนดใดๆ ในข้อกำหนดทางกฎหมายของเราจะไม่ถือเป็นการสละสิทธิ์ในข้อกำหนดนั้นหรือสิทธิ์ในการบังคับใช้ข้อกำหนดดังกล่าว สิทธิ์ของเราตามข้อกำหนดทางกฎหมายของเราจะยังคงมีอยู่ต่อไปหลังจากการสิ้นสุดของข้อกำหนดทางกฎหมายของเรา
 
-**ลิงก์ของบุคคลที่สาม**
+**ลิงก์บุคคลที่สาม**
 
-เมื่อคุณคลิกลิงก์บนเว็บไซต์ของเรา ลิงก์เหล่านั้นอาจนำคุณออกจากเว็บไซต์ของเราไปยังเว็บไซต์อื่นที่เป็นเจ้าของและดำเนินการโดยบุคคลที่สาม เราไม่รับผิดชอบต่อแนวปฏิบัติด้านความเป็นส่วนตัวของเว็บไซต์บุคคลที่สามอื่นๆ และสนับสนุนให้คุณอ่านข้อกำหนดในการใช้งานและคำชี้แจงความเป็นส่วนตัวของพวกเขา เมื่อคุณออกจากเว็บไซต์ของเราหรือถูกเปลี่ยนเส้นทางไปยังเว็บไซต์หรือแอปพลิเคชันของบุคคลที่สาม คุณจะไม่อยู่ภายใต้ข้อกำหนดทางกฎหมายของเราอีกต่อไป
+เมื่อคุณคลิกลิงก์บนเว็บไซต์ของเรา ลิงก์เหล่านั้นอาจนำคุณออกจากเว็บไซต์ของเราไปยังเว็บไซต์อื่นที่ดำเนินการและเป็นเจ้าของโดยบุคคลที่สาม เราไม่รับผิดชอบต่อแนวปฏิบัติด้านความเป็นส่วนตัวของเว็บไซต์บุคคลที่สามอื่นๆ และแนะนำให้คุณอ่านข้อกำหนดในการใช้งานและคำชี้แจงความเป็นส่วนตัวของพวกเขา เมื่อคุณออกจากเว็บไซต์ของเราหรือถูกเปลี่ยนเส้นทางไปยังเว็บไซต์หรือแอปพลิเคชันของบุคคลที่สาม คุณจะไม่อยู่ภายใต้ข้อกำหนดทางกฎหมายของเราอีกต่อไป
 
 **นโยบายความเป็นส่วนตัว**
 
-ที่ Zero to Hero เราถือว่าความเป็นส่วนตัวเป็นเรื่องสำคัญมาก ดังนั้นเราจึงมุ่งมั่นที่จะปกป้องความเป็นส่วนตัวของข้อมูลส่วนบุคคลของผู้เยี่ยมชมทุกคน นโยบายความเป็นส่วนตัวนี้รวมถึงส่วนที่เกี่ยวข้องของพระราชบัญญัติการคุ้มครองข้อมูลส่วนบุคคลและเอกสารอิเล็กทรอนิกส์ (แคนาดา) พระราชบัญญัติการคุ้มครองข้อมูลส่วนบุคคล (อัลเบอร์ตา) และหลักการสิบประการที่กำหนดไว้ในรหัสต้นแบบของสมาคมมาตรฐานแคนาดา (CSA) สำหรับการคุ้มครองข้อมูลส่วนบุคคล (รวมเรียกว่า "กฎหมายความเป็นส่วนตัวที่เกี่ยวข้อง")
+ที่ Zero to Hero เราถือว่าความเป็นส่วนตัวเป็นเรื่องสำคัญอย่างยิ่ง และด้วยเหตุนี้เราจึงมุ่งมั่นที่จะปกป้องความเป็นส่วนตัวของข้อมูลส่วนบุคคลของผู้เยี่ยมชมทุกคน นโยบายความเป็นส่วนตัวนี้รวมเอาส่วนที่เกี่ยวข้องของพระราชบัญญัติการคุ้มครองข้อมูลส่วนบุคคลและเอกสารอิเล็กทรอนิกส์ (แคนาดา) พระราชบัญญัติการคุ้มครองข้อมูลส่วนบุคคล (อัลเบอร์ตา) และหลักการสิบประการที่กำหนดไว้ในประมวลจริยธรรมต้นแบบของสมาคมมาตรฐานแคนาดา (CSA) สำหรับการคุ้มครองข้อมูลส่วนบุคคล (เรียกรวมกันว่า "กฎหมายความเป็นส่วนตัวที่เกี่ยวข้อง")
 
-**การเก็บรวบรวมข้อมูล**
+**ข้อมูลที่เราเก็บรวบรวม**
 
-เราอาจเก็บรวบรวมข้อมูลส่วนบุคคลเพื่อวัตถุประสงค์อย่างใดอย่างหนึ่งหรือหลายอย่างดังต่อไปนี้:
+**ข้อมูลที่คุณให้โดยตรง:**
 
-*   เพื่อสร้างและรักษาความสัมพันธ์กับผู้เยี่ยมชม
-*   เพื่อให้บริการผลิตภัณฑ์และบริการที่ร้องขอและต่อเนื่อง
-*   เพื่อแจ้งให้คุณทราบถึงการเปลี่ยนแปลงในผลิตภัณฑ์และบริการของเรา
-*   เพื่อทำความเข้าใจผู้เยี่ยมชม ความต้องการ และความชอบของพวกเขาให้ดียิ่งขึ้น
-*   เพื่อพัฒนา เพิ่มประสิทธิภาพ ปรับปรุง และ/หรือทำการตลาดผลิตภัณฑ์และบริการของเรา
-*   เพื่อตรวจสอบการใช้งานเว็บไซต์ของเรา
-*   เพื่อจัดการและปรับปรุงธุรกิจและการดำเนินงานของเรา และ
-*   เพื่อให้เป็นไปตามข้อกำหนดทางกฎหมายและข้อบังคับ
+* ข้อมูลบัญชี: ชื่อของคุณ ที่อยู่อีเมล รหัสผ่าน ความชอบด้านภาษา และระดับการเรียนรู้
+* ข้อมูลการเรียนรู้: คำที่บันทึกไว้ วลี ความคืบหน้าของการทบทวน บันทึก เพลย์ลิสต์ วิดีโอที่ถูกใจ ประวัติการรับชม หนังสือ และความคืบหน้าในการอ่าน
+* เนื้อหาที่คุณอัปโหลดหรือสร้าง: สื่อที่กำหนดเอง ไฟล์ EPUB และข้อความที่คุณขอให้เราแปลหรืออธิบาย
+* ข้อมูลการชำระเงิน: เมื่อคุณซื้อการสมัครสมาชิก การชำระเงินจะดำเนินการโดย Stripe, PayPal หรือ Apple App Store เราได้รับการยืนยันและรายละเอียดการสมัครสมาชิก แต่โดยทั่วไปเราไม่ได้จัดเก็บหมายเลขบัตรเต็มของคุณ
+
+**ข้อมูลที่เก็บรวบรวมโดยอัตโนมัติ:**
+
+* ข้อมูลการใช้งาน: หน้าและฟีเจอร์ที่คุณเยี่ยมชม รวมถึง สำรวจสื่อ, เพลงและความบันเทิง, ทีวีสด, รายการทีวี, ค้นหา, พจนานุกรม, คำที่บันทึก, ทบทวน, โหมดอ่าน, โปรแกรมอ่านเว็บ, โปรแกรมอ่าน EPUB, สื่อท้องถิ่น, ประวัติการรับชม, เพลย์ลิสต์ และ วิดีโอที่ถูกใจ; วิดีโอที่คุณรับชม; การโต้ตอบ; และการประทับเวลา
+* ข้อมูลอุปกรณ์และเครือข่าย: ที่อยู่ IP ประเภทเบราว์เซอร์ ระบบปฏิบัติการ ประเภทอุปกรณ์ และตำแหน่งโดยประมาณที่ได้จากที่อยู่ IP ของคุณ
+* การวิเคราะห์: เราใช้ Google Analytics เพื่อทำความเข้าใจว่าผู้เยี่ยมชมใช้เว็บไซต์อย่างไร Google Analytics อาจใช้คุกกี้และเก็บรวบรวมข้อมูลการใช้งานในนามของเรา การใช้ข้อมูลดังกล่าวของ Google อยู่ภายใต้[นโยบายความเป็นส่วนตัวของ Google](https://policies.google.com/privacy)
+* การจัดเก็บในเครื่อง: เราใช้คุกกี้ \`localStorage\`, \`sessionStorage\` และ IndexedDB เพื่อให้คุณเข้าสู่ระบบอยู่ จดจำภาษาของคุณ จัดเก็บการตั้งค่า ความคืบหน้า และคำที่บันทึกไว้ และแคชเนื้อหาในเครื่อง
 
 **เราทำอะไรกับข้อมูลของคุณ?**
 
-เมื่อคุณซื้อสินค้าผ่านระบบสั่งซื้อออนไลน์ของเรา ซึ่งเป็นส่วนหนึ่งของกระบวนการซื้อขาย เราจะเก็บรวบรวมข้อมูลส่วนบุคคลของคุณ
+เราใช้ข้อมูลที่เราเก็บรวบรวมเพื่อ:
 
-เมื่อคุณเรียกดูเว็บไซต์ของเรา เราจะได้รับที่อยู่โปรโตคอลอินเทอร์เน็ต (IP) ของคอมพิวเตอร์ของคุณโดยอัตโนมัติเพื่อให้ข้อมูลที่ช่วยให้เราเรียนรู้เกี่ยวกับเบราว์เซอร์และระบบปฏิบัติการของคุณ
+* ให้บริการ บำรุงรักษา และปรับปรุงเว็บไซต์และฟีเจอร์ต่างๆ
+* สร้างและจัดการบัญชีของคุณ ยืนยันตัวตนของคุณ และให้คุณเข้าสู่ระบบอยู่
+* ปรับแต่งคำแนะนำตามภาษา ระดับ และประวัติการเรียนรู้ของคุณ
+* ซิงค์ข้อมูลของคุณระหว่างอุปกรณ์ต่างๆ
+* ดำเนินการสมัครสมาชิก การชำระเงิน และการต่ออายุ
+* ส่งอีเมลเกี่ยวกับธุรกรรม เช่น รหัสยืนยัน การรีเซ็ตรหัสผ่าน และใบเสร็จการชำระเงิน
+* ส่งการสื่อสารทางการตลาดหากคุณได้ให้อนุญาตแก่เรา
+* วิเคราะห์การใช้งานด้วย Google Analytics เพื่อทำความเข้าใจว่าผู้เยี่ยมชมใช้เว็บไซต์อย่างไรและเพื่อปรับปรุงผลิตภัณฑ์ของเรา
+* ปฏิบัติตามข้อกำหนดทางกฎหมายและข้อบังคับ และปกป้องสิทธิ์ของเราและสิทธิ์ของผู้ใช้ของเรา
 
-การตลาดทางตรงที่ได้รับอนุญาต (ถ้ามี): โดยได้รับอนุญาตจากคุณ เราอาจส่งจดหมายข่าวหรืออีเมลเพื่อโฆษณาเกี่ยวกับร้านค้า ผลิตภัณฑ์ใหม่ และข้อมูลอัปเดตอื่นๆ ของเรา
+เราไม่ขายข้อมูลส่วนบุคคลของคุณ
+
+**การแบ่งปันและการเปิดเผย**
+
+เราแบ่งปันข้อมูลส่วนบุคคลกับผู้ให้บริการที่ช่วยเราดำเนินการเว็บไซต์เท่านั้น รวมถึง:
+
+* ผู้ให้บริการโฮสติ้งและฐานข้อมูล รวมถึง Supabase
+* ผู้ประมวลผลการชำระเงิน รวมถึง Stripe, PayPal และ Apple App Store
+* ผู้ให้บริการการแปลและ AI รวมถึง DeepSeek เมื่อคุณใช้ฟีเจอร์การแปลหรือคำอธิบายด้วย AI
+* ผู้ให้บริการวิเคราะห์ รวมถึง Google Analytics
+* แพลตฟอร์มวิดีโอ รวมถึง YouTube และ Google เมื่อคุณรับชมวิดีโอที่ฝังไว้
+
+เราจะไม่ใช้หรือเปิดเผยข้อมูลส่วนบุคคลเพื่อวัตถุประสงค์อื่นนอกเหนือจากที่เก็บรวบรวมไว้ เว้นแต่จะได้รับความยินยอมจากคุณ หากกฎหมายอนุญาตหรือกำหนด หรือคุณละเมิดข้อกำหนดในการใช้งานของเรา
 
 **ความยินยอม**
 
-_คุณจะได้รับความยินยอมจากฉันได้อย่างไร?_
+_คุณให้ความยินยอมได้อย่างไร?_
 
-เมื่อคุณให้ข้อมูลส่วนบุคคลแก่เราเพื่อดำเนินการธุรกรรม ยืนยันบัตรเครดิต สั่งซื้อ จัดเตรียมการจัดส่ง หรือส่งคืนสินค้า หรือโพสต์หรือปักหมุดข้อมูลหรือรูปถ่ายใดๆ บนไซต์โซเชียลมีเดียของเรา เราถือว่าคุณยินยอมให้เราเก็บรวบรวมและใช้ข้อมูลนั้นเพื่อเหตุผลเฉพาะนั้นเท่านั้น
+เมื่อคุณให้ข้อมูลส่วนบุคคลแก่เราเพื่อสร้างบัญชี ทำธุรกรรมให้เสร็จสมบูรณ์ ยืนยันการชำระเงิน สั่งซื้อ หรือใช้ผลิตภัณฑ์และบริการของเรา เราถือว่าคุณยินยอมให้เราเก็บรวบรวมและใช้ข้อมูลดังกล่าวเพื่อวัตถุประสงค์เฉพาะนั้นเท่านั้น
 
-หากเราขอข้อมูลส่วนบุคคลของคุณเพื่อเหตุผลรอง เช่น การตลาด เราจะขอความยินยอมอย่างชัดแจ้งจากคุณโดยตรง หรือให้โอกาสคุณในการปฏิเสธ
+หากเราขอข้อมูลส่วนบุคคลของคุณเพื่อเหตุผลรอง เช่น การตลาด เราจะถามคุณโดยตรงเพื่อขอความยินยอมอย่างชัดแจ้ง หรือให้โอกาสคุณในการปฏิเสธ
 
 _ฉันจะถอนความยินยอมได้อย่างไร?_
 
-หากหลังจากที่คุณเลือกเข้าร่วมแล้ว คุณเปลี่ยนใจ คุณสามารถถอนความยินยอมให้เราติดต่อคุณ เพื่อการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลของคุณอย่างต่อเนื่องได้ตลอดเวลา โดยแจ้งให้เราทราบ
-
-**การเปิดเผยข้อมูล**
-
-เราจะไม่ใช้หรือเปิดเผยข้อมูลส่วนบุคคลเพื่อวัตถุประสงค์อื่นนอกเหนือจากที่เก็บรวบรวมไว้ เว้นแต่จะได้รับความยินยอมจากคุณ หากกฎหมายอนุญาตหรือกำหนดไว้ หรือคุณละเมิดข้อกำหนดในการใช้งานของเรา
+หากหลังจากที่คุณเลือกเข้าร่วมแล้ว คุณเปลี่ยนใจ คุณสามารถถอนความยินยอมให้เราติดต่อคุณ สำหรับการเก็บรวบรวม การใช้ หรือการเปิดเผยข้อมูลของคุณอย่างต่อเนื่อง ได้ตลอดเวลา โดยการแจ้งให้เราทราบ
 
 **การคุ้มครอง**
 
-เราจะปกป้องข้อมูลส่วนบุคคลโดยปฏิบัติตามแนวทางปฏิบัติที่ดีที่สุดในอุตสาหกรรมและใช้มาตรการป้องกันที่สมเหตุสมผลตามความเหมาะสมกับความอ่อนไหวของข้อมูล เราจะพยายามอย่างสมเหตุสมผลเพื่อปกป้องข้อมูลส่วนบุคคลจากการสูญหายหรือถูกขโมย รวมถึงการเข้าถึง การเปิดเผย การคัดลอก การใช้ หรือการดัดแปลงโดยไม่ได้รับอนุญาต ไม่ว่าจะอยู่ในรูปแบบใดก็ตาม กฎหมายยังอนุญาตให้เรา เพื่อวัตถุประสงค์ทางกฎหมายหรือธุรกิจ เก็บรักษาข้อมูลส่วนบุคคลไว้ตราบเท่าที่สมเหตุสมผล และตราบใดที่คุณไม่ได้เพิกถอนความยินยอมของคุณ
+เราจะปกป้องข้อมูลส่วนบุคคลโดยปฏิบัติตามแนวปฏิบัติที่ดีที่สุดของอุตสาหกรรมและใช้มาตรการป้องกันที่สมเหตุสมผลตามความเหมาะสมกับความละเอียดอ่อนของข้อมูล และจะใช้ความพยายามอย่างสมเหตุสมผลเพื่อปกป้องข้อมูลส่วนบุคคลจากการสูญหายหรือการโจรกรรม รวมถึงการเข้าถึง การเปิดเผย การคัดลอก การใช้ หรือการแก้ไขโดยไม่ได้รับอนุญาต ไม่ว่ารูปแบบใดก็ตามที่จัดเก็บไว้ กฎหมายยังอนุญาตให้เราเก็บรักษาข้อมูลส่วนบุคคลไว้ได้ตราบเท่าที่สมเหตุสมผลเพื่อวัตถุประสงค์ทางกฎหมายหรือทางธุรกิจ โดยมีเงื่อนไขว่าคุณไม่ได้ถอนความยินยอมของคุณ
 
 **ความปลอดภัย**
 
-เพื่อปกป้องข้อมูลส่วนบุคคลของคุณ เราใช้มาตรการป้องกันที่สมเหตุสมผลและปฏิบัติตามแนวทางปฏิบัติที่ดีที่สุดในอุตสาหกรรมเพื่อให้แน่ใจว่าข้อมูลจะไม่สูญหาย ถูกใช้ในทางที่ผิด เข้าถึง เปิดเผย เปลี่ยนแปลง หรือถูกทำลายอย่างไม่เหมาะสม
+เพื่อปกป้องข้อมูลส่วนบุคคลของคุณ เราใช้ข้อควรระวังที่สมเหตุสมผลและปฏิบัติตามแนวปฏิบัติที่ดีที่สุดของอุตสาหกรรมเพื่อให้แน่ใจว่าข้อมูลจะไม่สูญหาย ถูกใช้ในทางที่ผิด ถูกเข้าถึง ถูกเปิดเผย ถูกแก้ไข หรือถูกทำลายอย่างไม่เหมาะสม
 
-**คุกกี้**
+**คุกกี้และเทคโนโลยีที่คล้ายคลึงกัน**
 
-เว็บไซต์ของเราไม่ใช้คุกกี้
+เว็บไซต์ของเราใช้คุกกี้และเทคโนโลยีที่คล้ายคลึงกัน
+
+* **คุกกี้ที่จำเป็น:** เราใช้คุกกี้เพื่อให้คุณเข้าสู่ระบบอยู่ จดจำภาษาที่คุณเลือก และจัดการข้อจำกัดการนำทางของผู้เยี่ยมชม
+* **การวิเคราะห์:** เราใช้ Google Analytics ซึ่งอาจตั้งค่าคุกกี้ของตัวเองและเก็บรวบรวมข้อมูลการใช้งาน
+* **การจัดเก็บในเครื่อง:** เราใช้ \`localStorage\`, \`sessionStorage\` และ IndexedDB เพื่อจัดเก็บการตั้งค่า คำที่บันทึกไว้ ความคืบหน้า เนื้อหาการอ่าน และสื่อที่กำหนดเองบนอุปกรณ์ของคุณ
+* **เนื้อหาที่ฝังไว้:** วิดีโอถูกฝังจาก YouTube YouTube และ Google อาจตั้งค่าคุกกี้ของตัวเองเมื่อคุณรับชมวิดีโอ ซึ่งอยู่ภายใต้นโยบายความเป็นส่วนตัวของพวกเขา
+
+คุณสามารถบล็อกหรือลบคุกกี้ผ่านการตั้งค่าเบราว์เซอร์ของคุณ โปรดทราบว่าบางส่วนของเว็บไซต์อาจทำงานไม่ถูกต้องหากคุณปิดใช้งานคุกกี้
+
+**การเก็บรักษาและการลบข้อมูล**
+
+เราเก็บรักษาข้อมูลส่วนบุคคลตราบเท่าที่บัญชีของคุณยังใช้งานอยู่ หรือตราบเท่าที่จำเป็นเพื่อให้บริการเว็บไซต์ ปฏิบัติตามข้อผูกพันทางกฎหมาย ระงับข้อพิพาท และบังคับใช้ข้อตกลงของเรา
+
+คุณสามารถลบบัญชีของคุณได้ตลอดเวลาจากหน้า โปรไฟล์ โดยใช้ตัวเลือกการลบบัญชี หรือโดยติดต่อเราตามที่อยู่ด้านล่างนี้ เมื่อคุณลบบัญชีของคุณ เราจะลบหรือทำให้ข้อมูลส่วนบุคคลของคุณไม่สามารถระบุตัวตนได้ โดยขึ้นอยู่กับบันทึกที่เราจำเป็นต้องเก็บไว้เพื่อวัตถุประสงค์ทางกฎหมาย การชำระเงิน ภาษี หรือความปลอดภัย
 
 **การเปลี่ยนแปลงนโยบายความเป็นส่วนตัวนี้**
 
-เราขอสงวนสิทธิ์ในการแก้ไขนโยบายความเป็นส่วนตัวนี้ได้ตลอดเวลา ดังนั้นโปรดตรวจสอบบ่อยๆ การเปลี่ยนแปลงและคำชี้แจงจะมีผลทันทีเมื่อโพสต์บนเว็บไซต์ หากเราเปลี่ยนแปลงนโยบายนี้อย่างมีสาระสำคัญ เราจะแจ้งให้คุณทราบที่นี่ว่าได้รับการอัปเดตแล้ว เพื่อให้คุณทราบว่าข้อมูลใดที่เราเก็บรวบรวม เราใช้ข้อมูลนั้นอย่างไร และภายใต้สถานการณ์ใด (ถ้ามี) ที่เราใช้และ/หรือเปิดเผยข้อมูลนั้น
+เราขอสงวนสิทธิ์ในการแก้ไขนโยบายความเป็นส่วนตัวนี้ได้ตลอดเวลา ดังนั้นโปรดทบทวนเป็นประจำ การเปลี่ยนแปลงและการชี้แจงจะมีผลทันทีเมื่อมีการโพสต์บนเว็บไซต์ หากเราทำการเปลี่ยนแปลงที่สำคัญต่อนโยบายนี้ เราจะแจ้งให้คุณทราบที่นี่ว่าได้รับการอัปเดตแล้ว เพื่อให้คุณทราบว่าเราเก็บรวบรวมข้อมูลใดบ้าง เราใช้ข้อมูลนั้นอย่างไร และภายใต้สถานการณ์ใด หากมีการใช้และ/หรือเปิดเผยข้อมูลนั้น
 
-**คำถามและข้อมูลติดต่อ**
+**คำถามและข้อมูลการติดต่อ**
 
-หากคุณต้องการ: เข้าถึง แก้ไข ปรับเปลี่ยน หรือลบข้อมูลส่วนบุคคลใดๆ ที่เรามีเกี่ยวกับคุณ ยื่นเรื่องร้องเรียน หรือเพียงต้องการข้อมูลเพิ่มเติม โปรดติดต่อเราที่ [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)` },
+หากคุณต้องการ: เข้าถึง แก้ไข ปรับปรุง หรือลบข้อมูลส่วนบุคคลใดๆ ที่เรามีเกี่ยวกับคุณ ร้องเรียน หรือเพียงต้องการข้อมูลเพิ่มเติม โปรดติดต่อเราที่ [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)` },
     { path: 'reading/epub', title: 'โปรแกรมอ่าน EPUB', category: 'reading', content: `# โปรแกรมอ่าน EPUB
 
 อ่าน e-book ไฟล์ EPUB พร้อมค้นหาคำศัพท์แบบโต้ตอบ การแปลเฉพาะบล็อก และบันทึกความคืบหน้าข้ามเซสชัน
@@ -42126,102 +43018,134 @@ Videoyu ortasında sekmeyi kapatsanız bile konum kaydedilir. En az birkaç sani
 - Geçmişiniz mevcut L2 dilinizle sınırlıdır — Kore dili modundayken Japonca videolarını görmezsiniz` },
     { path: 'privacy-policy', title: 'Gizlilik Politikası', category: 'privacy-policy', content: `# Gizlilik Politikası
 
-Bu web sayfası, Kullanım Koşullarımız ve Gizlilik Politikamız olarak hizmet veren yasal bir belgedir ve web sitemizin kullanımını düzenler: [https://languageplayer.io](https://languageplayer.io), burada bulunan sayfalar ile tüm alt alan adları ve uygulamalar (topluca "Web Sitesi") dahil olmak üzere, tarafımızca (Zero to Hero Education, Kanada) ("Zero to Hero") işletilmekte ve sahiplenilmektedir.
+Bu web sayfası, Kullanım Şartlarımız ve Gizlilik Politikamız olarak hizmet veren yasal bir belgedir ve web sitemizin kullanımını düzenler: [https://languageplayer.io](https://languageplayer.io), burada yer alan sayfalar ve tüm alt alan adları ile uygulamalar (topluca "Web Sitesi"), tarafımızca, Zero to Hero Education, Kanada ("Zero to Hero") tarafından sahiplenilen ve işletilen web sitesidir.
 
 **Giriş**
 
-Kullanım Koşulları, aşağıda yayınlanan Gizlilik Politikamız ve Web Sitemizdeki diğer yayınlanan yönergeler veya politikalar (topluca "Yasal Şartlar"), sizinle bizim aramızdaki tek ve tam anlaşmayı oluşturur ve Web Sitemiz ile burada yer alan konuya ilişkin tüm diğer anlaşmaları, beyanları, garantileri ve mutabakatları geçersiz kılar. Yasal Şartlarımızı size özel bir bildirimde bulunmaksızın herhangi bir zamanda değiştirebiliriz. Yasal Şartlarımızın en son kopyaları Web Sitemizde yayınlanacaktır ve Web Sitemizi kullanmadan önce tüm Yasal Şartları gözden geçirmelisiniz. Yasal Şartlarımızda yapılan herhangi bir revizyon yayınlandıktan sonra, bu tür değişikliklere bağlı kalmayı kabul edersiniz. Bu nedenle, onlarla hâlâ aynı fikirde olduğunuzdan emin olmak için Yasal Şartlarımızı periyodik olarak gözden geçirmeniz önemlidir.
+Kullanım Şartları, aşağıda yayınlanan Gizlilik Politikamız ve Web Sitemizde yayınlanan diğer kılavuz veya politikalar (topluca "Yasal Şartlar"), sizinle bizim aramızdaki tek ve tam anlaşmayı oluşturur ve Web Sitemiz ile burada yer alan konulara ilişkin diğer tüm anlaşmaların, beyanların, garantilerin ve mutabakatların yerine geçer. Yasal Şartlarımızı size özel bildirimde bulunmaksızın herhangi bir zamanda değiştirebiliriz. Yasal Şartlarımızın en güncel kopyaları Web Sitemizde yayınlanacaktır ve Web Sitemizi kullanmadan önce tüm Yasal Şartları gözden geçirmelisiniz. Yasal Şartlarımızda yapılan herhangi bir revizyondan sonra, bu tür değişikliklere bağlı kalmayı kabul edersiniz. Bu nedenle, Yasal Şartlarımızı hâlâ kabul ettiğinizden emin olmak için periyodik olarak gözden geçirmeniz önemlidir.
 
-Web Sitemizi kullanarak, Yasal Şartlarımıza tamamen uymayı ve bunlarla bağlı olmayı kabul edersiniz. Lütfen bunları dikkatlice inceleyin. Yasal Şartlarımızı kabul etmiyorsanız, Web Sitemize erişmeyin ve kullanmayın. Web Sitemize zaten eriştiyseniz ve Yasal Şartlarımızı kabul etmiyorsanız, artık onu kullanma yetkiniz yoktur ve Web Sitemizi kullanmayı derhal bırakmalısınız.
+Web Sitemizi kullanarak, Yasal Şartlarımıza tamamen uymayı ve bunlarla bağlı olmayı kabul edersiniz. Lütfen bunları dikkatlice gözden geçirin. Yasal Şartlarımızı kabul etmiyorsanız, Web Sitemize erişmeyin ve kullanmayın. Web Sitemize zaten eriştiyseniz ve Yasal Şartlarımızı kabul etmiyorsanız, artık Web Sitesini kullanma yetkiniz yoktur ve Web Sitemizi kullanmayı derhal bırakmalısınız.
 
-**Web Sitemizdeki Diğer Tanımlanmış Terimler**
+**Web Sitemizdeki Diğer Tanımlı Terimler**
 
-Bu Web Sitesi, bu sayfada tanımlanan terimlerin yanı sıra aşağıdaki diğer tanımlanmış terimleri de içerir:
+Bu Web Sitesi, bu sayfa boyunca tanımlanan terimlerin yanı sıra şu diğer tanımlı terimleri de içerir:
 
-"biz" ve "bize" terimleri, Web Sitesinin sahibi olarak Zero to Hero'yu ifade eder. "İçerik", Web Sitemiz aracılığıyla yayınlanan, sunulan veya kullanıma açılan tüm metin, bilgi, grafik, ses, video ve diğer verileri içerir.
+"biz" ve "bize" terimleri, Web Sitesinin sahibi olarak Zero to Hero'yu ifade eder. "İçerik", Web Sitemiz aracılığıyla yayınlanan, sunulan veya erişime açılan tüm metinleri, bilgileri, grafikleri, sesleri, videoları ve diğer verileri içerir.
 
-Bir "ziyaretçi" veya "siz", ürünlerimizin satın alımını tamamlayıp tamamlamadığınıza bakılmaksızın, Web Sitemizin bir tarayıcısı olarak sizi ifade eden toplu tanımlayıcılardır.
+Bir "ziyaretçi" veya "siz", ürünlerimizden bir satın alma işlemini tamamlayıp tamamlamadığınıza bakılmaksızın, Web Sitemizin tarayıcısı olarak sizi ifade eden toplu tanımlayıcılardır.
 
-"Kişisel bilgi", bir kişinin adı, ikamet adresi, fatura adresi, teslimat adresi, telefon numarası, e-posta adresi ve diğer benzer iletişim bilgilerinin yanı sıra Web Sitesi kullanım geçmişi verilerini içerebilen, tanımlanabilir bir kişi hakkındaki bilgi anlamına gelir. Ödeme amacıyla sunulduğunda bir kişinin kredi kartı bilgilerini de içerebilir.
+"Kişisel bilgiler", kimliği belirlenebilir bir kişi hakkındaki bilgiler anlamına gelir; bu bilgiler kişinin adını, ikamet adresini, fatura adresini, teslimat adresini, telefon numarasını, e-posta adresini ve diğer benzer iletişim bilgilerini ve ayrıca Web Sitesi kullanım geçmişi verilerini içerebilir. Ödeme amacıyla sunulduğunda kişinin kredi kartı bilgilerini de içerebilir.
 
-**KULLANIM KOŞULLARI**
+**KULLANIM ŞARTLARI**
 
 **Fikri Mülkiyet**
 
-Web Sitemiz, kelimeler, grafikler ve logolar şeklinde, hizmet markalarımızı veya ticari markalarımızı ve ayrıca bağlı kuruluşlarımızın veya diğer kişi veya şirketlerin markalarını içerebilir. Web Sitemizi kullanmanız, ilgili hizmet markası/ticari marka sahibinin önceden yazılı izni olmaksızın bu tür hizmet markalarını/ticari markaları kullanma hakkı veya lisansı teşkil etmez. İçerik dahil Web Sitemiz ayrıca Kanada ve uluslararası telif hakkı yasalarıyla korunmaktadır. Web Sitemizi veya içeriği kullanmanız, size burada herhangi bir türde mülkiyet hakkı vermez. Web Sitemizin veya içeriğinin herhangi bir bölümünü kopyalamanız, yeniden dağıtmanız, kullanmanız veya yayınlamanız kesinlikle yasaktır ve bu nedenle önceden yazılı iznimizi almadan kopyalanamaz veya çoğaltılamaz.
+Web Sitemiz, kelimeler, grafikler ve logolar biçiminde, bizim hizmet markalarımızı veya ticari markalarımızı ve ayrıca bağlı kuruluşlarımızın veya diğer kişi veya şirketlerin hizmet markalarını veya ticari markalarını içerebilir. Web Sitemizi kullanımınız, ilgili hizmet markası/ticari marka sahibinin önceden yazılı izni olmaksızın bu tür hizmet markalarını/ticari markaları kullanma hakkı veya lisansı teşkil etmez. İçerik dahil Web Sitemiz, Kanada ve uluslararası telif hakkı yasalarıyla da korunmaktadır. Web Sitemizi veya içeriği kullanımınız, size burada herhangi bir türde sahiplik hakkı vermez. Web Sitemizin veya içeriğin herhangi bir bölümünün kopyalanması, yeniden dağıtılması, kullanılması veya yayınlanması kesinlikle yasaktır ve bu nedenle önceden yazılı iznimizi almadan kopyalanamaz veya çoğaltılamaz.
 
 **Sorumluluğun Sınırlandırılması**
 
-Hiçbir durumda biz veya memurlarımız ya da çalışanlarımız, bu Web Sitesine, çevrimiçi sipariş sistemine veya herhangi bir içeriğe erişiminiz, kullanımınız veya bunlara güvenmeniz ya da bunları kullanamamanız veya erişememeniz nedeniyle veya bununla bağlantılı olarak ortaya çıkan herhangi bir kayıp veya zarardan (yukarıdakilerin genelliğini sınırlamaksızın doğrudan, dolaylı, arızi, özel, cezai veya sonuç olarak ortaya çıkan zararlar dahil) sorumlu veya yükümlü olmayacaktır.
+Hiçbir durumda biz veya yöneticilerimiz veya çalışanlarımız, bu Web Sitesini, çevrimiçi sipariş sistemini veya herhangi bir içeriği kullanımınızdan, bunlara erişiminizden veya bunlara güvenmenizden ya da bunları kullanamamanızdan veya erişememenizden kaynaklanan veya bunlarla bağlantılı olarak, (öncekinin genelliğini sınırlamaksızın) doğrudan, dolaylı, arızi, özel, caydırıcı veya sonuçsal zararlar dahil ancak bunlarla sınırlı olmamak üzere herhangi bir kayıp veya zarardan sorumlu veya yükümlü olmayacaktır.
 
 **Genel Şartlar**
 
-Yasal Şartlarımız, Kanada'nın Britanya Kolumbiyası Eyaleti'nde icra edilmiş ve yerine getirilmiş gibi muamele görecek ve kanunlar ihtilafı ilkelerine bakılmaksızın bu bölgenin yasalarına tabi olacak ve bunlara uygun olarak yorumlanacaktır. Ayrıca, bu bölgedeki mahkemelerin kişisel yargı yetkisine ve yerine tabi olmayı kabul edersiniz. Web Sitemizle ilgili olarak tarafınızdan açılacak herhangi bir dava, dava sebebinin ortaya çıkmasından sonra bir (1) yıl içinde açılmalıdır, aksi takdirde süresiz olarak feragat edilmiş ve engellenmiş sayılır. Yasal Şartlarımızın herhangi bir bölümünün geçersiz veya uygulanamaz olduğu tespit edilirse, bu bölüm geçerli yasaya uygun olarak yorumlanacak ve kalan bölümler tam yürürlükte kalacaktır. Herhangi bir içeriğin Yasal Şartlarımızla çelişmesi veya tutarsız olması durumunda, Yasal Şartlarımız geçerli olacak ve birlikte yorumlanmalarında üstün gelecektir. Yasal Şartlarımızın herhangi bir hükmünü uygulayamamamız, bu hükümden veya bu hükmü uygulama hakkından feragat edildiği anlamına gelmez. Yasal Şartlarımız kapsamındaki haklarımız, Yasal Şartlarımızın sona ermesinden sonra da geçerliliğini koruyacaktır.
+Yasal Şartlarımız, Kanada'nın Britanya Kolumbiyası Eyaleti'nde imzalanmış ve ifa edilmiş gibi işleme tabi tutulacak ve çatışan hukuk ilkelerine bakılmaksızın bu bölgenin yasalarına göre yönetilecek ve yorumlanacaktır. Ayrıca, bu bölgedeki mahkemelerin kişisel yargı yetkisine ve yerine tabi olmayı kabul edersiniz. Web Sitemizle ilgili olarak tarafınızca açılacak herhangi bir dava, dava nedeni doğduktan sonra bir (1) yıl içinde açılmalıdır, aksi takdirde kalıcı olarak feragat edilmiş ve engellenmiş sayılır. Yasal Şartlarımızın herhangi bir bölümünün geçersiz veya uygulanamaz olduğu tespit edilirse, bu bölüm geçerli yasaya uygun olarak yorumlanacak ve geri kalan bölümler tam yürürlükte ve etkide kalmaya devam edecektir. Herhangi bir içeriğin Yasal Şartlarımızla çakışması veya tutarsız olması durumunda, Yasal Şartlarımız geçerli olacak ve bunların birlikte yorumlanmasında öncelikli olacaktır. Yasal Şartlarımızın herhangi bir hükmünü uygulamada başarısız olmamız, bu hükümden veya bu hükmü uygulama hakkından feragat edildiği anlamına gelmez. Yasal Şartlarımız kapsamındaki haklarımız, Yasal Şartlarımızın sona ermesinden sonra da geçerliliğini korur.
 
 **Üçüncü Taraf Bağlantıları**
 
-Web Sitemizdeki bağlantılara tıkladığınızda, sizi Web Sitemizden uzağa, bir üçüncü tarafça sahip olunan ve işletilen başka bir web sitesine yönlendirebilirler. Diğer üçüncü taraf web sitelerinin gizlilik uygulamalarından sorumlu değiliz ve kullanım koşullarını ve gizlilik bildirimlerini okumanızı teşvik ederiz. Web Sitemizden ayrıldıktan veya bir üçüncü taraf web sitesine veya uygulamasına yönlendirildikten sonra, artık Yasal Şartlarımıza tabi değilsiniz.
+Web Sitemizdeki bağlantılara tıkladığınızda, sizi Web Sitemizden üçüncü bir tarafça sahiplenilen ve işletilen başka bir web sitesine yönlendirebilirler. Diğer üçüncü taraf web sitelerinin gizlilik uygulamalarından sorumlu değiliz ve kullanım şartlarını ve gizlilik bildirimlerini okumanızı öneririz. Web Sitemizden ayrıldığınızda veya üçüncü taraf bir web sitesine veya uygulamaya yönlendirildiğinizde, artık Yasal Şartlarımıza tabi değilsiniz.
 
 **GİZLİLİK POLİTİKASI**
 
-Zero to Hero'da gizliliği çok önemli bir konu olarak görüyoruz ve bu nedenle tüm ziyaretçilerin kişisel bilgilerinin gizliliğini korumaya kararlıyız. Bu Gizlilik Politikası, Kişisel Bilgilerin Korunması ve Elektronik Belgeler Yasası (Kanada), Kişisel Bilgilerin Korunması Yasası (Alberta) ve Kanada Standartlar Birliği (CSA) Kişisel Bilgilerin Korunması için Model Kod'da belirtilen on ilkenin (birlikte "geçerli gizlilik yasaları") uygulanabilir bölümlerini içerir.
+Zero to Hero'da gizliliğin çok önemli bir konu olduğunu düşünüyoruz ve bu nedenle tüm ziyaretçilerin kişisel bilgilerinin gizliliğini korumaya kararlıyız. Bu Gizlilik Politikası, Kişisel Bilgilerin Korunması ve Elektronik Belgeler Yasası (Kanada), Kişisel Bilgilerin Korunması Yasası (Alberta) ve Kanada Standartlar Birliği (CSA) Kişisel Bilgilerin Korunması için Model Kod'da belirtilen on ilkenin (birlikte "geçerli gizlilik yasaları") uygulanabilir bölümlerini içerir.
 
-**Bilgi Toplama**
+**Topladığımız Bilgiler**
 
-Kişisel bilgileri aşağıdaki amaçlardan herhangi biri veya birkaçı için toplayabiliriz:
+**Doğrudan sağladığınız bilgiler:**
 
-*   ziyaretçilerle ilişkiler kurmak ve sürdürmek;
-*   talep edilen ve devam eden ürün ve hizmetleri sağlamak;
-*   ürün ve hizmetlerimizdeki değişiklikler hakkında sizi bilgilendirmek;
-*   ziyaretçilerimizin gereksinimleri ve tercihleri hakkında daha iyi bir anlayış elde etmek;
-*   ürün ve hizmetlerimizi geliştirmek, iyileştirmek, ilerletmek ve/veya pazarlamak;
-*   Web Sitemizin kullanımını izlemek;
-*   işimizi ve operasyonlarımızı yönetmek ve iyileştirmek; ve
-*   yasal ve düzenleyici gereklilikleri karşılamak.
+* Hesap bilgileri: adınız, e-posta adresiniz, şifreniz, dil tercihleriniz ve öğrenme seviyeniz.
+* Öğrenme verileri: kaydedilen kelimeler, ifadeler, ilerleme incelemeleri, notlar, çalma listeleri, beğenilen videolar, izleme geçmişi, kitaplar ve okuma ilerlemesi.
+* Yüklediğiniz veya oluşturduğunuz içerikler: özel medya, EPUB dosyaları ve çevirmemizi veya açıklamamızı istediğiniz metinler.
+* Ödeme bilgileri: abonelik satın aldığınızda, ödeme Stripe, PayPal veya Apple App Store tarafından işlenir. Onay ve abonelik ayrıntılarını alırız, ancak tam kart numaranızı genellikle saklamayız.
+
+**Otomatik olarak toplanan bilgiler:**
+
+* Kullanım verileri: ziyaret ettiğiniz sayfalar ve özellikler dahil Medyayı Keşfet, Müzik ve Eğlence, Canlı TV, TV Programları, Ara, Sözlük, Kaydedilen Kelimeler, Gözden Geçir, Okuyucu, Web Okuyucu, EPUK Okuyucu, Yerel Medya, İzleme Geçmişi, Çalma Listeleri ve Beğenilen Videolar; izlediğiniz videolar; etkileşimler; ve zaman damgaları.
+* Cihaz ve ağ bilgileri: IP adresi, tarayıcı türü, işletim sistemi, cihaz türü ve IP adresinizden türetilen yaklaşık konum.
+* Analitik: ziyaretçilerin Web Sitesini nasıl kullandığını anlamak için Google Analytics kullanıyoruz. Google Analytics, bizim adımıza çerezler kullanabilir ve kullanım verileri toplayabilir. Google'ın bu verileri kullanımı [Google'ın Gizlilik Politikası](https://policies.google.com/privacy) tarafından düzenlenir.
+* Yerel depolama: oturumunuzu açık tutmak, dilinizi hatırlamak, ayarlarınızı, ilerlemenizi ve kaydedilen kelimelerinizi saklamak ve içeriği yerel olarak önbelleğe almak için çerezler, \`localStorage\`, \`sessionStorage\` ve IndexedDB kullanıyoruz.
 
 **Bilgilerinizle Ne Yapıyoruz?**
 
-Çevrimiçi sipariş sistemimiz aracılığıyla bir şey satın aldığınızda, alım satım sürecinin bir parçası olarak kişisel bilgilerinizi toplarız.
+Topladığımız bilgileri şu amaçlarla kullanırız:
 
-Web Sitemizde gezinirken, tarayıcınız ve işletim sisteminiz hakkında bilgi edinmemize yardımcı olacak bilgiler sağlamak için bilgisayarınızın internet protokol (IP) adresini otomatik olarak alırız.
+* Web Sitesini ve özelliklerini sağlamak, sürdürmek ve geliştirmek;
+* hesabınızı oluşturmak ve yönetmek, kimliğinizi doğrulamak ve oturumunuzu açık tutmak;
+* dilinize, seviyenize ve öğrenme geçmişinize göre kişiselleştirilmiş öneriler sunmak;
+* verilerinizi cihazlar arasında senkronize etmek;
+* abonelikleri, ödemeleri ve yenilemeleri işlemek;
+* doğrulama kodları, şifre sıfırlama ve ödeme makbuzları gibi işlemsel e-postalar göndermek;
+* bize izin verdiyseniz pazarlama iletişimleri göndermek;
+* ziyaretçilerin Web Sitesini nasıl kullandığını anlamak ve ürünlerimizi geliştirmek için Google Analytics ile kullanımı analiz etmek;
+* yasal ve düzenleyici gereksinimleri karşılamak ve haklarımızı ile kullanıcılarımızın haklarını korumak.
 
-İzin verilen doğrudan pazarlama (varsa): İzninizle, mağazalarımız, yeni ürünlerimiz ve diğer güncellemeler hakkında reklam yapmak için size haber bültenleri veya e-postalar gönderebiliriz.
+Kişisel bilgilerinizi satmıyoruz.
 
-**Onay**
+**Paylaşım ve Açıklama**
 
-_Onayınızı nasıl alıyorum?_
+Kişisel bilgileri yalnızca Web Sitesini işletmemize yardımcı olan hizmet sağlayıcılarla paylaşırız; bunlar:
 
-Bir işlemi tamamlamak, kredi kartınızı doğrulamak, sipariş vermek, teslimat ayarlamak veya bir satın alımı iade etmek ya da sosyal medya sitemize herhangi bir bilgi veya fotoğraf göndermek veya sabitlemek için bize kişisel bilgi sağladığınızda, bunu yalnızca bu belirli amaç için toplamamıza ve kullanmamıza izin verdiğinizi varsayarız.
+* Supabase dahil barındırma ve veritabanı sağlayıcıları;
+* Stripe, PayPal ve Apple App Store dahil ödeme işlemcileri;
+* çeviri veya yapay zeka açıklama özelliklerini kullandığınızda DeepSeek dahil çeviri ve yapay zeka sağlayıcıları;
+* Google Analytics dahil analitik sağlayıcıları;
+* gömülü videoları izlediğinizde YouTube ve Google dahil video platformları.
 
-Pazarlama gibi ikincil bir neden için kişisel bilgilerinizi istersek, sizden doğrudan açık izin isteyeceğiz veya size hayır deme fırsatı vereceğiz.
+Kişisel bilgileri, toplandığı amaç dışında kullanmayacağız veya açıklamayacağız; ancak rızanız varsa, yasa tarafından izin veriliyorsa veya gerekiyorsa ya da Kullanım Şartlarımızı ihlal ederseniz bu mümkündür.
 
-_Onayımı nasıl geri çekerim?_
+**Rıza**
 
-Kaydolduktan sonra fikrinizi değiştirirseniz, bilgilerinizin sürekli toplanması, kullanılması veya ifşa edilmesi için bizimle iletişime geçerek istediğiniz zaman sizinle iletişim kurmamız için verdiğiniz onayı geri çekebilirsiniz.
+_Rızanızı nasıl alırız?_
 
-**İfşa**
+Hesap oluşturmak, bir işlemi tamamlamak, ödemenizi doğrulamak, sipariş vermek veya ürün ve hizmetlerimizi kullanmak için bize kişisel bilgilerinizi sağladığınızda, bunları toplamamıza ve yalnızca bu belirli amaç için kullanmamıza rıza gösterdiğinizi varsayıyoruz.
 
-Kişisel bilgileri, izniniz olmadıkça, kanunen izin verilmedikçe veya gerekmedikçe ya da Kullanım Koşullarımızı ihlal etmediğiniz sürece, toplandığı amaç dışında kullanmayacak veya ifşa etmeyeceğiz.
+Kişisel bilgilerinizi pazarlama gibi ikincil bir neden için istersek, sizden doğrudan açık rızanızı isteriz veya size hayır deme fırsatı sunarız.
+
+_Rızamı nasıl geri çekebilirim?_
+
+Kayıt olduktan sonra fikrinizi değiştirirseniz, bizimle iletişime geçerek sizinle iletişim kurmamız, bilgilerinizin sürekli toplanması, kullanılması veya açıklanması için verdiğiniz rızayı istediğiniz zaman geri çekebilirsiniz.
 
 **Koruma**
 
-Kişisel bilgileri, sektördeki en iyi uygulamaları takip ederek ve bilginin hassasiyetine uygun olabilecek makul güvenlik önlemlerini uygulayarak koruyacağız; kişisel bilgileri, tutulduğu format ne olursa olsun, kayba veya hırsızlığa karşı ve ayrıca yetkisiz erişime, ifşaya, kopyalamaya, kullanıma veya değiştirilmeye karşı korumak için makul çabalar göstereceğiz. Mevzuat ayrıca, yasal veya ticari amaçlarla, kişisel bilgileri makul olduğu sürece ve izninizi geri çekmemiş olmanız koşuluyla saklamamıza izin verir.
+Kişisel bilgileri, sektördeki en iyi uygulamaları izleyerek ve bilgilerin hassasiyetine uygun makul güvenlik önlemlerini uygulayarak koruyacağız; kişisel bilgileri, hangi formatta tutulursa tutulsun, kayıp veya hırsızlığa karşı ve yetkisiz erişime, açıklamaya, kopyalamaya, kullanıma veya değiştirilmeye karşı korumak için makul çabayı göstereceğiz. Mevzuat ayrıca, yasal veya ticari amaçlar için, rızanızı geri çekmemiş olmanız koşuluyla, kişisel bilgileri makul olduğu sürece saklamamıza izin verir.
 
 **Güvenlik**
 
-Kişisel bilgilerinizi korumak için, makul önlemler alır ve bunların uygunsuz bir şekilde kaybolmamasını, kötüye kullanılmamasını, erişilmemesini, ifşa edilmemesini, değiştirilmemesini veya yok edilmemesini sağlamak için sektördeki en iyi uygulamaları takip ederiz.
+Kişisel bilgilerinizi korumak için makul önlemler alır ve uygunsuz şekilde kaybolmamasını, kötüye kullanılmamasını, erişilmemesini, açıklanmamasını, değiştirilmemesini veya yok edilmemesini sağlamak için sektördeki en iyi uygulamaları izleriz.
 
-**Çerezler**
+**Çerezler ve Benzer Teknolojiler**
 
-Web Sitemiz çerez kullanmamaktadır.
+Web Sitemiz çerezler ve benzer teknolojiler kullanır.
+
+* **Zorunlu çerezler:** oturumunuzu açık tutmak, seçtiğiniz dilleri hatırlamak ve misafir gezinme sınırlarını yönetmek için çerezler kullanırız.
+* **Analitik:** kendi çerezlerini ayarlayabilen ve kullanım bilgileri toplayabilen Google Analytics kullanıyoruz.
+* **Yerel depolama:** ayarları, kaydedilen kelimeleri, ilerlemeyi, okuma içeriğini ve özel medyayı cihazınızda saklamak için \`localStorage\`, \`sessionStorage\` ve IndexedDB kullanıyoruz.
+* **Gömülü içerik:** videolar YouTube'dan gömülüdür. YouTube ve Google, bir video izlediğinizde kendi çerezlerini ayarlayabilir; bu çerezler kendi gizlilik politikalarına tabidir.
+
+Çerezleri tarayıcı ayarlarınız aracılığıyla engelleyebilir veya silebilirsiniz. Çerezleri devre dışı bırakırsanız Web Sitesinin bazı bölümlerinin düzgün çalışmayabileceğini lütfen unutmayın.
+
+**Veri Saklama ve Silme**
+
+Kişisel bilgileri, hesabınız aktif olduğu sürece veya Web Sitesini sağlamak, yasal yükümlülükleri yerine getirmek, anlaşmazlıkları çözmek ve anlaşmalarımızı uygulamak için gerektiği sürece saklarız.
+
+Hesabınızı istediğiniz zaman Profil sayfasındaki Hesabı Sil seçeneğini kullanarak veya aşağıdaki adresten bizimle iletişime geçerek silebilirsiniz. Hesabınızı sildiğinizde, yasal, ödeme, vergi veya güvenlik amaçlarıyla saklamamız gereken kayıtlar hariç, kişisel bilgilerinizi kaldırır veya anonimleştiririz.
 
 **Bu Gizlilik Politikasındaki Değişiklikler**
 
-Bu gizlilik politikasını herhangi bir zamanda değiştirme hakkını saklı tutarız, bu nedenle lütfen sık sık gözden geçirin. Değişiklikler ve açıklamalar, Web Sitesinde yayınlandıkları anda yürürlüğe girecektir. Bu politikada önemli değişiklikler yaparsak, güncellendiğini burada size bildireceğiz, böylece hangi bilgileri topladığımızı, bunları nasıl kullandığımızı ve hangi koşullar altında kullandığımızı ve/veya ifşa ettiğimizi bilirsiniz.
+Bu gizlilik politikasını istediğimiz zaman değiştirme hakkını saklı tutarız, bu nedenle lütfen sık sık gözden geçirin. Değişiklikler ve açıklamalar, Web Sitesinde yayınlandığı anda derhal yürürlüğe girer. Bu politikada önemli değişiklikler yaparsak, hangi bilgileri topladığımız, bunları nasıl kullandığımız ve hangi koşullar altında kullandığımız ve/veya açıkladığımız konusunda bilgi sahibi olmanız için sizi burada güncellendiği konusunda bilgilendireceğiz.
 
 **Sorular ve İletişim Bilgileri**
 
-Hakkınızda sahip olduğumuz herhangi bir kişisel bilgiye erişmek, düzeltmek, değiştirmek veya silmek, bir şikayette bulunmak veya sadece daha fazla bilgi almak isterseniz, bizimle şu adresten iletişime geçin: [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)` },
+Hakkınızda sahip olduğumuz kişisel bilgilere erişmek, bunları düzeltmek, değiştirmek veya silmek, bir şikayet bildirmek veya daha fazla bilgi almak isterseniz bizimle [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) adresinden iletişime geçin.` },
     { path: 'reading/epub', title: 'EPUK Okuyucu', category: 'reading', content: `# EPUK Okuyucu
 
 Etkileşimli kelime arama, blok bazlı çeviri ve oturumlar arasında devam eden ilerleme kaydı ile EPUB e-kitaplarını okuyun.
@@ -43592,103 +44516,134 @@ Lịch sử xem của bạn là riêng tư. Chỉ bạn mới thấy được kh
 - Lịch sử của bạn chỉ giới hạn trong ngôn ngữ thứ hai hiện tại — bạn sẽ không thấy video Tiếng Nhật khi đang ở chế độ Tiếng Triều Tiên` },
     { path: 'privacy-policy', title: 'Chính sách bảo mật', category: 'privacy-policy', content: `# Chính sách bảo mật
 
-Trang web này đại diện cho một văn bản pháp lý đóng vai trò là Điều khoản Sử dụng và Chính sách Quyền riêng tư của chúng tôi và điều chỉnh việc sử dụng trang web của chúng tôi: [https://languageplayer.io](https://languageplayer.io), bao gồm các trang được tìm thấy trên đó và tất cả các tên miền phụ và ứng dụng (gọi chung là "Trang web"), do chúng tôi, Zero to Hero Education, Canada ("Zero to Hero") sở hữu và điều hành.
+Trang web này đại diện cho một văn bản pháp lý đóng vai trò là Điều khoản Sử dụng và Chính sách Quyền riêng tư của chúng tôi và điều chỉnh việc sử dụng trang web của chúng tôi: [https://languageplayer.io](https://languageplayer.io), bao gồm các trang được tìm thấy trên đó và tất cả các tên miền phụ và ứng dụng (gọi chung là "Trang web"), do chúng tôi sở hữu và vận hành, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Giới thiệu**
 
-Điều khoản Sử dụng, cùng với Chính sách Quyền riêng tư được công bố bên dưới, và các hướng dẫn hoặc chính sách khác được đăng tải trong Trang web của chúng tôi (gọi chung là "Điều khoản Pháp lý"), cấu thành toàn bộ và duy nhất thỏa thuận giữa bạn và chúng tôi, và thay thế tất cả các thỏa thuận, tuyên bố, bảo đảm và hiểu biết khác liên quan đến Trang web của chúng tôi và nội dung được đề cập tại đây. Chúng tôi có thể sửa đổi Điều khoản Pháp lý của mình bất kỳ lúc nào mà không cần thông báo cụ thể cho bạn. Các bản sao mới nhất của Điều khoản Pháp lý sẽ được đăng tải trên Trang web của chúng tôi và bạn nên xem xét tất cả các Điều khoản Pháp lý trước khi sử dụng Trang web của chúng tôi. Sau khi mọi sửa đổi đối với Điều khoản Pháp lý được đăng tải, bạn đồng ý bị ràng buộc bởi bất kỳ thay đổi nào đó. Do đó, điều quan trọng là bạn phải định kỳ xem xét Điều khoản Pháp lý của chúng tôi để đảm bảo bạn vẫn đồng ý với chúng.
+Điều khoản Sử dụng, cùng với Chính sách Quyền riêng tư được công bố dưới đây, và các hướng dẫn hoặc chính sách khác được đăng trên Trang web của chúng tôi (gọi chung là "Điều khoản Pháp lý"), cấu thành toàn bộ và là thỏa thuận duy nhất giữa bạn và chúng tôi, và thay thế tất cả các thỏa thuận, tuyên bố, bảo đảm và hiểu biết khác liên quan đến Trang web của chúng tôi và nội dung được đề cập trong đây. Chúng tôi có thể sửa đổi Điều khoản Pháp lý của mình bất cứ lúc nào mà không cần thông báo cụ thể cho bạn. Các bản mới nhất của Điều khoản Pháp lý sẽ được đăng trên Trang web của chúng tôi, và bạn nên xem xét tất cả Điều khoản Pháp lý trước khi sử dụng Trang web của chúng tôi. Sau khi bất kỳ sửa đổi nào đối với Điều khoản Pháp lý được đăng, bạn đồng ý bị ràng buộc bởi những thay đổi đó. Do đó, điều quan trọng là bạn phải định kỳ xem xét Điều khoản Pháp lý của chúng tôi để đảm bảo bạn vẫn đồng ý với chúng.
 
-Bằng cách sử dụng Trang web của chúng tôi, bạn đồng ý tuân thủ đầy đủ và bị ràng buộc bởi Điều khoản Pháp lý của chúng tôi. Vui lòng xem xét chúng một cách cẩn thận. Nếu bạn không chấp nhận Điều khoản Pháp lý của chúng tôi, đừng truy cập và sử dụng Trang web của chúng tôi. Nếu bạn đã truy cập Trang web của chúng tôi và không chấp nhận Điều khoản Pháp lý, bạn không còn được phép sử dụng nó nữa và bạn nên ngừng sử dụng Trang web của chúng tôi ngay lập tức.
+Bằng cách sử dụng Trang web của chúng tôi, bạn đồng ý tuân thủ đầy đủ và bị ràng buộc bởi Điều khoản Pháp lý của chúng tôi. Vui lòng xem xét chúng một cách cẩn thận. Nếu bạn không chấp nhận Điều khoản Pháp lý của chúng tôi, không truy cập và sử dụng Trang web của chúng tôi. Nếu bạn đã truy cập Trang web của chúng tôi và không chấp nhận Điều khoản Pháp lý của chúng tôi, bạn không còn được phép sử dụng nó và bạn nên ngay lập tức ngừng sử dụng Trang web của chúng tôi.
 
-**Các Thuật ngữ Được Định nghĩa Khác trên Trang Web của Chúng tôi**
+**Các Thuật ngữ Được Định nghĩa Khác Trên Trang Web Của Chúng Tôi**
 
-Trang web này bao gồm các thuật ngữ được định nghĩa trong suốt trang này cũng như các thuật ngữ được định nghĩa khác sau đây:
+Trang web này bao gồm các thuật ngữ được định nghĩa xuyên suốt trang này cũng như các thuật ngữ được định nghĩa khác sau đây:
 
-Các thuật ngữ "chúng tôi" đề cập đến Zero to Hero với tư cách là chủ sở hữu của Trang web. "Nội dung" bao gồm bất kỳ và tất cả văn bản, thông tin, đồ họa, âm thanh, video và dữ liệu khác được đăng tải, cung cấp hoặc làm sẵn có thông qua Trang web của chúng tôi.
+Các thuật ngữ "chúng tôi" và "chúng tôi" đề cập đến Zero to Hero với tư cách là chủ sở hữu của Trang web. "Nội dung" bao gồm tất cả và bất kỳ văn bản, thông tin, đồ họa, âm thanh, video và dữ liệu khác được đăng, cung cấp hoặc làm cho có sẵn thông qua Trang web của chúng tôi.
 
-"Khách truy cập" hoặc "bạn" là các định danh chung đề cập đến bạn với tư cách là người duyệt Trang web của chúng tôi, cho dù bạn có hoàn tất việc mua sản phẩm của chúng tôi hay không.
+"Khách truy cập" hoặc "bạn" là các định danh chung đề cập đến bạn với tư cách là người duyệt Trang web của chúng tôi, dù bạn có hoàn tất việc mua sản phẩm của chúng tôi hay không.
 
-"Thông tin cá nhân" có nghĩa là thông tin về một người có thể nhận dạng được, có thể bao gồm tên, địa chỉ cư trú, địa chỉ thanh toán, địa chỉ giao hàng, số điện thoại, địa chỉ email và các thông tin liên lạc tương tự khác, cũng như dữ liệu lịch sử sử dụng Trang web. Nó cũng có thể bao gồm thông tin thẻ tín dụng của một người khi được cung cấp cho mục đích thanh toán.
+"Thông tin cá nhân" có nghĩa là thông tin về một người có thể nhận dạng được, có thể bao gồm tên, địa chỉ nhà ở, địa chỉ thanh toán, địa chỉ giao hàng, số điện thoại, địa chỉ email và các thông tin liên lạc tương tự khác, cũng như dữ liệu lịch sử sử dụng Trang web. Nó cũng có thể bao gồm thông tin thẻ tín dụng của một người khi được cung cấp cho mục đích thanh toán.
 
 **ĐIỀU KHOẢN SỬ DỤNG**
 
 **Sở hữu Trí tuệ**
 
-Trang Web của chúng tôi có thể chứa các dấu hiệu dịch vụ hoặc nhãn hiệu thương mại của chúng tôi cũng như của các chi nhánh hoặc người hoặc công ty khác, dưới dạng từ ngữ, đồ họa và logo. Việc bạn sử dụng Trang web của chúng tôi không cấu thành bất kỳ quyền hoặc giấy phép nào cho bạn để sử dụng các dấu hiệu dịch vụ/nhãn hiệu thương mại đó mà không có sự ủy quyền bằng văn bản trước của chủ sở hữu dấu hiệu dịch vụ/nhãn hiệu thương mại tương ứng. Trang web của chúng tôi bao gồm cả nội dung cũng được bảo vệ theo luật bản quyền của Canada và quốc tế. Việc bạn sử dụng Trang web của chúng tôi hoặc nội dung không cấp cho bạn quyền sở hữu dưới bất kỳ hình thức nào đối với nội dung đó. Việc sao chép, phân phối lại, sử dụng hoặc xuất bản bất kỳ phần nào của Trang web hoặc nội dung của chúng tôi đều bị nghiêm cấm và do đó không được sao chép hoặc tái tạo nếu không có sự ủy quyền bằng văn bản của chúng tôi.
+Trang web của chúng tôi có thể chứa các dấu hiệu dịch vụ hoặc nhãn hiệu thương mại của chúng tôi cũng như của các bên liên kết hoặc các cá nhân hoặc công ty khác, dưới dạng từ ngữ, đồ họa và logo. Việc bạn sử dụng Trang web của chúng tôi không cấu thành bất kỳ quyền hoặc giấy phép nào để bạn sử dụng các dấu hiệu dịch vụ/nhãn hiệu thương mại đó, nếu không có sự cho phép bằng văn bản trước của chủ sở hữu dấu hiệu dịch vụ/nhãn hiệu thương mại tương ứng. Trang web của chúng tôi bao gồm cả nội dung cũng được bảo vệ theo luật bản quyền của Canada và quốc tế. Việc bạn sử dụng Trang web hoặc nội dung của chúng tôi không cấp cho bạn quyền sở hữu dưới bất kỳ hình thức nào đối với nội dung đó. Việc sao chép, phân phối lại, sử dụng hoặc xuất bản bởi bạn bất kỳ phần nào của Trang web hoặc nội dung của chúng tôi bị nghiêm cấm và do đó không được sao chép hoặc tái tạo mà không có sự cho phép bằng văn bản của chúng tôi trước tiên.
 
 **Giới hạn Trách nhiệm**
 
-Trong mọi trường hợp, chúng tôi hoặc các nhân viên hoặc cán bộ của chúng tôi sẽ không chịu trách nhiệm hoặc trách nhiệm pháp lý đối với bất kỳ tổn thất hoặc thiệt hại nào, bao gồm (không giới hạn tính chung chung của những điều trên) bất kỳ thiệt hại trực tiếp, gián tiếp, ngẫu nhiên, đặc biệt, trừng phạt hoặc do hậu quả nào, phát sinh từ hoặc liên quan đến việc bạn sử dụng, truy cập hoặc phụ thuộc vào, hoặc không có khả năng sử dụng hoặc truy cập, Trang web này, hệ thống đặt hàng trực tuyến hoặc bất kỳ nội dung nào.
+Trong mọi trường hợp, chúng tôi hoặc các nhân viên điều hành hoặc nhân viên của chúng tôi sẽ không chịu trách nhiệm hoặc chịu trách nhiệm pháp lý đối với bất kỳ tổn thất hoặc thiệt hại nào, bao gồm (không giới hạn tính khái quát của điều trên) bất kỳ thiệt hại trực tiếp, gián tiếp, ngẫu nhiên, đặc biệt, trừng phạt hoặc do hậu quả nào, phát sinh từ hoặc liên quan đến việc bạn sử dụng, truy cập hoặc dựa vào, hoặc việc bạn không thể sử dụng hoặc truy cập Trang web này, hệ thống đặt hàng trực tuyến hoặc bất kỳ nội dung nào.
 
 **Điều khoản Chung**
 
-Điều khoản Pháp lý của chúng tôi sẽ được coi như được thực hiện và thực thi tại Tỉnh British Columbia, Canada và sẽ được điều chỉnh và giải thích theo luật pháp của khu vực đó mà không xem xét đến các nguyên tắc xung đột pháp luật. Ngoài ra, bạn đồng ý tuân theo quyền tài phán cá nhân và địa điểm xét xử của các tòa án trong khu vực đó. Bất kỳ nguyên nhân hành động nào của bạn liên quan đến Trang web của chúng tôi phải được khởi kiện trong vòng một (1) năm kể từ khi nguyên nhân hành động phát sinh nếu không sẽ bị từ bỏ và ngăn chặn vĩnh viễn. Nếu bất kỳ phần nào của Điều khoản Pháp lý của chúng tôi bị coi là vô hiệu hoặc không thể thực thi, phần đó sẽ được giải thích phù hợp với luật áp dụng và các phần còn lại sẽ vẫn có hiệu lực đầy đủ. Trong phạm vi mà bất kỳ nội dung nào mâu thuẫn hoặc không nhất quán với Điều khoản Pháp lý của chúng tôi, Điều khoản Pháp lý của chúng tôi sẽ thay thế và được ưu tiên trong việc giải thích chúng cùng nhau. Việc chúng tôi không thực thi bất kỳ điều khoản nào của Điều khoản Pháp lý sẽ không được coi là sự từ bỏ điều khoản đó hoặc quyền thực thi điều khoản đó. Các quyền của chúng tôi theo Điều khoản Pháp lý sẽ tiếp tục tồn tại sau khi chấm dứt Điều khoản Pháp lý.
+Điều khoản Pháp lý của chúng tôi sẽ được coi như được thực hiện và thực thi tại Tỉnh British Columbia, Canada và sẽ được điều chỉnh và giải thích theo luật của khu vực đó mà không xem xét đến các nguyên tắc xung đột pháp luật. Ngoài ra, bạn đồng ý tuân theo quyền tài phán cá nhân và địa điểm xét xử của các tòa án trong khu vực đó. Bất kỳ nguyên nhân hành động nào của bạn liên quan đến Trang web của chúng tôi phải được khởi kiện trong vòng một (1) năm sau khi nguyên nhân hành động phát sinh hoặc sẽ bị miễn trừ và chặn vĩnh viễn. Nếu bất kỳ phần nào của Điều khoản Pháp lý của chúng tôi bị coi là vô hiệu hoặc không thể thực thi, phần đó sẽ được giải thích phù hợp với luật hiện hành và các phần còn lại sẽ vẫn có hiệu lực đầy đủ. Trong phạm vi bất kỳ nội dung nào xung đột hoặc không nhất quán với Điều khoản Pháp lý của chúng tôi, Điều khoản Pháp lý của chúng tôi sẽ thay thế và được ưu tiên trong việc giải thích chúng cùng nhau. Việc chúng tôi không thực thi bất kỳ điều khoản nào của Điều khoản Pháp lý sẽ không được coi là từ bỏ điều khoản đó cũng như không từ bỏ quyền thực thi điều khoản đó. Các quyền của chúng tôi theo Điều khoản Pháp lý sẽ tồn tại sau khi chấm dứt Điều khoản Pháp lý của chúng tôi.
 
 **Liên kết Bên thứ Ba**
 
-Khi bạn nhấp vào các liên kết trên Trang web của chúng tôi, chúng có thể đưa bạn ra khỏi Trang web của chúng tôi đến một trang web khác do bên thứ ba sở hữu và điều hành. Chúng tôi không chịu trách nhiệm về các hoạt động bảo mật của các trang web bên thứ ba khác và khuyến khích bạn đọc các điều khoản sử dụng và tuyên bố về quyền riêng tư của họ. Một khi bạn rời khỏi Trang web của chúng tôi hoặc được chuyển hướng đến một trang web hoặc ứng dụng của bên thứ ba, bạn không còn bị điều chỉnh bởi Điều khoản Pháp lý của chúng tôi nữa.
+Khi bạn nhấp vào các liên kết trên Trang web của chúng tôi, chúng có thể đưa bạn ra khỏi Trang web của chúng tôi đến một trang web khác do bên thứ ba sở hữu và vận hành. Chúng tôi không chịu trách nhiệm về các hoạt động bảo mật của các trang web bên thứ ba khác và khuyến khích bạn đọc các điều khoản sử dụng và tuyên bố về quyền riêng tư của họ. Khi bạn rời khỏi Trang web của chúng tôi hoặc được chuyển hướng đến một trang web hoặc ứng dụng bên thứ ba, bạn không còn bị ràng buộc bởi Điều khoản Pháp lý của chúng tôi.
 
 **CHÍNH SÁCH QUYỀN RIÊNG TƯ**
 
-Tại Zero to Hero, chúng tôi coi quyền riêng tư là một vấn đề rất quan trọng và do đó chúng tôi cam kết bảo vệ quyền riêng tư của thông tin cá nhân của tất cả khách truy cập. Chính sách Quyền riêng tư này kết hợp các phần áp dụng của Đạo luật Bảo vệ Thông tin Cá nhân và Tài liệu Điện tử (Canada), Đạo luật Bảo vệ Thông tin Cá nhân (Alberta) và mười nguyên tắc được nêu trong Quy tắc Mẫu của Hiệp hội Tiêu chuẩn Canada (CSA) về Bảo vệ Thông tin Cá nhân (gọi chung là "luật bảo mật áp dụng").
+Tại Zero to Hero, chúng tôi coi quyền riêng tư là một vấn đề rất quan trọng và do đó chúng tôi cam kết bảo vệ quyền riêng tư của thông tin cá nhân của tất cả khách truy cập. Chính sách Quyền riêng tư này bao gồm các phần áp dụng của Đạo luật Bảo vệ Thông tin Cá nhân và Tài liệu Điện tử (Canada), Đạo luật Bảo vệ Thông tin Cá nhân (Alberta) và mười nguyên tắc được nêu trong Bộ luật Mẫu của Hiệp hội Tiêu chuẩn Canada (CSA) về Bảo vệ Thông tin Cá nhân (cùng nhau, "luật bảo mật áp dụng").
 
-**Thu thập Thông tin**
+**Thông Tin Chúng Tôi Thu Thập**
 
-Chúng tôi có thể thu thập thông tin cá nhân cho một hoặc nhiều mục đích sau:
+**Thông tin bạn cung cấp trực tiếp:**
 
-*   để thiết lập và duy trì mối quan hệ với khách truy cập;
-*   để cung cấp các sản phẩm và dịch vụ được yêu cầu và đang diễn ra;
-*   để thông báo cho bạn về những thay đổi đối với sản phẩm và dịch vụ của chúng tôi;
-*   để hiểu rõ hơn về khách truy cập, yêu cầu và sở thích của họ;
-*   để phát triển, nâng cao, cải thiện và/hoặc tiếp thị các sản phẩm và dịch vụ của chúng tôi;
-*   để giám sát việc sử dụng Trang web của chúng tôi;
-*   để quản lý và cải thiện hoạt động kinh doanh và vận hành của chúng tôi; và
-*   để đáp ứng các yêu cầu pháp lý và quy định.
+* Thông tin tài khoản: tên, địa chỉ email, mật khẩu, sở thích ngôn ngữ và trình độ học tập của bạn.
+* Dữ liệu học tập: từ, cụm từ đã lưu, tiến độ ôn tập, ghi chú, danh sách phát, video đã thích, lịch sử xem, sách và tiến độ đọc.
+* Nội dung bạn tải lên hoặc tạo: phương tiện tùy chỉnh, tệp EPUB và văn bản bạn yêu cầu chúng tôi dịch hoặc giải thích.
+* Thông tin thanh toán: khi bạn mua đăng ký, thanh toán được xử lý bởi Stripe, PayPal hoặc Apple App Store. Chúng tôi nhận được xác nhận và chi tiết đăng ký, nhưng chúng tôi thường không lưu trữ số thẻ đầy đủ của bạn.
 
-**  
-Chúng Tôi Làm Gì Với Thông Tin Của Bạn?**
+**Thông tin được thu thập tự động:**
 
-Khi bạn mua hàng thông qua hệ thống đặt hàng trực tuyến của chúng tôi, như một phần của quá trình mua và bán, chúng tôi thu thập thông tin cá nhân của bạn.
+* Dữ liệu sử dụng: các trang và tính năng bạn truy cập, bao gồm Khám phá phương tiện, Âm nhạc và Giải trí, TV trực tiếp, Chương trình TV, Tìm kiếm, Từ điển, Từ đã lưu, Ôn tập, Trình đọc, Trình đọc web, Trình đọc EPUB, Phương Tiện Cục Bộ, Lịch sử xem, Danh sách phát và Video đã thích; video bạn xem; tương tác; và dấu thời gian.
+* Thông tin thiết bị và mạng: địa chỉ IP, loại trình duyệt, hệ điều hành, loại thiết bị và vị trí gần đúng được suy ra từ địa chỉ IP của bạn.
+* Phân tích: chúng tôi sử dụng Google Analytics để hiểu cách khách truy cập sử dụng Trang web. Google Analytics có thể sử dụng cookie và thu thập dữ liệu sử dụng thay mặt chúng tôi. Việc Google sử dụng dữ liệu đó được điều chỉnh bởi [Chính sách Quyền riêng tư của Google](https://policies.google.com/privacy).
+* Lưu trữ cục bộ: chúng tôi sử dụng cookie, \`localStorage\`, \`sessionStorage\` và IndexedDB để giữ cho bạn đăng nhập, ghi nhớ ngôn ngữ của bạn, lưu trữ cài đặt, tiến độ và từ đã lưu của bạn, và lưu trữ nội dung cục bộ.
 
-Khi bạn duyệt Trang web của chúng tôi, chúng tôi cũng tự động nhận địa chỉ giao thức internet (IP) của máy tính bạn để cung cấp cho chúng tôi thông tin giúp chúng tôi tìm hiểu về trình duyệt và hệ điều hành của bạn.
+**Chúng Tôi Làm Gì Với Thông Tin Của Bạn?**
 
-Tiếp thị trực tiếp được phép (nếu áp dụng): Với sự cho phép của bạn, chúng tôi có thể gửi cho bạn bản tin hoặc email để quảng cáo về cửa hàng, sản phẩm mới và các cập nhật khác của chúng tôi.
+Chúng tôi sử dụng thông tin chúng tôi thu thập để:
 
-**Sự đồng ý**
+* cung cấp, duy trì và cải thiện Trang web và các tính năng của nó;
+* tạo và quản lý tài khoản của bạn, xác minh danh tính của bạn và giữ cho bạn đăng nhập;
+* cá nhân hóa các đề xuất dựa trên ngôn ngữ, trình độ và lịch sử học tập của bạn;
+* đồng bộ dữ liệu của bạn trên các thiết bị;
+* xử lý đăng ký, thanh toán và gia hạn;
+* gửi email giao dịch như mã xác minh, đặt lại mật khẩu và biên nhận thanh toán;
+* gửi thông tin tiếp thị nếu bạn đã cho phép chúng tôi làm như vậy;
+* phân tích việc sử dụng với Google Analytics để hiểu cách khách truy cập sử dụng Trang web và cải thiện sản phẩm của chúng tôi;
+* đáp ứng các yêu cầu pháp lý và quy định và bảo vệ quyền của chúng tôi và quyền của người dùng.
 
-_Làm thế nào để bạn có được sự đồng ý của tôi?_
+Chúng tôi không bán thông tin cá nhân của bạn.
 
-Khi bạn cung cấp cho chúng tôi thông tin cá nhân để hoàn tất giao dịch, xác minh thẻ tín dụng của bạn, đặt hàng, sắp xếp giao hàng hoặc trả lại hàng đã mua, hoặc đăng hoặc ghim bất kỳ thông tin hoặc ảnh nào lên trang mạng xã hội của chúng tôi, chúng tôi suy luận rằng bạn đồng ý cho chúng tôi thu thập thông tin đó và sử dụng nó chỉ cho mục đích cụ thể đó.
+**Chia sẻ và Tiết lộ**
 
-Nếu chúng tôi yêu cầu thông tin cá nhân của bạn vì một lý do thứ yếu, như tiếp thị, chúng tôi sẽ trực tiếp yêu cầu bạn đồng ý rõ ràng hoặc cung cấp cho bạn cơ hội để từ chối.
+Chúng tôi chia sẻ thông tin cá nhân chỉ với các nhà cung cấp dịch vụ giúp chúng tôi vận hành Trang web, bao gồm:
+
+* nhà cung cấp lưu trữ và cơ sở dữ liệu, bao gồm Supabase;
+* bộ xử lý thanh toán, bao gồm Stripe, PayPal và Apple App Store;
+* nhà cung cấp dịch vụ dịch thuật và AI, bao gồm DeepSeek, khi bạn sử dụng các tính năng dịch thuật hoặc giải thích AI;
+* nhà cung cấp phân tích, bao gồm Google Analytics;
+* nền tảng video, bao gồm YouTube và Google, khi bạn xem video được nhúng.
+
+Chúng tôi sẽ không sử dụng hoặc tiết lộ thông tin cá nhân cho các mục đích khác ngoài mục đích thu thập, trừ khi có sự đồng ý của bạn, nếu được pháp luật cho phép hoặc yêu cầu, hoặc bạn vi phạm Điều khoản Sử dụng của chúng tôi.
+
+**Sự Đồng Ý**
+
+_Làm thế nào để tôi nhận được sự đồng ý của bạn?_
+
+Khi bạn cung cấp cho chúng tôi thông tin cá nhân để tạo tài khoản, hoàn tất giao dịch, xác minh thanh toán, đặt hàng hoặc sử dụng sản phẩm và dịch vụ của chúng tôi, chúng tôi ngụ ý rằng bạn đồng ý với việc chúng tôi thu thập thông tin đó và sử dụng nó chỉ cho mục đích cụ thể đó.
+
+Nếu chúng tôi yêu cầu thông tin cá nhân của bạn cho một lý do thứ yếu, như tiếp thị, chúng tôi sẽ hỏi trực tiếp bạn về sự đồng ý rõ ràng của bạn hoặc cung cấp cho bạn cơ hội để từ chối.
 
 _Làm thế nào để tôi rút lại sự đồng ý của mình?_
 
-Nếu sau khi bạn đồng ý, bạn thay đổi ý định, bạn có thể rút lại sự đồng ý của mình để chúng tôi liên hệ với bạn, cho việc tiếp tục thu thập, sử dụng hoặc tiết lộ thông tin của bạn, bất cứ lúc nào, bằng cách thông báo cho chúng tôi.
-
-**Tiết lộ**
-
-Chúng tôi sẽ không sử dụng hoặc tiết lộ thông tin cá nhân cho các mục đích khác ngoài mục đích mà nó được thu thập, trừ khi có sự đồng ý của bạn, nếu được pháp luật cho phép hoặc yêu cầu, hoặc bạn vi phạm Điều khoản Sử dụng của chúng tôi.
+Nếu sau khi bạn chọn tham gia, bạn thay đổi ý định, bạn có thể rút lại sự đồng ý cho chúng tôi liên hệ với bạn, cho việc tiếp tục thu thập, sử dụng hoặc tiết lộ thông tin của bạn, bất cứ lúc nào, bằng cách thông báo cho chúng tôi.
 
 **Bảo vệ**
 
-Chúng tôi sẽ bảo vệ thông tin cá nhân bằng cách tuân theo các thông lệ tốt nhất của ngành và thực hiện các biện pháp bảo vệ hợp lý phù hợp với độ nhạy cảm của thông tin; chúng tôi sẽ nỗ lực hợp lý để bảo vệ thông tin cá nhân khỏi bị mất hoặc đánh cắp, cũng như truy cập, tiết lộ, sao chép, sử dụng hoặc sửa đổi trái phép bất kể định dạng nào mà nó được lưu giữ. Pháp luật cũng cho phép chúng tôi, vì mục đích pháp lý hoặc kinh doanh, giữ lại thông tin cá nhân trong thời gian hợp lý và với điều kiện bạn chưa rút lại sự đồng ý của mình.
+Chúng tôi sẽ bảo vệ thông tin cá nhân bằng cách tuân theo các thông lệ tốt nhất của ngành và thực hiện các biện pháp bảo vệ hợp lý phù hợp với độ nhạy cảm của thông tin; chúng tôi sẽ nỗ lực hợp lý để bảo vệ thông tin cá nhân chống lại mất mát hoặc trộm cắp, cũng như truy cập, tiết lộ, sao chép, sử dụng hoặc sửa đổi trái phép bất kể định dạng lưu trữ. Pháp luật cũng cho phép chúng tôi, vì mục đích pháp lý hoặc kinh doanh, lưu giữ thông tin cá nhân trong thời gian hợp lý và với điều kiện bạn chưa rút lại sự đồng ý của mình.
 
 **Bảo mật**
 
 Để bảo vệ thông tin cá nhân của bạn, chúng tôi thực hiện các biện pháp phòng ngừa hợp lý và tuân theo các thông lệ tốt nhất của ngành để đảm bảo thông tin không bị mất, sử dụng sai, truy cập, tiết lộ, thay đổi hoặc phá hủy một cách không phù hợp.
 
-**Cookie**
+**Cookie và Công nghệ Tương tự**
 
-Trang web của chúng tôi không sử dụng cookie.
+Trang web của chúng tôi sử dụng cookie và các công nghệ tương tự.
 
-**Thay đổi đối với Chính sách Quyền riêng tư này**
+* **Cookie thiết yếu:** chúng tôi sử dụng cookie để giữ cho bạn đăng nhập, ghi nhớ ngôn ngữ bạn đã chọn và quản lý giới hạn điều hướng của khách.
+* **Phân tích:** chúng tôi sử dụng Google Analytics, có thể đặt cookie riêng và thu thập thông tin sử dụng.
+* **Lưu trữ cục bộ:** chúng tôi sử dụng \`localStorage\`, \`sessionStorage\` và IndexedDB để lưu trữ cài đặt, từ đã lưu, tiến độ, nội dung đọc và phương tiện tùy chỉnh trên thiết bị của bạn.
+* **Nội dung nhúng:** video được nhúng từ YouTube. YouTube và Google có thể đặt cookie riêng của họ khi bạn xem video, được điều chỉnh bởi chính sách quyền riêng tư của họ.
 
-Chúng tôi có quyền sửa đổi chính sách bảo mật này bất kỳ lúc nào, vì vậy vui lòng xem xét nó thường xuyên. Các thay đổi và làm rõ sẽ có hiệu lực ngay sau khi được đăng tải trên Trang web. Nếu chúng tôi thực hiện các thay đổi quan trọng đối với chính sách này, chúng tôi sẽ thông báo cho bạn tại đây rằng nó đã được cập nhật, để bạn biết chúng tôi thu thập thông tin gì, cách chúng tôi sử dụng thông tin đó và trong hoàn cảnh nào, nếu có, chúng tôi sử dụng và/hoặc tiết lộ thông tin đó.
+Bạn có thể chặn hoặc xóa cookie thông qua cài đặt trình duyệt của mình. Xin lưu ý rằng một số phần của Trang web có thể không hoạt động chính xác nếu bạn vô hiệu hóa cookie.
 
-**Câu hỏi và Thông tin Liên hệ**
+**Lưu giữ và Xóa Dữ liệu**
 
-Nếu bạn muốn: truy cập, chỉnh sửa, sửa đổi hoặc xóa bất kỳ thông tin cá nhân nào chúng tôi có về bạn, khiếu nại hoặc chỉ đơn giản là muốn biết thêm thông tin, hãy liên hệ với chúng tôi tại [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
+Chúng tôi lưu giữ thông tin cá nhân miễn là tài khoản của bạn còn hoạt động, hoặc miễn là cần thiết để cung cấp Trang web, tuân thủ các nghĩa vụ pháp lý, giải quyết tranh chấp và thực thi các thỏa thuận của chúng tôi.
+
+Bạn có thể xóa tài khoản của mình bất cứ lúc nào từ trang Hồ sơ bằng tùy chọn Xóa Tài khoản, hoặc bằng cách liên hệ với chúng tôi theo địa chỉ dưới đây. Khi bạn xóa tài khoản, chúng tôi sẽ xóa hoặc ẩn danh thông tin cá nhân của bạn, tùy thuộc vào các hồ sơ chúng tôi được yêu cầu lưu giữ vì mục đích pháp lý, thanh toán, thuế hoặc bảo mật.
+
+**Thay đổi Đối với Chính sách Quyền riêng tư Này**
+
+Chúng tôi có quyền sửa đổi chính sách quyền riêng tư này bất cứ lúc nào, vì vậy vui lòng xem xét thường xuyên. Các thay đổi và làm rõ sẽ có hiệu lực ngay lập tức khi được đăng trên Trang web. Nếu chúng tôi thực hiện các thay đổi quan trọng đối với chính sách này, chúng tôi sẽ thông báo cho bạn tại đây rằng nó đã được cập nhật, để bạn biết chúng tôi thu thập thông tin gì, cách chúng tôi sử dụng nó và trong trường hợp nào, nếu có, chúng tôi sử dụng và/hoặc tiết lộ nó.
+
+**Câu Hỏi và Thông Tin Liên Hệ**
+
+Nếu bạn muốn: truy cập, chỉnh sửa, sửa đổi hoặc xóa bất kỳ thông tin cá nhân nào chúng tôi có về bạn, đăng ký khiếu nại hoặc chỉ đơn giản muốn biết thêm thông tin, hãy liên hệ với chúng tôi tại [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca).` },
     { path: 'reading/epub', title: 'Trình đọc EPUB', category: 'reading', content: `# Trình đọc EPUB
 
 Đọc sách điện tử EPUB với tra cứu từ tương tác, dịch theo khối, và tiến độ được lưu lại qua các phiên.
@@ -45059,102 +46014,134 @@ Language Player会自动保存您的观看历史。当您观看视频时，每15
 - 历史记录仅限于当前学习的L2语言——在韩语模式下不会看到日语的视频` },
     { path: 'privacy-policy', title: '隐私政策', category: 'privacy-policy', content: `# 隐私政策
 
-本网页是一份法律文件，构成我们的使用条款和隐私政策，管辖您对我们网站的使用：[https://languageplayer.io](https://languageplayer.io)，包括其上的页面以及所有子域名和应用程序（统称"网站"），由我们（加拿大Zero to Hero Education）拥有和运营（以下简称"Zero to Hero"）。
+本网页是一份法律文件，构成我们的使用条款和隐私政策，用于规范您对我们网站的使用：[https://languageplayer.io](https://languageplayer.io)，包括该网站上的所有页面以及所有子域名和应用（统称“网站”），该网站由我们——Zero to Hero Education, Canada（“Zero to Hero”）——拥有并运营。
 
 **引言**
 
-使用条款以及下文发布的隐私政策以及我们网站中发布的其他指南或政策（统称"法律条款"）构成您与我们之间完整且唯一的协议，取代之前所有与本网站及其所含主题事项相关的协议、陈述、保证和谅解。我们可随时修改法律条款，无需向您发出具体通知。最新版本的法律条款将发布在本网站上，您在使用本网站前应审阅所有法律条款。法律条款的任何修订一经发布，即表示您同意受其约束。因此，您务必定期审阅我们的法律条款，以确保您仍然同意其内容。
+使用条款、下文发布的隐私政策以及我们网站内发布的其他指南或政策（统称“法律条款”）构成您与我们之间的完整且唯一的协议，并取代所有其他与本网站及其所含主题事项相关的协议、陈述、保证和理解。我们可随时修改法律条款，恕不另行通知您。我们法律条款的最新版本将发布在我们的网站上，您在使用我们的网站前应审阅所有法律条款。在我们法律条款的任何修订发布后，您即同意受其约束。因此，定期审阅我们的法律条款以确保您仍然同意其内容非常重要。
 
-使用本网站即表示您完全遵守并受我们的法律条款约束。请仔细阅读。如果您不接受我们的法律条款，请勿访问和使用本网站。如果您已访问本网站但不接受法律条款，则您不再有权使用本网站，并应立即停止使用。
+使用我们的网站即表示您同意完全遵守并受我们的法律条款约束。请仔细审阅这些条款。如果您不接受我们的法律条款，请勿访问和使用我们的网站。如果您已经访问了我们的网站但不接受我们的法律条款，您将不再被授权使用该网站，并应立即停止使用。
 
-**本网站的其他定义术语**
+**我们网站上的其他定义术语**
 
-本网站包含本页定义以及以下其他定义术语：
+本网站包含本页面中定义的各种术语以及以下其他定义术语：
 
-"我们"指作为网站所有者的Zero to Hero。"内容"包括通过本网站发布、提供或可获取的任何及所有文本、信息、图形、音频、视频及其他数据。
+术语“我们”指作为网站所有者的Zero to Hero。“内容”包括通过我们网站发布、提供或可获取的任何及所有文本、信息、图形、音频、视频和其他数据。
 
-"访客"或"您"指浏览本网站的用户，无论您是否购买我们的产品。
+“访客”或“您”是集体标识符，指作为我们网站浏览者的您，无论您是否完成我们产品的购买。
 
-"个人信息"指可识别个人的信息，可能包括姓名、住宅地址、账单地址、送货地址、电话号码、电子邮件地址及其他类似联系信息，以及网站使用历史数据。还可能包括用于支付的信用卡信息。
+“个人信息”指与可识别个人相关的信息，可能包括个人姓名、居住地址、账单地址、送货地址、电话号码、电子邮件地址及其他类似的联系信息，以及网站使用历史数据。它还可能包括个人在支付时提供的信用卡信息。
 
 **使用条款**
 
 **知识产权**
 
-本网站可能包含我们、关联方或其他个人或公司的服务标记或商标，以文字、图形和标识形式呈现。使用本网站不构成您使用此类服务标记/商标的任何权利或许可，除非事先获得相应权利人的书面授权。本网站及其内容受加拿大和国际版权法保护。使用本网站或内容不授予您任何所有权。严禁复制、再分发、使用或发布本网站或其任何部分内容，未经书面授权不得复制或转载。
+我们的网站可能包含我们的服务标志或商标，以及我们关联公司或其他个人或公司的服务标志或商标，形式包括文字、图形和徽标。您对我们网站的使用不构成您使用此类服务标志/商标的任何权利或许可，除非获得相应服务标志/商标所有者的事先书面授权。我们的网站（包括内容）受加拿大和国际版权法保护。您对我们网站或内容的使用不授予您任何所有权。严禁您复制、再分发、使用或发布我们网站或内容的任何部分，未经我们事先书面授权不得复制或翻印。
 
 **责任限制**
 
-在任何情况下，我们、我们的管理人员或员工均不对因您使用、访问、依赖或无法使用或访问本网站、在线订购系统或任何内容而产生的任何损失或损害（包括但不限于直接、间接、 incidental、特殊、惩罚性或后果性损害）承担责任。
+在任何情况下，我们或我们的管理人员或员工均不对任何损失或损害承担责任，包括（不限于前述的一般性）因您使用、访问或依赖本网站、在线订购系统或任何内容，或因您无法使用或访问本网站、在线订购系统或任何内容而产生的或与之相关的任何直接、间接、偶然、特殊、惩罚性或后果性损害。
 
 **一般条款**
 
-法律条款应视为在加拿大不列颠哥伦比亚省签署并履行，并受该地区法律管辖（不考虑法律冲突原则）。此外，您同意接受该地区法院的个人管辖权和审判地。您就本网站提出的任何诉讼必须在诉因发生之日起一（1）年内提起，否则永久放弃。如果法律条款的任何部分被认定为无效或不可执行，该部分应按照适用法律解释，其余部分继续完全有效。如果任何内容与法律条款冲突或不一致，应以法律条款为准。我们未能执行法律条款的任何规定不构成对该规定或执行权的放弃。法律条款终止后，我们的权利仍然有效。
+我们的法律条款应视为在加拿大不列颠哥伦比亚省签署和履行，并受该地区法律管辖和解释，不考虑法律冲突原则。此外，您同意接受该地区法院的个人管辖权和审判地。您就我们网站提起的任何诉讼必须在诉因产生后一（1）年内提起，否则将被永久放弃和禁止。如果我们的法律条款的任何部分被认定为无效或不可执行，该部分应按照适用法律进行解释，其余部分应保持完全有效。如果任何内容与我们的法律条款冲突或不一致，我们的法律条款应优先并主导对它们的整体解释。我们未能执行法律条款的任何规定不应被视为放弃该规定或执行该规定的权利。我们在法律条款下的权利在法律条款终止后仍然有效。
 
 **第三方链接**
 
-点击本网站上的链接可能会将您引导至第三方拥有和运营的其他网站。我们不对其他第三方网站的隐私做法负责，建议您阅读其使用条款和隐私声明。一旦离开本网站或被重定向至第三方网站或应用程序，您不再受我们的法律条款约束。
+当您点击我们网站上的链接时，这些链接可能会将您引导离开我们的网站，进入由第三方拥有和运营的其他网站。我们不对其他第三方网站的隐私惯例负责，并鼓励您阅读其使用条款和隐私声明。一旦您离开我们的网站或被重定向到第三方网站或应用程序，您将不再受我们的法律条款约束。
 
 **隐私政策**
 
-在Zero to Hero，我们高度重视隐私问题，致力于保护所有访客个人信息的隐私。本隐私政策包含《个人信息保护和电子文件法案（加拿大）》、《个人信息保护法案（阿尔伯塔省）》以及加拿大标准协会（CSA）《个人信息保护示范守则》中规定的十项原则（统称"适用隐私法"）的适用部分。
+在Zero to Hero，我们认为隐私是非常重要的事项，因此我们致力于保护所有访客个人信息的隐私。本隐私政策包含《个人信息保护与电子文件法》（加拿大）、《个人信息保护法》（阿尔伯塔省）的适用部分，以及加拿大标准协会（CSA）《个人信息保护示范规范》中规定的十项原则（统称“适用隐私法律”）。
 
-**信息收集**
+**我们收集的信息**
 
-我们可能出于以下一个或多个目的收集个人信息：
+**您直接提供的信息：**
 
-*   建立和维护与访客的关系；
-*   提供所请求的持续产品和服务；
-*   通知您产品和服务的变化；
-*   更好地了解访客的需求和偏好；
-*   开发、增强、改进和/或营销我们的产品和服务；
-*   监控本网站的使用情况；
-*   管理和改进我们的业务和运营；
-*   满足法律和监管要求。
+* 账户信息：您的姓名、电子邮件地址、密码、语言偏好和学习水平。
+* 学习数据：保存的单词、短语、复习进度、笔记、播放列表、收藏的视频、观看历史、书籍和阅读进度。
+* 您上传或创建的内容：自定义媒体、EPUB文件，以及您要求我们翻译或解释的文本。
+* 支付信息：当您购买订阅时，付款由Stripe、PayPal或Apple App Store处理。我们会收到确认和订阅详情，但通常不会存储您的完整银行卡号。
 
-**我们如何处理您的信息？**
+**自动收集的信息：**
 
-当您通过我们的在线订购系统购买商品时，作为买卖过程的一部分，我们会收集您的个人信息。
+* 使用数据：您访问的页面和功能，包括探索媒体、音乐与娱乐、直播电视、电视节目、搜索、字典、已保存的单词、复习、阅读器、网页阅读器、EPUB阅读器、本地媒体、观看历史、播放列表和喜欢的视频；您观看的视频；交互；以及时间戳。
+* 设备和网络信息：IP地址、浏览器类型、操作系统、设备类型以及根据您的IP地址推导出的大致位置。
+* 分析：我们使用Google Analytics来了解访客如何使用网站。Google Analytics可能会代表我们使用cookie并收集使用数据。Google对此数据的使用受[Google隐私政策](https://policies.google.com/privacy)的约束。
+* 本地存储：我们使用cookie、\`localStorage\`、\`sessionStorage\`和IndexedDB来保持您的登录状态、记住您的语言、存储您的设置、进度和保存的单词，并在本地缓存内容。
 
-当您浏览本网站时，我们会自动接收您计算机的互联网协议（IP）地址，以便了解您的浏览器和操作系统信息。
+**我们如何使用您的信息？**
 
-允许的直接营销（如适用）：经您许可，我们可能会向您发送新闻通讯或电子邮件，宣传我们的商店、新产品和其他更新。
+我们将收集的信息用于：
+
+* 提供、维护和改进网站及其功能；
+* 创建和管理您的账户、验证您的身份并保持您的登录状态；
+* 根据您的语言、水平和学习历史个性化推荐；
+* 在设备间同步您的数据；
+* 处理订阅、付款和续费；
+* 发送交易性电子邮件，如验证码、密码重置和付款收据；
+* 在您授权的情况下发送营销通讯；
+* 使用Google Analytics分析使用情况，以了解访客如何使用网站并改进我们的产品；
+* 满足法律和监管要求，保护我们及我们用户的权利。
+
+我们不会出售您的个人信息。
+
+**共享与披露**
+
+我们仅与帮助我们运营网站的服务提供商共享个人信息，包括：
+
+* 托管和数据库提供商，包括Supabase；
+* 支付处理商，包括Stripe、PayPal和Apple App Store；
+* 翻译和AI提供商，包括DeepSeek，当您使用翻译或AI解释功能时；
+* 分析提供商，包括Google Analytics；
+* 视频平台，包括YouTube和Google，当您观看嵌入式视频时。
+
+除经您同意、法律允许或要求，或您违反我们的使用条款外，我们不会将个人信息用于收集目的以外的其他用途，也不会披露个人信息。
 
 **同意**
 
-_如何获得我的同意？_
+_您如何给予同意？_
 
-当您提供个人信息以完成交易、验证信用卡、下订单、安排送货或退货，或向我们的社交媒体网站发布或标注任何信息或照片时，我们默认为您同意我们仅为该特定目的收集和使用信息。
+当您向我们提供个人信息以创建账户、完成交易、验证付款、下订单或使用我们的产品和服务时，我们推定您同意我们收集该信息并仅将其用于该特定目的。
 
-如果我们出于次要原因（如营销）要求提供个人信息，我们将直接征求您的明确同意，或为您提供拒绝的机会。
+如果我们因次要原因（如营销）请求您的个人信息，我们将直接请求您的明示同意，或为您提供拒绝的机会。
 
 _如何撤回同意？_
 
-如果您在同意后改变主意，可随时通知我们撤回同意，停止我们联系您以及继续收集、使用或披露您的信息。
-
-**披露**
-
-除经您同意、法律允许或要求，或您违反我们的使用条款外，我们不会将个人信息用于收集目的之外的其他用途。
+如果您在选择加入后改变主意，您可以随时通过通知我们，撤回同意我们与您联系、继续收集、使用或披露您的信息。
 
 **保护**
 
-我们将遵循行业最佳实践，并根据信息的敏感程度实施合理的保护措施来保护个人信息；我们将采取合理措施防止个人信息丢失、被盗，以及未经授权的访问、披露、复制、使用或修改，无论信息以何种格式保存。法律还允许我们出于法律或商业目的，在合理期限内保留个人信息，前提是您未撤回同意。
+我们将通过遵循行业最佳实践并实施与信息敏感程度相称的合理保障措施来保护个人信息；我们将尽合理努力防止个人信息丢失或被盗，以及未经授权的访问、披露、复制、使用或修改，无论其以何种格式保存。法律还允许我们出于法律或商业目的，在合理的时间内保留个人信息，前提是您未撤回同意。
 
 **安全**
 
-为保护您的个人信息，我们采取合理的预防措施并遵循行业最佳实践，确保信息不会不当地丢失、滥用、访问、披露、更改或销毁。
+为保护您的个人信息，我们采取合理的预防措施并遵循行业最佳实践，确保信息不会被不当丢失、滥用、访问、披露、篡改或销毁。
 
-**Cookie**
+**Cookie和类似技术**
 
-本网站不使用Cookie。
+我们的网站使用cookie和类似技术。
+
+* **必需cookie：** 我们使用cookie来保持您的登录状态、记住您选择的语言，并管理访客的浏览限制。
+* **分析：** 我们使用Google Analytics，它可能设置自己的cookie并收集使用信息。
+* **本地存储：** 我们使用\`localStorage\`、\`sessionStorage\`和IndexedDB在您的设备上存储设置、保存的单词、进度、阅读内容和自定义媒体。
+* **嵌入内容：** 视频从YouTube嵌入。当您观看视频时，YouTube和Google可能会设置自己的cookie，这些cookie受其隐私政策的约束。
+
+您可以通过浏览器设置阻止或删除cookie。请注意，如果您禁用cookie，网站的某些部分可能无法正常工作。
+
+**数据保留与删除**
+
+只要您的账户处于活跃状态，或只要需要提供网站、履行法律义务、解决争议和执行我们的协议，我们就会保留个人信息。
+
+您可以随时通过个人资料页面上的“删除账户”选项删除您的账户，或通过以下地址联系我们。当您删除账户时，我们将删除或匿名化您的个人信息，但法律、支付、税务或安全目的要求我们保留的记录除外。
 
 **本隐私政策的变更**
 
-我们保留随时修改本隐私政策的权利，请经常查阅。变更和澄清将在发布到网站后立即生效。如果我们对此政策进行重大更改，我们将在此通知您已更新，以便您了解我们收集哪些信息、如何使用以及在何种情况下使用和/或披露。
+我们保留随时修改本隐私政策的权利，请经常审阅。变更和澄清将在发布到网站后立即生效。如果我们对本政策作出重大变更，我们将在此处通知您已更新，以便您了解我们收集哪些信息、如何使用这些信息，以及在何种情况下（如有）我们使用和/或披露这些信息。
 
-**问题和联系方式**
+**问题与联系信息**
 
-如果您希望访问、更正、修改或删除我们持有的您的个人信息，提出投诉，或只需获取更多信息，请通过以下方式联系我们：[jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)` },
+如果您想：访问、更正、修改或删除我们持有的关于您的任何个人信息，提出投诉，或只是想了解更多信息，请通过[jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)联系我们。` },
     { path: 'reading/epub', title: 'EPUB阅读器', category: 'reading', content: `# EPUB阅读器
 
 支持交互式单词查询、按块翻译以及跨会话持久化进度的EPUB电子书阅读器。
@@ -46525,148 +47512,134 @@ Language Player會自動儲存您的觀看記錄。當您觀看影片時，系�
 - 您的觀看記錄僅限於當前的L2——當您在韓語模式時，不會看到日語的影片` },
     { path: 'privacy-policy', title: '隱私權政策', category: 'privacy-policy', content: `# 隱私權政策
 
-本網頁為一份法律文件，構成我們的使用條款與隱私政策，並規範您對我們網站的使
-用：https://languageplayer.io，包括其上的頁面以及所有子域名和應用程式（統稱「網站」
-），由我們Zero to Hero Education, Canada（「Zero to Hero」）擁有與運營。
+本網頁代表一份法律文件，作為我們的使用條款與隱私權政策，並規範我們網站的使用：[https://languageplayer.io](https://languageplayer.io)，包括其中發現的頁面以及所有子域名和應用程式（統稱「網站」），該網站由我們 Zero to Hero Education, Canada（「Zero to Hero」）擁有和經營。
 
-**引言**
+**簡介**
 
-使用條款、下方發布的隱私政策以及我們網站內其他發布的指南或政策（統稱「法律條款」
-），構成您與我們之間的完整且唯一協議，取代先前所有關於我們網站及此處主題內容的
-協議、陳述、保證與共識。我們可能隨時修改法律條款，無需另行通知您。最新版本的法
-律條款將張貼在我們的網站上，您應在使用我們的網站前審閱所有法律條款。在法律條款
-修訂張貼後，您同意受其任何變更的約束。因此，定期審閱我們的法律條款以確保您仍同
-意其內容，對您而言至關重要。
+使用條款、下方發布的隱私權政策，以及我們網站內發布的其他指引或政策（統稱「法律條款」），構成您與我們之間的完整且唯一的協議，並取代所有與我們網站及本文所含主題相關的其他協議、陳述、保證和諒解。我們可能隨時修訂法律條款，恕不另行通知您。我們法律條款的最新副本將發布在我們的網站上，您應在使用我們網站前審閱所有法律條款。我們法律條款的任何修訂發布後，您即同意受任何此類變更的約束。因此，定期審閱我們的法律條款以確保您仍然同意這些條款非常重要。
 
-使用我們的網站即表示您同意完全遵守並受我們的法律條款約束。請仔細審閱這些條款。
-若您不接受我們的法律條款，請勿存取或使用我們的網站。若您已存取我們的網站且不接
-受我們的法律條款，您將不再被授權使用，並應立即停止使用我們的網站。
+使用我們的網站，即表示您同意完全遵守我們的法律條款並受其約束。請仔細審閱。如果您不接受我們的法律條款，請勿訪問和使用我們的網站。如果您已訪問我們的網站且不接受我們的法律條款，您不再被授權使用它，您應立即停止使用我們的網站。
 
-**我們網站上的其他定義術語**
+**我們網站上的其他定義條款**
 
-本網站納入本頁面定義的術語以及以下其他定義術語：
+本網站包含本頁面中定義的條款以及以下其他定義條款：
 
-「我們」和「我方」指作為網站擁有者的Zero to Hero。「內容」包括透過我們網站發
-布、提供或提供的任何及所有文字、資訊、圖形、音訊、影片及其他資料。
+條款「我們」和「我方」指作為網站擁有者的 Zero to Hero。「內容」包括通過我們網站發布、提供或提供的任何及所有文字、資訊、圖形、音訊、視訊和其他資料。
 
-「訪客」或「您」為集體識別詞，指作為我們網站瀏覽者的您，無論您是否完成我們產
-品的購買。
+「訪客」或「您」是集體識別符，指您作為我們網站的瀏覽者，無論您是否完成我們產品的購買。
 
-「個人資訊」指關於可識別個人的資訊，可能包括個人的姓名、住宅地址、帳單地址、
-送貨地址、電話號碼、電子郵件地址及其他類似聯絡資訊，以及網站使用歷史資料。它
-也可能包括個人為付款目的提供的信用卡資訊。
+「個人資訊」指關於可識別個人的資訊，可能包括個人姓名、住宅地址、帳單地址、送貨地址、電話號碼、電子郵件地址和其他類似的聯絡資訊，以及網站使用歷史資料。它也可能包括個人的信用卡資訊，當其被提供用於付款目的時。
 
 **使用條款**
 
 **智慧財產權**
 
-我們的網站可能以文字、圖形和標誌的形式包含我們或我們附屬機構或其他個人或公司的
-服務標誌或商標。您使用我們的網站並不構成任何權利或許可讓您使用此類服務標誌/商標
-，除非事先獲得相應服務標誌/商標擁有者的書面授權。我們的網站（包括內容）也受加拿
-大和國際版權法保護。您使用我們的網站或內容並不授予您其中任何類型的擁有權。嚴禁
-您複製、重新分發、使用或發布我們網站或內容的任何部分，因此在未獲得我們書面授權
-前不得複製或重製。
+我們的網站可能包含我們的服務標誌或商標，以及我們關聯公司或其他個人或公司的服務標誌或商標，以文字、圖形和標誌的形式呈現。您使用我們的網站並不構成您使用此類服務標誌/商標的任何權利或授權，除非獲得相應服務標誌/商標擁有者的事先書面授權。我們的網站（包括內容）也受加拿大和國際版權法保護。您使用我們的網站或內容並不授予您任何形式的所有權。您對我們網站或內容的任何部分的複製、再分發、使用或發布均被嚴格禁止，因此未經我們事先書面授權，不得複製或再製。
 
 **責任限制**
 
-在任何情況下，我們或我們的高職員或員工均不對因您使用、存取或依賴我們的網站、線
-上訂購系統或任何內容，或因您無法使用或存取它們而產生或與之相關的任何損失或損害
-（包括但不限於任何直接、間接、附帶、特殊、懲罰性或後果性損害）負責或承擔責任。
+在任何情況下，我們或我們的高級職員或員工均不對任何損失或損害負責或承擔責任，包括（不限於前述的一般性）因您使用、訪問或依賴我們的網站、線上訂購系統或任何內容，或因您無法使用或訪問這些內容而產生的或與之相關的任何直接、間接、偶然、特殊、懲罰性或後果性損害。
 
 **一般條款**
 
-我們的法律條款應被視為在加拿大不列顛哥倫比亞省簽署與履行，並受該地區法律管轄與
-解釋，不考慮法律衝突原則。此外，您同意接受該地區法院的屬人管轄權與審判地。您就
-我們的網站提出的任何訴訟原因必須在訴訟原因產生後一（1）年內提起，否則將被永久放
-棄與禁止。若我們法律條款的任何部分被認定為無效或不可執行，該部分應按適用法律解
-釋，其餘部分則維持完全效力。若任何內容與我們的法律條款衝突或不一致，我們的法律
-條款應優先並主導其共同解釋。我們未能執行法律條款的任何規定不應被視為放棄該規定
-或執行該規定的權利。我們在法律條款下的權利應在法律條款終止後繼續有效。
+我們的法律條款應被視為在加拿大不列顛哥倫比亞省執行和履行，並應受該地區法律管轄並依其解釋，不考慮法律衝突原則。此外，您同意服從該地區法院的屬人管轄權和審判地。您就我們網站提出的任何訴訟原因必須在訴訟原因產生後一（1）年內提起，否則將被永久放棄和禁止。如果我們法律條款的任何部分被認定為無效或不可執行，該部分應依照適用法律解釋，其餘部分應保持完全效力。在內容與我們的法律條款衝突或不一致的範圍內，我們的法律條款應優先並在整體解釋中居主導地位。我們未能執行我們法律條款的任何規定不應被視為放棄該規定或執行該規定的權利。我們在法律條款下的權利應在法律條款終止後繼續有效。
 
 **第三方連結**
 
-當您點擊我們網站上的連結時，它們可能將您引導至由第三方擁有與運營的其他網站。我
-們不對其他第三方網站的隱私做法負責，並鼓勵您閱讀其使用條款與隱私聲明。一旦您離
-開我們的網站或被重新導向至第三方網站或應用程式，您將不再受我們的法律條款約束。
+當您點擊我們網站上的連結時，它們可能將您引導離開我們的網站，前往由第三方擁有和經營的另一網站。我們不對其他第三方網站的隱私做法負責，並鼓勵您閱讀其使用條款和隱私聲明。一旦您離開我們的網站或被重定向到第三方網站或應用程式，您不再受我們法律條款的約束。
 
-**隱私政策**
+**隱私權政策**
 
-在Zero to Hero，我們視隱私為非常重要的事項，因此我們致力於保護所有訪客個人資訊
-的隱私。本隱私政策納入《個人資訊保護與電子文件法》（加拿大）、《個人資訊保護法
-》（亞伯達省）以及加拿大標準協會（CSA）個人資訊保護模範準則中規定的十項原則（
-統稱「適用隱私法」）的適用部分。
+在 Zero to Hero，我們認為隱私是非常重要的問題，因此我們致力於保護所有訪客個人資訊的隱私。本隱私權政策包含《個人資訊保護和電子文件法》（加拿大）、《個人資訊保護法》（亞伯達省）以及加拿大標準協會（CSA）《個人資訊保護示範準則》中規定的十項原則的適用部分（統稱「適用隱私法律」）。
 
-**資訊收集**
+**我們收集的資訊**
 
-我們可能為以下一個或多個目的收集個人資訊：
+**您直接提供的資訊：**
 
-* 建立與維持與訪客的關係；
-* 提供所要求及持續的產品與服務；
-* 通知您我們產品與服務的變更；
-* 更深入了解我們的訪客及其需求與偏好；
-* 開發、增強、改善及/或行銷我們的產品與服務；
-* 監控我們網站的使用情況；
-* 管理與改善我們的業務與運營；以及
-* 滿足法律與監管要求。
+* 帳戶資訊：您的姓名、電子郵件地址、密碼、語言偏好和學習程度。
+* 學習資料：已儲存的單詞、片語、複習進度、筆記、播放清單、喜歡的影片、觀看歷史、書籍和閱讀進度。
+* 您上傳或建立的內容：自訂媒體、EPUB 檔案，以及您要求我們翻譯或說明的文字。
+* 付款資訊：當您購買訂閱時，付款由 Stripe、PayPal 或 Apple App Store 處理。我們會收到確認和訂閱詳情，但通常不會儲存您的完整卡號。
+
+**自動收集的資訊：**
+
+* 使用資料：您訪問的頁面和功能，包括 探索媒體、音樂與娛樂、直播電視、電視節目、搜尋、字典、已儲存的單字、複習、閱讀器、網頁閱讀器、EPUB閱讀器、本地媒體、觀看紀錄、播放清單 和 喜歡的影片；您觀看的影片；互動；以及時間戳記。
+* 裝置和網路資訊：IP 地址、瀏覽器類型、作業系統、裝置類型和從您的 IP 地址推斷的大致位置。
+* 分析：我們使用 Google Analytics 來了解訪客如何使用網站。Google Analytics 可能代表我們使用 Cookie 並收集使用資料。Google 對該資料的使用受 [Google 隱私權政策](https://policies.google.com/privacy) 管轄。
+* 本機儲存：我們使用 Cookie、\`localStorage\`、\`sessionStorage\` 和 IndexedDB 來保持您的登入狀態、記住您的語言、儲存您的設定、進度和已儲存的單詞，並在本機快取內容。
 
 **我們如何處理您的資訊？**
 
-當您透過我們的線上訂購系統購買商品時，作為買賣過程的一部分，我們會收集您的個人
-資訊。
+我們使用收集的資訊來：
 
-當您瀏覽我們的網站時，我們也會自動接收您電腦的網際網路通訊協定（IP）地址，以便
-提供有助於我們了解您的瀏覽器與操作系統的資訊。
+* 提供、維護和改進網站及其功能；
+* 建立和管理您的帳戶、驗證您的身份並保持您的登入狀態；
+* 根據您的語言、程度和學習歷史個人化推薦；
+* 跨裝置同步您的資料；
+* 處理訂閱、付款和續訂；
+* 發送交易性電子郵件，例如驗證碼、密碼重設和付款收據；
+* 在您允許的情況下發送行銷通訊；
+* 使用 Google Analytics 分析使用情況，以了解訪客如何使用網站並改進我們的產品；
+* 滿足法律和監管要求，並保護我們和我們使用者的權利。
 
-允許的直接行銷（如適用）：經您許可，我們可能向您發送新聞通訊或電子郵件，以宣傳
-我們的商店、新產品及其他更新。
+我們不會出售您的個人資訊。
+
+**分享和揭露**
+
+我們僅與幫助我們營運網站的服務提供商分享個人資訊，包括：
+
+* 託管和資料庫提供商，包括 Supabase；
+* 付款處理商，包括 Stripe、PayPal 和 Apple App Store；
+* 翻譯和 AI 提供商，包括 DeepSeek，當您使用翻譯或 AI 解釋功能時；
+* 分析提供商，包括 Google Analytics；
+* 影片平台，包括 YouTube 和 Google，當您觀看嵌入影片時。
+
+我們不會將個人資訊用於收集目的以外的用途或揭露，除非經您同意、法律允許或要求，或您違反我們的使用條款。
 
 **同意**
 
 _您如何獲得我的同意？_
 
-當您提供個人資訊以完成交易、驗證您的信用卡、下訂單、安排送貨或退貨，或在我們的
-社交媒體網站上發布或標記任何資訊或照片時，我們推斷您同意我們僅為該特定目的收集
-與使用您的資訊。
+當您向我們提供個人資訊以建立帳戶、完成交易、驗證您的付款、下訂單或使用我們的產品和服務時，我們推定您同意我們收集該資訊並僅將其用於該特定原因。
 
-若我們因次要原因（如行銷）要求您的個人資訊，我們將直接要求您明示同意，或提供您
-拒絕的機會。
+如果我們出於次要原因（例如行銷）要求您的個人資訊，我們將直接詢問您的明示同意，或提供您拒絕的機會。
 
-_我如何撤回同意？_
+_我如何撤回我的同意？_
 
-若您在選擇加入後改變主意，您可以隨時通知我們，撤回您對我們聯絡您、以及繼續收集
-、使用或揭露您資訊的同意。
-
-**揭露**
-
-我們不會將個人資訊用於或揭露於收集目的以外的用途，除非獲得您的同意、法律允許或
-要求，或您違反我們的使用條款。
+如果您在選擇加入後改變主意，您可以隨時透過通知我們，撤回您對我們聯絡您、持續收集、使用或揭露您的資訊的同意。
 
 **保護**
 
-我們將遵循行業最佳實踐，並根據資訊的敏感性實施合理的保護措施來保護個人資訊；我
-們將盡合理努力保護個人資訊免於遺失或遭竊，以及未經授權的存取、揭露、複製、使用
-或修改，無論其以何種格式保存。法律也允許我們基於法律或業務目的，在合理期限內並
-在您未撤回同意的情況下保留個人資訊。
+我們將遵循行業最佳實踐並實施適合資訊敏感性的合理保障措施來保護個人資訊；我們將做出合理努力，防止個人資訊遺失或被盜，以及未經授權的訪問、揭露、複製、使用或修改，無論其持有的格式為何。法律也允許我們出於法律或商業目的，在合理的時間內保留個人資訊，前提是您未撤回您的同意。
 
 **安全性**
 
-為保護您的個人資訊，我們採取合理預防措施並遵循行業最佳實踐，以確保其不會不當遺
-失、誤用、存取、揭露、更改或銷毀。
+為保護您的個人資訊，我們採取合理的預防措施並遵循行業最佳實踐，以確保其不會被不當遺失、誤用、訪問、揭露、更改或銷毀。
 
-**Cookie**
+**Cookie 和類似技術**
 
-我們的網站不使用Cookie。
+我們的網站使用 Cookie 和類似技術。
 
-**本隱私政策的變更**
+* **必要 Cookie：** 我們使用 Cookie 來保持您的登入狀態、記住您選擇的語言，並管理訪客導覽限制。
+* **分析：** 我們使用 Google Analytics，它可能設定自己的 Cookie 並收集使用資訊。
+* **本機儲存：** 我們使用 \`localStorage\`、\`sessionStorage\` 和 IndexedDB 來在您的裝置上儲存設定、已儲存的單詞、進度、閱讀內容和自訂媒體。
+* **嵌入內容：** 影片從 YouTube 嵌入。YouTube 和 Google 可能在您觀看影片時設定自己的 Cookie，這些 Cookie 受其隱私權政策管轄。
 
-我們保留隨時修改本隱私政策的權利，因此請經常審閱。變更與澄清將在張貼於網站後立
-即生效。若我們對本政策進行重大變更，我們將在此處通知您已更新，以便您了解我們收
-集哪些資訊、如何使用，以及在何種情況下（如有）使用及/或揭露。
+您可以通過瀏覽器設定封鎖或刪除 Cookie。請注意，如果您停用 Cookie，網站的某些部分可能無法正常運作。
 
-**問題與聯絡資訊**
+**資料保留和刪除**
 
-若您想：存取、更正、修改或刪除我們擁有的關於您的任何個人資訊、提出投訴，或只想
-獲取更多資訊，請透過 jon.long@zerotohero.ca 聯絡我們。` },
+我們在您的帳戶活躍期間，或在需要提供網站、遵守法律義務、解決爭議和執行我們的協議所需的時間內，保留個人資訊。
+
+您可以隨時從 個人資料 頁面使用「刪除帳戶」選項刪除您的帳戶，或透過下方地址聯絡我們。當您刪除帳戶時，我們將刪除或匿名化您的個人資訊，但我們因法律、付款、稅務或安全目的而需要保留的記錄除外。
+
+**本隱私權政策的變更**
+
+我們保留隨時修改本隱私權政策的權利，因此請經常審閱。變更和澄清將在發布在網站上時立即生效。如果我們對本政策做出重大變更，我們將在此處通知您已更新，以便您了解我們收集哪些資訊、如何使用這些資訊，以及在何種情況下（如有）我們使用和/或揭露這些資訊。
+
+**問題和聯絡資訊**
+
+如果您想：訪問、更正、修改或刪除我們擁有的關於您的任何個人資訊、提出投訴，或只是想要更多資訊，請透過 [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca) 聯絡我們。` },
     { path: 'reading/epub', title: 'EPUB閱讀器', category: 'reading', content: `# EPUB閱讀器
 
 使用互動式單詞查詢、區塊翻譯以及跨工作階段持續保留的閱讀進度，閱讀 EPUB 電子書。
