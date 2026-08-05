@@ -37,6 +37,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `action.add_to_playlist` | Add to Playlist |
 | `action.all_results` | All Results |
 | `action.back` | Back |
+| `action.back_to_documentation` | Back to Documentation |
 | `action.back_to_login` | Back to login |
 | `action.browse` | Browse |
 | `action.cancel` | Cancel |

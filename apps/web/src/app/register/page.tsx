@@ -175,7 +175,7 @@ export default function RegisterPage() {
           <>
             <h1 className="text-2xl font-bold">{t('title.check_email')}</h1>
             <p className="mt-2 text-muted-foreground">
-              {t('msg.verification_code_sent').replace('{email}', email)}
+              {t('msg.verification_code_sent', { email })}
             </p>
 
             {error && (
