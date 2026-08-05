@@ -185,6 +185,7 @@
         "invalid_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง",
         "invalid_user_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         "invalid_verification_code": "รหัสยืนยันไม่ถูกต้อง กรุณาลองอีกครั้ง",
+        "invalid_verification_link": "ลิงก์ยืนยันไม่ถูกต้อง กรุณาลองอีกครั้ง",
         "language_not_selected": "ไม่ได้เลือกภาษา",
         "loading_failed": "โหลดล้มเหลว",
         "login": "ข้อผิดพลาดในการเข้าสู่ระบบ",

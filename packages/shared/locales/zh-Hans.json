@@ -177,6 +177,7 @@
         "general": "发生错误",
         "invalid_credentials": "邮箱或密码无效，请重试。",
         "invalid_verification_code": "验证码无效，请重试。",
+        "invalid_verification_link": "验证链接无效，请重试。",
         "language_not_selected": "未选择语言",
         "loading_failed": "加载失败",
         "login": "登录错误",

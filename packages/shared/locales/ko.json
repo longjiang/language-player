@@ -185,6 +185,7 @@
         "invalid_credentials": "잘못된 이메일 또는 비밀번호입니다. 다시 시도해 주세요.",
         "invalid_user_credentials": "잘못된 이메일 또는 비밀번호",
         "invalid_verification_code": "잘못된 인증 코드입니다. 다시 시도해 주세요.",
+        "invalid_verification_link": "잘못된 인증 링크입니다. 다시 시도해 주세요.",
         "language_not_selected": "언어가 선택되지 않았습니다",
         "loading_failed": "로딩 실패",
         "login": "로그인 오류",

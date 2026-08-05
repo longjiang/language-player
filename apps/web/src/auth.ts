@@ -50,6 +50,62 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    Credentials({
+      id: 'link-token',
+      name: 'Email confirmation link',
+      credentials: {
+        token: { label: 'Token', type: 'text' },
+        tokenHash: { label: 'Token Hash', type: 'text' },
+        email: { label: 'Email', type: 'email' },
+        accessToken: { label: 'Access Token', type: 'text' },
+        refreshToken: { label: 'Refresh Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials) return null;
+
+        let data: any = null;
+        if (credentials.accessToken || credentials.refreshToken) {
+          const res = await fetch(`${PYTHON_API_URL}/auth/session`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              accessToken: credentials.accessToken ? String(credentials.accessToken) : undefined,
+              refreshToken: credentials.refreshToken ? String(credentials.refreshToken) : undefined,
+            }),
+          });
+          if (!res.ok) return null;
+          data = await res.json();
+        } else {
+          const token = credentials.token ? String(credentials.token) : undefined;
+          const tokenHash = credentials.tokenHash ? String(credentials.tokenHash) : undefined;
+          if (!token && !tokenHash) return null;
+          const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token,
+              token_hash: tokenHash,
+              email: credentials.email ? String(credentials.email) : undefined,
+            }),
+          });
+          if (!res.ok) return null;
+          data = await res.json();
+        }
+
+        const token = data?.token;
+        const user = data?.user;
+        if (!token || !user) return null;
+
+        return {
+          id: String(user.id),
+          email: String(user.email),
+          name: String(`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email),
+          accessToken: token,
+          refreshToken: data?.refreshToken ?? null,
+          tokenExpiresAt: tokenExpiry(token),
+        };
+      },
+    }),
   ],
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' as const },

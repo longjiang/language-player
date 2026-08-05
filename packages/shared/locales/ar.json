@@ -185,6 +185,7 @@
         "invalid_credentials": "بريد إلكتروني أو كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",
         "invalid_user_credentials": "بريد إلكتروني أو كلمة مرور غير صالحة",
         "invalid_verification_code": "رمز التحقق غير صالح. يرجى المحاولة مرة أخرى.",
+        "invalid_verification_link": "رابط التحقق غير صالح. يرجى المحاولة مرة أخرى.",
         "language_not_selected": "لم يتم اختيار اللغة",
         "loading_failed": "فشل التحميل",
         "login": "خطأ في تسجيل الدخول",

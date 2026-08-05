@@ -185,6 +185,7 @@
         "invalid_credentials": "Email ou mot de passe invalide. Veuillez réessayer.",
         "invalid_user_credentials": "E-mail ou mot de passe invalide",
         "invalid_verification_code": "Code de vérification invalide. Veuillez réessayer.",
+        "invalid_verification_link": "Lien de vérification invalide. Veuillez réessayer.",
         "language_not_selected": "Langue non sélectionnée",
         "loading_failed": "Échec du chargement",
         "login": "Erreur de connexion",

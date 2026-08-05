@@ -185,6 +185,7 @@
         "invalid_credentials": "Email atau kata sandi tidak valid. Silakan coba lagi.",
         "invalid_user_credentials": "Email atau kata sandi tidak valid",
         "invalid_verification_code": "Kode verifikasi tidak valid. Silakan coba lagi.",
+        "invalid_verification_link": "Tautan verifikasi tidak valid. Silakan coba lagi.",
         "language_not_selected": "Bahasa belum dipilih",
         "loading_failed": "Gagal memuat",
         "login": "Kesalahan masuk",

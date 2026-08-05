@@ -185,6 +185,7 @@
         "invalid_credentials": "Ogiltig e-post eller lösenord. Försök igen.",
         "invalid_user_credentials": "Ogiltig e-post eller lösenord",
         "invalid_verification_code": "Ogiltig verifieringskod. Försök igen.",
+        "invalid_verification_link": "Ogiltig verifieringslänk. Försök igen.",
         "language_not_selected": "Språk ej valt",
         "loading_failed": "Laddningen misslyckades",
         "login": "Inloggningsfel",

@@ -177,6 +177,7 @@
         "general": "發生錯誤",
         "invalid_credentials": "電子郵件或密碼無效，請重試。",
         "invalid_verification_code": "驗證碼無效，請重試。",
+        "invalid_verification_link": "驗證連結無效，請重試。",
         "language_not_selected": "還沒選語言耶",
         "loading_failed": "載入失敗",
         "login": "登錄錯誤",

@@ -185,6 +185,7 @@
         "invalid_credentials": "メールアドレスまたはパスワードが無効です。もう一度お試しください。",
         "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
         "invalid_verification_code": "確認コードが無効です。もう一度お試しください。",
+        "invalid_verification_link": "確認リンクが無効です。もう一度お試しください。",
         "language_not_selected": "言語が選択されていません",
         "loading_failed": "読み込みに失敗しました",
         "login": "ログインエラー",

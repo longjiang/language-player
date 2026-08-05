@@ -185,6 +185,7 @@
         "invalid_credentials": "Неважећа е-пошта или лозинка. Покушајте поново.",
         "invalid_user_credentials": "Неисправна имејл адреса или лозинка",
         "invalid_verification_code": "Неважећи верификациони код. Покушајте поново.",
+        "invalid_verification_link": "Неважећи верификациони линк. Покушајте поново.",
         "language_not_selected": "Jezik nije izabran",
         "loading_failed": "Учитавање није успело",
         "login": "Грешка при пријави",

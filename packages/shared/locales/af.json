@@ -185,6 +185,7 @@
         "invalid_credentials": "Ongeldige e-pos of wagwoord. Probeer asseblief weer.",
         "invalid_user_credentials": "Ongeldige e-pos of wagwoord",
         "invalid_verification_code": "Ongeldige verifikasiekode. Probeer asseblief weer.",
+        "invalid_verification_link": "Ongeldige verifikasieskakel. Probeer asseblief weer.",
         "language_not_selected": "Taal nie gekies nie",
         "loading_failed": "Laai het misluk",
         "login": "Aanmeldfout",

@@ -185,6 +185,7 @@
         "invalid_credentials": "Ugyldig e-post eller passord. Vennligst prøv igjen.",
         "invalid_user_credentials": "Ugyldig e-post eller passord",
         "invalid_verification_code": "Ugyldig bekreftelseskode. Vennligst prøv igjen.",
+        "invalid_verification_link": "Ugyldig bekreftelseslenke. Vennligst prøv igjen.",
         "language_not_selected": "Språk ikke valgt",
         "loading_failed": "Lasting mislyktes",
         "login": "Påloggingsfeil",

@@ -185,6 +185,7 @@
         "invalid_credentials": "Virheellinen sähköposti tai salasana. Yritä uudelleen.",
         "invalid_user_credentials": "Virheellinen sähköposti tai salasana",
         "invalid_verification_code": "Virheellinen vahvistuskoodi. Yritä uudelleen.",
+        "invalid_verification_link": "Virheellinen vahvistuslinkki. Yritä uudelleen.",
         "language_not_selected": "Kieltä ei valittu",
         "loading_failed": "Lataus epäonnistui",
         "login": "Kirjautumisvirhe",
