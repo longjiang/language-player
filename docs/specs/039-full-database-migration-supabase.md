@@ -402,6 +402,25 @@ language id; `owner` = Directus user id until the 5.7 remap).
    day, `video_embeddings` gained an `l2` column (backfilled + before-insert
    trigger) and per-language partial HNSW indexes replaced the single global
    HNSW index, letting the neighbor query filter by `ve.l2` directly.
+9. ✅ **Subs-search performance (2026-08-05).** Common-term searches were still
+   ~42s cold on the Postgres path: `subs_l2 ILIKE '%term%'` on the 10 GB table
+   triggers a trigram bitmap whose recheck reads ~41k full subtitle blobs
+   (~4.8 GB of TOAST) and sorts all 17.6k matches. Fix (all in
+   `zerotohero-python-server/`):
+   - Two-phase query: matching ids ordered by views first, then full rows
+     fetched only for the limited result set.
+   - Composite `(l2, views DESC NULLS LAST)` index so the sort can walk in
+     views order and stop after `limit` matches.
+   - Full-text matching via `to_tsvector(public.subs_tsv_config(l2), subs_l2)
+     @@ websearch_to_tsquery` (`public.subs_tsv_config` = per-language
+     text-search config; CJK/no-space scripts return NULL and keep the
+     ILIKE/trigram path). Migration: `tmp/supabase-subs-search-fts.sql`.
+   - Query uses `websearch_to_tsquery(config, 'a OR b')` (word-based matching;
+     note `|` is NOT the OR operator in websearch syntax).
+   - 6s walk timeout with a pg_trgm ILIKE retry for rare/zero-match terms.
+   - Shared subs_search Redis cache, namespaced `pg` so it never collides with
+     the Classic MySQL cache keys.
+   Measured: `fly,flies,flew,flown&l2=en` 42s → ~4s cold, ~0.001s cached.
 
 ### WS-6 — Subscriptions & Payments
 
