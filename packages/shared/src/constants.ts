@@ -36,6 +36,24 @@ export const SUPPORTED_L2S = [
 
 export type SupportedL2 = (typeof SUPPORTED_L2S)[number];
 
+/** "How did you hear about us?" registration survey options (matches Classic).
+ *  `labelKey` is a translations.csv key; values are what the Flask
+ *  `/acquisition_survey` endpoint stores in `user_acquisition.source`. */
+export const ACQUISITION_SOURCES = [
+  { value: 'word_of_mouth', labelKey: 'option.word_of_mouth' },
+  { value: 'instagram', labelKey: 'option.instagram' },
+  { value: 'bilibili', labelKey: 'option.bilibili' },
+  { value: 'google_ads', labelKey: 'option.google_ads' },
+  { value: 'hsk_courses', labelKey: 'option.hsk_courses' },
+  { value: 'app_store', labelKey: 'option.app_store' },
+  { value: 'google_play', labelKey: 'option.google_play' },
+  { value: 'google_search', labelKey: 'option.google_search' },
+  { value: 'youtube', labelKey: 'option.youtube' },
+  { value: 'other', labelKey: 'option.other' },
+] as const;
+
+export type AcquisitionSource = (typeof ACQUISITION_SOURCES)[number]['value'];
+
 /** Languages supported by YouTube's automatic captioning. */
 export const LANGS_YOUTUBE_SUPPORTS = [
   'aa', 'ab', 'af', 'am', 'ar', 'as', 'ay', 'az', 'ba', 'be',
