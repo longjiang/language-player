@@ -41,6 +41,8 @@ The **active development** happens in:
 
    **Classic (Nuxt) backend URL** — `zerotohero-nuxt/lib/utils/servers.js` exports `PYTHON_SERVER` with the **production URL as the default** (`https://python.zerotohero.ca/`). Override it per-environment with a `PYTHON_SERVER` env var — never by editing the committed default. Local dev: put `PYTHON_SERVER=http://127.0.0.1:5001/` in `zerotohero-nuxt/.env` (gitignored) or prefix the dev command. `nuxt.config.js` bakes the same resolved value into the client bundle, so the nuxt-auth URLs stay in sync. Committing a localhost value to `servers.js` breaks production (all user-data calls hit the user's machine); this happened in SPEC-039 5.8 and is tracked in commit `382e935f`.
 
+   **Classic authenticated calls must use `$axios`, not plain `axios`.** The `@nuxtjs/auth-next` refresh scheme attaches the token and auto-refreshes expired access tokens only on the Nuxt `$axios` instance. Plain `axios` calls (with a manually-attached `Authorization` header) bypass that and 401 once the 1-hour access token expires (the "auto-logged-in but request errors" storm). All stores and `plugins/directus.js` were converted in commit `94ff3350` — keep new Flask calls on `$nuxt.$axios`/`this.$axios` and don't reintroduce `import axios from "axios"` for authenticated endpoints.
+
 ### Before Implementing Any Feature
 
 1. Check if `@langplayer/shared` already has the types you need
