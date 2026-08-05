@@ -912,6 +912,7 @@
         "annual": "รายปี",
         "annual_desc": "คิดค่าบริการรายปี ประหยัด 25%",
         "full_transcripts": "บทถอดเสียงแบบเต็ม",
+        "interactive_transcripts": "บทถอดเสียงแบบโต้ตอบเต็มรูปแบบ",
         "lifetime": "ตลอดชีพ",
         "lifetime_desc": "จ่ายครั้งเดียว เข้าถึงตลอดชีพ",
         "monthly": "รายเดือน",

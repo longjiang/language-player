@@ -912,6 +912,7 @@
         "annual": "Annual",
         "annual_desc": "Billed annually. Save 25%.",
         "full_transcripts": "Full transcripts",
+        "interactive_transcripts": "Full interactive transcripts",
         "lifetime": "Lifetime",
         "lifetime_desc": "One-time payment. Lifetime access.",
         "monthly": "Monthly",
