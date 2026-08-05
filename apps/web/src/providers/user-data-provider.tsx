@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import { useUserData, type UserDataResponse } from '@langplayer/api-client';
+import type { UserDataResponse } from '@langplayer/api-client';
 
 interface UserDataContextValue {
   /** The full user-data response from GET /user-data, or null if not yet fetched / error. */
@@ -24,7 +24,6 @@ const UserDataContext = createContext<UserDataContextValue>({ data: null, loaded
  */
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const { getUserData } = useUserData();
   const [data, setData] = useState<UserDataResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
   // Track which user ID was last fetched so we re-fetch on user change
@@ -43,25 +42,18 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Already fetched for this user — skip
-    if (loaded && lastUserId.current === userId) return;
-
     let cancelled = false;
     lastUserId.current = userId;
 
-    getUserData()
-      .then((result) => {
-        if (!cancelled) setData(result);
-      })
-      .catch(() => {
-        if (!cancelled) setData(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoaded(true);
-      });
+    // All user-data fields now use the row APIs (SPEC-039 5.2+); the legacy
+    // full-blob GET /user-data is no longer fetched.
+    if (!cancelled) {
+      setData(null);
+      setLoaded(true);
+    }
 
     return () => { cancelled = true; };
-  }, [status, userId, loaded, getUserData]);
+  }, [status, userId]);
 
   return (
     <UserDataContext.Provider value={{ data, loaded }}>
