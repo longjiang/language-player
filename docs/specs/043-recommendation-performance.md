@@ -119,13 +119,22 @@ Keep-warm only helps a handful of active languages and must be a **periodic back
 task** (not request-path, not one-shot app-start). Optionally drive it off the most-used
 languages.
 
-### R4 — Raise `ef_search` *(recall; corrected benefit)*
-`ef` is the effective candidate-pool size (results ≈ `ef`). Raising 200 → 500/1000 enlarges
-the pool and helps high-level bands, at **superlinear cold cost** (measured: ef=500 ≈ 4.3–8.6 s
-cold vs ~1.7 s at ef=200; warm 130 ms vs 93 ms). **It does not fix jon's first-pass
-fallback** — his neighborhood is ~96 % music, so discovery mode still filters it out at any
-ef. Raise `ef` only after R3 (keep-warm) tames the cold cost, and gate on a survivor-count /
-recall measurement (see verification).
+### R4 — Raise `ef_search` *(recall; implemented — `VECTOR_EF_SEARCH = 500`, 2026-08-05)*
+`ef` is the effective candidate-pool size (pgvector 0.8.2 returns ≈ `ef` rows; hard cap
+1000). Swept on the R6 path (`tmp/sweep_ef_r6.py`):
+- **L7 in-band survivors (the R5-rejected gap) scale 2–5× with ef** (jon: 155→374→659;
+  others 50–129 @ ef=200 → 125–335 @ ef=500 → 253–414 @ ef=1000).
+- **E2E L7 feeds**: ef=200 left random fill for 4/5 sampled users (3–17 items); ef=500 →
+  20/20 scored for all but the single-channel user; ef=1000 → 20/20 for everyone (the
+  larger pool spans more channels, unblocking the 3-per-channel cap).
+- **Latency**: warm ~130–190 ms (200) → ~150–550 ms (500) → ~170–1040 ms (1000); cold
+  scales superlinearly (~0.3–2.3 s / ~0.7–3.7 s / ~0.6–8 s).
+
+**Decision (2026-08-05): `VECTOR_EF_SEARCH = 500`.** Best quality/cost balance — removes
+the last "random fill at high levels" for typical users at ~2× warm cost. ef=1000 kept as
+a future toggle for the single-channel-diversity case (best paired with keep-warm R3, which
+tames the cold tail). Note: R4 does not address music-starved first passes — that was R6
+(the mode-scoped vector), which already makes the first pass succeed.
 
 ### R5 — High-level band widening *(rejected — product decision 2026-08-05)*
 The strict difficulty band empties high-level feeds when a user's neighborhood has no
@@ -297,11 +306,13 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
    difficulty of non-music neighborhoods covers the high-level case R5 was meant to
    address (R5 is rejected — see R5).
 
-#### Step 5 — R4: `ef_search` tuning (after keep-warm is live)
-1. Sweep `ef` (200/500/1000) via `profiling_recommendations_ef.py`: report survivor counts
-   per user class (like-signal, history-signal) and warm/cold latency.
-2. Raise `ef` only if recall gains justify the cold cost (keep-warm should have tamed it).
-3. Update the `hnsw.ef_search` constant and any R1 cache key.
+#### Step 5 — R4: `ef_search` tuning ✅ (implemented 2026-08-05)
+1. Swept `ef` (200/500/1000) on the R6 path via `tmp/sweep_ef_r6.py`: L7 in-band survivors
+   2–5× with ef; E2E L7 feeds go 20/20 scored at ef=500 for all but the single-channel user.
+2. Decided **`VECTOR_EF_SEARCH = 500`** (quality/cost sweet spot; ~2× warm, superlinear
+   cold — pair keep-warm R3 for the cold tail). ef=1000 documented as a future toggle for
+   single-channel diversity.
+3. `_FALLBACK_NEIGHBOR_CACHE` key already includes ef, so no stale-neighbor risk.
 
 ## Verification
 
