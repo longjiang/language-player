@@ -1,7 +1,7 @@
 # ADR-0026: Subs-Search Indexing for Continua Languages (Monograms & Bigrams)
 
 **Date**: 2026-08-05
-**Status**: proposed
+**Status**: accepted
 **See also**: [SPEC-044](../specs/044-subs-search-db-optimizations.md),
 [ARCH-004](../arch/004-subs-search-architecture.md),
 [SPEC-039](../specs/039-full-database-migration-supabase.md),
@@ -244,21 +244,25 @@ query with `subs_bigrams @> array['中国']`.
 ### Option E — PGroonga
 
 Enable the `pgroonga` extension (available on this Supabase project, v3.2.5,
-not yet installed) and index `subs_l2` with a bigram tokenizer:
+not yet installed) and index `subs_l2` with a bigram tokenizer, scoped to
+just the continua languages:
 
 ```sql
 create extension pgroonga with schema extensions;
 create index youtube_videos_subs_l2_pgroonga
   on public.youtube_videos
   using pgroonga (subs_l2)
-  with (tokenizer = 'TokenBigram');
+  with (tokenizer = 'TokenBigram')
+  where l2 in ('zh', 'ja', 'yue', 'nan', … continua list …);
 ```
 
 **Initial cost**
 
 - Low-to-medium: no Python backfill, no token table; one extension enablement
   (Supabase dashboard) and one index build.
-- Storage: another multi-GB index (the existing pg_trgm index is ~4 GB).
+- Storage: a multi-GB index, but only over the ~195k continua rows (the
+  existing full-table pg_trgm index is ~4 GB), so much smaller than a
+  whole-table PGroonga index.
 - Dependency: adds a non-standard extension to the stack.
 
 **Result quality**
@@ -310,26 +314,31 @@ create index youtube_videos_subs_l2_pgroonga
 
 ## Decision
 
-**Open.** This ADR records the options and trade-offs; no option is selected
-yet. The decision should be made after:
+**Option B — stored n-gram token tsvector** (2026-08-05).
 
-- benchmarking Option B's planner behavior at full continua scale (122k+ zh
-  rows) for common and rare monograms/bigrams;
-- confirming the storage budget (Option B ~7–10 GB vs Option C ~25 GB vs
-  Option E's index size);
-- confirming the operational appetite for backfill/trigger maintenance versus
-  a managed extension.
+Use a stored tsvector of unique 1-char and 2-char tokens per continua-language
+video, with a partial GIN index, and route continua searches through the same
+two-phase FTS flow as SPEC-044. Terms of 3+ characters are matched as the AND
+of their overlapping bigrams. ILIKE/trigram remains only for wildcards and
+space-containing terms.
+
+**Rationale**: Option B has the best balance of the measured trade-offs —
+medium initial cost (backfill + ~7–10 GB) versus ~25 GB for the posting
+table, no new extension dependency (vs PGroonga), and it reuses the FTS/GIN
+machinery SPEC-044 already validated for word-based languages. The main
+remaining risk is planner behavior at full continua scale; it is mitigated by
+the bounded walk + GIN fallback and the validation gates in
+[SPEC-045](../specs/045-continua-subs-search-ngram-tsv.md).
 
 ## Consequences / next steps
 
-- Whatever the choice, wire the continua branch through the bounded
-  walk + fallback flow from SPEC-044's FTS path so no request can hang on a
-  bad plan.
+- Wire the continua branch through the bounded walk + fallback flow from
+  SPEC-044's FTS path so no request can hang on a bad plan.
 - Fix `_reduce_subs_to_context` to `re.escape` terms before building the
   match regex (`c++` currently raises `multiple repeat`).
 - Add a cache TTL so new videos become searchable without manual clears.
 - Extend `profiling_subs_search.py` with the CJK matrix (`中`, `中国`,
   `对不起`, `峥嵘`, `绌`, `私`, `日本`) and require uncached p95 < 1 s.
 - Update SPEC-044's verification table (its "Chinese ~0.4s" claim is only
-  valid for 3+ char terms) and rewrite ARCH-004's backend section once a
-  decision lands.
+  valid for 3+ char terms) and rewrite ARCH-004's backend section.
+- Implementation plan and validation gates are tracked in SPEC-045.
