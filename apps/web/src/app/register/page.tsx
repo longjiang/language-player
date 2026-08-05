@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { ACQUISITION_SOURCES } from '@langplayer/shared';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logwarn } from '@/lib/logger';
 import { getExploreUrl } from '@/lib/last-language-pair';
@@ -24,14 +26,23 @@ function RegisterForm() {
   const [email, setEmail] = useState(verifyEmail);
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
+  const [acquisitionSource, setAcquisitionSource] = useState('');
+  const [acquisitionDetails, setAcquisitionDetails] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const selectedSourceLabel = acquisitionSource
+    ? ACQUISITION_SOURCES.find((o) => o.value === acquisitionSource)?.labelKey
+    : undefined;
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setNotice('');
+    if (!acquisitionSource) {
+      setError(t('msg.please_select_option'));
+      return;
+    }
     setLoading(true);
 
     try {
@@ -52,6 +63,25 @@ function RegisterForm() {
           throw new Error(t('error.email_exists'));
         }
         throw new Error(t('error.create_account_failed'));
+      }
+
+      const data = await res.json().catch(() => null);
+      const userId = data?.user?.id;
+      if (userId) {
+        try {
+          await fetch(`${PYTHON_API_URL}/acquisition_survey`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userId,
+              acquisition_source: acquisitionSource,
+              acquisition_details:
+                acquisitionSource === 'other' ? acquisitionDetails.trim() : undefined,
+            }),
+          });
+        } catch {
+          logwarn('[LP Web] Failed to submit acquisition survey');
+        }
       }
 
       const verifyRes = await fetch(`${PYTHON_API_URL}/auth/resend-verification`, {
@@ -200,6 +230,46 @@ function RegisterForm() {
                   placeholder={t('placeholder.password_min')} minLength={8} required autoComplete="new-password"
                 />
               </div>
+              <div>
+                <label htmlFor="acquisitionSource" className="block text-sm font-medium">{t('title.how_did_you_hear')}</label>
+                <Select
+                  value={acquisitionSource || undefined}
+                  onValueChange={(value) => {
+                    setAcquisitionSource(value);
+                    setError('');
+                  }}
+                >
+                  <SelectTrigger id="acquisitionSource" className="mt-1.5 w-full !h-[42px]">
+                    <SelectValue placeholder={t('title.how_did_you_hear')}>
+                      {selectedSourceLabel ? t(selectedSourceLabel) : undefined}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>{t('title.how_did_you_hear')}</SelectLabel>
+                      {ACQUISITION_SOURCES.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {t(opt.labelKey)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              {acquisitionSource === 'other' && (
+                <div>
+                  <label htmlFor="acquisitionDetails" className="block text-sm font-medium">{t('placeholder.please_specify')}</label>
+                  <input
+                    id="acquisitionDetails" type="text" value={acquisitionDetails}
+                    onChange={(e) => {
+                      setAcquisitionDetails(e.target.value);
+                      setError('');
+                    }}
+                    className="mt-1.5 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
+                    placeholder={t('placeholder.please_specify')} required
+                  />
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? t('msg.creating_account') : t('action.create_account')}

@@ -797,6 +797,7 @@
         "playlist_not_found": "ไม่พบเพลย์ลิสต์",
         "playlist_video_count": "วิดีโอ: {count}",
         "playlists_description": "จัดการเพลย์ลิสต์วิดีโอที่บันทึกไว้ของคุณ",
+        "please_select_option": "กรุณาเลือกตัวเลือก",
         "popular_languages": "เป็นที่นิยม",
         "preparing_review_cards": "กำลังเตรียมการ์ดทบทวน...",
         "price_load_error": "ไม่สามารถโหลดราคาได้ โปรดลองอีกครั้งในภายหลัง",

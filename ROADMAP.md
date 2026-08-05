@@ -27,6 +27,7 @@
 - ✅ NextAuth.js v5 (beta.31) integration with Directus 8 credentials provider
 - ✅ Auth middleware (cookie-based session check, protect routes, redirect to login)
 - ✅ User registration flow (3-step: form → email verification → auto-login)
+- ✅ Required "How did you hear about us?" acquisition survey on registration (web + mobile, SPEC-042)
 - ✅ Password reset flow (Directus)
 - ✅ L1/L2 language selector (onboarding dual-picker + search)
 - ✅ Header/navbar with language switcher + swap button
