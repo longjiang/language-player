@@ -189,14 +189,14 @@ export default function RegisterPage() {
               <div>
                 <label htmlFor="code" className="block text-sm font-medium">{t('placeholder.verification_code')}</label>
                 <input
-                  id="code" type="text" inputMode="numeric" maxLength={6}
+                  id="code" type="text" inputMode="numeric" maxLength={8}
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   className="mt-1.5 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-center text-2xl tracking-[0.5em] transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-                  placeholder="000000" required autoFocus
+                  placeholder="00000000" required autoFocus
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading || code.length < 6}>
+              <Button type="submit" className="w-full" disabled={loading || code.length < 8}>
                 {loading ? t('msg.verifying') : t('action.verify_email')}
               </Button>
             </form>

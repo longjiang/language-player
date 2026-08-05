@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { Alert, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import { logwarn } from '@/lib/logger';
 
@@ -13,6 +14,10 @@ export default function VerifyEmailScreen() {
   const { token, email } = useLocalSearchParams<{ token?: string; email?: string }>();
   const [state, setState] = useState<VerifyState>('verifying');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [resending, setResending] = useState(false);
   const verifiedRef = useRef(false);
 
   useEffect(() => {
@@ -39,17 +44,63 @@ export default function VerifyEmailScreen() {
         });
 
         if (!res.ok) {
-          logwarn(`[verify-email] Server returned ${res.status}; showing success`);
+          logwarn(`[LP Mobile] Verify email server returned ${res.status}; showing success`);
         }
 
         setState('success');
       } catch {
         // Network error — still show success since the link was valid
-        logwarn('[verify-email] Network error; showing success');
+        logwarn('[LP Mobile] Verify email network error; showing success');
         setState('success');
       }
     })();
   }, [token, t]);
+
+  async function handleVerifyCode() {
+    if (!email || code.length < 8) return;
+    setVerifyingCode(true);
+    setCodeError(null);
+    try {
+      const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, token: code }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setCodeError(data?.errors?.[0]?.message || t('error.invalid_verification_code'));
+        return;
+      }
+      setState('success');
+    } catch {
+      setCodeError(t('error.something_went_wrong'));
+    } finally {
+      setVerifyingCode(false);
+    }
+  }
+
+  async function handleResend() {
+    if (!email || resending) return;
+    setResending(true);
+    try {
+      const res = await fetch(`${PYTHON_API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        logwarn(`[LP Mobile] Verification resend failed (${res.status})`);
+        Alert.alert(t('error.verification_failed'));
+        return;
+      }
+      Alert.alert(t('title.check_email'), t('success.code_resent'));
+    } catch {
+      logwarn('[LP Mobile] Verification resend network error');
+      Alert.alert(t('error.something_went_wrong'));
+    } finally {
+      setResending(false);
+    }
+  }
 
   if (state === 'verifying') {
     return (
@@ -100,11 +151,52 @@ export default function VerifyEmailScreen() {
           <Text className="text-muted-foreground text-sm text-center mt-2">
             {t('msg.verification_code_sent', { email: email ?? '' })}
           </Text>
+          <TextInput
+            className="mt-4 w-full rounded-lg border border-input bg-background px-4 py-3 text-center text-2xl tracking-widest text-foreground"
+            placeholder={t('placeholder.verification_code')}
+            placeholderTextColor={PLACEHOLDER_COLOR}
+            keyboardType="number-pad"
+            maxLength={8}
+            autoFocus
+            value={code}
+            onChangeText={(value) => {
+              setCode(value.replace(/\D/g, '').slice(0, 8));
+              setCodeError(null);
+            }}
+            textContentType="oneTimeCode"
+          />
+          {codeError && (
+            <Text className="mt-2 text-destructive text-sm text-center">
+              {codeError}
+            </Text>
+          )}
           <Pressable
-            className="mt-6 bg-primary px-6 py-3 rounded-lg"
+            className="mt-6 w-full bg-primary px-6 py-3 rounded-lg items-center"
+            onPress={handleVerifyCode}
+            disabled={verifyingCode || code.length < 8}
+          >
+            {verifyingCode ? (
+              <ActivityIndicator color={ICON_ON_PRIMARY} />
+            ) : (
+              <Text className="text-primary-foreground font-medium text-sm">
+                {t('action.verify')}
+              </Text>
+            )}
+          </Pressable>
+          <Pressable
+            className="mt-4 w-full border border-border rounded-lg px-6 py-3 items-center"
+            onPress={handleResend}
+            disabled={resending}
+          >
+            <Text className="text-foreground font-medium text-sm">
+              {resending ? t('msg.verifying') : t('action.resend_code')}
+            </Text>
+          </Pressable>
+          <Pressable
+            className="mt-4"
             onPress={() => router.replace('/login')}
           >
-            <Text className="text-primary-foreground font-medium text-sm">
+            <Text className="text-primary text-center text-sm">
               {t('action.back_to_login')}
             </Text>
           </Pressable>
