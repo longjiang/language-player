@@ -14,6 +14,8 @@ interface ExploreCacheContextValue {
   get: (levelKey: string) => CacheEntry | null;
   /** Store results for a level key. */
   set: (levelKey: string, entry: CacheEntry) => void;
+  /** Drop every cached result for a language (used when preferences change). */
+  clearL2: (l2Code: string) => void;
 }
 
 const ExploreCacheContext = createContext<ExploreCacheContextValue | null>(null);
@@ -51,9 +53,19 @@ export function ExploreCacheProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const clearL2 = useCallback((l2Code: string) => {
+    const prefix = `${l2Code}:`;
+    const needle = `:${l2Code}:`;
+    for (const key of Array.from(cacheRef.current.keys())) {
+      if (key.startsWith(prefix) || key.includes(needle)) {
+        cacheRef.current.delete(key);
+      }
+    }
+  }, []);
+
   const value = React.useMemo<ExploreCacheContextValue>(
-    () => ({ get, set }),
-    [get, set],
+    () => ({ get, set, clearL2 }),
+    [get, set, clearL2],
   );
 
   return (

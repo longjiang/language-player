@@ -6,6 +6,10 @@ import { MoreVertical, Bell, BellOff, EyeOff, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/hooks/use-t';
 import { useChannelPreference } from '@/hooks/use-channel-preference';
+import type { ChannelPref } from '@/hooks/use-channel-preference';
+import { useLanguage } from '@/providers/language-provider';
+import { baseCode } from '@/lib/language-data';
+import { useExploreCache } from '@/providers/explore-cache-provider';
 
 interface ChannelActionsMenuProps {
   channelId: string;
@@ -15,10 +19,19 @@ interface ChannelActionsMenuProps {
  *  Uses a portal to avoid clipping from parent overflow:hidden containers. */
 export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
   const t = useT();
+  const { l2 } = useLanguage();
+  const { clearL2 } = useExploreCache();
   const { pref, savePref } = useChannelPreference(channelId);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  const handleSave = (status: ChannelPref) => {
+    // Channel prefs change the recommendation feed — drop the cached
+    // explore/music lists so the change shows up without a reload.
+    clearL2(baseCode(l2.code));
+    savePref(status);
+  };
 
   useEffect(() => {
     if (open && btnRef.current) {
@@ -53,14 +66,14 @@ export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
               >
                 {pref !== 'subscribed' ? (
                   <button
-                    onClick={() => { savePref('subscribed'); setOpen(false); }}
+                    onClick={() => { handleSave('subscribed'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <Bell className="h-3.5 w-3.5" /> {t('action.subscribe')}
                   </button>
                 ) : (
                   <button
-                    onClick={() => { savePref('neutral'); setOpen(false); }}
+                    onClick={() => { handleSave('neutral'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <BellOff className="h-3.5 w-3.5" /> {t('action.unsubscribe')}
@@ -68,14 +81,14 @@ export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
                 )}
                 {pref !== 'not_interested' ? (
                   <button
-                    onClick={() => { savePref('not_interested'); setOpen(false); }}
+                    onClick={() => { handleSave('not_interested'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <EyeOff className="h-3.5 w-3.5" /> {t('action.not_interested')}
                   </button>
                 ) : (
                   <button
-                    onClick={() => { savePref('neutral'); setOpen(false); }}
+                    onClick={() => { handleSave('neutral'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <Eye className="h-3.5 w-3.5" /> {t('action.remove_not_interested')}
