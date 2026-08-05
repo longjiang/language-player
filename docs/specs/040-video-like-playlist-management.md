@@ -13,6 +13,9 @@ The web app now lets users like videos from the watch page, save videos into
 playlists, manage those playlists, and browse all liked videos. The account
 navigation was also consolidated: Watch History, Playlists, Liked Videos, and
 Saved Words moved from the main header menus into the UserMenu.
+The profile page keeps account, level, and subscription settings; Watch
+History and Saved Words are reached from the UserMenu instead of being
+duplicated on the profile page.
 
 ## User Stories
 
