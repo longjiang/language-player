@@ -39,6 +39,8 @@ The **active development** happens in:
 
 7. **Always import `PYTHON_API_URL` from `@/lib/api-url`**, never from `process.env`. The shared module is the single source of truth — it reads `NEXT_PUBLIC_API_URL` with a localhost fallback. Using `process.env.PYTHON_API_URL` directly in server code will silently fall back to `http://127.0.0.1:5001` in production if only `NEXT_PUBLIC_API_URL` is set in the deployment environment, breaking login, video/channel APIs, and subtitle fetching.
 
+   **Classic (Nuxt) backend URL** — `zerotohero-nuxt/lib/utils/servers.js` exports `PYTHON_SERVER` with the **production URL as the default** (`https://python.zerotohero.ca/`). Override it per-environment with a `PYTHON_SERVER` env var — never by editing the committed default. Local dev: put `PYTHON_SERVER=http://127.0.0.1:5001/` in `zerotohero-nuxt/.env` (gitignored) or prefix the dev command. `nuxt.config.js` bakes the same resolved value into the client bundle, so the nuxt-auth URLs stay in sync. Committing a localhost value to `servers.js` breaks production (all user-data calls hit the user's machine); this happened in SPEC-039 5.8 and is tracked in commit `382e935f`.
+
 ### Before Implementing Any Feature
 
 1. Check if `@langplayer/shared` already has the types you need
