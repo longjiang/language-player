@@ -406,7 +406,8 @@ language id; `owner` = Directus user id until the 5.7 remap).
    ~42s cold on the Postgres path: `subs_l2 ILIKE '%term%'` on the 10 GB table
    triggers a trigram bitmap whose recheck reads ~41k full subtitle blobs
    (~4.8 GB of TOAST) and sorts all 17.6k matches. Fix (all in
-   `zerotohero-python-server/`):
+   `zerotohero-python-server/`; strategy documented in
+   [SPEC-044](044-subs-search-db-optimizations.md)):
    - Two-phase query: matching ids ordered by views first, then full rows
      fetched only for the limited result set.
    - Composite `(l2, views DESC NULLS LAST)` index so the sort can walk in
@@ -417,7 +418,15 @@ language id; `owner` = Directus user id until the 5.7 remap).
      ILIKE/trigram path). Migration: `tmp/supabase-subs-search-fts.sql`.
    - Query uses `websearch_to_tsquery(config, 'a OR b')` (word-based matching;
      note `|` is NOT the OR operator in websearch syntax).
-   - 6s walk timeout with a pg_trgm ILIKE retry for rare/zero-match terms.
+   - tsvector GIN expression index (`youtube_videos_subs_tsv_idx`, built
+     2026-08-05, ~96 min concurrent) over
+     `to_tsvector(public.subs_tsv_config(l2), subs_l2)`; after ANALYZE the
+     planner uses it directly for rare/zero-match terms (e.g. `zygote` ~1s)
+     and the `(l2, views)` walk for common terms (`fly` ~0.6s, `marry`
+     ~1.3s). A 6s walk-timeout → GIN-bitmap retry remains as a safety net;
+     Vietnamese keeps the pg_trgm ILIKE retry, continua scripts use the
+     ILIKE/trigram path directly. No full-corpus scan, and timeouts are not
+     cached as "no matches".
    - Shared subs_search Redis cache, namespaced `pg` so it never collides with
      the Classic MySQL cache keys.
    Measured: `fly,flies,flew,flown&l2=en` 42s → ~4s cold, ~0.001s cached.
