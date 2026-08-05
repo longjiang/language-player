@@ -185,6 +185,7 @@
         "invalid_credentials": "Nevažeća e-pošta ili lozinka. Pokušajte ponovno.",
         "invalid_user_credentials": "Neispravna e-pošta ili lozinka",
         "invalid_verification_code": "Nevažeći verifikacijski kod. Pokušajte ponovno.",
+        "invalid_verification_link": "Nevažeća veza za verifikaciju. Pokušajte ponovno.",
         "language_not_selected": "Jezik nije odabran",
         "loading_failed": "Učitavanje nije uspjelo",
         "login": "Greška pri prijavi",

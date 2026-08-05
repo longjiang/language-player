@@ -185,6 +185,7 @@
         "invalid_credentials": "Неверный email или пароль. Пожалуйста, попробуйте снова.",
         "invalid_user_credentials": "Неверный email или пароль",
         "invalid_verification_code": "Неверный код подтверждения. Пожалуйста, попробуйте снова.",
+        "invalid_verification_link": "Недействительная ссылка для подтверждения. Пожалуйста, попробуйте снова.",
         "language_not_selected": "Язык не выбран",
         "loading_failed": "Ошибка загрузки",
         "login": "Ошибка входа",

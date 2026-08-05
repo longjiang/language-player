@@ -185,6 +185,7 @@
         "invalid_credentials": "Érvénytelen e-mail vagy jelszó. Kérjük, próbálja újra.",
         "invalid_user_credentials": "Érvénytelen e-mail vagy jelszó",
         "invalid_verification_code": "Érvénytelen megerősítő kód. Kérjük, próbálja újra.",
+        "invalid_verification_link": "Érvénytelen ellenőrző link. Kérjük, próbálja újra.",
         "language_not_selected": "Nyelv nincs kiválasztva",
         "loading_failed": "Betöltés sikertelen",
         "login": "Bejelentkezési hiba",

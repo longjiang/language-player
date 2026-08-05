@@ -185,6 +185,7 @@
         "invalid_credentials": "Geçersiz e-posta veya şifre. Lütfen tekrar deneyin.",
         "invalid_user_credentials": "Geçersiz e-posta veya şifre",
         "invalid_verification_code": "Geçersiz doğrulama kodu. Lütfen tekrar deneyin.",
+        "invalid_verification_link": "Geçersiz doğrulama bağlantısı. Lütfen tekrar deneyin.",
         "language_not_selected": "Dil seçilmedi",
         "loading_failed": "Yükleme başarısız oldu",
         "login": "Giriş hatası",

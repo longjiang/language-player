@@ -64,10 +64,13 @@ export default function proxy(req: NextRequest) {
   const l1 = segments[0];
   const l2 = segments[1];
 
+  const isConfirmPage = pathname === '/auth/confirm' || pathname.startsWith('/auth/confirm/');
   const isAuthPage = AUTH_PATHS.some((p) => pathname.startsWith(p));
-  const isPublic = isAuthPage || pathname === '/language-select';
+  const isPublic = isAuthPage || isConfirmPage || pathname === '/language-select';
 
-  // 1. Redirect authenticated users away from auth pages
+  // 1. Redirect authenticated users away from auth pages. The confirm page is
+  // excluded so a verification link can run even in an existing session and
+  // replace it with the confirmed account.
   if (isAuthenticated && isAuthPage) {
     const l1Cookie = req.cookies.get('l1');
     const l2Cookie = req.cookies.get('l2');

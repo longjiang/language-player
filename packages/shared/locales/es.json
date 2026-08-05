@@ -185,6 +185,7 @@
         "invalid_credentials": "Correo electrónico o contraseña inválidos. Inténtelo de nuevo.",
         "invalid_user_credentials": "Correo electrónico o contraseña inválidos",
         "invalid_verification_code": "Código de verificación inválido. Inténtelo de nuevo.",
+        "invalid_verification_link": "El enlace de verificación no es válido. Inténtalo de nuevo.",
         "language_not_selected": "Idioma no seleccionado",
         "loading_failed": "Error de carga",
         "login": "Error de inicio de sesión",

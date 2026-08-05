@@ -185,6 +185,7 @@
         "invalid_credentials": "Email hoặc mật khẩu không hợp lệ. Vui lòng thử lại.",
         "invalid_user_credentials": "Email hoặc mật khẩu không hợp lệ",
         "invalid_verification_code": "Mã xác minh không hợp lệ. Vui lòng thử lại.",
+        "invalid_verification_link": "Liên kết xác minh không hợp lệ. Vui lòng thử lại.",
         "language_not_selected": "Chưa chọn ngôn ngữ",
         "loading_failed": "Tải không thành công",
         "login": "Lỗi đăng nhập",

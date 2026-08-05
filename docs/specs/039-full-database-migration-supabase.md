@@ -173,6 +173,21 @@ sweep/reconciler now resolves Directus owner ids → auth UUIDs via
 new numeric-keyed rows appear after the Flask server is restarted with the
 patched code. **Sub-phase 5.7 is COMPLETE.**
 
+**Email-verification UX (2026-08-05):** Supabase's "Confirm signup" template
+can include both `{{ .ConfirmationURL }}` and `{{ .Token }}` (the 6-digit OTP)
+in the same email. Web now has `/auth/confirm`, which accepts a custom
+`token_hash` link or a Supabase redirect session, exchanges it through Flask,
+and logs the user in directly via NextAuth instead of landing on the home page.
+To enable the direct-login link, update **Authentication → Email Templates →
+Confirm signup** to point the button at
+`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` (keep
+`{{ .Token }}` in the body for manual code entry), and add `/auth/confirm` to
+the project's **URL Configuration → Redirect URLs**. The default
+`{{ .ConfirmationURL }}` link is also supported when the project's redirect
+target is `/auth/confirm`: it lands there with a session fragment that the
+page exchanges for a login. A ready-to-paste branded template is in
+`docs/email-templates/confirm-signup.html`.
+
 ### WS-2 — Remaining User-Data Columns
 
 Follow the SPEC-034 row pattern:

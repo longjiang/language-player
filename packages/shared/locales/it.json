@@ -185,6 +185,7 @@
         "invalid_credentials": "Email o password non validi. Per favore riprova.",
         "invalid_user_credentials": "Email o password non validi",
         "invalid_verification_code": "Codice di verifica non valido. Per favore riprova.",
+        "invalid_verification_link": "Link di verifica non valido. Per favore riprova.",
         "language_not_selected": "Lingua non selezionata",
         "loading_failed": "Caricamento fallito",
         "login": "Errore di accesso",

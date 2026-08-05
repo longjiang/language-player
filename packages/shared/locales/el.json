@@ -185,6 +185,7 @@
         "invalid_credentials": "Μη έγκυρο email ή κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.",
         "invalid_user_credentials": "Μη έγκυρο email ή κωδικός",
         "invalid_verification_code": "Μη έγκυρος κωδικός επαλήθευσης. Παρακαλώ δοκιμάστε ξανά.",
+        "invalid_verification_link": "Μη έγκυρος σύνδεσμος επαλήθευσης. Παρακαλώ δοκιμάστε ξανά.",
         "language_not_selected": "Η γλώσσα δεν έχει επιλεγεί",
         "loading_failed": "Η φόρτωση απέτυχε",
         "login": "Σφάλμα σύνδεσης",

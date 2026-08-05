@@ -185,6 +185,7 @@
         "invalid_credentials": "Correu electrònic o contrasenya no vàlids. Torna-ho a provar.",
         "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
         "invalid_verification_code": "Codi de verificació no vàlid. Torna-ho a provar.",
+        "invalid_verification_link": "L'enllaç de verificació no és vàlid. Torna-ho a provar.",
         "language_not_selected": "Idioma no seleccionat",
         "loading_failed": "Ha fallat la càrrega",
         "login": "Error d'inici de sessió",

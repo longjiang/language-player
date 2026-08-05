@@ -185,6 +185,7 @@
         "invalid_credentials": "अमान्य ईमेल या पासवर्ड। कृपया पुनः प्रयास करें।",
         "invalid_user_credentials": "अमान्य ईमेल या पासवर्ड",
         "invalid_verification_code": "अमान्य सत्यापन कोड। कृपया पुनः प्रयास करें।",
+        "invalid_verification_link": "अमान्य सत्यापन लिंक। कृपया पुनः प्रयास करें।",
         "language_not_selected": "भाषा का चयन नहीं किया गया",
         "loading_failed": "लोड करने में विफल",
         "login": "लॉगिन त्रुटि",
