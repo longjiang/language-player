@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 interface SubscriptionInfo {
   id?: number;
@@ -42,9 +43,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    fetch(`${PYTHON_API_URL}/user-subscription`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/user-subscription`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled) return;

@@ -7,6 +7,7 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { baseCode } from '@langplayer/utils';
 import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -89,7 +90,7 @@ function LevelPicker({ l2Code, value, onChange, t }: {
 }
 
 export default function ProfileScreen() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { l1Lang, l2Lang } = useLanguage();
   const { savedWords: allSaved } = useSavedWords();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2Lang.code));
@@ -108,16 +109,14 @@ export default function ProfileScreen() {
   const [histLoading, setHistLoading] = useState(true);
   useEffect(() => {
     if (!user?.id) { setHistLoading(false); return; }
-    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Code)}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Code)}`)
       .then((r) => r.ok ? r.json() : [])
       .then((d: { history?: WatchHistoryItem[] }) => {
         const seen = new Set<string>();
         setHistory((d?.history ?? []).filter((i) => seen.has(i.youtube_id) ? false : (seen.add(i.youtube_id), true)).slice(0, 5));
       })
       .catch(() => {}).finally(() => setHistLoading(false));
-  }, [user?.id, token, l2Code]);
+  }, [user?.id, l2Code]);
 
   // ── Subscription ──
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
@@ -127,9 +126,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!user?.id) { setSubLoading(false); return; }
     setSubLoading(true);
-    fetch(`${PYTHON_API_URL}/user-subscription`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/user-subscription`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setSub(data?.id ? data : null);

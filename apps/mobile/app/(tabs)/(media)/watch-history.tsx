@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { Clock, AlertCircle, Play, Trash2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -74,7 +75,7 @@ function formatSectionDate(dateKey: string, locale: string, todayLabel: string):
 
 export default function WatchHistoryScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const t = useT();
 
   const [items, setItems] = useState<WatchHistoryItem[]>([]);
@@ -90,9 +91,7 @@ export default function WatchHistoryScreen() {
     setLoading(true);
     setError(null);
 
-    fetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Lang.code)}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Lang.code)}`)
       .then((res) => {
         if (res.status === 404) return [];
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -118,7 +117,7 @@ export default function WatchHistoryScreen() {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id, token, l2Lang?.code]);
+  }, [user?.id, l2Lang?.code]);
 
   // ── Date grouping ──
   const sections = useMemo((): HistorySection[] => {
@@ -170,11 +169,8 @@ export default function WatchHistoryScreen() {
             try {
               // Delete items one by one via Flask proxy
               for (const item of items) {
-                await fetch(`${PYTHON_API_URL}/watch-history/${item.id}`, {
+                await authenticatedFetch(`${PYTHON_API_URL}/watch-history/${item.id}`, {
                   method: 'DELETE',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                  },
                 });
               }
               setItems([]);
@@ -187,7 +183,7 @@ export default function WatchHistoryScreen() {
         },
       ],
     );
-  }, [items, token]);
+  }, [items]);
 
   const handlePlay = (item: WatchHistoryItem) => {
     router.push(`/(tabs)/(media)/watch/${item.youtube_id}` as any);

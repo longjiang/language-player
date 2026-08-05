@@ -11,6 +11,7 @@ import { useT } from '@/hooks/use-t';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import {
   Dialog,
   DialogContent,
@@ -98,9 +99,7 @@ export default function ProfilePage() {
     if (!userId) { setSubLoading(false); return; }
     let cancelled = false;
     setSubLoading(true);
-    fetch(`${PYTHON_API_URL}/user-subscription`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    })
+    authenticatedFetch(`${PYTHON_API_URL}/user-subscription`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled) return;

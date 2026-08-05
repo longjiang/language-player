@@ -5,6 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log } from '@/lib/logger';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const SAVE_INTERVAL_MS = 15_000; // every 15 seconds
 
@@ -83,11 +84,10 @@ export function useWatchHistoryRecorder(
 
       log('[watch-history] sending save', { videoId, position: Math.round(time) });
 
-      fetch(`${PYTHON_API_URL}/watch-history`, {
+      authenticatedFetch(`${PYTHON_API_URL}/watch-history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           videoId: Number(videoId),

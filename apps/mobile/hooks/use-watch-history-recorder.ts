@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const SAVE_INTERVAL_MS = 15_000;
 
@@ -42,11 +43,10 @@ export function useWatchHistoryRecorder(
 
       lastSavedRef.current = { time, videoId };
 
-      fetch(`${PYTHON_API_URL}/watch-history`, {
+      authenticatedFetch(`${PYTHON_API_URL}/watch-history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           videoId: Number(videoId),

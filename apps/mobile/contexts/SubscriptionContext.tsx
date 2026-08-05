@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useAuth } from './AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import type { SubscriptionRecord, SubscriptionState } from '@langplayer/shared';
 
 // ── Types ──
@@ -78,7 +79,7 @@ function computeState(sub: SubscriptionRecord | null): Omit<SubscriptionState, '
 // ── Provider ──
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [sub, setSub] = useState<SubscriptionRecord | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,12 +92,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      const res = await fetch(
-        `${PYTHON_API_URL}/user-subscription`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        },
-      );
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/user-subscription`);
       const data = res.ok ? await res.json() : null;
       setSub(data?.id ? data : null);
       setError(null);
