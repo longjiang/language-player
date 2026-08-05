@@ -109,7 +109,7 @@ GoTrue (proxied); no Directus, no client SDKs.
 See [SPEC-034](034-saved-words-supabase-migration.md). The mirror/reconciler/
 sweep scaffolding remains until WS-8.
 
-### WS-1 — Auth & Users (ADR-0023)
+### WS-1 — Auth & Users (ADR-0023) — COMPLETE
 
 **Target**: all three apps authenticate via Flask → GoTrue; Directus JWTs gone.
 
@@ -424,7 +424,7 @@ so each is fully verified before the next starts:
 
 ### Sub-phase details
 
-#### 5.1 — Auth investigation + import prep (in progress)
+#### 5.1 — Auth investigation + import prep — COMPLETE
 
 **Goal**: remove every unknown from the auth migration before the cutover.
 
@@ -606,7 +606,9 @@ saved words all UUID-keyed (Mary 2,186, Bob 4). Subscription/email lookups in
 `utils_subscription.py` now return auth UUIDs (with an `auth.users` fallback
 for post-GoTrue registrations) and tolerate legacy numeric ids. The saved-words
 sweep/reconciler resolves Directus owners → UUIDs before writing, closing the
-post-remap orphan gap. **Sub-phase 5.7 is COMPLETE.**
+post-remap orphan gap. End-to-end verification (2026-08-05): email
+confirmation/resend works, and Classic (Nuxt) registers new users through
+Flask → GoTrue successfully. **Sub-phase 5.7 is COMPLETE.**
 
 **Rollback**: revert Flask auth + client token sources; remap is reversible via
 `user_id_map` (map back to Directus ids).
