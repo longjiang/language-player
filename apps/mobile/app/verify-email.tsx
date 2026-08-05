@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Alert, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useAuth } from '@/contexts/AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
@@ -11,6 +12,7 @@ type VerifyState = 'verifying' | 'success' | 'error' | 'check-email';
 
 export default function VerifyEmailScreen() {
   const t = useT();
+  const { applySession } = useAuth();
   const { token, email } = useLocalSearchParams<{ token?: string; email?: string }>();
   const [state, setState] = useState<VerifyState>('verifying');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export default function VerifyEmailScreen() {
       return;
     }
 
-    // Attempt email verification via Directus API
+    // Attempt email verification via Flask -> GoTrue
     (async () => {
       try {
         const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
@@ -43,10 +45,21 @@ export default function VerifyEmailScreen() {
           body: JSON.stringify({ token: token.trim() }),
         });
 
+        const data = await res.json().catch(() => null);
         if (!res.ok) {
           logwarn(`[LP Mobile] Verify email server returned ${res.status}; showing success`);
         }
 
+        if (data?.token && data?.user) {
+          try {
+            await applySession(data.token, data.refreshToken ?? null, data.user);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            router.replace('/(tabs)/(media)' as any);
+            return;
+          } catch {
+            // Storage failure shouldn't invalidate a successful verification.
+          }
+        }
         setState('success');
       } catch {
         // Network error — still show success since the link was valid
@@ -54,7 +67,7 @@ export default function VerifyEmailScreen() {
         setState('success');
       }
     })();
-  }, [token, t]);
+  }, [token, t, applySession]);
 
   async function handleVerifyCode() {
     if (!email || code.length < 8) return;
@@ -70,6 +83,17 @@ export default function VerifyEmailScreen() {
         const data = await res.json().catch(() => ({}));
         setCodeError(data?.errors?.[0]?.message || t('error.invalid_verification_code'));
         return;
+      }
+      const data = await res.json().catch(() => null);
+      if (data?.token && data?.user) {
+        try {
+          await applySession(data.token, data.refreshToken ?? null, data.user);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          router.replace('/(tabs)/(media)' as any);
+          return;
+        } catch {
+          // Storage failure shouldn't invalidate a successful verification.
+        }
       }
       setState('success');
     } catch {

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
@@ -12,21 +12,25 @@ import { logwarn } from '@/lib/logger';
 
 type Step = 'form' | 'verify' | 'complete';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verifyEmail = searchParams.get('verifyEmail') ?? '';
   const t = useT();
-  const [step, setStep] = useState<Step>('form');
+  const [step, setStep] = useState<Step>(verifyEmail ? 'verify' : 'form');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(verifyEmail);
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
 
     try {
@@ -56,7 +60,7 @@ export default function RegisterPage() {
       });
 
       if (!verifyRes.ok) {
-        logwarn('Verification email failed to send');
+        logwarn('[LP Web] Verification email failed to send');
       }
 
       setStep('verify');
@@ -67,9 +71,32 @@ export default function RegisterPage() {
     }
   }
 
+  async function handleResendCode() {
+    setError('');
+    setNotice('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${PYTHON_API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.errors?.[0]?.message || t('error.something_went_wrong'));
+      }
+      setNotice(t('success.code_resent'));
+    } catch (err: any) {
+      setError(err.message || t('error.something_went_wrong'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
 
     try {
@@ -80,23 +107,37 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        throw new Error(t('error.invalid_verification_code'));
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.errors?.[0]?.message || t('error.invalid_verification_code'));
       }
 
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.ok) {
-        setStep('complete');
-        router.push('/language-select');
-        router.refresh();
+      const data = await res.json().catch(() => null);
+      let result: { ok?: boolean; error?: string; code?: string } | null = null;
+      if (data?.token && data?.user) {
+        result = await signIn('link-token', {
+          accessToken: data.token,
+          refreshToken: data.refreshToken ?? undefined,
+          redirect: false,
+        });
+      } else if (password) {
+        result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
       } else {
+        throw new Error(t('error.verification_failed'));
+      }
+
+      if (!result?.ok) {
         setStep('complete');
         setTimeout(() => router.push('/login'), 2000);
+        return;
       }
+
+      setStep('complete');
+      router.push('/language-select');
+      router.refresh();
     } catch (err: any) {
       setError(err.message || t('error.verification_failed'));
     } finally {
@@ -178,6 +219,13 @@ export default function RegisterPage() {
               {t('msg.verification_code_sent', { email })}
             </p>
 
+            {notice && (
+              <div className="mt-4 flex items-center gap-2 rounded-lg border border-green-500/50 bg-green-500/10 p-3 text-sm text-green-600">
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                {notice}
+              </div>
+            )}
+
             {error && (
               <div className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -205,12 +253,17 @@ export default function RegisterPage() {
               {t('msg.didnt_receive_code')}{' '}
               <button
                 type="button"
-                onClick={() => handleRegister({ preventDefault: () => {} } as any)}
+                onClick={handleResendCode}
+                disabled={loading}
                 className="font-medium text-primary hover:underline"
               >
-                {t('action.resend')}
+                {loading ? t('msg.verifying') : t('action.resend')}
               </button>
             </p>
+
+            <Link href="/login" className="mt-6 block text-center text-sm font-medium text-primary hover:underline">
+              {t('action.back_to_login')}
+            </Link>
           </>
         )}
 
@@ -223,5 +276,13 @@ export default function RegisterPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

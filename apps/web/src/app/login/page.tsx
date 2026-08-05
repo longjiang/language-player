@@ -31,6 +31,10 @@ function LoginForm() {
       });
 
       if (result?.error) {
+        if (result.code === 'email_not_confirmed') {
+          router.push(`/register?verifyEmail=${encodeURIComponent(email)}`);
+          return;
+        }
         setError(t('error.invalid_credentials'));
       } else if (result?.ok) {
         router.push(callbackUrl);

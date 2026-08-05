@@ -1,6 +1,10 @@
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PYTHON_API_URL } from '@/lib/api-url';
+
+class EmailNotConfirmedError extends CredentialsSignin {
+  code = 'email_not_confirmed';
+}
 
 function tokenExpiry(token: string): number {
   try {
@@ -29,7 +33,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: credentials.email, password: credentials.password }),
           });
-          if (!res.ok) return null;
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => null);
+            if (errorData?.errors?.[0]?.code === 'email_not_confirmed') {
+              throw new EmailNotConfirmedError();
+            }
+            return null;
+          }
           const data = await res.json();
           const token = data?.token;
           if (!token) return null;
