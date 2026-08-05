@@ -7,7 +7,6 @@ import { signIn } from 'next-auth/react';
 import { useT } from '@/hooks/use-t';
 import { buttonVariants } from '@/components/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { getExploreUrl } from '@/lib/last-language-pair';
 import { logwarn } from '@/lib/logger';
 
 export default function ConfirmEmailPage() {
@@ -64,7 +63,7 @@ export default function ConfirmEmailPage() {
           setError(t('error.invalid_verification_link'));
         } else if (result?.ok) {
           window.history.replaceState({}, '', '/auth/confirm');
-          router.replace(getExploreUrl());
+          router.replace('/auth/verified');
           router.refresh();
           return;
         } else {

@@ -175,17 +175,16 @@ patched code. **Sub-phase 5.7 is COMPLETE.**
 
 **Email-verification UX (2026-08-05):** Supabase's "Confirm signup" template
 can include both `{{ .ConfirmationURL }}` and `{{ .Token }}` (the 8-digit OTP)
-in the same email. Web now has `/auth/confirm`, which accepts a custom
-`token_hash` link or a Supabase redirect session, exchanges it through Flask,
-and logs the user in directly via NextAuth instead of landing on the home page.
-To enable the direct-login link, update **Authentication → Email Templates →
-Confirm signup** to point the button at
-`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` (keep
-`{{ .Token }}` in the body for manual code entry), and add `/auth/confirm` to
-the project's **URL Configuration → Redirect URLs**. The default
-`{{ .ConfirmationURL }}` link is also supported when the project's redirect
-target is `/auth/confirm`: it lands there with a session fragment that the
-page exchanges for a login. A ready-to-paste branded template is in
+in the same email. The button uses the **default `{{ .ConfirmationURL }}`**
+link so it works for every client: GoTrue verifies the token and redirects to
+the Site URL with the session in the hash fragment
+(`#access_token=...&type=signup`). Classic's `plugins/main.js` catches that
+fragment and shows `/login?verified=1`; the new web app's root-layout handler
+exchanges it through NextAuth and lands on `/auth/verified`. The
+`{{ .SiteURL }}/auth/confirm?token_hash=...` custom link is only usable when
+the Site URL is owned by the new web app — Classic has no `/auth/confirm`
+route and would 404. Keep `{{ .Token }}` in the body for manual code entry. A
+ready-to-paste branded template is in
 `docs/email-templates/confirm-signup.html`. Unverified logins now redirect to
 the same 8-digit code verification screen on web and mobile instead of showing
 a generic "invalid credentials" error.
@@ -199,6 +198,18 @@ previously made NextAuth pick the session-exchange branch and fail with
 `CredentialsSignin` while the `token_hash` was never sent to GoTrue. Flask now
 strips literal `"undefined"`/`"null"` values defensively and defaults the
 8-digit code OTP verification to `type=email` per the GoTrue contract.
+
+**Confirmation URL fragment handling (2026-08-05):** the default
+`{{ .ConfirmationURL }}` email link verifies on Supabase's side and redirects
+to the site root with the session in the hash fragment
+(`/#access_token=...&refresh_token=...&type=signup`). A root-layout handler
+now exchanges that fragment through NextAuth and sends the user to
+`/auth/verified` (the "You're all set!" page), which then forwards to
+`/language-select` — the same post-verification flow as manual code entry.
+The template's button uses `{{ .ConfirmationURL }}` for this flow, since the
+custom `token_hash` link would 404 on Classic; `/auth/confirm` remains for
+token-hash links and redirect-session fragments when the Site URL is owned by
+the new web app. Both link formats now log the user in directly.
 
 **Supabase signup vs Directus (2026-08-05):** GoTrue does not treat an
 unverified email as occupied. `POST /auth/v1/signup` with an existing

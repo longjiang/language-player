@@ -10,15 +10,16 @@ both the one-click confirmation link and the 8-digit verification code.
    **HTML content** field.
 3. Make sure **Authentication → URL Configuration** has:
    - **Site URL** set to your app origin (e.g. `https://languageplayer.io`)
-   - `/auth/confirm` in **Redirect URLs** if you use the default
-     `{{ .ConfirmationURL }}` flow
+   - `/auth/confirm` in **Redirect URLs** only if you switch the button to the
+     custom `{{ .SiteURL }}/auth/confirm?token_hash=...` link
 
 The template uses these Supabase variables:
 
 | Variable | Purpose |
 |---|---|
-| `{{ .SiteURL }}` | App origin for the confirmation link |
-| `{{ .TokenHash }}` | Hashed token for the `/auth/confirm` custom link |
+| `{{ .ConfirmationURL }}` | One-click confirmation link (works for Classic and the new web app) |
+| `{{ .SiteURL }}` | App origin; the default confirmation redirect lands here with the session fragment |
+| `{{ .TokenHash }}` | Hashed token, only needed if you switch to the custom `/auth/confirm` link |
 | `{{ .Token }}` | 8-digit code shown as a fallback |
 
 ## Logo
@@ -38,7 +39,13 @@ https://language-player.netlify.app/img/logo.png
 
 ## Notes
 
-- The custom link goes to `/auth/confirm?token_hash=...`, which the web app
-  exchanges for a session and uses to log the user in directly.
+- The button uses the default `{{ .ConfirmationURL }}`: GoTrue verifies the
+  token, then redirects to the Site URL with the session in the URL fragment.
+  Classic (`plugins/main.js`) cleans the fragment and shows
+  `/login?verified=1`; the new web app's root-layout handler exchanges it and
+  lands on the "You're all set!" page.
+- The custom `{{ .SiteURL }}/auth/confirm?token_hash=...` link only works when
+  the Site URL is owned by the new web app — Classic has no `/auth/confirm`
+  route and would 404.
 - If your email provider rewrites or prefetches links, users can still use the
   code on the verification screen.
