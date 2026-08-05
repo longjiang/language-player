@@ -3,6 +3,7 @@ import { Alert, View, Text, TextInput, Pressable, ActivityIndicator } from 'reac
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
@@ -10,10 +11,24 @@ import { logwarn } from '@/lib/logger';
 
 type VerifyState = 'verifying' | 'success' | 'error' | 'check-email';
 
+function routeAfterVerification(first: string | undefined, hasStoredPair: boolean) {
+  if (first === '1') {
+    router.replace('/select-language');
+    return;
+  }
+  if (hasStoredPair) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    router.replace('/(tabs)/(media)' as any);
+    return;
+  }
+  router.replace('/select-language');
+}
+
 export default function VerifyEmailScreen() {
   const t = useT();
   const { applySession } = useAuth();
-  const { token, email } = useLocalSearchParams<{ token?: string; email?: string }>();
+  const { hasStoredPair } = useLanguage();
+  const { token, email, first } = useLocalSearchParams<{ token?: string; email?: string; first?: string }>();
   const [state, setState] = useState<VerifyState>('verifying');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [code, setCode] = useState('');
@@ -53,8 +68,7 @@ export default function VerifyEmailScreen() {
         if (data?.token && data?.user) {
           try {
             await applySession(data.token, data.refreshToken ?? null, data.user);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            router.replace('/(tabs)/(media)' as any);
+            routeAfterVerification(first, hasStoredPair);
             return;
           } catch {
             // Storage failure shouldn't invalidate a successful verification.
@@ -67,7 +81,7 @@ export default function VerifyEmailScreen() {
         setState('success');
       }
     })();
-  }, [token, t, applySession]);
+  }, [token, t, applySession, first, hasStoredPair]);
 
   async function handleVerifyCode() {
     if (!email || code.length < 8) return;
@@ -77,7 +91,7 @@ export default function VerifyEmailScreen() {
       const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token: code }),
+        body: JSON.stringify({ email, token: code, type: 'email' }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -88,8 +102,7 @@ export default function VerifyEmailScreen() {
       if (data?.token && data?.user) {
         try {
           await applySession(data.token, data.refreshToken ?? null, data.user);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          router.replace('/(tabs)/(media)' as any);
+          routeAfterVerification(first, hasStoredPair);
           return;
         } catch {
           // Storage failure shouldn't invalidate a successful verification.

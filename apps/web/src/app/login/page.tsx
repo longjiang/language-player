@@ -7,12 +7,13 @@ import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { getExploreUrl } from '@/lib/last-language-pair';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useT();
-  const callbackUrl = searchParams.get('callbackUrl') ?? '/language-select';
+  const explicitCallbackUrl = searchParams.get('callbackUrl');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,7 +38,7 @@ function LoginForm() {
         }
         setError(t('error.invalid_credentials'));
       } else if (result?.ok) {
-        router.push(callbackUrl);
+        router.push(explicitCallbackUrl ?? getExploreUrl());
         router.refresh();
       }
     } catch {

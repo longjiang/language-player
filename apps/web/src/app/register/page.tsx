@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logwarn } from '@/lib/logger';
+import { getExploreUrl } from '@/lib/last-language-pair';
 
 type Step = 'form' | 'verify' | 'complete';
 
@@ -103,7 +104,7 @@ function RegisterForm() {
       const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token: code }),
+        body: JSON.stringify({ email, token: code, type: 'email' }),
       });
 
       if (!res.ok) {
@@ -115,8 +116,8 @@ function RegisterForm() {
       let result: { ok?: boolean; error?: string; code?: string } | null = null;
       if (data?.token && data?.user) {
         result = await signIn('link-token', {
-          accessToken: data.token,
-          refreshToken: data.refreshToken ?? undefined,
+          ...(data.token ? { accessToken: data.token } : {}),
+          ...(data.refreshToken ? { refreshToken: data.refreshToken } : {}),
           redirect: false,
         });
       } else if (password) {
@@ -136,7 +137,7 @@ function RegisterForm() {
       }
 
       setStep('complete');
-      router.push('/language-select');
+      router.push(verifyEmail ? getExploreUrl() : '/language-select');
       router.refresh();
     } catch (err: any) {
       setError(err.message || t('error.verification_failed'));
@@ -270,8 +271,8 @@ function RegisterForm() {
         {step === 'complete' && (
           <div className="text-center">
             <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-            <h1 className="mt-4 text-2xl font-bold">You&apos;re all set!</h1>
-            <p className="mt-2 text-muted-foreground">Redirecting you to language selection...</p>
+            <h1 className="mt-4 text-2xl font-bold">{t('title.all_set')}</h1>
+            <p className="mt-2 text-muted-foreground">{t('msg.redirecting_to_language_selection')}</p>
           </div>
         )}
       </div>

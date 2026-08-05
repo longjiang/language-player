@@ -47,6 +47,7 @@ function buildLanguageMeta(code: string, locale?: string): LanguageMeta {
 interface LanguageContextValue {
   l1Lang: LanguageMeta;
   l2Lang: LanguageMeta;
+  hasStoredPair: boolean;
   setL1Lang: (code: string) => Promise<void>;
   setL2Lang: (code: string) => Promise<void>;
   swapLanguages: () => Promise<void>;
@@ -69,6 +70,7 @@ const L2_STORAGE_KEY = 'lp_l2';
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [l1Code, setL1CodeState] = useState<string>('en');
   const [l2Code, setL2CodeState] = useState<string>('en');
+  const [hasStoredPair, setHasStoredPair] = useState(false);
   const [ready, setReady] = useState(false);
 
   // Restore on mount
@@ -82,17 +84,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (storedL2) {
         setL2CodeState(storedL2);
       }
+      if (storedL1 && storedL2) {
+        setHasStoredPair(true);
+      }
       setReady(true);
     })();
   }, []);
 
   const setL1Lang = useCallback(async (code: string) => {
     setL1CodeState(code);
+    setHasStoredPair(true);
     await SecureStore.setItemAsync(L1_STORAGE_KEY, code);
   }, []);
 
   const setL2Lang = useCallback(async (code: string) => {
     setL2CodeState(code);
+    setHasStoredPair(true);
     await SecureStore.setItemAsync(L2_STORAGE_KEY, code);
   }, []);
 
@@ -101,6 +108,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const newL2 = l1Code;
     setL1CodeState(newL1);
     setL2CodeState(newL2);
+    setHasStoredPair(true);
     await SecureStore.setItemAsync(L1_STORAGE_KEY, newL1);
     await SecureStore.setItemAsync(L2_STORAGE_KEY, newL2);
   }, [l1Code, l2Code]);
@@ -108,11 +116,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const value = useMemo<LanguageContextValue>(() => ({
     l1Lang: buildLanguageMeta(l1Code, l1Code),
     l2Lang: buildLanguageMeta(l2Code, l1Code),
+    hasStoredPair,
     setL1Lang,
     setL2Lang,
     swapLanguages,
     availableL1s: [...SUPPORTED_L1S],
-  }), [l1Code, l2Code, setL1Lang, setL2Lang, swapLanguages]);
+  }), [l1Code, l2Code, hasStoredPair, setL1Lang, setL2Lang, swapLanguages]);
 
   if (!ready) return null; // Wait for stored languages before rendering
 

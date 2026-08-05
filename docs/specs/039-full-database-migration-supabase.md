@@ -190,6 +190,16 @@ page exchanges for a login. A ready-to-paste branded template is in
 the same 8-digit code verification screen on web and mobile instead of showing
 a generic "invalid credentials" error.
 
+**Verification-link fix (2026-08-05):** the web confirm page now forwards the
+link's `type` query param (`email`) through NextAuth to Flask, so GoTrue
+receives the same type the link carried instead of a hardcoded `signup`. It
+also omits unset credential fields (`token`, `email`, `accessToken`,
+`refreshToken`) instead of serializing them as literal `"undefined"` — that
+previously made NextAuth pick the session-exchange branch and fail with
+`CredentialsSignin` while the `token_hash` was never sent to GoTrue. Flask now
+strips literal `"undefined"`/`"null"` values defensively and defaults the
+8-digit code OTP verification to `type=email` per the GoTrue contract.
+
 **Supabase signup vs Directus (2026-08-05):** GoTrue does not treat an
 unverified email as occupied. `POST /auth/v1/signup` with an existing
 unconfirmed email returns 200 with the original user (`identities` intact), so

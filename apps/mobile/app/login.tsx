@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Keyboard } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
@@ -10,6 +11,7 @@ import { e2e } from '@/lib/e2e';
 export default function LoginScreen() {
   const t = useT();
   const { login } = useAuth();
+  const { hasStoredPair } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,8 +23,12 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(media)' as any);
+      if (hasStoredPair) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        router.replace('/(tabs)/(media)' as any);
+      } else {
+        router.replace('/select-language');
+      }
     } catch (e: any) {
       if (e?.code === 'email_not_confirmed') {
         router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}`);
