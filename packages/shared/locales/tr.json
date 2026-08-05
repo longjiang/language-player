@@ -854,6 +854,7 @@
         "today": "Bugün",
         "tokenizer_desc": "{l2} için tokenleştirme + lemmatizasyon. Metnin tek tek sözcüklere ve temel biçimlerine nasıl ayrıldığını görün.",
         "transcript_mode_desc": "Videoyla senkronize altyazılar yerine tam etkileşimli transkripti göster.",
+        "transcript_still_available": "Transkript aşağıda hâlâ mevcut.",
         "translated_subtitles": "Çevrilmiş altyazılar mevcut",
         "translating": "Çevriliyor…",
         "translation_failed": "Çeviri başarısız oldu. Lütfen tekrar deneyin.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "otomatik olarak yenilenecek",
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "you_are_pro": "Artık Pro'sunuz!",
-        "youtube_captions": "YouTube altyazıları mevcut"
+        "youtube_captions": "YouTube altyazıları mevcut",
+        "youtube_error_code": "YouTube hatası {code}",
+        "youtube_error_embed_disabled": "Yükleyen kişi bu videonun gömülmesine izin vermediği için burada oynatılamıyor.",
+        "youtube_error_generic": "Bu video gömülü oynatıcıda yüklenemedi.",
+        "youtube_error_html5": "Bu video, bu cihazda veya tarayıcıda gömülü oynatıcıda oynatılamıyor.",
+        "youtube_error_invalid_id": "Bu video, bağlantısı veya kimliği geçersiz olduğu için yüklenemiyor."
     },
     "nav": {
         "media": "Medya",

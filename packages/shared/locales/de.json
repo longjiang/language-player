@@ -854,6 +854,7 @@
         "today": "Heute",
         "tokenizer_desc": "Tokenisierung + Lemmatisierung für {l2}. Sehen Sie, wie Text in einzelne Wörter und deren Grundformen zerlegt wird.",
         "transcript_mode_desc": "Vollständiges interaktives Transkript anstelle von mit dem Video synchronisierten Untertiteln anzeigen.",
+        "transcript_still_available": "Das Transkript ist weiterhin unten verfügbar.",
         "translated_subtitles": "Übersetzte Untertitel verfügbar",
         "translating": "Übersetzen…",
         "translation_failed": "Übersetzung fehlgeschlagen. Bitte versuche es erneut.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "verlängert sich automatisch",
         "with_pro_you_can": "Mit Pro können Sie:",
         "you_are_pro": "Du bist jetzt Pro!",
-        "youtube_captions": "YouTube-Untertitel verfügbar"
+        "youtube_captions": "YouTube-Untertitel verfügbar",
+        "youtube_error_code": "YouTube-Fehler {code}",
+        "youtube_error_embed_disabled": "Der Uploader hat das Einbetten dieses Videos nicht erlaubt, daher kann es hier nicht abgespielt werden.",
+        "youtube_error_generic": "Dieses Video konnte im eingebetteten Player nicht geladen werden.",
+        "youtube_error_html5": "Dieses Video kann auf diesem Gerät oder in diesem Browser nicht im eingebetteten Player abgespielt werden.",
+        "youtube_error_invalid_id": "Dieses Video kann nicht geladen werden, da der Link oder die ID ungültig ist."
     },
     "nav": {
         "media": "Medien",

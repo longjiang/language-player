@@ -854,6 +854,7 @@
         "today": "Данас",
         "tokenizer_desc": "Токенизација + лематизација за {l2}. Погледајте како се текст разлаже на појединачне речи и њихове основне облике.",
         "transcript_mode_desc": "Прикажи цео интерактивни транскрипт уместо титлова синхронизованих са видео записом.",
+        "transcript_still_available": "Транскрипт је и даље доступан испод.",
         "translated_subtitles": "Преведени титлови доступни",
         "translating": "Превођење…",
         "translation_failed": "Превод није успео. Покушајте поново.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "će se automatski obnoviti",
         "with_pro_you_can": "Sa Pro verzijom možeš:",
         "you_are_pro": "Sada ste Pro!",
-        "youtube_captions": "YouTube titlovi dostupni"
+        "youtube_captions": "YouTube titlovi dostupni",
+        "youtube_error_code": "YouTube грешка {code}",
+        "youtube_error_embed_disabled": "Особа која је отпремила видео није дозволила његово уграђивање, па се не може репродуковати овде.",
+        "youtube_error_generic": "Овај видео није могао да се учита у уграђеном плејеру.",
+        "youtube_error_html5": "Овај видео се не може репродуковати у уграђеном плејеру на овом уређају или прегледачу.",
+        "youtube_error_invalid_id": "Овај видео се не може учитати јер је његов линк или ID неважећи."
     },
     "nav": {
         "media": "Mediji",

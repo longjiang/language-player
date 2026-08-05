@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef, useId } from 'react';
+import { useT } from '@/hooks/use-t';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -33,6 +34,35 @@ const PLAYER_STATES = {
   BUFFERING: 3,
   CUED: 5,
 };
+
+interface PlayerErrorInfo {
+  /** Translation key for the user-facing message. */
+  messageKey: string;
+  /** YouTube IFrame API error code, when known. */
+  code?: number;
+  /** The uploader disabled embedding — offer a link out to YouTube. */
+  embedBlocked?: boolean;
+}
+
+// YouTube IFrame API onError codes:
+//   2    invalid parameter (bad video ID)
+//   5    cannot play in the HTML5 player
+//   100  video removed or made private
+//   101/150  embedding disabled by the uploader
+const YOUTUBE_ERRORS: Record<number, PlayerErrorInfo> = {
+  2: { messageKey: 'msg.youtube_error_invalid_id' },
+  5: { messageKey: 'msg.youtube_error_html5' },
+  100: { messageKey: 'msg.video_unavailable' },
+  101: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true },
+  150: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true },
+};
+
+function toPlayerError(code: number | undefined): PlayerErrorInfo {
+  if (code === undefined || Number.isNaN(code)) {
+    return { messageKey: 'msg.youtube_error_generic' };
+  }
+  return { ...(YOUTUBE_ERRORS[code] ?? { messageKey: 'msg.youtube_error_generic' }), code };
+}
 
 declare global {
   interface Window {
@@ -78,7 +108,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   const playerIdRef = useRef(`yt-player-${uid}`);
   const startAppliedRef = useRef(false);
   const [apiReady, setApiReady] = useState(false);
-  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [playerError, setPlayerError] = useState<PlayerErrorInfo | null>(null);
+  const t = useT();
 
   // Load YouTube IFrame API
   useEffect(() => {
@@ -168,8 +199,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             }
           },
           onError: (event: any) => {
-            const msg = `YouTube player error (code: ${event?.data ?? 'unknown'})`;
-            setPlayerError(msg);
+            const code = Number(event?.data);
+            const info = toPlayerError(Number.isFinite(code) ? code : undefined);
+            setPlayerError(info);
+            const msg = `YouTube player error (code: ${Number.isFinite(code) ? code : 'unknown'})`;
             onError?.(new Error(msg));
           },
         },
@@ -177,9 +210,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
       playerRef.current = player;
     } catch (err: any) {
-      const msg = err?.message ?? 'Failed to load YouTube player';
-      setPlayerError(msg);
-      onError?.(err instanceof Error ? err : new Error(msg));
+      setPlayerError({ messageKey: 'msg.youtube_error_generic' });
+      onError?.(err instanceof Error ? err : new Error('Failed to load YouTube player'));
     }
 
     return () => {
@@ -251,14 +283,27 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     <div className="relative w-full overflow-hidden rounded-xl bg-black">
       <div className="aspect-video">
         {playerError ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">
             <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <p className="text-sm">This video cannot be played in the embedded player.</p>
-            <p className="text-xs text-muted-foreground/60">The transcript is still available below.</p>
+            <p className="text-sm">{t(playerError.messageKey)}</p>
+            {playerError.code !== undefined && (
+              <p className="text-xs text-muted-foreground/60">{t('msg.youtube_error_code', { code: playerError.code })}</p>
+            )}
+            {playerError.embedBlocked && (
+              <a
+                href={`https://www.youtube.com/watch?v=${youtubeId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+              >
+                {t('action.view_on_youtube')} ↗
+              </a>
+            )}
+            <p className="text-xs text-muted-foreground/60">{t('msg.transcript_still_available')}</p>
           </div>
         ) : (
           <div ref={containerRef} id={playerIdRef.current} className="h-full w-full" />

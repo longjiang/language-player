@@ -854,6 +854,7 @@
         "today": "Leo",
         "tokenizer_desc": "Uteuzi wa tokeni + uchambuzi wa sarufi kwa {l2}. Tazama jinsi maandishi yanavyogawanyika katika maneno binafsi na maumbo yao ya msingi.",
         "transcript_mode_desc": "Onyesha nakala kamili wasilianifu badala ya manukuu yanayosawazishwa na video.",
+        "transcript_still_available": "Nakala bado inapatikana hapa chini.",
         "translated_subtitles": "Manukuu yaliyotafsiriwa yanapatikana",
         "translating": "Inatafsiri…",
         "translation_failed": "Tafsiri imeshindwa. Tafadhali jaribu tena.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "itasasisha kiotomatiki",
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
         "you_are_pro": "Sasa uko Pro!",
-        "youtube_captions": "Manukuu ya YouTube yanapatikana"
+        "youtube_captions": "Manukuu ya YouTube yanapatikana",
+        "youtube_error_code": "Hitilafu ya YouTube {code}",
+        "youtube_error_embed_disabled": "Mpakiaji hajaruhusu video hii kupachikwa, kwa hivyo haiwezi kuchezwa hapa.",
+        "youtube_error_generic": "Video hii haikuweza kupakiwa kwenye kichezaji kilichopachikwa.",
+        "youtube_error_html5": "Video hii haiwezi kuchezwa kwenye kichezaji kilichopachikwa kwenye kifaa au kivinjari hiki.",
+        "youtube_error_invalid_id": "Video hii haiwezi kupakiwa kwa sababu kiungo au kitambulisho chake si sahihi."
     },
     "nav": {
         "media": "Vyombo vya Habari",

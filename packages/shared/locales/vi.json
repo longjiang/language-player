@@ -854,6 +854,7 @@
         "today": "Hôm nay",
         "tokenizer_desc": "Token hóa + phân tích hình thái cho {l2}. Xem cách văn bản được chia nhỏ thành các từ riêng lẻ và dạng gốc của chúng.",
         "transcript_mode_desc": "Hiển thị bảng điểm tương tác đầy đủ thay vì phụ đề đồng bộ với video.",
+        "transcript_still_available": "Bản ghi vẫn có sẵn bên dưới.",
         "translated_subtitles": "Có phụ đề dịch",
         "translating": "Đang dịch…",
         "translation_failed": "Dịch thuật thất bại. Vui lòng thử lại.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "sẽ tự động gia hạn",
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "you_are_pro": "Bạn đã là Pro!",
-        "youtube_captions": "Có phụ đề YouTube"
+        "youtube_captions": "Có phụ đề YouTube",
+        "youtube_error_code": "Lỗi YouTube {code}",
+        "youtube_error_embed_disabled": "Người đăng tải chưa cho phép nhúng video này nên video không thể phát ở đây.",
+        "youtube_error_generic": "Không thể tải video này trong trình phát nhúng.",
+        "youtube_error_html5": "Không thể phát video này trong trình phát nhúng trên thiết bị hoặc trình duyệt này.",
+        "youtube_error_invalid_id": "Không thể tải video này vì liên kết hoặc ID không hợp lệ."
     },
     "nav": {
         "media": "Media",

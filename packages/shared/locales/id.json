@@ -854,6 +854,7 @@
         "today": "Hari ini",
         "tokenizer_desc": "Tokenisasi + lematisasi untuk {l2}. Lihat bagaimana teks dipecah menjadi kata-kata individual dan bentuk dasarnya.",
         "transcript_mode_desc": "Tampilkan transkrip interaktif lengkap alih-alih subtitle yang disinkronkan dengan video.",
+        "transcript_still_available": "Transkrip masih tersedia di bawah.",
         "translated_subtitles": "Subtitle terjemahan tersedia",
         "translating": "Menerjemahkan…",
         "translation_failed": "Terjemahan gagal. Silakan coba lagi.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "akan diperpanjang otomatis",
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "you_are_pro": "Kamu sekarang Pro!",
-        "youtube_captions": "Teks YouTube tersedia"
+        "youtube_captions": "Teks YouTube tersedia",
+        "youtube_error_code": "Kesalahan YouTube {code}",
+        "youtube_error_embed_disabled": "Pengunggah tidak mengizinkan video ini disematkan, jadi video tidak dapat diputar di sini.",
+        "youtube_error_generic": "Video ini tidak dapat dimuat di pemutar tertanam.",
+        "youtube_error_html5": "Video ini tidak dapat diputar di pemutar tertanam di perangkat atau browser ini.",
+        "youtube_error_invalid_id": "Video ini tidak dapat dimuat karena tautan atau ID-nya tidak valid."
     },
     "nav": {
         "media": "Media",

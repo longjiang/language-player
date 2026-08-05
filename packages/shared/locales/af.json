@@ -854,6 +854,7 @@
         "today": "Vandag",
         "tokenizer_desc": "Tokenisasie + lemmatisering vir {l2}. Sien hoe teks in individuele woorde en hul basisvorme opbreek.",
         "transcript_mode_desc": "Wys volledige interaktiewe transkripsie in plaas van onderskrifte wat met video gesinchroniseer is.",
+        "transcript_still_available": "Die transkripsie is steeds hieronder beskikbaar.",
         "translated_subtitles": "Vertaalde onderskrifte beskikbaar",
         "translating": "Vertaal…",
         "translation_failed": "Vertaling het misluk. Probeer asseblief weer.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "sal outomaties hernu",
         "with_pro_you_can": "Met Pro kan jy:",
         "you_are_pro": "Jy is nou Pro!",
-        "youtube_captions": "YouTube-onderskrifte beskikbaar"
+        "youtube_captions": "YouTube-onderskrifte beskikbaar",
+        "youtube_error_code": "YouTube-fout {code}",
+        "youtube_error_embed_disabled": "Die oplaai het nie toegelaat dat hierdie video ingebed word nie, so dit kan nie hier gespeel word nie.",
+        "youtube_error_generic": "Hierdie video kon nie in die ingebedde speler gelaai word nie.",
+        "youtube_error_html5": "Hierdie video kan nie op hierdie toestel of blaaier in die ingebedde speler gespeel word nie.",
+        "youtube_error_invalid_id": "Hierdie video kan nie gelaai word nie, want die skakel of ID is ongeldig."
     },
     "nav": {
         "media": "Media",

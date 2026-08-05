@@ -833,6 +833,7 @@
         "today": "今天",
         "tokenizer_desc": "{l2} 的分詞與詞形還原。查看文字如何分解為個別單字及其基本形式。",
         "transcript_mode_desc": "顯示完整的互動式逐字稿，而非與影片同步的字幕。",
+        "transcript_still_available": "下方仍提供逐字稿。",
         "translated_subtitles": "提供翻譯字幕",
         "translating": "翻譯中…",
         "translation_failed": "翻譯失敗，請重試。",
@@ -857,7 +858,12 @@
         "will_auto_renew": "將自動續訂",
         "with_pro_you_can": "用專業版，你就可以：",
         "you_are_pro": "您已是專業版會員！",
-        "youtube_captions": "提供 YouTube 字幕"
+        "youtube_captions": "提供 YouTube 字幕",
+        "youtube_error_code": "YouTube 錯誤 {code}",
+        "youtube_error_embed_disabled": "上傳者未允許嵌入此影片，因此無法在此播放。",
+        "youtube_error_generic": "無法在嵌入式播放器中載入此影片。",
+        "youtube_error_html5": "此影片無法在此裝置或瀏覽器上的嵌入式播放器中播放。",
+        "youtube_error_invalid_id": "無法載入此影片，因為其連結或ID無效。"
     },
     "nav": {
         "media": "媒體",

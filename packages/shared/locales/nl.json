@@ -854,6 +854,7 @@
         "today": "Vandaag",
         "tokenizer_desc": "Tokenisatie + lemmatisering voor {l2}. Zie hoe tekst wordt opgesplitst in individuele woorden en hun basisvormen.",
         "transcript_mode_desc": "Toon volledig interactief transcript in plaats van met video gesynchroniseerde ondertitels.",
+        "transcript_still_available": "Het transcript is hieronder nog steeds beschikbaar.",
         "translated_subtitles": "Vertaalde ondertiteling beschikbaar",
         "translating": "Vertalen…",
         "translation_failed": "Vertaling mislukt. Probeer het opnieuw.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "wordt automatisch verlengd",
         "with_pro_you_can": "Met Pro kun je:",
         "you_are_pro": "Je bent nu Pro!",
-        "youtube_captions": "YouTube-ondertiteling beschikbaar"
+        "youtube_captions": "YouTube-ondertiteling beschikbaar",
+        "youtube_error_code": "YouTube-fout {code}",
+        "youtube_error_embed_disabled": "De uploader heeft niet toegestaan dat deze video wordt ingebed, dus hij kan hier niet worden afgespeeld.",
+        "youtube_error_generic": "Deze video kon niet worden geladen in de ingebouwde speler.",
+        "youtube_error_html5": "Deze video kan niet worden afgespeeld in de ingebouwde speler op dit apparaat of deze browser.",
+        "youtube_error_invalid_id": "Deze video kan niet worden geladen omdat de link of ID ongeldig is."
     },
     "nav": {
         "media": "Media",
