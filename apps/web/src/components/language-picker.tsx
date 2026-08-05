@@ -14,8 +14,9 @@ import React, { useCallback, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useLocaleSwitcher } from '@/providers/locale-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES, useLanguagePicker } from '@langplayer/shared';
-import { languageName } from '@/lib/language-data';
+import { languageName, isRTL } from '@/lib/language-data';
 import { LanguagePickerNarrow } from '@/components/language-picker-narrow';
 import { LanguagePickerWide } from '@/components/language-picker-wide';
 
@@ -65,6 +66,11 @@ export function LanguagePicker({
   const locale = useLocale();
   const t = useT();
   const { getL2, updateL2 } = useSettingsContext();
+  const { switchLocale } = useLocaleSwitcher();
+
+  // L2 names are translated into the UI locale (L1), so the L2 list follows
+  // the locale's direction rather than each language's native direction.
+  const l2Rtl = isRTL(locale);
 
   // L1 list: show each language's self-name (Français, Deutsch, 中文（简体）…)
   const getNameL1 = useCallback((code: string) => languageName(code), []);
@@ -111,6 +117,16 @@ export function LanguagePicker({
     onConfirm(picker.selectedL1, picker.selectedL2);
   }, [picker.selectedL1, picker.selectedL2, picker.useTraditional, onConfirm, getL2, updateL2]);
 
+  // Picking a new L1 immediately retranslates the entire UI into that
+  // language (before the user confirms and navigates).
+  const handleSetL1 = useCallback(
+    (code: string) => {
+      picker.setSelectedL1(code);
+      void switchLocale(code);
+    },
+    [picker.setSelectedL1, switchLocale],
+  );
+
   // Detect screen width for responsive layout
   const [isWide, setIsWide] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
@@ -133,22 +149,26 @@ export function LanguagePicker({
 
   const narrowProps = {
     ...picker,
+    setSelectedL1: handleSetL1,
     onConfirm: handleConfirm,
     showTitle,
     showClose,
     onDismiss,
     getName,
     getNameL1,
+    l2Rtl,
   };
 
   if (useWide) {
     return (
       <LanguagePickerWide
         {...picker}
+        setSelectedL1={handleSetL1}
         onConfirm={handleConfirm}
         showTitle={showTitle}
         getName={getName}
         getNameL1={getNameL1}
+        l2Rtl={l2Rtl}
       />
     );
   }
