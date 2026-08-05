@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
+import { LocaleProvider } from '@/providers/locale-provider';
 import { SessionProvider } from '@/providers/session-provider';
 import { ApiClientProvider } from '@/components/api-client-provider';
 import { UserDataProvider } from '@/providers/user-data-provider';
@@ -113,7 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://www.youtube.com" />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <LocaleProvider locale={locale} messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SessionProvider>
               <ApiClientProvider>
@@ -129,7 +129,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </SessionProvider>
             <Toaster richColors closeButton={false} position="top-center" />
           </ThemeProvider>
-        </NextIntlClientProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

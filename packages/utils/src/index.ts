@@ -49,6 +49,7 @@ export { parseSubtitles, detectSubtitleFormat } from './subtitle-parser';
 export { QueueManager, getGlobalQueueManager } from './queue-manager';
 export type { QueueState, QueueType } from './queue-manager';
 export { stripMarkdown } from './strip-markdown';
+export { deepMerge } from './deep-merge';
 export {
   pendingOpKey,
   enqueuePendingOp,
