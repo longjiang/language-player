@@ -766,6 +766,7 @@
         "sale_discount": "精选方案节省 {pct}%！",
         "sale_lifetime_price": "节省 {pct}% — 仅需 {price} 获得终身访问！",
         "save_more_words": "收藏更多单词以继续学习。",
+        "save_word_hint": "点击任意单词旁边的书签图标即可保存。",
         "save_words_to_build_deck": "观看视频时收藏单词以建立复习卡组。点击字幕中的任意单词即可查询并收藏。",
         "saved_words_desc": "已在{l2}中收藏 {count} 个单词",
         "search_settings": "搜索设置…",
