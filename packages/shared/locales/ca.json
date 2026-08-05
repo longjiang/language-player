@@ -854,6 +854,7 @@
         "today": "Avui",
         "tokenizer_desc": "Tokenització i lematització per {l2}. Mira com es desglossa el text en paraules individuals i les seves formes base.",
         "transcript_mode_desc": "Mostra la transcripció interactiva completa en lloc de subtítols sincronitzats amb el vídeo.",
+        "transcript_still_available": "La transcripció encara està disponible més avall.",
         "translated_subtitles": "Subtítols traduïts disponibles",
         "translating": "Traduint…",
         "translation_failed": "Ha fallat la traducció. Torna-ho a provar.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "es renovarà automàticament",
         "with_pro_you_can": "Amb Pro, pots:",
         "you_are_pro": "Ara ets Pro!",
-        "youtube_captions": "Subtítols de YouTube disponibles"
+        "youtube_captions": "Subtítols de YouTube disponibles",
+        "youtube_error_code": "Error de YouTube {code}",
+        "youtube_error_embed_disabled": "La persona que ha pujat el vídeo no ha permès incrustar-lo, per tant no es pot reproduir aquí.",
+        "youtube_error_generic": "Aquest vídeo no s'ha pogut carregar al reproductor incrustat.",
+        "youtube_error_html5": "Aquest vídeo no es pot reproduir al reproductor incrustat en aquest dispositiu o navegador.",
+        "youtube_error_invalid_id": "Aquest vídeo no s'ha pogut carregar perquè l'enllaç o la ID no és vàlida."
     },
     "nav": {
         "media": "Multimèdia",

@@ -834,6 +834,7 @@
         "today": "今天",
         "tokenizer_desc": "{l2}的分词与词形还原。查看文本如何分解为单个单词及其原形。",
         "transcript_mode_desc": "显示完整的交互式文字记录，而非与视频同步的字幕。",
+        "transcript_still_available": "下方仍提供字幕文本。",
         "translated_subtitles": "提供翻译字幕",
         "translating": "翻译中…",
         "translation_failed": "翻译失败，请重试。",
@@ -858,7 +859,12 @@
         "will_auto_renew": "将自动续费",
         "with_pro_you_can": "使用专业版，您可以：",
         "you_are_pro": "您已是 Pro 用户！",
-        "youtube_captions": "提供 YouTube 字幕"
+        "youtube_captions": "提供 YouTube 字幕",
+        "youtube_error_code": "YouTube 错误 {code}",
+        "youtube_error_embed_disabled": "上传者未允许嵌入此视频，因此无法在此播放。",
+        "youtube_error_generic": "无法在嵌入式播放器中加载此视频。",
+        "youtube_error_html5": "此视频无法在此设备或浏览器上的嵌入式播放器中播放。",
+        "youtube_error_invalid_id": "无法加载此视频，因为其链接或ID无效。"
     },
     "nav": {
         "media": "媒体",

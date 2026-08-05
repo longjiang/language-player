@@ -854,6 +854,7 @@
         "today": "Hoy",
         "tokenizer_desc": "Tokenización + lematización para {l2}. Vea cómo el texto se divide en palabras individuales y sus formas base.",
         "transcript_mode_desc": "Mostrar la transcripción interactiva completa en lugar de subtítulos sincronizados con el vídeo.",
+        "transcript_still_available": "La transcripción sigue disponible abajo.",
         "translated_subtitles": "Subtítulos traducidos disponibles",
         "translating": "Traduciendo…",
         "translation_failed": "Falló la traducción. Inténtalo de nuevo.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "se renovará automáticamente",
         "with_pro_you_can": "Con Pro, puedes:",
         "you_are_pro": "¡Ahora eres Pro!",
-        "youtube_captions": "Subtítulos de YouTube disponibles"
+        "youtube_captions": "Subtítulos de YouTube disponibles",
+        "youtube_error_code": "Error de YouTube {code}",
+        "youtube_error_embed_disabled": "La persona que subió el video no ha permitido incrustarlo, así que no se puede reproducir aquí.",
+        "youtube_error_generic": "Este video no se pudo cargar en el reproductor integrado.",
+        "youtube_error_html5": "Este video no se puede reproducir en el reproductor integrado en este dispositivo o navegador.",
+        "youtube_error_invalid_id": "Este video no se pudo cargar porque su enlace o ID no es válido."
     },
     "nav": {
         "media": "Medios",

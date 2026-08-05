@@ -854,6 +854,7 @@
         "today": "Today",
         "tokenizer_desc": "Tokenization + lemmatization for {l2}. See how text breaks down into individual words and their base forms.",
         "transcript_mode_desc": "Show full interactive transcript instead of subtitles synced to video playback.",
+        "transcript_still_available": "The transcript is still available below.",
         "translated_subtitles": "Translated subtitles available",
         "translating": "Translating…",
         "translation_failed": "Translation failed. Please try again.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "will auto-renew",
         "with_pro_you_can": "With Pro, you can:",
         "you_are_pro": "You're now Pro!",
-        "youtube_captions": "YouTube captions available"
+        "youtube_captions": "YouTube captions available",
+        "youtube_error_code": "YouTube error {code}",
+        "youtube_error_embed_disabled": "The uploader hasn't allowed this video to be embedded, so it can't play here.",
+        "youtube_error_generic": "This video couldn't be loaded in the embedded player.",
+        "youtube_error_html5": "This video can't be played in the embedded player on this device or browser.",
+        "youtube_error_invalid_id": "This video can't be loaded because its link or ID is invalid."
     },
     "nav": {
         "media": "Media",

@@ -854,6 +854,7 @@
         "today": "Dzisiaj",
         "tokenizer_desc": "Tokenizacja + lematyzacja dla {l2}. Zobacz, jak tekst dzieli się na poszczególne słowa i ich formy podstawowe.",
         "transcript_mode_desc": "Wyświetl pełny interaktywny transkrypt zamiast napisów zsynchronizowanych z wideo.",
+        "transcript_still_available": "Transkrypcja jest nadal dostępna poniżej.",
         "translated_subtitles": "Przetłumaczone napisy dostępne",
         "translating": "Tłumaczenie…",
         "translation_failed": "Tłumaczenie nie powiodło się. Spróbuj ponownie.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "będzie odnawiane automatycznie",
         "with_pro_you_can": "Z wersją Pro możesz:",
         "you_are_pro": "Jesteś teraz Pro!",
-        "youtube_captions": "Napisy YouTube dostępne"
+        "youtube_captions": "Napisy YouTube dostępne",
+        "youtube_error_code": "Błąd YouTube: {code}",
+        "youtube_error_embed_disabled": "Osoba, która przesłała ten film, nie zezwoliła na jego osadzenie, więc nie można go tu odtworzyć.",
+        "youtube_error_generic": "Nie można było załadować tego filmu w odtwarzaczu osadzonym.",
+        "youtube_error_html5": "Tego filmu nie można odtworzyć w odtwarzaczu osadzonym na tym urządzeniu lub w tej przeglądarce.",
+        "youtube_error_invalid_id": "Nie można załadować tego filmu, ponieważ jego link lub identyfikator jest nieprawidłowy."
     },
     "nav": {
         "media": "Multimedia",

@@ -854,6 +854,7 @@
         "today": "اليوم",
         "tokenizer_desc": "تجزئة النص وتصريف الكلمات لـ {l2}. شاهد كيف ينقسم النص إلى كلمات فردية وأشكالها الأساسية.",
         "transcript_mode_desc": "إظهار النص التفاعلي الكامل بدلاً من الترجمة المتزامنة مع الفيديو.",
+        "transcript_still_available": "لا يزال النص الكامل متاحًا بالأسفل.",
         "translated_subtitles": "ترجمات مترجمة متاحة",
         "translating": "جار الترجمة…",
         "translation_failed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "سيتم التجديد تلقائيًا",
         "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
         "you_are_pro": "أنت الآن برو!",
-        "youtube_captions": "ترجمات YouTube متاحة"
+        "youtube_captions": "ترجمات YouTube متاحة",
+        "youtube_error_code": "خطأ يوتيوب {code}",
+        "youtube_error_embed_disabled": "لم يسمح رافع الفيديو بدمج هذا الفيديو، لذا لا يمكن تشغيله هنا.",
+        "youtube_error_generic": "تعذر تحميل هذا الفيديو في المشغل المضمّن.",
+        "youtube_error_html5": "لا يمكن تشغيل هذا الفيديو في المشغل المضمّن على هذا الجهاز أو المتصفح.",
+        "youtube_error_invalid_id": "تعذر تحميل هذا الفيديو لأن رابطه أو معرّفه غير صالح."
     },
     "nav": {
         "media": "وسائط",

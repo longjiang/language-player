@@ -854,6 +854,7 @@
         "today": "오늘",
         "tokenizer_desc": "{l2}에 대한 토큰화 및 표제어 추출. 텍스트가 개별 단어와 기본 형태로 어떻게 분해되는지 확인하세요.",
         "transcript_mode_desc": "동영상에 동기화된 자막 대신 전체 대화형 대본을 표시합니다.",
+        "transcript_still_available": "대본은 아래에서 계속 확인할 수 있습니다.",
         "translated_subtitles": "번역 자막 가능",
         "translating": "번역 중…",
         "translation_failed": "번역에 실패했습니다. 다시 시도해 주세요.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "자동 갱신됩니다",
         "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
         "you_are_pro": "이제 프로 회원입니다!",
-        "youtube_captions": "YouTube 자막 가능"
+        "youtube_captions": "YouTube 자막 가능",
+        "youtube_error_code": "YouTube 오류 {code}",
+        "youtube_error_embed_disabled": "업로더가 이 동영상의 임베딩을 허용하지 않아 여기에서 재생할 수 없습니다.",
+        "youtube_error_generic": "이 동영상을 임베디드 플레이어에서 불러올 수 없습니다.",
+        "youtube_error_html5": "이 동영상은 이 기기 또는 브라우저의 임베디드 플레이어에서 재생할 수 없습니다.",
+        "youtube_error_invalid_id": "이 동영상은 링크 또는 ID가 유효하지 않아 불러올 수 없습니다."
     },
     "nav": {
         "media": "미디어",

@@ -854,6 +854,7 @@
         "today": "Idag",
         "tokenizer_desc": "Tokenisering + lemmatisering för {l2}. Se hur text bryts ner i enskilda ord och deras grundformer.",
         "transcript_mode_desc": "Visa hela interaktiva transkriptet istället för undertexter synkroniserade med videon.",
+        "transcript_still_available": "Transkriptionen finns fortfarande tillgänglig nedan.",
         "translated_subtitles": "Översatt textning tillgänglig",
         "translating": "Översätter…",
         "translation_failed": "Översättningen misslyckades. Försök igen.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "förnyas automatiskt",
         "with_pro_you_can": "Med Pro kan du:",
         "you_are_pro": "Du är nu Pro!",
-        "youtube_captions": "YouTube-textning tillgänglig"
+        "youtube_captions": "YouTube-textning tillgänglig",
+        "youtube_error_code": "YouTube-fel {code}",
+        "youtube_error_embed_disabled": "Uppladdaren har inte tillåtit att den här videon bäddas in, så den kan inte spelas upp här.",
+        "youtube_error_generic": "Den här videon kunde inte laddas i den inbäddade spelaren.",
+        "youtube_error_html5": "Den här videon kan inte spelas upp i den inbäddade spelaren på den här enheten eller i den här webbläsaren.",
+        "youtube_error_invalid_id": "Den här videon kan inte laddas eftersom dess länk eller ID är ogiltigt."
     },
     "nav": {
         "media": "Media",

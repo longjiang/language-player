@@ -854,6 +854,7 @@
         "today": "Inniu",
         "tokenizer_desc": "Tocsainiú + léamú don {l2}. Féach conas a bhriseann téacs síos ina fhocail aonair agus ina bhfoirmeacha bunúsacha.",
         "transcript_mode_desc": "Taispeáin an athscríbhinn idirghníomhach iomlán in ionad fotheideal atá sioncronaithe leis an bhfíseán.",
+        "transcript_still_available": "Tá an athscríbhinn fós ar fáil thíos.",
         "translated_subtitles": "Fotheidil aistrithe ar fáil",
         "translating": "Ag aistriú…",
         "translation_failed": "Theip ar an aistriúchán. Bain triail eile as.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "athnuafaidh sé go huathoibríoch",
         "with_pro_you_can": "Le Pro, is féidir leat:",
         "you_are_pro": "Tá tú Pro anois!",
-        "youtube_captions": "Fotheidil YouTube ar fáil"
+        "youtube_captions": "Fotheidil YouTube ar fáil",
+        "youtube_error_code": "Earráid YouTube {code}",
+        "youtube_error_embed_disabled": "Níor cheadaigh an t-uaslódálaí an físeán seo a leabú, mar sin ní féidir é a sheinm anseo.",
+        "youtube_error_generic": "Níorbh fhéidir an físeán seo a lódáil sa seinnteoir leabaithe.",
+        "youtube_error_html5": "Ní féidir an físeán seo a sheinm sa seinnteoir leabaithe ar an ngléas nó sa bhrabhsálaí seo.",
+        "youtube_error_invalid_id": "Níorbh fhéidir an físeán seo a lódáil toisc go bhfuil a nasc nó a aitheantóir neamhbhailí."
     },
     "nav": {
         "media": "Meáin",

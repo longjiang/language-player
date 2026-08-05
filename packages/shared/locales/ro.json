@@ -854,6 +854,7 @@
         "today": "Astăzi",
         "tokenizer_desc": "Tokenizare + lematizare pentru {l2}. Vezi cum textul se descompune în cuvinte individuale și formele lor de bază.",
         "transcript_mode_desc": "Afișează transcrierea interactivă completă în loc de subtitrări sincronizate cu videoclipul.",
+        "transcript_still_available": "Transcrierea este în continuare disponibilă mai jos.",
         "translated_subtitles": "Subtitrări traduse disponibile",
         "translating": "Se traduce…",
         "translation_failed": "Traducerea a eșuat. Vă rugăm să încercați din nou.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "se va reînnoi automat",
         "with_pro_you_can": "Cu Pro, poți:",
         "you_are_pro": "Ești acum Pro!",
-        "youtube_captions": "Subtitrări YouTube disponibile"
+        "youtube_captions": "Subtitrări YouTube disponibile",
+        "youtube_error_code": "Eroare YouTube {code}",
+        "youtube_error_embed_disabled": "Persoana care a încărcat acest videoclip nu a permis încorporarea lui, așa că nu poate fi redat aici.",
+        "youtube_error_generic": "Acest videoclip nu a putut fi încărcat în playerul încorporat.",
+        "youtube_error_html5": "Acest videoclip nu poate fi redat în playerul încorporat pe acest dispozitiv sau browser.",
+        "youtube_error_invalid_id": "Acest videoclip nu poate fi încărcat deoarece linkul sau ID-ul său este invalid."
     },
     "nav": {
         "media": "Media",

@@ -854,6 +854,7 @@
         "today": "今日",
         "tokenizer_desc": "{l2}のトークン化とレンマ化。テキストがどのように個々の単語とその基本形に分解されるかを確認してください。",
         "transcript_mode_desc": "動画に同期した字幕ではなく、完全なインタラクティブトランスクリプトを表示します。",
+        "transcript_still_available": "トランスクリプトは引き続き下にあります。",
         "translated_subtitles": "翻訳字幕あり",
         "translating": "翻訳中…",
         "translation_failed": "翻訳に失敗しました。もう一度お試しください。",
@@ -881,7 +882,12 @@
         "will_auto_renew": "自動更新されます",
         "with_pro_you_can": "Proでは、次のことができます:",
         "you_are_pro": "あなたはプロになりました！",
-        "youtube_captions": "YouTube字幕あり"
+        "youtube_captions": "YouTube字幕あり",
+        "youtube_error_code": "YouTube エラー {code}",
+        "youtube_error_embed_disabled": "アップロードした人がこの動画の埋め込みを許可していないため、ここでは再生できません。",
+        "youtube_error_generic": "この動画を埋め込みプレーヤーで読み込めませんでした。",
+        "youtube_error_html5": "この動画は、この端末またはブラウザーの埋め込みプレーヤーでは再生できません。",
+        "youtube_error_invalid_id": "この動画はリンクまたはIDが無効なため読み込めません。"
     },
     "nav": {
         "media": "メディア",

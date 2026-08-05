@@ -854,6 +854,7 @@
         "today": "Tänään",
         "tokenizer_desc": "Tokenisaatio + lemmatisointi {l2}-kielelle. Katso, miten teksti jakautuu yksittäisiin sanoihin ja niiden perusmuotoihin.",
         "transcript_mode_desc": "Näytä koko interaktiivinen transkriptio synkronoitujen tekstitysten sijaan.",
+        "transcript_still_available": "Transkriptio on edelleen saatavilla alla.",
         "translated_subtitles": "Käännetty tekstitys saatavilla",
         "translating": "Käännetään…",
         "translation_failed": "Käännös epäonnistui. Yritä uudelleen.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "uusiutuu automaattisesti",
         "with_pro_you_can": "Pro-versiolla voit:",
         "you_are_pro": "Olet nyt Pro!",
-        "youtube_captions": "YouTube-tekstitykset saatavilla"
+        "youtube_captions": "YouTube-tekstitykset saatavilla",
+        "youtube_error_code": "YouTuben virhe {code}",
+        "youtube_error_embed_disabled": "Videon lataaja ei ole sallinut videon upottamista, joten sitä ei voi toistaa tässä.",
+        "youtube_error_generic": "Tätä videota ei voitu ladata upotetussa soittimessa.",
+        "youtube_error_html5": "Tätä videota ei voi toistaa upotetussa soittimessa tällä laitteella tai selaimella.",
+        "youtube_error_invalid_id": "Tätä videota ei voitu ladata, koska sen linkki tai tunnus on virheellinen."
     },
     "nav": {
         "media": "Media",

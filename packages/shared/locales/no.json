@@ -854,6 +854,7 @@
         "today": "I dag",
         "tokenizer_desc": "Tokenisering + lemmatisering for {l2}. Se hvordan tekst brytes ned i enkeltord og deres grunnformer.",
         "transcript_mode_desc": "Vis full interaktiv transkripsjon i stedet for undertekster synkronisert med videoen.",
+        "transcript_still_available": "Transkripsjonen er fortsatt tilgjengelig nedenfor.",
         "translated_subtitles": "Oversatt teksting tilgjengelig",
         "translating": "Oversetter…",
         "translation_failed": "Oversettelsen mislyktes. Vennligst prøv igjen.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "fornyes automatisk",
         "with_pro_you_can": "Med Pro kan du:",
         "you_are_pro": "Du er nå Pro!",
-        "youtube_captions": "YouTube-teksting tilgjengelig"
+        "youtube_captions": "YouTube-teksting tilgjengelig",
+        "youtube_error_code": "YouTube-feil {code}",
+        "youtube_error_embed_disabled": "Opplasteren har ikke tillatt at denne videoen bygges inn, så den kan ikke spilles av her.",
+        "youtube_error_generic": "Denne videoen kunne ikke lastes inn i den innebygde spilleren.",
+        "youtube_error_html5": "Denne videoen kan ikke spilles av i den innebygde spilleren på denne enheten eller nettleseren.",
+        "youtube_error_invalid_id": "Denne videoen kan ikke lastes inn fordi lenken eller ID-en er ugyldig."
     },
     "nav": {
         "media": "Media",

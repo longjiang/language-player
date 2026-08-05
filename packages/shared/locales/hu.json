@@ -854,6 +854,7 @@
         "today": "Ma",
         "tokenizer_desc": "Tokenizáció és lemmatizáció a következőhöz: {l2}. Lásd, hogyan bomlik le a szöveg egyes szavakra és azok alapformáira.",
         "transcript_mode_desc": "Teljes interaktív átirat megjelenítése a videóval szinkronizált feliratok helyett.",
+        "transcript_still_available": "Az átirat továbbra is elérhető lent.",
         "translated_subtitles": "Fordított feliratok elérhetők",
         "translating": "Fordítás…",
         "translation_failed": "A fordítás nem sikerült. Kérlek próbáld újra.",
@@ -881,7 +882,12 @@
         "will_auto_renew": "automatikusan megújul",
         "with_pro_you_can": "A Pro-val teheti:",
         "you_are_pro": "Mostantól Pro vagy!",
-        "youtube_captions": "YouTube feliratok elérhetők"
+        "youtube_captions": "YouTube feliratok elérhetők",
+        "youtube_error_code": "YouTube-hiba {code}",
+        "youtube_error_embed_disabled": "A feltöltő nem engedélyezte ennek a videónak a beágyazását, ezért itt nem játszható le.",
+        "youtube_error_generic": "Ezt a videót nem sikerült betölteni a beágyazott lejátszóban.",
+        "youtube_error_html5": "Ez a videó nem játszható le a beágyazott lejátszóban ezen az eszközön vagy böngészőben.",
+        "youtube_error_invalid_id": "Ez a videó nem tölthető be, mert a hivatkozása vagy azonosítója érvénytelen."
     },
     "nav": {
         "media": "Média",
