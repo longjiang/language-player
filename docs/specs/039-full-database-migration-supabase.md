@@ -349,7 +349,10 @@ language id; `owner` = Directus user id until the 5.7 remap).
    likes/watch history (Supabase), difficulty-band widening via
    `DIFFICULTY_PROFILE`, pool-size tiering, per-channel cap, cold-start seeds
    per category mode. The legacy SQL pipeline is retained as a fallback; the
-   old pipeline can be restored by flipping the wrapper functions.
+   old pipeline can be restored by flipping the wrapper functions. The same
+   day, `video_embeddings` gained an `l2` column (backfilled + before-insert
+   trigger) and per-language partial HNSW indexes replaced the single global
+   HNSW index, letting the neighbor query filter by `ve.l2` directly.
 
 ### WS-6 — Subscriptions & Payments
 

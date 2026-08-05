@@ -144,7 +144,12 @@ subtitle FULLTEXT search.
   later phase.
 - **Storage**: `video_embeddings(video_id, model, kind='metadata',
   embedding vector(1024))` with an HNSW cosine index. ~13 GB (vectors + index)
-  on the 50 GB disk.
+  on the 50 GB disk. As of 2026-08-04 the table also carries an `l2` text
+  column (backfilled from `youtube_videos`, auto-filled by a before-insert
+  trigger), and the single global HNSW index was replaced with per-language
+  partial HNSW indexes (`video_embeddings_hnsw_l2_*`) so vector search can be
+  scoped to one language instead of scanning the global 216-language neighbor
+  set (see `migrate_embedding_l2_indexes.py`).
 - **Coverage**: 100% of videos embedded (1,045,422/1,045,422), zero missing
   languages; verified by count and similarity spot-checks (e.g., Chinese drama
   episodes cluster at 0.96+ cosine similarity).
