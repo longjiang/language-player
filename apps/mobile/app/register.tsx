@@ -30,7 +30,7 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(email.trim(), password, firstName.trim(), lastName.trim());
-      router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+      router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}&first=1`);
     } catch (e: any) {
       setError(e.message || t('error.registration_failed'));
     } finally {

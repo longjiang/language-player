@@ -17,6 +17,14 @@ function tokenExpiry(token: string): number {
   }
 }
 
+/** Credentials arrive as form fields; `undefined` is serialized as the literal
+ * string "undefined", so normalize that (and "null"/blank) back to absent. */
+function cleanCredential(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed && trimmed !== 'undefined' && trimmed !== 'null' ? trimmed : undefined;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
@@ -66,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         token: { label: 'Token', type: 'text' },
         tokenHash: { label: 'Token Hash', type: 'text' },
+        type: { label: 'Type', type: 'text' },
         email: { label: 'Email', type: 'email' },
         accessToken: { label: 'Access Token', type: 'text' },
         refreshToken: { label: 'Refresh Token', type: 'text' },
@@ -73,21 +82,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials) return null;
 
+        const accessToken = cleanCredential(credentials.accessToken);
+        const refreshToken = cleanCredential(credentials.refreshToken);
+        const token = cleanCredential(credentials.token);
+        const tokenHash = cleanCredential(credentials.tokenHash);
+        const email = cleanCredential(credentials.email);
+        const type = cleanCredential(credentials.type);
+
         let data: any = null;
-        if (credentials.accessToken || credentials.refreshToken) {
+        if (accessToken || refreshToken) {
           const res = await fetch(`${PYTHON_API_URL}/auth/session`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              accessToken: credentials.accessToken ? String(credentials.accessToken) : undefined,
-              refreshToken: credentials.refreshToken ? String(credentials.refreshToken) : undefined,
+              ...(accessToken ? { accessToken } : {}),
+              ...(refreshToken ? { refreshToken } : {}),
             }),
           });
           if (!res.ok) return null;
           data = await res.json();
         } else {
-          const token = credentials.token ? String(credentials.token) : undefined;
-          const tokenHash = credentials.tokenHash ? String(credentials.tokenHash) : undefined;
           if (!token && !tokenHash) return null;
           const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
             method: 'POST',
@@ -95,24 +109,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             body: JSON.stringify({
               token,
               token_hash: tokenHash,
-              email: credentials.email ? String(credentials.email) : undefined,
+              email,
+              type,
             }),
           });
           if (!res.ok) return null;
           data = await res.json();
         }
 
-        const token = data?.token;
+        const sessionToken = data?.token;
         const user = data?.user;
-        if (!token || !user) return null;
+        if (!sessionToken || !user) return null;
 
         return {
           id: String(user.id),
           email: String(user.email),
           name: String(`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email),
-          accessToken: token,
+          accessToken: sessionToken,
           refreshToken: data?.refreshToken ?? null,
-          tokenExpiresAt: tokenExpiry(token),
+          tokenExpiresAt: tokenExpiry(sessionToken),
         };
       },
     }),

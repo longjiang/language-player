@@ -7,6 +7,8 @@ import { signIn } from 'next-auth/react';
 import { useT } from '@/hooks/use-t';
 import { buttonVariants } from '@/components/ui/button';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { getExploreUrl } from '@/lib/last-language-pair';
+import { logwarn } from '@/lib/logger';
 
 export default function ConfirmEmailPage() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function ConfirmEmailPage() {
     const hashToken = hash.get('token') ?? '';
     const token = queryToken || hashToken || undefined;
     const tokenHash = query.get('token_hash') ?? hash.get('token_hash') ?? undefined;
+    const type = query.get('type') ?? hash.get('type') ?? undefined;
     const email = query.get('email') ?? hash.get('email');
     // Supabase sometimes puts the verification JWT in ?token=. Treat a JWT
     // as an access token so we can exchange it for a full session.
@@ -41,20 +44,27 @@ export default function ConfirmEmailPage() {
 
     (async () => {
       try {
-        const result = await signIn('link-token', {
-          tokenHash,
-          token,
-          email: email ?? undefined,
-          accessToken: accessToken ?? undefined,
-          refreshToken: refreshToken ?? undefined,
-          redirect: false,
-        });
+        // Only include fields that are actually present. NextAuth serializes
+        // `undefined` values as the literal string "undefined", which would
+        // otherwise make authorize() treat them as real credentials.
+        const credentials: Record<string, string> = {};
+        if (tokenHash) credentials.tokenHash = tokenHash;
+        if (token) credentials.token = token;
+        if (email) credentials.email = email;
+        if (accessToken) credentials.accessToken = accessToken;
+        if (refreshToken) credentials.refreshToken = refreshToken;
+        if (type) credentials.type = type;
+
+        const result = await signIn('link-token', { ...credentials, redirect: false });
 
         if (result?.error) {
+          logwarn(
+            `[LP Web] Confirm link failed: error=${result.error} code=${result.code ?? ''} status=${result.status ?? ''}`
+          );
           setError(t('error.invalid_verification_link'));
         } else if (result?.ok) {
           window.history.replaceState({}, '', '/auth/confirm');
-          router.replace('/language-select');
+          router.replace(getExploreUrl());
           router.refresh();
           return;
         } else {
