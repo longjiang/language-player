@@ -20,6 +20,7 @@ interface SubscriptionInfo {
 export function useSubscription() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const token = (session?.user as any)?.accessToken as string | undefined;
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -29,7 +30,9 @@ export function useSubscription() {
       return;
     }
     let cancelled = false;
-    fetch(`${PYTHON_API_URL}/user-subscription?user_id=${userId}`)
+    fetch(`${PYTHON_API_URL}/user-subscription`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled) return;
@@ -38,7 +41,7 @@ export function useSubscription() {
       })
       .catch(() => { if (!cancelled) setLoaded(true); });
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, token]);
 
   const planType = sub?.type ?? 'free';
   const isLifetime = planType === 'lifetime';

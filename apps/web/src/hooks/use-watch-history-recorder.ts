@@ -45,7 +45,7 @@ export function useWatchHistoryRecorder(
       .then((data) => {
         if (cancelled) return;
         const userId = data?.user?.id ?? null;
-        const token = data?.user?.directusToken ?? null;
+        const token = data?.user?.accessToken ?? null;
         setSession({ userId, token, loaded: true });
         log('[watch-history] session loaded', { hasUserId: !!userId, hasToken: !!token });
       })

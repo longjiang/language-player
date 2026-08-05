@@ -25,7 +25,7 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
       baseURL: PYTHON_API_URL,
       timeout: 15000,
       getAccessToken() {
-        const token = (sessionRef.current?.user as any)?.directusToken as string | undefined;
+        const token = (sessionRef.current?.user as any)?.accessToken as string | undefined;
         return Promise.resolve(token ?? null);
       },
       onError(error) {

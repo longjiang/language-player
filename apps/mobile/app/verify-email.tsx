@@ -6,11 +6,11 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { e2e } from '@/lib/e2e';
 import { logwarn } from '@/lib/logger';
 
-type VerifyState = 'verifying' | 'success' | 'error';
+type VerifyState = 'verifying' | 'success' | 'error' | 'check-email';
 
 export default function VerifyEmailScreen() {
   const t = useT();
-  const { token } = useLocalSearchParams<{ token: string }>();
+  const { token, email } = useLocalSearchParams<{ token?: string; email?: string }>();
   const [state, setState] = useState<VerifyState>('verifying');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const verifiedRef = useRef(false);
@@ -20,8 +20,12 @@ export default function VerifyEmailScreen() {
     verifiedRef.current = true;
 
     if (!token) {
-      setState('error');
-      setErrorMsg(t('error.invalid_verification_link') || 'Invalid verification link');
+      if (email) {
+        setState('check-email');
+      } else {
+        setState('error');
+        setErrorMsg(t('error.invalid_verification_link') || 'Invalid verification link');
+      }
       return;
     }
 
@@ -77,6 +81,30 @@ export default function VerifyEmailScreen() {
             {...e2e('verify-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
+              {t('action.back_to_login')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (state === 'check-email') {
+    return (
+      <View className="flex-1 justify-center bg-background p-6">
+        <View className="rounded-2xl border border-border bg-card p-8 items-center">
+          <Text className="text-5xl mb-4">📬</Text>
+          <Text className="text-xl font-bold text-foreground text-center">
+            {t('title.check_email')}
+          </Text>
+          <Text className="text-muted-foreground text-sm text-center mt-2">
+            {email}
+          </Text>
+          <Pressable
+            className="mt-6 bg-primary px-6 py-3 rounded-lg"
+            onPress={() => router.replace('/login')}
+          >
+            <Text className="text-primary-foreground font-medium text-sm">
               {t('action.back_to_login')}
             </Text>
           </Pressable>

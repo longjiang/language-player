@@ -5,10 +5,13 @@ export interface ApiClientConfig {
   baseURL: string;
   timeout?: number;
   getAccessToken?: () => Promise<string | null>;
+  /** Called on 401 to mint a fresh access token (e.g. /auth/refresh). */
+  refreshAccessToken?: () => Promise<string | null>;
   onError?: (error: ApiError) => void;
 }
 
 let clientInstance: AxiosInstance | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 export function createApiClient(config: ApiClientConfig): AxiosInstance {
   const instance = axios.create({
@@ -31,7 +34,24 @@ export function createApiClient(config: ApiClientConfig): AxiosInstance {
   // Normalize errors
   instance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+      const original = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
+      if (
+        error.response?.status === 401 &&
+        config.refreshAccessToken &&
+        original &&
+        !original._retry
+      ) {
+        original._retry = true;
+        refreshPromise ??= config
+          .refreshAccessToken()
+          .finally(() => { refreshPromise = null; });
+        const newToken = await refreshPromise;
+        if (newToken) {
+          original.headers = { ...(original.headers ?? {}), Authorization: `Bearer ${newToken}` };
+          return instance(original);
+        }
+      }
       const apiError: ApiError = {
         code: error.response?.status?.toString() ?? 'NETWORK_ERROR',
         message: error.response?.data?.message ?? error.message,

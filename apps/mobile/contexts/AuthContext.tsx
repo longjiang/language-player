@@ -7,6 +7,28 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 
 let initialized = false;
 
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const refreshToken = await SecureStore.getItemAsync('authRefreshToken');
+    if (!refreshToken) return null;
+    const res = await fetch(`${PYTHON_API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.token) return null;
+    await SecureStore.setItemAsync('authToken', data.token);
+    if (data.refreshToken) {
+      await SecureStore.setItemAsync('authRefreshToken', data.refreshToken);
+    }
+    return data.token;
+  } catch {
+    return null;
+  }
+}
+
 export function initApiClient() {
   if (initialized) return;
   initialized = true;
@@ -14,6 +36,7 @@ export function initApiClient() {
   createApiClient({
     baseURL: PYTHON_API_URL,
     getAccessToken: () => SecureStore.getItemAsync('authToken'),
+    refreshAccessToken,
   });
 }
 
@@ -31,7 +54,7 @@ interface AuthContextValue {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<User>;
   logout: () => Promise<void>;
 }
 
@@ -45,7 +68,7 @@ export function useAuth(): AuthContextValue {
 
 // ── Flask Auth Helpers ──────────────────────
 
-async function flaskAuthLogin(email: string, password: string): Promise<{ token: string; user: User }> {
+async function flaskAuthLogin(email: string, password: string): Promise<{ token: string; refreshToken: string | null; user: User }> {
   const res = await fetch(`${PYTHON_API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,6 +81,7 @@ async function flaskAuthLogin(email: string, password: string): Promise<{ token:
   const json = await res.json();
   return {
     token: json.token,
+    refreshToken: json.refreshToken ?? null,
     user: json.user,
   };
 }
@@ -105,8 +129,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { token, user } = await flaskAuthLogin(email, password);
+    const { token, refreshToken, user } = await flaskAuthLogin(email, password);
     await SecureStore.setItemAsync('authToken', token);
+    if (refreshToken) await SecureStore.setItemAsync('authRefreshToken', refreshToken);
     await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
     setToken(token);
     setUser(user);
@@ -114,18 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const user = await flaskAuthRegister(email, password, firstName, lastName);
-    // After registration, log in to get token
-    const auth = await flaskAuthLogin(email, password);
-    await SecureStore.setItemAsync('authToken', auth.token);
-    await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
-    setToken(auth.token);
-    setUser(user);
-    initApiClient();
+    // GoTrue requires email confirmation before login (mailer_autoconfirm=false).
+    // The caller routes the user to the verification screen.
+    return await flaskAuthRegister(email, password, firstName, lastName);
   }, []);
 
   const logout = useCallback(async () => {
     await SecureStore.deleteItemAsync('authToken');
+    await SecureStore.deleteItemAsync('authRefreshToken');
     await SecureStore.deleteItemAsync('userInfo');
     setToken(null);
     setUser(null);

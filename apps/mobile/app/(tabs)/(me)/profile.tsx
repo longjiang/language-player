@@ -127,7 +127,9 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!user?.id) { setSubLoading(false); return; }
     setSubLoading(true);
-    fetch(`${PYTHON_API_URL}/user-subscription?user_id=${user.id}`)
+    fetch(`${PYTHON_API_URL}/user-subscription`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         setSub(data?.id ? data : null);

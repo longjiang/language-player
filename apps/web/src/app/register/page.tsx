@@ -49,7 +49,7 @@ export default function RegisterPage() {
         throw new Error(t('error.create_account_failed'));
       }
 
-      const verifyRes = await fetch(`${PYTHON_API_URL}/verification_email`, {
+      const verifyRes = await fetch(`${PYTHON_API_URL}/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -73,10 +73,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${PYTHON_API_URL}/verification_email/verify`, {
+      const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, token: code }),
       });
 
       if (!res.ok) {
