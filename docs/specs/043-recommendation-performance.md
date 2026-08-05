@@ -23,10 +23,10 @@ for 20 videos, dominated by two things:
    `l2` lives on `youtube_videos`, not on `user_watch_history`.
 
 This spec defines a two-phase plan: **Phase A** — behavior-neutral performance fixes
-(denormalize `l2`, cache fallback neighbors, keep-warm), and **Phase B** — quality fixes
-that change feed behavior and are therefore **gated on product decisions** (ef tuning, and
-the discovery/category mismatch that is the *root cause* of both jon's fallback and his
-empty high-level feeds).
+(denormalize `l2`, cache fallback neighbors; keep-warm script delivered but **deferred** —
+real traffic warms the index), and **Phase B** — quality fixes that change feed behavior
+and are therefore **gated on product decisions** (ef tuning, and the discovery/category
+mismatch that is the *root cause* of both jon's fallback and his empty high-level feeds).
 
 All numbers below were verified against the live database on 2026-08-05
 (`verify_recommendation_assessment.py`, `verify_fallback_source.py`, and prior
@@ -112,12 +112,16 @@ semantics (top 500 EN by date). Re-aligns with the legacy Directus schema that h
 Rejected alternatives (verified): recent-500-filter-in-Python (14 vs 143 EN ids — behavior
 regression), hash semi-join with current indexes (~4.2 s — worse).
 
-### R3 — Keep-warm the HNSW indexes *(perf, secondary)*
-The warm/cold variance is real (ef=200: ~93 ms warm vs 1.4–4.8 s cold). But the EN index
-alone is 1.2 GB and all per-language indexes total ~14 GB, so Supabase will evict.
-Keep-warm only helps a handful of active languages and must be a **periodic background
-task** (not request-path, not one-shot app-start). Optionally drive it off the most-used
-languages.
+### R3 — Keep-warm the HNSW indexes *(deferred 2026-08-05 — revisit if cold first-hits observed)*
+The warm/cold variance is real (ef=500: ~150–550 ms warm vs ~0.7–3.7 s cold). But at
+current scale (~16 concurrent users), **real traffic already keeps the active languages'
+hot index pages resident** — every feed generation runs the HNSW scan, so R3 adds nothing
+during peak use. Its only value is the first request after an idle gap (overnight / zero
+traffic) or a deploy/restart — one slow hit, then warm. The script
+(`scripts/keep_warm_hnsw.py`) is delivered and tested, but **not scheduled**; enable it
+(one cron line for the top 1–2 languages) only if cold first-hits are observed. Constraints
+if enabled: periodic background task, NOT request-path, NOT one-shot app-start, NOT per
+gunicorn worker; Supabase eviction means it only stabilizes a handful of languages.
 
 ### R4 — Raise `ef_search` *(recall; implemented — `VECTOR_EF_SEARCH = 500`, 2026-08-05)*
 `ef` is the effective candidate-pool size (pgvector 0.8.2 returns ≈ `ef` rows; hard cap
@@ -277,15 +281,17 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
 4. Caveat: if R4 later changes `ef`, the cache key must include `ef` (or the cache is
    invalidated on deploy).
 
-#### Step 3 — R3: keep-warm (background, active languages only)
-1. Add a small scheduled task (e.g., an APScheduler job or a cron script; NOT a per-worker
-   thread in every gunicorn worker, NOT in the request path).
-2. Every N minutes, for the top active languages (by request volume or `_POOL_COUNT_CACHE`
-   activity), issue the cold-start seed HNSW query at the current `ef`.
-3. **Verify**: measure the same query cold-after-idle vs right-after-warm; confirm the
-   first-request variance collapses for those languages.
-4. Keep it optional/disable-able; Supabase eviction means this only stabilizes a few
-   languages at a time.
+#### Step 3 — R3: keep-warm (deferred — script delivered, not scheduled)
+Script `scripts/keep_warm_hnsw.py` committed and tested (warms a language's discovery +
+music modes via the seed-vector HNSW query at the current `ef`). **Deferred on 2026-08-05**:
+at ~16 concurrent users, natural traffic keeps the active language warm, and cold cost is
+bounded to one first-hit per idle/deploy gap. Enable only if cold first-hits are observed:
+1. Add a cron entry for the top 1–2 languages:
+   `*/5 * * * * cd <server> && .venv/bin/python3.10 -u scripts/keep_warm_hnsw.py en`
+2. Every N minutes the task issues the seed HNSW query per language+mode (NOT request-path,
+   NOT one-shot app-start, NOT per gunicorn worker).
+3. **Verify** (when enabled): measure the same query cold-after-idle vs right-after-warm;
+   confirm first-request variance collapses for those languages.
 
 ### Phase B — Quality (product-gated)
 
@@ -337,10 +343,11 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
   `l2` on conflict anyway.
 - **R1 cache correctness**: cache key must include `ef` if R4 changes it; TTL must match
   `_CACHE_TTL_SEC` so a stale neighbor list never outlives the page cache.
-- **R3 multi-worker**: a keep-warm thread per gunicorn worker multiplies work; run it once
-  (single worker role or cron) and tolerate it being best-effort.
-- **R4 cold cost**: ef=500 cold ≈ 4.3–8.6 s — do not raise ef before R3, and never on the
-  request path.
+- **R3 (if enabled)**: run keep-warm once (cron or single worker role), never per gunicorn
+  worker; best-effort — Supabase eviction limits it to a handful of languages.
+- **R4 cold cost**: ef=500 cold ≈ 0.7–3.7 s (ef=1000 ≈ 4–8 s). R3 (deferred) would tame the
+  cold tail; without it, first-hits after idle/deploy pay the cold scan — bounded to one per
+  cache window by the 5-min feed cache.
 - **R6 changes feed content** (not a reversal of the "discovery = no music" contract —
   the hard filter stays): users with enough non-music signal get their own non-music taste
   instead of the seed's. Pure-music users still fall back to the seed. Ship behind the
@@ -350,8 +357,10 @@ users (verified plan: pure index scan of ~143 rows vs 4188-lookup join).
 
 1. For users with < 3 non-music videos, should discovery fall back to the seed (primary
    R6) or to the soft-penalty variant that surfaces ranked-down music (product option)?
-2. Is `ef=500` acceptable once keep-warm is live (R4)?
-3. Which languages should keep-warm prioritize (R3) — request-volume-driven or static list?
+2. Should `ef=1000` ever be enabled for single-channel diversity (the only remaining L7
+   fill case, currently 3/17 for 1711239010)?
+3. If R3 keep-warm is ever enabled, which languages to prioritize — request-volume-driven
+   or static list?
 4. Should R1's cache also cover the *first-pass* HNSW for anonymous/no-signal users
    (same seed vector), or is the fallback path enough?
 
