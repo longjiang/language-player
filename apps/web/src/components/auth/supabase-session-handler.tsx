@@ -28,8 +28,19 @@ export default function SupabaseSessionHandler() {
     const refreshToken = hash.get('refresh_token');
     if (!accessToken && !refreshToken) return;
 
+    const type = hash.get('type');
+
     // Drop the fragment so it doesn't linger or get re-processed.
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
+
+    // Password-recovery links (type=recovery) are handled by the password-reset
+    // page: Flask /auth/password-reset consumes the recovery JWT directly, so we
+    // do NOT log the user in through NextAuth here (that would create a normal
+    // auth session instead of a password-change flow).
+    if (type === 'recovery' && accessToken) {
+      router.replace(`/password-reset?token=${encodeURIComponent(accessToken)}`);
+      return;
+    }
 
     (async () => {
       try {
