@@ -3,14 +3,11 @@
 import { Suspense } from 'react';
 import { useDictionaryContext, DictionaryProvider } from '@/providers/dictionary-provider';
 import { useLanguage } from '@/providers/language-provider';
-import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
-import { buildEntryRoute } from '@/lib/entry-route';
-import { decomposeWordId } from '@langplayer/shared';
+import { buildEntryRouteWithList, updateCurrentEntryId } from '@/lib/word-list-navigation';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
-import type { SavedLexicalItemRecord } from '@langplayer/shared';
 
 // ── Inner layout (needs context, so must be child of DictionaryProvider) ──
 
@@ -26,22 +23,17 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
     setMobileSidebarOpen,
   } = useDictionaryContext();
 
-  const { getSavedWords, loaded: savedLoaded } = useSavedWordsContext();
-
   const handleResultClick = (item: Wlni) => {
+    // Legacy saved words with an unresolvable id fall back to a search.
+    if (item.dictionaryId === 'unknown') {
+      router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(item.head)}`);
+      return;
+    }
     setDetailHead(item.head);
     setMobileSidebarOpen(false);
-    const route = buildEntryRoute(l1.code, l2.code, item.dictionaryId, item.entryId);
-    router.push(route);
-  };
-
-  const handleSavedWordClick = (word: SavedLexicalItemRecord) => {
-    const decomposed = decomposeWordId(word.id, l2.code);
-    if (!decomposed) return;
-    setDetailHead(word.forms[0] ?? '');
-    setMobileSidebarOpen(false);
-    const route = buildEntryRoute(l1.code, l2.code, decomposed.dict, decomposed.id);
-    router.push(route);
+    // Navigate within the same source list so the sidebar stays available.
+    updateCurrentEntryId(item.id);
+    router.push(buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id));
   };
 
   return (
@@ -62,12 +54,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
           onOpenChange={setMobileSidebarOpen}
           sidebarOpen={sidebarOpen}
           source={sidebarSource}
-          savedLoaded={savedLoaded}
-          getSavedWords={getSavedWords}
-          l1Code={l1.code}
-          l2Code={l2.code}
           onResultClick={handleResultClick}
-          onSavedWordClick={handleSavedWordClick}
         />
       </div>
     </div>

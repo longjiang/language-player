@@ -16,6 +16,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry } from '@langplayer/shared';
+import type { WordListNavItem, WordListNavSource } from '@/lib/word-list-navigation';
 
 // ── Recent searches (localStorage) ──────────
 
@@ -36,11 +37,13 @@ function saveRecent(l2Code: string, term: string) {
 }
 
 // ── Sidebar content type ─────────────────────
+// The sidebar shows the word list the user navigated to the current entry
+// from. It's set by the entry page from the URL (?listCurrent= + stored nav)
+// and is `none` everywhere else — there is no saved-words fallback.
 
 export type SidebarSource =
-  | { kind: 'saved' }
-  | { kind: 'results'; items: DictionaryEntry[] }
-  | { kind: 'wordlist'; items: { head: string; dictionaryId: string; entryId: string; id: string; pronunciation?: string; definition?: string }[]; currentId: string };
+  | { kind: 'none' }
+  | { kind: 'list'; items: WordListNavItem[]; currentId?: string; source: WordListNavSource };
 
 // ── Context shape ────────────────────────────
 
@@ -107,7 +110,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecent(l2.code));
 
   const [cameFromSearch, setCameFromSearch] = useState(false);
-  const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'saved' });
+  const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'none' });
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [detailHead, setDetailHead] = useState<string | null>(null);
@@ -122,7 +125,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setError(null);
     setSearchedText('');
     setCameFromSearch(false);
-    setSidebarSource({ kind: 'saved' });
+    setSidebarSource({ kind: 'none' });
     setMobileSidebarOpen(false);
     setDetailHead(null);
     searchedRef.current = false;
@@ -145,7 +148,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       setError(null);
       setSearchedText('');
       setCameFromSearch(false);
-      setSidebarSource({ kind: 'saved' });
+      setSidebarSource({ kind: 'none' });
       setMobileSidebarOpen(false);
       setDetailHead(null);
     }
@@ -206,7 +209,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setSearchedText('');
     setCameFromSearch(false);
     setDetailHead(null);
-    setSidebarSource({ kind: 'saved' });
+    setSidebarSource({ kind: 'none' });
     searchedRef.current = false;
     const params = new URLSearchParams(searchParams.toString());
     params.delete('q');
