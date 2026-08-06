@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -82,6 +83,7 @@ export function WordListSidebar({
             item={item}
             l1Code={l1Code}
             l2Code={l2Code}
+            isActive={item.id === source.currentId}
             onOpen={onResultClick}
           />
         ))}
@@ -100,11 +102,14 @@ function SidebarEntryCard({
   item,
   l1Code,
   l2Code,
+  isActive,
   onOpen,
 }: {
   item: WordListNavItem;
   l1Code: string;
   l2Code: string;
+  /** Highlight the card for the entry currently being viewed. */
+  isActive: boolean;
   onOpen: (item: WordListNavItem) => void;
 }) {
   const router = useRouter();
@@ -118,19 +123,18 @@ function SidebarEntryCard({
     return () => { cancelled = true; };
   }, [item.id, item.head, l1Code, l2Code]);
 
-  // Still loading — show the head with a spinner.
+  let content: ReactNode;
   if (entry === undefined) {
-    return (
+    // Still loading — show the head with a spinner.
+    content = (
       <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
         <span className="text-sm font-medium text-muted-foreground" lang={l2Code}>{item.head}</span>
         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
       </div>
     );
-  }
-
-  // Unresolvable word — clickable head that opens a dictionary search.
-  if (!entry) {
-    return (
+  } else if (!entry) {
+    // Unresolvable word — clickable head that opens a dictionary search.
+    content = (
       <button
         type="button"
         onClick={() => router.push(`/${l1Code}/${l2Code}/dictionary?q=${encodeURIComponent(item.head)}`)}
@@ -140,17 +144,24 @@ function SidebarEntryCard({
         {item.head}
       </button>
     );
+  } else {
+    content = (
+      <DictionaryEntryCard
+        entry={entry}
+        variant="compact"
+        l2Code={l2Code}
+        l1Code={l1Code}
+        saveContext={{ form: item.head, text: item.head, textTitle: 'Dictionary' }}
+        onClick={() => onOpen(item)}
+      />
+    );
   }
 
-  return (
-    <DictionaryEntryCard
-      entry={entry}
-      variant="compact"
-      l2Code={l2Code}
-      l1Code={l1Code}
-      saveContext={{ form: item.head, text: item.head, textTitle: 'Dictionary' }}
-      onClick={() => onOpen(item)}
-    />
+  // Highlight the entry currently being viewed.
+  return isActive ? (
+    <div className="rounded-lg ring-2 ring-primary">{content}</div>
+  ) : (
+    content
   );
 }
 
