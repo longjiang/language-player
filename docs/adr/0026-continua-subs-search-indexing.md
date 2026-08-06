@@ -328,7 +328,8 @@ table, no new extension dependency (vs PGroonga), and it reuses the FTS/GIN
 machinery SPEC-044 already validated for word-based languages. The main
 remaining risk is planner behavior at full continua scale; it is mitigated by
 the bounded walk + GIN fallback and the validation gates in
-[SPEC-045](../specs/045-continua-subs-search-ngram-tsv.md).
+[SPEC-044 Part 2](../specs/044-subs-search-db-optimizations.md#part-2--continua-n-gram-token-index)
+(SPEC-045 was merged into SPEC-044 on 2026-08-05).
 
 ## Consequences / next steps
 
@@ -341,4 +342,6 @@ the bounded walk + GIN fallback and the validation gates in
   `对不起`, `峥嵘`, `绌`, `私`, `日本`) and require uncached p95 < 1 s.
 - Update SPEC-044's verification table (its "Chinese ~0.4s" claim is only
   valid for 3+ char terms) and rewrite ARCH-004's backend section.
-- Implementation plan and validation gates are tracked in SPEC-045.
+- Implementation plan and validation gates are tracked in
+  [SPEC-044 Part 2](../specs/044-subs-search-db-optimizations.md)
+  (formerly SPEC-045, merged 2026-08-05).
