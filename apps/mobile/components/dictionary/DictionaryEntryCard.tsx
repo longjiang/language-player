@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { formatProficiencyLevel, primaryScale } from '@langplayer/shared';
+import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
@@ -75,9 +75,9 @@ export function DictionaryEntryCard({
 
   const scale = primaryScale(l2Code);
   // Format each level with its own scale so HSK badges show the year/version
-  // (e.g. "HSK 2025 3"); other scales use the language's primary exam scale.
+  // (e.g. "HSK:2025 3"); Chinese shows only HSK levels, other languages all.
   const formattedLevels = (entry.levels ?? [])
-    .filter((l) => l.numeric != null)
+    .filter((l) => l.numeric != null && shouldShowLevel(l, l2Code))
     .map((l) => formatProficiencyLevel(l, scale));
   const isFull = variant === 'full';
 

@@ -158,6 +158,21 @@ export function formatProficiencyLevel(
   };
 }
 
+/** Whether a level uses an HSK scale (any version). */
+export function isHskScale(scale: string): boolean {
+  return scale === 'hsk_2010' || scale === 'hsk_2025';
+}
+
+/**
+ * Whether a level should be shown for the given L2. Chinese shows only HSK
+ * levels (old + new HSK); every other language shows all level scales.
+ * Handles BCP 47 subtags (zh-Hans → zh).
+ */
+export function shouldShowLevel(level: { scale: string }, l2Code: string): boolean {
+  const base = l2Code.split('-')[0]!.toLowerCase();
+  return base !== 'zh' || isHskScale(level.scale);
+}
+
 /**
  * Get the display label for a numeric level (1–7) in a given scale.
  *
