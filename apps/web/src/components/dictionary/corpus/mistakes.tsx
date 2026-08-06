@@ -65,7 +65,8 @@ export function Mistakes({ word, highlightForms = [], highlightEntryIds = [] }: 
                 <TokenizedText
                   text={`${mistake.left ?? ''}${word}${mistake.right ?? ''}`}
                   l2Code="zh"
-                  textScale={0}
+                  // 1rem base, scaled by the user's zoom setting
+                  textScale={1}
                   leading="none"
                   highlightSaved={false}
                   highlightForms={highlightForms}

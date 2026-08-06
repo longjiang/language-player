@@ -528,7 +528,7 @@ export function ReaderPanel({
                   {/* State 3: no blocks yet — fallback */}
                   {!blocks && text && (
                     <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
-                      <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} selectionDictionary />
+                      <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1} context={ctx} selectionDictionary />
                     </TextActionMenu>
                   )}
                 </div>

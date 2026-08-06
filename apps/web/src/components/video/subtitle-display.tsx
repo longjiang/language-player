@@ -295,7 +295,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               <TokenizedText
                 text={activeLine.line}
                 l2Code={l2Code}
-                textScale={1.5 * textZoomFactor}
+                textScale={1.5}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
@@ -358,7 +358,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 <TokenizedText
                   text={line.l2Line}
                   l2Code={l2Code}
-                  textScale={0.875 * textZoomFactor}
+                  textScale={1}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
