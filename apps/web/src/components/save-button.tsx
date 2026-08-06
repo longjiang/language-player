@@ -7,13 +7,14 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { isWordSaved } from '@langplayer/shared';
+import { isInflectable, isWordSaved } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { dedupeSearchTerms } from '@/lib/mutually-exclusive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 
-/** Languages that have a Python inflection endpoint. */
+/** Python inflection endpoints per language (membership is decided by
+ *  @langplayer/shared's isInflectable()). */
 const INFLECT_ENDPOINTS: Record<string, string> = {
   ja: '/inflect-japanese',
   ko: '/inflect-korean',
@@ -30,7 +31,7 @@ const INFLECT_ENDPOINTS: Record<string, string> = {
 async function fetchInflectedForms(head: string, l2Code: string): Promise<string[]> {
   const base = baseCode(l2Code);
   const endpoint = INFLECT_ENDPOINTS[base];
-  if (!endpoint) return [head];
+  if (!isInflectable(base) || !endpoint) return [head];
 
   try {
     const res = await fetch(

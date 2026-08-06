@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
+import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
 import { BookOpen, Film, Binary, Sparkles, ImageIcon, Library } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
+import { baseCode } from '@/lib/language-data';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -82,33 +83,43 @@ export function DictionaryEntryTabs({
   // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
   const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
+  // Only languages with an inflection endpoint get the Conjugations tab
+  // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
+  const hasInflections = isInflectable(baseCode(l2Code));
+  const inflectionsTab = { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> };
+
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
+        ...(hasInflections ? [inflectionsTab] : []),
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
       ]
     : [
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
         { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
+        ...(hasInflections ? [inflectionsTab] : []),
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
       ];
+
+  // If the language has no inflections but the (possibly controlled) tab is
+  // still 'inflections' — e.g. navigating from a ja entry to a zh entry on the
+  // same detail page — fall back so the panel never renders empty.
+  const effectiveTab = !hasInflections && tab === 'inflections' ? (showDefinitionTab ? 'word' : 'examples') : tab;
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <TabbedPanel
         tabs={tabs}
-        activeTab={tab}
+        activeTab={effectiveTab}
         onTabChange={handleTabChange}
         className={embedded ? 'rounded-none border-0 bg-transparent' : 'shadow-sm'}
         contentClassName={embedded ? 'px-0 pt-4' : 'px-6 pt-4 pb-6'}
       >
-        {tab === 'word' && (
+        {effectiveTab === 'word' && (
           <DictionaryEntryCard
             entry={entry}
             variant="full"
@@ -119,13 +130,13 @@ export function DictionaryEntryTabs({
             onClick={onCardClick}
           />
         )}
-        {tab === 'deepseek' && (
+        {effectiveTab === 'deepseek' && (
           <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
         )}
         {/* Prefetch strategy: Examples/Images/Inflections stay mounted (hidden)
             so their fetches start as soon as the tabs mount or the entry changes.
             Switching tabs only toggles visibility, so nothing is loaded twice. */}
-        <div className={tab === 'examples' ? '' : 'hidden'}>
+        <div className={effectiveTab === 'examples' ? '' : 'hidden'}>
           <SubsSearchResults
             term={searchTermString}
             headTerm={headTerm}
@@ -135,7 +146,7 @@ export function DictionaryEntryTabs({
             embedded
           />
         </div>
-        <div className={tab === 'images' ? '' : 'hidden'}>
+        <div className={effectiveTab === 'images' ? '' : 'hidden'}>
           <ImageSearchResults
             term={entry.head}
             l2Code={l2Code}
@@ -145,10 +156,10 @@ export function DictionaryEntryTabs({
             contextForm={contextForm}
           />
         </div>
-        <div className={tab === 'inflections' ? '' : 'hidden'}>
+        <div className={effectiveTab === 'inflections' ? '' : 'hidden'}>
           <InflectionTable head={entry.head} l2Code={l2Code} embedded />
         </div>
-        <div className={tab === 'corpus' ? '' : 'hidden'}>
+        <div className={effectiveTab === 'corpus' ? '' : 'hidden'}>
           <CorpusPanel
             word={entry.head}
             l2Code={l2Code}

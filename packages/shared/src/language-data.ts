@@ -38,3 +38,22 @@ const CONTINUA_SET: ReadonlySet<string> = new Set(CONTINUA_LANGUAGES);
 export function isContinua(code: string): boolean {
   return CONTINUA_SET.has(code.split('-')[0]!.toLowerCase());
 }
+
+/**
+ * Languages with a Python inflection/conjugation backend endpoint
+ * (/inflect-japanese, /inflect-korean, /inflect-pattern, /inflect-pymorphy).
+ * All other languages (Chinese, Thai, Vietnamese, …) are isolating — they get
+ * no inflection UI and search only uses the head + script variants.
+ */
+export const INFLECTABLE_LANGUAGES: readonly string[] = [
+  'ja', 'ko', 'en', 'de', 'it', 'es', 'fr', 'nl', 'ru', 'uk',
+];
+
+const INFLECTABLE_SET: ReadonlySet<string> = new Set(INFLECTABLE_LANGUAGES);
+
+/** True when a language has an inflection/conjugation backend endpoint
+ *  (ja, ko, en, de, it, es, fr, nl, ru, uk). False for isolating languages
+ *  like Chinese, Thai, Vietnamese. Handles BCP 47 subtags (zh-Hans → zh). */
+export function isInflectable(code: string): boolean {
+  return INFLECTABLE_SET.has(code.split('-')[0]!.toLowerCase());
+}
