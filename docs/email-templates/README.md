@@ -51,11 +51,11 @@ URLs.
 | [`verification-method-added.html`](./verification-method-added.html) | Verification method added | `A new verification method was added to your account` | Branded |
 | [`verification-method-removed.html`](./verification-method-removed.html) | Verification method removed | `A verification method was removed from your account` | Branded |
 
-> **Status note:** the 12 non-confirm templates were branded here (SPEC-046
-> purple, README-consistent design) but are **not yet applied to the live
-> project**. The live templates are still Supabase defaults (see
-> `_auth-config-mailer.json`). Paste the HTML from each file into
-> **Authentication → Email Templates** to deploy them.
+> **Status note:** all 12 non-confirm templates are branded (SPEC-046 purple,
+> README-consistent design) and **have been deployed to the live project**
+> (2026-08-05) via the Management API. The live content matches these files —
+> re-exporting with `tmp/export_email_templates.py` overwrites them with the
+> live values (they should stay identical). Subjects remain Supabase defaults.
 
 `_auth-config-mailer.json` is the raw Management API dump of every `mailer_*`
 setting (subjects, contents, OTP length/expiry, security-notification toggles).
