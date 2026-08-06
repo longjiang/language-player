@@ -15,13 +15,15 @@ interface RelatedWordsProps {
   corpname?: string | null;
   /** Word forms (head + variants + inflections) to highlight in each word. */
   highlightForms?: string[];
+  /** Dictionary entry ids to highlight by identity (e.g. the entry being viewed). */
+  highlightEntryIds?: string[];
 }
 
 /**
  * Related words (thesaurus), sorted by similarity score.
  * GET /sketch-engine/thesaurus?word=&l2=  (ARCH-020 §7.3)
  */
-export function RelatedWords({ word, l2Code, corpname = null, highlightForms = [] }: RelatedWordsProps) {
+export function RelatedWords({ word, l2Code, corpname = null, highlightForms = [], highlightEntryIds = [] }: RelatedWordsProps) {
   const t = useT();
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/thesaurus?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}${corpnameParam}`;
@@ -70,6 +72,7 @@ export function RelatedWords({ word, l2Code, corpname = null, highlightForms = [
                 leading="none"
                 highlightSaved={false}
                 highlightForms={highlightForms}
+                highlightEntryIds={highlightEntryIds}
               />
             </span>
           ))}

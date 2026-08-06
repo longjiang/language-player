@@ -10,7 +10,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
-import { enqueueLookupWords } from '@/lib/dictionary-cache';
+import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 import { isPhoneticsEligible, mergePhraseTokens, sentenceContaining, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
@@ -210,6 +210,12 @@ export interface TokenizedTextProps {
   /** Multiple word forms to highlight (e.g. search terms in subs-search). Any token
    *  whose text matches one of these forms gets the highlight ring. */
   highlightForms?: string[];
+  /** Dictionary entry ids to highlight by identity (e.g. the entry being
+   *  viewed). After the batch dictionary lookup resolves, any token whose
+   *  lemma resolves to one of these entries (same id) gets the highlight
+   *  ring — more precise than surface-form matching, and immune to
+   *  homograph false positives. */
+  highlightEntryIds?: string[];
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end). When undefined, karaoke is off. */
   karaokeProgress?: number;
   /** When false, phonetics are suppressed on highlighted tokens. Used by the SRS
@@ -265,6 +271,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   onOpenLink,
   highlightForm,
   highlightForms,
+  highlightEntryIds,
   karaokeProgress,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
@@ -579,6 +586,26 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return forms;
   }, [savedWords, l2Code]);
 
+  // Entry-id matching: once the batch dictionary lookup populates the cache,
+  // highlight any token whose lemma resolves to one of the requested entries
+  // (compared by id — e.g. the dictionary entry currently being viewed). The
+  // cache is keyed by baseCode(l2Code), matching enqueueLookupWords, so reads
+  // use the base code too. Re-evaluates whenever cacheVersion bumps.
+  const highlightEntryIdSet = useMemo(
+    () => new Set(highlightEntryIds ?? []),
+    [highlightEntryIds],
+  );
+  const tokenHasTargetEntry = (token: LemmatizedToken): boolean => {
+    if (highlightEntryIdSet.size === 0) return false;
+    const base = baseCode(l2Code);
+    for (const lemma of token.lemmas) {
+      const entries = getCachedEntries(base, lemma.lemma);
+      if (entries?.some((e) => highlightEntryIdSet.has(e.id))) return true;
+    }
+    const surface = getCachedEntries(base, token.text);
+    return !!surface?.some((e) => highlightEntryIdSet.has(e.id));
+  };
+
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
@@ -663,7 +690,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isSaved={highlightSaved === false ? false : savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
                 (!!highlightForm && token.text === highlightForm) ||
-                (!!highlightForms && highlightForms.some((f) => f === token.text))
+                (!!highlightForms && highlightForms.some((f) => f === token.text)) ||
+                tokenHasTargetEntry(token)
               }
               nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={(rect) => handleTokenClick(token, rect)}

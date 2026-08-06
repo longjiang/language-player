@@ -146,6 +146,7 @@ export function DictionaryEntryTabs({
             l2Code={l2Code}
             l1Code={l1Code}
             highlightForms={allTerms.length ? allTerms : [entry.head]}
+            highlightEntryIds={[entry.id]}
           />
         </div>
       </TabbedPanel>
