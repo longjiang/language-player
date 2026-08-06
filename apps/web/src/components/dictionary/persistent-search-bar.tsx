@@ -43,6 +43,13 @@ export function PersistentSearchBar() {
 
   // ── Autocomplete state (ephemeral — local to the search bar, never URL) ──
   const dict = useDictionary();
+  // useDictionary() returns a fresh object every render. Holding it in a ref
+  // keeps the effect dependency array stable — otherwise any state update
+  // (acLoading/acOpen/suggestions) re-renders → new dict identity → the
+  // debounce effect re-runs → reschedules → re-requests the same query,
+  // forever (spinner/results flashing on and off).
+  const dictRef = useRef(dict);
+  dictRef.current = dict;
   const [suggestions, setSuggestions] = useState<DictionaryEntry[] | null>(null);
   const [acLoading, setAcLoading] = useState(false);
   const [acOpen, setAcOpen] = useState(false);
@@ -77,7 +84,7 @@ export function PersistentSearchBar() {
       setAcLoading(true);
       setAcOpen(true);
       try {
-        const res = await dict.autocomplete(trimmed, l2Code);
+        const res = await dictRef.current.autocomplete(trimmed, l2Code);
         if (seq !== acSeqRef.current) return; // stale — a newer keystroke won
         const results = res.results ?? [];
         setSuggestions(results);
@@ -103,7 +110,7 @@ export function PersistentSearchBar() {
       }
     }, 250);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [query, userEdited, l2.code, dict]);
+  }, [query, userEdited, l2.code]);
 
   // What to show in the input
   const inputValue = (isDetailPage && detailHead && !userEdited) ? detailHead : query;
