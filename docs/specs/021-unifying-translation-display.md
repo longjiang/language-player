@@ -8,6 +8,7 @@
 - **ROADMAP Phase**: Cross-cutting — spans reader (Phase 3), video (Phase 4), review (Phase 1)
 - **Depends on**: Phase 3 (Reader Experience — TextActionMenu ✅), Phase 4 (Video Player ✅)
 - **See also**:
+  - [SPEC-006: Translation](./006-translation.md) — the base translation spec (endpoints, caching, what is/isn't translated)
   - [STATUS.md](../../apps/mobile/STATUS.md) — web-reader notes "Still missing: page translation"
   - [SPEC-009: Reader Layout](./009-reader-layout.md)
 
@@ -157,6 +158,35 @@ User taps "Translate"
 
 ---
 
+## Cross-Cutting: Term Emphasis in Translations
+
+When translating text that contains the word the learner is studying, both
+endpoints accept an optional highlight term so the server **bolds that word in
+its own translation** (located with the backend tokenizer, matching how the
+tokenized L2 text highlights the same term):
+
+| Endpoint | Param | Consumer |
+|---|---|---|
+| `POST /translate` | `form` (single string) | Review context (Pattern 3) — sends `{ text, form, l1, l2 }` |
+| `POST /translate_array` | `forms` (array, parallel to `texts`) | Subtitle / subs-search translation (Pattern 2) — per-line first matching search form |
+
+The backend wraps the term in `**…**` markers and preserves them in the
+returned translation. Clients render the markers per surface:
+
+- **Subs-search result list & subtitles (Pattern 2)**: the translation is
+  rendered with ReactMarkdown and a `strong → <mark>` override, so the matched
+  term shows as the same highlight ring (`bg-primary/15 … ring-primary/30`)
+  used on the tokenized L2 text.
+- **Review context (Pattern 3)**: the `form` is sent so the server keeps the
+  translation focused on the word under review.
+
+This behavior is **not covered in SPEC-006** — it was added after that spec.
+New translation surfaces built on top of tokenized text (e.g. a corpus Examples
+translation) should reuse the `form`/`forms` param + `**…**` → `<mark>`
+rendering instead of inventing a separate emphasis path.
+
+---
+
 ## Inconsistency Analysis
 
 | Aspect | Reader (Pattern 1) | Video (Pattern 2) | Review (Pattern 3) | Action (Pattern 4) |
@@ -186,6 +216,11 @@ The biggest gap is **Pattern 1 (page-level translation)** on mobile. The other t
 4. **Consistent text styling**: Translation text uses `text-muted-foreground` at a size one step smaller than the original. Italic for inline translations (subtitle, review). Normal weight for side-by-side translations (reader). Per-block heading sizing preserved where applicable.
 
 5. **Shared `TextActionMenu` props**: Both web and mobile `TextActionMenu` support `translation`, `translationClass`, and `loading` props. Mobile adds these as deferred optional props (no regression on existing behavior).
+
+6. **Term emphasis**: when the text being translated contains the word being
+   studied, pass it via `form`/`forms` so the server bolds it, and render the
+   returned `**…**` markers as a `<mark>` highlight — consistent with the
+   highlight ring on the original tokenized text.
 
 ### Implementation Plan
 
