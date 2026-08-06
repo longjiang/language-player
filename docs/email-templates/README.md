@@ -1,34 +1,66 @@
 # Supabase email templates
 
-Ready-to-paste HTML for every email template configured in Supabase Auth,
-exported from the live project (`tfugoojrqybaoukgpqza`) via the Management API.
+Ready-to-paste HTML for every email template configured in Supabase Auth for
+the live project (`tfugoojrqybaoukgpqza`). Every template is styled with the
+**Language Player** brand and the SPEC-046 purple primary `#69279c` — same card
+layout, logo, and footer as `confirm-signup.html`.
 
-> **Only the Confirm signup template is customized.** The other templates are
-> the Supabase defaults. They're checked in here so you have a full record and a
-> starting point to brand them — paste the HTML into
-> **Authentication → Email Templates** and edit.
+## ✅ Password-reset "localhost" bug — root cause & fix (applied)
+
+Users reported that the reset-password (and confirm/magic-link/invite) emails
+took them to `http://localhost:3000`, which is blank for them.
+
+**Cause:** the Supabase project's **Site URL** was set to `http://localhost:3000`
+(confirmed live on 2026-08-05). GoTrue builds every `{{ .ConfirmationURL }}`
+from that Site URL, so the email link pointed at localhost regardless of what's
+in the template. The templates themselves contain no `localhost` reference.
+
+**Fix (applied 2026-08-05):** the live Site URL was changed via the Management
+API from `http://localhost:3000` to the production origin:
+
+```
+https://languageplayer.io
+```
+
+Verified live after the change. Supabase's own docs state: *"Change this from
+`http://localhost:3000` to your production URL... This setting is critical for
+email confirmations and password resets."* The `uri_allow_list` is empty (no
+explicit redirect restrictions), so the Site URL is used as the default.
+
+**To manually re-verify / change it later:** Dashboard →
+**Authentication → URL Configuration → Site URL**. If you later add a Redirect
+URLs allow list, include `https://languageplayer.io/**`, plus
+`http://localhost:3000/**` and any Netlify preview `https://**--*.netlify.app/**`
+URLs.
 
 ## Index
 
 | File | Template | Subject | Status |
 |---|---|---|---|
-| [`confirm-signup.html`](./confirm-signup.html) | Confirm signup | `Confirm your email` | **Customized** |
-| [`reset-password.html`](./reset-password.html) | Reset password | `Reset your password` | Default |
-| [`magic-link.html`](./magic-link.html) | Magic link | `Your sign-in link` | Default |
-| [`invite-user.html`](./invite-user.html) | Invite user | `You've been invited` | Default |
-| [`change-email.html`](./change-email.html) | Change email address | `Confirm your new email address` | Default |
-| [`reauthentication.html`](./reauthentication.html) | Reauthentication | `{{ .Token }} is your verification code` | Default |
-| [`password-changed.html`](./password-changed.html) | Password changed | `Your password was changed` | Default |
-| [`email-changed.html`](./email-changed.html) | Email changed | `Your email address was changed` | Default |
-| [`phone-changed.html`](./phone-changed.html) | Phone changed | `Your phone number was changed` | Default |
-| [`signin-method-linked.html`](./signin-method-linked.html) | Sign-in method linked | `A new sign-in method was linked to your account` | Default |
-| [`signin-method-removed.html`](./signin-method-removed.html) | Sign-in method removed | `A sign-in method was removed from your account` | Default |
-| [`verification-method-added.html`](./verification-method-added.html) | Verification method added | `A new verification method was added to your account` | Default |
-| [`verification-method-removed.html`](./verification-method-removed.html) | Verification method removed | `A verification method was removed from your account` | Default |
+| [`confirm-signup.html`](./confirm-signup.html) | Confirm signup | `Confirm your email` | Branded |
+| [`reset-password.html`](./reset-password.html) | Reset password | `Reset your password` | Branded |
+| [`magic-link.html`](./magic-link.html) | Magic link | `Your sign-in link` | Branded |
+| [`invite-user.html`](./invite-user.html) | Invite user | `You've been invited` | Branded |
+| [`change-email.html`](./change-email.html) | Change email address | `Confirm your new email address` | Branded |
+| [`reauthentication.html`](./reauthentication.html) | Reauthentication | `{{ .Token }} is your verification code` | Branded |
+| [`password-changed.html`](./password-changed.html) | Password changed | `Your password was changed` | Branded |
+| [`email-changed.html`](./email-changed.html) | Email changed | `Your email address was changed` | Branded |
+| [`phone-changed.html`](./phone-changed.html) | Phone changed | `Your phone number was changed` | Branded |
+| [`signin-method-linked.html`](./signin-method-linked.html) | Sign-in method linked | `A new sign-in method was linked to your account` | Branded |
+| [`signin-method-removed.html`](./signin-method-removed.html) | Sign-in method removed | `A sign-in method was removed from your account` | Branded |
+| [`verification-method-added.html`](./verification-method-added.html) | Verification method added | `A new verification method was added to your account` | Branded |
+| [`verification-method-removed.html`](./verification-method-removed.html) | Verification method removed | `A verification method was removed from your account` | Branded |
+
+> **Status note:** the 12 non-confirm templates were branded here (SPEC-046
+> purple, README-consistent design) but are **not yet applied to the live
+> project**. The live templates are still Supabase defaults (see
+> `_auth-config-mailer.json`). Paste the HTML from each file into
+> **Authentication → Email Templates** to deploy them.
 
 `_auth-config-mailer.json` is the raw Management API dump of every `mailer_*`
 setting (subjects, contents, OTP length/expiry, security-notification toggles).
-It's the canonical export record — don't hand-edit it.
+It's the canonical export record of what is **currently live** — don't hand-edit
+it.
 
 ## Re-exporting
 
