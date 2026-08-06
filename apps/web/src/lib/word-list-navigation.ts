@@ -71,6 +71,18 @@ export function updateCurrentEntryId(entryId: string): void {
 }
 
 /**
+ * Replace one item in the stored list (matched by its current id) and update
+ * the current entry id. Used when a search-fallback sidebar item resolves to
+ * a real entry, so the list keeps real ids while staying intact.
+ */
+export function replaceNavItem(oldId: string, updated: WordListNavItem, currentEntryId: string): void {
+  const stored = read();
+  if (!stored) return;
+  const items = stored.items.map((it) => (it.id === oldId ? updated : it));
+  write(items, currentEntryId, stored.source);
+}
+
+/**
  * Read the stored word list. Does NOT clear — persists across navigations
  * and page refreshes. Source pages overwrite it via setWordListNav().
  */

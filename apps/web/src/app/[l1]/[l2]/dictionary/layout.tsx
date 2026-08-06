@@ -6,8 +6,9 @@ import { useLanguage } from '@/providers/language-provider';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
-import { buildEntryRouteWithList, updateCurrentEntryId } from '@/lib/word-list-navigation';
+import { buildEntryRouteWithList, entryToNavItem, replaceNavItem, updateCurrentEntryId } from '@/lib/word-list-navigation';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
+import type { DictionaryEntry } from '@langplayer/shared';
 
 // ── Inner layout (needs context, so must be child of DictionaryProvider) ──
 
@@ -23,7 +24,18 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
     setMobileSidebarOpen,
   } = useDictionaryContext();
 
-  const handleResultClick = (item: Wlni) => {
+  const handleResultClick = (item: Wlni, entry?: DictionaryEntry) => {
+    // A search-fallback item that has since resolved to a real entry: route to
+    // it and upgrade the stored list item to its real id, keeping the list
+    // intact so the sidebar doesn't get lost.
+    if (item.dictionaryId === 'unknown' && entry) {
+      const real = entryToNavItem(entry);
+      setDetailHead(item.head);
+      setMobileSidebarOpen(false);
+      replaceNavItem(item.id, real, real.id);
+      router.push(buildEntryRouteWithList(l1.code, l2.code, real.dictionaryId, real.entryId, real.id));
+      return;
+    }
     // Legacy saved words with an unresolvable id fall back to a search.
     if (item.dictionaryId === 'unknown') {
       router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(item.head)}`);
