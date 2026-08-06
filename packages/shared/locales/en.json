@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "This mistake has to do with {errorLevel} ({errorType}), committed by a {proficiency} learner from {country}.",
-        "provided_by": "Corpus data provided by Sketch Engine"
+        "provided_by": "Corpus data provided by Sketch Engine",
+        "related_to": "Corpus - Related to '{word}'"
     },
     "docs": {
         "guides_reference": "Guides, reference, and frequently asked questions",

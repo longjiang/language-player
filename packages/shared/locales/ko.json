@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "말뭉치: {name}",
         "mistake_description": "이 실수는 {errorLevel}({errorType})와 관련이 있으며, {country} 출신의 {proficiency} 수준 학습자가 저지른 것입니다.",
-        "provided_by": "말뭉치 데이터 제공: Sketch Engine"
+        "provided_by": "말뭉치 데이터 제공: Sketch Engine",
+        "related_to": "말뭉치 - '{word}' 관련"
     },
     "docs": {
         "guides_reference": "가이드, 참조 및 자주 묻는 질문",

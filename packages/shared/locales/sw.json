@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpusi: {name}",
         "mistake_description": "Kosa hii inahusiana na {errorLevel} ({errorType}), imefanywa na mwanafunzi wa kiwango cha {proficiency} kutoka {country}.",
-        "provided_by": "Data za korpusi hutolewa na Sketch Engine"
+        "provided_by": "Data za korpusi hutolewa na Sketch Engine",
+        "related_to": "Korpusi - Kuhusiana na '{word}'"
     },
     "docs": {
         "guides_reference": "Mwongozo, marejeleo na maswali ya kawaida",

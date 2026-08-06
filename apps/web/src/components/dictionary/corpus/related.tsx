@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { DictionaryEntry, SketchThesaurusResponse } from '@langplayer/shared';
+import type { DictionaryEntry, SavedWordContext, SketchThesaurusResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -62,13 +62,15 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {/* Same column logic as the Collocations section: 1 column, then 2 at sm+. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {data.related
           .filter((related) => related.word)
           .map((related, index) => (
             <RelatedWordCard
               key={`${related.word}-${index}`}
               text={related.word}
+              sourceWord={word}
               l1Code={l1Code}
               l2Code={l2Code}
             />
@@ -86,14 +88,18 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
  */
 function RelatedWordCard({
   text,
+  sourceWord,
   l1Code,
   l2Code,
 }: {
   text: string;
+  /** The entry-page word this related word was found under (save-context source). */
+  sourceWord: string;
   l1Code: string;
   l2Code: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const base = baseCode(l2Code);
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(() =>
     getCachedEntries(base, text)?.[0],
@@ -150,12 +156,20 @@ function RelatedWordCard({
     );
   }
 
+  // Saving a related word records its source as "Corpus - Related to '<entry word>'".
+  const saveContext: SavedWordContext = {
+    form: text,
+    text,
+    textTitle: t('corpus.related_to', { word: sourceWord }),
+  };
+
   return (
     <DictionaryEntryCard
       entry={entry}
       variant="compact"
       l2Code={l2Code}
       l1Code={l1Code}
+      saveContext={saveContext}
       onClick={() => router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id))}
     />
   );

@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Корпус: {name}",
         "mistake_description": "Эта ошибка связана с {errorLevel} ({errorType}) и допущена учащимся уровня {proficiency} из {country}.",
-        "provided_by": "Данные корпуса предоставлены Sketch Engine"
+        "provided_by": "Данные корпуса предоставлены Sketch Engine",
+        "related_to": "Корпус - Связано с «{word}»"
     },
     "docs": {
         "guides_reference": "Руководства, справочные материалы и часто задаваемые вопросы",

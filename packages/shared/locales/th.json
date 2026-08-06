@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "คลังข้อมูลภาษา: {name}",
         "mistake_description": "ข้อผิดพลาดนี้เกี่ยวข้องกับ {errorLevel} ({errorType}) โดยผู้เรียนระดับ {proficiency} จาก {country}",
-        "provided_by": "ข้อมูลคลังข้อมูลภาษาโดย Sketch Engine"
+        "provided_by": "ข้อมูลคลังข้อมูลภาษาโดย Sketch Engine",
+        "related_to": "คลังข้อมูลภาษา - เกี่ยวข้องกับ '{word}'"
     },
     "docs": {
         "guides_reference": "คู่มือ เอกสารอ้างอิง และคำถามที่พบบ่อย",

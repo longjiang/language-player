@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Корпус: {name}",
         "mistake_description": "Ова грешка има везе са {errorLevel} ({errorType}), а починио ју је ученик нивоа {proficiency} из {country}.",
-        "provided_by": "Податке корпуса обезбеђује Sketch Engine"
+        "provided_by": "Податке корпуса обезбеђује Sketch Engine",
+        "related_to": "Корпус - Повезано са '{word}'"
     },
     "docs": {
         "guides_reference": "Vodiči, reference i često postavljana pitanja",

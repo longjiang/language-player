@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Det här misstaget har att göra med {errorLevel} ({errorType}) och begicks av en {proficiency}-elev från {country}.",
-        "provided_by": "Korpusdata tillhandahålls av Sketch Engine"
+        "provided_by": "Korpusdata tillhandahålls av Sketch Engine",
+        "related_to": "Korpus - Relaterat till '{word}'"
     },
     "docs": {
         "guides_reference": "Guider, referens och vanliga frågor",

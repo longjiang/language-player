@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Derlem: {name}",
         "mistake_description": "Bu hata, {country} ülkesinden {proficiency} seviyesinde bir öğrenci tarafından yapılmış olup {errorLevel} ({errorType}) ile ilgilidir.",
-        "provided_by": "Derlem verileri Sketch Engine tarafından sağlanır"
+        "provided_by": "Derlem verileri Sketch Engine tarafından sağlanır",
+        "related_to": "Derlem - '{word}' ile ilgili"
     },
     "docs": {
         "guides_reference": "Kılavuzlar, referans ve sık sorulan sorular",

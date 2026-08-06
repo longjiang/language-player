@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpas: {name}",
         "mistake_description": "Baineann an botún seo le {errorLevel} ({errorType}), déanta ag foghlaimeoir {proficiency} ó {country}.",
-        "provided_by": "Sonraí corpas arna soláthar ag Sketch Engine"
+        "provided_by": "Sonraí corpas arna soláthar ag Sketch Engine",
+        "related_to": "Corpas - Gaolmhar le '{word}'"
     },
     "docs": {
         "guides_reference": "Treoracha, tagairt agus ceisteanna coitianta",

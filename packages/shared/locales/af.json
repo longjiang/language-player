@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Hierdie fout het te make met {errorLevel} ({errorType}), gemaak deur 'n {proficiency}-leerder van {country}.",
-        "provided_by": "Korpusdata verskaf deur Sketch Engine"
+        "provided_by": "Korpusdata verskaf deur Sketch Engine",
+        "related_to": "Korpus - Verwant aan '{word}'"
     },
     "docs": {
         "guides_reference": "Gidse, naslaanwerk en algemene vrae",

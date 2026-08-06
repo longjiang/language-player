@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Denne feilen har å gjøre med {errorLevel} ({errorType}) og er begått av en {proficiency}-elev fra {country}.",
-        "provided_by": "Korpusdata levert av Sketch Engine"
+        "provided_by": "Korpusdata levert av Sketch Engine",
+        "related_to": "Korpus - Relatert til '{word}'"
     },
     "docs": {
         "guides_reference": "Veiledninger, referanse og vanlige spørsmål",

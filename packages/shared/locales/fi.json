@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Tämä virhe liittyy asiaan {errorLevel} ({errorType}); sen on tehnyt {proficiency}-tason oppija maasta {country}.",
-        "provided_by": "Korpusaineiston tarjoaa Sketch Engine"
+        "provided_by": "Korpusaineiston tarjoaa Sketch Engine",
+        "related_to": "Korpus - Liittyy sanaan '{word}'"
     },
     "docs": {
         "guides_reference": "Oppaat, viitteet ja usein kysytyt kysymykset",
