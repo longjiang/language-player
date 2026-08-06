@@ -84,7 +84,9 @@ export function PersistentSearchBar() {
       setAcLoading(true);
       setAcOpen(true);
       try {
-        const res = await dictRef.current.autocomplete(trimmed, l2Code);
+        // byDefinition=true: an English query also matches Chinese entries by
+        // their English definitions, so 'meal' suggests 饭/餐/meal entries.
+        const res = await dictRef.current.autocomplete(trimmed, l2Code, true);
         if (seq !== acSeqRef.current) return; // stale — a newer keystroke won
         const results = res.results ?? [];
         setSuggestions(results);

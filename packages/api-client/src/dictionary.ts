@@ -10,23 +10,30 @@ import type {
 
 export function useDictionary() {
   return {
-    /** Look up a word in the dictionary. POST /dictionary/lookup */
-    lookup: (text: string, l2: string, l1: string = 'en') =>
+    /**
+     * Look up a word in the dictionary. POST /dictionary/lookup
+     * byDefinition: also match English definitions (dictionary search only,
+     * not the popup dictionary).
+     */
+    lookup: (text: string, l2: string, l1: string = 'en', byDefinition = false) =>
       apiClient.post<DictionaryLookupResponse>('/dictionary/lookup', {
         text,
         l2,
         l1,
+        by_definition: byDefinition,
       }),
 
     /**
      * Fast, LLM-free autocomplete suggestions for a partial query.
      * POST /dictionary/autocomplete — English definitions only (l1 unset),
-     * ranked for prefix relevance, capped at 6 results.
+     * ranked for prefix relevance, capped at 6 results. byDefinition adds
+     * English-definition matches.
      */
-    autocomplete: (text: string, l2: string) =>
+    autocomplete: (text: string, l2: string, byDefinition = false) =>
       apiClient.post<DictionaryAutocompleteResponse>('/dictionary/autocomplete', {
         text,
         l2,
+        by_definition: byDefinition,
       }),
 
     /** Fetch a single entry by ID. GET /dictionary/entry?l2=&dict=&id=&l1= */

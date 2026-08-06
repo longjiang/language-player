@@ -352,7 +352,7 @@ export interface DictionaryEntry extends LexicalEntry {
   // ── Core (always present) ──
   id: string;
   /** How this entry was matched to the query. NOTE: 'llm' is not valid here — LLM entries use LlmGeneratedEntry. */
-  match_type: 'exact' | 'lemma' | 'fuzzy' | null;
+  match_type: 'exact' | 'lemma' | 'fuzzy' | 'definition' | null;
 
   // ── Optional metadata (levels, part_of_speech inherited from LexicalEntry) ──
   /** Narrowed scale union for curated dictionary entries. */
