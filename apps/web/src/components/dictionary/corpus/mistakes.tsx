@@ -9,13 +9,15 @@ import { TokenizedText } from '@/components/tokenized-text';
 
 interface MistakesProps {
   word: string;
+  /** Word forms (head + script variants) to highlight in each sentence. */
+  highlightForms?: string[];
 }
 
 /**
  * Common Chinese learner mistakes (guangwai corpus).
  * GET /sketch-engine/mistakes?word=  (ARCH-020 §7.4)
  */
-export function Mistakes({ word }: MistakesProps) {
+export function Mistakes({ word, highlightForms = [] }: MistakesProps) {
   const t = useT();
   const url = `${PYTHON_API_URL}/sketch-engine/mistakes?word=${encodeURIComponent(word)}`;
   const { data, loading, error } = useCorpusFetch<SketchMistakesResponse>(url);
@@ -64,6 +66,7 @@ export function Mistakes({ word }: MistakesProps) {
                   textScale={0}
                   leading="none"
                   highlightSaved={false}
+                  highlightForms={highlightForms}
                 />
               </p>
               {mistake.rightContext ? (

@@ -20,6 +20,8 @@ interface CorpusPanelProps {
   l2Code: string;
   /** ISO 639-1 code of the user's L1 (used for parallel translations). */
   l1Code?: string;
+  /** Word forms (head + script variants + inflections) to highlight in the sections. */
+  highlightForms?: string[];
 }
 
 /**
@@ -30,7 +32,7 @@ interface CorpusPanelProps {
  * Sections stay mounted (hidden) once the panel opens, so each fetches exactly
  * once — matching the prefetch strategy used by the parent DictionaryEntryTabs.
  */
-export function CorpusPanel({ word, l2Code, l1Code = 'en' }: CorpusPanelProps) {
+export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [] }: CorpusPanelProps) {
   const t = useT();
   const showMistakes = baseCode(l2Code) === 'zh';
   const [active, setActive] = useState<CorpusPill>('collocations');
@@ -72,19 +74,19 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en' }: CorpusPanelProps) {
 
       {/* Sections stay mounted so their fetches start when the panel opens */}
       <div className={active === 'collocations' ? '' : 'hidden'}>
-        <Collocations word={word} l2Code={l2Code} corpname={corpname} />
+        <Collocations word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} />
       </div>
       <div className={active === 'examples' ? '' : 'hidden'}>
-        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} />
+        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} />
       </div>
       <div className={active === 'related' ? '' : 'hidden'}>
-        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} />
+        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} />
       </div>
       {/* Mistakes always query the fixed guangwai learner corpus — the
           backend ignores corpname, so don't pass a selection. */}
       {showMistakes && (
         <div className={active === 'mistakes' ? '' : 'hidden'}>
-          <Mistakes word={word} />
+          <Mistakes word={word} highlightForms={highlightForms} />
         </div>
       )}
 

@@ -141,7 +141,12 @@ export function DictionaryEntryTabs({
           <InflectionTable head={entry.head} l2Code={l2Code} embedded />
         </div>
         <div className={tab === 'corpus' ? '' : 'hidden'}>
-          <CorpusPanel word={entry.head} l2Code={l2Code} l1Code={l1Code} />
+          <CorpusPanel
+            word={entry.head}
+            l2Code={l2Code}
+            l1Code={l1Code}
+            highlightForms={allTerms.length ? allTerms : [entry.head]}
+          />
         </div>
       </TabbedPanel>
     </div>
