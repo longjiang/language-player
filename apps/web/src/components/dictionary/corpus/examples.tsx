@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { isContinua, type SketchExamplesResponse } from '@langplayer/shared';
 import { sentenceContaining } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -7,6 +8,8 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { useLazyTranslations } from '@/hooks/use-lazy-translations';
+import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
 
 interface CorpusExamplesProps {
@@ -37,6 +40,37 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
   // sentence with a space between every token, so strip them to read naturally.
   const stripSpaces = isContinua(l2);
 
+  // The trimmed sentence for each example (same truncation as the render below):
+  // cut each Sketch Engine passage to the sentence containing the word (or any
+  // of its inflected forms) via Intl.Segmenter-based segmentation.
+  const displayTexts = useMemo(() => {
+    if (!data) return [];
+    const searchForms = highlightForms.length > 0 ? highlightForms : [word];
+    return data.examples.map((example) => {
+      const sentence = stripSpaces ? example.l2.replace(/ /g, '') : example.l2;
+      let hitOffset = -1;
+      for (const f of searchForms) {
+        if (!f) continue;
+        const i = sentence.indexOf(f);
+        if (i !== -1 && (hitOffset === -1 || i < hitOffset)) hitOffset = i;
+      }
+      return hitOffset !== -1 ? sentenceContaining(sentence, hitOffset, l2) : sentence;
+    });
+  }, [data, stripSpaces, l2, highlightForms, word]);
+
+  // Send the full highlight-form list per line so the server bolds EVERY
+  // inflected/discovered form that appears in the sentence's translation.
+  const highlightTermForms = useMemo(
+    () => displayTexts.map(() => highlightForms),
+    [displayTexts, highlightForms],
+  );
+  const { translations, containerRef } = useLazyTranslations({
+    texts: displayTexts,
+    l1: baseCode(l1Code),
+    l2,
+    forms: highlightTermForms,
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-10">
@@ -63,23 +97,10 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
   }
 
   return (
-    <>
+    <div ref={containerRef}>
       <ul className="divide-y divide-border">
         {data.examples.map((example, index) => {
-          const sentence = stripSpaces ? example.l2.replace(/ /g, '') : example.l2;
-          // Sketch Engine returns a short passage around the hit — truncate to
-          // the sentence containing the word (or any of its inflected forms)
-          // using Intl.Segmenter-based segmentation (sentenceContaining).
-          let hitOffset = -1;
-          const searchForms = highlightForms.length > 0 ? highlightForms : [word];
-          for (const f of searchForms) {
-            if (!f) continue;
-            const i = sentence.indexOf(f);
-            if (i !== -1 && (hitOffset === -1 || i < hitOffset)) hitOffset = i;
-          }
-          const display = hitOffset !== -1
-            ? sentenceContaining(sentence, hitOffset, l2)
-            : sentence;
+          const display = displayTexts[index] ?? '';
           return (
             <li key={`${example.l2}-${index}`} className="py-3">
               <p lang={l2} className="text-sm leading-relaxed text-foreground">
@@ -93,9 +114,9 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
                   highlightEntryIds={highlightEntryIds}
                 />
               </p>
-              {example.l1 ? (
+              {translations[index] ? (
                 <p lang={baseCode(l1Code)} className="mt-1 text-sm text-muted-foreground">
-                  {example.l1}
+                  {renderInlineMarkdown(translations[index]!)}
                 </p>
               ) : null}
               {example.ref ? (
@@ -105,6 +126,6 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
           );
         })}
       </ul>
-    </>
+    </div>
   );
 }

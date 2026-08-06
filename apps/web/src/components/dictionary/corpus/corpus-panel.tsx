@@ -76,7 +76,7 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [], 
 
       {/* Sections stay mounted so their fetches start when the panel opens */}
       <div className={active === 'collocations' ? '' : 'hidden'}>
-        <Collocations word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
+        <Collocations word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
       </div>
       <div className={active === 'examples' ? '' : 'hidden'}>
         <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />

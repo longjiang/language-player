@@ -1,17 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { isContinua, type SketchCollocationsResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { useLazyTranslations } from '@/hooks/use-lazy-translations';
+import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
 
 interface CollocationsProps {
   word: string;
   l2Code: string;
+  /** ISO 639-1 code of the user's L1 (translation target). */
+  l1Code?: string;
   /** Optional corpus override; null = let the backend auto-resolve. */
   corpname?: string | null;
   /** Word forms (head + variants + inflections) to highlight in each phrase. */
@@ -27,7 +31,7 @@ const DEFAULT_VISIBLE = 3;
  * Word sketch — collocations grouped by grammatical relation.
  * GET /sketch-engine/collocations?word=&l2=  (ARCH-020 §7.1)
  */
-export function Collocations({ word, l2Code, corpname = null, highlightForms = [], highlightEntryIds = [] }: CollocationsProps) {
+export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, highlightForms = [], highlightEntryIds = [] }: CollocationsProps) {
   const t = useT();
   /** Gramrel indices the user has expanded to see all their collocations. */
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -39,6 +43,41 @@ export function Collocations({ word, l2Code, corpname = null, highlightForms = [
   // Vietnamese…) are written without spaces — collocation phrases come back
   // with a space between every token (e.g. `学习 知识`), so strip them too.
   const stripSpaces = isContinua(baseCode(l2Code));
+
+  // Flat list of the collocation phrases actually rendered (respects the
+  // per-gramrel "show more" expansion), plus each gramrel's start offset.
+  const { flatTexts, startsByGramrel } = useMemo(() => {
+    const texts: string[] = [];
+    const starts: number[] = new Array(data?.gramrels.length ?? 0).fill(0);
+    if (!data) return { flatTexts: [], startsByGramrel: [] };
+    let running = 0;
+    data.gramrels.forEach((gramrel, gramrelIndex) => {
+      starts[gramrelIndex] = running;
+      const words = (gramrel.words || []).filter((w) => w.cm || w.word);
+      if (words.length === 0) return;
+      const isExpanded = expanded.has(gramrelIndex);
+      const visible = isExpanded ? words : words.slice(0, DEFAULT_VISIBLE);
+      for (const w of visible) {
+        const text = w.cm || w.word;
+        texts.push(stripSpaces ? text.replace(/ /g, '') : text);
+      }
+      running += visible.length;
+    });
+    return { flatTexts: texts, startsByGramrel: starts };
+  }, [data, expanded, stripSpaces]);
+
+  // Send the full highlight-form list per line so the server bolds EVERY
+  // inflected/discovered form that appears in the phrase's translation.
+  const highlightTermForms = useMemo(
+    () => flatTexts.map(() => highlightForms),
+    [flatTexts, highlightForms],
+  );
+  const { translations, containerRef } = useLazyTranslations({
+    texts: flatTexts,
+    l1: baseCode(l1Code),
+    l2: baseCode(l2Code),
+    forms: highlightTermForms,
+  });
 
   const toggleExpanded = (gramrelIndex: number) => {
     setExpanded((prev) => {
@@ -77,7 +116,7 @@ export function Collocations({ word, l2Code, corpname = null, highlightForms = [
   return (
     <>
       {/* Two categories per row on sm+, single column on narrow screens. */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div ref={containerRef} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {data.gramrels.map((gramrel, gramrelIndex) => {
           // Some gramrels contain null cm/word tokens (ARCH-020 §9) — drop
           // them so they never render as empty rows or collide on keys.
@@ -100,6 +139,8 @@ export function Collocations({ word, l2Code, corpname = null, highlightForms = [
                 {visibleWords.map((w, wordIndex) => {
                   const text = w.cm || w.word;
                   const display = stripSpaces ? text.replace(/ /g, '') : text;
+                  const flatIdx = (startsByGramrel[gramrelIndex] ?? 0) + wordIndex;
+                  const translation = translations[flatIdx];
                   return (
                     <li
                       key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`}
@@ -115,6 +156,11 @@ export function Collocations({ word, l2Code, corpname = null, highlightForms = [
                         highlightForms={highlightForms}
                         highlightEntryIds={highlightEntryIds}
                       />
+                      {translation ? (
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">
+                          {renderInlineMarkdown(translation)}
+                        </p>
+                      ) : null}
                     </li>
                   );
                 })}
