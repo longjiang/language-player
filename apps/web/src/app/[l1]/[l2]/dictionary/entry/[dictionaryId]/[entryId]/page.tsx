@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getWordListNav } from '@/lib/word-list-navigation';
+import { log } from '@/lib/logger';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -75,10 +76,19 @@ export default function DictionaryEntryPage() {
   }, [fetchEntry]);
 
   // The sidebar shows the word list the user navigated here from (search
-  // results or saved words). It's only available when ?listCurrent= points at
-  // a stored list with more than one item — otherwise there is no list to show.
+  // results, saved words, or related words). It's only available when
+  // ?listCurrent= points at a stored list with more than one item — otherwise
+  // there is no list to show. Also logs every dictionary nav from a wordlist.
   useEffect(() => {
     const nav = searchParams.get('listCurrent') ? getWordListNav() : null;
+    if (nav) {
+      log('Dictionary nav from wordlist', {
+        source: nav.source,
+        count: nav.items.length,
+        sidebarShown: nav.items.length > 1,
+        currentId: nav.currentEntryId,
+      });
+    }
     if (nav && nav.items.length > 1) {
       setSidebarSource({ kind: 'list', items: nav.items, currentId: nav.currentEntryId, source: nav.source });
     } else {

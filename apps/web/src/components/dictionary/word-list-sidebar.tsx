@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
+import { baseCode } from '@/lib/language-data';
+import { PYTHON_API_URL } from '@/lib/api-url';
+import { getCachedEntries, enqueueLookupWords } from '@/lib/dictionary-cache';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { fetchSavedWordEntry } from '@/components/dictionary/saved-word-entry-card';
 import { Sidebar } from '@/components/ui/sidebar';
@@ -20,8 +23,9 @@ export interface WordListSidebarProps {
   sidebarOpen: boolean;
   /** The word list the user navigated to the current entry from (or none). */
   source: SidebarSource;
-  /** Click handler for a word in the sidebar list. */
-  onResultClick: (item: WordListNavItem) => void;
+  /** Click handler for a word in the sidebar list. The resolved entry is
+   *  passed when the item was a search-fallback that has since resolved. */
+  onResultClick: (item: WordListNavItem, entry?: DictionaryEntry) => void;
   /** ISO 639-1 code of the target language. */
   l2Code: string;
   /** ISO 639-1 code of the user's L1 (card pronunciation + save context). */
@@ -110,18 +114,24 @@ function SidebarEntryCard({
   l2Code: string;
   /** Highlight the card for the entry currently being viewed. */
   isActive: boolean;
-  onOpen: (item: WordListNavItem) => void;
+  onOpen: (item: WordListNavItem, entry?: DictionaryEntry) => void;
 }) {
   const router = useRouter();
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
-    void fetchSavedWordEntry(item.id, item.head, l1Code, l2Code).then((e) => {
+    const load = async () => {
+      // Search-fallback items (unknown dictionary id) resolve by head and keep
+      // the real entry id; everything else resolves via its composite id.
+      const e = item.dictionaryId === 'unknown'
+        ? await resolveByHead(item.head, l2Code)
+        : await fetchSavedWordEntry(item.id, item.head, l1Code, l2Code);
       if (!cancelled) setEntry(e);
-    });
+    };
+    void load();
     return () => { cancelled = true; };
-  }, [item.id, item.head, l1Code, l2Code]);
+  }, [item.id, item.head, item.dictionaryId, l1Code, l2Code]);
 
   let content: ReactNode;
   if (entry === undefined) {
@@ -152,7 +162,7 @@ function SidebarEntryCard({
         l2Code={l2Code}
         l1Code={l1Code}
         saveContext={{ form: item.head, text: item.head, textTitle: 'Dictionary' }}
-        onClick={() => onOpen(item)}
+        onClick={() => onOpen(item, entry)}
       />
     );
   }
@@ -163,5 +173,19 @@ function SidebarEntryCard({
   ) : (
     content
   );
+}
+
+/**
+ * Resolve an entry by its head, keeping the real dictionary entry id (unlike
+ * fetchSavedWordEntry, which normalizes the id to the saved composite). Used
+ * for search-fallback sidebar items whose real ids weren't known when the
+ * source list was built.
+ */
+async function resolveByHead(head: string, l2Code: string): Promise<DictionaryEntry | null> {
+  const base = baseCode(l2Code);
+  const cached = getCachedEntries(base, head);
+  if (cached && cached.length > 0) return cached[0] ?? null;
+  await enqueueLookupWords([{ text: head, l2Code: base }], PYTHON_API_URL);
+  return getCachedEntries(base, head)?.[0] ?? null;
 }
 
