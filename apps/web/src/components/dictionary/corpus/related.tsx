@@ -53,15 +53,17 @@ export function RelatedWords({ word, l2Code }: RelatedWordsProps) {
   return (
     <>
       <div className="flex flex-wrap gap-1.5">
-        {data.related.map((related) => (
-          <span
-            key={related.word}
-            lang={baseCode(l2Code)}
-            className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-1 text-sm text-foreground"
-          >
-            {related.word}
-          </span>
-        ))}
+        {data.related
+          .filter((related) => related.word)
+          .map((related, index) => (
+            <span
+              key={`${related.word}-${index}`}
+              lang={baseCode(l2Code)}
+              className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-1 text-sm text-foreground"
+            >
+              {related.word}
+            </span>
+          ))}
       </div>
       <CorpusFooter corpname={data.corpname} />
     </>

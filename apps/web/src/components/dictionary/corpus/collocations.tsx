@@ -54,27 +54,33 @@ export function Collocations({ word, l2Code }: CollocationsProps) {
   return (
     <>
       <div className="space-y-3">
-        {data.gramrels.map((gramrel) => (
-          <div
-            key={gramrel.name}
-            className="rounded-lg border border-border bg-muted/30 p-3"
-          >
-            <h4 className="mb-2 text-sm font-semibold text-foreground">
-              {gramrel.description.replace(/{word}/g, word)}
-            </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {gramrel.words.map((w) => (
-                <span
-                  key={`${gramrel.name}-${w.word}`}
-                  lang={baseCode(l2Code)}
-                  className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-sm text-foreground"
-                >
-                  <HighlightTerm text={w.cm || w.word} term={word} />
-                </span>
-              ))}
+        {data.gramrels.map((gramrel, gramrelIndex) => {
+          // Some gramrels contain null cm/word tokens (ARCH-020 §9) — drop
+          // them so they never render as empty pills or collide on keys.
+          const words = (gramrel.words || []).filter((w) => w.cm || w.word);
+          if (words.length === 0) return null;
+          return (
+            <div
+              key={gramrel.name || gramrelIndex}
+              className="rounded-lg border border-border bg-muted/30 p-3"
+            >
+              <h4 className="mb-2 text-sm font-semibold text-foreground">
+                {gramrel.description.replace(/{word}/g, word)}
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {words.map((w, wordIndex) => (
+                  <span
+                    key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`}
+                    lang={baseCode(l2Code)}
+                    className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-sm text-foreground"
+                  >
+                    <HighlightTerm text={w.cm || w.word} term={word} />
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <CorpusFooter corpname={data.corpname} />
     </>
