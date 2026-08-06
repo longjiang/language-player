@@ -122,7 +122,7 @@ export default function DictionaryPage() {
 
   // ── Empty state (recent searches) ──
   return (
-    <div className="p-4">
+    <div>
       {recentSearches.length > 0 ? (
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
