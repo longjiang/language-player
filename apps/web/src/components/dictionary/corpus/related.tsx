@@ -6,20 +6,22 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
-import { CorpusFooter } from './corpus-footer';
 
 interface RelatedWordsProps {
   word: string;
   l2Code: string;
+  /** Optional corpus override; null = let the backend auto-resolve. */
+  corpname?: string | null;
 }
 
 /**
  * Related words (thesaurus), sorted by similarity score.
  * GET /sketch-engine/thesaurus?word=&l2=  (ARCH-020 §7.3)
  */
-export function RelatedWords({ word, l2Code }: RelatedWordsProps) {
+export function RelatedWords({ word, l2Code, corpname = null }: RelatedWordsProps) {
   const t = useT();
-  const url = `${PYTHON_API_URL}/sketch-engine/thesaurus?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}`;
+  const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
+  const url = `${PYTHON_API_URL}/sketch-engine/thesaurus?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchThesaurusResponse>(url);
 
   if (loading) {
@@ -41,12 +43,9 @@ export function RelatedWords({ word, l2Code }: RelatedWordsProps) {
 
   if (!data || data.related.length === 0) {
     return (
-      <>
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t('msg.no_related_found', { term: word })}
-        </p>
-        <CorpusFooter corpname={data?.corpname} />
-      </>
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {t('msg.no_related_found', { term: word })}
+      </p>
     );
   }
 
@@ -65,7 +64,6 @@ export function RelatedWords({ word, l2Code }: RelatedWordsProps) {
             </span>
           ))}
       </div>
-      <CorpusFooter corpname={data.corpname} />
     </>
   );
 }

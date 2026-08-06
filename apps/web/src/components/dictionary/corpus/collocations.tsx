@@ -7,12 +7,13 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
-import { CorpusFooter } from './corpus-footer';
 import { HighlightTerm } from './highlight-term';
 
 interface CollocationsProps {
   word: string;
   l2Code: string;
+  /** Optional corpus override; null = let the backend auto-resolve. */
+  corpname?: string | null;
 }
 
 /** Words shown per grammatical-relation group before the user expands it. */
@@ -22,11 +23,12 @@ const DEFAULT_VISIBLE = 3;
  * Word sketch — collocations grouped by grammatical relation.
  * GET /sketch-engine/collocations?word=&l2=  (ARCH-020 §7.1)
  */
-export function Collocations({ word, l2Code }: CollocationsProps) {
+export function Collocations({ word, l2Code, corpname = null }: CollocationsProps) {
   const t = useT();
   /** Gramrel indices the user has expanded to see all their collocations. */
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const url = `${PYTHON_API_URL}/sketch-engine/collocations?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}`;
+  const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
+  const url = `${PYTHON_API_URL}/sketch-engine/collocations?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchCollocationsResponse>(url);
 
   const toggleExpanded = (gramrelIndex: number) => {
@@ -57,12 +59,9 @@ export function Collocations({ word, l2Code }: CollocationsProps) {
 
   if (!data || data.gramrels.length === 0) {
     return (
-      <>
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t('msg.no_collocations_found', { term: word })}
-        </p>
-        <CorpusFooter corpname={data?.corpname} />
-      </>
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {t('msg.no_collocations_found', { term: word })}
+      </p>
     );
   }
 
@@ -123,7 +122,6 @@ export function Collocations({ word, l2Code }: CollocationsProps) {
           );
         })}
       </div>
-      <CorpusFooter corpname={data.corpname} />
     </>
   );
 }

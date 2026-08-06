@@ -8,6 +8,8 @@ import { Collocations } from './collocations';
 import { CorpusExamples } from './examples';
 import { RelatedWords } from './related';
 import { Mistakes } from './mistakes';
+import { CorpusFooter } from './corpus-footer';
+import { useCorpora } from './use-corpora';
 
 type CorpusPill = 'collocations' | 'examples' | 'related' | 'mistakes';
 
@@ -32,6 +34,9 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en' }: CorpusPanelProps) {
   const t = useT();
   const showMistakes = baseCode(l2Code) === 'zh';
   const [active, setActive] = useState<CorpusPill>('collocations');
+  /** Selected corpus; null = let the backend auto-resolve the default. */
+  const [corpname, setCorpname] = useState<string | null>(null);
+  const { corpora } = useCorpora(l2Code);
 
   const pills: { key: CorpusPill; label: string }[] = [
     { key: 'collocations', label: t('title.collocations') },
@@ -67,19 +72,24 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en' }: CorpusPanelProps) {
 
       {/* Sections stay mounted so their fetches start when the panel opens */}
       <div className={active === 'collocations' ? '' : 'hidden'}>
-        <Collocations word={word} l2Code={l2Code} />
+        <Collocations word={word} l2Code={l2Code} corpname={corpname} />
       </div>
       <div className={active === 'examples' ? '' : 'hidden'}>
-        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} />
+        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} />
       </div>
       <div className={active === 'related' ? '' : 'hidden'}>
-        <RelatedWords word={word} l2Code={l2Code} />
+        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} />
       </div>
+      {/* Mistakes always query the fixed guangwai learner corpus — the
+          backend ignores corpname, so don't pass a selection. */}
       {showMistakes && (
         <div className={active === 'mistakes' ? '' : 'hidden'}>
           <Mistakes word={word} />
         </div>
       )}
+
+      {/* Shared footer: attribution + corpus picker (re-queries all sections) */}
+      <CorpusFooter corpora={corpora} corpname={corpname} onCorpnameChange={setCorpname} />
     </div>
   );
 }
