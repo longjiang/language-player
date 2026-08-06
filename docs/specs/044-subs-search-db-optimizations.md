@@ -506,21 +506,46 @@ the DB is back to idle):
 `wait_event_test.py`, `io_attribution.py`, `os_disk_during_stall.py`,
 `idle_io_60s.py`. Useful for re-verification or as evidence for Supabase.
 
-## Alternatives that bypass the backfill (if the storage issue persists)
+## Alternatives that bypass the backfill — status (2026-08-06)
 
-Two paths do **not** require the in-place backfill that hangs:
+Two paths do **not** require the in-place backfill that hangs. Both were
+attempted on 2026-08-06:
 
-- **Option A — planner safety net (code-only, doable today).** Add the
-  bounded walk + forced `(l2, views)` walk + timeout/fallback to the continua
-  ILIKE branch (what Part 1 does for FTS). Zero DB writes, fixes common 1–2
-  char terms (31 s → 0.7 s) but not rare ones. See ADR-0026 Option A.
-- **PGroonga (verified available, v3.2.5).** Enable `pgroonga`, build a
-  partial `TokenBigram` index over `subs_l2` for continua rows, and query with
-  `&@` / `&@~`. **No Python backfill and no stored column** — the build is
-  bulk sequential writes to a new index file (a different I/O path; the
-  Russian FTS GIN index built fine on this table), so it avoids the UPDATE
-  hang. See ADR-0026 Option E. Caveats: new extension dependency, and corpus
-  behavior (CSV blobs, mixed scripts) needs a small validation build first.
+- **Option A — planner safety net: SHIPPED and live.** `utils_content.subs_search`
+  now runs the continua ILIKE phase 1 through a bounded 3-attempt sequence
+  (planner's choice → forced `(l2, views)` walk via `enable_sort=off` → pg_trgm
+  bitmap via `enable_indexscan=off`), each 6 s, worst case ~18 s, and timeouts
+  are never cached. Committed in the server repo (`ae523a2`). Live
+  measurements (zh/ja, 2026-08-06): `中` 0.67 s, `相形见绌` 1.48 s, `中国`
+  31 s → 8.45 s, `日本` 8.1 s → 6.85 s, rare `峥嵘` >30 s hang → 18.85 s
+  bounded (0 results, not cached). This bounds everything and makes common
+  1-char / 4-char terms fast, but it does not reach the <1 s target for
+  2-char common terms — that still needs a real index.
+- **PGroonga: attempted, BLOCKED by the same storage hang.** The extension
+  was enabled (`pgroonga` 3.2.5, `extensions` schema) and a temp-table
+  validation passed: a TokenBigram index over a 500-row sample built in 2.2 s
+  and `&@` / `&@|` / `&@~` returned **exact parity with ILIKE** for
+  `中`/`中国`/`对不起`/`相形见绌`/`日本`/`私`/`の` (1-char terms work via
+  match escalation). The full partial index build over the live continua rows
+  then **hung** in PGroonga's "indexing (loading)" phase: the build backend
+  ran 7+ minutes with **zero CPU, zero WAL, zero disk I/O** and was
+  **unkillable even via `pg_terminate_backend`** (uninterruptible kernel
+  D-state — PGroonga does its own file I/O outside PG's wait-event machinery,
+  so the hang shows as `wait_event=None` instead of `DataFileRead`). It holds
+  `ShareUpdateExclusiveLock` on `youtube_videos` (blocks DDL, not reads/writes
+  — the app is unaffected). This is the **same storage-layer root cause** as
+  the backfill and disproves the hope that "index builds avoid the hang". The
+  routing code (`subs_l2 &@| …`, auto-detected) is committed but **dormant**
+  (gated on index validity) and will activate automatically if a later build
+  succeeds.
+- **Cleanup required after the instance recovers** (a Supabase restart /
+  support ticket clears the stuck backend):
+  `drop index youtube_videos_subs_l2_pgroonga_idx;` — the cancelled
+  CONCURRENTLY build left it invalid. The `pgroonga` extension itself is
+  harmless and can stay for a retry after the compute upgrade.
+- **Conclusion**: neither bypass is usable until the storage-layer issue is
+  fixed (compute upgrade / Supabase support). Option A is a strict
+  improvement and is live in the meantime. See the blocker diagnosis above.
 
 ## Migration steps (ordered)
 
@@ -529,7 +554,11 @@ Two paths do **not** require the in-place backfill that hangs:
    pause + timeout safety net).
 3. ⛔ Backfill all continua rows in batches — **blocked** (storage-layer I/O
    hang; see above). Resumed at **12,166 / 182,507** once the storage issue is
-   resolved (or bypass via PGroonga / Option A).
+   resolved. **2026-08-06**: Option A planner safety net shipped (live); the
+   PGroonga index build was attempted and hung on the same storage issue
+   (see "Alternatives that bypass the backfill" below) — an invalid
+   `youtube_videos_subs_l2_pgroonga_idx` remains to be dropped after the
+   instance recovers.
 4. ⬜ `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
 5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
    until the index is valid) — code done, dormant until the index exists.
