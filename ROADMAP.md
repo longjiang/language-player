@@ -72,6 +72,7 @@
 - ✅ TV Shows page — browse shows with search, sort (views/title/year), locale filter, poster grid
 - ✅ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add pytohn code to supply inflections via inflectors
 - ✅ Shared Radix sidebar primitive (dictionary, reader, EPUB, web-reader) + Radix migration of all web ui primitives (SPEC-030, ADR-0020)
+- ✅ Corpus tab in the web dictionary (Sketch Engine collocations, examples, related words, and Chinese learner mistakes) (SPEC-047)
 
 ## Phase 5: Content Features
 

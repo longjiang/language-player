@@ -988,3 +988,100 @@ export function createSettingsV2(l2Code?: string): SettingsV2 {
     l2,
   };
 }
+
+// ── Sketch Engine corpus (ARCH-020) ────────────────────────────────
+// Cleaned responses from the Flask `/sketch-engine/*` endpoints, ready to
+// render. See `docs/arch/020-sketch-engine-architecture.md`.
+
+/** One collocation word inside a word-sketch grammatical-relation group. */
+export interface SketchCollocationWord {
+  word: string;
+  /** Collocation measure label (may contain the POS-tag pattern, e.g. "知识 学习"). */
+  cm: string;
+  score: number;
+  count: number;
+}
+
+/** A grammatical-relation group (e.g. "Object") of collocating words. */
+export interface SketchCollocationGramrel {
+  name: string;
+  /** Display label with `{word}` substituted for the queried term. */
+  description: string;
+  count: number;
+  score: number;
+  words: SketchCollocationWord[];
+}
+
+/** GET /sketch-engine/collocations?word=&l2= */
+export interface SketchCollocationsResponse {
+  word: string;
+  corpname: string;
+  from: 'cache' | 'live';
+  gramrels: SketchCollocationGramrel[];
+}
+
+/** One concordance example sentence (with optional parallel translation). */
+export interface SketchExample {
+  /** L2 sentence: left context + highlighted keyword + right context. */
+  l2: string;
+  /** Parallel L1 translation, present when the corpus is aligned. */
+  l1?: string;
+  /** First reference (source attribution) of the sentence. */
+  ref?: string;
+}
+
+/** GET /sketch-engine/examples?word=&l2=&l1= */
+export interface SketchExamplesResponse {
+  word: string;
+  corpname: string;
+  parallel: boolean;
+  from: 'cache' | 'live';
+  examples: SketchExample[];
+}
+
+/** One thesaurus entry (related word). */
+export interface SketchRelatedWord {
+  word: string;
+  score: number;
+  freq: number;
+}
+
+/** GET /sketch-engine/thesaurus?word=&l2= */
+export interface SketchThesaurusResponse {
+  word: string;
+  corpname: string;
+  from: 'cache' | 'live';
+  related: SketchRelatedWord[];
+}
+
+/** One Chinese learner-corpus mistake (guangwai corpus). */
+export interface SketchMistake {
+  /** Sentence part before the mistaken word. */
+  left: string;
+  /** Sentence part after the mistaken word. */
+  right: string;
+  /** Context before the sentence. */
+  leftContext: string;
+  /** Context after the sentence. */
+  rightContext: string;
+  /** Full sentence: left + word + right. */
+  text: string;
+  /** Learner's country (ISO2 code + name), when identifiable. */
+  country: { code: string; name: string | null } | null;
+  /** Learner proficiency: beginner | intermediate | advanced. */
+  proficiency?: string;
+  /** Error category (e.g. "orthography", "word choice"). */
+  errorType?: string;
+  /** Error sub-category (from the same errors map). */
+  errorLevel?: string;
+  /** Learner's native language code. */
+  l1?: string;
+}
+
+/** GET /sketch-engine/mistakes?word= */
+export interface SketchMistakesResponse {
+  word: string;
+  corpus: string;
+  from: 'cache' | 'live';
+  mistakes: SketchMistake[];
+}
