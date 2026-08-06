@@ -6,7 +6,6 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
-import { HighlightTerm } from './highlight-term';
 
 interface CorpusExamplesProps {
   word: string;
@@ -65,7 +64,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null }:
           return (
             <li key={`${example.l2}-${index}`} className="py-3">
               <p lang={l2} className="text-sm leading-relaxed text-foreground">
-                <HighlightTerm text={sentence} term={word} />
+                {sentence}
               </p>
               {example.l1 ? (
                 <p lang={baseCode(l1Code)} className="mt-1 text-sm text-muted-foreground">
