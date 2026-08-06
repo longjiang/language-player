@@ -13,7 +13,7 @@ import { Sidebar } from '@/components/ui/sidebar';
 import type { SidebarSource } from '@/providers/dictionary-provider';
 import type { WordListNavItem } from '@/lib/word-list-navigation';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
 export interface WordListSidebarProps {
   /** Mobile: whether the slide-in sheet is open. */
@@ -72,6 +72,22 @@ export function WordListSidebar({
         ? t('title.related')
         : t('msg.result_count', { count: source.items.length });
 
+  // Prev/next over the source list, relative to the entry being viewed.
+  const currentIdx = source.items.findIndex((it) => it.id === source.currentId);
+  const prevItem = currentIdx > 0 ? source.items[currentIdx - 1] ?? null : null;
+  const nextItem =
+    currentIdx >= 0 && currentIdx < source.items.length - 1
+      ? source.items[currentIdx + 1] ?? null
+      : null;
+
+  // Navigate to a neighbouring item. Search-fallback items are resolved first
+  // so the click routes to the real entry and keeps the list intact.
+  const goTo = async (item: WordListNavItem) => {
+    const entry =
+      item.dictionaryId === 'unknown' ? (await resolveByHead(item.head, l2Code)) ?? undefined : undefined;
+    onResultClick(item, entry);
+  };
+
   return (
     <Sidebar
       open={open}
@@ -79,6 +95,30 @@ export function WordListSidebar({
       sidebarOpen={sidebarOpen}
       title={title}
       desktopClassName="lg:flex-1 lg:min-w-0 w-56 ml-3"
+      headerActions={
+        <>
+          <button
+            type="button"
+            onClick={() => prevItem && void goTo(prevItem)}
+            disabled={!prevItem}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+            title={t('action.previous')}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            {t('action.previous')}
+          </button>
+          <button
+            type="button"
+            onClick={() => nextItem && void goTo(nextItem)}
+            disabled={!nextItem}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+            title={t('action.next')}
+          >
+            {t('action.next')}
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </>
+      }
     >
       <div className="space-y-3 p-2">
         {source.items.map((item) => (
