@@ -135,24 +135,23 @@ export function formatNumericLevel(numeric: number, scaleId: ScaleId): Formatted
 }
 
 /**
- * Format a proficiency level honoring its OWN scale when it's an HSK variant,
- * so the badge shows the year/version (e.g. `hsk_2025` level 3 → "HSK 2025 3").
- *
- * For non-HSK scales the level's scale is ignored and `fallbackScaleId` is used
- * (pass `primaryScale(l2Code)`) — preserving the existing behavior where every
- * badge for a language uses that language's primary exam scale.
+ * Format a proficiency level honoring its OWN scale, so the badge shows what
+ * the level actually is (e.g. `{ scale: 'cefr', value: 'B2' }` → "CEFR B2",
+ * `{ scale: 'hsk_2025', value: 3 }` → "HSK:2025 3" — including the HSK
+ * year/version). If the level's scale isn't a known scale, `fallbackScaleId`
+ * is used (pass `primaryScale(l2Code)`).
  */
 export function formatProficiencyLevel(
   level: { scale: string; value: number | string; numeric?: number },
   fallbackScaleId: ScaleId = 'cefr',
 ): FormattedLevel {
-  const isHsk = level.scale === 'hsk_2010' || level.scale === 'hsk_2025';
-  const scaleId: ScaleId = isHsk ? (level.scale as ScaleId) : fallbackScaleId;
+  const known = SCALES[level.scale as ScaleId];
+  const scaleId: ScaleId = known ? (level.scale as ScaleId) : fallbackScaleId;
   const numeric = level.numeric ?? _reverseLabels(SCALES[scaleId]).get(String(level.value));
   const { label, prefix, sourceScaleId } = getLevelLabelWithFallback(numeric ?? 0, scaleId);
-  const version = isHsk ? SCALES[scaleId].version : undefined;
+  const version = known?.version;
   return {
-    short: version ? `${prefix} ${version} ${label}` : `${prefix} ${label}`,
+    short: version ? `${prefix}:${version} ${label}` : `${prefix} ${label}`,
     long: `${SCALES[sourceScaleId].longPrefix} ${label}`,
     numeric,
     hexColor: numeric ? (LEVEL_HEX_COLORS[numeric] ?? '#6b7280') : '#6b7280',
