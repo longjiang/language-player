@@ -6,23 +6,25 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
-import { CorpusFooter } from './corpus-footer';
 import { HighlightTerm } from './highlight-term';
 
 interface CorpusExamplesProps {
   word: string;
   l2Code: string;
   l1Code?: string;
+  /** Optional corpus override; null = let the backend auto-resolve. */
+  corpname?: string | null;
 }
 
 /**
  * Example sentences (concordance) with optional parallel translation.
  * GET /sketch-engine/examples?word=&l2=&l1=  (ARCH-020 §7.2)
  */
-export function CorpusExamples({ word, l2Code, l1Code = 'en' }: CorpusExamplesProps) {
+export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null }: CorpusExamplesProps) {
   const t = useT();
   const l2 = baseCode(l2Code);
-  const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${l2}&l1=${baseCode(l1Code)}`;
+  const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
+  const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${l2}&l1=${baseCode(l1Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchExamplesResponse>(url);
 
   // Continua languages (CJK, Thai, Khmer, Lao, Burmese, Tibetan, Japanese,
@@ -49,12 +51,9 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en' }: CorpusExamplesPr
 
   if (!data || data.examples.length === 0) {
     return (
-      <>
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t('msg.no_examples_found_corpus', { term: word })}
-        </p>
-        <CorpusFooter corpname={data?.corpname} />
-      </>
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {t('msg.no_examples_found_corpus', { term: word })}
+      </p>
     );
   }
 
@@ -80,7 +79,6 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en' }: CorpusExamplesPr
           );
         })}
       </ul>
-      <CorpusFooter corpname={data.corpname} />
     </>
   );
 }

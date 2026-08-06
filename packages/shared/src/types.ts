@@ -1085,3 +1085,26 @@ export interface SketchMistakesResponse {
   from: 'cache' | 'live';
   mistakes: SketchMistake[];
 }
+
+/** One corpus from the Sketch Engine CA corpus list (ARCH-020 §3). */
+export interface SketchCorpus {
+  corpname: string;
+  /** Human-readable display name (e.g. "Chinese Web 2021 (zhTenTen21)"). */
+  name: string;
+  /** BCP 47 locale string (e.g. "zh-Hans", "zh-Hant"). */
+  language_id: string;
+  language_name?: string;
+  is_featured?: boolean;
+  /** Parallel-alignment target languages when the corpus is aligned. */
+  aligned?: string[];
+  tags?: string[];
+  info?: string;
+  sizes?: { wordcount?: number };
+}
+
+/** GET /sketch-engine/corpora */
+export interface SketchCorporaResponse {
+  data: SketchCorpus[];
+  from: 'cache' | 'live';
+  fetched_at: string;
+}

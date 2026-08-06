@@ -5,7 +5,6 @@ import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
-import { CorpusFooter } from './corpus-footer';
 
 interface MistakesProps {
   word: string;
@@ -39,12 +38,9 @@ export function Mistakes({ word }: MistakesProps) {
 
   if (!data || data.mistakes.length === 0) {
     return (
-      <>
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t('msg.no_mistakes_found', { term: word })}
-        </p>
-        <CorpusFooter corpname={data?.corpus} />
-      </>
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {t('msg.no_mistakes_found', { term: word })}
+      </p>
     );
   }
 
@@ -84,7 +80,6 @@ export function Mistakes({ word }: MistakesProps) {
           );
         })}
       </ul>
-      <CorpusFooter corpname={data.corpus} />
     </>
   );
 }

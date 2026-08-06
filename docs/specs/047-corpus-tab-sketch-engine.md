@@ -76,6 +76,15 @@ Added to `translations.csv` (all 31 locales): `title.corpus`, `title.collocation
   shows 3 words by default with a per-category `Show more (N)` / `Show less`
   toggle (reusing `action.show_more` / `action.show_less`), mirroring Classic's
   per-card `ShowMoreButton`.
+- **Corpus picker (dropdown)**: the footer of the Corpus tab has a dropdown
+  (reusing `label.auto_best_available` for the default) listing the corpora for
+  the current language (from `/sketch-engine/corpora`, filtered by
+  `language_id`, learner corpora excluded, sorted by wordcount — a port of
+  Classic `CorpusSelect.vue`). Choosing a corpus re-queries Collocations,
+  Examples, and Related with `&corpname=`; Mistakes is unaffected (the backend
+  always uses the fixed `guangwai` learner corpus).
+- **Example sentences have spaces stripped for continua languages**
+  (`isContinua` from `packages/shared`), matching Classic `Concordance.vue`.
 - **Stale dev-server messages**: new CSV keys require a restart of the web dev
   server to appear in the `packages/shared/locales/*.json` module (Turbopack
   caches the shared-package JSON import). The code and generated JSONs are
