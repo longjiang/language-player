@@ -24,7 +24,7 @@ export interface WordListNavItem {
 const STORAGE_KEY = 'lp_word_list_nav';
 
 /** Where the word list came from — used for the sidebar title. */
-export type WordListNavSource = 'search' | 'saved';
+export type WordListNavSource = 'search' | 'saved' | 'corpus';
 
 export interface WordListNav {
   items: WordListNavItem[];

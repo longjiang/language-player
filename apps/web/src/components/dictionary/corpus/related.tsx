@@ -6,7 +6,7 @@ import type { DictionaryEntry, SavedWordContext, SketchThesaurusResponse } from 
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { buildEntryRoute } from '@/lib/entry-route';
+import { buildEntryRouteWithList, entryToNavItem, setWordListNav } from '@/lib/word-list-navigation';
 import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
@@ -32,6 +32,7 @@ interface RelatedWordsProps {
  */
 export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: RelatedWordsProps) {
   const t = useT();
+  const router = useRouter();
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/thesaurus?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchThesaurusResponse>(url);
@@ -61,6 +62,23 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
     );
   }
 
+  // Opening a related word surfaces this related-words list in the entry-page
+  // sidebar, like search results and saved words do. Words that haven't been
+  // resolved to an entry yet fall back to a dictionary search when clicked.
+  const handleOpenWord = (entry: DictionaryEntry) => {
+    const items = data.related
+      .filter((related) => related.word)
+      .map((related) => {
+        const cached = getCachedEntries(baseCode(l2Code), related.word)?.[0];
+        return cached
+          ? entryToNavItem(cached)
+          : { head: related.word, dictionaryId: 'unknown', entryId: related.word, id: related.word };
+      });
+    const item = entryToNavItem(entry);
+    setWordListNav(items, item.id, 'corpus');
+    router.push(buildEntryRouteWithList(l1Code, l2Code, item.dictionaryId, item.entryId, item.id));
+  };
+
   return (
     <WordList layout="grid">
       {/* Same column logic as the Collocations section: 1 column, then 2 at sm+. */}
@@ -73,6 +91,7 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
             sourceWord={word}
             l1Code={l1Code}
             l2Code={l2Code}
+            onOpen={handleOpenWord}
           />
         ))}
     </WordList>
@@ -90,12 +109,15 @@ function RelatedWordCard({
   sourceWord,
   l1Code,
   l2Code,
+  onOpen,
 }: {
   text: string;
   /** The entry-page word this related word was found under (save-context source). */
   sourceWord: string;
   l1Code: string;
   l2Code: string;
+  /** Open this resolved entry (also surfaces the related-words list in the sidebar). */
+  onOpen: (entry: DictionaryEntry) => void;
 }) {
   const router = useRouter();
   const t = useT();
@@ -169,7 +191,7 @@ function RelatedWordCard({
       l2Code={l2Code}
       l1Code={l1Code}
       saveContext={saveContext}
-      onClick={() => router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id))}
+      onClick={() => onOpen(entry)}
     />
   );
 }
