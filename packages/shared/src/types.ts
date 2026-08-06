@@ -259,6 +259,11 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
+/** Matches the Python backend's dictionary/autocomplete response format. */
+export interface DictionaryAutocompleteResponse {
+  results: DictionaryEntry[];
+}
+
 /** Response from GET /dictionary/download — two-tier bulk export. */
 export interface DictionaryDownloadResponse {
   entries: DictionaryEntry[];
