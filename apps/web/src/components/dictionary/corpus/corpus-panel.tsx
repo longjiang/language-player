@@ -1,0 +1,85 @@
+'use client';
+
+import { useState } from 'react';
+import { useT } from '@/hooks/use-t';
+import { baseCode } from '@/lib/language-data';
+import { cn } from '@/lib/utils';
+import { Collocations } from './collocations';
+import { CorpusExamples } from './examples';
+import { RelatedWords } from './related';
+import { Mistakes } from './mistakes';
+
+type CorpusPill = 'collocations' | 'examples' | 'related' | 'mistakes';
+
+interface CorpusPanelProps {
+  /** The word to look up in the corpus (the dictionary head form). */
+  word: string;
+  /** ISO 639-1 code of the target language. */
+  l2Code: string;
+  /** ISO 639-1 code of the user's L1 (used for parallel translations). */
+  l1Code?: string;
+}
+
+/**
+ * "Corpus" tab content: Sketch Engine corpus features (ARCH-020) behind four
+ * pills — Collocations, Examples, Related, Mistakes. Mistakes only applies to
+ * Chinese (l2 = zh) and is hidden for other languages.
+ *
+ * Sections stay mounted (hidden) once the panel opens, so each fetches exactly
+ * once — matching the prefetch strategy used by the parent DictionaryEntryTabs.
+ */
+export function CorpusPanel({ word, l2Code, l1Code = 'en' }: CorpusPanelProps) {
+  const t = useT();
+  const showMistakes = baseCode(l2Code) === 'zh';
+  const [active, setActive] = useState<CorpusPill>('collocations');
+
+  const pills: { key: CorpusPill; label: string }[] = [
+    { key: 'collocations', label: t('title.collocations') },
+    { key: 'examples', label: t('title.examples') },
+    { key: 'related', label: t('title.related') },
+    ...(showMistakes ? [{ key: 'mistakes' as const, label: t('title.mistakes') }] : []),
+  ];
+
+  const pillClass = (isActive: boolean) =>
+    cn(
+      'rounded-full border px-3 py-1 text-xs transition-colors',
+      isActive
+        ? 'border-primary bg-primary text-primary-foreground'
+        : 'border-border bg-muted text-muted-foreground hover:text-foreground',
+    );
+
+  return (
+    <div>
+      {/* Pills row */}
+      <div className="mb-3 flex flex-nowrap items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {pills.map((pill) => (
+          <button
+            key={pill.key}
+            type="button"
+            onClick={() => setActive(pill.key)}
+            aria-pressed={active === pill.key}
+            className={cn(pillClass(active === pill.key), 'flex-shrink-0 whitespace-nowrap')}
+          >
+            {pill.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Sections stay mounted so their fetches start when the panel opens */}
+      <div className={active === 'collocations' ? '' : 'hidden'}>
+        <Collocations word={word} l2Code={l2Code} />
+      </div>
+      <div className={active === 'examples' ? '' : 'hidden'}>
+        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} />
+      </div>
+      <div className={active === 'related' ? '' : 'hidden'}>
+        <RelatedWords word={word} l2Code={l2Code} />
+      </div>
+      {showMistakes && (
+        <div className={active === 'mistakes' ? '' : 'hidden'}>
+          <Mistakes word={word} />
+        </div>
+      )}
+    </div>
+  );
+}

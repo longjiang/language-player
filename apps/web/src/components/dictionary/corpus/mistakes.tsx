@@ -1,0 +1,90 @@
+'use client';
+
+import type { SketchMistakesResponse } from '@langplayer/shared';
+import { useT } from '@/hooks/use-t';
+import { PYTHON_API_URL } from '@/lib/api-url';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useCorpusFetch } from './use-corpus-fetch';
+import { CorpusFooter } from './corpus-footer';
+
+interface MistakesProps {
+  word: string;
+}
+
+/**
+ * Common Chinese learner mistakes (guangwai corpus).
+ * GET /sketch-engine/mistakes?word=  (ARCH-020 §7.4)
+ */
+export function Mistakes({ word }: MistakesProps) {
+  const t = useT();
+  const url = `${PYTHON_API_URL}/sketch-engine/mistakes?word=${encodeURIComponent(word)}`;
+  const { data, loading, error } = useCorpusFetch<SketchMistakesResponse>(url);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+        {t('error.failed_to_load', { status: error })}
+      </div>
+    );
+  }
+
+  if (!data || data.mistakes.length === 0) {
+    return (
+      <>
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          {t('msg.no_mistakes_found', { term: word })}
+        </p>
+        <CorpusFooter corpname={data?.corpus} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <ul className="space-y-5">
+        {data.mistakes.map((mistake, index) => {
+          const country = mistake.country?.name ?? mistake.country?.code ?? '';
+          const hasDescription =
+            mistake.errorLevel || mistake.errorType || mistake.proficiency || country;
+          return (
+            <li key={`${mistake.text}-${index}`}>
+              {mistake.leftContext ? (
+                <p className="text-xs text-muted-foreground/70">{mistake.leftContext}</p>
+              ) : null}
+              <p lang="zh" className="mt-1 text-sm leading-relaxed">
+                {mistake.left}
+                <span className="font-semibold text-red-600 dark:text-red-400">
+                  {word}
+                </span>
+                {mistake.right}
+              </p>
+              {mistake.rightContext ? (
+                <p className="mt-1 text-xs text-muted-foreground/70">{mistake.rightContext}</p>
+              ) : null}
+              {hasDescription ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t('corpus.mistake_description', {
+                    errorLevel: mistake.errorLevel ?? '',
+                    errorType: mistake.errorType ?? '',
+                    proficiency: mistake.proficiency ?? '',
+                    country,
+                  })}
+                </p>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+      <CorpusFooter corpname={data.corpus} />
+    </>
+  );
+}
