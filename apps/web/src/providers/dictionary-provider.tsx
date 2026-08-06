@@ -179,7 +179,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       router.replace(`/${l1.code}/${l2.code}/dictionary?${params.toString()}`, { scroll: false });
 
       try {
-        const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
+        // byDefinition=true: also match English definitions, so an English
+        // word finds its Chinese translation. The popup dictionary (raw
+        // fetch) and saved-word lookups don't pass this and stay head-only.
+        const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code, true);
         const res: DictionaryEntry[] = response.results ?? [];
         setResults(res);
         setMessage(response.message ?? null);
