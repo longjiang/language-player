@@ -54,6 +54,8 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
           onOpenChange={setMobileSidebarOpen}
           sidebarOpen={sidebarOpen}
           source={sidebarSource}
+          l1Code={l1.code}
+          l2Code={l2.code}
           onResultClick={handleResultClick}
         />
       </div>

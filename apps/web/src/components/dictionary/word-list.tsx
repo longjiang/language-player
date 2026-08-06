@@ -3,88 +3,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-// ── WordListItem ─────────────────────────────────
-
-export interface WordListItemProps {
-  /** Primary display form in the target language's script. */
-  head: string;
-  /** Alternative forms (inflections, conjugations) shown after the head. */
-  altForms?: string[];
-  /** The surface form that was saved, if different from head (shown in parentheses). */
-  contextForm?: string;
-  /** Lazy-loaded inline definition component. Rendered below the head line. */
-  definitionSlot?: ReactNode;
-  /** Secondary text line — subtitle context, example sentence, etc. */
-  contextSlot?: ReactNode;
-  /** Source attribution or metadata line. */
-  sourceSlot?: ReactNode;
-  /** Icon or indicator rendered before the head (e.g., SRS dot). */
-  prefix?: ReactNode;
-  /** Action button rendered after the text block (e.g., bookmark, remove). */
-  suffix?: ReactNode;
-  /** Click handler for the entire row. */
-  onClick?: () => void;
-  /** When true, reduces padding and typography size for compact layouts (sidebars). */
-  compact?: boolean;
-}
-
-/**
- * A single word row — head form + optional alt forms, definition, context, source.
- * Designed to be composed with slots for customization.
- */
-export function WordListItem({
-  head,
-  altForms,
-  contextForm,
-  definitionSlot,
-  contextSlot,
-  sourceSlot,
-  prefix,
-  suffix,
-  onClick,
-  compact = false,
-}: WordListItemProps) {
-  return (
-    <div
-      className={`flex cursor-pointer items-center gap-2 rounded-lg transition-colors hover:bg-muted/50 ${
-        compact ? 'px-2 py-1' : 'px-3 py-2 gap-3'
-      }`}
-      onClick={onClick}
-    >
-      {/* Prefix (SRS dot, icon, etc.) */}
-      {prefix}
-
-      {/* Word info */}
-      <div className="min-w-0 flex-1">
-        {/* Head + alt forms */}
-        <div className={`flex items-center gap-1.5 ${compact ? '' : 'gap-2'}`}>
-          <span className={compact ? 'text-sm font-semibold' : 'text-lg font-semibold'}>{head}</span>
-          {contextForm && contextForm !== head && (
-            <span className="text-xs text-muted-foreground">({contextForm})</span>
-          )}
-          {altForms && altForms.length > 0 && (
-            <span className="text-xs text-muted-foreground">{altForms.join(', ')}</span>
-          )}
-        </div>
-
-        {/* Inline definition */}
-        {definitionSlot}
-
-        {/* Context line — same size regardless of mode */}
-        {contextSlot}
-
-        {/* Source attribution */}
-        {sourceSlot && (
-          <div className="mt-1 text-xs text-muted-foreground/70">{sourceSlot}</div>
-        )}
-      </div>
-
-      {/* Suffix (action button) */}
-      {suffix}
-    </div>
-  );
-}
-
 // ── WordList ─────────────────────────────────────
 
 export type WordListLayout = 'stack' | 'grid';
@@ -107,9 +25,9 @@ export interface WordListProps {
 }
 
 /**
- * A group of word items, optionally with a labeled heading and count badge.
- * When `label` is omitted, renders a bare list with no header.
- * `layout="grid"` renders the items as a responsive card grid instead of a
+ * A group of dictionary entry cards, optionally with a labeled heading and
+ * count badge. When `label` is omitted, renders a bare list with no header.
+ * `layout="grid"` renders the cards as a responsive grid instead of a
  * vertical stack, so labeled grid sections (saved words, related words) share
  * the same header + body pattern.
  */
