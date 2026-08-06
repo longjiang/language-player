@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type {
   DictionaryLookupResponse,
+  DictionaryAutocompleteResponse,
   DictionaryEntry,
   DictionaryDownloadResponse,
   Token,
@@ -15,6 +16,17 @@ export function useDictionary() {
         text,
         l2,
         l1,
+      }),
+
+    /**
+     * Fast, LLM-free autocomplete suggestions for a partial query.
+     * POST /dictionary/autocomplete — English definitions only (l1 unset),
+     * ranked for prefix relevance, capped at 6 results.
+     */
+    autocomplete: (text: string, l2: string) =>
+      apiClient.post<DictionaryAutocompleteResponse>('/dictionary/autocomplete', {
+        text,
+        l2,
       }),
 
     /** Fetch a single entry by ID. GET /dictionary/entry?l2=&dict=&id=&l1= */

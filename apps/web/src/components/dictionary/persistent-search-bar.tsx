@@ -1,14 +1,19 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { languageName } from '@/lib/language-data';
+import { languageName, baseCode } from '@/lib/language-data';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
+import { useDictionary } from '@langplayer/api-client';
+import type { DictionaryEntry } from '@langplayer/shared';
 import { Search, Loader2, X, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isSidebarAvailable } from '@/components/dictionary/word-list-sidebar';
+import { WordList } from '@/components/dictionary/word-list';
+import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { buildEntryRouteWithList, entryToNavItem, setWordListNav } from '@/lib/word-list-navigation';
 
 /**
  * Persistent search bar — always rendered in the dictionary layout.
@@ -28,11 +33,20 @@ export function PersistentSearchBar() {
     sidebarSource,
     sidebarOpen, setSidebarOpen,
     setMobileSidebarOpen,
+    setCameFromSearch, setDetailHead,
     doSearch, handleSearch, clearSearch,
   } = useDictionaryContext();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [userEdited, setUserEdited] = useState(false);
+
+  // ── Autocomplete state (ephemeral — local to the search bar, never URL) ──
+  const dict = useDictionary();
+  const [suggestions, setSuggestions] = useState<DictionaryEntry[] | null>(null);
+  const [acLoading, setAcLoading] = useState(false);
+  const [acOpen, setAcOpen] = useState(false);
+  const acSeqRef = useRef(0);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // When navigating to a new detail page, sync the search bar to the head word
   useEffect(() => {
@@ -41,6 +55,40 @@ export function PersistentSearchBar() {
       setUserEdited(false);
     }
   }, [isDetailPage, detailHead, setQuery]);
+
+  // Debounced autocomplete lookup (l1 unset → English defs, no translation).
+  // Only fires while the user is actually typing (userEdited) and only touches
+  // local state — URL/recents stay untouched until a real search/selection.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const trimmed = query.trim();
+    if (!userEdited || !trimmed) {
+      setSuggestions(null);
+      setAcOpen(false);
+      setAcLoading(false);
+      return;
+    }
+    const seq = ++acSeqRef.current;
+    debounceRef.current = setTimeout(async () => {
+      setAcLoading(true);
+      setAcOpen(true);
+      try {
+        const res = await dict.autocomplete(trimmed, baseCode(l2.code));
+        if (seq !== acSeqRef.current) return; // stale — a newer keystroke won
+        const results = res.results ?? [];
+        setSuggestions(results);
+        setAcOpen(results.length > 0);
+      } catch {
+        if (seq === acSeqRef.current) {
+          setSuggestions(null);
+          setAcOpen(false);
+        }
+      } finally {
+        if (seq === acSeqRef.current) setAcLoading(false);
+      }
+    }, 250);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query, userEdited, l2.code, dict]);
 
   // What to show in the input
   const inputValue = (isDetailPage && detailHead && !userEdited) ? detailHead : query;
@@ -52,16 +100,41 @@ export function PersistentSearchBar() {
     setUserEdited(true);
   };
 
+  const closeSuggestions = useCallback(() => {
+    setAcOpen(false);
+  }, []);
+
   const handleClear = () => {
     clearSearch();
     setUserEdited(false);
+    setSuggestions(null);
+    setAcOpen(false);
     inputRef.current?.focus();
   };
+
+  // Selecting a suggestion navigates straight to the entry, reusing the same
+  // list + navigation helpers as the results page (sidebar keeps prev/next).
+  const handleSuggestionClick = useCallback(
+    (entry: DictionaryEntry) => {
+      const item = entryToNavItem(entry);
+      const items = (suggestions ?? []).map(entryToNavItem);
+      setWordListNav(items, item.id, 'search');
+      setCameFromSearch(true);
+      setDetailHead(entry.head);
+      setSuggestions(null);
+      setAcOpen(false);
+      router.push(buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id));
+    },
+    [suggestions, router, l1.code, l2.code, setCameFromSearch, setDetailHead],
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      setAcOpen(false);
       doSearch(inputValue.trim());
+    } else if (e.key === 'Escape') {
+      setAcOpen(false);
     }
   };
 
@@ -95,6 +168,7 @@ export function PersistentSearchBar() {
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onBlur={closeSuggestions}
           placeholder={isDetailPage && detailHead ? detailHead : placeholder}
           className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-8 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -108,6 +182,33 @@ export function PersistentSearchBar() {
           >
             <X className="h-4 w-4" />
           </button>
+        )}
+
+        {/* Autocomplete dropdown — reuses WordList + DictionaryEntryCard (compact) */}
+        {acOpen && (
+          <div
+            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-lg"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            {acLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <WordList>
+                {(suggestions ?? []).map((entry) => (
+                  <DictionaryEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    variant="compact"
+                    l2Code={l2.code}
+                    l1Code={l1.code}
+                    onClick={() => handleSuggestionClick(entry)}
+                  />
+                ))}
+              </WordList>
+            )}
+          </div>
         )}
       </div>
 
