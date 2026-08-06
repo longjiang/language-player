@@ -68,10 +68,11 @@ export function Collocations({ word, l2Code }: CollocationsProps) {
 
   return (
     <>
-      <div className="space-y-3">
+      {/* Two categories per row on sm+, single column on narrow screens. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {data.gramrels.map((gramrel, gramrelIndex) => {
           // Some gramrels contain null cm/word tokens (ARCH-020 §9) — drop
-          // them so they never render as empty pills or collide on keys.
+          // them so they never render as empty rows or collide on keys.
           const words = (gramrel.words || []).filter((w) => w.cm || w.word);
           if (words.length === 0) return null;
 
@@ -87,17 +88,17 @@ export function Collocations({ word, l2Code }: CollocationsProps) {
               <h4 className="mb-2 text-sm font-semibold text-foreground">
                 {gramrel.description.replace(/{word}/g, word)}
               </h4>
-              <div className="flex flex-wrap gap-1.5">
+              <ul className="flex flex-col">
                 {visibleWords.map((w, wordIndex) => (
-                  <span
+                  <li
                     key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`}
                     lang={baseCode(l2Code)}
-                    className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-sm text-foreground"
+                    className="rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-background"
                   >
                     <HighlightTerm text={w.cm || w.word} term={word} />
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
               {hiddenCount > 0 && (
                 <button
                   type="button"

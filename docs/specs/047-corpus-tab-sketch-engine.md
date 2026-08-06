@@ -72,6 +72,10 @@ Added to `translations.csv` (all 31 locales): `title.corpus`, `title.collocation
 - **Collocation pills show `cm`** (the full collocation phrase, e.g. `学习 知识`)
   with the term highlighted, matching Classic's `Collocation.vue`, rather than
   the bare `word` field.
+- **Collocations are collapsible per category**: each grammatical-relation group
+  shows 3 words by default with a per-category `Show more (N)` / `Show less`
+  toggle (reusing `action.show_more` / `action.show_less`), mirroring Classic's
+  per-card `ShowMoreButton`.
 - **Stale dev-server messages**: new CSV keys require a restart of the web dev
   server to appear in the `packages/shared/locales/*.json` module (Turbopack
   caches the shared-package JSON import). The code and generated JSONs are
