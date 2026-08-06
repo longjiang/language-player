@@ -5,6 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { TokenizedText } from '@/components/tokenized-text';
 
 interface MistakesProps {
   word: string;
@@ -57,9 +58,13 @@ export function Mistakes({ word }: MistakesProps) {
                 <p className="text-xs text-muted-foreground/70">{mistake.leftContext}</p>
               ) : null}
               <p lang="zh" className="mt-1 text-sm leading-relaxed">
-                {mistake.left}
-                {word}
-                {mistake.right}
+                <TokenizedText
+                  text={`${mistake.left ?? ''}${word}${mistake.right ?? ''}`}
+                  l2Code="zh"
+                  textScale={0}
+                  leading="none"
+                  highlightSaved={false}
+                />
               </p>
               {mistake.rightContext ? (
                 <p className="mt-1 text-xs text-muted-foreground/70">{mistake.rightContext}</p>

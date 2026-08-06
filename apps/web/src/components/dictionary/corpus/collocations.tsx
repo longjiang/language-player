@@ -7,6 +7,7 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { TokenizedText } from '@/components/tokenized-text';
 
 interface CollocationsProps {
   word: string;
@@ -101,7 +102,13 @@ export function Collocations({ word, l2Code, corpname = null }: CollocationsProp
                       lang={baseCode(l2Code)}
                       className="rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-background"
                     >
-                      {display}
+                      <TokenizedText
+                        text={display}
+                        l2Code={l2Code}
+                        textScale={0}
+                        leading="none"
+                        highlightSaved={false}
+                      />
                     </li>
                   );
                 })}

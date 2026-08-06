@@ -6,6 +6,7 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { TokenizedText } from '@/components/tokenized-text';
 
 interface RelatedWordsProps {
   word: string;
@@ -60,7 +61,13 @@ export function RelatedWords({ word, l2Code, corpname = null }: RelatedWordsProp
               lang={baseCode(l2Code)}
               className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-1 text-sm text-foreground"
             >
-              {related.word}
+              <TokenizedText
+                text={related.word}
+                l2Code={l2Code}
+                textScale={0}
+                leading="none"
+                highlightSaved={false}
+              />
             </span>
           ))}
       </div>
