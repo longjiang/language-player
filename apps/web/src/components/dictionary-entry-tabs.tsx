@@ -73,6 +73,12 @@ export function DictionaryEntryTabs({
   const [exactMatch, setExactMatch] = useState(false);
   // Stable id array so TokenizedText's highlightEntryIdSet memo doesn't churn.
   const corpusHighlightEntryIds = useMemo(() => [entry.id], [entry.id]);
+  // Stable forms array so the corpus sections don't re-derive/retranslate on
+  // every parent render (they also feed the lazy-translation highlight terms).
+  const corpusHighlightForms = useMemo(
+    () => (allTerms.length ? allTerms : [entry.head]),
+    [allTerms, entry.head],
+  );
   // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
   const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
@@ -147,7 +153,7 @@ export function DictionaryEntryTabs({
             word={entry.head}
             l2Code={l2Code}
             l1Code={l1Code}
-            highlightForms={allTerms.length ? allTerms : [entry.head]}
+            highlightForms={corpusHighlightForms}
             highlightEntryIds={corpusHighlightEntryIds}
           />
         </div>
