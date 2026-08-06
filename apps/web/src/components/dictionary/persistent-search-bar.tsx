@@ -8,6 +8,7 @@ import { languageName } from '@/lib/language-data';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { Search, Loader2, X, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isSidebarAvailable } from '@/components/dictionary/word-list-sidebar';
 
 /**
  * Persistent search bar — always rendered in the dictionary layout.
@@ -24,6 +25,7 @@ export function PersistentSearchBar() {
     query, setQuery,
     loading, detailHead,
     cameFromSearch,
+    sidebarSource,
     sidebarOpen, setSidebarOpen,
     setMobileSidebarOpen,
     doSearch, handleSearch, clearSearch,
@@ -65,6 +67,9 @@ export function PersistentSearchBar() {
 
   // Back button: only on detail page + came from search
   const showBack = isDetailPage && cameFromSearch;
+
+  // Sidebar toggles only make sense while the sidebar has a list to show.
+  const sidebarAvailable = isSidebarAvailable(sidebarSource);
 
   return (
     <div className="flex items-center gap-3 py-4 bg-background">
@@ -122,23 +127,28 @@ export function PersistentSearchBar() {
         <span className="hidden sm:inline">{t('action.search')}</span>
       </Button>
 
-      {/* Sidebar toggle — mobile: opens the slide-in sheet */}
-      <button
-        onClick={() => setMobileSidebarOpen(true)}
-        className="lg:hidden flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        aria-label={t('action.show_sidebar')}
-      >
-        <PanelRight className="h-4 w-4" />
-      </button>
+      {/* Sidebar toggles — only when the sidebar is available (source list >1) */}
+      {sidebarAvailable && (
+        <>
+          {/* Mobile: opens the slide-in sheet */}
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="lg:hidden flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label={t('action.show_sidebar')}
+          >
+            <PanelRight className="h-4 w-4" />
+          </button>
 
-      {/* Sidebar toggle — desktop: collapses the persistent panel */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="hidden lg:flex flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        title={sidebarOpen ? t('action.hide_sidebar') : t('action.show_sidebar')}
-      >
-        {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-      </button>
+          {/* Desktop: collapses the persistent panel */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hidden lg:flex flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={sidebarOpen ? t('action.hide_sidebar') : t('action.show_sidebar')}
+          >
+            {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+          </button>
+        </>
+      )}
     </div>
   );
 }

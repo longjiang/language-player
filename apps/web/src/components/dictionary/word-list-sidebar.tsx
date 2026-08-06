@@ -20,6 +20,17 @@ export interface WordListSidebarProps {
 }
 
 /**
+ * Whether the dictionary sidebar has a source word list to show. It appears
+ * only when the user navigated to the entry from a word list with more than
+ * one item — otherwise it is unavailable.
+ */
+export function isSidebarAvailable(
+  source: SidebarSource,
+): source is Extract<SidebarSource, { kind: 'list' }> {
+  return source.kind === 'list' && source.items.length > 1;
+}
+
+/**
  * Dictionary sidebar — shows the word list the user navigated to the current
  * entry from (search results or saved words).
  *
@@ -36,12 +47,14 @@ export function WordListSidebar({
 }: WordListSidebarProps) {
   const t = useT();
 
-  if (source.kind !== 'list' || source.items.length <= 1) return null;
+  if (!isSidebarAvailable(source)) return null;
 
   const title =
     source.source === 'saved'
       ? t('title.saved_words')
-      : t('msg.result_count', { count: source.items.length });
+      : source.source === 'corpus'
+        ? t('title.related')
+        : t('msg.result_count', { count: source.items.length });
 
   return (
     <Sidebar
