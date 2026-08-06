@@ -55,8 +55,10 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
         });
-        if (res.status === 401) {
-          // Refresh token is dead — match Classic's auth-guard.js clean logout.
+        if (res.status === 401 || res.status === 400) {
+          // Refresh token is dead — GoTrue answers a rejected/rotated refresh
+          // token with 400 invalid_grant (not 401), so treat both as a dead
+          // session and clean-logout. Otherwise the app loops 401/400 forever.
           signOut({ redirect: false }).catch(() => {});
           return null;
         }
