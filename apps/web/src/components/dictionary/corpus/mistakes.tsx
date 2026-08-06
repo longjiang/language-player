@@ -58,9 +58,7 @@ export function Mistakes({ word }: MistakesProps) {
               ) : null}
               <p lang="zh" className="mt-1 text-sm leading-relaxed">
                 {mistake.left}
-                <span className="font-semibold text-red-600 dark:text-red-400">
-                  {word}
-                </span>
+                {word}
                 {mistake.right}
               </p>
               {mistake.rightContext ? (
