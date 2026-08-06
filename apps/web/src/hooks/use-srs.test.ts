@@ -369,6 +369,62 @@ describe('Daily New Card Limit', () => {
 
       expect(remainingNewCardsToday(cards)).toBe(0);
     });
+
+    it('caps the new deck: unreviewed cards from previous days still count toward the limit', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
+
+      // 20 cards created yesterday, never rated — still in the "new" (blue) deck
+      const cards: Record<string, SrsFields> = {};
+      for (let i = 0; i < 20; i++) {
+        cards[`card-${i}`] = cardAt({ createdAt: yesterday, lastReview: yesterday });
+      }
+
+      // Nothing created today, but the deck is already full → nothing to add.
+      // This is the "user never reviews" case: 20 stays 20, not 40, 60, ...
+      expect(remainingNewCardsToday(cards)).toBe(0);
+    });
+
+    it('frees budget as unreviewed new cards are reviewed out of the deck', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
+
+      const cards: Record<string, SrsFields> = {};
+      // 15 still-unreviewed new cards from yesterday (blue)
+      for (let i = 0; i < 15; i++) {
+        cards[`new-${i}`] = cardAt({ createdAt: yesterday, lastReview: yesterday });
+      }
+      // 5 graduated yesterday (reviewed Good → green), no longer in the new deck
+      for (let i = 0; i < 5; i++) {
+        cards[`done-${i}`] = cardAt({
+          createdAt: yesterday,
+          lastReview: yesterday,
+          repetitions: 1,
+          interval: 1,
+          nextReview: yesterday + 86_400_000,
+        });
+      }
+
+      expect(remainingNewCardsToday(cards)).toBe(5);
+    });
+
+    it('failed (again) cards leave the new deck and free up budget', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
+
+      // 20 cards created yesterday, all failed once → red (relearning), not new
+      const cards: Record<string, SrsFields> = {};
+      for (let i = 0; i < 20; i++) {
+        cards[`card-${i}`] = cardAt({
+          createdAt: yesterday,
+          lastReview: yesterday + 60_000, // rated (failed) after creation
+          nextReview: yesterday + 60_000,
+        });
+      }
+
+      // All left the new deck, so the full budget is available again
+      expect(remainingNewCardsToday(cards)).toBe(20);
+    });
   });
 });
 

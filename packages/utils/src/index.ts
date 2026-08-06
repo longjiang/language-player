@@ -24,6 +24,7 @@ export {
   getDueCards,
   countDueCards,
   countNewCardsToday,
+  countUnreviewedNewCards,
   remainingNewCardsToday,
   DEFAULT_DAILY_NEW_LIMIT,
   nextReviewText,

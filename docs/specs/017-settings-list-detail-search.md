@@ -232,7 +232,7 @@ Each detail screen is self-contained (~50–150 lines). It receives settings via
 
 **`speech.tsx`** — VoicePicker (Select-based per SPEC-016), rate slider.
 
-**`review.tsx`** — New cards per day stepper (1–50).
+**`review.tsx`** — New cards per day stepper (1–200).
 
 #### 2.4 iPad Split View
 
@@ -334,7 +334,7 @@ SettingsContext (global state)
 ├── settings.playback.autoPause → boolean
 ├── settings.speech.voiceURI → string | undefined
 ├── settings.speech.rate → 0.25–2.0
-├── settings.review.newCardsPerDay → 1–50
+├── settings.review.newCardsPerDay → 1–200
 └── l2Settings[code].display.byeonggi → boolean (Korean hanja / Vietnamese hán tự)
 ```
 

@@ -66,7 +66,7 @@ This document analyzes how settings are stored, mutated, and synced across all t
 | `phonetics`, `traditional`, `phoneticsOnly`, `phoneticsForHardWordsOnly` | **Per-L2** | Phonetic needs differ by language (pinyin for zh, furigana for ja, none for en). `hardWords`: a word is "hard" if its `levels[].numeric` or `frequencyLevel` ≥ user's level, OR if the entry is cached but has neither — unknown words are treated as hard. Words not yet in cache are NOT shown (wait for async lookup). |
 | `voiceURI`, `speechRate` | **Per-L2** | TTS voice and speed are language-specific |
 | `tvShowFilter`, `categoryFilter` | **Per-L2** | Content filters are language-scoped |
-| `dailyNewLimit` | **Global** | SRS queue is shared across all languages |
+| `dailyNewLimit` | **Global** | The setting is one global number (set to 50 → 50 for every L2). But the new-card budget is ENFORCED per language — each L2's review deck gets its own `dailyNewLimit` cards/day, computed against that language's cards only. Russian having more cards never reduces Japanese's budget; the budgets don't share a pool |
 
 | App | Per-L2 Keying | Mechanism |
 |---|---|---|
@@ -112,7 +112,7 @@ The Next.js Web app currently has **three independent settings mechanisms** with
 - **Pattern:** React hook + context (`SrsProvider`)
 - **Reactivity:** ✅ Reads via React state
 - **Sync:** ✅ Debounced 3s cloud sync via `POST /user-data/sync` → Directus `user_data.srs_progress`
-- **Per-L2:** ❌ Global only (though SRS cards are per-language)
+- **Per-L2:** ❌ Single global value (the new-card budget it controls is still enforced per language)
 - **Note:** `dailyNewLimit` is piggybacked inside the SRS progress blob; it's not a standalone setting
 
 ### Summary of Current Problems
@@ -238,7 +238,7 @@ SettingsV2
 |---|---|---|
 | `global.display` + `l2[L2].display` | Global + Per-L2 | **Display** — translations, phonetics, script, zoom, font |
 | `l2[L2].speech` | Per-L2 | **Pronunciation** — TTS voice, speech rate |
-| `global.review` | Global | **Review** — daily new card limit |
+| `global.review` | Global (single value, enforced per L2) | **Review** — daily new card limit |
 | `global.playback` | Global | *(future tab)* — speed, auto-pause, karaoke, scroll, collapse |
 | `global.interaction` | Global | *(grouped into Display tab)* — quiz mode, auto-pronounce, disable popup |
 | `global.theme` | Global | *(app-level, not in settings page)* — light/dark/system |
@@ -255,7 +255,7 @@ Classic mixes global and per-language properties in one flat object with a neste
 | `global` | Applies everywhere, regardless of L2 | `theme`, `playback`, `display`, `interaction`, `review` |
 | `l2` | Scoped to the target language being learned | `display.phonetics`, `speech.voiceURI`, `content.tvShowFilter` |
 
-`learning` has been folded into `global.review` since `dailyNewLimit` is the only learning parameter and is global.
+`learning` has been folded into `global.review` since `dailyNewLimit` is the only learning parameter. The value is a single global number, but it's applied per language — each L2's deck gets its own `dailyNewLimit` new cards per day, matching the per-language SRS card store.
 
 #### Why nest by functional category?
 
@@ -275,7 +275,7 @@ A user might prefer 0.75× speed for a difficult language (Japanese) but 1.25× 
 
 #### Why is `dailyNewLimit` in `global.review` instead of a separate `learning` key?
 
-It's the only learning parameter and it's global. Nesting it under `global.review` keeps the top-level keys to two (`global` + `l2`) and maps directly to the Review tab in the settings page. If per-language limits are needed later, it can move into `L2Settings` without breaking the schema.
+It's the only learning parameter. Nesting it under `global.review` keeps the top-level keys to two (`global` + `l2`) and maps directly to the Review tab in the settings page. The value is a single number, but the daily budget it controls is applied per language — each L2's review deck gets its own `dailyNewLimit` new cards per day, matching the per-language SRS card store. If genuinely per-language limit *values* are needed later, it can move into `L2Settings` without breaking the schema.
 
 #### Why NOT include SRS cards in this store?
 
