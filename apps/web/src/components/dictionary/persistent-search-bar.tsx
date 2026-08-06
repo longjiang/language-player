@@ -8,6 +8,7 @@ import { languageName, baseCode } from '@/lib/language-data';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { log, logwarn } from '@/lib/logger';
 import { Search, Loader2, X, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isSidebarAvailable } from '@/components/dictionary/word-list-sidebar';
@@ -70,18 +71,32 @@ export function PersistentSearchBar() {
     }
     const seq = ++acSeqRef.current;
     debounceRef.current = setTimeout(async () => {
+      const startedAt = performance.now();
+      const l2Code = baseCode(l2.code);
+      log('Dictionary autocomplete request:', { text: trimmed, l2: l2Code });
       setAcLoading(true);
       setAcOpen(true);
       try {
-        const res = await dict.autocomplete(trimmed, baseCode(l2.code));
+        const res = await dict.autocomplete(trimmed, l2Code);
         if (seq !== acSeqRef.current) return; // stale — a newer keystroke won
         const results = res.results ?? [];
         setSuggestions(results);
         setAcOpen(results.length > 0);
-      } catch {
+        log('Dictionary autocomplete:', {
+          text: trimmed,
+          l2: l2Code,
+          results: results.length,
+          ms: Math.round(performance.now() - startedAt),
+        });
+      } catch (err) {
         if (seq === acSeqRef.current) {
           setSuggestions(null);
           setAcOpen(false);
+          logwarn('Dictionary autocomplete failed:', {
+            text: trimmed,
+            l2: l2Code,
+            error: err instanceof Error ? err.message : err,
+          });
         }
       } finally {
         if (seq === acSeqRef.current) setAcLoading(false);
