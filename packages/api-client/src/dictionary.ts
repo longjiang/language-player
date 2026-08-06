@@ -26,7 +26,7 @@ export function useDictionary() {
     /**
      * Fast, LLM-free autocomplete suggestions for a partial query.
      * POST /dictionary/autocomplete — English definitions only (l1 unset),
-     * ranked for prefix relevance, capped at 6 results. byDefinition adds
+     * ranked for prefix relevance, capped at 10 results. byDefinition adds
      * English-definition matches.
      */
     autocomplete: (text: string, l2: string, byDefinition = false) =>
