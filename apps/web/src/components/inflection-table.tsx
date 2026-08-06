@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useInflection } from '@langplayer/api-client';
-import type { InflectedForm } from '@langplayer/shared';
+import { isInflectable, type InflectedForm } from '@langplayer/shared';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
+import { baseCode } from '@/lib/language-data';
 
-/** ISO 639-1 → ISO 639-3 mappings for languages with inflection support. */
+/** ISO 639-1 → ISO 639-3 mappings for languages with inflection support.
+ *  Membership is decided by @langplayer/shared's isInflectable(). */
 const ISO_639_1_TO_3: Record<string, string> = {
   ja: 'jpn',
   ko: 'kor',
@@ -58,8 +60,8 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const iso639_3 = ISO_639_1_TO_3[l2Code];
-  const isSupported = iso639_3 != null;
+  const iso639_3 = ISO_639_1_TO_3[baseCode(l2Code)];
+  const isSupported = isInflectable(l2Code) && iso639_3 != null;
 
   useEffect(() => {
     if (!isSupported || !head) return;
@@ -69,14 +71,15 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
     setError(null);
 
     let promise: Promise<InflectedForm[]>;
+    const base = baseCode(l2Code);
 
-    if (JP_LANGS.has(l2Code)) {
+    if (JP_LANGS.has(base)) {
       promise = inflection.japanese(head, verbType);
-    } else if (KO_LANGS.has(l2Code)) {
+    } else if (KO_LANGS.has(base)) {
       promise = inflection.korean(head);
-    } else if (PATTERN_LANGS.has(l2Code)) {
+    } else if (PATTERN_LANGS.has(base)) {
       promise = inflection.pattern(head, iso639_3);
-    } else if (PYMORPHY_LANGS.has(l2Code)) {
+    } else if (PYMORPHY_LANGS.has(base)) {
       promise = inflection.pymorphy(head, iso639_3);
     } else {
       setLoading(false);

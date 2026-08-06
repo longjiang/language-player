@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { isInflectable } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { baseCode } from '@/lib/language-data';
 import {
@@ -126,7 +127,7 @@ export function useInflectedSearchTerms(
       // 2. Inflected forms from Python backend
       let inflected: string[] = [];
       const endpoint = inflectionEndpoint(base);
-      if (endpoint) {
+      if (isInflectable(base) && endpoint) {
         try {
           const res = await fetch(
             `${PYTHON_API_URL}${endpoint}?text=${encodeURIComponent(e.head)}&lang=${base}`,
