@@ -16,6 +16,8 @@ interface CollocationsProps {
   corpname?: string | null;
   /** Word forms (head + variants + inflections) to highlight in each phrase. */
   highlightForms?: string[];
+  /** Dictionary entry ids to highlight by identity (e.g. the entry being viewed). */
+  highlightEntryIds?: string[];
 }
 
 /** Words shown per grammatical-relation group before the user expands it. */
@@ -25,7 +27,7 @@ const DEFAULT_VISIBLE = 3;
  * Word sketch — collocations grouped by grammatical relation.
  * GET /sketch-engine/collocations?word=&l2=  (ARCH-020 §7.1)
  */
-export function Collocations({ word, l2Code, corpname = null, highlightForms = [] }: CollocationsProps) {
+export function Collocations({ word, l2Code, corpname = null, highlightForms = [], highlightEntryIds = [] }: CollocationsProps) {
   const t = useT();
   /** Gramrel indices the user has expanded to see all their collocations. */
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -111,6 +113,7 @@ export function Collocations({ word, l2Code, corpname = null, highlightForms = [
                         leading="none"
                         highlightSaved={false}
                         highlightForms={highlightForms}
+                        highlightEntryIds={highlightEntryIds}
                       />
                     </li>
                   );

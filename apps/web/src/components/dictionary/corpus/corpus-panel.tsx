@@ -22,6 +22,8 @@ interface CorpusPanelProps {
   l1Code?: string;
   /** Word forms (head + script variants + inflections) to highlight in the sections. */
   highlightForms?: string[];
+  /** Dictionary entry ids to highlight by identity (e.g. the entry being viewed). */
+  highlightEntryIds?: string[];
 }
 
 /**
@@ -32,7 +34,7 @@ interface CorpusPanelProps {
  * Sections stay mounted (hidden) once the panel opens, so each fetches exactly
  * once — matching the prefetch strategy used by the parent DictionaryEntryTabs.
  */
-export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [] }: CorpusPanelProps) {
+export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [], highlightEntryIds = [] }: CorpusPanelProps) {
   const t = useT();
   const showMistakes = baseCode(l2Code) === 'zh';
   const [active, setActive] = useState<CorpusPill>('collocations');
@@ -74,19 +76,19 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [] }
 
       {/* Sections stay mounted so their fetches start when the panel opens */}
       <div className={active === 'collocations' ? '' : 'hidden'}>
-        <Collocations word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} />
+        <Collocations word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
       </div>
       <div className={active === 'examples' ? '' : 'hidden'}>
-        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} />
+        <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
       </div>
       <div className={active === 'related' ? '' : 'hidden'}>
-        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} />
+        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
       </div>
       {/* Mistakes always query the fixed guangwai learner corpus — the
           backend ignores corpname, so don't pass a selection. */}
       {showMistakes && (
         <div className={active === 'mistakes' ? '' : 'hidden'}>
-          <Mistakes word={word} highlightForms={highlightForms} />
+          <Mistakes word={word} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
         </div>
       )}
 
