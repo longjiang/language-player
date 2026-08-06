@@ -446,6 +446,18 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
 
+  // Target highlight for the context sentence: match by ALL of the saved
+  // word's forms (head + inflections) and by dictionary-entry id — not just
+  // the exact `context.form`. The sentence may contain an inflected surface
+  // form (e.g. 言い寄りました) that differs from the head form (言い寄る); the
+  // dictionary tabs already use this highlightForms + highlightEntryIds
+  // pattern. Stable id array so TokenizedText's highlightEntryIdSet memo
+  // doesn't churn on every render.
+  const targetHighlightEntryIds = useMemo(
+    () => (currentCard ? [currentCard.word.id] : []),
+    [currentCard?.word.id],
+  );
+
   // ── Clear stale context translation when card changes ──
   useEffect(() => {
     setContextTranslation(null);
@@ -709,6 +721,8 @@ export default function ReviewPage() {
                 text={wordCtx.text}
                 l2Code={l2Code}
                 highlightForm={wordCtx.form}
+                highlightForms={currentCard.word.forms}
+                highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
                 context={{
