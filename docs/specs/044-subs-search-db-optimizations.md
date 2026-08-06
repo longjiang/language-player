@@ -538,11 +538,10 @@ attempted on 2026-08-06:
   routing code (`subs_l2 &@| …`, auto-detected) is committed but **dormant**
   (gated on index validity) and will activate automatically if a later build
   succeeds.
-- **Cleanup required after the instance recovers** (a Supabase restart /
-  support ticket clears the stuck backend):
-  `drop index youtube_videos_subs_l2_pgroonga_idx;` — the cancelled
-  CONCURRENTLY build left it invalid. The `pgroonga` extension itself is
-  harmless and can stay for a retry after the compute upgrade.
+- **Cleanup done (2026-08-06)**: after a Supabase restart cleared the stuck
+  backend, `youtube_videos_subs_l2_pgroonga_idx` was dropped (the cancelled
+  CONCURRENTLY build had left it invalid). The `pgroonga` extension remains
+  installed (harmless) for a retry after the compute upgrade.
 - **Conclusion**: neither bypass is usable until the storage-layer issue is
   fixed (compute upgrade / Supabase support). Option A is a strict
   improvement and is live in the meantime. See the blocker diagnosis above.
