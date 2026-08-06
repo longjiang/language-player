@@ -62,6 +62,49 @@ export function setCachedEntryById(l2Code: string, entry: DictionaryEntry): void
   }
 }
 
+// ── L1-translated entries ──
+// key = `${l2Code}:${l1Code}:${entryId}` → entry whose definitions are already
+// translated into l1. Populated by the review back side and the dictionary
+// popup so an entry's L1 translation is fetched at most once per (l2, l1) —
+// the server re-translates on every call, so duplicate fetches are redundant
+// and produce slightly different wording.
+const l1Cache = new Map<string, DictionaryEntry>();
+
+/** Get an L1-translated entry by its ID, or undefined if not yet fetched. */
+export function getL1CachedEntry(
+  l2Code: string,
+  l1Code: string,
+  entryId: string,
+): DictionaryEntry | undefined {
+  return l1Cache.get(`${l2Code}:${l1Code}:${entryId}`);
+}
+
+/** Get every L1-translated entry already cached for the given entry IDs. */
+export function getL1CachedEntries(
+  l2Code: string,
+  l1Code: string,
+  entryIds: string[],
+): DictionaryEntry[] {
+  const out: DictionaryEntry[] = [];
+  for (const id of entryIds) {
+    const entry = l1Cache.get(`${l2Code}:${l1Code}:${id}`);
+    if (entry) out.push(entry);
+  }
+  return out;
+}
+
+/** Cache an L1-translated entry by its ID. */
+export function setL1CachedEntry(
+  l2Code: string,
+  l1Code: string,
+  entry: DictionaryEntry,
+): void {
+  if (!entry?.id) return;
+  l1Cache.set(`${l2Code}:${l1Code}:${entry.id}`, entry);
+  _cacheVersion++;
+  notify();
+}
+
 // ── Debug helpers ──
 
 /** List all ID cache keys (for debugging). */

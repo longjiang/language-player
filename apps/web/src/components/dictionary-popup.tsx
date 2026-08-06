@@ -16,7 +16,8 @@ import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { getCachedEntries, setCachedEntries, subscribeToCache } from '@/lib/dictionary-cache';
+import { getCachedEntries, setCachedEntries, subscribeToCache, getL1CachedEntries, setL1CachedEntry } from '@/lib/dictionary-cache';
+import { lookupL1Text } from '@/lib/l1-lookup';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -228,6 +229,12 @@ export function DictionaryPopup({
             // Cache the results for future use
             if (results.length > 0) {
               setCachedEntries(l2Code, text, results);
+              // lookupWord always sends l1 — when non-English, the results are
+              // already L1-translated; index them by id so the review back
+              // side reuses the exact same translation.
+              if (l1Code !== 'en') {
+                for (const e of results) setL1CachedEntry(baseCode(l2Code), l1Code, e);
+              }
             }
             allEntries.push(...results);
           }
@@ -251,19 +258,29 @@ export function DictionaryPopup({
       // clicks a word and their L1 is not English, fetch translated definitions
       // and replace the displayed entries once they arrive.
       if (cacheHit && l1Code !== 'en' && !cancelled) {
-        for (const text of texts) {
-          if (cancelled) break;
-          const results = await lookupWord(text, controller.signal);
-          if (!cancelled && results.length > 0) {
-            // Cache the L1-translated results so future lookups get them directly
-            setCachedEntries(l2Code, text, results);
-            const seen2 = new Set<string>();
-            const deduped2 = results.filter((e) => {
-              if (seen2.has(e.id)) return false;
-              seen2.add(e.id);
-              return true;
-            });
-            setEntries(deduped2);
+        // Reuse L1-translated entries already fetched (e.g. by the review back
+        // side) — keyed by entry id, so the same entry's definitions are
+        // translated only once instead of on every lookup.
+        const l2 = baseCode(l2Code);
+        const currentIds = allEntries.map((e) => e.id).filter(Boolean);
+        const cachedL1 = getL1CachedEntries(l2, l1Code, currentIds);
+        if (cachedL1.length > 0) {
+          const cachedL1Ids = new Set(cachedL1.map((e) => e.id));
+          setEntries([
+            ...cachedL1,
+            ...allEntries.filter((e) => !cachedL1Ids.has(e.id)),
+          ]);
+        } else {
+          // lookupL1Text dedupes concurrent fetches (the review back side
+          // shares this path) and caches every result by entry id.
+          for (const text of texts) {
+            if (cancelled) break;
+            const results = await lookupL1Text(text, l2Code, l1Code);
+            if (cancelled || results.length === 0) continue;
+            // Swap in L1-translated versions of the displayed entries; keep any
+            // entry the lookup didn't translate.
+            const byId = new Map(results.map((e) => [e.id, e]));
+            setEntries(allEntries.map((e) => byId.get(e.id) ?? e));
             break;
           }
         }

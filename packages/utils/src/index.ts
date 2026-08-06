@@ -9,6 +9,9 @@ export {
   setCachedEntryById,
   getIdCacheKeys,
   getTextCacheKeys,
+  getL1CachedEntry,
+  getL1CachedEntries,
+  setL1CachedEntry,
 } from './dictionary-cache';
 export { formatDuration, formatNumber, formatRelativeDate } from './format';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';

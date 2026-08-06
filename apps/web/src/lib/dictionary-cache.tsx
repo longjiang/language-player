@@ -14,4 +14,7 @@ export {
   subscribeToCache,
   bulkLookupWords,
   enqueueLookupWords,
+  getL1CachedEntry,
+  getL1CachedEntries,
+  setL1CachedEntry,
 } from '@langplayer/utils';
