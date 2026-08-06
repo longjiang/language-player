@@ -108,6 +108,13 @@ export function countDueCards(cards: Record<string, SrsFields>): number {
 /** Default max new cards introduced per day. */
 export const DEFAULT_DAILY_NEW_LIMIT = 20;
 
+/** A "new" (blue) card — created but never rated yet. A card leaves the new
+ *  deck the moment it's rated, whether it passed (green) or failed (red). */
+export function isNewCard(card: SrsFields): boolean {
+  const createdAt = card.createdAt ?? 0;
+  return card.repetitions === 0 && (card.lastReview ?? createdAt) <= createdAt;
+}
+
 /** Count how many cards were created today (by createdAt timestamp). */
 export function countNewCardsToday(cards: Record<string, SrsFields>): number {
   const todayStart = new Date();
@@ -123,9 +130,8 @@ export function countNewCardsToday(cards: Record<string, SrsFields>): number {
 
 /**
  * Count cards created before today that are still sitting unreviewed in the
- * "new" deck (still blue — never rated). A card leaves the new deck the moment
- * it's rated, whether it passed (green) or failed (red/again). Cards created
- * today are skipped — they're already counted by `countNewCardsToday()`.
+ * "new" deck (still blue — never rated). Cards created today are skipped —
+ * they're already counted by `countNewCardsToday()`.
  */
 export function countUnreviewedNewCards(cards: Record<string, SrsFields>): number {
   const todayStart = new Date();
@@ -136,8 +142,7 @@ export function countUnreviewedNewCards(cards: Record<string, SrsFields>): numbe
   for (const c of Object.values(cards)) {
     const createdAt = c.createdAt ?? 0;
     if (createdAt >= cutoff) continue; // introduced today → counted by countNewCardsToday
-    const lastReview = c.lastReview ?? createdAt;
-    if (c.repetitions === 0 && lastReview <= createdAt) count++;
+    if (isNewCard(c)) count++;
   }
   return count;
 }
@@ -155,6 +160,43 @@ export function remainingNewCardsToday(
   limit: number = DEFAULT_DAILY_NEW_LIMIT,
 ): number {
   return Math.max(0, limit - countNewCardsToday(cards) - countUnreviewedNewCards(cards));
+}
+
+/**
+ * Compute the blue ("new") deck: the `limit` most recently saved words that
+ * have no card yet or an unreviewed (blue) card, newest-saved first.
+ *
+ * New saves displace the oldest blue cards when the deck is full — a freshly
+ * saved word enters the deck and the least-recent blue card is pushed back
+ * (its card is removed) to make room. Rated cards (green/red) are never
+ * displaced.
+ *
+ * @param savedWords Saved lexical items (only `id` and save `date` are read).
+ * @param cards      Current SRS cards for this language (wordId → SrsFields).
+ * @param limit      Max blue deck size (the daily new-card limit).
+ * @returns `toCreate` — word ids that should get a brand-new card,
+ *          `toRemove` — word ids whose blue cards should be dropped.
+ */
+export function planNewDeck(
+  savedWords: Array<{ id: string; date?: number }>,
+  cards: Record<string, SrsFields>,
+  limit: number,
+): { toCreate: string[]; toRemove: string[] } {
+  const cap = Math.max(0, Math.floor(limit));
+
+  const pool = savedWords
+    .filter((sw) => {
+      const srs = cards[sw.id];
+      return !srs || isNewCard(srs);
+    })
+    .sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
+
+  const desired = pool.slice(0, cap);
+
+  return {
+    toCreate: desired.filter((sw) => !cards[sw.id]).map((sw) => sw.id),
+    toRemove: pool.slice(cap).filter((sw) => cards[sw.id]).map((sw) => sw.id),
+  };
 }
 
 /** Get the next review time as a human-readable countdown. */

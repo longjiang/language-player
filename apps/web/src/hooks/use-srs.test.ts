@@ -16,6 +16,8 @@ import {
   getDueCards,
   countDueCards,
   countNewCardsToday,
+  isNewCard,
+  planNewDeck,
   remainingNewCardsToday,
   DEFAULT_DAILY_NEW_LIMIT,
   createSrsStore,
@@ -426,6 +428,79 @@ describe('Daily New Card Limit', () => {
       expect(remainingNewCardsToday(cards)).toBe(20);
     });
   });
+
+  describe('isNewCard()', () => {
+    it('returns true for a brand-new card', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const card = newCard();
+      expect(isNewCard(card)).toBe(true);
+    });
+
+    it('returns false after a failed (again) rating', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const card = newCard();
+      advanceTime(1000); // user rates it Again a moment later
+      const failed = sm2(card, 0);
+      expect(isNewCard(failed)).toBe(false);
+    });
+
+    it('returns false after a passing (good) rating', () => {
+      setNow(new Date('2026-07-14T12:00:00Z').getTime());
+      const card = newCard();
+      advanceTime(1000);
+      const passed = sm2(card, 4);
+      expect(isNewCard(passed)).toBe(false);
+    });
+  });
+
+  describe('planNewDeck()', () => {
+    it('creates cards for the newest saved words up to the limit', () => {
+      const savedWords = [
+        { id: 'old', date: 100 },
+        { id: 'mid', date: 200 },
+        { id: 'new', date: 300 },
+      ];
+      const plan = planNewDeck(savedWords, {}, 2);
+      expect(plan.toCreate).toEqual(['new', 'mid']);
+      expect(plan.toRemove).toEqual([]);
+    });
+
+    it('new saves displace the oldest blue card when the deck is full', () => {
+      // Blue deck: a1 (newest), a2, a3 (oldest)
+      const cards: Record<string, SrsFields> = {
+        a1: cardAt({ createdAt: 300, lastReview: 300 }),
+        a2: cardAt({ createdAt: 200, lastReview: 200 }),
+        a3: cardAt({ createdAt: 100, lastReview: 100 }),
+      };
+      const savedWords = [
+        { id: 'a3', date: 100 },
+        { id: 'a2', date: 200 },
+        { id: 'a1', date: 300 },
+        { id: 'b1', date: 400 }, // newly saved
+      ];
+      const plan = planNewDeck(savedWords, cards, 3);
+      expect(plan.toCreate).toEqual(['b1']); // newest word gets a card
+      expect(plan.toRemove).toEqual(['a3']); // oldest blue is pushed back
+    });
+
+    it('leaves rated cards untouched', () => {
+      const cards: Record<string, SrsFields> = {
+        green: cardAt({ createdAt: 100, lastReview: 100, repetitions: 1, interval: 1, nextReview: 999 }),
+        blue: cardAt({ createdAt: 200, lastReview: 200 }),
+      };
+      const savedWords = [
+        { id: 'green', date: 100 },
+        { id: 'blue', date: 200 },
+      ];
+      const plan = planNewDeck(savedWords, cards, 3);
+      expect(plan.toCreate).toEqual([]);
+      expect(plan.toRemove).toEqual([]);
+    });
+
+    it('returns an empty plan for no saved words', () => {
+      expect(planNewDeck([], {}, 20)).toEqual({ toCreate: [], toRemove: [] });
+    });
+  });
 });
 
 // ────────────────────────────────────────────────
@@ -465,16 +540,19 @@ describe('SRS Multi-Day Simulation', () => {
     // Helper: add new words to the store (mimics auto-initialization)
     function introduceNewCards(wordIds: string[], limit: number) {
       const langCards = getLanguageCards(store, l2);
-      const unscheduled = wordIds.filter((id) => !langCards[id]);
-      const remaining = remainingNewCardsToday(langCards, limit);
-      const toAdd = unscheduled.slice(0, remaining);
+      // Later words are treated as newer saves (date = array index).
+      const saved = wordIds.map((id, i) => ({ id, date: i }));
+      const plan = planNewDeck(saved, langCards, limit);
 
-      for (const id of toAdd) {
+      for (const id of plan.toRemove) {
+        delete store.cards[l2]?.[id];
+      }
+      for (const id of plan.toCreate) {
         const card = newCard();
         card.nextReview = currentTime; // due now
         store.cards[l2] = { ...store.cards[l2], [id]: card };
       }
-      return toAdd.length;
+      return plan.toCreate.length;
     }
 
     // Helper: review all due cards with a given quality

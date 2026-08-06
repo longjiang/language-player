@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
-import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
+import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -87,27 +87,31 @@ export default function ReviewScreen() {
   const lastCardIdRef = useRef<string | null>(null);
 
   // ── Auto-initialize SRS cards for saved words that don't have them ──
+  // The blue ("new") deck always holds the `dailyNewLimit` most recently saved
+  // words that haven't been rated yet. Newly saved words displace the oldest
+  // blue cards when the deck is full (their cards are removed and re-queued).
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
-    const unscheduled = l2SavedWords.filter((sw) => !langCards[sw.id]);
+    const plan = planNewDeck(l2SavedWords, langCards, dailyNewLimit);
 
-    if (unscheduled.length > 0) {
-      const remaining = remainingNewCardsToday(langCards, dailyNewLimit);
-      const toAdd = unscheduled.slice(0, Math.max(0, remaining));
-
-      if (toAdd.length > 0) {
-        setInitializing(true);
-        for (const sw of toAdd) {
-          const card = newCard();
-          card.nextReview = Date.now(); // due now
-          updateCard(l2Code, sw.id, card);
-        }
-        setTimeout(() => setInitializing(false), 100);
-      }
+    // Push back: drop blue cards that fell outside the newest `dailyNewLimit`.
+    for (const id of plan.toRemove) {
+      removeCard(l2Code, id);
     }
-  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyNewLimit, updateCard]);
+
+    // Introduce: create due-now cards for the newest unrated words lacking one.
+    if (plan.toCreate.length > 0) {
+      setInitializing(true);
+      for (const id of plan.toCreate) {
+        const card = newCard();
+        card.nextReview = Date.now(); // due now
+        updateCard(l2Code, id, card);
+      }
+      setTimeout(() => setInitializing(false), 100);
+    }
+  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyNewLimit, updateCard, removeCard]);
 
   // ── Compute due cards ──
   const dueCards = useMemo(() => {
@@ -330,10 +334,10 @@ export default function ReviewScreen() {
     for (const c of cards) {
       if (c.srs.repetitions >= 1) {
         reviewCount++;
-      } else if (c.srs.lastReview > (c.srs.createdAt ?? 0)) {
-        againCount++;
-      } else {
+      } else if (isNewCard(c.srs)) {
         newCount++;
+      } else {
+        againCount++;
       }
     }
     return { newCount, againCount, reviewCount };
@@ -393,8 +397,7 @@ export default function ReviewScreen() {
       .sort((a, b) => a.nextReview - b.nextReview)[0];
 
     const unscheduledCount = l2SavedWords.filter((sw) => !langCards[sw.id]).length;
-    const remaining = remainingNewCardsToday(langCards, dailyNewLimit);
-    const queued = unscheduledCount > 0 && remaining === 0;
+    const queued = unscheduledCount > 0;
 
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
@@ -409,9 +412,6 @@ export default function ReviewScreen() {
           )}
           {queued && (
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
-          )}
-          {unscheduledCount > 0 && remaining > 0 && (
-            <> {remaining} {t('msg.new_cards_available', { count: remaining, limit: dailyNewLimit })}</>
           )}
         </Text>
       </View>

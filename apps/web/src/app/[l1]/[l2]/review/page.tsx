@@ -9,7 +9,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
+import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, enqueueLookupWords } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
@@ -104,28 +104,31 @@ export default function ReviewPage() {
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   // ── Auto-initialize SRS cards for saved words that don't have them ──
+  // The blue ("new") deck always holds the `dailyLimit` most recently saved
+  // words that haven't been rated yet. Newly saved words displace the oldest
+  // blue cards when the deck is full (their cards are removed and re-queued).
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
-    const unscheduled = l2SavedWords.filter((sw) => !langCards[sw.id]);
+    const plan = planNewDeck(l2SavedWords, langCards, dailyLimit);
 
-    if (unscheduled.length > 0) {
-      // Respect daily new card limit
-      const remaining = remainingNewCardsToday(langCards, dailyLimit);
-      const toAdd = unscheduled.slice(0, Math.max(0, remaining));
-
-      if (toAdd.length > 0) {
-        setInitializing(true);
-        for (const sw of toAdd) {
-          const card = newCard();
-          card.nextReview = Date.now(); // due now
-          updateCard(l2Code, sw.id, card);
-        }
-        setTimeout(() => setInitializing(false), 100);
-      }
+    // Push back: drop blue cards that fell outside the newest `dailyLimit`.
+    for (const id of plan.toRemove) {
+      removeCard(l2Code, id);
     }
-  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard]);
+
+    // Introduce: create due-now cards for the newest unrated words lacking one.
+    if (plan.toCreate.length > 0) {
+      setInitializing(true);
+      for (const id of plan.toCreate) {
+        const card = newCard();
+        card.nextReview = Date.now(); // due now
+        updateCard(l2Code, id, card);
+      }
+      setTimeout(() => setInitializing(false), 100);
+    }
+  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -432,10 +435,10 @@ export default function ReviewPage() {
     for (const c of cards) {
       if (c.srs.repetitions >= 1) {
         reviewCount++;
-      } else if (c.srs.lastReview > (c.srs.createdAt ?? 0)) {
-        againCount++;
-      } else {
+      } else if (isNewCard(c.srs)) {
         newCount++;
+      } else {
+        againCount++;
       }
     }
     return { newCount, againCount, reviewCount };
@@ -618,8 +621,7 @@ export default function ReviewPage() {
       .sort((a, b) => a.nextReview - b.nextReview)[0];
 
     const unscheduledCount = l2SavedWords.filter((sw) => !langCards[sw.id]).length;
-    const remaining = remainingNewCardsToday(langCards, dailyLimit);
-    const queued = unscheduledCount > 0 && remaining === 0;
+    const queued = unscheduledCount > 0;
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -634,9 +636,6 @@ export default function ReviewPage() {
           )}
           {queued && (
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
-          )}
-          {unscheduledCount > 0 && remaining > 0 && (
-            <> {remaining} {t('msg.new_cards_available', { count: remaining, limit: dailyLimit })}</>
           )}
         </p>
         <Link href={`/${l1.code}/${l2.code}/explore`}>
