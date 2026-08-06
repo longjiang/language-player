@@ -16,11 +16,11 @@ export function ReviewSettings() {
           desc={t('msg.new_cards_per_day_desc')}
           value={review.dailyNewLimit}
           min={1}
-          max={50}
+          max={200}
           onValueChange={(v) => updateReview({ dailyNewLimit: v })}
           leftLabel="1"
           centerLabel={t('msg.default_value', { n: 20 })}
-          rightLabel="50"
+          rightLabel="200"
         />
       </View>
     </ScrollView>

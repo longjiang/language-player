@@ -121,12 +121,40 @@ export function countNewCardsToday(cards: Record<string, SrsFields>): number {
   return count;
 }
 
-/** How many more new cards can be introduced today. Never negative. */
+/**
+ * Count cards created before today that are still sitting unreviewed in the
+ * "new" deck (still blue — never rated). A card leaves the new deck the moment
+ * it's rated, whether it passed (green) or failed (red/again). Cards created
+ * today are skipped — they're already counted by `countNewCardsToday()`.
+ */
+export function countUnreviewedNewCards(cards: Record<string, SrsFields>): number {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const cutoff = todayStart.getTime();
+
+  let count = 0;
+  for (const c of Object.values(cards)) {
+    const createdAt = c.createdAt ?? 0;
+    if (createdAt >= cutoff) continue; // introduced today → counted by countNewCardsToday
+    const lastReview = c.lastReview ?? createdAt;
+    if (c.repetitions === 0 && lastReview <= createdAt) count++;
+  }
+  return count;
+}
+
+/**
+ * How many more new cards can be introduced today. Never negative.
+ *
+ * The budget does NOT roll over day to day: cards introduced today (whether or
+ * not already rated) plus older cards still sitting unreviewed in the "new"
+ * deck both count toward the daily limit. So if a user never reviews, the deck
+ * stays capped at `limit` (e.g. 20) instead of growing by `limit` every day.
+ */
 export function remainingNewCardsToday(
   cards: Record<string, SrsFields>,
   limit: number = DEFAULT_DAILY_NEW_LIMIT,
 ): number {
-  return Math.max(0, limit - countNewCardsToday(cards));
+  return Math.max(0, limit - countNewCardsToday(cards) - countUnreviewedNewCards(cards));
 }
 
 /** Get the next review time as a human-readable countdown. */

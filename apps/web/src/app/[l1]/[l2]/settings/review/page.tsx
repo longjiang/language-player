@@ -34,11 +34,11 @@ export default function ReviewSettingsPage() {
       <SliderRow
         label={t('label.new_cards_per_day')}
         description={t('msg.new_cards_per_day_desc')}
-        min={1} max={50} step={1} value={review.dailyNewLimit}
+        min={1} max={200} step={1} value={review.dailyNewLimit}
         onChange={v => updateReview({ dailyNewLimit: v })}
         leftLabel="1"
         centerLabel={t('msg.default_value', { n: 20 })}
-        rightLabel="50"
+        rightLabel="200"
       />
     </div>
   );

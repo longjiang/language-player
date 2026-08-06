@@ -835,7 +835,15 @@ export interface PlaybackSettings {
 }
 
 export interface ReviewSettings {
-  /** Max new SRS cards introduced per day across all languages. */
+  /**
+   * Max new SRS cards introduced per day.
+   *
+   * The SETTING is global — one number shared across all languages (set to 50
+   * means 50 for every L2). But it's ENFORCED per language: each L2's review
+   * deck gets its own allowance of `dailyNewLimit` new cards per day, computed
+   * against that language's cards only. Russian having more cards never reduces
+   * Japanese's budget — the budgets don't share a pool.
+   */
   dailyNewLimit: number;
 }
 

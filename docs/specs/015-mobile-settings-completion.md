@@ -87,7 +87,7 @@ The `ToggleRow` wraps `@rn-primitives/switch` with NativeWind styling (design to
 | Display | `display.tsx` | Theme (light/dark/system), translation toggle, popup dict toggle, tokenized text preview with L1 translation, font picker, text size slider, phonetics (ruby/word/off + conditions), word-level display (quick gloss, interlinear gloss, Chinese character set, Korean hanja, Vietnamese hán tự), quiz mode | ✅ Full parity |
 | Playback | `playback.tsx` | Captions display mode (transcript/subtitles), smooth scroll, karaoke, auto-pause | ✅ Full parity |
 | Speech | `speech.tsx` | VoicePicker with TTS voice selection and rate control | ✅ Full parity |
-| Review | `review.tsx` | New cards per day slider (1–50) | ✅ Full parity |
+| Review | `review.tsx` | New cards per day slider (1–200) | ✅ Full parity |
 
 ### Root List Sections
 
@@ -157,7 +157,7 @@ The old monolithic `settings.tsx` had a `Pressable` link buried at the bottom of
 
 #### G6: Slider vs Stepper UX — ✅ RESOLVED (2026-07-25)
 
-**Status**: ✅ Implemented. Both text size (0–7) and new cards/day (1–50) use `@react-native-community/slider` via the shared `SliderRow` component, matching web's Slider pattern. Min/max/center labels annotate the slider ends.
+**Status**: ✅ Implemented. Both text size (0–7) and new cards/day (1–200) use `@react-native-community/slider` via the shared `SliderRow` component, matching web's Slider pattern. Min/max/center labels annotate the slider ends.
 
 ---
 
@@ -209,7 +209,7 @@ Each detail screen is a focused, self-contained component:
 | `settings/display.tsx` | Theme, translation/popup toggles, tokenized text preview, font, text size slider, phonetics, word-level display, Chinese character set, Korean/Vietnamese script toggles, quiz mode |
 | `settings/playback.tsx` | Captions display mode, smooth scroll, karaoke, auto-pause |
 | `settings/speech.tsx` | VoicePicker component |
-| `settings/review.tsx` | New cards per day slider (1–50) |
+| `settings/review.tsx` | New cards per day slider (1–200) |
 
 #### 3.3 Create Root List Screen with Search — ✅ DONE
 
