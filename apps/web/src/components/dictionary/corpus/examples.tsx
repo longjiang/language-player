@@ -1,6 +1,6 @@
 'use client';
 
-import type { SketchExamplesResponse } from '@langplayer/shared';
+import { isContinua, type SketchExamplesResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -21,8 +21,14 @@ interface CorpusExamplesProps {
  */
 export function CorpusExamples({ word, l2Code, l1Code = 'en' }: CorpusExamplesProps) {
   const t = useT();
-  const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}&l1=${baseCode(l1Code)}`;
+  const l2 = baseCode(l2Code);
+  const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${l2}&l1=${baseCode(l1Code)}`;
   const { data, loading, error } = useCorpusFetch<SketchExamplesResponse>(url);
+
+  // Continua languages (CJK, Thai, Khmer, Lao, Burmese, Tibetan, Japanese,
+  // Vietnamese…) are written without spaces — Sketch Engine returns the
+  // sentence with a space between every token, so strip them to read naturally.
+  const stripSpaces = isContinua(l2);
 
   if (loading) {
     return (
@@ -55,21 +61,24 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en' }: CorpusExamplesPr
   return (
     <>
       <ul className="divide-y divide-border">
-        {data.examples.map((example, index) => (
-          <li key={`${example.l2}-${index}`} className="py-3">
-            <p lang={baseCode(l2Code)} className="text-sm leading-relaxed text-foreground">
-              <HighlightTerm text={example.l2} term={word} />
-            </p>
-            {example.l1 ? (
-              <p lang={baseCode(l1Code)} className="mt-1 text-sm text-muted-foreground">
-                {example.l1}
+        {data.examples.map((example, index) => {
+          const sentence = stripSpaces ? example.l2.replace(/ /g, '') : example.l2;
+          return (
+            <li key={`${example.l2}-${index}`} className="py-3">
+              <p lang={l2} className="text-sm leading-relaxed text-foreground">
+                <HighlightTerm text={sentence} term={word} />
               </p>
-            ) : null}
-            {example.ref ? (
-              <p className="mt-1 text-xs text-muted-foreground/70">{example.ref}</p>
-            ) : null}
-          </li>
-        ))}
+              {example.l1 ? (
+                <p lang={baseCode(l1Code)} className="mt-1 text-sm text-muted-foreground">
+                  {example.l1}
+                </p>
+              ) : null}
+              {example.ref ? (
+                <p className="mt-1 text-xs text-muted-foreground/70">{example.ref}</p>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
       <CorpusFooter corpname={data.corpname} />
     </>
