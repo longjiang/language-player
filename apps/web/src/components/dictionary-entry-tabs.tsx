@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { BookOpen, Film, Binary, Sparkles, ImageIcon, Library } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
@@ -71,6 +71,8 @@ export function DictionaryEntryTabs({
   // ── Inflected search terms ──
   const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entry, l2Code);
   const [exactMatch, setExactMatch] = useState(false);
+  // Stable id array so TokenizedText's highlightEntryIdSet memo doesn't churn.
+  const corpusHighlightEntryIds = useMemo(() => [entry.id], [entry.id]);
   // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
   const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
@@ -146,7 +148,7 @@ export function DictionaryEntryTabs({
             l2Code={l2Code}
             l1Code={l1Code}
             highlightForms={allTerms.length ? allTerms : [entry.head]}
-            highlightEntryIds={[entry.id]}
+            highlightEntryIds={corpusHighlightEntryIds}
           />
         </div>
       </TabbedPanel>

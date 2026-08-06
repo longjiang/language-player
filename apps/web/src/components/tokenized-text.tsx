@@ -11,6 +11,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
+import { addExtraForm } from '@/hooks/use-inflected-search-terms';
 import { isPhoneticsEligible, mergePhraseTokens, sentenceContaining, sentenceForToken } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
@@ -605,6 +606,36 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const surface = getCachedEntries(base, token.text);
     return !!surface?.some((e) => highlightEntryIdSet.has(e.id));
   };
+
+  // Report surface forms of tokens that matched a dictionary entry back to
+  // the inflection store ("other" category) — anywhere TokenizedText renders.
+  // Once the batch lookup resolves (cacheVersion bumps), every token whose
+  // lemma (or surface) has cached entries contributes its surface form to
+  // each matched entry id. useInflectedSearchTerms subscribes and folds these
+  // into the word's inflection list. addExtraForm dedupes, so this converges.
+  useEffect(() => {
+    if (displayTokens.length === 0) return;
+    const base = baseCode(l2Code);
+    for (const token of displayTokens) {
+      const surface = token.text.trim();
+      if (!surface || /^[\s\p{P}]+$/u.test(surface)) continue;
+      const reported = new Set<string>();
+      const reportEntry = (id: string) => {
+        if (!id || reported.has(id)) return;
+        reported.add(id);
+        addExtraForm(base, id, surface);
+      };
+      for (const lemma of token.lemmas) {
+        const entries = getCachedEntries(base, lemma.lemma);
+        for (const e of entries ?? []) reportEntry(e.id);
+      }
+      const surfaceEntries = getCachedEntries(base, surface);
+      for (const e of surfaceEntries ?? []) reportEntry(e.id);
+    }
+    // Re-run when the batch lookup resolves (cacheVersion) and when the
+    // token set changes. Cache reads are live.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayTokens, cacheVersion, l2Code]);
 
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {

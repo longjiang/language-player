@@ -9,6 +9,8 @@
 
 /** The entry fields we care about when building written search terms. */
 export interface WrittenFormEntry {
+  /** Dictionary entry id — used to correlate corpus-discovered surface forms. */
+  id?: string;
   head: string;
   alternate?: string | null;
   han_script?: {
