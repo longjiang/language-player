@@ -18,6 +18,9 @@ export interface ScaleMeta {
   id: ScaleId;
   shortPrefix: string;   // "HSK", "CEFR", "JLPT"
   longPrefix: string;    // "HSK (2010)", "CEFR"
+  /** Year/version qualifier for frameworks with revisions users care about
+   *  (HSK 2010 vs HSK 2025). Absent for unversioned scales. */
+  version?: string;
   /** 1–7 numeric → scale-specific label. e.g., cefr: 3 → "A2", hsk_2010: 3 → "3" */
   labels: Record<number, string>;
 }
@@ -27,12 +30,14 @@ export const SCALES: Record<ScaleId, ScaleMeta> = {
     id: 'hsk_2010',
     shortPrefix: 'HSK',
     longPrefix: 'HSK (2010)',
+    version: '2010',
     labels: { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6' },
   },
   hsk_2025: {
     id: 'hsk_2025',
     shortPrefix: 'HSK',
     longPrefix: 'HSK (2025)',
+    version: '2025',
     labels: { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7-9' },
   },
   cefr: {
@@ -126,6 +131,31 @@ export function formatNumericLevel(numeric: number, scaleId: ScaleId): Formatted
     long: `${scale?.longPrefix ?? 'CEFR'} ${label}`,
     numeric,
     hexColor: LEVEL_HEX_COLORS[numeric] ?? '#6b7280',
+  };
+}
+
+/**
+ * Format a proficiency level honoring its OWN scale when it's an HSK variant,
+ * so the badge shows the year/version (e.g. `hsk_2025` level 3 → "HSK 2025 3").
+ *
+ * For non-HSK scales the level's scale is ignored and `fallbackScaleId` is used
+ * (pass `primaryScale(l2Code)`) — preserving the existing behavior where every
+ * badge for a language uses that language's primary exam scale.
+ */
+export function formatProficiencyLevel(
+  level: { scale: string; value: number | string; numeric?: number },
+  fallbackScaleId: ScaleId = 'cefr',
+): FormattedLevel {
+  const isHsk = level.scale === 'hsk_2010' || level.scale === 'hsk_2025';
+  const scaleId: ScaleId = isHsk ? (level.scale as ScaleId) : fallbackScaleId;
+  const numeric = level.numeric ?? _reverseLabels(SCALES[scaleId]).get(String(level.value));
+  const { label, prefix, sourceScaleId } = getLevelLabelWithFallback(numeric ?? 0, scaleId);
+  const version = isHsk ? SCALES[scaleId].version : undefined;
+  return {
+    short: version ? `${prefix} ${version} ${label}` : `${prefix} ${label}`,
+    long: `${SCALES[sourceScaleId].longPrefix} ${label}`,
+    numeric,
+    hexColor: numeric ? (LEVEL_HEX_COLORS[numeric] ?? '#6b7280') : '#6b7280',
   };
 }
 
