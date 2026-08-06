@@ -87,24 +87,47 @@ export function WordListItem({
 
 // ── WordList ─────────────────────────────────────
 
+export type WordListLayout = 'stack' | 'grid';
+
 export interface WordListProps {
   /** Section heading (e.g., "Today", "Earlier"). Omit to hide the header. */
   label?: string;
   /** Count badge shown next to the heading. Only shown when label is provided. */
   count?: number;
-  /** Rendered word rows. */
+  /** Rendered word rows or cards. */
   children: ReactNode;
-  /** Extra classes for the row list (overrides default spacing). */
+  /** 'stack' (default) — single-column vertical list (space-y-1).
+   *  'grid' — responsive card grid (grid-cols-1 → sm:grid-cols-2). */
+  layout?: WordListLayout;
+  /** Responsive grid template classes when layout="grid" (merged over the
+   *  default "sm:grid-cols-2", e.g. "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"). */
+  columns?: string;
+  /** Extra classes for the list/grid container (overrides default spacing). */
   className?: string;
 }
 
 /**
  * A group of word items, optionally with a labeled heading and count badge.
- * When `label` is omitted, renders a bare vertical list with no header.
+ * When `label` is omitted, renders a bare list with no header.
+ * `layout="grid"` renders the items as a responsive card grid instead of a
+ * vertical stack, so labeled grid sections (saved words, related words) share
+ * the same header + body pattern.
  */
-export function WordList({ label, count, children, className }: WordListProps) {
+export function WordList({
+  label,
+  count,
+  children,
+  layout = 'stack',
+  columns,
+  className,
+}: WordListProps) {
+  const bodyClass =
+    layout === 'grid'
+      ? cn('grid grid-cols-1 gap-3 sm:grid-cols-2', columns, className)
+      : cn('space-y-1', className);
+
   if (!label) {
-    return <div className={cn('space-y-1', className)}>{children}</div>;
+    return <div className={bodyClass}>{children}</div>;
   }
   return (
     <div>
@@ -114,7 +137,7 @@ export function WordList({ label, count, children, className }: WordListProps) {
           {count ?? 0}
         </span>
       </div>
-      <div className={cn('space-y-1', className)}>{children}</div>
+      <div className={bodyClass}>{children}</div>
     </div>
   );
 }

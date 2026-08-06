@@ -11,6 +11,7 @@ import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useCorpusFetch } from './use-corpus-fetch';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { WordList } from '@/components/dictionary/word-list';
 
 interface RelatedWordsProps {
   word: string;
@@ -61,22 +62,20 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
   }
 
   return (
-    <>
+    <WordList layout="grid">
       {/* Same column logic as the Collocations section: 1 column, then 2 at sm+. */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {data.related
-          .filter((related) => related.word)
-          .map((related, index) => (
-            <RelatedWordCard
-              key={`${related.word}-${index}`}
-              text={related.word}
-              sourceWord={word}
-              l1Code={l1Code}
-              l2Code={l2Code}
-            />
-          ))}
-      </div>
-    </>
+      {data.related
+        .filter((related) => related.word)
+        .map((related, index) => (
+          <RelatedWordCard
+            key={`${related.word}-${index}`}
+            text={related.word}
+            sourceWord={word}
+            l1Code={l1Code}
+            l2Code={l2Code}
+          />
+        ))}
+    </WordList>
   );
 }
 

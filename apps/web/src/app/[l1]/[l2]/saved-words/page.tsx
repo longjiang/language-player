@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { SavedWordEntryCard } from '@/components/dictionary/saved-word-entry-card';
+import { WordList } from '@/components/dictionary/word-list';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { decomposeWordId } from '@langplayer/shared';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
@@ -285,43 +286,41 @@ function SavedWordGroup({
   onWordClick: (word: SavedLexicalItemRecord) => void;
 }) {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <h2 className="text-lg font-semibold text-muted-foreground">{label}</h2>
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-          {words.length}
-        </span>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {words.map((word) => {
-          const card = getCard(l2Code, word.id);
-          const srsStatus = getSrsStatus(card);
-          return (
-            <SavedWordEntryCard
-              key={`${word.id}-${word.date}`}
-              word={word}
-              l1Code={l1Code}
-              l2Code={l2Code}
-              onClick={() => onWordClick(word)}
-              srsDot={
-                srsStatus ? (
-                  <span
-                    title={
-                      srsStatus === 'overdue' ? 'Overdue for review' :
-                      srsStatus === 'due' ? 'Due for review' :
-                      srsStatus === 'new' ? 'New — not yet reviewed' :
-                      'Reviewed'
-                    }
-                  >
-                    <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
-                  </span>
-                ) : undefined
-              }
-            />
-          );
-        })}
-      </div>
-    </div>
+    <WordList
+      label={label}
+      count={words.length}
+      layout="grid"
+      columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      className="gap-4"
+    >
+      {words.map((word) => {
+        const card = getCard(l2Code, word.id);
+        const srsStatus = getSrsStatus(card);
+        return (
+          <SavedWordEntryCard
+            key={`${word.id}-${word.date}`}
+            word={word}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            onClick={() => onWordClick(word)}
+            srsDot={
+              srsStatus ? (
+                <span
+                  title={
+                    srsStatus === 'overdue' ? 'Overdue for review' :
+                    srsStatus === 'due' ? 'Due for review' :
+                    srsStatus === 'new' ? 'New — not yet reviewed' :
+                    'Reviewed'
+                  }
+                >
+                  <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
+                </span>
+              ) : undefined
+            }
+          />
+        );
+      })}
+    </WordList>
   );
 }
 
