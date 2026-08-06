@@ -82,7 +82,7 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [], 
         <CorpusExamples word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
       </div>
       <div className={active === 'related' ? '' : 'hidden'}>
-        <RelatedWords word={word} l2Code={l2Code} corpname={corpname} highlightForms={highlightForms} highlightEntryIds={highlightEntryIds} />
+        <RelatedWords word={word} l2Code={l2Code} l1Code={l1Code} corpname={corpname} />
       </div>
       {/* Mistakes always query the fixed guangwai learner corpus — the
           backend ignores corpname, so don't pass a selection. */}
