@@ -107,7 +107,8 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
                 <TokenizedText
                   text={display}
                   l2Code={l2}
-                  textScale={0}
+                  // 1rem base, scaled by the user's zoom setting
+                  textScale={1}
                   leading="none"
                   highlightSaved={false}
                   highlightForms={highlightForms}

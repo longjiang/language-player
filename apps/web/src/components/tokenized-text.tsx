@@ -165,9 +165,9 @@ export interface TokenizedTextProps {
   text: string;
   l2Code: string;
   /**
-   * Explicit text size in rem. When omitted, uses the user's zoom setting
-   * from SettingsContext (tokenizedText.zoom). Pass 0 to inherit from parent
-   * (no inline font-size set).
+   * Base text size in rem, multiplied by the user's zoom setting from
+   * SettingsContext (tokenizedText.zoom). When omitted, uses the zoom alone.
+   * Pass 0 to inherit from parent (no inline font-size set).
    */
   textScale?: number;
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
@@ -292,11 +292,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
 
-  // Resolve effective font size:
-  //   - textScale explicitly provided → use as absolute rem value
-  //   - textScale omitted        → use user's zoom setting from SettingsContext
-  //   - textScale === 0          → inherit (no inline fontSize set)
-  const effectiveScale = textScale ?? (ZOOM_TO_REM[settingsTokenizedText.zoom] ?? 1);
+  // Resolve effective font size (rem). The user's zoom setting from
+  // SettingsContext always applies to TokenizedText's own size:
+  //   - textScale provided (non-zero) → textScale × user zoom
+  //   - textScale omitted             → user zoom alone
+  //   - textScale === 0               → inherit (no inline font-size; the
+  //        parent controls size). Used by AI explanations and corpus snippets
+  //        so they match their surrounding text instead of the user's zoom.
+  const zoomRem = ZOOM_TO_REM[settingsTokenizedText.zoom] ?? 1;
+  const effectiveScale = textScale === undefined
+    ? zoomRem
+    : (textScale === 0 ? 0 : textScale * zoomRem);
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);

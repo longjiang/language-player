@@ -202,6 +202,7 @@ export function SubtitlesModeBand({
               <TokenizedText
                 text={activeDisplayText}
                 l2Code={l2.code}
+                textScale={1.5}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 context={videoTitle ? { videoTitle } : undefined}

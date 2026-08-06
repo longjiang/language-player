@@ -79,7 +79,7 @@ export default function TokenizerPage() {
       {displayText && (
         <div className="mt-8 rounded-lg border bg-card p-6">
           <h2 className="mb-4 text-sm font-medium text-muted-foreground">{t('title.tokenized_result')}</h2>
-          <TokenizedText key={key} text={displayText} l2Code={l2.code} textScale={1.2} />
+          <TokenizedText key={key} text={displayText} l2Code={l2.code} textScale={1} />
         </div>
       )}
     </div>
