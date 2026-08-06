@@ -107,7 +107,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const loadingRef = useRef(false);
   const searchedRef = useRef(false);
 
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecent(l2.code));
+  // Start empty so the server and the client render the same markup during
+  // hydration (localStorage is client-only). The effect below loads the real
+  // value after mount and whenever l2 changes.
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const [cameFromSearch, setCameFromSearch] = useState(false);
   const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'none' });
