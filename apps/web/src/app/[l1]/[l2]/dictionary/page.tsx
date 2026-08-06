@@ -6,7 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { languageName } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
-import { buildEntryRoute } from '@/lib/entry-route';
+import { buildEntryRouteWithList, entryToNavItem, setWordListNav } from '@/lib/word-list-navigation';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, AlertCircle, Clock } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -20,7 +20,7 @@ export default function DictionaryPage() {
   const {
     results, loading, error, message, searchedText,
     recentSearches, clearRecent, handleRecentClick,
-    setCameFromSearch, setSidebarSource, setDetailHead,
+    setCameFromSearch, setDetailHead,
   } = useDictionaryContext();
 
   const redirectingRef = useRef(false);
@@ -35,27 +35,26 @@ export default function DictionaryPage() {
 
   const handleResultClick = useCallback(
     (entry: DictionaryEntry) => {
-      const dictId = entry.dictionary?.id ?? 'llm';
-      setSidebarSource({ kind: 'results', items: results! });
+      const item = entryToNavItem(entry);
+      setWordListNav(results!.map(entryToNavItem), item.id, 'search');
       setCameFromSearch(true);
       setDetailHead(entry.head);
-      router.push(buildEntryRoute(l1.code, l2.code, dictId, entry.id));
+      router.push(buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id));
     },
-    [results, router, l1.code, l2.code, setSidebarSource, setCameFromSearch, setDetailHead],
+    [results, router, l1.code, l2.code, setCameFromSearch, setDetailHead],
   );
 
   // Single result → redirect directly to entry detail (no results page shown)
   useEffect(() => {
     if (hasResults && results!.length === 1 && !redirectingRef.current) {
       redirectingRef.current = true;
-      const entry = results![0]!;
-      const dictId = entry.dictionary?.id ?? 'llm';
-      setSidebarSource({ kind: 'results', items: results! });
+      const item = entryToNavItem(results![0]!);
+      setWordListNav([item], item.id, 'search');
       setCameFromSearch(true);
-      setDetailHead(entry.head);
-      router.replace(buildEntryRoute(l1.code, l2.code, dictId, entry.id));
+      setDetailHead(item.head);
+      router.replace(buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id));
     }
-  }, [hasResults, results, router, l1.code, l2.code, setSidebarSource, setCameFromSearch, setDetailHead]);
+  }, [hasResults, results, router, l1.code, l2.code, setCameFromSearch, setDetailHead]);
 
   // Reset redirect flag when results change
   useEffect(() => {

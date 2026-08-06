@@ -7,6 +7,7 @@ import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { getWordListNav } from '@/lib/word-list-navigation';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -35,7 +36,7 @@ export default function DictionaryEntryPage() {
   const t = useT();
   const searchParams = useSearchParams();
 
-  const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
+  const { setDetailHead, setSidebarSource } = useDictionaryContext();
 
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,13 +74,17 @@ export default function DictionaryEntryPage() {
     fetchEntry();
   }, [fetchEntry]);
 
-  // If reached from saved-words page (has ?listCurrent= param), show saved words in sidebar
+  // The sidebar shows the word list the user navigated here from (search
+  // results or saved words). It's only available when ?listCurrent= points at
+  // a stored list with more than one item — otherwise there is no list to show.
   useEffect(() => {
-    if (searchParams.get('listCurrent')) {
-      setSidebarSource({ kind: 'saved' });
-      setCameFromSearch(false);
+    const nav = searchParams.get('listCurrent') ? getWordListNav() : null;
+    if (nav && nav.items.length > 1) {
+      setSidebarSource({ kind: 'list', items: nav.items, currentId: nav.currentEntryId, source: nav.source });
+    } else {
+      setSidebarSource({ kind: 'none' });
     }
-  }, [searchParams, setSidebarSource, setCameFromSearch]);
+  }, [searchParams, setSidebarSource]);
 
   const saveContext = {
     form: entry?.head ?? '',

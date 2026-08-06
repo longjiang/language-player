@@ -128,7 +128,7 @@ export default function SavedWordsPage() {
   /** Navigate to the entry detail page for a saved word. */
   const handleWordClick = (word: SavedLexicalItemRecord) => {
     // Store the full saved-words list so the entry page can show a sidebar
-    setWordListNav(words.map(w => savedWordToNavItem(w, l2.code)), word.id);
+    setWordListNav(words.map(w => savedWordToNavItem(w, l2.code)), word.id, 'saved');
 
     const decomposed = decomposeWordId(word.id, l2.code);
     if (decomposed) {

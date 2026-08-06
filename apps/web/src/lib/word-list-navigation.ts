@@ -1,4 +1,4 @@
-import type { SavedLexicalItemRecord } from '@langplayer/shared';
+import type { DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { decomposeWordId } from '@langplayer/shared';
 
@@ -23,18 +23,22 @@ export interface WordListNavItem {
 
 const STORAGE_KEY = 'lp_word_list_nav';
 
-interface StoredList {
+/** Where the word list came from — used for the sidebar title. */
+export type WordListNavSource = 'search' | 'saved';
+
+export interface WordListNav {
   items: WordListNavItem[];
   currentEntryId: string;
+  source: WordListNavSource;
 }
 
-function write(items: WordListNavItem[], currentEntryId: string): void {
+function write(items: WordListNavItem[], currentEntryId: string, source: WordListNavSource): void {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ items, currentEntryId }));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ items, currentEntryId, source }));
   } catch { /* quota exceeded */ }
 }
 
-function read(): StoredList | null {
+function read(): WordListNav | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -47,8 +51,12 @@ function read(): StoredList | null {
  * Store a word list before navigating to an entry detail page.
  * Overwrites any previous list. The entry page reads it to render the sidebar.
  */
-export function setWordListNav(items: WordListNavItem[], currentEntryId: string): void {
-  write(items, currentEntryId);
+export function setWordListNav(
+  items: WordListNavItem[],
+  currentEntryId: string,
+  source: WordListNavSource,
+): void {
+  write(items, currentEntryId, source);
 }
 
 /**
@@ -58,7 +66,7 @@ export function setWordListNav(items: WordListNavItem[], currentEntryId: string)
 export function updateCurrentEntryId(entryId: string): void {
   const stored = read();
   if (stored) {
-    write(stored.items, entryId);
+    write(stored.items, entryId, stored.source);
   }
 }
 
@@ -66,7 +74,7 @@ export function updateCurrentEntryId(entryId: string): void {
  * Read the stored word list. Does NOT clear — persists across navigations
  * and page refreshes. Source pages overwrite it via setWordListNav().
  */
-export function getWordListNav(): StoredList | null {
+export function getWordListNav(): WordListNav | null {
   return read();
 }
 
@@ -96,6 +104,23 @@ export function savedWordToNavItem(w: SavedLexicalItemRecord, l2: string): WordL
     dictionaryId: decomposed?.dict ?? 'unknown',
     entryId: decomposed?.id ?? w.id,
     id: w.id,
+  };
+}
+
+/**
+ * Convert a DictionaryEntry (search result) to a WordListNavItem.
+ * `id` is the composite "dictionaryId-entryId" form used for sidebar
+ * highlighting and for saving the word.
+ */
+export function entryToNavItem(e: DictionaryEntry): WordListNavItem {
+  const dictionaryId = e.dictionary?.id ?? 'llm';
+  return {
+    head: e.head,
+    dictionaryId,
+    entryId: e.id,
+    id: `${dictionaryId}-${e.id}`,
+    pronunciation: e.pronunciation,
+    definition: e.definitions?.length ? e.definitions.join('; ') : undefined,
   };
 }
 
