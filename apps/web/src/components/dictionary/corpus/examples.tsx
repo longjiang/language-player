@@ -14,13 +14,15 @@ interface CorpusExamplesProps {
   l1Code?: string;
   /** Optional corpus override; null = let the backend auto-resolve. */
   corpname?: string | null;
+  /** Word forms (head + variants + inflections) to highlight in each sentence. */
+  highlightForms?: string[];
 }
 
 /**
  * Example sentences (concordance) with optional parallel translation.
  * GET /sketch-engine/examples?word=&l2=&l1=  (ARCH-020 §7.2)
  */
-export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null }: CorpusExamplesProps) {
+export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, highlightForms = [] }: CorpusExamplesProps) {
   const t = useT();
   const l2 = baseCode(l2Code);
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
@@ -71,6 +73,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null }:
                   textScale={0}
                   leading="none"
                   highlightSaved={false}
+                  highlightForms={highlightForms}
                 />
               </p>
               {example.l1 ? (
