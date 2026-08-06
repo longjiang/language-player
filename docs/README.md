@@ -67,6 +67,7 @@ docs/
 | 010 | [Video Loading Pipeline](arch/010-video-loading-pipeline.md) | End-to-end data flow: subtitles → lemmatization → translation → dictionary |
 | 011 | [Settings Architecture](arch/011-settings-architecture.md) | Cross-app settings analysis: storage, mutation, sync patterns |
 | 012 | [Metro Debugging Process](arch/012-metro-debugging-process.md) | Mobile debugging workflow: Metro, idb, iOS Simulator |
+| 020 | [Sketch Engine Architecture](arch/020-sketch-engine-architecture.md) | Corpus features (collocations, examples, thesaurus, mistakes) — Classic PHP proxy ported to Flask with server-side parsing for web/mobile |
 
 ## Quick Reference
 
