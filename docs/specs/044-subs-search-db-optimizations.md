@@ -612,9 +612,11 @@ attempted on 2026-08-06:
 - **Materialized inverted index** (`(lexeme, video_id, views)`, index-only
   lookups) for guaranteed sub-second behavior on every term, at the cost of
   ~10–15 GB and a sync trigger.
-- **PGroonga as the continua unblock** — recommended if the storage issue is
-  not resolved quickly (no backfill; see "Alternatives that bypass the
-  backfill").
+- **PGroonga as the continua unblock** — viable only **after** the storage
+  issue is fixed: the 2026-08-06 partial-index build hung on the same
+  storage-layer hang (see "Alternatives that bypass the backfill" for the
+  full outcome). The routing code is already committed and dormant, so a
+  successful build after the compute upgrade activates it automatically.
 - **Posting table** remains the documented heavy alternative in ADR-0026.
 - **Per-term hybrid routing** (token path for clean terms + ILIKE for dirty
   terms in the same request) if dirty-term traffic proves significant.
