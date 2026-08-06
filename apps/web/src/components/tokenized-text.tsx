@@ -16,6 +16,7 @@ import { isPhoneticsEligible, mergePhraseTokens, sentenceContaining, sentenceFor
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup } from '@/hooks/use-selection-popup';
+import { log } from '@/lib/logger';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 
 // Re-exported for callers that imported the constant from this component
@@ -612,6 +613,39 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const surface = getCachedEntries(base, token.text);
     return !!surface?.some((e) => highlightEntryIdSet.has(e.id));
   };
+
+  // ── DEBUG: log the context sentence + target-highlight decisions ──
+  // Temporary instrumentation for the "highlighted as saved but not as the
+  // target word" bug. Fires when a target highlight is active and the
+  // sentence/tokens/saved-forms/entry-cache change. Remove after diagnosis.
+  const highlightDebugKeyRef = useRef('');
+  useEffect(() => {
+    const hasTarget =
+      !!highlightForm || !!highlightForms?.length || !!highlightEntryIds?.length;
+    if (!hasTarget) return;
+
+    const key = `${text}|${highlightForm ?? ''}|${highlightForms?.join(',') ?? ''}|${displayTokens.length}|${savedFormSet.size}|${cacheVersion}`;
+    if (highlightDebugKeyRef.current === key) return;
+    highlightDebugKeyRef.current = key;
+
+    log('TokenizedText highlight debug', {
+      text,
+      l2Code,
+      highlightForm,
+      highlightForms,
+      highlightEntryIds,
+      savedForms: [...savedFormSet].slice(0, 100),
+      tokens: displayTokens.map((t) => ({
+        text: t.text,
+        lemmas: t.lemmas.map((l) => l.lemma),
+        targetExactMatch: !!highlightForm && t.text === highlightForm,
+        targetFormsMatch: !!highlightForms && highlightForms.some((f) => f === t.text),
+        targetEntryMatch: tokenHasTargetEntry(t),
+        saved: savedFormSet.has(t.text.toLowerCase()),
+      })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, highlightForm, highlightForms, highlightEntryIds, displayTokens, savedFormSet, cacheVersion]);
 
   // Report surface forms of tokens that matched a dictionary entry back to
   // the inflection store ("other" category) — anywhere TokenizedText renders.

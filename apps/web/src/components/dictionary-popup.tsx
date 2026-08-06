@@ -16,7 +16,7 @@ import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
-import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
+import { getCachedEntries, setCachedEntries, subscribeToCache } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -63,6 +63,11 @@ export function DictionaryPopup({
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
   const [dialogOpen, setDialogOpen] = useState(true);
+
+  // Re-resolve saved words from the dictionary cache whenever it populates
+  // (e.g. the review page pre-fetches the saved entry for the current card).
+  const [cacheVersion, setCacheVersion] = useState(0);
+  useEffect(() => subscribeToCache(() => setCacheVersion((v) => v + 1)), []);
 
   // Diagnostic: log the inputs whenever a dictionary popup opens, so lookup /
   // saved-word ID mismatches can be traced from the console.
@@ -278,28 +283,62 @@ export function DictionaryPopup({
     };
   }, [token, lookupWord, l2Code]);
 
-  // Find saved words for this token whose IDs don't match any loaded entry
-  const unmatchedSavedWords = useMemo(() => {
-    if (loading || error) return [];
-    const langWords = savedWords[l2Code] ?? [];
-    // Include phrase-card entries: a word saved from the /extract-phrases
-    // "Phrases" section carries the ID of its canonical phrase entry, which
-    // only appears in phraseCards — not in the standard lookup results for the
-    // selected surface form. Without it, freshly saved phrase words would be
-    // flagged as unrecognized legacy data.
-    const entryIds = new Set([...entries, ...phraseCards].map((e) => e.id));
+  // IDs loaded for this token: the standard lookup results plus any phrase
+  // cards. A word saved from the /extract-phrases "Phrases" section carries the
+  // ID of its canonical phrase entry, which only appears in phraseCards — not
+  // in the standard lookup results for the selected surface form. Without it,
+  // freshly saved phrase words would be flagged as unrecognized legacy data.
+  const entryIds = useMemo(
+    () => new Set([...entries, ...phraseCards].map((e) => e.id)),
+    [entries, phraseCards],
+  );
 
+  // Saved words whose forms include the token text but whose ID isn't among
+  // the loaded entries — the pool that could be flagged as unrecognized.
+  const formMatchingSavedWords = useMemo(() => {
+    const langWords = savedWords[l2Code] ?? [];
     return langWords.filter((sw) => {
-      // Check if this saved word's forms include the token text
       const formMatch = sw.forms.some(
         (f) => f.toLowerCase() === token.text.toLowerCase()
       );
-      if (!formMatch) return false;
-      // Check if this saved word's ID matches any entry (direct comparison — same ID scheme)
-      if (entryIds.has(sw.id)) return false;
-      return true;
+      return formMatch && !entryIds.has(sw.id);
     });
-  }, [savedWords, l2Code, entries, phraseCards, token.text, loading, error]);
+  }, [savedWords, l2Code, entryIds, token.text]);
+
+  // A form-matching saved word is often missed by the standard lookup when the
+  // clicked surface is an ambiguous reading (e.g. kana しのぎ vs the saved kanji
+  // entry 鎬). Resolve the saved word's own entry from the dictionary cache —
+  // callers like the review page pre-fetch the saved entry — so it's shown in
+  // the popup and NOT flagged as unrecognized legacy data.
+  const resolvedSavedEntries = useMemo(() => {
+    if (formMatchingSavedWords.length === 0) return [];
+    const base = baseCode(l2Code);
+    const out: DictionaryEntry[] = [];
+    const resolved = new Set<string>();
+    for (const sw of formMatchingSavedWords) {
+      if (resolved.has(sw.id)) continue;
+      const forms = new Set([token.text, ...token.lemmas.map((l) => l.lemma), ...sw.forms]);
+      for (const form of forms) {
+        if (!form.trim()) continue;
+        const cached = getCachedEntries(base, form);
+        const entry = cached?.find((e) => e.id === sw.id);
+        if (entry) {
+          resolved.add(sw.id);
+          out.push(entry);
+          break;
+        }
+      }
+    }
+    return out;
+  }, [formMatchingSavedWords, token.text, token.lemmas, l2Code, cacheVersion]);
+
+  // Find saved words for this token whose IDs don't match any loaded entry —
+  // only words that couldn't be resolved via the cache are truly unrecognized.
+  const unmatchedSavedWords = useMemo(() => {
+    if (loading || error) return [];
+    const resolvedIds = new Set(resolvedSavedEntries.map((e) => e.id));
+    return formMatchingSavedWords.filter((sw) => !resolvedIds.has(sw.id));
+  }, [loading, error, formMatchingSavedWords, resolvedSavedEntries]);
 
   // Diagnostic: when a saved word is flagged as unrecognized, log the ID sets
   // involved so an ID-scheme mismatch can be traced (saved id vs. the ids the
@@ -483,6 +522,18 @@ export function DictionaryPopup({
           ))}
 
           <WordList className="space-y-3">
+            {/* Saved words resolved from cache for an ambiguous surface reading
+                (e.g. kana しのぎ → saved kanji 鎬) come first. */}
+            {resolvedSavedEntries.map((entry) => (
+              <DictionaryEntryCard
+                key={entry.id}
+                entry={entry}
+                onClick={handleEntryClick}
+                saveContext={context}
+                pronunciation={formatPronunciation(entry, l2Code)}
+                l2Code={l2Code}
+              />
+            ))}
             {entries.map((entry) => (
               <DictionaryEntryCard
                 key={entry.id}
