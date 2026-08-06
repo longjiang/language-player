@@ -17,6 +17,7 @@ import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -457,6 +458,27 @@ export default function ReviewPage() {
     () => (currentCard ? [currentCard.word.id] : []),
     [currentCard?.word.id],
   );
+
+  // ── DEBUG: log the current card's word + context for highlight debugging ──
+  // Temporary instrumentation for the "highlighted as saved but not as the
+  // target word" bug. Logs once per unique word id. Remove after diagnosis.
+  const loggedCardIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!currentCard) return;
+    const id = currentCard.word.id;
+    if (loggedCardIdRef.current === id) return;
+    loggedCardIdRef.current = id;
+    const ctx = currentCard.word.context;
+    log('Review card context', {
+      wordId: id,
+      forms: currentCard.word.forms,
+      context: ctx ? { form: ctx.form, text: ctx.text } : null,
+      instances: (currentCard.word.instances ?? []).map((i) => ({
+        form: i.form,
+        text: i.context.text,
+      })),
+    });
+  }, [currentCard]);
 
   // ── Clear stale context translation when card changes ──
   useEffect(() => {
