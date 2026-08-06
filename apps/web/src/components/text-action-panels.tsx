@@ -9,8 +9,12 @@ import { MarkdownExplanation } from '@/components/markdown-explanation';
  * Render a translation string with the inline markdown the translate backend
  * emits (it bolds highlighted terms with `**…**`). Handles **bold**, *italic*,
  * and `code`; anything else passes through untouched.
+ *
+ * With `markBold`, the bolded term renders as a prominent <mark> highlight
+ * (bg-primary/15 + ring — the same emphasis as subs-search translations)
+ * instead of plain <strong>.
  */
-export function renderInlineMarkdown(text: string): ReactNode {
+export function renderInlineMarkdown(text: string, opts?: { markBold?: boolean }): ReactNode {
   const parts: ReactNode[] = [];
   const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
   let last = 0;
@@ -20,7 +24,19 @@ export function renderInlineMarkdown(text: string): ReactNode {
     if (m.index > last) parts.push(text.slice(last, m.index));
     const token = m[0];
     if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
-      parts.push(<strong key={key}>{token.slice(2, -2)}</strong>);
+      const inner = token.slice(2, -2);
+      parts.push(
+        opts?.markBold ? (
+          <mark
+            key={key}
+            className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30"
+          >
+            {inner}
+          </mark>
+        ) : (
+          <strong key={key}>{inner}</strong>
+        ),
+      );
     } else if (token.startsWith('`') && token.endsWith('`')) {
       parts.push(
         <code key={key} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">

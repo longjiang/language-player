@@ -116,7 +116,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
               </p>
               {translations[index] ? (
                 <p lang={baseCode(l1Code)} className="mt-1 text-sm text-muted-foreground">
-                  {renderInlineMarkdown(translations[index]!)}
+                  {renderInlineMarkdown(translations[index]!, { markBold: true })}
                 </p>
               ) : null}
               {example.ref ? (

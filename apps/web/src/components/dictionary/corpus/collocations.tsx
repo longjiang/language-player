@@ -158,7 +158,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                       />
                       {translation ? (
                         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">
-                          {renderInlineMarkdown(translation)}
+                          {renderInlineMarkdown(translation, { markBold: true })}
                         </p>
                       ) : null}
                     </li>
