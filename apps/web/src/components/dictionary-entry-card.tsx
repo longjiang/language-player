@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { formatProficiencyLevel, primaryScale } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, ExternalLink, Video } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
@@ -90,9 +90,11 @@ export function DictionaryEntryCard({
 
   const scale = primaryScale(l2Code ?? '');
   const levels = entry.levels ?? [];
+  // Format each level with its own scale so HSK badges show the year/version
+  // (e.g. "HSK 2025 3"); other scales use the language's primary exam scale.
   const levelBadges = levels
     .filter((l) => l.numeric != null)
-    .map((l) => formatNumericLevel(l.numeric, scale));
+    .map((l) => formatProficiencyLevel(l, scale));
 
   const formattedPron = pronunciation !== undefined
     ? pronunciation
