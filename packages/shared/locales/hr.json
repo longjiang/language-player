@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Ova pogreška ima veze s {errorLevel} ({errorType}); počinio ju je učenik razine {proficiency} iz {country}.",
-        "provided_by": "Podatke korpusa pruža Sketch Engine"
+        "provided_by": "Podatke korpusa pruža Sketch Engine",
+        "related_to": "Korpus - Povezano s '{word}'"
     },
     "docs": {
         "guides_reference": "Vodiči, reference i često postavljana pitanja",

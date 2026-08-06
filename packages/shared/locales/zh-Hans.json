@@ -149,7 +149,8 @@
     "corpus": {
         "corpus_name": "语料库：{name}",
         "mistake_description": "这个错误与{errorLevel}（{errorType}）有关，由来自{country}的{proficiency}学习者所犯。",
-        "provided_by": "语料数据由 Sketch Engine 提供"
+        "provided_by": "语料数据由 Sketch Engine 提供",
+        "related_to": "语料库 - 与“{word}”相关"
     },
     "docs": {
         "guides_reference": "指南、参考和常见问题解答",

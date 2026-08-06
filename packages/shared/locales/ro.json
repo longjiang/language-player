@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Această greșeală are legătură cu {errorLevel} ({errorType}) și a fost făcută de un cursant de nivel {proficiency} din {country}.",
-        "provided_by": "Datele corpusului sunt furnizate de Sketch Engine"
+        "provided_by": "Datele corpusului sunt furnizate de Sketch Engine",
+        "related_to": "Corpus - Legat de '{word}'"
     },
     "docs": {
         "guides_reference": "Ghiduri, referințe și întrebări frecvente",

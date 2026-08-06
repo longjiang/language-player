@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Kesalahan ini berkaitan dengan {errorLevel} ({errorType}), dilakukan oleh pelajar tingkat {proficiency} dari {country}.",
-        "provided_by": "Data korpus disediakan oleh Sketch Engine"
+        "provided_by": "Data korpus disediakan oleh Sketch Engine",
+        "related_to": "Korpus - Terkait dengan '{word}'"
     },
     "docs": {
         "guides_reference": "Panduan, referensi, dan pertanyaan umum",

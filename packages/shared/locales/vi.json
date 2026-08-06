@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Kho ngữ liệu: {name}",
         "mistake_description": "Lỗi này liên quan đến {errorLevel} ({errorType}), do người học trình độ {proficiency} đến từ {country} mắc phải.",
-        "provided_by": "Dữ liệu ngữ liệu do Sketch Engine cung cấp"
+        "provided_by": "Dữ liệu ngữ liệu do Sketch Engine cung cấp",
+        "related_to": "Kho ngữ liệu - Liên quan đến '{word}'"
     },
     "docs": {
         "guides_reference": "Hướng dẫn, tham khảo và câu hỏi thường gặp",

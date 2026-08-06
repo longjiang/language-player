@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "コーパス：{name}",
         "mistake_description": "この間違いは{errorLevel}（{errorType}）に関係しており、{country}出身の{proficiency}レベルの学習者によるものです。",
-        "provided_by": "コーパスデータ提供：Sketch Engine"
+        "provided_by": "コーパスデータ提供：Sketch Engine",
+        "related_to": "コーパス - 「{word}」に関連"
     },
     "docs": {
         "guides_reference": "ガイド、リファレンス、よくある質問",

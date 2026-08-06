@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpus: {name}",
         "mistake_description": "Ten błąd ma związek z {errorLevel} ({errorType}) i został popełniony przez ucznia na poziomie {proficiency} z kraju {country}.",
-        "provided_by": "Dane korpusu dostarcza Sketch Engine"
+        "provided_by": "Dane korpusu dostarcza Sketch Engine",
+        "related_to": "Korpus - Powiązane z '{word}'"
     },
     "docs": {
         "guides_reference": "Przewodniki, materiały referencyjne i często zadawane pytania",

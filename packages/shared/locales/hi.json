@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "कॉर्पस: {name}",
         "mistake_description": "यह गलती {errorLevel} ({errorType}) से संबंधित है, जो {country} के {proficiency} स्तर के शिक्षार्थी ने की है।",
-        "provided_by": "कॉर्पस डेटा Sketch Engine द्वारा प्रदान किया गया"
+        "provided_by": "कॉर्पस डेटा Sketch Engine द्वारा प्रदान किया गया",
+        "related_to": "कॉर्पस - '{word}' से संबंधित"
     },
     "docs": {
         "guides_reference": "गाइड, संदर्भ और अक्सर पूछे जाने वाले प्रश्न",

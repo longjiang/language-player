@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Deze fout heeft te maken met {errorLevel} ({errorType}) en is gemaakt door een {proficiency}-leerling uit {country}.",
-        "provided_by": "Corpusgegevens geleverd door Sketch Engine"
+        "provided_by": "Corpusgegevens geleverd door Sketch Engine",
+        "related_to": "Corpus - Verwant aan '{word}'"
     },
     "docs": {
         "guides_reference": "Handleidingen, naslag en veelgestelde vragen",

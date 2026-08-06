@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "المدوّنة: {name}",
         "mistake_description": "يرتبط هذا الخطأ بـ {errorLevel} ({errorType})، وقد ارتكبه متعلم {proficiency} من {country}.",
-        "provided_by": "بيانات المدوّنة مقدَّمة من Sketch Engine"
+        "provided_by": "بيانات المدوّنة مقدَّمة من Sketch Engine",
+        "related_to": "المدوّنة - مرتبط بـ «{word}»"
     },
     "docs": {
         "guides_reference": "أدلة ومراجع وأسئلة شائعة",

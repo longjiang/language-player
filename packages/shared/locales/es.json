@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Este error tiene que ver con {errorLevel} ({errorType}), cometido por un estudiante de nivel {proficiency} de {country}.",
-        "provided_by": "Datos del corpus proporcionados por Sketch Engine"
+        "provided_by": "Datos del corpus proporcionados por Sketch Engine",
+        "related_to": "Corpus - Relacionado con '{word}'"
     },
     "docs": {
         "guides_reference": "Guías, referencia y preguntas frecuentes",

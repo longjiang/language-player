@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Korpusz: {name}",
         "mistake_description": "Ez a hiba a {errorLevel} ({errorType}) kategóriába tartozik, és egy {proficiency} szintű tanuló követte el {country} országból.",
-        "provided_by": "A korpuszadatokat a Sketch Engine biztosítja"
+        "provided_by": "A korpuszadatokat a Sketch Engine biztosítja",
+        "related_to": "Korpusz - Kapcsolódik: '{word}'"
     },
     "docs": {
         "guides_reference": "Útmutatók, referencia és gyakori kérdések",

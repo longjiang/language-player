@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Σώμα κειμένων: {name}",
         "mistake_description": "Αυτό το λάθος έχει να κάνει με {errorLevel} ({errorType}) και το έκανε μαθητής επιπέδου {proficiency} από τη {country}.",
-        "provided_by": "Τα δεδομένα του σώματος κειμένων παρέχονται από το Sketch Engine"
+        "provided_by": "Τα δεδομένα του σώματος κειμένων παρέχονται από το Sketch Engine",
+        "related_to": "Σώμα κειμένων - Σχετικό με «{word}»"
     },
     "docs": {
         "guides_reference": "Οδηγοί, αναφορές και συχνές ερωτήσεις",

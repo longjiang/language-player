@@ -156,7 +156,8 @@
     "corpus": {
         "corpus_name": "Corpus: {name}",
         "mistake_description": "Aquest error té a veure amb {errorLevel} ({errorType}), comès per un aprenent de nivell {proficiency} de {country}.",
-        "provided_by": "Dades del corpus proporcionades per Sketch Engine"
+        "provided_by": "Dades del corpus proporcionades per Sketch Engine",
+        "related_to": "Corpus - Relacionat amb '{word}'"
     },
     "docs": {
         "guides_reference": "Guies, referència i preguntes freqüents",
