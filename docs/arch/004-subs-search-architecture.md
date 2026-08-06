@@ -144,6 +144,76 @@ SubsSearchResults
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+> **Historical note:** the `## Backend: app_subs_search.py` section below documents
+> the **Classic/MySQL** path (`/subs-search-classic`). Since SPEC-039 the live
+> `GET /subs-search` endpoint runs on **Postgres/Supabase** via
+> `utils_content.subs_search` — see the next section.
+
+## Backend (current): `utils_content.subs_search` on Supabase
+
+Since SPEC-039 5.5 (and optimized by SPEC-044 + SPEC-045), `GET /subs-search`
+runs the Postgres path in `zerotohero-python-server/utils_content.py`. The
+API response shape is unchanged, so web/mobile/Classic call sites keep working.
+
+### Language routing
+
+`public.subs_tsv_config(l2)` is the single source of truth for how a language
+is matched:
+
+| Language group | Phase-1 matching | Fallback on 6 s walk timeout |
+|---|---|---|
+| Word-based (en, fr, de, ru, es, it, …) | `to_tsvector(subs_tsv_config(l2), subs_l2) @@ websearch_to_tsquery(config, 'a OR b')` | tsvector GIN bitmap (`youtube_videos_subs_tsv_idx`), no trigram, no full scan |
+| Vietnamese (`vi`) | FTS (`simple` config) | pg_trgm ILIKE bitmap |
+| Continua scripts (zh/ja/th/km/lo/my/bo/dz, Sinitic variants) **with the SPEC-045 n-gram index built** | `subs_ngram_tsv @@ websearch_to_tsquery('simple', …)` on unique 1-char/2-char tokens | n-gram GIN bitmap (`youtube_videos_subs_ngram_tsv_idx`) |
+| Continua scripts **before the SPEC-045 migration** (or wildcard/whitespace terms) | ILIKE + pg_trgm (`youtube_videos_subs_l2_trgm_idx`) | — (trigram is the primary path) |
+| Wildcards (`*`, `?`) or terms with whitespace — any language | ILIKE | — (explicit user intent) |
+
+The routing auto-detects the SPEC-045 migration: the token path is used only
+when the `subs_ngram_tsv` column exists and the partial GIN index is valid;
+otherwise continua languages keep the ILIKE/trigram path. No feature flag.
+
+### Two-phase query
+
+Phase 1 returns only matching ids ordered by views (`LIMIT 100`), walking the
+`idx_youtube_videos_l2_views` index for common terms. Phase 2 fetches the full
+rows (including the multi-KB `subs_l2` blobs) only for the limited id set.
+`_reduce_subs_to_context` then rechecks every candidate line against the full
+literal term (regex, `re.escape`d — see below) and keeps ±context lines.
+
+### SPEC-045: continua n-gram token index
+
+1-2 char terms — the common case for Chinese/Japanese/Thai dictionary lookups —
+are barely indexable by pg_trgm (no usable trigram), so the ILIKE path was
+slow (`中国` ~31 s, rare 1-2 char terms >30 s). SPEC-045 adds:
+
+- **`subs_ngram_tsv tsvector`** — a stored column of unique 1-char and 2-char
+  tokens per continua-language video, extracted from the `line` column only
+  (metadata can never produce candidates). Tokens are split on `\S+` runs so
+  spaces never cross token boundaries.
+- **Partial GIN index** `youtube_videos_subs_ngram_tsv_idx` over the continua
+  language list (same list as `subs_tsv_config()`'s NULL branch).
+- **Query:** 1-2 char terms are single lexemes; 3+ char terms are the AND of
+  overlapping bigrams (`对不起` → `对不 不起`); terms are OR-joined with
+  `websearch_to_tsquery('simple', …)`.
+- **Invalidation trigger** `youtube_videos_invalidate_ngram_tsv` sets the
+  column NULL on subtitle writes; `backfill_subs_ngram_tsv.py` (nightly)
+  repopulates it. The backfill must run **before** the index build.
+
+`_reduce_subs_to_context` uses `re.escape` on each term before building the
+match regex (so terms like `c++` can't raise `multiple repeat`), then converts
+the search wildcards back to regex tokens (`*` → any run, `?`/`_` → any single
+char) to stay consistent with the ILIKE path.
+
+Measured plan gates (SPEC-045 verification): common terms → `(l2, views)` walk
+stopping at LIMIT; rare/zero-match terms → Bitmap Index Scan on the n-gram GIN
+index; no full `l2` index scans for plain continua terms.
+
+### Caching
+
+Results are cached in the shared subs-search cache (namespaced `pg` so they
+never collide with the Classic MySQL keys). Walk timeouts are **not** cached as
+"no matches".
+
 ## Backend: `app_subs_search.py`
 
 ### Entry Point

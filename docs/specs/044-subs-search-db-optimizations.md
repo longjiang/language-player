@@ -155,9 +155,17 @@ Planner behavior after `ANALYZE` (verified with EXPLAIN):
 | `marry` en (medium) | slow | **~1.3 s** |
 | `zygote` en (rare) | empty at 6 s / minutes | **~1 s, 20 results** |
 | `zzzzqqq` en (zero-match) | ~6 s empty | **~0.2 s empty** |
-| `相形见绌,相形見絀` zh | ~40 s | **~0.4 s** |
+| `相形见绌,相形見絀` zh (4-char, rare) | ~40 s | **~0.4 s** |
 | `xin` vi | — | **~0.4 s** |
 | Any repeated search | n/a | **~0.01 s (cached)** |
+
+> **SPEC-045 correction (2026-08-05):** the Chinese "~0.4 s" row above is only
+> valid for **3+ char terms** (pg_trgm has a usable trigram for those). Common
+> 1-2 char terms (`中国` ~31 s) and rare 1-2 char terms (`峥嵘`, `绌` >30 s)
+> stayed slow because pg_trgm cannot index short patterns and the planner
+> misestimates their selectivity. SPEC-045 adds a stored n-gram token tsvector
+> (`subs_ngram_tsv`) with a partial GIN index for continua languages; see
+> [SPEC-045](045-continua-subs-search-ngram-tsv.md).
 
 ## Known limitations
 
