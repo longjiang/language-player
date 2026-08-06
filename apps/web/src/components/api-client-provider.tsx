@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo, useCallback, useEffect } from 'react';
+import { useRef, useMemo, useCallback } from 'react';
 import { createApiClient } from '@langplayer/api-client';
 import { useSession, signOut } from 'next-auth/react';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -100,13 +100,21 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
 
   // Keep the module-level token mirror in sync with the session and register
   // the refresh function so raw fetches can trigger the same refresh path.
-  useEffect(() => {
-    const user = (session?.user as any) ?? null;
-    setAuthTokens(
-      (user?.accessToken as string | undefined) ?? null,
-      refreshAccessToken,
-    );
-  }, [session, refreshAccessToken]);
+  //
+  // This MUST run during render, not in a useEffect: React flushes child
+  // effects before parent effects, so SubscriptionProvider (a child) fires its
+  // authenticatedFetch('/user-subscription') on the session-loading render
+  // BEFORE a parent useEffect here could populate the mirror — the request
+  // then goes out with no Authorization header, Flask 401s with "Missing or
+  // invalid Authorization header", and the child's effect never re-runs (its
+  // [userId, token] deps don't change). Populating during render (parent body
+  // runs before children) guarantees every child that effects on this commit
+  // reads the current token.
+  const sessionUser = (session?.user as any) ?? null;
+  setAuthTokens(
+    (sessionUser?.accessToken as string | undefined) ?? null,
+    refreshAccessToken,
+  );
 
   // Initialize synchronously (not in useEffect) — runs before child effects
   useMemo(() => {
