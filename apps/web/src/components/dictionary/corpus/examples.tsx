@@ -1,6 +1,7 @@
 'use client';
 
 import { isContinua, type SketchExamplesResponse } from '@langplayer/shared';
+import { sentenceContaining } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -64,11 +65,24 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
       <ul className="divide-y divide-border">
         {data.examples.map((example, index) => {
           const sentence = stripSpaces ? example.l2.replace(/ /g, '') : example.l2;
+          // Sketch Engine returns a short passage around the hit — truncate to
+          // the sentence containing the word (or any of its inflected forms)
+          // using Intl.Segmenter-based segmentation (sentenceContaining).
+          let hitOffset = -1;
+          const searchForms = highlightForms.length > 0 ? highlightForms : [word];
+          for (const f of searchForms) {
+            if (!f) continue;
+            const i = sentence.indexOf(f);
+            if (i !== -1 && (hitOffset === -1 || i < hitOffset)) hitOffset = i;
+          }
+          const display = hitOffset !== -1
+            ? sentenceContaining(sentence, hitOffset, l2)
+            : sentence;
           return (
             <li key={`${example.l2}-${index}`} className="py-3">
               <p lang={l2} className="text-sm leading-relaxed text-foreground">
                 <TokenizedText
-                  text={sentence}
+                  text={display}
                   l2Code={l2}
                   textScale={0}
                   leading="none"
