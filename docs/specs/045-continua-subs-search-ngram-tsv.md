@@ -5,7 +5,17 @@
 - **Spec ID**: SPEC-045
 - **Feature**: Fast monogram/bigram subs-search for continua languages on
   Supabase (`GET /subs-search` → `utils_content.subs_search`)
-- **Status**: planned (decision made 2026-08-05; implementation not started)
+- **Status**: **blocked at backfill (2026-08-05)** — code shipped (routing +
+  n-gram query builder in `utils_content.py`, `backfill_subs_ngram_tsv.py`,
+  migration SQL in `tmp/supabase-continua-ngram-tsv.sql`, SPEC-045 benchmark
+  matrix in `profiling_subs_search.py`, unit tests in `test_app.py`). The
+  production DB migration is partially applied: **Step 1 done** (column +
+  invalidation trigger) and the backfill reached **12,155 / ~194k continua
+  rows** before stalling on sustained write throughput. **Step 2 is blocked**;
+  Steps 3–4 (partial GIN index + benchmark) are deferred. Until the backfill
+  completes and the index is valid, the auto-detect keeps continua searches on
+  the ILIKE/trigram path (no production impact). See the "Blockers / rollout
+  state" section below.
 - **Created**: 2026-08-05
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (backend performance on
   `zerotohero-python-server`)
@@ -57,9 +67,19 @@ Root causes:
 Token volume (2% system sample, unique per video): zh ≈ 444 chars + 1,433
 bigrams; ja ≈ 236 + 815; th ≈ 75 + 702. Projected ~315M token/video pairs
 across the 194,964 continua rows; stored tsvector + GIN estimated at
-~7–10 GB.
+~7–10 GB. Both the token-volume table and the ~7–10 GB projection come from
+[ADR-0026](../adr/0026-continua-subs-search-indexing.md) (2,000-row prototype,
+~85 MB, scaled linearly to the full continua corpus) — validate on a staging
+copy and monitor actual storage during the backfill.
 
 ## Strategy (decisions)
+
+> This strategy is the implementation of the **accepted decision in
+> [ADR-0026](../adr/0026-continua-subs-search-indexing.md)** (Option B — stored
+> n-gram tsvector), which contains the option comparison, rationale, and the
+> prototype measurements behind the token-volume and ~7–10 GB storage
+> projections cited in the Background above. The decisions below are the
+> as-built detail for that ADR.
 
 1. **New stored column, not a reuse of `subs_tsv`.** Add
    `subs_ngram_tsv tsvector` to `youtube_videos`. The existing `subs_tsv`
@@ -245,17 +265,55 @@ Changes in `utils_content.subs_search`:
    the new `subs_ngram_tsv` queries and confirm the ILIKE phase-1 latency
    disappears from the top-slow list.
 
+## Blockers / rollout state (2026-08-05)
+
+**Blocker: Step 2 (backfill) does not converge on the production DB due to
+collapsing write throughput under sustained multi-KB TOAST writes.**
+
+- Step 1 (column + trigger) is applied. The backfill reached **12,155** of
+  ~194k continua rows (continua-only; the non-continua write bug was found and
+  cleaned up — see below), then stalled: a single 200-row batch ran 25+ min,
+  and subsequent smaller runs made no progress in minutes.
+- **Evidence / root-cause hypothesis**: a single-row tsvector write is
+  ~276 ms when the DB is idle but collapses to 10–30 s/row under sustained
+  backfill load. No autovacuum was running and only ~22k dead tuples existed
+  (not classic bloat); connection is via the Supabase **pooler** only (no
+  direct URL in the repo env). Best-fit explanation is instance-level
+  write-throughput / IOPS throttling plus self-inflicted pressure from the
+  backfill's own WAL/checkpoint/TOAST churn on a ~14 GB table with multi-KB
+  `subs_l2` blobs. **Not conclusively proven** — a controlled idle-DB burst
+  test (1 / 20 / 100-row writes while `pg_stat_bgwriter` is observed) is the
+  next diagnostic step.
+- **What was tried and learned**:
+  - id-ordering, no timeout: ~9 rows/s then a 25+ min batch stall.
+  - size-ascending (`ORDER BY octet_length(subs_l2)`): **worse** — the sort is
+    not indexable, forcing a full-table detoast + sort per page; reverted.
+  - Backfill script now uses id-ordering keyset paging + a **per-batch timeout
+    (60 s)** with a **per-row fallback (30 s)** that skips+logs pathological
+    rows, plus **burst/pause** (`--burst 5 --pause 30`) to let IOPS recover.
+  - **Non-continua write bug**: the first no-arg run had a WHERE clause that
+    was NOT scoped to the continua list, so it backfilled `en/fr/ru/vi/…` too
+    (3,991 rows). Fixed by making the base WHERE `l2 = any(CONTINUA_L2)`
+    unconditional, and all 3,991 non-continua rows were reset to NULL.
+- **Path forward**: run the backfill in a **low-traffic window** with the
+  burst/pause safety net (or first validate the burst-test hypothesis to pick
+  the right burst/pause values), then proceed to Step 3 (partial GIN index)
+  and Step 4 (benchmark). The committed 12,155 rows are safe and the script is
+  idempotent/resumable.
+
 ## Migration steps (ordered)
 
-1. Add `subs_ngram_tsv` column + invalidation trigger (migration SQL in
-   `zerotohero-python-server/tmp/`).
-2. Write `backfill_subs_ngram_tsv.py` + unit tests; dry-run on a sample.
-3. Backfill all continua rows in batches; monitor progress and storage.
-4. `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
-5. Ship routing changes (auto-detect index readiness; falls back to ILIKE
-   until the index is valid).
-6. Run benchmark matrix + parity checks; verify plan gates.
-7. Update ARCH-004's backend section and SPEC-044's verification table.
+1. ✅ Add `subs_ngram_tsv` column + invalidation trigger (done).
+2. ✅ Write `backfill_subs_ngram_tsv.py` + unit tests (done; script has burst/
+   pause + timeout safety net).
+3. ⛔ Backfill all continua rows in batches — **blocked** (see above); resumed
+   at 12,155 / ~194k rows once the performance blocker is resolved.
+4. ⬜ `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
+5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
+   until the index is valid) — code done, dormant until the index exists.
+6. ⬜ Run benchmark matrix + parity checks; verify plan gates.
+7. ✅ Update ARCH-004's backend section and SPEC-044's verification table
+   (done).
 
 ## Known limitations / risks
 
