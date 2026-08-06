@@ -5,7 +5,6 @@ import { useT } from '@/hooks/use-t';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { cn } from '@/lib/utils';
-import { log } from '@/lib/logger';
 import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 
 // Openverse is the direct image source for the web app (see ADR-0024): it has
@@ -138,18 +137,13 @@ async function fetchQueryResults(query: string, signal: AbortSignal): Promise<Se
       if (cached.length > 0) return cached;
       continue; // known empty — try a shorter candidate
     }
-    if (i === start && start < words.length) {
-      log('[ImageSearch] Pre-relaxed:', query, '→', candidate);
-    }
     const url = `${OPENVERSE_IMAGES_URL}?q=${encodeURIComponent(candidate)}&page_size=${PAGE_SIZE}&filter_dead=true`;
-    log('[ImageSearch] Openverse fetch:', candidate, url);
     const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json() as { results?: SearchImage[] };
     const results = data.results ?? [];
     setSearchCache(candidate, results);
     if (results.length > 0) {
-      if (candidate !== query) log('[ImageSearch] Query relaxed:', query, '→', candidate);
       return results;
     }
   }
