@@ -12,9 +12,10 @@
 - **Feature**: Subtitle search performance on Supabase (`GET /subs-search` →
   `utils_content.subs_search`)
 - **Status**: **Part 1 (word-based FTS) complete** (implemented + verified
-  2026-08-05); **Part 2 (continua n-gram token index) blocked at backfill**
-  (code shipped, migration partially applied, storage-layer I/O hang —
-  see "Blockers / rollout state").
+  2026-08-05); **Part 2 (continua n-gram token index) unblocked 2026-08-06**
+  — the storage-layer I/O hang was resolved with a full `VACUUM FULL` table
+  rewrite, and the backfill is running again (see "Blockers / rollout
+  state").
 - **Created**: 2026-08-05
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (backend performance on
   `zerotohero-python-server`)
@@ -40,7 +41,8 @@ left:
   1-char + 2-char tokens per video) with a partial GIN index for continua
   languages (zh/ja/th/km/…), routed through the same two-phase FTS flow. The
   goal is uncached p95 < 1 s for the continua benchmark matrix (1–4 char
-  terms). **Blocked at the backfill by a storage-layer I/O hang** (see
+  terms). The backfill blocker (storage-layer I/O hang) was **resolved
+  2026-08-06** with a `VACUUM FULL` table rewrite; backfill resumed (see
   Blockers below).
 
 ---
@@ -546,18 +548,61 @@ attempted on 2026-08-06:
   fixed (compute upgrade / Supabase support). Option A is a strict
   improvement and is live in the meantime. See the blocker diagnosis above.
 
+## Storage issue resolved — `VACUUM FULL` (2026-08-06)
+
+The storage-layer hang was **definitively resolved with a full table
+rewrite**, without needing Supabase support:
+
+- **Fresh-block hypothesis validated first.** Copying known-bad rows into a
+  temp table and updating them there was fast (0.06 s each) with data intact,
+  proving the data itself was fine and the corruption was page/block-level on
+  the data volume's lower physical region. (The prior disk-size upgrade to
+  100 GB and the compute upgrade to 1 GB `shared_buffers` did **not** clear
+  the row hangs.)
+- **`VACUUM FULL public.youtube_videos` ran to completion** (01:45–04:16 PDT,
+  **9022 s / ~2.5 h**) with `statement_timeout = 0`. Heap scan: 97,244/97,244
+  blocks, 1,045,422 tuples written. Index rebuild phase dominated the time:
+  the 4.3 GB `subs_l2_trgm_idx` GIN build under `maintenance_work_mem` spills
+  enormous sort runs to temp files (165 GB cumulative temp_bytes) and every
+  write is throttled by the disk-IO budget (observed 8–44 MB/s). Verified
+  NOT hung throughout via: `pg_stat_progress_cluster` (`idx_rebuild` 15→18),
+  sustained disk writes (never 0 — the hang signature), and temp-file growth.
+- **Post-VACUUM verification — the fix works.**
+  - Row count unchanged: **1,045,422**; all **19/19 indexes valid+ready**.
+  - The four known-bad rows (`40000000614`, `40000000622`, `40000005026`,
+    `40000010000`) — which hung in D-state on ANY write — now write in
+    **0.09–0.11 s**. Controls also 0.06–0.13 s.
+  - Single-row `subs_ngram_tsv` tsvector writes: **0.06–0.09 s** (the fast
+    regime; previously they hung).
+  - `subs_search` unaffected (ILIKE path: `中` 1.56 s, `日本` 8.21 s).
+  - Disk free recovered to **69 GB** after the old files were dropped.
+- **Backfill resumed** (idempotent, keyset-paginated): steady **~77 rows/min**
+  (~0.74 s/row; batch of 200 ≈ 150 s, limited by sustained TOAST-write
+  throttle — single-row idle writes are 0.06–0.09 s). As of 2026-08-06
+  04:23 PDT: **12,566 / ~182,500 remaining** (ETA ~37 h at this rate). The
+  `--burst 5 --pause 30` throttling remains appropriate.
+- **Remaining after the backfill converges**: build the partial GIN index
+  `youtube_videos_subs_ngram_tsv_idx` (concurrently), then run the benchmark
+  matrix; the PGroonga routing (dormant) is now buildable if desired, but the
+  n-gram GIN index is the primary path.
+
+**Re-verification tools** (kept in `zerotohero-python-server/tmp/`):
+`run_vacuum_full.py` (background runner + log), plus the monitor queries
+(`pg_stat_progress_cluster` with PG17 column names `heap_blks_scanned` /
+`heap_tuples_written` / `index_rebuild_count`; disk-IO deltas from the
+Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
+
 ## Migration steps (ordered)
 
 1. ✅ Add `subs_ngram_tsv` column + invalidation trigger (done).
 2. ✅ Write `backfill_subs_ngram_tsv.py` + unit tests (done; script has burst/
    pause + timeout safety net).
-3. ⛔ Backfill all continua rows in batches — **blocked** (storage-layer I/O
-   hang; see above). Resumed at **12,166 / 182,507** once the storage issue is
-   resolved. **2026-08-06**: Option A planner safety net shipped (live); the
-   PGroonga index build was attempted and hung on the same storage issue
-   (see "Alternatives that bypass the backfill" below) — an invalid
-   `youtube_videos_subs_l2_pgroonga_idx` remains to be dropped after the
-   instance recovers.
+3. 🔄 Backfill all continua rows in batches — **resumed 2026-08-06** after
+   the storage-layer I/O hang was resolved with a `VACUUM FULL` table rewrite
+   (see "Storage issue resolved" above). Running at ~77 rows/min;
+   **12,566 / ~182,500 remaining** as of 2026-08-06 04:23 PDT (~37 h ETA).
+   The 2026-08-06 bypass work (Option A shipped live; PGroonga build
+   attempted/hung, then cleaned up) is documented above.
 4. ⬜ `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
 5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
    until the index is valid) — code done, dormant until the index exists.
@@ -580,8 +625,9 @@ attempted on 2026-08-06:
 - **Wildcard `?` searches** on medium-frequency patterns remain slow
   (pre-existing ILIKE behavior).
 - **Part 2 storage/build**: ~7–10 GB and a multi-hour backfill on the
-  continua corpus — and currently the backfill itself hangs at the storage
-  layer (see Blockers).
+  continua corpus. The storage-layer hang that blocked it was resolved
+  2026-08-06 with a `VACUUM FULL` rewrite; the backfill is running at
+  ~77 rows/min (~37 h ETA for the remaining ~182.5k rows).
 - **Part 2 full-scale planner behavior**: the prototype was 2k rows; the
   walk/GIN split must be verified at 122k zh rows. The bounded walk + GIN
   fallback prevents hangs if the planner misbehaves.
@@ -611,11 +657,11 @@ attempted on 2026-08-06:
 - **Materialized inverted index** (`(lexeme, video_id, views)`, index-only
   lookups) for guaranteed sub-second behavior on every term, at the cost of
   ~10–15 GB and a sync trigger.
-- **PGroonga as the continua unblock** — viable only **after** the storage
-  issue is fixed: the 2026-08-06 partial-index build hung on the same
-  storage-layer hang (see "Alternatives that bypass the backfill" for the
-  full outcome). The routing code is already committed and dormant, so a
-  successful build after the compute upgrade activates it automatically.
+- **PGroonga as the continua unblock** — the storage-layer hang that blocked
+  the 2026-08-06 build attempt is resolved (VACUUM FULL rewrite, same day);
+  the routing code is committed and dormant, so a successful build now
+  activates it automatically. The n-gram GIN partial index (Part 2) is the
+  primary path; PGroonga is an optional alternative.
 - **Posting table** remains the documented heavy alternative in ADR-0026.
 - **Per-term hybrid routing** (token path for clean terms + ILIKE for dirty
   terms in the same request) if dirty-term traffic proves significant.
