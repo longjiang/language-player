@@ -11,13 +11,13 @@ import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
-import { getCachedEntries, enqueueLookupWords } from '@langplayer/utils';
+import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
+import { lookupL1Text } from '@/lib/l1-lookup';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -459,27 +459,6 @@ export default function ReviewPage() {
     [currentCard?.word.id],
   );
 
-  // ── DEBUG: log the current card's word + context for highlight debugging ──
-  // Temporary instrumentation for the "highlighted as saved but not as the
-  // target word" bug. Logs once per unique word id. Remove after diagnosis.
-  const loggedCardIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!currentCard) return;
-    const id = currentCard.word.id;
-    if (loggedCardIdRef.current === id) return;
-    loggedCardIdRef.current = id;
-    const ctx = currentCard.word.context;
-    log('Review card context', {
-      wordId: id,
-      forms: currentCard.word.forms,
-      context: ctx ? { form: ctx.form, text: ctx.text } : null,
-      instances: (currentCard.word.instances ?? []).map((i) => ({
-        form: i.form,
-        text: i.context.text,
-      })),
-    });
-  }, [currentCard]);
-
   // ── Clear stale context translation when card changes ──
   useEffect(() => {
     setContextTranslation(null);
@@ -498,16 +477,21 @@ export default function ReviewPage() {
     // Skip if we already have an L1 entry for this word
     if (l1Entry?.id === card.word.id) return;
 
+    // Reuse an L1-translated entry already fetched elsewhere (e.g. by the
+    // dictionary popup) — keyed by entry id, so the same entry's definitions
+    // are translated only once instead of on every reveal.
+    const cached = getL1CachedEntry(l2Code, l1.code, card.word.id);
+    if (cached) {
+      setL1Entry(cached);
+      return;
+    }
+
+    // lookupL1Text dedupes concurrent fetches and caches each result by entry
+    // id, so the popup and this back side always share the exact translation.
     let cancelled = false;
-    fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: form, l2: l2Code, l1: baseCode(l1.code) }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
+    lookupL1Text(form, l2Code, l1.code)
+      .then((results) => {
         if (cancelled) return;
-        const results = (data.results ?? []) as DictionaryEntry[];
         // Try to match the saved word's entry ID; fall back to first result
         const match = results.find((e) => e.id === card.word.id) ?? results[0] ?? null;
         setL1Entry(match);
