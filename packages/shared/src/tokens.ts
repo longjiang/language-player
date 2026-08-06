@@ -19,7 +19,7 @@ export const colors = {
     200: '214 90% 85%',
     300: '217 91% 75%',
     400: '224 82% 65%',
-    500: '228 74% 59%', // ← primary
+    500: '228 74% 59%',
     600: '232 65% 52%',
     700: '235 58% 46%',
     800: '237 52% 40%',
@@ -124,7 +124,7 @@ export const lightSemantic: SemanticColors = {
   cardForeground: '222 47% 11%',
   popover: '0 0% 100%',
   popoverForeground: '222 47% 11%',
-  primary: colors.blue[500],
+  primary: '274 60% 38%', // ← brand purple (light) #69279c
   primaryForeground: '0 0% 100%',
   secondary: colors.neutral[100],
   secondaryForeground: '222 47% 11%',
@@ -140,7 +140,7 @@ export const lightSemantic: SemanticColors = {
   warningForeground: '0 0% 100%',
   border: colors.neutral[200],
   input: colors.neutral[200],
-  ring: colors.blue[500],
+  ring: '274 60% 38%',
 };
 
 // Dark theme values match apps/web/src/app/globals.css CSS custom properties.
@@ -151,7 +151,7 @@ export const darkSemantic: SemanticColors = {
   cardForeground: '0 0% 95%',
   popover: '230 25% 12%',
   popoverForeground: '0 0% 95%',
-  primary: '228 74% 65%',
+  primary: '274 60% 46%', // ← brand purple (dark) #7d2fba
   primaryForeground: '0 0% 100%',
   secondary: '230 20% 18%',
   secondaryForeground: '0 0% 95%',
@@ -167,7 +167,7 @@ export const darkSemantic: SemanticColors = {
   warningForeground: '0 0% 100%',
   border: '230 20% 22%',
   input: '230 20% 22%',
-  ring: '228 74% 65%',
+  ring: '274 60% 46%',
 };
 
 // ── Typography ──────────────────────────────

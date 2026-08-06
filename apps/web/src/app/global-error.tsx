@@ -28,8 +28,8 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           .icon{margin-bottom:1rem}
           h1{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem}
           p{color:#9ca3af;font-size:0.875rem;margin-bottom:1.5rem}
-          button{cursor:pointer;background:#5c7cfa;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:0.5rem;font-size:0.875rem;font-weight:500;display:inline-flex;align-items:center;gap:0.5rem}
-          button:hover{background:#4c6ef5}
+          button{cursor:pointer;background:#7d2fba;color:#fff;border:none;padding:0.5rem 1.25rem;border-radius:0.5rem;font-size:0.875rem;font-weight:500;display:inline-flex;align-items:center;gap:0.5rem}
+          button:hover{background:#69279c}
           code{display:block;margin-top:1.5rem;font-size:0.75rem;color:#6b7280;word-break:break-all}
         `}</style>
       </head>

@@ -11,7 +11,7 @@ const H = 630;
 const BG_TOP = '#0B0D18';
 const BG_MID = '#1a1d2e';
 const BG_BOT = '#252840';
-const ACCENT_START = '#5c7cfa';
+const ACCENT_START = '#7d2fba';
 const ACCENT_END = '#ff922b';
 
 // ── Helpers ───────────────────────────────────────────────────
