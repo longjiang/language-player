@@ -211,6 +211,25 @@ custom `token_hash` link would 404 on Classic; `/auth/confirm` remains for
 token-hash links and redirect-session fragments when the Site URL is owned by
 the new web app. Both link formats now log the user in directly.
 
+**Password-recovery (type=recovery) link handling (2026-08-05):** reset-password
+emails use `{{ .ConfirmationURL }}`, so a recovery link redirects to the Site
+URL with a `type=recovery` session fragment — the same shape as signup, but it
+must land on a **password form**, not "email verified". Both apps now detect it:
+
+- **New web app**: `supabase-session-handler.tsx` reads `type` from the fragment;
+  on `type=recovery` it routes to the new **`/password-reset`** page (added to
+  `proxy.ts` AUTH_PATHS) with the recovery JWT in `?token=`, instead of
+  exchanging through NextAuth to `/auth/verified`. The page POSTs
+  `/auth/password-reset` with `{ token, password }`.
+- **Classic**: `plugins/main.js` routes a `type=recovery` fragment to the
+  existing `pages/password-reset.vue` with `?token=<access_token>` (instead of
+  `/login?verified=1`); that page already POSTs `/auth/password-reset`.
+
+Flask `/auth/password-reset` consumes the recovery JWT directly: it verifies the
+token, reads `sub`, and updates the password via the GoTrue admin API
+(`PUT /auth/v1/admin/users/{id}`). The one shared template + client-agnostic
+fragment approach works for both apps without per-app link URLs.
+
 **Supabase signup vs Directus (2026-08-05):** GoTrue does not treat an
 unverified email as occupied. `POST /auth/v1/signup` with an existing
 unconfirmed email returns 200 with the original user (`identities` intact), so

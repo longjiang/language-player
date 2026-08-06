@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 
-const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
+const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/password-reset'];
 const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
 
