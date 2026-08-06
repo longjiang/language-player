@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SketchCollocationsResponse } from '@langplayer/shared';
+import { isContinua, type SketchCollocationsResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -30,6 +30,11 @@ export function Collocations({ word, l2Code, corpname = null }: CollocationsProp
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/collocations?word=${encodeURIComponent(word)}&l2=${baseCode(l2Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchCollocationsResponse>(url);
+
+  // Continua languages (CJK, Thai, Khmer, Lao, Burmese, Tibetan, Japanese,
+  // Vietnamese…) are written without spaces — collocation phrases come back
+  // with a space between every token (e.g. `学习 知识`), so strip them too.
+  const stripSpaces = isContinua(baseCode(l2Code));
 
   const toggleExpanded = (gramrelIndex: number) => {
     setExpanded((prev) => {
@@ -88,15 +93,19 @@ export function Collocations({ word, l2Code, corpname = null }: CollocationsProp
                 {gramrel.description.replace(/{word}/g, word)}
               </h4>
               <ul className="flex flex-col">
-                {visibleWords.map((w, wordIndex) => (
-                  <li
-                    key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`}
-                    lang={baseCode(l2Code)}
-                    className="rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-background"
-                  >
-                    <HighlightTerm text={w.cm || w.word} term={word} />
-                  </li>
-                ))}
+                {visibleWords.map((w, wordIndex) => {
+                  const text = w.cm || w.word;
+                  const display = stripSpaces ? text.replace(/ /g, '') : text;
+                  return (
+                    <li
+                      key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`}
+                      lang={baseCode(l2Code)}
+                      className="rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-background"
+                    >
+                      <HighlightTerm text={display} term={word} />
+                    </li>
+                  );
+                })}
               </ul>
               {hiddenCount > 0 && (
                 <button
