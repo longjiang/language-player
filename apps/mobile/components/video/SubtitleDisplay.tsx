@@ -6,12 +6,11 @@ import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
-import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
+import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/shared';
 
 interface SubtitleDisplayProps {
   lines: SubtitleSyncedLine[];
@@ -83,45 +82,6 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     })),
     [lines, translatedLines, showTranslation],
   );
-
-  // ── Batch lemmatization ──
-  const [batchTokens, setBatchTokens] = useState<Record<number, LemmatizedToken[]>>({});
-  const [loadingBatch, setLoadingBatch] = useState(false);
-  const batchGenRef = useRef(0);
-
-  useEffect(() => {
-    if (lines.length === 0) return;
-    if (tokenCache && !tokenCacheLoaded) return;
-
-    const gen = ++batchGenRef.current;
-    setLoadingBatch(true);
-    const texts = lines.map(l => l.l2Line);
-
-    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts, l2: l2Lang.code }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (batchGenRef.current !== gen) return;
-        const results: LemmatizedToken[][] = data?.results ?? [];
-        const map: Record<number, LemmatizedToken[]> = {};
-        results.forEach((tokens, i) => { if (tokens?.length) map[i] = tokens; });
-        setBatchTokens(map);
-        setLoadingBatch(false);
-      })
-      .catch(async () => {
-        if (batchGenRef.current !== gen) return;
-        const { lemmatizeText } = await import('@/lib/tokenizer');
-        const results = await Promise.all(texts.map(t => lemmatizeText(t, l2Lang.code)));
-        if (batchGenRef.current !== gen) return;
-        const map: Record<number, LemmatizedToken[]> = {};
-        results.forEach((tokens, i) => { if (tokens?.length) map[i] = tokens; });
-        setBatchTokens(map);
-        setLoadingBatch(false);
-      });
-  }, [lines, l2Lang.code, tokenCache, tokenCacheLoaded]);
 
   // ── Drive FlatList scroll from Animated.Value when smoothScroll is on ──
   useEffect(() => {
@@ -217,7 +177,6 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   // ── Single-line subtitle mode ──
   if (singleLine) {
     const activeLine = activeLineIndex >= 0 ? displayLines[activeLineIndex] : undefined;
-    const activeTokens = activeLineIndex >= 0 ? batchTokens[activeLineIndex] : undefined;
 
     // Karaoke progress for the active line
     let karaokeProgress: number | undefined;
@@ -250,7 +209,6 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   l2Code={l2Lang.code}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
-                  tokens={activeTokens}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
                 />
@@ -283,17 +241,15 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
         onScrollToIndexFailed={(info) => {
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
         }}
-        ListHeaderComponent={loading || loadingBatch ? (
+        ListHeaderComponent={loading ? (
           <View className="py-1">
             <Text className="text-xs text-muted-foreground">
               {showTranslation && loading ? `${t('msg.translating')} ${progress}/${lines.length}` : ''}
-              {loadingBatch ? ` ${t('msg.making_words_interactive')}` : ''}
             </Text>
           </View>
         ) : null}
         renderItem={({ item, index }) => {
           const isActive = index === activeLineIndex;
-          const preloadedTokens = batchTokens[index];
 
           // Karaoke progress for active line
           let karaokeProgress: number | undefined;
@@ -321,7 +277,6 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   l2Code={l2Lang.code}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
-                  tokens={preloadedTokens}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
                 />
