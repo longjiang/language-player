@@ -327,6 +327,7 @@ export default function EpubReaderScreen() {
             showTextActions
             onOpenLink={handleOpenLink}
             highlight={highlight}
+            textScale={1}
             t={t}
           />
         </View>

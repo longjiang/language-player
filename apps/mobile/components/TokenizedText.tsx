@@ -15,6 +15,7 @@ import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { log, logwarn } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { enqueueLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter } from '@/lib/chinese-script';
@@ -173,6 +174,9 @@ export interface TokenizedTextProps {
   onOpenLink?: (href: string) => void;
   /** When false, forces phonetics/furigana off (AI explanation plain spans). */
   phonetics?: boolean;
+  /** Text scale multiplier (matches web): omitted → user zoom; 0 → inherit
+   *  (fixed 16px on mobile); otherwise textScale × user zoom. */
+  textScale?: number;
 }
 
 /**
@@ -189,7 +193,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -306,8 +310,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   // ── Computed text styles from zoom + typeFace settings ──
   const textStyle = useMemo(() => {
     const zoom = tokenSettings.zoom;
-    const baseSize = 16; // text-base
-    const size = zoom === 0 ? baseSize : baseSize + zoom * 2; // zoom 1→18, 2→20, ..., 7→30
+    const zoomRem = ZOOM_TO_REM[zoom] ?? 1;
+    // Matches web: omitted → user zoom; 0 → inherit (fixed 16px); otherwise
+    // textScale × user zoom.
+    const effectiveScale = textScale === undefined
+      ? zoomRem
+      : (textScale === 0 ? 0 : textScale * zoomRem);
+    const size = effectiveScale === 0 ? 16 : 16 * effectiveScale;
     const style: { fontSize: number; fontFamily?: string; lineHeight?: number } = { fontSize: size };
 
     if (tokenSettings.typeFace === 'serif') {
@@ -317,7 +326,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     }
 
     return style;
-  }, [tokenSettings.zoom, tokenSettings.typeFace]);
+  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale]);
 
   // ── Leading ratio from prop (default: loose = 2) ──
   const LEADING_RATIOS: Record<string, number> = {
