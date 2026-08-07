@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
-import { VideoCard } from '@/components/video/VideoCard';
+import { VideoGrid } from '@/components/video/VideoGrid';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -32,11 +32,7 @@ export default function MusicScreen() {
           <Text className="text-muted-foreground">{t(error as any)}</Text>
         </View>
       ) : (
-        <FlatList
-          data={videos}
-          keyExtractor={(item) => item.youtube_id}
-          renderItem={({ item }) => <VideoCard video={item} />}
-        />
+        <VideoGrid videos={videos} loading={loading} />
       )}
     </PageContainer>
   );

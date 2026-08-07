@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
-import { VideoCard } from '@/components/video/VideoCard';
+import { VideoGrid } from '@/components/video/VideoGrid';
 import { baseCode } from '@langplayer/utils';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -89,7 +89,7 @@ export default function SearchScreen() {
   const hasResults = results && results.length > 0;
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth={hasResults ? '7xl' : '2xl'}>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
       </View>
@@ -182,20 +182,12 @@ export default function SearchScreen() {
 
       {/* Results */}
       {hasResults && (
-        <FlatList
-          data={results!}
-          keyExtractor={(item) => item.youtube_id}
-          ListHeaderComponent={
-            <Text className="mb-2 px-4 text-sm text-muted-foreground">
-              {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: query })}
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View className="px-4 pt-2">
-              <VideoCard video={item} videos={results ?? []} queueType="search" layout="list" />
-            </View>
-          )}
-        />
+        <>
+          <Text className="mb-2 px-4 pt-2 text-sm text-muted-foreground">
+            {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: query })}
+          </Text>
+          <VideoGrid videos={results!} queueType="search" />
+        </>
       )}
     </PageContainer>
   );

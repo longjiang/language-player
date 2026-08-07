@@ -4,6 +4,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { e2e } from '@/lib/e2e';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
+import { gridColumnCount } from '@/lib/constants';
 import { VideoCard } from './VideoCard';
 import type { QueueType } from '@langplayer/utils';
 
@@ -20,7 +21,7 @@ interface VideoGridProps {
 export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing, queueType = 'recommended' }: VideoGridProps) {
   const t = useT();
   const { width } = useResponsive();
-  const numColumns = width < 640 ? 1 : width < 1024 ? 2 : width < 1280 ? 3 : 4;
+  const numColumns = gridColumnCount(width);
 
   if (loading && videos.length === 0) {
     return (

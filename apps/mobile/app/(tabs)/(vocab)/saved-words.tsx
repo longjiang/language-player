@@ -8,6 +8,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
+import { gridColumnCount } from '@/lib/constants';
 import { decomposeWordId } from '@langplayer/shared';
 import { Search, Trash2, Download, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -28,7 +29,7 @@ export default function SavedWordsScreen() {
 
   // Responsive tiling like the explore/media grid (item 2.4).
   // Phones stay single-column; tablets/desktop tile.
-  const numColumns = screenWidth < 640 ? 1 : screenWidth < 1024 ? 2 : screenWidth < 1280 ? 3 : 4;
+  const numColumns = gridColumnCount(screenWidth);
 
   const [filterText, setFilterText] = useState('');
   const [exporting, setExporting] = useState(false);

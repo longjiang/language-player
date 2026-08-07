@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Pressable, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, Image } from 'react-native';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ImageOff, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -126,8 +127,8 @@ export function ImageSearchResults({
 }: ImageSearchResultsProps) {
   const t = useT();
   const isCompact = variant === 'compact';
-  const { width } = useWindowDimensions();
-  const cols = 3;
+  const { width, isSm } = useResponsive();
+  const cols = isSm ? 4 : 3;
 
   const [images, setImages] = useState<SearchImage[] | null>(null);
   const [queries, setQueries] = useState<string[]>([]);
@@ -319,7 +320,7 @@ export function ImageSearchResults({
         <SkeletonPills />
         <View className="flex-row flex-wrap gap-2 px-2">
           {Array.from({ length: pageSize }, (_, i) => (
-            <View key={i} style={{ width: (width - 32) / 3 }} className="aspect-square rounded-lg bg-muted" />
+            <View key={i} style={{ width: (width - 32) / cols }} className="aspect-square rounded-lg bg-muted" />
           ))}
         </View>
       </>
@@ -335,7 +336,7 @@ export function ImageSearchResults({
   const pageImages = goodImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
   const gridCells: (SearchImage | null)[] = Array.from({ length: pageSize }, (_, i) => pageImages[i] ?? null);
 
-  const tileWidth = (width - 32) / 3;
+  const tileWidth = (width - 32) / cols;
 
   if (images.length === 0) {
     return (
