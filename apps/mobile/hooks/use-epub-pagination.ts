@@ -32,6 +32,8 @@ interface UseEpubPaginationReturn {
   prevPage: () => void;
   nextPage: () => void;
   goToPage: (page: number) => void;
+  /** Map a global block index to the page containing it (in-book search). */
+  blockPage: (blockIndex: number) => number;
   handleMeasureBlock: (index: number, height: number) => void;
   contentWidth: number;
 }
@@ -253,6 +255,17 @@ export function useEpubPagination({
     setBlockTranslations({});
   }, [page, totalPages]);
 
+  // ── Map a global block index to the page that contains it (in-book search) ──
+  const blockPage = useCallback((blockIndex: number): number => {
+    if (pageBreaks.length === 0 || !blocks) return 0;
+    for (let p = 0; p <= pageBreaks.length; p++) {
+      const start = p === 0 ? 0 : pageBreaks[p - 1]!;
+      const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
+      if (blockIndex >= start && blockIndex < end) return p;
+    }
+    return 0;
+  }, [pageBreaks, blocks]);
+
   // ── Report anchor on page change (matches web ReaderPanel) ──
   useEffect(() => {
     if (prevPageRef.current === page || !onAnchorChange) return;
@@ -266,6 +279,6 @@ export function useEpubPagination({
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
     loadingTokens, tokenCache, blockTranslations, isTranslating,
-    prevPage, nextPage, goToPage, handleMeasureBlock, contentWidth,
+    prevPage, nextPage, goToPage, blockPage, handleMeasureBlock, contentWidth,
   };
 }

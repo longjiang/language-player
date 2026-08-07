@@ -8,7 +8,8 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { BookOpen, Upload, X } from 'lucide-react-native';
+import { BookSearchDialog } from '@/components/reader/BookSearchDialog';
+import { BookOpen, Upload, X, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function EpubReaderScreen() {
@@ -17,6 +18,7 @@ export default function EpubReaderScreen() {
   const t = useT();
   const [text, setText] = React.useState('');
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
   const onChapterChange = useCallback((chapterText: string, _title: string) => {
     setText(chapterText);
@@ -96,6 +98,9 @@ export default function EpubReaderScreen() {
         <Pressable onPress={epub.close} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
           <X size={14} color={ICON_MUTED} /><Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
         </Pressable>
+        <Pressable onPress={() => setSearchOpen(true)} className="rounded p-1 active:bg-muted" accessibilityLabel={t('action.search')}>
+          <Search size={20} color={ICON_MUTED} />
+        </Pressable>
         <Pressable onPress={() => setSidebarOpen(!sidebarOpen)} className="rounded p-1 active:bg-muted">
           <BookOpen size={20} color={ICON_MUTED} />
         </Pressable>
@@ -136,6 +141,18 @@ export default function EpubReaderScreen() {
           />
           </View>
         )}
+
+        {/* In-book search (SPEC-049 §9.4/9.5) — jump to the matching page */}
+        <BookSearchDialog
+          visible={searchOpen}
+          blocks={pagination.blocks}
+          onSelect={(blockIndex) => {
+            const targetPage = pagination.blockPage(blockIndex);
+            pagination.goToPage(targetPage);
+            setSearchOpen(false);
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
       </View>
     </View>
   );
