@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
+import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log } from '@/lib/logger';
 import {
@@ -137,6 +138,9 @@ async function saveRecent(l2Code: string, term: string) {
 }
 
 export function DictionaryProvider({ children }: { children: ReactNode }) {
+  const t = useT();
+  const tRef = useRef(t);
+  tRef.current = t;
   const { l1Lang, l2Lang } = useLanguage();
   const dict = useDictionary();
   const l2Code = l2Lang.code;
@@ -198,6 +202,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       if (cached) {
         log('[Dict] memory cache hit —', trimmed);
         setResults(cached);
+        setMessage(cached.length === 0 ? tRef.current('msg.no_results') : null);
         setLoading(false);
         await saveRecent(l2Code, trimmed);
         setRecentSearches(await loadRecent(l2Code));
@@ -227,7 +232,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       sessionCache.set(cacheKey, entries);
 
       setResults(entries);
-      setMessage(res.message ?? null);
+      setMessage(entries.length === 0 ? (res.message ?? tRef.current('msg.no_results')) : (res.message ?? null));
       await saveRecent(l2Code, trimmed);
       setRecentSearches(await loadRecent(l2Code));
     } catch (e: any) {
