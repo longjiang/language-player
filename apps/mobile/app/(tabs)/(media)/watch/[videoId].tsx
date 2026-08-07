@@ -14,7 +14,7 @@ import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
 import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
-import { SimpleSubsForDebug } from '@/components/video/SimpleSubsForDebug';
+import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
 import { VideoMeta } from '@/components/video/VideoMeta';
 import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
@@ -385,7 +385,7 @@ export default function WatchScreen() {
                 playlistDisabled={playlistDisabled}
               />
             </View>
-            <SimpleSubsForDebug
+            <SubtitleDisplay
               singleLine
               lines={subtitleLines}
               activeLineIndex={activeLineIndex}
@@ -435,7 +435,7 @@ export default function WatchScreen() {
             playlistDisabled={playlistDisabled}
           />
         </View>
-        <SimpleSubsForDebug
+        <SubtitleDisplay
           singleLine
           lines={subtitleLines}
           activeLineIndex={activeLineIndex}
@@ -464,7 +464,7 @@ export default function WatchScreen() {
   const transcriptPanel = (
     <TranscriptQueuePanel
       transcript={
-        <SimpleSubsForDebug
+        <SubtitleDisplay
           lines={subtitleLines}
           activeLineIndex={activeLineIndex}
           currentTime={currentTime}
