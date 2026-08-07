@@ -9,7 +9,12 @@ import { logwarn } from '@/lib/logger';
  * sections (collocations, examples) — mirrors web's useLazyTranslations
  * without the IntersectionObserver (mobile sections render on mount).
  */
-export function useCorpusTranslations(texts: string[], l1: string, l2: string) {
+export function useCorpusTranslations(
+  texts: string[],
+  l1: string,
+  l2: string,
+  forms?: (string[] | string | null | undefined)[],
+) {
   const [translations, setTranslations] = useState<(string | undefined)[]>([]);
   const cacheRef = useRef<Map<string, string>>(new Map());
   const doneRef = useRef<Set<number>>(new Set());
@@ -24,7 +29,10 @@ export function useCorpusTranslations(texts: string[], l1: string, l2: string) {
     const translateOne = async (index: number, text: string): Promise<void> => {
       if (cancelled || doneRef.current.has(index)) return;
       doneRef.current.add(index);
-      const cached = cacheRef.current.get(text);
+      const rawForm = forms?.[index];
+      const formKey = Array.isArray(rawForm) ? rawForm.join(',') : (rawForm ?? '');
+      const cacheKey = `${text}\u0000${formKey}`;
+      const cached = cacheRef.current.get(cacheKey);
       if (cached !== undefined) {
         if (!cancelled) {
           setTranslations((prev) => {
@@ -36,16 +44,23 @@ export function useCorpusTranslations(texts: string[], l1: string, l2: string) {
         return;
       }
       try {
-        const res = await fetch(`${PYTHON_API_URL}/translate`, {
+        // Use /translate_array even for a single line so multiple highlight
+        // forms are supported, matching web's corpus translation pipeline.
+        const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, l1, l2 }),
+          body: JSON.stringify({
+            texts: [text],
+            l1,
+            l2,
+            ...(forms ? { forms: [forms[index] ?? null] } : {}),
+          }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const raw = data?.translated_text ?? data?.translation ?? data?.text;
+        const raw = data?.translated_texts?.[0] ?? data?.translated_text ?? data?.translation;
         if (typeof raw === 'string' && raw) {
-          cacheRef.current.set(text, raw);
+          cacheRef.current.set(cacheKey, raw);
           if (!cancelled) {
             setTranslations((prev) => {
               const next = [...prev];

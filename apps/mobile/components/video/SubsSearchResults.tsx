@@ -15,6 +15,7 @@ import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { VideoControlBar } from './VideoControlBar';
 import { baseCode } from '@langplayer/utils';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { List, X, Play } from 'lucide-react-native';
 
@@ -456,7 +457,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                                 return (
                                   <Text key={j} className="text-xs text-muted-foreground">
                                     {j > 0 ? ' ' : ''}
-                                    {translated}
+                                    {renderInlineMarkdown(translated, { markBold: true })}
                                   </Text>
                                 );
                               })}

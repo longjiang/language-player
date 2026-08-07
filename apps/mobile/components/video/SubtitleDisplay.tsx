@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
@@ -249,7 +250,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               </View>
               {showTranslation && activeLine.l1Line ? (
                 <Text className="text-sm text-center mt-0.5 text-muted-foreground">
-                  {activeLine.l1Line}
+                  {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
                 </Text>
               ) : null}
             </TextActionMenu>
@@ -318,7 +319,9 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   highlightTerms={highlightTerms}
                 />
                 {item.l1Line ? (
-                  <Text className="mt-1 text-sm text-muted-foreground">{item.l1Line}</Text>
+                  <Text className="mt-1 text-sm text-muted-foreground">
+                    {renderInlineMarkdown(item.l1Line, { markBold: true })}
+                  </Text>
                 ) : null}
               </TextActionMenu>
             </Pressable>

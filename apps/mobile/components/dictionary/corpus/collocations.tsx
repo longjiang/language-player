@@ -9,6 +9,7 @@ import { useCorpusFetch } from './use-corpus-fetch';
 import { useCorpusTranslations } from './use-corpus-translations';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 
 interface CollocationsProps {
   word: string;
@@ -55,7 +56,12 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
     return texts;
   }, [data, expanded, stripSpaces]);
 
-  const { translations } = useCorpusTranslations(flatTexts, l1Code.split('-')[0], l2Code.split('-')[0]);
+  const { translations } = useCorpusTranslations(
+    flatTexts,
+    l1Code.split('-')[0],
+    l2Code.split('-')[0],
+    flatTexts.map(() => highlightForms),
+  );
 
   const toggleExpanded = (gramrelIndex: number) => {
     setExpanded((prev) => {
@@ -133,7 +139,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                     </TextActionMenu>
                     {translation ? (
                       <Text className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">
-                        {translation}
+                        {renderInlineMarkdown(translation, { markBold: true })}
                       </Text>
                     ) : null}
                   </View>
