@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
 import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
@@ -10,8 +11,12 @@ import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, Fil
 export default function LocalMediaScreen() {
   const t = useT();
   const localMedia = useLocalMedia();
-  const { width: screenWidth } = useWindowDimensions();
-  const videoHeight = (screenWidth / 16) * 9;
+  const { width: screenWidth, isLg } = useResponsive();
+  const hasSubtitles = localMedia.subtitleLines.length > 0;
+  const contentWidth = Math.min(screenWidth, 1280);
+  const asideWidth = 320;
+  const playerWidth = isLg && hasSubtitles ? contentWidth - asideWidth - 24 : screenWidth;
+  const videoHeight = (playerWidth / 16) * 9;
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -101,7 +106,6 @@ export default function LocalMediaScreen() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const hasSubtitles = localMedia.subtitleLines.length > 0;
   const progress = duration > 0 ? currentTime / duration : 0;
 
   // ── File bar (matches web's CustomMediaUpload compact bar) ──
@@ -169,7 +173,7 @@ export default function LocalMediaScreen() {
       <Pressable
         className="h-1 bg-muted"
         onPress={(e) => {
-          const pct = e.nativeEvent.locationX / screenWidth;
+          const pct = e.nativeEvent.locationX / playerWidth;
           player.seekBy(pct * duration - currentTime);
         }}
       >
@@ -197,6 +201,29 @@ export default function LocalMediaScreen() {
     </View>
   );
 
+  const subtitlesPanel = hasSubtitles ? (
+    <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 12 }}>
+      {localMedia.subtitleLines.map((line, i) => {
+        const isActive = currentTime >= line.starttime &&
+          (i + 1 < localMedia.subtitleLines.length
+            ? currentTime < localMedia.subtitleLines[i + 1]!.starttime
+            : true);
+        return (
+          <Pressable
+            key={i}
+            onPress={() => player.seekBy(line.starttime - currentTime)}
+            className={`mb-2 rounded-lg px-3 py-2 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
+          >
+            <Text className={`text-sm ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+              {line.line}
+            </Text>
+            <Text className="mt-0.5 text-xs text-muted-foreground">{formatTime(line.starttime)}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  ) : null;
+
   return (
     <View className="flex-1 bg-background">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
@@ -223,31 +250,17 @@ export default function LocalMediaScreen() {
           <View className="px-4 pb-2">
             <FileBar />
           </View>
-          <PlayerSection />
-
-          {/* Subtitles — matching web's subtitle panel */}
-          {hasSubtitles && (
-            <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 12 }}>
-              {localMedia.subtitleLines.map((line, i) => {
-                const isActive = currentTime >= line.starttime &&
-                  (i + 1 < localMedia.subtitleLines.length
-                    ? currentTime < localMedia.subtitleLines[i + 1]!.starttime
-                    : true);
-                return (
-                  <Pressable
-                    key={i}
-                    onPress={() => player.seekBy(line.starttime - currentTime)}
-                    className={`mb-2 rounded-lg px-3 py-2 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
-                  >
-                    <Text className={`text-sm ${isActive ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                      {line.line}
-                    </Text>
-                    <Text className="mt-0.5 text-xs text-muted-foreground">{formatTime(line.starttime)}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
+          <View className={isLg && hasSubtitles ? 'flex-1 flex-row gap-6 min-h-0 px-4' : 'flex-1'}>
+            <View className={isLg && hasSubtitles ? 'min-w-0 flex-1' : ''}>
+              <PlayerSection />
+              {!isLg && subtitlesPanel}
+            </View>
+            {isLg && hasSubtitles && (
+              <View className="min-h-0" style={{ width: asideWidth }}>
+                {subtitlesPanel}
+              </View>
+            )}
+          </View>
         </View>
       )}
     </View>

@@ -10,6 +10,7 @@ import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/util
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import Toast from 'react-native-toast-message';
 import { CheckCircle2, BookOpen } from 'lucide-react-native';
@@ -77,6 +78,7 @@ export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
   const t = useT();
+  const { isSm } = useResponsive();
 
   const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
   const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
@@ -475,7 +477,7 @@ export default function ReviewScreen() {
 
       {/* Flashcard — only as tall as content, max height fills remaining space */}
       <View className="px-4 mb-2 flex-1">
-        <View className="max-h-full rounded-xl border border-border bg-card p-4">
+        <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
           <ScrollView>
             {/* Context sentences — loop over saved word instances */}
           {instances.map((inst, idx) => (

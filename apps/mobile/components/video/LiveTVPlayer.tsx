@@ -10,6 +10,8 @@ import type { LiveTVChannel } from '@langplayer/shared';
 interface LiveTVPlayerProps {
   channel: LiveTVChannel;
   onError?: (error: string) => void;
+  /** Width of the parent container. When provided, overrides useWindowDimensions to prevent overflow. */
+  containerWidth?: number;
 }
 
 export interface LiveTVPlayerHandle {
@@ -19,11 +21,12 @@ export interface LiveTVPlayerHandle {
 }
 
 export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
-  function LiveTVPlayer({ channel, onError }, ref) {
+  function LiveTVPlayer({ channel, onError, containerWidth }, ref) {
     const t = useT();
     const isFocused = useIsFocused();
     const { width: screenWidth } = useWindowDimensions();
-    const videoHeight = (screenWidth / 16) * 9;
+    const playerWidth = containerWidth ?? screenWidth;
+    const videoHeight = (playerWidth / 16) * 9;
     const [muted, setMuted] = useState(false);
     const [isPlaying, setIsPlaying] = useState(true);
     const [buffering, setBuffering] = useState(true);

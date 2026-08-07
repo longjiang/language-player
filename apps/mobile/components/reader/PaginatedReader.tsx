@@ -20,6 +20,8 @@ interface PaginatedReaderProps {
   // ── Rendering options ──
   /** Wrap body blocks in TextActionMenu (copy/speak/explain/translate). Default false. */
   showTextActions?: boolean;
+  /** Render L1 translation beside the L2 block at lg+ widths (web parity). */
+  translationSideBySide?: boolean;
   /** Show L1 translation below each body block. Default false. */
   showTranslation?: boolean;
   /** Called when the translate toggle button is pressed. Parent controls the state. */
@@ -63,7 +65,7 @@ export function PaginatedReader({
   highlight,
   textScale = 0,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
-  showTextActions = false, scrollMode = false, t,
+  showTextActions = false, translationSideBySide = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
   const handlePageNumberTap = useCallback(() => {
     if (!goToPage) return;
@@ -94,7 +96,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide),
           )}
         </View>
         {onToggleTranslation && (
@@ -128,7 +130,7 @@ export function PaginatedReader({
 
           <ScrollView className="flex-1 px-4">
             {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale),
+              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide),
             )}
           </ScrollView>
 
@@ -157,7 +159,7 @@ export function PaginatedReader({
       {blocks && !hasMeasured && handleMeasureBlock && (
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
           {blocks.slice(0, measuredWindow ?? blocks.length).map((block, bi) =>
-            renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions, textScale),
+            renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions, textScale, translationSideBySide),
           )}
         </View>
       )}
@@ -175,6 +177,7 @@ function renderBlock(
   showTextActions: boolean, onOpenLink?: (href: string) => void,
   highlight?: { blockIndex: number; start: number; end: number } | null,
   textScale?: number,
+  translationSideBySide = false,
 ) {
   const scale = textScale ?? 0;
   if (block.kind === 'image') {
@@ -239,12 +242,29 @@ function renderBlock(
     const transEl = showTranslation && translation ? (
       <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{translation}</Text>
     ) : null;
+    const sideBySide = translationSideBySide && transEl;
 
     switch (type) {
       case 'paragraph':
-        return <><View>{tokenEl}{transEl}</View></>;
+        return sideBySide ? (
+          <View className="flex-row items-start gap-4">
+            <View className="min-w-0 flex-[3]">{tokenEl}</View>
+            <View className="min-w-0 flex-[2]">{transEl}</View>
+          </View>
+        ) : (
+          <View>{tokenEl}{transEl}</View>
+        );
       case 'blockquote':
-        return <><View className="border-l-2 border-muted-foreground/30 pl-3">{tokenEl}{transEl}</View></>;
+        return sideBySide ? (
+          <View className="border-l-2 border-muted-foreground/30 pl-3">
+            <View className="flex-row items-start gap-4">
+              <View className="min-w-0 flex-[3]">{tokenEl}</View>
+              <View className="min-w-0 flex-[2]">{transEl}</View>
+            </View>
+          </View>
+        ) : (
+          <View className="border-l-2 border-muted-foreground/30 pl-3">{tokenEl}{transEl}</View>
+        );
       case 'list-item':
         return (
           <View>
@@ -293,6 +313,7 @@ function renderMeasuringBlock(
   showTranslation: boolean, l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean,
   textScale: number,
+  translationSideBySide = false,
 ) {
   if (block.kind === 'image') {
     return (
@@ -325,16 +346,32 @@ function renderMeasuringBlock(
     <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
       {block.type === 'heading' && <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>}
       {block.type === 'paragraph' && (
-        <View>
-          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
-          {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
-        </View>
+        translationSideBySide && showTranslation ? (
+          <View className="flex-row items-start gap-4">
+            <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
+            <View className="min-w-0 flex-[2]"><Text className="text-sm leading-relaxed text-muted-foreground">{' '}</Text></View>
+          </View>
+        ) : (
+          <View>
+            <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
+            {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
+          </View>
+        )
       )}
       {block.type === 'blockquote' && (
-        <View className="border-l-2 border-muted-foreground/30 pl-3">
-          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
-          {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
-        </View>
+        translationSideBySide && showTranslation ? (
+          <View className="border-l-2 border-muted-foreground/30 pl-3">
+            <View className="flex-row items-start gap-4">
+              <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
+              <View className="min-w-0 flex-[2]"><Text className="text-sm leading-relaxed text-muted-foreground">{' '}</Text></View>
+            </View>
+          </View>
+        ) : (
+          <View className="border-l-2 border-muted-foreground/30 pl-3">
+            <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
+            {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
+          </View>
+        )
       )}
       {block.type === 'list-item' && (
         <View>

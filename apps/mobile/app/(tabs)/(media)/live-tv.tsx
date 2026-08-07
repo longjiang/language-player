@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PLACEHOLDER_COLOR, ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
 import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
@@ -102,6 +103,7 @@ function DropdownPicker<T extends string>({
 export default function LiveTvScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
+  const { width, isLg, isXl } = useResponsive();
   const [channels, setChannels] = useState<LiveTVChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,39 +172,12 @@ export default function LiveTvScreen() {
     return `${(ms / 1000).toFixed(1)}s`;
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" className="text-primary" />
-      </View>
-    );
-  }
+  const contentWidth = Math.min(width, 1280);
+  const asideWidth = isXl ? 384 : 320;
+  const playerWidth = isLg ? contentWidth - asideWidth - 24 : width;
 
-  if (error && channels.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-muted-foreground">{t(error as any)}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <PageContainer>
-      <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
-      {/* Player section */}
-      {selectedChannel && (
-        <LiveTVPlayer
-          channel={selectedChannel}
-          onError={(msg) => setPlayerError(msg)}
-        />
-      )}
-
-      {playerError && (
-        <View className="mx-4 mt-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
-          <Text className="text-xs text-destructive">{playerError}</Text>
-        </View>
-      )}
-
+  const channelListPanel = (
+    <>
       {/* Search & filter bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-3 py-2">
         <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-2.5">
@@ -304,6 +279,54 @@ export default function LiveTvScreen() {
           </Pressable>
         )}
       />
+    </>
+  );
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="large" className="text-primary" />
+      </View>
+    );
+  }
+
+  if (error && channels.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <Text className="text-muted-foreground">{t(error as any)}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <PageContainer maxWidth="7xl">
+      <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
+      <View className={isLg ? 'flex-row gap-6' : ''}>
+        {/* Player section */}
+        <View className={isLg ? 'min-w-0 flex-1' : ''}>
+          {selectedChannel && (
+            <LiveTVPlayer
+              channel={selectedChannel}
+              onError={(msg) => setPlayerError(msg)}
+              containerWidth={playerWidth}
+            />
+          )}
+
+          {playerError && (
+            <View className="mx-4 mt-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
+              <Text className="text-xs text-destructive">{playerError}</Text>
+            </View>
+          )}
+        </View>
+
+        {isLg ? (
+          <View className="min-h-0 shrink-0" style={{ width: asideWidth }}>
+            {channelListPanel}
+          </View>
+        ) : (
+          channelListPanel
+        )}
+      </View>
     </PageContainer>
   );
 }
