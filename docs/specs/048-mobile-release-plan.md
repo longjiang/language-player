@@ -79,19 +79,30 @@ Maestro assertions to manual checks.
 
 ### 1.2 Pre-release QA checklist
 
-| # | Area | SPEC-023 ref | Manual checks | Run on |
-|---|---|---|---|---|
-| S | Smoke | Tier 0 | Launch → login screen; login → 4 tabs render; logout returns to login | Sim |
-| A | Auth & onboarding | Tier 1 | Login ok / wrong pass / empty fields; register (happy + duplicate email); forgot & reset password (deep link); verify email; delete account; language selection; session persists across background | Sim |
-| M | Media | Tier 2 | Explore feed + level filter + pagination; video meta; tap subtitle word → dictionary popup; search (results + empty state); TV shows → episodes; live TV stream + mute; watch history; channel subscribe; video queue | Sim |
-| D | Dictionary & vocab | Tier 3 | Search found / not found; save + unsave word; saved list (filter / sort / inline defs / source); word detail (defs + Examples / Inflections / AI Explain tabs); speak button; recent searches; popup from reader; pitch accent (ja); traditional chars (zh) | Sim |
-| R | Review (SRS) | Tier 4 | No-cards-due state; card front; rate Good → next card; all-done + stats; undo; daily new-card limit | Sim |
-| E | Reading | Tier 5 | Notes create/edit/rename/delete + tokenized tap; EPUB upload / read / resume + word lookup; web reader fetch + TextActionMenu (copy / AI explain / translate / speak) | Sim |
-| P | Settings & profile | Tier 6 | Profile info; level change; display theme light/dark/system; playback toggles; speech voice + rate; review settings; settings search; subscription screen (pro/free) | Sim + device |
-| O | Offline | Tier 7 | Download + delete offline dict; tokenizer warning (Category E); airplane-mode reading + dictionary popup; offline tokenization; offline → online sync | Device |
-| IP | iPad & responsive | Tier 8 | Landscape; 1/3 + 50/50 split view; slide-over; full portrait (820) + landscape (1180); wide-screen content centering | iPad |
-| L | Deep links & cross-flow | Tier 9 | `languageplayer://vocab/word/...`; `.../media/watch/...`; password-reset deep link; network loss mid-video; rapid L2 switch | Sim + device |
-| Pay | Payments | SPEC-025 | Stripe card; WeChat / Alipay / PayPal; iOS IAP purchase + restore; free-tier gates | Device |
+| # | Area | SPEC-023 ref | Manual checks | Run on | Notes |
+|---|---|---|---|---|---|
+| S | Smoke | Tier 0 | ✅ Launch → login screen<br>✅ login → 4 tabs render<br>✅ logout returns to login | Sim | All good |
+| A | Auth & onboarding | Tier 1 | ✅ Login ok<br>✅ Login wrong pass<br>✅ Login empty fields<br>✅ register (happy + duplicate email)<br>⬜ forgot & reset password (deep link)<br>✅ verify email<br>⬜ delete account<br>✅ language selection<br>✅ session persists across background | Sim | Password reset missing deeplinking (website can also reset fine) |
+| M | Media | Tier 2 | ⬜ Explore feed + level filter + pagination<br>⬜ video meta<br>⬜ tap subtitle word → dictionary popup<br>⬜ search (results + empty state)<br>⬜ TV shows → episodes<br>⬜ live TV stream + mute<br>⬜ watch history<br>⬜ channel subscribe<br>⬜ video queue | Sim | Explore Feed's Infinite scroll not working; Many untranslated English strings; subtitles in 'transcript' mode not showing; video search by tag not working; TV shows cannot find episodes; |
+| 049-M1 | Subs-search & player translation (§7) | Tier 2 | ⬜ text action menu + translations on subs-search subtitles<br>⬜ subs-search translation always stacked below the subtitle<br>⬜ target form sent to the translate API instead of pre-marking text<br>⬜ specific translated YouTube player errors<br>⬜ progressive caption normalization | Sim | |
+| 049-M2 | Native text selection & actions (§8) | Tier 2 | ⬜ native text-selection actions on `TokenizedText`<br>⬜ selection opens the dictionary popup (not the action menu)<br>⬜ canonical phrase cards in the selection dictionary popup<br>⬜ immediate sentence passed as selection popup context | Sim | |
+| D | Dictionary & vocab | Tier 3 | ⬜ Search found / not found<br>⬜ save + unsave word<br>⬜ saved list (filter / sort / inline defs / source)<br>⬜ word detail (defs + Examples / Inflections / AI Explain tabs)<br>⬜ speak button<br>⬜ recent searches<br>⬜ popup from reader<br>⬜ pitch accent (ja)<br>⬜ traditional chars (zh) | Sim | |
+| 049-S1 | Dict — search/autocomplete & sidebar (SPEC-049 §1) | Tier 3 | ⬜ English-definition autocomplete surfaces matching L2 entries (typing "meal")<br>⬜ sidebar prev/next in header<br>⬜ currently-viewed entry card highlighted<br>⬜ "Related" sidebar title when a corpus list is available; dead toggles hidden<br>⬜ Conjugations tab hidden for non-inflecting languages<br>⬜ sidebar is a slide-from-right drawer | Sim | |
+| 049-S2 | Dict — saved words as entry cards (§2) | Tier 3 | ⬜ saved words render as full dictionary entry cards<br>⬜ saved-word metadata (date/source/context/form)<br>⬜ saved-word form highlighted in the save bar<br>⬜ cards tile responsively<br>⬜ sort toggle removed; video titles capped | Sim | |
+| 049-S3 | Dict — image search grid (§3) | Tier 3 | ⬜ Openverse image-search tab<br>⬜ LLM-rewritten search with filter pills<br>⬜ scrollable query pills + paginated grid + query relaxation<br>⬜ skeleton loading + grid placeholders<br>⬜ compact image strip in the popup dictionary<br>⬜ backend image endpoint consumed on both platforms | Sim | |
+| 049-S4 | Dict — corpus tab / Sketch Engine (§4) | Tier 3 | ⬜ corpus tab pills: Collocations / Examples / Related / Mistakes<br>⬜ corpus text is interactive tokenized text with term highlighting<br>⬜ related words as infinite-scroll card grid with bookmark + corpus source | Sim | |
+| 049-S5 | Dict — AI Explain / DeepSeek (§5) | Tier 3 | ⬜ pro-gated explanation embedded in the full entry card<br>⬜ interactive tokenized L2 strings in AI-explain responses<br>⬜ "ask for two same-sense usage examples"<br>⬜ "Let AI Explain" instant + subscription status shared app-wide | Sim | |
+| R | Review (SRS) | Tier 4 | ⬜ No-cards-due state<br>⬜ card front<br>⬜ rate Good → next card<br>⬜ all-done + stats<br>⬜ undo<br>⬜ daily new-card limit | Sim | |
+| 049-R | Review — phonetics & styling (§6) | Tier 4 | ⬜ phonetics on highlighted words; reveal on card flip<br>⬜ target form emphasized in review translation; markdown rendered<br>⬜ card padding halved on phones; source dates localized<br>⬜ tap-to-rate zones removed | Sim | |
+| E | Reading | Tier 5 | ⬜ Notes create/edit/rename/delete + tokenized tap<br>⬜ EPUB upload / read / resume + word lookup<br>⬜ web reader fetch + TextActionMenu (copy / AI explain / translate / speak) | Sim | |
+| 049-E1 | Reading — EPUB bookshelf & search (§9) | Tier 5 | ⬜ whole-book model re-engineering<br>⬜ per-book EPUB bookshelf with reading progress<br>⬜ language-specific EPUB bookshelf<br>⬜ in-book search with snippets + chapter navigation<br>⬜ highlight EPUB search matches<br>⬜ EPUB opens straight to content + page-number estimates<br>⬜ in-book back history + in-content link fragments<br>⬜ dictionary popup from clicked tokens / internal links | Sim | |
+| 049-E2 | Reading — web reader (§10) | Tier 5 | ⬜ curated reading suggestions + markdown formatting<br>⬜ page-title sniffing + tracked visited sites/date<br>⬜ reader links open in-app + back-to-home button<br>⬜ text-source titles capped in the save bar<br>⬜ clickable chevron links | Sim | |
+| 049-Q | Quick gloss & translation styling (§11) | Tier 3 | ⬜ quick gloss restyled with parens + smart spacing<br>⬜ `TokenizedText` respects the text-scaling setting everywhere | Sim | |
+| P | Settings & profile | Tier 6 | ⬜ Profile info<br>⬜ level change<br>⬜ display theme light/dark/system<br>⬜ playback toggles<br>⬜ speech voice + rate<br>⬜ review settings<br>⬜ settings search<br>⬜ subscription screen (pro/free) | Sim + device | |
+| O | Offline | Tier 7 | ⬜ Download + delete offline dict<br>⬜ tokenizer warning (Category E)<br>⬜ airplane-mode reading + dictionary popup<br>⬜ offline tokenization<br>⬜ offline → online sync | Device | |
+| IP | iPad & responsive | Tier 8 | ⬜ Landscape<br>⬜ 1/3 + 50/50 split view<br>⬜ slide-over<br>⬜ full portrait (820) + landscape (1180)<br>⬜ wide-screen content centering | iPad | |
+| L | Deep links & cross-flow | Tier 9 | ⬜ `languageplayer://vocab/word/...`<br>⬜ `.../media/watch/...`<br>⬜ password-reset deep link<br>⬜ network loss mid-video<br>⬜ rapid L2 switch | Sim + device | |
+| Pay | Payments | SPEC-025 | ⬜ Stripe card<br>⬜ WeChat / Alipay / PayPal<br>⬜ iOS IAP purchase + restore<br>⬜ free-tier gates | Device | |
 
 > Audio, visual-layout, offline, and payment checks require a human and
 > (mostly) a real device — exactly why they are human checks rather than Maestro
@@ -225,6 +236,8 @@ dependency-hoisting condition.
 - Any **blocking** failure (crash, broken login, wrong API host, corrupt data)
   stops the release — fix, rebuild, re-verify.
 - Non-blocking cosmetic issues may ship but must be logged for the next release.
+
+
 
 ## 2. Release build — common to both stores
 
