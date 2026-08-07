@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
+import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 // ── Types ────────────────────────────────────
@@ -87,6 +88,7 @@ export function ContextMenu({
   triggerHitSlop = 6,
   stopPropagation = true,
 }: ContextMenuProps) {
+  const { isMd } = useResponsive();
   // ── Internal state (uncontrolled mode) ──
   const [internalOpen, setInternalOpen] = useState(false);
 
@@ -139,7 +141,7 @@ export function ContextMenu({
         <TriggerIcon size={triggerSize} color={triggerColor} />
       </Pressable>
 
-      {/* Bottom sheet menu */}
+      {/* Bottom sheet menu on narrow screens; centered dialog on md+ */}
       <Modal
         visible={isOpen}
         transparent
@@ -147,16 +149,18 @@ export function ContextMenu({
         onRequestClose={closeMenu}
       >
         <Pressable
-          className="flex-1 bg-black/40 justify-end"
+          className={isMd ? 'flex-1 items-center justify-center bg-black/40 px-4' : 'flex-1 justify-end bg-black/40'}
           onPress={closeMenu}
         >
           <View
-            className="rounded-t-2xl bg-card px-4 pb-8 pt-2"
+            className={isMd ? 'w-full max-w-sm rounded-2xl bg-card p-2' : 'rounded-t-2xl bg-card px-4 pb-8 pt-2'}
           >
             {/* Handle bar */}
-            <View className="mb-4 items-center">
-              <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
-            </View>
+            {!isMd && (
+              <View className="mb-4 items-center">
+                <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+              </View>
+            )}
 
             {/* Menu items */}
             {items.map((item) => {
