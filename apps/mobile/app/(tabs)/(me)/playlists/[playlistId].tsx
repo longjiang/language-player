@@ -135,7 +135,7 @@ export default function PlaylistDetailScreen() {
   // ── Not authenticated ──
   if (!isSignedIn) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
@@ -146,7 +146,7 @@ export default function PlaylistDetailScreen() {
   // ── Loading ──
   if (!loaded || (!playlist && !notFound)) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
@@ -157,7 +157,7 @@ export default function PlaylistDetailScreen() {
   // ── Not found ──
   if (notFound || !playlist) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.playlist_not_found')}</Text>
@@ -175,7 +175,7 @@ export default function PlaylistDetailScreen() {
   // ── Empty ──
   if (playlist.videos.length === 0) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <View className="px-4 py-5">
           <Text className="text-xl font-bold text-foreground" numberOfLines={1}>{playlist.title}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
@@ -192,7 +192,7 @@ export default function PlaylistDetailScreen() {
 
   // ── List ──
   return (
-    <PageContainer>
+    <PageContainer maxWidth="4xl">
       {/* Header */}
       <View className="flex-row items-center justify-between gap-3 px-4 py-5">
         <View className="flex-1 min-w-0">

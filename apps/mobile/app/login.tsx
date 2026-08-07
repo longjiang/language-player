@@ -7,6 +7,7 @@ import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
+import { AuthContainer } from '@/components/layout/AuthContainer';
 
 export default function LoginScreen() {
   const t = useT();
@@ -41,7 +42,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center bg-background p-6">
+    <AuthContainer>
       <Pressable
         onPress={() => Keyboard.dismiss()}
         {...e2e('dismiss-keyboard')}
@@ -106,6 +107,6 @@ export default function LoginScreen() {
           {t('msg.dont_have_account')}
         </Text>
       </Pressable>
-    </View>
+    </AuthContainer>
   );
 }

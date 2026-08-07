@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY, ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
+import { AuthContainer } from '@/components/layout/AuthContainer';
 import { ACQUISITION_SOURCES } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logwarn } from '@/lib/logger';
@@ -76,7 +77,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center bg-background p-6">
+    <AuthContainer>
       <Pressable
         onPress={() => Keyboard.dismiss()}
         {...e2e('dismiss-keyboard')}
@@ -233,6 +234,6 @@ export default function RegisterScreen() {
           {t('msg.already_have_account')}
         </Text>
       </Pressable>
-    </View>
+    </AuthContainer>
   );
 }

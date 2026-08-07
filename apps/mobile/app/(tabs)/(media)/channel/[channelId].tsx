@@ -97,7 +97,7 @@ export default function ChannelPage() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
       <View className="px-4 py-5">
         {/* Channel header */}

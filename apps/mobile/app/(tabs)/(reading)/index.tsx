@@ -104,7 +104,7 @@ export default function ReaderScreen() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
           {notes.currentNote ? notes.currentNote.title : t('title.notes_reader')}

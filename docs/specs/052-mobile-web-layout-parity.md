@@ -226,7 +226,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 2. Cap tokenizer at `max-w-2xl`.
 3. Widen watch history, liked videos, playlist detail, and TV show detail to their web widths.
 4. Add responsive plan grids to Profile and Go Pro (1 → 3 at sm).
-5. Docs: either port per-doc routes + TOC sidebar (slide-in <1280, sticky ≥1280) or document the single-screen mobile docs as a deliberate deviation.
+5. Docs: **decision — keep the single-screen mobile docs as a deliberate deviation** (no per-doc routes or TOC sidebar in this pass). Mobile docs remain a mobile-optimized search + reading surface; web docs keep the sidebar/TOC model.
 
 **Acceptance:** every route's content cap matches its web counterpart at all widths.
 
@@ -270,6 +270,6 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 1. Should mobile Music/Search use the exact same grid as Explore, or keep a denser list variant on phones and only grid on ≥640?
 2. Should watch-history date grouping stay as a mobile improvement, or be removed to match web's flat list?
-3. Should docs get full route-per-doc + TOC sidebar parity, or remain a single-screen mobile docs surface?
+3. ~~Should docs get full route-per-doc + TOC sidebar parity, or remain a single-screen mobile docs surface?~~ **Resolved (2026-08-07)** — keep the single-screen mobile docs surface; revisit only if docs become a primary mobile surface.
 4. Should the dictionary entry screen get the full web shell (persistent search bar + sidebar), or is the current split screen close enough once widths/breakpoints align?
 5. Should auth forms become centered `max-w-md` cards, or is full-width mobile auth intentional on iPad?

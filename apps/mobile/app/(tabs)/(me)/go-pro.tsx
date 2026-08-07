@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -84,6 +85,7 @@ function isCurrentPlan(planKey: string, planType: string | null): boolean {
 
 export default function GoProScreen() {
   const t = useT();
+  const { isSm } = useResponsive();
   const { user } = useAuth();
   const {
     isPro,
@@ -366,7 +368,7 @@ export default function GoProScreen() {
       )}
 
       {/* ── Plan Selection ── */}
-      <View className="mt-6 gap-3">
+      <View className={`${isSm ? 'flex-row flex-wrap' : ''} mt-6 gap-3`}>
         {loadingPrices ? (
           <View className="items-center py-8">
             <ActivityIndicator size="small" color={ICON_MUTED} />
@@ -382,6 +384,7 @@ export default function GoProScreen() {
             return (
               <Pressable
                 key={plan.planKey}
+                style={isSm ? { width: '31%' } : undefined}
                 onPress={() => !restrictedOnIOS && setSelectedPlan(plan.planKey)}
                 disabled={restrictedOnIOS}
                 className={`rounded-xl border-2 p-4 ${

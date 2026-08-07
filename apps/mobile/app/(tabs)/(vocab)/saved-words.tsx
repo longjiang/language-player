@@ -197,7 +197,7 @@ export default function SavedWordsScreen() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       {/* Header row — title + export + clear */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <View className="flex-1">

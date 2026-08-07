@@ -127,7 +127,7 @@ export default function DictionaryScreen() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       </View>

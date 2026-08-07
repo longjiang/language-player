@@ -46,7 +46,7 @@ export default function LikedVideosScreen() {
   // ── Not authenticated ──
   if (!isSignedIn) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <Heart size={40} className="mb-3 text-muted-foreground" />
@@ -59,7 +59,7 @@ export default function LikedVideosScreen() {
   // ── Loading ──
   if (!loaded) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
@@ -71,7 +71,7 @@ export default function LikedVideosScreen() {
   // ── Empty ──
   if (liked.length === 0) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <Heart size={40} className="mb-3 text-muted-foreground" />
@@ -83,7 +83,7 @@ export default function LikedVideosScreen() {
 
   // ── List ──
   return (
-    <PageContainer>
+    <PageContainer maxWidth="4xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
       <FlatList
         data={liked}

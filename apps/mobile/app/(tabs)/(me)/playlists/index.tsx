@@ -76,7 +76,7 @@ export default function PlaylistsScreen() {
   // ── Not authenticated ──
   if (!isSignedIn) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="5xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.playlists')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} className="mb-3 text-muted-foreground" />
@@ -89,7 +89,7 @@ export default function PlaylistsScreen() {
   // ── Loading ──
   if (!loaded) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="5xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.playlists')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
@@ -101,7 +101,7 @@ export default function PlaylistsScreen() {
   // ── Empty ──
   if (playlists.length === 0) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="5xl">
         <View className="flex-row items-center justify-between px-4 py-5">
           <Text className="text-xl font-bold text-foreground">{t('title.playlists')}</Text>
           {renderNewButton()}
@@ -117,7 +117,7 @@ export default function PlaylistsScreen() {
 
   // ── List ──
   return (
-    <PageContainer>
+    <PageContainer maxWidth="5xl">
       <View className="flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.playlists')}</Text>
         {renderNewButton()}

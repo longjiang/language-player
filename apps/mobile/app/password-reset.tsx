@@ -5,6 +5,7 @@ import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { e2e } from '@/lib/e2e';
+import { AuthContainer } from '@/components/layout/AuthContainer';
 
 export default function PasswordResetScreen() {
   const t = useT();
@@ -62,7 +63,7 @@ export default function PasswordResetScreen() {
 
   if (success) {
     return (
-      <View className="flex-1 justify-center bg-background p-6">
+      <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">✅</Text>
           <Text className="text-2xl font-bold text-foreground text-center">
@@ -81,12 +82,12 @@ export default function PasswordResetScreen() {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </AuthContainer>
     );
   }
 
   return (
-    <View className="flex-1 justify-center bg-background p-6">
+    <AuthContainer>
       <Text className="text-3xl font-bold text-foreground mb-2 text-center">
         {t('title.reset_password')}
       </Text>
@@ -138,6 +139,6 @@ export default function PasswordResetScreen() {
           {t('action.back_to_login')}
         </Text>
       </Pressable>
-    </View>
+    </AuthContainer>
   );
 }

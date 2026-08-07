@@ -446,7 +446,7 @@ export default function ReviewScreen() {
   const srs = currentCard.srs;
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="2xl">
       {/* Header with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <View>
