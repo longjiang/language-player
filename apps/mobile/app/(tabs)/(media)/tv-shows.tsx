@@ -3,6 +3,7 @@ import { View, Text, FlatList, Pressable, Image, ActivityIndicator, TextInput, S
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { baseCode } from '@langplayer/utils';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -124,7 +125,7 @@ export default function TvShowsScreen() {
     setLoading(true);
     setError(null);
 
-    fetch(`${PYTHON_API_URL}/tv-shows?l2=${l2Lang.code}&limit=200`)
+    fetch(`${PYTHON_API_URL}/tv-shows?l2=${baseCode(l2Lang.code)}&limit=200`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
