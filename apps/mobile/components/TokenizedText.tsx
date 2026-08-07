@@ -177,6 +177,9 @@ export interface TokenizedTextProps {
   /** Text scale multiplier (matches web): omitted → user zoom; 0 → inherit
    *  (fixed 16px on mobile); otherwise textScale × user zoom. */
   textScale?: number;
+  /** Tailwind text color class for the L2 text. Defaults to `text-foreground`
+   *  (used by the on-video subtitle band to render white text). */
+  textColor?: string;
 }
 
 /**
@@ -193,7 +196,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -584,7 +587,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               if (!isWord(token)) {
                 return (
                   <View key={i} className="items-center mx-px">
-                    <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">{token.text}</Text>
+                    <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
                     {/* Universal definition slot: when showDefinition is on, every token
                         gets a slot of the same height so all word texts share a baseline.
                         Punctuation gets an empty spacer. */}
@@ -742,7 +745,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
              Line-height is controlled by the `leading` prop (default: relaxed). */
-          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className="text-foreground">
+          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor}>
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
@@ -802,7 +805,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
                   {isBlanked ? (
-                    <Text className="text-foreground">▯</Text>
+                    <Text className={textColor}>▯</Text>
                   ) : (
                     <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
@@ -842,7 +845,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     return (
       <Animated.Text
         testID={testID}
-        className="text-base text-foreground"
+        className={`text-base ${textColor}`}
         style={[fallbackStyle, { opacity: pulseAnim }]}
       >
         {text}
@@ -850,5 +853,5 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     );
   }
 
-  return <Text testID={testID} className="text-base text-foreground" style={fallbackStyle}>{text}</Text>;
+  return <Text testID={testID} className={`text-base ${textColor}`} style={fallbackStyle}>{text}</Text>;
 }
