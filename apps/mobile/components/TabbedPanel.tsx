@@ -68,7 +68,7 @@ export function TabbedPanel({
                 <Text
                   className={`text-xs font-medium ${
                     activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
-                  } ${activeTab !== tab.key ? 'hidden' : ''}`}
+                  }`}
                 >
                   {tab.label}
                 </Text>
