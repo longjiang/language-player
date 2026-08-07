@@ -11,6 +11,9 @@ export default function MeLayout() {
       <Stack.Screen name="docs" />
       <Stack.Screen name="go-pro" />
       <Stack.Screen name="offline-dictionaries" />
+      <Stack.Screen name="liked-videos" />
+      <Stack.Screen name="playlists/index" />
+      <Stack.Screen name="playlists/[playlistId]" />
     </Stack>
   );
 }
