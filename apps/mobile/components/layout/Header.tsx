@@ -10,15 +10,14 @@ import { e2e } from '@/lib/e2e';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
+import { NavBar } from './NavBar';
 
 export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
-  const { isSm } = useResponsive();
+  const { isMd } = useResponsive();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
-
-  const showAppName = isSm;
 
   return (
     <>
@@ -39,10 +38,11 @@ export function Header() {
               className="h-7 w-7"
               resizeMode="contain"
             />
-            {showAppName && (
-              <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>
-            )}
+            <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>
           </Pressable>
+
+          {/* Desktop/tablet navigation — mirrors web md+ dropdowns */}
+          {isMd && <NavBar headerHeight={headerHeight} />}
 
           {/* Spacer */}
           <View className="flex-1" />
@@ -62,19 +62,23 @@ export function Header() {
           {/* User menu */}
           <UserMenu />
 
-          {/* Hamburger */}
-          <Pressable
-            onPress={() => setDrawerOpen(!drawerOpen)}
-            className="rounded-lg p-1.5 active:bg-muted"
-            {...e2e('header-hamburger-button')}
-          >
-            {drawerOpen ? <X size={22} color={ICON_MUTED} /> : <Menu size={22} color={ICON_MUTED} />}
-          </Pressable>
+          {/* Hamburger — phones only; md+ uses NavBar */}
+          {!isMd && (
+            <Pressable
+              onPress={() => setDrawerOpen(!drawerOpen)}
+              className="rounded-lg p-1.5 active:bg-muted"
+              {...e2e('header-hamburger-button')}
+            >
+              {drawerOpen ? <X size={22} color={ICON_MUTED} /> : <Menu size={22} color={ICON_MUTED} />}
+            </Pressable>
+          )}
         </View>
       </View>
 
       {/* Hamburger drawer — positioned below the header (matches web's top-14 behavior) */}
-      <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} headerHeight={headerHeight} />
+      {!isMd && (
+        <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} headerHeight={headerHeight} />
+      )}
     </>
   );
 }
