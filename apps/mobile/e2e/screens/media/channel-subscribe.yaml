@@ -6,9 +6,9 @@ appId: ca.zerotohero.app
 # Login → Media tab → tap a video that has a channel → tap the
 # ChannelActionsMenu (⋮) → verify the menu opens.
 #
-# ⚠️  Channel subscribe action requires a video WITH a channel_id.
-# If the tapped video has no channel, the menu icon won't appear.
-# The test gracefully passes if the menu isn't found.
+# ⚠️  The ChannelActionsMenu (⋮) now appears on every video card (Add to
+# Playlist is always available). Channel subscribe/not-interested items only
+# appear when the video has a channel_id.
 
 # ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:

@@ -101,7 +101,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           {views && <span>{views}</span>}
         </div>
       </div>
-      {video.channel_id && <ChannelActionsMenu channelId={video.channel_id} />}
+      <ChannelActionsMenu channelId={video.channel_id} video={video} />
     </div>
   ) : (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
@@ -137,7 +137,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           <h3 className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
             {video.title ?? t('label.untitled_video')}
           </h3>
-          {video.channel_id && <ChannelActionsMenu channelId={video.channel_id} />}
+          <ChannelActionsMenu channelId={video.channel_id} video={video} />
         </div>
         <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
           {views && (

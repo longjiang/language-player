@@ -98,7 +98,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
             {duration ? <Text className="text-xs text-muted-foreground">{duration}</Text> : null}
           </View>
         </View>
-        {video.channel_id ? <ChannelActionsMenu channelId={video.channel_id} /> : null}
+        <ChannelActionsMenu channelId={video.channel_id} video={video} />
       </Pressable>
     );
   }
@@ -127,7 +127,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
           <Text className="flex-1 text-sm font-medium text-foreground" numberOfLines={2}>
             {video.title ?? ''}
           </Text>
-          {video.channel_id ? <ChannelActionsMenu channelId={video.channel_id} /> : null}
+          <ChannelActionsMenu channelId={video.channel_id} video={video} />
         </View>
         <View className="mt-1.5 flex-row items-center gap-2">
           {views ? <Text className="text-xs text-muted-foreground">{t('label.views_count', { count: views })}</Text> : null}
