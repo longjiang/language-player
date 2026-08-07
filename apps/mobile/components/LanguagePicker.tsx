@@ -112,6 +112,9 @@ export function LanguagePicker({
     showClose,
     onDismiss,
     getName,
+    // In dialog mode the picker sizes to its content; `flex-1` collapses to a
+    // sliver inside the centered Dialog.Content wrapper.
+    containerClassName: variant === 'dialog' ? 'w-full bg-background' : undefined,
   };
 
   if (isWide) {
