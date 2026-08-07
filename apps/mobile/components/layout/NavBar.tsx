@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, Modal } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, Pressable, Modal, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {
@@ -55,8 +55,13 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
 };
 
 function iconKey(href: string): string {
-  const parts = href.split('/');
-  return parts[parts.length - 1]!;
+  const parts = href.split('/').filter(Boolean);
+  const last = parts[parts.length - 1]!;
+  // Index routes end with the group segment; map them to their group icon.
+  if (last === '(media)') return 'explore';
+  if (last === '(reading)') return 'reader';
+  if (last === '(vocab)') return 'dictionary';
+  return last;
 }
 
 /**
@@ -65,7 +70,21 @@ function iconKey(href: string): string {
  */
 export function NavBar({ headerHeight }: { headerHeight: number }) {
   const t = useT();
+  const { width: screenWidth } = useWindowDimensions();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [dropdownLeft, setDropdownLeft] = useState(16);
+  const buttonRefs = useRef<Record<string, View | null>>({});
+
+  const toggleGroup = (label: string) => {
+    const next = openGroup === label ? null : label;
+    setOpenGroup(next);
+    if (next) {
+      // Position the dropdown under the pressed group button, not top-left.
+      buttonRefs.current[label]?.measureInWindow((x: number) => {
+        setDropdownLeft(Math.min(x, Math.max(0, screenWidth - 200)));
+      });
+    }
+  };
 
   const navigate = (href: string) => {
     setOpenGroup(null);
@@ -80,7 +99,10 @@ export function NavBar({ headerHeight }: { headerHeight: number }) {
         {NAV_GROUPS.map((group) => (
           <Pressable
             key={group.label}
-            onPress={() => setOpenGroup(openGroup === group.label ? null : group.label)}
+            ref={(node: View | null) => {
+              buttonRefs.current[group.label] = node;
+            }}
+            onPress={() => toggleGroup(group.label)}
             className={`flex-row items-center gap-0.5 rounded-lg px-3 py-1.5 active:bg-muted ${
               openGroup === group.label ? 'bg-muted' : ''
             }`}
@@ -106,7 +128,7 @@ export function NavBar({ headerHeight }: { headerHeight: number }) {
               style={{
                 position: 'absolute',
                 top: headerHeight,
-                left: 16,
+                left: dropdownLeft,
                 // Inline shadow instead of the `shadow-lg` class: NativeWind's
                 // dynamic class upgrades can crash dev builds with a misleading
                 // "navigation context" error (nativewind/nativewind#1432).
