@@ -8,6 +8,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import { logwarn } from '@/lib/logger';
+import { AuthContainer } from '@/components/layout/AuthContainer';
 
 type VerifyState = 'verifying' | 'success' | 'error' | 'check-email';
 
@@ -141,18 +142,20 @@ export default function VerifyEmailScreen() {
 
   if (state === 'verifying') {
     return (
-      <View className="flex-1 justify-center bg-background p-6 items-center">
-        <ActivityIndicator size="large" />
-        <Text className="text-muted-foreground text-sm mt-4" {...e2e('verify-verifying-text')}>
-          {t('action.verify_email')}
-        </Text>
-      </View>
+      <AuthContainer>
+        <View className="items-center">
+          <ActivityIndicator size="large" />
+          <Text className="text-muted-foreground text-sm mt-4" {...e2e('verify-verifying-text')}>
+            {t('action.verify_email')}
+          </Text>
+        </View>
+      </AuthContainer>
     );
   }
 
   if (state === 'error') {
     return (
-      <View className="flex-1 justify-center bg-background p-6">
+      <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">⚠️</Text>
           <Text className="text-xl font-bold text-foreground text-center">
@@ -173,13 +176,13 @@ export default function VerifyEmailScreen() {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </AuthContainer>
     );
   }
 
   if (state === 'check-email') {
     return (
-      <View className="flex-1 justify-center bg-background p-6">
+      <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">📬</Text>
           <Text className="text-xl font-bold text-foreground text-center">
@@ -238,12 +241,12 @@ export default function VerifyEmailScreen() {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </AuthContainer>
     );
   }
 
   return (
-    <View className="flex-1 justify-center bg-background p-6">
+    <AuthContainer>
       <View className="rounded-2xl border border-border bg-card p-8 items-center">
         <Text className="text-5xl mb-4">🎉</Text>
         <Text className="text-2xl font-bold text-foreground text-center">
@@ -262,6 +265,6 @@ export default function VerifyEmailScreen() {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </AuthContainer>
   );
 }

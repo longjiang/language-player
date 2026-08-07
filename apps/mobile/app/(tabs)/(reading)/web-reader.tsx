@@ -119,7 +119,7 @@ export default function WebReaderScreen() {
   }, [handleLoad, url]);
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       {/* Main content — persistent panel on wide screens, sheet on narrow */}
       <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
         <View className="flex-1">

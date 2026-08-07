@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { baseCode } from '@langplayer/utils';
@@ -97,6 +98,7 @@ export default function ProfileScreen() {
   const { level: userLevel, setLevel } = useProgress(baseCode(l2Lang.code));
   const router = useRouter();
   const t = useT();
+  const { isSm } = useResponsive();
 
   const l2Code = baseCode(l2Lang.code);
   const savedWords = (allSaved[l2Lang.code] ?? []).slice(0, 5);
@@ -258,14 +260,18 @@ export default function ProfileScreen() {
               <Text className="text-sm font-medium text-foreground">{t('label.free_account')}</Text>
             </View>
             <Text className="text-sm text-muted-foreground mb-4">{t('msg.upgrade_to_pro_banner')}</Text>
-            <View className="gap-2 mb-4">
+            <View className={`${isSm ? 'flex-row flex-wrap' : ''} gap-2 mb-4`}>
               {PLANS.map((plan) => (
-                <View key={plan.planKey} className="flex-row items-center justify-between rounded-lg border border-border px-3 py-2.5">
+                <View
+                  key={plan.planKey}
+                  style={isSm ? { width: '31%' } : undefined}
+                  className="rounded-lg border border-border px-3 py-2.5"
+                >
                   <View>
                     <Text className="text-sm font-semibold text-foreground">{t(plan.nameKey)}</Text>
                     <Text className="text-xs text-muted-foreground">{plan.interval}</Text>
                   </View>
-                  <Text className="text-lg font-bold text-foreground">{plan.price}</Text>
+                  <Text className="mt-1 text-lg font-bold text-foreground">{plan.price}</Text>
                 </View>
               ))}
             </View>

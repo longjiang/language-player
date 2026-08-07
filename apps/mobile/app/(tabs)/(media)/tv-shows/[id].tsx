@@ -140,99 +140,101 @@ export default function TvShowEpisodesScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Back button */}
-      <Pressable
-        onPress={() => router.back()}
-        className="flex-row items-center gap-1 px-4 py-5"
-      >
-        <ArrowLeft size={20} color={ICON_MUTED} />
-        <Text className="text-sm text-muted-foreground">{t('action.back')}</Text>
-      </Pressable>
+      <View className="w-full flex-1 self-center" style={{ maxWidth: 896 }}>
+        {/* Back button */}
+        <Pressable
+          onPress={() => router.back()}
+          className="flex-row items-center gap-1 px-4 py-5"
+        >
+          <ArrowLeft size={20} color={ICON_MUTED} />
+          <Text className="text-sm text-muted-foreground">{t('action.back')}</Text>
+        </Pressable>
 
-      {/* Show header */}
-      {show && (
-        <View className="mb-4 px-4">
-          <View className="flex-row items-center gap-3">
-            <Tv size={28} className="text-primary" />
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-foreground">{show.title}</Text>
-              {show.locale ? (
-                <Text className="text-xs text-muted-foreground uppercase">{show.locale}</Text>
-              ) : null}
+        {/* Show header */}
+        {show && (
+          <View className="mb-4 px-4">
+            <View className="flex-row items-center gap-3">
+              <Tv size={28} className="text-primary" />
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-foreground">{show.title}</Text>
+                {show.locale ? (
+                  <Text className="text-xs text-muted-foreground uppercase">{show.locale}</Text>
+                ) : null}
+              </View>
             </View>
+            {show.description ? (
+              <Text className="mt-3 text-sm text-muted-foreground">{show.description}</Text>
+            ) : null}
           </View>
-          {show.description ? (
-            <Text className="mt-3 text-sm text-muted-foreground">{show.description}</Text>
-          ) : null}
+        )}
+
+        {/* Episodes */}
+        <View className="flex-row items-center justify-between px-4 mb-3">
+          <Text className="text-lg font-semibold text-foreground">
+            {t('title.episodes')} ({episodes.length})
+          </Text>
         </View>
-      )}
 
-      {/* Episodes */}
-      <View className="flex-row items-center justify-between px-4 mb-3">
-        <Text className="text-lg font-semibold text-foreground">
-          {t('title.episodes')} ({episodes.length})
-        </Text>
-      </View>
+        {episodes.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Tv size={40} className="mb-3 text-muted-foreground" />
+            <Text className="text-center text-muted-foreground">{t('msg.no_episodes')}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={episodes}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+            renderItem={({ item, index }) => {
+              const thumb = youtubeThumbnail(item.youtube_id);
+              const durationStr = formatDuration(item.duration);
 
-      {episodes.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Tv size={40} className="mb-3 text-muted-foreground" />
-          <Text className="text-center text-muted-foreground">{t('msg.no_episodes')}</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={episodes}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
-          renderItem={({ item, index }) => {
-            const thumb = youtubeThumbnail(item.youtube_id);
-            const durationStr = formatDuration(item.duration);
-
-            return (
-              <Pressable
-                onPress={() => handlePlayEpisode(item, index)}
-                className="mb-1 flex-row items-center gap-3 rounded-lg border border-border px-3 py-2 active:bg-muted"
-              >
-                {/* Episode number */}
-                <Text className="w-8 text-center text-sm font-medium text-muted-foreground">
-                  {index + 1}
-                </Text>
-
-                {/* Thumbnail */}
-                <View className="h-14 w-24 overflow-hidden rounded bg-muted">
-                  <Image source={{ uri: thumb }} className="h-full w-full" />
-                </View>
-
-                {/* Info */}
-                <View className="flex-1 min-w-0">
-                  <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
-                    {item.title}
+              return (
+                <Pressable
+                  onPress={() => handlePlayEpisode(item, index)}
+                  className="mb-1 flex-row items-center gap-3 rounded-lg border border-border px-3 py-2 active:bg-muted"
+                >
+                  {/* Episode number */}
+                  <Text className="w-8 text-center text-sm font-medium text-muted-foreground">
+                    {index + 1}
                   </Text>
-                  <View className="mt-1 flex-row items-center gap-3">
-                    {durationStr ? (
-                      <View className="flex-row items-center gap-1">
-                        <Clock size={12} color={ICON_MUTED} />
-                        <Text className="text-xs text-muted-foreground">{durationStr}</Text>
-                      </View>
-                    ) : null}
-                    {item.views != null && item.views > 0 ? (
-                      <View className="flex-row items-center gap-1">
-                        <Eye size={12} color={ICON_MUTED} />
-                        <Text className="text-xs text-muted-foreground">{item.views.toLocaleString()}</Text>
-                      </View>
-                    ) : null}
-                    {item.level != null ? (
-                      <View className="rounded bg-muted px-1.5 py-0.5">
-                        <Text className="text-xs text-muted-foreground">L{item.level}</Text>
-                      </View>
-                    ) : null}
+
+                  {/* Thumbnail */}
+                  <View className="h-14 w-24 overflow-hidden rounded bg-muted">
+                    <Image source={{ uri: thumb }} className="h-full w-full" />
                   </View>
-                </View>
-              </Pressable>
-            );
-          }}
-        />
-      )}
+
+                  {/* Info */}
+                  <View className="flex-1 min-w-0">
+                    <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <View className="mt-1 flex-row items-center gap-3">
+                      {durationStr ? (
+                        <View className="flex-row items-center gap-1">
+                          <Clock size={12} color={ICON_MUTED} />
+                          <Text className="text-xs text-muted-foreground">{durationStr}</Text>
+                        </View>
+                      ) : null}
+                      {item.views != null && item.views > 0 ? (
+                        <View className="flex-row items-center gap-1">
+                          <Eye size={12} color={ICON_MUTED} />
+                          <Text className="text-xs text-muted-foreground">{item.views.toLocaleString()}</Text>
+                        </View>
+                      ) : null}
+                      {item.level != null ? (
+                        <View className="rounded bg-muted px-1.5 py-0.5">
+                          <Text className="text-xs text-muted-foreground">L{item.level}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            }}
+          />
+        )}
+      </View>
     </View>
   );
 }

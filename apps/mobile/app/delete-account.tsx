@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { AuthContainer } from '@/components/layout/AuthContainer';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 
@@ -57,7 +58,7 @@ export default function DeleteAccountScreen() {
 
   if (state === 'success') {
     return (
-      <View className="flex-1 justify-center bg-background p-6">
+      <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">😢</Text>
           <Text className="text-2xl font-bold text-foreground text-center">
@@ -76,12 +77,12 @@ export default function DeleteAccountScreen() {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </AuthContainer>
     );
   }
 
   return (
-    <View className="flex-1 justify-center bg-background p-6">
+    <AuthContainer>
       <View className="rounded-2xl border border-border bg-card p-6">
         <Text className="text-2xl font-bold text-foreground text-center mb-4">
           {t('title.delete_account')}
@@ -121,6 +122,6 @@ export default function DeleteAccountScreen() {
           </>
         )}
       </View>
-    </View>
+    </AuthContainer>
   );
 }

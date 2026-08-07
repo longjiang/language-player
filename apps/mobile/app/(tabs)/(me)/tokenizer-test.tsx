@@ -15,6 +15,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { Sparkles } from 'lucide-react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { getSampleText } from '@langplayer/shared';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -60,87 +61,89 @@ export default function TokenizerScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 py-5">
-      <Text className="text-2xl font-bold text-foreground">
-        {t('title.tokenizer_test')}
-      </Text>
-      <Text className="mt-2 text-sm text-muted-foreground">
-        {t('msg.tokenizer_desc', { l2: l2Lang.name })}
-      </Text>
-
-      {/* ── Sample text (paginated, like reader) ── */}
-      <View className="mt-6 rounded-lg border border-border bg-card p-4">
-        <Text className="mb-3 text-xs font-medium text-muted-foreground">
-          {sample?.title ?? l2Lang.name} · {t('label.sample')}
+    <PageContainer maxWidth="2xl">
+      <ScrollView className="flex-1 px-4 py-5">
+        <Text className="text-2xl font-bold text-foreground">
+          {t('title.tokenizer_test')}
         </Text>
-        <PaginatedReader
-          blocks={samplePagination.blocks}
-          visibleBlocks={samplePagination.visibleBlocks}
-          page={samplePagination.page}
-          totalPages={samplePagination.totalPages}
-          hasMeasured={samplePagination.hasMeasured}
-          loadingTokens={samplePagination.loadingTokens}
-          tokenCache={samplePagination.tokenCache}
-          blockTranslations={samplePagination.blockTranslations}
-          prevPage={samplePagination.prevPage}
-          nextPage={samplePagination.nextPage}
-          goToPage={samplePagination.goToPage}
-          handleMeasureBlock={samplePagination.handleMeasureBlock}
-          contentWidth={samplePagination.contentWidth}
-          l2Code={l2Lang.code}
-          l1Code={l1Lang.code}
-          showTextActions
-          t={t}
-        />
-      </View>
-
-      {/* ── Custom text input ── */}
-      <View className="mt-6">
-        <Text className="mb-2 text-sm font-medium text-foreground">
-          {t('label.custom_text')}
+        <Text className="mt-2 text-sm text-muted-foreground">
+          {t('msg.tokenizer_desc', { l2: l2Lang.name })}
         </Text>
-        <TextInput
-          className="mb-3 min-h-[80px] rounded-lg border border-border bg-background p-4 text-sm text-foreground"
-          value={customText}
-          onChangeText={setCustomText}
-          placeholder={t('placeholder.enter_text', { l2: l2Lang.name })}
-          placeholderTextColor={ICON_MUTED}
-          multiline
-          textAlignVertical="top"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <Pressable
-          onPress={handleTokenizeCustom}
-          disabled={!customText.trim()}
-          className={`flex-row items-center self-start rounded-lg px-4 py-2.5 ${
-            !customText.trim() ? 'bg-muted' : 'bg-primary active:bg-primary/80'
-          }`}
-        >
-          <Sparkles size={16} color="#fff" />
-          <Text className="ml-2 text-sm font-medium text-primary-foreground">
-            {t('action.tokenize')}
+
+        {/* ── Sample text (paginated, like reader) ── */}
+        <View className="mt-6 rounded-lg border border-border bg-card p-4">
+          <Text className="mb-3 text-xs font-medium text-muted-foreground">
+            {sample?.title ?? l2Lang.name} · {t('label.sample')}
           </Text>
-        </Pressable>
-      </View>
-
-      {/* ── Custom text result ── */}
-      {customLoading && (
-        <View className="mt-4 flex-row items-center gap-2">
-          <ActivityIndicator size="small" />
-          <Text className="text-sm text-muted-foreground">{t('msg.loading')}</Text>
-        </View>
-      )}
-      {customTokens && customTokens.length > 0 && (
-        <View className="mt-4 rounded-lg border border-border bg-card p-4">
-          <TokenizedText
-            text={customText.trim()}
+          <PaginatedReader
+            blocks={samplePagination.blocks}
+            visibleBlocks={samplePagination.visibleBlocks}
+            page={samplePagination.page}
+            totalPages={samplePagination.totalPages}
+            hasMeasured={samplePagination.hasMeasured}
+            loadingTokens={samplePagination.loadingTokens}
+            tokenCache={samplePagination.tokenCache}
+            blockTranslations={samplePagination.blockTranslations}
+            prevPage={samplePagination.prevPage}
+            nextPage={samplePagination.nextPage}
+            goToPage={samplePagination.goToPage}
+            handleMeasureBlock={samplePagination.handleMeasureBlock}
+            contentWidth={samplePagination.contentWidth}
             l2Code={l2Lang.code}
-            tokens={customTokens}
-            textScale={1}
+            l1Code={l1Lang.code}
+            showTextActions
+            t={t}
           />
         </View>
-      )}
-    </ScrollView>
+
+        {/* ── Custom text input ── */}
+        <View className="mt-6">
+          <Text className="mb-2 text-sm font-medium text-foreground">
+            {t('label.custom_text')}
+          </Text>
+          <TextInput
+            className="mb-3 min-h-[80px] rounded-lg border border-border bg-background p-4 text-sm text-foreground"
+            value={customText}
+            onChangeText={setCustomText}
+            placeholder={t('placeholder.enter_text', { l2: l2Lang.name })}
+            placeholderTextColor={ICON_MUTED}
+            multiline
+            textAlignVertical="top"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Pressable
+            onPress={handleTokenizeCustom}
+            disabled={!customText.trim()}
+            className={`flex-row items-center self-start rounded-lg px-4 py-2.5 ${
+              !customText.trim() ? 'bg-muted' : 'bg-primary active:bg-primary/80'
+            }`}
+          >
+            <Sparkles size={16} color="#fff" />
+            <Text className="ml-2 text-sm font-medium text-primary-foreground">
+              {t('action.tokenize')}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* ── Custom text result ── */}
+        {customLoading && (
+          <View className="mt-4 flex-row items-center gap-2">
+            <ActivityIndicator size="small" />
+            <Text className="text-sm text-muted-foreground">{t('msg.loading')}</Text>
+          </View>
+        )}
+        {customTokens && customTokens.length > 0 && (
+          <View className="mt-4 rounded-lg border border-border bg-card p-4">
+            <TokenizedText
+              text={customText.trim()}
+              l2Code={l2Lang.code}
+              tokens={customTokens}
+              textScale={1}
+            />
+          </View>
+        )}
+      </ScrollView>
+    </PageContainer>
   );
 }

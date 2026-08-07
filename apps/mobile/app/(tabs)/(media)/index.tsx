@@ -93,7 +93,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <PageContainer {...e2e('explore-screen')}>
+    <PageContainer maxWidth="7xl" {...e2e('explore-screen')}>
       <View className="px-4 pt-4 pb-1">
         <Text className="text-2xl font-bold text-foreground">
           {t('msg.explore_media_for', { l2: l2Lang.name })}

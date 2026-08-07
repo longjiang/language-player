@@ -193,7 +193,7 @@ export default function WatchHistoryScreen() {
   // ── Not authenticated ──
   if (!user) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <AlertCircle size={40} className="mb-3 text-muted-foreground" />
@@ -206,7 +206,7 @@ export default function WatchHistoryScreen() {
   // ── Loading ──
   if (loading) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
@@ -218,7 +218,7 @@ export default function WatchHistoryScreen() {
   // ── Error ──
   if (error) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="4xl">
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <Text className="text-sm text-destructive">{error}</Text>
@@ -229,7 +229,7 @@ export default function WatchHistoryScreen() {
 
   // ── Empty or list ──
   return (
-    <PageContainer>
+    <PageContainer maxWidth="4xl">
       {/* Header row */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.watch_history')}</Text>

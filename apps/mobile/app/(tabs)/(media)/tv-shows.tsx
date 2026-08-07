@@ -194,7 +194,7 @@ export default function TvShowsScreen() {
   // ── Error ──
   if (error) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="7xl">
         <View className="px-4 py-8 flex-1">
         <Text className="text-2xl font-bold text-foreground mb-4">{t('title.tv_shows')}</Text>
         <View className="flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
@@ -207,7 +207,7 @@ export default function TvShowsScreen() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       {/* Header */}
       <View className="px-4 pt-5 pb-2">
         <Text className="text-2xl font-bold text-foreground">{t('title.tv_shows')}</Text>
