@@ -1,18 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, FlatList } from 'react-native';
-import { useT } from '@/hooks/use-t';
-import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
+import { View, Text, TextInput, Pressable } from 'react-native';
 import { Search, X } from 'lucide-react-native';
+import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 
-interface BookSearchDialogProps {
-  visible: boolean;
+interface EpubSearchPanelProps {
   blocks: ContentBlock[] | null;
   /** Whole-book chapter labels (nearest preceding TOC entry per block). */
   chapterLabels?: { blockIndex: number; label: string }[];
   /** Called when the user taps a result — jump to the block's page. */
   onSelect: (blockIndex: number) => void;
-  onClose: () => void;
 }
 
 interface Match {
@@ -25,11 +23,10 @@ interface Match {
 }
 
 /**
- * In-book search (SPEC-049 §9.4/9.5): searches the current chapter's text
- * blocks for a term, shows snippets with the term highlighted, and jumps to
- * the page containing the tapped result.
+ * In-book search body for the EPUB sidebar (SPEC-049 §9.4/9.5) — content-only
+ * version of BookSearchDialog, rendered inside the shared sidebar's tabs.
  */
-export function BookSearchDialog({ visible, blocks, chapterLabels = [], onSelect, onClose }: BookSearchDialogProps) {
+export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSearchPanelProps) {
   const t = useT();
   const [query, setQuery] = useState('');
 
@@ -66,12 +63,9 @@ export function BookSearchDialog({ visible, blocks, chapterLabels = [], onSelect
     return out;
   }, [query, blocks]);
 
-  if (!visible) return null;
-
   return (
-    <View className="absolute inset-0 z-20 bg-background" style={{ elevation: 8 }}>
-      {/* Header: input + close */}
-      <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
+    <View className="p-2">
+      <View className="flex-row items-center gap-2 border-b border-border px-1 pb-2">
         <Search size={16} color={ICON_MUTED} />
         <TextInput
           className="flex-1 text-sm text-foreground"
@@ -85,48 +79,39 @@ export function BookSearchDialog({ visible, blocks, chapterLabels = [], onSelect
         />
         {query ? (
           <Pressable onPress={() => setQuery('')} className="p-1">
-            <X size={16} color={ICON_MUTED} />
+            <X size={14} color={ICON_MUTED} />
           </Pressable>
         ) : null}
-        <Pressable onPress={onClose} className="rounded bg-muted px-3 py-1.5 active:opacity-70">
-          <Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
-        </Pressable>
       </View>
 
-      {/* Results */}
       {query.trim() ? (
         <>
-          <Text className="px-4 py-2 text-xs text-muted-foreground">
+          <Text className="px-1 py-2 text-xs text-muted-foreground">
             {t('msg.result_count', { count: matches.length })}
           </Text>
-          <FlatList
-            data={matches}
-            keyExtractor={(m, i) => `${m.blockIndex}-${m.offset}-${i}`}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
+          {matches.length === 0 ? (
+            <Text className="px-1 py-2 text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+          ) : (
+            matches.map((m, i) => (
               <Pressable
-                onPress={() => onSelect(item.blockIndex)}
-                className="border-b border-border px-4 py-2.5 active:bg-muted"
+                key={`${m.blockIndex}-${m.offset}-${i}`}
+                onPress={() => onSelect(m.blockIndex)}
+                className="border-b border-border px-1 py-2.5 active:bg-muted"
               >
                 <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
-                  <HighlightSnippet snippet={item.snippet} term={query.trim()} />
+                  <HighlightSnippet snippet={m.snippet} term={query.trim()} />
                 </Text>
-                {labelForBlock(item.blockIndex) ? (
+                {labelForBlock(m.blockIndex) ? (
                   <Text className="mt-0.5 text-[10px] font-medium text-primary/80" numberOfLines={1}>
-                    {labelForBlock(item.blockIndex)}
+                    {labelForBlock(m.blockIndex)}
                   </Text>
                 ) : null}
                 <Text className="mt-0.5 text-[10px] text-muted-foreground/70">
                   {t('action.go_to_page')}
                 </Text>
               </Pressable>
-            )}
-            ListEmptyComponent={
-              <View className="items-center py-10">
-                <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
-              </View>
-            }
-          />
+            ))
+          )}
         </>
       ) : (
         <View className="items-center py-10">

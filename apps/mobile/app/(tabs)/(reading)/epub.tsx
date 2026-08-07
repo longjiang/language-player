@@ -6,11 +6,13 @@ import { useT } from '@/hooks/use-t';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
+import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { BookSearchDialog } from '@/components/reader/BookSearchDialog';
-import { ArrowLeft, BookOpen, X, Search } from 'lucide-react-native';
+import { Sidebar, useSidebar } from '@/components/ui/sidebar';
+import { TabbedPanel } from '@/components/TabbedPanel';
+import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
@@ -23,9 +25,8 @@ export default function EpubReaderScreen() {
   const t = useT();
   const epub = useEpub();
   const { height: windowHeight } = useWindowDimensions();
+  const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [seekBlock, setSeekBlock] = useState<number | null>(null);
@@ -122,15 +123,14 @@ export default function EpubReaderScreen() {
   const handleClose = useCallback(async () => {
     setLocation(null);
     historyRef.current = [];
-    setSidebarOpen(false);
-    setSearchOpen(false);
+    setMobileOpen(false);
     await epub.close();
   }, [epub]);
 
   const handleBack = useCallback(() => {
     const prev = historyRef.current.pop();
     if (prev) {
-      setSearchOpen(false);
+      setMobileOpen(false);
       jumpToBlock(prev);
     } else {
       void handleClose();
@@ -138,13 +138,13 @@ export default function EpubReaderScreen() {
   }, [jumpToBlock, handleClose]);
 
   const handleChapterSelect = useCallback((href: string) => {
-    setSidebarOpen(false);
+    setMobileOpen(false);
     pushHistory();
     void epub.resolveHref(href).then(jumpToBlock);
   }, [epub, pushHistory, jumpToBlock]);
 
   const handleSearchSelect = useCallback((blockIndex: number) => {
-    setSearchOpen(false);
+    setMobileOpen(false);
     pushHistory();
     jumpToBlock({ blockIndex, offset: 0 });
   }, [pushHistory, jumpToBlock]);
@@ -283,61 +283,102 @@ export default function EpubReaderScreen() {
         <Pressable onPress={handleClose} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
           <X size={14} color={ICON_MUTED} /><Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
         </Pressable>
-        <Pressable onPress={() => setSearchOpen(true)} className="rounded p-1 active:bg-muted" accessibilityLabel={t('action.search')}>
-          <Search size={20} color={ICON_MUTED} />
-        </Pressable>
-        <Pressable onPress={() => setSidebarOpen(!sidebarOpen)} className="rounded p-1 active:bg-muted">
-          <BookOpen size={20} color={ICON_MUTED} />
+        <Pressable
+          onPress={toggle}
+          className="rounded p-1 active:bg-muted"
+          accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
+        >
+          {isWide && sidebarOpen ? (
+            <PanelRightClose size={20} color={ICON_MUTED} />
+          ) : (
+            <PanelRightOpen size={20} color={ICON_MUTED} />
+          )}
         </Pressable>
       </View>
 
-      <View className="flex-1 pt-2">
-        <PaginatedReader
-          blocks={pagination.blocks}
-          visibleBlocks={pagination.visibleBlocks}
-          page={pagination.page}
-          totalPages={pagination.totalPages}
-          hasMeasured={pagination.hasMeasured}
-          loadingTokens={pagination.loadingTokens}
-          tokenCache={pagination.tokenCache}
-          blockTranslations={pagination.blockTranslations}
-          prevPage={pagination.prevPage}
-          nextPage={pagination.nextPage}
-          goToPage={pagination.goToPage}
-          handleMeasureBlock={pagination.handleMeasureBlock}
-          contentWidth={pagination.contentWidth}
-          measuredWindow={pagination.measuredWindow}
-          l2Code={l2Lang.code}
-          l1Code={l1Lang.code}
-          showTranslation={display.translation}
-          onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
-          showTextActions
-          onOpenLink={handleOpenLink}
-          t={t}
-        />
+      <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
+        <View className="flex-1">
+          <PaginatedReader
+            blocks={pagination.blocks}
+            visibleBlocks={pagination.visibleBlocks}
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            hasMeasured={pagination.hasMeasured}
+            loadingTokens={pagination.loadingTokens}
+            tokenCache={pagination.tokenCache}
+            blockTranslations={pagination.blockTranslations}
+            prevPage={pagination.prevPage}
+            nextPage={pagination.nextPage}
+            goToPage={pagination.goToPage}
+            handleMeasureBlock={pagination.handleMeasureBlock}
+            contentWidth={pagination.contentWidth}
+            measuredWindow={pagination.measuredWindow}
+            l2Code={l2Lang.code}
+            l1Code={l1Lang.code}
+            showTranslation={display.translation}
+            onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+            showTextActions
+            onOpenLink={handleOpenLink}
+            t={t}
+          />
+        </View>
 
-        {sidebarOpen && (
-          <View className="absolute right-0 top-0 bottom-0 z-10" style={{ elevation: 8 }}>
+        {/* Sidebar — shared panel + sheet with chapters/search tabs (web parity) */}
+        <Sidebar
+          open={mobileOpen}
+          onOpenChange={setMobileOpen}
+          sidebarOpen={sidebarOpen}
+          title={t('title.epub_reader')}
+          desktopClassName="w-64 ml-3"
+          headerActions={
+            <View className="flex-row items-center gap-1">
+              <Pressable
+                onPress={() => jumpToMarker(markerNav.prev)}
+                disabled={!markerNav.prev}
+                className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+                accessibilityLabel={t('action.previous_chapter')}
+              >
+                <ChevronLeft size={16} color={ICON_MUTED} />
+                <Text className="text-xs text-muted-foreground">{t('action.previous_chapter')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => jumpToMarker(markerNav.next)}
+                disabled={!markerNav.next}
+                className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+                accessibilityLabel={t('action.next_chapter')}
+              >
+                <Text className="text-xs text-muted-foreground">{t('action.next_chapter')}</Text>
+                <ChevronRight size={16} color={ICON_MUTED} />
+              </Pressable>
+            </View>
+          }
+          footer={
+            <Text className="px-3 py-2 text-xs text-muted-foreground">
+              {epub.markers.length} {t('msg.chapters')}
+            </Text>
+          }
+        >
+          <TabbedPanel
+            tabs={[
+              { key: 'chapters', label: t('title.chapters') },
+              { key: 'search', label: t('action.search') },
+            ]}
+            defaultTab="chapters"
+            className="h-full"
+            contentClassName="min-h-0"
+          >
             <EpubChapterSidebar
               toc={epub.toc}
               chapterHref={nearestMarker?.href ?? null}
-              prevHref={markerNav.prev?.href ?? null}
-              nextHref={markerNav.next?.href ?? null}
               onSelect={handleChapterSelect}
-              onPrev={() => jumpToMarker(markerNav.prev)}
-              onNext={() => jumpToMarker(markerNav.next)}
-              onClose={() => setSidebarOpen(false)}
             />
-          </View>
-        )}
-
-        <BookSearchDialog
-          visible={searchOpen}
-          blocks={pagination.blocks}
-          chapterLabels={epub.chapterLabels}
-          onSelect={handleSearchSelect}
-          onClose={() => setSearchOpen(false)}
-        />
+            <EpubSearchPanel
+              blocks={pagination.blocks}
+              chapterLabels={epub.chapterLabels}
+              onSelect={handleSearchSelect}
+            />
+          </TabbedPanel>
+        </Sidebar>
       </View>
     </View>
   );
