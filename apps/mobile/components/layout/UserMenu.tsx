@@ -6,7 +6,7 @@ import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Settings, BookOpen, Info, LogOut, LogIn } from 'lucide-react-native';
+import { Settings, BookOpen, Info, LogOut, LogIn, History, ListVideo, Heart, Bookmark } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 
@@ -65,6 +65,34 @@ export function UserMenu() {
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(media)/watch-history' as any); }}
+              >
+                <History size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.watch_history')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/playlists' as any); }}
+              >
+                <ListVideo size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.playlists')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/liked-videos' as any); }}
+              >
+                <Heart size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.liked_videos')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(vocab)/saved-words' as any); }}
+              >
+                <Bookmark size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.saved_words')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
                 onPress={() => { setOpen(false); router.push('/(tabs)/(me)/docs' as any); }}
               >
                 <BookOpen size={16} color={ICON_MUTED} />
@@ -101,6 +129,34 @@ export function UserMenu() {
               >
                 <BookOpen size={16} color={ICON_MUTED} />
                 <Text className="text-sm text-foreground">{t('title.docs')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(media)/watch-history' as any); }}
+              >
+                <History size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.watch_history')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/playlists' as any); }}
+              >
+                <ListVideo size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.playlists')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/liked-videos' as any); }}
+              >
+                <Heart size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.liked_videos')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(vocab)/saved-words' as any); }}
+              >
+                <Bookmark size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.saved_words')}</Text>
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"

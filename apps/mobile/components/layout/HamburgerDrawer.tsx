@@ -6,8 +6,8 @@ import {
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {
-  Compass, Music, Tv, Clapperboard, History, Upload,
-  FileText, BookMarked, Bookmark, RotateCcw, Globe, BookOpen,
+  Compass, Music, Tv, Clapperboard, Upload,
+  FileText, BookMarked, RotateCcw, Globe, BookOpen,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -28,7 +28,6 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.music_and_entertainment', href: '/(tabs)/(media)/music' },
       { key: 'title.live_tv', href: '/(tabs)/(media)/live-tv' },
       { key: 'title.tv_shows', href: '/(tabs)/(media)/tv-shows' },
-      { key: 'title.watch_history', href: '/(tabs)/(media)/watch-history' },
       { key: 'title.local_media', href: '/(tabs)/(media)/local-media' },
     ],
   },
@@ -44,7 +43,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Vocab',
     links: [
       { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
-      { key: 'title.saved_words', href: '/(tabs)/(vocab)/saved-words' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review' },
     ],
   },
@@ -59,13 +57,11 @@ const NAV_ICONS: Record<string, React.JSX.Element> = {
   music: <Music size={16} color={ICON_COLOR} />,
   'live-tv': <Tv size={16} color={ICON_COLOR} />,
   'tv-shows': <Clapperboard size={16} color={ICON_COLOR} />,
-  'watch-history': <History size={16} color={ICON_COLOR} />,
   'local-media': <Upload size={16} color={ICON_COLOR} />,
   reader: <FileText size={16} color={ICON_COLOR} />,
   'web-reader': <Globe size={16} color={ICON_COLOR} />,
   epub: <BookOpen size={16} color={ICON_COLOR} />,
   dictionary: <BookMarked size={16} color={ICON_COLOR} />,
-  'saved-words': <Bookmark size={16} color={ICON_COLOR} />,
   review: <RotateCcw size={16} color={ICON_COLOR} />,
 };
 

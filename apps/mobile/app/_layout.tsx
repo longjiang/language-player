@@ -71,6 +71,7 @@ import { DictionaryProvider } from '@/contexts/DictionaryContext';
 import { SavedWordsProvider } from '@/contexts/SavedWordsContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
 import '../global.css';
 
 // ── Error Boundary to surface full stack traces to Metro ──
@@ -124,6 +125,7 @@ export default function RootLayout() {
                   <SavedWordsProvider>
                     <VideoPlayerProvider>
                       <SubscriptionProvider>
+                      <UserLibraryProvider>
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />
@@ -135,6 +137,7 @@ export default function RootLayout() {
                       </Stack>
                       <PortalHost />
                       <Toast config={toastConfig} topOffset={insets.top + 8} />
+                      </UserLibraryProvider>
                       </SubscriptionProvider>
                     </VideoPlayerProvider>
                   </SavedWordsProvider>
