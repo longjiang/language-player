@@ -5,6 +5,7 @@ import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useVideos } from '@langplayer/api-client';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
@@ -74,7 +75,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const router = useRouter();
   const videosApi = useVideos();
   const playerRef = useRef<YouTubePlayerHandle>(null);
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { isMd } = useResponsive();
   const [containerWidth, setContainerWidth] = useState(screenWidth);
   const videoHeight = (containerWidth / 16) * 9;
 
@@ -304,6 +306,92 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     );
   }
 
+  // Shared body for the bottom sheet (narrow) and centered dialog (md+).
+  const listBody = (
+    <>
+      {/* Dialog header */}
+      <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
+        <Dialog.Title>{t('msg.videos_matching', { searchTerm: termDisplay })}</Dialog.Title>
+        <Dialog.Close className="rounded-full bg-muted p-2">
+          <X size={18} color={ICON_MUTED} />
+        </Dialog.Close>
+      </View>
+
+      {/* Video list */}
+      <FlatList
+        data={videos}
+        keyExtractor={(v) => String(v.id)}
+        style={isMd ? { flex: 1 } : undefined}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
+        onViewableItemsChanged={({ viewableItems }) => {
+          const first = viewableItems[0];
+          if (first?.index != null) setListFirstVisible(first.index);
+        }}
+        renderItem={({ item, index }) => {
+          const ml = item.subs_l2[item.matchLineIndex];
+          const isActive = index === currentIndex;
+          return (
+            <Pressable
+              onPress={() => selectFromList(index)}
+              className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
+            >
+              {/* Thumbnail */}
+              <View className="h-12 w-20 overflow-hidden rounded bg-muted">
+                <Image
+                  source={{ uri: youtubeThumbnail(item.youtube_id) }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+                {ml && (
+                  <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
+                    <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Info — original on top, translation below, horizontal scroll for long lines */}
+              <View className="min-w-0 flex-1">
+                <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
+                  <View>
+                    <View className="flex-row">
+                      {rowSegments[index]?.map((seg, j) => (
+                        <Text
+                          key={j}
+                          className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
+                        >
+                          {j > 0 ? ' ' : ''}
+                          <HighlightTerms line={seg.text} terms={highlightTerms} />
+                        </Text>
+                      ))}
+                    </View>
+                    {display.translation && (
+                      <View className="mt-0.5 flex-row">
+                        {rowSegments[index]?.map((seg, j) => {
+                          const flatIdx = (translationInput.rowStarts[index] ?? 0) + j;
+                          const translated = listTranslations[flatIdx]?.line;
+                          if (!translated) return null;
+                          return (
+                            <Text key={j} className="text-xs text-muted-foreground">
+                              {j > 0 ? ' ' : ''}
+                              {renderInlineMarkdown(translated, { markBold: true })}
+                            </Text>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
+                </ScrollView>
+              </View>
+            </Pressable>
+          );
+        }}
+      />
+    </>
+  );
+
   // ── Render ──
   return (
     <View
@@ -398,87 +486,28 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       {/* ── Video List Dialog ── */}
       <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
         <Dialog.Portal>
-          <Dialog.SheetContent className="max-h-[85%]">
-            {/* Dialog header */}
-            <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
-              <Dialog.Title>{t('msg.videos_matching', { searchTerm: termDisplay })}</Dialog.Title>
-              <Dialog.Close className="rounded-full bg-muted p-2">
-                <X size={18} color={ICON_MUTED} />
-              </Dialog.Close>
+          {isMd ? (
+            <View className="absolute inset-0 items-center justify-center px-4">
+              <View
+                className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background"
+                style={{
+                  height: Math.min(screenHeight * 0.75, 640),
+                  // Inline shadow — see NavBar workaround for the css-interop crash.
+                  shadowColor: ICON_MUTED,
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: 8,
+                }}
+              >
+                <View className="flex-1 p-4">{listBody}</View>
+              </View>
             </View>
-
-            {/* Video list */}
-            <FlatList
-              data={videos}
-              keyExtractor={(v) => String(v.id)}
-              viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
-              onViewableItemsChanged={({ viewableItems }) => {
-                const first = viewableItems[0];
-                if (first?.index != null) setListFirstVisible(first.index);
-              }}
-              renderItem={({ item, index }) => {
-                const ml = item.subs_l2[item.matchLineIndex];
-                const isActive = index === currentIndex;
-                return (
-                  <Pressable
-                    onPress={() => selectFromList(index)}
-                    className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
-                  >
-                    {/* Thumbnail */}
-                    <View className="h-12 w-20 overflow-hidden rounded bg-muted">
-                      <Image
-                        source={{ uri: youtubeThumbnail(item.youtube_id) }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
-                      {ml && (
-                        <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
-                          <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Info — original on top, translation below, horizontal scroll for long lines */}
-                    <View className="min-w-0 flex-1">
-                      <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
-                        <View>
-                          <View className="flex-row">
-                            {rowSegments[index]?.map((seg, j) => (
-                              <Text
-                                key={j}
-                                className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
-                              >
-                                {j > 0 ? ' ' : ''}
-                                <HighlightTerms line={seg.text} terms={highlightTerms} />
-                              </Text>
-                            ))}
-                          </View>
-                          {display.translation && (
-                            <View className="mt-0.5 flex-row">
-                              {rowSegments[index]?.map((seg, j) => {
-                                const flatIdx = (translationInput.rowStarts[index] ?? 0) + j;
-                                const translated = listTranslations[flatIdx]?.line;
-                                if (!translated) return null;
-                                return (
-                                  <Text key={j} className="text-xs text-muted-foreground">
-                                    {j > 0 ? ' ' : ''}
-                                    {renderInlineMarkdown(translated, { markBold: true })}
-                                  </Text>
-                                );
-                              })}
-                            </View>
-                          )}
-                        </View>
-                      </ScrollView>
-                    </View>
-                  </Pressable>
-                );
-              }}
-            />
-          </Dialog.SheetContent>
+          ) : (
+            <Dialog.SheetContent className="max-h-[85%]">
+              {listBody}
+            </Dialog.SheetContent>
+          )}
         </Dialog.Portal>
       </Dialog.Root>
     </View>
