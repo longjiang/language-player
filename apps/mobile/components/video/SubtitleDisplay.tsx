@@ -203,7 +203,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               l2Code={l2Lang.code}
               l1Code={baseCode(l1Lang.code)}
             >
-              <View className="items-center">
+              <View className="w-full items-center">
                 <TokenizedText
                   text={activeLine.l2Line}
                   l2Code={l2Lang.code}
@@ -213,12 +213,12 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   highlightTerms={highlightTerms}
                   textScale={1.5}
                 />
+                {showTranslation && activeLine.l1Line ? (
+                  <Text className="text-sm text-center mt-0.5 text-muted-foreground">
+                    {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
+                  </Text>
+                ) : null}
               </View>
-              {showTranslation && activeLine.l1Line ? (
-                <Text className="text-sm text-center mt-0.5 text-muted-foreground">
-                  {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
-                </Text>
-              ) : null}
             </TextActionMenu>
           ) : (
             <Text className="text-sm text-muted-foreground">...</Text>
