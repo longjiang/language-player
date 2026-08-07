@@ -646,6 +646,7 @@
         "confirm_cancel_subscription": "您确定要取消订阅吗？",
         "confirm_clear_words": "确定要移除所有已收藏的单词吗？",
         "confirm_delete_all_dictionaries": "删除所有离线词典？您将需要网络来查词。",
+        "confirm_delete_book": "删除{title}？您的阅读进度将丢失。",
         "confirm_delete_dictionary": "删除离线{lang}词典？您将需要网络来查词。",
         "confirm_delete_note": "确定要删除此笔记吗？",
         "confirm_delete_playlist": "删除{title}？此操作无法撤销。",

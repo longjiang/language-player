@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?",
         "confirm_clear_words": "क्या आप वाकई सभी सहेजे गए शब्दों को हटाना चाहते हैं?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "{title} हटाएँ? आपकी पढ़ने की प्रगति खो जाएगी।",
         "confirm_delete_dictionary": "{lang} ऑफ़लाइन शब्दकोश हटाएँ? शब्द खोजने के लिए आपको इंटरनेट की आवश्यकता होगी।",
         "confirm_delete_note": "क्या आप वाकई इस नोट को हटाना चाहते हैं?",
         "confirm_delete_playlist": "{title} हटाएँ? इसे पूर्ववत नहीं किया जा सकता।",

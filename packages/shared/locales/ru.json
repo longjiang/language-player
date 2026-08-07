@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
         "confirm_clear_words": "Вы уверены, что хотите удалить все сохраненные слова?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Удалить {title}? Ваш прогресс чтения будет потерян.",
         "confirm_delete_dictionary": "Удалить офлайн-словарь {lang}? Вам понадобится интернет для поиска слов.",
         "confirm_delete_note": "Вы уверены, что хотите удалить эту заметку?",
         "confirm_delete_playlist": "Удалить {title}? Это действие нельзя отменить.",

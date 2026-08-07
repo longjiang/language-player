@@ -1,270 +1,164 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import JSZip from 'jszip';
-import { parseOPF, resolvePath } from '@/lib/epub-parser';
-import type { TocItem, EpubManifestItem } from '@/lib/epub-parser';
-
-const STORAGE_PATH = FileSystem.documentDirectory + 'epub_state.json';
-
-interface StoredEpubState {
-  fileName: string;
-  fileUri: string;
-  chapterHref: string | null;
-  /** First ~40 chars of the first text block on the last-read page. */
-  lastAnchor: string | null;
-}
+import {
+  openEpubBook,
+  sanitizeEpubId,
+  type EpubBookModel,
+  type BookLocation,
+  type TocMarker,
+} from '@/lib/epub-book';
+import {
+  saveEpub,
+  listEpubs,
+  updateEpubMeta,
+  deleteEpub,
+  readLegacyState,
+  clearLegacyState,
+  ensureLibraryDir,
+  libraryFileUri,
+  LIBRARY_DIR,
+  type EpubMeta,
+  type EpubSummary,
+} from '@/lib/epub-store';
+import type { TocItem } from '@/lib/epub-parser';
+import type { ContentBlock } from '@/lib/parse-markdown';
+import { log } from '@/lib/logger';
 
 export interface UseEpubReturn {
-  fileName: string | null;
-  toc: TocItem[];
-  chapterTitle: string | null;
-  chapterHref: string | null;
+  /** Bookshelf entries (metadata only), sorted by last read. */
+  books: EpubSummary[];
+  /** Id of the currently open book, or null when showing the bookshelf. */
+  openBookId: string | null;
   loading: boolean;
-  coverUrl: string | null;
-  coverTapped: boolean;
-  flatToc: TocItem[];
-  prevHref: string | null;
-  nextHref: string | null;
+  /** Error message (already localized, or null). */
   error: string | null;
+  /** Nested TOC items of the open book. */
+  toc: TocItem[];
+  /** Flattened TOC entries resolved to whole-book locations. */
+  markers: TocMarker[];
+  /** Whole-book block stream (all linear spine items in order). */
+  blocks: ContentBlock[] | null;
+  chapterLabels: { blockIndex: number; label: string }[];
+  totalChars: number;
+  fileName: string | null;
   epubTitle: string;
   epubAuthor: string;
+  coverUrl: string | null;
+  /** Whether the reader has entered content (cover dismissed / skipped). */
+  coverTapped: boolean;
+  /** Location to resume at once the cover is dismissed. */
+  initialLocation: BookLocation | null;
+  /** Canonical zip paths of the spine items (for internal link resolution). */
+  spineHrefs: string[];
+  /** True once the bookshelf has been loaded (and legacy state migrated). */
+  ready: boolean;
+  /** Reload the bookshelf from storage (runs legacy migration once). */
+  refreshBooks: () => Promise<void>;
+  /** Import one EPUB from the document picker and open it at its cover. */
   pickFile: () => Promise<void>;
-  loadChapter: (href: string) => Promise<string>;
-  prevChapter: () => void;
-  nextChapter: () => void;
+  /** Open a stored book; returns the location to resume at. */
+  openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
+  /** Close the book and return to the bookshelf (the handle is kept). */
   close: () => Promise<void>;
-  openFromCover: () => void;
-  /** First ~40 chars of the first text block on the last-read page (for position restore). */
-  initialAnchor: string | null;
-  /** Call when the user turns a page to persist their reading position. */
-  saveAnchor: (anchor: string) => Promise<void>;
+  /** Enter the reader after the cover has been tapped. */
+  dismissCover: () => void;
+  /** Persist the current reading location + progress. */
+  saveLocation: (loc: BookLocation) => Promise<void>;
+  /** Resolve a TOC/internal link href to a location in the open book. */
+  resolveHref: (href: string, fromHref?: string) => Promise<BookLocation | null>;
+  /** Remove a book from the shelf (deletes its stored handle + files). */
+  removeBook: (id: string) => Promise<void>;
 }
 
-function flattenToc(items: TocItem[]): TocItem[] {
-  const r: TocItem[] = [];
-  for (const i of items) { r.push(i); if (i.children) r.push(...flattenToc(i.children)); }
-  return r;
-}
-
-export function useEpub(onChapterChange?: (text: string, title: string) => void): UseEpubReturn {
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [toc, setToc] = useState<TocItem[]>([]);
-  const [chapterTitle, setChapterTitle] = useState<string | null>(null);
-  const [chapterHref, setChapterHref] = useState<string | null>(null);
+export function useEpub(): UseEpubReturn {
+  const [books, setBooks] = useState<EpubSummary[]>([]);
+  const [openBookId, setOpenBookId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [coverUrl, setCoverUrl] = useState<string | null>(null);
-  const [coverTapped, setCoverTapped] = useState(false);
-  const [epubTitle, setEpubTitle] = useState('');
-  const [epubAuthor, setEpubAuthor] = useState('');
-  const [restoring, setRestoring] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [model, setModel] = useState<EpubBookModel | null>(null);
+  const [coverTapped, setCoverTapped] = useState(false);
+  const [initialLocation, setInitialLocation] = useState<BookLocation | null>(null);
+  const [ready, setReady] = useState(false);
 
-  const zipRef = useRef<any>(null);
-  const spineRef = useRef<{ href: string; title: string }[]>([]);
-  const cacheRef = useRef<Map<string, string>>(new Map());
-  const imageCacheRef = useRef<Map<string, string>>(new Map());
-  const storedRef = useRef<StoredEpubState | null>(null);
-  const flatTocRef = useRef<TocItem[]>([]);
+  const modelRef = useRef<EpubBookModel | null>(null);
+  const openBookIdRef = useRef<string | null>(null);
+  const migratedRef = useRef(false);
 
-  const flatToc = flattenToc(toc);
-  flatTocRef.current = flatToc;
-  const i = chapterHref ? flatToc.findIndex((c) => c.href === chapterHref) : -1;
-  const prevHref = i > 0 ? flatToc[i - 1]!.href : null;
-  const nextHref = i >= 0 && i < flatToc.length - 1 ? flatToc[i + 1]!.href : null;
-
-  // Persist
-  const persist = useCallback(async (st: StoredEpubState | null) => {
-    try {
-      if (st) await FileSystem.writeAsStringAsync(STORAGE_PATH, JSON.stringify(st));
-      else { try { await FileSystem.deleteAsync(STORAGE_PATH); } catch {} }
-    } catch {}
+  const setCurrentModel = useCallback((m: EpubBookModel, id: string, skipCover: boolean, resume: BookLocation | null) => {
+    modelRef.current?.close().catch(() => {});
+    modelRef.current = m;
+    openBookIdRef.current = id;
+    setModel(m);
+    setOpenBookId(id);
+    setCoverTapped(skipCover);
+    setInitialLocation(resume);
+    setError(null);
   }, []);
 
-  // Restore — runs exactly once on mount
-  const restoredRef = useRef(false);
-  useEffect(() => {
-    if (restoredRef.current) return;
-    restoredRef.current = true;
-    (async () => {
+  /** Reload the bookshelf list + migrate the pre-bookshelf single-book state. */
+  const refreshBooks = useCallback(async () => {
+    if (!migratedRef.current) {
+      migratedRef.current = true;
       try {
-        const info = await FileSystem.getInfoAsync(STORAGE_PATH);
-        if (!info.exists) { setRestoring(false); return; }
-        const json = await FileSystem.readAsStringAsync(STORAGE_PATH);
-        const st: StoredEpubState = JSON.parse(json);
-        const fileInfo = await FileSystem.getInfoAsync(st.fileUri);
-        if (!fileInfo.exists) { setRestoring(false); return; }
-
-        storedRef.current = st;
-        setFileName(st.fileName);
-        // Don't set restoring false yet — wait until loadFromUri has set coverUrl
-        await loadFromUri(st.fileUri);
-        if (st.chapterHref) {
-          // Use loadChapter (not loadChapterContent) so spine concatenation
-          // merges all content docs belonging to this logical chapter.
-          await loadChapter(st.chapterHref);
-        }
-      } catch (e: any) { setError(e?.message ?? String(e)); }
-      setRestoring(false);
-    })();
-  }, []);
-
-  // Core: load EPUB from URI
-  const loadFromUri = useCallback(async (uri: string) => {
-    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-    const zip = await JSZip.loadAsync(base64, { base64: true });
-    zipRef.current = zip;
-    // Clear stale content from any previously loaded EPUB
-    cacheRef.current.clear();
-
-    const containerFile = zip.file('META-INF/container.xml');
-    if (!containerFile) throw new Error('Invalid EPUB: no container.xml');
-    const containerXml = await containerFile.async('text');
-    const rootfileMatch = containerXml.match(/full-path="([^"]+)"/);
-    if (!rootfileMatch) throw new Error('Invalid EPUB: no rootfile');
-
-    const opfPath = rootfileMatch[1]!;
-    const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
-    const opfFile = zip.file(opfPath);
-    if (!opfFile) throw new Error('OPF not found');
-    const opfXml = await opfFile.async('text');
-
-    // Build manifest map for nav/NCX lookups + image extraction
-    const manifestItems = new Map<string, EpubManifestItem>();
-    const itemRegex = /<item\b([^>]*)>/g;
-    let itemMatch: RegExpExecArray | null;
-    while ((itemMatch = itemRegex.exec(opfXml)) !== null) {
-      const a = itemMatch[1]!;
-      const id = a.match(/id="([^"]+)"/)?.[1];
-      const href = a.match(/href="([^"]+)"/)?.[1];
-      const mediaType = a.match(/media-type="([^"]+)"/)?.[1];
-      const props = a.match(/properties="([^"]+)"/)?.[1];
-      if (id && href) manifestItems.set(id, { id, href, mediaType, props });
-    }
-
-    // Try to load EPUB 3 nav document (item with properties="nav")
-    let navXml: string | undefined;
-    let navDir: string | undefined;
-    for (const [, item] of manifestItems) {
-      if (item.props?.split(/\s+/).includes('nav')) {
-        const navFile = zip.file(resolvePath(opfDir, item.href));
-        if (navFile) {
-          navXml = await navFile.async('text');
-          // Compute directory of the nav doc so relative hrefs resolve correctly
-          navDir = opfDir + item.href.substring(0, item.href.lastIndexOf('/') + 1);
-        }
-        break;
-      }
-    }
-
-    // Try to load NCX for TOC (EPUB 2 fallback)
-    let ncxXml: string | undefined;
-    if (!navXml) {
-      const ncxItem = [...manifestItems.values()].find(
-        (item) => item.id === 'ncx' || item.href.endsWith('.ncx'),
-      );
-      if (ncxItem) {
-        const ncxFile = zip.file(resolvePath(opfDir, ncxItem.href));
-        if (ncxFile) ncxXml = await ncxFile.async('text');
-      }
-    }
-
-    const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
-    spineRef.current = meta.spine;
-    setEpubTitle(meta.title);
-    setEpubAuthor(meta.author);
-
-    // ── Build image cache from manifest — write images to temp files (RN Image needs file:// URIs) ──
-    const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    imageCacheRef.current.clear();
-    // Also track temp file paths for cleanup
-    let imgIdx = 0;
-    const tempImagePaths: string[] = [];
-    for (const [, item] of manifestItems) {
-      if (item.mediaType && IMAGE_MIME_TYPES.includes(item.mediaType)) {
-        const resolvedPath = resolvePath(opfDir, item.href);
-        const imgFile = zip.file(resolvedPath);
-        if (imgFile) {
-          try {
-            const base64 = await imgFile.async('base64');
-            const ext = ((item.mediaType.split('/')[1] || 'jpg') as string).replace('jpeg', 'jpg');
-            const imgPath = FileSystem.documentDirectory + 'epub_img_' + (imgIdx++) + '.' + ext;
-            await FileSystem.writeAsStringAsync(imgPath, base64, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            imageCacheRef.current.set(resolvedPath, 'file://' + imgPath);
-            tempImagePaths.push(imgPath);
-          } catch {
-            // skip corrupt images
+        const legacy = await readLegacyState();
+        if (legacy) {
+          log(`[LP Mobile] 📖 migrating legacy EPUB state: ${legacy.fileName}`);
+          await ensureLibraryDir();
+          const id = sanitizeEpubId(legacy.fileName);
+          const dest = libraryFileUri(id);
+          const destInfo = await FileSystem.getInfoAsync(dest);
+          if (!destInfo.exists) {
+            await FileSystem.copyAsync({ from: legacy.fileUri, to: dest });
           }
+          const sizeInfo = await FileSystem.getInfoAsync(dest);
+          const m = await openEpubBook(dest, legacy.fileName);
+          // Resolve the legacy chapter + text anchor to a whole-book location.
+          let lastLocation: BookLocation | null = null;
+          if (legacy.chapterHref) {
+            lastLocation = await m.resolveHref(legacy.chapterHref);
+            if (lastLocation && legacy.lastAnchor) {
+              const anchor = legacy.lastAnchor;
+              const found = m.blocks.findIndex(
+                (b, i) => i >= lastLocation!.blockIndex && b.kind === 'text' && b.text.includes(anchor),
+              );
+              if (found !== -1) lastLocation = { blockIndex: found, offset: 0 };
+            }
+          }
+          const meta: EpubMeta = {
+            id,
+            fileName: legacy.fileName,
+            fileSize: sizeInfo.exists ? (sizeInfo as { size: number }).size : 0,
+            language: m.language,
+            coverUrl: null,
+            title: m.title,
+            author: m.author,
+            lastLocation,
+            totalChars: m.totalChars,
+            readChars: lastLocation ? m.prefixChars[lastLocation.blockIndex] ?? 0 : 0,
+            lastReadAt: Date.now(),
+            addedAt: Date.now(),
+          };
+          await m.close();
+          await saveEpub(meta);
+          // Remove the old single-book copy now that the library owns a handle.
+          try { await FileSystem.deleteAsync(legacy.fileUri); } catch { /* already gone */ }
+          await clearLegacyState();
         }
+      } catch (e: any) {
+        log(`[LP Mobile] EPUB legacy migration failed: ${e?.message ?? e}`);
+        await clearLegacyState();
       }
     }
-    // Store temp paths for cleanup (appended to existing ref in close)
-    (imageCacheRef.current as any)._tempPaths = tempImagePaths;
-
-    // ── Cover image — write to temp file (RN Image struggles with long data: URIs) ──
-    if (meta.coverBase64) {
-      const resolvedPath = resolvePath(opfDir, meta.coverBase64);
-      const cf = zip.file(resolvedPath);
-      if (cf) {
-        try {
-          const coverItem = meta.coverItemId ? manifestItems.get(meta.coverItemId) : undefined;
-          const mimeType = coverItem?.mediaType ?? 'image/jpeg';
-          const base64 = await cf.async('base64');
-          const ext = (mimeType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-          const coverPath = FileSystem.documentDirectory + 'epub_cover.' + ext;
-          await FileSystem.writeAsStringAsync(coverPath, base64, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          // RN Image needs file:// prefix for local paths
-          setCoverUrl('file://' + coverPath);
-        } catch {
-          // Cover extraction failed — leave coverUrl null for generated fallback
-        }
-      }
-      // Cover href in metadata but file missing — leave coverUrl null for fallback
-    }
-    // No cover metadata — leave coverUrl null for fallback
-
-    // TOC — nav doc or NCX already parsed, fallback to spine map
-    setToc(meta.toc.length > 0 ? meta.toc : meta.spine.map((s, idx) => ({
-      label: s.title || `Chapter ${idx + 1}`, href: s.href,
-    })));
+    setBooks(await listEpubs());
+    setReady(true);
   }, []);
 
-  const loadChapterContent = useCallback(async (href: string): Promise<string> => {
-    // Strip fragment — zip entries never include #fragment
-    const cleanHref = href.includes('#') ? href.split('#')[0]! : href;
-    if (cacheRef.current.has(cleanHref)) return cacheRef.current.get(cleanHref)!;
-    const zip = zipRef.current; if (!zip) return '';
-    const file = zip.file(cleanHref); if (!file) return '';
-    let html: string = await file.async('text');
+  useEffect(() => {
+    void refreshBooks();
+  }, [refreshBooks]);
 
-    // ── Resolve <img> tags into [IMG:uri] markers before stripping HTML ──
-    const contentDir = cleanHref.substring(0, cleanHref.lastIndexOf('/') + 1);
-    html = html
-      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<img\b[^>]*\bsrc\s*=\s*(["'])([^"']+)\1[^>]*\/?>/gi, (_match, _quote: string, src: string) => {
-        // Skip external URLs
-        if (src.includes('://')) return '';
-        // Resolve src relative to content doc directory, normalizing ../ segments
-        const resolvedPath = resolvePath(contentDir, src);
-        const dataUri = imageCacheRef.current.get(resolvedPath);
-        return dataUri ? `[IMG:${dataUri}]` : '';
-      });
-
-    const text = html
-      .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/h[1-6]>/gi, '\n\n')
-      .replace(/<\/div>/gi, '\n').replace(/<\/li>/gi, '\n').replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\n{3,}/g, '\n\n').trim();
-    cacheRef.current.set(cleanHref, text);
-    return text;
-  }, []);
-
+  /** Import one EPUB from the document picker and open it at its cover. */
   const pickFile = useCallback(async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/epub+zip', 'application/octet-stream'],
@@ -272,135 +166,147 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
-    setLoading(true); setError(null);
-    try {
-      const permUri = FileSystem.documentDirectory + asset.name;
-      await FileSystem.copyAsync({ from: asset.uri, to: permUri });
-      await loadFromUri(permUri);
-      setFileName(asset.name);
-      const st: StoredEpubState = { fileName: asset.name, fileUri: permUri, chapterHref: null, lastAnchor: null };
-      storedRef.current = st;
-      await persist(st);
-      // Don't auto-load — show cover first (matches Next.js)
-    } catch (e: any) { setError(e?.message ?? String(e)); }
-    finally { setLoading(false); }
-  }, [loadFromUri, persist]);
-
-  /** Persist chapter href to stored state (used by both normal and empty-chapter paths). */
-  const persistedChapterRef = useCallback((href: string) => {
-    storedRef.current = { ...storedRef.current!, chapterHref: href };
-    persist(storedRef.current);
-  }, [persist]);
-
-  /** Load a chapter by TOC href. All chapter-loading paths converge here:
-   *  - cover tap (openFromCover), position restore, TOC sidebar tap, prev/next.
-   *  Concatenates all spine items belonging to the logical chapter. */
-  const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
+    setError(null);
     try {
-      const cleanHref = href.includes('#') ? href.split('#')[0]! : href;
-      const spine = spineRef.current;
-      const toc = flatTocRef.current;
+      await ensureLibraryDir();
+      const id = sanitizeEpubId(asset.name);
+      const dest = libraryFileUri(id);
+      await FileSystem.copyAsync({ from: asset.uri, to: dest });
 
-      // Match TOC entry by comparing fragment-stripped hrefs
-      const entry = toc.find(t => {
-        const tHref = t.href.includes('#') ? t.href.split('#')[0]! : t.href;
-        return tHref === cleanHref;
-      });
-
-      // Find where this TOC chapter starts in the spine
-      const startIdx = spine.findIndex(s => s.href === cleanHref);
-
-      // Guard: href not in spine (e.g. TOC references a file not in the spine).
-      // Treat as an empty chapter rather than crashing.
-      if (startIdx === -1) {
-        setCoverTapped(true);
-        setChapterTitle(entry?.label ?? '');
-        setChapterHref(cleanHref);
-        onChapterChange?.('', entry?.label ?? '');
-        if (storedRef.current) persistedChapterRef(cleanHref);
-        return '';
+      const m = await openEpubBook(dest, asset.name);
+      let coverUrl = m.coverUrl;
+      if (coverUrl?.startsWith('file://')) {
+        const src = coverUrl.slice(7);
+        const ext = src.split('.').pop() ?? 'jpg';
+        const coverDest = `${LIBRARY_DIR}${id.replace(/\.epub$/i, '')}_cover.${ext}`;
+        try {
+          await FileSystem.copyAsync({ from: src, to: coverDest });
+          coverUrl = 'file://' + coverDest;
+        } catch { /* keep temp cover */ }
       }
+      const info = await FileSystem.getInfoAsync(dest);
+      const meta: EpubMeta = {
+        id,
+        fileName: asset.name,
+        fileSize: info.exists ? (info as { size: number }).size : 0,
+        language: m.language,
+        coverUrl,
+        title: m.title,
+        author: m.author,
+        lastLocation: null,
+        totalChars: m.totalChars,
+        readChars: 0,
+        lastReadAt: Date.now(),
+        addedAt: Date.now(),
+      };
+      await saveEpub(meta);
+      setBooks(await listEpubs());
+      const start: BookLocation | null =
+        m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null);
+      setCurrentModel(m, id, false, start);
+    } catch (e: any) {
+      setError(e?.message ?? String(e));
+    } finally {
+      setLoading(false);
+    }
+  }, [setCurrentModel]);
 
-      // Build a set of TOC hrefs (fragment-stripped) — these are chapter boundaries
-      const tocHrefs = new Set(
-        toc.map(t => (t.href.includes('#') ? t.href.split('#')[0]! : t.href)),
-      );
-
-      // Find where the NEXT TOC chapter starts in the spine (end boundary)
-      let endIdx = spine.findIndex(
-        (s, i) => i > startIdx && tocHrefs.has(s.href),
-      );
-      if (endIdx === -1) endIdx = spine.length;
-
-      // Concatenate all spine items belonging to this logical chapter
-      let combinedText = '';
-      for (let i = startIdx; i < endIdx; i++) {
-        const text = await loadChapterContent(spine[i]!.href);
-        if (text) combinedText += (combinedText ? '\n\n' : '') + text;
-      }
-
-      setCoverTapped(true);
-      setChapterTitle(entry?.label ?? '');
-      setChapterHref(cleanHref);
-      onChapterChange?.(combinedText, entry?.label ?? '');
-      if (storedRef.current) persistedChapterRef(cleanHref);
-      return combinedText;
-    } finally { setLoading(false); }
-  }, [loadChapterContent, onChapterChange, persist]);
-
-  const openFromCover = useCallback(async () => {
-    if (spineRef.current.length === 0) return;
-    // Start from the first TOC chapter, not the first spine item.
-    // The first spine item is often a cover/title page with no extractable text
-    // (e.g. only images), which produces an empty chapter on mobile.
-    const toc = flatTocRef.current;
-    const href = toc.length > 0 ? toc[0]!.href : spineRef.current[0]!.href;
-    await loadChapter(href);
-  }, [loadChapter]);
-
-  const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);
-  const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);
+  /** Open a stored book; returns the location to resume at. */
+  const openBook = useCallback(async (id: string, opts?: { skipCover?: boolean }): Promise<BookLocation | null> => {
+    const skipCover = opts?.skipCover ?? false;
+    if (openBookIdRef.current === id && modelRef.current) {
+      setCoverTapped(skipCover);
+      return initialLocation;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const meta = books.find((b) => b.id === id) ?? (await listEpubs()).find((b) => b.id === id);
+      if (!meta) { setError('Book not found'); return null; }
+      const fileUri = libraryFileUri(id);
+      const info = await FileSystem.getInfoAsync(fileUri);
+      if (!info.exists) { setError('Book file missing'); return null; }
+      const m = await openEpubBook(fileUri, meta.fileName, { coverUri: meta.coverUrl });
+      const resume = meta.lastLocation && meta.lastLocation.blockIndex < m.blocks.length
+        ? meta.lastLocation
+        : (m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null));
+      setCurrentModel(m, id, skipCover, resume);
+      await updateEpubMeta(id, { lastReadAt: Date.now() });
+      setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
+      return resume;
+    } catch (e: any) {
+      setError(e?.message ?? String(e));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [books, initialLocation, setCurrentModel]);
 
   const close = useCallback(async () => {
-    // Clean up temp image files
-    const tempPaths: string[] = (imageCacheRef.current as any)?._tempPaths ?? [];
-    for (const p of tempPaths) {
-      FileSystem.deleteAsync(p).catch(() => {});
-    }
-    // Clean up temp cover file
-    if (coverUrl) {
-      const coverPath = coverUrl.startsWith('file://') ? coverUrl.slice(7) : coverUrl;
-      FileSystem.deleteAsync(coverPath).catch(() => {});
-    }
-    zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
-    storedRef.current = null;
-    setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
-    setCoverUrl(null); setCoverTapped(false); setError(null);
-    setEpubTitle(''); setEpubAuthor('');
-    await persist(null);
-  }, [persist, coverUrl]);
+    await modelRef.current?.close().catch(() => {});
+    modelRef.current = null;
+    openBookIdRef.current = null;
+    setModel(null);
+    setOpenBookId(null);
+    setCoverTapped(false);
+    setInitialLocation(null);
+    setError(null);
+  }, []);
 
-  // ── Anchor: persist reading position within a chapter ──
-  const saveAnchor = useCallback(async (anchor: string) => {
-    if (!storedRef.current) return;
-    const updated = { ...storedRef.current, lastAnchor: anchor };
-    storedRef.current = updated;
-    await persist(updated);
-  }, [persist]);
+  const dismissCover = useCallback(() => setCoverTapped(true), []);
+
+  /** Persist the current reading location + progress (chars before block). */
+  const saveLocation = useCallback(async (loc: BookLocation) => {
+    const m = modelRef.current;
+    const id = openBookIdRef.current;
+    if (!m || !id) return;
+    const readChars = Math.min(
+      m.totalChars,
+      (m.prefixChars[loc.blockIndex] ?? 0) + loc.offset,
+    );
+    await updateEpubMeta(id, { lastLocation: loc, readChars, lastReadAt: Date.now() });
+    setBooks(prev => prev.map((b) =>
+      b.id === id ? { ...b, lastLocation: loc, readChars, lastReadAt: Date.now() } : b,
+    ));
+  }, []);
+
+  const resolveHref = useCallback(async (href: string, fromHref?: string) => {
+    return modelRef.current?.resolveHref(href, fromHref) ?? null;
+  }, []);
+
+  const removeBook = useCallback(async (id: string) => {
+    const meta = books.find((b) => b.id === id);
+    if (meta) await deleteEpub(meta);
+    if (openBookIdRef.current === id) await close();
+    setBooks(await listEpubs());
+  }, [books, close]);
 
   return {
-    fileName: restoring && storedRef.current ? storedRef.current.fileName : fileName,
-    toc, chapterTitle,
-    chapterHref: restoring && storedRef.current ? storedRef.current.chapterHref : chapterHref,
-    loading: loading || restoring,
-    coverUrl, coverTapped,
-    flatToc, prevHref, nextHref, error,
-    epubTitle, epubAuthor,
-    initialAnchor: storedRef.current?.lastAnchor ?? null,
-    saveAnchor,
-    pickFile, loadChapter, prevChapter, nextChapter, close, openFromCover,
+    books,
+    openBookId,
+    loading,
+    error,
+    toc: model?.toc ?? [],
+    markers: model?.markers ?? [],
+    blocks: model?.blocks ?? null,
+    chapterLabels: model?.chapterLabels ?? [],
+    totalChars: model?.totalChars ?? 0,
+    fileName: model?.fileName ?? null,
+    epubTitle: model?.title ?? '',
+    epubAuthor: model?.author ?? '',
+    coverUrl: model?.coverUrl ?? null,
+    coverTapped,
+    initialLocation,
+    spineHrefs: model?.spineHrefs ?? [],
+    ready,
+    refreshBooks,
+    pickFile,
+    openBook,
+    close,
+    dismissCover,
+    saveLocation,
+    resolveHref,
+    removeBook,
   };
 }
-
-

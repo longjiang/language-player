@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
         "confirm_clear_words": "هل أنت متأكد من إزالة جميع الكلمات المحفوظة؟",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "إزالة {title}؟ سيتم فقدان تقدم قراءتك.",
         "confirm_delete_dictionary": "حذف قاموس {lang} دون اتصال؟ ستحتاج إلى الإنترنت للبحث عن الكلمات.",
         "confirm_delete_note": "هل أنت متأكد من حذف هذه الملاحظة؟",
         "confirm_delete_playlist": "حذف {title}؟ لا يمكن التراجع عن هذا.",

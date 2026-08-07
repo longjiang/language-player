@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Da li si siguran/na da želiš da otkažeš pretplatu?",
         "confirm_clear_words": "Da li ste sigurni da želite da uklonite sve sačuvane reči?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Уклонити {title}? Ваш напредак читања ће бити изгубљен.",
         "confirm_delete_dictionary": "Избрисати {lang} речник ван мреже? Биће вам потребан интернет за претрагу речи.",
         "confirm_delete_note": "Да ли сте сигурни да желите да обришете ову белешку?",
         "confirm_delete_playlist": "Обрисати {title}? Ова радња се не може поништити.",

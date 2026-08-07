@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
         "confirm_clear_words": "Tüm kaydedilmiş kelimeleri kaldırmak istediğinize emin misiniz?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "{title} kaldırılsın mı? Okuma ilerlemeniz kaybolacak.",
         "confirm_delete_dictionary": "{lang} çevrimdışı sözlüğü silinsin mi? Kelime aramak için internete ihtiyacınız olacak.",
         "confirm_delete_note": "Bu notu silmek istediğinizden emin misiniz?",
         "confirm_delete_playlist": "{title} silinsin mi? Bu işlem geri alınamaz.",

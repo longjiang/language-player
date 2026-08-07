@@ -76,11 +76,11 @@ export function EpubChapterSidebar({
     <View style={{ width: sidebarWidth }} className="border-l border-border bg-card">
       <View className="flex-row items-center justify-between border-b border-border px-3 py-2">
         <View className="flex-row gap-1">
-          <Pressable onPress={onPrev} className="rounded p-1 active:bg-muted" disabled={!prevHref}>
-            <ChevronLeft size={14} color={prevHref ? ICON_MUTED : '#555'} />
+          <Pressable onPress={onPrev} className="rounded p-1 active:bg-muted" disabled={!prevHref} style={!prevHref ? { opacity: 0.3 } : undefined}>
+            <ChevronLeft size={14} color={ICON_MUTED} />
           </Pressable>
-          <Pressable onPress={onNext} className="rounded p-1 active:bg-muted" disabled={!nextHref}>
-            <ChevronRight size={14} color={nextHref ? ICON_MUTED : '#555'} />
+          <Pressable onPress={onNext} className="rounded p-1 active:bg-muted" disabled={!nextHref} style={!nextHref ? { opacity: 0.3 } : undefined}>
+            <ChevronRight size={14} color={ICON_MUTED} />
           </Pressable>
         </View>
         <Pressable onPress={onClose} className="rounded p-1 active:bg-muted">

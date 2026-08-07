@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
         "confirm_clear_words": "Je, una uhakika unataka kuondoa maneno yote yaliyohifadhiwa?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Ondoa {title}? Maendeleo yako ya kusoma yatapotea.",
         "confirm_delete_dictionary": "Futa kamusi ya {lang} nje ya mtandao? Utahitaji intaneti kutafuta maneno.",
         "confirm_delete_note": "Una uhakika unataka kufuta dokezo hili?",
         "confirm_delete_playlist": "Futa {title}? Kitendo hiki hakiwezi kutenduliwa.",

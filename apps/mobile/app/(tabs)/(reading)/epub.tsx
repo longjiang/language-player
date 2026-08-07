@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { View, Text, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, Pressable, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -7,65 +7,231 @@ import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubCover } from '@/components/reader/EpubCover';
+import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { BookSearchDialog } from '@/components/reader/BookSearchDialog';
-import { BookOpen, Upload, X, Search } from 'lucide-react-native';
+import { ArrowLeft, BookOpen, X, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import type { BookLocation, TocMarker } from '@/lib/epub-book';
+
+/** Hidden-measurement chunk size for large whole-book block streams. */
+const MEASURE_CHUNK = 150;
 
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
-  const [text, setText] = React.useState('');
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
+  const epub = useEpub();
+  const { height: windowHeight } = useWindowDimensions();
 
-  const onChapterChange = useCallback((chapterText: string, _title: string) => {
-    setText(chapterText);
-  }, []);
-  const epub = useEpub(onChapterChange);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [openingId, setOpeningId] = useState<string | null>(null);
+  const [location, setLocation] = useState<BookLocation | null>(null);
+  const [seekBlock, setSeekBlock] = useState<number | null>(null);
+  const locationRef = useRef<BookLocation | null>(null);
+  const historyRef = useRef<BookLocation[]>([]);
+  const pendingJumpRef = useRef<BookLocation | null>(null);
+
+  useEffect(() => { locationRef.current = location; }, [location]);
+
+  const hasBook = epub.openBookId != null;
 
   const pagination = useEpubPagination({
-    text,
+    text: '',
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
-    resetKey: epub.fileName,
-    initialAnchor: epub.initialAnchor,
-    onAnchorChange: epub.saveAnchor,
+    resetKey: epub.openBookId,
+    preParsedBlocks: epub.blocks,
+    initialBlockIndex: seekBlock,
+    onBlockChange: useCallback((blockIndex: number) => {
+      const loc: BookLocation = { blockIndex, offset: 0 };
+      setLocation(loc);
+      void epub.saveLocation(loc);
+    }, [epub]),
+    measureChunkSize: MEASURE_CHUNK,
   });
 
-  const { height: windowHeight } = useWindowDimensions();
+  // Seek to the resume location once the reader enters content (cover tap or
+  // straight-to-content bookshelf open).
+  useEffect(() => {
+    if (!epub.openBookId) { setSeekBlock(null); return; }
+    setSeekBlock(epub.coverTapped ? (epub.initialLocation?.blockIndex ?? null) : null);
+  }, [epub.openBookId, epub.coverTapped, epub.initialLocation]);
 
-  // ── Upload state ──
-  if (!epub.fileName && !epub.loading) {
+  // ── Navigation ──
+  const pushHistory = useCallback(() => {
+    const cur = locationRef.current;
+    if (!cur) return;
+    const stack = historyRef.current;
+    const last = stack[stack.length - 1];
+    if (last && last.blockIndex === cur.blockIndex) return;
+    historyRef.current = [...stack, cur].slice(-50);
+  }, []);
+
+  const jumpToBlock = useCallback((loc: BookLocation | null) => {
+    if (!loc) return;
+    pendingJumpRef.current = loc;
+    if (pagination.hasMeasured) {
+      const page = pagination.blockPage(loc.blockIndex);
+      pagination.goToPage(page);
+    }
+    setLocation(loc);
+  }, [pagination]);
+
+  // Apply a jump queued while whole-book measurement was still running.
+  useEffect(() => {
+    if (!pagination.hasMeasured || !pendingJumpRef.current) return;
+    const loc = pendingJumpRef.current;
+    pendingJumpRef.current = null;
+    const page = pagination.blockPage(loc.blockIndex);
+    pagination.goToPage(page);
+  }, [pagination.hasMeasured, pagination]);
+
+  const jumpToMarker = useCallback((marker: TocMarker | null) => {
+    if (!marker) return;
+    pushHistory();
+    jumpToBlock(marker.location);
+  }, [pushHistory, jumpToBlock]);
+
+  const handleOpenBook = useCallback(async (id: string) => {
+    if (openingId) return;
+    setOpeningId(id);
+    setLocation(null);
+    historyRef.current = [];
+    try {
+      const start = await epub.openBook(id, { skipCover: true });
+      if (start) setLocation(start);
+    } finally {
+      setOpeningId(null);
+    }
+  }, [epub, openingId]);
+
+  const handleAddBook = useCallback(async () => {
+    setLocation(null);
+    historyRef.current = [];
+    await epub.pickFile();
+  }, [epub]);
+
+  const handleCoverOpen = useCallback(() => {
+    epub.dismissCover();
+    if (epub.initialLocation) setLocation(epub.initialLocation);
+  }, [epub]);
+
+  const handleClose = useCallback(async () => {
+    setLocation(null);
+    historyRef.current = [];
+    setSidebarOpen(false);
+    setSearchOpen(false);
+    await epub.close();
+  }, [epub]);
+
+  const handleBack = useCallback(() => {
+    const prev = historyRef.current.pop();
+    if (prev) {
+      setSearchOpen(false);
+      jumpToBlock(prev);
+    } else {
+      void handleClose();
+    }
+  }, [jumpToBlock, handleClose]);
+
+  const handleChapterSelect = useCallback((href: string) => {
+    setSidebarOpen(false);
+    pushHistory();
+    void epub.resolveHref(href).then(jumpToBlock);
+  }, [epub, pushHistory, jumpToBlock]);
+
+  const handleSearchSelect = useCallback((blockIndex: number) => {
+    setSearchOpen(false);
+    pushHistory();
+    jumpToBlock({ blockIndex, offset: 0 });
+  }, [pushHistory, jumpToBlock]);
+
+  const handleOpenLink = useCallback((href: string) => {
+    if (/^https?:\/\//i.test(href)) {
+      Linking.openURL(href).catch(() => {});
+      return;
+    }
+    if (!href || href === '#') return;
+    const cur = locationRef.current;
+    const block = cur ? epub.blocks?.[cur.blockIndex] : undefined;
+    const fromHref = block && block.kind === 'text'
+      ? epub.spineHrefs[block.spineIndex ?? 0]
+      : undefined;
+    pushHistory();
+    void epub.resolveHref(href, fromHref).then(jumpToBlock);
+  }, [epub, pushHistory, jumpToBlock]);
+
+  const handleRemoveBook = useCallback((id: string) => {
+    void epub.removeBook(id);
+  }, [epub]);
+
+  // ── Header metadata ──
+  const nearestMarker = useMemo(() => {
+    if (!location || epub.markers.length === 0) return null;
+    let best: TocMarker | null = null;
+    for (const m of epub.markers) {
+      if (m.location.blockIndex <= location.blockIndex) best = m;
+      else break;
+    }
+    return best;
+  }, [location, epub.markers]);
+
+  const markerNav = useMemo(() => {
+    if (!location || epub.markers.length === 0) {
+      return { prev: null as TocMarker | null, next: null as TocMarker | null };
+    }
+    const idx = epub.markers.findIndex((m) => m.location.blockIndex >= location.blockIndex);
+    const currentIdx = idx === -1
+      ? epub.markers.length - 1
+      : (epub.markers[idx]!.location.blockIndex === location.blockIndex ? idx : idx - 1);
+    return {
+      prev: currentIdx > 0 ? epub.markers[currentIdx - 1] ?? null : null,
+      next: currentIdx >= 0 && currentIdx < epub.markers.length - 1
+        ? epub.markers[currentIdx + 1] ?? null
+        : null,
+    };
+  }, [location, epub.markers]);
+
+  const errorText = epub.error ? t('msg.epub_parse_error') : null;
+
+  // ── Bookshelf (no book open) ──
+  if (!hasBook) {
+    if (!epub.ready || (epub.loading && !epub.error)) {
+      return (
+        <View className="flex-1 items-center justify-center bg-background">
+          <ActivityIndicator size="large" color={ICON_MUTED} />
+        </View>
+      );
+    }
     return (
       <View className="flex-1 bg-background">
-        <View className="px-4 py-5"><Text className="text-xl font-bold text-foreground">{t('title.epub_reader')}</Text></View>
-        <View className="mx-4 flex-1 items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 p-10">
-          <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
-          <Text className="mb-2 text-sm text-muted-foreground">{t('msg.drop_epub_here')}</Text>
-          <Pressable onPress={epub.pickFile} className="mt-4 flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted">
-            <Upload size={16} color={ICON_MUTED} />
-            <Text className="text-sm text-foreground">{t('action.browse')}</Text>
-          </Pressable>
+        <View className="px-4 py-5">
+          <Text className="text-xl font-bold text-foreground">{t('title.epub_reader')}</Text>
         </View>
+        <EpubBookshelf
+          books={epub.books}
+          l2Code={l2Lang.code}
+          l2Name={l2Lang.name}
+          openingId={openingId}
+          error={errorText}
+          onOpenBook={handleOpenBook}
+          onRemoveBook={handleRemoveBook}
+          onAddBook={handleAddBook}
+        />
       </View>
     );
   }
 
-  // ── Loading ──
-  if (epub.loading && (!epub.fileName || (!epub.coverUrl && !epub.coverTapped))) {
+  // ── Opening ──
+  if (openingId || (epub.loading && !epub.coverTapped)) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
       </View>
     );
-  }
-
-  // ── Cover ──
-  if (!epub.coverTapped && epub.fileName) {
-    return <EpubCover epub={epub} windowHeight={windowHeight} t={t} />;
   }
 
   // ── Error ──
@@ -74,14 +240,30 @@ export default function EpubReaderScreen() {
       <View className="flex-1 bg-background">
         <View className="px-4 py-5 flex-row items-center justify-between">
           <Text className="text-xl font-bold text-foreground">{epub.fileName}</Text>
-          <Pressable onPress={epub.close} className="rounded p-1 active:bg-muted">
+          <Pressable onPress={handleClose} className="rounded p-1 active:bg-muted">
             <X size={18} color={ICON_MUTED} />
           </Pressable>
         </View>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-          <Text className="text-sm text-destructive">{epub.error}</Text>
+          <Text className="text-sm text-destructive">{errorText}</Text>
         </View>
       </View>
+    );
+  }
+
+  // ── Cover (new imports) ──
+  if (!epub.coverTapped) {
+    return (
+      <EpubCover
+        fileName={epub.fileName}
+        epubTitle={epub.epubTitle}
+        epubAuthor={epub.epubAuthor}
+        coverUrl={epub.coverUrl}
+        onClose={handleClose}
+        onOpen={handleCoverOpen}
+        windowHeight={windowHeight}
+        t={t}
+      />
     );
   }
 
@@ -89,13 +271,16 @@ export default function EpubReaderScreen() {
   return (
     <View className="flex-1 bg-background">
       <View className="px-4 py-5 flex-row items-center gap-3">
+        <Pressable onPress={handleBack} className="rounded p-1 active:bg-muted" accessibilityLabel={t('action.back')}>
+          <ArrowLeft size={18} color={ICON_MUTED} />
+        </Pressable>
         <View className="flex-1 min-w-0">
           <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
-            {epub.chapterTitle || epub.fileName || t('title.epub_reader')}
+            {nearestMarker?.label || epub.fileName || t('title.epub_reader')}
           </Text>
           <Text className="text-xs text-muted-foreground">{l2Lang.name} → {l1Lang.name}</Text>
         </View>
-        <Pressable onPress={epub.close} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
+        <Pressable onPress={handleClose} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
           <X size={14} color={ICON_MUTED} /><Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
         </Pressable>
         <Pressable onPress={() => setSearchOpen(true)} className="rounded p-1 active:bg-muted" accessibilityLabel={t('action.search')}>
@@ -106,7 +291,6 @@ export default function EpubReaderScreen() {
         </Pressable>
       </View>
 
-      {/* Content — sidebar overlays when open */}
       <View className="flex-1 pt-2">
         <PaginatedReader
           blocks={pagination.blocks}
@@ -122,35 +306,36 @@ export default function EpubReaderScreen() {
           goToPage={pagination.goToPage}
           handleMeasureBlock={pagination.handleMeasureBlock}
           contentWidth={pagination.contentWidth}
+          measuredWindow={pagination.measuredWindow}
           l2Code={l2Lang.code}
           l1Code={l1Lang.code}
           showTranslation={display.translation}
           onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
           showTextActions
+          onOpenLink={handleOpenLink}
           t={t}
         />
 
         {sidebarOpen && (
           <View className="absolute right-0 top-0 bottom-0 z-10" style={{ elevation: 8 }}>
-          <EpubChapterSidebar
-            toc={epub.toc} chapterHref={epub.chapterHref}
-            prevHref={epub.prevHref} nextHref={epub.nextHref}
-            onSelect={(href) => { epub.loadChapter(href); setSidebarOpen(false); }}
-            onPrev={epub.prevChapter} onNext={epub.nextChapter}
-            onClose={() => setSidebarOpen(false)}
-          />
+            <EpubChapterSidebar
+              toc={epub.toc}
+              chapterHref={nearestMarker?.href ?? null}
+              prevHref={markerNav.prev?.href ?? null}
+              nextHref={markerNav.next?.href ?? null}
+              onSelect={handleChapterSelect}
+              onPrev={() => jumpToMarker(markerNav.prev)}
+              onNext={() => jumpToMarker(markerNav.next)}
+              onClose={() => setSidebarOpen(false)}
+            />
           </View>
         )}
 
-        {/* In-book search (SPEC-049 §9.4/9.5) — jump to the matching page */}
         <BookSearchDialog
           visible={searchOpen}
           blocks={pagination.blocks}
-          onSelect={(blockIndex) => {
-            const targetPage = pagination.blockPage(blockIndex);
-            pagination.goToPage(targetPage);
-            setSearchOpen(false);
-          }}
+          chapterLabels={epub.chapterLabels}
+          onSelect={handleSearchSelect}
           onClose={() => setSearchOpen(false)}
         />
       </View>

@@ -42,6 +42,10 @@ interface PaginatedReaderProps {
   goToPage?: (page: number) => void;
   handleMeasureBlock?: (index: number, height: number) => void;
   contentWidth?: number;
+  /** Number of blocks currently mounted in the hidden measuring view (whole-book chunking). */
+  measuredWindow?: number;
+  /** Follow an in-book link (SPEC-049 §9.7) — passed to linked tokens. */
+  onOpenLink?: (href: string) => void;
 }
 
 export function PaginatedReader({
@@ -50,6 +54,8 @@ export function PaginatedReader({
   tokenCache = {}, blockTranslations = {},
   prevPage, nextPage, goToPage, handleMeasureBlock,
   contentWidth: contentWidthProp = 300,
+  measuredWindow,
+  onOpenLink,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
@@ -144,7 +150,7 @@ export function PaginatedReader({
       {/* Hidden measuring view — only needed during measurement phase */}
       {blocks && !hasMeasured && handleMeasureBlock && (
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
-          {blocks.map((block, bi) =>
+          {blocks.slice(0, measuredWindow ?? blocks.length).map((block, bi) =>
             renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
           )}
         </View>
@@ -160,7 +166,7 @@ function renderBlock(
   visibleBlocks: ContentBlock[], tokenCache: Record<number, LemmatizedToken[]>,
   blockTranslations: Record<number, string>, showTranslation: boolean,
   l2Code: string, l1Code: string, contentWidth: number,
-  showTextActions: boolean,
+  showTextActions: boolean, onOpenLink?: (href: string) => void,
 ) {
   if (block.kind === 'image') {
     return (
@@ -206,7 +212,15 @@ function renderBlock(
 
   // ── Body block content (tokenized text + optional translation) ──
   const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item') => {
-    const tokenEl = <TokenizedText text={block.text} l2Code={l2Code} tokens={cachedTokens} />;
+    const tokenEl = (
+      <TokenizedText
+        text={block.text}
+        l2Code={l2Code}
+        tokens={cachedTokens}
+        formats={block.formats}
+        onOpenLink={onOpenLink}
+      />
+    );
     const transEl = showTranslation && translation ? (
       <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{translation}</Text>
     ) : null;

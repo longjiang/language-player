@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Είστε σίγουροι ότι θέλετε να ακυρώσετε τη συνδρομή σας;",
         "confirm_clear_words": "Είστε σίγουροι ότι θέλετε να αφαιρέσετε όλες τις αποθηκευμένες λέξεις;",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Αφαίρεση {title}; Η πρόοδος ανάγνωσής σας θα χαθεί.",
         "confirm_delete_dictionary": "Διαγραφή λεξικού {lang} εκτός σύνδεσης; Θα χρειαστείτε internet για αναζήτηση.",
         "confirm_delete_note": "Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτή τη σημείωση;",
         "confirm_delete_playlist": "Διαγραφή {title}; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",

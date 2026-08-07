@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
         "confirm_clear_words": "저장된 모든 단어를 삭제하시겠습니까?",
         "confirm_delete_all_dictionaries": "모든 오프라인 사전을 삭제하시겠습니까?",
+        "confirm_delete_book": "{title}을(를) 제거할까요? 읽기 진행 상황이 손실됩니다.",
         "confirm_delete_dictionary": "오프라인 {lang} 사전을 삭제하시겠습니까? 단어를 검색하려면 인터넷이 필요합니다.",
         "confirm_delete_note": "이 노트를 삭제하시겠습니까?",
         "confirm_delete_playlist": "{title}을(를) 삭제할까요? 이 작업은 취소할 수 없습니다.",

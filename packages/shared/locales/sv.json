@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Är du säker på att du vill avbryta prenumerationen?",
         "confirm_clear_words": "Är du säker på att du vill ta bort alla sparade ord?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Ta bort {title}? Din läsframsteg går förlorad.",
         "confirm_delete_dictionary": "Ta bort {lang} offline-ordbok? Du behöver internet för att slå upp ord.",
         "confirm_delete_note": "Är du säker på att du vill ta bort denna anteckning?",
         "confirm_delete_playlist": "Ta bort {title}? Detta kan inte ångras.",

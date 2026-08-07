@@ -1,10 +1,17 @@
 import { marked } from 'marked';
+import type { EpubFormatRange } from '@/lib/epub-parser';
 
 export interface TextBlock {
   kind: 'text';
   type: 'heading' | 'paragraph' | 'list-item' | 'blockquote';
   depth?: number;
   text: string;
+  /** EPUB (SPEC-049 §9.1): source element id used to resolve #fragments. */
+  srcElementId?: string;
+  /** EPUB (SPEC-049 §9.7): inline link ranges mapped onto the text. */
+  formats?: EpubFormatRange[];
+  /** EPUB: index of the containing spine item (whole-book flow). */
+  spineIndex?: number;
 }
 
 export interface ImageBlock {

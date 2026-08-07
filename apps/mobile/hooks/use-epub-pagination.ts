@@ -13,10 +13,18 @@ interface UseEpubPaginationOptions {
   showTranslation: boolean;
   /** Resets all state when changed (e.g., file name changes) */
   resetKey: string | null;
+  /** Pre-parsed whole-book blocks (EPUB, SPEC-049 §9.1) — skips markdown parsing. */
+  preParsedBlocks?: ContentBlock[] | null;
   /** If set, seek to the page containing this text snippet after measurement. */
   initialAnchor?: string | null;
+  /** If set, seek to the page containing this whole-book block index (EPUB). */
+  initialBlockIndex?: number | null;
   /** Called with the first ~40 chars of the first text block on the current page. */
   onAnchorChange?: (anchor: string) => void;
+  /** Called with the global block index of the first text block on the page. */
+  onBlockChange?: (blockIndex: number) => void;
+  /** Measure the hidden view in chunks (large whole-book streams). Default: all at once. */
+  measureChunkSize?: number;
 }
 
 interface UseEpubPaginationReturn {
@@ -36,16 +44,20 @@ interface UseEpubPaginationReturn {
   blockPage: (blockIndex: number) => number;
   handleMeasureBlock: (index: number, height: number) => void;
   contentWidth: number;
+  /** Number of blocks currently rendered in the hidden measuring view. */
+  measuredWindow: number;
 }
 
 export function useEpubPagination({
   text, l1Code, l2Code, showTranslation, resetKey,
-  initialAnchor, onAnchorChange,
+  preParsedBlocks, initialAnchor, initialBlockIndex,
+  onAnchorChange, onBlockChange, measureChunkSize,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const contentWidth = windowWidth - 32;
 
   const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
+  const [measuredWindow, setMeasuredWindow] = useState(0);
   const [page, setPage] = useState(0);
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
   const [hasMeasured, setHasMeasured] = useState(false);
@@ -73,13 +85,15 @@ export function useEpubPagination({
     setPage(0);
     anchorSeenRef.current = false;
     prevPageRef.current = 0;
-  }, [resetKey]);
+    setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
+  }, [resetKey, measureChunkSize]);
 
-  // ── Parse markdown when text changes ──
+  // ── Use pre-parsed whole-book blocks, or parse markdown when text changes ──
   useEffect(() => {
+    if (preParsedBlocks) { setBlocks(preParsedBlocks); return; }
     if (!text.trim()) { setBlocks(null); return; }
     try { setBlocks(parseMarkdownBlocks(text)); } catch { setBlocks(null); }
-  }, [text]);
+  }, [text, preParsedBlocks]);
 
   // ── Reset measurement state when text (chapter) changes ──
   useEffect(() => {
@@ -89,7 +103,16 @@ export function useEpubPagination({
     setTokenCache({});
     blockHeightsRef.current = [];
     setPage(0);
-  }, [text]);
+    setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
+  }, [text, measureChunkSize]);
+
+  // ── Advance the chunked measurement window as blocks report heights ──
+  useEffect(() => {
+    if (!measureChunkSize || !blocks) return;
+    if (measuredWindow >= blocks.length) return;
+    if (measuredBlockCount < measuredWindow) return;
+    setMeasuredWindow((w) => Math.min(blocks.length, w + measureChunkSize));
+  }, [measuredBlockCount, measuredWindow, measureChunkSize, blocks]);
 
   // ── Compute visible blocks for the current page ──
   const visibleBlocks = useMemo(() => {
@@ -134,9 +157,9 @@ export function useEpubPagination({
     setHasMeasured(true);
   }, [blocks, windowHeight, measuredBlockCount]);
 
-  // ── Seek to initialAnchor after measurement completes ──
+  // ── Seek to initialAnchor / initialBlockIndex after measurement completes ──
   useEffect(() => {
-    if (!initialAnchor || !blocks || !hasMeasured) return;
+    if ((!initialAnchor && initialBlockIndex == null) || !blocks || !hasMeasured) return;
     if (anchorSeenRef.current) return;
     anchorSeenRef.current = true;
     if (pageBreaks.length === 0) return;
@@ -144,12 +167,15 @@ export function useEpubPagination({
       const start = p === 0 ? 0 : pageBreaks[p - 1]!;
       const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
       const pageBlocks = blocks.slice(start, end);
+      if (initialBlockIndex != null && initialBlockIndex >= start && initialBlockIndex < end) {
+        setPage(p); break;
+      }
       const hasAnchor = pageBlocks.some((b): b is TextBlock =>
-        b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item') && b.text.includes(initialAnchor),
+        initialAnchor != null && b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item') && b.text.includes(initialAnchor),
       );
       if (hasAnchor) { setPage(p); break; }
     }
-  }, [initialAnchor, blocks, hasMeasured, pageBreaks]);
+  }, [initialAnchor, initialBlockIndex, blocks, hasMeasured, pageBreaks]);
 
   // ── Batch lemmatize visible text blocks (per-page) ──
   useEffect(() => {
@@ -266,19 +292,23 @@ export function useEpubPagination({
     return 0;
   }, [pageBreaks, blocks]);
 
-  // ── Report anchor on page change (matches web ReaderPanel) ──
+  // ── Report anchor / block index on page change (matches web ReaderPanel) ──
   useEffect(() => {
-    if (prevPageRef.current === page || !onAnchorChange) return;
+    if (prevPageRef.current === page || (!onAnchorChange && !onBlockChange)) return;
     prevPageRef.current = page;
     const first = visibleBlocks?.find(
       (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
     );
-    if (first) onAnchorChange(first.text.slice(0, 40));
-  }, [page, visibleBlocks, onAnchorChange]);
+    if (!first) return;
+    onAnchorChange?.(first.text.slice(0, 40));
+    const globalIdx = blocks?.indexOf(first) ?? -1;
+    if (globalIdx >= 0) onBlockChange?.(globalIdx);
+  }, [page, visibleBlocks, onAnchorChange, onBlockChange, blocks]);
 
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
     loadingTokens, tokenCache, blockTranslations, isTranslating,
     prevPage, nextPage, goToPage, blockPage, handleMeasureBlock, contentWidth,
+    measuredWindow,
   };
 }

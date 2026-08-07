@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
         "confirm_clear_words": "Apakah Anda yakin ingin menghapus semua kata yang disimpan?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Hapus {title}? Progres membaca Anda akan hilang.",
         "confirm_delete_dictionary": "Hapus kamus {lang} luring? Anda akan memerlukan internet untuk mencari kata.",
         "confirm_delete_note": "Apakah Anda yakin ingin menghapus catatan ini?",
         "confirm_delete_playlist": "Hapus {title}? Tindakan ini tidak dapat dibatalkan.",
