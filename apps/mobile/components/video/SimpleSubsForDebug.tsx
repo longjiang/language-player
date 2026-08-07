@@ -5,9 +5,11 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen, Heart, Bookmark } from 'lucide-react-native';
+import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
@@ -321,7 +323,12 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
           onPress={() => { if (activeLine) onSeekToLine?.(activeLine.starttime); }}
         >
           {activeLine ? (
-            <>
+            <TextActionMenu
+              className="w-full"
+              text={activeLine.l2Line}
+              l2Code={l2Lang.code}
+              l1Code={baseCode(l1Lang.code)}
+            >
               <View className="items-center">
                 <TokenizedText
                   text={activeLine.l2Line}
@@ -338,7 +345,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
                   {activeLine.l1Line}
                 </Text>
               ) : null}
-            </>
+            </TextActionMenu>
           ) : (
             <Text className="text-sm text-muted-foreground">...</Text>
           )}
@@ -388,18 +395,25 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
               onPress={() => onSeekToLine?.(item.starttime)}
               className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
             >
-              <TokenizedText
+              <TextActionMenu
+                className="w-full"
                 text={item.l2Line}
                 l2Code={l2Lang.code}
-                tokenCache={tokenCache}
-                tokenCacheLoaded={tokenCacheLoaded}
-                tokens={preloadedTokens}
-                karaokeProgress={karaokeProgress}
-                highlightTerms={highlightTerms}
-              />
-              {item.l1Line ? (
-                <Text className="mt-1 text-sm text-muted-foreground">{item.l1Line}</Text>
-              ) : null}
+                l1Code={baseCode(l1Lang.code)}
+              >
+                <TokenizedText
+                  text={item.l2Line}
+                  l2Code={l2Lang.code}
+                  tokenCache={tokenCache}
+                  tokenCacheLoaded={tokenCacheLoaded}
+                  tokens={preloadedTokens}
+                  karaokeProgress={karaokeProgress}
+                  highlightTerms={highlightTerms}
+                />
+                {item.l1Line ? (
+                  <Text className="mt-1 text-sm text-muted-foreground">{item.l1Line}</Text>
+                ) : null}
+              </TextActionMenu>
             </Pressable>
           );
         }}
