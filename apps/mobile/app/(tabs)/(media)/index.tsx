@@ -115,6 +115,7 @@ export default function ExploreScreen() {
           onLoadMore={handleLoadMore}
           onRefresh={handleRefresh}
           refreshing={refreshing}
+          queueType="recommended"
         />
     </PageContainer>
   );

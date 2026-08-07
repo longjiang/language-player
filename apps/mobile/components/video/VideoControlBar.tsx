@@ -3,7 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import {
   Play, Pause, SkipBack, SkipForward, RotateCcw,
   ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
-  Info, Clock, PanelRightOpen, Heart, Bookmark,
+  Info, Clock, PanelRightOpen, PanelRightClose, Heart, Bookmark,
 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -25,6 +25,8 @@ interface VideoControlBarProps {
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
   onTogglePanel?: () => void;
+  /** Whether the transcript/queue panel is currently open. */
+  panelOpen?: boolean;
   hasPreviousLine?: boolean;
   hasNextLine?: boolean;
   hasPreviousVideo?: boolean;
@@ -59,6 +61,7 @@ export function VideoControlBar({
   onPreviousVideo,
   onNextVideo,
   onTogglePanel,
+  panelOpen = true,
   hasPreviousLine = true,
   hasNextLine = true,
   hasPreviousVideo = false,
@@ -142,7 +145,11 @@ export function VideoControlBar({
         )}
         {onTogglePanel && (
           <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
-            <PanelRightOpen size={16} color={ICON_MUTED} />
+            {panelOpen ? (
+              <PanelRightClose size={16} color={ICON_MUTED} />
+            ) : (
+              <PanelRightOpen size={16} color={ICON_MUTED} />
+            )}
           </Pressable>
         )}
       </View>

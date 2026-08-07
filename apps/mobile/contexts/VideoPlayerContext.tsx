@@ -24,6 +24,7 @@ interface VideoPlayerContextValue {
   ) => void;
   playNext: () => void;
   playPrevious: () => void;
+  ensureQueue: (video: YouTubeVideo) => void;
   hasNext: boolean;
   hasPrevious: boolean;
 }
@@ -64,11 +65,18 @@ export function VideoPlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [qm, queueState.currentVideo]);
 
+  /** Seed the queue with a single video when navigating directly to it. */
+  const ensureQueue = useCallback((video: YouTubeVideo) => {
+    if (qm.findIndex(video.youtube_id) >= 0) return;
+    qm.setVideoAndQueue(video, [video], 'recommended');
+    setQueueState(qm.getSnapshot(video.youtube_id));
+  }, [qm]);
+
   const hasNext = !!queueState.currentVideo && qm.getNext(queueState.currentVideo.youtube_id) !== null;
   const hasPrevious = !!queueState.currentVideo && qm.getPrevious(queueState.currentVideo.youtube_id) !== null;
 
   return (
-    <VideoPlayerContext.Provider value={{ queueState, playVideo, playNext, playPrevious, hasNext, hasPrevious }}>
+    <VideoPlayerContext.Provider value={{ queueState, playVideo, playNext, playPrevious, ensureQueue, hasNext, hasPrevious }}>
       {children}
     </VideoPlayerContext.Provider>
   );

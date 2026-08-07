@@ -39,6 +39,8 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
           <View className="flex-1 min-w-0">
             <VideoCard
               video={video}
+              videos={queue}
+              queueType={queueType}
               layout="list"
               isActive={video.youtube_id === currentYoutubeId}
             />

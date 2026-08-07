@@ -5,13 +5,18 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { getLevelFromDifficulty, formatNumericLevel, primaryScale, LEVEL_HEX_COLORS } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { e2e } from '@/lib/e2e';
 import { ChannelActionsMenu } from './ChannelActionsMenu';
+import type { QueueType } from '@langplayer/utils';
 
 interface VideoCardProps {
   video: YouTubeVideo;
   layout?: 'card' | 'list';
+  /** When provided, tapping the card starts the video in this queue. */
+  videos?: YouTubeVideo[];
+  queueType?: QueueType;
   isActive?: boolean;
   /** Optional testID override. When set, this replaces the auto-generated video-card-{youtube_id}. */
   testID?: string;
@@ -37,9 +42,10 @@ function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
 }
 
-export function VideoCard({ video, layout = 'card', isActive = false, testID: testIDOverride }: VideoCardProps) {
+export function VideoCard({ video, layout = 'card', videos, queueType = 'recommended', isActive = false, testID: testIDOverride }: VideoCardProps) {
   const t = useT();
   const { l2Lang } = useLanguage();
+  const { playVideo } = useVideoPlayer();
   const profiles = useDifficultyProfile();
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views);
@@ -50,6 +56,10 @@ export function VideoCard({ video, layout = 'card', isActive = false, testID: te
   const testID = testIDOverride ?? `video-card-${video.youtube_id}`;
 
   const handlePress = () => {
+    if (videos && videos.length > 0) {
+      playVideo(video, videos, queueType);
+      return;
+    }
     router.push(`/(tabs)/(media)/watch/${video.youtube_id}` as any);
   };
 
