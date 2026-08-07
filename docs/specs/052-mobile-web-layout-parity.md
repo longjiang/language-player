@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-052
 - **Feature**: Bring `apps/mobile` layout behavior in line with `apps/web` at every screen-size breakpoint
-- **Status**: draft
+- **Status**: in-progress (phases 1–6 implemented; Phase 7 manual QA pending)
 - **Created**: 2026-08-07
 - **ROADMAP Phase**: Phase 8 — iPad & Responsive Layout
 - **Scope**: `apps/mobile` only; `apps/web` is the reference implementation
@@ -19,6 +19,10 @@
 This spec records the current route-by-route layout gap and defines a step-by-step plan to make mobile match web at each breakpoint, with iPad as the primary target.
 
 The goal is **layout parity**, not identical code. Mobile still uses React Native primitives and NativeWind, but the visual structure — columns, sidebars, max widths, side-by-side regions, and breakpoints — should match web.
+
+**As of 2026-08-07:** phases 1–6 are implemented on branch
+`codex/mobile-web-layout-parity`. Phase 7 (manual verification on device/simulator)
+is the remaining work before this spec can be marked complete.
 
 ---
 
@@ -71,6 +75,9 @@ Mobile should use the same effective breakpoints as web:
 
 ## Current state: already in place
 
+> Baseline captured when this spec was written. The "Implementation status"
+> section below records what changed in phases 1–6.
+
 | Item | Status |
 |---|---|
 | Orientation unlocked (`"orientation": "default"`, `supportsTablet: true`) | ✅ |
@@ -81,6 +88,34 @@ Mobile should use the same effective breakpoints as web:
 | Watch player wide/narrow aspect-ratio layout | ✅ (near parity) |
 | Language picker 640 breakpoint | ✅ |
 | `TabbedPanel` measurement-based label collapsing | ✅ |
+
+---
+
+## Implementation status (phases 1–6)
+
+| Phase | Status | Key changes |
+|---|---|---|
+| 1 — Responsive foundation | ✅ | Added `SM/MD/LG/XL_BREAKPOINT`, `gridColumnCount()`, `useResponsive()`, and `PageContainer maxWidth` variants (`2xl`–`7xl`, `full`) |
+| 2 — Grid parity | ✅ | `VideoGrid`, Music, Search, TV Shows, Saved Words, EPUB shelf, and image search now use web-equivalent columns |
+| 3 — Shell and navigation | ✅ | Persistent `NavBar` at ≥768, hamburger drawer only below 768, app name always visible |
+| 4 — Sidebar and split layouts | ✅ | `SIDEBAR_BREAKPOINT` → 1024, settings split → 1024 with Display default, 220px sidebar, `max-w-lg` detail, dictionary entry capped at 1280 |
+| 5 — Side-by-side surfaces | ✅ | Live TV, Local Media, reader translations, and review padding now follow web's lg layout |
+| 6 — Remaining route widths | ✅ | Auth `max-w-md`, tokenizer `max-w-2xl`, list route caps, profile/go-pro plan grids, playlists card grid, go-pro success/error alignment, docs deviation recorded |
+| 7 — Verification and documentation | ⬜ | Typecheck passes; manual iPad matrix not yet run |
+
+### Implemented source files (highlights)
+
+- `apps/mobile/lib/constants.ts` — breakpoint constants + `gridColumnCount()`
+- `apps/mobile/hooks/use-responsive.ts` — shared breakpoint hook
+- `apps/mobile/components/layout/PageContainer.tsx` — `maxWidth` variants
+- `apps/mobile/components/layout/NavBar.tsx` — md+ header navigation
+- `apps/mobile/components/layout/AuthContainer.tsx` — centered auth form shell
+- `apps/mobile/components/ui/sidebar.tsx` — 1024 sidebar breakpoint
+- `apps/mobile/components/video/VideoGrid.tsx` — web column model
+- `apps/mobile/components/reader/PaginatedReader.tsx` — lg side-by-side translation
+- `apps/mobile/app/(tabs)/(media)/live-tv.tsx` — lg player/list columns
+- `apps/mobile/app/(tabs)/(media)/local-media.tsx` — lg player/transcript columns
+- `apps/mobile/app/(tabs)/(me)/settings/index.tsx` — 1024 split + Display default
 
 ---
 
@@ -153,7 +188,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 ## Implementation plan
 
-### Phase 1 — Responsive foundation
+### Phase 1 — Responsive foundation ✅ Implemented
 
 **Goal:** one shared breakpoint source and a page container that can express web's per-route max widths.
 
@@ -174,7 +209,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** every mobile route can express the same content width as its web counterpart; no hardcoded numeric width checks remain except in `useResponsive`.
 
-### Phase 2 — Grid parity
+### Phase 2 — Grid parity ✅ Implemented
 
 1. Update `VideoGrid` columns to web's model:
    - `<640` → 1
@@ -190,7 +225,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** at 820px, media grids show the same column count as web at `md`; at 1180px, the same as web at `lg`; at ≥1280px, the same as web at `xl`.
 
-### Phase 3 — Shell and navigation
+### Phase 3 — Shell and navigation ✅ Implemented
 
 1. In `Header.tsx`, render the hamburger drawer button only below `MD_BREAKPOINT` (768).
 2. At ≥768, render persistent navigation matching web's `NAV_GROUPS`/`NAV_ICONS` — either ported `NavDropdown` components or a horizontal nav row with the same groups and destinations.
@@ -199,7 +234,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** iPad full portrait and landscape show web-style persistent nav; phones show the current drawer.
 
-### Phase 4 — Sidebar and split-layout parity
+### Phase 4 — Sidebar and split-layout parity ✅ Implemented
 
 1. Change `SIDEBAR_BREAKPOINT` in `components/ui/sidebar.tsx` from 768 to `LG_BREAKPOINT` (1024).
 2. Move dictionary entry definition/tabs split from ≥768 to ≥1024.
@@ -211,7 +246,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** sidebars and split views appear at the same width thresholds as web; 768–1023 behaves like web's mobile sheet mode.
 
-### Phase 5 — Side-by-side surfaces
+### Phase 5 — Side-by-side surfaces ✅ Implemented
 
 1. Live TV: at ≥1024, render player + channel list side-by-side with the web widths (`320` at lg, `384` at xl).
 2. Local Media: at ≥1024, render player/controls + transcript in `1fr 320px` columns.
@@ -220,7 +255,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** 1180px iPad landscape shows the same side-by-side regions as web `lg`.
 
-### Phase 6 — Remaining route widths
+### Phase 6 — Remaining route widths ✅ Implemented
 
 1. Wrap auth forms (login, register, forgot password, password reset, verify email, delete account) in a centered `max-w-md` container.
 2. Cap tokenizer at `max-w-2xl`.
@@ -230,10 +265,10 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 **Acceptance:** every route's content cap matches its web counterpart at all widths.
 
-### Phase 7 — Verification and documentation
+### Phase 7 — Verification and documentation ⬜ Pending
 
 1. Run `cd apps/mobile && ./node_modules/.bin/tsc --noEmit`.
-2. Manual iPad matrix:
+2. Manual iPad matrix (see [Manual verification checklist](#manual-verification-checklist) below):
    - iPad 1/3 split (~320px): phone layout, 1-column grids, capped drawer, stack nav.
    - iPad 50/50 (~438px): phone layout where detail pane would be too small.
    - Full portrait (820px): persistent header nav, web `md` columns, `PageContainer` width parity.
@@ -243,6 +278,66 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 4. Update this spec's status to `complete` once the checklist passes.
 
 **Acceptance:** typecheck passes and the manual matrix shows no route that visibly diverges from web's layout at the same width.
+
+---
+
+## Manual verification checklist
+
+Run on an iPhone (or iPad 1/3 split) and an iPad simulator. Expected width
+buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1280`.
+
+### Global shell
+
+- [ ] Header: hamburger only below 768; persistent nav at ≥768; app name always visible; nav dropdowns open and navigate.
+- [ ] Hamburger drawer: capped at `min(256, width*0.6)`; drawer never renders at ≥768.
+- [ ] Auth screens: centered at `max-w-md` (448px) at every width.
+
+### Media screens
+
+- [ ] **Explore** — grid 1/2/3/4 at `<640 / 640–1023 / 1024–1279 / ≥1280`; content capped at 1280.
+- [ ] **Search** — no-results state narrow; results use the same grid as Explore; result count shown.
+- [ ] **Music** — uses the Explore grid, not a single-column list.
+- [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl).
+- [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns.
+- [ ] **TV Show detail** — row list capped at 896.
+- [ ] **Channel** — Explore-style grid; channel header card intact.
+- [ ] **Watch** — portrait: subtitle band below player; landscape: subtitle overlay or right transcript column (320px).
+- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player.
+- [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
+- [ ] **Liked Videos** — capped at 896.
+- [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards.
+- [ ] **Playlist detail** — capped at 896.
+
+### Reading & vocabulary screens
+
+- [ ] **Notes Reader / Web Reader / EPUB** — sidebar is a slide-in sheet below 1024 and a persistent panel at ≥1024.
+- [ ] **Reader translation** — translation beside the L2 block at ≥1024, stacked below 1024.
+- [ ] **EPUB bookshelf** — 2/3/4/5 columns at `<640 / 640–767 / 768–1279 / ≥1280`.
+- [ ] **Dictionary search** — capped at 1280; web's persistent search shell is intentionally not ported.
+- [ ] **Dictionary entry** — definition/tabs split and sidebar appear at ≥1024; content capped at 1280.
+- [ ] **Saved Words** — grid 1/2/3/4 at web thresholds; capped at 1280.
+- [ ] **Review** — capped at 672; card padding 16 below 640 and 32 at ≥640.
+- [ ] **Image search** — 3 columns below 640, 4 columns at ≥640.
+
+### Settings, profile, and auth screens
+
+- [ ] **Settings** — stack below 1024; split at ≥1024; Display auto-selected on wide root; sidebar ~220px; detail content capped at 512.
+- [ ] **Profile / Go Pro** — plan cards 1 column below 640, 3 columns at ≥640.
+- [ ] **Tokenizer** — capped at 672.
+- [ ] **Login / Register / Forgot / Reset / Verify / Delete account** — centered 448px container.
+- [ ] **Go Pro success / error** — centered 512px container; action buttons row at ≥640.
+- [ ] **Docs** — single-screen mobile docs, no TOC sidebar (intentional deviation).
+
+### Quick mode matrix
+
+| Mode | Width | Expected |
+|---|---|---|
+| iPhone portrait | 320–430 | 1-column grids, drawer nav, stacked panels |
+| iPad Slide Over / 1/3 split | ~320–438 | same as phone; drawer capped |
+| iPad 50/50 split | ~438–680 | 1–2 columns; no persistent sidebars |
+| iPad full portrait | 820 | 2-column grids, persistent header nav, sheet sidebars |
+| iPad full landscape | 1180 | 3-column grids, persistent sidebars, side-by-side surfaces |
+| Windowed / Apple Silicon | ≥1280 | 4-column grids, 5-column EPUB shelf, web max-widths |
 
 ---
 
@@ -268,8 +363,8 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 ## Open Questions
 
-1. Should mobile Music/Search use the exact same grid as Explore, or keep a denser list variant on phones and only grid on ≥640?
-2. Should watch-history date grouping stay as a mobile improvement, or be removed to match web's flat list?
+1. ~~Should mobile Music/Search use the exact same grid as Explore, or keep a denser list variant?~~ **Resolved (2026-08-07)** — they use the same responsive `VideoGrid` as Explore.
+2. ~~Should watch-history date grouping stay as a mobile improvement?~~ **Resolved (2026-08-07)** — keep it; it's a documented mobile-only improvement.
 3. ~~Should docs get full route-per-doc + TOC sidebar parity, or remain a single-screen mobile docs surface?~~ **Resolved (2026-08-07)** — keep the single-screen mobile docs surface; revisit only if docs become a primary mobile surface.
-4. Should the dictionary entry screen get the full web shell (persistent search bar + sidebar), or is the current split screen close enough once widths/breakpoints align?
-5. Should auth forms become centered `max-w-md` cards, or is full-width mobile auth intentional on iPad?
+4. Should the dictionary entry screen get the full web shell (persistent search bar + sidebar)? **Open** — phases 1–6 stop at width/breakpoint/sidebar parity; the full shell is a possible follow-up.
+5. ~~Should auth forms become centered `max-w-md` cards?~~ **Resolved (2026-08-07)** — yes, via `AuthContainer`.
