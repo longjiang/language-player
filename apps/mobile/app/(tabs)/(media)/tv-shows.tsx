@@ -8,6 +8,8 @@ import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { useResponsive } from '@/hooks/use-responsive';
+import { gridColumnCount } from '@/lib/constants';
 import { Tv, AlertCircle, ChevronDown } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -113,12 +115,14 @@ function DropdownPicker<T extends string>({
 export default function TvShowsScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
+  const { width } = useResponsive();
   const [shows, setShows] = useState<ShowWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('views');
   const [localeFilter, setLocaleFilter] = useState('all');
+  const numColumns = gridColumnCount(width);
 
   useEffect(() => {
     let cancelled = false;
@@ -258,9 +262,10 @@ export default function TvShowsScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          numColumns={2}
+          key={`tv-shows-${numColumns}`}
+          numColumns={numColumns}
           contentContainerStyle={{ padding: 16, gap: 12 }}
-          columnWrapperStyle={{ gap: 12 }}
+          columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
           renderItem={({ item }) => {
             const coverUrl =
               item.poster ??
