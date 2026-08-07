@@ -140,19 +140,15 @@ export function DictionaryPopup({
     // Check cache first — show instantly if all texts are cached
     const allCached = textBatch.every((t) => getCachedEntries(l2, t) !== undefined);
 
-    const finalize = async (merged: DictionaryEntry[]): Promise<DictionaryEntry[]> => {
-      if (l1 === 'en' || merged.length === 0) return merged;
+    // Render English/batch results immediately, then upgrade to L1-translated
+    // definitions in the background. Translation must never block the cards.
+    const translateInBackground = async (merged: DictionaryEntry[]) => {
+      if (l1 === 'en' || merged.length === 0) return;
       try {
-        const ids = merged.map((e) => e.id).filter(Boolean);
-        const cachedL1 = getL1CachedEntries(l2, l1, ids);
-        if (cachedL1.length > 0) {
-          const byId = new Map(cachedL1.map((e) => [e.id, e]));
-          return merged.map((e) => byId.get(e.id) ?? e);
-        }
-        return await applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
+        const translated = await applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
+        if (!cancelled) setResults(translated);
       } catch {
-        // L1 translation is an enhancement; never block the English cards.
-        return merged;
+        // Keep the English results.
       }
     };
 
@@ -167,7 +163,8 @@ export function DictionaryPopup({
         const merged = [...primaryResults, ...surfaceResults];
         // Index by ID for the detail page cache
         for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-        if (!cancelled) setResults(await finalize(merged));
+        if (!cancelled) setResults(merged);
+        void translateInBackground(merged);
         return;
       }
 
@@ -215,7 +212,8 @@ export function DictionaryPopup({
         const merged = [...primaryResults, ...surfaceResults];
         // Index by ID for the detail page cache
         for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-        if (!cancelled) setResults(await finalize(merged));
+        if (!cancelled) setResults(merged);
+        void translateInBackground(merged);
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? t('error.general'));
       } finally {
