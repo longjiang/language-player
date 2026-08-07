@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, Pressable, ActivityIndicator, Image, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { PLACEHOLDER_COLOR, ICON_MUTED } from '@/lib/theme-colors';
+import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -174,14 +174,15 @@ export default function LiveTvScreen() {
 
   const contentWidth = Math.min(width, 1280);
   const asideWidth = isXl ? 384 : 320;
-  const playerWidth = isLg ? contentWidth - asideWidth - 24 : width;
+  // The row carries px-4 (32pt total); the lg row also has a 24pt gap before the aside.
+  const playerWidth = isLg ? contentWidth - 32 - asideWidth - 24 : contentWidth - 32;
 
   const channelListPanel = (
     <>
       {/* Search & filter bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-3 py-2">
         <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-2.5">
-          <Search size={14} className="text-muted-foreground" />
+          <Search size={14} color={ICON_MUTED} />
           <TextInput
             className="flex-1 px-2 py-1.5 text-sm text-foreground"
             placeholder={t('action.search')}
@@ -194,7 +195,7 @@ export default function LiveTvScreen() {
           onPress={() => setShowFilters(!showFilters)}
           className={`rounded-lg p-2 ${showFilters ? 'bg-primary' : 'bg-card border border-border'}`}
         >
-          <SlidersHorizontal size={16} className={showFilters ? 'text-primary-foreground' : 'text-foreground'} />
+          <SlidersHorizontal size={16} color={showFilters ? ICON_ON_PRIMARY : ICON_MUTED} />
         </Pressable>
       </View>
 
@@ -247,7 +248,7 @@ export default function LiveTvScreen() {
               {item.logo ? (
                 <Image source={{ uri: item.logo }} className="h-full w-full" resizeMode="contain" />
               ) : (
-                <Tv size={18} className="text-muted-foreground" />
+                <Tv size={18} color={ICON_MUTED} />
               )}
             </View>
             {/* Info */}
@@ -301,7 +302,7 @@ export default function LiveTvScreen() {
   return (
     <PageContainer maxWidth="7xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
-      <View className={isLg ? 'flex-row gap-6' : ''}>
+      <View className={isLg ? 'flex-row gap-6 px-4' : 'px-4'}>
         {/* Player section */}
         <View className={isLg ? 'min-w-0 flex-1' : ''}>
           {selectedChannel && (
