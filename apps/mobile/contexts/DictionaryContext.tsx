@@ -14,8 +14,6 @@ import { log } from '@/lib/logger';
 import {
   openDictionaryDB,
   lookupOffline,
-  lookupLLMCache,
-  storeLLMCacheEntry,
   bulkInsertEntries,
   deleteDictionary as deleteDictDB,
   hasOfflineDictionary,
@@ -93,9 +91,12 @@ import * as SecureStore from 'expo-secure-store';
 // calls within a session. Cleared when L2 changes.
 const sessionCache = new Map<string, DictionaryEntry[]>();
 
-/** Check whether any entry in the results is LLM-generated. */
-function hasLlmEntry(entries: DictionaryEntry[]): boolean {
-  return entries.some((e) => (e as any).kind === 'llm' || (e as any).match_type === 'llm');
+/** Dictionary search shows real dictionary entries only — LLM-only results
+ *  (e.g. nonsense words) should surface as "no results" instead. */
+function stripLlmEntries(entries: DictionaryEntry[]): DictionaryEntry[] {
+  return entries.filter(
+    (e) => (e as any).kind !== 'llm' && (e as any).match_type !== 'llm',
+  );
 }
 
 // ── Provider ────────────────────────────────
@@ -193,7 +194,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
     try {
       // ── Tier 1: Memory cache ──
-      const cached = sessionCache.get(cacheKey);
+      const cached = stripLlmEntries(sessionCache.get(cacheKey) ?? []);
       if (cached) {
         log('[Dict] memory cache hit —', trimmed);
         setResults(cached);
@@ -217,32 +218,13 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // ── Tier 3: LLM cache ──
-      if (dbRef.current) {
-        const llmCached = await lookupLLMCache(dbRef.current, trimmed, l1Lang.code, l2Code);
-        if (llmCached && llmCached.length > 0) {
-          log('[Dict] LLM cache hit —', trimmed);
-          sessionCache.set(cacheKey, llmCached);
-          setResults(llmCached);
-          setLoading(false);
-          await saveRecent(l2Code, trimmed);
-          setRecentSearches(await loadRecent(l2Code));
-          return;
-        }
-      }
-
       // ── Tier 4: Online lookup ──
       const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
-      const entries = res.results ?? [];
+      const entries = stripLlmEntries(res.results ?? []);
       log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
 
       // Cache in memory
       sessionCache.set(cacheKey, entries);
-
-      // Auto-store LLM-generated entries in persistent cache
-      if (entries.length > 0 && hasLlmEntry(entries) && dbRef.current) {
-        storeLLMCacheEntry(dbRef.current, trimmed, l1Lang.code, l2Code, entries).catch(() => {});
-      }
 
       setResults(entries);
       setMessage(res.message ?? null);

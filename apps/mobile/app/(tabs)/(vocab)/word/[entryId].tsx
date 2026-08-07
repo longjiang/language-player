@@ -73,15 +73,17 @@ export default function WordDetailScreen() {
   useEffect(() => {
     if (contextEntry || !entryId) return;
     const l2 = l2Code;
+    // CEDICT ids contain commas, which are encoded as ~ in the route.
+    const decodedId = entryId.replace(/~/g, ',');
 
     // Check ID cache first (populated by bulkLookupWords or previous fetches)
-    const cached = getCachedEntryById(l2, entryId);
+    const cached = getCachedEntryById(l2, decodedId);
     if (cached) {
       setApiEntry(cached);
       return;
     }
 
-    const decomposed = decomposeWordId(entryId, l2);
+    const decomposed = decomposeWordId(decodedId, l2);
     if (!decomposed) {
       setApiError('Unrecognized entry ID format');
       return;
