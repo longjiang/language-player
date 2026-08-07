@@ -142,13 +142,18 @@ export function DictionaryPopup({
 
     const finalize = async (merged: DictionaryEntry[]): Promise<DictionaryEntry[]> => {
       if (l1 === 'en' || merged.length === 0) return merged;
-      const ids = merged.map((e) => e.id).filter(Boolean);
-      const cachedL1 = getL1CachedEntries(l2, l1, ids);
-      if (cachedL1.length > 0) {
-        const byId = new Map(cachedL1.map((e) => [e.id, e]));
-        return merged.map((e) => byId.get(e.id) ?? e);
+      try {
+        const ids = merged.map((e) => e.id).filter(Boolean);
+        const cachedL1 = getL1CachedEntries(l2, l1, ids);
+        if (cachedL1.length > 0) {
+          const byId = new Map(cachedL1.map((e) => [e.id, e]));
+          return merged.map((e) => byId.get(e.id) ?? e);
+        }
+        return await applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
+      } catch {
+        // L1 translation is an enhancement; never block the English cards.
+        return merged;
       }
-      return applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
     };
 
     const run = async () => {
@@ -175,7 +180,21 @@ export function DictionaryPopup({
           PYTHON_API_URL,
         );
 
-        const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
+        let primaryResults = getCachedEntries(l2, lookupWord) ?? [];
+
+        // Batch lookup is exact-match SQL only. When it misses (inflected
+        // forms, proper nouns, or words that need the LLM fallback), call the
+        // single-word endpoint so the popup still shows entry cards.
+        if (primaryResults.length === 0) {
+          const richRes = await dict.lookup(lookupWord, l2, l1);
+          primaryResults = richRes.results ?? [];
+          if (primaryResults.length > 0) {
+            setCachedEntries(l2, lookupWord, primaryResults);
+            if (l1 !== 'en') {
+              for (const e of primaryResults) setL1CachedEntry(l2, l1, e);
+            }
+          }
+        }
 
         // Also individually fetch the surface form if it wasn't in the batch
         let surfaceResults: DictionaryEntry[] = [];
