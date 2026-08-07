@@ -30,6 +30,8 @@ export default function EpubReaderScreen() {
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [seekBlock, setSeekBlock] = useState<number | null>(null);
+  /** Active search-match highlight (block + char range), if any. */
+  const [highlight, setHighlight] = useState<{ blockIndex: number; start: number; end: number } | null>(null);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
@@ -124,6 +126,7 @@ export default function EpubReaderScreen() {
     setLocation(null);
     historyRef.current = [];
     setMobileOpen(false);
+    setHighlight(null);
     await epub.close();
   }, [epub]);
 
@@ -131,6 +134,7 @@ export default function EpubReaderScreen() {
     const prev = historyRef.current.pop();
     if (prev) {
       setMobileOpen(false);
+      setHighlight(null);
       jumpToBlock(prev);
     } else {
       void handleClose();
@@ -139,14 +143,16 @@ export default function EpubReaderScreen() {
 
   const handleChapterSelect = useCallback((href: string) => {
     setMobileOpen(false);
+    setHighlight(null);
     pushHistory();
     void epub.resolveHref(href).then(jumpToBlock);
   }, [epub, pushHistory, jumpToBlock]);
 
-  const handleSearchSelect = useCallback((blockIndex: number) => {
+  const handleSearchSelect = useCallback((match: { blockIndex: number; start: number; end: number }) => {
     setMobileOpen(false);
+    setHighlight(match);
     pushHistory();
-    jumpToBlock({ blockIndex, offset: 0 });
+    jumpToBlock({ blockIndex: match.blockIndex, offset: match.start });
   }, [pushHistory, jumpToBlock]);
 
   const handleOpenLink = useCallback((href: string) => {
@@ -319,6 +325,7 @@ export default function EpubReaderScreen() {
             onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
             showTextActions
             onOpenLink={handleOpenLink}
+            highlight={highlight}
             t={t}
           />
         </View>

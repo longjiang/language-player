@@ -9,8 +9,8 @@ interface EpubSearchPanelProps {
   blocks: ContentBlock[] | null;
   /** Whole-book chapter labels (nearest preceding TOC entry per block). */
   chapterLabels?: { blockIndex: number; label: string }[];
-  /** Called when the user taps a result — jump to the block's page. */
-  onSelect: (blockIndex: number) => void;
+  /** Called when the user taps a result — jump to the block and highlight it. */
+  onSelect: (match: { blockIndex: number; start: number; end: number }) => void;
 }
 
 interface Match {
@@ -95,7 +95,11 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
             matches.map((m, i) => (
               <Pressable
                 key={`${m.blockIndex}-${m.offset}-${i}`}
-                onPress={() => onSelect(m.blockIndex)}
+                onPress={() => onSelect({
+                  blockIndex: m.blockIndex,
+                  start: m.offset,
+                  end: m.offset + query.trim().length,
+                })}
                 className="border-b border-border px-1 py-2.5 active:bg-muted"
               >
                 <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
