@@ -3,6 +3,7 @@ import { View, Text, SectionList, Pressable, Image, ActivityIndicator, Alert } f
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { baseCode } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
@@ -91,7 +92,7 @@ export default function WatchHistoryScreen() {
     setLoading(true);
     setError(null);
 
-    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Lang.code)}`)
+    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(baseCode(l2Lang.code))}`)
       .then((res) => {
         if (res.status === 404) return [];
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
