@@ -620,7 +620,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                         creating a tall invisible box that breaks baseline alignment. */}
                     {showQuickGloss && (
                       <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} onPress={handlePress}>
-                        <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">'{firstDef}'</Text>
+                        <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">{` ('${firstDef}') `}</Text>
                       </Text>
                     )}
                   </View>
@@ -698,7 +698,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                     <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
-                  {showQuickGloss ? <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text> : ''}
+                  {showQuickGloss ? <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">{` ('${firstDef}') `}</Text> : ''}
                 </Text>
               );
             });
