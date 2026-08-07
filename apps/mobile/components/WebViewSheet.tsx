@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, Share2, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 
 interface WebViewSheetProps {
   visible: boolean;
@@ -29,6 +30,7 @@ interface WebViewSheetProps {
 export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps) {
   const t = useT();
   const { height: screenHeight } = useWindowDimensions();
+  const { isMd } = useResponsive();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -40,13 +42,13 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
       setLoading(true);
       setLoadError(false);
       Animated.parallel([
-        Animated.spring(slideAnim, {
+        ...(isMd ? [] : [Animated.spring(slideAnim, {
           toValue: 0,
           useNativeDriver: true,
           damping: 30,
           stiffness: 300,
           mass: 0.8,
-        }),
+        })]),
         Animated.timing(overlayOpacity, {
           toValue: 1,
           duration: 200,
@@ -55,11 +57,11 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, {
+        ...(isMd ? [] : [Animated.timing(slideAnim, {
           toValue: screenHeight,
           duration: 200,
           useNativeDriver: true,
-        }),
+        })]),
         Animated.timing(overlayOpacity, {
           toValue: 0,
           duration: 200,
@@ -67,7 +69,7 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
         }),
       ]).start();
     }
-  }, [visible, screenHeight, slideAnim, overlayOpacity]);
+  }, [visible, screenHeight, slideAnim, overlayOpacity, isMd]);
 
   const handleShare = async () => {
     try {
@@ -107,11 +109,11 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
       {/* Sheet */}
       <Animated.View
         pointerEvents={visible ? 'box-none' : 'none'}
-        className="absolute inset-x-0 bottom-0 z-50"
-        style={{ transform: [{ translateY: slideAnim }] }}
+        className={isMd ? 'absolute inset-0 z-50 items-center justify-center px-4' : 'absolute inset-x-0 bottom-0 z-50'}
+        style={{ transform: isMd ? undefined : [{ translateY: slideAnim }] }}
       >
         <View
-          className="rounded-t-xl bg-background overflow-hidden"
+          className={isMd ? 'w-full max-w-2xl overflow-hidden rounded-xl bg-background' : 'rounded-t-xl bg-background overflow-hidden'}
           style={{ maxHeight: screenHeight * 0.85 }}
         >
           {/* Header */}
