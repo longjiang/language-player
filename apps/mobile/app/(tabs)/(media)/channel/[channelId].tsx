@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,10 @@ export default function ChannelPage() {
   const { channelId: rawChannelId } = useLocalSearchParams<{ channelId: string }>();
   const { l2Lang } = useLanguage();
   const t = useT();
+  // `useT()` returns a new function every render; keep a ref so fetchVideos
+  // stays stable and the fetch effect doesn't re-run forever (404 loop).
+  const tRef = useRef(t);
+  tRef.current = t;
   const channelId = rawChannelId ? decodeURIComponent(rawChannelId) : '';
 
   const [channel, setChannel] = useState<ChannelInfo | null>(null);
@@ -66,12 +70,12 @@ export default function ChannelPage() {
         setVideos((prev) => (append ? [...prev, ...res.videos] : res.videos));
         setHasMore(res.hasMore);
       } catch (err: any) {
-        setError(err?.message ?? t('error.failed_to_load', { status: err?.code ?? '' }));
+        setError(err?.message ?? tRef.current('error.failed_to_load', { status: err?.code ?? '' }));
       } finally {
         setLoading(false);
       }
     },
-    [channelId, l2Lang.code, t],
+    [channelId, l2Lang.code],
   );
 
   useEffect(() => {
