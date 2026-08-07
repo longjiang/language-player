@@ -31,6 +31,7 @@ const DEFAULT_VISIBLE = 3;
  */
 export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, highlightForms = [] }: CollocationsProps) {
   const t = useT();
+  const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/collocations?word=${encodeURIComponent(word)}&l2=${l2Code.split('-')[0]}${corpnameParam}`;
@@ -61,6 +62,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
     l1Code.split('-')[0],
     l2Code.split('-')[0],
     flatTexts.map(() => highlightForms),
+    visible,
   );
 
   const toggleExpanded = (gramrelIndex: number) => {
@@ -98,7 +100,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
   }
 
   return (
-    <View className="gap-3">
+    <View className="gap-3" onLayout={() => setVisible(true)}>
       {data.gramrels.map((gramrel, gramrelIndex) => {
         const words = (gramrel.words || []).filter((w) => w.cm || w.word);
         if (words.length === 0) return null;
