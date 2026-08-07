@@ -74,6 +74,8 @@ Maestro assertions to manual checks.
   payments); otherwise the iOS simulator is fine.
 - Recommended minimum: iPhone (real), iPad (simulator), Android phone (real,
   once a build exists).
+- Platform split: run the full checklist once on iOS, then the Android subset
+  — see [§ 1.3](#13-platform-split--ios-first-android-subset).
 
 ### 1.2 Pre-release QA checklist
 
@@ -93,9 +95,132 @@ Maestro assertions to manual checks.
 
 > Audio, visual-layout, offline, and payment checks require a human and
 > (mostly) a real device — exactly why they are human checks rather than Maestro
-> automation. See SPEC-025 for the detailed payment checklist.
+> automation. See SPEC-025 for the detailed payment checklist. The `Run on`
+> column is **iOS-first** — see
+> [§ 1.3](#13-platform-split--ios-first-android-subset) for the Android subset.
 
-### 1.3 Failure handling
+### 1.3 Platform split — iOS first, Android subset
+
+The checklist above is **iOS-first** (the `Run on` column assumes the iOS
+simulator / iPhone / iPad). You do **not** run the full checklist twice:
+
+1. **Run the full checklist once on iOS** — the app is ~100% shared React
+   Native, so this covers all cross-platform logic (auth, media, dictionary,
+   review, reading, settings).
+2. **On Android, run a targeted platform-specific subset** — these genuinely
+   differ per OS and must be verified on the Android build:
+   - **Build / install / signing** — AAB install, `versionCode`, package
+     `ca.zerotohero.app` (vs iOS bundle `ca.zerotohero.go`).
+   - **Native modules** — SQLite, SecureStore, expo-video, expo-speech,
+     expo-sharing (share sheet), TTS voices/rate.
+   - **OS UI** — Android back button, permission dialogs, keyboard, status
+     bar/notch, safe areas.
+   - **Deep links** — Android App Links / intents vs the iOS
+     `languageplayer://` URL scheme.
+   - **Payments** — Stripe / WeChat / Alipay / PayPal web views; Play Billing
+     is **N/A** (not implemented — SPEC-014).
+   - **Tablet layout** — Android tablets, if targeted (the IP row below only
+     covers iPad).
+   - **Offline / network** — airplane-mode behavior and storage paths.
+3. For everything else on Android, do a **light smoke pass** (launch, login,
+   one screen per tab) to confirm no platform-specific crash.
+
+Android QA can only be completed once an Android build exists (§ 4) — it runs
+after the first AAB is built.
+
+### 1.4 Simulator vs real device — concrete steps
+
+**The local Flask flag.** `EXPO_PUBLIC_API_URL` selects which Flask server the
+app talks to. It is read at **bundle time** in `lib/api-url.ts`, so set it
+**before** starting Metro / building; changing it later requires restarting the
+dev server (or rebuilding). Dev builds default to the right local URL
+automatically via `__DEV__`, but set it explicitly whenever you need control
+(release builds, LAN IP, staging).
+
+**Local Flask server** — start it on the Mac first (per AGENTS.md this is the
+developer's job, not the agent's):
+
+```bash
+cd zerotohero-python-server && python3.10 app.py   # serves http://127.0.0.1:5001
+```
+
+#### iOS Simulator
+The simulator shares the Mac's network stack, so `localhost:5001` reaches the
+Mac's Flask server directly.
+
+```bash
+# Dev (Expo Go / dev build) — __DEV__ already defaults to localhost:5001
+cd apps/mobile && npx expo start --ios
+
+# Release build on the simulator (matches the shipped binary)
+cd apps/mobile && EXPO_PUBLIC_API_URL=http://localhost:5001 npx expo run:ios --configuration Release
+
+# …or install the built archive directly:
+# xcrun simctl install booted ~/Desktop/LanguagePlayer.xcarchive/Products/Applications/LanguagePlayer.app
+```
+
+#### Real device (iOS or Android)
+A physical device cannot reach your Mac's `localhost` — point it at your Mac's
+**LAN IP**:
+
+```bash
+ipconfig getifaddr en0        # macOS: your LAN IP, e.g. 192.168.1.130
+cd apps/mobile && EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo start
+# then scan the QR with Expo Go, or install the dev/release build on the device
+```
+
+- Phone and Mac must be on the **same Wi-Fi**, and the Flask server must accept
+  LAN connections (if a device can't connect, it may be bound to `127.0.0.1`
+  only — verify with `curl http://<mac-lan-ip>:5001/`).
+- On-device checks that need this setup: audio (TTS), offline (airplane mode),
+  payments (Stripe/IAP web views), permissions — the `Device` rows in § 1.2.
+
+#### Android emulator
+The Android emulator reaches the host via `10.0.2.2` (already the `__DEV__`
+default in `lib/api-url.ts`):
+
+```bash
+cd apps/mobile && EXPO_PUBLIC_API_URL=http://10.0.2.2:5001 npx expo start --android
+```
+
+> **Never ship a build pointing at `localhost` or a LAN IP.** Release builds
+> must use `https://pythonvps.zerotohero.ca` — see § 2 (and the
+> [Problems encountered](#problems-encountered) section for the stale-bundle
+> trap that produced a `localhost:5001` release).
+
+### 1.5 The four iOS run/build modes & conflicts
+
+| # | Mode | Command | API URL | Native build? |
+|---|---|---|---|---|
+| 1 | Simulator · Metro + Expo Go | `npx expo start --ios` | `localhost:5001` (dev default) | ❌ |
+| 2 | Simulator · built app | `npx expo run:ios` · `npx expo run:ios --configuration Release` | `localhost:5001` (dev default) | ✅ |
+| 3 | Real device · built app | `npx expo run:ios --device`, Expo Go via LAN IP, or TestFlight / Ad Hoc from a § 3 archive | `http://<mac-lan-ip>:5001` (dev) / prod | ✅ |
+| 4 | App Store · archive | `xcodebuild … archive` (see § 3) | `https://pythonvps.zerotohero.ca` (explicit) | ✅ |
+
+**Conflicts:**
+- **One Metro at a time** (port 8081) — modes 1 and dev-mode 2 both start
+  Metro; kill first with `kill $(lsof -ti:8081)`.
+- **One native build at a time** — modes 2 and 4 share DerivedData +
+  `ios/Pods`; never run an archive while `expo run:ios` is compiling.
+- **Env-var scoping** — dev modes default to localhost via `__DEV__`; the
+  archive MUST set `EXPO_PUBLIC_API_URL` explicitly and keep it scoped to that
+  command (a leaked prod URL makes dev hit production).
+- Simulator vs real device are independent; Expo Go (`host.exp.Exponent`) and a
+  dev build (`ca.zerotohero.go`) can coexist installed, but only one is
+  frontmost.
+- The iOS bundle ID is `ca.zerotohero.go` — real-device dev builds and archives
+  need provisioning for that ID (not `ca.zerotohero.app`).
+
+**Troubleshooting — `expo start` crashes with `Cannot find module 'expo-router/_ctx-shared'`:**
+The root `@expo/cli` / `@expo/router-server` (typed-routes generation, enabled
+via `experiments.typedRoutes`) must resolve `expo-router` from the **root**
+`node_modules`. Keep `expo-router` in the ROOT `package.json`
+`devDependencies` so it stays hoisted; if it ever gets nested back under
+`apps/mobile/node_modules` (e.g., after a lockfile regeneration), mode 1 fails
+at startup. Note: the archive build does **not** cause this — it is purely a
+dependency-hoisting condition.
+
+### 1.6 Failure handling
 
 - Any **blocking** failure (crash, broken login, wrong API host, corrupt data)
   stops the release — fix, rebuild, re-verify.
