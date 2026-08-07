@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { VideoCard } from './VideoCard';
 import { Tv } from 'lucide-react-native';
@@ -17,7 +17,7 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
   if (queue.length <= 1 && queueType !== 'tvShow') return null;
 
   return (
-    <View>
+    <ScrollView className="flex-1">
       {/* TV show header */}
       {queueType === 'tvShow' && tvShow && (
         <View className="mb-2 flex-row items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
@@ -47,6 +47,6 @@ export function VideoQueueList({ currentYoutubeId }: VideoQueueListProps) {
           </View>
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 }
