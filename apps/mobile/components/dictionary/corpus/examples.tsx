@@ -10,6 +10,7 @@ import { useCorpusFetch } from './use-corpus-fetch';
 import { useCorpusTranslations } from './use-corpus-translations';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 
 interface CorpusExamplesProps {
   word: string;
@@ -50,7 +51,12 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
     });
   }, [data, stripSpaces, l2, highlightForms, word]);
 
-  const { translations } = useCorpusTranslations(displayTexts, l1Code.split('-')[0], l2);
+  const { translations } = useCorpusTranslations(
+    displayTexts,
+    l1Code.split('-')[0],
+    l2,
+    displayTexts.map(() => highlightForms),
+  );
 
   if (loading) {
     return (
@@ -88,7 +94,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
             </TextActionMenu>
             {translations[index] ? (
               <Text className="mt-1 text-xs leading-relaxed text-muted-foreground/70">
-                {translations[index]}
+                {renderInlineMarkdown(translations[index]!, { markBold: true })}
               </Text>
             ) : null}
             {example.ref ? (

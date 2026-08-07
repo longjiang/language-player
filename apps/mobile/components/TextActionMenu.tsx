@@ -9,6 +9,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { MarkdownText } from '@/components/MarkdownText';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
 import { ContextMenu } from '@/components/ui/context-menu';
 import type { ContextMenuItem } from '@/components/ui/context-menu';
@@ -271,7 +272,9 @@ export function TextActionMenu(props: TextActionMenuProps) {
             ) : translateError ? (
               <Text className="text-sm text-destructive">{translateError}</Text>
             ) : (
-              <Text className="text-sm leading-relaxed text-foreground">{translateResult}</Text>
+              <Text className="text-sm leading-relaxed text-foreground">
+                {renderInlineMarkdown(translateResult ?? '')}
+              </Text>
             )}
           </Pressable>
         </Pressable>
