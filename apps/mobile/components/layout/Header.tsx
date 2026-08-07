@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Image, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, Text, Pressable, Image, LayoutChangeEvent } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { e2e } from '@/lib/e2e';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
-import { SM_BREAKPOINT } from '@/lib/constants';
 
 export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
+  const { isSm } = useResponsive();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const showAppName = screenWidth >= SM_BREAKPOINT;
+  const showAppName = isSm;
 
   return (
     <>

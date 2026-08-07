@@ -1,8 +1,9 @@
 import React from 'react';
-import { FlatList, View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { FlatList, View, Text, ActivityIndicator } from 'react-native';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { e2e } from '@/lib/e2e';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { VideoCard } from './VideoCard';
 import type { QueueType } from '@langplayer/utils';
 
@@ -18,8 +19,8 @@ interface VideoGridProps {
 
 export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing, queueType = 'recommended' }: VideoGridProps) {
   const t = useT();
-  const { width } = useWindowDimensions();
-  const numColumns = width < 400 ? 1 : width < 700 ? 2 : width < 1000 ? 3 : 4;
+  const { width } = useResponsive();
+  const numColumns = width < 640 ? 1 : width < 1024 ? 2 : width < 1280 ? 3 : 4;
 
   if (loading && videos.length === 0) {
     return (

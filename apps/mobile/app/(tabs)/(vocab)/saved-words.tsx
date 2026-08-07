@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { View, Text, Pressable, TextInput, FlatList, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, TextInput, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { decomposeWordId } from '@langplayer/shared';
 import { Search, Trash2, Download, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -23,11 +24,11 @@ export default function SavedWordsScreen() {
   const { savedWords, removeWord, clearAll, loaded, refreshEntry } = useSavedWords(l2Lang.code);
   const router = useRouter();
   const t = useT();
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth } = useResponsive();
 
   // Responsive tiling like the explore/media grid (item 2.4).
   // Phones stay single-column; tablets/desktop tile.
-  const numColumns = screenWidth < 640 ? 1 : screenWidth < 900 ? 2 : screenWidth < 1200 ? 3 : 4;
+  const numColumns = screenWidth < 640 ? 1 : screenWidth < 1024 ? 2 : screenWidth < 1280 ? 3 : 4;
 
   const [filterText, setFilterText] = useState('');
   const [exporting, setExporting] = useState(false);
