@@ -24,9 +24,9 @@ export default function Index() {
       // Not authenticated → show login
       router.replace('/login');
     } else {
-      // Authenticated → SRS review
+      // Authenticated → Explore
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(vocab)/review' as any);
+      router.replace('/(tabs)/(media)' as any);
     }
   }, [user, authLoading]);
 
