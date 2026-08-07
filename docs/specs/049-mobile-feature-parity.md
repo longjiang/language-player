@@ -165,13 +165,13 @@ The web reader is a separate feature from the EPUB reader. Mobile has a
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 10.1 | Curated reading suggestions + markdown formatting | `c2c21453` | Not in mobile |
-| 10.2 | Sync reader URL to the browser address bar | `6dffd845` | Not in mobile (N/A on native) |
-| 10.3 | Sniff page title / tracked visited sites + visit date | `4dc92ca8`, `1db5bc86`, `1e708204` | Not in mobile |
-| 10.4 | Open reader links in-app + back-to-home button | `47a42ef5`, `ff3e8e62`, `cda9d465` | Not in mobile |
+| 10.1 | Curated reading suggestions + markdown formatting | `c2c21453` | **Ported** — the web-reader empty state shows `getReadingSuggestions(l2)` grouped by category (shared curated data) |
+| 10.2 | Sync reader URL to the browser address bar | `6dffd845` | N/A on native |
+| 10.3 | Sniff page title / tracked visited sites + visit date | `4dc92ca8`, `1db5bc86`, `1e708204` | **Ported** — new `reader-history` (AsyncStorage) tracks visited sites with title + visit date; shown with delete in the empty state. Title sniffing already present via `extractTitle` |
+| 10.4 | Open reader links in-app + back-to-home button | `47a42ef5`, `ff3e8e62`, `cda9d465` | **Ported** — reading-suggestion links load in-app; header gains a Home button to return to the reader home |
 | 10.5 | Hide edit/read mode tabs | `c25280a5` | Web-only filter |
-| 10.6 | Cap text-source titles in the save bar | `7908cd37` | Not in mobile |
-| 10.7 | Clickable chevron links | `5f94d5a2` | Not in mobile |
+| 10.6 | Cap text-source titles in the save bar | `7908cd37` | **Ported** — `capSourceTitle` (5 words / 15 chars) added in Section 2 applies to text-source titles |
+| 10.7 | Clickable chevron links | `5f94d5a2` | N/A on native — links open via suggestion/visited rows instead |
 
 ## 11. Quick Gloss & Translation Styling
 
