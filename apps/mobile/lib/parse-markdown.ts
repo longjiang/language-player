@@ -116,31 +116,39 @@ function parseMarkdownOnly(md: string): ContentBlock[] {
             alt: (token.tokens![0] as any).text ?? '',
           });
         } else {
+          const { text, formats } = flattenWithFormats(token.tokens ?? []);
           blocks.push({
             kind: 'text',
             type: 'paragraph',
-            text: plainText(token),
+            text,
+            formats: formats.length ? formats : undefined,
           });
         }
         break;
 
       case 'blockquote': {
-        const bqText = (token.tokens ?? [])
-          .map((t) => plainText(t))
-          .join(' ');
+        const { text: bqText, formats } = flattenTokensJoined(token.tokens ?? []);
         if (bqText.trim()) {
-          blocks.push({ kind: 'text', type: 'blockquote', text: bqText });
+          blocks.push({
+            kind: 'text',
+            type: 'blockquote',
+            text: bqText,
+            formats: formats.length ? formats : undefined,
+          });
         }
         break;
       }
 
       case 'list':
         for (const item of token.items) {
-          const liText = (item.tokens ?? [])
-            .map((t: any) => plainText(t))
-            .join(' ');
+          const { text: liText, formats } = flattenTokensJoined(item.tokens ?? []);
           if (liText.trim()) {
-            blocks.push({ kind: 'text', type: 'list-item', text: liText });
+            blocks.push({
+              kind: 'text',
+              type: 'list-item',
+              text: liText,
+              formats: formats.length ? formats : undefined,
+            });
           }
         }
         break;
@@ -185,4 +193,53 @@ function plainText(token: any): string {
   if (token.type === 'text') return token.text ?? '';
   if (token.type === 'codespan') return token.text ?? '';
   return '';
+}
+
+/** Flatten tokens to plain text while recording `link` ranges as formats. */
+function flattenWithFormats(tokens: any[]): { text: string; formats: EpubFormatRange[] } {
+  let text = '';
+  const formats: EpubFormatRange[] = [];
+
+  const walk = (items: any[]) => {
+    for (const t of items) {
+      if (t.type === 'link') {
+        const start = text.length;
+        const inner = flattenWithFormats(t.tokens ?? []);
+        text += inner.text;
+        if (t.href) {
+          formats.push({ start, end: text.length, type: 'link', url: t.href });
+        }
+        formats.push(...inner.formats.map((f) => ({
+          ...f,
+          start: f.start + start,
+          end: f.end + start,
+        })));
+      } else if (t.tokens) {
+        walk(t.tokens);
+      } else if (t.type === 'text' || t.type === 'codespan') {
+        text += t.text ?? '';
+      }
+    }
+  };
+
+  walk(tokens);
+  return { text, formats };
+}
+
+/** Join multiple token groups with spaces, preserving format offsets. */
+function flattenTokensJoined(tokens: any[]): { text: string; formats: EpubFormatRange[] } {
+  let text = '';
+  const formats: EpubFormatRange[] = [];
+  for (const t of tokens) {
+    if (text) text += ' ';
+    const offset = text.length;
+    const r = flattenWithFormats([t]);
+    text += r.text;
+    formats.push(...r.formats.map((f) => ({
+      ...f,
+      start: f.start + offset,
+      end: f.end + offset,
+    })));
+  }
+  return { text, formats };
 }
