@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
-import { BookOpen, Film, Binary, Sparkles, ImageIcon } from 'lucide-react-native';
+import { BookOpen, Film, Binary, Sparkles, ImageIcon, Library } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
@@ -11,6 +11,7 @@ import { SubsSearchResults } from '@/components/video/SubsSearchResults';
 import { InflectionTable } from '@/components/InflectionTable';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import { ImageSearchResults } from '@/components/dictionary/ImageSearchResults';
+import { CorpusPanel } from '@/components/dictionary/corpus/corpus-panel';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 interface DictionaryEntryTabsProps {
@@ -80,6 +81,7 @@ export function DictionaryEntryTabs({
   const hasInflections = isInflectable(l2Code);
   const inflectionsTab = { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> };
   const imagesTab = { key: 'images', label: t('title.images'), icon: () => <ImageIcon size={14} color={ICON_MUTED} /> };
+  const corpusTab = { key: 'corpus', label: t('title.corpus'), icon: () => <Library size={14} color={ICON_MUTED} /> };
 
   const tabs = showDefinitionTab
     ? [
@@ -88,12 +90,14 @@ export function DictionaryEntryTabs({
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
         imagesTab,
         ...(hasInflections ? [inflectionsTab] : []),
+        corpusTab,
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
         imagesTab,
         ...(hasInflections ? [inflectionsTab] : []),
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
+        corpusTab,
       ];
 
   // If the language has no inflections but the (possibly controlled) tab is
@@ -145,10 +149,20 @@ export function DictionaryEntryTabs({
       <InflectionTable head={entry.head} l2Code={l2Code} embedded />
     </View>
   );
+  const corpusPanel = (
+    <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+      <CorpusPanel
+        word={entry.head}
+        l2Code={l2Code}
+        l1Code={l1Code ?? 'en'}
+        highlightForms={allTerms.length ? allTerms : [entry.head]}
+      />
+    </View>
+  );
 
   const children = showDefinitionTab
-    ? [wordPanel, examplesPanel, deepseekPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : [])]
-    : [examplesPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel];
+    ? [wordPanel, examplesPanel, deepseekPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), corpusPanel]
+    : [examplesPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel, corpusPanel];
 
   return (
     <TabbedPanel
