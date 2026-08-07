@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View, Text, Pressable, Image, ScrollView, Alert,
-  useWindowDimensions, ActivityIndicator,
-} from 'react-native';
+import { View, Text, Pressable, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { BookOpen, MoreVertical, Trash2, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { EpubSummary } from '@/lib/epub-store';
@@ -48,10 +46,10 @@ export function EpubBookshelf({
   loading = false,
 }: EpubBookshelfProps) {
   const t = useT();
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth } = useResponsive();
   const [menuId, setMenuId] = useState<string | null>(null);
 
-  const columns = windowWidth >= 720 ? 4 : windowWidth >= 520 ? 3 : 2;
+  const columns = windowWidth >= 1280 ? 5 : windowWidth >= 768 ? 4 : windowWidth >= 640 ? 3 : 2;
   const gap = 16;
   const cardWidth = Math.floor((windowWidth - 32 - gap * (columns - 1)) / columns);
 

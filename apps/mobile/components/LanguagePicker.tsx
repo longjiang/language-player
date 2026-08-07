@@ -9,15 +9,14 @@
  */
 
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useWindowDimensions } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES } from '@langplayer/shared';
 import { useLanguagePicker, type UseLanguagePickerReturn } from '@langplayer/shared';
 import { LanguagePickerNarrow } from './LanguagePickerNarrow';
 import { LanguagePickerWide } from './LanguagePickerWide';
-import { SM_BREAKPOINT } from '@/lib/constants';
 
 // ── Props ─────────────────────────────────────
 
@@ -59,7 +58,7 @@ export function LanguagePicker({
   variant = 'fullscreen',
 }: LanguagePickerProps) {
   const t = useT();
-  const { width: screenWidth } = useWindowDimensions();
+  const { isSm } = useResponsive();
   const { setL1Lang, setL2Lang } = useLanguage();
   const { getL2, setUseTraditional } = useSettingsContext();
 
@@ -104,7 +103,7 @@ export function LanguagePicker({
   }, [picker.selectedL1, picker.selectedL2, picker.useTraditional, onConfirm, setL1Lang, setL2Lang, setUseTraditional]);
 
   // Dialog mode always uses narrow
-  const isWide = variant !== 'dialog' && screenWidth >= SM_BREAKPOINT;
+  const isWide = variant !== 'dialog' && isSm;
 
   const narrowProps = {
     ...picker,
