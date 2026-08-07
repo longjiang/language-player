@@ -3,6 +3,7 @@ import { View, Text, Pressable, Animated } from 'react-native';
 import { router, useSegments } from 'expo-router';
 import { ChevronDown } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useResponsive } from '@/hooks/use-responsive';
 import * as Dialog from '@/components/ui/dialog';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -15,6 +16,7 @@ function isExplore(segments: string[]): boolean {
 export function LanguageSwitcher() {
   const { l1Lang, l2Lang, setL1Lang, setL2Lang } = useLanguage();
   const segments = useSegments();
+  const { isMd } = useResponsive();
   const [open, setOpen] = useState(false);
   const [pickerInitialL1, setPickerInitialL1] = useState(l1Lang.code);
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -64,16 +66,31 @@ export function LanguageSwitcher() {
       {/* Single dialog — same LanguagePicker as onboarding */}
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
-          <Dialog.SheetContent>
-            <LanguagePicker
-              initialL1={pickerInitialL1}
-              initialL2={l2Lang.code}
-              onConfirm={handleConfirm}
-              onDismiss={() => setOpen(false)}
-              showClose
-              variant="dialog"
-            />
-          </Dialog.SheetContent>
+          {isMd ? (
+            /* Web parity: centered dialog on wide screens (apps/web uses DialogContent). */
+            <Dialog.Content>
+              <LanguagePicker
+                initialL1={pickerInitialL1}
+                initialL2={l2Lang.code}
+                onConfirm={handleConfirm}
+                onDismiss={() => setOpen(false)}
+                showClose
+                variant="dialog"
+              />
+            </Dialog.Content>
+          ) : (
+            /* Phone/split-view: bottom sheet. */
+            <Dialog.SheetContent>
+              <LanguagePicker
+                initialL1={pickerInitialL1}
+                initialL2={l2Lang.code}
+                onConfirm={handleConfirm}
+                onDismiss={() => setOpen(false)}
+                showClose
+                variant="dialog"
+              />
+            </Dialog.SheetContent>
+          )}
         </Dialog.Portal>
       </Dialog.Root>
     </View>
