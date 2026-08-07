@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, Image, Pressable, FlatList, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -13,9 +14,10 @@ import { SimpleSubsForDebug } from './SimpleSubsForDebug';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { VideoControlBar } from './VideoControlBar';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { List, X } from 'lucide-react-native';
+import { List, X, Play } from 'lucide-react-native';
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -69,6 +71,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const { l1Lang, l2Lang } = useLanguage();
   const { display } = useSettingsContext();
   const t = useT();
+  const router = useRouter();
   const videosApi = useVideos();
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const { width: screenWidth } = useWindowDimensions();
@@ -80,6 +83,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [paused, setPaused] = useState(true);
   const [listOpen, setListOpen] = useAnimatedBoolean();
 
   const currentVideo = videos[currentIndex] ?? null;
@@ -221,11 +226,53 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   // ── Player callbacks ──
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
+  const handleDuration = useCallback((d: number) => setDuration(d), []);
+  const handleStateChange = useCallback((state: string) => {
+    setPaused(state !== 'playing');
+  }, []);
 
   const selectFromList = (idx: number) => {
     setCurrentIndex(idx);
     setListOpen(false);
   };
+
+  const goToPreviousLine = useCallback(() => {
+    if (!currentVideo) return;
+    const subs = currentVideo.subs_l2;
+    for (let i = subs.length - 1; i >= 0; i--) {
+      if (subs[i]!.starttime < currentTime - 0.3) {
+        playerRef.current?.seekTo(subs[i]!.starttime);
+        return;
+      }
+    }
+  }, [currentVideo, currentTime]);
+
+  const goToNextLine = useCallback(() => {
+    if (!currentVideo) return;
+    const subs = currentVideo.subs_l2;
+    for (let i = 0; i < subs.length; i++) {
+      if (subs[i]!.starttime > currentTime + 0.3) {
+        playerRef.current?.seekTo(subs[i]!.starttime);
+        return;
+      }
+    }
+  }, [currentVideo, currentTime]);
+
+  const hasPreviousLine = useMemo(() => {
+    if (!currentVideo) return false;
+    return currentVideo.subs_l2.some((l) => l.starttime < currentTime - 0.3);
+  }, [currentVideo, currentTime]);
+
+  const hasNextLine = useMemo(() => {
+    if (!currentVideo) return false;
+    return currentVideo.subs_l2.some((l) => l.starttime > currentTime + 0.3);
+  }, [currentVideo, currentTime]);
+
+  const handleWatch = useCallback(() => {
+    if (currentVideo) {
+      router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any);
+    }
+  }, [currentVideo, router]);
 
   // ── Loading ──
   if (loading) {
@@ -260,38 +307,44 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       className="my-4"
       onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
     >
-      {/* Header */}
-      <View className="mb-2 flex-row items-center justify-between px-4">
-        <Text className="text-xs text-muted-foreground">
-          {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
-        </Text>
-        <View className="flex-row items-center gap-2">
-          {formCount > 1 && (
-            <View className="flex-row items-center rounded-full bg-muted p-0.5">
-              <Pressable
-                onPress={() => onExactToggle?.(true)}
-                className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
-                accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-              >
-                <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {headTerm || term}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => onExactToggle?.(false)}
-                className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
-                accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
-              >
-                <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {t('msg.all_forms')}
-                </Text>
-              </Pressable>
-            </View>
-          )}
-          <Pressable onPress={() => setListOpen(true)} className="rounded-full bg-muted p-2">
-            <List size={16} color={ICON_MUTED} />
-          </Pressable>
-        </View>
+      {/* Nav bar — forms toggle, watch, list all (matches web) */}
+      <View className="mb-2 flex-row items-center justify-center gap-2">
+        {formCount > 1 && (
+          <View className="flex-row items-center rounded-full bg-muted p-0.5">
+            <Pressable
+              onPress={() => onExactToggle?.(true)}
+              className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
+              accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
+            >
+              <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                {headTerm || term}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => onExactToggle?.(false)}
+              className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
+              accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
+            >
+              <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                {t('msg.all_forms')}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        <Pressable
+          onPress={handleWatch}
+          className="flex-row items-center gap-1 rounded-full bg-muted px-3 py-1.5"
+        >
+          <Play size={14} color={ICON_MUTED} />
+          <Text className="text-xs font-medium text-muted-foreground">{t('action.watch')}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setListOpen(true)}
+          className="flex-row items-center gap-1 rounded-full bg-muted px-3 py-1.5"
+        >
+          <List size={14} color={ICON_MUTED} />
+          <Text className="text-xs font-medium text-muted-foreground">{t('action.list_all')}</Text>
+        </Pressable>
       </View>
 
       {/* Player */}
@@ -300,17 +353,40 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           ref={playerRef}
           youtubeId={currentVideo!.youtube_id}
           onTimeUpdate={handleTimeUpdate}
+          onDuration={handleDuration}
+          onStateChange={handleStateChange}
           containerWidth={containerWidth}
         />
       </View>
 
-      {/* Subtitle + text action menu (SPEC-049 §7.1) */}
+      {/* Controls — centered; result count between prev/next line buttons */}
+      <View className="flex-row justify-center border-b border-border py-1">
+        <VideoControlBar
+          reduced
+          playerRef={playerRef}
+          currentTime={currentTime}
+          duration={duration}
+          paused={paused}
+          onPauseToggle={() => {}}
+          onPreviousLine={goToPreviousLine}
+          onNextLine={goToNextLine}
+          onPreviousVideo={() => { if (currentIndex > 0) setCurrentIndex((i) => i - 1); }}
+          onNextVideo={() => { if (currentIndex < videos.length - 1) setCurrentIndex((i) => i + 1); }}
+          hasPreviousLine={hasPreviousLine}
+          hasNextLine={hasNextLine}
+          hasPreviousVideo={currentIndex > 0}
+          hasNextVideo={currentIndex < videos.length - 1}
+          videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
+        />
+      </View>
+
+      {/* Subtitle + text action menu (SPEC-049 §7.1) — next to the subtitle line */}
       <TextActionMenu
         text={subtitleInitialLines[activeLineIndex]?.l2Line ?? matchLine?.line ?? ''}
         l2Code={l2Lang.code}
         l1Code={baseCode(l1Lang.code)}
       >
-        <View className="min-h-32">
+        <View className="min-h-32 items-center">
           <SimpleSubsForDebug
             singleLine
             lines={subtitleInitialLines}
