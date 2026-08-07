@@ -23,9 +23,10 @@ The goal is **layout parity**, not identical code. Mobile still uses React Nativ
 **As of 2026-08-07:** phases 1–6 are implemented on branch
 `codex/mobile-web-layout-parity`. A review pass found and fixed the issues
 documented in [Review fixes](#review-fixes-2026-08-07) and the
-[Bottom-sheet policy](#bottom-sheet-policy-2026-08-07) below. Phase 7 (manual
-verification on device/simulator) is the remaining work before this spec can
-be marked complete.
+[Bottom-sheet policy](#bottom-sheet-policy-2026-08-07) below, plus the
+[Follow-up fixes](#follow-up-fixes-2026-08-07). Phase 7 (manual verification
+on device/simulator) is the remaining work before this spec can be marked
+complete.
 
 ---
 
@@ -123,6 +124,16 @@ dev-mode artifact and is **not** caused by a missing `NavigationContainer`.
 The NavBar fix above removes the most likely new trigger; the remaining
 conditional `shadow-*`/alpha classes elsewhere in the app are tracked as a
 follow-up (upgrade or patch `react-native-css-interop`).
+
+### Follow-up fixes (2026-08-07)
+
+Manual checklist review found three more issues, all fixed:
+
+| Fix | Problem found | Change |
+|---|---|---|
+| Header app name | App name was visible on all widths after phase 3, crowding phones | App name now shows at ≥640 only; below that the header is logo-only |
+| NavBar dropdowns | Index routes (`/(tabs)/(media)` etc.) had no icon because the icon lookup used the raw route segment; the menu always opened at `left: 16` instead of under the clicked group | Icon lookup maps group index routes to `explore` / `reader` / `dictionary`; the dropdown is positioned via `measureInWindow` under the pressed group |
+| Live TV split layout | No padding around the player/channel list; search/filter icons used `className` colors that render black in dark mode | Row now has `px-4`; player-width math accounts for it; search/filter icons use `ICON_MUTED` / `ICON_ON_PRIMARY` |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -269,7 +280,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 
 1. In `Header.tsx`, render the hamburger drawer button only below `MD_BREAKPOINT` (768).
 2. At ≥768, render persistent navigation matching web's `NAV_GROUPS`/`NAV_ICONS` — either ported `NavDropdown` components or a horizontal nav row with the same groups and destinations.
-3. Make the app name always visible (remove the `<640` hiding rule).
+3. Show the app name at ≥640 (logo-only below 640).
 4. Keep the drawer width cap (`min(256, width*0.6)`) for split view.
 
 **Acceptance:** iPad full portrait and landscape show web-style persistent nav; phones show the current drawer.
@@ -328,7 +339,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 
 ### Global shell
 
-- [ ] Header: hamburger only below 768; persistent nav at ≥768; app name always visible; nav dropdowns open and navigate.
+- [ ] Header: hamburger only below 768; persistent nav at ≥768; app name visible at ≥640 (logo-only below); nav dropdowns open below the clicked group and every item has an icon.
 - [ ] Hamburger drawer: capped at `min(256, width*0.6)`; drawer never renders at ≥768.
 - [ ] Auth screens: centered at `max-w-md` (448px) at every width.
 - [ ] Language switcher dialog: bottom sheet below 768; centered `max-w-md` dialog at ≥768 (picker remains `variant="dialog"`).
@@ -339,7 +350,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Explore** — grid 1/2/3/4 at `<640 / 640–1023 / 1024–1279 / ≥1280`; cards tile in equal-width columns; content capped at 1280.
 - [ ] **Search** — no-results state narrow; results use the same grid as Explore; result count shown.
 - [ ] **Music** — uses the Explore grid, not a single-column list.
-- [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl).
+- [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl) with padding around both columns; search/filter icons use theme tokens (no black icons in dark mode).
 - [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns.
 - [ ] **TV Show detail** — row list capped at 896.
 - [ ] **Channel** — Explore-style grid; channel header card intact.
