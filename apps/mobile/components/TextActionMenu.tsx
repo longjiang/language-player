@@ -28,6 +28,9 @@ interface TextActionMenuProps {
   context?: string;
   /** Extra classes for the content row wrapper. */
   className?: string;
+  /** Centers children in the full width and overlays the action button on the
+   *  right — used for centered single-line subtitles. Default false. */
+  centered?: boolean;
   children: React.ReactNode;
 }
 
@@ -41,7 +44,7 @@ type ActionKind = 'explain' | 'translate';
  * AI explain and translate open their own result modals.
  */
 export function TextActionMenu(props: TextActionMenuProps) {
-  const { text, l2Code, l1Code, context, className, children } = props;
+  const { text, l2Code, l1Code, context, className, centered = false, children } = props;
   const { l1Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
@@ -157,22 +160,30 @@ export function TextActionMenu(props: TextActionMenuProps) {
     },
   ];
 
+  const menu = (
+    <ContextMenu
+      items={menuItems}
+      open={menuOpen}
+      onOpenChange={setMenuOpen}
+      triggerClassName="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
+      triggerSize={16}
+    />
+  );
+
   return (
     <>
       {/* Content row with action button */}
-      <View className={`flex-row items-start gap-1 ${className ?? ''}`}>
-        <View className="flex-1 min-w-0">
+      <View className={`flex-row items-start gap-1 ${className ?? ''} ${centered ? 'relative' : ''}`}>
+        <View className={centered ? 'w-full pr-8' : 'flex-1 min-w-0'}>
           {/* as any: @types/react ReactNode includes bigint; RN's View expects RN's ReactNode (excludes it).
               This is the standard workaround for the type mismatch in RN projects with @types/react installed. */}
           {children as any}
         </View>
-        <ContextMenu
-          items={menuItems}
-          open={menuOpen}
-          onOpenChange={setMenuOpen}
-          triggerClassName="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
-          triggerSize={16}
-        />
+        {centered ? (
+          <View className="absolute right-0 top-0">{menu}</View>
+        ) : (
+          menu
+        )}
       </View>
 
       {/* ── AI Explain Modal ── */}

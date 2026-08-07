@@ -231,6 +231,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
           {activeLine ? (
             <TextActionMenu
               className="w-full"
+              centered
               text={activeLine.l2Line}
               l2Code={l2Lang.code}
               l1Code={baseCode(l1Lang.code)}
