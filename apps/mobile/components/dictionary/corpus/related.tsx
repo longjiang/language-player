@@ -61,10 +61,21 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
 
   const openWord = (entry: DictionaryEntry) => {
     // Surface the related-words list in the entry-page sidebar (source 'corpus').
+    const base = l2Code.split('-')[0];
     const items = data.related
       .filter((related) => related.word)
       .map((related) => {
-        const cached = getCachedEntries(l2Code.split('-')[0], related.word)?.[0];
+        const cached = getCachedEntries(base, related.word)?.[0];
+        // Keep the clicked entry's real id so the sidebar can highlight it.
+        const isCurrent = related.word === entry.head || cached?.id === entry.id;
+        if (isCurrent) {
+          return {
+            id: entry.id,
+            head: entry.head,
+            dictionaryId: entry.dictionary?.id ?? 'llm',
+            entryId: entry.id,
+          };
+        }
         return cached
           ? {
               id: cached.id,

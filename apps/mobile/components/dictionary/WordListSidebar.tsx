@@ -173,9 +173,9 @@ function SidebarEntryCard({
   }
 
   return isActive ? (
-    <View className="rounded-lg ring-2 ring-primary">{content}</View>
+    <View className="mb-3 rounded-lg ring-2 ring-primary">{content}</View>
   ) : (
-    content
+    <View className="mb-3">{content}</View>
   );
 }
 
@@ -249,7 +249,7 @@ export function WordListSidebar({
       }
     >
       {/* List of entry cards */}
-      <View className="space-y-3 p-2">
+      <View className="p-2">
         {items.map((item) => (
           <SidebarEntryCard
             key={item.id}
