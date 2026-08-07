@@ -7,15 +7,9 @@ import * as Dialog from '@/components/ui/dialog';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
-/**
- * Dictionary search and dictionary entry pages are content-scoped: after
- * switching L1/L2 the old results/entry no longer apply, so redirect to
- * Explore (matches web's pickRedirectTarget behavior for content pages).
- */
-function isDictionaryRoute(segments: string[]): boolean {
-  if (!segments.includes('(vocab)')) return false;
-  const page = segments.find((s) => !s.startsWith('(') && !s.endsWith(')'));
-  return page === undefined || page === 'word';
+/** True when the user is already on the Explore tab (media index). */
+function isExplore(segments: string[]): boolean {
+  return segments.includes('(media)') && !segments.some((s) => !s.startsWith('(') && !s.endsWith(')'));
 }
 
 export function LanguageSwitcher() {
@@ -39,10 +33,13 @@ export function LanguageSwitcher() {
   });
 
   async function handleConfirm(l1: string, l2: string) {
+    const l2Changed = l2 !== l2Lang.code;
     await setL1Lang(l1);
     await setL2Lang(l2);
     setOpen(false);
-    if (isDictionaryRoute(segments)) {
+    // Changing L2 invalidates the current page's content, so always return
+    // to Explore. An L1-only change keeps the user on the same page.
+    if (l2Changed && !isExplore(segments)) {
       router.replace('/(tabs)/(media)' as any);
     }
   }
