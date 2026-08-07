@@ -14,6 +14,7 @@ export function useSubtitleTranslation(
   l1: string,
   l2: string,
   enabled: boolean,
+  highlightForms?: (string | null | undefined)[],
 ): { translatedLines: SubtitleLine[]; loading: boolean; progress: number } {
   const [translatedLines, setTranslatedLines] = useState<SubtitleLine[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,16 @@ export function useSubtitleTranslation(
         const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: chunk, l1, l2 }),
+          body: JSON.stringify({
+            texts: chunk,
+            l1,
+            l2,
+            // Send the highlight form per line so the server bolds it in the
+            // translation (SPEC-049 §7.3) instead of pre-marking the text.
+            ...(highlightForms
+              ? { forms: chunk.map((_, i) => highlightForms[start + i] ?? null) }
+              : {}),
+          }),
           signal: controller.signal,
         });
 
@@ -72,7 +82,7 @@ export function useSubtitleTranslation(
       setLoading(false);
       setProgress(total);
     }
-  }, [enabled, l2Lines, l1, l2]);
+  }, [enabled, l2Lines, l1, l2, highlightForms]);
 
   useEffect(() => {
     translate();
