@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
@@ -15,6 +16,7 @@ import { e2e } from '@/lib/e2e';
 
 export default function SelectLanguageScreen() {
   const { setL1Lang, setL2Lang } = useLanguage();
+  const insets = useSafeAreaInsets();
 
   async function handleConfirm(l1: string, l2: string) {
     await setL1Lang(l1);
@@ -24,7 +26,11 @@ export default function SelectLanguageScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background" {...e2e('select-language-screen')}>
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      {...e2e('select-language-screen')}
+    >
       <LanguagePicker
         onConfirm={handleConfirm}
         showTitle
