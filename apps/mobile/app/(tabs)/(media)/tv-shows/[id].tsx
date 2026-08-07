@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image, ActivityIndicator, FlatList } from 'react
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { baseCode } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ArrowLeft, Tv, Clock, Eye, AlertCircle } from 'lucide-react-native';
@@ -58,6 +59,7 @@ export default function TvShowEpisodesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
   const { l2Lang } = useLanguage();
+  const { playVideo } = useVideoPlayer();
   const showId = Number(id);
 
   const [show, setShow] = useState<TvShow | null>(null);
@@ -106,7 +108,9 @@ export default function TvShowEpisodesScreen() {
     }));
     const video = queue[idx];
     if (video) {
-      router.push(`/(tabs)/(media)/watch/${video.youtube_id}` as any);
+      playVideo(video, queue, 'tvShow', {
+        tvShow: show ? { id: show.id, title: show.title } : undefined,
+      });
     }
   };
 

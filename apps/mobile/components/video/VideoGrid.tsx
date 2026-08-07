@@ -4,6 +4,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { e2e } from '@/lib/e2e';
 import { useT } from '@/hooks/use-t';
 import { VideoCard } from './VideoCard';
+import type { QueueType } from '@langplayer/utils';
 
 interface VideoGridProps {
   videos: YouTubeVideo[];
@@ -12,9 +13,10 @@ interface VideoGridProps {
   onLoadMore?: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
+  queueType?: QueueType;
 }
 
-export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing }: VideoGridProps) {
+export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing, queueType = 'recommended' }: VideoGridProps) {
   const t = useT();
   const { width } = useWindowDimensions();
   const numColumns = width < 400 ? 1 : width < 700 ? 2 : width < 1000 ? 3 : 4;
@@ -42,6 +44,8 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
       renderItem={({ item, index }) => (
         <VideoCard
           video={item}
+          videos={videos}
+          queueType={queueType}
           testID={index === 0 ? 'video-card-first' : undefined}
         />
       )}

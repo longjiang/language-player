@@ -192,7 +192,7 @@ export default function SearchScreen() {
           }
           renderItem={({ item }) => (
             <View className="px-4 pt-2">
-              <VideoCard video={item} layout="list" />
+              <VideoCard video={item} videos={results ?? []} queueType="search" layout="list" />
             </View>
           )}
         />

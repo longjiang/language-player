@@ -69,7 +69,7 @@ export default function WatchScreen() {
   // content (SPEC-048 Tier 9). The param wins over the persisted pair.
   const l2Code = requestedL2 ?? l2Lang.code;
   const t = useT();
-  const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
+  const { playNext, playPrevious, hasNext, hasPrevious, ensureQueue } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -103,6 +103,12 @@ export default function WatchScreen() {
 
   // Watch history recording
   useWatchHistoryRecorder(video?.id, currentTime);
+
+  // Seed the queue for direct/deep-linked videos so next/prev and the queue
+  // tab stay defined even when the user didn't navigate through a list.
+  useEffect(() => {
+    if (video) ensureQueue(video);
+  }, [video, ensureQueue]);
 
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;
@@ -452,6 +458,7 @@ export default function WatchScreen() {
           hasNextLine={subtitleStartTimes.length > 0}
           hasPreviousVideo={hasPrevious}
           hasNextVideo={hasNext}
+          panelOpen={!isSubtitles}
           liked={liked}
           onToggleLike={handleToggleLike}
           likeDisabled={likeDisabled}
