@@ -44,13 +44,14 @@ duplicated on the profile page.
 ### Data Flow
 
 1. `UserLibraryProvider` hydrates likes and playlists once per authenticated user + L2 from the Flask row APIs.
-2. The watch page reads `isLiked`/`toggleLike` and opens `AddToPlaylistDialog`.
+2. The watch page reads `isLiked`/`toggleLike` and opens `AddToPlaylistDialog`. Video cards (web + mobile) also open it from their `⋮` actions menu via **Add to Playlist**, matching Classic's `YouTubeVideoCard` actions modal.
 3. Mutations are optimistic; failures are logged and state is rolled back where applicable.
 
 ### Components
 
 - `providers/user-library-provider.tsx` — shared likes/playlists state and mutation API.
 - `components/video/add-to-playlist-dialog.tsx` — save a video into existing playlists and/or a new playlist.
+- `components/video/channel-actions-menu.tsx` (web) / `components/video/ChannelActionsMenu.tsx` (mobile) — video-card `⋮` menu with channel actions plus Add to Playlist.
 - `components/video/video-control-bar.tsx` / `subtitles-mode-band.tsx` — heart + bookmark actions.
 - `components/layout/user-menu.tsx` — account navigation links.
 
