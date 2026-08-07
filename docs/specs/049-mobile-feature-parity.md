@@ -58,16 +58,16 @@ isolating languages. Item 2.x (saved-words entry cards) is tracked in Section 2.
 ## 2. Dictionary — Saved Words as Entry Cards
 
 The web saved-words sidebar was rebuilt from a plain list into full dictionary
-entry cards with rich metadata. Mobile still renders the simpler list form.
+entry cards with rich metadata. Mobile now renders the same tiled entry cards.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 2.1 | Render saved words as full dictionary entry cards | `eb037b50`, `1f9ecee7` | Not in mobile |
-| 2.2 | Show saved-word metadata (date/source/context/form) on entry cards | `6e055336`, `a39bbe11`, `b1232785`, `430d089c`, `ec046c31`, `d395edd5` | Not in mobile |
-| 2.3 | Highlight the saved word form in the entry-card save bar | `69c7f31b`, `fb5a93c2`, `913ac385`, `ea20faba` | Not in mobile |
-| 2.4 | Tile saved-word cards responsively (like explore) | `4f57d584` | Not in mobile |
-| 2.5 | Remove the sort toggle from the saved-words toolbar | `a155f593`, `46a7aae2` | Not in mobile |
-| 2.6 | Cap video titles in the entry-card save bar | `b243f825` | Not in mobile |
+| 2.1 | Render saved words as full dictionary entry cards | `eb037b50`, `1f9ecee7` | **Ported** — mobile `SavedWordEntryCard` renders each saved word as a compact `DictionaryEntryCard` (lazily enriched via `refreshEntry`) |
+| 2.2 | Show saved-word metadata (date/source/context/form) on entry cards | `6e055336`, `a39bbe11`, `b1232785`, `430d089c`, `ec046c31`, `d395edd5` | **Ported** — compact card shows date · source type+title · context sentence |
+| 2.3 | Highlight the saved word form in the entry-card save bar | `69c7f31b`, `fb5a93c2`, `913ac385`, `ea20faba` | **Ported** — `HighlightForm` bolds the saved surface form in the context sentence |
+| 2.4 | Tile saved-word cards responsively (like explore) | `4f57d584` | **Ported** — saved-words screen tiles cards via a row-based grid (1–4 columns by width) |
+| 2.5 | Remove the sort toggle from the saved-words toolbar | `a155f593`, `46a7aae2` | **Ported** — toolbar is filter-only, always newest-first |
+| 2.6 | Cap video titles in the entry-card save bar | `b243f825` | **Ported** — `capSourceTitle` (5 words / 15 chars) applied to source titles |
 
 ## 3. Dictionary — Image Search (popup + entry)
 

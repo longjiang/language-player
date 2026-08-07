@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { View, Text, Pressable, TextInput, SectionList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, FlatList, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -7,27 +7,27 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
-import { decomposeWordId, type SavedWordContext } from '@langplayer/shared';
-import { BookmarkCheck, BookOpen, Search, ArrowUpDown, Clock, ArrowDownAZ, Trash2, Download } from 'lucide-react-native';
+import { decomposeWordId } from '@langplayer/shared';
+import { Search, Trash2, Download, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { logwarn } from '@/lib/logger';
-import { InlineDefinition } from '@/components/dictionary/InlineDefinition';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
-
-type SortMode = 'newest' | 'alpha';
+import { SavedWordEntryCard } from '@/components/dictionary/SavedWordEntryCard';
 
 /** Lazy enrichment: only fetch dictionary entries for rows visible on screen. */
 const ENRICH_BUFFER = 20; // enrich visible + this many extra rows below
 
 export default function SavedWordsScreen() {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { savedWords, removeWord, clearAll, loaded, refreshEntry } = useSavedWords(l2Lang.code);
   const router = useRouter();
   const t = useT();
+  const { width: screenWidth } = useWindowDimensions();
 
-  const [sortMode, setSortMode] = useState<SortMode>('newest');
+  // Responsive tiling like the explore/media grid (item 2.4).
+  const numColumns = screenWidth < 400 ? 1 : screenWidth < 700 ? 2 : screenWidth < 1000 ? 3 : 4;
+
   const [filterText, setFilterText] = useState('');
   const [exporting, setExporting] = useState(false);
 
@@ -36,7 +36,7 @@ export default function SavedWordsScreen() {
     [savedWords, l2Lang.code],
   );
 
-  // Filter + sort
+  // Filter + keep newest-first order (matches Next.js — sort toggle removed).
   const words = useMemo(() => {
     let result = [...allWords];
 
@@ -48,22 +48,16 @@ export default function SavedWordsScreen() {
       });
     }
 
-    // Sort: Classic uses `date` (millis), mobile-v2 uses `savedAt` (ISO string)
     const getTs = (w: typeof allWords[number]) =>
       w.date ?? new Date(w.savedAt ?? 0).getTime();
-
-    if (sortMode === 'alpha') {
-      const getName = (w: typeof allWords[number]) => w.head || w.forms?.[0] || w.id;
-      result.sort((a, b) => getName(a).localeCompare(getName(b)));
-    } else {
-      result.sort((a, b) => getTs(b) - getTs(a));
-    }
-
+    result.sort((a, b) => getTs(b) - getTs(a));
     return result;
-  }, [allWords, filterText, sortMode]);
+  }, [allWords, filterText]);
 
-  // Group by Today / Earlier (matches Next.js)
-  const sections = useMemo(() => {
+  // Group by Today / Earlier (matches Next.js) and flatten into a row-based
+  // model for responsive tiling: each element is either a section header or a
+  // chunk of `numColumns` words rendered side-by-side.
+  const rows = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const today: typeof words = [];
@@ -72,21 +66,47 @@ export default function SavedWordsScreen() {
       const d = w.date ?? new Date(w.savedAt ?? 0).getTime();
       if (d >= startOfToday) today.push(w); else earlier.push(w);
     }
-    const result: { title: string; data: typeof words }[] = [];
-    if (today.length > 0) result.push({ title: t('msg.today'), data: today });
-    if (earlier.length > 0) result.push({ title: t('msg.earlier'), data: earlier });
-    return result;
-  }, [words]);
+    const groups: { title: string; data: typeof words }[] = [];
+    if (today.length > 0) groups.push({ title: t('msg.today'), data: today });
+    if (earlier.length > 0) groups.push({ title: t('msg.earlier'), data: earlier });
+
+    type Row =
+      | { kind: 'header'; title: string; count: number }
+      | { kind: 'words'; items: typeof words };
+    const out: Row[] = [];
+    for (const g of groups) {
+      out.push({ kind: 'header', title: g.title, count: g.data.length });
+      for (let i = 0; i < g.data.length; i += numColumns) {
+        out.push({ kind: 'words', items: g.data.slice(i, i + numColumns) });
+      }
+    }
+    return out;
+  }, [words, t, numColumns]);
 
   const handleWordPress = useCallback((word: typeof allWords[number]) => {
     const decomposed = decomposeWordId(word.id, l2Lang.code);
     if (!decomposed) return;
     setDetailHead(word.head || word.forms?.[0] || '');
-    setSidebarSource({ kind: 'saved' });
+    // Surface the saved-words list in the entry-page sidebar (like web's
+    // setWordListNav with source 'saved') so prev/next stay available.
+    setSidebarSource({
+      kind: 'wordlist',
+      source: 'saved',
+      currentId: word.id,
+      items: words.map((w) => {
+        const dec = decomposeWordId(w.id, l2Lang.code);
+        return {
+          id: w.id,
+          head: w.head || w.forms?.[0] || w.id,
+          dictionaryId: dec?.dict ?? 'unknown',
+          entryId: dec?.id ?? w.id,
+        };
+      }),
+    });
     setCameFromSearch(false);
     const safeId = word.id.replace(/,/g, '~');
     router.push(`word/${safeId}` as any);
-  }, [l2Lang.code, setDetailHead, setSidebarSource, setCameFromSearch, router]);
+  }, [l2Lang.code, words, setDetailHead, setSidebarSource, setCameFromSearch, router]);
 
   const handleRemove = useCallback((word: typeof allWords[number]) => {
     removeWord(l2Lang.code, word.id);
@@ -123,21 +143,24 @@ export default function SavedWordsScreen() {
     }
   }, [savedWords, l2Lang.code, t]);
 
-  // ── Lazy enrichment: only fetch dictionary entries for rows visible on screen ──
+  // ── Lazy enrichment: only fetch dictionary entries for cards visible on screen ──
   const enrichedRef = useRef<Set<string>>(new Set());
 
   const handleViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: Array<{ item: typeof words[number]; index: number | null }> }) => {
+    ({ viewableItems }: { viewableItems: Array<{ item: { kind: string; items?: typeof words }; index: number | null }> }) => {
       const toEnrich = viewableItems.slice(0, ENRICH_BUFFER);
       for (const vi of toEnrich) {
-        const w = vi.item;
-        if (w.head && (w.canonicalEntry || w.llmEntry)) continue; // already enriched
-        if (enrichedRef.current.has(w.id)) continue; // already requested
-        enrichedRef.current.add(w.id);
-        refreshEntry(l2Lang.code, w.id);
+        const row = vi.item;
+        if (row.kind !== 'words' || !row.items) continue;
+        for (const w of row.items) {
+          if (w.head && (w.canonicalEntry || w.llmEntry)) continue; // already enriched
+          if (enrichedRef.current.has(w.id)) continue; // already requested
+          enrichedRef.current.add(w.id);
+          refreshEntry(l2Lang.code, w.id);
+        }
       }
     },
-    [l2Lang.code, refreshEntry, words],
+    [l2Lang.code, refreshEntry],
   );
 
   const viewabilityConfig = useRef({
@@ -200,9 +223,9 @@ export default function SavedWordsScreen() {
         </View>
       </View>
 
-      {/* Toolbar: filter + sort */}
+      {/* Toolbar: filter only (sort toggle removed — always newest-first) */}
       <View className="flex-row items-center gap-3 px-4 pb-3">
-        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-background px-3 py-2">
+        <View className="flex-row items-center rounded-lg border border-border bg-background px-3 py-2 flex-1">
           <Search size={14} color={ICON_MUTED} />
           <TextInput
             className="ml-2 flex-1 text-sm text-foreground"
@@ -217,64 +240,55 @@ export default function SavedWordsScreen() {
             </Pressable>
           ) : null}
         </View>
-
-        <Pressable
-          onPress={() => setSortMode((m) => m === 'newest' ? 'alpha' : 'newest')}
-          className="flex-row items-center gap-1.5 rounded-md border border-border px-3 py-2"
-        >
-          <ArrowUpDown size={14} color={ICON_MUTED} />
-          {sortMode === 'newest' ? (
-            <>
-              <Clock size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('sort.newest')}</Text>
-            </>
-          ) : (
-            <>
-              <ArrowDownAZ size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('sort.alphabetical')}</Text>
-            </>
-          )}
-        </Pressable>
       </View>
 
-      {/* Word list with sections */}
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        stickySectionHeadersEnabled={false}
+      {/* Tiled saved-word entry cards, grouped by Today / Earlier */}
+      <FlatList
+        data={rows}
+        keyExtractor={(row, index) => `${row.kind}-${index}`}
         onViewableItemsChanged={handleViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderSectionHeader={({ section }) => (
-          <View className="bg-muted/50 px-4 py-1.5">
-            <Text className="text-xs font-medium text-muted-foreground">{section.title}</Text>
-          </View>
-        )}
+        contentContainerStyle={{ paddingBottom: 16 }}
         renderItem={({ item }) => {
-          const ts = item.date ?? new Date(item.savedAt ?? 0).getTime();
-          return (
-            <Pressable
-              onPress={() => handleWordPress(item)}
-              className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted"
-            >
-              {/* Remove button (bookmark icon like Next.js) */}
-              <Pressable onPress={() => handleRemove(item)} className="mr-3" hitSlop={8}>
-                <BookmarkCheck size={20} color={ICON_MUTED} />
-              </Pressable>
-
-              {/* Content */}
-              <View className="flex-1">
-                <Text className="text-base font-medium text-foreground">
-                  {item.head || item.forms?.[0] || item.id}
-                </Text>
-                <InlineDefinition entry={item.canonicalEntry} />
-                <SavedWordSource
-                  context={item.context as SavedWordContext | undefined}
-                  date={ts}
-                />
+          if (item.kind === 'header') {
+            return (
+              <View className="mt-2 flex-row items-center gap-2 bg-muted/50 px-4 py-1.5">
+                <Text className="text-xs font-medium text-muted-foreground">{item.title}</Text>
+                <Text className="text-xs text-muted-foreground/70">{item.count}</Text>
               </View>
-            </Pressable>
+            );
+          }
+          // Words row — tile cards horizontally, matching explore's grid.
+          return (
+            <View
+              className="flex-row px-1"
+              style={numColumns > 1 ? { gap: 8 } : { gap: 0 }}
+            >
+              {item.items.map((w) => (
+                <View
+                  key={w.id}
+                  style={{ flex: 1 }}
+                  className="px-0.5"
+                >
+                  <SavedWordEntryCard
+                    word={w}
+                    l1Code={l1Lang.code}
+                    l2Code={l2Lang.code}
+                    onClick={() => handleWordPress(w)}
+                    onRemove={() => handleRemove(w)}
+                  />
+                </View>
+              ))}
+            </View>
           );
         }}
+        ListEmptyComponent={
+          words.length === 0 && filterText.trim() ? (
+            <View className="mx-4 mt-6 rounded-lg border border-dashed p-8 items-center">
+              <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+            </View>
+          ) : null
+        }
       />
     </PageContainer>
   );

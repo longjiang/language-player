@@ -73,6 +73,7 @@ function itemsFromSource(source: SidebarSource, currentId?: string | null): Side
 function sidebarTitle(source: SidebarSource, t: (k: string, vars?: any) => string): string {
   if (source.kind === 'saved') return t('title.saved_words');
   if (source.kind === 'wordlist' && source.source === 'corpus') return t('title.related');
+  if (source.kind === 'wordlist' && source.source === 'saved') return t('title.saved_words');
   const count = source.kind === 'results' ? source.items.length : source.kind === 'wordlist' ? source.items.length : 0;
   return t('msg.result_count', { count });
 }

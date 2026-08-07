@@ -95,7 +95,7 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
-| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. Inline definitions (pronunciation + part-of-speech + definition) shown beneath each headword via lazy enrichment. Source attribution (video/article title + date) shown for words saved from context. |
+| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Responsively tiled compact `DictionaryEntryCard`s (like the explore grid) with saved-word metadata (date · source · context with the saved form highlighted) and inline save/remove. Filter + export + clear all work; sort toggle removed (always newest-first). Lazily enriches each word's full entry. Seeds the entry-page sidebar with the saved-words list. |
 | SRS Review | `(tabs)/(vocab)/review.tsx` | ✅ | `[l1]/[l2]/review/page.tsx` | Full SM-2 algorithm, due card computation, 4 ratings (again/hard/good/easy), undo, daily new card limit, "no cards due" & "all done" states, entry preloading |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | ADR 0007 two-panel: definitions card (classifiers, study materials, han script, phonetic extras, Google Images, match_type, SpeakButton) + tabs panel (examples, inflections, AI explanation) with icons |
 
@@ -107,6 +107,7 @@
 | Dictionary Entry Card | `components/dictionary/DictionaryEntryCard.tsx` | ✅ | Headword, pronunciation, level, definitions |
 | Save Button | `components/dictionary/SaveButton.tsx` | ✅ | Bookmark save/unsave toggle |
 | Search Bar | `components/dictionary/SearchBar.tsx` | ✅ | With clear + loading spinner |
+| Saved Word Entry Card | `components/dictionary/SavedWordEntryCard.tsx` | ✅ | Renders a saved word as a compact `DictionaryEntryCard` from its lazily-enriched entry; loads head+spinner while enriching; normalizes the entry id to the saved word id |
 | Word List Sidebar | `components/dictionary/WordListSidebar.tsx` | ✅ | Slide-in sidebar (`@rn-primitives/dialog` DrawerContent) fed by `SidebarSource`; shows the source word list (search results / autocomplete suggestions / corpus related) with prev/next header buttons and current-entry highlight. Toggle only renders when the sidebar is available. |
 | Word List | `components/dictionary/WordList.tsx` | ✅ | Reusable FlatList for saved words |
 | Lookup Source Indicator | `components/dictionary/LookupSourceIndicator.tsx` | ✅ | Shows which dictionary source provided the entry |
