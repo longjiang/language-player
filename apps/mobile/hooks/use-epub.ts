@@ -162,7 +162,9 @@ export function useEpub(): UseEpubReturn {
    *  opens immediately; multiple selections are added to the bookshelf. */
   const pickFile = useCallback(async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: ['application/epub+zip', 'application/octet-stream'],
+      // Some EPUBs (especially older ones like 鲁迅's 呐喊) are reported with
+      // nonstandard MIME types; accept any file so they can be selected.
+      type: '*/*',
       copyToCacheDirectory: true,
       multiple: true,
     });
