@@ -58,3 +58,13 @@ export async function removeVisitedSite(url: string): Promise<VisitedSite[]> {
   await saveVisitedSites(next);
   return next;
 }
+
+/** Rename a visited site (mirrors the web app's commitRename). */
+export async function renameVisitedSite(url: string, title: string): Promise<VisitedSite[]> {
+  const sites = await loadVisitedSites();
+  const next = sites.map((s) =>
+    s.url === url ? { ...s, title: title.trim() || s.url } : s,
+  );
+  await saveVisitedSites(next);
+  return next;
+}
