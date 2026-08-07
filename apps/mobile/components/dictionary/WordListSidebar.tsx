@@ -233,7 +233,7 @@ export function WordListSidebar({
                   </Pressable>
                 </View>
               )}
-              <Pressable onPress={() => onOpenChange(false)} className="rounded p-1.5 active:bg-muted" accessibilityLabel="Close sidebar">
+              <Pressable onPress={() => onOpenChange(false)} className="rounded p-1.5 active:bg-muted" accessibilityLabel={t('action.close_sidebar')}>
                 <PanelRightClose size={18} color={ICON_MUTED} />
               </Pressable>
             </View>

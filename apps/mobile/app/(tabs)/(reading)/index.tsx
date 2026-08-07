@@ -133,7 +133,7 @@ export default function ReaderScreen() {
           </Text>
         </Pressable>
         <View className="flex-1" />
-        {saving && <Text className="mr-2 text-xs text-muted-foreground">Saving…</Text>}
+        {saving && <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>}
         <Pressable
           onPress={() => setSidebarOpen(!sidebarOpen)}
           className="rounded p-1.5 active:bg-muted"

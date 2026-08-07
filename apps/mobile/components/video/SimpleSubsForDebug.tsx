@@ -3,6 +3,7 @@ import { View, Text, FlatList, Pressable, Animated, Easing } from 'react-native'
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -42,6 +43,7 @@ interface SimpleSubsForDebugProps {
 
 export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
+  const t = useT();
   const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
   const userScrolledUntil = useRef(0);
@@ -362,8 +364,8 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         ListHeaderComponent={loading || loadingBatch ? (
           <View className="py-1">
             <Text className="text-xs text-muted-foreground">
-              {showTranslation && loading ? `Translating… ${progress}/${lines.length}` : ''}
-              {loadingBatch ? ' Making words interactive…' : ''}
+              {showTranslation && loading ? `${t('msg.translating')} ${progress}/${lines.length}` : ''}
+              {loadingBatch ? ` ${t('msg.making_words_interactive')}` : ''}
             </Text>
           </View>
         ) : null}

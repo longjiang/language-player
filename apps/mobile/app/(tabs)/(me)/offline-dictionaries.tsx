@@ -337,7 +337,7 @@ export default function OfflineDictionariesScreen() {
         {!isDownloading && !isFailed && !hasLocalTokenizer(l2) && (
           <View className="mt-1 flex-row items-center gap-1">
             <AlertTriangle size={11} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">Cannot make text interactive offline</Text>
+            <Text className="text-xs text-muted-foreground">{t('msg.cannot_make_text_interactive_offline')}</Text>
           </View>
         )}
 

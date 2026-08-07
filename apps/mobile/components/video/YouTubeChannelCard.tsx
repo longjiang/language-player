@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ExternalLink, Loader2 } from 'lucide-react-native';
@@ -17,6 +18,7 @@ interface YouTubeChannelCardProps {
 }
 
 export function YouTubeChannelCard({ channelId }: YouTubeChannelCardProps) {
+  const t = useT();
   const { l1Lang, l2Lang } = useLanguage();
   const [channel, setChannel] = useState<ChannelInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export function YouTubeChannelCard({ channelId }: YouTubeChannelCardProps) {
     return (
       <View className="flex-row items-center gap-2 rounded-lg border border-border px-3 py-2">
         <Loader2 size={16} color={ICON_MUTED} />
-        <Text className="text-xs text-muted-foreground">Loading channel...</Text>
+        <Text className="text-xs text-muted-foreground">{t('msg.loading_channel')}</Text>
       </View>
     );
   }

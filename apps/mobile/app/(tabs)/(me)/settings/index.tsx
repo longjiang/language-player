@@ -221,6 +221,7 @@ function SettingsList({
 // ── Detail Panel (wide mode) ──────────────────
 
 function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
+  const t = useT();
   switch (selectedKey) {
     case 'display':
       return <DisplaySettings />;
@@ -234,7 +235,7 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
       return (
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-sm text-muted-foreground">
-            Select a settings category
+            {t('msg.select_settings_category')}
           </Text>
         </View>
       );

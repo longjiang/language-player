@@ -166,7 +166,7 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
         if (table === 'head') {
           return (
             <View key="head" className="mb-3 rounded-lg bg-primary/5 px-4 py-3">
-              <Text className="text-xs font-medium text-primary">Dictionary form</Text>
+              <Text className="text-xs font-medium text-primary">{t('label.dictionary_form')}</Text>
               <Text className="mt-1 text-lg font-bold text-foreground">{group[0]!.form}</Text>
             </View>
           );

@@ -2,6 +2,7 @@ import React from 'react';
 import { FlatList, View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { e2e } from '@/lib/e2e';
+import { useT } from '@/hooks/use-t';
 import { VideoCard } from './VideoCard';
 
 interface VideoGridProps {
@@ -14,6 +15,7 @@ interface VideoGridProps {
 }
 
 export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing }: VideoGridProps) {
+  const t = useT();
   const { width } = useWindowDimensions();
   const numColumns = width < 400 ? 1 : width < 700 ? 2 : width < 1000 ? 3 : 4;
 
@@ -28,7 +30,7 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
   if (!loading && videos.length === 0) {
     return (
       <View className="flex-1 items-center justify-center py-16 px-4" {...e2e('video-grid-empty')}>
-        <Text className="text-center text-muted-foreground">No videos found</Text>
+        <Text className="text-center text-muted-foreground">{t('msg.no_videos_found')}</Text>
       </View>
     );
   }

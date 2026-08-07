@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'r
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { useT } from '@/hooks/use-t';
 import type { LiveTVChannel } from '@langplayer/shared';
 
 interface LiveTVPlayerProps {
@@ -18,6 +19,7 @@ export interface LiveTVPlayerHandle {
 
 export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
   function LiveTVPlayer({ channel, onError }, ref) {
+    const t = useT();
     const { width: screenWidth } = useWindowDimensions();
     const videoHeight = (screenWidth / 16) * 9;
     const [muted, setMuted] = useState(false);
@@ -71,7 +73,7 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
     if (!channel.url) {
       return (
         <View className="w-full items-center justify-center bg-muted" style={{ height: videoHeight }}>
-          <Text className="text-muted-foreground">No stream URL available</Text>
+          <Text className="text-muted-foreground">{t('msg.no_stream_url_available')}</Text>
         </View>
       );
     }
