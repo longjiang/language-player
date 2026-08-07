@@ -177,8 +177,8 @@ The web reader is a separate feature from the EPUB reader. Mobile has a
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 11.1 | Restyle quick gloss with parens and smart spacing | `a793418c` | Not in mobile |
-| 11.2 | `TokenizedText` respects the text-scaling setting everywhere | `03ea9b55` | Not in mobile |
+| 11.1 | Restyle quick gloss with parens and smart spacing | `a793418c` | **Ported** — mobile quick gloss now renders `('definition')` (parens + typographic quotes, muted, leading/trailing space) matching web |
+| 11.2 | `TokenizedText` respects the text-scaling setting everywhere | `03ea9b55` | **Ported** — mobile `TokenizedText` derives `textStyle` from the zoom setting in every render path (base 16 + zoom×2) |
 
 ## 12. Language Picker & Branding (shared/fundamental)
 
