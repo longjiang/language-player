@@ -82,6 +82,13 @@ export function DictionaryPopup({
   const l2 = baseCode(l2Lang.code);
   const dict = useDictionary();
   const t = useT();
+  // `useDictionary()` and `useT()` return fresh objects/functions on every
+  // render. Holding them in refs keeps the lookup effect stable so state
+  // changes don't cancel and restart the dictionary fetch on every render.
+  const dictRef = useRef(dict);
+  dictRef.current = dict;
+  const tRef = useRef(t);
+  tRef.current = t;
   const router = useRouter();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { height: screenHeight } = useWindowDimensions();
@@ -145,7 +152,7 @@ export function DictionaryPopup({
     const translateInBackground = async (merged: DictionaryEntry[]) => {
       if (l1 === 'en' || merged.length === 0) return;
       try {
-        const translated = await applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
+        const translated = await applyL1Translations(merged, textBatch, l2, l1, dictRef.current.lookup);
         if (!cancelled) setResults(translated);
       } catch {
         // Keep the English results.
@@ -183,7 +190,7 @@ export function DictionaryPopup({
         // forms, proper nouns, or words that need the LLM fallback), call the
         // single-word endpoint so the popup still shows entry cards.
         if (primaryResults.length === 0) {
-          const richRes = await dict.lookup(lookupWord, l2, l1);
+          const richRes = await dictRef.current.lookup(lookupWord, l2, l1);
           primaryResults = richRes.results ?? [];
           if (primaryResults.length > 0) {
             setCachedEntries(l2, lookupWord, primaryResults);
@@ -200,7 +207,7 @@ export function DictionaryPopup({
           if (surfaceCached) {
             surfaceResults = surfaceCached;
           } else {
-            const surfaceRes = await dict.lookup(word, l2, l1);
+            const surfaceRes = await dictRef.current.lookup(word, l2, l1);
             surfaceResults = surfaceRes.results ?? [];
             setCachedEntries(l2, word, surfaceResults);
           }
@@ -215,7 +222,7 @@ export function DictionaryPopup({
         if (!cancelled) setResults(merged);
         void translateInBackground(merged);
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? t('error.general'));
+        if (!cancelled) setError(e?.message ?? tRef.current('error.general'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -223,7 +230,7 @@ export function DictionaryPopup({
 
     void run();
     return () => { cancelled = true; };
-  }, [visible, word, lemma, l2Lang.code, l1Lang.code, dict, t]);
+  }, [visible, word, lemma, l2Lang.code, l1Lang.code]);
 
   const lemmaForm = lemma && lemma !== word ? lemma : null;
 
