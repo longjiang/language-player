@@ -4,13 +4,14 @@ import { Stack, Slot } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useColorScheme } from 'nativewind';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { LG_BREAKPOINT } from '@/lib/constants';
 
 export default function SettingsLayout() {
   const t = useT();
   const { width } = useWindowDimensions();
   const { colorScheme } = useColorScheme();
   const { settings } = useSettingsContext();
-  const isWide = width >= 600;
+  const isWide = width >= LG_BREAKPOINT;
 
   const isDark = colorScheme === 'dark';
   const headerStyle = {
