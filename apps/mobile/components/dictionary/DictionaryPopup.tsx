@@ -21,6 +21,7 @@ import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { ExternalLink } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
@@ -101,6 +102,7 @@ export function DictionaryPopup({
   const router = useRouter();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { height: screenHeight } = useWindowDimensions();
+  const { isMd } = useResponsive();
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,13 +114,13 @@ export function DictionaryPopup({
   useEffect(() => {
     if (visible) {
       Animated.parallel([
-        Animated.spring(slideAnim, {
+        ...(isMd ? [] : [Animated.spring(slideAnim, {
           toValue: 0,
           useNativeDriver: true,
           damping: 30,
           stiffness: 300,
           mass: 0.8,
-        }),
+        })]),
         Animated.timing(overlayOpacity, {
           toValue: 1,
           duration: 200,
@@ -127,11 +129,11 @@ export function DictionaryPopup({
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, {
+        ...(isMd ? [] : [Animated.timing(slideAnim, {
           toValue: screenHeight,
           duration: 200,
           useNativeDriver: true,
-        }),
+        })]),
         Animated.timing(overlayOpacity, {
           toValue: 0,
           duration: 200,
@@ -139,7 +141,7 @@ export function DictionaryPopup({
         }),
       ]).start();
     }
-  }, [visible, screenHeight, slideAnim, overlayOpacity]);
+  }, [visible, screenHeight, slideAnim, overlayOpacity, isMd]);
 
   // ── Look up the word when the popup opens (cache-first) ──
   useEffect(() => {
@@ -248,6 +250,8 @@ export function DictionaryPopup({
   useEffect(() => { if (visible) setWasVisible(true); }, [visible]);
   if (!visible && !wasVisible) return null;
 
+  const popupHeight = isMd ? Math.min(screenHeight * 0.75, 640) : screenHeight * 0.75;
+
   return (
     <DialogPrimitive.Root open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
       <DialogPrimitive.Portal>
@@ -263,23 +267,23 @@ export function DictionaryPopup({
           />
         </Animated.View>
 
-        {/* Bottom sheet */}
+        {/* Bottom sheet on narrow screens; centered dialog on md+ */}
         <Animated.View
           pointerEvents="box-none"
-          className="absolute inset-x-0 bottom-0"
-          style={{ transform: [{ translateY: slideAnim }] }}
+          className={isMd ? 'absolute inset-0 items-center justify-center px-4' : 'absolute inset-x-0 bottom-0'}
+          style={{ transform: isMd ? undefined : [{ translateY: slideAnim }] }}
         >
           <View
             testID="dictionary-popup"
-            className="rounded-t-xl bg-background"
+            className={isMd ? 'w-full max-w-lg overflow-hidden rounded-xl bg-background' : 'rounded-t-xl bg-background'}
             style={{
-              maxHeight: screenHeight * 0.75,
-              minHeight: screenHeight * 0.35,
+              maxHeight: popupHeight,
+              minHeight: isMd ? undefined : screenHeight * 0.35,
             }}
           >
             <View
               className="px-4 pt-4 pb-8"
-              style={{ height: screenHeight * 0.75 }}
+              style={{ height: popupHeight }}
             >
               {/* Header — surface form as headline, lemma below when different */}
               <View className="mb-3 flex-row items-center justify-between">
