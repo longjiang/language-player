@@ -149,14 +149,14 @@ richer (SPEC-032) and is web-only:
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 9.1 | Whole-book model re-engineering of the EPUB reader | `78134763` (SPEC-032) | Not in mobile |
-| 9.2 | Per-book EPUB bookshelf with reading progress | `af91c627`, `204130ba`, `1bd69f54`, `d4af42e6` | Not in mobile |
-| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | Not in mobile |
-| 9.4 | In-book search with snippets + chapter navigation | `cec93152`, `f32df70d` | Not in mobile |
-| 9.5 | Highlight EPUB search matches in the reader | `7f11764f`, `e4920f2e` | Not in mobile |
-| 9.6 | Open EPUBs straight to content + page-number estimates | `08f95227`, `4de9a652` | Not in mobile |
-| 9.7 | In-book back history + in-content link fragments | `3a18d4bf` | Not in mobile |
-| 9.8 | Dictionary popup spawned from clicked token / internal links | `e7ca8271`, `39f085f9` | Not in mobile |
+| 9.1 | Whole-book model re-engineering of the EPUB reader | `78134763` (SPEC-032) | Deferred — mobile keeps the single-file reader model |
+| 9.2 | Per-book EPUB bookshelf with reading progress | `af91c627`, `204130ba`, `1bd69f54`, `d4af42e6` | Deferred — `useEpub` persists a single book + position; multi-book library is future work |
+| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | Deferred — depends on 9.2 |
+| 9.4 | In-book search with snippets + chapter navigation | `cec93152`, `f32df70d` | **Ported** — new `BookSearchDialog` searches the current chapter's text blocks with highlighted snippets |
+| 9.5 | Highlight EPUB search matches in the reader | `7f11764f`, `e4920f2e` | **Ported** — search results highlight the term and jump to the matching page (`blockPage` added to `use-epub-pagination`) |
+| 9.6 | Open EPUBs straight to content + page-number estimates | `08f95227`, `4de9a652` | Partial — mobile restores the last-read position (anchor) on open; page-number estimates N/A |
+| 9.7 | In-book back history + in-content link fragments | `3a18d4bf` | Deferred — chapter sidebar has prev/next; full back-history stack is web-only |
+| 9.8 | Dictionary popup spawned from clicked token / internal links | `e7ca8271`, `39f085f9` | **Ported** — mobile reader renders via `TokenizedText` (tap-to-lookup dictionary popup); internal links N/A (no hyperlinks in the simplified mobile reader) |
 
 ## 10. Web Reader (article/text) — `apps/web` only
 
