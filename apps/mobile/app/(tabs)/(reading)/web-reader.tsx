@@ -109,6 +109,15 @@ export default function WebReaderScreen() {
     setVisitedSites(next);
   }, []);
 
+  /** Open a link (possibly relative) inside the web reader itself. */
+  const handleOpenLinkInReader = useCallback((href: string) => {
+    let resolved = href;
+    try {
+      resolved = new URL(href, url).href;
+    } catch { /* keep raw href */ }
+    void handleLoad(resolved);
+  }, [handleLoad, url]);
+
   return (
     <PageContainer>
       {/* Main content — persistent panel on wide screens, sheet on narrow */}
@@ -208,6 +217,7 @@ export default function WebReaderScreen() {
                   showTranslation={display.translation}
                   onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
                   showTextActions
+                  onOpenLink={handleOpenLinkInReader}
                   t={t}
                 />
               </View>
