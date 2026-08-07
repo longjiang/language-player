@@ -134,6 +134,7 @@ Manual checklist review found three more issues, all fixed:
 | Header app name | App name was visible on all widths after phase 3, crowding phones | App name now shows at ≥640 only; below that the header is logo-only |
 | NavBar dropdowns | Index routes (`/(tabs)/(media)` etc.) had no icon because the icon lookup used the raw route segment; the menu always opened at `left: 16` instead of under the clicked group | Icon lookup maps group index routes to `explore` / `reader` / `dictionary`; the dropdown is positioned via `measureInWindow` under the pressed group |
 | Live TV split layout | No padding around the player/channel list; search/filter icons used `className` colors that render black in dark mode | Row now has `px-4`; player-width math accounts for it; search/filter icons use `ICON_MUTED` / `ICON_ON_PRIMARY` |
+| TV Shows toolbar | Sort + region filter were always stacked below the search bar, unlike web's inline toolbar | At ≥768 the toolbar is a row: search takes remaining width, sort + region sit to its right; below 768 it stays stacked |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -351,7 +352,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Search** — no-results state narrow; results use the same grid as Explore; result count shown.
 - [ ] **Music** — uses the Explore grid, not a single-column list.
 - [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl) with padding around both columns; search/filter icons use theme tokens (no black icons in dark mode).
-- [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns.
+- [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns; at ≥768 sort + region filter sit to the right of the search bar (stacked below).
 - [ ] **TV Show detail** — row list capped at 896.
 - [ ] **Channel** — Explore-style grid; channel header card intact.
 - [ ] **Watch** — portrait: subtitle band below player; landscape: subtitle overlay or right transcript column (320px).
