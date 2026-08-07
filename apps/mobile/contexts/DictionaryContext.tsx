@@ -232,7 +232,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       sessionCache.set(cacheKey, entries);
 
       setResults(entries);
-      setMessage(entries.length === 0 ? (res.message ?? tRef.current('msg.no_results')) : (res.message ?? null));
+      setMessage(entries.length === 0 ? tRef.current('msg.no_results') : (res.message ?? null));
       await saveRecent(l2Code, trimmed);
       setRecentSearches(await loadRecent(l2Code));
     } catch (e: any) {
