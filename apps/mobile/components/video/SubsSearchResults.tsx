@@ -10,7 +10,7 @@ import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
-import { SimpleSubsForDebug } from './SimpleSubsForDebug';
+import { SubtitleDisplay } from './SubtitleDisplay';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { VideoControlBar } from './VideoControlBar';
@@ -150,7 +150,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     translationInput.forms,
   );
 
-  // Pre-parsed subtitle lines for SimpleSubsForDebug
+  // Pre-parsed subtitle lines for SubtitleDisplay
   const subtitleInitialLines = useMemo(
     () =>
       currentVideo?.subs_l2.map((l) => ({
@@ -381,7 +381,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
       {/* Subtitle — action menu is attached inside TokenizedText blocks */}
       <View className="min-h-32 w-full">
-        <SimpleSubsForDebug
+        <SubtitleDisplay
           singleLine
           lines={subtitleInitialLines}
           activeLineIndex={activeLineIndex}

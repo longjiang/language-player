@@ -12,7 +12,7 @@ import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
-interface SimpleSubsForDebugProps {
+interface SubtitleDisplayProps {
   lines: SubtitleSyncedLine[];
   activeLineIndex: number;
   currentTime: number;
@@ -25,7 +25,7 @@ interface SimpleSubsForDebugProps {
   singleLine?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false }: SimpleSubsForDebugProps) {
+export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback } = useSettingsContext();
