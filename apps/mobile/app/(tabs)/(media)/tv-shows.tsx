@@ -115,7 +115,7 @@ function DropdownPicker<T extends string>({
 export default function TvShowsScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const { width } = useResponsive();
+  const { width, isMd } = useResponsive();
   const [shows, setShows] = useState<ShowWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -217,10 +217,18 @@ export default function TvShowsScreen() {
       </View>
 
       {/* Toolbar: search + sort + locale filter */}
-      <View className="px-4 py-2 border-b border-border gap-2">
+      <View
+        className={
+          isMd
+            ? 'flex-row items-center gap-2 border-b border-border px-4 py-2'
+            : 'gap-2 border-b border-border px-4 py-2'
+        }
+      >
         {/* Search */}
         <TextInput
-          className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+          className={`rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground ${
+            isMd ? 'flex-1' : ''
+          }`}
           placeholder={t('action.search') + '...'}
           placeholderTextColor={PLACEHOLDER_COLOR}
           value={search}
@@ -229,7 +237,7 @@ export default function TvShowsScreen() {
 
         {/* Sort + Locale filter — dropdowns side by side */}
         <View className="flex-row gap-2">
-          <View className="flex-1">
+          <View className={isMd ? 'min-w-[140px]' : 'flex-1'}>
             <DropdownPicker
               value={sortKey}
               options={SORT_OPTIONS.map((o) => o.key)}
@@ -239,7 +247,7 @@ export default function TvShowsScreen() {
           </View>
 
           {locales.length > 2 && (
-            <View className="flex-1">
+            <View className={isMd ? 'min-w-[140px]' : 'flex-1'}>
               <DropdownPicker
                 value={localeFilter}
                 options={locales}
@@ -258,7 +266,7 @@ export default function TvShowsScreen() {
           <Text className="mt-4 text-center text-muted-foreground">{t('msg.no_shows_found')}</Text>
         </View>
       ) : (
-        /* Grid — 2 columns */
+        /* Grid — responsive columns (1/2/3/4 at web breakpoints) */
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
