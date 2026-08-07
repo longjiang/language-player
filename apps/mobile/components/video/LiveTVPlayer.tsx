@@ -48,11 +48,13 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
     useEffect(() => {
       const onPlayingChange = player.addListener('playingChange', (p) => {
         setIsPlaying(p.isPlaying);
+        // Live streams can emit a ready/playing status without a matching
+        // statusChange after loading; clear the spinner as soon as playback
+        // actually starts so it never stays visible on a playing stream.
+        if (p.isPlaying) setBuffering(false);
       });
       const onStatusChange = player.addListener('statusChange', (p) => {
         setBuffering(p.status === 'loading');
-      });
-      const onErrorEvent = player.addListener('statusChange', (p) => {
         if (p.status === 'error') {
           onError?.('Playback error');
         }
@@ -60,7 +62,6 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
       return () => {
         onPlayingChange.remove();
         onStatusChange.remove();
-        onErrorEvent.remove();
       };
     }, [player, onError]);
 
