@@ -325,6 +325,7 @@ export default function EpubReaderScreen() {
             showTranslation={display.translation}
             onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
             showTextActions
+            translationSideBySide={isWide}
             onOpenLink={handleOpenLink}
             highlight={highlight}
             textScale={1}
