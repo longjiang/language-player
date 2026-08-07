@@ -7,8 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
-import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen, Heart, Bookmark } from 'lucide-react-native';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
@@ -24,29 +23,9 @@ interface SimpleSubsForDebugProps {
   highlightTerms?: string[];
   /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
   singleLine?: boolean;
-  /** Called when user taps the transcript-mode toggle (singleLine mode only). */
-  onSwitchToTranscriptMode?: () => void;
-  /** Called when user taps previous video (singleLine mode only). */
-  onPrevVideo?: () => void;
-  /** Called when user taps next video (singleLine mode only). */
-  onNextVideo?: () => void;
-  /** Whether there is a previous video in queue. */
-  hasPrevVideo?: boolean;
-  /** Whether there is a next video in queue. */
-  hasNextVideo?: boolean;
-  /** Like state + handler. When omitted, the heart button is hidden. */
-  liked?: boolean;
-  onToggleLike?: () => void;
-  likeDisabled?: boolean;
-  /** Add-to-playlist handler. When omitted, the bookmark button is hidden. */
-  onSaveToPlaylist?: () => void;
-  playlistDisabled?: boolean;
-  /** When false, hides the single-line control row + separator (e.g. when the
-   *  parent already renders its own video control bar). Default true. */
-  showControls?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false, showControls = true }: SimpleSubsForDebugProps) {
+export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback } = useSettingsContext();
@@ -231,8 +210,6 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   if (singleLine) {
     const activeLine = activeLineIndex >= 0 ? displayLines[activeLineIndex] : undefined;
     const activeTokens = activeLineIndex >= 0 ? batchTokens[activeLineIndex] : undefined;
-    const isFirstLine = activeLineIndex <= 0;
-    const isLastLine = activeLineIndex >= lines.length - 1;
 
     // Karaoke progress for the active line
     let karaokeProgress: number | undefined;
@@ -244,86 +221,8 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         : 0;
     }
 
-    const btnColor = ICON_MUTED;
-
     return (
       <View className="flex-1 bg-card border-t border-border">
-        {showControls && (
-          <>
-            {/* Control row */}
-            <View className="flex-row items-center gap-0.5 px-2 py-1">
-              <Pressable
-                onPress={onPrevVideo}
-                disabled={!hasPrevVideo}
-                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-              >
-                <SkipBack size={18} color={btnColor} />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (!isFirstLine) {
-                    const prev = lines[activeLineIndex - 1];
-                    if (prev) onSeekToLine?.(prev.starttime);
-                  }
-                }}
-                disabled={isFirstLine}
-                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-              >
-                <ChevronLeft size={20} color={btnColor} />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (!isLastLine) {
-                    const next = lines[activeLineIndex + 1];
-                    if (next) onSeekToLine?.(next.starttime);
-                  }
-                }}
-                disabled={isLastLine}
-                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-              >
-                <ChevronRight size={20} color={btnColor} />
-              </Pressable>
-              <Pressable
-                onPress={onNextVideo}
-                disabled={!hasNextVideo}
-                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-              >
-                <SkipForward size={18} color={btnColor} />
-              </Pressable>
-              <View className="flex-1" />
-              {onToggleLike ? (
-                <Pressable
-                  onPress={onToggleLike}
-                  disabled={likeDisabled}
-                  className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-                >
-                  <Heart size={18} color={liked ? ICON_DESTRUCTIVE : btnColor} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
-                </Pressable>
-              ) : null}
-              {onSaveToPlaylist ? (
-                <Pressable
-                  onPress={onSaveToPlaylist}
-                  disabled={playlistDisabled}
-                  className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-                >
-                  <Bookmark size={18} color={btnColor} />
-                </Pressable>
-              ) : null}
-              {onSwitchToTranscriptMode ? (
-                <Pressable
-                  onPress={onSwitchToTranscriptMode}
-                  className="rounded p-1.5 active:bg-muted"
-                >
-                  <PanelRightOpen size={18} color={btnColor} />
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* Separator */}
-            <View className="mx-3 border-t border-border" />
-          </>
-        )}
-
         {/* Active line */}
         <Pressable
           className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
