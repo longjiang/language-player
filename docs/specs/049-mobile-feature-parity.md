@@ -143,20 +143,27 @@ dictionary popup, which opens directly on word tap (no action menu).
 
 ## 9. EPUB Reader & Bookshelf
 
-Mobile has a **basic** single-file EPUB reader (`(reading)/epub.tsx`: upload,
-cover, chapter sidebar, pagination). The web EPUB experience is substantially
-richer (SPEC-032) and is web-only:
+Mobile now uses a **whole-book model** (`lib/epub-book.ts`: spine = flow, TOC =
+bookmarks resolved to block locations, continuous pagination) with a
+multi-book, language-specific bookshelf (`lib/epub-store.ts` + `EpubBookshelf`).
+The web EPUB experience (SPEC-032) is fully ported:
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 9.1 | Whole-book model re-engineering of the EPUB reader | `78134763` (SPEC-032) | Deferred — mobile keeps the single-file reader model |
-| 9.2 | Per-book EPUB bookshelf with reading progress | `af91c627`, `204130ba`, `1bd69f54`, `d4af42e6` | Deferred — `useEpub` persists a single book + position; multi-book library is future work |
-| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | Deferred — depends on 9.2 |
+| 9.1 | Whole-book model re-engineering of the EPUB reader | `78134763` (SPEC-032) | **Ported (mobile equivalent)** — `lib/epub-book.ts` converts every linear spine item once into a global block stream, resolves TOC entries (fragments kept) to `BookLocation { blockIndex, offset }`, paginates continuously across the whole book, and restores by location (no text anchors) |
+| 9.2 | Per-book EPUB bookshelf with reading progress | `af91c627`, `204130ba`, `1bd69f54`, `d4af42e6` | **Ported** — `lib/epub-store.ts` (AsyncStorage) keeps one handle per book with `lastLocation`, `readChars`/`totalChars`; `EpubBookshelf` shows cover tiles + progress bars with add/remove actions |
+| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | **Ported** — OPF `dc:language` is stored per book; the shelf filters to the current L2 (books without a detected language appear everywhere) |
 | 9.4 | In-book search with snippets + chapter navigation | `cec93152`, `f32df70d` | **Ported** — new `BookSearchDialog` searches the current chapter's text blocks with highlighted snippets |
 | 9.5 | Highlight EPUB search matches in the reader | `7f11764f`, `e4920f2e` | **Ported** — search results highlight the term and jump to the matching page (`blockPage` added to `use-epub-pagination`) |
-| 9.6 | Open EPUBs straight to content + page-number estimates | `08f95227`, `4de9a652` | Partial — mobile restores the last-read position (anchor) on open; page-number estimates N/A |
-| 9.7 | In-book back history + in-content link fragments | `3a18d4bf` | Deferred — chapter sidebar has prev/next; full back-history stack is web-only |
-| 9.8 | Dictionary popup spawned from clicked token / internal links | `e7ca8271`, `39f085f9` | **Ported** — mobile reader renders via `TokenizedText` (tap-to-lookup dictionary popup); internal links N/A (no hyperlinks in the simplified mobile reader) |
+| 9.6 | Open EPUBs straight to content + page-number estimates | `08f95227`, `4de9a652` | **Ported** — bookshelf clicks open straight to the saved location (no cover tap); the reader shows continuous whole-book page numbers (`n / total`); page-number estimates N/A |
+| 9.7 | In-book back history + in-content link fragments | `3a18d4bf` | **Ported (mobile equivalent)** — reader header Back pops the in-book jump stack (TOC / search / internal links) and closes the book when empty; content links are parsed into link formats and tapping a linked token resolves its fragment via the book model (external links open in the system browser) |
+| 9.8 | Dictionary popup spawned from clicked token / internal links | `e7ca8271`, `39f085f9` | **Ported** — mobile reader renders via `TokenizedText` (tap-to-lookup dictionary popup); internal links now navigate via link formats (9.7) |
+
+**Notes:** Search (9.4/9.5) and the reader now operate over the whole-book
+block stream, so results cover every spine item exactly once and include the
+nearest preceding TOC chapter label. Pages are continuous across the entire
+book, and progress on the bookshelf is character-based
+(`readChars`/`totalChars`), so it never depends on the viewport.
 
 ## 10. Web Reader (article/text) — `apps/web` only
 
@@ -226,6 +233,8 @@ Excluded from the inventory as **not user-facing parity items**:
 - Should the native **WebViewSheet** image search (the commit `f0bad902a9` that
   anchors this range) be replaced by the native grid, or kept? Decisions here
   affect Section 3 scope.
-- Mobile currently uses a **single-file** EPUB reader. Do we port the whole-book
-  bookshelf model, or is per-device rendering enough for v3?
+- ~~Mobile currently uses a **single-file** EPUB reader. Do we port the
+  whole-book bookshelf model, or is per-device rendering enough for v3?~~
+  **Resolved (2026-08-07)** — mobile ported the whole-book model + bookshelf
+  (Section 9); search results and progress now span the entire book.
 - The list should be revisited at each mobile release to mark rows **Ported**.

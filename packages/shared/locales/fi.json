@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Oletko varma, että haluat peruuttaa tilauksesi?",
         "confirm_clear_words": "Haluatko varmasti poistaa kaikki tallennetut sanat?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Poistetaanko {title}? Lukemisen edistyminen menetetään.",
         "confirm_delete_dictionary": "Poistetaanko {lang}-sanakirja offline-tilasta? Tarvitset internetiä sanojen etsimiseen.",
         "confirm_delete_note": "Haluatko varmasti poistaa tämän muistiinpanon?",
         "confirm_delete_playlist": "Poistetaanko {title}? Tätä toimintoa ei voi kumota.",

@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Biztos benne, hogy le szeretné mondani az előfizetését?",
         "confirm_clear_words": "Biztosan el akarod távolítani az összes mentett szót?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "{title} eltávolítása? Az olvasási haladás elvész.",
         "confirm_delete_dictionary": "Törli a(z) {lang} offline szótárat? Internetre lesz szüksége a szavak kereséséhez.",
         "confirm_delete_note": "Biztosan törli ezt a jegyzetet?",
         "confirm_delete_playlist": "Törli: {title}? Ez nem vonható vissza.",

@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Tem certeza de que deseja cancelar sua assinatura?",
         "confirm_clear_words": "Tem certeza de que deseja remover todas as palavras salvas?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Remover {title}? O seu progresso de leitura será perdido.",
         "confirm_delete_dictionary": "Eliminar dicionário de {lang} offline? Precisará de internet para procurar palavras.",
         "confirm_delete_note": "Tem certeza que deseja excluir esta nota?",
         "confirm_delete_playlist": "Excluir {title}? Esta ação não pode ser desfeita.",

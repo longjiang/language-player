@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "An bhfuil tú cinnte gur mian leat do shíntiús a chealú?",
         "confirm_clear_words": "An bhfuil tú cinnte gur mian leat gach focal sábháilte a bhaint?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "An mbainfear {title}? Caillfear do dhul chun cinn léitheoireachta.",
         "confirm_delete_dictionary": "Scrios foclóir {lang} as líne? Beidh idirlíon uait chun focail a chuardach.",
         "confirm_delete_note": "An bhfuil tú cinnte gur mian leat an nóta seo a scriosadh?",
         "confirm_delete_playlist": "An scriosfar {title}? Ní féidir é seo a chur ar ceal.",

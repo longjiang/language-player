@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิก?",
         "confirm_clear_words": "คุณแน่ใจหรือไม่ว่าต้องการลบคำศัพท์ที่บันทึกไว้ทั้งหมด?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "นำ{title}ออก? ความคืบหน้าการอ่านของคุณจะหายไป",
         "confirm_delete_dictionary": "ลบพจนานุกรม{lang}ออฟไลน์หรือไม่? คุณจะต้องใช้อินเทอร์เน็ตเพื่อค้นหาคำศัพท์",
         "confirm_delete_note": "คุณแน่ใจหรือว่าต้องการลบบันทึกนี้",
         "confirm_delete_playlist": "ลบ {title} หรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้",

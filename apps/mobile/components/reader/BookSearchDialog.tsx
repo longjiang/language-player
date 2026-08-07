@@ -8,6 +8,8 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 interface BookSearchDialogProps {
   visible: boolean;
   blocks: ContentBlock[] | null;
+  /** Whole-book chapter labels (nearest preceding TOC entry per block). */
+  chapterLabels?: { blockIndex: number; label: string }[];
   /** Called when the user taps a result — jump to the block's page. */
   onSelect: (blockIndex: number) => void;
   onClose: () => void;
@@ -27,9 +29,21 @@ interface Match {
  * blocks for a term, shows snippets with the term highlighted, and jumps to
  * the page containing the tapped result.
  */
-export function BookSearchDialog({ visible, blocks, onSelect, onClose }: BookSearchDialogProps) {
+export function BookSearchDialog({ visible, blocks, chapterLabels = [], onSelect, onClose }: BookSearchDialogProps) {
   const t = useT();
   const [query, setQuery] = useState('');
+
+  const labelForBlock = useMemo(() => {
+    const sorted = [...chapterLabels].sort((a, b) => a.blockIndex - b.blockIndex);
+    return (blockIndex: number): string | null => {
+      let best: string | null = null;
+      for (const c of sorted) {
+        if (c.blockIndex <= blockIndex) best = c.label;
+        else break;
+      }
+      return best;
+    };
+  }, [chapterLabels]);
 
   const matches = useMemo<Match[]>(() => {
     const q = query.trim().toLowerCase();
@@ -97,6 +111,11 @@ export function BookSearchDialog({ visible, blocks, onSelect, onClose }: BookSea
                 <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
                   <HighlightSnippet snippet={item.snippet} term={query.trim()} />
                 </Text>
+                {labelForBlock(item.blockIndex) ? (
+                  <Text className="mt-0.5 text-[10px] font-medium text-primary/80" numberOfLines={1}>
+                    {labelForBlock(item.blockIndex)}
+                  </Text>
+                ) : null}
                 <Text className="mt-0.5 text-[10px] text-muted-foreground/70">
                   {t('action.go_to_page')}
                 </Text>

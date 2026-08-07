@@ -17,6 +17,7 @@ import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { enqueueLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 import { getConverter } from '@/lib/chinese-script';
+import type { EpubFormatRange } from '@/lib/epub-parser';
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -165,6 +166,10 @@ export interface TokenizedTextProps {
    *  the review card to reveal phonetics on the highlighted word when the
    *  card is flipped (SPEC-049 §6.1). Default false. */
   phoneticsOnHighlight?: boolean;
+  /** EPUB inline link ranges mapped onto `text` (SPEC-049 §9.7). */
+  formats?: EpubFormatRange[];
+  /** Follow an in-book link when a linked token is tapped. */
+  onOpenLink?: (href: string) => void;
 }
 
 /**
@@ -181,7 +186,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -261,6 +266,27 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   }, [tokens, useTraditional]);
 
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
+
+  // ── Map EPUB link format ranges onto token indices (SPEC-049 §9.7) ──
+  // Surface tokens concatenate back to `text`; when that invariant breaks
+  // (e.g. a tokenizer quirk), links are simply not applied.
+  const linkFormatMap = useMemo<Array<string | null>>(() => {
+    if (!formats?.length || tokens.length === 0) return [];
+    const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return [];
+    let pos = 0;
+    return tokens.map((token) => {
+      let url: string | null = null;
+      for (const f of formats) {
+        if (pos < f.end && pos + token.text.length > f.start) {
+          url = f.url;
+          break;
+        }
+      }
+      pos += token.text.length;
+      return url;
+    });
+  }, [formats, tokens, text]);
 
   // Quiz mode: track which tokens have been revealed
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
@@ -561,6 +587,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 : [{ text: displayText }];
 
               const handlePress = () => {
+                const linkUrl = onOpenLink ? linkFormatMap[i] ?? null : null;
+                if (linkUrl) {
+                  onOpenLink?.(linkUrl);
+                  return;
+                }
                 if (quizMode) {
                   setRevealedTokens(prev => new Set(prev).add(i));
                   return;
@@ -574,6 +605,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               };
 
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
+              const isLink = onOpenLink ? (linkFormatMap[i] ?? null) != null : false;
 
               return (
                 <View key={i} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
@@ -599,7 +631,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                             <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
                           ) : (
                             <Text style={[textStyle, { lineHeight: baseLeading }]}
-                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
                               {seg.text}
                             </Text>
                           )}
@@ -671,8 +703,14 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSaved = savedFormSet.has(word.toLowerCase());
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
+              const isLink = onOpenLink ? (linkFormatMap[i] ?? null) != null : false;
 
               const handlePress = () => {
+                const linkUrl = onOpenLink ? linkFormatMap[i] ?? null : null;
+                if (linkUrl) {
+                  onOpenLink?.(linkUrl);
+                  return;
+                }
                 if (quizMode) {
                   setRevealedTokens(prev => new Set(prev).add(i));
                   return;
@@ -695,7 +733,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {isBlanked ? (
                     <Text className="text-foreground">▯</Text>
                   ) : (
-                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
                   {showQuickGloss ? <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">{` ('${firstDef}') `}</Text> : ''}

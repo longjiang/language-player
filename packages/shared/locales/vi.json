@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký không?",
         "confirm_clear_words": "Bạn có chắc muốn xóa tất cả từ đã lưu?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Xóa {title}? Tiến độ đọc của bạn sẽ bị mất.",
         "confirm_delete_dictionary": "Xóa từ điển {lang} ngoại tuyến? Bạn sẽ cần internet để tra từ.",
         "confirm_delete_note": "Bạn có chắc muốn xóa ghi chú này không?",
         "confirm_delete_playlist": "Xóa {title}? Hành động này không thể hoàn tác.",

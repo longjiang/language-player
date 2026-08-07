@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Is jy seker jy wil jou inskrywing kanselleer?",
         "confirm_clear_words": "Is jy seker jy wil alle gestoorde woorde verwyder?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "Verwyder {title}? Jou leesvordering sal verlore gaan.",
         "confirm_delete_dictionary": "Skrap vanlyn {lang}-woordeboek? Jy sal internet nodig hê om woorde op te soek.",
         "confirm_delete_note": "Is jy seker jy wil hierdie nota uitvee?",
         "confirm_delete_playlist": "Vee {title} uit? Dit kan nie ongedaan gemaak word nie.",

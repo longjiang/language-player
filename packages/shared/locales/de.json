@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "confirm_clear_words": "Bist du sicher, dass du alle gespeicherten Wörter entfernen möchtest?",
         "confirm_delete_all_dictionaries": "Delete all offline dictionaries? You will need internet to look up words.",
+        "confirm_delete_book": "{title} entfernen? Ihr Lesefortschritt geht verloren.",
         "confirm_delete_dictionary": "Offline-Wörterbuch {lang} löschen? Sie benötigen Internet, um Wörter nachzuschlagen.",
         "confirm_delete_note": "Möchtest du diese Notiz wirklich löschen?",
         "confirm_delete_playlist": "{title} löschen? Das kann nicht rückgängig gemacht werden.",

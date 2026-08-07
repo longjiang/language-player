@@ -661,6 +661,7 @@
         "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか？",
         "confirm_clear_words": "保存した単語をすべて削除してもよろしいですか？",
         "confirm_delete_all_dictionaries": "すべてのオフライン辞書を削除しますか？",
+        "confirm_delete_book": "{title}を削除しますか？読書の進捗が失われます。",
         "confirm_delete_dictionary": "オフライン{lang}辞書を削除しますか？単語を検索するにはインターネットが必要になります。",
         "confirm_delete_note": "このノートを削除してもよろしいですか？",
         "confirm_delete_playlist": "{title}を削除しますか？この操作は元に戻せません。",
