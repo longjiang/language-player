@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { isContinua, type SketchExamplesResponse } from '@langplayer/shared';
 import { sentenceContaining } from '@langplayer/utils';
@@ -28,6 +28,7 @@ interface CorpusExamplesProps {
  */
 export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, highlightForms = [] }: CorpusExamplesProps) {
   const t = useT();
+  const [visible, setVisible] = useState(false);
   const l2 = l2Code.split('-')[0];
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${l2}&l1=${l1Code.split('-')[0]}${corpnameParam}`;
@@ -56,6 +57,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
     l1Code.split('-')[0],
     l2,
     displayTexts.map(() => highlightForms),
+    visible,
   );
 
   if (loading) {
@@ -84,7 +86,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
   }
 
   return (
-    <View>
+    <View onLayout={() => setVisible(true)}>
       {data.examples.map((example, index) => {
         const display = displayTexts[index] ?? '';
         return (
