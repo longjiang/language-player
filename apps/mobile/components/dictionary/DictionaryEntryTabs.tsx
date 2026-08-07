@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
+import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
 import { BookOpen, Film, Binary, Sparkles } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
@@ -72,18 +72,28 @@ export function DictionaryEntryTabs({
   const [exactMatch, setExactMatch] = useState(false);
   const searchTermString = exactMatch ? headTerm : allTerms.join(',');
 
+  // Only languages with an inflection endpoint get the Conjugations tab
+  // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
+  const hasInflections = isInflectable(l2Code);
+  const inflectionsTab = { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> };
+
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: () => <BookOpen size={14} color={ICON_MUTED} /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> },
+        ...(hasInflections ? [inflectionsTab] : []),
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> },
+        ...(hasInflections ? [inflectionsTab] : []),
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
       ];
+
+  // If the language has no inflections but the (possibly controlled) tab is
+  // still 'inflections' — e.g. navigating from a ja entry to a zh entry on the
+  // same detail page — fall back so the panel never renders empty.
+  const effectiveTab = !hasInflections && tab === 'inflections' ? (showDefinitionTab ? 'word' : 'examples') : tab;
 
   // Tab content panels — order must match the tabs array above
   const wordPanel = (
@@ -118,8 +128,8 @@ export function DictionaryEntryTabs({
   );
 
   const children = showDefinitionTab
-    ? [wordPanel, examplesPanel, deepseekPanel, inflectionsPanel]
-    : [examplesPanel, inflectionsPanel, deepseekPanel];
+    ? [wordPanel, examplesPanel, deepseekPanel, ...(hasInflections ? [inflectionsPanel] : [])]
+    : [examplesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel];
 
   return (
     <TabbedPanel
