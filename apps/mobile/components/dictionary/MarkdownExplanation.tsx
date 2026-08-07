@@ -77,7 +77,7 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
           // Interactive tokenized L2 span — bold, no chip background.
           return (
             <View key={i} className="flex-row items-baseline">
-              <TokenizedText text={part.value} l2Code={l2Code} leading="loose" />
+              <TokenizedText text={part.value} l2Code={l2Code} leading="loose" phonetics={false} />
             </View>
           );
         }
