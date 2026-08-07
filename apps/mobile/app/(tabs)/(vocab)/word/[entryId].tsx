@@ -11,14 +11,21 @@ import { WordListSidebar, isSidebarAvailable, type SidebarListItem } from '@/com
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { PanelRight } from 'lucide-react-native';
 import { getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
-import type { DictionaryEntry } from '@langplayer/shared';
+import { SUPPORTED_L2S, type DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
 
 export default function WordDetailScreen() {
-  const { entryId } = useLocalSearchParams<{ entryId: string }>();
+  const { entryId, l2 } = useLocalSearchParams<{ entryId: string; l2?: string }>();
   const t = useT();
   const router = useRouter();
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l1Lang, l2Lang, setL2Lang } = useLanguage();
+  const requestedL2 =
+    typeof l2 === 'string' && (SUPPORTED_L2S as readonly string[]).includes(l2.trim())
+      ? l2.trim()
+      : null;
+  // Deep links can carry ?l2=... to switch the stored L2 before loading
+  // content (SPEC-048 Tier 9). The param wins over the persisted pair.
+  const l2Code = requestedL2 ?? l2Lang.code;
   const {
     results,
     loading: ctxLoading,
@@ -36,6 +43,14 @@ export default function WordDetailScreen() {
   const [apiEntry, setApiEntry] = useState<DictionaryEntry | null>(null);
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // Persist the deep-link L2 override so the header, dictionary context, and
+  // saved-words state all agree with the language of the linked content.
+  useEffect(() => {
+    if (requestedL2 && requestedL2 !== l2Lang.code) {
+      setL2Lang(requestedL2);
+    }
+  }, [requestedL2, l2Lang.code, setL2Lang]);
 
   // Find the entry from sidebar source or search results (context).
   // The route may have ~ in place of , (CEDICT encoding), but context entries
@@ -56,7 +71,7 @@ export default function WordDetailScreen() {
   // Deep-link fallback: check ID cache first, then fetch from API.
   useEffect(() => {
     if (contextEntry || !entryId) return;
-    const l2 = l2Lang.code;
+    const l2 = l2Code;
 
     // Check ID cache first (populated by bulkLookupWords or previous fetches)
     const cached = getCachedEntryById(l2, entryId);
@@ -82,7 +97,7 @@ export default function WordDetailScreen() {
         setApiError(e?.message ?? 'Failed to load entry');
       })
       .finally(() => setApiLoading(false));
-  }, [contextEntry, entryId, l2Lang.code]);
+  }, [contextEntry, entryId, l2Code]);
 
   const entry = contextEntry ?? apiEntry;
   const loading = ctxLoading || apiLoading;
@@ -165,7 +180,7 @@ export default function WordDetailScreen() {
           <DictionaryEntryCard
             entry={entry}
             variant="full"
-            l2Code={l2Lang.code}
+            l2Code={l2Code}
           />
         </View>
 
@@ -173,7 +188,7 @@ export default function WordDetailScreen() {
         <View className="mx-4 mt-4 mb-8">
           <DictionaryEntryTabs
             entry={entry}
-            l2Code={l2Lang.code}
+            l2Code={l2Code}
             showDefinitionTab={false}
           />
         </View>
@@ -185,8 +200,8 @@ export default function WordDetailScreen() {
         onOpenChange={setSidebarOpen}
         source={sidebarSource}
         l1Code={l1Lang.code}
-        l2Code={l2Lang.code}
-        l2Base={l2Lang.code.split('-')[0]}
+        l2Code={l2Code}
+        l2Base={l2Code.split('-')[0]}
         currentEntryId={currentEntryId}
         onNavigate={handleSidebarNavigate}
       />

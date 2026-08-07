@@ -23,7 +23,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { parseSubtitleCSV } from '@langplayer/utils';
 import { AlertCircle } from 'lucide-react-native';
-import type { SubtitleSyncedLine, YouTubeVideo } from '@langplayer/shared';
+import { SUPPORTED_L2S, type SubtitleSyncedLine, type YouTubeVideo } from '@langplayer/shared';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
 const SAVE_POS_INTERVAL = 5000;
@@ -59,8 +59,15 @@ async function savePosition(videoId: string, time: number) {
 }
 
 export default function WatchScreen() {
-  const { videoId } = useLocalSearchParams<{ videoId: string }>();
-  const { l2Lang } = useLanguage();
+  const { videoId, l2 } = useLocalSearchParams<{ videoId: string; l2?: string }>();
+  const { l2Lang, setL2Lang } = useLanguage();
+  const requestedL2 =
+    typeof l2 === 'string' && (SUPPORTED_L2S as readonly string[]).includes(l2.trim())
+      ? l2.trim()
+      : null;
+  // Deep links can carry ?l2=... to switch the stored L2 before loading
+  // content (SPEC-048 Tier 9). The param wins over the persisted pair.
+  const l2Code = requestedL2 ?? l2Lang.code;
   const t = useT();
   const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
@@ -80,10 +87,18 @@ export default function WatchScreen() {
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
 
+  // Persist the deep-link L2 override so the header and library state agree
+  // with the language of the linked video.
+  useEffect(() => {
+    if (requestedL2 && requestedL2 !== l2Lang.code) {
+      setL2Lang(requestedL2);
+    }
+  }, [requestedL2, l2Lang.code, setL2Lang]);
+
   // Token cache — use Directus video ID (not YouTube ID)
   const { cache: tokenCache, loaded: tokenCacheLoaded } = useVideoTokenCache(
     video?.id ?? '',
-    l2Lang.code,
+    l2Code,
   );
 
   // Watch history recording
@@ -128,7 +143,7 @@ export default function WatchScreen() {
       try {
         // Single endpoint: queries Directus, falls back to YouTube
         const res = await fetch(
-          `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(videoId)}&subs_l2=1&l2=${l2Lang.code}`,
+          `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(videoId)}&subs_l2=1&l2=${l2Code}`,
           { signal: AbortSignal.timeout(15000) },
         );
         if (!res.ok) throw new Error(t('msg.video_unavailable'));
@@ -179,7 +194,7 @@ export default function WatchScreen() {
         if (lines.length === 0) {
           try {
             const captionsRes = await fetch(
-              `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Lang.code}`,
+              `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Code}`,
               { signal: AbortSignal.timeout(15000) },
             );
             if (captionsRes.ok) {
@@ -211,7 +226,7 @@ export default function WatchScreen() {
         setLoading(false);
       }
     })();
-  }, [videoId, l2Lang.code]);
+  }, [videoId, l2Code]);
 
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
   const handleDuration = useCallback((d: number) => setDuration(d), []);
@@ -298,7 +313,7 @@ export default function WatchScreen() {
     if (video) void toggleLike(video);
   }, [toggleLike, video]);
 
-  const liked = !!video && isLiked(l2Lang.code, video);
+  const liked = !!video && isLiked(l2Code, video);
   const likeDisabled = !isSignedIn || !video?.id;
   const openPlaylistDialog = useCallback(() => setPlaylistDialogOpen(true), []);
   const playlistDisabled = !isSignedIn;
