@@ -5,8 +5,8 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TokenizedText } from '../TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { ICON_MUTED } from '@/lib/theme-colors';
-import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen } from 'lucide-react-native';
+import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen, Heart, Bookmark } from 'lucide-react-native';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
@@ -31,9 +31,16 @@ interface SimpleSubsForDebugProps {
   hasPrevVideo?: boolean;
   /** Whether there is a next video in queue. */
   hasNextVideo?: boolean;
+  /** Like state + handler. When omitted, the heart button is hidden. */
+  liked?: boolean;
+  onToggleLike?: () => void;
+  likeDisabled?: boolean;
+  /** Add-to-playlist handler. When omitted, the bookmark button is hidden. */
+  onSaveToPlaylist?: () => void;
+  playlistDisabled?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false }: SimpleSubsForDebugProps) {
+export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
@@ -265,6 +272,24 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
             <SkipForward size={18} color={btnColor} />
           </Pressable>
           <View className="flex-1" />
+          {onToggleLike ? (
+            <Pressable
+              onPress={onToggleLike}
+              disabled={likeDisabled}
+              className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+            >
+              <Heart size={18} color={liked ? ICON_DESTRUCTIVE : btnColor} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
+            </Pressable>
+          ) : null}
+          {onSaveToPlaylist ? (
+            <Pressable
+              onPress={onSaveToPlaylist}
+              disabled={playlistDisabled}
+              className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+            >
+              <Bookmark size={18} color={btnColor} />
+            </Pressable>
+          ) : null}
           {onSwitchToTranscriptMode ? (
             <Pressable
               onPress={onSwitchToTranscriptMode}

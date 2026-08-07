@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
@@ -17,6 +18,7 @@ import { SimpleSubsForDebug } from '@/components/video/SimpleSubsForDebug';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
 import { VideoMeta } from '@/components/video/VideoMeta';
 import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
+import { AddToPlaylistDialog } from '@/components/video/AddToPlaylistDialog';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { parseSubtitleCSV } from '@langplayer/utils';
@@ -62,6 +64,7 @@ export default function WatchScreen() {
   const t = useT();
   const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
+  const { isLiked, toggleLike, isSignedIn } = useUserLibraryContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const isWide = screenWidth / screenHeight > 1;
 
@@ -75,6 +78,7 @@ export default function WatchScreen() {
   const [paused, setPaused] = useState(true);
   const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
+  const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
 
   // Token cache — use Directus video ID (not YouTube ID)
   const { cache: tokenCache, loaded: tokenCacheLoaded } = useVideoTokenCache(
@@ -290,6 +294,15 @@ export default function WatchScreen() {
     updatePlayback({ transcriptMode: isSubtitles ? 'transcript' : 'subtitles' });
   }, [updatePlayback, isSubtitles]);
 
+  const handleToggleLike = useCallback(() => {
+    if (video) void toggleLike(video);
+  }, [toggleLike, video]);
+
+  const liked = !!video && isLiked(l2Lang.code, video);
+  const likeDisabled = !isSignedIn || !video?.id;
+  const openPlaylistDialog = useCallback(() => setPlaylistDialogOpen(true), []);
+  const playlistDisabled = !isSignedIn;
+
   // ── Loading ──
   if (loading) {
     return (
@@ -343,9 +356,19 @@ export default function WatchScreen() {
               hasNextVideo={hasNext}
               onPrevVideo={playPrevious}
               onNextVideo={playNext}
+              liked={liked}
+              onToggleLike={handleToggleLike}
+              likeDisabled={likeDisabled}
+              onSaveToPlaylist={openPlaylistDialog}
+              playlistDisabled={playlistDisabled}
             />
           </View>
         </View>
+        <AddToPlaylistDialog
+          open={playlistDialogOpen}
+          onOpenChange={setPlaylistDialogOpen}
+          video={video}
+        />
       </View>
     );
   }
@@ -368,6 +391,16 @@ export default function WatchScreen() {
           hasNextVideo={hasNext}
           onPrevVideo={playPrevious}
           onNextVideo={playNext}
+          liked={liked}
+          onToggleLike={handleToggleLike}
+          likeDisabled={likeDisabled}
+          onSaveToPlaylist={openPlaylistDialog}
+          playlistDisabled={playlistDisabled}
+        />
+        <AddToPlaylistDialog
+          open={playlistDialogOpen}
+          onOpenChange={setPlaylistDialogOpen}
+          video={video}
         />
       </View>
     );
@@ -404,6 +437,11 @@ export default function WatchScreen() {
           hasNextLine={subtitleStartTimes.length > 0}
           hasPreviousVideo={hasPrevious}
           hasNextVideo={hasNext}
+          liked={liked}
+          onToggleLike={handleToggleLike}
+          likeDisabled={likeDisabled}
+          onSaveToPlaylist={openPlaylistDialog}
+          playlistDisabled={playlistDisabled}
         />
       </View>
 
@@ -425,6 +463,13 @@ export default function WatchScreen() {
           info={videoInfo}
         />
       </View>
+
+      {/* Add-to-playlist dialog */}
+      <AddToPlaylistDialog
+        open={playlistDialogOpen}
+        onOpenChange={setPlaylistDialogOpen}
+        video={video}
+      />
     </View>
   );
 }

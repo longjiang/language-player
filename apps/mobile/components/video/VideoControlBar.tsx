@@ -3,10 +3,10 @@ import { View, Text, Pressable } from 'react-native';
 import {
   Play, Pause, SkipBack, SkipForward, RotateCcw,
   ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
-  Info, Clock, PanelRightOpen,
+  Info, Clock, PanelRightOpen, Heart, Bookmark,
 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
-import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubePlayerHandle } from './YouTubePlayer';
 
 // Speed options matching Next.js: 1× → 0.75× → 0.5× → 1×
@@ -29,6 +29,13 @@ interface VideoControlBarProps {
   hasNextLine?: boolean;
   hasPreviousVideo?: boolean;
   hasNextVideo?: boolean;
+  /** Like state + handler. When omitted, the heart button is hidden. */
+  liked?: boolean;
+  onToggleLike?: () => void;
+  likeDisabled?: boolean;
+  /** Add-to-playlist handler. When omitted, the bookmark button is hidden. */
+  onSaveToPlaylist?: () => void;
+  playlistDisabled?: boolean;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
 }
@@ -56,6 +63,11 @@ export function VideoControlBar({
   hasNextLine = true,
   hasPreviousVideo = false,
   hasNextVideo = false,
+  liked = false,
+  onToggleLike,
+  likeDisabled = false,
+  onSaveToPlaylist,
+  playlistDisabled = false,
   reduced = false,
 }: VideoControlBarProps) {
   const t = useT();
@@ -113,6 +125,24 @@ export function VideoControlBar({
         {onTogglePanel && (
           <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
             <PanelRightOpen size={16} color={ICON_MUTED} />
+          </Pressable>
+        )}
+        {onToggleLike && (
+          <Pressable
+            onPress={onToggleLike}
+            disabled={likeDisabled}
+            className={`rounded p-1.5 ${likeDisabled ? 'opacity-30' : 'active:bg-muted'}`}
+          >
+            <Heart size={16} color={liked ? ICON_DESTRUCTIVE : ICON_MUTED} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
+          </Pressable>
+        )}
+        {onSaveToPlaylist && (
+          <Pressable
+            onPress={onSaveToPlaylist}
+            disabled={playlistDisabled}
+            className={`rounded p-1.5 ${playlistDisabled ? 'opacity-30' : 'active:bg-muted'}`}
+          >
+            <Bookmark size={16} color={ICON_MUTED} />
           </Pressable>
         )}
       </View>
