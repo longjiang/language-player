@@ -6,7 +6,7 @@ import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplay
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
-import { BookOpen, Bookmark, ExternalLink } from 'lucide-react-native';
+import { BookOpen, Bookmark, BookmarkCheck, ExternalLink, Video } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -29,6 +29,38 @@ interface DictionaryEntryCardProps {
   saveContext?: SavedWordContext;
   /** Pre-formatted pronunciation override. Uses formatPronunciation if omitted. */
   pronunciation?: string | null;
+}
+
+/** Cap a source title to 5 space-delimited words or 15 characters, whichever is shorter. */
+function capSourceTitle(title: string): string {
+  const trimmed = title.trim();
+  const words = trimmed.split(/\s+/).slice(0, 5).join(' ');
+  const chars = trimmed.slice(0, 15);
+  const capped = words.length < chars.length ? words : chars;
+  const truncated = trimmed.split(/\s+/).length > 5 || trimmed.length > 15;
+  return truncated ? `${capped.trim()}…` : trimmed;
+}
+
+/**
+ * Highlights every occurrence of the saved word's surface form inside the
+ * context sentence, mirroring the web review page's highlightForm logic.
+ */
+function HighlightForm({ text, form }: { text: string; form?: string }) {
+  if (!form) return <Text>{text}</Text>;
+  const parts = text.split(form);
+  if (parts.length === 1) return <Text>{text}</Text>;
+  return (
+    <Text>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <Text className="font-bold text-foreground">{form}</Text>
+          )}
+        </React.Fragment>
+      ))}
+    </Text>
+  );
 }
 
 /** Renders the entry details for a dictionary lookup result — compact in popups, full on detail pages.
@@ -72,6 +104,23 @@ export function DictionaryEntryCard({
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
+
+  // ── Saved-word metadata — shown on the compact card when this entry is in
+  // the user's saved words (date + context sentence + context source + title).
+  // Mirrors the web DictionaryEntryCard's saved-metadata block. ──
+  const savedRecord = (savedWords[l2Lang.code] ?? []).find((w) => w.id === entry.id);
+  const savedCtx = savedRecord?.context ? (savedRecord.context as unknown as SavedWordContext | undefined) : undefined;
+  const saveDateStr = savedRecord?.date
+    ? new Date(savedRecord.date).toLocaleDateString(l1Code ?? 'en')
+    : savedRecord?.savedAt
+      ? new Date(savedRecord.savedAt).toLocaleDateString(l1Code ?? 'en')
+      : '';
+  const contextSentence = savedCtx?.text && savedCtx.text !== head ? savedCtx.text : undefined;
+  const hasVideoSource = !!(savedCtx?.youtube_id || savedCtx?.videoTitle);
+  const hasTextSource = !!savedCtx?.textTitle;
+  const sourceLabel = hasVideoSource
+    ? (savedCtx?.videoTitle ? capSourceTitle(savedCtx.videoTitle) : undefined)
+    : hasTextSource ? (savedCtx?.textTitle ? capSourceTitle(savedCtx.textTitle) : undefined) : undefined;
 
   const scale = primaryScale(l2Code);
   // Format each level with its own scale so HSK badges show the year/version
@@ -163,13 +212,44 @@ export function DictionaryEntryCard({
             </Text>
           )}
 
+          {/* Saved metadata — date · source type + title · context sentence (form highlighted) */}
+          {savedRecord && (
+            <View className="mt-2 flex-row items-start gap-1">
+              <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
+              <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
+                {saveDateStr
+                  ? <Text className="text-muted-foreground">{saveDateStr}</Text>
+                  : null}
+                {(hasVideoSource || hasTextSource) && (
+                  <Text> · {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}{sourceLabel ? ` ${sourceLabel}` : ''}</Text>
+                )}
+                {contextSentence && (
+                  <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
+                )}
+              </Text>
+            </View>
+          )}
+
           {/* Source + save */}
-          {displaySource || saveButton ? (
+          {(displaySource || saveContext || saveButton) && (
             <View className="mt-2 flex-row items-center justify-between">
               {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
-              {saveButton ? <View className="-mr-1">{saveButton as any}</View> : null}
+              {saveButton
+                ? <View className="-mr-1">{saveButton as any}</View>
+                : saveContext ? (
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); toggleSave(); }}
+                    hitSlop={8}
+                    className="rounded p-1"
+                    accessibilityLabel={wordSaved ? t('action.remove_from_saved') : t('action.save_word')}
+                  >
+                    {wordSaved
+                      ? <BookmarkCheck size={20} color="#f59e0b" fill="#f59e0b" />
+                      : <Bookmark size={20} color="#f59e0b" />}
+                  </Pressable>
+                ) : null}
             </View>
-          ) : null}
+          )}
         </View>
       </Pressable>
     );
