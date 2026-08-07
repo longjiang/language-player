@@ -35,7 +35,7 @@ export function TranscriptQueuePanel({
       activeTab={tab}
       onTabChange={(key) => setTab(key as 'transcript' | 'queue' | 'info')}
       className={`h-full min-h-0 ${className ?? ''}`}
-      contentClassName="min-h-0"
+      contentClassName="min-h-0 p-4"
     >
       {transcript}
       {queue}
