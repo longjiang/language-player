@@ -9,7 +9,8 @@ export type VideoTokenCache = Record<string, LemmatizeResponse>;
 // This prevents cascading re-renders when used in useEffect dependency arrays.
 
 const _searchByTitle = (params: {
-  q: string;
+  q?: string;
+  tag?: string;
   l2: string;
   limit?: number;
   page?: number;

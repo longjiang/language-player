@@ -6,6 +6,7 @@ import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoCard } from '@/components/video/VideoCard';
+import { baseCode } from '@langplayer/utils';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -38,7 +39,7 @@ export default function SearchScreen() {
     let cancelled = false;
     setTagsLoading(true);
     apiClient.get<VideoTag[]>('/video-tags', {
-      params: { l2: l2Lang.code, limit: 50, min_count: 2 },
+      params: { l2: baseCode(l2Lang.code), limit: 50, min_count: 2 },
     }).then((data) => {
       if (!cancelled) { setTags(data); setTagsLoading(false); }
     }).catch(() => {
@@ -52,7 +53,7 @@ export default function SearchScreen() {
     return (match && match[2]?.length === 11) ? match[2] : null;
   };
 
-  const doSearch = useCallback(async (term: string) => {
+  const doSearch = useCallback(async (term: string, byTag = false) => {
     const trimmed = term.trim();
     if (!trimmed) return;
 
@@ -68,7 +69,9 @@ export default function SearchScreen() {
     setHasSearched(true);
 
     try {
-      const res = await videosApi.searchByTitle({ q: trimmed, l2: l2Lang.code, limit: 50 });
+      const res = byTag
+        ? await videosApi.searchByTitle({ tag: trimmed, l2: baseCode(l2Lang.code), limit: 50 })
+        : await videosApi.searchByTitle({ q: trimmed, l2: baseCode(l2Lang.code), limit: 50 });
       setResults(Array.isArray(res) ? res : []);
     } catch (err: any) {
       setError(err?.message ?? t('error.something_went_wrong'));
@@ -79,7 +82,7 @@ export default function SearchScreen() {
 
   const handleTagClick = (tag: string) => {
     setQuery(tag);
-    doSearch(tag);
+    doSearch(tag, true);
   };
 
   const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
