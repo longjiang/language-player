@@ -3,6 +3,26 @@
 **Date**: 2026-07-25
 **Status**: accepted
 
+**See also**: [SPEC-048 — Mobile Release Plan (Human QA + App Store & Play Store)](../specs/048-mobile-release-plan.md) for the build/upload process for both stores (including the production `EXPO_PUBLIC_API_URL` requirement), and [ADR-0027](0027-defer-automated-e2e-human-qa.md) for the decision to gate releases on human QA instead of automated E2E.
+
+## Update (2026-08-06) — Revised iOS & Play Store strategy
+
+This supersedes the "replace the Nuxt binary" decision in the original
+[Decision](#decision) below (old Option B):
+
+- **iOS — Classic stays**: the Classic Nuxt app remains live and is renamed
+  **"Language Player 2"** (its existing listing).
+- **iOS — GO replaced**: the GO Legacy app is replaced by the new
+  `apps/mobile` build and renamed **"Language Player 3"**. Because a store
+  listing's bundle ID cannot change, the new iOS binary must use the GO
+  bundle ID **`ca.zerotohero.go`** (currently the new app is configured as
+  `ca.zerotohero.app` in `apps/mobile/app.json` — see SPEC-048 § 3).
+- **Google Play — new launch**: a brand-new **"Language Player 3"** listing on
+  a new Play Developer account (see SPEC-048 § 4).
+
+The bundle-ID and IAP consequences of this revised plan are tracked in
+[SPEC-048 — Mobile Release Plan](../specs/048-mobile-release-plan.md).
+
 ## Context
 
 We have two iOS apps live on the App Store, both offering essentially the same product (language learning with video content) but built on different tech stacks and named differently:

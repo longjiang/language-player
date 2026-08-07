@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Language Player",
+    "name": "Language Player 3",
     "slug": "language-player",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "languageplayer",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ca.zerotohero.app"
+      "bundleIdentifier": "ca.zerotohero.go"
     },
     "android": {
       "adaptiveIcon": {

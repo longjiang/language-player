@@ -1,5 +1,13 @@
 # SPEC-023: Mobile End-to-End Testing Plan
 
+> **Deferred 2026-08-06** — automated Maestro E2E is deferred in favor of
+> informal, checklist-based human testing. See
+> [ADR-0027](../adr/0027-defer-automated-e2e-human-qa.md) and
+> [SPEC-048 § 1 — Pre-release QA checklist](048-mobile-release-plan.md#12-pre-release-qa-checklist).
+> The Tier 0–9 catalog below is kept as the source list for that human QA
+> checklist; the Maestro flows under `apps/mobile/e2e/` are preserved but not
+> a release gate.
+
 ## Metadata
 - **Spec ID**: SPEC-023
 - **Feature**: End-to-End Testing for Mobile App
