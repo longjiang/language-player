@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import { File } from 'expo-file-system';
 import JSZip from 'jszip';
 import {
   parseOPF,
@@ -92,8 +93,10 @@ export async function openEpubBook(
   fileName: string,
   opts: OpenOptions = {},
 ): Promise<EpubBookModel> {
-  const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
-  const zip = await JSZip.loadAsync(base64, { base64: true });
+  // Read the archive as binary (not base64) — base64 expands the file 33% and
+  // can make JSZip hang or freeze the JS thread on large books.
+  const data = await new File(fileUri).arrayBuffer();
+  const zip = await JSZip.loadAsync(data);
   const id = sanitizeEpubId(fileName);
   const tempDir = `${FileSystem.cacheDirectory}epub_tmp_${id}/`;
   try { await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true }); } catch { /* exists */ }
