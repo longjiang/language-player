@@ -171,6 +171,8 @@ export interface TokenizedTextProps {
   formats?: EpubFormatRange[];
   /** Follow an in-book link when a linked token is tapped. */
   onOpenLink?: (href: string) => void;
+  /** When false, forces phonetics/furigana off (AI explanation plain spans). */
+  phonetics?: boolean;
 }
 
 /**
@@ -187,7 +189,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -224,8 +226,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
-  const showPhonetics = phonetics.show !== false;
-  const replaceWithPhonetics = phonetics.show === 'word';
+  const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
+  const replaceWithPhonetics = phoneticsOverride === false ? false : phonetics.show === 'word';
   const popupEnabled = tokenSettings.enabled;
   const quizMode = tokenSettings.mode === 'quiz';
 
