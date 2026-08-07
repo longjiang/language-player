@@ -16,6 +16,9 @@ export {
   enqueueLookupWords,
   getCachedEntryById,
   setCachedEntryById,
+  getL1CachedEntry,
+  getL1CachedEntries,
+  setL1CachedEntry,
   getIdCacheKeys,
   getTextCacheKeys,
 } from '@langplayer/utils';

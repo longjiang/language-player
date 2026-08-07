@@ -7,7 +7,14 @@ import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import { ImageSearchResults } from '@/components/dictionary/ImageSearchResults';
-import { getCachedEntries, setCachedEntries, setCachedEntryById, bulkLookupWords } from '@/lib/dictionary-cache';
+import {
+  getCachedEntries,
+  setCachedEntries,
+  setCachedEntryById,
+  getL1CachedEntries,
+  setL1CachedEntry,
+  bulkLookupWords,
+} from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { useRouter } from 'expo-router';
@@ -22,9 +29,40 @@ interface DictionaryPopupProps {
   /** Pronunciation from the lemmatizer, shown in [brackets] next to the headword. */
   tokenPron?: string | null;
   context?: string;
-  translatedContext?: string;
   onClose: () => void;
   onViewDetail?: (entry: DictionaryEntry, allResults: DictionaryEntry[]) => void;
+}
+
+/**
+ * When the user's L1 is not English, swap the English batch-lookup results
+ * for L1-translated entries (fetched once per entry and cached by id).
+ */
+async function applyL1Translations(
+  entries: DictionaryEntry[],
+  texts: string[],
+  l2: string,
+  l1: string,
+  lookup: (text: string, l2: string, l1: string) => Promise<{ results?: DictionaryEntry[] }>,
+): Promise<DictionaryEntry[]> {
+  if (l1 === 'en' || entries.length === 0) return entries;
+
+  const ids = entries.map((e) => e.id).filter(Boolean);
+  const cached = getL1CachedEntries(l2, l1, ids);
+  if (cached.length > 0) {
+    const byId = new Map(cached.map((e) => [e.id, e]));
+    return entries.map((e) => byId.get(e.id) ?? e);
+  }
+
+  for (const text of texts) {
+    const res = await lookup(text, l2, l1);
+    const translated = res.results ?? [];
+    if (translated.length === 0) continue;
+    for (const e of translated) setL1CachedEntry(l2, l1, e);
+    const byId = new Map(translated.map((e) => [e.id, e]));
+    return entries.map((e) => byId.get(e.id) ?? e);
+  }
+
+  return entries;
 }
 
 export function DictionaryPopup({
@@ -33,7 +71,6 @@ export function DictionaryPopup({
   lemma,
   tokenPron,
   context,
-  translatedContext,
   onClose,
   onViewDetail,
 }: DictionaryPopupProps) {
@@ -86,6 +123,7 @@ export function DictionaryPopup({
   // ── Look up the word when the popup opens (cache-first) ──
   useEffect(() => {
     if (!visible || !word) return;
+    let cancelled = false;
     setError(null);
     setResults(null);
 
@@ -97,25 +135,35 @@ export function DictionaryPopup({
 
     // Check cache first — show instantly if all texts are cached
     const allCached = textBatch.every((t) => getCachedEntries(l2, t) !== undefined);
-    if (allCached) {
-      const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
-      if (!alsoLookupSurface) {
-        setResults(primaryResults);
+
+    const finalize = async (merged: DictionaryEntry[]): Promise<DictionaryEntry[]> => {
+      if (l1 === 'en' || merged.length === 0) return merged;
+      const ids = merged.map((e) => e.id).filter(Boolean);
+      const cachedL1 = getL1CachedEntries(l2, l1, ids);
+      if (cachedL1.length > 0) {
+        const byId = new Map(cachedL1.map((e) => [e.id, e]));
+        return merged.map((e) => byId.get(e.id) ?? e);
+      }
+      return applyL1Translations(merged, textBatch, l2, l1, dict.lookup);
+    };
+
+    const run = async () => {
+      if (allCached) {
+        const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
+        const surfaceResults = alsoLookupSurface
+          ? (getCachedEntries(l2, word) ?? []).filter(
+              (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
+            )
+          : [];
+        const merged = [...primaryResults, ...surfaceResults];
+        // Index by ID for the detail page cache
+        for (const e of merged) if (e.id) setCachedEntryById(l2, e);
+        if (!cancelled) setResults(await finalize(merged));
         return;
       }
-      const surfaceResults = (getCachedEntries(l2, word) ?? []).filter(
-        (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
-      );
-      const merged = [...primaryResults, ...surfaceResults];
-      // Index by ID for the detail page cache
-      for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-      setResults(merged);
-      return;
-    }
 
-    // Cache miss — fetch from server
-    setLoading(true);
-    (async () => {
+      // Cache miss — fetch from server
+      setLoading(true);
       try {
         // Use bulkLookupWords to populate cache, then read from cache
         await bulkLookupWords(
@@ -144,14 +192,17 @@ export function DictionaryPopup({
         const merged = [...primaryResults, ...surfaceResults];
         // Index by ID for the detail page cache
         for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-        setResults(merged);
+        if (!cancelled) setResults(await finalize(merged));
       } catch (e: any) {
-        setError(e?.message ?? t('error.general'));
+        if (!cancelled) setError(e?.message ?? t('error.general'));
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    })();
-  }, [visible, word, lemma, l2Lang.code, l1Lang.code]);
+    };
+
+    void run();
+    return () => { cancelled = true; };
+  }, [visible, word, lemma, l2Lang.code, l1Lang.code, dict, t]);
 
   const lemmaForm = lemma && lemma !== word ? lemma : null;
 
@@ -218,18 +269,6 @@ export function DictionaryPopup({
                   <Text className="text-base text-muted-foreground">✕</Text>
                 </Pressable>
               </View>
-
-              {/* Context */}
-              {context ? (
-                <View className="mb-2 rounded-lg bg-muted/50 p-2">
-                  <Text className="text-sm text-foreground">{context}</Text>
-                  {translatedContext ? (
-                    <Text className="mt-1 text-sm text-muted-foreground">
-                      {translatedContext}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
 
               {/* Results */}
               <ScrollView

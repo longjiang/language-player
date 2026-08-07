@@ -16,6 +16,7 @@ import { log, logwarn } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { enqueueLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
+import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter } from '@/lib/chinese-script';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
@@ -293,6 +294,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // Batch dictionary lookup layer (matches web's tokenized-text.tsx)
   const [cacheVersion, setCacheVersion] = useState(0);
+  // L1-translated quick glosses keyed by lookup text (non-English UI only).
+  const [l1Glosses, setL1Glosses] = useState<Record<string, string>>({});
 
   // ── Computed text styles from zoom + typeFace settings ──
   const textStyle = useMemo(() => {
@@ -501,6 +504,40 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
     };
   }, [l2Code, cacheVersion]);
+
+  // ── L1-translated quick gloss (matches web token-span) ──
+  useEffect(() => {
+    if (l1Lang.code === 'en' || !quickGlossEnabled) return;
+    let cancelled = false;
+
+    const pending: Array<{ lookupText: string }> = [];
+    const seen = new Set<string>();
+    for (const token of tokens) {
+      const lower = token.text.toLowerCase();
+      if (!savedFormSet.has(lower) || seen.has(lower)) continue;
+      seen.add(lower);
+      const { firstDef } = getTokenEntryData(token);
+      if (!firstDef) continue;
+      const lookupText = token.lemmas[0]?.lemma || token.text;
+      const cached = getL1Gloss(lookupText, l2Code, l1Lang.code);
+      if (cached !== null) {
+        setL1Glosses((prev) => (prev[lookupText] ? prev : { ...prev, [lookupText]: cached }));
+      } else {
+        pending.push({ lookupText });
+      }
+    }
+
+    for (const { lookupText } of pending) {
+      void fetchL1Gloss(lookupText, l2Code, l1Lang.code).then((gloss) => {
+        if (!cancelled && gloss) {
+          setL1Glosses((prev) => (prev[lookupText] ? prev : { ...prev, [lookupText]: gloss }));
+        }
+      });
+    }
+
+    return () => { cancelled = true; };
+  }, [tokens, cacheVersion, l1Lang.code, quickGlossEnabled, savedFormSet, getTokenEntryData]);
+
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
     const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
@@ -557,6 +594,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
+              const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
               const isSaved = savedFormSet.has(word.toLowerCase());
@@ -573,7 +612,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               // Quick gloss and interlinear definition coexist (matching web).
               // Quick gloss: 'def' marker inline after saved words.
               // Interlinear: definition stacked below all words.
-              const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
@@ -651,8 +690,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                         otherwise the word's large lineHeight applies to the gloss text too,
                         creating a tall invisible box that breaks baseline alignment. */}
                     {showQuickGloss && (
-                      <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} onPress={handlePress}>
-                        <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">{` ('${firstDef}') `}</Text>
+                      <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }} onPress={handlePress}>
+                        <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
                       </Text>
                     )}
                   </View>
@@ -699,9 +738,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
+              const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const isSaved = savedFormSet.has(word.toLowerCase());
-              const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const isLink = onOpenLink ? (linkFormatMap[i] ?? null) != null : false;
 
@@ -736,7 +777,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                     <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
-                  {showQuickGloss ? <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">{` ('${firstDef}') `}</Text> : ''}
+                  {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
                 </Text>
               );
             });
