@@ -28,6 +28,39 @@ function stripUnwanted(html: string): string {
     .replace(/<[a-z]+[^>]*class="[^"]*\b(sidebar|menu|navigation|mw-jump-link|mw-editsection|reference|noprint|thumb|infobox|navbox|metadata)\b[^"]*"[^>]*\/>/gi, '');
 }
 
+/** Remove HTML tags while respecting quoted attribute values, which can
+ *  contain `>` and newlines (e.g. MediaWiki's `data-mw` JSON attributes). */
+function stripHtmlTags(html: string): string {
+  let out = '';
+  let i = 0;
+  while (i < html.length) {
+    if (html[i] === '<') {
+      let j = i + 1;
+      let quote: string | null = null;
+      let closed = false;
+      while (j < html.length) {
+        const ch = html[j];
+        if (quote) {
+          if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+          quote = ch;
+        } else if (ch === '>') {
+          closed = true;
+          break;
+        }
+        j++;
+      }
+      if (closed) {
+        i = j + 1;
+        continue;
+      }
+    }
+    out += html[i];
+    i++;
+  }
+  return out;
+}
+
 /**
  * Extract the main content area from HTML.
  * Looks for #mw-content-text (Wikipedia), <article>, <main>, or falls back to <body>.
@@ -218,8 +251,8 @@ export function htmlToMarkdown(html: string, baseUrl: string): string {
   // Paragraphs
   md = md.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n\n$1\n\n');
 
-  // Remove any remaining HTML tags
-  md = md.replace(/<[^>]+>/g, '');
+  // Remove any remaining HTML tags (quote-aware so `data-mw` JSON never leaks)
+  md = stripHtmlTags(md);
 
   // Clean up whitespace
   md = md
