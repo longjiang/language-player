@@ -17,6 +17,7 @@ import {
 } from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useT } from '@/hooks/use-t';
@@ -75,6 +76,10 @@ export function DictionaryPopup({
   onViewDetail,
 }: DictionaryPopupProps) {
   const { l1Lang, l2Lang } = useLanguage();
+  // The shared dictionary cache and backend both key on the base L2 code
+  // (e.g. "zh" not "zh-Hans"). Using the regional code here misses the cache
+  // TokenizedText has already populated and can make the popup look empty.
+  const l2 = baseCode(l2Lang.code);
   const dict = useDictionary();
   const t = useT();
   const router = useRouter();
@@ -127,7 +132,6 @@ export function DictionaryPopup({
     setError(null);
     setResults(null);
 
-    const l2 = l2Lang.code;
     const l1 = l1Lang.code;
     const lookupWord = lemma && lemma !== word ? lemma : word;
     const alsoLookupSurface = lookupWord !== word;
@@ -287,7 +291,7 @@ export function DictionaryPopup({
                 <View className="mb-3">
                   <ImageSearchResults
                     term={results?.[0]?.head ?? lemmaForm ?? word}
-                    l2Code={l2Lang.code}
+                    l2Code={l2}
                     l2Name={l2Lang.name}
                     l1Code={l1Lang.code}
                     variant="compact"
@@ -334,7 +338,7 @@ export function DictionaryPopup({
                           router.push(`/word/${safeId}` as any);
                         }
                       }}
-                      l2Code={l2Lang.code}
+                      l2Code={l2}
                       saveButton={<SaveButton entry={entry} size={20} />}
                     />
                   </View>
