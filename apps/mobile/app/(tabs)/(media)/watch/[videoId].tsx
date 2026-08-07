@@ -306,7 +306,7 @@ export default function WatchScreen() {
   // ── Loading ──
   if (loading) {
     return (
-      <View testID="watch-screen" accessibilityLabel="watch screen" className="flex-1 items-center justify-center bg-background">
+      <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
       </View>
     );
@@ -315,7 +315,7 @@ export default function WatchScreen() {
   // ── Error ──
   if (error || !video) {
     return (
-      <View testID="watch-screen" accessibilityLabel="watch screen" className="flex-1 items-center justify-center bg-background px-8">
+      <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 items-center justify-center bg-background px-8">
         <AlertCircle size={48} color={ICON_DESTRUCTIVE} />
         <Text className="mt-4 text-xl font-bold text-foreground">{t('msg.video_unavailable')}</Text>
         {error ? <Text className="mt-2 text-center text-muted-foreground">{error}</Text> : null}
@@ -415,7 +415,7 @@ export default function WatchScreen() {
   );
 
   return (
-    <View testID="watch-screen" accessibilityLabel="watch screen" className="flex-1 bg-background">
+    <View testID="watch-screen" accessibilityLabel={t('label.watch_screen')} className="flex-1 bg-background">
       {/* Player */}
       <View>{playerElement}</View>
 

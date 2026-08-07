@@ -131,10 +131,10 @@ export default function GoProSuccessPage() {
       ) : (
         <>
           <Text className="text-2xl font-bold text-foreground text-center">
-            Payment successful
+            {t('msg.payment_successful')}
           </Text>
           <Text className="mt-2 text-muted-foreground text-center">
-            Please log in to verify your Pro status.
+            {t('msg.log_in_to_verify_pro_status')}
           </Text>
           <View className="mt-8 w-full max-w-sm">
             <Pressable

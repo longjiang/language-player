@@ -20,7 +20,7 @@ export function TranscriptQueuePanel({
   const t = useT();
 
   const tabs: TabDef[] = [
-    { key: 'video', label: 'Video' },
+    { key: 'video', label: t('title.video') },
     { key: 'transcript', label: t('title.transcript') },
     { key: 'queue', label: t('title.queue') },
   ];

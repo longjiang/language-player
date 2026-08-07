@@ -71,7 +71,7 @@ export default function TokenizerScreen() {
       {/* ── Sample text (paginated, like reader) ── */}
       <View className="mt-6 rounded-lg border border-border bg-card p-4">
         <Text className="mb-3 text-xs font-medium text-muted-foreground">
-          {sample?.title ?? l2Lang.name} · Sample
+          {sample?.title ?? l2Lang.name} · {t('label.sample')}
         </Text>
         <PaginatedReader
           blocks={samplePagination.blocks}
@@ -97,7 +97,7 @@ export default function TokenizerScreen() {
       {/* ── Custom text input ── */}
       <View className="mt-6">
         <Text className="mb-2 text-sm font-medium text-foreground">
-          Custom text
+          {t('label.custom_text')}
         </Text>
         <TextInput
           className="mb-3 min-h-[80px] rounded-lg border border-border bg-background p-4 text-sm text-foreground"
