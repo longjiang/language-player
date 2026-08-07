@@ -54,6 +54,7 @@ export default function EpubReaderScreen() {
       void epub.saveLocation(loc);
     }, [epub]),
     measureChunkSize: MEASURE_CHUNK,
+    estimate: true,
   });
 
   // Seek to the resume location once the reader enters content (cover tap or

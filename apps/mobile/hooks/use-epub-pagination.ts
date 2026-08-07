@@ -25,6 +25,18 @@ interface UseEpubPaginationOptions {
   onBlockChange?: (blockIndex: number) => void;
   /** Measure the hidden view in chunks (large whole-book streams). Default: all at once. */
   measureChunkSize?: number;
+  /** When true, estimate page breaks from text length instead of measuring
+   *  hidden views — much faster and non-blocking for large EPUBs. */
+  estimate?: boolean;
+}
+
+/** Rough block height estimate used for non-blocking EPUB pagination. */
+function estimateBlockHeight(block: ContentBlock, contentWidth: number): number {
+  if (block.kind === 'image') return contentWidth * 0.6 + 24;
+  if (block.kind === 'table') return (block.rows.length + 1) * 32 + 16 + 12;
+  const charsPerLine = Math.max(20, Math.floor(contentWidth / 8));
+  const lines = Math.max(1, Math.ceil(block.text.length / charsPerLine));
+  return lines * 24 + 12;
 }
 
 interface UseEpubPaginationReturn {
@@ -51,7 +63,7 @@ interface UseEpubPaginationReturn {
 export function useEpubPagination({
   text, l1Code, l2Code, showTranslation, resetKey,
   preParsedBlocks, initialAnchor, initialBlockIndex,
-  onAnchorChange, onBlockChange, measureChunkSize,
+  onAnchorChange, onBlockChange, measureChunkSize, estimate = false,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const contentWidth = windowWidth - 32;
@@ -94,6 +106,29 @@ export function useEpubPagination({
     if (!text.trim()) { setBlocks(null); return; }
     try { setBlocks(parseMarkdownBlocks(text)); } catch { setBlocks(null); }
   }, [text, preParsedBlocks]);
+
+  // ── Estimated pagination (EPUB whole-book mode) ──
+  // Avoids rendering every block in a hidden measuring view, which can freeze
+  // the app on large books. Page breaks are approximate but instant.
+  useEffect(() => {
+    if (!estimate || !blocks || blocks.length === 0) return;
+    const availableHeight = windowHeight - 260;
+    const breaks: number[] = [];
+    let accumulated = 0;
+    for (let i = 0; i < blocks.length; i++) {
+      const h = estimateBlockHeight(blocks[i]!, contentWidth);
+      if (accumulated + h > availableHeight && accumulated > 0) {
+        breaks.push(i);
+        accumulated = h;
+      } else {
+        accumulated += h;
+      }
+    }
+    setPageBreaks(breaks);
+    setPage(0);
+    setHasMeasured(true);
+    setMeasuredWindow(blocks.length);
+  }, [estimate, blocks, windowHeight, contentWidth]);
 
   // ── Reset measurement state when text (chapter) changes ──
   useEffect(() => {
