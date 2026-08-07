@@ -85,6 +85,7 @@
 | TextActionMenu | `components/TextActionMenu.tsx` | ✅ | Per-block action menu: copy, speak (TTS), AI explain (streaming DeepSeek), translate (POST /translate). Bottom sheet on trigger. |
 | TabbedPanel | `components/TabbedPanel.tsx` | ✅ | Reusable tab bar + content switcher |
 | EPUB Chapter Sidebar | `components/reader/epub-chapter-sidebar.tsx` | ✅ | Chapter TOC with prev/next nav |
+| Book Search Dialog | `components/reader/BookSearchDialog.tsx` | ✅ | In-book search with highlighted snippets; tap a result to jump to the matching page |
 | EPUB Cover | `components/reader/EpubCover.tsx` | ✅ | EPUB cover image rendering |
 | Paginated Reader | `components/reader/PaginatedReader.tsx` | ✅ | Shared paginated content renderer (EPUB + notes reader) |
 
@@ -162,6 +163,7 @@
 | TokenizedText | `components/TokenizedText.tsx` | ✅ | Core lemmatized text rendering across all screens |
 | TabbedPanel | `components/TabbedPanel.tsx` | ✅ | Used by WordDetailScreen and Settings |
 | AI Explanation | `components/AiExplanation.tsx` | ✅ | DeepSeek SSE streaming |
+| Markdown Explanation | `components/dictionary/MarkdownExplanation.tsx` | ✅ | AI explanation renderer — backticked L2 spans become interactive TokenizedText once streaming finishes |
 | PitchAccent | `components/PitchAccent.tsx` | ✅ | Japanese kana with ↑↓ pitch accent markers via `@langplayer/utils` |
 | Inflection Table | `components/InflectionTable.tsx` | ✅ | Multi-language inflection support |
 | MarkdownText | `components/MarkdownText.tsx` | ✅ | Basic markdown rendering |
