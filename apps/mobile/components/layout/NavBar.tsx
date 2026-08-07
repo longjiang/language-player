@@ -103,8 +103,20 @@ export function NavBar({ headerHeight }: { headerHeight: number }) {
           <Pressable className="absolute inset-0" onPress={() => setOpenGroup(null)} />
           {activeGroup && (
             <View
-              style={{ position: 'absolute', top: headerHeight, left: 16 }}
-              className="z-50 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg"
+              style={{
+                position: 'absolute',
+                top: headerHeight,
+                left: 16,
+                // Inline shadow instead of the `shadow-lg` class: NativeWind's
+                // dynamic class upgrades can crash dev builds with a misleading
+                // "navigation context" error (nativewind/nativewind#1432).
+                shadowColor: ICON_MUTED,
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+                elevation: 8,
+              }}
+              className="z-50 min-w-[180px] rounded-lg border border-border bg-card p-1"
             >
               {activeGroup.links.map((link) => (
                 <Pressable
