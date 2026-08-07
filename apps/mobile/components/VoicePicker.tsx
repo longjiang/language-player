@@ -4,6 +4,7 @@ import * as Speech from 'expo-speech';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { getSampleSentence } from '@langplayer/shared';
 import { Volume2, Square, ChevronDown } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
@@ -47,7 +48,9 @@ export function VoicePicker() {
       rate,
     };
     if (selectedVoice) (options as any).voice = selectedVoice;
-    Speech.speak(l2Lang.name, options);
+    // Speak a real sentence in the target language — the language name
+    // ("Japanese") is read incorrectly by many TTS voices.
+    Speech.speak(getSampleSentence(l2Lang.code), options);
     setIsSpeaking(true);
     // expo-speech doesn't have onDone callback in v14+, so use a timer
     setTimeout(() => setIsSpeaking(false), 3000);
