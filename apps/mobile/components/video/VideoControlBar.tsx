@@ -38,6 +38,8 @@ interface VideoControlBarProps {
   /** Add-to-playlist handler. When omitted, the bookmark button is hidden. */
   onSaveToPlaylist?: () => void;
   playlistDisabled?: boolean;
+  /** Optional count text shown between the previous/next line buttons. */
+  videoCountText?: string | null;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
 }
@@ -71,6 +73,7 @@ export function VideoControlBar({
   likeDisabled = false,
   onSaveToPlaylist,
   playlistDisabled = false,
+  videoCountText,
   reduced = false,
 }: VideoControlBarProps) {
   const t = useT();
@@ -111,6 +114,9 @@ export function VideoControlBar({
         >
           <ChevronLeft size={18} color={ICON_MUTED} />
         </Pressable>
+        {videoCountText ? (
+          <Text className="px-1 text-xs tabular-nums text-muted-foreground">{videoCountText}</Text>
+        ) : null}
         <Pressable
           onPress={onNextLine}
           disabled={!hasNextLine}
