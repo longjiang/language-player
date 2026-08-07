@@ -24,8 +24,19 @@ interface VideoCardProps {
 
 function formatDuration(seconds: number | string | undefined): string {
   if (seconds == null || seconds === '') return '';
-  const num = typeof seconds === 'string' ? parseFloat(seconds) : seconds;
-  if (isNaN(num)) return '';
+  let num: number;
+  if (typeof seconds === 'string') {
+    // Support ISO 8601 durations (PT1H23M45S) as well as plain seconds.
+    const m = seconds.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
+    if (m) {
+      num = parseInt(m[1] ?? '0', 10) * 3600 + parseInt(m[2] ?? '0', 10) * 60 + parseFloat(m[3] ?? '0');
+    } else {
+      num = parseFloat(seconds);
+    }
+  } else {
+    num = seconds;
+  }
+  if (isNaN(num) || num <= 0) return '';
   const mins = Math.floor(num / 60);
   const secs = Math.floor(num % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
