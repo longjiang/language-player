@@ -380,7 +380,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       </View>
 
       {/* Subtitle — action menu is attached inside TokenizedText blocks */}
-      <View className="min-h-32 items-center">
+      <View className="min-h-32 w-full">
         <SimpleSubsForDebug
           singleLine
           lines={subtitleInitialLines}

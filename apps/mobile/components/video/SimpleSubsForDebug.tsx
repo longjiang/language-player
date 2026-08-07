@@ -222,7 +222,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     }
 
     return (
-      <View className="flex-1 bg-card border-t border-border">
+      <View className="min-h-32 flex-1 bg-card border-t border-border">
         {/* Active line */}
         <Pressable
           className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
