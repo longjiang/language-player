@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { ListVideo, Plus, Trash2, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import type { Playlist } from '@langplayer/shared';
@@ -18,9 +19,11 @@ export default function PlaylistsScreen() {
   const { l2Lang } = useLanguage();
   const { loaded, isSignedIn, getPlaylists, createPlaylist, deletePlaylist } = useUserLibraryContext();
   const t = useT();
+  const { width } = useResponsive();
 
   const l2Code = l2Lang?.code ?? '';
   const playlists = getPlaylists(l2Code);
+  const numColumns = width < 640 ? 1 : width < 1024 ? 2 : 3;
 
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -125,51 +128,56 @@ export default function PlaylistsScreen() {
       <FlatList
         data={playlists}
         keyExtractor={(item) => String(item.id)}
+        key={`playlists-${numColumns}`}
+        numColumns={numColumns}
+        columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
         renderItem={({ item }) => {
           const first = item.videos[0];
           return (
-            <Pressable
-              onPress={() => router.push(`/(tabs)/(me)/playlists/${item.id}` as any)}
-              className="mb-2 flex-row items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 active:bg-muted"
-            >
-              {/* Thumbnail or placeholder */}
-              <View className="relative h-14 w-24 overflow-hidden rounded bg-muted">
-                {first?.youtube_id ? (
-                  <Image source={{ uri: youtubeThumbnail(first.youtube_id) }} className="h-full w-full" />
-                ) : (
-                  <View className="flex-1 items-center justify-center">
-                    <ListVideo size={20} className="text-muted-foreground/40" />
+            <View key={item.id} className="mb-2 overflow-hidden rounded-xl border border-border bg-card" style={{ flex: 1 }}>
+              <Pressable
+                onPress={() => router.push(`/(tabs)/(me)/playlists/${item.id}` as any)}
+                className="active:bg-muted"
+              >
+                {/* Thumbnail or placeholder */}
+                <View className="relative aspect-video w-full bg-muted">
+                  {first?.youtube_id ? (
+                    <Image source={{ uri: youtubeThumbnail(first.youtube_id) }} className="h-full w-full" />
+                  ) : (
+                    <View className="flex-1 items-center justify-center">
+                      <ListVideo size={24} className="text-muted-foreground/40" />
+                    </View>
+                  )}
+                  <View className="absolute bottom-2 right-2 rounded bg-black/70 px-1.5 py-0.5">
+                    <Text className="text-xs text-white">
+                      {t('msg.playlist_video_count', { count: item.videos.length })}
+                    </Text>
                   </View>
-                )}
-                <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
-                  <Text className="text-[10px] text-white">
-                    {t('msg.playlist_video_count', { count: item.videos.length })}
+                </View>
+
+                {/* Info */}
+                <View className="p-3">
+                  <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
+                    {item.title}
                   </Text>
                 </View>
-              </View>
-
-              {/* Info */}
-              <View className="flex-1 min-w-0">
-                <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
-                  {item.title}
-                </Text>
-              </View>
+              </Pressable>
 
               {/* Delete */}
               <Pressable
                 onPress={() => handleDelete(item)}
                 disabled={deletingId === item.id}
-                className="flex h-9 w-9 items-center justify-center rounded-lg active:bg-destructive/10"
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 active:bg-destructive/80"
                 hitSlop={8}
               >
                 {deletingId === item.id ? (
-                  <Loader2 size={16} color={ICON_MUTED} />
+                  <Loader2 size={16} color="#fff" />
                 ) : (
-                  <Trash2 size={16} color={ICON_DESTRUCTIVE} />
+                  <Trash2 size={16} color="#fff" />
                 )}
               </Pressable>
-            </Pressable>
+            </View>
           );
         }}
       />
