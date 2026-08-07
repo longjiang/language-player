@@ -1,33 +1,28 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { NotesSidebar } from '@/components/reader/NotesSidebar';
+import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
-import { BookOpen, PenLine, Plus, PanelRightOpen, PanelRightClose, Cloud, Check, MoreHorizontal, Trash2 } from 'lucide-react-native';
+import { BookOpen, PenLine, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
-
-const SIDEBAR_MAX_WIDTH = 400;
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
-  const { width: screenWidth } = useWindowDimensions();
-  const sidebarWidth = Math.min(screenWidth - 32, SIDEBAR_MAX_WIDTH);
+  const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
 
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [saving, setSaving] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [renameId, setRenameId] = useState<number | null>(null);
-  const [renameText, setRenameText] = useState('');
-  const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
@@ -88,20 +83,24 @@ export default function ReaderScreen() {
     autoSave(newText);
   };
 
-  // Rename
-  const handleRenameSubmit = async () => {
-    if (renameId !== null && renameText.trim()) {
-      await notes.renameNote(renameId, renameText.trim());
-      setRenameId(null);
-    }
-  };
-
   // Delete
   const handleDelete = (noteId: number) => {
     Alert.alert(t('action.delete'), t('msg.confirm_delete_note'), [
       { text: t('action.cancel'), style: 'cancel' },
       { text: t('action.delete'), style: 'destructive', onPress: () => notes.deleteNote(noteId) },
     ]);
+  };
+
+  // Selecting/creating a note closes the mobile sheet (matches web).
+  const handleSelectNote = (noteId: number) => {
+    setMobileOpen(false);
+    void notes.selectNote(noteId);
+  };
+
+  const handleNewNote = () => {
+    setMobileOpen(false);
+    justCreatedRef.current = true;
+    void notes.createNote(t('msg.untitled_note'));
   };
 
   return (
@@ -135,10 +134,11 @@ export default function ReaderScreen() {
         <View className="flex-1" />
         {saving && <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>}
         <Pressable
-          onPress={() => setSidebarOpen(!sidebarOpen)}
+          onPress={toggle}
           className="rounded p-1.5 active:bg-muted"
+          accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
         >
-          {sidebarOpen ? (
+          {isWide && sidebarOpen ? (
             <PanelRightClose size={18} color={ICON_MUTED} />
           ) : (
             <PanelRightOpen size={18} color={ICON_MUTED} />
@@ -146,8 +146,8 @@ export default function ReaderScreen() {
         </Pressable>
       </View>
 
-      {/* Main content — sidebar overlays content when open */}
-      <View className="flex-1 pt-2">
+      {/* Main content — persistent panel on wide screens, sheet on narrow */}
+      <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
         {/* Editor / Reader */}
         <View className="flex-1">
           {activeTab === 'edit' && (
@@ -205,105 +205,24 @@ export default function ReaderScreen() {
           )}
         </View>
 
-        {/* Notes sidebar — overlay */}
-        {sidebarOpen && (
-          <View className="absolute right-0 top-0 bottom-0 z-10 border-l border-border bg-card shadow-lg" style={{ width: sidebarWidth, elevation: 8 }}>
-            <View className="border-b border-border px-3 py-2">
-              <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
-            </View>
-            <Pressable
-              onPress={() => { justCreatedRef.current = true; notes.createNote(t('msg.untitled_note')); setSidebarOpen(false); }}
-              className="mx-3 my-2 flex-row items-center gap-1.5 rounded-lg border border-border px-3 py-2 active:bg-muted"
-            >
-              <Plus size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-foreground">{t('action.new_note')}</Text>
-            </Pressable>
-
-            <ScrollView className="flex-1">
-              {notes.notesLoading && (
-                <ActivityIndicator size="small" color={ICON_MUTED} style={{ marginTop: 20 }} />
-              )}
-              {notes.notesError && (
-                <Text className="px-3 py-4 text-xs text-red-500">{notes.notesError}</Text>
-              )}
-              {!notes.notesLoading && notes.notes.length === 0 && (
-                <Text className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</Text>
-              )}
-              {notes.notes.map((n) => (
-                <View key={n.id}>
-                  {renameId === n.id ? (
-                    <View className="flex-row items-center px-2 py-1">
-                      <TextInput
-                        className="flex-1 rounded border border-border px-2 py-1 text-xs text-foreground"
-                        value={renameText}
-                        onChangeText={setRenameText}
-                        onSubmitEditing={handleRenameSubmit}
-                        onBlur={handleRenameSubmit}
-                        autoFocus
-                      />
-                    </View>
-                  ) : (
-                    <Pressable
-                      onPress={() => { notes.selectNote(n.id); setSidebarOpen(false); }}
-                      className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
-                    >
-                      {n._syncStatus === 'synced' ? (
-                        <Check size={14} color={ICON_PRIMARY} />
-                      ) : n._syncStatus === 'error' ? (
-                        <Cloud size={14} color={ICON_DESTRUCTIVE} />
-                      ) : (
-                        <Cloud size={14} color={ICON_MUTED} />
-                      )}
-                      <View className="flex-1">
-                        <Text className={`text-sm truncate ${notes.currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
-                          {n.title ?? t('msg.untitled_note')}
-                        </Text>
-                        {n.created_on && (
-                          <Text className="text-xs text-muted-foreground">
-                            {new Date(n.created_on).toLocaleDateString()}
-                          </Text>
-                        )}
-                      </View>
-                      <Pressable
-                        onPress={() => setMenuNoteId(menuNoteId === n.id ? null : n.id)}
-                        className="rounded p-1 active:bg-muted"
-                      >
-                        <MoreHorizontal size={14} color={ICON_MUTED} />
-                      </Pressable>
-                    </Pressable>
-                  )}
-
-                  {/* Context menu */}
-                  {menuNoteId === n.id && (
-                    <View className="absolute right-2 top-10 z-20 min-w-[120px] rounded-lg border border-border bg-card py-1 shadow-lg" style={{ elevation: 8 }}>
-                      <Pressable
-                        onPress={() => { setMenuNoteId(null); setRenameId(n.id); setRenameText(n.title ?? ''); }}
-                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
-                      >
-                        <PenLine size={12} color={ICON_MUTED} />
-                        <Text className="text-xs text-foreground">{t('action.rename')}</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => { setMenuNoteId(null); handleDelete(n.id); }}
-                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
-                      >
-                        <Trash2 size={12} color={ICON_DESTRUCTIVE} />
-                        <Text className="text-xs text-red-500">{t('action.delete')}</Text>
-                      </Pressable>
-                    </View>
-                  )}
-                </View>
-              ))}
-              {/* Tappable backdrop to close menu */}
-              {menuNoteId !== null && (
-                <Pressable
-                  onPress={() => setMenuNoteId(null)}
-                  className="absolute inset-0 z-10"
-                />
-              )}
-            </ScrollView>
-          </View>
-        )}
+        {/* Notes sidebar — shared panel + sheet */}
+        <Sidebar
+          open={mobileOpen}
+          onOpenChange={setMobileOpen}
+          sidebarOpen={sidebarOpen}
+          title={t('title.notes')}
+        >
+          <NotesSidebar
+            notes={notes.notes}
+            notesLoading={notes.notesLoading}
+            notesError={notes.notesError}
+            currentNoteId={notes.currentNoteId}
+            onSelectNote={handleSelectNote}
+            onNewNote={handleNewNote}
+            onRenameNote={(id, title) => notes.renameNote(id, title)}
+            onDeleteNote={handleDelete}
+          />
+        </Sidebar>
       </View>
     </PageContainer>
   );
