@@ -5,6 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
 import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio } from 'lucide-react-native';
 
@@ -15,7 +16,8 @@ export default function LocalMediaScreen() {
   const hasSubtitles = localMedia.subtitleLines.length > 0;
   const contentWidth = Math.min(screenWidth, 1280);
   const asideWidth = 320;
-  const playerWidth = isLg && hasSubtitles ? contentWidth - asideWidth - 24 : screenWidth;
+  // The lg+ row adds px-4 (32pt total) and gap-6 (24pt) around the player column.
+  const playerWidth = isLg && hasSubtitles ? contentWidth - 32 - asideWidth - 24 : contentWidth;
   const videoHeight = (playerWidth / 16) * 9;
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -225,7 +227,7 @@ export default function LocalMediaScreen() {
   ) : null;
 
   return (
-    <View className="flex-1 bg-background">
+    <PageContainer maxWidth="7xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
 
       {/* Upload state — matches web's dashed border upload area */}
@@ -263,6 +265,6 @@ export default function LocalMediaScreen() {
           </View>
         </View>
       )}
-    </View>
+    </PageContainer>
   );
 }
