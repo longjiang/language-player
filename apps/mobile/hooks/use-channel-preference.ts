@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { baseCode } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
@@ -71,7 +72,7 @@ export function useChannelPreference(channelId: string | undefined) {
   const { user } = useAuth();
   const { l2Lang } = useLanguage();
   const userId = user?.id;
-  const code = l2Lang.code;
+  const code = baseCode(l2Lang.code);
 
   const [pref, setPref] = useState<ChannelPref>('neutral');
   const [loaded, setLoaded] = useState(false);
