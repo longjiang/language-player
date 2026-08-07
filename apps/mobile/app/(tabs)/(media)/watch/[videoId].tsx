@@ -305,10 +305,6 @@ export default function WatchScreen() {
     playerRef.current?.seekTo(t);
   }, []);
 
-  const handleSwitchToTranscriptMode = useCallback(() => {
-    updatePlayback({ transcriptMode: 'transcript' });
-  }, [updatePlayback]);
-
   const isSubtitles = playback.transcriptMode === 'subtitles';
 
   const handleTogglePanel = useCallback(() => {
@@ -364,6 +360,31 @@ export default function WatchScreen() {
         <View className="relative flex-1">
           {playerElement}
           <View className="absolute bottom-0 left-0 right-0 z-10 rounded-t-xl bg-black/70">
+            <View className="flex-row justify-center border-b border-white/10 py-1">
+              <VideoControlBar
+                reduced
+                playerRef={playerRef}
+                currentTime={currentTime}
+                duration={duration}
+                paused={paused}
+                onPauseToggle={handlePauseToggle}
+                onPreviousLine={handlePreviousLine}
+                onNextLine={handleNextLine}
+                onPreviousVideo={playPrevious}
+                onNextVideo={playNext}
+                onTogglePanel={handleTogglePanel}
+                hasPreviousLine={subtitleStartTimes.length > 0}
+                hasNextLine={subtitleStartTimes.length > 0}
+                hasPreviousVideo={hasPrevious}
+                hasNextVideo={hasNext}
+                panelOpen={!isSubtitles}
+                liked={liked}
+                onToggleLike={handleToggleLike}
+                likeDisabled={likeDisabled}
+                onSaveToPlaylist={openPlaylistDialog}
+                playlistDisabled={playlistDisabled}
+              />
+            </View>
             <SimpleSubsForDebug
               singleLine
               lines={subtitleLines}
@@ -372,16 +393,6 @@ export default function WatchScreen() {
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
               onSeekToLine={handleSeekToLine}
-              onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
-              hasPrevVideo={hasPrevious}
-              hasNextVideo={hasNext}
-              onPrevVideo={playPrevious}
-              onNextVideo={playNext}
-              liked={liked}
-              onToggleLike={handleToggleLike}
-              likeDisabled={likeDisabled}
-              onSaveToPlaylist={openPlaylistDialog}
-              playlistDisabled={playlistDisabled}
             />
           </View>
         </View>
@@ -399,6 +410,31 @@ export default function WatchScreen() {
     return (
       <View testID="watch-screen" className="flex-1 bg-background">
         <View>{playerElement}</View>
+        <View className="flex-row justify-end border-b border-border px-2 py-1">
+          <VideoControlBar
+            reduced
+            playerRef={playerRef}
+            currentTime={currentTime}
+            duration={duration}
+            paused={paused}
+            onPauseToggle={handlePauseToggle}
+            onPreviousLine={handlePreviousLine}
+            onNextLine={handleNextLine}
+            onPreviousVideo={playPrevious}
+            onNextVideo={playNext}
+            onTogglePanel={handleTogglePanel}
+            hasPreviousLine={subtitleStartTimes.length > 0}
+            hasNextLine={subtitleStartTimes.length > 0}
+            hasPreviousVideo={hasPrevious}
+            hasNextVideo={hasNext}
+            panelOpen={!isSubtitles}
+            liked={liked}
+            onToggleLike={handleToggleLike}
+            likeDisabled={likeDisabled}
+            onSaveToPlaylist={openPlaylistDialog}
+            playlistDisabled={playlistDisabled}
+          />
+        </View>
         <SimpleSubsForDebug
           singleLine
           lines={subtitleLines}
@@ -407,16 +443,6 @@ export default function WatchScreen() {
           tokenCache={tokenCache}
           tokenCacheLoaded={tokenCacheLoaded}
           onSeekToLine={handleSeekToLine}
-          onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
-          hasPrevVideo={hasPrevious}
-          hasNextVideo={hasNext}
-          onPrevVideo={playPrevious}
-          onNextVideo={playNext}
-          liked={liked}
-          onToggleLike={handleToggleLike}
-          likeDisabled={likeDisabled}
-          onSaveToPlaylist={openPlaylistDialog}
-          playlistDisabled={playlistDisabled}
         />
         <AddToPlaylistDialog
           open={playlistDialogOpen}
