@@ -116,6 +116,7 @@
 | Offline Banner | `components/dictionary/OfflineBanner.tsx` | ✅ | Offline availability status banner |
 | Dictionary Definitions Panel | `components/dictionary/DictionaryDefinitionsPanel.tsx` | ✅ | Full definitions panel (classifiers, study materials, han script, phonetic extras, Google Images, match_type, SpeakButton, SaveButton). Ported from web. |
 | Speak Button | `components/dictionary/SpeakButton.tsx` | ✅ | TTS button using expo-speech via useSpeech hook |
+| Image Search | `components/dictionary/ImageSearchResults.tsx` | ✅ | Openverse image search: grid variant (Images tab in DictionaryEntryTabs) with LLM-rewritten query pills, paginated 3-col grid, query relaxation, skeleton loading; compact variant (thumbnail strip) in DictionaryPopup. Same Openverse + `/dictionary/image-queries` endpoints as web. |
 
 ---
 

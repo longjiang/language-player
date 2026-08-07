@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { isInflectable, type DictionaryEntry, type SavedWordContext } from '@langplayer/shared';
-import { BookOpen, Film, Binary, Sparkles } from 'lucide-react-native';
+import { BookOpen, Film, Binary, Sparkles, ImageIcon } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { TabbedPanel } from '@/components/TabbedPanel';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SubsSearchResults } from '@/components/video/SubsSearchResults';
 import { InflectionTable } from '@/components/InflectionTable';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
+import { ImageSearchResults } from '@/components/dictionary/ImageSearchResults';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 interface DictionaryEntryTabsProps {
@@ -58,6 +60,7 @@ export function DictionaryEntryTabs({
   embedded = false,
 }: DictionaryEntryTabsProps) {
   const t = useT();
+  const { l2Lang } = useLanguage();
   const isControlled = controlledTab !== undefined;
   const [internalTab, setInternalTab] = useState<string>(showDefinitionTab ? 'word' : 'examples');
   const tab = isControlled ? controlledTab : internalTab;
@@ -76,16 +79,19 @@ export function DictionaryEntryTabs({
   // (e.g. hidden entirely for Chinese, Thai, Vietnamese).
   const hasInflections = isInflectable(l2Code);
   const inflectionsTab = { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> };
+  const imagesTab = { key: 'images', label: t('title.images'), icon: () => <ImageIcon size={14} color={ICON_MUTED} /> };
 
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: () => <BookOpen size={14} color={ICON_MUTED} /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
+        imagesTab,
         ...(hasInflections ? [inflectionsTab] : []),
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
+        imagesTab,
         ...(hasInflections ? [inflectionsTab] : []),
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
       ];
@@ -121,6 +127,19 @@ export function DictionaryEntryTabs({
       <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
     </View>
   );
+  const imagesPanel = (
+    <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+      <ImageSearchResults
+        term={entry.head}
+        l2Code={l2Code}
+        l2Name={l2Lang.name}
+        l1Code={l1Code ?? 'en'}
+        definition={entry.definitions?.[0]}
+        contextText={contextText}
+        contextForm={contextForm}
+      />
+    </View>
+  );
   const inflectionsPanel = (
     <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
       <InflectionTable head={entry.head} l2Code={l2Code} embedded />
@@ -128,8 +147,8 @@ export function DictionaryEntryTabs({
   );
 
   const children = showDefinitionTab
-    ? [wordPanel, examplesPanel, deepseekPanel, ...(hasInflections ? [inflectionsPanel] : [])]
-    : [examplesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel];
+    ? [wordPanel, examplesPanel, deepseekPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : [])]
+    : [examplesPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel];
 
   return (
     <TabbedPanel

@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
+import { ImageSearchResults } from '@/components/dictionary/ImageSearchResults';
 import { getCachedEntries, setCachedEntries, setCachedEntryById, bulkLookupWords } from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -242,6 +243,17 @@ export function DictionaryPopup({
                   contextText={context}
                   entryFound={(results?.length ?? 0) > 0}
                 />
+
+                {/* Compact image strip — Openverse thumbnails for the looked-up term */}
+                <View className="mb-3">
+                  <ImageSearchResults
+                    term={results?.[0]?.head ?? lemmaForm ?? word}
+                    l2Code={l2Lang.code}
+                    l2Name={l2Lang.name}
+                    l1Code={l1Lang.code}
+                    variant="compact"
+                  />
+                </View>
 
                 {loading && (
                   <View className="items-center py-12">

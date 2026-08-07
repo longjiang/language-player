@@ -77,12 +77,12 @@ The shared **types are in `@langplayer/shared`**, so mobile only needs the UI.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 3.1 | Openverse image search tab in the dictionary | `7a827c74` | Not in mobile (mobile's WebViewSheet is the stand-in) |
-| 3.2 | LLM-rewritten image search with filter pills | `f5951ae3`, `7d839a0c` | Not in mobile |
-| 3.3 | Scrollable query pills, paginated grid, query relaxation | `1fb1c689`, `a42d5711`, `d2b91511` | Not in mobile |
-| 3.4 | Skeleton loading states + full-row grid placeholders | `a51690cf` | Not in mobile |
-| 3.5 | Compact image strip in the popup dictionary | `f563f091` | Not in mobile |
-| 3.6 | Replace Openverse → Bing via Flask → revert to Openverse + LLM polyfill | `5ea5ffb7`, `43dad42b`, `e9d0166f` | Backend/API — confirm mobile can consume the same endpoint |
+| 3.1 | Openverse image search tab in the dictionary | `7a827c74` | **Ported** — mobile `ImageSearchResults` (grid variant) added as an Images tab in `DictionaryEntryTabs` |
+| 3.2 | LLM-rewritten image search with filter pills | `f5951ae3`, `7d839a0c` | **Ported** — mobile grid fetches LLM queries via `POST /dictionary/image-queries` and shows query pills |
+| 3.3 | Scrollable query pills, paginated grid, query relaxation | `1fb1c689`, `a42d5711`, `d2b91511` | **Ported** — scrollable pills, 3-col paginated grid, query relaxation ladder |
+| 3.4 | Skeleton loading states + full-row grid placeholders | `a51690cf` | **Ported** — skeleton pills + grid placeholders while loading |
+| 3.5 | Compact image strip in the popup dictionary | `f563f091` | **Ported** — mobile `DictionaryPopup` shows a compact Openverse thumbnail strip |
+| 3.6 | Replace Openverse → Bing via Flask → revert to Openverse + LLM polyfill | `5ea5ffb7`, `43dad42b`, `e9d0166f` | Backend/API — mobile consumes the same Openverse + `/dictionary/image-queries` endpoints |
 
 ## 4. Dictionary — Corpus Tab (Sketch Engine)
 
