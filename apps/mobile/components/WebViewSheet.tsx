@@ -4,6 +4,7 @@ import {
   Text,
   Pressable,
   Animated,
+  Modal,
   useWindowDimensions,
   Share,
   ActivityIndicator,
@@ -87,7 +88,13 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
   };
 
   return (
-    <>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       {/* Overlay */}
       <Animated.View
         pointerEvents={visible ? 'auto' : 'none'}
@@ -189,6 +196,6 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
           <View style={{ height: insets.bottom }} />
         </View>
       </Animated.View>
-    </>
+    </Modal>
   );
 }

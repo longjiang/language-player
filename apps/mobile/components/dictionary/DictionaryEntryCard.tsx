@@ -250,6 +250,14 @@ export function DictionaryEntryCard({
                 ) : null}
             </View>
           )}
+
+          {/* Image Search Sheet — full-screen modal (also works in compact cards) */}
+          <WebViewSheet
+            visible={showImageSearch}
+            url={googleImagesUrl}
+            title={t('action.search_images')}
+            onClose={() => setShowImageSearch(false)}
+          />
         </View>
       </Pressable>
     );
