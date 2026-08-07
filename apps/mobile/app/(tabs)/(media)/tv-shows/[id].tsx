@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Image, ActivityIndicator, FlatList } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { baseCode } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ArrowLeft, Tv, Clock, Eye, AlertCircle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -55,6 +57,7 @@ function formatDuration(dur?: string | null): string {
 export default function TvShowEpisodesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
+  const { l2Lang } = useLanguage();
   const showId = Number(id);
 
   const [show, setShow] = useState<TvShow | null>(null);
@@ -71,7 +74,7 @@ export default function TvShowEpisodesScreen() {
 
     Promise.all([
       fetch(`${PYTHON_API_URL}/tv-shows/${showId}`).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
-      fetch(`${PYTHON_API_URL}/tv-shows/${showId}/episodes?sort=title`).then((r) =>
+      fetch(`${PYTHON_API_URL}/tv-shows/${showId}/episodes?sort=title&l2=${baseCode(l2Lang.code)}`).then((r) =>
         r.ok ? r.json() : Promise.reject(r.status),
       ),
     ])
@@ -92,7 +95,7 @@ export default function TvShowEpisodesScreen() {
     return () => {
       cancelled = true;
     };
-  }, [showId]);
+  }, [showId, l2Lang.code]);
 
   const handlePlayEpisode = (ep: Episode, idx: number) => {
     const queue: YouTubeVideo[] = episodes.map((ep) => ({
