@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
-import * as Dialog from '@/components/ui/dialog';
+import { Sidebar } from '@/components/ui/sidebar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { getCachedEntries, enqueueLookupWords, getCachedEntryById, bulkLookupWords } from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { ChevronLeft, ChevronRight, PanelRightClose } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { SidebarSource } from '@/contexts/DictionaryContext';
 
@@ -24,6 +24,8 @@ export interface SidebarListItem {
 interface WordListSidebarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Wide screens: whether the persistent right panel is expanded. */
+  sidebarOpen: boolean;
   source: SidebarSource;
   l1Code: string;
   l2Code: string;
@@ -171,6 +173,7 @@ function SidebarEntryCard({
 export function WordListSidebar({
   open,
   onOpenChange,
+  sidebarOpen,
   source,
   l1Code,
   l2Code,
@@ -192,74 +195,60 @@ export function WordListSidebar({
   const currentIdx = currentId ? headIds.indexOf(currentId) : -1;
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.DrawerContent className="p-0" drawerWidth={320}>
-          <View className="h-full">
-            {/* Header: title + close + prev/next */}
-            <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
-              <Text className="flex-1 text-base font-semibold text-foreground" numberOfLines={1}>
-                {title}
-              </Text>
-              {currentIdx >= 0 && (
-                <View className="flex-row items-center gap-1">
-                  <Pressable
-                    onPress={() => {
-                      const prev = currentIdx > 0 ? items[currentIdx - 1] : null;
-                      if (prev) onNavigate?.(items, prev.id, source.kind === 'wordlist' ? source.source : undefined);
-                    }}
-                    disabled={currentIdx <= 0}
-                    className="rounded px-2 py-1 active:bg-muted disabled:opacity-30"
-                    accessibilityLabel={t('action.previous')}
-                  >
-                    <View className="flex-row items-center gap-1">
-                      <ChevronLeft size={16} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">{t('action.previous')}</Text>
-                    </View>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      const next = currentIdx >= 0 && currentIdx < items.length - 1 ? items[currentIdx + 1] : null;
-                      if (next) onNavigate?.(items, next.id, source.kind === 'wordlist' ? source.source : undefined);
-                    }}
-                    disabled={currentIdx < 0 || currentIdx >= items.length - 1}
-                    className="rounded px-2 py-1 active:bg-muted disabled:opacity-30"
-                    accessibilityLabel={t('action.next')}
-                  >
-                    <View className="flex-row items-center gap-1">
-                      <Text className="text-xs text-muted-foreground">{t('action.next')}</Text>
-                      <ChevronRight size={16} color={ICON_MUTED} />
-                    </View>
-                  </Pressable>
-                </View>
-              )}
-              <Pressable onPress={() => onOpenChange(false)} className="rounded p-1.5 active:bg-muted" accessibilityLabel={t('action.close_sidebar')}>
-                <PanelRightClose size={18} color={ICON_MUTED} />
-              </Pressable>
-            </View>
-
-            {/* List of entry cards */}
-            <ScrollView className="flex-1 p-2">
-              <View className="space-y-3">
-                {items.map((item) => (
-                  <SidebarEntryCard
-                    key={item.id}
-                    item={item}
-                    l1Code={l1Code}
-                    l2Code={l2Code}
-                    l2Base={l2Base ?? l2Code.split('-')[0]!}
-                    isActive={item.id === currentId}
-                    onOpen={(it, entry) => {
-                      onOpenChange(false);
-                      onNavigate?.(items, it.id, source.kind === 'wordlist' ? source.source : undefined);
-                    }}
-                  />
-                ))}
-              </View>
-            </ScrollView>
+    <Sidebar
+      open={open}
+      onOpenChange={onOpenChange}
+      sidebarOpen={sidebarOpen}
+      title={title}
+      desktopClassName="w-56 ml-3"
+      headerActions={
+        currentIdx >= 0 ? (
+          <View className="flex-row items-center gap-1">
+            <Pressable
+              onPress={() => {
+                const prev = currentIdx > 0 ? items[currentIdx - 1] : null;
+                if (prev) onNavigate?.(items, prev.id, source.kind === 'wordlist' ? source.source : undefined);
+              }}
+              disabled={currentIdx <= 0}
+              className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+              accessibilityLabel={t('action.previous')}
+            >
+              <ChevronLeft size={16} color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">{t('action.previous')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                const next = currentIdx >= 0 && currentIdx < items.length - 1 ? items[currentIdx + 1] : null;
+                if (next) onNavigate?.(items, next.id, source.kind === 'wordlist' ? source.source : undefined);
+              }}
+              disabled={currentIdx < 0 || currentIdx >= items.length - 1}
+              className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+              accessibilityLabel={t('action.next')}
+            >
+              <Text className="text-xs text-muted-foreground">{t('action.next')}</Text>
+              <ChevronRight size={16} color={ICON_MUTED} />
+            </Pressable>
           </View>
-        </Dialog.DrawerContent>
-      </Dialog.Portal>
-    </Dialog.Root>
+        ) : undefined
+      }
+    >
+      {/* List of entry cards */}
+      <View className="space-y-3 p-2">
+        {items.map((item) => (
+          <SidebarEntryCard
+            key={item.id}
+            item={item}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            l2Base={l2Base ?? l2Code.split('-')[0]!}
+            isActive={item.id === currentId}
+            onOpen={(it, entry) => {
+              onOpenChange(false);
+              onNavigate?.(items, it.id, source.kind === 'wordlist' ? source.source : undefined);
+            }}
+          />
+        ))}
+      </View>
+    </Sidebar>
   );
 }
