@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-052
 - **Feature**: Bring `apps/mobile` layout behavior in line with `apps/web` at every screen-size breakpoint
-- **Status**: in-progress (phases 1–6 implemented; Phase 7 manual QA pending)
+- **Status**: in-progress (phases 1–6 implemented; review fixes landed 2026-08-07; Phase 7 manual QA pending)
 - **Created**: 2026-08-07
 - **ROADMAP Phase**: Phase 8 — iPad & Responsive Layout
 - **Scope**: `apps/mobile` only; `apps/web` is the reference implementation
@@ -21,8 +21,10 @@ This spec records the current route-by-route layout gap and defines a step-by-st
 The goal is **layout parity**, not identical code. Mobile still uses React Native primitives and NativeWind, but the visual structure — columns, sidebars, max widths, side-by-side regions, and breakpoints — should match web.
 
 **As of 2026-08-07:** phases 1–6 are implemented on branch
-`codex/mobile-web-layout-parity`. Phase 7 (manual verification on device/simulator)
-is the remaining work before this spec can be marked complete.
+`codex/mobile-web-layout-parity`. A review pass found and fixed four issues
+(see [Review fixes](#review-fixes-2026-08-07) below). Phase 7 (manual
+verification on device/simulator) is the remaining work before this spec can
+be marked complete.
 
 ---
 
@@ -103,6 +105,24 @@ Mobile should use the same effective breakpoints as web:
 | 6 — Remaining route widths | ✅ | Auth `max-w-md`, tokenizer `max-w-2xl`, list route caps, profile/go-pro plan grids, playlists card grid, go-pro success/error alignment, docs deviation recorded |
 | 7 — Verification and documentation | ⬜ | Typecheck passes; manual iPad matrix not yet run |
 
+### Review fixes (2026-08-07)
+
+An implementation review of the phase 1–6 commits found four issues. All four
+are fixed on this branch:
+
+| Fix | Problem found | Change |
+|---|---|---|
+| Video grid card tiling | `FlatList` multi-column rows don't auto-equalize item widths; `VideoCard` had no `flex: 1`, so iPad grids rendered as stretched/overflowing single cards | `VideoGrid` now wraps each card in a `flex: 1` cell when `numColumns > 1` (matches TV shows / playlists / saved-words pattern) |
+| Local Media width cap | Side-by-side player + transcript was implemented without web's `max-w-7xl` cap, so >1280px windows stretched content full-width | Screen now uses `PageContainer maxWidth="7xl"`; player width math accounts for the row padding + gap so aspect ratio and seek bar stay accurate |
+| NavBar dropdown shadow | New conditional `shadow-lg` class is a known react-native-css-interop upgrade-warning crash trigger (misleading "Couldn't find a navigation context" error; nativewind/nativewind#1432) | Dropdown now uses inline shadow props (token-derived color, elevation 8) instead of the `shadow-lg` class |
+| Language-switcher dialog container | `variant="dialog"` always rendered as a full-width bottom sheet, including on iPad where web shows a centered dialog | Header switcher renders `Dialog.Content` (centered `max-w-md`) at ≥768 and the bottom sheet only below 768; the picker itself stays `variant="dialog"` |
+
+The "Couldn't find a navigation context" crash message is a known NativeWind
+dev-mode artifact and is **not** caused by a missing `NavigationContainer`.
+The NavBar fix above removes the most likely new trigger; the remaining
+conditional `shadow-*`/alpha classes elsewhere in the app are tracked as a
+follow-up (upgrade or patch `react-native-css-interop`).
+
 ### Implemented source files (highlights)
 
 - `apps/mobile/lib/constants.ts` — breakpoint constants + `gridColumnCount()`
@@ -111,11 +131,12 @@ Mobile should use the same effective breakpoints as web:
 - `apps/mobile/components/layout/NavBar.tsx` — md+ header navigation
 - `apps/mobile/components/layout/AuthContainer.tsx` — centered auth form shell
 - `apps/mobile/components/ui/sidebar.tsx` — 1024 sidebar breakpoint
-- `apps/mobile/components/video/VideoGrid.tsx` — web column model
+- `apps/mobile/components/video/VideoGrid.tsx` — web column model + `flex: 1` card cells for multi-column rows
 - `apps/mobile/components/reader/PaginatedReader.tsx` — lg side-by-side translation
 - `apps/mobile/app/(tabs)/(media)/live-tv.tsx` — lg player/list columns
-- `apps/mobile/app/(tabs)/(media)/local-media.tsx` — lg player/transcript columns
+- `apps/mobile/app/(tabs)/(media)/local-media.tsx` — lg player/transcript columns + `max-w-7xl` content cap
 - `apps/mobile/app/(tabs)/(me)/settings/index.tsx` — 1024 split + Display default
+- `apps/mobile/components/layout/LanguageSwitcher.tsx` — centered dialog ≥768, bottom sheet below
 
 ---
 
@@ -135,7 +156,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | TV Show detail → `(media)/tv-shows/[id]` | `max-w-4xl` row list | Full-width row list | Cap at `max-w-4xl` |
 | Channel → `(media)/channel/[channelId]` | `max-w-7xl` + `VideoGrid` | `max-w-3xl` + `VideoGrid` | Widen container; align grid thresholds |
 | Watch → `(media)/watch/[videoId]` | Wide = aspect ratio >1; transcript `grid-cols-[1fr_320px]`; narrow stacked | Same aspect-ratio logic and 320px column | Minor: keep narrow subtitles within `max-w-7xl` padding |
-| Local media → `(media)/local-media` | `max-w-7xl`; stacked <lg; `lg:grid-cols-[1fr_320px]` | Full-width; always stacked | Add ≥1024 player + transcript two-column layout |
+| Local media → `(media)/local-media` | `max-w-7xl`; stacked <lg; `lg:grid-cols-[1fr_320px]` | Full-width; always stacked | ✅ Add ≥1024 player + transcript two-column layout and cap at `max-w-7xl` (review fix) |
 | Watch history → `(media)/watch-history` | `max-w-4xl` flat list | `max-w-3xl` date-grouped list | Widen to `max-w-4xl`; decide whether date grouping stays (mobile-only layout improvement) |
 | Liked videos → `(me)/liked-videos` | `max-w-4xl` row list | `max-w-3xl` row list | Widen to `max-w-4xl` |
 | Playlists → `(me)/playlists` | `max-w-5xl`; cards 1 → 2 → 3 | `max-w-3xl`; single-column rows | Add responsive card grid; widen to `max-w-5xl` |
@@ -162,7 +183,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Go Pro → `(me)/go-pro` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan cards stacked | Add responsive plan grid (1 <640, 3 ≥640) |
 | Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | Decide scope: route-per-doc + TOC sidebar parity, or keep single-screen docs as documented mobile deviation |
 | Tokenizer → `(me)/tokenizer-test` | `max-w-2xl` | Full-width scroll view | Cap at `max-w-2xl` |
-| Language select → `select-language` | Fullscreen; tabs <640, bi-panel ≥640 | Same 640 threshold | No change |
+| Language select → `select-language` | Fullscreen; tabs <640, bi-panel ≥640 | Same 640 threshold | No change to the picker itself; header switcher dialog now centered ≥768 instead of a bottom sheet (review fix) |
 | Login/Register/Forgot/Reset/Verify | Centered `max-w-md` card | Full-width form | Wrap auth forms in centered `max-w-md` container |
 | Go Pro success/error | `max-w-lg` centered; buttons row at sm | Full-width centered; buttons stacked | Align width cap and button row at ≥640 |
 
@@ -291,10 +312,11 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] Header: hamburger only below 768; persistent nav at ≥768; app name always visible; nav dropdowns open and navigate.
 - [ ] Hamburger drawer: capped at `min(256, width*0.6)`; drawer never renders at ≥768.
 - [ ] Auth screens: centered at `max-w-md` (448px) at every width.
+- [ ] Language switcher dialog: bottom sheet below 768; centered `max-w-md` dialog at ≥768 (picker remains `variant="dialog"`).
 
 ### Media screens
 
-- [ ] **Explore** — grid 1/2/3/4 at `<640 / 640–1023 / 1024–1279 / ≥1280`; content capped at 1280.
+- [ ] **Explore** — grid 1/2/3/4 at `<640 / 640–1023 / 1024–1279 / ≥1280`; cards tile in equal-width columns; content capped at 1280.
 - [ ] **Search** — no-results state narrow; results use the same grid as Explore; result count shown.
 - [ ] **Music** — uses the Explore grid, not a single-column list.
 - [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl).
@@ -302,7 +324,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **TV Show detail** — row list capped at 896.
 - [ ] **Channel** — Explore-style grid; channel header card intact.
 - [ ] **Watch** — portrait: subtitle band below player; landscape: subtitle overlay or right transcript column (320px).
-- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player.
+- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player; content capped at 1280.
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
 - [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards.
