@@ -158,55 +158,77 @@ export function useEpub(): UseEpubReturn {
     void refreshBooks();
   }, [refreshBooks]);
 
-  /** Import one EPUB from the document picker and open it at its cover. */
+  /** Import one or more EPUBs from the document picker. A single selection
+   *  opens immediately; multiple selections are added to the bookshelf. */
   const pickFile = useCallback(async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/epub+zip', 'application/octet-stream'],
       copyToCacheDirectory: true,
+      multiple: true,
     });
-    if (result.canceled || !result.assets?.[0]) return;
-    const asset = result.assets[0];
+    if (result.canceled || !result.assets?.length) return;
+    const assets = result.assets;
     setLoading(true);
     setError(null);
+
+    let importedCount = 0;
+    let firstError: string | null = null;
+    let lastModel: EpubBookModel | null = null;
+    let lastId = '';
+
     try {
       await ensureLibraryDir();
-      const id = sanitizeEpubId(asset.name);
-      const dest = libraryFileUri(id);
-      await FileSystem.copyAsync({ from: asset.uri, to: dest });
-
-      const m = await openEpubBook(dest, asset.name);
-      let coverUrl = m.coverUrl;
-      if (coverUrl?.startsWith('file://')) {
-        const src = coverUrl.slice(7);
-        const ext = src.split('.').pop() ?? 'jpg';
-        const coverDest = `${LIBRARY_DIR}${id.replace(/\.epub$/i, '')}_cover.${ext}`;
+      for (const asset of assets) {
         try {
-          await FileSystem.copyAsync({ from: src, to: coverDest });
-          coverUrl = 'file://' + coverDest;
-        } catch { /* keep temp cover */ }
+          const id = sanitizeEpubId(asset.name);
+          const dest = libraryFileUri(id);
+          await FileSystem.copyAsync({ from: asset.uri, to: dest });
+
+          const m = await openEpubBook(dest, asset.name);
+          let coverUrl = m.coverUrl;
+          if (coverUrl?.startsWith('file://')) {
+            const src = coverUrl.slice(7);
+            const ext = src.split('.').pop() ?? 'jpg';
+            const coverDest = `${LIBRARY_DIR}${id.replace(/\.epub$/i, '')}_cover.${ext}`;
+            try {
+              await FileSystem.copyAsync({ from: src, to: coverDest });
+              coverUrl = 'file://' + coverDest;
+            } catch { /* keep temp cover */ }
+          }
+          const info = await FileSystem.getInfoAsync(dest);
+          const meta: EpubMeta = {
+            id,
+            fileName: asset.name,
+            fileSize: info.exists ? (info as { size: number }).size : 0,
+            language: m.language,
+            coverUrl,
+            title: m.title,
+            author: m.author,
+            lastLocation: null,
+            totalChars: m.totalChars,
+            readChars: 0,
+            lastReadAt: Date.now(),
+            addedAt: Date.now(),
+          };
+          await saveEpub(meta);
+          importedCount++;
+          lastModel = m;
+          lastId = id;
+        } catch (e: any) {
+          firstError ??= e?.message ?? String(e);
+        }
       }
-      const info = await FileSystem.getInfoAsync(dest);
-      const meta: EpubMeta = {
-        id,
-        fileName: asset.name,
-        fileSize: info.exists ? (info as { size: number }).size : 0,
-        language: m.language,
-        coverUrl,
-        title: m.title,
-        author: m.author,
-        lastLocation: null,
-        totalChars: m.totalChars,
-        readChars: 0,
-        lastReadAt: Date.now(),
-        addedAt: Date.now(),
-      };
-      await saveEpub(meta);
+
       setBooks(await listEpubs());
-      const start: BookLocation | null =
-        m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null);
-      setCurrentModel(m, id, false, start);
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
+
+      if (importedCount === 0) {
+        setError(firstError ?? 'Failed to import EPUB');
+      } else if (importedCount === 1 && lastModel) {
+        const start: BookLocation | null =
+          lastModel.markers[0]?.location ??
+          (lastModel.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null);
+        setCurrentModel(lastModel, lastId, false, start);
+      }
     } finally {
       setLoading(false);
     }
