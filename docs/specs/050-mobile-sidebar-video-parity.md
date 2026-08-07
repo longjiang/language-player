@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-050
 - **Feature**: Bring `apps/mobile` sidebar and video-panel implementations into parity with the shared `apps/web` sidebar model
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-07
 - **ROADMAP Phase**: Phase 6 (Interaction Primitives) / Phase 8 (iPad & Responsive Layout)
 - **Scope**: `apps/mobile` only
@@ -186,16 +186,18 @@ Update `apps/mobile/app/(tabs)/(reading)/epub.tsx`:
 
 ---
 
-## Open questions
+## Resolved during implementation
 
-- **Web-reader sidebar content**: should mobile match web (visited sites) or
-  intentionally keep notes?
-- **EPUB search**: move `BookSearchDialog` into sidebar tabs (web parity) or
-  keep it as a standalone dialog?
-- **Wide/narrow breakpoint**: what width switches the shared `Sidebar`
-  between persistent panel and slide-in sheet on iPad?
-- **Persistent panel on mobile**: should the wide-screen behavior be a true
-  persistent collapsible panel (web parity) or always a slide-in sheet?
+- **Web-reader sidebar content**: mobile now matches web — the web-reader
+  sidebar shows visited sites (`VisitedSitesSidebar`), and the notes sidebar
+  lives only in the notes reader.
+- **EPUB search**: `BookSearchDialog` was replaced by `EpubSearchPanel`,
+  rendered as a “Search” tab inside the shared sidebar alongside “Chapters”
+  (web parity). The old full-screen dialog was removed.
+- **Wide/narrow breakpoint**: `SIDEBAR_BREAKPOINT = 768` (`useWindowDimensions`
+  width) switches between the persistent panel and the slide-in sheet.
+- **Persistent panel on mobile**: wide screens get a true persistent,
+  collapsible right panel (web parity); narrow screens use the shared sheet.
 
 ---
 
