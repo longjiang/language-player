@@ -113,10 +113,10 @@ zh-only as on web.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 6.1 | Show phonetics on highlighted words; reveal on review-card flip | `a31015f4`, `5fb47ebb` | Not in mobile |
-| 6.2 | Emphasize target form in review translation + render markdown | `a0fb8992`, `0d3df109` | Not in mobile |
-| 6.3 | Halve review-card padding on phones, localize source dates | `ad52ca3c`, `28e01935` | Not in mobile |
-| 6.4 | Remove tap-to-rate zones from the review card | `42a235d3` | Not in mobile |
+| 6.1 | Show phonetics on highlighted words; reveal on review-card flip | `a31015f4`, `5fb47ebb` | **Ported** — mobile `TokenizedText` gained `phoneticsOnHighlight`; the review context passes `phoneticsOnHighlight={showTabs}` so phonetics appear on the highlighted word after flip |
+| 6.2 | Emphasize target form in review translation + render markdown | `a0fb8992`, `0d3df109` | **Ported** — review translation renders the target form in primary color (echoed leading form stripped) and shows the auto-translated context translation that was previously fetched-but-hidden |
+| 6.3 | Halve review-card padding on phones, localize source dates | `ad52ca3c`, `28e01935` | **Ported** — mobile card already uses phone padding; `SavedWordSource` gained a `locale` prop and the review passes the L1 locale |
+| 6.4 | Remove tap-to-rate zones from the review card | `42a235d3` | **Ported** — mobile review card has no tap-to-rate zones (rating is via the explicit bottom buttons only) |
 
 ## 7. Subs-Search & Player Translation Display
 

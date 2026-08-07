@@ -57,6 +57,22 @@ function useRatingLabels() {
   ];
 }
 
+/**
+ * Emphasize the target form inside a review translation (SPEC-049 §6.2).
+ * Returns the translation with the first occurrence of the target form
+ * removed from the front (the translation usually echoes it) — the form is
+ * rendered separately in primary color by the caller.
+ */
+function renderTranslation(translation: string, form: string): string {
+  if (!translation || !form) return translation;
+  const idx = translation.indexOf(form);
+  if (idx === 0) {
+    const rest = translation.slice(form.length).replace(/^[\s:：·]+/, '');
+    return rest;
+  }
+  return translation;
+}
+
 export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
@@ -474,15 +490,21 @@ export default function ReviewScreen() {
                   text={inst.context.text}
                   l2Code={l2Code}
                   highlightTerms={[inst.form]}
+                  phoneticsOnHighlight={showTabs}
                 />
               </TextActionMenu>
               <View className="mt-1">
-                <SavedWordSource context={inst.context} date={inst.timestamp ?? savedWord.date} />
+                <SavedWordSource context={inst.context} date={inst.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
-              {showTabs && display.translation && inst.context.translation && (
-                <Text className="mt-2 text-xs leading-relaxed text-muted-foreground border-t border-border pt-2">
-                  {inst.context.translation}
-                </Text>
+              {showTabs && display.translation && (inst.context.translation || contextTranslation) && (
+                <View className="mt-2 border-t border-border pt-2">
+                  <Text className="text-xs leading-relaxed text-muted-foreground">
+                    <Text className="font-semibold text-primary">
+                      {inst.form}
+                    </Text>
+                    {renderTranslation(inst.context.translation ?? contextTranslation ?? '', inst.form)}
+                  </Text>
+                </View>
               )}
             </View>
           ))}

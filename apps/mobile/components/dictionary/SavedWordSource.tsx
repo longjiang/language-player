@@ -9,6 +9,8 @@ interface SavedWordSourceProps {
   context?: SavedWordContext | null;
   /** Unix-ms timestamp when the word was saved. */
   date: number;
+  /** BCP 47 locale for the date string (e.g. "zh-Hans" → localized). */
+  locale?: string;
 }
 
 /**
@@ -17,8 +19,8 @@ interface SavedWordSourceProps {
  *   📖 Book Title · Jul 18
  *   Jul 18                       (fallback — no context)
  */
-export function SavedWordSource({ context, date }: SavedWordSourceProps) {
-  const dateStr = date ? new Date(date).toLocaleDateString() : '';
+export function SavedWordSource({ context, date, locale = 'en' }: SavedWordSourceProps) {
+  const dateStr = date ? new Date(date).toLocaleDateString(locale) : '';
 
   // No context at all (legacy/corrupt record)
   if (!context) {

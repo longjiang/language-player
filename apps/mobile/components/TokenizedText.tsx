@@ -161,6 +161,10 @@ export interface TokenizedTextProps {
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
   /** testID for the outermost container — enables E2E selectors like "subtitle-line-0". */
   testID?: string;
+  /** When true, highlighted (target) words show their phonetics too. Used by
+   *  the review card to reveal phonetics on the highlighted word when the
+   *  card is flipped (SPEC-049 §6.1). Default false. */
+  phoneticsOnHighlight?: boolean;
 }
 
 /**
@@ -177,7 +181,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -513,13 +517,16 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
               const word = token.text;
               const traditionalText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              const isHighlighted = highlightTerms?.some((t) => t === word);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
+              // Highlighted (target) words keep their written form unless
+              // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && !showDefinition && shouldShowPhonetics(token) && token.pronunciation
+                && (!isHighlighted || phoneticsOnHighlight)
                 ? token.pronunciation
                 : traditionalText;
-              const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
@@ -544,9 +551,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
-              // Suppress ruby for the highlighted (target) word — its pronunciation is shown elsewhere.
+              // Suppress ruby for the highlighted (target) word unless
+              // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const isRubyMode = showPhonetics && phonetics.show === 'ruby';
-              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word && !isHighlighted;
+              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word
+                && (!isHighlighted || phoneticsOnHighlight);
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(displayText, token.pronunciation!, l2Code)
                 : [{ text: displayText }];
@@ -647,10 +656,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
               const word = token.text;
               const tokenDisplayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              const isHighlighted = highlightTerms?.some((t) => t === word);
+              // Highlighted (target) words keep their written form unless
+              // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
+                && (!isHighlighted || phoneticsOnHighlight)
                 ? token.pronunciation
                 : tokenDisplayText;
-              const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
