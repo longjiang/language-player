@@ -712,6 +712,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
             word={selectedWord ?? ''}
             lemma={selectedLemma ?? undefined}
             tokenPron={selectedTokenPron ?? undefined}
+            // Pass the immediate sentence as popup context (SPEC-049 §8.4
+            // equivalent): the popup's AI explanation + translations are
+            // biased by the surrounding sentence.
+            context={text}
             onClose={() => { configureLayoutAnimation(); setSelectedWord(null); setSelectedLemma(null); setSelectedTokenPron(null); }}
           />
         )}

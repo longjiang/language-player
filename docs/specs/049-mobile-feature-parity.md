@@ -130,12 +130,16 @@ zh-only as on web.
 
 ## 8. Native Text Selection & Selection Actions
 
+React Native has no `window.getSelection()` — native text-selection actions
+(8.1–8.3) are web-only. The mobile equivalent is TokenizedText's **tap-to-lookup**
+dictionary popup, which opens directly on word tap (no action menu).
+
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 8.1 | Native text-selection actions on `TokenizedText` | `f8933c22`, `b5ed5433` | Not in mobile |
-| 8.2 | Selection opens the dictionary popup (instead of the action menu) | `8bcbf886` | Not in mobile |
-| 8.3 | Canonical phrase cards in the selection dictionary popup | `4dda1406`, `09f99c08`, `4dda1406` | Not in mobile |
-| 8.4 | Pass the immediate sentence as selection popup context | `9263d87a` | Not in mobile |
+| 8.1 | Native text-selection actions on `TokenizedText` | `f8933c22`, `b5ed5433` | N/A on native — RN has no `getSelection`; tap-to-lookup is the interaction model |
+| 8.2 | Selection opens the dictionary popup (instead of the action menu) | `8bcbf886` | N/A on native — mobile token tap opens the dictionary popup directly |
+| 8.3 | Canonical phrase cards in the selection dictionary popup | `4dda1406`, `09f99c08`, `4dda1406` | N/A on native — same as 8.2 |
+| 8.4 | Pass the immediate sentence as selection popup context | `9263d87a` | **Ported (equivalent)** — mobile TokenizedText now passes the line text as `context` to its dictionary popup (biases AI explanation + translations) |
 
 ## 9. EPUB Reader & Bookshelf
 
