@@ -37,6 +37,8 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
   onDismiss?: () => void;
   /** Platform getName callback (passed through for use in rendering). */
   getName: (code: string) => string;
+  /** Root container classes. Defaults to `flex-1 bg-background` (fullscreen). */
+  containerClassName?: string;
 }
 
 // ── Tab segments ──────────────────────────────
@@ -72,6 +74,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
     showClose,
     onDismiss,
     getName,
+    containerClassName,
   } = props;
 
   const t = useT();
@@ -134,7 +137,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
   // ── Render ──
 
   return (
-    <View className="flex-1 bg-background">
+    <View className={containerClassName ?? 'flex-1 bg-background'}>
       {/* Header */}
       {showTitle && (
         <View className="px-6 pt-6 pb-2">
