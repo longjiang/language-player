@@ -122,11 +122,6 @@ export function VideoControlBar({
         >
           <SkipForward size={16} color={ICON_MUTED} />
         </Pressable>
-        {onTogglePanel && (
-          <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
-            <PanelRightOpen size={16} color={ICON_MUTED} />
-          </Pressable>
-        )}
         {onToggleLike && (
           <Pressable
             onPress={onToggleLike}
@@ -143,6 +138,11 @@ export function VideoControlBar({
             className={`rounded p-1.5 ${playlistDisabled ? 'opacity-30' : 'active:bg-muted'}`}
           >
             <Bookmark size={16} color={ICON_MUTED} />
+          </Pressable>
+        )}
+        {onTogglePanel && (
+          <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
+            <PanelRightOpen size={16} color={ICON_MUTED} />
           </Pressable>
         )}
       </View>
