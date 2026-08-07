@@ -19,10 +19,10 @@ function isDictionaryRoute(segments: string[]): boolean {
 }
 
 export function LanguageSwitcher() {
-  const { l2Lang, setL1Lang, setL2Lang } = useLanguage();
+  const { l1Lang, l2Lang, setL1Lang, setL2Lang } = useLanguage();
   const segments = useSegments();
   const [open, setOpen] = useState(false);
-  const [pickerInitialL1, setPickerInitialL1] = useState(l2Lang.code);
+  const [pickerInitialL1, setPickerInitialL1] = useState(l1Lang.code);
   const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function LanguageSwitcher() {
   }
 
   function handleOpen() {
-    setPickerInitialL1(l2Lang.code);
+    setPickerInitialL1(l1Lang.code);
     setOpen(true);
   }
 
@@ -70,6 +70,7 @@ export function LanguageSwitcher() {
           <Dialog.SheetContent>
             <LanguagePicker
               initialL1={pickerInitialL1}
+              initialL2={l2Lang.code}
               onConfirm={handleConfirm}
               onDismiss={() => setOpen(false)}
               showClose
