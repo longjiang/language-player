@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PanelRightClose } from 'lucide-react-native';
 import * as Dialog from '@/components/ui/dialog';
 import { useT } from '@/hooks/use-t';
@@ -49,9 +50,13 @@ export function SidebarPanel({
   headerClassName,
 }: SidebarPanelProps) {
   const t = useT();
+  const insets = useSafeAreaInsets();
   return (
     <View className="h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <View className={`flex-row flex-wrap items-center gap-2 border-b border-border px-3 py-2 ${headerClassName ?? ''}`}>
+      <View
+        className={`flex-row flex-wrap items-center gap-2 border-b border-border px-3 py-2 ${headerClassName ?? ''}`}
+        style={onClose ? { paddingTop: insets.top + 8 } : undefined}
+      >
         <Text className="flex-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground" numberOfLines={1}>
           {title}
         </Text>
