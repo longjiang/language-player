@@ -58,6 +58,12 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
           <View className="py-4">
             <ActivityIndicator size="small" className="text-muted-foreground" />
           </View>
+        ) : !hasMore && videos.length > 0 ? (
+          <View className="py-4">
+            <Text className="text-center text-sm text-muted-foreground">
+              {t('msg.end_of_list')}
+            </Text>
+          </View>
         ) : null
       }
     />
