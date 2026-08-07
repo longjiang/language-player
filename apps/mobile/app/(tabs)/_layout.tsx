@@ -7,7 +7,7 @@ export default function TabLayout() {
       <Header />
       <Stack
         screenOptions={{ headerShown: false }}
-        initialRouteName="(me)"
+        initialRouteName="(media)"
       >
         <Stack.Screen name="(media)" />
         <Stack.Screen name="(reading)" />

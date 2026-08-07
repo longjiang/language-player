@@ -19,7 +19,8 @@ export default function SelectLanguageScreen() {
   async function handleConfirm(l1: string, l2: string) {
     await setL1Lang(l1);
     await setL2Lang(l2);
-    router.replace('/(tabs)' as any);
+    // Land on Explore (media tab) after onboarding, not the bare tabs stack.
+    router.replace('/(tabs)/(media)' as any);
   }
 
   return (

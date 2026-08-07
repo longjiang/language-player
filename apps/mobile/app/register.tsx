@@ -63,6 +63,10 @@ export default function RegisterScreen() {
           logwarn('[LP Mobile] Failed to submit acquisition survey');
         }
       }
+      // Dismiss the register/login modal stack before replacing to a root
+      // screen. Replacing a route inside a modal corrupts SafeAreaInsets and
+      // makes the header shift down after the auth flow completes.
+      router.dismissAll();
       router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}&first=1`);
     } catch (e: any) {
       setError(e.message || t('error.registration_failed'));
