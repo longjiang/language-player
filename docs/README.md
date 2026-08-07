@@ -34,6 +34,7 @@ docs/
 | 006 | [Translation](specs/006-translation.md) | 3 | ✅ Complete |
 | 009 | [Reader Layout System](specs/009-reader-layout.md) | 5 | ✅ Complete |
 | 010 | [Subtitles Mode — Dual-View Watch Page](specs/010-subtitles-mode.md) | 4 | ✅ Complete |
+| 048 | [Mobile Release Plan — Human QA + App Store & Play Store](specs/048-mobile-release-plan.md) | — | 🔄 In progress |
 
 ## ADRs
 
