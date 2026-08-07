@@ -1,26 +1,27 @@
-import React, { type ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { TabbedPanel, type TabDef } from '../TabbedPanel';
 
 interface TranscriptQueuePanelProps {
-  video?: ReactNode;
   transcript: ReactNode;
   queue: ReactNode;
+  /** Optional video info content — shown as a third tab on narrow screens. */
   info?: ReactNode;
-  defaultTab?: 'video' | 'transcript' | 'queue' | 'info';
+  className?: string;
+  defaultTab?: 'transcript' | 'queue' | 'info';
 }
 
 export function TranscriptQueuePanel({
-  video,
   transcript,
   queue,
   info,
-  defaultTab = 'video',
+  className,
+  defaultTab = 'transcript',
 }: TranscriptQueuePanelProps) {
   const t = useT();
+  const [tab, setTab] = useState(defaultTab);
 
   const tabs: TabDef[] = [
-    { key: 'video', label: t('title.video') },
     { key: 'transcript', label: t('title.transcript') },
     { key: 'queue', label: t('title.queue') },
   ];
@@ -29,8 +30,13 @@ export function TranscriptQueuePanel({
   }
 
   return (
-    <TabbedPanel tabs={tabs} defaultTab={defaultTab}>
-      {video}
+    <TabbedPanel
+      tabs={tabs}
+      activeTab={tab}
+      onTabChange={(key) => setTab(key as 'transcript' | 'queue' | 'info')}
+      className={`h-full min-h-0 ${className ?? ''}`}
+      contentClassName="min-h-0"
+    >
       {transcript}
       {queue}
       {info}
