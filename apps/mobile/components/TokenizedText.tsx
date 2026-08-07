@@ -195,6 +195,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
   const [selectedTokenPron, setSelectedTokenPron] = useState<string | null>(null);
+  const [selectedLinkUrl, setSelectedLinkUrl] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
@@ -638,8 +639,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 : [{ text: displayText }];
 
               const handlePress = () => {
-                const linkUrl = onOpenLink ? tokenFormat?.url ?? null : null;
-                if (linkUrl) {
+                const rawUrl = tokenFormat?.url ?? null;
+                const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
+                if (linkUrl && !popupEnabled) {
                   onOpenLink?.(linkUrl);
                   return;
                 }
@@ -652,12 +654,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   setSelectedWord(word);
                   setSelectedLemma(firstLemma || null);
                   setSelectedTokenPron(token.pronunciation ?? null);
+                  setSelectedLinkUrl(linkUrl);
                 }
               };
 
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
-              const isLink = onOpenLink ? !!tokenFormat?.url : false;
+              const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
 
               return (
@@ -759,12 +762,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
-              const isLink = onOpenLink ? !!tokenFormat?.url : false;
+              const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
 
               const handlePress = () => {
-                const linkUrl = onOpenLink ? tokenFormat?.url ?? null : null;
-                if (linkUrl) {
+                const rawUrl = tokenFormat?.url ?? null;
+                const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
+                if (linkUrl && !popupEnabled) {
                   onOpenLink?.(linkUrl);
                   return;
                 }
@@ -777,6 +781,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   setSelectedWord(word);
                   setSelectedLemma(firstLemma || null);
                   setSelectedTokenPron(token.pronunciation ?? null);
+                  setSelectedLinkUrl(linkUrl);
                 }
               };
 
@@ -807,11 +812,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
             word={selectedWord ?? ''}
             lemma={selectedLemma ?? undefined}
             tokenPron={selectedTokenPron ?? undefined}
+            linkUrl={selectedLinkUrl}
+            onOpenLink={onOpenLink}
             // Pass the immediate sentence as popup context (SPEC-049 §8.4
             // equivalent): the popup's AI explanation + translations are
             // biased by the surrounding sentence.
             context={text}
-            onClose={() => { configureLayoutAnimation(); setSelectedWord(null); setSelectedLemma(null); setSelectedTokenPron(null); }}
+            onClose={() => { configureLayoutAnimation(); setSelectedWord(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
           />
         )}
       </>

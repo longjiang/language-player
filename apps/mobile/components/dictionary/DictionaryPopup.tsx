@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator, Animated, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,6 +21,8 @@ import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useT } from '@/hooks/use-t';
+import { ExternalLink } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 interface DictionaryPopupProps {
   visible: boolean;
@@ -30,6 +32,10 @@ interface DictionaryPopupProps {
   /** Pronunciation from the lemmatizer, shown in [brackets] next to the headword. */
   tokenPron?: string | null;
   context?: string;
+  /** Optional link attached to the tapped token — shows "Open in Reader". */
+  linkUrl?: string | null;
+  /** Custom handler for the link action (e.g. in-book EPUB navigation). */
+  onOpenLink?: (href: string) => void;
   onClose: () => void;
   onViewDetail?: (entry: DictionaryEntry, allResults: DictionaryEntry[]) => void;
 }
@@ -73,6 +79,8 @@ export function DictionaryPopup({
   lemma,
   tokenPron,
   context,
+  linkUrl,
+  onOpenLink,
   onClose,
   onViewDetail,
 }: DictionaryPopupProps) {
@@ -305,6 +313,23 @@ export function DictionaryPopup({
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
+                {linkUrl ? (
+                  <Pressable
+                    onPress={() => {
+                      onClose();
+                      if (onOpenLink) {
+                        onOpenLink(linkUrl);
+                      } else {
+                        Linking.openURL(linkUrl).catch(() => {});
+                      }
+                    }}
+                    className="mb-3 flex-row items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
+                  >
+                    <ExternalLink size={14} color={ICON_PRIMARY} />
+                    <Text className="text-sm font-medium text-primary">{t('action.open_in_reader')}</Text>
+                  </Pressable>
+                ) : null}
+
                 {/* AI Explanation — inside scrollable area, matching web + Classic */}
                 <AiExplanation
                   word={word}
