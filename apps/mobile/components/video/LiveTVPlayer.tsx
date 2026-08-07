@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { useIsFocused } from 'expo-router';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -20,6 +21,7 @@ export interface LiveTVPlayerHandle {
 export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
   function LiveTVPlayer({ channel, onError }, ref) {
     const t = useT();
+    const isFocused = useIsFocused();
     const { width: screenWidth } = useWindowDimensions();
     const videoHeight = (screenWidth / 16) * 9;
     const [muted, setMuted] = useState(false);
@@ -38,6 +40,23 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
       player.play();
       setBuffering(true);
     }, [channel.id, channel.url]);
+
+    // Stop the stream when the user navigates away from Live TV; resume it
+    // when they come back (the screen can stay mounted in the stack).
+    useEffect(() => {
+      if (isFocused) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }, [isFocused, player]);
+
+    // Make sure the stream is stopped if the player is ever unmounted.
+    useEffect(() => {
+      return () => {
+        player.pause();
+      };
+    }, [player]);
 
     // Sync muted state
     useEffect(() => {
