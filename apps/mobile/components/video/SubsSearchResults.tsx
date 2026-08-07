@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, Pressable, FlatList, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, Text, Image, Pressable, FlatList, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
@@ -10,6 +11,7 @@ import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { SimpleSubsForDebug } from './SimpleSubsForDebug';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
+import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -21,6 +23,8 @@ function youtubeThumbnail(id: string): string {
 
 interface SubsSearchResultsProps {
   term: string;
+  /** Dictionary head form — shown as the "exact form" pill label. */
+  headTerm?: string;
   exactMatch?: boolean;
   onExactToggle?: (exact: boolean) => void;
   formCount?: number;
@@ -32,8 +36,38 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export function SubsSearchResults({ term, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
+function lineHasAnyTerm(line: string, terms: string[]): boolean {
+  const lower = line.toLowerCase();
+  return terms.some((f) => lower.includes(f.trim().toLowerCase()));
+}
+
+/** The first search form that appears in this line (translation highlight). */
+function firstMatchingForm(line: string, terms: string[]): string | undefined {
+  const lower = line.toLowerCase();
+  return terms
+    .map((f) => f.trim())
+    .filter(Boolean)
+    .find((f) => lower.includes(f.toLowerCase()));
+}
+
+/** Simple highlight of search terms inside a subtitle segment. */
+function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
+  const term = firstMatchingForm(line, terms);
+  if (!term) return <Text>{line}</Text>;
+  const idx = line.toLowerCase().indexOf(term.toLowerCase());
+  if (idx < 0) return <Text>{line}</Text>;
+  return (
+    <Text>
+      {line.slice(0, idx)}
+      <Text className="font-semibold text-primary">{line.slice(idx, idx + term.length)}</Text>
+      {line.slice(idx + term.length)}
+    </Text>
+  );
+}
+
+export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
+  const { display } = useSettingsContext();
   const t = useT();
   const videosApi = useVideos();
   const playerRef = useRef<YouTubePlayerHandle>(null);
@@ -55,6 +89,61 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
   const highlightTerms = useMemo(
     () => term.split(',').map((t) => t.trim()).filter(Boolean),
     [term],
+  );
+
+  // Truncated display: "a, b, c, and X other forms" (localized).
+  const termDisplay = useMemo(() => {
+    const forms = highlightTerms;
+    if (forms.length <= 3) return forms.join(', ');
+    const shown = forms.slice(0, 3).join(', ');
+    const remaining = forms.length - 3;
+    return `${shown} ${t('msg.and_n_other_forms', { n: remaining })}`;
+  }, [highlightTerms, t]);
+
+  // Per-row context segments (prev + match + next) for the show-all list,
+  // mirroring web so translations can be requested per segment.
+  const rowSegments = useMemo(
+    () =>
+      videos.map((video) => {
+        const ml = video.subs_l2[video.matchLineIndex];
+        const segs: { text: string; hasTerm: boolean }[] = [];
+        if (video.matchLineIndex > 0) {
+          const prev = video.subs_l2[video.matchLineIndex - 1]?.line ?? '';
+          if (prev) segs.push({ text: prev, hasTerm: lineHasAnyTerm(prev, highlightTerms) });
+        }
+        const match = ml?.line ?? '';
+        if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, highlightTerms) });
+        if (video.matchLineIndex < video.subs_l2.length - 1) {
+          const next = video.subs_l2[video.matchLineIndex + 1]?.line ?? '';
+          if (next) segs.push({ text: next, hasTerm: lineHasAnyTerm(next, highlightTerms) });
+        }
+        return segs;
+      }),
+    [videos, highlightTerms],
+  );
+
+  const translationInput = useMemo(() => {
+    const lines: SubtitleLine[] = [];
+    const forms: (string | null | undefined)[] = [];
+    const rowStarts: number[] = [];
+    for (const segs of rowSegments) {
+      rowStarts.push(lines.length);
+      for (const seg of segs) {
+        lines.push({ line: seg.text, starttime: 0 });
+        forms.push(seg.hasTerm ? firstMatchingForm(seg.text, highlightTerms) : undefined);
+      }
+    }
+    return { lines, forms, rowStarts };
+  }, [rowSegments, highlightTerms]);
+
+  const {
+    translatedLines: listTranslations,
+  } = useSubtitleTranslation(
+    translationInput.lines,
+    l1Lang.code,
+    baseCode(l2Lang.code),
+    listOpen && display.translation,
+    translationInput.forms,
   );
 
   // Pre-parsed subtitle lines for SimpleSubsForDebug
@@ -178,14 +267,26 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
         </Text>
         <View className="flex-row items-center gap-2">
           {formCount > 1 && (
-            <Pressable
-              onPress={() => onExactToggle?.(!exactMatch)}
-              className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : 'bg-muted'}`}
-            >
-              <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                {exactMatch ? term : `${formCount} forms`}
-              </Text>
-            </Pressable>
+            <View className="flex-row items-center rounded-full bg-muted p-0.5">
+              <Pressable
+                onPress={() => onExactToggle?.(true)}
+                className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
+                accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
+              >
+                <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {headTerm || term}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => onExactToggle?.(false)}
+                className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
+                accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
+              >
+                <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {t('msg.all_forms')}
+                </Text>
+              </Pressable>
+            </View>
           )}
           <Pressable onPress={() => setListOpen(true)} className="rounded-full bg-muted p-2">
             <List size={16} color={ICON_MUTED} />
@@ -209,7 +310,7 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
         l2Code={l2Lang.code}
         l1Code={baseCode(l1Lang.code)}
       >
-        <View className="h-32">
+        <View className="min-h-32">
           <SimpleSubsForDebug
             singleLine
             lines={subtitleInitialLines}
@@ -227,7 +328,7 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
           <Dialog.SheetContent className="max-h-[85%]">
             {/* Dialog header */}
             <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
-              <Dialog.Title>{videos.length} videos</Dialog.Title>
+              <Dialog.Title>{t('msg.videos_matching', { searchTerm: termDisplay })}</Dialog.Title>
               <Dialog.Close className="rounded-full bg-muted p-2">
                 <X size={18} color={ICON_MUTED} />
               </Dialog.Close>
@@ -259,26 +360,41 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
                       )}
                     </View>
 
-                    {/* Info */}
-                    <View className="flex-1">
+                    {/* Info — original on top, translation below, horizontal scroll for long lines */}
+                    <View className="min-w-0 flex-1">
                       <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
                         {item.title}
                       </Text>
-                      {item.matchLineIndex > 0 && (
-                        <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
-                          {item.subs_l2[item.matchLineIndex - 1]?.line}
-                        </Text>
-                      )}
-                      {ml && (
-                        <Text className="text-xs text-foreground" numberOfLines={2}>
-                          {ml.line}
-                        </Text>
-                      )}
-                      {item.matchLineIndex < item.subs_l2.length - 1 && (
-                        <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
-                          {item.subs_l2[item.matchLineIndex + 1]?.line}
-                        </Text>
-                      )}
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
+                        <View>
+                          <View className="flex-row">
+                            {rowSegments[index]?.map((seg, j) => (
+                              <Text
+                                key={j}
+                                className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
+                              >
+                                {j > 0 ? ' ' : ''}
+                                <HighlightTerms line={seg.text} terms={highlightTerms} />
+                              </Text>
+                            ))}
+                          </View>
+                          {display.translation && (
+                            <View className="mt-0.5 flex-row">
+                              {rowSegments[index]?.map((seg, j) => {
+                                const flatIdx = (translationInput.rowStarts[index] ?? 0) + j;
+                                const translated = listTranslations[flatIdx]?.line;
+                                if (!translated) return null;
+                                return (
+                                  <Text key={j} className="text-xs text-muted-foreground">
+                                    {j > 0 ? ' ' : ''}
+                                    {translated}
+                                  </Text>
+                                );
+                              })}
+                            </View>
+                          )}
+                        </View>
+                      </ScrollView>
                     </View>
                   </Pressable>
                 );

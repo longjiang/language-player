@@ -121,6 +121,7 @@ export function DictionaryEntryTabs({
   const examplesPanel = (
     <SubsSearchResults
       term={searchTermString}
+      headTerm={entry.head}
       exactMatch={exactMatch}
       onExactToggle={setExactMatch}
       formCount={formCount}
