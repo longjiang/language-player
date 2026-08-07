@@ -32,18 +32,85 @@ function stripUnwanted(html: string): string {
  * Extract the main content area from HTML.
  * Looks for #mw-content-text (Wikipedia), <article>, <main>, or falls back to <body>.
  */
+/** Find the next HTML tag matching `re`, ignoring tag-like text inside
+ *  quoted attribute values (e.g. `</div>` inside a JSON data attribute). */
+function indexOfTagOutsideQuotes(html: string, from: number, re: RegExp): number {
+  let i = from;
+  while (i < html.length) {
+    if (html[i] === '<') {
+      let j = i + 1;
+      let quote: string | null = null;
+      while (j < html.length) {
+        const ch = html[j];
+        if (quote) {
+          if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+          quote = ch;
+        } else if (ch === '>') {
+          break;
+        }
+        j++;
+      }
+      const tag = html.slice(i, Math.min(j + 1, html.length));
+      re.lastIndex = 0;
+      if (re.test(tag)) return i;
+      i = j + 1;
+    } else {
+      i++;
+    }
+  }
+  return -1;
+}
+
+function matchBalanced(
+  html: string,
+  openRe: RegExp,
+  anyOpenRe: RegExp,
+  closeRe: RegExp,
+): { full: string; inner: string } | null {
+  const start = indexOfTagOutsideQuotes(html, 0, openRe);
+  if (start === -1) return null;
+  const openLen = html.slice(start).match(openRe)![0].length;
+  // The matched opening tag is depth 1; nested same-tag elements add to it.
+  let depth = 1;
+  let pos = start + openLen;
+  while (pos < html.length) {
+    const nextOpen = indexOfTagOutsideQuotes(html, pos, anyOpenRe);
+    const nextClose = indexOfTagOutsideQuotes(html, pos, closeRe);
+    if (nextClose === -1) return null;
+    if (nextOpen !== -1 && nextOpen < nextClose) {
+      depth++;
+      pos = nextOpen + html.slice(nextOpen).match(anyOpenRe)![0].length;
+    } else {
+      depth--;
+      const closeLen = html.slice(nextClose).match(closeRe)![0].length;
+      pos = nextClose + closeLen;
+      if (depth === 0) {
+        return {
+          full: html.slice(start, pos),
+          inner: html.slice(start + openLen, nextClose),
+        };
+      }
+    }
+  }
+  return null;
+}
+
 function extractMainContent(html: string): string {
-  // Try Wikipedia-style content
-  const mwMatch = html.match(/<[a-z]+[^>]*id="mw-content-text"[^>]*>([\s\S]*?)<\/[a-z]+>/i);
-  if (mwMatch) return mwMatch[0];
+  // Try Wikipedia-style content (balanced <div> matching, not first-close-tag)
+  const mw = matchBalanced(
+    html,
+    /<div[^>]*id="mw-content-text"[^>]*>/i,
+    /<div\b[^>]*>/i,
+    /<\/div\s*>/i,
+  );
+  if (mw) return mw.full;
 
-  // Try <article>
-  const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-  if (articleMatch) return articleMatch[0];
-
-  // Try <main>
-  const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
-  if (mainMatch) return mainMatch[0];
+  // Try <article> and <main> with balanced matching
+  const article = matchBalanced(html, /<article[^>]*>/i, /<article\b[^>]*>/i, /<\/article\s*>/i);
+  if (article) return article.full;
+  const main = matchBalanced(html, /<main[^>]*>/i, /<main\b[^>]*>/i, /<\/main\s*>/i);
+  if (main) return main.full;
 
   // Try <body>
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
