@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView,
   ActivityIndicator, Alert, useWindowDimensions,
@@ -12,7 +12,9 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { saveUrlAnchor, getUrlAnchor } from '@/lib/reader-storage';
-import { Globe, Plus, MoreHorizontal, PenLine, Trash2, Check, PanelRightOpen } from 'lucide-react-native';
+import { loadVisitedSites, recordVisit, removeVisitedSite, type VisitedSite } from '@/lib/reader-history';
+import { getReadingSuggestions, type ReadingCategory, type ReadingSuggestionItem } from '@langplayer/shared';
+import { Globe, Plus, MoreHorizontal, PenLine, Trash2, Check, PanelRightOpen, Home, Clock } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
@@ -36,6 +38,13 @@ export default function WebReaderScreen() {
   const [renameText, setRenameText] = useState('');
   const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+  /** Visited-sites history (SPEC-049 §10.3). */
+  const [visitedSites, setVisitedSites] = useState<VisitedSite[]>([]);
+
+  // Load visited-sites history on mount and when L2 changes.
+  useEffect(() => {
+    loadVisitedSites().then(setVisitedSites);
+  }, [l2Lang.code]);
 
   const handleAnchorChange = useCallback((anchor: string) => {
     saveUrlAnchor(url || title, anchor);
@@ -66,15 +75,25 @@ export default function WebReaderScreen() {
       const extractedTitle = extractTitle(raw) || targetUrl;
       setTitle(extractedTitle);
       setText(md);
+      setUrl(targetUrl);
       // Load saved anchor for this URL
       const savedAnchor = await getUrlAnchor(targetUrl);
       setInitialAnchor(savedAnchor);
+      // Track the visit (SPEC-049 §10.3)
+      recordVisit(targetUrl, extractedTitle).then(setVisitedSites);
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
       setLoading(false);
     }
   }, [url, t]);
+
+  /** Back to the reader home (clear the loaded article) — SPEC-049 §10.4. */
+  const handleHome = useCallback(() => {
+    setText('');
+    setTitle('');
+    setError(null);
+  }, []);
 
   // Notes rename — tracks original title to skip no-op API calls
   const [originalTitle, setOriginalTitle] = useState('');
@@ -115,6 +134,15 @@ export default function WebReaderScreen() {
               {title || t('title.web_reader')}
             </Text>
           </View>
+          {!!title && (
+            <Pressable
+              onPress={handleHome}
+              className="rounded p-1.5 active:bg-muted"
+              accessibilityLabel={t('title.web_reader')}
+            >
+              <Home size={18} color={ICON_MUTED} />
+            </Pressable>
+          )}
           <Pressable
             onPress={() => setSidebarOpen(!sidebarOpen)}
             className="rounded p-1.5 active:bg-muted"
@@ -199,16 +227,56 @@ export default function WebReaderScreen() {
           </View>
         )}
 
-        {/* ── Empty state ── */}
+        {/* ── Empty state: suggestions + visited sites ── */}
         {!text && !loading && (
-          <View className="flex-1 items-center justify-center py-16 px-4">
-            <Globe size={48} color={ICON_MUTED} style={{ opacity: 0.4 }} />
-            <Text className="mt-3 text-lg font-semibold text-muted-foreground">
-              {t('title.web_reader')}
-            </Text>
-            <Text className="mt-1 max-w-md text-center text-sm text-muted-foreground">
-              {t('msg.web_reader_empty_state', { l2: t(`lang.${l2Lang.code}`) })}
-            </Text>
+          <View className="flex-1 px-4 py-6">
+            <View className="items-center mb-6">
+              <Globe size={48} color={ICON_MUTED} style={{ opacity: 0.4 }} />
+              <Text className="mt-3 text-lg font-semibold text-muted-foreground">
+                {t('title.web_reader')}
+              </Text>
+              <Text className="mt-1 max-w-md text-center text-sm text-muted-foreground">
+                {t('msg.web_reader_empty_state', { l2: t(`lang.${l2Lang.code}`) })}
+              </Text>
+            </View>
+
+            {/* Curated reading suggestions (SPEC-049 §10.1) */}
+            <ReadingSuggestionsList
+              l2Code={l2Lang.code}
+              onLoad={handleLoad}
+            />
+
+            {/* Visited sites (SPEC-049 §10.3) */}
+            {visitedSites.length > 0 && (
+              <View className="mt-6">
+                <Text className="mb-2 text-xs font-medium text-muted-foreground">
+                  {t('title.visited_sites')}
+                </Text>
+                {visitedSites.map((site) => (
+                  <Pressable
+                    key={site.url}
+                    onPress={() => handleLoad(site.url)}
+                    className="flex-row items-center gap-2 border-b border-border py-2.5 active:bg-muted"
+                  >
+                    <Clock size={14} color={ICON_MUTED} />
+                    <View className="flex-1 min-w-0">
+                      <Text className="text-sm text-foreground" numberOfLines={1}>{site.title}</Text>
+                      <Text className="text-[10px] text-muted-foreground/70" numberOfLines={1}>{site.url}</Text>
+                    </View>
+                    <Text className="text-[10px] text-muted-foreground/70">
+                      {new Date(site.visitedAt).toLocaleDateString(l1Lang.code)}
+                    </Text>
+                    <Pressable
+                      onPress={() => removeVisitedSite(site.url).then(setVisitedSites)}
+                      className="rounded p-1 active:bg-muted"
+                      hitSlop={8}
+                    >
+                      <Trash2 size={14} color={ICON_MUTED} />
+                    </Pressable>
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </View>
         )}
           </ScrollView>
@@ -309,5 +377,43 @@ export default function WebReaderScreen() {
         )}
       </View>
     </PageContainer>
+  );
+}
+
+/**
+ * Curated reading suggestions for the current L2 (SPEC-049 §10.1), grouped by
+ * category. Uses the shared getReadingSuggestions() (curated JSON per language,
+ * falling back to a derived Wikipedia suggestion).
+ */
+function ReadingSuggestionsList({ l2Code, onLoad }: { l2Code: string; onLoad: (url: string) => void }) {
+  const t = useT();
+  const suggestions = getReadingSuggestions(l2Code.split('-')[0]);
+  if (!suggestions) return null;
+
+  return (
+    <View>
+      <Text className="mb-2 text-xs font-medium text-muted-foreground">
+        {t('title.suggested_reading')}
+      </Text>
+      {(Object.keys(suggestions) as ReadingCategory[]).map((category) => {
+        const items = suggestions[category];
+        if (!items || items.length === 0) return null;
+        return (
+          <View key={category} className="mb-4">
+            <Text className="mb-1 text-xs text-muted-foreground/70">{category}</Text>
+            {items.map((item: ReadingSuggestionItem) => (
+              <Pressable
+                key={item.url}
+                onPress={() => onLoad(item.url)}
+                className="py-2 border-b border-border active:bg-muted"
+              >
+                <Text className="text-sm text-primary" numberOfLines={2}>{item.title}</Text>
+                <Text className="mt-0.5 text-[10px] text-muted-foreground/70" numberOfLines={1}>{item.url}</Text>
+              </Pressable>
+            ))}
+          </View>
+        );
+      })}
+    </View>
   );
 }
