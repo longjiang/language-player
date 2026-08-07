@@ -79,7 +79,7 @@ export function TabbedPanel({
 
         {/* Tab content panels */}
         {tabs.map((tab, i) => (
-          <Tabs.Content key={tab.key} value={tab.key} className={contentClassName}>
+          <Tabs.Content key={tab.key} value={tab.key} className={contentClassName ?? 'p-4'}>
             {childrenArray[i] as any}
           </Tabs.Content>
         ))}
