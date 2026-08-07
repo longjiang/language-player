@@ -61,7 +61,8 @@ export function DictionaryEntryTabs({
   embedded = false,
 }: DictionaryEntryTabsProps) {
   const t = useT();
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
+  const effectiveL1 = l1Code ?? l1Lang.code;
   const isControlled = controlledTab !== undefined;
   const [internalTab, setInternalTab] = useState<string>(showDefinitionTab ? 'word' : 'examples');
   const tab = isControlled ? controlledTab : internalTab;
@@ -112,7 +113,7 @@ export function DictionaryEntryTabs({
         entry={entry}
         variant="full"
         l2Code={l2Code}
-        l1Code={l1Code}
+        l1Code={effectiveL1}
         saveContext={saveContext}
         onPress={onCardPress}
       />
@@ -138,7 +139,7 @@ export function DictionaryEntryTabs({
         term={entry.head}
         l2Code={l2Code}
         l2Name={l2Lang.name}
-        l1Code={l1Code ?? 'en'}
+        l1Code={effectiveL1}
         definition={entry.definitions?.[0]}
         contextText={contextText}
         contextForm={contextForm}
@@ -155,7 +156,7 @@ export function DictionaryEntryTabs({
       <CorpusPanel
         word={entry.head}
         l2Code={l2Code}
-        l1Code={l1Code ?? 'en'}
+        l1Code={effectiveL1}
         highlightForms={allTerms.length ? allTerms : [entry.head]}
       />
     </View>
