@@ -48,6 +48,8 @@ interface PaginatedReaderProps {
   onOpenLink?: (href: string) => void;
   /** Active search-match highlight (block + char range), if any. */
   highlight?: { blockIndex: number; start: number; end: number } | null;
+  /** Text scale for reader blocks (0 = fixed 16px; 1 = user zoom). */
+  textScale?: number;
 }
 
 export function PaginatedReader({
@@ -59,6 +61,7 @@ export function PaginatedReader({
   measuredWindow,
   onOpenLink,
   highlight,
+  textScale = 0,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
@@ -91,7 +94,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-            renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale),
           )}
         </View>
         {onToggleTranslation && (
@@ -125,7 +128,7 @@ export function PaginatedReader({
 
           <ScrollView className="flex-1 px-4">
             {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight),
+              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale),
             )}
           </ScrollView>
 
@@ -154,7 +157,7 @@ export function PaginatedReader({
       {blocks && !hasMeasured && handleMeasureBlock && (
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
           {blocks.slice(0, measuredWindow ?? blocks.length).map((block, bi) =>
-            renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
+            renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions, textScale),
           )}
         </View>
       )}
@@ -171,7 +174,9 @@ function renderBlock(
   l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean, onOpenLink?: (href: string) => void,
   highlight?: { blockIndex: number; start: number; end: number } | null,
+  textScale?: number,
 ) {
+  const scale = textScale ?? 0;
   if (block.kind === 'image') {
     return (
       <View key={bi} className="my-3 items-center">
@@ -189,7 +194,7 @@ function renderBlock(
         <View className="flex-row bg-muted/50">
           {block.header.map((cell, ci) => (
             <View key={ci} className={`px-2 py-1.5 ${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} /></Text>
+              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} textScale={scale} /></Text>
             </View>
           ))}
         </View>
@@ -198,7 +203,7 @@ function renderBlock(
           <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
             {row.map((cell, ci) => (
               <View key={ci} className={`px-2 py-1.5 ${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} />
+                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} textScale={scale} />
               </View>
             ))}
           </View>
@@ -222,13 +227,14 @@ function renderBlock(
         ? [...formats, { start: highlight.start, end: highlight.end, type: 'highlight' as const }]
         : formats;
     const tokenEl = (
-      <TokenizedText
-        text={block.text}
-        l2Code={l2Code}
-        tokens={cachedTokens}
-        formats={effectiveFormats}
-        onOpenLink={onOpenLink}
-      />
+          <TokenizedText
+            text={block.text}
+            l2Code={l2Code}
+            tokens={cachedTokens}
+            formats={effectiveFormats}
+            onOpenLink={onOpenLink}
+            textScale={scale}
+          />
     );
     const transEl = showTranslation && translation ? (
       <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{translation}</Text>
@@ -286,6 +292,7 @@ function renderMeasuringBlock(
   handleMeasureBlock: (i: number, h: number) => void,
   showTranslation: boolean, l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean,
+  textScale: number,
 ) {
   if (block.kind === 'image') {
     return (
@@ -319,20 +326,20 @@ function renderMeasuringBlock(
       {block.type === 'heading' && <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>}
       {block.type === 'paragraph' && (
         <View>
-          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} />
+          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
           {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
         </View>
       )}
       {block.type === 'blockquote' && (
         <View className="border-l-2 border-muted-foreground/30 pl-3">
-          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} />
+          <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
           {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
         </View>
       )}
       {block.type === 'list-item' && (
         <View>
           <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
-            <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} /></View>
+            <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
           </View>
           {showTranslation && <Text className="ml-4 mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
         </View>

@@ -92,7 +92,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
         return (
           <View key={`${example.l2}-${index}`} className="border-b border-border py-3">
             <TextActionMenu className="w-full" text={display} l2Code={l2} l1Code={l1Code.split('-')[0]}>
-              <TokenizedText text={display} l2Code={l2} leading="relaxed" highlightTerms={highlightForms} />
+              <TokenizedText text={display} l2Code={l2} leading="relaxed" highlightTerms={highlightForms} textScale={1} />
             </TextActionMenu>
             {translations[index] ? (
               <Text className="mt-1 text-xs leading-relaxed text-muted-foreground/70">

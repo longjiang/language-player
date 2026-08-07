@@ -218,7 +218,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
               {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
                 <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
-                  <TokenizedText text={text} l2Code={l2Code} />
+                  <TokenizedText text={text} l2Code={l2Code} textScale={0} />
                 </View>
                 {contextExpanded ? (
                   <Pressable onPress={() => setContextExpanded(false)} className="mt-1">

@@ -137,6 +137,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                         l2Code={l2Code}
                         leading="none"
                         highlightTerms={highlightForms}
+                        textScale={1}
                       />
                     </TextActionMenu>
                     {translation ? (

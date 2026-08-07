@@ -211,6 +211,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
+                  textScale={1.5}
                 />
               </View>
               {showTranslation && activeLine.l1Line ? (
@@ -279,6 +280,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
+                  textScale={1}
                 />
                 {item.l1Line ? (
                   <Text className="mt-1 text-sm text-muted-foreground">

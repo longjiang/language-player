@@ -137,6 +137,7 @@ export default function TokenizerScreen() {
             text={customText.trim()}
             l2Code={l2Lang.code}
             tokens={customTokens}
+            textScale={1}
           />
         </View>
       )}
