@@ -44,12 +44,14 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
       data={videos}
       keyExtractor={(item) => item.youtube_id}
       renderItem={({ item, index }) => (
-        <VideoCard
-          video={item}
-          videos={videos}
-          queueType={queueType}
-          testID={index === 0 ? 'video-card-first' : undefined}
-        />
+        <View className={numColumns > 1 ? 'flex-1' : undefined}>
+          <VideoCard
+            video={item}
+            videos={videos}
+            queueType={queueType}
+            testID={index === 0 ? 'video-card-first' : undefined}
+          />
+        </View>
       )}
       key={`grid-${numColumns}`}
       numColumns={numColumns}
