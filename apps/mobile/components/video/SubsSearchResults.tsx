@@ -13,7 +13,6 @@ import { useAnimatedBoolean } from '@/lib/animations';
 import { SimpleSubsForDebug } from './SimpleSubsForDebug';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { TextActionMenu } from '@/components/TextActionMenu';
 import { VideoControlBar } from './VideoControlBar';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -380,23 +379,17 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         />
       </View>
 
-      {/* Subtitle + text action menu (SPEC-049 §7.1) — next to the subtitle line */}
-      <TextActionMenu
-        text={subtitleInitialLines[activeLineIndex]?.l2Line ?? matchLine?.line ?? ''}
-        l2Code={l2Lang.code}
-        l1Code={baseCode(l1Lang.code)}
-      >
-        <View className="min-h-32 items-center">
-          <SimpleSubsForDebug
-            singleLine
-            lines={subtitleInitialLines}
-            activeLineIndex={activeLineIndex}
-            currentTime={currentTime}
-            highlightTerms={highlightTerms}
-            onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-          />
-        </View>
-      </TextActionMenu>
+      {/* Subtitle — action menu is attached inside TokenizedText blocks */}
+      <View className="min-h-32 items-center">
+        <SimpleSubsForDebug
+          singleLine
+          lines={subtitleInitialLines}
+          activeLineIndex={activeLineIndex}
+          currentTime={currentTime}
+          highlightTerms={highlightTerms}
+          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+        />
+      </View>
 
       {/* ── Video List Dialog ── */}
       <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
