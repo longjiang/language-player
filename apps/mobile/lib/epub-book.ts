@@ -60,6 +60,24 @@ export interface EpubBookModel {
   resolveHref: (href: string, fromHref?: string) => Promise<BookLocation | null>;
 }
 
+/** Recursively add a directory's files into a JSZip instance. */
+async function addDirectoryToZip(zip: JSZip, dirUri: string, prefix: string): Promise<void> {
+  const entries = await FileSystem.readDirectoryAsync(dirUri);
+  for (const name of entries) {
+    const full = `${dirUri}${name}`;
+    const rel = prefix ? `${prefix}/${name}` : name;
+    const info = await FileSystem.getInfoAsync(full);
+    if (info.isDirectory) {
+      await addDirectoryToZip(zip, `${full}/`, rel);
+    } else {
+      const b64 = await FileSystem.readAsStringAsync(full, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      zip.file(rel, b64, { base64: true });
+    }
+  }
+}
+
 interface OpenOptions {
   /** Existing persisted cover file:// URI to reuse (bookshelf covers). */
   coverUri?: string | null;
@@ -93,10 +111,21 @@ export async function openEpubBook(
   fileName: string,
   opts: OpenOptions = {},
 ): Promise<EpubBookModel> {
-  // Read the archive as binary (not base64) — base64 expands the file 33% and
-  // can make JSZip hang or freeze the JS thread on large books.
-  const data = await new File(fileUri).arrayBuffer();
-  const zip = await JSZip.loadAsync(data);
+  // Some books arrive as unzipped EPUB directories (e.g. older files from
+  // Dropbox/Calibre). Build an in-memory JSZip from the directory so the rest
+  // of the model code is identical for both forms.
+  const info = await FileSystem.getInfoAsync(fileUri);
+  const isDirectory = !!info.isDirectory;
+  let zip: JSZip;
+  if (isDirectory) {
+    zip = new JSZip();
+    await addDirectoryToZip(zip, fileUri.endsWith('/') ? fileUri : `${fileUri}/`, '');
+  } else {
+    // Read the archive as binary (not base64) — base64 expands the file 33%
+    // and can make JSZip hang or freeze the JS thread on large books.
+    const data = await new File(fileUri).arrayBuffer();
+    zip = await JSZip.loadAsync(data);
+  }
   const id = sanitizeEpubId(fileName);
   const tempDir = `${FileSystem.cacheDirectory}epub_tmp_${id}/`;
   try { await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true }); } catch { /* exists */ }

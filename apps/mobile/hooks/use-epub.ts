@@ -25,6 +25,22 @@ import type { TocItem } from '@/lib/epub-parser';
 import type { ContentBlock } from '@/lib/parse-markdown';
 import { log } from '@/lib/logger';
 
+/** Recursively copy a directory (used for unzipped EPUB folder packages). */
+async function copyDirectoryContents(srcDir: string, destDir: string): Promise<void> {
+  const entries = await FileSystem.readDirectoryAsync(srcDir);
+  for (const name of entries) {
+    const src = `${srcDir}${name}`;
+    const dst = `${destDir}${name}`;
+    const info = await FileSystem.getInfoAsync(src);
+    if (info.isDirectory) {
+      await FileSystem.makeDirectoryAsync(dst, { intermediates: true });
+      await copyDirectoryContents(`${src}/`, `${dst}/`);
+    } else {
+      await FileSystem.copyAsync({ from: src, to: dst });
+    }
+  }
+}
+
 export interface UseEpubReturn {
   /** Bookshelf entries (metadata only), sorted by last read. */
   books: EpubSummary[];
@@ -184,7 +200,20 @@ export function useEpub(): UseEpubReturn {
         try {
           const id = sanitizeEpubId(asset.name);
           const dest = libraryFileUri(id);
-          await FileSystem.copyAsync({ from: asset.uri, to: dest });
+          const assetInfo = await FileSystem.getInfoAsync(asset.uri);
+          const existing = await FileSystem.getInfoAsync(dest);
+          if (existing.exists) {
+            await FileSystem.deleteAsync(dest);
+          }
+          if (assetInfo.isDirectory) {
+            await FileSystem.makeDirectoryAsync(dest, { intermediates: true });
+            await copyDirectoryContents(
+              asset.uri.endsWith('/') ? asset.uri : `${asset.uri}/`,
+              dest.endsWith('/') ? dest : `${dest}/`,
+            );
+          } else {
+            await FileSystem.copyAsync({ from: asset.uri, to: dest });
+          }
 
           const m = await openEpubBook(dest, asset.name);
           let coverUrl = m.coverUrl;
