@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -10,8 +11,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { baseCode } from '@langplayer/utils';
 import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { User, Mail, Clock, BookOpen, Crown, Play, Star, ArrowRight, Check, ChevronDown } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE, ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { User, Mail, Clock, BookOpen, Crown, Play, Star, ArrowRight, Check, ChevronDown, Trash2, AlertTriangle } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 function youtubeThumb(id: string) { return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; }
@@ -160,6 +161,43 @@ export default function ProfileScreen() {
       setCancelling(false);
     }
   }, [sub?.payment_customer_id]);
+
+  // ── Delete account (mirrors apps/web profile) ──
+  const hasRenewingSubscription = willAutoRenew;
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+
+  const closeDeleteDialog = () => {
+    setDeleteOpen(false);
+    setDeleteConfirm('');
+    setDeleteError(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE' || deleting || hasRenewingSubscription) return;
+    setDeleting(true);
+    setDeleteError(false);
+    try {
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/auth/delete-account`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('delete account failed');
+    } catch {
+      setDeleteError(true);
+      setDeleting(false);
+      return;
+    }
+    // Clear locally cached saved words (same keys the web clears on delete)
+    try {
+      await SecureStore.deleteItemAsync('zthSavedWords');
+      await SecureStore.deleteItemAsync('zthSavedWordsPendingOps');
+    } catch { /* ignore */ }
+    await logout();
+    router.replace('/login');
+  };
 
   // ── Render ──
 
@@ -402,11 +440,103 @@ export default function ProfileScreen() {
         )}
       </View>
 
+      {/* ── Delete Account ── */}
+      <View className="mx-4 mb-6 rounded-xl border border-destructive/40 bg-destructive/5 p-4">
+        <View className="flex-row items-center gap-2">
+          <Trash2 size={18} color={ICON_DESTRUCTIVE} />
+          <Text className="text-base font-semibold text-destructive">{t('title.delete_account')}</Text>
+        </View>
+        <Text className="mt-2 text-sm text-muted-foreground">
+          {t('msg.delete_account_permanent_warning')}
+        </Text>
+        {subLoading ? (
+          <View className="mt-3 flex-row items-center gap-2">
+            <ActivityIndicator size="small" color={ICON_MUTED} />
+            <Text className="text-sm text-muted-foreground">{t('msg.loading')}</Text>
+          </View>
+        ) : hasRenewingSubscription ? (
+          <Text className="mt-3 text-sm font-medium text-destructive">
+            {t('msg.delete_account_cancel_subscription_first')}
+          </Text>
+        ) : (
+          <Pressable
+            onPress={() => setDeleteOpen(true)}
+            className="mt-4 flex-row items-center justify-center gap-2 rounded-lg bg-destructive py-2.5"
+          >
+            <Trash2 size={16} color={ICON_ON_PRIMARY} />
+            <Text className="text-sm font-semibold text-destructive-foreground">
+              {t('action.delete_account_permanently')}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+
       {/* ── Logout ── */}
       <Pressable onPress={logout} className="mx-4 mb-8 py-3 items-center border-t border-border">
         <Text className="text-sm text-destructive">{t('action.logout')}</Text>
       </Pressable>
       </ScrollView>
+
+      {/* ── Delete Account confirm dialog ── */}
+      <Modal
+        visible={deleteOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeDeleteDialog}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-sm rounded-2xl border border-destructive/40 bg-card p-5">
+            <View className="flex-row items-center gap-2">
+              <AlertTriangle size={18} color={ICON_DESTRUCTIVE} />
+              <Text className="text-lg font-bold text-destructive">{t('title.delete_account')}</Text>
+            </View>
+            <Text className="mt-2 text-sm text-muted-foreground">
+              {t('msg.delete_account_permanent_warning')}
+            </Text>
+            <View className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+              <Text className="text-sm text-destructive">{t('msg.delete_account_irreversible')}</Text>
+            </View>
+            <Text className="mt-3 text-sm font-medium text-foreground">{t('msg.delete_account_type_to_confirm')}</Text>
+            <TextInput
+              value={deleteConfirm}
+              onChangeText={(text) => {
+                setDeleteConfirm(text);
+                setDeleteError(false);
+              }}
+              placeholder="DELETE"
+              placeholderTextColor={PLACEHOLDER_COLOR}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              className="mt-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            />
+            {deleteError && (
+              <Text className="mt-2 text-sm text-destructive">{t('msg.delete_account_error')}</Text>
+            )}
+            <View className="mt-4 flex-row justify-end gap-2">
+              <Pressable
+                onPress={closeDeleteDialog}
+                className="rounded-lg border border-border px-4 py-2.5"
+              >
+                <Text className="text-sm text-foreground">{t('action.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleDeleteAccount}
+                disabled={deleteConfirm !== 'DELETE' || deleting}
+                className={`flex-row items-center gap-2 rounded-lg bg-destructive px-4 py-2.5 ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
+              >
+                {deleting ? (
+                  <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
+                ) : (
+                  <Trash2 size={14} color={ICON_ON_PRIMARY} />
+                )}
+                <Text className="text-sm font-semibold text-destructive-foreground">
+                  {t('action.delete_account_permanently')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </PageContainer>
   );
 }
