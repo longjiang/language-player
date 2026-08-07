@@ -26,7 +26,14 @@ const _getRecommendations = (params: {
   page?: number;
   limit?: number;
   userId?: string;
-}) => apiClient.get<YouTubeVideo[]>('/recommend-videos', { params });
+}) => {
+  const { userId, ...rest } = params;
+  // The Flask endpoint reads `user_id`, not `userId`; without this mapping
+  // the feed never receives the user context and cannot be personalized.
+  return apiClient.get<YouTubeVideo[]>('/recommend-videos', {
+    params: { ...rest, user_id: userId },
+  });
+};
 
 const _getLiveTV = (lang: string) =>
   apiClient.get<YouTubeVideo[]>('/videos/live-tv', { params: { lang } });
