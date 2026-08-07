@@ -63,13 +63,23 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
   const showTranslation = display.translation;
 
+  // Per-line highlight form: the first highlight term present in each line.
+  // Sent to /translate_array so the server bolds it in the translation
+  // (SPEC-049 §7.3) instead of pre-marking the text.
+  const highlightFormsForLines = useMemo(
+    () => lines.map((l) =>
+      (highlightTerms ?? []).find((f) => f && l.l2Line.includes(f)) ?? null,
+    ),
+    [lines, highlightTerms],
+  );
+
   // ── Scroll-position-based visibility ──
   const scrollYRef = useRef(0);
   const [containerHeight, setContainerHeight] = useState(0);
   // Conservative item height estimate for visibility math
   const estimatedItemHeight = showTranslation ? 100 : 56;
 
-  const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, showTranslation);
+  const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, showTranslation, highlightFormsForLines);
 
   // Merge translations into SyncedLine shape
   const displayLines = useMemo(

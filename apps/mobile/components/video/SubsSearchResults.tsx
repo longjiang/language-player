@@ -10,6 +10,8 @@ import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { SimpleSubsForDebug } from './SimpleSubsForDebug';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
+import { TextActionMenu } from '@/components/TextActionMenu';
+import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { List, X } from 'lucide-react-native';
 
@@ -201,17 +203,23 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
         />
       </View>
 
-      {/* Subtitle */}
-      <View className="h-32">
-        <SimpleSubsForDebug
-          singleLine
-          lines={subtitleInitialLines}
-          activeLineIndex={activeLineIndex}
-          currentTime={currentTime}
-          highlightTerms={highlightTerms}
-          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-        />
-      </View>
+      {/* Subtitle + text action menu (SPEC-049 §7.1) */}
+      <TextActionMenu
+        text={subtitleInitialLines[activeLineIndex]?.l2Line ?? matchLine?.line ?? ''}
+        l2Code={l2Lang.code}
+        l1Code={baseCode(l1Lang.code)}
+      >
+        <View className="h-32">
+          <SimpleSubsForDebug
+            singleLine
+            lines={subtitleInitialLines}
+            activeLineIndex={activeLineIndex}
+            currentTime={currentTime}
+            highlightTerms={highlightTerms}
+            onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+          />
+        </View>
+      </TextActionMenu>
 
       {/* ── Video List Dialog ── */}
       <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
