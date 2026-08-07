@@ -17,6 +17,7 @@ import { YouTubePlayer } from '@/components/video/YouTubePlayer';
 import { AlertCircle } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
+import { ChannelActionsMenu } from '@/components/video/ChannelActionsMenu';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -110,13 +111,16 @@ export default function ChannelPage() {
             />
             <View className="flex-1">
               <Text className="text-xl font-bold text-foreground">{channel.title}</Text>
-              <Pressable
-                onPress={() =>
-                  Linking.openURL(`https://www.youtube.com/channel/${channelId}`)
-                }
-              >
-                <Text className="text-sm text-muted-foreground">{t('action.view_on_youtube')} ↗</Text>
-              </Pressable>
+              <View className="mt-1 flex-row items-center gap-3">
+                <Pressable
+                  onPress={() =>
+                    Linking.openURL(`https://www.youtube.com/channel/${channelId}`)
+                  }
+                >
+                  <Text className="text-sm text-muted-foreground">{t('action.view_on_youtube')} ↗</Text>
+                </Pressable>
+                <ChannelActionsMenu channelId={channelId} />
+              </View>
             </View>
           </View>
         )}

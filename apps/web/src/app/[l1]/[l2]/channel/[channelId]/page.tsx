@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { VideoGrid } from '@/components/video/video-grid';
+import { ChannelActionsMenu } from '@/components/video/channel-actions-menu';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { languageName, baseCode } from '@/lib/language-data';
@@ -86,14 +87,17 @@ export default function ChannelPage() {
           />
           <div>
             <h1 className="text-2xl font-bold">{channel.title}</h1>
-            <a
-              href={`https://www.youtube.com/channel/${channelId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {t('action.view_on_youtube')} ↗
-            </a>
+            <div className="mt-1 flex items-center gap-3">
+              <a
+                href={`https://www.youtube.com/channel/${channelId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('action.view_on_youtube')} ↗
+              </a>
+              <ChannelActionsMenu channelId={channelId} />
+            </div>
           </div>
         </div>
       )}
