@@ -485,10 +485,17 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {
     if (!token.lemmas.length) return { byeonggiText: null as string | null, firstDef: null as string | null };
     const firstLemma = token.lemmas[0]!.lemma;
-    const entries = getCachedEntries(l2Code, firstLemma);
+    // Cache/backend keys use the base L2 code (e.g. "zh" not "zh-Hans"), but
+    // components may be mounted with the regional code. Check both so quick
+    // glosses work everywhere (including video subtitles).
+    const entries =
+      getCachedEntries(l2Code, firstLemma) ??
+      getCachedEntries(baseCode(l2Code), firstLemma);
     if (!entries || entries.length === 0) {
       // Try surface form if lemma didn't match
-      const surfaceEntries = getCachedEntries(l2Code, token.text);
+      const surfaceEntries =
+        getCachedEntries(l2Code, token.text) ??
+        getCachedEntries(baseCode(l2Code), token.text);
       if (surfaceEntries && surfaceEntries.length > 0) {
         const e = surfaceEntries[0]!;
         return {
