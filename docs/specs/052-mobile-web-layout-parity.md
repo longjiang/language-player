@@ -21,8 +21,9 @@ This spec records the current route-by-route layout gap and defines a step-by-st
 The goal is **layout parity**, not identical code. Mobile still uses React Native primitives and NativeWind, but the visual structure — columns, sidebars, max widths, side-by-side regions, and breakpoints — should match web.
 
 **As of 2026-08-07:** phases 1–6 are implemented on branch
-`codex/mobile-web-layout-parity`. A review pass found and fixed four issues
-(see [Review fixes](#review-fixes-2026-08-07) below). Phase 7 (manual
+`codex/mobile-web-layout-parity`. A review pass found and fixed the issues
+documented in [Review fixes](#review-fixes-2026-08-07) and the
+[Bottom-sheet policy](#bottom-sheet-policy-2026-08-07) below. Phase 7 (manual
 verification on device/simulator) is the remaining work before this spec can
 be marked complete.
 
@@ -123,6 +124,23 @@ The NavBar fix above removes the most likely new trigger; the remaining
 conditional `shadow-*`/alpha classes elsewhere in the app are tracked as a
 follow-up (upgrade or patch `react-native-css-interop`).
 
+### Bottom-sheet policy (2026-08-07)
+
+Bottom sheets are now reserved for phones and narrow iPad windows
+(width < `md`, 768px). On larger screens every sheet-style surface renders as
+a centered dialog instead, matching `apps/web`. The language picker sizing bug
+(its `flex-1` root collapsed to a sliver inside the centered `Dialog.Content`)
+was fixed by making dialog mode size to content.
+
+| Surface | < 768 | ≥ 768 |
+|---|---|---|
+| Language switcher (`variant="dialog"`) | bottom sheet | centered `Dialog.Content` (`max-w-md`) |
+| Subtitle-search video list | bottom sheet | centered dialog (`max-w-lg`, capped height) |
+| Dictionary popup | bottom sheet | centered dialog (`max-w-lg`, capped height) |
+| WebView sheet | bottom sheet | centered dialog (`max-w-2xl`, capped height) |
+| Context menu | bottom sheet | centered dialog (`max-w-sm`) |
+| Right sidebar / hamburger drawer | drawer / sheet (nav only) | persistent sidebar / removed |
+
 ### Implemented source files (highlights)
 
 - `apps/mobile/lib/constants.ts` — breakpoint constants + `gridColumnCount()`
@@ -137,6 +155,7 @@ follow-up (upgrade or patch `react-native-css-interop`).
 - `apps/mobile/app/(tabs)/(media)/local-media.tsx` — lg player/transcript columns + `max-w-7xl` content cap
 - `apps/mobile/app/(tabs)/(me)/settings/index.tsx` — 1024 split + Display default
 - `apps/mobile/components/layout/LanguageSwitcher.tsx` — centered dialog ≥768, bottom sheet below
+- Bottom-sheet policy — `LanguageSwitcher`, `SubsSearchResults`, `WebViewSheet`, `DictionaryPopup`, `ui/context-menu`: bottom sheets <768, centered dialogs ≥768
 
 ---
 
@@ -200,8 +219,8 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Component | Web | Mobile | Required change |
 |---|---|---|---|
 | `TextActionMenu` translation | Original + translation side-by-side at lg | Always stacked | Add `lg`-equivalent side-by-side mode at ≥1024 |
-| `DictionaryPopup` | ~448px centered dialog | Bottom sheet | Leave as platform-appropriate or align sizing on iPad (open question) |
-| Subs-search list modal | Bottom sheet <640, centered ≥640 | Always bottom sheet | Optionally center on ≥640 |
+| `DictionaryPopup` | ~448px centered dialog | Bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
+| Subs-search list modal | Bottom sheet <640, centered ≥640 | Always bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
 | `ImageSearchResults` | 3 columns <640, 4 ≥640 | Always 3 columns | Use 4 columns ≥640 |
 | Hamburger drawer | `w-64` | `min(256, width*0.6)` | Keep cap (it's better for split view); align when drawer is removed ≥md |
 
@@ -313,6 +332,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] Hamburger drawer: capped at `min(256, width*0.6)`; drawer never renders at ≥768.
 - [ ] Auth screens: centered at `max-w-md` (448px) at every width.
 - [ ] Language switcher dialog: bottom sheet below 768; centered `max-w-md` dialog at ≥768 (picker remains `variant="dialog"`).
+- [ ] Dictionary popup, subtitle-search list, WebView sheet, and context menus: bottom sheet below 768; centered dialogs at ≥768 (no stretched full-width sheets on iPad).
 
 ### Media screens
 
