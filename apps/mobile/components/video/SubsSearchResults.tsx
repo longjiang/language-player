@@ -86,6 +86,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
   const [listOpen, setListOpen] = useAnimatedBoolean();
+  /** First visible row in the show-all list — drives lazy translation. */
+  const [listFirstVisible, setListFirstVisible] = useState(0);
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
@@ -148,6 +150,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     l1Lang.code,
     baseCode(l2Lang.code),
     listOpen && display.translation,
+    listFirstVisible,
     translationInput.forms,
   );
 
@@ -408,6 +411,11 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             <FlatList
               data={videos}
               keyExtractor={(v) => String(v.id)}
+              viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
+              onViewableItemsChanged={({ viewableItems }) => {
+                const first = viewableItems[0];
+                if (first?.index != null) setListFirstVisible(first.index);
+              }}
               renderItem={({ item, index }) => {
                 const ml = item.subs_l2[item.matchLineIndex];
                 const isActive = index === currentIndex;

@@ -66,7 +66,14 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   // Conservative item height estimate for visibility math
   const estimatedItemHeight = showTranslation ? 100 : 56;
 
-  const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, showTranslation, highlightFormsForLines);
+  const { translatedLines, loading, progress } = useSubtitleTranslation(
+    subtitleLines,
+    l1Lang.code,
+    l2Lang.code,
+    showTranslation,
+    activeLineIndex,
+    highlightFormsForLines,
+  );
 
   // Merge translations into SyncedLine shape
   const displayLines = useMemo(
