@@ -1,5 +1,7 @@
 import React, { useState, type ReactNode } from 'react';
+import { FileText, ListVideo, Info } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { TabbedPanel, type TabDef } from '../TabbedPanel';
 
 interface TranscriptQueuePanelProps {
@@ -22,11 +24,11 @@ export function TranscriptQueuePanel({
   const [tab, setTab] = useState(defaultTab);
 
   const tabs: TabDef[] = [
-    { key: 'transcript', label: t('title.transcript') },
-    { key: 'queue', label: t('title.queue') },
+    { key: 'transcript', label: t('title.transcript'), icon: () => <FileText size={14} color={ICON_MUTED} /> },
+    { key: 'queue', label: t('title.queue'), icon: () => <ListVideo size={14} color={ICON_MUTED} /> },
   ];
   if (info) {
-    tabs.push({ key: 'info', label: t('title.info') });
+    tabs.push({ key: 'info', label: t('title.info'), icon: () => <Info size={14} color={ICON_MUTED} /> });
   }
 
   return (
