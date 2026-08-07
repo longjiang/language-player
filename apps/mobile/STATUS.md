@@ -117,6 +117,7 @@
 | Dictionary Definitions Panel | `components/dictionary/DictionaryDefinitionsPanel.tsx` | ✅ | Full definitions panel (classifiers, study materials, han script, phonetic extras, Google Images, match_type, SpeakButton, SaveButton). Ported from web. |
 | Speak Button | `components/dictionary/SpeakButton.tsx` | ✅ | TTS button using expo-speech via useSpeech hook |
 | Image Search | `components/dictionary/ImageSearchResults.tsx` | ✅ | Openverse image search: grid variant (Images tab in DictionaryEntryTabs) with LLM-rewritten query pills, paginated 3-col grid, query relaxation, skeleton loading; compact variant (thumbnail strip) in DictionaryPopup. Same Openverse + `/dictionary/image-queries` endpoints as web. |
+| Corpus Panel | `components/dictionary/corpus/corpus-panel.tsx` | ✅ | Corpus tab (Sketch Engine, SPEC-047): Collocations / Examples / Related / Mistakes pills (Mistakes zh-only). Sections use TokenizedText with term highlighting + L1 translations; Related words render as compact entry cards seeding the sidebar (source 'corpus'). `use-corpus-fetch.ts` + `use-corpus-translations.ts` shared. |
 
 ---
 

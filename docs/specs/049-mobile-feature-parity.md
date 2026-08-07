@@ -86,17 +86,19 @@ The shared **types are in `@langplayer/shared`**, so mobile only needs the UI.
 
 ## 4. Dictionary — Corpus Tab (Sketch Engine)
 
-Fully documented in [SPEC-047](047-corpus-tab-sketch-engine.md). **Web-only today.**
-Mobile's dictionary entry has no Corpus / Collocations / Examples / Related / Mistakes pills.
+Fully documented in [SPEC-047](047-corpus-tab-sketch-engine.md). Mobile now has a
+Corpus tab with all four Sketch Engine pills.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 4.1 | Corpus tab with Sketch Engine pills (Collocations / Examples / Related / Mistakes) | `85eb7be4`, `10fc9ebf`, `cc19a18a`, `9b419715`, `b831dd04`, `60631ee1`, `60ad84db`, `548c33a2`, `5ad757c0` | Not in mobile |
-| 4.2 | Corpus text rendered as interactive tokenized text + term highlighting | `b7afa7a0`, `416357b9`, `e1e077aa`, `d350a874`, `4febef32`, `be6bfbc4` | Not in mobile |
-| 4.3 | Related words as an infinite-scroll card grid with bookmark + corpus source | `f43efb05`, `bb1a9777` | Not in mobile |
+| 4.1 | Corpus tab with Sketch Engine pills (Collocations / Examples / Related / Mistakes) | `85eb7be4`, `10fc9ebf`, `cc19a18a`, `9b419715`, `b831dd04`, `60631ee1`, `60ad84db`, `548c33a2`, `5ad757c0` | **Ported** — mobile `CorpusPanel` (pills row) added as a Corpus tab in `DictionaryEntryTabs`; Collocations/Examples/Related/Mistakes sections consume the same `/sketch-engine/*` endpoints |
+| 4.2 | Corpus text rendered as interactive tokenized text + term highlighting | `b7afa7a0`, `416357b9`, `e1e077aa`, `d350a874`, `4febef32`, `be6bfbc4` | **Ported** — collocations/examples render via mobile `TokenizedText` (tappable tokens + dictionary popup) with `highlightTerms`; L1 translations via `/translate` |
+| 4.3 | Related words as an infinite-scroll card grid with bookmark + corpus source | `f43efb05`, `bb1a9777` | **Ported** — related words render as compact `DictionaryEntryCard`s (lazy entry fetch) that seed the entry sidebar with `source: 'corpus'` |
 
 Use the shared `Sketch*Response` types from `packages/shared/src/types.ts` (added
-in SPEC-047) directly — no new API work needed on the backend.
+in SPEC-047) directly — no new API work needed on the backend. Notes: the corpus
+picker dropdown is not ported (auto-resolved default corpus is used); Mistakes is
+zh-only as on web.
 
 ## 5. Dictionary — AI Explain (DeepSeek)
 
