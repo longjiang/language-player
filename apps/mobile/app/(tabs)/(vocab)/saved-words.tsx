@@ -26,7 +26,8 @@ export default function SavedWordsScreen() {
   const { width: screenWidth } = useWindowDimensions();
 
   // Responsive tiling like the explore/media grid (item 2.4).
-  const numColumns = screenWidth < 400 ? 1 : screenWidth < 700 ? 2 : screenWidth < 1000 ? 3 : 4;
+  // Phones stay single-column; tablets/desktop tile.
+  const numColumns = screenWidth < 640 ? 1 : screenWidth < 900 ? 2 : screenWidth < 1200 ? 3 : 4;
 
   const [filterText, setFilterText] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -261,13 +262,13 @@ export default function SavedWordsScreen() {
           // Words row — tile cards horizontally, matching explore's grid.
           return (
             <View
-              className="flex-row px-1"
+              className="mb-3 flex-row px-1"
               style={numColumns > 1 ? { gap: 8 } : { gap: 0 }}
             >
               {item.items.map((w) => (
                 <View
                   key={w.id}
-                  style={{ flex: 1 }}
+                  style={{ width: `${100 / numColumns}%` as `${number}%` }}
                   className="px-0.5"
                 >
                   <SavedWordEntryCard
