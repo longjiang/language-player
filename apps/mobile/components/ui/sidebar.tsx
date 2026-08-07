@@ -5,6 +5,7 @@ import { PanelRightClose } from 'lucide-react-native';
 import * as Dialog from '@/components/ui/dialog';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { LG_BREAKPOINT } from '@/lib/constants';
 
 /**
  * Shared right-side sidebar — mirrors apps/web/src/components/ui/sidebar.tsx.
@@ -13,7 +14,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
  */
 
 /** Width at which the sidebar switches from sheet to persistent panel. */
-export const SIDEBAR_BREAKPOINT = 768;
+export const SIDEBAR_BREAKPOINT = LG_BREAKPOINT;
 
 /** Sheet width matching web's `w-80 max-w-[85vw]`. */
 export function sidebarSheetWidth(screenWidth: number): number {

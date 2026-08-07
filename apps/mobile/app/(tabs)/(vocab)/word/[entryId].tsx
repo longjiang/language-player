@@ -162,60 +162,62 @@ export default function WordDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Header bar — dictionary title + sidebar toggle when a list is available */}
-      <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
-        <Text className="text-lg font-bold text-foreground">{t('title.dictionary')}</Text>
-        {sidebarAvailable && (
-          <Pressable
-            onPress={toggle}
-            className="flex-row items-center gap-1.5 rounded-md border border-border px-3 py-1.5 active:bg-muted"
-            accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
-          >
-            {isWide && sidebarOpen ? (
-              <PanelRightClose size={16} color={ICON_MUTED} />
-            ) : (
-              <PanelRight size={16} color={ICON_MUTED} />
-            )}
-            <Text className="text-xs text-muted-foreground">
-              {t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
-            </Text>
-          </Pressable>
-        )}
-      </View>
+      <View className="w-full flex-1 self-center" style={{ maxWidth: 1280 }}>
+        {/* Header bar — dictionary title + sidebar toggle when a list is available */}
+        <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+          <Text className="text-lg font-bold text-foreground">{t('title.dictionary')}</Text>
+          {sidebarAvailable && (
+            <Pressable
+              onPress={toggle}
+              className="flex-row items-center gap-1.5 rounded-md border border-border px-3 py-1.5 active:bg-muted"
+              accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
+            >
+              {isWide && sidebarOpen ? (
+                <PanelRightClose size={16} color={ICON_MUTED} />
+              ) : (
+                <PanelRight size={16} color={ICON_MUTED} />
+              )}
+              <Text className="text-xs text-muted-foreground">
+                {t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
-      <View className="flex-1" style={{ flexDirection: isWide ? 'row' : 'column' }}>
-        <ScrollView className="flex-1">
-          {/* Definitions card at the top (like web's left panel on lg+) */}
-          <View className="mx-4 mt-4 rounded-xl border border-border bg-card p-6">
-            <DictionaryEntryCard
-              entry={entry}
-              variant="full"
-              l2Code={l2Code}
-            />
-          </View>
+        <View className="flex-1" style={{ flexDirection: isWide ? 'row' : 'column' }}>
+          <ScrollView className="flex-1">
+            {/* Definitions card at the top (like web's left panel on lg+) */}
+            <View className="mx-4 mt-4 rounded-xl border border-border bg-card p-6">
+              <DictionaryEntryCard
+                entry={entry}
+                variant="full"
+                l2Code={l2Code}
+              />
+            </View>
 
-          {/* Tabs panel: Examples, Conjugations, DeepSeek (matches web right panel) */}
-          <View className="mx-4 mt-4 mb-8">
-            <DictionaryEntryTabs
-              entry={entry}
-              l2Code={l2Code}
-              showDefinitionTab={false}
-            />
-          </View>
-        </ScrollView>
+            {/* Tabs panel: Examples, Conjugations, DeepSeek (matches web right panel) */}
+            <View className="mx-4 mt-4 mb-8">
+              <DictionaryEntryTabs
+                entry={entry}
+                l2Code={l2Code}
+                showDefinitionTab={false}
+              />
+            </View>
+          </ScrollView>
 
-        {/* Sidebar — shared panel + sheet, source list + prev/next + highlight */}
-        <WordListSidebar
-          open={mobileOpen}
-          onOpenChange={setMobileOpen}
-          sidebarOpen={sidebarOpen}
-          source={sidebarSource}
-          l1Code={l1Lang.code}
-          l2Code={l2Code}
-          l2Base={l2Code.split('-')[0]}
-          currentEntryId={currentEntryId}
-          onNavigate={handleSidebarNavigate}
-        />
+          {/* Sidebar — shared panel + sheet, source list + prev/next + highlight */}
+          <WordListSidebar
+            open={mobileOpen}
+            onOpenChange={setMobileOpen}
+            sidebarOpen={sidebarOpen}
+            source={sidebarSource}
+            l1Code={l1Lang.code}
+            l2Code={l2Code}
+            l2Base={l2Code.split('-')[0]}
+            currentEntryId={currentEntryId}
+            onNavigate={handleSidebarNavigate}
+          />
+        </View>
       </View>
     </View>
   );

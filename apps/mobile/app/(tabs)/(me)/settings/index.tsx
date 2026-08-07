@@ -12,6 +12,7 @@ import { DisplaySettings } from './display';
 import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
 import { ReviewSettings } from './review';
+import { LG_BREAKPOINT } from '@/lib/constants';
 
 // ── Section/Row types ─────────────────────────
 
@@ -222,17 +223,22 @@ function SettingsList({
 
 function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
   const t = useT();
+  let content;
   switch (selectedKey) {
     case 'display':
-      return <DisplaySettings />;
+      content = <DisplaySettings />;
+      break;
     case 'playback':
-      return <PlaybackSettings />;
+      content = <PlaybackSettings />;
+      break;
     case 'speech':
-      return <SpeechSettings />;
+      content = <SpeechSettings />;
+      break;
     case 'review':
-      return <ReviewSettings />;
+      content = <ReviewSettings />;
+      break;
     default:
-      return (
+      content = (
         <View className="flex-1 items-center justify-center bg-background">
           <Text className="text-sm text-muted-foreground">
             {t('msg.select_settings_category')}
@@ -240,6 +246,13 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
         </View>
       );
   }
+  return (
+    <View className="flex-1">
+      <View className="mx-auto h-full w-full" style={{ maxWidth: 512 }}>
+        {content}
+      </View>
+    </View>
+  );
 }
 
 // ── Main Screen ───────────────────────────────
@@ -248,8 +261,15 @@ export default function SettingsScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const sidebarWidth = Math.min(256, width * 0.4);
-  const isWide = width >= 600 && (width - sidebarWidth) >= 320;
+  const sidebarWidth = Math.min(220, width * 0.4);
+  const isWide = width >= LG_BREAKPOINT && (width - sidebarWidth) >= 320;
+
+  // Match web: the wide settings root opens the Display detail by default.
+  useEffect(() => {
+    if (isWide && !selectedKey) {
+      setSelectedKey('display');
+    }
+  }, [isWide, selectedKey]);
 
   const handleSelect = (key: string) => {
     if (isWide) {
