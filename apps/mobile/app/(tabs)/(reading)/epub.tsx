@@ -12,7 +12,7 @@ import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { TabbedPanel } from '@/components/TabbedPanel';
-import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
+import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose, List, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
@@ -360,8 +360,8 @@ export default function EpubReaderScreen() {
         >
           <TabbedPanel
             tabs={[
-              { key: 'chapters', label: t('title.chapters') },
-              { key: 'search', label: t('action.search') },
+              { key: 'chapters', label: t('title.chapters'), icon: () => <List size={14} color={ICON_MUTED} /> },
+              { key: 'search', label: t('action.search'), icon: () => <Search size={14} color={ICON_MUTED} /> },
             ]}
             defaultTab="chapters"
             className="h-full"

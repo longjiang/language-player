@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import * as Tabs from '@/components/ui/tabs';
 
@@ -23,10 +23,55 @@ interface TabbedPanelProps {
   contentClassName?: string;
 }
 
+type DisplayMode = 'full' | 'compact' | 'icon';
+
+/** Whether a tab shows its label in the given display mode. */
+function shouldShowLabel(tab: TabDef, mode: DisplayMode, activeKey: string): boolean {
+  if (!tab.icon) return true;
+  return mode === 'full' || (mode === 'compact' && tab.key === activeKey);
+}
+
+/**
+ * Hidden ruler that mirrors a tab trigger at its natural (unconstrained)
+ * width, so the panel can measure each display mode — mirrors apps/web.
+ */
+function MeasureRow({
+  tabs,
+  mode,
+  activeKey,
+}: {
+  tabs: TabDef[];
+  mode: DisplayMode;
+  activeKey: string;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignSelf: 'flex-start' }}>
+      {tabs.map((tab) => {
+        const showLabel = shouldShowLabel(tab, mode, activeKey);
+        return (
+          <View
+            key={tab.key}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 10 }}
+          >
+            {tab.icon ? <>{tab.icon()}</> : null}
+            {showLabel && <Text style={{ fontSize: 12, fontWeight: '500' }}>{tab.label}</Text>}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 /**
  * Tabbed panel using @rn-primitives/tabs for proper ARIA roles,
  * keyboard navigation, and focus management.
  * Renders a row of tab buttons and only the active tab's content.
+ *
+ * Tab labels adapt to the available width (mirrors apps/web):
+ *  - 'full'    every tab shows icon + label
+ *  - 'compact' the active tab keeps its label, the rest collapse to icon-only
+ *  - 'icon'    every tab collapses to icon-only
+ * The widest mode that still fits is used (full → compact → icon).
  *
  * Supports both controlled (activeTab + onTabChange) and uncontrolled (defaultTab) modes.
  * Accepts className and contentClassName for custom styling (e.g., embedded mode).
@@ -45,6 +90,29 @@ export function TabbedPanel({
   const activeTab = isControlled ? controlledTab : internalTab;
   const childrenArray = React.Children.toArray(children);
 
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [measurements, setMeasurements] = useState<{
+    full: number;
+    compact: number;
+    icon: number;
+  } | null>(null);
+
+  const updateMeasurement = (key: 'full' | 'compact' | 'icon', width: number) => {
+    setMeasurements((prev) => {
+      if (prev && prev[key] === width) return prev;
+      return { ...(prev ?? { full: 0, compact: 0, icon: 0 }), [key]: width };
+    });
+  };
+
+  // Pick the widest mode that still fits. The +2px tolerance keeps the mode
+  // from flapping at the exact boundary (mirrors apps/web).
+  const mode: DisplayMode = useMemo(() => {
+    if (!measurements || containerWidth === 0) return 'full';
+    if (containerWidth + 2 >= measurements.full) return 'full';
+    if (containerWidth + 2 >= measurements.compact) return 'compact';
+    return 'icon';
+  }, [measurements, containerWidth]);
+
   const handleTabChange = (key: string) => {
     if (!isControlled) setInternalTab(key);
     onTabChange?.(key);
@@ -52,29 +120,38 @@ export function TabbedPanel({
 
   return (
     <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-      <View className={className}>
+      <View
+        className={className}
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
         <Tabs.List>
-          {tabs.map((tab) => (
-            <Pressable
-              key={tab.key}
-              testID={`tab-${tab.key}`}
-              onPress={() => handleTabChange(tab.key)}
-              className={`flex-1 items-center px-2 py-2.5 ${
-                activeTab === tab.key ? 'border-b-2 border-primary' : ''
-              }`}
-            >
-              <View className="flex-row items-center gap-1.5">
-                {tab.icon ? <>{tab.icon()}</> : null}
-                <Text
-                  className={`text-xs font-medium ${
-                    activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </View>
-            </Pressable>
-          ))}
+          {tabs.map((tab) => {
+            const showLabel = shouldShowLabel(tab, mode, activeTab);
+            return (
+              <Pressable
+                key={tab.key}
+                testID={`tab-${tab.key}`}
+                onPress={() => handleTabChange(tab.key)}
+                className={`flex-1 items-center px-2 py-2.5 ${
+                  activeTab === tab.key ? 'border-b-2 border-primary' : ''
+                }`}
+              >
+                <View className="flex-row items-center gap-1.5">
+                  {tab.icon ? <>{tab.icon()}</> : null}
+                  {showLabel && (
+                    <Text
+                      numberOfLines={1}
+                      className={`text-xs font-medium ${
+                        activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {tab.label}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })}
         </Tabs.List>
 
         {/* Tab content panels */}
@@ -83,6 +160,23 @@ export function TabbedPanel({
             {childrenArray[i] as any}
           </Tabs.Content>
         ))}
+
+        {/* Hidden rulers used only for width measurement — clipped and
+            pointer-events off so they never affect layout or intercept taps. */}
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: -10000, top: 0, opacity: 0 }}
+        >
+          <View onLayout={(e) => updateMeasurement('full', e.nativeEvent.layout.width)}>
+            <MeasureRow tabs={tabs} mode="full" activeKey={activeTab} />
+          </View>
+          <View onLayout={(e) => updateMeasurement('compact', e.nativeEvent.layout.width)}>
+            <MeasureRow tabs={tabs} mode="compact" activeKey={activeTab} />
+          </View>
+          <View onLayout={(e) => updateMeasurement('icon', e.nativeEvent.layout.width)}>
+            <MeasureRow tabs={tabs} mode="icon" activeKey={activeTab} />
+          </View>
+        </View>
       </View>
     </Tabs.Root>
   );
