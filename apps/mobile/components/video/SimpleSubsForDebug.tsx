@@ -41,9 +41,12 @@ interface SimpleSubsForDebugProps {
   /** Add-to-playlist handler. When omitted, the bookmark button is hidden. */
   onSaveToPlaylist?: () => void;
   playlistDisabled?: boolean;
+  /** When false, hides the single-line control row + separator (e.g. when the
+   *  parent already renders its own video control bar). Default true. */
+  showControls?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SimpleSubsForDebugProps) {
+export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false, showControls = true }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback } = useSettingsContext();
@@ -245,77 +248,81 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
     return (
       <View className="flex-1 bg-card border-t border-border">
-        {/* Control row */}
-        <View className="flex-row items-center gap-0.5 px-2 py-1">
-          <Pressable
-            onPress={onPrevVideo}
-            disabled={!hasPrevVideo}
-            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-          >
-            <SkipBack size={18} color={btnColor} />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (!isFirstLine) {
-                const prev = lines[activeLineIndex - 1];
-                if (prev) onSeekToLine?.(prev.starttime);
-              }
-            }}
-            disabled={isFirstLine}
-            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-          >
-            <ChevronLeft size={20} color={btnColor} />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              if (!isLastLine) {
-                const next = lines[activeLineIndex + 1];
-                if (next) onSeekToLine?.(next.starttime);
-              }
-            }}
-            disabled={isLastLine}
-            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-          >
-            <ChevronRight size={20} color={btnColor} />
-          </Pressable>
-          <Pressable
-            onPress={onNextVideo}
-            disabled={!hasNextVideo}
-            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-          >
-            <SkipForward size={18} color={btnColor} />
-          </Pressable>
-          <View className="flex-1" />
-          {onToggleLike ? (
-            <Pressable
-              onPress={onToggleLike}
-              disabled={likeDisabled}
-              className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-            >
-              <Heart size={18} color={liked ? ICON_DESTRUCTIVE : btnColor} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
-            </Pressable>
-          ) : null}
-          {onSaveToPlaylist ? (
-            <Pressable
-              onPress={onSaveToPlaylist}
-              disabled={playlistDisabled}
-              className="rounded p-1.5 active:bg-muted disabled:opacity-30"
-            >
-              <Bookmark size={18} color={btnColor} />
-            </Pressable>
-          ) : null}
-          {onSwitchToTranscriptMode ? (
-            <Pressable
-              onPress={onSwitchToTranscriptMode}
-              className="rounded p-1.5 active:bg-muted"
-            >
-              <PanelRightOpen size={18} color={btnColor} />
-            </Pressable>
-          ) : null}
-        </View>
+        {showControls && (
+          <>
+            {/* Control row */}
+            <View className="flex-row items-center gap-0.5 px-2 py-1">
+              <Pressable
+                onPress={onPrevVideo}
+                disabled={!hasPrevVideo}
+                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+              >
+                <SkipBack size={18} color={btnColor} />
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  if (!isFirstLine) {
+                    const prev = lines[activeLineIndex - 1];
+                    if (prev) onSeekToLine?.(prev.starttime);
+                  }
+                }}
+                disabled={isFirstLine}
+                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+              >
+                <ChevronLeft size={20} color={btnColor} />
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  if (!isLastLine) {
+                    const next = lines[activeLineIndex + 1];
+                    if (next) onSeekToLine?.(next.starttime);
+                  }
+                }}
+                disabled={isLastLine}
+                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+              >
+                <ChevronRight size={20} color={btnColor} />
+              </Pressable>
+              <Pressable
+                onPress={onNextVideo}
+                disabled={!hasNextVideo}
+                className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+              >
+                <SkipForward size={18} color={btnColor} />
+              </Pressable>
+              <View className="flex-1" />
+              {onToggleLike ? (
+                <Pressable
+                  onPress={onToggleLike}
+                  disabled={likeDisabled}
+                  className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+                >
+                  <Heart size={18} color={liked ? ICON_DESTRUCTIVE : btnColor} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
+                </Pressable>
+              ) : null}
+              {onSaveToPlaylist ? (
+                <Pressable
+                  onPress={onSaveToPlaylist}
+                  disabled={playlistDisabled}
+                  className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+                >
+                  <Bookmark size={18} color={btnColor} />
+                </Pressable>
+              ) : null}
+              {onSwitchToTranscriptMode ? (
+                <Pressable
+                  onPress={onSwitchToTranscriptMode}
+                  className="rounded p-1.5 active:bg-muted"
+                >
+                  <PanelRightOpen size={18} color={btnColor} />
+                </Pressable>
+              ) : null}
+            </View>
 
-        {/* Separator */}
-        <View className="mx-3 border-t border-border" />
+            {/* Separator */}
+            <View className="mx-3 border-t border-border" />
+          </>
+        )}
 
         {/* Active line */}
         <Pressable

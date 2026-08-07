@@ -383,6 +383,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       <View className="min-h-32 items-center">
         <SimpleSubsForDebug
           singleLine
+          showControls={false}
           lines={subtitleInitialLines}
           activeLineIndex={activeLineIndex}
           currentTime={currentTime}
