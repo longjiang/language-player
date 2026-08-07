@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { baseCode } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
@@ -27,11 +28,13 @@ export function useWatchHistoryRecorder(
     if (!videoId || !user?.id || !token) return;
 
     const userId = user.id;
-    const l2 = l2Lang.code;
+    const l2 = baseCode(l2Lang.code);
 
     const interval = setInterval(() => {
       const time = currentTimeRef.current;
       if (time <= 0) return;
+      const numericVideoId = Number(videoId);
+      if (!Number.isFinite(numericVideoId)) return;
 
       if (
         lastSavedRef.current &&
@@ -49,7 +52,7 @@ export function useWatchHistoryRecorder(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          videoId: Number(videoId),
+          videoId: numericVideoId,
           l2,
           lastPosition: Math.round(time),
         }),
