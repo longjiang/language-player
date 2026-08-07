@@ -135,6 +135,8 @@ Manual checklist review found three more issues, all fixed:
 | NavBar dropdowns | Index routes (`/(tabs)/(media)` etc.) had no icon because the icon lookup used the raw route segment; the menu always opened at `left: 16` instead of under the clicked group | Icon lookup maps group index routes to `explore` / `reader` / `dictionary`; the dropdown is positioned via `measureInWindow` under the pressed group |
 | Live TV split layout | No padding around the player/channel list; search/filter icons used `className` colors that render black in dark mode | Row now has `px-4`; player-width math accounts for it; search/filter icons use `ICON_MUTED` / `ICON_ON_PRIMARY` |
 | TV Shows toolbar | Sort + region filter were always stacked below the search bar, unlike web's inline toolbar | At ≥768 the toolbar is a row: search takes remaining width, sort + region sit to its right; below 768 it stays stacked |
+| Channel page fetch loop | `useT()` returns a new function each render, so `fetchVideos` changed identity and the fetch `useEffect` re-ran forever (visible as a 404/loading loop) | `t` is now held in a ref; `fetchVideos` is stable and the effect runs once per channel |
+| Watch subtitle band | Landscape used an opaque card (`bg-card`) inside the overlay band and dark text on the translucent band; portrait controls were a separate row instead of part of the band | `SubtitleDisplay` gained an `overlay` mode (transparent, white text via `TokenizedText textColor`); landscape shows a translucent `bg-black/70` band, portrait shows a `bg-card` band with controls + active line, matching web |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -354,8 +356,8 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl) with padding around both columns; search/filter icons use theme tokens (no black icons in dark mode).
 - [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns; at ≥768 sort + region filter sit to the right of the search bar (stacked below).
 - [ ] **TV Show detail** — row list capped at 896.
-- [ ] **Channel** — Explore-style grid; channel header card intact.
-- [ ] **Watch** — portrait: subtitle band below player; landscape: subtitle overlay or right transcript column (320px).
+- [ ] **Channel** — Explore-style grid; channel header card intact; loads once (no 404/loading refetch loop).
+- [ ] **Watch** — portrait: subtitle band below player (controls + active line in one card band); landscape: translucent subtitle band overlay on the video (white text, no opaque card).
 - [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player; content capped at 1280.
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
