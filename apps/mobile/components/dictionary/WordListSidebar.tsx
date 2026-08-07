@@ -80,6 +80,15 @@ function sidebarTitle(source: SidebarSource, t: (k: string, vars?: any) => strin
   return t('msg.result_count', { count });
 }
 
+/** Look up an entry id in both full and base L2 cache keys. */
+function getCachedEntryByIdEither(
+  l2Code: string,
+  l2Base: string,
+  id: string,
+): DictionaryEntry | undefined {
+  return getCachedEntryById(l2Code, id) ?? getCachedEntryById(l2Base, id);
+}
+
 /**
  * Resolve an entry for a sidebar item, lazily fetching it through the shared
  * batch lookup cache (mirrors the web SidebarEntryCard). Search-fallback items
@@ -96,13 +105,13 @@ async function resolveItemEntry(
     await enqueueLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
     return getCachedEntries(l2Base, item.head)?.[0] ?? null;
   }
-  const cached = getCachedEntryById(l2Code, item.id);
+  const cached = getCachedEntryByIdEither(l2Code, l2Base, item.id);
   if (cached) return cached;
   const decomposed = decomposeWordId(item.id, l2Code);
   if (!decomposed) return null;
   // Try bulk lookup via the shared cache (populates the id cache too).
   await bulkLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
-  return getCachedEntryById(l2Code, item.id) ?? null;
+  return getCachedEntryByIdEither(l2Code, l2Base, item.id) ?? null;
 }
 
 function SidebarEntryCard({
@@ -144,7 +153,7 @@ function SidebarEntryCard({
   } else if (!entry) {
     content = (
       <Pressable
-        onPress={() => router.push(`/(tabs)/(vocab)/?q=${encodeURIComponent(item.head)}` as any)}
+        onPress={() => onOpen(item)}
         className="w-full rounded-lg border border-border bg-card p-3"
       >
         <Text className="text-lg font-bold text-foreground" numberOfLines={1}>{item.head}</Text>
@@ -182,6 +191,7 @@ export function WordListSidebar({
   onNavigate,
 }: WordListSidebarProps) {
   const t = useT();
+  const router = useRouter();
 
   if (!isSidebarAvailable(source)) return null;
 
@@ -207,7 +217,10 @@ export function WordListSidebar({
             <Pressable
               onPress={() => {
                 const prev = currentIdx > 0 ? items[currentIdx - 1] : null;
-                if (prev) onNavigate?.(items, prev.id, source.kind === 'wordlist' ? source.source : undefined);
+                if (prev) {
+                  onOpenChange(false);
+                  onNavigate?.(items, prev.id, source.kind === 'wordlist' ? source.source : undefined);
+                }
               }}
               disabled={currentIdx <= 0}
               className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
@@ -219,7 +232,10 @@ export function WordListSidebar({
             <Pressable
               onPress={() => {
                 const next = currentIdx >= 0 && currentIdx < items.length - 1 ? items[currentIdx + 1] : null;
-                if (next) onNavigate?.(items, next.id, source.kind === 'wordlist' ? source.source : undefined);
+                if (next) {
+                  onOpenChange(false);
+                  onNavigate?.(items, next.id, source.kind === 'wordlist' ? source.source : undefined);
+                }
               }}
               disabled={currentIdx < 0 || currentIdx >= items.length - 1}
               className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
@@ -244,7 +260,21 @@ export function WordListSidebar({
             isActive={item.id === currentId}
             onOpen={(it, entry) => {
               onOpenChange(false);
-              onNavigate?.(items, it.id, source.kind === 'wordlist' ? source.source : undefined);
+              if (!entry && it.dictionaryId === 'unknown') {
+                router.push(`/(tabs)/(vocab)/?q=${encodeURIComponent(it.head)}` as any);
+                return;
+              }
+              // Unknown items resolve to a real entry while the sidebar is
+              // open — replace the head-as-id with the real entry id so the
+              // tapped word navigates to its entry, not a search page.
+              const resolvedItems = entry && it.dictionaryId === 'unknown'
+                ? items.map((x) =>
+                    x.id === it.id
+                      ? { ...x, id: entry.id, entryId: entry.id, dictionaryId: entry.dictionary?.id ?? 'llm', head: entry.head }
+                      : x,
+                  )
+                : items;
+              onNavigate?.(resolvedItems, entry?.id ?? it.id, source.kind === 'wordlist' ? source.source : undefined);
             }}
           />
         ))}

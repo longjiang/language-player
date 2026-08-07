@@ -67,7 +67,7 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
         const cached = getCachedEntries(l2Code.split('-')[0], related.word)?.[0];
         return cached
           ? {
-              id: `${cached.dictionary?.id ?? 'llm'}-${cached.id}`,
+              id: cached.id,
               head: cached.head,
               dictionaryId: cached.dictionary?.id ?? 'llm',
               entryId: cached.id,
@@ -75,7 +75,7 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
           : { id: related.word, head: related.word, dictionaryId: 'unknown', entryId: related.word };
       });
     setDetailHead(entry.head);
-    setSidebarSource({ kind: 'wordlist', items, currentId: `${entry.dictionary?.id ?? 'llm'}-${entry.id}`, source: 'corpus' });
+    setSidebarSource({ kind: 'wordlist', items, currentId: entry.id, source: 'corpus' });
     setCameFromSearch(true);
     const safeId = entry.id.replace(/,/g, '~');
     router.push(`/(tabs)/(vocab)/word/${safeId}` as any);
