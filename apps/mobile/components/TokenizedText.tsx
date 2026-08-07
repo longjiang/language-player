@@ -270,24 +270,27 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
 
-  // ── Map EPUB link format ranges onto token indices (SPEC-049 §9.7) ──
+  // ── Map EPUB format ranges (links + search highlights) onto token indices ──
   // Surface tokens concatenate back to `text`; when that invariant breaks
-  // (e.g. a tokenizer quirk), links are simply not applied.
-  const linkFormatMap = useMemo<Array<string | null>>(() => {
+  // (e.g. a tokenizer quirk), formats are simply not applied.
+  const tokenFormatMap = useMemo<Array<{ url?: string; highlight?: boolean } | null>>(() => {
     if (!formats?.length || tokens.length === 0) return [];
     const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return [];
     let pos = 0;
     return tokens.map((token) => {
-      let url: string | null = null;
+      let format: { url?: string; highlight?: boolean } | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
-          url = f.url;
-          break;
+          if (f.type === 'highlight') {
+            format = { ...(format ?? {}), highlight: true };
+          } else if (f.url) {
+            format = { ...(format ?? {}), url: f.url };
+          }
         }
       }
       pos += token.text.length;
-      return url;
+      return format;
     });
   }, [formats, tokens, text]);
 
@@ -635,7 +638,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 : [{ text: displayText }];
 
               const handlePress = () => {
-                const linkUrl = onOpenLink ? linkFormatMap[i] ?? null : null;
+                const linkUrl = onOpenLink ? tokenFormat?.url ?? null : null;
                 if (linkUrl) {
                   onOpenLink?.(linkUrl);
                   return;
@@ -653,7 +656,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               };
 
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
-              const isLink = onOpenLink ? (linkFormatMap[i] ?? null) != null : false;
+              const tokenFormat = tokenFormatMap[i] ?? null;
+              const isLink = onOpenLink ? !!tokenFormat?.url : false;
+              const isSearchHighlight = !!tokenFormat?.highlight;
 
               return (
                 <View key={i} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
@@ -679,7 +684,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                             <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
                           ) : (
                             <Text style={[textStyle, { lineHeight: baseLeading }]}
-                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
                               {seg.text}
                             </Text>
                           )}
@@ -753,10 +758,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSaved = savedFormSet.has(word.toLowerCase());
               const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
-              const isLink = onOpenLink ? (linkFormatMap[i] ?? null) != null : false;
+              const tokenFormat = tokenFormatMap[i] ?? null;
+              const isLink = onOpenLink ? !!tokenFormat?.url : false;
+              const isSearchHighlight = !!tokenFormat?.highlight;
 
               const handlePress = () => {
-                const linkUrl = onOpenLink ? linkFormatMap[i] ?? null : null;
+                const linkUrl = onOpenLink ? tokenFormat?.url ?? null : null;
                 if (linkUrl) {
                   onOpenLink?.(linkUrl);
                   return;
@@ -783,7 +790,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {isBlanked ? (
                     <Text className="text-foreground">▯</Text>
                   ) : (
-                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
                   {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}

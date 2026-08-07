@@ -46,6 +46,8 @@ interface PaginatedReaderProps {
   measuredWindow?: number;
   /** Follow an in-book link (SPEC-049 §9.7) — passed to linked tokens. */
   onOpenLink?: (href: string) => void;
+  /** Active search-match highlight (block + char range), if any. */
+  highlight?: { blockIndex: number; start: number; end: number } | null;
 }
 
 export function PaginatedReader({
@@ -56,6 +58,7 @@ export function PaginatedReader({
   contentWidth: contentWidthProp = 300,
   measuredWindow,
   onOpenLink,
+  highlight,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
@@ -88,7 +91,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-            renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
+            renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight),
           )}
         </View>
         {onToggleTranslation && (
@@ -122,7 +125,7 @@ export function PaginatedReader({
 
           <ScrollView className="flex-1 px-4">
             {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
+              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight),
             )}
           </ScrollView>
 
@@ -167,6 +170,7 @@ function renderBlock(
   blockTranslations: Record<number, string>, showTranslation: boolean,
   l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean, onOpenLink?: (href: string) => void,
+  highlight?: { blockIndex: number; start: number; end: number } | null,
 ) {
   if (block.kind === 'image') {
     return (
@@ -212,12 +216,17 @@ function renderBlock(
 
   // ── Body block content (tokenized text + optional translation) ──
   const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item') => {
+    const formats = block.formats ?? [];
+    const effectiveFormats =
+      highlight && block.kind === 'text' && highlight.blockIndex === globalIdx
+        ? [...formats, { start: highlight.start, end: highlight.end, type: 'highlight' as const }]
+        : formats;
     const tokenEl = (
       <TokenizedText
         text={block.text}
         l2Code={l2Code}
         tokens={cachedTokens}
-        formats={block.formats}
+        formats={effectiveFormats}
         onOpenLink={onOpenLink}
       />
     );

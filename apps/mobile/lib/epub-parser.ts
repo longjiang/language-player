@@ -15,9 +15,9 @@ export interface EpubManifestItem {
 export interface EpubFormatRange {
   start: number;
   end: number;
-  type: 'link';
+  type: 'link' | 'highlight';
   /** Raw href from the source document (relative or absolute, may carry #fragment). */
-  url: string;
+  url?: string;
 }
 
 /** A converted EPUB text block (paragraph/heading/list item/…). */
