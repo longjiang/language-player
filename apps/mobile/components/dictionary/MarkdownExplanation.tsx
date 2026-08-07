@@ -77,7 +77,7 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
           // Interactive tokenized L2 span — bold, no chip background.
           return (
             <View key={i} className="flex-row items-baseline">
-              <TokenizedText text={part.value} l2Code={l2Code} leading="none" />
+              <TokenizedText text={part.value} l2Code={l2Code} leading="loose" />
             </View>
           );
         }
@@ -111,7 +111,11 @@ function InlineMarkdown({ text }: { text: string }) {
   return (
     <>
       {parts.map((part, i) => (
-        <Text key={i} className={`${part.bold ? 'font-bold' : ''} ${part.italic ? 'italic' : ''}`}>
+        <Text
+          key={i}
+          className={`text-foreground ${part.bold ? 'font-bold' : ''} ${part.italic ? 'italic' : ''}`}
+          style={{ fontSize: 16, lineHeight: 32 }}
+        >
           {part.value}
         </Text>
       ))}
