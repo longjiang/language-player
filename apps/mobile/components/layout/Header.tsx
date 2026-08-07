@@ -15,7 +15,7 @@ import { NavBar } from './NavBar';
 export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
-  const { isMd } = useResponsive();
+  const { isMd, isSm } = useResponsive();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
@@ -38,7 +38,7 @@ export function Header() {
               className="h-7 w-7"
               resizeMode="contain"
             />
-            <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>
+            {isSm && <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>}
           </Pressable>
 
           {/* Desktop/tablet navigation — mirrors web md+ dropdowns */}
