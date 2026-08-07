@@ -27,8 +27,8 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="flex-grow-0"
-      contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 6, alignItems: 'center' }}
+      className="h-12 flex-grow-0"
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
     >
       <Pressable
         onPress={() => onSelect(undefined)}
