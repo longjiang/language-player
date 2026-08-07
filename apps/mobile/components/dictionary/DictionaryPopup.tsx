@@ -49,21 +49,22 @@ async function applyL1Translations(
 
   const ids = entries.map((e) => e.id).filter(Boolean);
   const cached = getL1CachedEntries(l2, l1, ids);
-  if (cached.length > 0) {
-    const byId = new Map(cached.map((e) => [e.id, e]));
-    return entries.map((e) => byId.get(e.id) ?? e);
-  }
+  const byId = new Map<string, DictionaryEntry>();
+  for (const e of cached) if (e.id) byId.set(e.id, e);
 
+  // Merge translations from every text in the batch (lemma + surface form)
+  // so ALL entry cards get L1 definitions, not just the first lookup's hits.
   for (const text of texts) {
     const res = await lookup(text, l2, l1);
     const translated = res.results ?? [];
-    if (translated.length === 0) continue;
-    for (const e of translated) setL1CachedEntry(l2, l1, e);
-    const byId = new Map(translated.map((e) => [e.id, e]));
-    return entries.map((e) => byId.get(e.id) ?? e);
+    for (const e of translated) {
+      if (!e?.id) continue;
+      byId.set(e.id, e);
+      setL1CachedEntry(l2, l1, e);
+    }
   }
 
-  return entries;
+  return byId.size > 0 ? entries.map((e) => byId.get(e.id) ?? e) : entries;
 }
 
 export function DictionaryPopup({
