@@ -212,7 +212,11 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       if (!decomposed) return;
       const { dict: dictId, id: scopedId } = decomposed;
       const { apiClient } = await import('@langplayer/api-client');
-      const res = await apiClient.get(`/dictionary/entry/${l2Code}/${dictId}/${scopedId}`);
+      // The endpoint takes query params, not path segments. Using the old
+      // path form 404'd, leaving every saved-word card stuck on its spinner.
+      const res = await apiClient.get('/dictionary/entry', {
+        params: { l2: l2Code.split('-')[0], dict: dictId, id: scopedId },
+      });
       const entry = (res as any)?.entry as DictionaryEntry | undefined;
       if (!entry) return;
 
