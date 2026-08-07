@@ -26,6 +26,8 @@ interface TextActionMenuProps {
   l1Code?: string;
   /** Surrounding context for AI explanation (full paragraph, etc.). */
   context?: string;
+  /** Extra classes for the content row wrapper. */
+  className?: string;
   children: React.ReactNode;
 }
 
@@ -39,7 +41,7 @@ type ActionKind = 'explain' | 'translate';
  * AI explain and translate open their own result modals.
  */
 export function TextActionMenu(props: TextActionMenuProps) {
-  const { text, l2Code, l1Code, context, children } = props;
+  const { text, l2Code, l1Code, context, className, children } = props;
   const { l1Lang } = useLanguage();
   const effectiveL1 = l1Code ?? l1Lang.code;
   const t = useT();
@@ -158,7 +160,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
   return (
     <>
       {/* Content row with action button */}
-      <View className="flex-row items-start gap-1">
+      <View className={`flex-row items-start gap-1 ${className ?? ''}`}>
         <View className="flex-1 min-w-0">
           {/* as any: @types/react ReactNode includes bigint; RN's View expects RN's ReactNode (excludes it).
               This is the standard workaround for the type mismatch in RN projects with @types/react installed. */}

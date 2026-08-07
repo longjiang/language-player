@@ -8,6 +8,7 @@ import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useCorpusFetch } from './use-corpus-fetch';
 import { useCorpusTranslations } from './use-corpus-translations';
 import { TokenizedText } from '@/components/TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
 
 interface CollocationsProps {
   word: string;
@@ -117,12 +118,19 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                 const translation = translations[flatIdx + wordIndex];
                 return (
                   <View key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}`} className="rounded-md px-2 py-1">
-                    <TokenizedText
+                    <TextActionMenu
+                      className="w-full"
                       text={display}
-                      l2Code={l2Code}
-                      leading="none"
-                      highlightTerms={highlightForms}
-                    />
+                      l2Code={l2Code.split('-')[0]}
+                      l1Code={l1Code.split('-')[0]}
+                    >
+                      <TokenizedText
+                        text={display}
+                        l2Code={l2Code}
+                        leading="none"
+                        highlightTerms={highlightForms}
+                      />
+                    </TextActionMenu>
                     {translation ? (
                       <Text className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">
                         {translation}
