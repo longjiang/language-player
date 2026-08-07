@@ -23,9 +23,11 @@ interface SubtitleDisplayProps {
   highlightTerms?: string[];
   /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
   singleLine?: boolean;
+  /** When true (single-line mode), renders transparent/white for an on-video band. */
+  overlay?: boolean;
 }
 
-export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback } = useSettingsContext();
@@ -189,7 +191,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     }
 
     return (
-      <View className="min-h-32 flex-1 bg-card border-t border-border">
+      <View className={overlay ? 'min-h-0 flex-1' : 'min-h-32 flex-1 bg-card border-t border-border'}>
         {/* Active line */}
         <Pressable
           className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
@@ -212,16 +214,17 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
                   textScale={1.5}
+                  textColor={overlay ? 'text-white' : undefined}
                 />
                 {showTranslation && activeLine.l1Line ? (
-                  <Text className="text-sm text-center mt-0.5 text-muted-foreground">
+                  <Text className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}>
                     {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
                   </Text>
                 ) : null}
               </View>
             </TextActionMenu>
           ) : (
-            <Text className="text-sm text-muted-foreground">...</Text>
+            <Text className={`text-sm ${overlay ? 'text-white/50' : 'text-muted-foreground'}`}>...</Text>
           )}
         </Pressable>
       </View>

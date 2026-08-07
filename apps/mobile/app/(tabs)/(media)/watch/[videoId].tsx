@@ -359,7 +359,7 @@ export default function WatchScreen() {
       <View testID="watch-screen" className="flex-1 bg-black">
         <View className="relative flex-1">
           {playerElement}
-          <View className="absolute bottom-0 left-0 right-0 z-10 rounded-t-xl bg-black/70">
+          <View className="absolute bottom-0 left-0 right-0 z-10 min-h-24 rounded-t-xl bg-black/70">
             <View className="flex-row justify-center border-b border-white/10 py-1">
               <VideoControlBar
                 reduced
@@ -387,6 +387,7 @@ export default function WatchScreen() {
             </View>
             <SubtitleDisplay
               singleLine
+              overlay
               lines={subtitleLines}
               activeLineIndex={activeLineIndex}
               currentTime={currentTime}
@@ -410,40 +411,43 @@ export default function WatchScreen() {
     return (
       <View testID="watch-screen" className="flex-1 bg-background">
         <View>{playerElement}</View>
-        <View className="flex-row justify-end border-b border-border px-2 py-1">
-          <VideoControlBar
-            reduced
-            playerRef={playerRef}
+        {/* Web parity: controls + active line in one band below the player */}
+        <View className="bg-card border-t border-border">
+          <View className="flex-row justify-end border-b border-border px-2 py-1">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={handlePauseToggle}
+              onPreviousLine={handlePreviousLine}
+              onNextLine={handleNextLine}
+              onPreviousVideo={playPrevious}
+              onNextVideo={playNext}
+              onTogglePanel={handleTogglePanel}
+              hasPreviousLine={subtitleStartTimes.length > 0}
+              hasNextLine={subtitleStartTimes.length > 0}
+              hasPreviousVideo={hasPrevious}
+              hasNextVideo={hasNext}
+              panelOpen={!isSubtitles}
+              liked={liked}
+              onToggleLike={handleToggleLike}
+              likeDisabled={likeDisabled}
+              onSaveToPlaylist={openPlaylistDialog}
+              playlistDisabled={playlistDisabled}
+            />
+          </View>
+          <SubtitleDisplay
+            singleLine
+            lines={subtitleLines}
+            activeLineIndex={activeLineIndex}
             currentTime={currentTime}
-            duration={duration}
-            paused={paused}
-            onPauseToggle={handlePauseToggle}
-            onPreviousLine={handlePreviousLine}
-            onNextLine={handleNextLine}
-            onPreviousVideo={playPrevious}
-            onNextVideo={playNext}
-            onTogglePanel={handleTogglePanel}
-            hasPreviousLine={subtitleStartTimes.length > 0}
-            hasNextLine={subtitleStartTimes.length > 0}
-            hasPreviousVideo={hasPrevious}
-            hasNextVideo={hasNext}
-            panelOpen={!isSubtitles}
-            liked={liked}
-            onToggleLike={handleToggleLike}
-            likeDisabled={likeDisabled}
-            onSaveToPlaylist={openPlaylistDialog}
-            playlistDisabled={playlistDisabled}
+            tokenCache={tokenCache}
+            tokenCacheLoaded={tokenCacheLoaded}
+            onSeekToLine={handleSeekToLine}
           />
         </View>
-        <SubtitleDisplay
-          singleLine
-          lines={subtitleLines}
-          activeLineIndex={activeLineIndex}
-          currentTime={currentTime}
-          tokenCache={tokenCache}
-          tokenCacheLoaded={tokenCacheLoaded}
-          onSeekToLine={handleSeekToLine}
-        />
         <AddToPlaylistDialog
           open={playlistDialogOpen}
           onOpenChange={setPlaylistDialogOpen}
