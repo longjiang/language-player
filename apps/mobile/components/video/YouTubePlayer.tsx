@@ -4,6 +4,21 @@ import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-ifram
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
+// react-native-youtube-iframe reports errors as PLAYER_ERROR names, and web's
+// player maps numeric IFrame codes. Keep both mappings so every known error
+// shows a localized message instead of a raw English string.
+const YOUTUBE_ERROR_KEYS: Record<string, string> = {
+  invalid_parameter: 'msg.youtube_error_invalid_id',
+  HTML5_error: 'msg.youtube_error_html5',
+  video_not_found: 'msg.youtube_error_invalid_id',
+  embed_not_allowed: 'msg.youtube_error_embed_disabled',
+  '2': 'msg.youtube_error_invalid_id',
+  '5': 'msg.youtube_error_html5',
+  '100': 'msg.youtube_error_invalid_id',
+  '101': 'msg.youtube_error_embed_disabled',
+  '150': 'msg.youtube_error_embed_disabled',
+};
+
 /**
  * YouTube player wrapper using react-native-youtube-iframe v2.3.0.
  *
@@ -51,7 +66,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   function YouTubePlayer({ youtubeId, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth }, ref) {
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errorKey, setErrorKey] = useState<string | null>(null);
     const [playerState, setPlayerState] = useState<string>('unstarted');
     const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
@@ -103,13 +118,23 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       setPlayerState(state);
     }, []);
 
-    if (error) {
+    if (errorKey) {
       return (
         <View style={{ width: playerWidth, height: videoHeight }} className="items-center justify-center bg-muted p-4">
-          <Text className="text-center text-sm text-destructive">{error}</Text>
+          <Text className="text-center text-sm text-destructive">{t(errorKey)}</Text>
         </View>
       );
     }
+
+    const handlePlayerError = (e: any) => {
+      const raw =
+        typeof e === 'string'
+          ? e
+          : (e?.error ?? e?.message ?? e?.nativeEvent?.description ?? '');
+      const key = YOUTUBE_ERROR_KEYS[String(raw)] ?? 'msg.youtube_error_generic';
+      setErrorKey(key);
+      onError?.(new Error(t(key)));
+    };
 
     return (
       <View className="w-full bg-black" style={{ height: videoHeight }}>
@@ -129,14 +154,11 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             allowsInlineMediaPlayback: true,
             allowsFullscreenVideo: true,
             mediaPlaybackRequiresUserAction: false,
+            onError: handlePlayerError,
           }}
           onChangeState={handleStateChange}
           onReady={() => setReady(true)}
-          onError={(e: any) => {
-            const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? t('msg.playback_error'));
-            setError(String(msg));
-            onError?.(new Error(String(msg)));
-          }}
+          onError={handlePlayerError}
           webViewStyle={{ opacity: ready ? 1 : 0.99 }}
         />
       </View>
