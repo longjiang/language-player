@@ -41,16 +41,19 @@ Web-only since `f0bad902a9`:
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 1.1 | English-definition lookup in dictionary search + autocomplete | `a6231de7`, `e56b97d7`, `876f0224` | Not in mobile |
-| 1.2 | Prev/next buttons in the dictionary sidebar header | `5e9f00eb` | Not in mobile |
-| 1.3 | Highlight the currently-viewed entry card in the dictionary sidebar | `78c8b725` | Not in mobile |
-| 1.4 | Related-words list surfaced in the entry sidebar (+ hide dead toggles) | `31b607aa` | Not in mobile |
-| 1.5 | Hide the Conjugations tab for languages without inflections | `86c1427f` | Not in mobile |
-| 1.6 | Shared Radix sidebar primitive across dictionary/reader/epub/web-reader | `c025cdb5` | N/A (Radix is web-only; mobile has its own sheet) |
+| 1.1 | English-definition lookup in dictionary search + autocomplete | `a6231de7`, `e56b97d7`, `876f0224` | **Ported** — mobile `(vocab)/index.tsx` has a debounced autocomplete dropdown (`dict.autocomplete(term, l2, true)`) surfacing English-definition matches |
+| 1.2 | Prev/next buttons in the dictionary sidebar header | `5e9f00eb` | **Ported** — mobile `WordListSidebar` header has prev/next |
+| 1.3 | Highlight the currently-viewed entry card in the dictionary sidebar | `78c8b725` | **Ported** — mobile `WordListSidebar` wraps the active card with `ring-2 ring-primary` |
+| 1.4 | Related-words list surfaced in the entry sidebar (+ hide dead toggles) | `31b607aa` | **Ported (foundation)** — `SidebarSource.wordlist` gained a `source: 'corpus'` origin → "Related" title; sidebar toggle only renders when `isSidebarAvailable`. Actual related-words fetch lands with the Corpus tab (Section 4). |
+| 1.5 | Hide the Conjugations tab for languages without inflections | `86c1427f` | **Ported** — mobile `DictionaryEntryTabs` uses `isInflectable(l2)` to omit the tab |
+| 1.6 | Shared Radix sidebar primitive across dictionary/reader/epub/web-reader | `c025cdb5` | **Ported (mobile equivalent)** — sidebar built on `@rn-primitives/dialog` `DrawerContent` (slide-from-right), consistent with the app's interaction primitives |
 
-**Notes:** Mobile's dictionary entry screen (`(vocab)/word/[entryId].tsx`) already
-has Conjugations, Examples, and DeepSeek tabs. It lacks search autocomplete,
-the sidebar navigation affordances, and the related-words panel.
+**Notes:** Mobile's dictionary entry screen (`(vocab)/word/[entryId].tsx`) now has
+a slide-in sidebar (`WordListSidebar`) fed by `SidebarSource` (search results,
+autocomplete suggestions, saved, or future corpus related-words), with prev/next
+navigation and current-entry highlighting. The search screen gained a debounced
+English-definition autocomplete dropdown, and the Conjugations tab is hidden for
+isolating languages. Item 2.x (saved-words entry cards) is tracked in Section 2.
 
 ## 2. Dictionary — Saved Words as Entry Cards
 

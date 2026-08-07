@@ -32,7 +32,13 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 export type SidebarSource =
   | { kind: 'saved' }
   | { kind: 'results'; items: DictionaryEntry[] }
-  | { kind: 'wordlist'; items: { head: string; dictionaryId: string; entryId: string; id: string; pronunciation?: string; definition?: string }[]; currentId: string };
+  | {
+      kind: 'wordlist';
+      items: { head: string; dictionaryId: string; entryId: string; id: string; pronunciation?: string; definition?: string }[];
+      currentId: string;
+      /** Origin of the wordlist — used for the sidebar title ('corpus' → "Related"). */
+      source?: 'search' | 'saved' | 'corpus';
+    };
 
 // ── Download state ──────────────────────────
 

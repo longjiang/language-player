@@ -107,6 +107,7 @@
 | Dictionary Entry Card | `components/dictionary/DictionaryEntryCard.tsx` | ✅ | Headword, pronunciation, level, definitions |
 | Save Button | `components/dictionary/SaveButton.tsx` | ✅ | Bookmark save/unsave toggle |
 | Search Bar | `components/dictionary/SearchBar.tsx` | ✅ | With clear + loading spinner |
+| Word List Sidebar | `components/dictionary/WordListSidebar.tsx` | ✅ | Slide-in sidebar (`@rn-primitives/dialog` DrawerContent) fed by `SidebarSource`; shows the source word list (search results / autocomplete suggestions / corpus related) with prev/next header buttons and current-entry highlight. Toggle only renders when the sidebar is available. |
 | Word List | `components/dictionary/WordList.tsx` | ✅ | Reusable FlatList for saved words |
 | Lookup Source Indicator | `components/dictionary/LookupSourceIndicator.tsx` | ✅ | Shows which dictionary source provided the entry |
 | Inline Definition | `components/dictionary/InlineDefinition.tsx` | ✅ | Inline pronunciation + part-of-speech + first definition from lazily enriched canonicalEntry |
