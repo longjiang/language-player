@@ -5,7 +5,7 @@ import { useStreamingExplanation } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@langplayer/utils';
-import { MarkdownText } from '@/components/MarkdownText';
+import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
 import { Sparkles, RefreshCw, Lock, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
@@ -61,6 +61,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     if (!nonInflecting.includes(code)) {
       prompt += ' ' + t('prompt.explain_morphology');
     }
+
+    // L2 strings are backticked so they render as interactive tokenized text
+    // in MarkdownExplanation (SPEC-049 §5.2).
+    const ticksPrompt = t('prompt.explain_ticks', { l2Name });
+    prompt += '\n\n' + ticksPrompt;
 
     return prompt;
   }, [t, word, contextText, contextForm]);
@@ -143,7 +148,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>
           {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
         </View>
-        <MarkdownText>{explanation || ''}</MarkdownText>
+        <MarkdownExplanation text={explanation || ''} l2Code={l2Lang.code} streaming={loading} />
         {error && explanation ? (
           <Text className="mt-2 text-xs text-red-600">{error}</Text>
         ) : null}

@@ -104,10 +104,10 @@ zh-only as on web.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 5.1 | Embed pro-gated DeepSeek explanation in the full entry card | `aa938b30`, `f3dce79f`, `eea1eed1`, `d1df2dec` | Partial — mobile entry has a DeepSeek tab/API |
-| 5.2 | Interactive tokenized L2 strings in AI explain responses | `dab49f8c` | Not in mobile |
-| 5.3 | Ask DeepSeek for two same-sense usage examples | `9659e1b8` | Not in mobile |
-| 5.4 | Show "Let AI Explain" instantly + share subscription status app-wide | `e7cc6246` | Not in mobile |
+| 5.1 | Embed pro-gated DeepSeek explanation in the full entry card | `aa938b30`, `f3dce79f`, `eea1eed1`, `d1df2dec` | **Ported** — mobile entry DeepSeek tab + popup embed Pro-gate via `useSubscription` |
+| 5.2 | Interactive tokenized L2 strings in AI explain responses | `dab49f8c` | **Ported** — new mobile `MarkdownExplanation` renders backticked L2 spans as interactive `TokenizedText` once streaming finishes; prompt appends `prompt.explain_ticks` |
+| 5.3 | Ask DeepSeek for two same-sense usage examples | `9659e1b8` | **Ported** — `prompt.explain_word` already asks for "2 examples with translations" |
+| 5.4 | Show "Let AI Explain" instantly + share subscription status app-wide | `e7cc6246` | **Ported** — button + Pro gate present; autoLoad streams instantly for Pro users |
 
 ## 6. Review (flashcards)
 
