@@ -203,8 +203,8 @@ export default function LocalMediaScreen() {
     </View>
   );
 
-  const subtitlesPanel = hasSubtitles ? (
-    <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingVertical: 12 }}>
+  const subtitlesList = hasSubtitles ? (
+    <View className="px-4 py-3">
       {localMedia.subtitleLines.map((line, i) => {
         const isActive = currentTime >= line.starttime &&
           (i + 1 < localMedia.subtitleLines.length
@@ -223,7 +223,7 @@ export default function LocalMediaScreen() {
           </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   ) : null;
 
   return (
@@ -248,32 +248,35 @@ export default function LocalMediaScreen() {
 
       {/* Media loaded — file bar + player + subtitles */}
       {localMedia.hasMedia && (
-        <View className="flex-1">
-          <View className="px-4 pb-2">
-            <FileBar />
-          </View>
-          <View className={isLg && hasSubtitles ? 'flex-1 flex-row gap-6 min-h-0 px-4' : 'flex-1'}>
-            <View className={isLg && hasSubtitles ? 'min-w-0 flex-1' : ''}>
-              {isLg && hasSubtitles ? (
-                /* Wide + captions: let the player column scroll so the
-                   controls below the player stay reachable. */
+        isLg && hasSubtitles ? (
+          /* lg + captions: player column and transcript each scroll independently
+             (matches web's lg:overflow-y-auto columns). */
+          <View className="flex-1">
+            <View className="flex-1 flex-row gap-6 min-h-0 px-4">
+              <View className="min-w-0 flex-1">
                 <ScrollView contentContainerStyle={{ paddingBottom: 12 }}>
+                  <View className="px-4 pb-2">
+                    <FileBar />
+                  </View>
                   <PlayerSection />
                 </ScrollView>
-              ) : (
-                <>
-                  <PlayerSection />
-                  {!isLg && subtitlesPanel}
-                </>
-              )}
-            </View>
-            {isLg && hasSubtitles && (
-              <View className="min-h-0" style={{ width: asideWidth }}>
-                {subtitlesPanel}
               </View>
-            )}
+              <View className="min-h-0" style={{ width: asideWidth }}>
+                <ScrollView className="flex-1">{subtitlesList}</ScrollView>
+              </View>
+            </View>
           </View>
-        </View>
+        ) : (
+          /* Stacked with captions, or full-width without captions: the whole
+             page scrolls so controls below the player stay reachable (web parity). */
+          <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
+            <View className="px-4 pb-2">
+              <FileBar />
+            </View>
+            <PlayerSection />
+            {subtitlesList}
+          </ScrollView>
+        )
       )}
     </PageContainer>
   );
