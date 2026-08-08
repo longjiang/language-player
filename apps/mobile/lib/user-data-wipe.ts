@@ -3,9 +3,10 @@
  *
  * Removes every account-scoped local store (notes, saved words, progress,
  * SRS, settings, recent searches, sync.db) so switching users never leaks
- * the previous user's data. Deliberately KEEPS device-level state: Offline
- * Mode toggle, language preference, offline dictionaries, tokenizer packs,
- * and tokenizer caches.
+ * the previous user's data. Also turns OFF the device-local Offline Mode
+ * toggle so the next login isn't blocked by the network gate. Deliberately
+ * KEEPS: language preference, offline dictionaries, tokenizer packs, and
+ * tokenizer caches.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +15,7 @@ import { log } from '@/lib/logger';
 import { openSyncDB } from '@/lib/sync-db';
 import { resetSyncEngineForLogout } from '@/lib/sync-engine';
 import { clearRecentSearchesStorage } from '@/lib/recent-searches-storage';
+import { setOfflineModeEnabled } from '@/lib/offline-mode';
 
 const SECURE_KEYS = [
   'lp_settings',               // SettingsV2
@@ -40,6 +42,14 @@ const ASYNC_PREFIXES = [
 /** Remove all account-scoped local user data. */
 export async function wipeUserData(): Promise<void> {
   const started = Date.now();
+
+  // Turn Offline Mode off FIRST so a crash mid-wipe can't leave the login
+  // screen blocked by the network gate.
+  try {
+    await setOfflineModeEnabled(false);
+  } catch {
+    // best effort — the in-memory gate still flips via setOfflineModeEnabled
+  }
 
   try {
     const keys = await AsyncStorage.getAllKeys();
