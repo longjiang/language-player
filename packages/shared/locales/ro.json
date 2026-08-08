@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definițiile sunt în engleză",
         "offline_definitions_english_desc": "Dicționarele offline stochează definiții în engleză. Traducerile în {l1} sunt adăugate când căutați cuvinte online.",
         "offline_dictionaries_desc": "Descărcați dicționare pentru a căuta cuvinte fără internet.",
+        "offline_dictionary_required": "Descarcă un dicționar offline pentru a folosi această funcție offline.",
         "offline_mode_not_synced": "Această setare rămâne pe acest dispozitiv și nu este sincronizată cu contul tău.",
         "options": "Opțiuni",
         "or_login_with": "Sau conectează-te cu:",

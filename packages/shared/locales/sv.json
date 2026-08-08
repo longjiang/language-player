@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definitioner är på engelska",
         "offline_definitions_english_desc": "Offline-ordböcker lagrar engelska definitioner. {l1}-översättningar läggs till när du slår upp ord online.",
         "offline_dictionaries_desc": "Ladda ner ordböcker för att slå upp ord utan internet.",
+        "offline_dictionary_required": "Ladda ner en offline-ordbok för att använda den här funktionen offline.",
         "offline_mode_not_synced": "Den här inställningen finns kvar på den här enheten och synkroniseras inte med ditt konto.",
         "options": "Alternativ",
         "or_login_with": "Eller logga in med:",

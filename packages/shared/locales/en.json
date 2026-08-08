@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definitions are in English",
         "offline_definitions_english_desc": "Offline dictionaries store English definitions. {l1} translations are added as you look up words online.",
         "offline_dictionaries_desc": "Download dictionaries to look up words without an internet connection.",
+        "offline_dictionary_required": "Download an offline dictionary to use this feature offline.",
         "offline_mode_not_synced": "This setting stays on this device and is not synced to your account.",
         "options": "Options",
         "or_login_with": "Or login with:",

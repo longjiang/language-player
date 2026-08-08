@@ -811,6 +811,7 @@
         "offline_definitions_english": "Les definicions són en anglès",
         "offline_definitions_english_desc": "Els diccionaris fora de línia emmagatzemen definicions en anglès. Les traduccions al {l1} s'afegeixen en cercar paraules en línia.",
         "offline_dictionaries_desc": "Descarregueu diccionaris per cercar paraules sense connexió.",
+        "offline_dictionary_required": "Baixa un diccionari fora de línia per utilitzar aquesta funció fora de línia.",
         "offline_mode_not_synced": "Aquesta configuració es manté en aquest dispositiu i no se sincronitza amb el vostre compte.",
         "options": "Opcions",
         "or_login_with": "O inicia sessió amb:",

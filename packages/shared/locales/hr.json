@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definicije su na engleskom",
         "offline_definitions_english_desc": "Izvanmrežni rječnici pohranjuju engleske definicije. {l1} prijevodi se dodaju kada tražite riječi online.",
         "offline_dictionaries_desc": "Preuzmite rječnike za traženje riječi bez interneta.",
+        "offline_dictionary_required": "Preuzmite izvanmrežni rječnik da biste ovu funkciju koristili izvan mreže.",
         "offline_mode_not_synced": "Ova postavka ostaje na ovom uređaju i ne sinkronizira se s vašim računom.",
         "options": "Opcije",
         "or_login_with": "Ili se prijavite s:",

@@ -811,6 +811,7 @@
         "offline_definitions_english": "Ufafanuzi uko kwa Kiingereza",
         "offline_definitions_english_desc": "Kamusi za nje ya mtandao huhifadhi ufafanuzi wa Kiingereza. Tafsiri za {l1} huongezwa unapotafuta maneno mtandaoni.",
         "offline_dictionaries_desc": "Pakua kamusi kutafuta maneno bila intaneti.",
+        "offline_dictionary_required": "Pakua kamusi ya nje ya mtandao ili kutumia kipengele hiki nje ya mtandao.",
         "offline_mode_not_synced": "Mpangilio huu unabaki kwenye kifaa hiki na hausawazishwi na akaunti yako.",
         "options": "Chaguo",
         "or_login_with": "Au ingia kwa:",

@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definisjoner er på engelsk",
         "offline_definitions_english_desc": "Frakoblede ordbøker lagrer engelske definisjoner. {l1}-oversettelser legges til når du slår opp ord på nettet.",
         "offline_dictionaries_desc": "Last ned ordbøker for å slå opp ord uten internett.",
+        "offline_dictionary_required": "Last ned en frakoblet ordbok for å bruke denne funksjonen frakoblet.",
         "offline_mode_not_synced": "Denne innstillingen forblir på denne enheten og synkroniseres ikke med kontoen din.",
         "options": "Alternativer",
         "or_login_with": "Eller logg inn med:",

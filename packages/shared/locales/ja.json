@@ -811,6 +811,7 @@
         "offline_definitions_english": "定義は英語です",
         "offline_definitions_english_desc": "オフライン辞書には英語の定義が保存されます。オンラインで単語を調べると{l1}の翻訳が追加されます。",
         "offline_dictionaries_desc": "辞書をダウンロードして、オフラインで単語を検索できます。",
+        "offline_dictionary_required": "この機能をオフラインで利用するには、オフライン辞書をダウンロードしてください。",
         "offline_mode_not_synced": "この設定はこのデバイスにのみ保存され、アカウントには同期されません。",
         "options": "オプション",
         "or_login_with": "または次でログイン：",

@@ -21,6 +21,7 @@ import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { enqueueLookupWords, getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
+import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -90,6 +91,7 @@ export default function ReviewScreen() {
   const RATING_LABELS = useRatingLabels();
 
   const l2Code = l2Lang.code;
+  const dictAvailable = useOfflineDictionaryAvailable(l2Code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -592,7 +594,9 @@ export default function ReviewScreen() {
               ) : offlineEntryLookupDone[currentCard.word.id] ? (
                 <View className="items-center justify-center py-8">
                   <Text className="text-sm text-muted-foreground">
-                    {t('msg.no_definition_offline')}
+                    {dictAvailable === false
+                      ? t('msg.offline_dictionary_required')
+                      : t('msg.no_definition_offline')}
                   </Text>
                 </View>
               ) : (

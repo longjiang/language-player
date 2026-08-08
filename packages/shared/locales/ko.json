@@ -811,6 +811,7 @@
         "offline_definitions_english": "정의는 영어로 제공됩니다",
         "offline_definitions_english_desc": "오프라인 사전에는 영어 정의가 저장됩니다. 온라인에서 단어를 검색하면 {l1} 번역이 추가됩니다.",
         "offline_dictionaries_desc": "사전을 다운로드하여 오프라인에서 단어를 검색하세요.",
+        "offline_dictionary_required": "이 기능을 오프라인에서 사용하려면 오프라인 사전을 다운로드하세요.",
         "offline_mode_not_synced": "이 설정은 이 기기에만 유지되며 계정에 동기화되지 않습니다.",
         "options": "옵션",
         "or_login_with": "또는 다음으로 로그인:",

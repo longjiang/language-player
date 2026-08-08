@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
+import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeError } from '@/lib/offline-mode';
@@ -93,6 +95,8 @@ interface DictionaryContextValue {
   getDownloadState: (l2: string) => DownloadState;
   isOfflineAvailable: (l2: string) => Promise<boolean>;
   getDownloadedCount: (l2: string) => Promise<number>;
+  /** Bumps whenever a download state changes (for availability re-checks). */
+  downloadStatesVersion: number;
 }
 
 const DictionaryContext = createContext<DictionaryContextValue | null>(null);
@@ -139,8 +143,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   tRef.current = t;
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
+  const { status } = useSyncStatus();
   const dict = useDictionary();
   const l2Code = l2Lang.code;
+  const dictAvailable = useOfflineDictionaryAvailable(l2Code);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
@@ -198,6 +204,18 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const doSearch = useCallback(async (term: string) => {
     const trimmed = term.trim();
     if (!trimmed) return;
+
+    // Offline without a downloaded dictionary: lookups can't work — show a
+    // clear message instead of the network-blocked error.
+    if (status.effectiveOffline && dictAvailable === false) {
+      setQuery(trimmed);
+      setSearchedText(trimmed);
+      setMessage(tRef.current('msg.offline_dictionary_required'));
+      setResults(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     setQuery(trimmed);
     setLoading(true);
@@ -261,7 +279,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [dict, l2Code, l1Lang.code]);
+  }, [dict, l2Code, l1Lang.code, status.effectiveOffline, dictAvailable]);
 
   const clearSearch = useCallback(() => {
     setQuery('');
@@ -537,6 +555,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         sidebarSource, setSidebarSource, detailHead, setDetailHead,
         startDownload, cancelDownload, deleteDictionary,
         getDownloadState, isOfflineAvailable, getDownloadedCount,
+        downloadStatesVersion,
       }}
     >
       {children}

@@ -811,6 +811,7 @@
         "offline_definitions_english": "Tá na sainmhínithe i mBéarla",
         "offline_definitions_english_desc": "Stórálann foclóirí as líne sainmhínithe Béarla. Cuirtear aistriúcháin {l1} leis agus tú ag cuardach focal ar líne.",
         "offline_dictionaries_desc": "Íoslódáil foclóirí chun focail a chuardach gan nasc idirlín.",
+        "offline_dictionary_required": "Íoslódáil foclóir as líne chun an ghné seo a úsáid as líne.",
         "offline_mode_not_synced": "Fanann an socrú seo ar an ngléas seo agus ní shioncronaítear é le do chuntas.",
         "options": "Roghanna",
         "or_login_with": "Nó logáil isteach le:",
