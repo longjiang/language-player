@@ -11,6 +11,7 @@ import { OfflineBanner } from '@/components/dictionary/OfflineBanner';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { autocompleteOffline } from '@/lib/dictionary-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { setCachedEntryById } from '@/lib/dictionary-cache';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -123,6 +124,9 @@ export default function DictionaryScreen() {
     setSuggestions(null);
     setAcOpen(false);
     const safeId = entry.id.replace(/,/g, '~');
+    setCachedEntryById(l2Lang.code, entry);
+    setCachedEntryById(l2Lang.code.split('-')[0], entry);
+    log('[Dict] autocomplete suggestion tapped — id:', entry.id, 'head:', entry.head, 'route:', `word/${safeId}`);
     router.push(`word/${safeId}` as any);
   }, [suggestions, setDetailHead, setSidebarSource, setCameFromSearch, router]);
 

@@ -217,7 +217,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
       // ── Tier 2: Offline SQLite (precompiled file first, legacy table fallback) ──
       log('[Dict] tier 2 offline lookup — l2:', l2Code, 'text:', trimmed);
-      const offline = await lookupOfflineByL2(l2Code, trimmed);
+      const offline = await lookupOfflineByL2(l2Code, trimmed, true);
       if (offline && offline.length > 0) {
         log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
         sessionCache.set(cacheKey, offline);
@@ -231,7 +231,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
       // ── Tier 4: Online lookup ──
       log('[Dict] tier 4 online lookup — l2:', l2Code, 'text:', trimmed, 'l1:', l1Lang.code);
-      const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
+      const res = await dict.lookup(trimmed, l2Code, l1Lang.code, true);
       const entries = stripLlmEntries(res.results ?? []);
       log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
 
