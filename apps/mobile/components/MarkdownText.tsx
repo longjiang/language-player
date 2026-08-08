@@ -4,17 +4,20 @@ import Markdown from 'react-native-markdown-display';
 
 interface MarkdownTextProps {
   children: string;
+  /** Optional render-rule overrides (e.g. heading onLayout for TOC scrolling). */
+  rules?: Record<string, (node: any, children: any[], parent: any[], styles: any) => React.ReactNode>;
 }
 
 /**
  * Renders markdown content using react-native-markdown-display.
  * Styled with NativeWind-compatible rules matching the app's design tokens.
  */
-export function MarkdownText({ children }: MarkdownTextProps) {
+export function MarkdownText({ children, rules }: MarkdownTextProps) {
   const { width } = useWindowDimensions();
 
   return (
     <Markdown
+      rules={rules}
       style={{
         body: {
           color: 'rgb(248 250 252)',

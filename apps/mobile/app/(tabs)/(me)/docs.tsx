@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { MarkdownText } from '@/components/MarkdownText';
-import { Search, BookOpen, List } from 'lucide-react-native';
+import { Search, BookOpen, List, X } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 function stripMarkdown(text: string): string {
@@ -16,15 +17,25 @@ function stripMarkdown(text: string): string {
     .replace(/`([^`]+)`/g, '$1');
 }
 
-/** Extract H2 headings from markdown content. Returns { text, anchor } pairs. */
-function extractHeadings(content: string): { text: string; anchor: string }[] {
-  const headings: { text: string; anchor: string }[] = [];
-  const regex = /^## (.+)$/gm;
+/** Slugify a heading for the TOC anchor — matches apps/web (rehype-slug). */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Extract H2/H3 headings from markdown content (matches web's extractToc). */
+function extractToc(content: string): { level: number; text: string; id: string }[] {
+  const headings: { level: number; text: string; id: string }[] = [];
+  const regex = /^(##|###) (.+)$/gm;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) !== null) {
-    const text = match[1]!.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
-    const anchor = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    headings.push({ text, anchor });
+    const level = match[1]!.length;
+    const text = match[2]!.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
+    headings.push({ level, text, id: slugify(text) });
   }
   return headings;
 }
@@ -37,8 +48,14 @@ function categoryKey(slug: string): string {
 export default function DocsScreen() {
   const t = useT();
   const { l1Lang } = useLanguage();
+  const { isXl } = useResponsive();
   const [query, setQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
+  const [tocOpen, setTocOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const headingOffsets = useRef<Record<string, number>>({});
+  const [contentCardY, setContentCardY] = useState(0);
+  const [markdownY, setMarkdownY] = useState(0);
 
   const localeDocs = useMemo(() => DOCS_BY_LOCALE[l1Lang.code] ?? DOCS, [l1Lang.code]);
 
@@ -73,13 +90,109 @@ export default function DocsScreen() {
     return map;
   }, [categorizedDocs]);
 
+  const handleSelectDoc = (doc: DocEntry) => {
+    setSelectedDoc(doc);
+    setTocOpen(false);
+    headingOffsets.current = {};
+  };
+
+  const scrollToHeading = (id: string) => {
+    const y = (headingOffsets.current[id] ?? 0) + markdownY + contentCardY - 12;
+    scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: true });
+    setTocOpen(false);
+  };
+
+  // Heading render-rule overrides record each heading's offset for TOC scrolling.
+  const makeHeadingRule = (level: 2 | 3) => (
+    node: any,
+    children: any[],
+    _parent: any[],
+    styles: any,
+  ) => {
+    const raw = String(node.content ?? '');
+    const text = raw.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
+    const id = slugify(text);
+    return (
+      <View
+        key={node.key}
+        style={styles[`_VIEW_SAFE_heading${level}`]}
+        onLayout={(e) => {
+          headingOffsets.current[id] = e.nativeEvent.layout.y;
+        }}
+      >
+        {children}
+      </View>
+    );
+  };
+
   // ── Selected doc detail view ──
   if (selectedDoc) {
     const isRootDoc = !selectedDoc.path.includes('/');
-    const headings = extractHeadings(selectedDoc.content);
-    return (
-      <PageContainer>
-        <ScrollView className="flex-1 px-4 py-5">
+    const headings = extractToc(selectedDoc.content);
+
+    const tocSidebar = (
+      <View className="flex-1">
+        <Text className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {t('docs.table_of_contents')}
+        </Text>
+        <ScrollView className="flex-1">
+          {rootDocs.map((doc) => (
+            <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5">
+              <Text
+                className={
+                  doc.path === selectedDoc.path
+                    ? 'text-sm font-medium text-primary'
+                    : 'text-sm text-foreground'
+                }
+              >
+                {doc.title}
+              </Text>
+            </Pressable>
+          ))}
+          {Object.entries(grouped).map(([cat, catDocs]) => (
+            <View key={cat} className="mt-3">
+              <Text className="mb-1 text-xs font-bold uppercase text-muted-foreground">
+                {t(categoryKey(cat))}
+              </Text>
+              {catDocs.map((doc) => (
+                <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5">
+                  <Text
+                    className={
+                      doc.path === selectedDoc.path
+                        ? 'text-sm font-medium text-primary'
+                        : 'text-sm text-foreground'
+                    }
+                  >
+                    {doc.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+
+        {headings.length > 0 && (
+          <View className="mt-4 border-t border-border pt-3">
+            <Text className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t('docs.on_this_page')}
+            </Text>
+            {headings.map((h) => (
+              <Pressable
+                key={h.id}
+                onPress={() => scrollToHeading(h.id)}
+                className="py-1.5"
+                style={{ paddingLeft: 4 + (h.level - 2) * 12 }}
+              >
+                <Text className="text-sm text-muted-foreground">{h.text}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+
+    const docContent = (
+      <>
         <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
           <Text className="text-sm text-primary">← {t('action.back')}</Text>
         </Pressable>
@@ -91,26 +204,71 @@ export default function DocsScreen() {
           </Text>
         )}
 
-        {/* ── On this page (heading TOC) ── */}
-        {headings.length > 1 && (
-          <View className="mb-5 rounded-xl border border-border bg-card p-3">
-            <View className="flex-row items-center gap-1.5 mb-2">
-              <List size={14} color={ICON_MUTED} />
-              <Text className="text-xs font-semibold text-muted-foreground uppercase">{t('label.on_this_page')}</Text>
-            </View>
-            {headings.map((h, i) => (
-              <Pressable key={i} className="py-1.5">
-                <Text className="text-sm text-primary leading-5">{h.text}</Text>
-              </Pressable>
-            ))}
+        {/* ── Markdown content (headings report offsets for the TOC) ── */}
+        <View
+          className="rounded-xl border border-border bg-card p-4"
+          onLayout={(e) => setContentCardY(e.nativeEvent.layout.y)}
+        >
+          <View onLayout={(e) => setMarkdownY(e.nativeEvent.layout.y)}>
+            <MarkdownText
+              rules={{
+                heading2: makeHeadingRule(2),
+                heading3: makeHeadingRule(3),
+              }}
+            >
+              {selectedDoc.content}
+            </MarkdownText>
           </View>
-        )}
-
-        {/* ── Markdown content ── */}
-        <View className="rounded-xl border border-border bg-card p-4">
-          <MarkdownText>{selectedDoc.content}</MarkdownText>
         </View>
-        </ScrollView>
+      </>
+    );
+
+    return (
+      <PageContainer maxWidth="7xl">
+        {isXl ? (
+          /* ≥1280: persistent right-side TOC (matches web's sticky xl sidebar). */
+          <View className="flex-1 flex-row">
+            <ScrollView ref={scrollRef} className="flex-1 px-4 py-5">
+              <View className="w-full max-w-3xl">{docContent}</View>
+            </ScrollView>
+            <View className="w-56 shrink-0 border-l border-border p-4">{tocSidebar}</View>
+          </View>
+        ) : (
+          <>
+            <ScrollView ref={scrollRef} className="flex-1 px-4 py-5">
+              <View className="w-full max-w-3xl">{docContent}</View>
+            </ScrollView>
+
+            {/* Slide-in TOC below xl, matching web's xl:hidden drawer. */}
+            {tocOpen && (
+              <>
+                <Pressable
+                  className="absolute inset-0 z-40 bg-black/30"
+                  onPress={() => setTocOpen(false)}
+                />
+                <View className="absolute bottom-0 right-0 top-0 z-50 w-72 border-l border-border bg-background p-4">
+                  <View className="mb-3 flex-row items-center justify-between">
+                    <Text className="text-sm font-semibold text-foreground">
+                      {t('docs.table_of_contents')}
+                    </Text>
+                    <Pressable onPress={() => setTocOpen(false)} className="rounded p-1 active:bg-muted">
+                      <X size={18} color={ICON_MUTED} />
+                    </Pressable>
+                  </View>
+                  {tocSidebar}
+                </View>
+              </>
+            )}
+
+            <Pressable
+              onPress={() => setTocOpen(true)}
+              className="absolute right-4 top-4 z-50 h-8 w-8 items-center justify-center rounded-md border border-border bg-background"
+              accessibilityLabel={t('docs.table_of_contents')}
+            >
+              <List size={18} color={ICON_MUTED} />
+            </Pressable>
+          </>
+        )}
       </PageContainer>
     );
   }
