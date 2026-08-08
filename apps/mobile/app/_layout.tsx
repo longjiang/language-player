@@ -74,7 +74,6 @@ import { SavedWordsProvider } from '@/contexts/SavedWordsContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
-import { OfflineBanner } from '@/components/sync/OfflineBanner';
 import '../global.css';
 
 // ── Error Boundary to surface full stack traces to Metro ──
@@ -137,7 +136,6 @@ export default function RootLayout() {
                     <VideoPlayerProvider>
                       <SubscriptionProvider>
                       <UserLibraryProvider>
-                      <OfflineBanner topInset={insets.top} />
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />
