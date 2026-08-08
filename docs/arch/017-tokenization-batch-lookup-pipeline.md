@@ -352,14 +352,46 @@ text → [OpenCC cn→twp] → POST /lemmatize-normalized → tokens → TokenSp
 
 **After (current):**
 ```typescript
-// apps/web/src/components/token-span.tsx (lines 106–125)
+// apps/web/src/components/token-span.tsx
 const isChinese = base === 'zh';
 const useTraditional = isChinese && l2Settings.display.traditional;
 
 const [displayText, setDisplayText] = useState(token.text);
 useEffect(() => {
-  if (!useTraditional) { setDisplayText(token.text); return; }
+  if (!isHanToken) { setDisplayText(token.text); return; }
   let cancelled = false;
+  (async () => {
+    const { toTraditional, toSimplified } = await import('@/lib/chinese-script');
+    const convert = useTraditional ? toTraditional : toSimplified;
+    const result = await convert(token.text);
+    if (!cancelled) setDisplayText(result);
+  })();
+  return () => { cancelled = true; };
+}, [token.text, useTraditional]);
+```
+
+Mobile mirrors this at `TokenizedText` level (batch conversion of unique
+token texts) using `getConverter()` / `getSimplifiedConverter()` from
+`apps/mobile/lib/chinese-script.ts`:
+
+```typescript
+// apps/mobile/components/TokenizedText.tsx
+const converter = useTraditional ? await getConverter() : await getSimplifiedConverter();
+for (const text of uniqueTexts) {
+  mapping.set(text, converter(text));
+}
+```
+
+**Bidirectional (2026-08-08):** conversion runs in both directions, per
+ADR-0019 — `cn→twp` when the user prefers traditional, `twp→cn` when the
+user prefers simplified. Both OpenCC converters are idempotent on
+already-matching text, so no script detection is needed; conversion is
+still applied only at the render layer, never to the lemmatizer input.
+
+Legacy notes (pre-bidirectional):
+```
+// before 2026-08-08 — only the traditional preference was handled:
+if (!useTraditional) { setDisplayText(token.text); return; }
   import('@/lib/chinese-script').then(({ toTraditional }) => {
     toTraditional(token.text).then(result => {
       if (!cancelled) setDisplayText(result);
@@ -369,10 +401,10 @@ useEffect(() => {
 }, [token.text, useTraditional]);
 ```
 
-- OpenCC `cn→twp` is idempotent on already-traditional text — no-op for traditional source content
 - Lazy-loaded per `TokenSpan` instance, stays in memory
 - No new props — `TokenSpan` reads `display.traditional` directly from `useSettingsContext()`
-- `TokenizedText` no longer has any conversion logic (~25 lines removed)
+- Web `TokenizedText` no longer has conversion logic; mobile keeps a
+  batched render-layer equivalent (see Mobile vs Web table below)
 
 ---
 
@@ -401,7 +433,7 @@ TokenizedText (single file, ~360 lines)
 |---|---|---|---|
 | **Lazy loading** | IntersectionObserver 200px margin | Not implemented (no browser API) | ⬜ Open — FlatList viewability config possible |
 | **In-flight lemmatize dedup** | `lemmatizeInflight` Map | `lemmatizeInflight` Map in `tokenizer.ts` | ✅ Done — same pattern, different file |
-| **Traditional Chinese** | OpenCC per-token in TokenSpan (ADR-0019) | Pre-converted at TokenizedText level via `getConverter()` | ✅ Done — batch conversion of unique texts, same OpenCC lib |
+| **Traditional Chinese** | OpenCC per-token in TokenSpan, bidirectional (ADR-0019) | Pre-converted at TokenizedText level via `getConverter()`/`getSimplifiedConverter()` | ✅ Done — batch conversion of unique texts, both directions |
 | **hardWords filter** | `getWordDifficulty()` in TokenSpan | `getWordDifficulty()` + `shouldShowPhonetics()` in TokenizedText | ✅ Done |
 | **quickGloss** | `QuickGloss` component for saved words | Inline `savedFormSet` + `firstDef` from dict cache | ✅ Done — rendered as small muted text after word |
 | **byeonggi** | Per-token `useMemo` from cache | `getTokenEntryData()` per token | ✅ Done |
