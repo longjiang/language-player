@@ -9,6 +9,7 @@ import { getCachedEntries } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
 
 // ── Module-level L1 definition cache ──
 // Key: `${l2Code}:${text}:${l1Code}` → first definition in the user's L1.
@@ -203,16 +204,26 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // cn→twp is idempotent on already-traditional text and preserves
   // 1:1 character mapping, so ruby alignment with pinyin is safe.
   const [displayText, setDisplayText] = useState(token.text);
+  const isHanToken = /[\u4E00-\u9FFF]/.test(token.text);
   useEffect(() => {
-    if (!useTraditional) { setDisplayText(token.text); return; }
+    if (!useTraditional) {
+      if (isHanToken) {
+        log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=false direction=none token="${token.text}" → "${token.text}" converted=false`);
+      }
+      setDisplayText(token.text);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { toTraditional } = await import('@/lib/chinese-script');
       const result = await toTraditional(token.text);
+      if (isHanToken) {
+        log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=true direction=toTraditional token="${token.text}" → "${result}" converted=${result !== token.text}`);
+      }
       if (!cancelled) setDisplayText(result);
     })();
     return () => { cancelled = true; };
-  }, [token.text, useTraditional]);
+  }, [token.text, useTraditional, isHanToken, l2Code]);
 
   // ── First gloss segment — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
