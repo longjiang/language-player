@@ -76,6 +76,18 @@ by every `TokenizedText` instance.
 - Web's approach: tokenize when within 200px of viewport, stay tokenized once visible
 - This is a larger feature and should be its own subtask
 
+**Status**: ✅ Fixed 2026-08-08 — reader pages (Notes Reader, Web Reader, EPUB)
+now tokenize only blocks near the viewport. `PaginatedReader` tracks scroll
+position + viewport height with refs (no re-render per scroll frame), measures
+each block's content rect via `onLayout`, and reports the global indices whose
+rects intersect the viewport ± 200px (web's `rootMargin`). `useEpubPagination`
+gates its per-page batch lemmatization to that reported set, and
+`TokenizedText` gained `deferTokenization` so deferred blocks render plain text
+until the parent hands tokens back through the `tokens` prop. Blocks that have
+been tokenized stay tokenized; new blocks are tokenized as the user scrolls.
+The subtitle transcript was already effectively lazy via FlatList
+virtualization (only mounted lines tokenize), so it needs no change.
+
 ---
 
 ### ⬜ Feature Gaps (Token Rendering)
@@ -146,9 +158,11 @@ This is the hardest gap. See ADR-0019 for the architectural rationale. Options:
 
 | Task | Effort | Files |
 |---|---|---|
-| **Lazy tokenization** | Large | `SubtitleDisplay.tsx`, `TokenizedText.tsx`, watch page layout |
+| **Lazy tokenization** | Medium | `PaginatedReader.tsx`, `use-epub-pagination.ts`, `TokenizedText.tsx` |
 
-The web uses `IntersectionObserver` which doesn't exist in React Native. This needs its own design discussion and is lower priority than the above features.
+**Status**: ✅ Done 2026-08-08 — reader pages only tokenize blocks within
+`VISIBILITY_BUFFER = 200px` of the viewport, then continue lazily as the user
+scrolls. The subtitle transcript remains lazy through FlatList windowing.
 
 ---
 
@@ -186,6 +200,6 @@ For a video transcript with 500 subtitle lines, 200 unique lemmas:
 - [ ] `phonetics.conditions === 'hardWords'` filters phonetics by word difficulty (Phase 2)
 - [ ] `quickGloss` shows dictionary definition for saved words (Phase 2)
 - [ ] Chinese script conversion works per-token on mobile (Phase 3)
-- [ ] Subtitle lines lazily tokenized when approaching viewport (Phase 4)
+- [x] Reader-page blocks lazily tokenized when approaching viewport (Phase 4)
 - [ ] TypeScript compiles cleanly: `./node_modules/.bin/tsc --noEmit`
 - [ ] No regression in existing tokenization behavior

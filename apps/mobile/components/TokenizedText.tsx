@@ -188,6 +188,11 @@ export interface TokenizedTextProps {
   /** Whether the token cache has finished loading. When false and tokenCache
    *  is provided, the component shows plain text without calling the API. */
   tokenCacheLoaded?: boolean;
+  /** When true, skip this component's own lemmatization queue — the parent
+   *  (e.g. reader pagination) is the lemmatization authority and supplies
+   *  tokens via the `tokens` prop once a block is near the viewport
+   *  (SPEC-019 O2 lazy loading). */
+  deferTokenization?: boolean;
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
@@ -230,10 +235,10 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
-  const [loading, setLoading] = useState(!preloadedTokens);
+  const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
   const [selectedTokenPron, setSelectedTokenPron] = useState<string | null>(null);
@@ -422,6 +427,15 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   useEffect(() => {
     // Skip if tokens were preloaded externally
     if (preloadedTokens) return;
+    // Parent-driven tokenization (reader pages): don't start our own queue
+    // request — the parent only tokenizes blocks near the viewport and hands
+    // tokens back through the `tokens` prop. Render plain text until then.
+    if (deferTokenization) {
+      setTokens([]);
+      setLoading(false);
+      loadingRef.current = false;
+      return;
+    }
     // Offline + no dictionary: don't attempt tokenization at all — plain
     // text immediately, no pulsing (a tap explains why).
     if (offlineNoDict) {
@@ -504,7 +518,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       controller.abort();
       loadingRef.current = false;
     };
-  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, offlineNoDict]);
+  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, offlineNoDict, deferTokenization]);
 
   // ── Abort on unmount ──
   useEffect(() => {
