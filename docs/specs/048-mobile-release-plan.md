@@ -5,7 +5,7 @@
 - **Feature**: Pre-release (informal, human) testing + releasing `apps/mobile/` to the Apple App Store and Google Play Store
 - **Status**: draft
 - **Created**: 2026-08-06
-- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E](025-payment-e2e-testing.md)
+- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E](025-payment-e2e-testing.md) · [SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md)
 
 ## Overview
 
@@ -79,30 +79,198 @@ Maestro assertions to manual checks.
 
 ### 1.2 Pre-release QA checklist
 
-| # | Area | SPEC-023 ref | Manual checks | Run on | Notes |
-|---|---|---|---|---|---|
-| S | Smoke | Tier 0 | ✅ Launch → login screen<br>✅ login → 4 tabs render<br>✅ logout returns to login | Sim | All good |
-| A | Auth & onboarding | Tier 1 | ✅ Login ok<br>✅ Login wrong pass<br>✅ Login empty fields<br>✅ register (happy + duplicate email)<br>⬜ forgot & reset password (deep link)<br>✅ verify email<br>⬜ delete account<br>✅ language selection<br>✅ session persists across background | Sim | Password reset missing deeplinking (website can also reset fine) |
-| M | Media | Tier 2 | ⬜ Explore feed + level filter + pagination<br>⬜ video meta<br>⬜ tap subtitle word → dictionary popup<br>⬜ search (results + empty state)<br>⬜ TV shows → episodes<br>⬜ live TV stream + mute<br>⬜ watch history<br>⬜ channel subscribe<br>⬜ video queue | Sim | Explore Feed's Infinite scroll not working; Many untranslated English strings; subtitles in 'transcript' mode not showing; video search by tag not working; TV shows cannot find episodes; |
-| 049-M1 | Subs-search & player translation (§7) | Tier 2 | ⬜ text action menu + translations on subs-search subtitles<br>⬜ subs-search translation always stacked below the subtitle<br>⬜ target form sent to the translate API instead of pre-marking text<br>⬜ specific translated YouTube player errors<br>⬜ progressive caption normalization | Sim | |
-| 049-M2 | Native text selection & actions (§8) | Tier 2 | ⬜ native text-selection actions on `TokenizedText`<br>⬜ selection opens the dictionary popup (not the action menu)<br>⬜ canonical phrase cards in the selection dictionary popup<br>⬜ immediate sentence passed as selection popup context | Sim | |
-| D | Dictionary & vocab | Tier 3 | ⬜ Search found / not found<br>⬜ save + unsave word<br>⬜ saved list (filter / sort / inline defs / source)<br>⬜ word detail (defs + Examples / Inflections / AI Explain tabs)<br>⬜ speak button<br>⬜ recent searches<br>⬜ popup from reader<br>⬜ pitch accent (ja)<br>⬜ traditional chars (zh) | Sim | |
-| 049-S1 | Dict — search/autocomplete & sidebar (SPEC-049 §1) | Tier 3 | ⬜ English-definition autocomplete surfaces matching L2 entries (typing "meal")<br>⬜ sidebar prev/next in header<br>⬜ currently-viewed entry card highlighted<br>⬜ "Related" sidebar title when a corpus list is available; dead toggles hidden<br>⬜ Conjugations tab hidden for non-inflecting languages<br>⬜ sidebar is a slide-from-right drawer | Sim | |
-| 049-S2 | Dict — saved words as entry cards (§2) | Tier 3 | ⬜ saved words render as full dictionary entry cards<br>⬜ saved-word metadata (date/source/context/form)<br>⬜ saved-word form highlighted in the save bar<br>⬜ cards tile responsively<br>⬜ sort toggle removed; video titles capped | Sim | |
-| 049-S3 | Dict — image search grid (§3) | Tier 3 | ⬜ Openverse image-search tab<br>⬜ LLM-rewritten search with filter pills<br>⬜ scrollable query pills + paginated grid + query relaxation<br>⬜ skeleton loading + grid placeholders<br>⬜ compact image strip in the popup dictionary<br>⬜ backend image endpoint consumed on both platforms | Sim | |
-| 049-S4 | Dict — corpus tab / Sketch Engine (§4) | Tier 3 | ⬜ corpus tab pills: Collocations / Examples / Related / Mistakes<br>⬜ corpus text is interactive tokenized text with term highlighting<br>⬜ related words as infinite-scroll card grid with bookmark + corpus source | Sim | |
-| 049-S5 | Dict — AI Explain / DeepSeek (§5) | Tier 3 | ⬜ pro-gated explanation embedded in the full entry card<br>⬜ interactive tokenized L2 strings in AI-explain responses<br>⬜ "ask for two same-sense usage examples"<br>⬜ "Let AI Explain" instant + subscription status shared app-wide | Sim | |
-| R | Review (SRS) | Tier 4 | ⬜ No-cards-due state<br>⬜ card front<br>⬜ rate Good → next card<br>⬜ all-done + stats<br>⬜ undo<br>⬜ daily new-card limit | Sim | |
-| 049-R | Review — phonetics & styling (§6) | Tier 4 | ⬜ phonetics on highlighted words; reveal on card flip<br>⬜ target form emphasized in review translation; markdown rendered<br>⬜ card padding halved on phones; source dates localized<br>⬜ tap-to-rate zones removed | Sim | |
-| E | Reading | Tier 5 | ⬜ Notes create/edit/rename/delete + tokenized tap<br>⬜ EPUB upload / read / resume + word lookup<br>⬜ web reader fetch + TextActionMenu (copy / AI explain / translate / speak) | Sim | |
-| 049-E1 | Reading — EPUB bookshelf & search (§9) | Tier 5 | ⬜ whole-book model re-engineering<br>⬜ per-book EPUB bookshelf with reading progress<br>⬜ language-specific EPUB bookshelf<br>⬜ in-book search with snippets + chapter navigation<br>⬜ highlight EPUB search matches<br>⬜ EPUB opens straight to content + page-number estimates<br>⬜ in-book back history + in-content link fragments<br>⬜ dictionary popup from clicked tokens / internal links | Sim | |
-| 049-E2 | Reading — web reader (§10) | Tier 5 | ⬜ curated reading suggestions + markdown formatting<br>⬜ page-title sniffing + tracked visited sites/date<br>⬜ reader links open in-app + back-to-home button<br>⬜ text-source titles capped in the save bar<br>⬜ clickable chevron links | Sim | |
-| 049-Q | Quick gloss & translation styling (§11) | Tier 3 | ⬜ quick gloss restyled with parens + smart spacing<br>⬜ `TokenizedText` respects the text-scaling setting everywhere | Sim | |
-| P | Settings & profile | Tier 6 | ⬜ Profile info<br>⬜ level change<br>⬜ display theme light/dark/system<br>⬜ playback toggles<br>⬜ speech voice + rate<br>⬜ review settings<br>⬜ settings search<br>⬜ subscription screen (pro/free) | Sim + device | |
-| O | Offline | Tier 7 | ⬜ Download + delete offline dict<br>⬜ tokenizer warning (Category E)<br>⬜ airplane-mode reading + dictionary popup<br>⬜ offline tokenization<br>⬜ offline → online sync | Device | |
-| IP | iPad & responsive | Tier 8 | ⬜ Landscape<br>⬜ 1/3 + 50/50 split view<br>⬜ slide-over<br>⬜ full portrait (820) + landscape (1180)<br>⬜ wide-screen content centering | iPad | |
-| L | Deep links & cross-flow | Tier 9 | ⬜ `languageplayer://vocab/word/...`<br>⬜ `.../media/watch/...`<br>⬜ password-reset deep link<br>⬜ network loss mid-video<br>⬜ rapid L2 switch | Sim + device | |
-| Pay | Payments | SPEC-025 | ⬜ Stripe card<br>⬜ WeChat / Alipay / PayPal<br>⬜ iOS IAP purchase + restore<br>⬜ free-tier gates | Device | |
+Checklists are grouped by product flow (smoke/auth → media → dictionary &
+vocab → review → reading → settings → offline → deep links → payments).
+Tester comments are kept in brackets.
+
+#### S. Smoke  **· SPEC-023 ref:** Tier 0 · **Run on:** Simulator
+
+- ✅ Launch → login screen
+- ✅ login → 4 tabs render
+- ✅ logout returns to login
+
+#### A. Auth & onboarding  **· SPEC-023 ref:** Tier 1 · **Run on:** Simulator
+
+- ✅ Login ok
+- ✅ Login wrong pass
+- ✅ Login empty fields
+- ✅ register (happy + duplicate email) [language section conflicting with notch after registration]
+- ✅ verify email
+- ✅ delete account
+- ✅ language selection [should go to explore not saved words; language switching from dictionary should go back to explore; when switching to a new language]
+- ✅ session persists across background
+
+#### M. Media  **· SPEC-023 ref:** Tier 2 · **Run on:** Simulator
+
+- ✅ Explore feed + level filter + pagination
+- ✅ video cards
+- ✅ live TV stream + mute [stream should not continue to play when navigating away]
+- ✅ channel subscribe
+- ✅ video playback [subtitles in 'transcript' mode not showing, tabs invisible, tab content missing]
+- ✅ search (results + empty state)
+- ✅ TV shows → episodes
+- ✅ watch history
+- ✅ video queue
+- ✅ tap subtitle word → dictionary popup
+- ⚠️ multiline transcript - smooth scroll [very slow and buggy - leave as is]
+- ⚠️ single line transcript [should be right aligned but have repeated issues implementing - leave as is]
+
+#### 049-M1. Subs-search & player translation (§7)  **· SPEC-023 ref:** Tier 2 · **Run on:** Simulator
+
+- ✅ subs-search translation always stacked below the subtitle
+- ✅ text action menu + translations on subs-search subtitle
+- ✅ watch full button
+- ✅ highlight target form in translation by having target form sent to the translate API [translation is bolded with ** but not properly displayed, keyword is not highlighted in subs - should match apps/web’s way of highlighting the term in translation]
+- ✅ specific translated YouTube player errors [test against “untamed” episode]
+
+#### 049-M2. Native text selection & actions (§8)  **· SPEC-023 ref:** Tier 2 · **Run on:** Simulator
+
+- ⚠️ native text-selection actions on TokenizedText [feature missing, leave as is]
+- ⚠️ selection opens the dictionary popup (not the action menu) [feature missing, leave as is]
+- ⚠️ canonical phrase cards in the selection dictionary popup [feature missing, leave as is]
+- ⚠️ immediate sentence passed as selection popup context [feature missing, leave as is]
+
+#### D. Dictionary & vocab  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ save + unsave word
+- ✅ word detail - defs
+- ✅ Inflections
+- ✅ speak button
+- ✅ recent searches
+- ✅ pitch accent (ja)
+- ✅ popup dictionary’s l1≠en defs translation
+- ✅ quick gloss
+- ✅ chinese cedict cannot open word - “Unrecognized entry ID format”
+- ✅ traditional chars (zh)
+- ✅ saved list (filter / inline defs / source)
+- ✅ saved words render as dictionary entry cards
+- ✅ saved-word metadata (date/source/context/form)
+- ✅ saved-word form highlighted in the save bar
+- ✅ saved-word context - video titles capped
+- ✅ dictionary search found / not found
+- ✅ AI Explain
+- ⚠️ Subs search show-all list [result item needs to scroll horizontally if too long, leave as is]
+
+#### 049-S1. Dict — search/autocomplete & sidebar (SPEC-049 §1)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ English-definition autocomplete surfaces matching L2 entries (typing “meal”)
+- ✅ dead toggles hidden [sidebar missing on phone]
+- ✅ Conjugations tab hidden for non-inflecting languages
+- ✅ sidebar is a slide-from-right drawer
+- ✅ sidebar prev/next in header
+- ⚠️ currently-viewed entry card highlighted [not highlighted, leave as is]
+- ⚠️ “Related” sidebar title when a corpus list is available [text too large - clipped off, leave as is]
+
+#### 049-S2. Dict — saved words as entry cards (§2)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ cards tile responsively
+- ✅ sort toggle removed
+
+#### 049-S3. Dict — image search grid (§3)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ Openverse image-search tab
+- ✅ LLM-rewritten search with filter pills
+- ✅ scrollable query pills + paginated grid + query relaxation
+- ✅ skeleton loading + grid placeholders
+- ✅ compact image strip in the popup dictionary
+
+#### 049-S4. Dict — corpus tab / Sketch Engine (§4)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ corpus text is interactive tokenized text with term highlighting
+- ✅ related words as infinite-scroll card grid with bookmark + corpus source
+- ✅ corpus tab pills: Collocations / Examples / Related / Mistakes [translations show up as English]
+
+#### 049-S5. Dict — AI Explain / DeepSeek (§5)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ pro-gated explanation embedded in the full entry card
+- ✅ interactive tokenized L2 strings in AI-explain responses
+- ✅ “ask for two same-sense usage examples”
+- ✅ “Let AI Explain” instant + subscription status shared app-wide
+- ✅ Follow up questions for “Let AI Explain” [not implemented, should match apps/web’s implementation]
+
+#### 049-Q. Quick gloss & translation styling (§11)  **· SPEC-023 ref:** Tier 3 · **Run on:** Simulator
+
+- ✅ quick gloss restyled with parens + smart spacing
+- ✅ TokenizedText respects the text-scaling setting everywhere
+
+#### R. Review (SRS)  **· SPEC-023 ref:** Tier 4 · **Run on:** Simulator
+
+- ✅ No-cards-due state
+- ✅ card front and back
+- ✅ rate Good → next card
+- ✅ all-done + stats
+- ✅ undo
+- ✅ daily new-card limit
+
+#### 049-R. Review — phonetics & styling (§6)  **· SPEC-023 ref:** Tier 4 · **Run on:** Simulator
+
+- ✅ phonetics on highlighted words; reveal on card flip
+- ✅ target form emphasized in review translation; markdown rendered
+- ✅ card padding halved on phones; source dates localized
+- ✅ tap-to-rate zones removed
+
+#### E. Reading  **· SPEC-023 ref:** Tier 5 · **Run on:** Simulator
+
+- ✅ Notes ✅create/⚠️ edit/✅ rename/✅ delete + ✅ tokenized tap (after editing, translation needs to reload)
+- ✅ EPUB reader resume + word lookup
+- ✅ EPUB upload
+- ✅ web reader fetch
+- ✅ web reader TextActionMenu (copy / AI explain / translate / speak)
+
+#### 049-E1. Reading — EPUB bookshelf & search (§9)  **· SPEC-023 ref:** Tier 5 · **Run on:** Simulator
+
+- ✅ per-book EPUB bookshelf with reading progress
+- ✅ in-book search with snippets
+- ✅ EPUB opens straight to content + page-number estimates
+- ✅ in-book back history
+- ✅ language-specific EPUB bookshelf
+- ⚠️ whole-book model re-engineering [pagination calculation should be more intelligent, but do so without loading forever - leave as is] [some pages are paginated extremely long; tokenization and translation process hangs UI because it’s not lazy or visibility driven - leave as is]
+- ⚠️ dictionary popup from clicked tokens / internal links [cannot be tested - books with internal links cannot open - leave as is]
+- ⚠️ in-content link fragments [yet to be tested - books cannot open - leave as is]
+
+#### 049-E2. Reading — web reader (§10)  **· SPEC-023 ref:** Tier 5 · **Run on:** Simulator
+
+- ✅ curated reading suggestions
+- ✅ markdown formatting [cannot be tested - fails to load]
+- ✅ page-title sniffing + tracked visited sites/date
+- ✅ reader links open in-app
+- ✅ back-to-home button
+- ✅ text-source titles capped in the save bar
+
+#### P. Settings & profile  **· SPEC-023 ref:** Tier 6 · **Run on:** Simulator + device
+
+- ✅ Profile info
+- ✅ level change
+- ✅ display theme light/dark/system
+- ✅ playback toggles
+- ✅ review settings
+- ✅ settings search
+- ✅ subscription screen (pro/free)
+- ✅ speech voice + rate
+
+#### O. Offline  **· SPEC-023 ref:** Tier 7 · **Run on:** Device
+
+- ✅ Download + delete offline dict
+- ✅ tokenizer warning (Category E)
+- ✅ airplane-mode reading + dictionary popup
+- ✅ offline tokenization
+- ✅ offline → online sync
+- ⬜ network loss mid-reading
+
+#### L. Deep links & cross-flow  **· SPEC-023 ref:** Tier 9 · **Run on:** Device
+
+- ⬜ languageplayer://vocab/word/...
+- ⬜ .../media/watch/...
+- ⬜ password-reset deep link
+- ⬜ L2 switch in deeplinking
+- ⬜ forgot & reset password (deep link) [missing deeplinking (website can also reset fine]
+
+#### Pay. Payments  **· SPEC-023 ref:** SPEC-025 · **Run on:** Device
+
+- ⬜ Stripe card
+- ⬜ WeChat / Alipay / PayPal
+- ⬜ iOS IAP purchase + restore
+- ⬜ free-tier gates
 
 > Audio, visual-layout, offline, and payment checks require a human and
 > (mostly) a real device — exactly why they are human checks rather than Maestro
@@ -130,8 +298,9 @@ simulator / iPhone / iPad). You do **not** run the full checklist twice:
      `languageplayer://` URL scheme.
    - **Payments** — Stripe / WeChat / Alipay / PayPal web views; Play Billing
      is **N/A** (not implemented — SPEC-014).
-   - **Tablet layout** — Android tablets, if targeted (the IP row below only
-     covers iPad).
+   - **Tablet layout** — Android tablets, if targeted (iPad layout parity is
+     tracked separately in [SPEC-052](052-mobile-large-screen-ipad-layout-parity-with-web.md);
+     the 1.2 checklist no longer has a separate iPad row).
    - **Offline / network** — airplane-mode behavior and storage paths.
 3. For everything else on Android, do a **light smoke pass** (launch, login,
    one screen per tab) to confirm no platform-specific crash.

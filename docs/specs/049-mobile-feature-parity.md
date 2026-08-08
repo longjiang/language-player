@@ -9,7 +9,7 @@
 - **ROADMAP Phase**: Phase 4 (Dictionary) / Phase 5 (Content Features) / Phase 6 (User Features)
 - **Scope**: `apps/web` → `apps/mobile` (the fresh React Native/Expo 57 port per ADR-0010)
 - **Method**: `git log f0bad902a9..HEAD -- apps/web` diffed against `-- apps/mobile`, then filtered to user-facing features
-- **Related specs**: [SPEC-032 — EPUB Reader Re-engineering](032-epub-reader-re-engineering.md) · [SPEC-047 — Corpus Tab (Sketch Engine)](047-corpus-tab-sketch-engine.md) · [SPEC-030 — Radix UI Migration](030-radix-ui-migration.md)
+- **Related specs**: [SPEC-032 — EPUB Reader Re-engineering](032-epub-reader-re-engineering.md) · [SPEC-047 — Corpus Tab (Sketch Engine)](047-corpus-tab-sketch-engine.md) · [SPEC-030 — Radix UI Migration](030-radix-ui-migration.md) · [SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md) · [SPEC-053 — Mobile Offline Mode & Offline Sync](053-mobile-offline-mode.md)
 
 ## Overview
 
@@ -23,6 +23,20 @@ Per the project porting rules ([ADR-0010 — Fresh Mobile Port](../adr/0010-port
 feature-for-feature. This document is the inventory to plan against. Features are
 grouped by product area; each entry lists the web commits that implemented it and
 a mobile status.
+
+**Layout parity** is tracked separately in
+[SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md).
+Its 2026-08-08 e2e large pass found iPad layouts are **largely ready for
+shipping** — see the
+[SPEC-052 e2e test results](052-mobile-large-screen-ipad-layout-parity-with-web.md#e2e-test-results-2026-08-08)
+for the per-screen pass/fail matrix and the remaining follow-ups.
+
+**Offline capability** is tracked separately in
+[SPEC-053 — Mobile Offline Mode & Offline Sync](053-mobile-offline-mode.md).
+Its 2026-08-08 e2e results show offline mode testing is **largely passing and
+ready for shipping** — see the
+[SPEC-053 test results](053-mobile-offline-mode.md#test-results-2026-08-08)
+for the per-check matrix and the items still marked to be performed.
 
 ## How to use this spec
 

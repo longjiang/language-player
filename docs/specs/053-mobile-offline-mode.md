@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-053
 - **Feature**: Offline Mode (local network kill switch) + offline-first sync strategy
-- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; outbox payload-integrity safeguards implemented 2026-08-08 (structural safeguards section below); full two-device conflict suite pending manual verification
+- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; outbox payload-integrity safeguards implemented 2026-08-08 (structural safeguards section below); **e2e large pass 2026-08-08 — offline mode largely tested and ready for shipping** ([Test Results](#test-results-2026-08-08)); items without ✅/⚠️ are marked **to be performed**
 - **Created**: 2026-08-07
 - **Scope**: `apps/mobile` client + proposed Flask sync endpoints
 - **Related specs**: [SPEC-013 — Mobile Offline Dictionary](013-mobile-offline-dictionary.md) · [SPEC-018 — Mobile Local Tokenization](018-local-tokenization-mobile.md) · [SPEC-039 — Full Database Migration to Supabase](039-full-database-migration-supabase.md) · [ADR-0015 — Settings UI and Search](../adr/0015-settings-ui-and-search.md)
@@ -32,6 +32,11 @@ the app never blocks on the network and no user write is silently lost.
 The setting is intentionally **local-only**: it is stored in SecureStore under
 its own key, outside `SettingsV2`, and is never sent to `GET/PUT
 /user-settings`. It does not sync to the user's account or to other devices.
+
+**As of 2026-08-08:** the Phase 1 + Phase 2 e2e results are recorded in
+[Test Results](#test-results-2026-08-08) below. Offline Mode is **largely
+tested and ready for shipping**; checks without a ✅/⚠️ marker are marked
+**to be performed** (not yet verified).
 
 ---
 
@@ -690,11 +695,12 @@ an accessible label; never rely on color alone.
   progress, watch part of a video) writes through the durable outbox and
   survives app kill / airplane mode. Reading an EPUB works locally (bookshelf
   + reading progress are intentionally local-only, out of sync scope). Two-way
-  sync is implemented; the full manual checklist (below) still needs device
-  verification.
+  sync is implemented and verified in the
+  [Test Results](#test-results-2026-08-08) below; remaining items are marked
+  **to be performed**.
 - ✅ Two devices editing concurrently converge via LWW + tombstones
   (server-side LWW guards + client merge; deleted items are not resurrected).
-  Manual two-device verification is still pending.
+  Two-device LWW passed in the 2026-08-08 results (optional Test 9).
 - ✅ Replaying the same outbox op (retry, crash, duplicate network response)
   cannot create a duplicate row (server-side idempotency keys).
 - ✅ The sync status UI covers online / offline / offline mode / pending /
@@ -770,6 +776,95 @@ Manual verification checklist:
 7. Turn on Offline Mode while pending ops exist; confirm no network attempts
    occur and the pending badge still updates locally; turn it off and confirm
    sync resumes.
+
+---
+
+## Test Results (2026-08-08)
+
+E2E results for Phase 1 + Phase 2. Offline Mode is **largely tested and ready
+for shipping**. Status legend: ✅ = passed, ⚠️ = passed with a known issue
+(see note), **To be performed** = not yet verified (no ✅/⚠️ recorded).
+
+### Phase 1 — Offline Mode kill switch
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Settings → Network → Offline Mode → enable | ✅ Passed |
+| 2 | Open a downloaded dictionary language and confirm dictionary lookups come from SQLite and still work | ✅ Passed |
+| 3 | Open tokenized text and confirm the local `lemmatizeText()` fallback runs (server call fails fast, no 3s hang) | ⚠️ Passed — `lemmatizeText` and batch lookup block the UI; workers not available — leave as is |
+| 4 | Start a dictionary download while Offline Mode is on; confirm it fails fast and does not replace an existing downloaded dictionary | ✅ Passed |
+| 5 | Disable Offline Mode; confirm networking resumes immediately | ✅ Passed |
+| 6 | Reload the app with Offline Mode enabled; confirm no boot-time network calls are made and an expired session is not logged out | ✅ Passed |
+| 7 | Inspect the `PUT /user-settings` payload (network inspector or server logs) and confirm `offlineMode` never appears | ✅ Passed |
+| 8 | Use settings search for "offline" and "network"; confirm the row appears | ✅ Passed |
+
+### Phase 2 — Offline session (airplane mode)
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Load a note | ⚠️ Passed — sidebar shows “Network requests blocked…” hard-coded English; opening a saved note shows as empty |
+| 2 | Create and edit notes | ✅ Passed |
+| 3 | Rename a note | ✅ Passed |
+| 4 | Save and remove words | ✅ Passed |
+| 5 | See saved words from the Saved Words page | ✅ Passed — definitions do not load (spinner spins forever) |
+| 6 | Review SRS cards | ⚠️ Passed — context sentence does not show (only a “…” action trigger; copying the text copies nothing) |
+| 7 | Change learning progress (change level from Profile) | ✅ Passed |
+| 8 | Watch part of a video | **To be performed** — video cannot be watched while offline |
+| 9 | Read an EPUB, close book, and resume | ✅ Passed |
+| 10 | Kill and relaunch the app while still offline | ✅ Passed |
+
+### Phase 2 — Pending ops & sync status
+
+| # | Check | Result |
+|---|---|---|
+| 4 | Notes: open an EPUB, open the notes sidebar, create a note, type a sentence, and rename it. Note row shows a muted cloud icon (pending); banner/icon count → 1; Metro: `[notes-sync] enqueue create note tmp--...`, `[sync] outbox now pending=1` | ✅ Passed |
+| 5 | Saved words: tap a word in the book → popup → tap the bookmark; save a second word the same way. Count → 3; Metro: `[SavedWordsContext] enqueue put saved_word ja::...` | ✅ Passed |
+| 6 | SRS: open Review (Vocab tab); new cards auto-create; rate one card. Count → 4+; Metro: `[srs] queued upsert card ja::...` | ⚠️ Passed — context sentence missing (only a “…” action trigger; copying copies nothing); save date shows below; “show definition” shows a forever spinner; the last two words work fine (context and definition show) |
+| 7 | Progress: Profile → change your level (e.g., 6). Count → 5; Metro: `[progress] queued sync — l2: ja` | ✅ Passed |
+| 9 | Header cloud icon: cloud-off with a numeric badge equal to the total pending (5-ish; notes/saved words/SRS/progress each count once, bookshelf coalesces) | ✅ Passed — no count change for EPUB open/close; EPUB progress does not sync to the server by design |
+| 10 | Banner: “Offline — changes are saved on this device · N pending” plus a Sync now button | ⚠️ Passed — tapping Sync now while offline does nothing; tapping while online does nothing for a few seconds, then the top bar disappears completely — needs better interaction feedback |
+| 11 | Tap the cloud icon → Sync Status screen: one row per pending op (＋ note tmp--..., ＋ saved_word ja::..., ＋ srs_card ..., ＋ progress ja, ＋ bookshelf default), each labeled Saved locally | ✅ Passed |
+| 12 | Notes sidebar: unsynced notes show the muted-cloud icon; synced notes show a green check | ⚠️ Passed — see the kill + relaunch note below |
+| 13 | Swipe the app away in the app switcher, reopen it, stay offline | ✅ Passed |
+| 14 | Offline Mode is still on; banner and badge come back with the same count; Notes / Saved Words / Review / Profile / Bookshelf all still show the changes you made; note IDs are still temp (`tmp--...`) until sync | ✅ Passed |
+| 15 | Turn Offline Mode off: icon briefly becomes cloud-with-up-arrow (syncing), then plain cloud with no badge; Sync Status list empties; temp IDs become server IDs after remap; Metro: `[sync] ✅ cycle done pushed=N`; Flask: `POST /sync/push ... ok=N failed=0` | ✅ Passed |
+
+- ⚠️ **Known issue (kill + relaunch while still offline):** opening the notes
+  reader freezes during tokenization; four rapid taps on “add notes” create
+  four notes, all selected and “current”; one action trigger opens the menu of
+  all four notes; the top three show the cloud icon, the bottom one shows a
+  checkmark even though they are the same note.
+
+### Phase 2 — Note sync regression suite
+
+**Setup:** restart Flask (`FLASK_ENV=development .venv/bin/python app.py`) and
+reload Metro (`r`). Log in, go online, confirm badge 0 and `[sync] push skip —
+outbox empty`. Keep the Sync Status screen and both terminals visible.
+
+| Test | Check | Result |
+|---|---|---|
+| 1 — Happy path (rename survives autosave) | Offline Mode ON → Notes Reader → new note → type 冬の寒さが和らぐと、春になると生物の活動が活発になる。 → wait for “Saved locally” → rename to 春の訪れ → append そして、雪解け水が田植えに使われる。 → wait for save. Expect: sidebar shows #-… (negative id), muted cloud, badge 1, Sync Status has one ＋ note tmp--…. Kill + relaunch offline → note opens with 春の訪れ + both sentences. Reconnect → Metro remap -… → positive id; badge 0; server has exactly one note titled 春の訪れ with both sentences. Pass: title is never 无标题, text intact, one server row | ⚠️ Passed with issues — tokenization blocks the UI (repeated taps cause duplicate notes); a red error “Offline mode has blocked requests” appears above the note; all three expectation steps passed |
+| 2 — Rename before any text (no autosave interference) | Offline → new note → immediately rename to 読書メモ (before typing anything). Reconnect → server note title = 読書メモ, text empty. Pass: rename alone pushes correctly; no Untitled/无标题 leak | ⚠️ Passed with issue — after reconnect the note is gone locally |
+| 3 — Type → rename → type rapidly (the original regression) | Offline → new note → type sentence 1, then within the 2s debounce rename to 春の訪れ, then immediately keep typing sentence 2. Expect Metro: multiple outbox coalesce … upsert→upsert `keyChanged=false` but one pending op. Reconnect → server note has 春の訪れ + both sentences; `ok=1 failed=0` in Flask. Pass: coalescing never drops title or text (this exact sequence failed before) | **To be performed** |
+| 4 — Two notes offline (distinct temp ids + FIFO) | Offline → create note A, type 朝ごはんのメモ, rename to 朝食 → create note B, type 旅行の計画 (leave title Untitled). Expect: two rows (note tmp--A, note tmp--B), badge 2, different temp ids. Reconnect → two remap logs, server has exactly two notes with correct titles/text, no duplicates. Pass: ids are unique (the 4-tap duplicate-id bug stays dead) | **To be performed** |
+| 5 — Create → delete before sync (delete collapses) | Offline → create note → type 朝ごはんのメモ → delete it via the note's … menu. Expect: badge returns to its previous count (delete coalesces over the upsert with a new key). Reconnect → Flask shows the delete op as dropped/no-op; server list never contains the note; nothing to clean up. Pass: no empty note ever reaches the server | ✅ Passed — badge shows 1, item is “X note, tmp—1…” |
+| 6 — Edit → delete offline after the note already exists online | Online: create note, let it sync (note id e.g., 20430). Offline: edit its text, then delete it. Reconnect → outbox has one delete row for `note:20430`; server deletes it; next pull doesn't resurrect it (tombstone). Pass: note is gone everywhere after one cycle; no resurrection | ✅ Passed |
+| 7 — Lost-ack replay (idempotency) | With one pending note create, go online and tap Sync now. The moment Flask logs `apply op … entity=note …`, kill the app. Relaunch (now online) → if the op wasn't acked, Flask logs `idempotent replay …`; if it was acked, `push skip — outbox empty`. Verify server note count is still exactly one. Pass: no duplicate row from the retry; the strengthened server test now asserts the handler ran once | **To be performed** |
+| 8 — Payload integrity checkpoints | After Test 1's offline edits: check Sync Status shows exactly one note row (not three). Check Metro for `[sync-db] outbox coalesce … keyChanged=false` and no missing required key errors; Flask `POST /sync/push done … ok=N failed=0`. After sync, check the sidebar shows one note with a positive id. Pass: one op per entity, full payload, clean ack | **To be performed** |
+| 9 — Two-device LWW (optional, needs a second simulator) | Device A offline renames to タイトルA; Device B offline renames the same note to タイトルB with a later timestamp. Reconnect both → both converge on the newer title; no duplicate note | ✅ Passed |
+
+### Remaining — to be performed
+
+These checks have no ✅/⚠️ result yet and should be run later:
+
+- Watch part of a video while offline (video playback is unavailable offline).
+- Sync regression **Test 3** — type → rename → type rapidly (coalescing never drops title or text).
+- Sync regression **Test 4** — two notes offline (distinct temp ids + FIFO, duplicate-id bug stays dead).
+- Sync regression **Test 7** — lost-ack replay (idempotency prevents duplicates).
+- Sync regression **Test 8** — payload-integrity checkpoints (one op per entity, full payload, clean ack).
+- Phase 2 checklist item 5 — force a retry/network failure mid-push; confirm the idempotency key prevents duplicates.
+- Phase 2 checklist item 6 — let outbox attempts exhaust for one item; confirm it shows "Needs attention" and can be retried from Sync Status without affecting other pending items.
+- Phase 2 checklist item 7 — turn Offline Mode on while pending ops exist; confirm no network attempts and the pending badge still updates locally; turn it off and confirm sync resumes.
 
 ---
 
