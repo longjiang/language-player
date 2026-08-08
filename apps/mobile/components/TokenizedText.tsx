@@ -28,7 +28,7 @@ import {
   setCachedEntries,
 } from '@/lib/dictionary-cache';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
-import { getConverter } from '@/lib/chinese-script';
+import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
 // ── Queued batch lemmatization ────────────────────────────────────────
@@ -295,22 +295,23 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const isChinese = baseCode(l2Code) === 'zh';
   const useTraditional = isChinese && l2Settings.display.traditional;
 
-  // Pre-convert all unique token texts to traditional (OpenCC is lazy-loaded).
-  // When useTraditional is false, the map is empty and original text is used.
+  // Pre-convert all unique token texts to the preferred script (OpenCC is
+  // lazy-loaded). Bidirectional per ADR-0019: traditional when
+  // useTraditional, simplified otherwise.
   const [convertedTexts, setConvertedTexts] = useState<Map<string, string>>(new Map());
   useEffect(() => {
-    if (!useTraditional || tokens.length === 0) {
+    if (!isChinese || tokens.length === 0) {
       setConvertedTexts(new Map());
-      if (__DEV__ && isChinese) {
-        const hanTokens = [...new Set(tokens.map((t) => t.text))].filter((t) => /[\u4E00-\u9FFF]/.test(t));
-        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=false direction=none uniqueHan=${hanTokens.length} skipped — sample=${hanTokens.slice(0, 10).join('|') || '(none)'}`);
-      }
       return;
     }
     let cancelled = false;
     (async () => {
       try {
-        const converter = await getConverter();
+        // ADR-0019: convert whenever the user's script preference differs
+        // from the token's script. cn→twp when traditional is preferred;
+        // twp→cn when simplified is preferred (idempotent on matching text).
+        const converter = useTraditional ? await getConverter() : await getSimplifiedConverter();
+        const direction = useTraditional ? 'toTraditional' : 'toSimplified';
         if (cancelled) return;
         const uniqueTexts = [...new Set(tokens.map(t => t.text))];
         const mapping = new Map<string, string>();
@@ -324,7 +325,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
             if (changes.length < 10) changes.push(`${text}→${result}`);
           }
         }
-        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=true direction=toTraditional unique=${uniqueTexts.length} converted=${converted} sample=${changes.join(', ') || '(none changed)'}`);
+        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=${useTraditional} direction=${direction} unique=${uniqueTexts.length} converted=${converted} sample=${changes.join(', ') || '(none changed)'}`);
         if (!cancelled) setConvertedTexts(mapping);
       } catch {
         logwarn(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} OpenCC load failed — falling back to original text`);

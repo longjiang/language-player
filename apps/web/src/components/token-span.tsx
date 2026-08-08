@@ -201,25 +201,23 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const useTraditional = isChinese && l2Settings.display.traditional;
 
   // Per-token OpenCC conversion (lazy-loaded once at module level).
-  // cn→twp is idempotent on already-traditional text and preserves
-  // 1:1 character mapping, so ruby alignment with pinyin is safe.
+  // Bidirectional per ADR-0019: cn→twp for traditional preference, twp→cn
+  // for simplified. Both are idempotent on already-matching text and
+  // preserve 1:1 character mapping, so ruby alignment with pinyin is safe.
   const [displayText, setDisplayText] = useState(token.text);
   const isHanToken = /[\u4E00-\u9FFF]/.test(token.text);
   useEffect(() => {
-    if (!useTraditional) {
-      if (isHanToken) {
-        log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=false direction=none token="${token.text}" → "${token.text}" converted=false`);
-      }
-      setDisplayText(token.text);
-      return;
-    }
+    // ADR-0019: convert whenever the user's script preference differs from
+    // the token's script. cn→twp when traditional is preferred; twp→cn
+    // when simplified is preferred (idempotent on already-matching text).
+    if (!isHanToken) { setDisplayText(token.text); return; }
     let cancelled = false;
     (async () => {
-      const { toTraditional } = await import('@/lib/chinese-script');
-      const result = await toTraditional(token.text);
-      if (isHanToken) {
-        log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=true direction=toTraditional token="${token.text}" → "${result}" converted=${result !== token.text}`);
-      }
+      const { toTraditional, toSimplified } = await import('@/lib/chinese-script');
+      const convert = useTraditional ? toTraditional : toSimplified;
+      const direction = useTraditional ? 'toTraditional' : 'toSimplified';
+      const result = await convert(token.text);
+      log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=${useTraditional} direction=${direction} token="${token.text}" → "${result}" converted=${result !== token.text}`);
       if (!cancelled) setDisplayText(result);
     })();
     return () => { cancelled = true; };

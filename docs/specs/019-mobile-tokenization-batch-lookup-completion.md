@@ -145,13 +145,17 @@ These two give functional parity for the two most impactful display settings.
 
 ### Phase 3: Chinese Script (F3)
 
+**Status**: ✅ Done 2026-08-08 — bidirectional render-layer conversion
+(simplified ↔ traditional) via `opencc-js`, batched at `TokenizedText`
+level on mobile and per-token in `TokenSpan` on web (ADR-0019).
+
 | Task | Effort | Files |
 |---|---|---|
-| **Chinese script conversion (F3)** | Large | Needs architectural decision (native module vs server-side vs character map) |
+| **Chinese script conversion (F3)** | Large | `apps/mobile/lib/chinese-script.ts`, `apps/mobile/components/TokenizedText.tsx`, `apps/web/src/components/token-span.tsx` |
 
-This is the hardest gap. See ADR-0019 for the architectural rationale. Options:
+This was the hardest gap. See ADR-0019 for the architectural rationale. Considered options:
 - **Server-side**: Add `traditional: boolean` to `/lemmatize-normalized` — tokenizer sends traditional, cache is still unified (hash of original text). TokenSpan reads the setting and passes the flag.
-- **Client-side**: Port `opencc-js` to React Native (WebView-based or native module). Follows ADR-0019 pattern of per-token conversion at render layer.
+- **Client-side**: Port `opencc-js` to React Native (WebView-based or native module). Follows ADR-0019 pattern of per-token conversion at render layer. ✅ **Chosen** — `opencc-js` runs in RN/Hermes; conversion is bidirectional (`cn→twp` for traditional preference, `twp→cn` for simplified preference).
 - **Character map**: Smaller than OpenCC, but handles ~95% of common conversions.
 
 ### Phase 4: Lazy Loading (O2)
@@ -199,7 +203,7 @@ For a video transcript with 500 subtitle lines, 200 unique lemmas:
 - [ ] In-flight lemmatize dedup prevents duplicate API calls (Phase 1)
 - [ ] `phonetics.conditions === 'hardWords'` filters phonetics by word difficulty (Phase 2)
 - [ ] `quickGloss` shows dictionary definition for saved words (Phase 2)
-- [ ] Chinese script conversion works per-token on mobile (Phase 3)
+- [x] Chinese script conversion works per-token on mobile, both directions (Phase 3 — 2026-08-08)
 - [x] Reader-page blocks lazily tokenized when approaching viewport (Phase 4)
 - [ ] TypeScript compiles cleanly: `./node_modules/.bin/tsc --noEmit`
 - [ ] No regression in existing tokenization behavior

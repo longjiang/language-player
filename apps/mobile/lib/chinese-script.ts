@@ -47,6 +47,19 @@ export async function getConverter(): Promise<ChineseConverter> {
   return cn2tCached;
 }
 
+/**
+ * Get the raw Traditional→Simplified converter function (OpenCC twp→cn).
+ * Loads OpenCC on first call (async), returns cached function on subsequent calls.
+ * The returned function is synchronous — useful for batch conversion without
+ * per-call Promise overhead.
+ */
+export async function getSimplifiedConverter(): Promise<ChineseConverter> {
+  if (!t2cnCached) {
+    t2cnCached = await loadT2cn();
+  }
+  return t2cnCached;
+}
+
 /** Convert Simplified Chinese text to Traditional. Idempotent on already-traditional text. */
 export async function toTraditional(text: string): Promise<string> {
   const converter = await loadCn2t();
