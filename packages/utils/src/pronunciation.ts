@@ -52,11 +52,15 @@ export function formatPronunciation(
     if (pron) return `[${pron}]`;
   }
 
-  // ── Chinese (Mandarin & Cantonese): pinyin (tone-marked from API) ──
+  // ── Chinese (Mandarin & Cantonese) ──
+  // The dictionary's own pronunciation field is already the right reading:
+  // cedict stores tone-marked pinyin, cccanto stores jyutping. Prefer it
+  // over phonetic_detail so Cantonese never shows Mandarin pinyin by
+  // default (phonetic_detail variants remain as fallbacks for sparse rows).
   if (l2Code === 'zh' || l2Code === 'yue') {
-    if (pd?.pinyin) return `[${pd.pinyin}]`;
-    if (l2Code === 'yue' && pd?.jyutping) return `[${pd.jyutping}]`;
     if (pron) return `[${pron}]`;
+    if (pd?.pinyin) return `[${pd.pinyin}]`;
+    if (pd?.jyutping) return `[${pd.jyutping}]`;
   }
 
   // ── Korean: romanization ──
