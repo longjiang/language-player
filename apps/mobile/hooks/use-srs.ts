@@ -34,7 +34,8 @@ export function useSrs() {
   const { getSrs } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
-  const cloudLoaded = useRef(false);
+  const cloudLoadedUserId = useRef<string | null>(null);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (loaded) return;
@@ -55,8 +56,8 @@ export function useSrs() {
 
   // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoaded.current) return;
-    cloudLoaded.current = true;
+    if (!user || !loaded || cloudLoadedUserId.current === user.id) return;
+    cloudLoadedUserId.current = user.id;
     let cancelled = false;
     (async () => {
       try {
@@ -81,6 +82,18 @@ export function useSrs() {
     })();
     return () => { cancelled = true; };
   }, [user, loaded, getSrs]);
+
+  // ── User change (logout/login): drop the previous user's in-memory state ──
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    const next = user?.id ?? null;
+    prevUserIdRef.current = next;
+    if (prev === undefined) return; // initial boot — keep locally loaded state
+    if (prev !== next) {
+      cloudLoadedUserId.current = null;
+      setStore(createSrsStore());
+    }
+  }, [user?.id]);
 
   const updateCard = useCallback((lang: string, wordId: string, fields: Partial<SrsFields>) => {
     setStore((prev) => {

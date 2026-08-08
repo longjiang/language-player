@@ -17,16 +17,9 @@ import {
   Heart,
   Bookmark,
 } from 'lucide-react';
+import { clearUserData } from '@/lib/user-data-wipe';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { AboutDialog } from '@/components/about/about-dialog';
-
-/** Nuke all user-specific localStorage keys on logout. */
-function clearUserData() {
-  const keys = ['zthSavedWords'];
-  for (const k of keys) {
-    try { localStorage.removeItem(k); } catch {}
-  }
-}
 
 export function UserMenu() {
   const { data: session, status } = useSession();

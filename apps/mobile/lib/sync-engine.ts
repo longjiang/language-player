@@ -292,6 +292,7 @@ async function pushOutbox(): Promise<number> {
         entity?: string;
         entity_id?: string;
         error?: string;
+        dropped?: boolean;
       }>;
     };
 
@@ -305,7 +306,11 @@ async function pushOutbox(): Promise<number> {
       if (!row) continue;
       if (result.ok) {
         okCount++;
-        log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
+        if (result.dropped) {
+          log(`[sync] push dropped ${row.entity}:${row.entity_id} idem=${row.idempotency_key} — no-op`);
+        } else {
+          log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
+        }
         acked.push(row.id);
         // Temp-ID remap for offline note creates (and any future temp-ID flow).
         if (
@@ -491,6 +496,28 @@ export function startSyncEngine(getAuth: () => { userId: string | null }): () =>
     engineStarted = false;
     log('[sync] engine stopped');
   };
+}
+
+/**
+ * Reset in-memory sync state after a logout wipe (the outbox/entity_cache
+ * rows are deleted by the caller). Pending counts go to zero and listeners
+ * are notified so the header icon clears immediately.
+ */
+export async function resetSyncEngineForLogout(): Promise<void> {
+  inFlightOutboxIds.clear();
+  if (flushTimer) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+  syncing = false;
+  status.syncing = false;
+  status.pendingCount = 0;
+  status.errorCount = 0;
+  status.lastSyncAt = null;
+  status.lastError = null;
+  await refreshPendingCount();
+  publishStatus();
+  log('[sync] engine reset for logout');
 }
 
 /** Keep the manual Offline Mode toggle in sync with the status snapshot. */
