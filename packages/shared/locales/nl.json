@@ -756,6 +756,8 @@
         "logging_in": "Inloggen...",
         "login_to_save_notes": "Log in om je notities op te slaan.",
         "login_to_verify_pro": "Log in om je Pro-status te verifiëren.",
+        "logout_offline_title": "Offline uitloggen?",
+        "logout_offline_warning": "Je bent offline. Na het uitloggen kun je pas weer inloggen als je een internetverbinding hebt. Toch uitloggen?",
         "lookup_words_desc": "Zoek woorden op in {l2} met vertalingen naar {l1}.",
         "making_words_interactive": "Woorden interactief maken…",
         "money_back_guarantee": "14 dagen geld-terug-garantie. Vragen?",

@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
+import { confirmLogoutIfOffline } from '@/lib/logout-guard';
 import * as Dialog from '@/components/ui/dialog';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +14,7 @@ import { e2e } from '@/lib/e2e';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
+  const { status } = useSyncStatus();
   const t = useT();
   const [open, setOpen] = useAnimatedBoolean();
   const insets = useSafeAreaInsets();
@@ -23,8 +26,9 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     setOpen(false);
-    await logout();
-    router.replace('/login' as any);
+    confirmLogoutIfOffline(t, status.effectiveOffline, () => {
+      void logout().then(() => router.replace('/login' as any));
+    });
   };
 
   return (

@@ -2,23 +2,27 @@ import React from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
+import { confirmLogoutIfOffline } from '@/lib/logout-guard';
 import { e2e } from '@/lib/e2e';
 import { Settings, User, LogOut, Star, CreditCard, Download, Crown, Trash2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function MeScreen() {
   const { user, logout } = useAuth();
+  const { status } = useSyncStatus();
   const { l1Lang, l2Lang } = useLanguage();
   const { isPro, isLifetime } = useSubscription();
   const router = useRouter();
   const t = useT();
 
   const handleLogout = async () => {
-    await logout();
-    router.replace('/login');
+    confirmLogoutIfOffline(t, status.effectiveOffline, () => {
+      void logout().then(() => router.replace('/login'));
+    });
   };
 
   const menuItems = [

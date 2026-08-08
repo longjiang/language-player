@@ -756,6 +756,8 @@
         "logging_in": "Inaingia...",
         "login_to_save_notes": "Ingia ili kuhifadhi vidokezo vyako.",
         "login_to_verify_pro": "Tafadhali ingia ili kuthibitisha hali yako ya Pro.",
+        "logout_offline_title": "Toka nje ya mtandao?",
+        "logout_offline_warning": "Uko nje ya mtandao. Baada ya kutoka, hautaweza kuingia tena hadi uwe na muunganisho wa intaneti. Bado utoke?",
         "lookup_words_desc": "Tafuta maneno katika {l2} yenye tafsiri kwa {l1}.",
         "making_words_interactive": "Kufanya maneno yaingiliane…",
         "money_back_guarantee": "Dhamana ya kurudishiwa pesa ndani ya siku 14. Una maswali?",

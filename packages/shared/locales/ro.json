@@ -756,6 +756,8 @@
         "logging_in": "Se autentifică...",
         "login_to_save_notes": "Conectați-vă pentru a salva notițele.",
         "login_to_verify_pro": "Conectați-vă pentru a verifica statutul Pro.",
+        "logout_offline_title": "Deconectare offline?",
+        "logout_offline_warning": "Ești offline. După deconectare, nu te vei putea reconecta până nu ai o conexiune la internet. Deconectezi oricum?",
         "lookup_words_desc": "Căutați cuvinte în {l2} cu traduceri în {l1}.",
         "making_words_interactive": "Se fac cuvintele interactive…",
         "money_back_guarantee": "Garanție de rambursare a banilor în 14 zile. Întrebări?",

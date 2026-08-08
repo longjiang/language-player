@@ -756,6 +756,8 @@
         "logging_in": "Connexion en cours...",
         "login_to_save_notes": "Connectez-vous pour enregistrer vos notes.",
         "login_to_verify_pro": "Veuillez vous connecter pour vérifier votre statut Pro.",
+        "logout_offline_title": "Se déconnecter hors ligne ?",
+        "logout_offline_warning": "Vous êtes hors ligne. Après la déconnexion, vous ne pourrez plus vous reconnecter tant que vous n'aurez pas de connexion internet. Se déconnecter quand même ?",
         "lookup_words_desc": "Recherchez des mots dans {l2} avec des traductions vers {l1}.",
         "making_words_interactive": "Rendre les mots interactifs…",
         "money_back_guarantee": "Garantie de remboursement de 14 jours. Des questions ?",

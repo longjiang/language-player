@@ -756,6 +756,8 @@
         "logging_in": "Kirjaudutaan...",
         "login_to_save_notes": "Kirjaudu sisään tallentaaksesi muistiinpanosi.",
         "login_to_verify_pro": "Kirjaudu sisään vahvistaaksesi Pro-tilauksesi.",
+        "logout_offline_title": "Kirjaudu ulos offline-tilassa?",
+        "logout_offline_warning": "Olet offline-tilassa. Uloskirjautumisen jälkeen et voi kirjautua takaisin ennen kuin sinulla on internetyhteys. Kirjaudutaanko silti ulos?",
         "lookup_words_desc": "Etsi sanoja kohteesta {l2} käännöksillä kohteeseen {l1}.",
         "making_words_interactive": "Tehdään sanoista vuorovaikutteisia…",
         "money_back_guarantee": "14 päivän rahat takaisin -takuu. Kysyttävää?",

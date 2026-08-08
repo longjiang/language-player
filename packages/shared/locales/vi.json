@@ -756,6 +756,8 @@
         "logging_in": "Đang đăng nhập...",
         "login_to_save_notes": "Đăng nhập để lưu ghi chú của bạn.",
         "login_to_verify_pro": "Vui lòng đăng nhập để xác minh trạng thái Pro của bạn.",
+        "logout_offline_title": "Đăng xuất khi ngoại tuyến?",
+        "logout_offline_warning": "Bạn đang ngoại tuyến. Sau khi đăng xuất, bạn sẽ không thể đăng nhập lại cho đến khi có kết nối internet. Vẫn đăng xuất chứ?",
         "lookup_words_desc": "Tra từ trong {l2} với bản dịch sang {l1}.",
         "making_words_interactive": "Đang làm cho từ tương tác…",
         "money_back_guarantee": "Đảm bảo hoàn tiền trong 14 ngày. Có thắc mắc?",

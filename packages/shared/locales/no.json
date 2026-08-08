@@ -756,6 +756,8 @@
         "logging_in": "Logger inn...",
         "login_to_save_notes": "Logg inn for å lagre notatene dine.",
         "login_to_verify_pro": "Logg inn for å bekrefte Pro-statusen din.",
+        "logout_offline_title": "Logge ut uten nett?",
+        "logout_offline_warning": "Du er frakoblet. Etter utlogging kan du ikke logge inn igjen før du har internettforbindelse. Logge ut likevel?",
         "lookup_words_desc": "Slå opp ord i {l2} med oversettelser til {l1}.",
         "making_words_interactive": "Gjør ord interaktive…",
         "money_back_guarantee": "14 dagers pengene-tilbake-garanti. Spørsmål?",

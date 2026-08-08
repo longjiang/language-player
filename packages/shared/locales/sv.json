@@ -756,6 +756,8 @@
         "logging_in": "Loggar in...",
         "login_to_save_notes": "Logga in för att spara dina anteckningar.",
         "login_to_verify_pro": "Logga in för att verifiera din Pro-status.",
+        "logout_offline_title": "Logga ut offline?",
+        "logout_offline_warning": "Du är offline. Efter utloggning kan du inte logga in igen förrän du har en internetanslutning. Logga ut ändå?",
         "lookup_words_desc": "Slå upp ord i {l2} med översättningar till {l1}.",
         "making_words_interactive": "Gör ord interaktiva…",
         "money_back_guarantee": "14-dagars pengarna tillbaka-garanti. Frågor?",

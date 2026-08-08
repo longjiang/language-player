@@ -756,6 +756,8 @@
         "logging_in": "Accesso in corso...",
         "login_to_save_notes": "Accedi per salvare le tue note.",
         "login_to_verify_pro": "Accedi per verificare il tuo stato Pro.",
+        "logout_offline_title": "Disconnettersi offline?",
+        "logout_offline_warning": "Sei offline. Dopo il logout non potrai riaccedere finché non avrai una connessione internet. Disconnettersi comunque?",
         "lookup_words_desc": "Cerca parole in {l2} con traduzioni in {l1}.",
         "making_words_interactive": "Rendendo le parole interattive…",
         "money_back_guarantee": "Garanzia di rimborso di 14 giorni. Domande?",

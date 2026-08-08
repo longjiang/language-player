@@ -756,6 +756,8 @@
         "logging_in": "Logging in...",
         "login_to_save_notes": "Log in to save your notes.",
         "login_to_verify_pro": "Please log in to verify your Pro status.",
+        "logout_offline_title": "Log out while offline?",
+        "logout_offline_warning": "You're offline. After logging out you won't be able to log back in until you have an internet connection. Log out anyway?",
         "lookup_words_desc": "Look up words in {l2} with translations to {l1}.",
         "making_words_interactive": "Making words interactive…",
         "money_back_guarantee": "14-day money-back guarantee. Questions?",

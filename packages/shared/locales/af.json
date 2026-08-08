@@ -756,6 +756,8 @@
         "logging_in": "Meld aan...",
         "login_to_save_notes": "Teken aan om jou notas te stoor.",
         "login_to_verify_pro": "Meld asseblief aan om jou Pro-status te verifieer.",
+        "logout_offline_title": "Teken af terwyl jy vanlyn is?",
+        "logout_offline_warning": "Jy is vanlyn. Nadat jy afteken, kan jy nie weer inteken voordat jy 'n internetverbinding het nie. Tog afteken?",
         "lookup_words_desc": "Soek woorde in {l2} op met vertalings na {l1}.",
         "making_words_interactive": "Maak woorde interaktief…",
         "money_back_guarantee": "14-dag geld-terug-waarborg. Vrae?",

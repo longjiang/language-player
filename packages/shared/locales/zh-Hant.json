@@ -739,6 +739,8 @@
         "logging_in": "正在登入...",
         "login_to_save_notes": "登入以儲存筆記。",
         "login_to_verify_pro": "請登入以驗證您的 Pro 狀態。",
+        "logout_offline_title": "離線狀態下登出？",
+        "logout_offline_warning": "你目前處於離線狀態。登出後，在恢復網路連線前將無法重新登入。仍要登出嗎？",
         "lookup_words_desc": "查詢 {l2} 單字，並翻譯成 {l1}。",
         "making_words_interactive": "正在讓單字可互動…",
         "money_back_guarantee": "14 天退款保證。有疑問嗎？",

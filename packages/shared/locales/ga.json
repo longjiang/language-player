@@ -756,6 +756,8 @@
         "logging_in": "Ag logáil isteach...",
         "login_to_save_notes": "Logáil isteach chun do nótaí a shábháil.",
         "login_to_verify_pro": "Logáil isteach le do stádas Pro a fhíorú.",
+        "logout_offline_title": "Logáil amach as líne?",
+        "logout_offline_warning": "Tá tú as líne. Tar éis logáil amach, ní bheidh tú in ann logáil isteach arís go dtí go mbeidh nasc idirlín agat. Logáil amach mar sin féin?",
         "lookup_words_desc": "Cuardaigh focail i {l2} le haistriúcháin go {l1}.",
         "making_words_interactive": "Ag déanamh focail idirghníomhacha…",
         "money_back_guarantee": "Ráthaíocht airgid ar ais 14 lá. Ceisteanna?",
