@@ -9,6 +9,8 @@ import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { SearchBar } from '@/components/dictionary/SearchBar';
 import { WordListSidebar, isSidebarAvailable, type SidebarListItem } from '@/components/dictionary/WordListSidebar';
+import { ErrorNotice } from '@/components/ui/error-notice';
+import { localizedError } from '@/lib/errors';
 import { useSidebar } from '@/components/ui/sidebar';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { PanelRight, PanelRightClose } from 'lucide-react-native';
@@ -89,7 +91,7 @@ export default function WordDetailScreen() {
 
     const decomposed = decomposeWordId(decodedId, l2);
     if (!decomposed) {
-      setApiError('Unrecognized entry ID format');
+      setApiError(t('error.entry_not_found'));
       return;
     }
     const { dict: dictId, id: scopedId } = decomposed;
@@ -101,7 +103,7 @@ export default function WordDetailScreen() {
         setApiEntry(res.entry);
       })
       .catch((e) => {
-        setApiError(e?.message ?? 'Failed to load entry');
+        setApiError(localizedError(t, e));
       })
       .finally(() => setApiLoading(false));
   }, [contextEntry, entryId, l2Code]);
@@ -146,9 +148,7 @@ export default function WordDetailScreen() {
         <Pressable onPress={() => router.push('/(tabs)/(vocab)' as any)} className="self-start px-1 py-3">
           <Text className="text-sm text-primary">← {t('action.back')}</Text>
         </Pressable>
-        <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-          <Text className="text-sm text-destructive">{error}</Text>
-        </View>
+        <ErrorNotice message={error} />
       </View>
     );
   }

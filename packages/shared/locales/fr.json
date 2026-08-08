@@ -198,6 +198,7 @@
         "loading_failed": "Échec du chargement",
         "login": "Erreur de connexion",
         "occurred": "Une erreur est survenue",
+        "offline_mode_blocked": "Les requêtes réseau sont bloquées par le mode hors ligne",
         "passwords_do_not_match": "Les mots de passe ne correspondent pas",
         "payment_problem": "Il y a eu un problème avec votre paiement.",
         "registration_failed": "Échec de l'inscription",

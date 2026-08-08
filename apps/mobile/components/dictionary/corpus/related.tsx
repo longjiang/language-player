@@ -5,7 +5,7 @@ import type { DictionaryEntry, SketchThesaurusResponse } from '@langplayer/share
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { AlertCircle } from 'lucide-react-native';
+import { ErrorNotice } from '@/components/ui/error-notice';
 import { useCorpusFetch } from './use-corpus-fetch';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { getCachedEntries, enqueueLookupWords } from '@/lib/dictionary-cache';
@@ -43,12 +43,7 @@ export function RelatedWords({ word, l2Code, l1Code = 'en', corpname = null }: R
   }
 
   if (error) {
-    return (
-      <View className="flex-row items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-        <AlertCircle size={16} color="#ef4444" />
-        <Text className="text-sm text-destructive">{t('error.failed_to_load', { status: error })}</Text>
-      </View>
-    );
+    return <ErrorNotice message={t('error.failed_to_load', { status: error })} />;
   }
 
   if (!data || data.related.length === 0) {

@@ -198,6 +198,7 @@
         "loading_failed": "Ошибка загрузки",
         "login": "Ошибка входа",
         "occurred": "Произошла ошибка",
+        "offline_mode_blocked": "Сетевые запросы блокируются офлайн-режимом",
         "passwords_do_not_match": "Пароли не совпадают",
         "payment_problem": "Возникла проблема с вашим платежом.",
         "registration_failed": "Регистрация не удалась",

@@ -25,7 +25,7 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import type { DictionaryDownloadResponse, DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { savePrecompiledDictionary } from './dictionary-db';
 
 const NDJSON_MARKER = '#langplayer-ndjson-v1';
@@ -310,7 +310,13 @@ export async function downloadPrecompiledDictionary(
     log('[DictDownload] downloaded gzip bytes:', gzBytes.length, '— l2:', l2);
 
     const { gunzipSync } = await import('fflate');
-    const dbBytes = gunzipSync(gzBytes);
+    let dbBytes: Uint8Array;
+    try {
+      dbBytes = gunzipSync(gzBytes);
+    } catch (e) {
+      logwarn('[DictDownload] ❌ gunzip failed — l2:', l2, 'bytes:', gzBytes.length, 'error:', (e as Error)?.message ?? e);
+      throw e;
+    }
     log('[DictDownload] decompressed db bytes:', dbBytes.length, '— l2:', l2);
 
     return await savePrecompiledDictionary(l2, dbBytes);

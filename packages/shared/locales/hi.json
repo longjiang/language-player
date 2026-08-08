@@ -198,6 +198,7 @@
         "loading_failed": "लोड करने में विफल",
         "login": "लॉगिन त्रुटि",
         "occurred": "एक त्रुटि हुई",
+        "offline_mode_blocked": "नेटवर्क अनुरोध ऑफ़लाइन मोड द्वारा अवरुद्ध हैं",
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
         "payment_problem": "आपके भुगतान में कोई समस्या थी।",
         "registration_failed": "पंजीकरण विफल",

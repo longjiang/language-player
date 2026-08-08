@@ -198,6 +198,7 @@
         "loading_failed": "読み込みに失敗しました",
         "login": "ログインエラー",
         "occurred": "エラーが発生しました",
+        "offline_mode_blocked": "オフラインモードによってネットワークリクエストがブロックされています",
         "passwords_do_not_match": "パスワードが一致しません",
         "payment_problem": "お支払いに問題がありました。",
         "registration_failed": "登録に失敗しました",

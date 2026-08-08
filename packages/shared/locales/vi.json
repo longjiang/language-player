@@ -198,6 +198,7 @@
         "loading_failed": "Tải không thành công",
         "login": "Lỗi đăng nhập",
         "occurred": "Đã xảy ra lỗi",
+        "offline_mode_blocked": "Các yêu cầu mạng bị chặn bởi Chế độ ngoại tuyến",
         "passwords_do_not_match": "Mật khẩu không khớp",
         "payment_problem": "Đã xảy ra sự cố với khoản thanh toán của bạn.",
         "registration_failed": "Đăng ký thất bại",

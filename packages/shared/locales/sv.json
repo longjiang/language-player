@@ -198,6 +198,7 @@
         "loading_failed": "Laddningen misslyckades",
         "login": "Inloggningsfel",
         "occurred": "Ett fel inträffade",
+        "offline_mode_blocked": "Nätverksförfrågningar blockeras av offlineläge",
         "passwords_do_not_match": "Lösenorden matchar inte",
         "payment_problem": "Det uppstod ett problem med din betalning.",
         "registration_failed": "Registrering misslyckades",

@@ -198,6 +198,7 @@
         "loading_failed": "Gagal memuat",
         "login": "Kesalahan masuk",
         "occurred": "Terjadi kesalahan",
+        "offline_mode_blocked": "Permintaan jaringan diblokir oleh Mode Offline",
         "passwords_do_not_match": "Kata sandi tidak cocok",
         "payment_problem": "Ada masalah dengan pembayaran Anda.",
         "registration_failed": "Pendaftaran gagal",

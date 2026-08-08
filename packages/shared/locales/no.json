@@ -198,6 +198,7 @@
         "loading_failed": "Lasting mislyktes",
         "login": "Påloggingsfeil",
         "occurred": "Det oppstod en feil",
+        "offline_mode_blocked": "Nettverksforespørsler blokkeres av frakoblet modus",
         "passwords_do_not_match": "Passordene stemmer ikke overens",
         "payment_problem": "Det oppstod et problem med betalingen din.",
         "registration_failed": "Registrering mislyktes",

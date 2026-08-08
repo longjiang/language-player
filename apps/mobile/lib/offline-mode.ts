@@ -28,6 +28,16 @@ export class OfflineModeError extends Error {
   }
 }
 
+/** True for the Offline Mode network gate error, including across bundler boundaries. */
+export function isOfflineModeError(e: unknown): boolean {
+  return (
+    e instanceof OfflineModeError ||
+    (typeof e === 'object' && e !== null && (e as { name?: unknown })?.name === 'OfflineModeError') ||
+    (typeof e === 'object' && e !== null && (e as { message?: unknown })?.message === 'Network requests are blocked by Offline Mode') ||
+    (typeof e === 'string' && e === 'Network requests are blocked by Offline Mode')
+  );
+}
+
 function rejectOffline(): Promise<never> {
   return Promise.reject(new OfflineModeError());
 }

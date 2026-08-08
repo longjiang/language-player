@@ -198,6 +198,7 @@
         "loading_failed": "Lataus epäonnistui",
         "login": "Kirjautumisvirhe",
         "occurred": "Tapahtui virhe",
+        "offline_mode_blocked": "Verkkopyynnöt on estetty offline-tilassa",
         "passwords_do_not_match": "Salasanat eivät täsmää",
         "payment_problem": "Maksussasi ilmeni ongelma.",
         "registration_failed": "Rekisteröinti epäonnistui",

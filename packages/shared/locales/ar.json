@@ -198,6 +198,7 @@
         "loading_failed": "فشل التحميل",
         "login": "خطأ في تسجيل الدخول",
         "occurred": "حدث خطأ",
+        "offline_mode_blocked": "تم حظر طلبات الشبكة بواسطة الوضع دون اتصال",
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "payment_problem": "كانت هناك مشكلة في الدفع الخاص بك.",
         "registration_failed": "فشل التسجيل",

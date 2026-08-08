@@ -198,6 +198,7 @@
         "loading_failed": "Betöltés sikertelen",
         "login": "Bejelentkezési hiba",
         "occurred": "Hiba történt",
+        "offline_mode_blocked": "A hálózati kéréseket az offline mód blokkolja",
         "passwords_do_not_match": "A jelszavak nem egyeznek",
         "payment_problem": "Probléma volt a fizetésével.",
         "registration_failed": "Regisztráció sikertelen",

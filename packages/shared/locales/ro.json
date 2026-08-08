@@ -198,6 +198,7 @@
         "loading_failed": "Eroare la încărcare",
         "login": "Eroare de autentificare",
         "occurred": "A apărut o eroare",
+        "offline_mode_blocked": "Solicitările de rețea sunt blocate de modul offline",
         "passwords_do_not_match": "Parolele nu se potrivesc",
         "payment_problem": "A apărut o problemă cu plata dvs.",
         "registration_failed": "Înregistrarea a eșuat",

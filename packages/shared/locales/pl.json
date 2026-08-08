@@ -198,6 +198,7 @@
         "loading_failed": "Błąd ładowania",
         "login": "Błąd logowania",
         "occurred": "Wystąpił błąd",
+        "offline_mode_blocked": "Żądania sieciowe są blokowane przez tryb offline",
         "passwords_do_not_match": "Hasła nie są zgodne",
         "payment_problem": "Wystąpił problem z Twoją płatnością.",
         "registration_failed": "Rejestracja nie powiodła się",

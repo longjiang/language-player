@@ -198,6 +198,7 @@
         "loading_failed": "Učitavanje nije uspjelo",
         "login": "Greška pri prijavi",
         "occurred": "Došlo je do pogreške",
+        "offline_mode_blocked": "Mrežni zahtjevi su blokirani izvanmrežnim načinom rada",
         "passwords_do_not_match": "Lozinke se ne podudaraju",
         "payment_problem": "Došlo je do problema s vašim plaćanjem.",
         "registration_failed": "Registracija nije uspjela",

@@ -190,6 +190,7 @@
         "loading_failed": "載入失敗",
         "login": "登錄錯誤",
         "occurred": "發生錯誤",
+        "offline_mode_blocked": "離線模式已封鎖網路請求",
         "passwords_do_not_match": "密碼不一樣耶",
         "payment_problem": "您的付款出現問題。",
         "registration_failed": "註冊失敗啦",
