@@ -7,6 +7,7 @@ import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText } from '@/lib/tokenizer';
+import { lookupOfflineByL2 } from '@/lib/dictionary-db';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -16,7 +17,12 @@ import { log, logwarn } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
-import { enqueueLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
+import {
+  enqueueLookupWords,
+  getCachedEntries,
+  getCacheVersion,
+  setCachedEntries,
+} from '@/lib/dictionary-cache';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter } from '@/lib/chinese-script';
 import type { EpubFormatRange } from '@/lib/epub-parser';
@@ -493,6 +499,23 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       text,
       l2Code: baseCode(l2Code),
     }));
+
+    // Offline-first: hydrate the shared cache from the downloaded dictionary
+    // so popups and quick glosses work when Offline Mode blocks the network.
+    void Promise.all(
+      words.map(async (w) => {
+        try {
+          if (getCachedEntries(w.l2Code, w.text)) return;
+          const offline = await lookupOfflineByL2(w.l2Code, w.text);
+          if (offline && offline.length > 0) {
+            log('[TokenizedText] 📖 offline cache hit — l2:', w.l2Code, 'text:', w.text, 'entries:', offline.length);
+            setCachedEntries(w.l2Code, w.text, offline);
+          }
+        } catch (e) {
+          logwarn('[TokenizedText] ❌ offline cache hydration failed — l2:', w.l2Code, 'text:', w.text, 'error:', (e as Error)?.message ?? e);
+        }
+      }),
+    ).then(() => setCacheVersion(v => v + 1));
 
     // Queue with other visible lines' lemmas so one flush covers many lines
     // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).

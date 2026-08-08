@@ -11,7 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
+import { isOfflineModeError } from '@/lib/offline-mode';
 import {
   openDictionaryDB,
   lookupOfflineByL2,
@@ -202,8 +203,9 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
     try {
       // ── Tier 1: Memory cache ──
+      log('[Dict] tier 1 memory lookup — l2:', l2Code, 'text:', trimmed);
       const cached = stripLlmEntries(sessionCache.get(cacheKey) ?? []);
-      if (cached) {
+      if (cached && cached.length > 0) {
         log('[Dict] memory cache hit —', trimmed);
         setResults(cached);
         setMessage(cached.length === 0 ? tRef.current('msg.no_results') : null);
@@ -214,6 +216,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       }
 
       // ── Tier 2: Offline SQLite (precompiled file first, legacy table fallback) ──
+      log('[Dict] tier 2 offline lookup — l2:', l2Code, 'text:', trimmed);
       const offline = await lookupOfflineByL2(l2Code, trimmed);
       if (offline && offline.length > 0) {
         log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
@@ -224,21 +227,30 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         setRecentSearches(await loadRecent(l2Code));
         return;
       }
+      log('[Dict] tier 2 offline miss — l2:', l2Code, 'text:', trimmed, '— falling back to online');
 
       // ── Tier 4: Online lookup ──
+      log('[Dict] tier 4 online lookup — l2:', l2Code, 'text:', trimmed, 'l1:', l1Lang.code);
       const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
       const entries = stripLlmEntries(res.results ?? []);
       log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
 
       // Cache in memory
-      sessionCache.set(cacheKey, entries);
+      if (entries.length > 0) {
+        sessionCache.set(cacheKey, entries);
+      }
 
       setResults(entries);
       setMessage(entries.length === 0 ? tRef.current('msg.no_results') : (res.message ?? null));
       await saveRecent(l2Code, trimmed);
       setRecentSearches(await loadRecent(l2Code));
     } catch (e: any) {
-      setError(e?.message ?? 'Dictionary lookup failed');
+      logwarn('[Dict] ❌ dictionary lookup failed — l2:', l2Code, 'text:', trimmed, 'error:', e?.message ?? e);
+      setError(
+        isOfflineModeError(e)
+          ? tRef.current('error.offline_mode_blocked')
+          : (e?.message ?? tRef.current('error.general')),
+      );
       setResults(null);
     } finally {
       setLoading(false);
@@ -467,7 +479,9 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         progress: 0,
         downloaded: 0,
         total: 0,
-        error: e?.message ?? 'Download failed',
+        error: isOfflineModeError(e)
+          ? tRef.current('error.offline_mode_blocked')
+          : (e?.message ?? tRef.current('msg.download_failed')),
       });
       setDownloadStatesVersion((v) => v + 1);
     } finally {

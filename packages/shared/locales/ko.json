@@ -198,6 +198,7 @@
         "loading_failed": "로딩 실패",
         "login": "로그인 오류",
         "occurred": "오류가 발생했습니다",
+        "offline_mode_blocked": "오프라인 모드로 인해 네트워크 요청이 차단되었습니다",
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
         "payment_problem": "결제에 문제가 있었습니다.",
         "registration_failed": "등록에 실패했습니다",

@@ -16,6 +16,9 @@ import {
   bulkLookupWords,
 } from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { lookupOfflineByL2 } from '@/lib/dictionary-db';
+import { localizedError } from '@/lib/errors';
+import { ErrorNotice } from '@/components/ui/error-notice';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
@@ -189,6 +192,28 @@ export function DictionaryPopup({
       // Cache miss — fetch from server
       setLoading(true);
       try {
+        // Offline SQLite first (precompiled file or legacy central table).
+        // This is what makes popups work when Offline Mode blocks the network.
+        const offlinePrimary = (await lookupOfflineByL2(l2, lookupWord)) ?? [];
+        const offlineSurface = alsoLookupSurface
+          ? ((await lookupOfflineByL2(l2, word)) ?? [])
+          : [];
+        const seenIds = new Set<string>();
+        const offlineMerged = [...offlinePrimary, ...offlineSurface].filter((e) => {
+          if (!e.id) return true;
+          if (seenIds.has(e.id)) return false;
+          seenIds.add(e.id);
+          return true;
+        });
+        if (offlineMerged.length > 0) {
+          setCachedEntries(l2, lookupWord, offlinePrimary);
+          if (alsoLookupSurface) setCachedEntries(l2, word, offlineSurface);
+          for (const e of offlineMerged) if (e.id) setCachedEntryById(l2, e);
+          if (!cancelled) setResults(offlineMerged);
+          void translateInBackground(offlineMerged);
+          return;
+        }
+
         // Use bulkLookupWords to populate cache, then read from cache
         await bulkLookupWords(
           textBatch.map((text) => ({ text, l2Code: l2 })),
@@ -233,7 +258,9 @@ export function DictionaryPopup({
         if (!cancelled) setResults(merged);
         void translateInBackground(merged);
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? tRef.current('error.general'));
+        if (!cancelled) {
+          setError(localizedError(tRef.current, e));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -362,9 +389,7 @@ export function DictionaryPopup({
                 )}
 
                 {error && (
-                  <View className="rounded-lg border border-red-200 bg-red-50 p-3">
-                    <Text className="text-sm text-red-700">{error}</Text>
-                  </View>
+                  <ErrorNotice message={error} className="mb-3" />
                 )}
 
                 {results && results.length === 0 && !loading && (

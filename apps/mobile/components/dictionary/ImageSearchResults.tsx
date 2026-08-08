@@ -3,7 +3,8 @@ import { View, Text, Pressable, ScrollView, Image } from 'react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { ImageOff, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ErrorNotice } from '@/components/ui/error-notice';
+import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 // Openverse is the direct image source (matches web / ADR-0024): stable JSON
@@ -281,12 +282,7 @@ export function ImageSearchResults({
   }, [term, l2Code, l2Name, l1Code, definition, contextText, contextForm, isCompact]);
 
   if (error) {
-    return (
-      <View className="mx-2 flex-row items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3">
-        <AlertCircle size={16} color="#ef4444" />
-        <Text className="text-sm text-destructive">{t('msg.failed_to_load_images')}</Text>
-      </View>
-    );
+    return <ErrorNotice message={t('msg.failed_to_load_images')} className="mx-2" />;
   }
 
   const pageSize = cols * 3;

@@ -198,6 +198,7 @@
         "loading_failed": "Yükleme başarısız oldu",
         "login": "Giriş hatası",
         "occurred": "Bir hata oluştu",
+        "offline_mode_blocked": "Ağ istekleri Çevrimdışı Mod tarafından engelleniyor",
         "passwords_do_not_match": "Şifreler uyuşmuyor",
         "payment_problem": "Ödemenizle ilgili bir sorun oluştu.",
         "registration_failed": "Kayıt başarısız",

@@ -15,6 +15,8 @@ import { SubtitleDisplay } from './SubtitleDisplay';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { VideoControlBar } from './VideoControlBar';
+import { ErrorNotice } from '@/components/ui/error-notice';
+import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -210,7 +212,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? t('error.subs_search_failed'));
+          setError(localizedError(t, err, 'error.subs_search_failed'));
           setLoading(false);
         }
       });
@@ -290,11 +292,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   // ── Error ──
   if (error) {
-    return (
-      <View className="my-4 px-4">
-        <Text className="text-sm text-muted-foreground">{error}</Text>
-      </View>
-    );
+    return <ErrorNotice message={error} className="my-4" />;
   }
 
   // ── Empty ──

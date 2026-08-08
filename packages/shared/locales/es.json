@@ -198,6 +198,7 @@
         "loading_failed": "Error de carga",
         "login": "Error de inicio de sesión",
         "occurred": "Ocurrió un error",
+        "offline_mode_blocked": "Las solicitudes de red están bloqueadas por el modo sin conexión",
         "passwords_do_not_match": "Las contraseñas no coinciden",
         "payment_problem": "Hubo un problema con su pago.",
         "registration_failed": "Error en el registro",

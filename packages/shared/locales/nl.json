@@ -198,6 +198,7 @@
         "loading_failed": "Laden mislukt",
         "login": "Inlogfout",
         "occurred": "Er is een fout opgetreden",
+        "offline_mode_blocked": "Netwerkverzoeken worden geblokkeerd door de offlinemodus",
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
         "payment_problem": "Er was een probleem met uw betaling.",
         "registration_failed": "Registratie mislukt",

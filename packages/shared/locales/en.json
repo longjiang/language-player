@@ -198,6 +198,7 @@
         "loading_failed": "Loading failed",
         "login": "Login Error",
         "occurred": "An error occurred",
+        "offline_mode_blocked": "Network requests are blocked by Offline Mode",
         "passwords_do_not_match": "Passwords do not match",
         "payment_problem": "There was a problem with your payment.",
         "registration_failed": "Registration failed",

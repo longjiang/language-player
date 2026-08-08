@@ -6,6 +6,8 @@ import { useStreamingExplanation } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
+import { ErrorNotice } from '@/components/ui/error-notice';
+import { localizedError } from '@/lib/errors';
 import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
@@ -299,7 +301,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         </View>
 
         {error && (
-          <Text className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</Text>
+          <ErrorNotice message={localizedError(t, error)} className="mt-2" />
         )}
 
         {FOLLOW_UPS.filter((followUp) => !usedFollowUps.has(followUp.kind)).length > 0 && (

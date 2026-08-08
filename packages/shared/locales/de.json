@@ -198,6 +198,7 @@
         "loading_failed": "Laden fehlgeschlagen",
         "login": "Anmeldefehler",
         "occurred": "Ein Fehler ist aufgetreten",
+        "offline_mode_blocked": "Netzwerkanfragen werden durch den Offline-Modus blockiert",
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
         "payment_problem": "Es gab ein Problem mit Ihrer Zahlung.",
         "registration_failed": "Registrierung fehlgeschlagen",

@@ -8,6 +8,9 @@ import { useDictionary } from '@langplayer/api-client';
 import { SearchBar } from '@/components/dictionary/SearchBar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { OfflineBanner } from '@/components/dictionary/OfflineBanner';
+import { ErrorNotice } from '@/components/ui/error-notice';
+import { autocompleteOffline } from '@/lib/dictionary-db';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -53,17 +56,48 @@ export default function DictionaryScreen() {
       const l2Code = l2Lang.code.split('-')[0];
       setAcLoading(true);
       setAcOpen(true);
-      try {
-        const res = await dictRef.current.autocomplete(trimmed, l2Code, true);
-        if (seq !== acSeqRef.current) return; // stale keystroke
-        const list = res.results ?? [];
+      const applyResults = (list: DictionaryEntry[]) => {
+        if (seq !== acSeqRef.current) return;
         setSuggestions(list);
         setAcOpen(list.length > 0);
+      };
+
+      // Offline Mode blocks the server autocomplete endpoint — use the
+      // downloaded dictionary instead.
+      if (isOfflineModeEnabled()) {
+        try {
+          const list = await autocompleteOffline(l2Code, trimmed);
+          applyResults(list);
+        } catch (err) {
+          logwarn('[LP Mobile] offline dictionary autocomplete failed:', err);
+          if (seq === acSeqRef.current) {
+            setSuggestions(null);
+            setAcOpen(false);
+          }
+        } finally {
+          if (seq === acSeqRef.current) setAcLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const res = await dictRef.current.autocomplete(trimmed, l2Code, true);
+        applyResults(res.results ?? []);
       } catch (err) {
         if (seq === acSeqRef.current) {
-          setSuggestions(null);
-          setAcOpen(false);
           logwarn('[LP Mobile] dictionary autocomplete failed:', err);
+          // Network failed (offline, flaky, etc.) — fall back to the
+          // downloaded dictionary so autocomplete still works.
+          try {
+            const list = await autocompleteOffline(l2Code, trimmed);
+            applyResults(list);
+          } catch (offlineErr) {
+            logwarn('[LP Mobile] offline dictionary autocomplete fallback failed:', offlineErr);
+            if (seq === acSeqRef.current) {
+              setSuggestions(null);
+              setAcOpen(false);
+            }
+          }
         }
       } finally {
         if (seq === acSeqRef.current) setAcLoading(false);
@@ -167,9 +201,7 @@ export default function DictionaryScreen() {
       )}
 
       {error && (
-        <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-          <Text className="text-sm text-destructive">{error}</Text>
-        </View>
+        <ErrorNotice message={error} className="mx-4 mt-4" />
       )}
 
       <OfflineBanner />

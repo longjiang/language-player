@@ -198,6 +198,7 @@
         "loading_failed": "Caricamento fallito",
         "login": "Errore di accesso",
         "occurred": "Si è verificato un errore",
+        "offline_mode_blocked": "Le richieste di rete sono bloccate dalla modalità offline",
         "passwords_do_not_match": "Le password non corrispondono",
         "payment_problem": "C'è stato un problema con il tuo pagamento.",
         "registration_failed": "Registrazione fallita",

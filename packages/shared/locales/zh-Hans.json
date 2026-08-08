@@ -190,6 +190,7 @@
         "loading_failed": "加载失败",
         "login": "登录错误",
         "occurred": "发生错误",
+        "offline_mode_blocked": "离线模式已阻止网络请求",
         "passwords_do_not_match": "密码不匹配",
         "payment_problem": "您的付款出现问题。",
         "registration_failed": "注册失败",

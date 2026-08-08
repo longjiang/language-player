@@ -198,6 +198,7 @@
         "loading_failed": "Ha fallat la càrrega",
         "login": "Error d'inici de sessió",
         "occurred": "S'ha produït un error",
+        "offline_mode_blocked": "Les sol·licituds de xarxa estan bloquejades pel mode fora de línia",
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
         "payment_problem": "Hi ha hagut un problema amb el seu pagament.",
         "registration_failed": "Error en el registre",

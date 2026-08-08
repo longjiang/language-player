@@ -16,7 +16,7 @@
 import * as SQLite from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 
 // ── Constants ────────────────────────────────
 
@@ -199,6 +199,7 @@ export async function openOfflineDictionaryDB(
   if (cached) return cached;
 
   await ensureDictionariesDir();
+  log('[DictDB] opening precompiled dict file — l2:', l2, 'file:', dictionaryDbFileName(l2));
   const db = await SQLite.openDatabaseAsync(
     dictionaryDbFileName(l2),
     {},
@@ -240,6 +241,7 @@ export async function savePrecompiledDictionary(
   tmpFile.write(dbBytes);
   try {
     await tmpFile.move(finalFile, { overwrite: true });
+    log('[DictDB] 💾 saved precompiled dict — l2:', l2, 'file:', dictionaryDbFileName(l2), 'bytes:', dbBytes.length);
   } catch (e) {
     try { tmpFile.delete(); } catch { /* best effort */ }
     throw e;
@@ -416,6 +418,7 @@ export async function lookupOffline(
 ): Promise<DictionaryEntry[] | null> {
   const table = dictTableName(l2);
   try {
+    log('[DictDB] legacy central lookup — l2:', l2, 'text:', text, 'table:', table);
     // Primary: head match (simplified for zh). Mirrors the server's
     // `head = ? OR alternate = ?` lookup so traditional text resolves to
     // the same entry offline. Two indexed queries keep this fast.
@@ -423,16 +426,19 @@ export async function lookupOffline(
       `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
       [text],
     );
+    log('[DictDB] legacy head rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
     if (!rows || rows.length === 0) {
       rows = await db.getAllAsync<{ entry_json: string }>(
         `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
         [text],
       );
+      log('[DictDB] legacy alternate rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
     }
     if (!rows || rows.length === 0) return null;
     return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
-  } catch {
+  } catch (e) {
     // Table doesn't exist yet (not downloaded for this language)
+    logwarn('[DictDB] ❌ legacy central lookup failed — l2:', l2, 'text:', text, 'table:', table, 'error:', (e as Error)?.message ?? e);
     return null;
   }
 }
@@ -447,34 +453,100 @@ export async function lookupOfflineByL2(
   text: string,
 ): Promise<DictionaryEntry[] | null> {
   let l2Db: SQLite.SQLiteDatabase | null = null;
+  const file = dictionaryDbFile(l2);
   try {
     l2Db = await openOfflineDictionaryDB(l2);
-  } catch {
+  } catch (e) {
+    logwarn('[DictDB] ❌ failed to open precompiled dict — l2:', l2, 'file:', dictionaryDbFileName(l2), 'error:', (e as Error)?.message ?? e);
     l2Db = null;
   }
   if (l2Db) {
     try {
       const table = dictTableName(l2);
+      log('[DictDB] precompiled lookup — l2:', l2, 'text:', text, 'file:', dictionaryDbFileName(l2), 'table:', table);
       let rows = await l2Db.getAllAsync<{ entry_json: string }>(
         `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
         [text],
       );
+      log('[DictDB] precompiled head rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
       if (!rows || rows.length === 0) {
         rows = await l2Db.getAllAsync<{ entry_json: string }>(
           `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
           [text],
         );
+        log('[DictDB] precompiled alternate rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
       }
       if (rows && rows.length > 0) {
+        log('[DictDB] ✅ precompiled hit — l2:', l2, 'text:', text, 'rows:', rows.length);
         return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
       }
-    } catch {
-      // Corrupt file or table — fall through to legacy central DB.
+      log('[DictDB] precompiled miss — l2:', l2, 'text:', text, '— falling back to legacy central table');
+    } catch (e) {
+      logwarn('[DictDB] ❌ precompiled lookup failed — l2:', l2, 'text:', text, 'error:', (e as Error)?.message ?? e);
+    }
+  } else {
+    log('[DictDB] no precompiled file — l2:', l2, 'file exists:', file.exists, '— trying legacy central table');
+  }
+
+  const db = await openDictionaryDB();
+  const legacy = await lookupOffline(db, text, l2);
+  log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
+  return legacy;
+}
+
+/**
+ * Offline autocomplete: prefix-match headwords/alternates from the downloaded
+ * dictionary. Used by the dictionary search bar when Offline Mode blocks the
+ * server autocomplete endpoint.
+ */
+export async function autocompleteOffline(
+  l2: string,
+  query: string,
+  limit = 20,
+): Promise<DictionaryEntry[]> {
+  const like = `${query}%`;
+  const table = dictTableName(l2);
+
+  let l2Db: SQLite.SQLiteDatabase | null = null;
+  try {
+    l2Db = await openOfflineDictionaryDB(l2);
+  } catch {
+    l2Db = null;
+  }
+
+  const parse = (rows: { entry_json: string }[] | null): DictionaryEntry[] =>
+    (rows ?? []).map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
+
+  if (l2Db) {
+    try {
+      const rows = await l2Db.getAllAsync<{ entry_json: string }>(
+        `SELECT entry_json FROM ${table}
+         WHERE head LIKE ? COLLATE NOCASE OR alternate LIKE ? COLLATE NOCASE
+         LIMIT ?`,
+        [like, like, limit],
+      );
+      if (rows.length > 0) {
+        log('[DictDB] ✅ offline autocomplete hit — l2:', l2, 'query:', query, 'rows:', rows.length);
+        return parse(rows);
+      }
+    } catch (e) {
+      logwarn('[DictDB] ❌ offline autocomplete failed — l2:', l2, 'query:', query, 'error:', (e as Error)?.message ?? e);
     }
   }
 
   const db = await openDictionaryDB();
-  return lookupOffline(db, text, l2);
+  try {
+    const rows = await db.getAllAsync<{ entry_json: string }>(
+      `SELECT entry_json FROM ${table}
+       WHERE head LIKE ? COLLATE NOCASE OR alternate LIKE ? COLLATE NOCASE
+       LIMIT ?`,
+      [like, like, limit],
+    );
+    return parse(rows);
+  } catch (e) {
+    logwarn('[DictDB] ❌ legacy offline autocomplete failed — l2:', l2, 'query:', query, 'error:', (e as Error)?.message ?? e);
+    return [];
+  }
 }
 
 // ── LLM cache ─────────────────────────────────
