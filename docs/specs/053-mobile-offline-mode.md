@@ -472,9 +472,10 @@ subject to `updated_at` timestamp ties.
 - `contexts/SyncStatusContext.tsx` — global sync status provider
   (connectivity, syncing, pending/error counts, last sync time).
 - UI: header cloud icon immediately left of Search (cloud / cloud-off /
-  cloud-upload / cloud-alert + pending badge, tap opens Sync Status), a
-  persistent non-blocking offline/pending banner, and the Sync Status /
-  Outbox screen with per-op status, errors, and manual retry.
+  cloud-upload / cloud-alert + pending badge, tap opens Sync Status), and the
+  Sync Status / Outbox screen with an Offline Mode toggle, per-op status,
+  errors, and manual retry. (The initial always-on top banner was removed in
+  favor of the icon + Sync Status screen.)
 - Wiring: settings, progress, SRS cards/settings, saved words, notes, and
   watch history write through the durable outbox. The old notes/saved-words
   queues were replaced by the engine (their public APIs were kept for call-site
@@ -535,10 +536,11 @@ an accessible label; never rely on color alone.
 
 **Indicators.**
 
-- **Persistent, non-blocking banner** when the device is offline or Offline
-  Mode is on: "Offline — changes are saved on this device" plus "N waiting" and
-  a "Sync now" action. It does not cover content and cannot be dismissed while
-  still offline (Gmail's outbox + Google's offline bar pattern).
+- **Header icon + Sync Status screen** (chosen over an always-on banner):
+  the cloud icon shows offline/syncing/pending/error states, and the Sync
+  Status screen (opened by tapping the icon) shows the Offline Mode toggle,
+  pending count, per-op status, and "Sync now". The initial top banner was
+  removed — it duplicated the icon and took vertical space on every screen.
 - **Global pending badge** in the header / Me tab: `Offline · 3 pending` or
   `3 pending` when online but unsynced.
 - **Per-item badges** on notes, saved words, SRS cards, and reading progress:
@@ -571,7 +573,8 @@ an accessible label; never rely on color alone.
 - ✅ Replaying the same outbox op (retry, crash, duplicate network response)
   cannot create a duplicate row (server-side idempotency keys).
 - ✅ The sync status UI covers online / offline / offline mode / pending /
-  syncing / error (banner, header icon, Sync Status screen).
+  syncing / error (header icon + Sync Status screen, including an Offline
+  Mode toggle).
 - ✅ The header cloud icon reflects synced / syncing / offline (plus
   pending/error badges) and opens the Sync Status screen on tap.
 - ⚠️ Existing local stores remain in place (SecureStore/AsyncStorage caches

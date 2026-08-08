@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
 import { RefreshCw, CloudOff, CloudUpload, CheckCircle2, AlertTriangle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -11,11 +11,14 @@ import {
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
 import { SyncNowButton } from '@/components/sync/SyncNowButton';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { ICON_PRIMARY } from '@/lib/theme-colors';
 
 /** Central Sync Status / Outbox screen (SPEC-053 Phase 2). */
 export default function SyncStatusScreen() {
   const t = useT();
   const { status } = useSyncStatus();
+  const { offlineMode, setOfflineMode } = useSettingsContext();
   const [ops, setOps] = useState<OutboxSnapshot[]>([]);
 
   useEffect(() => {
@@ -42,6 +45,20 @@ export default function SyncStatusScreen() {
   return (
     <ScrollView className="flex-1 bg-background px-4 py-6" {...e2e('sync-status-screen')}>
       <Text className="text-3xl font-bold text-foreground">{t('title.sync_status')}</Text>
+
+      {/* Offline Mode toggle — same local-only setting as Settings → Network */}
+      <View className="mt-4 flex-row items-center justify-between rounded-xl border border-border bg-card p-4">
+        <View className="flex-1 pr-3">
+          <Text className="text-sm font-semibold text-foreground">{t('title.offline_mode')}</Text>
+          <Text className="mt-0.5 text-xs text-muted-foreground">{t('setting.offline_mode_desc')}</Text>
+          <Text className="mt-0.5 text-xs text-muted-foreground">{t('msg.offline_mode_not_synced')}</Text>
+        </View>
+        <Switch
+          value={offlineMode}
+          onValueChange={(value) => void setOfflineMode(value)}
+          trackColor={{ true: ICON_PRIMARY, false: ICON_MUTED }}
+        />
+      </View>
 
       <View className="mt-4 flex-row items-center gap-3 rounded-xl border border-border bg-card p-4">
         {effectiveOffline ? (

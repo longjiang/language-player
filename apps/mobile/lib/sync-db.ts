@@ -176,6 +176,18 @@ export function enqueueOutboxOp(input: {
         // fresh key (the server may have already applied the old op).
         const keyChanged = existing.op !== op;
         log(`[sync-db] outbox coalesce ${entity}:${entityId} ${existing.op}→${op} keyChanged=${keyChanged}`);
+        // MERGE payloads instead of replacing: a note's create → edit → rename
+        // sequence must keep title AND text/translation (replacing lost fields
+        // and the server created the note empty).
+        let mergedPayloadJson = payloadJson;
+        if (!keyChanged) {
+          try {
+            const existingPayload = JSON.parse(existing.payload) as Record<string, unknown>;
+            mergedPayloadJson = JSON.stringify({ ...existingPayload, ...payload });
+          } catch {
+            // Corrupt existing payload — fall back to the new one.
+          }
+        }
         await db.runAsync(
           `UPDATE outbox
            SET op = ?, payload = ?, updated_at = ?, attempts = 0, last_error = NULL,
@@ -183,12 +195,17 @@ export function enqueueOutboxOp(input: {
            WHERE id = ?`,
           [
             op,
-            payloadJson,
+            mergedPayloadJson,
             updatedAt,
             Date.now(),
             keyChanged ? makeSyncId() : existing.idempotency_key,
             existing.id,
           ],
+        );
+        await db.runAsync(
+          `UPDATE entity_cache SET payload = ?, updated_at = ?, deleted_at = ?
+           WHERE entity = ? AND entity_id = ?`,
+          [mergedPayloadJson, updatedAt, op === 'delete' ? updatedAt : null, entity, entityId],
         );
       } else {
         log(`[sync-db] outbox insert ${entity}:${entityId} ${op}`);
@@ -200,11 +217,13 @@ export function enqueueOutboxOp(input: {
         );
       }
 
-      await db.runAsync(
-        `INSERT OR REPLACE INTO entity_cache (entity, entity_id, payload, updated_at, deleted_at)
-         VALUES (?, ?, ?, ?, ?)`,
-        [entity, entityId, payloadJson, updatedAt, op === 'delete' ? updatedAt : null],
-      );
+      if (!existing) {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO entity_cache (entity, entity_id, payload, updated_at, deleted_at)
+           VALUES (?, ?, ?, ?, ?)`,
+          [entity, entityId, payloadJson, updatedAt, op === 'delete' ? updatedAt : null],
+        );
+      }
     });
     log(`[sync-db] entity_cache updated ${entity}:${entityId} ${op} @${updatedAt}`);
   };
