@@ -24,6 +24,7 @@ import {
 } from '@/lib/notes-sync';
 import { subscribeRemap } from '@/lib/sync-engine';
 import { getEntityCacheRow } from '@/lib/sync-db';
+import { localizedError } from '@/lib/errors';
 
 export interface NoteListItemWithSync extends NoteListItem {
   _syncStatus: SyncStatus;
@@ -48,9 +49,14 @@ export interface UseReaderNotesReturn {
   pendingSyncCount: number;
 }
 
+let tempIdCounter = 0;
+
 function makeTempId(): number {
-  // Negative timestamp — won't collide with server IDs (positive integers)
-  return -Date.now();
+  // Negative, unique under rapid taps — Date.now() alone collided when four
+  // "add note" presses landed in the same millisecond (all four notes got the
+  // same id, which made every note look selected and share one sync status).
+  tempIdCounter += 1;
+  return -(Date.now() + tempIdCounter);
 }
 
 export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
@@ -63,6 +69,8 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
   const [currentNoteId, setCurrentNoteId] = useState<number | null>(null);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const mountedRef = useRef(true);
+  const creatingRef = useRef(false);
+  const lastCreateAtRef = useRef(0);
 
   // Start sync listener once
   useEffect(() => {
@@ -116,6 +124,13 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
         (b.created_on ?? '').localeCompare(a.created_on ?? ''),
       );
       await cacheNotesList(l2Code, sorted);
+      // Cache full bodies too — the list endpoint returns complete notes, and
+      // this is what lets an existing note open fully while offline.
+      for (const item of sorted) {
+        if (item && typeof (item as unknown as Note).title === 'string') {
+          await cacheNote(item as unknown as Note);
+        }
+      }
       if (mountedRef.current) {
         const annotated = await annotateSyncStatus(sorted);
         setNotes(annotated);
@@ -123,7 +138,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     } catch (e: any) {
       // Server fetch failed — cache is already showing
       if (mountedRef.current) {
-        setNotesError(e?.message ?? t('msg.failed_to_load_notes'));
+        setNotesError(localizedError(t, e, 'msg.failed_to_load_notes'));
       }
     } finally {
       if (mountedRef.current) setNotesLoading(false);
@@ -160,33 +175,41 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     }
 
     // Then try the sync.db entity cache (queued locally or pulled from
-    // another device) — lets an existing note load fully offline.
-    if (!cached) {
-      try {
-        const row = await getEntityCacheRow('note', String(noteId));
-        if (row && row.deleted_at == null) {
-          const payload = JSON.parse(row.payload) as Record<string, unknown>;
-          if (typeof payload.title === 'string') {
-            const fromCache: Note = {
-              id: noteId,
-              title: payload.title,
-              text: String(payload.text ?? ''),
-              translation: String(payload.translation ?? ''),
-              l2: 0,
-              owner: 0,
-              created_on: String(payload.created_on ?? ''),
-            };
-            await cacheNote(fromCache);
-            if (mountedRef.current) {
-              setCurrentNote(fromCache);
-              setCurrentNoteId(noteId);
-            }
-            cached = fromCache;
-          }
+    // another device) — merge its newer text/translation/title over the
+    // AsyncStorage body so an existing note opens fully offline.
+    try {
+      const row = await getEntityCacheRow('note', String(noteId));
+      if (row && row.deleted_at == null) {
+        const payload = JSON.parse(row.payload) as Record<string, unknown>;
+        const listTitle = notes.find((n) => n.id === noteId)?.title;
+        const merged: Note = {
+          id: noteId,
+          title:
+            typeof payload.title === 'string' && payload.title
+              ? payload.title
+              : (cached?.title ?? listTitle ?? 'Untitled'),
+          text: String(payload.text ?? cached?.text ?? ''),
+          translation: String(payload.translation ?? cached?.translation ?? ''),
+          l2: cached?.l2 ?? 0,
+          owner: cached?.owner ?? 0,
+          created_on: String(payload.created_on ?? cached?.created_on ?? ''),
+        };
+        if (
+          !cached ||
+          merged.text !== cached.text ||
+          merged.translation !== cached.translation ||
+          merged.title !== cached.title
+        ) {
+          await cacheNote(merged);
         }
-      } catch {
-        // Corrupt cache row — fall through to server fetch.
+        if (mountedRef.current) {
+          setCurrentNote(merged);
+          setCurrentNoteId(noteId);
+        }
+        cached = merged;
       }
+    } catch {
+      // Corrupt cache row — fall through to server fetch.
     }
 
     // Then try server
@@ -206,7 +229,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
 
     // Persist selection
     await saveActiveNote(noteId, l2Code);
-  }, [l2Code]);
+  }, [l2Code, notes]);
 
   // ── Temp-ID remap after an offline create is acknowledged ──
   useEffect(() => {
@@ -226,80 +249,91 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
   // ── Create note ───────────────────────────────────────
 
   const createNote = useCallback(async (defaultTitle?: string): Promise<number> => {
-    const title = defaultTitle ?? 'Untitled';
-    const online = await checkOnline();
+    // Re-entrancy guard + short cooldown: taps queued while the UI is busy
+    // (e.g. tokenizer warm-up) must not create a burst of duplicate notes.
+    const now = Date.now();
+    if (creatingRef.current || now - lastCreateAtRef.current < 400) return -1;
+    creatingRef.current = true;
+    lastCreateAtRef.current = now;
 
-    if (online) {
-      // Happy path: create on server
-      try {
-        const created = await apiClient.post<Note>('/user-notes', {
-          title,
-          text: '',
-          translation: '',
-          l2: l2Code,
-        });
-        await cacheNote(created);
-        await patchCachedNotesList(l2Code, 'create', {
-          id: created.id,
-          title: created.title,
-          created_on: created.created_on,
-        });
-        if (mountedRef.current) {
-          setNotes(prev => [{
+    const title = defaultTitle ?? 'Untitled';
+    try {
+      const online = await checkOnline();
+
+      if (online) {
+        // Happy path: create on server
+        try {
+          const created = await apiClient.post<Note>('/user-notes', {
+            title,
+            text: '',
+            translation: '',
+            l2: l2Code,
+          });
+          await cacheNote(created);
+          await patchCachedNotesList(l2Code, 'create', {
             id: created.id,
             title: created.title,
             created_on: created.created_on,
-            _syncStatus: 'synced',
-          }, ...prev]);
-          setCurrentNote(created);
-          setCurrentNoteId(created.id);
+          });
+          if (mountedRef.current) {
+            setNotes(prev => [{
+              id: created.id,
+              title: created.title,
+              created_on: created.created_on,
+              _syncStatus: 'synced',
+            }, ...prev]);
+            setCurrentNote(created);
+            setCurrentNoteId(created.id);
+          }
+          await saveActiveNote(created.id, l2Code);
+          return created.id;
+        } catch {
+          // Fall through to offline path
         }
-        await saveActiveNote(created.id, l2Code);
-        return created.id;
-      } catch {
-        // Fall through to offline path
       }
-    }
 
-    // Offline path: create locally, queue for sync
-    const tempId = makeTempId();
-    const now = new Date().toISOString();
-    const localNote: Note = {
-      id: tempId,
-      title,
-      text: '',
-      translation: '',
-      l2: 0, // placeholder — filled on sync
-      owner: 0,
-      created_on: now,
-    };
-
-    await cacheNote(localNote);
-    await patchCachedNotesList(l2Code, 'create', {
-      id: tempId,
-      title,
-      created_on: now,
-    });
-    await enqueue({
-      action: 'create',
-      tempId,
-      payload: { title, text: '', translation: '', l2: l2Code },
-      l2Code,
-    });
-
-    if (mountedRef.current) {
-      setNotes(prev => [{
+      // Offline path: create locally, queue for sync
+      const tempId = makeTempId();
+      const createdOn = new Date().toISOString();
+      const localNote: Note = {
         id: tempId,
         title,
-        created_on: now,
-        _syncStatus: 'pending',
-      }, ...prev]);
-      setCurrentNote(localNote);
-      setCurrentNoteId(tempId);
+        text: '',
+        translation: '',
+        l2: 0, // placeholder — filled on sync
+        owner: 0,
+        created_on: createdOn,
+      };
+
+      await cacheNote(localNote);
+      await patchCachedNotesList(l2Code, 'create', {
+        id: tempId,
+        title,
+        created_on: createdOn,
+      });
+      await enqueue({
+        action: 'create',
+        tempId,
+        payload: { title, text: '', translation: '', l2: l2Code },
+        l2Code,
+      });
+
+      if (mountedRef.current) {
+        setNotes(prev => [{
+          id: tempId,
+          title,
+          created_on: createdOn,
+          _syncStatus: 'pending',
+        }, ...prev]);
+        setCurrentNote(localNote);
+        setCurrentNoteId(tempId);
+      }
+      await saveActiveNote(tempId, l2Code);
+      await refreshPendingCount();
+      return tempId;
+    } finally {
+      creatingRef.current = false;
     }
-    await saveActiveNote(tempId, l2Code);
-    await refreshPendingCount();
-    return tempId;
   }, [l2Code, refreshPendingCount]);
 
   // ── Rename note ───────────────────────────────────────

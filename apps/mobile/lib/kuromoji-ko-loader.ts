@@ -696,18 +696,25 @@ export async function hasKuromojiKoFiles(dicPath: string): Promise<boolean> {
  * @throws If any dictionary file is missing, unreadable, or corrupt
  */
 export async function loadKuromojiKo(dicPath: string): Promise<any> {
-  // Load all dictionary files in parallel for maximum throughput
-  const [
-    [baseBuf, checkBuf],
-    [tidBuf, tidPosBuf, tidMapBuf],
-    ccBuf,
-    [unkBuf, unkPosBuf, unkMapBuf, unkCharBuf, unkCompatBuf, unkInvokeBuf],
-  ] = await Promise.all([
-    Promise.all(TRIE_FILES.map((f) => readAndDecompress(dicPath, f))),
-    Promise.all(TOKEN_INFO_FILES.map((f) => readAndDecompress(dicPath, f))),
-    readAndDecompress(dicPath, CC_FILE),
-    Promise.all(UNK_FILES.map((f) => readAndDecompress(dicPath, f))),
-  ]);
+  // Load one file at a time and yield between files (same rationale as the
+  // Japanese loader — parallel decompression froze the UI during warm-up).
+  const buffers: Record<string, ArrayBuffer> = {};
+  for (const file of ALL_DICT_FILES) {
+    buffers[file] = await readAndDecompress(dicPath, file);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  const baseBuf = buffers['base.dat.gz']!;
+  const checkBuf = buffers['check.dat.gz']!;
+  const tidBuf = buffers['tid.dat.gz']!;
+  const tidPosBuf = buffers['tid_pos.dat.gz']!;
+  const tidMapBuf = buffers['tid_map.dat.gz']!;
+  const ccBuf = buffers['cc.dat.gz']!;
+  const unkBuf = buffers['unk.dat.gz']!;
+  const unkPosBuf = buffers['unk_pos.dat.gz']!;
+  const unkMapBuf = buffers['unk_map.dat.gz']!;
+  const unkCharBuf = buffers['unk_char.dat.gz']!;
+  const unkCompatBuf = buffers['unk_compat.dat.gz']!;
+  const unkInvokeBuf = buffers['unk_invoke.dat.gz']!;
 
   // Import the kuromoji-ko Tokenizer from the published API
   // @ts-ignore - kuromoji-ko is an ESM package, works with Metro bundler
