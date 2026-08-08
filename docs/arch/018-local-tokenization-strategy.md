@@ -551,8 +551,8 @@ Rule-based suffix-stripping stemmers available for 15 languages via the `snowbal
 ### Bundle & Download Impact
 
 **JS engines (bundled with app at build time as npm dependencies)**:
-- kuromoji (~200 KB) + kuromoji-ko (~200 KB) + snowball-stemmers (~450 KB for 15 languages) + arabic-stem (15 KB, already in Phase 1)
-- **Total bundled: ~865 KB**. These are npm packages — React Native cannot dynamically load arbitrary JS at runtime.
+- kuromoji (~200 KB) + kuromoji-ko (~200 KB) + snowball-stemmers (~450 KB for 15 languages) + arabic-stem (15 KB, already in Phase 1) + koroman (~20 KB, Korean romanization)
+- **Total bundled: ~885 KB**. These are npm packages — React Native cannot dynamically load arbitrary JS at runtime.
 
 > ⚠️ **RN Compatibility**: kuromoji and kuromoji-ko use Node `fs`/`zlib` in their Node builds but ship separate browser-compatible builds (using XHR + JS inflate). We use the browser build with a custom loader function that reads local files via `expo-file-system`. nlptoolkit has NO browser build and is dropped in favor of the snowball Turkish stemmer. See [SPEC-018](../specs/018-local-tokenization-mobile.md) for details.
 
@@ -564,6 +564,26 @@ Rule-based suffix-stripping stemmers available for 15 languages via the `snowbal
 | Bundle all data | ~10 MB total (not recommended — forces all users to pay for all languages) |
 
 > **Recommendation**: Bundle the ~1 MB of JS engines with the app. Download data files on demand alongside offline dictionaries. This keeps the app small for casual users while giving power users full offline capability for their chosen languages.
+
+---
+
+## Pronunciation / Romanization (Offline)
+
+Offline tokens carry `pronunciation` when the local pipeline can produce it:
+
+| Language(s) | Offline source | Notes |
+|---|---|---|
+| ja | kuromoji `reading` (katakana) | Furigana-style phonetics |
+| zh | cedict `pronunciation` (pinyin) via WebView dict worker | Dictionary-driven; allowed because Chinese is uninflected |
+| ko | `koroman` (npm) — same codebase as server PyPI `koroman` | Attached to kuromoji-ko surface forms; byte-identical to online |
+| ru, bg, uk, el, hy, ka | `apps/mobile/lib/romanize.ts` — 1:1 TS port of server `romanize.py` char maps | Byte-identical to online |
+
+`apps/mobile/lib/romanize.ts` is the single offline romanization module. Its Korean path delegates to the npm `koroman` package (the server uses the same algorithm via PyPI), and the Cyrillic/Greek/Armenian/Georgian tables are copied verbatim from the server so online/offline parity is guaranteed. It is wired into:
+
+- `tokenizeKorean()` — kuromoji-ko tokens get romanized surface forms when no reading is present.
+- `lemmatizeLocal()` — the lemma-table / snowball / surface fallback attaches romanization for all seven romanizable languages.
+
+Non-word tokens (spaces/punctuation, `lemmas: []`) never get pronunciation. Not covered offline: Arabic/Persian (no portable G2P — server-only), Thai (no RN-portable romanizer), yue (dictionary worker is zh-only for now), Burmese (phonetics suppressed).
 
 ---
 

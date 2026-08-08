@@ -670,7 +670,7 @@ Non-Latin scripts get Latin transliteration via `romanize.py`. The romanization 
 
 | Language(s) | Script | Standard | Romanizer Function |
 |---|---|---|---|
-| Korean (`ko`, `kor`) | Hangul | Revised Romanization | `_romanize_korean()` |
+| Korean (`ko`, `kor`) | Hangul | Revised Romanization (koroman) | `koroman.romanize()` (PyPI) |
 | Russian (`ru`, `rus`) | Cyrillic | ISO 9 (adjusted) | `_ru_map` char lookup |
 | Bulgarian (`bg`) | Cyrillic | ISO 9 (+ Bulgarian-specific) | `_bg_map` char lookup |
 | Ukrainian (`uk`) | Cyrillic | ISO 9 (+ Ukrainian-specific) | `_uk_map` char lookup |
@@ -680,10 +680,18 @@ Non-Latin scripts get Latin transliteration via `romanize.py`. The romanization 
 
 ### Korean Romanization Details
 
-The Korean romanizer handles:
-- Hangul decomposition into choseong (initial), jungseong (medial), jongseong (final)
-- Batchim assimilation (final consonant carries over to following vowel-initial syllable)
-- Spacing and hyphenation
+Korean romanization uses the **`koroman` PyPI package** (MIT, pure Python) — the same codebase as the `koroman` npm package used by the mobile offline tokenizer, so online and offline output is byte-identical. koroman applies the National Institute of Korean Language rules:
+
+- Liaison (연음화) — e.g. `꽃이 → kkochi`, `없어요 → eopseoyo`
+- Nasal assimilation (비음화) — e.g. `국물 → gungmul`
+- Lateralization (유음화) — e.g. `곧이 → goji`, `같이 → gachi`
+- Aspiration / consonant-cluster simplification — e.g. `좋아합니다 → joahamnida`, `밟다 → bapda`, `닭고기 → dakgogi`
+
+Defaults: lowercase, pronunciation rules on, no hyphens.
+
+Known tradeoff: koroman does no morphological analysis, so proper-noun exceptions romanize by pronunciation rather than orthography (`묵호 → muko`, `집현전 → jipyeonjeon`).
+
+> **History**: this replaced a hand-written Hangul decomposer (`_romanize_korean`) whose output was not standard RR (e.g. `jotahapnida`, `eopsda`, `dalkgogi`). Commit `39bd078` (server).
 
 **Not romanized**: Chinese (uses pinyin directly from jieba), Japanese (uses katakana from MeCab), Arabic (uses Buckwalter/SAMPA from Qalsadi), Persian (uses Latin from PersianG2p), Burmese.
 
