@@ -227,6 +227,42 @@ export async function openOfflineDictionaryDB(
 }
 
 /**
+ * Backfill a column from entry_json in one native SQLite statement (JSON1).
+ * Returns false when JSON1 isn't available so callers fall back to the JS
+ * row-by-row path.
+ */
+async function tryNativeJsonBackfill(
+  db: SQLite.SQLiteDatabase,
+  table: string,
+  kind: 'alternate' | 'definitions',
+): Promise<boolean> {
+  try {
+    if (kind === 'alternate') {
+      await db.execAsync(
+        `UPDATE ${table}
+         SET alternate = json_extract(entry_json, '$.alternate')
+         WHERE alternate IS NULL AND json_valid(entry_json)`,
+      );
+    } else {
+      await db.execAsync(
+        `UPDATE ${table}
+         SET definitions = (
+           SELECT group_concat(
+             CASE WHEN json_each.value IS NOT NULL AND json_each.value <> '' THEN json_each.value END,
+             '|'
+           )
+           FROM json_each(entry_json, '$.definitions')
+         )
+         WHERE (definitions IS NULL OR definitions = '') AND json_valid(entry_json)`,
+      );
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Older precompiled files (before `definitions` was added) get a definitions
  * column backfilled from entry_json so English-definition search works
  * offline without forcing a re-download.
@@ -244,12 +280,22 @@ async function migratePrecompiledDefinitions(
       await db.execAsync(`ALTER TABLE ${table} ADD COLUMN definitions TEXT`);
     }
 
+    // Native JSON1 backfill: one statement instead of loading every row into
+    // JS and running hundreds of UPDATE batches (117K rows used to stall the
+    // download at "finalizing" for minutes).
+    if (await tryNativeJsonBackfill(db, table, 'definitions')) {
+      log('[DictDB] ✅ native definitions backfill — l2:', l2, 'table:', table);
+      l2MigratedDefs.add(l2);
+      return;
+    }
+
     const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
       `SELECT id, entry_json FROM ${table} WHERE definitions IS NULL OR definitions = ''`,
     );
     if (rows.length > 0) {
       log('[DictDB] 🧬 backfilling definitions — l2:', l2, 'rows:', rows.length);
       for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+        log('[DictDB] 🧬 definitions chunk', i / CHUNK_SIZE + 1, '/', Math.ceil(rows.length / CHUNK_SIZE));
         const chunk = rows.slice(i, i + CHUNK_SIZE);
         const statements = chunk.map((r) => {
           let definitions = '';
@@ -443,27 +489,33 @@ async function migrateDictTables(db: SQLite.SQLiteDatabase): Promise<void> {
           `CREATE INDEX IF NOT EXISTS idx_${name}_alternate ON ${name}(alternate COLLATE NOCASE)`
         );
 
-        const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
-          `SELECT id, entry_json FROM ${name} WHERE alternate IS NULL`
-        );
-        for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
-          const statements = rows.slice(i, i + CHUNK_SIZE).map((r) => {
-            let alternate: string | null = null;
-            try {
-              alternate = (JSON.parse(r.entry_json) as DictionaryEntry).alternate ?? null;
-            } catch {
-              // Corrupt row — leave alternate NULL
-            }
-            return `UPDATE ${name} SET alternate=${escOrNull(alternate)} WHERE id='${esc(r.id)}';`;
-          }).join('');
-          if (statements) await db.execAsync(statements);
+        if (!(await tryNativeJsonBackfill(db, name, 'alternate'))) {
+          const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
+            `SELECT id, entry_json FROM ${name} WHERE alternate IS NULL`
+          );
+          for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+            const statements = rows.slice(i, i + CHUNK_SIZE).map((r) => {
+              let alternate: string | null = null;
+              try {
+                alternate = (JSON.parse(r.entry_json) as DictionaryEntry).alternate ?? null;
+              } catch {
+                // Corrupt row — leave alternate NULL
+              }
+              return `UPDATE ${name} SET alternate=${escOrNull(alternate)} WHERE id='${esc(r.id)}';`;
+            }).join('');
+            if (statements) await db.execAsync(statements);
+          }
         }
-        log('[DictDB] ✅ migrated', name, '— backfilled', rows.length, 'rows');
+        log('[DictDB] ✅ migrated', name, '— backfilled alternate column');
       }
 
       // Definitions column for English-definition search (same as server).
       if (!cols.some((c) => c.name === 'definitions')) {
         await db.execAsync(`ALTER TABLE ${name} ADD COLUMN definitions TEXT`);
+      }
+      if (await tryNativeJsonBackfill(db, name, 'definitions')) {
+        log('[DictDB] ✅ native definitions backfill — table:', name);
+        continue;
       }
       const defRows = await db.getAllAsync<{ id: string; entry_json: string }>(
         `SELECT id, entry_json FROM ${name} WHERE definitions IS NULL OR definitions = ''`
@@ -471,6 +523,7 @@ async function migrateDictTables(db: SQLite.SQLiteDatabase): Promise<void> {
       if (defRows.length > 0) {
         log('[DictDB] 🧬 migrating', name, '— backfilling definitions');
         for (let i = 0; i < defRows.length; i += CHUNK_SIZE) {
+          log('[DictDB] 🧬 definitions chunk', i / CHUNK_SIZE + 1, '/', Math.ceil(defRows.length / CHUNK_SIZE));
           const statements = defRows.slice(i, i + CHUNK_SIZE).map((r) => {
             let definitions = '';
             try {
