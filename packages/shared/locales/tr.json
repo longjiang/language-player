@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video oynatılıyor, ancak transkripti ve altyazıları yükleyemedik. Sayfayı yenileyin veya bir dakika sonra tekrar deneyin.",
         "failed_to_load_url": "URL yüklenemedi",
         "failed_to_load_watch_history": "İzleme geçmişi yüklenemedi",
+        "feature_requires_connection": "Bu özellik internet bağlantısı gerektirir. Çevrimdışısınız.",
         "find_videos_matched": "Seviyenize uygun videolar bulun",
         "for_term": "{term} için",
         "forgot_password": "Şifrenizi mi unuttunuz?",

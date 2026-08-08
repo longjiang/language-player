@@ -12,6 +12,7 @@ import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 interface VideoTag {
   tag: string;
@@ -94,6 +95,7 @@ export default function SearchScreen() {
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
       </View>
+      <OfflineFeatureNotice />
 
       {/* Search bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">

@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video soi, mutta emme pystyneet lataamaan transkriptiota ja tekstityksiä. Päivitä sivu tai yritä hetken kuluttua uudelleen.",
         "failed_to_load_url": "URL-osoitteen lataaminen epäonnistui",
         "failed_to_load_watch_history": "Katseluhistorian lataaminen epäonnistui",
+        "feature_requires_connection": "Tämä toiminto vaatii internetyhteyden. Olet offline-tilassa.",
         "find_videos_matched": "Löydä tasollesi sopivia videoita",
         "for_term": "kohteelle {term}",
         "forgot_password": "Unohditko salasanasi?",

@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Film jest odtwarzany, ale nie udało nam się załadować transkrypcji i napisów. Odśwież stronę lub spróbuj ponownie za chwilę.",
         "failed_to_load_url": "Nie udało się załadować adresu URL",
         "failed_to_load_watch_history": "Nie udało się załadować historii oglądania",
+        "feature_requires_connection": "Ta funkcja wymaga połączenia z internetem. Jesteś offline.",
         "find_videos_matched": "Znajdź filmy dopasowane do Twojego poziomu",
         "for_term": "dla {term}",
         "forgot_password": "Zapomniałeś hasła?",

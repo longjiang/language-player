@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Videoclipul se redă, dar nu am putut încărca transcrierea și subtitrările. Reîmprospătați pagina sau încercați din nou într-o clipă.",
         "failed_to_load_url": "Nu s-a putut încărca URL-ul",
         "failed_to_load_watch_history": "Eroare la încărcarea istoricului vizionărilor",
+        "feature_requires_connection": "Această funcție necesită o conexiune la internet. Ești offline.",
         "find_videos_matched": "Găsiți videoclipuri potrivite nivelului dvs.",
         "for_term": "pentru {term}",
         "forgot_password": "Ai uitat parola?",

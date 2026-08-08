@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Das Video wird abgespielt, aber wir konnten Transkript und Untertitel nicht laden. Aktualisiere die Seite oder versuche es gleich noch einmal.",
         "failed_to_load_url": "URL konnte nicht geladen werden",
         "failed_to_load_watch_history": "Fehler beim Laden des Wiedergabeverlaufs",
+        "feature_requires_connection": "Für diese Funktion ist eine Internetverbindung erforderlich. Du bist offline.",
         "find_videos_matched": "Finde Videos, die deinem Niveau entsprechen",
         "for_term": "für {term}",
         "forgot_password": "Passwort vergessen?",

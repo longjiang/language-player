@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video sedang diputar, tetapi kami tidak dapat memuat transkrip dan subtitle. Muat ulang halaman atau coba lagi sebentar lagi.",
         "failed_to_load_url": "Gagal memuat URL",
         "failed_to_load_watch_history": "Gagal memuat riwayat tontonan",
+        "feature_requires_connection": "Fitur ini memerlukan koneksi internet. Anda sedang luring.",
         "find_videos_matched": "Temukan video yang cocok dengan level Anda",
         "for_term": "untuk {term}",
         "forgot_password": "Lupa kata sandi?",

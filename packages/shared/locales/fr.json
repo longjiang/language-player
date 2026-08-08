@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "La vidéo est en cours de lecture, mais nous n'avons pas pu charger la transcription et les sous-titres. Actualisez la page ou réessayez dans un instant.",
         "failed_to_load_url": "Échec du chargement de l'URL",
         "failed_to_load_watch_history": "Échec du chargement de l'historique de visionnage",
+        "feature_requires_connection": "Cette fonction nécessite une connexion internet. Vous êtes hors ligne.",
         "find_videos_matched": "Trouvez des vidéos adaptées à votre niveau",
         "for_term": "pour {term}",
         "forgot_password": "Mot de passe oublié ?",

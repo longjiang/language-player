@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "動画は再生されていますが、字幕とトランスクリプトを読み込めませんでした。ページを更新するか、少し待ってからもう一度お試しください。",
         "failed_to_load_url": "URLの読み込みに失敗しました",
         "failed_to_load_watch_history": "視聴履歴の読み込みに失敗しました",
+        "feature_requires_connection": "この機能にはインターネット接続が必要です。現在オフラインです。",
         "find_videos_matched": "自分のレベルに合った動画を見つける",
         "for_term": "{term}の場合",
         "forgot_password": "パスワードをお忘れですか？",

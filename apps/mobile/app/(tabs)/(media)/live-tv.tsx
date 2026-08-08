@@ -10,6 +10,7 @@ import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
 import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
 import type { LiveTVChannel } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 type SortKey = 'latency' | 'name' | 'random';
 
@@ -302,6 +303,7 @@ export default function LiveTvScreen() {
   return (
     <PageContainer maxWidth="7xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
+      <OfflineFeatureNotice />
       <View className={isLg ? 'flex-row gap-6 px-4' : 'px-4'}>
         {/* Player section */}
         <View className={isLg ? 'min-w-0 flex-1' : ''}>

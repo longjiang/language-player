@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Videon spelas upp, men vi kunde inte läsa in transkriptionen och undertexterna. Uppdatera sidan eller försök igen om en stund.",
         "failed_to_load_url": "Misslyckades med att ladda URL",
         "failed_to_load_watch_history": "Misslyckades med att ladda visningshistorik",
+        "feature_requires_connection": "Den här funktionen kräver en internetanslutning. Du är offline.",
         "find_videos_matched": "Hitta videor som matchar din nivå",
         "for_term": "för {term}",
         "forgot_password": "Glömt lösenord?",

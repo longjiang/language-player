@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Die video speel, maar ons kon nie die transkripsie en onderskrifte laai nie. Verfris die bladsy of probeer weer oor 'n oomblik.",
         "failed_to_load_url": "Kon nie URL laai nie",
         "failed_to_load_watch_history": "Kon nie kykgeskiedenis laai nie",
+        "feature_requires_connection": "Hierdie funksie benodig 'n internetverbinding. Jy is vanlyn.",
         "find_videos_matched": "Vind video's wat by jou vlak pas",
         "for_term": "vir {term}",
         "forgot_password": "Wagwoord vergeet?",
