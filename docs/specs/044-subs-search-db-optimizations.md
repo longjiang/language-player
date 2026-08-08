@@ -597,12 +597,15 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
 1. ✅ Add `subs_ngram_tsv` column + invalidation trigger (done).
 2. ✅ Write `backfill_subs_ngram_tsv.py` + unit tests (done; script has burst/
    pause + timeout safety net).
-3. 🔄 Backfill all continua rows in batches — **resumed 2026-08-06** after
-   the storage-layer I/O hang was resolved with a `VACUUM FULL` table rewrite
-   (see "Storage issue resolved" above). Running at ~77 rows/min;
-   **12,566 / ~182,500 remaining** as of 2026-08-06 04:23 PDT (~37 h ETA).
-   The 2026-08-06 bypass work (Option A shipped live; PGroonga build
-   attempted/hung, then cleaned up) is documented above.
+3. ✅ Backfill all continua rows — **completed 2026-08-08**. Full run
+   processed the remaining **63,105 rows in ~3 h 35 m** (0 skipped, 0 slow
+   rows; rate ~300 rows/min in the fast regime). Final state:
+   **194,567 / 194,673** rows with `subs_l2` are backfilled; the remaining
+   **106 rows** have no tokenizable `line` text (empty `subs_l2`, literal
+   `"null"`, or whitespace-only lines) and stay NULL by design. No skip/slow
+   log files were produced. (Earlier state: resumed 2026-08-06 after the
+   storage-layer I/O hang was resolved with a `VACUUM FULL` rewrite;
+   12,566 / ~182,500 remaining as of 2026-08-06 04:23 PDT.)
 4. ⬜ `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
 5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
    until the index is valid) — code done, dormant until the index exists.
