@@ -39,7 +39,9 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
 
     // Update source when channel changes
     useEffect(() => {
-      player.replace({ uri: channel.url });
+      // replaceAsync avoids loading the asset synchronously on the main
+      // thread (the sync `replace` is deprecated and freezes the UI).
+      void player.replaceAsync({ uri: channel.url }).catch(() => {});
       player.play();
       setBuffering(true);
     }, [channel.id, channel.url]);
@@ -57,7 +59,12 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
     // Make sure the stream is stopped if the player is ever unmounted.
     useEffect(() => {
       return () => {
-        player.pause();
+        try {
+          player.pause();
+        } catch {
+          // useVideoPlayer releases the native player during unmount; by the
+          // time this cleanup runs the shared object may already be gone.
+        }
       };
     }, [player]);
 
