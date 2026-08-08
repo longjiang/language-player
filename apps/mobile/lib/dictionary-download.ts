@@ -24,7 +24,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { log } from '@/lib/logger';
 
 const NDJSON_MARKER = '#langplayer-ndjson-v1';
-const ROW_BATCH_SIZE = 500;
+const ROW_BATCH_SIZE = 2000;
 const READ_CHUNK_SIZE = 256 * 1024;
 
 export interface OfflineDictMeta {
@@ -113,6 +113,7 @@ async function streamNdjson(
   file: File,
   callbacks: DictionaryDownloadCallbacks,
   signal?: AbortSignal,
+  l2?: string,
 ): Promise<OfflineDictMeta> {
   const handle: FileHandle = file.open(FileMode.ReadOnly);
   const decoder = new TextDecoder('utf-8');
@@ -151,10 +152,14 @@ async function streamNdjson(
     const row = JSON.parse(line) as [string, string, string | null, string];
     const entryJson = row[3];
     let alternate: string | null = null;
-    try {
-      alternate = (JSON.parse(entryJson) as DictionaryEntry).alternate ?? null;
-    } catch {
-      // Corrupt entry — headword segmentation still works without alternate
+    // Only zh/yue carry a traditional-script alternate. Parsing every entry
+    // just to extract it is pure overhead for the other ~60 languages.
+    if (l2 === 'zh' || l2 === 'yue') {
+      try {
+        alternate = (JSON.parse(entryJson) as DictionaryEntry).alternate ?? null;
+      } catch {
+        // Corrupt entry — headword segmentation still works without alternate
+      }
     }
     batch.push({
       id: row[0],
@@ -239,7 +244,7 @@ export async function downloadDictionaryData(
   try {
     file = await downloadToCache(url, l2, callbacks.onDownloadProgress, signal);
     try {
-      return await streamNdjson(file, callbacks, signal);
+      return await streamNdjson(file, callbacks, signal, l2);
     } catch (e) {
       if (!(e instanceof NotNdjsonError)) throw e;
 
