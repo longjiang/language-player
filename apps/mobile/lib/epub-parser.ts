@@ -638,23 +638,50 @@ function finalizeFrame(frame: BlockFrame): EpubBlock[] {
     : 'paragraph';
   const srcElementId = frame.id ?? frame.nearestId;
 
-  // Split on image markers so images keep their position in the flow.
-  let cursor = 0;
-  let markerOffset = 0;
-  IMG_MARKER_RE.lastIndex = 0;
-  let imgMatch: RegExpExecArray | null;
-  while ((imgMatch = IMG_MARKER_RE.exec(body)) !== null) {
-    const seg = body.slice(cursor, imgMatch.index);
-    if (seg.trim()) {
-      blocks.push(makeTextBlock(type, frame.depth, seg, srcElementId, formats, markerOffset));
+  // Haodoo-style EPUBs separate paragraphs with <br><br> inside a single
+  // container (no <p> tags). Split on 2+ newlines so a whole chapter never
+  // becomes one giant tokenized block (SPEC-049 §9.1 — large chapters froze
+  // the reader with thousands of tokens in a single block).
+  const splitByParagraphs = frame.type === 'container' || frame.type === 'paragraph';
+  const parts: Array<{ start: number; text: string }> = [];
+  if (splitByParagraphs && /\n{2,}/.test(body)) {
+    const partRe = /\n{2,}/g;
+    let partStart = 0;
+    let pm: RegExpExecArray | null;
+    while ((pm = partRe.exec(body)) !== null) {
+      const seg = body.slice(partStart, pm.index);
+      if (seg.trim()) parts.push({ start: partStart, text: seg });
+      partStart = pm.index + pm[0].length;
     }
-    blocks.push({ kind: 'image', uri: imgMatch[1]! });
-    markerOffset += imgMatch[0].length;
-    cursor = imgMatch.index + imgMatch[0].length;
+    const tailSeg = body.slice(partStart);
+    if (tailSeg.trim()) parts.push({ start: partStart, text: tailSeg });
+  } else {
+    parts.push({ start: 0, text: body });
   }
-  const rest = body.slice(cursor);
-  if (rest.trim()) {
-    blocks.push(makeTextBlock(type, frame.depth, rest, srcElementId, formats, markerOffset));
+
+  for (const part of parts) {
+    // Rebase link formats onto this paragraph, then split on image markers so
+    // images keep their position in the flow.
+    const partFormats = formats
+      .map((f) => ({ ...f, start: f.start - part.start, end: f.end - part.start }))
+      .filter((f) => f.start >= 0 && f.end <= part.text.length && f.end > f.start);
+    let cursor = 0;
+    let markerOffset = 0;
+    IMG_MARKER_RE.lastIndex = 0;
+    let imgMatch: RegExpExecArray | null;
+    while ((imgMatch = IMG_MARKER_RE.exec(part.text)) !== null) {
+      const seg = part.text.slice(cursor, imgMatch.index);
+      if (seg.trim()) {
+        blocks.push(makeTextBlock(type, frame.depth, seg, srcElementId, partFormats, markerOffset));
+      }
+      blocks.push({ kind: 'image', uri: imgMatch[1]! });
+      markerOffset += imgMatch[0].length;
+      cursor = imgMatch.index + imgMatch[0].length;
+    }
+    const rest = part.text.slice(cursor);
+    if (rest.trim()) {
+      blocks.push(makeTextBlock(type, frame.depth, rest, srcElementId, partFormats, markerOffset));
+    }
   }
 
   return blocks;
