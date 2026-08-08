@@ -77,5 +77,6 @@ export {
   getSyncEntityDef,
   validateSyncPayload,
   coalesceSyncPayload,
+  repairSyncPayload,
 } from './sync-entities';
 export type { SyncEntityDef, SyncFieldType } from './sync-entities';

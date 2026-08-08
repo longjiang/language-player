@@ -79,7 +79,7 @@ export default function SyncStatusScreen() {
             <Text className="mt-1 text-xs text-destructive">{lastError}</Text>
           ) : null}
         </View>
-        <SyncNowButton />
+        {!effectiveOffline && <SyncNowButton />}
       </View>
 
       {errorCount > 0 && (

@@ -558,6 +558,9 @@ tests — never inferred by a generic heuristic.
   generic replace/merge heuristic.
 - Notes now enqueue whole-row payloads (`l2`/`title`/`text`/`translation`),
   built by merging the caller's patch over the cached note body.
+- Push-time self-healing: legacy partial payloads queued before the whole-row
+  contract are repaired from `entity_cache` + safe defaults before sending,
+  so strict server validation can't strand them forever.
 - Server-side per-entity validation in `utils_sync._validate_upsert_payload`:
   `/sync/push` rejects partial/malformed payloads per-op instead of writing
   empty rows.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   coalesceSyncPayload,
+  repairSyncPayload,
   validateSyncPayload,
   getSyncEntityDef,
 } from './sync-entities';
@@ -71,5 +72,27 @@ describe('coalesceSyncPayload', () => {
     ]) {
       expect(getSyncEntityDef(entity)?.coalesce).toBeTypeOf('function');
     }
+  });
+});
+
+describe('repairSyncPayload', () => {
+  it('fills missing note fields from source then defaults', () => {
+    const repaired = repairSyncPayload(
+      'note',
+      { l2: 'ja', text: 'body' },
+      { l2: 'ja', title: 'Cached title', translation: '' },
+    );
+    expect(repaired).toEqual({ l2: 'ja', text: 'body', title: 'Cached title', translation: '' });
+  });
+
+  it('uses defaults when source has no value (legacy pre-fix rows)', () => {
+    const repaired = repairSyncPayload('note', { l2: 'ja' }, null);
+    expect(repaired).toEqual({ l2: 'ja', title: 'Untitled', text: '', translation: '' });
+  });
+
+  it('leaves payloads that cannot be repaired (missing l2) untouched', () => {
+    const repaired = repairSyncPayload('note', { title: 'T' }, null);
+    expect(repaired.title).toBe('T');
+    expect(repaired.l2).toBeUndefined();
   });
 });
