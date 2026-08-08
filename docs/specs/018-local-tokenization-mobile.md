@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-018
 - **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
-- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f done; 3b deferred)
+- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred)
 - **Created**: 2026-07-26
 - **Last updated**: 2026-08-07
 - **Supersedes**: [SPEC-016](../specs/016-mobile-local-tokenization.md)
@@ -33,6 +33,7 @@
 | Phase 3d — Silent error handling | ✅ Implemented | App logger (`logwarn`) with app-wide log gate |
 | Phase 3e — Batch endpoint offline fallback | ✅ Implemented | `use-epub-pagination.ts` falls back to `lemmatizeText()` per block |
 | Phase 3f — Offline Mode setting | ✅ Implemented (2026-08-07) | Settings → Network toggle; local-only network kill switch, never synced |
+| Phase 3g — Tokenization performance | ✅ Implemented (2026-08-07) | Offline Mode skips network; batched lemma/dict lookups; time-sliced tokenization |
 
 ## Overview
 
@@ -127,17 +128,19 @@ lemmatizeText(text, l2)
   │
   ├─ 1. In-memory cache hit? ────→ return cached tokens (instant)
   │
-  ├─ 2. POST /lemmatize-normalized (with 3s timeout)
+  ├─ 2. Offline Mode active? ────→ local fallback (no network attempt)
+  │
+  ├─ 3. POST /lemmatize-normalized (with 3s timeout)
   │      ├─ success ──────────────→ cache & return server tokens
   │      └─ timeout / network err ─→ fall through
   │
-  ├─ 3. Local fallback chain
+  ├─ 4. Local fallback chain
   │      ├─ Downloaded tokenizer/lemma pack? ──→ use it (Phase 2+)
   │      ├─ arabic-stem (if l2=ar) ────────────→ stemmed tokens
   │      ├─ regex word-split ──────────────────→ per-token split
   │      └─ surface-as-lemma ─────────────────→ each token is its own lemma
   │
-  └─ 4. Return result (may be empty array on total failure)
+  └─ 5. Return result (may be empty array on total failure)
 ```
 
 ### Server Call with Timeout
@@ -1003,6 +1006,58 @@ fallback chain (SPEC-018) without disabling the Mac's network or killing Metro.
 
 ---
 
+#### Phase 3g: Tokenization Performance (Offline Fast Path + Batched Lookups) ✅ IMPLEMENTED
+
+**Why**: SPEC-053 Phase 1 test item 3 requires tokenized text to work via the
+local `lemmatizeText()` fallback with no 3s hang, and review found two hot
+paths that could block the UI: per-word SQLite round-trips during local
+lemmatization / dictionary-cache hydration, and synchronous CPU work
+(kuromoji, dict max-matching) on long paragraphs.
+
+**Offline fast path** — `lemmatizeText()` checks `isOfflineModeEnabled()`
+before touching the network and goes straight to the local fallback chain.
+`TokenizedText`'s batch endpoint and `use-epub-pagination`'s batch endpoint
+do the same, and `TokenizedText` skips the queued `/dictionary/lookup-batch`
+hydration (the local cache hydration runs instead), so Offline Mode never
+issues a doomed lemmatize or dictionary-batch request. The network gate would
+reject those instantly anyway; skipping them removes the failure noise from
+the logs and makes the local path the only path.
+Both `/lemmatize-normalized/batch` calls also carry the same 3s timeout as
+the single-word server call, so a blackholed network (Offline Mode off)
+can't stall tokenization past the same bound.
+
+**Batched local lookups**:
+
+- `tokenizer-db.lookupLemmasBatch(l2, surfaces)` — one `WHERE surface IN (…)`
+  query (chunked at 500) replaces N per-word `lookupLemma()` calls in
+  `lemmatizeLocal()`.
+- `dictionary-db.lookupOfflineManyByL2(l2, texts)` — one exact
+  head/alternate/pronunciation query per language replaces N per-word
+  cache-hydration lookups in `TokenizedText`. Popup taps still run the full
+  fuzzy/substring chain on demand, so no lookup behavior is lost.
+
+**Time-sliced CPU work** — kuromoji/kuromoji-ko tokenization and dict
+max-matching now chunk long text and `await setTimeout(0)` between chunks
+(~200–300 chars), so a long paragraph no longer blocks scrolling and
+rendering for its full duration. Typical subtitle lines (short text) are
+processed in a single chunk with zero added latency.
+
+**Pre-warming** — `prewarmLocalLemmatizer(l2)` loads the kuromoji data pack
+and the dictionary headword set in the background as soon as tokenized text
+is visible, so the first line doesn't pay the full one-time initialization
+cost (singletons dedupe concurrent calls).
+
+**Why not workers?** (research 2026-08-07): Expo SDK 57 / RN 0.86 has no
+built-in Worker API, and the app runs on the New Architecture (Hermes V1).
+`@jacobp100/react-native-webworker` explicitly does not support the new
+architecture and is iOS-only, while `react-native-hermes-worker` is an
+unvetted native module that would require a development build (breaking
+Expo Go). Time-slicing plus batching delivers most of the responsiveness win
+without native changes; revisit workers if long-paragraph tokenization still
+janks in real usage.
+
+---
+
 #### Phase 3 Summary
 
 | Subphase | What | Why | Effort |
@@ -1013,8 +1068,9 @@ fallback chain (SPEC-018) without disabling the Mac's network or killing Metro.
 | **3d** ✅ | Silent error handling | Kuromoji init/tokenize failures route through the app-wide `logwarn()` logger (gated by the log switch) instead of raw `console.warn` | Trivial |
 | **3e** ✅ | Batch endpoint offline fallback | `use-epub-pagination.ts` catches batch failure and re-tokenizes visible blocks with `lemmatizeText()` | Trivial |
 | **3f** ✅ | Offline Mode setting | Local network kill switch (fetch/XHR/expo-file-system); stored locally, never synced | Small |
+| **3g** ✅ | Tokenization performance | Offline Mode skips server; one query per batch of lemma/dict lookups; time-sliced kuromoji + dict segmentation | Medium |
 
-**Status**: 3a, 3c, 3d, 3e, 3f implemented; 3b remains deferred (no bundled lemma-table assets — tables are download-only).
+**Status**: 3a, 3c, 3d, 3e, 3f, 3g implemented; 3b remains deferred (no bundled lemma-table assets — tables are download-only).
 **Server assets**: 2 zip archives (kuromoji-ipadic, mecab-ko-dic) ✅; 7 gzipped lemma-table JSONs not built.
 
 #### Deferred (research review 2026-08-07)

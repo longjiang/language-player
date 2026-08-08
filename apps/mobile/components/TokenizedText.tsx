@@ -6,8 +6,9 @@ import { firstGloss } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { lemmatizeText } from '@/lib/tokenizer';
-import { lookupOfflineByL2 } from '@/lib/dictionary-db';
+import { lemmatizeText, prewarmLocalLemmatizer } from '@/lib/tokenizer';
+import { lookupOfflineManyByL2 } from '@/lib/dictionary-db';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -84,19 +85,43 @@ async function flushLemmatizeBatch() {
     }
 
     for (const [l2Code, group] of byL2) {
+      // Offline Mode: don't attempt the batch endpoint at all. The gate would
+      // reject instantly anyway; skipping keeps the local fallback instant
+      // and avoids the double failure (batch + per-line) in the logs.
+      if (isOfflineModeEnabled()) {
+        log('[TokenizedText] ⏭ OFFLINE-MODE — skipping /lemmatize-normalized/batch, using local lemmatizeText');
+        await Promise.allSettled(group.map(async (item) => {
+          try {
+            item.resolve(await lemmatizeText(item.text, item.l2Code));
+          } catch (lineErr) {
+            item.reject(lineErr);
+          } finally {
+            lemmatizeBatchPending.delete(item.key);
+          }
+        }));
+        continue;
+      }
+
       try {
-        const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: group.map((g) => g.text), l2: l2Code }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const results: LemmatizedToken[][] = data?.results ?? [];
-        group.forEach((item, i) => {
-          item.resolve(results[i] ?? []);
-          lemmatizeBatchPending.delete(item.key);
-        });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3000);
+        try {
+          const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texts: group.map((g) => g.text), l2: l2Code }),
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const results: LemmatizedToken[][] = data?.results ?? [];
+          group.forEach((item, i) => {
+            item.resolve(results[i] ?? []);
+            lemmatizeBatchPending.delete(item.key);
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
       } catch (err) {
         // Batch failed — fall back to lemmatizeText() (server-first, then local
         // tokenizer), preserving the offline pipeline.
@@ -499,28 +524,48 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       text,
       l2Code: baseCode(l2Code),
     }));
+    const uncachedWords = words.filter((w) => !getCachedEntries(w.l2Code, w.text));
 
     // Offline-first: hydrate the shared cache from the downloaded dictionary
     // so popups and quick glosses work when Offline Mode blocks the network.
-    void Promise.all(
-      words.map(async (w) => {
-        try {
-          if (getCachedEntries(w.l2Code, w.text)) return;
-          const offline = await lookupOfflineByL2(w.l2Code, w.text);
-          if (offline && offline.length > 0) {
-            log('[TokenizedText] 📖 offline cache hit — l2:', w.l2Code, 'text:', w.text, 'entries:', offline.length);
-            setCachedEntries(w.l2Code, w.text, offline);
+    // One batched exact-match query per language instead of one SQLite
+    // round-trip per word (the popup still runs the full lookup on tap).
+    const byL2 = new Map<string, string[]>();
+    for (const w of uncachedWords) {
+      const group = byL2.get(w.l2Code);
+      if (group) group.push(w.text);
+      else byL2.set(w.l2Code, [w.text]);
+    }
+    void Promise.all([...byL2.entries()].map(async ([l2, texts]) => {
+      try {
+        const hits = await lookupOfflineManyByL2(l2, texts);
+        for (const [text, entries] of hits) {
+          if (entries.length > 0) {
+            log('[TokenizedText] 📖 offline batch cache hit — l2:', l2, 'text:', text, 'entries:', entries.length);
+            setCachedEntries(l2, text, entries);
           }
-        } catch (e) {
-          logwarn('[TokenizedText] ❌ offline cache hydration failed — l2:', w.l2Code, 'text:', w.text, 'error:', (e as Error)?.message ?? e);
         }
-      }),
-    ).then(() => setCacheVersion(v => v + 1));
+      } catch (e) {
+        logwarn('[TokenizedText] ❌ offline batch cache hydration failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+      }
+    })).then(() => setCacheVersion(v => v + 1));
 
     // Queue with other visible lines' lemmas so one flush covers many lines
     // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).
-    enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
+    // Offline Mode skips this: the local hydration above already filled the
+    // cache, and the popup runs a full offline lookup on tap.
+    if (!isOfflineModeEnabled()) {
+      enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
+    }
   }, [tokens, loading, l2Code]);
+
+  // ── Pre-warm local tokenizer machinery ──
+  // Start loading the kuromoji data pack / dictionary headword set as soon
+  // as tokenized text becomes visible, so the first line doesn't pay the
+  // full one-time initialization cost (singletons dedupe concurrent calls).
+  useEffect(() => {
+    void prewarmLocalLemmatizer(l2Code);
+  }, [l2Code]);
 
   // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {
