@@ -127,9 +127,12 @@ export function ImageSearchResults({
 }: ImageSearchResultsProps) {
   const t = useT();
   const isCompact = variant === 'compact';
-  const { width, isSm } = useResponsive();
-  const cols = isSm ? 4 : 3;
+  const { width } = useResponsive();
   const [containerWidth, setContainerWidth] = useState(width);
+  // Column count follows the measured grid width (3 below 640, 4 at ≥640) —
+  // not just the window, so wide containers always render 4 filling columns.
+  const effectiveWidth = containerWidth > 0 ? containerWidth : width;
+  const cols = effectiveWidth >= 640 ? 4 : 3;
   // Tile width from the measured container (not the window) so the intended
   // 3/4 columns actually fit — window width overflows padded cards on iPad.
   const tileWidth =
