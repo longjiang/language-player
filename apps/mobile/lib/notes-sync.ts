@@ -22,6 +22,7 @@ import {
 import { getEntityCacheRow } from '@/lib/sync-db';
 import {
   cacheNote,
+  getCachedNote,
   patchCachedNotesList,
   removeCachedNote,
   remapLocalNoteId,
@@ -74,11 +75,29 @@ export async function enqueue(
     noteId != null && !isTemp
       ? String(noteId)
       : `tmp-${noteId ?? entry.tempId ?? Date.now()}`;
+
+  // Whole-row contract: every queued note op carries the FULL note
+  // (l2/title/text/translation). The caller sends a partial patch (rename
+  // only sends title, autosave only sends text), so merge it over the cached
+  // body — otherwise the final coalesced payload could drop fields and the
+  // server would create/update an empty note.
+  let cached: Note | null = null;
+  const cachedId = noteId ?? entry.tempId ?? null;
+  if (cachedId != null) {
+    try {
+      cached = await getCachedNote(cachedId);
+    } catch {
+      cached = null;
+    }
+  }
+  const patch = entry.payload ?? {};
   const payload: Record<string, unknown> = {
-    ...(entry.payload ?? {}),
     l2: entry.l2Code,
     ...(isTemp ? { tempId: noteId } : { noteId }),
     ...(entry.noteId == null && entry.tempId != null ? { tempId: entry.tempId } : {}),
+    title: typeof patch.title === 'string' ? patch.title : (cached?.title ?? 'Untitled'),
+    text: typeof patch.text === 'string' ? patch.text : (cached?.text ?? ''),
+    translation: typeof patch.translation === 'string' ? patch.translation : (cached?.translation ?? ''),
   };
   log(`[notes-sync] enqueue ${action} note ${entityId}`);
   await enqueueSyncOp({

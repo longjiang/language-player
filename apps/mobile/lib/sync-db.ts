@@ -11,6 +11,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
+import { coalesceSyncPayload, validateSyncPayload } from '@langplayer/utils';
 import { log } from '@/lib/logger';
 
 const DB_NAME = 'sync.db';
@@ -160,6 +161,11 @@ export function enqueueOutboxOp(input: {
   const run = async () => {
     const db = await openSyncDB();
     const { entity, entityId, op, payload, updatedAt } = input;
+    // Whole-row contract: upsert payloads must match the entity schema.
+    // (Delete payloads are intentionally minimal and skip validation.)
+    if (op === 'upsert') {
+      validateSyncPayload(entity, payload);
+    }
     const payloadJson = JSON.stringify(payload);
 
     await db.withTransactionAsync(async () => {
@@ -176,14 +182,14 @@ export function enqueueOutboxOp(input: {
         // fresh key (the server may have already applied the old op).
         const keyChanged = existing.op !== op;
         log(`[sync-db] outbox coalesce ${entity}:${entityId} ${existing.op}→${op} keyChanged=${keyChanged}`);
-        // MERGE payloads instead of replacing: a note's create → edit → rename
-        // sequence must keep title AND text/translation (replacing lost fields
-        // and the server created the note empty).
+        // Domain-owned composition: the entity decides merge vs. replace.
         let mergedPayloadJson = payloadJson;
         if (!keyChanged) {
           try {
             const existingPayload = JSON.parse(existing.payload) as Record<string, unknown>;
-            mergedPayloadJson = JSON.stringify({ ...existingPayload, ...payload });
+            mergedPayloadJson = JSON.stringify(
+              coalesceSyncPayload(entity, existingPayload, payload),
+            );
           } catch {
             // Corrupt existing payload — fall back to the new one.
           }

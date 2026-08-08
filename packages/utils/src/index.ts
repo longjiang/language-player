@@ -73,3 +73,9 @@ export {
 export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms';
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
+export {
+  getSyncEntityDef,
+  validateSyncPayload,
+  coalesceSyncPayload,
+} from './sync-entities';
+export type { SyncEntityDef, SyncFieldType } from './sync-entities';
