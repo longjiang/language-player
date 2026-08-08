@@ -36,7 +36,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   ab: 'Abkhaz', acf: 'Saint Lucian Creole French', acu: 'Achuar',
   af: 'Afrikaans', aib: 'Aynu', ain: 'Ainu', akk: 'Akkadian',
   am: 'አማርኛ', ami: 'Amis', ang: 'Old English', ar: 'العربية',
-  arb: 'Standard Arabic', arc: 'Aramaic', as: 'Assamese',
+  arc: 'Aramaic', as: 'Assamese',
   ase: 'American Sign Language', ay: 'Aymara', az: 'Azərbaycan',
   ba: 'Bashkir', be: 'Беларуская', bg: 'Български', bho: 'Bhojpuri',
   bn: 'বাংলা', bo: 'Tibetan', br: 'Breton', bs: 'Bosanski',

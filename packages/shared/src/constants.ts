@@ -15,7 +15,7 @@ export type SupportedL1 = (typeof SUPPORTED_L1S)[number];
 /** All languages available on the platform (matching Classic LANGS_WITH_CONTENT). */
 export const SUPPORTED_L2S = [
   'ab', 'acf', 'acu', 'af', 'aib', 'ain', 'akk', 'am', 'ami', 'ang', 'ar',
-  'arb', 'arc', 'as', 'ase', 'ay', 'az', 'ba', 'be', 'bg', 'bho', 'bn', 'bo',
+  'arc', 'as', 'ase', 'ay', 'az', 'ba', 'be', 'bg', 'bho', 'bn', 'bo',
   'br', 'bs', 'bsk', 'ca', 'ceb', 'cjy', 'ckb', 'cnr', 'cop', 'cpx',
   'crh', 'cs', 'csb', 'cy', 'czo', 'da', 'de', 'dsb', 'dz', 'el', 'en', 'enm',
   'eo', 'es', 'eso', 'et', 'eu', 'fa', 'fi', 'fo', 'fr', 'fsl', 'fur', 'fy',
