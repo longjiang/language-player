@@ -145,6 +145,7 @@ Manual checklist review found three more issues, all fixed:
 | Channel 404 | Mobile called `/channels/{id}` but the backend only exposes `/channels/{id}/videos`, so every channel page hit a raw axios 404; the error was shown as hard-coded English | Fetch now uses the `/videos` endpoint; errors are mapped to localized copy (`msg.page_not_found_desc` for 404, `error.failed_to_load` otherwise) |
 | Watch player overflow | `YouTubePlayer` sized itself to the full window when no `containerWidth` was passed, so in landscape it overflowed the left column and ran behind the transcript | The player column is measured with `onLayout` and passed as `containerWidth` in every watch mode |
 | Local Media reachability/icons | The lg+ player column wasn't scrollable, so controls below the player could be unreachable; file-bar lucide icons used `className` colors that render black | Player column scrolls at ≥1024 with captions; file-bar icons use `ICON_MUTED` |
+| Dictionary entry lg layout | Definition card and tabs panel stayed stacked inside the scroll view even at ≥1024, unlike web's two-column layout | At ≥1024 the panels render side-by-side (`flex-1` definition + `flex-[2]` tabs), matching web; still stacked below lg |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -211,7 +212,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Web reader → `(reading)/web-reader` | Same as notes reader + visited-sites sidebar | Same mobile pattern (`max-w-3xl`, sidebar ≥768) | Same changes as notes reader |
 | EPUB reader → `(reading)/epub` | `max-w-7xl`; sidebar sheet <lg, persistent ≥1024; bookshelf 2 → 3 → 4 → 5 | Full-width; sidebar ≥768; bookshelf 2 <520, 3 <720, 4 ≥720 | Sidebar → 1024; bookshelf thresholds 640/768/1280 and 5 columns at xl |
 | Dictionary search → `(vocab)/index` | `max-w-7xl` full-height shell with persistent search bar + word-list sidebar at lg | `max-w-3xl` standalone search page; no persistent shell | Add web-like full-height dictionary shell with persistent search and sidebar |
-| Dictionary entry → `(vocab)/word/[entryId]` | Within `max-w-7xl` dictionary shell; definition/tabs stacked <lg, side-by-side ≥1024; sidebar at lg | Full-width; split at ≥768; sidebar ≥768 | ✅ Split/sidebar at ≥1024, capped at 1280, persistent search bar, no "Dictionary" title |
+| Dictionary entry → `(vocab)/word/[entryId]` | Within `max-w-7xl` dictionary shell; definition/tabs stacked <lg, side-by-side ≥1024; sidebar at lg | Full-width; split at ≥768; sidebar ≥768 | ✅ Split/sidebar at ≥1024, capped at 1280, persistent search bar, no "Dictionary" title, definition + tabs side-by-side at ≥1024 |
 | Saved words → `(vocab)/saved-words` | `max-w-7xl`; grid 1 → 2 → 3 → 4 | `max-w-3xl`; grid 1 <640, 2 <900, 3 <1200, 4 ≥1200 | Widen to `max-w-7xl`; align thresholds to 640/1024/1280 |
 | Review → `(vocab)/review` | `max-w-2xl`; card padding `p-4 sm:p-8` | `max-w-3xl`; card padding always `p-4` | Use `max-w-2xl`; increase card padding ≥640 |
 
@@ -378,7 +379,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Reader translation** — translation beside the L2 block at ≥1024, stacked below 1024.
 - [ ] **EPUB bookshelf** — 2/3/4/5 columns at `<640 / 640–767 / 768–1279 / ≥1280`.
 - [ ] **Dictionary search** — capped at 1280; web's persistent search shell is intentionally not ported.
-- [ ] **Dictionary entry** — definition/tabs split and sidebar appear at ≥1024; content capped at 1280; persistent search bar in the header (no "Dictionary" title).
+- [ ] **Dictionary entry** — definition + tabs panels side-by-side and sidebar appear at ≥1024; content capped at 1280; persistent search bar in the header (no "Dictionary" title).
 - [ ] **Saved Words** — grid 1/2/3/4 at web thresholds; capped at 1280.
 - [ ] **Review** — capped at 672; card padding 16 below 640 and 32 at ≥640.
 - [ ] **Image search** — 3 columns below 640, 4 columns at ≥640, sized from the container width.
