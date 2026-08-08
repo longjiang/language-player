@@ -102,6 +102,7 @@ export function initOfflineMode(): Promise<boolean> {
     initPromise = SecureStore.getItemAsync(OFFLINE_MODE_KEY)
       .then((raw) => {
         offlineModeEnabled = raw === 'true';
+        log(`[LP Mobile] Offline Mode loaded — ${offlineModeEnabled ? 'enabled' : 'disabled'}`);
         return offlineModeEnabled;
       })
       .catch(() => {
