@@ -204,6 +204,16 @@ async function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: n
   let i = 0;
   let charsSinceYield = 0;
   while (i < text.length) {
+    // Group ASCII letters/digits into one token (ISBN, 978, URLs) instead of
+    // emitting char-by-char tokens — matches the online jieba output and keeps
+    // the tokenized rendering from looking spaced out.
+    if (/[A-Za-z0-9]/.test(text[i]!)) {
+      let j = i + 1;
+      while (j < text.length && /[A-Za-z0-9]/.test(text[j]!)) j++;
+      result.push(text.slice(i, j));
+      i = j;
+      continue;
+    }
     let longestMatch = text[i]!;
     const searchEnd = Math.min(i + maxWordLen, text.length);
     for (let len = searchEnd - i; len >= 1; len--) {

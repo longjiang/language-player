@@ -425,10 +425,10 @@ async function runWarmDict(l2: string): Promise<void> {
     }
     const db = l2Db ?? (await openDictionaryDB());
     const table = `dict_${l2.replace(/-/g, '_')}`;
-    const rows = await db.getAllAsync<{ head: string }>(
-      `SELECT head FROM ${table} WHERE head != ''
+    const rows = await db.getAllAsync<{ head: string; pronunciation: string | null }>(
+      `SELECT head, pronunciation FROM ${table} WHERE head != ''
        UNION
-       SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+       SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
     );
     if (!rows || rows.length === 0) {
       if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
@@ -439,11 +439,18 @@ async function runWarmDict(l2: string): Promise<void> {
     }
 
     const seen = new Set<string>();
+    const pinyin = new Map<string, string>();
     for (const row of rows) {
-      if (row.head) seen.add(row.head);
+      if (row.head && !seen.has(row.head)) {
+        seen.add(row.head);
+        if (row.pronunciation) pinyin.set(row.head, row.pronunciation);
+      }
     }
     const words = Array.from(seen);
-    const json = JSON.stringify(words);
+    const pronunciations = words.map((w) => pinyin.get(w) ?? null);
+    // {w: [...heads...], p: [pinyin|null...]} — pinyin drives furigana-style
+    // phonetics (tone-marked client-side, matching the online lemmatizer).
+    const json = JSON.stringify({ w: words, p: pronunciations });
     const encoder = new TextEncoder();
     const total = Math.ceil(json.length / DICT_CHUNK_BYTES);
     dictChunkAcks.set(l2, new Set());
@@ -686,12 +693,73 @@ ${kuromojiSource}
 
   // ── Dict-based segmentation datasets (Chinese + SEA, SPEC-018 Phase 2b) ──
   // Data is the offline dictionary headword set (simplified + alternate
-  // forms), serialized as a JSON string array and streamed in chunks.
+  // forms) plus per-head pinyin, serialized as {w:[...], p:[...]} and
+  // streamed in chunks.
   var dictChunks = {};
   var dictTotals = {};
   var dictReadyL2 = null;
   var dictSet = null;
+  var dictPinyin = {};
   var dictMaxLen = 1;
+
+  // CC-CEDICT writes ü as "u:" — canonicalize to "v" like the server does,
+  // then convert numeric tone (ni3 hao3) to tone marks (nǐ hǎo).
+  var TONE_MARKS = {
+    a: ['ā', 'á', 'ǎ', 'à'],
+    e: ['ē', 'é', 'ě', 'è'],
+    i: ['ī', 'í', 'ǐ', 'ì'],
+    o: ['ō', 'ó', 'ǒ', 'ò'],
+    u: ['ū', 'ú', 'ǔ', 'ù'],
+    ü: ['ǖ', 'ǘ', 'ǚ', 'ǜ']
+  };
+  function applyToneMark(syllable, tone) {
+    var lower = syllable.toLowerCase();
+    var positions = [];
+    for (var i = 0; i < lower.length; i++) {
+      if ('aeoiuüv'.indexOf(lower.charAt(i)) !== -1) positions.push(i);
+    }
+    if (positions.length === 0) return syllable;
+    var pos = null;
+    for (var pi = 0; pi < positions.length; pi++) {
+      var v = lower.charAt(positions[pi]);
+      if (v === 'a' || v === 'e') { pos = positions[pi]; break; }
+    }
+    if (pos === null) {
+      for (var oi = 0; oi < positions.length; oi++) {
+        if (lower.charAt(positions[oi]) === 'o') { pos = positions[oi]; break; }
+      }
+    }
+    if (pos === null) pos = positions[positions.length - 1];
+    var vowel = lower.charAt(pos);
+    var key = (vowel === 'v') ? 'ü' : vowel;
+    var marks = TONE_MARKS[key] || [];
+    var mark = marks[tone - 1];
+    if (!mark) return syllable;
+    return syllable.slice(0, pos) + mark + syllable.slice(pos + 1);
+  }
+  function toToneMarks(pinyin) {
+    if (!pinyin) return pinyin;
+    pinyin = pinyin.replace(/u:/g, 'v').replace(/U:/g, 'V');
+    var syllables = pinyin.split(' ');
+    var out = [];
+    for (var s = 0; s < syllables.length; s++) {
+      var syl = syllables[s];
+      var tone = null;
+      var base = syl;
+      if (syl.length > 0 && /[0-9]/.test(syl.charAt(syl.length - 1))) {
+        tone = parseInt(syl.charAt(syl.length - 1), 10);
+        base = syl.slice(0, -1);
+      }
+      if (tone >= 1 && tone <= 4) {
+        out.push(applyToneMark(base, tone));
+      } else if (tone === 5) {
+        out.push(base);
+      } else {
+        out.push(syl);
+      }
+    }
+    return out.join(' ').toLowerCase();
+  }
 
   window.__lpAppendDict = function (l2, index, chunk, total) {
     if (!dictChunks[l2]) dictChunks[l2] = [];
@@ -731,15 +799,25 @@ ${kuromojiSource}
         off += parts[pi].length;
       }
       var decoded = new TextDecoder('utf-8').decode(bytes);
-      var words = JSON.parse(decoded);
-      if (!Array.isArray(words)) throw new Error('dict dataset is not an array');
+      var data = JSON.parse(decoded);
+      var words = data.w;
+      var pinyinList = data.p;
+      if (!Array.isArray(words) || !Array.isArray(pinyinList)) {
+        throw new Error('dict dataset is not {w,p}');
+      }
       dictSet = new Set();
+      dictPinyin = {};
       dictMaxLen = 1;
       for (var w = 0; w < words.length; w++) {
         var word = String(words[w]);
         if (!word) continue;
         dictSet.add(word);
         if (word.length > dictMaxLen) dictMaxLen = word.length;
+      }
+      for (var pi = 0; pi < pinyinList.length && pi < words.length; pi++) {
+        var pWord = String(words[pi] || '');
+        var pPy = pinyinList[pi];
+        if (pWord && pPy) dictPinyin[pWord] = String(pPy);
       }
       dictReadyL2 = l2;
       post({ type: 'ready_dict', l2: l2, words: dictSet.size, maxLen: dictMaxLen });
@@ -765,6 +843,17 @@ ${kuromojiSource}
       var tokens = [];
       var i = 0;
       while (i < text.length) {
+        var ch = text.charAt(i);
+        // Group ASCII letters/digits into one token (matches the server's
+        // jieba output: ISBN, 978, URLs — not 9/7/8 char-by-char).
+        if (/[A-Za-z0-9]/.test(ch)) {
+          var runStart = i;
+          i++;
+          while (i < text.length && /[A-Za-z0-9]/.test(text.charAt(i))) i++;
+          var run = text.slice(runStart, i);
+          tokens.push({ text: run, lemmas: [{ lemma: run }], pronunciation: run, source: 'dict-seg' });
+          continue;
+        }
         var longestMatch = text.charAt(i);
         var searchEnd = Math.min(i + dictMaxLen, text.length);
         for (var len = searchEnd - i; len >= 1; len--) {
@@ -774,7 +863,10 @@ ${kuromojiSource}
             break;
           }
         }
-        tokens.push({ text: longestMatch, lemmas: [{ lemma: longestMatch }], source: 'dict-seg' });
+        var py = dictPinyin[longestMatch] ? toToneMarks(dictPinyin[longestMatch]) : null;
+        var token = { text: longestMatch, lemmas: [{ lemma: longestMatch }], source: 'dict-seg' };
+        if (py) token.pronunciation = py;
+        tokens.push(token);
         i += longestMatch.length;
       }
       post({ type: 'result', id: id, kind: 'dict', tokens: tokens });
