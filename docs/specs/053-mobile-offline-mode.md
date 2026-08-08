@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-053
 - **Feature**: Offline Mode (local network kill switch) + offline-first sync strategy
-- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; full two-device conflict suite pending manual verification
+- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; outbox payload-integrity safeguards proposed (structural safeguards section below); full two-device conflict suite pending manual verification
 - **Created**: 2026-08-07
 - **Scope**: `apps/mobile` client + proposed Flask sync endpoints
 - **Related specs**: [SPEC-013 — Mobile Offline Dictionary](013-mobile-offline-dictionary.md) · [SPEC-018 — Mobile Local Tokenization](018-local-tokenization-mobile.md) · [SPEC-039 — Full Database Migration to Supabase](039-full-database-migration-supabase.md) · [ADR-0015 — Settings UI and Search](../adr/0015-settings-ui-and-search.md)
@@ -483,6 +483,75 @@ subject to `updated_at` timestamp ties.
   settings, progress, and SRS. The EPUB bookshelf + reading progress stay
   local-only (out of scope).
 - i18n: 10 new keys added through the standard CSV workflow (all 31 locales).
+
+### Structural Safeguards — Outbox Payload Integrity (2026-08-08)
+
+**What happened.** During Phase 2 manual testing, offline notes lost their
+body text. The sequence was: create a note offline → type text → rename it →
+go online. The outbox coalesced all three mutations into one row, but the
+coalescing logic **replaced** the payload with the newest op's fields — so the
+final payload contained only the rename fields (`title`), and the server
+created the note with an empty body. The next online list fetch then
+overwrote the local cached body with the empty server copy. From the user's
+perspective, every previously created note silently became empty.
+
+**Root cause / bug class.** The engine applied one generic coalescing rule —
+“same entity + same op → keep the newest payload” — to every entity. That rule
+is only correct for **whole-row writes** (settings, progress, saved words, SRS
+cards, watch history), where each payload is the complete new row. It is wrong
+for **partial-field entities** like notes, where separate mutations touch
+different fields (`title` vs `text`/`translation`). A heuristic shallow-merge
+was applied as an interim fix (commit `e505d894`), but a generic merge is
+still not a structural guarantee: a future entity could need merge, replace,
+or delete-collapse semantics, and the engine cannot know which.
+
+**Motivation.** This is a silent-corruption class: the UI, local cache, and
+server all agree, and nothing errors — the data is just wrong. The outbox is
+the durability backbone for every syncable domain, so its payload-composition
+semantics must be enforced by the type system, the entity contracts, and
+tests — never inferred by a generic heuristic.
+
+**Accepted design (not yet implemented).**
+
+1. **Entity registry with schema + domain-owned coalesce.** Each syncable
+   entity gets a small contract in one registry (`sync-entities.ts`):
+
+   ```ts
+   const note = {
+     schema: { l2: 'string', title: 'string', text: 'string', translation: 'string' },
+     coalesce(prev, next) { return { ...prev, ...next }; }, // partial-field merge
+   };
+   const savedWord = {
+     schema: { l2: 'string', wordId: 'string', word: 'object' },
+     coalesce(_prev, next) { return next; }, // whole-row replace
+   };
+   ```
+
+   `enqueueOutboxOp` never merges payloads generically. It only handles
+   delete-collapse (a pending delete always wins) and otherwise delegates to
+   the domain's `coalesce`. A payload that fails the schema is rejected at
+   enqueue time — loud developer error, never silent corruption.
+
+2. **Whole-row payload invariant (preferred).** Every entity op carries the
+   complete row, never a patch. Notes send `{l2, title, text, translation}`
+   on every mutation, rename included. Then “newest payload wins” is provably
+   safe and the engine can stay dumb; the registry's schema is the guard.
+
+3. **Server-side per-entity validation.** `/sync/push` validates required
+   keys/types per entity before applying. A future client that sends a partial
+   note gets a clear per-op validation error instead of an empty server row —
+   turning silent corruption into a loud failure in production.
+
+4. **Coalescing invariant tests.** Per entity, run randomized sequences
+   (`create → edit → rename → edit → delete` and permutations) through the
+   domain's coalesce and assert: no field that was ever set is dropped unless
+   the final op deleted it; the final payload equals the composed state; and a
+   pending delete collapses everything. The current bug fails this test
+   instantly.
+
+**Status.** Design accepted; implementation planned. Until then, the interim
+shallow-merge fix remains in place and the per-entity invariant tests should
+be added as part of the implementation.
 
 ### Offline UX — how users know they are offline
 
