@@ -55,9 +55,7 @@ export default function SyncStatusScreen() {
         <View className="flex-1">
           <Text className="text-sm font-semibold text-foreground">{stateText}</Text>
           <Text className="mt-0.5 text-xs text-muted-foreground">
-            {lastSyncAt
-              ? t('msg.last_sync_at', { time: new Date(lastSyncAt).toLocaleTimeString() })
-              : t('msg.no_pending_changes')}
+            {lastSyncAt ? t('msg.last_sync_at', { time: new Date(lastSyncAt).toLocaleTimeString() }) : null}
           </Text>
           {lastError ? (
             <Text className="mt-1 text-xs text-destructive">{lastError}</Text>
