@@ -207,22 +207,31 @@ export default function WordDetailScreen() {
 
         <View className="flex-1" style={{ flexDirection: isWide ? 'row' : 'column' }}>
           <ScrollView className="flex-1">
-            {/* Definitions card at the top (like web's left panel on lg+) */}
-            <View className="mx-4 mt-4 rounded-xl border border-border bg-card p-6">
-              <DictionaryEntryCard
-                entry={entry}
-                variant="full"
-                l2Code={l2Code}
-              />
-            </View>
+            {/* lg+: definitions left + tabs right side-by-side (web parity) */}
+            <View className={isWide ? 'flex-row items-start gap-4 px-4 pt-4 pb-8' : ''}>
+              {/* Definitions card — web's left panel (flex-1) */}
+              <View
+                className={
+                  isWide
+                    ? 'min-w-0 flex-1 rounded-xl border border-border bg-card p-6'
+                    : 'mx-4 mt-4 rounded-xl border border-border bg-card p-6'
+                }
+              >
+                <DictionaryEntryCard
+                  entry={entry}
+                  variant="full"
+                  l2Code={l2Code}
+                />
+              </View>
 
-            {/* Tabs panel: Examples, Conjugations, DeepSeek (matches web right panel) */}
-            <View className="mx-4 mt-4 mb-8">
-              <DictionaryEntryTabs
-                entry={entry}
-                l2Code={l2Code}
-                showDefinitionTab={false}
-              />
+              {/* Tabs panel: Examples, Conjugations, DeepSeek — web's right panel (flex-[2]) */}
+              <View className={isWide ? 'min-w-0 flex-[2]' : 'mx-4 mt-4 mb-8'}>
+                <DictionaryEntryTabs
+                  entry={entry}
+                  l2Code={l2Code}
+                  showDefinitionTab={false}
+                />
+              </View>
             </View>
           </ScrollView>
 
