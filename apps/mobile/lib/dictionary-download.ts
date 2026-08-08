@@ -19,7 +19,7 @@ import {
   type FileHandle,
 } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
-import type { DictionaryDownloadResponse } from '@langplayer/shared';
+import type { DictionaryDownloadResponse, DictionaryEntry } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log } from '@/lib/logger';
 
@@ -38,6 +38,8 @@ export interface OfflineDictMeta {
 export interface OfflineDictRow {
   id: string;
   head: string;
+  /** Traditional script form (zh/yue). Null when the entry has none. */
+  alternate: string | null;
   pronunciation: string | null;
   entry_json: string;
 }
@@ -101,6 +103,7 @@ function rowsFromEntries(data: DictionaryDownloadResponse): OfflineDictRow[] {
   return data.entries.map((entry) => ({
     id: String(entry.id ?? ''),
     head: entry.head ?? '',
+    alternate: entry.alternate ?? null,
     pronunciation: entry.pronunciation ?? null,
     entry_json: JSON.stringify(entry),
   }));
@@ -146,11 +149,19 @@ async function streamNdjson(
     }
 
     const row = JSON.parse(line) as [string, string, string | null, string];
+    const entryJson = row[3];
+    let alternate: string | null = null;
+    try {
+      alternate = (JSON.parse(entryJson) as DictionaryEntry).alternate ?? null;
+    } catch {
+      // Corrupt entry — headword segmentation still works without alternate
+    }
     batch.push({
       id: row[0],
       head: row[1],
+      alternate,
       pronunciation: row[2] ?? null,
-      entry_json: row[3],
+      entry_json: entryJson,
     });
     processed++;
 

@@ -68,20 +68,22 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/** Whether a language has a downloadable tokenizer/lemma pack that works
- *  independently of the offline dictionary. Dict-segmentation languages
- *  (zh, th, km, etc.) require the dictionary for word segmentation and
- *  are treated as not having a standalone tokenizer.
- *  Languages without one (Category E, ~146 langs) fall back to regex
+/** Whether a language has local tokenizer support once its offline data is
+ *  downloaded. Dict-segmentation languages (zh, th, km, etc.) segment using
+ *  the offline dictionary's own headword list, so the dictionary download IS
+ *  the tokenizer download — no standalone pack is needed.
+ *  Languages without any strategy (Category E, ~146 langs) fall back to regex
  *  word-split + surface-as-lemma — text cannot be made interactive offline.
  *  See ARCH-018 for the per-language taxonomy. */
 function hasLocalTokenizer(l2: string): boolean {
   const config = TOKENIZER_CONFIG[l2];
   if (!config) return false;
-  // Dict-segmentation-only languages need the offline dictionary for
-  // word segmentation — no standalone tokenizer.
-  if (config.needsDictSegmentation && !config.needsKuromoji) return false;
-  return true;
+  return Boolean(
+    config.snowballCode ||
+      config.hasLemmaTable ||
+      config.needsKuromoji ||
+      config.needsDictSegmentation,
+  );
 }
 
 // ── Main Screen ──────────────────────────────

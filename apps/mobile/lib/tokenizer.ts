@@ -21,6 +21,9 @@
  *
  * Phase 2b — Dict-Based Segmentation (CJK + SEA scriptio continua):
  *   - Forward maximum matching using offline dictionary headwords
+ *   - Word set includes both simplified heads and traditional alternates so
+ *     both scripts segment the same way (script conversion stays at the
+ *     render layer, per ADR-0019)
  *   - Covers Chinese varieties (zh, cmn, yue, nan, ...) + Thai, Khmer,
  *     Burmese, Lao, Tibetan (th, km, my, lo, bo)
  *   - ~90% accuracy for Chinese (cedict, 30K entries)
@@ -127,7 +130,11 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
     const db = await openDictionaryDB();
     const table = `dict_${l2.replace(/-/g, '_')}`;
     const rows = await db.getAllAsync<{ head: string }>(
-      `SELECT DISTINCT head FROM ${table}`,
+      // head = simplified form (zh), alternate = traditional form (zh/yue).
+      // UNION dedupes across both scripts.
+      `SELECT head FROM ${table} WHERE head != ''
+       UNION
+       SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
     );
     if (!rows || rows.length === 0) return null;
 
