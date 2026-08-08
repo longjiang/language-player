@@ -60,7 +60,7 @@ The local tokenizer families covered:
   - Tap 思った → dictionary popup lemma 思う.
   - 耳 shows katakana ruby (ミミ).
   - 銃撃戦 stays one token.
-- **Pass**: No spaces inserted between Japanese tokens — including in ruby mode, where tokens must render flush with no phantom gaps (regression: per-token `mx-px` margins removed 2026-08-08); punctuation (、。…) not clickable; ruby is katakana, not romaji; tapping anywhere on a kanji+kana word (including its furigana) opens the popup for the whole token, with a dimming press feedback (regression: one `Pressable` per token added 2026-08-08, pressed-state opacity 0.45).
+- **Pass**: No spaces inserted between Japanese tokens — including in ruby mode, where tokens must render flush with no phantom gaps (regression: per-token `mx-px` margins removed 2026-08-08); punctuation (、。…) not clickable; ruby is katakana, not romaji, and sits close to the base text with no large vertical gap (regression: furigana gap trim 2026-08-08); tapping anywhere on a kanji+kana word (including its furigana) opens the popup for the whole token, with a dimming press feedback (regression: one `Pressable` per token added 2026-08-08, pressed-state opacity 0.45).
 
 ### TC-02 — Korean (kuromoji-ko + koroman)
 

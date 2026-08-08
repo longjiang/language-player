@@ -680,8 +680,15 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
-    const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
-    const baseLeading = leadingRatio ? Math.round(textStyle.fontSize! * leadingRatio) : undefined;
+    const tokenFontSize = textStyle.fontSize ?? 16;
+    const readingSize = Math.max(8, Math.round(tokenFontSize * 0.55));
+    const baseLeading = leadingRatio ? Math.round(tokenFontSize * leadingRatio) : undefined;
+    // The base text's line box is `baseLeading` tall, so its top half-leading
+    // creates a visible gap between furigana and the word. Pull the reading
+    // down by that half-leading (minus a small breathing room) and compensate
+    // with top padding on the token column — row height and baseline
+    // alignment with punctuation stay identical.
+    const rubyGapTrim = Math.max(2, Math.round(((baseLeading ?? tokenFontSize) - tokenFontSize) / 2) - 2);
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -791,7 +798,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSearchHighlight = !!tokenFormat?.highlight;
 
               return (
-                <View key={i} className="items-center" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                <View key={i} className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, { paddingTop: rubyGapTrim }]}>
                   {/* One pressable per token: the whole word — kanji + kana +
                       furigana + quick gloss — shares a single tap target, matching
                       web's token-span.tsx wrapper span. */}
@@ -806,12 +813,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       {rubySegs.map((seg, j) => (
                         <View key={j} className="items-center">
                           {seg.reading && (
-                            <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
+                            <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className="text-muted-foreground">{seg.reading}</Text>
                           )}
                           {/* Spacer: align kana-only segments with kanji segments that have ruby above.
                               Matches the reading text's lineHeight so base texts share a baseline. */}
                           {hasRuby && !seg.reading && (
-                            <View style={{ height: readingSize + 2 }} />
+                            <View style={{ height: readingSize + 2, marginBottom: -rubyGapTrim }} />
                           )}
                           <Text style={[textStyle, { lineHeight: baseLeading }]}>
                             {isBlanked ? (
