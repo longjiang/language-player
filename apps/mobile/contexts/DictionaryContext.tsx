@@ -16,11 +16,16 @@ import {
   openDictionaryDB,
   lookupOffline,
   bulkInsertEntries,
+  resetDictTable,
   deleteDictionary as deleteDictDB,
   hasOfflineDictionary,
   saveDictMeta,
   getDictMeta,
 } from '@/lib/dictionary-db';
+import {
+  downloadDictionaryData,
+  type OfflineDictMeta,
+} from '@/lib/dictionary-download';
 import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -46,6 +51,7 @@ export interface DownloadState {
   progress: number; // 0–100
   downloaded: number;
   total: number;
+  phase?: 'dictionary' | 'insert' | 'lemma' | 'tokenizer' | 'finalizing';
   error?: string;
 }
 
@@ -162,6 +168,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const downloadStatesRef = useRef<Map<string, DownloadState>>(new Map());
   const [downloadStatesVersion, setDownloadStatesVersion] = useState(0); // bump to trigger re-renders
   const cancelRef = useRef<Map<string, boolean>>(new Map());
+  const downloadAbortRef = useRef<Map<string, AbortController>>(new Map());
 
   // Init DB on mount
   useEffect(() => {
@@ -290,49 +297,90 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     const db = dbRef.current;
     const stateMap = downloadStatesRef.current;
     const cancelMap = cancelRef.current;
+    const controller = new AbortController();
+    downloadAbortRef.current.set(l2, controller);
 
     // Reset cancel flag
     cancelMap.set(l2, false);
 
     // Set initial state
-    stateMap.set(l2, { status: 'downloading', progress: 0, downloaded: 0, total: 0 });
+    stateMap.set(l2, {
+      status: 'downloading',
+      progress: 1,
+      downloaded: 0,
+      total: 0,
+      phase: 'dictionary',
+    });
     setDownloadStatesVersion((v) => v + 1);
 
+    const update = (patch: Partial<DownloadState>) => {
+      const current = stateMap.get(l2) ?? {
+        status: 'downloading' as const,
+        progress: 0,
+        downloaded: 0,
+        total: 0,
+      };
+      stateMap.set(l2, { ...current, ...patch });
+      setDownloadStatesVersion((v) => v + 1);
+    };
+    let tableReady = false;
+
     try {
-      log('[DictContext] 🌐 GET /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
-      const res = await dict.downloadDictionary(l2, l1Lang.code);
-      const { entries, total, version } = res;
-      log('[DictContext] ✅ download response — entries:', entries.length, 'total:', total, 'version:', version.slice(0, 12));
-
-      // Check cancellation before starting insert
-      if (cancelMap.get(l2)) {
-        log('[DictContext] 🛑 Cancelled before insert — l2:', l2);
-        stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
-        setDownloadStatesVersion((v) => v + 1);
-        throw new Error('Download cancelled');
-      }
-
-      log('[DictContext] 💾 bulkInsertEntries starting — l2:', l2, 'count:', entries.length);
+      log('[DictContext] 🌐 streaming /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
       const insertStart = Date.now();
+      const downloadMeta: { value: OfflineDictMeta | null } = { value: null };
+      let lastNetworkPct = -1;
 
-      await bulkInsertEntries(db, l2, entries, (pct) => {
-        // Check cancellation between chunks
-        if (cancelMap.get(l2)) return;
-        const downloaded = Math.round((pct / 100) * entries.length);
-        stateMap.set(l2, {
-          status: 'downloading',
-          progress: pct,
-          downloaded,
-          total: entries.length,
-        });
-        setDownloadStatesVersion((v) => v + 1);
-      });
+      await downloadDictionaryData(
+        l2,
+        l1Lang.code,
+        {
+          onDownloadProgress: (fraction) => {
+            // Network transfer maps to the first 0–64% of the bar.
+            const pct = Math.min(64, Math.floor(fraction * 64));
+            if (pct !== lastNetworkPct) {
+              lastNetworkPct = pct;
+              update({
+                status: 'downloading',
+                phase: 'dictionary',
+                progress: pct,
+                downloaded: 0,
+                total: 0,
+              });
+            }
+          },
+          onMeta: (meta) => {
+            downloadMeta.value = meta;
+          },
+          onRows: async (rows, processed, total) => {
+            if (cancelMap.get(l2)) throw new Error('Download cancelled');
+            // Only replace the existing table once the new data has actually
+            // started arriving, so a failed network fetch keeps the old copy.
+            if (!tableReady) {
+              await resetDictTable(db, l2);
+              tableReady = true;
+            }
+            await bulkInsertEntries(db, l2, rows);
+            // Insertion maps to 65–90% of the bar.
+            const insertPct = total > 0 ? Math.round((processed / total) * 25) : 25;
+            update({
+              status: 'downloading',
+              phase: 'insert',
+              progress: 65 + Math.min(25, insertPct),
+              downloaded: processed,
+              total,
+            });
+          },
+        },
+        controller.signal,
+      );
 
-      log('[DictContext] 💾 bulkInsertEntries done — l2:', l2, '— took', Date.now() - insertStart, 'ms');
+      const total = downloadMeta.value?.downloaded || downloadMeta.value?.total || 0;
+      const version = downloadMeta.value?.version ?? '';
+      log('[DictContext] ✅ dictionary download done — l2:', l2, 'total:', total, 'version:', version.slice(0, 12), '— took', Date.now() - insertStart, 'ms');
 
-      // Check cancellation after insert
       if (cancelMap.get(l2)) {
-        log('[DictContext] 🛑 Cancelled after insert, cleaning up — l2:', l2);
+        log('[DictContext] 🛑 Cancelled after download, cleaning up — l2:', l2);
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
@@ -344,8 +392,8 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       const meta: DictMeta = {
         l2,
         downloaded_at: now,
-        entry_count: entries.length,
-        size_bytes: JSON.stringify(entries).length,
+        entry_count: total,
+        size_bytes: total * 600,
         version,
       };
       await saveDictMeta(db, meta);
@@ -354,11 +402,20 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       // ── SPEC-018 Phase 2a: Download lemma table as sidecar ──
       const tokenConfig = TOKENIZER_CONFIG[l2];
       if (tokenConfig?.hasLemmaTable) {
+        if (cancelMap.get(l2)) throw new Error('Download cancelled');
+        update({
+          status: 'downloading',
+          phase: 'lemma',
+          progress: 92,
+          downloaded: total,
+          total,
+        });
         log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
         try {
-          const ok = await downloadLemmaTable(l2, PYTHON_API_URL, 50000);
+          const ok = await downloadLemmaTable(l2, PYTHON_API_URL, 50000, controller.signal);
           log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
         } catch (e: any) {
+          if (cancelMap.get(l2)) throw new Error('Download cancelled');
           log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);
         }
       }
@@ -366,17 +423,42 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       // ── SPEC-018 Phase 2c/2d: Download kuromoji/kuromoji-ko data pack ──
       // Japanese (ja): kuromoji + IPADIC dict, Korean (ko): kuromoji-ko + mecab-ko-dic
       if (tokenConfig?.needsKuromoji) {
+        if (cancelMap.get(l2)) throw new Error('Download cancelled');
+        update({
+          status: 'downloading',
+          phase: 'tokenizer',
+          progress: 94,
+          downloaded: total,
+          total,
+        });
         log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
         try {
           const { downloadKuromojiData } = await import('@/lib/tokenizer-db');
-          const ok = await downloadKuromojiData(l2, PYTHON_API_URL);
+          const ok = await downloadKuromojiData(
+            l2,
+            PYTHON_API_URL,
+            (fraction) => {
+              // Tokenizer pack maps to 94–99% of the bar.
+              const pct = Math.min(99, 94 + Math.round(fraction * 5));
+              update({
+                status: 'downloading',
+                phase: 'tokenizer',
+                progress: pct,
+                downloaded: total,
+                total,
+              });
+            },
+            controller.signal,
+          );
           log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
           if (ok) {
             // Reset the tokenizer singleton so next lemmatizeText() reloads
             const { resetTokenizer } = await import('@/lib/tokenizer');
             resetTokenizer(l2);
           }
+          if (cancelMap.get(l2)) throw new Error('Download cancelled');
         } catch (e: any) {
+          if (cancelMap.get(l2)) throw new Error('Download cancelled');
           log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
         }
       }
@@ -384,16 +466,26 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       stateMap.set(l2, {
         status: 'completed',
         progress: 100,
-        downloaded: entries.length,
-        total: entries.length,
+        downloaded: total,
+        total,
+        phase: 'finalizing',
       });
       setDownloadStatesVersion((v) => v + 1);
-      log('[DictContext] 🎉 download complete — l2:', l2, 'total entries:', entries.length);
+      log('[DictContext] 🎉 download complete — l2:', l2, 'total entries:', total);
 
     } catch (e: any) {
       log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
-      // Clean up partial data on failure
-      try { await deleteDictDB(db, l2); } catch {}
+      // Clean up partial data on failure — but only if we actually replaced
+      // the table. A failed network fetch leaves the previous download intact.
+      if (tableReady) {
+        try { await deleteDictDB(db, l2); } catch {}
+      }
+
+      if (cancelMap.get(l2)) {
+        stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
+        setDownloadStatesVersion((v) => v + 1);
+        throw new Error('Download cancelled');
+      }
 
       stateMap.set(l2, {
         status: 'failed',
@@ -403,16 +495,20 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         error: e?.message ?? 'Download failed',
       });
       setDownloadStatesVersion((v) => v + 1);
+    } finally {
+      downloadAbortRef.current.delete(l2);
     }
-  }, [dict, l1Lang.code]);
+  }, [l1Lang.code]);
 
   const cancelDownload = useCallback((l2: string) => {
     cancelRef.current.set(l2, true);
+    downloadAbortRef.current.get(l2)?.abort();
   }, []);
 
   const deleteDictionary = useCallback(async (l2: string) => {
     if (!dbRef.current) return;
-    await deleteDictDB(dbRef.current, l2);
+    downloadAbortRef.current.get(l2)?.abort();
+    cancelRef.current.set(l2, true);
     // Also clean up lemma table (SPEC-018 Phase 2a)
     try { await deleteLemmaTable(l2); } catch {}
     // Also clean up kuromoji/kuromoji-ko data pack (SPEC-018 Phase 2c/2d)
@@ -420,11 +516,16 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       try {
         const { deleteKuromojiData } = await import('@/lib/tokenizer-db');
         await deleteKuromojiData(l2);
-        // Reset the tokenizer singleton
-        const { resetTokenizer } = await import('@/lib/tokenizer');
-        resetTokenizer(l2);
       } catch {}
     }
+    // Drop the dictionary table + metadata last so the VACUUM reclaims every
+    // freed page from the dict, lemma, and tokenizer cleanup in one pass.
+    await deleteDictDB(dbRef.current, l2);
+    // Drop in-memory headword/tokenizer/lemmatization state for this language.
+    try {
+      const { clearDictionaryCaches } = await import('@/lib/tokenizer');
+      clearDictionaryCaches(l2);
+    } catch {}
     downloadStatesRef.current.delete(l2);
     setDownloadStatesVersion((v) => v + 1);
   }, []);
