@@ -142,6 +142,9 @@ Manual checklist review found three more issues, all fixed:
 | Dictionary entry shell | Entry page showed a "Dictionary" title and no way to search without going back | The header is now a persistent `SearchBar` (submits back to search results) plus the sidebar toggle; the title is removed |
 | Image search columns | Tile width was computed from the window, not the container, so 4 columns overflowed padded cards on wide screens and wrapped to 3 | Tiles are sized from the measured container (`(width − padding − gaps) / cols`) |
 | Docs TOC sidebar | Docs kept the single-screen inline "On this page" list with no sidebar parity | Implemented web's TOC logic: persistent right sidebar at ≥1280, slide-in drawer below with a floating button, H2/H3 anchors scroll to headings via measured offsets |
+| Channel 404 | Mobile called `/channels/{id}` but the backend only exposes `/channels/{id}/videos`, so every channel page hit a raw axios 404; the error was shown as hard-coded English | Fetch now uses the `/videos` endpoint; errors are mapped to localized copy (`msg.page_not_found_desc` for 404, `error.failed_to_load` otherwise) |
+| Watch player overflow | `YouTubePlayer` sized itself to the full window when no `containerWidth` was passed, so in landscape it overflowed the left column and ran behind the transcript | The player column is measured with `onLayout` and passed as `containerWidth` in every watch mode |
+| Local Media reachability/icons | The lg+ player column wasn't scrollable, so controls below the player could be unreachable; file-bar lucide icons used `className` colors that render black | Player column scrolls at ≥1024 with captions; file-bar icons use `ICON_MUTED` |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -361,9 +364,9 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Live TV** — stacked below 1024; player left + channel list right at ≥1024 (320px at lg, 384px at xl) with padding around both columns; search/filter icons use theme tokens (no black icons in dark mode).
 - [ ] **TV Shows** — grid 1/2/3/4, no hardcoded 2 columns; at ≥768 sort + region filter sit to the right of the search bar (stacked below).
 - [ ] **TV Show detail** — row list capped at 896.
-- [ ] **Channel** — Explore-style grid; channel header card intact; loads once (no 404/loading refetch loop).
-- [ ] **Watch** — portrait: subtitle band below player (controls + active line in one card band); landscape: translucent subtitle band overlay on the video (white text, no opaque card).
-- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player; content capped at 1280.
+- [ ] **Channel** — Explore-style grid; channel header card intact; loads once (no 404/loading refetch loop); 404 shows localized copy (no raw axios English).
+- [ ] **Watch** — portrait: subtitle band below player (controls + active line in one card band); landscape: translucent subtitle band overlay on the video (white text, no opaque card); the iframe stays inside the player column.
+- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024 with the player column scrollable; without captions: full-width player; content capped at 1280; file-bar icons use theme tokens.
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
 - [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards; empty-state "New playlist" opens the dialog; icons use theme tokens.
