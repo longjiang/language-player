@@ -8,6 +8,7 @@
  */
 
 import { AppState } from 'react-native';
+import { repairSyncPayload } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
@@ -238,13 +239,33 @@ async function pushOutbox(): Promise<number> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      ops: rows.map((r) => ({
-        idempotency_key: r.idempotency_key,
-        entity: r.entity,
-        entity_id: r.entity_id,
-        op: r.op,
-        payload: JSON.parse(r.payload) as Record<string, unknown>,
-        updated_at: r.updated_at,
+      ops: await Promise.all(rows.map(async (r) => {
+        let payload = JSON.parse(r.payload) as Record<string, unknown>;
+        // Self-heal legacy partial payloads (queued before the whole-row
+        // contract) so strict server validation can't strand them forever.
+        if (r.op === 'upsert') {
+          try {
+            const cached = await getEntityCacheRow(r.entity, r.entity_id);
+            const source = cached && cached.deleted_at == null
+              ? JSON.parse(cached.payload) as Record<string, unknown>
+              : null;
+            const repaired = repairSyncPayload(r.entity, payload, source);
+            if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
+              log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
+            }
+            payload = repaired;
+          } catch {
+            // Unrepairable — leave as-is; the server will reject loudly.
+          }
+        }
+        return {
+          idempotency_key: r.idempotency_key,
+          entity: r.entity,
+          entity_id: r.entity_id,
+          op: r.op,
+          payload,
+          updated_at: r.updated_at,
+        };
       })),
     }),
   });

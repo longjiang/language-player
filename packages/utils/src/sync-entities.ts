@@ -64,6 +64,11 @@ const SYNC_ENTITY_DEFS: Record<string, SyncEntityDef> = {
   },
 };
 
+/** Safe defaults for optional schema fields (used to heal legacy payloads). */
+const PAYLOAD_DEFAULTS: Record<string, Record<string, unknown>> = {
+  note: { title: 'Untitled', text: '', translation: '' },
+};
+
 export function getSyncEntityDef(entity: string): SyncEntityDef | null {
   return SYNC_ENTITY_DEFS[entity] ?? null;
 }
@@ -116,4 +121,29 @@ export function coalesceSyncPayload(
     throw new Error(`[sync] unknown sync entity: ${entity}`);
   }
   return def.coalesce(prev, next);
+}
+
+/**
+ * Heal a legacy/partial payload before pushing: fill missing required schema
+ * fields from `source` (e.g. the entity_cache row) or safe defaults. Ops
+ * queued before the whole-row contract are otherwise rejected forever by the
+ * server's strict validation.
+ */
+export function repairSyncPayload(
+  entity: string,
+  payload: Record<string, unknown>,
+  source?: Record<string, unknown> | null,
+): Record<string, unknown> {
+  const def = getSyncEntityDef(entity);
+  if (!def) return payload;
+  const out = { ...payload };
+  for (const key of Object.keys(def.schema)) {
+    if (key in out) continue;
+    if (source && key in source) {
+      out[key] = source[key];
+    } else if (PAYLOAD_DEFAULTS[entity]?.[key] !== undefined) {
+      out[key] = PAYLOAD_DEFAULTS[entity][key];
+    }
+  }
+  return out;
 }
