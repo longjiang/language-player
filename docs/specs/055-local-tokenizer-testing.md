@@ -84,7 +84,7 @@ The local tokenizer families covered:
   - Ruby shows tone-marked pinyin.
   - 围城 segments as one word; punctuation non-clickable.
 - **Pass**: Pinyin above words (nǐ hǎo style), no spaces between Han chars, tokens reconstruct text exactly.
-- **Verified 2026-08-08**: worker path `✅ WEBVIEW-DICT-WORKER OK`; pinyin ruby; no phantom spaces; **bidirectional script conversion** — a traditional-script EPUB (笑傲江湖) renders simplified with `display.traditional=false` (`SCRIPT-CONV direction=toSimplified` + `RENDER-CONV mapped=N/N`), and simplified source renders traditional when the preference is on (ADR-0019).
+- **Verified 2026-08-08**: worker path `✅ WEBVIEW-DICT-WORKER OK`; pinyin ruby; no phantom spaces; **bidirectional script conversion** — a traditional-script EPUB (笑傲江湖) renders simplified with `display.traditional=false`, and simplified source renders traditional when the preference is on (ADR-0019).
 
 ### TC-04 — Chinese main-thread fallback
 
