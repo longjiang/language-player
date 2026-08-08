@@ -251,6 +251,7 @@ export function DictionaryPopup({
         });
         setEntries(deduped);
         setLoading(false);
+        log(`🎙 POPUP-LOOKUP word=${JSON.stringify(token.text)} lemma=${JSON.stringify(token.lemmas[0]?.lemma ?? null)} pron=${JSON.stringify(token.pronunciation ?? null)} entries=${JSON.stringify(deduped.map((e) => ({ id: e.id, head: e.head })))}`);
       }
 
       // ── Cache hit + non-English L1: fetch L1-translated definitions in background ──
