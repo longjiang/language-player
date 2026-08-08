@@ -52,6 +52,7 @@ import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { isTokenizationWorkerReady, tokenizeJapaneseInWorker } from '@/lib/tokenizer-worker';
 
 const arabicStemmer = new Stemmer();
 
@@ -817,6 +818,18 @@ async function runLocalFallback(
   // Full morphological analysis — handles both segmentation and
   // lemmatization in one call with best offline accuracy.
   if (config?.needsKuromoji) {
+    // WebView worker first (off the RN JS thread) — ja only for now; the
+    // main-thread kuromoji singleton remains the fallback.
+    if (l2 === 'ja' && isTokenizationWorkerReady()) {
+      log(`[lemmatize] 🤖 WEBVIEW-WORKER l2=${l2} text="${text.slice(0, 50)}…"`);
+      const workerTokens = await tokenizeJapaneseInWorker(text);
+      if (workerTokens && workerTokens.length > 0) {
+        log(`[lemmatize] ✅ WEBVIEW-WORKER OK l2=${l2} tokens=${workerTokens.length}`);
+        cacheSet(cacheKey, workerTokens);
+        return workerTokens;
+      }
+      log(`[lemmatize] ⚠️ WEBVIEW-WORKER UNAVAIL l2=${l2} → main-thread kuromoji`);
+    }
     const tokenizeFn = l2 === 'ko' ? tokenizeKorean : l2 === 'ja' ? tokenizeJapanese : null;
     if (tokenizeFn) {
       log(`[lemmatize] 🤖 KUPOMOJI l2=${l2} text="${text.slice(0, 50)}…"`);
