@@ -838,7 +838,6 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
   try {
     const chunks = chunkTextForYield(text);
     const out: LemmatizedToken[] = [];
-    let pronReading = 0;
     let pronRomanized = 0;
     let pronNone = 0;
     for (let ci = 0; ci < chunks.length; ci++) {
@@ -876,19 +875,13 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
           (lemma.endsWith('다') ? KO_SUPPLETIVE_LEMMAS[lemma.slice(0, -1)] : undefined);
         if (suppletive) lemma = suppletive;
 
-        // Include reading if available; otherwise romanize the surface
-        // form with koroman so offline ko matches the server.
-        // NOTE: kuromoji-ko's reading is Hangul, so when present the
-        // pronunciation is Hangul (often identical to the surface), not
-        // the Latin romanization the UI expects for Korean.
-        const pron =
-          t.reading && t.reading !== '*'
-            ? t.reading
-            : /[\uAC00-\uD7A3]/.test(t.surface_form)
-              ? romanize(t.surface_form, 'ko')
-              : undefined;
-        if (t.reading && t.reading !== '*') pronReading++;
-        else if (/[\uAC00-\uD7A3]/.test(t.surface_form)) pronRomanized++;
+        // Korean phonetics are the Latin romanization (koroman) — matching
+        // the server. kuromoji-ko's `reading` is Hangul and is usually
+        // identical to the surface, which would suppress ruby rendering
+        // (`pronunciation === word` → no ruby), so we never use it here.
+        const isHangul = /[\uAC00-\uD7A3]/.test(t.surface_form);
+        const pron = isHangul ? romanize(t.surface_form, 'ko') : undefined;
+        if (isHangul) pronRomanized++;
         else pronNone++;
 
         out.push({
@@ -900,7 +893,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
       }
     }
     const pronEqSurface = out.filter((t) => t.pronunciation && t.pronunciation === t.text).length;
-    log(`[lemmatize] 🎙 KO-PRON l2=ko tokens=${out.length} reading=${pronReading} romanized=${pronRomanized} none=${pronNone} pronEqSurface=${pronEqSurface} sample=${out.slice(0, 12).map((t) => `${t.text}→${t.pronunciation ?? '∅'}`).join(', ')}`);
+    log(`[lemmatize] 🎙 KO-PRON l2=ko tokens=${out.length} romanized=${pronRomanized} none=${pronNone} pronEqSurface=${pronEqSurface} sample=${out.slice(0, 12).map((t) => `${t.text}→${t.pronunciation ?? '∅'}`).join(', ')}`);
     return out;
   } catch (e) {
     logwarn('[Tokenizer] kuromoji-ko tokenize error:', e);
