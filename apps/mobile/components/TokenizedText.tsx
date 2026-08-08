@@ -795,7 +795,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {/* One pressable per token: the whole word — kanji + kana +
                       furigana + quick gloss — shares a single tap target, matching
                       web's token-span.tsx wrapper span. */}
-                  <Pressable testID={`token-${i}`} onPress={handlePress}>
+                  <Pressable
+                    testID={`token-${i}`}
+                    onPress={handlePress}
+                    style={({ pressed }) => (pressed ? { opacity: 0.45 } : undefined)}
+                  >
                     {/* Segment row + quick gloss: items-end so the gloss (no furigana)
                         baseline-aligns with the word text at the bottom of the segment columns. */}
                     <View className="flex-row items-end">
