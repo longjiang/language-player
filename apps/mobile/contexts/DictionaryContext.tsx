@@ -12,7 +12,6 @@ import { useDictionary } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
-import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeError } from '@/lib/offline-mode';
@@ -146,7 +145,6 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const { status } = useSyncStatus();
   const dict = useDictionary();
   const l2Code = l2Lang.code;
-  const dictAvailable = useOfflineDictionaryAvailable(l2Code);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
@@ -166,6 +164,21 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const [downloadStatesVersion, setDownloadStatesVersion] = useState(0); // bump to trigger re-renders
   const cancelRef = useRef<Map<string, boolean>>(new Map());
   const downloadAbortRef = useRef<Map<string, AbortController>>(new Map());
+  // Local availability state for the doSearch gate (can't use the
+  // useOfflineDictionaryAvailable hook here — it reads this provider's own
+  // context).
+  const [dictAvailable, setDictAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setDictAvailable(null);
+    void hasOfflineDictionaryByL2(l2Code).then((value) => {
+      if (!cancelled) setDictAvailable(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [l2Code, downloadStatesVersion]);
 
   // Init DB on mount
   useEffect(() => {
