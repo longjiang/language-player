@@ -3,8 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-018
 - **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
-- **Status**: draft
+- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e done; 3b deferred)
 - **Created**: 2026-07-26
+- **Last updated**: 2026-08-07
 - **Supersedes**: [SPEC-016](../specs/016-mobile-local-tokenization.md)
 - **See also**:
   - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy and strategy reference
@@ -16,6 +17,21 @@
   - [SPEC-022: Tokenizer Auto-Download UI](../specs/022-tokenizer-auto-download-ui.md) — how tokenizer packs download invisibly alongside dictionaries
 
 ---
+
+## Implementation Status
+
+| Phase | Status | Notes |
+|---|---|---|
+| Phase 1 — Regex + surface-as-lemma + Arabic | ✅ Implemented (2026-07-27) | `apps/mobile/lib/tokenizer.ts` — cache → server (3s) → local fallback |
+| Phase 2a — Snowball + lemma tables | ✅ Implemented | `tokenizer-db.ts`, `/lemmatization/export`, sidecar download in `DictionaryContext` |
+| Phase 2b — Dict max-matching (CJK/SEA) | ✅ Implemented, enhanced 2026-08-07 | Headword set includes simplified `head` + traditional `alternate`; offline lookup matches both scripts; UI counts dict-seg languages as having a local tokenizer |
+| Phase 2c — Japanese kuromoji | ✅ Implemented (2026-07-27) | Custom RN loader + IPADIC pack |
+| Phase 2d — Korean kuromoji-ko | ✅ Implemented | Same loader pattern + mecab-ko-dic pack |
+| Phase 3a — Server data-pack hosting | ✅ Implemented | `/lemmatization/download` + zip archives |
+| Phase 3b — Bundled lemma tables | ⏳ Deferred | No bundled assets; lemma tables are download-only |
+| Phase 3c — Cache eviction & memory hygiene | ✅ Implemented | LRU lemmatize cache (2000) + dict word-set LRU (3 languages) |
+| Phase 3d — Silent error handling | ✅ Implemented | App logger (`logwarn`) with app-wide log gate |
+| Phase 3e — Batch endpoint offline fallback | ✅ Implemented | `use-epub-pagination.ts` falls back to `lemmatizeText()` per block |
 
 ## Overview
 
@@ -63,19 +79,15 @@ When the server is reachable, `POST /lemmatize-normalized` is always preferred �
 ┌─────────────────────────────────────────────────┐
 │         Tokenization (offline chain)             │
 │                                                  │
-│  Level 1: Intl.Segmenter (built-in, 0 KB)       │
-│  ├─ iOS: JSC native support (zh, ja, ko, th,    │
-│  │   lo, km, my, ...)                            │
-│  └─ Android: @formatjs/intl-segmenter polyfill   │
-│      (~30 KB) for Hermes                         │
-│                                                  │
-│  Level 2: Dictionary-Based Max Matching          │
+│  Level 1: Dictionary-Based Max Matching          │
 │  ├─ Uses offline dictionary headwords as word    │
 │  │   list (SPEC-013)                             │
+│  │   — simplified head + traditional alternate   │
 │  ├─ Pure JS, ~200 lines, no dependencies         │
-│  └─ Fallback when Intl.Segmenter unavailable     │
+│  └─ For CJK + SEA scriptio continua when the     │
+│      offline dictionary is downloaded            │
 │                                                  │
-│  Level 3: Regex Word Split                       │
+│  Level 2: Regex Word Split                       │
 │  ├─ For all space-separated languages             │
 │  ├─ Pattern: /[\w']+|[^\w\s']+/g                 │
 │  └─ Handles apostrophes, punctuation              │
@@ -102,6 +114,8 @@ When the server is reachable, `POST /lemmatize-normalized` is always preferred �
 ```
 
 For the detailed per-language assignment of which strategy applies to which language, see [ARCH-018](../arch/018-local-tokenization-strategy.md).
+
+> **Intl.Segmenter is not used.** Hermes has no native `Intl.Segmenter`, and the `@formatjs/intl-segmenter` polyfill segments each Han character individually (verified 2026-08-07) — it is not a Chinese word tokenizer. Dict max-matching is the implemented CJK/SEA fallback; see [Deferred](#deferred-research-review-2026-08-07).
 
 ### `lemmatizeText()` — Single Entry Point
 
@@ -355,7 +369,7 @@ JS NLP libraries written for Node.js may use `fs` or `zlib` — neither exists i
 
 ---
 
-#### Phase 2a: Snowball Stemmers + Lemma Tables
+#### Phase 2a: Snowball Stemmers + Lemma Tables ✅ IMPLEMENTED
 
 **Goal**: Add offline lemmatization for ~40 languages at zero data-download cost. Snowball stemmers are pure JS (~30 KB each) bundled as one npm package. Lemma tables are small JSON files downloaded silently alongside the offline dictionary.
 
@@ -398,11 +412,13 @@ The server reads LemmatizationList TSV files (`data/lemmatization-lists/lemmatiz
 
 ---
 
-#### Phase 2b: Chinese Segmentation (Dict Max-Matching)
+#### Phase 2b: Chinese Segmentation (Dict Max-Matching) ✅ IMPLEMENTED
 
 **Goal**: Add word segmentation for Chinese (and fallback for Thai, Khmer, Burmese, Lao) using the offline dictionary's own headword list. No npm dependencies, no data download — reuses the existing SPEC-013 offline dictionary.
 
-**How it works**: The offline dictionary SQLite table already contains all headwords for a language. We extract them with `SELECT DISTINCT head FROM dict_{l2}` (plus the traditional-script `alternate` column for zh/yue) and build a `Set<string>`. A forward maximum matching algorithm segments text by finding the longest dictionary match at each position. For unknown characters, emit single-character tokens.
+**Implementation**: Dict max-matching shipped 2026-07-27; both-scripts support, offline alternate lookup, and the UI indicator fix landed 2026-08-07 (commit `c76f1156`).
+
+**How it works**: The offline dictionary SQLite table already contains all headwords for a language. We extract them with `SELECT head FROM dict_{l2} UNION SELECT alternate FROM dict_{l2} WHERE alternate IS NOT NULL AND alternate != ''` and build a `Set<string>`. A forward maximum matching algorithm segments text by finding the longest dictionary match at each position. For unknown characters, emit single-character tokens.
 
 **Both scripts**: CEDICT stores the simplified form in `head` and the traditional form in `alternate` (e.g. 台湾 / 臺灣). The word set includes both, so simplified and traditional source text segment identically. Script conversion stays at the token render layer (ADR-0019), never in the tokenizer. Offline dictionary lookup matches both `head` and `alternate` for the same reason — tapping 臺灣 offline resolves to the same entry as 台湾.
 
@@ -411,10 +427,11 @@ function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number)
   const result: string[] = [];
   let i = 0;
   while (i < text.length) {
-    let longestMatch = text[i];
-    for (let len = Math.min(maxWordLen, text.length - i); len >= 1; len--) {
+    let longestMatch = text[i]!;
+    const searchEnd = Math.min(i + maxWordLen, text.length);
+    for (let len = searchEnd - i; len >= 1; len--) {
       const candidate = text.slice(i, i + len);
-      if (wordSet.has(candidate) || len === 1) {
+      if (wordSet.has(candidate)) {
         longestMatch = candidate;
         break;
       }
@@ -426,18 +443,22 @@ function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number)
 }
 ```
 
-**Accuracy**: ~90% for Chinese (cedict, 30K entries). ~80-88% for Thai/Khmer/Burmese (varies by dictionary coverage). Chinese characters are always their own lemma (no inflection), so surface-as-lemma is correct.
+**Accuracy**: ~90% for Chinese (cedict, 125K entries downloaded). ~80-88% for Thai/Khmer/Burmese (varies by dictionary coverage). Chinese characters are always their own lemma (no inflection), so surface-as-lemma is correct.
 
 > **Why not jieba?** jieba is the standard Chinese tokenizer (Python). Its core algorithm IS dictionary-based maximum matching plus an HMM layer for unknown words (~+5% accuracy). JS jieba ports exist (`nodejieba`, `@node-rs/jieba`) but are C++/Rust native bindings — not RN-compatible. WASM ports (`jieba-wasm`) require a WASM runtime that Expo/Hermes does not ship. Research (2026-08-07) confirmed the only jieba options are a native Turbo Module (needs dev builds, unvetted package) or porting a pure-JS engine (~700 lines) plus a ~3 MB downloadable dict pack. Our dict max-matching approach achieves ~90% accuracy with zero additional dependencies by reusing the existing offline dictionary, and including both scripts keeps it usable for simplified and traditional learners alike. If the missing ~5% from HMM proves insufficient in testing, the pure-JS jieba port remains the fallback path.
 
-**Languages covered**: `zh`, `cmn`, `nan`, `hak`, `lzh`, `gan`, `hsn`, `wuu`, `cjy`, `cpx`, `yue` (Chinese varieties) + `th`, `km`, `lo`, `my`, `bo` as fallback when Intl.Segmenter is unavailable.
+**Languages covered**: `zh`, `cmn`, `nan`, `hak`, `lzh`, `gan`, `hsn`, `wuu`, `cjy`, `cpx`, `yue` (Chinese varieties) + `th`, `km`, `lo`, `my`, `bo` — all use dict max-matching when the offline dictionary is downloaded, then regex word-split as the final fallback. No Intl.Segmenter involvement.
 
 **Files touched**:
 
 | File | Change |
 |---|---|
-| `apps/mobile/lib/tokenizer.ts` | Add `maxMatchSegment()`, integrate into fallback chain for CJK/SEA languages |
-| Offline dictionary SQLite | Query `SELECT DISTINCT head FROM dict_{l2}` to build word set |
+| `apps/mobile/lib/tokenizer.ts` | Add `loadDictWordSet()` + `maxMatchSegment()`, integrate into fallback chain; word set = `head` UNION `alternate` |
+| `apps/mobile/lib/dictionary-db.ts` | Add `alternate` column + index, one-time backfill migration, offline lookup by `head` then `alternate` |
+| `apps/mobile/lib/dictionary-download.ts` | Extract `alternate` from each row while streaming NDJSON (and JSON fallback) |
+| `apps/mobile/app/(tabs)/(me)/offline-dictionaries.tsx` | Dict-segmentation languages count as having a local tokenizer — no “Cannot make text interactive offline” warning for Chinese |
+
+**UI note**: Because the dictionary IS the tokenizer for Chinese, the offline-dictionaries screen treats `needsDictSegmentation` languages as having local tokenizer support (SPEC-022 rule — no standalone pack, no warning). The warning remains for Category E languages with no strategy at all.
 
 ---
 
@@ -479,7 +500,7 @@ cd apps/mobile && npm install fflate         # Zip extraction for data pack
 
 ---
 
-#### Phase 2d: Korean (kuromoji-ko)
+#### Phase 2d: Korean (kuromoji-ko) ✅ IMPLEMENTED
 
 **Goal**: Full morphological analysis for Korean using kuromoji-ko with a downloaded mecab-ko-dic dictionary. Same custom-loader pattern as Japanese.
 
@@ -807,7 +828,7 @@ cd apps/mobile && npm install expo-asset
 | `snowballStemmers` | `Map<string, function>` | ~30 KB each, max 15 | None — fixed ceiling |
 | `dictMaxWordLen` | `Map<string, number>` | 8 bytes each | None — trivial |
 
-**Review finding (2026-07-27)**: `lemmatizeCache` entries are tiny — 500 entries ≈ 1–2.5 MB, negligible on modern phones. The real unbounded memory risk is `dictWordSets`, which loads every headword from the offline dictionary SQLite into a `Set<string>`. A single Chinese dictionary (cedict, 30K entries) costs ~1–2 MB; 5 downloaded CJK languages cost 5–10 MB with no eviction. This was not addressed in the original plan.
+**Review finding (2026-07-27, updated 2026-08-07)**: `lemmatizeCache` entries are tiny — 500 entries ≈ 1–2.5 MB, negligible on modern phones. The real unbounded memory risk is `dictWordSets`, which loads every headword from the offline dictionary SQLite into a `Set<string>`. A Chinese download is now ~120K distinct simplified heads plus ~77K traditional alternates (~200K strings), so this cache is the dominant one and must stay capped. This was not addressed in the original plan.
 
 **Step 1**: Add LRU eviction to `lemmatizeCache` (belt-and-suspenders, low priority):
 
@@ -959,20 +980,19 @@ fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
 | Subphase | What | Why | Effort |
 |---|---|---|---|
 | **3a** ✅ | Server data pack hosting (`/lemmatization/download`) | JA/KO tokenizer packs can't download — endpoint + zips missing | Medium |
-| **3b** | Pre-built bundled lemma tables (Level 1) | Top 7 langs get instant offline lemmatization without any download | Medium |
-| **3c** | Cache eviction: `lemmatizeCache` (LRU, max 2000) + **`dictWordSets` (LRU, max 3)** | Prevents unbounded memory growth; `dictWordSets` is the higher risk (1–2 MB per language) | Small |
-| **3d** | Silent error handling | Gate 3 `console.warn` with `__DEV__` in kuromoji error paths | Trivial |
-| **3e** | Batch endpoint offline fallback | Add `.catch()` fallback calling `lemmatizeText()` in `use-epub-pagination.ts` | Trivial |
+| **3b** ⏳ | Pre-built bundled lemma tables (Level 1) | Top 7 langs get instant offline lemmatization without any download | Medium |
+| **3c** ✅ | Cache eviction: `lemmatizeCache` (LRU, max 2000) + **`dictWordSets` (LRU, max 3)** | Prevents unbounded memory growth; `dictWordSets` is the higher risk (a full Chinese set is ~120K simplified + ~77K traditional heads) | Small |
+| **3d** ✅ | Silent error handling | Kuromoji init/tokenize failures route through the app-wide `logwarn()` logger (gated by the log switch) instead of raw `console.warn` | Trivial |
+| **3e** ✅ | Batch endpoint offline fallback | `use-epub-pagination.ts` catches batch failure and re-tokenizes visible blocks with `lemmatizeText()` | Trivial |
 
-**Total new files**: 0 (all modifications to existing files)
-**Total modified files**: 3 (`tokenizer.ts`, `use-epub-pagination.ts`, `package.json`; `text_routes.py` already done in 3a ✅)
-**New server assets**: 2 zip archives ✅ + 7 gzipped JSON files
+**Status**: 3a, 3c, 3d, 3e implemented; 3b remains deferred (no bundled lemma-table assets — tables are download-only).
+**Server assets**: 2 zip archives (kuromoji-ipadic, mecab-ko-dic) ✅; 7 gzipped lemma-table JSONs not built.
 
-#### Deferred (unchanged)
+#### Deferred (research review 2026-08-07)
 
-- **Intl.Segmenter** with `@formatjs/intl-segmenter` polyfill — evaluate after dict max-matching accuracy is measured
-- **WASM tokenizers** (`jieba-js`, etc.) — evaluate if max-matching accuracy proves insufficient
-- **Native module tokenizers** — avoid unless pure JS proves too slow
+- **Intl.Segmenter** — not viable for Chinese on Hermes: no native support, and the `@formatjs/intl-segmenter` polyfill emits one segment per Han character (verified 2026-08-07). Keep it out of the CJK path.
+- **WASM tokenizers** (`jieba-wasm`) — blocked: Expo/Hermes has no WASM runtime (`expo-webassembly` is not published on npm as of 2026-08-07). Revisit only if a supported runtime ships.
+- **Jieba (pure-JS port or native module)** — `react-native-jieba` (cppjieba Turbo Module) fits RN 0.86/New Architecture but is brand-new/unvetted and forces development builds; a pure-JS port of `jieba-node` (~700 lines) plus a ~3 MB downloadable dict pack would match server accuracy but adds memory/effort. Decision: keep dict max-matching (with both scripts) as the offline fallback; revisit if the ~5% HMM gap proves insufficient.
 
 ---
 
@@ -1008,7 +1028,7 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - **Reduces server load** — fewer `/lemmatize-normalized` calls
 - **Complements offline dictionary** (SPEC-013) — together they enable full offline reading
 - **Most languages need near-zero code** — regex split + surface-as-lemma covers ~160 languages
-- **Intl.Segmenter is built-in on iOS** — zero-cost tokenization for CJK and scriptio continua languages
+- **Chinese needs no extra download** — the offline dictionary IS the tokenizer (dict max-matching, both scripts)
 
 ### Cons
 
@@ -1018,7 +1038,7 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - **Maintenance** — lemma tables need to be rebuilt when dictionaries update
 - **Coupled lifecycle** — tokenizer is tied to the dictionary; deleting the dict also deletes the tokenizer
 - **WASM and native module complexity** — if we go beyond pure JS libraries
-- **Android fragmentation** — Hermes doesn't support Intl.Segmenter; needs polyfill
+- **Hermes lacks Intl.Segmenter** — and the pure-JS polyfill is per-character for Chinese, so dict max-matching is the real CJK fallback
 
 ---
 
@@ -1036,9 +1056,10 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - [@formatjs/intl-segmenter polyfill](https://formatjs.io/docs/polyfills/intl-segmenter/)
 - [kuromoji.js](https://github.com/takuyaa/kuromoji.js) — Japanese tokenizer (pure JS)
 - [tiny-segmenter](https://github.com/SamuraiT/tiny-segmenter) — Tiny Japanese tokenizer
-- [jieba-js](https://github.com/fxsjy/jieba) — Chinese tokenizer (WASM port available)
+- [jieba](https://github.com/fxsjy/jieba) — Chinese tokenizer (Python; server uses dict.txt.big)
+- [jieba-node](https://www.npmjs.com/package/jieba-node) — pure-JS jieba port (Node-only loader; core is RN-portable)
+- [react-native-jieba](https://github.com/leonsilicon/react-native-jieba) — cppjieba Turbo Module (RN 0.85+, New Architecture)
 - [thai-segmenter](https://github.com/rayriffy/thai-segmenter) — Thai word segmentation (JS)
 - [compromise](https://github.com/spencermountain/compromise) — English NLP (JS)
 - [wink-nlp](https://github.com/winkjs/wink-nlp) — English NLP (JS)
-- [expo-webassembly](https://docs.expo.dev/versions/latest/sdk/webassembly/) — WASM in Expo
 - [Hermes Intl proposal](https://github.com/facebook/hermes/issues/896) — Intl.Segmenter in Hermes
