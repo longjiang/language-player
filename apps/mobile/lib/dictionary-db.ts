@@ -51,6 +51,9 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
 
     // Enable WAL mode for better concurrent read/write performance
     await _db.execAsync('PRAGMA journal_mode=WAL');
+    await _db.execAsync('PRAGMA synchronous=NORMAL');
+    // Larger page cache for bulk downloads and lookups (~8 MB).
+    await _db.execAsync('PRAGMA cache_size=-8192');
 
     // ── Shared tables (created once) ──
     await _db.execAsync(`
@@ -175,8 +178,9 @@ function dictTableName(l2: string): string {
 }
 
 /**
- * Create the dict_{l2} table (if it doesn't exist) with indexes.
- * Called before inserting entries for a language.
+ * Create the dict_{l2} table (if it doesn't exist). Lookup indexes are
+ * created separately by createDictIndexes() so bulk downloads can defer
+ * index maintenance until after all rows are inserted.
  */
 async function ensureDictTable(db: SQLite.SQLiteDatabase, l2: string): Promise<void> {
   const table = dictTableName(l2);
@@ -189,6 +193,17 @@ async function ensureDictTable(db: SQLite.SQLiteDatabase, l2: string): Promise<v
       entry_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     );
+  `);
+}
+
+/**
+ * Create the head/alternate lookup indexes. Kept separate from table creation
+ * so a bulk download can insert without index-maintenance overhead, then
+ * build both indexes once at the end.
+ */
+async function createDictIndexes(db: SQLite.SQLiteDatabase, l2: string): Promise<void> {
+  const table = dictTableName(l2);
+  await db.execAsync(`
     CREATE INDEX IF NOT EXISTS idx_${table}_head ON ${table}(head COLLATE NOCASE);
     CREATE INDEX IF NOT EXISTS idx_${table}_alternate ON ${table}(alternate COLLATE NOCASE);
   `);
@@ -343,73 +358,97 @@ export async function resetDictTable(
 ): Promise<void> {
   const table = dictTableName(l2);
   await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
+  // Deliberately no indexes here — they are created by finishBulkInsert().
   await ensureDictTable(db, l2);
 }
 
 /**
- * Insert downloaded dictionary rows in chunks, yielding to the main
- * thread between chunks to keep the UI responsive.
+ * Start a streaming bulk-insert session for a fresh dictionary download.
  *
- * Rows are pre-serialized (`entry_json` is already a JSON string), so no
- * per-entry JSON.stringify happens here. The caller must prepare the table
- * first with `resetDictTable()`.
+ * Drops/recreates the table without lookup indexes, then opens one transaction
+ * for the entire download. Every insertBatch call joins this transaction, so
+ * the app commits once and checkpoints the WAL once instead of paying that
+ * cost after every 500-row batch.
  *
- * @param onProgress — called after each chunk with percentage 0–100
+ * Must be paired with finishBulkInsert() on success or abortBulkInsert() on
+ * failure.
  */
-export async function bulkInsertEntries(
+export async function beginBulkInsert(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<void> {
+  await resetDictTable(db, l2);
+  await db.execAsync('BEGIN IMMEDIATE');
+}
+
+/**
+ * Insert one parsed batch inside the active bulk-insert transaction.
+ */
+export async function insertBulkBatch(
   db: SQLite.SQLiteDatabase,
   l2: string,
   entries: BulkEntryRow[],
   onProgress?: (pct: number) => void,
 ): Promise<void> {
-  const startTime = Date.now();
   const table = dictTableName(l2);
-  const totalChunks = Math.ceil(entries.length / CHUNK_SIZE);
+  // Build the multi-row INSERT in one JS pass, then measure the two phases
+  // separately so a slow download can be attributed to string building vs.
+  // the native SQLite call.
+  const buildStart = Date.now();
+  const values = entries
+    .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.alternate)},${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
+    .join(',');
+  const buildMs = Date.now() - buildStart;
 
-  log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
+  const txStart = Date.now();
+  await db.execAsync(
+    `INSERT OR REPLACE INTO ${table} (id, head, alternate, pronunciation, entry_json) VALUES ${values}`
+  );
+  const txMs = Date.now() - txStart;
 
-  for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-    const chunk = entries.slice(i, i + CHUNK_SIZE);
-    const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
-    const chunkStart = Date.now();
+  const avgEntryBytes = entries.length
+    ? Math.round(entries.reduce((sum, r) => sum + r.entry_json.length, 0) / entries.length)
+    : 0;
+  log('[DictDB] batch — l2:', l2, 'rows:', entries.length,
+    'avg entry_json:', avgEntryBytes, 'bytes',
+    '— sql build:', buildMs, 'ms — exec:', txMs, 'ms');
 
-    // Build multi-row INSERT to minimize JS↔native bridge roundtrips.
-    // Each roundtrip costs 1-4ms; 500 individual runAsync calls = ~2000ms.
-    // A single execAsync with all 500 rows = 1 roundtrip.
-    const txStart = Date.now();
-    const values = chunk
-      .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.alternate)},${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
-      .join(',');
-    await db.execAsync(
-      `INSERT OR REPLACE INTO ${table} (id, head, alternate, pronunciation, entry_json) VALUES ${values}`
-    );
-    const txMs = Date.now() - txStart;
-
-    const chunkMs = Date.now() - chunkStart;
-    const pct = Math.min(100, Math.round(((i + CHUNK_SIZE) / entries.length) * 100));
-
-    // Log every chunk for first 10, then every 10th, then every 20th
-    const shouldLog = chunkNum <= 10 || chunkNum % 10 === 0 || chunkNum === totalChunks;
-    if (shouldLog) {
-      log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
-        '— tx:', txMs, 'ms total:', chunkMs, 'ms',
-        '—', ((Date.now() - startTime) / 1000).toFixed(1), 's elapsed');
-    }
-
-    if (onProgress) {
-      onProgress(pct);
-    }
-
-    // Yield to the main thread to prevent UI freezes
-    await new Promise((resolve) => setTimeout(resolve, 0));
+  if (onProgress) {
+    onProgress(100);
   }
+}
 
-  log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
+/**
+ * Commit the bulk-insert transaction, build the lookup indexes, and flush the
+ * WAL once. Call this only after every batch has been inserted.
+ */
+export async function finishBulkInsert(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<void> {
+  const commitStart = Date.now();
+  await db.execAsync('COMMIT');
+  log('[DictDB] ✅ bulk insert committed — l2:', l2, '— commit took', Date.now() - commitStart, 'ms');
 
-  // Flush WAL to keep future inserts fast
-  log('[DictDB] 🧹 WAL checkpoint after bulk insert — l2:', l2);
-  try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
-  log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
+  const idxStart = Date.now();
+  await createDictIndexes(db, l2);
+  log('[DictDB] 🧱 lookup indexes created — l2:', l2, '— took', Date.now() - idxStart, 'ms');
+
+  const ckStart = Date.now();
+  await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)');
+  log('[DictDB] 🧹 WAL checkpoint done — l2:', l2, '— took', Date.now() - ckStart, 'ms');
+}
+
+/**
+ * Roll back an in-progress bulk insert. Safe to call when no transaction is
+ * open (e.g. the COMMIT already succeeded and index creation failed).
+ */
+export async function abortBulkInsert(db: SQLite.SQLiteDatabase): Promise<void> {
+  try {
+    await db.execAsync('ROLLBACK');
+  } catch {
+    // No open transaction — nothing to roll back.
+  }
 }
 
 // ── Dictionary metadata ───────────────────────

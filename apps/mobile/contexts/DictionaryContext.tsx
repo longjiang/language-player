@@ -15,8 +15,10 @@ import { log } from '@/lib/logger';
 import {
   openDictionaryDB,
   lookupOffline,
-  bulkInsertEntries,
-  resetDictTable,
+  beginBulkInsert,
+  insertBulkBatch,
+  finishBulkInsert,
+  abortBulkInsert,
   deleteDictionary as deleteDictDB,
   hasOfflineDictionary,
   saveDictMeta,
@@ -324,6 +326,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       setDownloadStatesVersion((v) => v + 1);
     };
     let tableReady = false;
+    let bulkStarted = false;
 
     try {
       log('[DictContext] 🌐 streaming /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
@@ -357,10 +360,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
             // Only replace the existing table once the new data has actually
             // started arriving, so a failed network fetch keeps the old copy.
             if (!tableReady) {
-              await resetDictTable(db, l2);
+              await beginBulkInsert(db, l2);
               tableReady = true;
+              bulkStarted = true;
             }
-            await bulkInsertEntries(db, l2, rows);
+            await insertBulkBatch(db, l2, rows);
             // Insertion maps to 65–90% of the bar.
             const insertPct = total > 0 ? Math.round((processed / total) * 25) : 25;
             update({
@@ -381,10 +385,19 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
       if (cancelMap.get(l2)) {
         log('[DictContext] 🛑 Cancelled after download, cleaning up — l2:', l2);
+        if (bulkStarted) {
+          await abortBulkInsert(db);
+          bulkStarted = false;
+        }
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
         throw new Error('Download cancelled');
+      }
+
+      if (bulkStarted) {
+        await finishBulkInsert(db, l2);
+        bulkStarted = false;
       }
 
       // Save metadata
@@ -477,6 +490,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
       // Clean up partial data on failure — but only if we actually replaced
       // the table. A failed network fetch leaves the previous download intact.
+      if (bulkStarted) {
+        await abortBulkInsert(db);
+        bulkStarted = false;
+      }
       if (tableReady) {
         try { await deleteDictDB(db, l2); } catch {}
       }
