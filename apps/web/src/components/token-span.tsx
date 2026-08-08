@@ -9,7 +9,6 @@ import { getCachedEntries } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
 
 // ── Module-level L1 definition cache ──
 // Key: `${l2Code}:${text}:${l1Code}` → first definition in the user's L1.
@@ -215,9 +214,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     (async () => {
       const { toTraditional, toSimplified } = await import('@/lib/chinese-script');
       const convert = useTraditional ? toTraditional : toSimplified;
-      const direction = useTraditional ? 'toTraditional' : 'toSimplified';
       const result = await convert(token.text);
-      log(`[LP Web] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=${useTraditional} direction=${direction} token="${token.text}" → "${result}" converted=${result !== token.text}`);
       if (!cancelled) setDisplayText(result);
     })();
     return () => { cancelled = true; };

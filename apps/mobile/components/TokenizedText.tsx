@@ -311,44 +311,20 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         // from the token's script. cn→twp when traditional is preferred;
         // twp→cn when simplified is preferred (idempotent on matching text).
         const converter = useTraditional ? await getConverter() : await getSimplifiedConverter();
-        const direction = useTraditional ? 'toTraditional' : 'toSimplified';
         if (cancelled) return;
         const uniqueTexts = [...new Set(tokens.map(t => t.text))];
         const mapping = new Map<string, string>();
-        let converted = 0;
-        const changes: string[] = [];
         for (const text of uniqueTexts) {
-          const result = converter(text);
-          mapping.set(text, result);
-          if (result !== text) {
-            converted++;
-            if (changes.length < 10) changes.push(`${text}→${result}`);
-          }
+          mapping.set(text, converter(text));
         }
-        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=${useTraditional} direction=${direction} unique=${uniqueTexts.length} converted=${converted} sample=${changes.join(', ') || '(none changed)'}`);
         if (!cancelled) setConvertedTexts(mapping);
       } catch {
-        logwarn(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} OpenCC load failed — falling back to original text`);
+        logwarn(`[LP Mobile] ⚠️ Chinese script conversion failed — falling back to original text`);
         // OpenCC failed to load — fall back to original text (map stays empty)
       }
     })();
     return () => { cancelled = true; };
   }, [tokens, useTraditional, isChinese, l2Code]);
-
-  // ── Render-layer debug: what display text will tokens actually get? ──
-  useEffect(() => {
-    if (!__DEV__ || !isChinese || tokens.length === 0) return;
-    const words = tokens.filter((t) => t.lemmas.length > 0);
-    const mapped = words.filter((t) => {
-      const converted = convertedTexts.get(t.text);
-      return converted !== undefined && converted !== t.text;
-    }).length;
-    const sample = words.slice(0, 8).map((t) => {
-      const converted = convertedTexts.get(t.text);
-      return converted !== undefined && converted !== t.text ? `${t.text}→${converted}` : t.text;
-    }).join(', ');
-    log(`[LP Mobile] 🎙 RENDER-CONV l2=${l2Code} useTraditional=${useTraditional} mapSize=${convertedTexts.size} mapped=${mapped}/${words.length} sample=${sample}`);
-  }, [tokens, convertedTexts, useTraditional, isChinese, l2Code]);
 
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
 
