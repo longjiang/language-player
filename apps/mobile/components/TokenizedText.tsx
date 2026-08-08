@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, Platform, Animated, Alert } from 'react-native';
+import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
@@ -792,53 +792,54 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
               return (
                 <View key={i} className="items-center" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
-                  {/* Segment row + quick gloss: items-end so the gloss (no furigana)
-                      baseline-aligns with the word text at the bottom of the segment columns. */}
-                  <View className="flex-row items-end">
-                    {rubySegs.map((seg, j) => (
-                      <View key={j} className="items-center">
-                        {seg.reading && (
-                          <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
-                        )}
-                        {/* Spacer: align kana-only segments with kanji segments that have ruby above.
-                            Matches the reading text's lineHeight so base texts share a baseline. */}
-                        {hasRuby && !seg.reading && (
-                          <View style={{ height: readingSize + 2 }} />
-                        )}
-                        <Text
-                          testID={`token-${i}`}
-                          style={[textStyle, { lineHeight: baseLeading }]}
-                          onPress={handlePress}
-                        >
-                          {isBlanked ? (
-                            <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
-                          ) : (
-                            <Text style={[textStyle, { lineHeight: baseLeading }]}
-                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
-                              {seg.text}
-                            </Text>
+                  {/* One pressable per token: the whole word — kanji + kana +
+                      furigana + quick gloss — shares a single tap target, matching
+                      web's token-span.tsx wrapper span. */}
+                  <Pressable testID={`token-${i}`} onPress={handlePress}>
+                    {/* Segment row + quick gloss: items-end so the gloss (no furigana)
+                        baseline-aligns with the word text at the bottom of the segment columns. */}
+                    <View className="flex-row items-end">
+                      {rubySegs.map((seg, j) => (
+                        <View key={j} className="items-center">
+                          {seg.reading && (
+                            <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                           )}
-                          {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
-                          {showByeonggi && j === 0 ? (
-                            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
-                          ) : null}
+                          {/* Spacer: align kana-only segments with kanji segments that have ruby above.
+                              Matches the reading text's lineHeight so base texts share a baseline. */}
+                          {hasRuby && !seg.reading && (
+                            <View style={{ height: readingSize + 2 }} />
+                          )}
+                          <Text style={[textStyle, { lineHeight: baseLeading }]}>
+                            {isBlanked ? (
+                              <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
+                            ) : (
+                              <Text style={[textStyle, { lineHeight: baseLeading }]}
+                                className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                                {seg.text}
+                              </Text>
+                            )}
+                            {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
+                            {showByeonggi && j === 0 ? (
+                              <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+                            ) : null}
+                          </Text>
+                        </View>
+                      ))}
+                      {/* Quick gloss: peer of the segment columns, not inside any segment.
+                          Placed after all segments so furigana centers over just the word,
+                          not the word + gloss combined width. items-end keeps the gloss on
+                          the same baseline as the word text.
+                          Uses readingSize for fontSize (both outer and inner) — when furigana is
+                          off, the outer wrapper must not inherit the word's full textStyle,
+                          otherwise the word's large lineHeight applies to the gloss text too,
+                          creating a tall invisible box that breaks baseline alignment. */}
+                      {showQuickGloss && (
+                        <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
+                          <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
                         </Text>
-                      </View>
-                    ))}
-                    {/* Quick gloss: peer of the segment columns, not inside any segment.
-                        Placed after all segments so furigana centers over just the word,
-                        not the word + gloss combined width. items-end keeps the gloss on
-                        the same baseline as the word text.
-                        Uses readingSize for fontSize (both outer and inner) — when furigana is
-                        off, the outer wrapper must not inherit the word's full textStyle,
-                        otherwise the word's large lineHeight applies to the gloss text too,
-                        creating a tall invisible box that breaks baseline alignment. */}
-                    {showQuickGloss && (
-                      <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }} onPress={handlePress}>
-                        <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
-                      </Text>
-                    )}
-                  </View>
+                      )}
+                    </View>
+                  </Pressable>
                   {/* Universal definition slot: when showDefinition is on, every token
                       gets a slot of the same height. Tokens without a definition get
                       an empty spacer — this keeps all word texts on the same baseline
