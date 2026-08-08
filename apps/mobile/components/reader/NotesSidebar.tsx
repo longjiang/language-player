@@ -93,11 +93,10 @@ export function NotesSidebar({
                   <Text className={`text-sm truncate ${currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
                     {n.title ?? t('msg.untitled_note')}
                   </Text>
-                  {n.created_on && (
-                    <Text className="text-xs text-muted-foreground">
-                      {new Date(n.created_on).toLocaleDateString()}
-                    </Text>
-                  )}
+                  <Text className="text-xs text-muted-foreground">
+                    {`#${n.id}`}
+                    {n.created_on ? ` · ${new Date(n.created_on).toLocaleDateString()}` : ''}
+                  </Text>
                 </View>
                 <Pressable
                   onPress={() => setMenuNoteId(menuNoteId === n.id ? null : n.id)}

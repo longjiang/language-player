@@ -235,7 +235,10 @@ async function mergeChange(change: {
 
 async function pushOutbox(): Promise<number> {
   const rows = await listPendingOutbox();
-  if (rows.length === 0) return 0;
+  if (rows.length === 0) {
+    log('[sync] push skip — outbox empty');
+    return 0;
+  }
   log(`[sync] push start ops=${rows.length}`);
 
   // Mark this batch as in-flight so concurrent edits can't coalesce into the
@@ -372,6 +375,9 @@ export async function runSyncNow(): Promise<void> {
     status.lastError = null;
     status.syncing = false;
     await setSyncMeta('last_sync_at', String(status.lastSyncAt));
+    if (status.pendingCount === 0 && status.errorCount === 0) {
+      log('[sync] ✅ outbox empty — all changes synced');
+    }
     log(`[sync] ✅ cycle done pushed=${pushed} lastSyncAt=${status.lastSyncAt}`);
   } catch (e) {
     status.lastError = (e as Error)?.message ?? String(e);

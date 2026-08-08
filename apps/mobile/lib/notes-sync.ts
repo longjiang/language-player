@@ -103,10 +103,13 @@ export async function enqueue(
   }
   const pick = (v: unknown) => (typeof v === 'string' ? v : undefined);
   const patch = entry.payload ?? {};
-  const title = pick(patch.title) ?? cached?.title ?? pick(cachedPayload?.title) ?? 'Untitled';
-  const text = pick(patch.text) ?? cached?.text ?? pick(cachedPayload?.text) ?? '';
+  // entity_cache is the last coalesced/queued state (authoritative). Prefer it
+  // over AsyncStorage, which can be stale (e.g. a rename that didn't update
+  // the body cache would otherwise revert the title on the next autosave).
+  const title = pick(patch.title) ?? pick(cachedPayload?.title) ?? cached?.title ?? 'Untitled';
+  const text = pick(patch.text) ?? pick(cachedPayload?.text) ?? cached?.text ?? '';
   const translation =
-    pick(patch.translation) ?? cached?.translation ?? pick(cachedPayload?.translation) ?? '';
+    pick(patch.translation) ?? pick(cachedPayload?.translation) ?? cached?.translation ?? '';
   const payload: Record<string, unknown> = {
     l2: entry.l2Code,
     ...(isTemp ? { tempId: noteId } : { noteId }),
