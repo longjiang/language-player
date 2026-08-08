@@ -271,7 +271,11 @@ original `lemmatize_chinese.py` remains for the legacy video path.
    - `yue` → jyutping from the **cccanto lexicon** (`data/dictionaries.db`),
      loaded lazily into jieba's user dictionary (heads + simplified alternates)
      so Cantonese words segment correctly; pronunciation is the raw jyutping
-     with tone digits (e.g. `nei5`, `se2`)
+     with tone digits (e.g. `nei5`, `se2`). When the full token has no cccanto
+     entry, pronunciation is **polyfilled by greedy sub-segment lookup**:
+     the token is split into dictionary-known pieces (e.g. `動物學` → `動物`
+     + `學` → `dung6 mat6 hok6`). Cantonese has few homonyms, so piecewise
+     readings are reliable; characters absent from the lexicon are skipped.
    - other Han variants → no pronunciation yet
 3. Cache key: `cache/lemmatization/jieba/{lang}/{md5}`
 
