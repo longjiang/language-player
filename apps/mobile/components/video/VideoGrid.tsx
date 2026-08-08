@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, View, Text, ActivityIndicator } from 'react-native';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { e2e } from '@/lib/e2e';
@@ -21,6 +21,7 @@ interface VideoGridProps {
 export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, refreshing, queueType = 'recommended' }: VideoGridProps) {
   const t = useT();
   const { width } = useResponsive();
+  const [gridWidth, setGridWidth] = useState(0);
   const numColumns = gridColumnCount(width);
 
   if (loading && videos.length === 0) {
@@ -40,40 +41,48 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
   }
 
   return (
-    <FlatList
-      data={videos}
-      keyExtractor={(item) => item.youtube_id}
-      renderItem={({ item, index }) => (
-        <View className={numColumns > 1 ? 'flex-1' : undefined}>
-          <VideoCard
-            video={item}
-            videos={videos}
-            queueType={queueType}
-            testID={index === 0 ? 'video-card-first' : undefined}
-          />
-        </View>
-      )}
-      key={`grid-${numColumns}`}
-      numColumns={numColumns}
-      columnWrapperStyle={numColumns > 1 ? { gap: 8, paddingHorizontal: 8 } : undefined}
-      contentContainerStyle={{ paddingBottom: 16 }}
-      onEndReached={hasMore ? onLoadMore : undefined}
-      onEndReachedThreshold={0.5}
-      onRefresh={onRefresh}
-      refreshing={refreshing}
-      ListFooterComponent={
-        loading ? (
-          <View className="py-4">
-            <ActivityIndicator size="small" className="text-muted-foreground" />
+    <View className="flex-1" onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
+      <FlatList
+        data={videos}
+        keyExtractor={(item) => item.youtube_id}
+        renderItem={({ item, index }) => (
+          <View
+            style={
+              numColumns > 1 && gridWidth > 0
+                ? { width: (gridWidth - 16 - 8 * (numColumns - 1)) / numColumns }
+                : undefined
+            }
+          >
+            <VideoCard
+              video={item}
+              videos={videos}
+              queueType={queueType}
+              testID={index === 0 ? 'video-card-first' : undefined}
+            />
           </View>
-        ) : !hasMore && videos.length > 0 ? (
-          <View className="py-4">
-            <Text className="text-center text-sm text-muted-foreground">
-              {t('msg.end_of_list')}
-            </Text>
-          </View>
-        ) : null
-      }
-    />
+        )}
+        key={`grid-${numColumns}`}
+        numColumns={numColumns}
+        columnWrapperStyle={numColumns > 1 ? { gap: 8, paddingHorizontal: 8 } : undefined}
+        contentContainerStyle={{ paddingBottom: 16 }}
+        onEndReached={hasMore ? onLoadMore : undefined}
+        onEndReachedThreshold={0.5}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        ListFooterComponent={
+          loading ? (
+            <View className="py-4">
+              <ActivityIndicator size="small" className="text-muted-foreground" />
+            </View>
+          ) : !hasMore && videos.length > 0 ? (
+            <View className="py-4">
+              <Text className="text-center text-sm text-muted-foreground">
+                {t('msg.end_of_list')}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
+    </View>
   );
 }
