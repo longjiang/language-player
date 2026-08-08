@@ -129,6 +129,13 @@ export function ImageSearchResults({
   const isCompact = variant === 'compact';
   const { width, isSm } = useResponsive();
   const cols = isSm ? 4 : 3;
+  const [containerWidth, setContainerWidth] = useState(width);
+  // Tile width from the measured container (not the window) so the intended
+  // 3/4 columns actually fit — window width overflows padded cards on iPad.
+  const tileWidth =
+    containerWidth > 0
+      ? Math.floor((containerWidth - 16 - 8 * (cols - 1)) / cols)
+      : (width - 32) / cols;
 
   const [images, setImages] = useState<SearchImage[] | null>(null);
   const [queries, setQueries] = useState<string[]>([]);
@@ -318,9 +325,12 @@ export function ImageSearchResults({
     return (
       <>
         <SkeletonPills />
-        <View className="flex-row flex-wrap gap-2 px-2">
+        <View
+          className="flex-row flex-wrap gap-2 px-2"
+          onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+        >
           {Array.from({ length: pageSize }, (_, i) => (
-            <View key={i} style={{ width: (width - 32) / cols }} className="aspect-square rounded-lg bg-muted" />
+            <View key={i} style={{ width: tileWidth }} className="aspect-square rounded-lg bg-muted" />
           ))}
         </View>
       </>
@@ -335,8 +345,6 @@ export function ImageSearchResults({
   const safePage = Math.min(page, pageCount - 1);
   const pageImages = goodImages.slice(safePage * pageSize, (safePage + 1) * pageSize);
   const gridCells: (SearchImage | null)[] = Array.from({ length: pageSize }, (_, i) => pageImages[i] ?? null);
-
-  const tileWidth = (width - 32) / cols;
 
   if (images.length === 0) {
     return (
@@ -355,7 +363,10 @@ export function ImageSearchResults({
       <QueryPills queries={queries} activeQuery={activeQuery} onSelect={(q) => { setActiveQuery(q); setPage(0); }} t={t} />
 
       {/* Grid — full rows with muted placeholders filling the gaps */}
-      <View className="flex-row flex-wrap gap-2 px-2">
+      <View
+        className="flex-row flex-wrap gap-2 px-2"
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
         {gridCells.map((img, i) => (
           <View key={img?.id ?? `ph-${i}`} style={{ width: tileWidth }}>
             {img ? (
