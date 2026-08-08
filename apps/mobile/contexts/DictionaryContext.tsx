@@ -14,19 +14,14 @@ import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log } from '@/lib/logger';
 import {
   openDictionaryDB,
-  lookupOffline,
-  beginBulkInsert,
-  insertBulkBatch,
-  finishBulkInsert,
-  abortBulkInsert,
+  lookupOfflineByL2,
   deleteDictionary as deleteDictDB,
-  hasOfflineDictionary,
+  hasOfflineDictionaryByL2,
+  getDownloadedCountByL2,
   saveDictMeta,
-  getDictMeta,
 } from '@/lib/dictionary-db';
 import {
-  downloadDictionaryData,
-  type OfflineDictMeta,
+  downloadPrecompiledDictionary,
 } from '@/lib/dictionary-download';
 import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
@@ -218,18 +213,16 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // ── Tier 2: Offline SQLite ──
-      if (dbRef.current) {
-        const offline = await lookupOffline(dbRef.current, trimmed, l2Code);
-        if (offline && offline.length > 0) {
-          log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
-          sessionCache.set(cacheKey, offline);
-          setResults(offline);
-          setLoading(false);
-          await saveRecent(l2Code, trimmed);
-          setRecentSearches(await loadRecent(l2Code));
-          return;
-        }
+      // ── Tier 2: Offline SQLite (precompiled file first, legacy table fallback) ──
+      const offline = await lookupOfflineByL2(l2Code, trimmed);
+      if (offline && offline.length > 0) {
+        log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
+        sessionCache.set(cacheKey, offline);
+        setResults(offline);
+        setLoading(false);
+        await saveRecent(l2Code, trimmed);
+        setRecentSearches(await loadRecent(l2Code));
+        return;
       }
 
       // ── Tier 4: Online lookup ──
@@ -275,14 +268,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isOfflineAvailable = useCallback(async (l2: string): Promise<boolean> => {
-    if (!dbRef.current) return false;
-    return hasOfflineDictionary(dbRef.current, l2);
+    return hasOfflineDictionaryByL2(l2);
   }, []);
 
   const getDownloadedCount = useCallback(async (l2: string): Promise<number> => {
-    if (!dbRef.current) return 0;
-    const meta = await getDictMeta(dbRef.current, l2);
-    return meta?.entry_count ?? 0;
+    return getDownloadedCountByL2(l2);
   }, []);
 
   const startDownload = useCallback(async (l2: string) => {
@@ -325,92 +315,63 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       stateMap.set(l2, { ...current, ...patch });
       setDownloadStatesVersion((v) => v + 1);
     };
-    let tableReady = false;
-    let bulkStarted = false;
+    const startTime = Date.now();
+    let lastNetworkPct = -1;
+    let installed = false;
 
     try {
-      log('[DictContext] 🌐 streaming /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
-      const insertStart = Date.now();
-      const downloadMeta: { value: OfflineDictMeta | null } = { value: null };
-      let lastNetworkPct = -1;
-
-      await downloadDictionaryData(
+      log('[DictContext] 📦 downloading precompiled /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
+      const fileMeta = await downloadPrecompiledDictionary(
         l2,
         l1Lang.code,
-        {
-          onDownloadProgress: (fraction) => {
-            // Network transfer maps to the first 0–64% of the bar.
-            const pct = Math.min(64, Math.floor(fraction * 64));
-            if (pct !== lastNetworkPct) {
-              lastNetworkPct = pct;
-              update({
-                status: 'downloading',
-                phase: 'dictionary',
-                progress: pct,
-                downloaded: 0,
-                total: 0,
-              });
-            }
-          },
-          onMeta: (meta) => {
-            downloadMeta.value = meta;
-          },
-          onRows: async (rows, processed, total) => {
-            if (cancelMap.get(l2)) throw new Error('Download cancelled');
-            // Only replace the existing table once the new data has actually
-            // started arriving, so a failed network fetch keeps the old copy.
-            if (!tableReady) {
-              await beginBulkInsert(db, l2);
-              tableReady = true;
-              bulkStarted = true;
-            }
-            await insertBulkBatch(db, l2, rows);
-            // Insertion maps to 65–90% of the bar.
-            const insertPct = total > 0 ? Math.round((processed / total) * 25) : 25;
+        (fraction) => {
+          // Network transfer maps to 0–90% of the bar; finalize at 90–100%.
+          const pct = Math.min(90, Math.floor(fraction * 90));
+          if (pct !== lastNetworkPct) {
+            lastNetworkPct = pct;
             update({
               status: 'downloading',
-              phase: 'insert',
-              progress: 65 + Math.min(25, insertPct),
-              downloaded: processed,
-              total,
+              phase: 'dictionary',
+              progress: Math.max(1, pct),
+              downloaded: 0,
+              total: 0,
             });
-          },
+          }
         },
         controller.signal,
       );
+      installed = true;
 
-      const total = downloadMeta.value?.downloaded || downloadMeta.value?.total || 0;
-      const version = downloadMeta.value?.version ?? '';
-      log('[DictContext] ✅ dictionary download done — l2:', l2, 'total:', total, 'version:', version.slice(0, 12), '— took', Date.now() - insertStart, 'ms');
+      const total = fileMeta.entry_count ?? 0;
+      const version = fileMeta.version ?? '';
+      log('[DictContext] ✅ precompiled dictionary downloaded — l2:', l2, 'total:', total, 'version:', version.slice(0, 12), '— took', Date.now() - startTime, 'ms');
 
       if (cancelMap.get(l2)) {
         log('[DictContext] 🛑 Cancelled after download, cleaning up — l2:', l2);
-        if (bulkStarted) {
-          await abortBulkInsert(db);
-          bulkStarted = false;
-        }
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
         throw new Error('Download cancelled');
       }
 
-      if (bulkStarted) {
-        await finishBulkInsert(db, l2);
-        bulkStarted = false;
-      }
-
-      // Save metadata
-      const now = new Date().toISOString();
+      // Save metadata in the central DB so the offline dictionaries list and
+      // storage accounting work without opening every per-language file.
       const meta: DictMeta = {
         l2,
-        downloaded_at: now,
+        downloaded_at: new Date().toISOString(),
         entry_count: total,
-        size_bytes: total * 600,
+        size_bytes: fileMeta.size_bytes ?? 0,
         version,
       };
       await saveDictMeta(db, meta);
       log('[DictContext] 💾 dict_meta saved — l2:', l2, 'meta:', JSON.stringify(meta).slice(0, 120));
+      update({
+        status: 'downloading',
+        phase: 'finalizing',
+        progress: 90,
+        downloaded: total,
+        total,
+      });
 
       // ── SPEC-018 Phase 2a: Download lemma table as sidecar ──
       const tokenConfig = TOKENIZER_CONFIG[l2];
@@ -488,13 +449,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
     } catch (e: any) {
       log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
-      // Clean up partial data on failure — but only if we actually replaced
-      // the table. A failed network fetch leaves the previous download intact.
-      if (bulkStarted) {
-        await abortBulkInsert(db);
-        bulkStarted = false;
-      }
-      if (tableReady) {
+      // If the new file was installed and something later failed (metadata
+      // write, lemma pack, etc.), remove it so we don't leave a half-flagged
+      // dictionary. A failure before install leaves the old file untouched.
+      if (installed) {
         try { await deleteDictDB(db, l2); } catch {}
       }
 
@@ -523,7 +481,9 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteDictionary = useCallback(async (l2: string) => {
-    if (!dbRef.current) return;
+    if (!dbRef.current) {
+      try { dbRef.current = await openDictionaryDB(); } catch { return; }
+    }
     downloadAbortRef.current.get(l2)?.abort();
     cancelRef.current.set(l2, true);
     // Also clean up lemma table (SPEC-018 Phase 2a)

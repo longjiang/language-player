@@ -1,11 +1,15 @@
 /**
  * Streaming offline-dictionary downloader.
  *
- * Downloads the dictionary export as NDJSON (`?format=ndjson`) into the
- * cache directory, then parses it line-by-line with a FileHandle. Each line
- * is `[id, head, pronunciation, entry_json]`, so rows can be inserted into
- * SQLite without ever building one giant JS array or re-serializing every
- * entry.
+ * Primary path: download a precompiled, gzipped SQLite database
+ * (`?format=db`) and replace the per-language file directly — no client-side
+ * row insertion.
+ *
+ * Legacy path: download the dictionary export as NDJSON (`?format=ndjson`)
+ * into the cache directory, then parse it line-by-line with a FileHandle.
+ * Each line is `[id, head, pronunciation, entry_json]`, so rows can be
+ * inserted into SQLite without ever building one giant JS array or
+ * re-serializing every entry.
  *
  * If the server is still running the old JSON-only version, the file is
  * detected as non-NDJSON and parsed with the previous JSON fallback.
@@ -19,9 +23,10 @@ import {
   type FileHandle,
 } from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
-import type { DictionaryDownloadResponse, DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryDownloadResponse, DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log } from '@/lib/logger';
+import { savePrecompiledDictionary } from './dictionary-db';
 
 const NDJSON_MARKER = '#langplayer-ndjson-v1';
 const ROW_BATCH_SIZE = 2000;
@@ -277,5 +282,41 @@ export async function downloadDictionaryData(
         if (file.exists) file.delete();
       } catch {}
     }
+  }
+}
+
+/**
+ * Download a precompiled, gzipped SQLite dictionary (`?format=db`), decompress
+ * it, and atomically replace the per-language dictionary file.
+ *
+ * Returns the metadata embedded in the DB's dict_meta table.
+ */
+export async function downloadPrecompiledDictionary(
+  l2: string,
+  l1: string,
+  onDownloadProgress?: (fraction: number) => void,
+  signal?: AbortSignal,
+): Promise<DictMeta> {
+  const url =
+    `${PYTHON_API_URL}/dictionary/download` +
+    `?l2=${encodeURIComponent(l2)}&l1=${encodeURIComponent(l1)}` +
+    `&limit=125000&format=db`;
+
+  log('[DictDownload] 📦 downloading precompiled dictionary — l2:', l2, 'l1:', l1);
+  const gzFile = await downloadToCache(url, l2, onDownloadProgress, signal);
+  try {
+    if (signal?.aborted) throw new Error('Download cancelled');
+    const gzBytes = await gzFile.bytes();
+    log('[DictDownload] downloaded gzip bytes:', gzBytes.length, '— l2:', l2);
+
+    const { gunzipSync } = await import('fflate');
+    const dbBytes = gunzipSync(gzBytes);
+    log('[DictDownload] decompressed db bytes:', dbBytes.length, '— l2:', l2);
+
+    return await savePrecompiledDictionary(l2, dbBytes);
+  } finally {
+    try {
+      if (gzFile.exists) gzFile.delete();
+    } catch {}
   }
 }

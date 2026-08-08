@@ -126,8 +126,15 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
   }
 
   try {
-    const { openDictionaryDB } = await import('@/lib/dictionary-db');
-    const db = await openDictionaryDB();
+    const { openOfflineDictionaryDB, openDictionaryDB } = await import('@/lib/dictionary-db');
+    // Precompiled per-language files first; legacy central tables as fallback.
+    let l2Db: Awaited<ReturnType<typeof openOfflineDictionaryDB>> | null = null;
+    try {
+      l2Db = await openOfflineDictionaryDB(l2);
+    } catch {
+      l2Db = null;
+    }
+    const db = l2Db ?? (await openDictionaryDB());
     const table = `dict_${l2.replace(/-/g, '_')}`;
     const rows = await db.getAllAsync<{ head: string }>(
       // head = simplified form (zh), alternate = traditional form (zh/yue).
