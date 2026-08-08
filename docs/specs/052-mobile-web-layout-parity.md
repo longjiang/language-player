@@ -370,7 +370,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
 - [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards; empty-state "New playlist" opens the dialog; icons use theme tokens.
-- [ ] **Playlist detail** — capped at 896; incomplete last grid rows keep normal card widths.
+- [ ] **Playlist detail** — capped at 896; incomplete last grid rows keep normal card widths; empty/not-found icons use theme tokens.
 
 ### Reading & vocabulary screens
 
