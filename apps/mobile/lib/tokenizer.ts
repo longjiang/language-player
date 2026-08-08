@@ -52,7 +52,10 @@ import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
-import { isTokenizationWorkerReady, tokenizeJapaneseInWorker } from '@/lib/tokenizer-worker';
+import {
+  tokenizeDictSegInWorker,
+  tokenizeJapaneseInWorker,
+} from '@/lib/tokenizer-worker';
 
 const arabicStemmer = new Stemmer();
 
@@ -820,7 +823,7 @@ async function runLocalFallback(
   if (config?.needsKuromoji) {
     // WebView worker first (off the RN JS thread) — ja only for now; the
     // main-thread kuromoji singleton remains the fallback.
-    if (l2 === 'ja' && isTokenizationWorkerReady()) {
+    if (l2 === 'ja') {
       log(`[lemmatize] 🤖 WEBVIEW-WORKER l2=${l2} text="${text.slice(0, 50)}…"`);
       const workerTokens = await tokenizeJapaneseInWorker(text);
       if (workerTokens && workerTokens.length > 0) {
@@ -846,6 +849,18 @@ async function runLocalFallback(
 
   // Phase 2b: Use dict-based segmentation for CJK/SEA languages
   // Falls back to regex word-split if dict not downloaded
+  if (config?.needsDictSegmentation) {
+    // WebView worker first — it internally waits for a launch-time warm so
+    // even the first page uses the worker when possible.
+    log(`[lemmatize] 🤖 WEBVIEW-DICT-WORKER l2=${l2} text="${text.slice(0, 50)}…"`);
+    const workerTokens = await tokenizeDictSegInWorker(text, l2);
+    if (workerTokens && workerTokens.length > 0) {
+      log(`[lemmatize] ✅ WEBVIEW-DICT-WORKER OK l2=${l2} tokens=${workerTokens.length}`);
+      cacheSet(cacheKey, workerTokens);
+      return workerTokens;
+    }
+    log(`[lemmatize] ⚠️ WEBVIEW-DICT-WORKER UNAVAIL l2=${l2} → main-thread dict-seg`);
+  }
   log(`[lemmatize] 🔽 GENERIC-FALLBACK l2=${l2} (${config?.needsKuromoji ? 'kuromoji unavailable' : 'no kuromoji for this lang'})`);
   const words = await segmentText(text, l2, config);
   const tokens = await lemmatizeLocal(words, l2, config);
