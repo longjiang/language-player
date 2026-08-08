@@ -13,6 +13,7 @@ import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
 import { ReviewSettings } from './review';
 import { NetworkSettings } from './network';
+import OfflineDictionariesScreen from '../offline-dictionaries';
 import { LG_BREAKPOINT } from '@/lib/constants';
 
 // ── Section/Row types ─────────────────────────
@@ -256,6 +257,9 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
     case 'network':
       content = <NetworkSettings />;
       break;
+    case 'offline':
+      content = <OfflineDictionariesScreen />;
+      break;
     default:
       content = (
         <View className="flex-1 items-center justify-center bg-background">
@@ -291,17 +295,15 @@ export default function SettingsScreen() {
   }, [isWide, selectedKey]);
 
   const handleSelect = (key: string) => {
-    // Offline Dictionaries is a full route, not a settings detail panel —
-    // navigate on wide screens too, or the split view shows the placeholder.
-    if (key === 'offline') {
-      router.push('/(tabs)/(me)/offline-dictionaries' as any);
-      return;
-    }
     if (isWide) {
       setSelectedKey(key);
     } else {
       // Navigate via expo-router
-      router.push(`/(tabs)/(me)/settings/${key}` as any);
+      if (key === 'offline') {
+        router.push('/(tabs)/(me)/offline-dictionaries' as any);
+      } else {
+        router.push(`/(tabs)/(me)/settings/${key}` as any);
+      }
     }
   };
 
