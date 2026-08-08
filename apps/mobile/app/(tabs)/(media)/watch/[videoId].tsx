@@ -83,6 +83,7 @@ export default function WatchScreen() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
+  const [playerContainerWidth, setPlayerContainerWidth] = useState(0);
   const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
@@ -350,6 +351,9 @@ export default function WatchScreen() {
       onTimeUpdate={handleTimeUpdate}
       onDuration={handleDuration}
       onStateChange={handleStateChange}
+      // Prevent the iframe from sizing to the full window in landscape —
+      // it must fit the measured player column (SPEC-052 watch parity).
+      containerWidth={playerContainerWidth || undefined}
     />
   );
 
@@ -357,7 +361,10 @@ export default function WatchScreen() {
   if (isSubtitles && isWide) {
     return (
       <View testID="watch-screen" className="flex-1 bg-black">
-        <View className="relative flex-1">
+        <View
+          className="relative flex-1"
+          onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}
+        >
           {playerElement}
           <View className="absolute bottom-0 left-0 right-0 z-10 min-h-24 rounded-t-xl bg-black/70">
             <View className="flex-row justify-center border-b border-white/10 py-1">
@@ -410,7 +417,9 @@ export default function WatchScreen() {
   if (isSubtitles) {
     return (
       <View testID="watch-screen" className="flex-1 bg-background">
-        <View>{playerElement}</View>
+        <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
+          {playerElement}
+        </View>
         {/* Web parity: controls + active line in one band below the player */}
         <View className="bg-card border-t border-border">
           <View className="flex-row justify-end border-b border-border px-2 py-1">
@@ -487,7 +496,9 @@ export default function WatchScreen() {
       {/* Wide (landscape): player + info left, transcript/queue right column */}
       <View className={isWide ? 'flex-1 flex-row min-h-0' : 'flex-1 min-h-0'}>
         <View className={isWide ? 'min-w-0 flex-1 space-y-4 overflow-y-auto px-4 py-6' : ''}>
-          <View>{playerElement}</View>
+          <View onLayout={(e) => setPlayerContainerWidth(e.nativeEvent.layout.width)}>
+            {playerElement}
+          </View>
 
           {/* Reduced control bar — only LP-specific controls per SPEC-010 */}
           <View className={`flex-row justify-end ${isWide ? '' : 'border-b border-border px-2 py-1'}`}>
