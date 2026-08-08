@@ -3,6 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { log, logwarn } from '@/lib/logger';
+import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
+import { getEntityCacheRow } from '@/lib/sync-db';
 import {
   initOfflineMode,
   isOfflineModeEnabled,
@@ -33,12 +35,11 @@ const SYNC_DEBOUNCE_MS = 3000;
  */
 export function useSettings() {
   const { user } = useAuth();
-  const { getUserSettings, putUserSettings } = useUserDataColumns();
+  const { getUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
   const [offlineMode, setOfflineModeState] = useState<boolean>(() => isOfflineModeEnabled());
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
   const cloudLoaded = useRef(false);
 
   // Local-only network kill switch: stored separately from SettingsV2 and
@@ -98,19 +99,45 @@ export function useSettings() {
     if (!user) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
-      if (isSyncing.current) return;
-      isSyncing.current = true;
       try {
-        log('[settings] PUT /user-settings — payload keys:', Object.keys(s).join(', '),
+        log('[settings] enqueue sync — payload keys:', Object.keys(s).join(', '),
           '— offlineMode present:', 'offlineMode' in s);
-        await putUserSettings({ settings_v2: s });
+        await enqueueSyncOp({
+          entity: 'settings',
+          entityId: 'v2',
+          op: 'upsert',
+          payload: { settings_v2: s, ts: s.ts },
+          updatedAt: Date.parse(s.ts) || Date.now(),
+        });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
-      } finally {
-        isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [user, putUserSettings]);
+  }, [user]);
+
+  // ── Pull-merge bridge: apply remote settings when the engine pulls them ──
+  useEffect(() => {
+    const unsub = subscribeEntity('settings', () => {
+      void (async () => {
+        try {
+          const row = await getEntityCacheRow('settings', 'v2');
+          if (!row || row.deleted_at != null) return;
+          const payload = JSON.parse(row.payload) as { settings_v2?: SettingsV2 };
+          const cloud = payload.settings_v2;
+          if (!cloud || cloud.v !== 2) return;
+          setSettings((prev) => {
+            if (cloud.ts <= prev.ts) return prev;
+            const merged = { ...cloud, ...prev, v: 2 as const, ts: new Date().toISOString() };
+            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
+            return merged;
+          });
+        } catch {
+          // Corrupt payload — ignore.
+        }
+      })();
+    });
+    return unsub;
+  }, []);
 
   // ── SSR-safe updates (write-through) ──
   const update = useCallback(

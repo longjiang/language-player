@@ -2,7 +2,6 @@ import React, { createContext, useContext, useCallback, useEffect, useRef, useSt
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './AuthContext';
 import { useSavedWordApi } from '@langplayer/api-client';
-import { enqueuePendingOp, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
 import {
   decomposeWordId,
   type DictionaryEntry,
@@ -12,9 +11,11 @@ import {
   type SavedWordContext,
 } from '@langplayer/shared';
 import { logwarn } from '@/lib/logger';
+import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
+import { getEntityCache } from '@/lib/sync-db';
 
 const STORAGE_KEY = 'zthSavedWords';
-const PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
+const LEGACY_PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
 
 export interface SavedWordMeta {
   id: string;
@@ -79,35 +80,10 @@ const SavedWordsContext = createContext<SavedWordsContextValue | null>(null);
 
 export function SavedWordsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const { getSavedWords: fetchSavedWordRows, putSavedWord, deleteSavedWord } = useSavedWordApi();
+  const { getSavedWords: fetchSavedWordRows } = useSavedWordApi();
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
   const hydratedUserId = useRef<string | null>(null);
-  const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
-
-  const loadPendingOps = useCallback(async (): Promise<PendingSavedWordOp[]> => {
-    try {
-      const raw = await SecureStore.getItemAsync(PENDING_OPS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(
-            (op): op is PendingSavedWordOp =>
-              !!op && (op.type === 'put' || op.type === 'delete')
-              && typeof op.l2 === 'string' && typeof op.wordId === 'string',
-          );
-        }
-      }
-    } catch (err) {
-      logwarn('[SavedWordsContext] error loading pending ops:', err);
-    }
-    return [];
-  }, []);
-
-  const savePendingOps = useCallback((ops: PendingSavedWordOp[]) => {
-    pendingOpsRef.current = ops;
-    SecureStore.setItemAsync(PENDING_OPS_KEY, JSON.stringify(ops)).catch(() => {});
-  }, []);
 
   // Load from SecureStore on mount
   useEffect(() => {
@@ -119,7 +95,34 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
           const parsed = JSON.parse(raw) as SavedWordsStore;
           if (!cancelled) setSavedWords(parsed);
         }
-        savePendingOps(await loadPendingOps());
+        // Migrate the pre-Phase-2 pending-op queue into the durable outbox.
+        const legacyRaw = await SecureStore.getItemAsync(LEGACY_PENDING_OPS_KEY);
+        if (legacyRaw) {
+          const legacy = JSON.parse(legacyRaw) as Array<{
+            type: 'put' | 'delete';
+            l2: string;
+            wordId: string;
+            word?: SavedLexicalItemRecord;
+            updatedAt?: number;
+          }>;
+          if (Array.isArray(legacy)) {
+            for (const op of legacy) {
+              if (!op || !op.l2 || !op.wordId) continue;
+              await enqueueSyncOp({
+                entity: 'saved_word',
+                entityId: `${op.l2}::${op.wordId}`,
+                op: op.type === 'delete' ? 'delete' : 'upsert',
+                payload: {
+                  l2: op.l2,
+                  wordId: op.wordId,
+                  ...(op.word ? { word: op.word } : {}),
+                },
+                updatedAt: op.updatedAt ?? Date.now(),
+              });
+            }
+            await SecureStore.deleteItemAsync(LEGACY_PENDING_OPS_KEY);
+          }
+        }
       } catch (err) {
         logwarn('[SavedWordsContext] error loading from SecureStore:', err);
       } finally {
@@ -127,16 +130,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [savePendingOps, loadPendingOps]);
-
-  const flushPending = useCallback(async () => {
-    if (!user) return;
-    const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
-    if (remaining.length > 0) {
-      logwarn('[SavedWordsContext] Pending ops remain after flush:', remaining.length);
-    }
-    savePendingOps(remaining);
-  }, [user, putSavedWord, deleteSavedWord, savePendingOps]);
+  }, []);
 
   // Hydrate from the server (after replaying pending ops)
   useEffect(() => {
@@ -146,7 +140,6 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        await flushPending();
         const res = await fetchSavedWordRows();
         if (cancelled) return;
         const local = storeToLocal(res.words ?? {});
@@ -157,13 +150,69 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [user, loaded, flushPending, fetchSavedWordRows]);
+  }, [user, loaded, fetchSavedWordRows]);
 
-  const queueRowOp = useCallback((op: PendingSavedWordOp) => {
+  // Pull-merge bridge: when the engine applies remote saved-word changes,
+  // rebuild the local store from entity_cache (tombstones remove rows).
+  useEffect(() => {
+    const applyCache = async () => {
+      try {
+        const rows = await getEntityCache('saved_word');
+        setSavedWords((prev) => {
+          const next: SavedWordsStore = { ...prev };
+          for (const row of rows) {
+            const payload = JSON.parse(row.payload) as {
+              l2?: string;
+              wordId?: string;
+              word?: SavedLexicalItemRecord;
+            };
+            if (!payload.l2) continue;
+            const l2 = payload.l2;
+            if (row.deleted_at != null) {
+              next[l2] = (next[l2] ?? []).filter((w) => w.id !== payload.wordId);
+              continue;
+            }
+            if (!payload.word) continue;
+            const list = next[l2] ?? [];
+            if (!list.some((w) => w.id === payload.word!.id)) {
+              next[l2] = [...list, toLocalMeta(payload.word)];
+            }
+          }
+          SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+      } catch (e) {
+        logwarn('[SavedWordsContext] pull merge failed:', e);
+      }
+    };
+    const unsub = subscribeEntity('saved_word', () => {
+      void applyCache();
+    });
+    return unsub;
+  }, []);
+
+  const queueRowOp = useCallback((op: {
+    type: 'put' | 'delete';
+    l2: string;
+    wordId: string;
+    word?: SavedLexicalItemRecord;
+    updatedAt?: number;
+  }) => {
     if (!user) return;
-    savePendingOps(enqueuePendingOp(pendingOpsRef.current, op));
-    void flushPending();
-  }, [user, savePendingOps, flushPending]);
+    void enqueueSyncOp({
+      entity: 'saved_word',
+      entityId: `${op.l2}::${op.wordId}`,
+      op: op.type === 'delete' ? 'delete' : 'upsert',
+      payload: {
+        l2: op.l2,
+        wordId: op.wordId,
+        ...(op.word ? { word: op.word } : {}),
+      },
+      updatedAt: op.updatedAt ?? Date.now(),
+    }).catch((e) => {
+      logwarn('[SavedWordsContext] enqueue failed:', e);
+    });
+  }, [user]);
 
   const saveWord = useCallback((l2Code: string, meta: SavedWordMeta) => {
     const savedAt = new Date().toISOString();
