@@ -75,7 +75,7 @@ The local tokenizer families covered:
 - **Pass**: Romanization matches server koroman output; no crash; text reconstructs exactly.
 - **Verified 2026-08-08**: romanization shows as Latin koroman ruby (e.g. `joahamnida`, `na`, `geureon`) with `pronEqWord=0` / `rubyShown>0` in debug logs; dictionary-form lemmas via `ExpressionToken.lemma` (`읽→읽다`, `아프→아프다`, suppletive `드시→들다`); spaces preserved.
 
-### TC-03 — Chinese (dict worker)
+### TC-03 — Chinese (dict worker) ✅ PASS (2026-08-08)
 
 - **Sample**: `围在城里的人想逃出来，城外的人想冲进去。`
 - **Steps**: Offline Mode on; open 围城 or any zh book.
@@ -84,6 +84,7 @@ The local tokenizer families covered:
   - Ruby shows tone-marked pinyin.
   - 围城 segments as one word; punctuation non-clickable.
 - **Pass**: Pinyin above words (nǐ hǎo style), no spaces between Han chars, tokens reconstruct text exactly.
+- **Verified 2026-08-08**: worker path `✅ WEBVIEW-DICT-WORKER OK`; pinyin ruby; no phantom spaces; **bidirectional script conversion** — a traditional-script EPUB (笑傲江湖) renders simplified with `display.traditional=false` (`SCRIPT-CONV direction=toSimplified` + `RENDER-CONV mapped=N/N`), and simplified source renders traditional when the preference is on (ADR-0019).
 
 ### TC-04 — Chinese main-thread fallback
 
