@@ -1,10 +1,10 @@
-# SPEC-052 — Mobile ↔ Web Layout Parity (iPad-First)
+# SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web
 
 ## Metadata
 
 - **Spec ID**: SPEC-052
-- **Feature**: Bring `apps/mobile` layout behavior in line with `apps/web` at every screen-size breakpoint
-- **Status**: in-progress (phases 1–6 implemented; review fixes landed 2026-08-07; Phase 7 manual QA pending)
+- **Feature**: Mobile large screen (iPad) layout parity with web
+- **Status**: in-progress (phases 1–6 implemented; review + follow-up fixes landed 2026-08-07; Phase 7 e2e large pass 2026-08-08 — follow-ups below)
 - **Created**: 2026-08-07
 - **ROADMAP Phase**: Phase 8 — iPad & Responsive Layout
 - **Scope**: `apps/mobile` only; `apps/web` is the reference implementation
@@ -27,6 +27,10 @@ documented in [Review fixes](#review-fixes-2026-08-07) and the
 [Follow-up fixes](#follow-up-fixes-2026-08-07). Phase 7 (manual verification
 on device/simulator) is the remaining work before this spec can be marked
 complete.
+
+**As of 2026-08-08:** Phase 7 verification ran an e2e large pass across the
+shell, media, reading/vocabulary, and settings/auth screens. Results and
+tester comments are recorded in [E2E test results](#e2e-test-results-2026-08-08).
 
 ---
 
@@ -105,7 +109,7 @@ Mobile should use the same effective breakpoints as web:
 | 4 — Sidebar and split layouts | ✅ | `SIDEBAR_BREAKPOINT` → 1024, settings split → 1024 with Display default, 220px sidebar, `max-w-lg` detail, dictionary entry capped at 1280 |
 | 5 — Side-by-side surfaces | ✅ | Live TV, Local Media, reader translations, and review padding now follow web's lg layout |
 | 6 — Remaining route widths | ✅ | Auth `max-w-md`, tokenizer `max-w-2xl`, list route caps, profile/go-pro plan grids, playlists card grid, go-pro success/error alignment, docs deviation recorded |
-| 7 — Verification and documentation | ⬜ | Typecheck passes; manual iPad matrix not yet run |
+| 7 — Verification and documentation | ⬜ | Typecheck passes; e2e large pass run 2026-08-08 ([results](#e2e-test-results-2026-08-08)); remaining follow-ups below |
 
 ### Review fixes (2026-08-07)
 
@@ -147,6 +151,46 @@ Manual checklist review found three more issues, all fixed:
 | Local Media reachability/icons | Without captions (and in stacked mode) the page couldn't scroll, so controls below the tall player were unreachable; file-bar lucide icons used `className` colors that render black | Page scrolls in stacked/no-captions modes; at ≥1024 with captions the player column and transcript each scroll independently; file-bar icons use `ICON_MUTED` |
 | Dictionary entry lg layout | Definition card and tabs panel stayed stacked inside the scroll view even at ≥1024, unlike web's two-column layout | At ≥1024 the panels render side-by-side (`flex-1` definition + `flex-[2]` tabs), matching web; still stacked below lg |
 | Docs content panel | Doc markdown was wrapped in a rounded `bg-card` panel, unlike web's plain prose article | Content now renders as capped (`max-w-3xl`) prose directly on the page background; TOC heading offsets still work without the card wrapper |
+
+### E2E test results (2026-08-08)
+
+Large pass from the Phase 7 e2e run. `✅` = passing, `⚠️` = known deviation
+(see bracketed tester notes), `⬜️` = not yet implemented/verified. Notes
+marked "ignore for now" are intentionally deferred.
+
+| Category | Screen / Component | Responsive Behavior & Layout Constraints |
+|---|---|---|
+| Global Shell | Header | ✅ Hamburger only at <768px; persistent nav at ≥768px. ✅ App name hidden on narrow screens, logo only. ✅ Nav dropdowns open and navigate [first item of nav menu are missing icons; nav menu are always showing up at the very top left which is wrong] |
+| Global Shell | Hamburger Drawer | ✅ Capped at min(256px, width * 0.6); never renders at ≥768px. |
+| Global Shell | Auth Screens | ✅ Centered at 448px (max-w-md) at all viewport widths. |
+| Media Screens | Explore | ✅ Grid layout: 1 col (<640px), 2 cols (640–1023px), 3 cols (1024–1279px), 4 cols (≥1280px); content capped at 1280px. |
+| Media Screens | Search | ✅ No-results state narrow; results use Explore grid; result count visible. |
+| Media Screens | Music | ✅ Grid layout (not a single-column list). |
+| Media Screens | Live TV | ✅ Stacked below 1024px; player left + channel list right at ≥1024px (320px at lg, 384px at xl). [Should add padding left of video player and right of channel list. Search and filter buttons — check if they're using hard coded colors — currently showing black icons even on dark screens!] |
+| Media Screens | TV Shows | ✅ Responsive grid (no hardcoded 2 columns). [Sort options and region filter should be on the right of search bar on screens >= md) |
+| Media Screens | TV Show Detail | ✅ Row list capped at 896px. |
+| Media Screens | Channel | ✅ Explore-style grid; header card intact. ["Request failed with status of 404" is hard coded English. 404 should be fixed] |
+| Media Screens | Watch | ✅ Portrait: subtitle band below; Landscape: subtitle overlay or right transcript column (320px). [for horizontal screens, when youtube iframe loads, it overflows its container and stretches across whole screen even behind the scrolling subs] |
+| Media Screens | Local Media | ✅ With captions: stacked below 1024px, player + 320px transcript at ≥1024px. Without captions: full-width player. [wide screen should allow scrolling so as to access video controls below the player] |
+| Media Screens | Watch History | ✅ Capped at 896px; date grouping retained. |
+| Media Screens | Liked Videos | ✅ Capped at 896px. |
+| Media Screens | Playlists | ✅ Card grid: 1 col (<640px), 2 cols (640–1023px), 3 cols (≥1024px); delete overlay on cards. |
+| Media Screens | Playlist Detail | ✅ Capped at 896px. |
+| Reading & Vocabulary | Reader Screens (Notes, Web, EPUB) | ✅ Sidebar is a sheet below 1024px; persistent panel at ≥1024px. |
+| Reading & Vocabulary | Reader Translation | ✅ Side-by-side at ≥1024px; stacked below 1024px. |
+| Reading & Vocabulary | EPUB Bookshelf | ✅ Column grid: 2 cols (<640px), 3 cols (640–767px), 4 cols (768–1279px), 5 cols (≥1280px). |
+| Reading & Vocabulary | Dictionary Search | ✅ Capped at 1280px. |
+| Reading & Vocabulary | Dictionary Entry | ✅ Split view and sidebar appear at ≥1024px; content capped at 1280px. |
+| Reading & Vocabulary | Saved Words | ✅ Grid: 1, 2, 3, or 4 cols (web thresholds); capped at 1280px. |
+| Reading & Vocabulary | Review | ✅ Capped at 672px; card padding 16px (<640px), 32px (≥640px). |
+| Reading & Vocabulary | Popup | ✅ Popup dictionary needs to be a small modal like apps/web. |
+| Reading & Vocabulary | Image Search | ⚠️ 3 columns below 640px; 4 columns at ≥640px. [wide screens still shows 3 columns, should show 4 columns — issue persists, ignore for now] |
+| Settings, Profile & Auth | Settings | ✅ Stacked below 1024px; split view at ≥1024px with Display auto-selected, sidebar ~220px, and detail capped at 512px. |
+| Settings, Profile & Auth | Profile / Go Pro | ✅ Plan cards: 1 column (<640px), 3 columns (≥640px). |
+| Settings, Profile & Auth | Tokenizer (Test) | ✅ Capped at 672px. |
+| Settings, Profile & Auth | Auth Flow (Login, Register, Forgot, Reset, Verify, Delete) | ✅ Centered 448px container. |
+| Settings, Profile & Auth | Go Pro Success / Error | ⬜️ Centered 512px container; button row at ≥640px. |
+| Settings, Profile & Auth | Docs | ⚠️ Should match apps/web for TOC sidebar logic. [on lg screens, page content layout should match apps/web (content should be width capped, not be in a rounded corner panel, etc — MATCH WEB! — issue persists, ignore for now] |
 
 ### Bottom-sheet policy (2026-08-07)
 
