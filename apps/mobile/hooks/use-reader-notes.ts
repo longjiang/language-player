@@ -25,6 +25,8 @@ import {
 import { subscribeRemap } from '@/lib/sync-engine';
 import { getEntityCacheRow } from '@/lib/sync-db';
 import { localizedError } from '@/lib/errors';
+import { isOfflineModeEnabled, isOfflineModeError } from '@/lib/offline-mode';
+import { getConnectivity } from '@/lib/connectivity';
 
 export interface NoteListItemWithSync extends NoteListItem {
   _syncStatus: SyncStatus;
@@ -123,21 +125,41 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       const sorted = data.sort((a, b) =>
         (b.created_on ?? '').localeCompare(a.created_on ?? ''),
       );
-      await cacheNotesList(l2Code, sorted);
+      // Keep local pending items the (possibly stale) server response doesn't
+      // include yet — e.g. a note created offline whose push raced this fetch
+      // would otherwise vanish from the list after reconnect.
+      const pendingMap = await getPendingSyncMap(l2Code);
+      const localList = await getCachedNotesList(l2Code);
+      const merged = [...sorted];
+      for (const item of localList) {
+        if (pendingMap.has(item.id) && !merged.some((n) => n.id === item.id)) {
+          merged.push(item);
+        }
+      }
+      const finalList = merged.sort((a, b) =>
+        (b.created_on ?? '').localeCompare(a.created_on ?? ''),
+      );
+      await cacheNotesList(l2Code, finalList);
       // Cache full bodies too — the list endpoint returns complete notes, and
       // this is what lets an existing note open fully while offline.
-      for (const item of sorted) {
+      for (const item of finalList) {
         if (item && typeof (item as unknown as Note).title === 'string') {
           await cacheNote(item as unknown as Note);
         }
       }
       if (mountedRef.current) {
-        const annotated = await annotateSyncStatus(sorted);
+        const annotated = await annotateSyncStatus(finalList);
         setNotes(annotated);
       }
     } catch (e: any) {
-      // Server fetch failed — cache is already showing
-      if (mountedRef.current) {
+      // Server fetch failed — cache is already showing. Offline / Offline Mode
+      // failures are expected, not errors: don't show the red banner.
+      if (
+        mountedRef.current &&
+        !isOfflineModeError(e) &&
+        !isOfflineModeEnabled() &&
+        getConnectivity() !== 'offline'
+      ) {
         setNotesError(localizedError(t, e, 'msg.failed_to_load_notes'));
       }
     } finally {

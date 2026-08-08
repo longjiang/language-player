@@ -69,7 +69,10 @@ export default function ReaderScreen() {
   }, [notes.currentNoteId]);
 
   const pagination = useEpubPagination({
-    text,
+    // Only tokenize/measure when the Read tab is actually visible — the
+    // kuromoji data-pack load otherwise freezes the UI on every Notes Reader
+    // open while the user is still editing.
+    text: activeTab === 'read' ? text : '',
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
