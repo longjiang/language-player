@@ -289,9 +289,12 @@ export function useEpubPagination({
         const results: LemmatizedToken[][] = data?.results ?? [];
         const withLemmas = results.filter(r => r?.some(t => t.lemmas.length > 0)).length;
         log(`[lemmatize] 📦 BATCH OK l2=${l2Code} results=${results.length} withLemmas=${withLemmas}`);
+        // Tag server tokens with source so the debug metadata is consistent
+        // with the single-line lemmatizeFromServer() path (SPEC-018).
+        const tagged = results.map(r => r.map(t => ({ ...t, source: 'server' as const })));
         setTokenCache(prev => {
           const next = { ...prev };
-          missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
+          missing.forEach((m, i) => { if (tagged[i]) next[m.idx] = tagged[i]!; });
           return next;
         });
       })
