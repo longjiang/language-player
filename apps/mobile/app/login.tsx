@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import { AuthContainer } from '@/components/layout/AuthContainer';
+import { OfflineModeNotice } from '@/components/auth/OfflineModeNotice';
 
 export default function LoginScreen() {
   const t = useT();
@@ -51,6 +52,8 @@ export default function LoginScreen() {
           Language Player
         </Text>
       </Pressable>
+
+      <OfflineModeNotice />
 
       {error && (
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
