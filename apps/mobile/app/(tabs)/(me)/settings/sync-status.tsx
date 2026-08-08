@@ -10,11 +10,12 @@ import {
 } from '@/lib/sync-engine';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
+import { SyncNowButton } from '@/components/sync/SyncNowButton';
 
 /** Central Sync Status / Outbox screen (SPEC-053 Phase 2). */
 export default function SyncStatusScreen() {
   const t = useT();
-  const { status, syncNow } = useSyncStatus();
+  const { status } = useSyncStatus();
   const [ops, setOps] = useState<OutboxSnapshot[]>([]);
 
   useEffect(() => {
@@ -61,13 +62,7 @@ export default function SyncStatusScreen() {
             <Text className="mt-1 text-xs text-destructive">{lastError}</Text>
           ) : null}
         </View>
-        <Pressable
-          onPress={() => void syncNow()}
-          className="rounded-md bg-primary px-2.5 py-1.5"
-          accessibilityRole="button"
-        >
-          <Text className="text-xs font-semibold text-primary-foreground">{t('action.sync_now')}</Text>
-        </Pressable>
+        <SyncNowButton />
       </View>
 
       {errorCount > 0 && (

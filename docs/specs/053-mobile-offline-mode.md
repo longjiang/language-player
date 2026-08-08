@@ -283,7 +283,7 @@ Current mobile behavior (verified against the codebase):
 | Saved words | SecureStore store + `zthSavedWordsPendingOps` | Pending-op queue with per-word coalescing; replayed before hydration | No pull cursor/ack; server has no idempotency contract |
 | Notes | AsyncStorage cache + `notes_sync_queue` | Durable FIFO outbox; temp IDs; retries with backoff | Separate engine from other domains; retries stop after 3 and errors stay stuck with no manual retry surface |
 | Watch history | None | Direct `POST /watch-history` every 15s; failures silently ignored | Offline watching is effectively lost |
-| EPUB bookshelf + reading progress | AsyncStorage `lp_epub_library_v1` | Local-only | Flask `/bookshelf` endpoint exists but the mobile app does not sync it |
+| EPUB bookshelf + reading progress | AsyncStorage `lp_epub_library_v1` | Local-only (out of scope for Phase 2 sync) | Device-local by design; Flask `/bookshelf` endpoint reserved for future cross-device resume |
 | Likes / playlists / channel prefs | Not yet ported to mobile | Server row APIs exist | Must use the same sync engine when ported |
 
 Intentionally **not** syncable: the Offline Mode toggle itself (Phase 1),
@@ -443,7 +443,10 @@ subject to `updated_at` timestamp ties.
   - `GET /sync/pull?cursor=<id>&limit=<n>` — per-user changes since the cursor
     including tombstones (`deleted`), with pagination.
   - Entities: `settings`, `progress`, `srs_settings`, `srs_card`,
-    `saved_word`, `note`, `watch_history`, `bookshelf`.
+    `saved_word`, `note`, `watch_history`. (`bookshelf` is intentionally out
+    of scope: mobile shelves/reading progress are local-only. The server
+    handler stays registered as a no-op so any ops queued before this scope
+    change drain cleanly instead of erroring.)
 - Existing row endpoints (`/progress`, `/srs/...`, `/user-settings`,
   `/bookshelf`, `/watch-history`, `/saved-words`, `/user-notes`) now append to
   the same change log, so mutations made by any device/API are visible to
@@ -472,11 +475,12 @@ subject to `updated_at` timestamp ties.
   cloud-upload / cloud-alert + pending badge, tap opens Sync Status), a
   persistent non-blocking offline/pending banner, and the Sync Status /
   Outbox screen with per-op status, errors, and manual retry.
-- Wiring: settings, progress, SRS cards/settings, saved words, notes, watch
-  history, and the EPUB bookshelf all write through the durable outbox. The
-  old notes/saved-words queues were replaced by the engine (their public APIs
-  were kept for call-site compatibility). Pull merges refresh local caches
-  for notes, saved words, settings, progress, SRS, and the bookshelf.
+- Wiring: settings, progress, SRS cards/settings, saved words, notes, and
+  watch history write through the durable outbox. The old notes/saved-words
+  queues were replaced by the engine (their public APIs were kept for call-site
+  compatibility). Pull merges refresh local caches for notes, saved words,
+  settings, progress, and SRS. The EPUB bookshelf + reading progress stay
+  local-only (out of scope).
 - i18n: 10 new keys added through the standard CSV workflow (all 31 locales).
 
 ### Offline UX — how users know they are offline
@@ -556,9 +560,11 @@ an accessible label; never rely on color alone.
 ### Definition of done (Phase 2)
 
 - ✅ A full offline session (write notes, save words, review cards, set
-  progress, watch part of a video, read an EPUB) writes through the durable
-  outbox and survives app kill / airplane mode. Two-way sync is implemented;
-  the full manual checklist (below) still needs device verification.
+  progress, watch part of a video) writes through the durable outbox and
+  survives app kill / airplane mode. Reading an EPUB works locally (bookshelf
+  + reading progress are intentionally local-only, out of sync scope). Two-way
+  sync is implemented; the full manual checklist (below) still needs device
+  verification.
 - ✅ Two devices editing concurrently converge via LWW + tombstones
   (server-side LWW guards + client merge; deleted items are not resurrected).
   Manual two-device verification is still pending.
@@ -673,7 +679,9 @@ Manual verification checklist:
   coalescing to the latest position per video? Queued-with-coalescing is
   recommended so offline watching is not lost.
 - Phase 2: should EPUB bookshelf/progress sync to the existing `/bookshelf`
-  endpoint? Recommended yes, but it is currently local-only.
+  endpoint? **Decided: out of scope for now.** The mobile bookshelf + reading
+  progress are device-local; the server `/bookshelf` endpoint is reserved for
+  future cross-device resume.
 - Phase 2: should locally cached notes be encrypted? Notes currently live in
   AsyncStorage in plain text; moving them to SQLite is an opportunity to
   revisit that.

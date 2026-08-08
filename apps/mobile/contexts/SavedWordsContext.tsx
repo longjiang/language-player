@@ -32,6 +32,8 @@ export interface SavedWordMeta {
   llmEntry?: LlmGeneratedEntry;
   /** Offline + online enrichment both failed; render without a spinner. */
   unresolvable?: boolean;
+  /** Per-save context instances (server shape: timestamp/form/context). */
+  instances?: Array<{ timestamp: number; form: string; context: SavedWordContext }>;
 }
 
 type SavedWordsStore = Record<string, SavedWordMeta[]>;
@@ -59,6 +61,11 @@ function toLocalMeta(record: SavedLexicalItemRecord): SavedWordMeta {
     forms: record.forms,
     date: record.date,
     context: record.context ? { ...record.context } : undefined,
+    // Preserve server-side instances (per-save context sentences) so review
+    // cards and saved-word metadata show context across devices.
+    ...(record.instances
+      ? { instances: record.instances as SavedWordMeta['instances'] }
+      : {}),
   };
 }
 
@@ -265,9 +272,9 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     if (existing.unresolvable && isOfflineModeEnabled()) return;
 
     const decomposed = decomposeWordId(wordId, l2Code);
-    if (!decomposed) return;
-    const { dict: dictId, id: scopedId } = decomposed;
     const baseL2 = l2Code.split('-')[0];
+    const scopedId = decomposed?.id ?? wordId;
+    const dictId = decomposed?.dict ?? '';
 
     const applyEntry = (entry: DictionaryEntry | null, unresolvable: boolean) => {
       setSavedWords((prev) => {
@@ -306,6 +313,11 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
 
     // 2. Network (skip entirely in Offline Mode; the gate would reject it).
     if (isOfflineModeEnabled()) {
+      applyEntry(null, true);
+      return;
+    }
+    if (!decomposed) {
+      // Unknown id format — don't spin forever; there's no endpoint to hit.
       applyEntry(null, true);
       return;
     }

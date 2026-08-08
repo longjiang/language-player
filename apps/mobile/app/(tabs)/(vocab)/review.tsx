@@ -19,7 +19,8 @@ import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { enqueueLookupWords } from '@/lib/dictionary-cache';
+import { enqueueLookupWords, getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
+import { getOfflineEntryById } from '@/lib/dictionary-db';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -98,6 +99,8 @@ export default function ReviewScreen() {
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
   const [showTabs, setShowTabs] = useState(false);
+  /** Cards whose offline entry lookup already finished (even with a miss). */
+  const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
@@ -156,7 +159,38 @@ export default function ReviewScreen() {
   // API response — EDICT entries use bare numeric IDs ("73458"), LLM entries
   // use their full ID ("ja-03254ca173ab"). Both are stored as-is, so the
   // saved word's raw `id` field is the correct cache key.
-  const currentEntry = useEntryByIdCache(l2Code, currentDueCard?.id ?? '') ?? null;
+  const currentEntry =
+    useEntryByIdCache(l2Code, currentDueCard?.id ?? '') ??
+    currentDueCard?.canonicalEntry ??
+    null;
+
+  // ── Offline-first entry hydration for the current card ──
+  // Old cards often have no shared-cache entry (they were never enriched
+  // online); without this the "Show definition" panel spins forever offline.
+  useEffect(() => {
+    const id = currentDueCard?.id;
+    if (!id) return;
+    if (getCachedEntryById(l2Code, id)) return;
+    if (currentDueCard?.canonicalEntry) {
+      setCachedEntryById(l2Code, currentDueCard.canonicalEntry);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const entry = await getOfflineEntryById(l2Code.split('-')[0], id);
+        if (!cancelled && entry) {
+          setCachedEntryById(l2Code, entry);
+        }
+      } catch {
+        // Offline dict missing/corrupt — leave unresolvable.
+      }
+      if (!cancelled) {
+        setOfflineEntryLookupDone((prev) => ({ ...prev, [id]: true }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentDueCard?.id, currentDueCard?.canonicalEntry, l2Code]);
 
   // ── Merge due cards with the reactive entry ──
   const cards = useMemo(() => dueCards.map((word) => ({
@@ -442,7 +476,10 @@ export default function ReviewScreen() {
   const entry = currentEntry;
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
-  const instances = savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []);
+  const instances = (savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []))
+    // Old records store an empty default context instance — skip it so the
+    // review card doesn't render a dead "…" trigger that copies nothing.
+    .filter((inst) => !!inst.context?.text);
   const srs = currentCard.srs;
 
   return (
@@ -543,6 +580,12 @@ export default function ReviewScreen() {
                   contextText={instances[0]?.context?.text}
                   contextForm={wordForm}
                 />
+              ) : offlineEntryLookupDone[currentCard.word.id] ? (
+                <View className="items-center justify-center py-8">
+                  <Text className="text-sm text-muted-foreground">
+                    {t('msg.no_definition_offline')}
+                  </Text>
+                </View>
               ) : (
                 <View className="items-center justify-center py-8">
                   <ActivityIndicator size="small" color={ICON_MUTED} />

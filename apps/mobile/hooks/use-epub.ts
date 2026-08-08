@@ -24,8 +24,6 @@ import {
 import type { TocItem } from '@/lib/epub-parser';
 import type { ContentBlock } from '@/lib/parse-markdown';
 import { log } from '@/lib/logger';
-import { syncBookshelfToServer } from '@/lib/bookshelf-sync';
-import { subscribeEntity } from '@/lib/sync-engine';
 
 /** Recursively copy a directory (used for unzipped EPUB folder packages). */
 async function copyDirectoryContents(srcDir: string, destDir: string): Promise<void> {
@@ -170,16 +168,7 @@ export function useEpub(): UseEpubReturn {
     }
     setBooks(await listEpubs());
     setReady(true);
-    void syncBookshelfToServer();
   }, []);
-
-  // Pull-merge bridge: another device's bookshelf changes reload local shelf.
-  useEffect(() => {
-    const unsub = subscribeEntity('bookshelf', () => {
-      void refreshBooks();
-    });
-    return unsub;
-  }, [refreshBooks]);
 
   useEffect(() => {
     void refreshBooks();
@@ -262,7 +251,6 @@ export function useEpub(): UseEpubReturn {
       }
 
       setBooks(await listEpubs());
-      void syncBookshelfToServer();
 
       if (importedCount === 0) {
         setError(firstError ?? 'Failed to import EPUB');
@@ -299,7 +287,6 @@ export function useEpub(): UseEpubReturn {
       setCurrentModel(m, id, skipCover, resume);
       await updateEpubMeta(id, { lastReadAt: Date.now() });
       setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
-      void syncBookshelfToServer();
       return resume;
     } catch (e: any) {
       setError(e?.message ?? String(e));
@@ -335,7 +322,6 @@ export function useEpub(): UseEpubReturn {
     setBooks(prev => prev.map((b) =>
       b.id === id ? { ...b, lastLocation: loc, readChars, lastReadAt: Date.now() } : b,
     ));
-    void syncBookshelfToServer();
   }, []);
 
   const resolveHref = useCallback(async (href: string, fromHref?: string) => {
@@ -347,7 +333,6 @@ export function useEpub(): UseEpubReturn {
     if (meta) await deleteEpub(meta);
     if (openBookIdRef.current === id) await close();
     setBooks(await listEpubs());
-    void syncBookshelfToServer();
   }, [books, close]);
 
   return {
