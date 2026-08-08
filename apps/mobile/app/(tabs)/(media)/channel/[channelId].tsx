@@ -56,7 +56,7 @@ export default function ChannelPage() {
 
       try {
         const res = await apiClient.get<ChannelResponse>(
-          `/channels/${encodeURIComponent(channelId)}`,
+          `/channels/${encodeURIComponent(channelId)}/videos`,
           {
             params: {
               l2: baseCode(l2Lang.code),
@@ -70,7 +70,14 @@ export default function ChannelPage() {
         setVideos((prev) => (append ? [...prev, ...res.videos] : res.videos));
         setHasMore(res.hasMore);
       } catch (err: any) {
-        setError(err?.message ?? tRef.current('error.failed_to_load', { status: err?.code ?? '' }));
+        // Never surface raw axios messages (e.g. "Request failed with status
+        // code 404"); map HTTP errors to localized copy instead.
+        const code = err?.code ?? 'NETWORK_ERROR';
+        setError(
+          code === '404'
+            ? tRef.current('msg.page_not_found_desc')
+            : tRef.current('error.failed_to_load', { status: code }),
+        );
       } finally {
         setLoading(false);
       }
