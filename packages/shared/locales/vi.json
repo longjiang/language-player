@@ -811,6 +811,7 @@
         "offline_definitions_english": "Định nghĩa bằng tiếng Anh",
         "offline_definitions_english_desc": "Từ điển ngoại tuyến lưu trữ định nghĩa tiếng Anh. Bản dịch {l1} được thêm khi bạn tra từ trực tuyến.",
         "offline_dictionaries_desc": "Tải từ điển để tra từ mà không cần kết nối mạng.",
+        "offline_dictionary_required": "Tải từ điển ngoại tuyến để sử dụng tính năng này khi ngoại tuyến.",
         "offline_mode_not_synced": "Cài đặt này chỉ lưu trên thiết bị này và không đồng bộ với tài khoản của bạn.",
         "options": "Tùy chọn",
         "or_login_with": "Hoặc đăng nhập bằng:",

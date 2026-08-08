@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definities zijn in het Engels",
         "offline_definitions_english_desc": "Offlinewoordenboeken slaan Engelse definities op. {l1}-vertalingen worden toegevoegd wanneer u online woorden opzoekt.",
         "offline_dictionaries_desc": "Download woordenboeken om woorden op te zoeken zonder internet.",
+        "offline_dictionary_required": "Download een offlinewoordenboek om deze functie offline te gebruiken.",
         "offline_mode_not_synced": "Deze instelling blijft op dit apparaat en wordt niet gesynchroniseerd met uw account.",
         "options": "Opties",
         "or_login_with": "Of log in met:",

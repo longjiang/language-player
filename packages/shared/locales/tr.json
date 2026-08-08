@@ -811,6 +811,7 @@
         "offline_definitions_english": "Tanımlar İngilizcedir",
         "offline_definitions_english_desc": "Çevrimdışı sözlükler İngilizce tanımları saklar. Çevrimiçi kelime aradıkça {l1} çevirileri eklenir.",
         "offline_dictionaries_desc": "İnternet olmadan kelime aramak için sözlükleri indirin.",
+        "offline_dictionary_required": "Bu özelliği çevrimdışı kullanmak için çevrimdışı sözlük indirin.",
         "offline_mode_not_synced": "Bu ayar yalnızca bu cihazda kalır ve hesabınızla eşitlenmez.",
         "options": "Seçenekler",
         "or_login_with": "Veya şununla giriş yapın:",

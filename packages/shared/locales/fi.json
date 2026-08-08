@@ -811,6 +811,7 @@
         "offline_definitions_english": "Määritelmät ovat englanniksi",
         "offline_definitions_english_desc": "Offline-sanakirjat tallentavat englanninkieliset määritelmät. {l1}-käännökset lisätään, kun haet sanoja verkossa.",
         "offline_dictionaries_desc": "Lataa sanakirjoja etsiäksesi sanoja ilman internetiä.",
+        "offline_dictionary_required": "Lataa offline-sanakirja käyttääksesi tätä toimintoa offline-tilassa.",
         "offline_mode_not_synced": "Tämä asetus säilyy tällä laitteella eikä synkronoidu tiliisi.",
         "options": "Vaihtoehdot",
         "or_login_with": "Tai kirjaudu sisään:",

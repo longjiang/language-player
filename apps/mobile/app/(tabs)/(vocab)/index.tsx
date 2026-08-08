@@ -170,7 +170,7 @@ export default function DictionaryScreen() {
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       </View>
-      <OfflineFeatureNotice />
+      <OfflineFeatureNotice l2Code={l2Lang.code} requiresDictionary />
 
       <View className="px-4 pt-2">
         <SearchBar

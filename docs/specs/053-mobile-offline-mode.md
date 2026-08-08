@@ -677,6 +677,12 @@ an accessible label; never rely on color alone.
   with side-by-side comparison. Default LWW resolves everything else silently.
 - **Freshness cues**: "As of 14:32" on cached content and a subtle syncing
   indicator, rather than hiding content or showing spinners.
+- **No offline dictionary**: when offline without a downloaded dictionary for
+  the L2, tokenized text renders plain and non-interactive (no pulsing
+  tokenization is attempted) and tapping a word shows a dialog explaining that
+  an offline dictionary is required. Dictionary search, saved words, and
+  review show the same "download an offline dictionary" message instead of a
+  network-blocked error.
 
 ### Definition of done (Phase 2)
 

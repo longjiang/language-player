@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definitionen sind auf Englisch",
         "offline_definitions_english_desc": "Offline-Wörterbücher speichern englische Definitionen. {l1}-Übersetzungen werden hinzugefügt, wenn Sie Wörter online nachschlagen.",
         "offline_dictionaries_desc": "Laden Sie Wörterbücher herunter, um Wörter ohne Internet nachzuschlagen.",
+        "offline_dictionary_required": "Laden Sie ein Offline-Wörterbuch herunter, um diese Funktion offline zu nutzen.",
         "offline_mode_not_synced": "Diese Einstellung bleibt auf diesem Gerät und wird nicht mit Ihrem Konto synchronisiert.",
         "options": "Optionen",
         "or_login_with": "Oder anmelden mit:",

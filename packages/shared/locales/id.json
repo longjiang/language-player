@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definisi dalam bahasa Inggris",
         "offline_definitions_english_desc": "Kamus luring menyimpan definisi bahasa Inggris. Terjemahan {l1} ditambahkan saat Anda mencari kata secara online.",
         "offline_dictionaries_desc": "Unduh kamus untuk mencari kata tanpa koneksi internet.",
+        "offline_dictionary_required": "Unduh kamus luring untuk menggunakan fitur ini saat luring.",
         "offline_mode_not_synced": "Pengaturan ini tetap di perangkat ini dan tidak disinkronkan ke akun Anda.",
         "options": "Pilihan",
         "or_login_with": "Atau masuk dengan:",

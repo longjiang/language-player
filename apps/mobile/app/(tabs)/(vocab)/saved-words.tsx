@@ -14,6 +14,7 @@ import { Search, Trash2, Download, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { logwarn } from '@/lib/logger';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import { SavedWordEntryCard } from '@/components/dictionary/SavedWordEntryCard';
 
 /** Lazy enrichment: only fetch dictionary entries for rows visible on screen. */
@@ -198,6 +199,7 @@ export default function SavedWordsScreen() {
 
   return (
     <PageContainer maxWidth="7xl">
+      <OfflineFeatureNotice l2Code={l2Lang.code} requiresDictionary />
       {/* Header row — title + export + clear */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <View className="flex-1">

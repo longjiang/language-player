@@ -811,6 +811,7 @@
         "offline_definitions_english": "A meghatározások angolul vannak",
         "offline_definitions_english_desc": "Az offline szótárak angol definíciókat tárolnak. A(z) {l1} fordítások online kereséskor kerülnek hozzáadásra.",
         "offline_dictionaries_desc": "Töltsön le szótárakat, hogy internet nélkül kereshessen szavakat.",
+        "offline_dictionary_required": "Töltsön le offline szótárat a funkció offline használatához.",
         "offline_mode_not_synced": "Ez a beállítás ezen az eszközön marad, és nem szinkronizálódik a fiókjával.",
         "options": "Opciók",
         "or_login_with": "Vagy jelentkezz be:",

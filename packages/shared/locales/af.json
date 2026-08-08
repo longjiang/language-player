@@ -811,6 +811,7 @@
         "offline_definitions_english": "Definisies is in Engels",
         "offline_definitions_english_desc": "Vanlynwoordeboeke stoor Engelse definisies. {l1}-vertalings word bygevoeg soos jy aanlyn woorde opsoek.",
         "offline_dictionaries_desc": "Laai woordeboeke af om woorde sonder internet op te soek.",
+        "offline_dictionary_required": "Laai 'n vanlyn woordeboek af om hierdie funksie vanlyn te gebruik.",
         "offline_mode_not_synced": "Hierdie instelling bly op hierdie toestel en word nie na jou rekening gesinkroniseer nie.",
         "options": "Opsies",
         "or_login_with": "Of teken aan met:",

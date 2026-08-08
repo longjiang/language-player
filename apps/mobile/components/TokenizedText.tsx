@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, Platform, Animated } from 'react-native';
+import { View, Text, Platform, Animated, Alert } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
@@ -11,8 +11,11 @@ import { lookupOfflineManyByL2 } from '@/lib/dictionary-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
+import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
+import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { log, logwarn } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
@@ -228,6 +231,7 @@ export interface TokenizedTextProps {
  * While loading, shows plain undivided text.
  */
 export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
+  const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -239,6 +243,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const lastTextRef = useRef(text);
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+  const { status } = useSyncStatus();
+  const dictAvailable = useOfflineDictionaryAvailable(l2Code);
+  // Offline + no downloaded dictionary: words can't be interactive. Render
+  // plain text immediately (no pulsing tokenization) and explain on tap.
+  const offlineNoDict = status.effectiveOffline && dictAvailable === false;
   // Opacity pulse shown while lemmatization is in flight.
   const pulseAnim = useRef(new Animated.Value(0.4)).current;
 
@@ -413,6 +422,14 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   useEffect(() => {
     // Skip if tokens were preloaded externally
     if (preloadedTokens) return;
+    // Offline + no dictionary: don't attempt tokenization at all — plain
+    // text immediately, no pulsing (a tap explains why).
+    if (offlineNoDict) {
+      setTokens([]);
+      setLoading(false);
+      loadingRef.current = false;
+      return;
+    }
 
     const effectiveText = text;
     if (!effectiveText.trim()) {
@@ -487,7 +504,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       controller.abort();
       loadingRef.current = false;
     };
-  }, [text, l2Code, preloadedTokens, tokenCacheLoaded]);
+  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, offlineNoDict]);
 
   // ── Abort on unmount ──
   useEffect(() => {
@@ -501,6 +518,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   // populating the shared cache for instant popups + byeonggi/gloss data.
   useEffect(() => {
     if (!tokens.length || loading) return;
+    if (offlineNoDict) return;
 
     const uniqueLemmas = new Map<string, string>();
     for (const token of tokens) {
@@ -630,6 +648,21 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
     return () => { cancelled = true; };
   }, [tokens, cacheVersion, l1Lang.code, quickGlossEnabled, savedFormSet, getTokenEntryData]);
+
+  // Offline without a downloaded dictionary: words can't be interactive.
+  // Render plain text immediately and explain on tap — never show the
+  // pulsing tokenization state in this case.
+  if (offlineNoDict) {
+    return (
+      <Text
+        className={textColor}
+        style={textStyle}
+        onPress={() => Alert.alert(t('title.offline_dictionaries'), t('msg.offline_dictionary_required'))}
+      >
+        {text}
+      </Text>
+    );
+  }
 
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;

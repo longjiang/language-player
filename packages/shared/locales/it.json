@@ -811,6 +811,7 @@
         "offline_definitions_english": "Le definizioni sono in inglese",
         "offline_definitions_english_desc": "I dizionari offline memorizzano definizioni in inglese. Le traduzioni in {l1} vengono aggiunte durante la ricerca online.",
         "offline_dictionaries_desc": "Scarica dizionari per cercare parole senza connessione.",
+        "offline_dictionary_required": "Scarica un dizionario offline per usare questa funzione offline.",
         "offline_mode_not_synced": "Questa impostazione rimane su questo dispositivo e non viene sincronizzata con il tuo account.",
         "options": "Opzioni",
         "or_login_with": "Oppure accedi con:",
