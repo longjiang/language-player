@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-053
 - **Feature**: Offline Mode (local network kill switch) + offline-first sync strategy
-- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; outbox payload-integrity safeguards proposed (structural safeguards section below); full two-device conflict suite pending manual verification
+- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; outbox payload-integrity safeguards implemented 2026-08-08 (structural safeguards section below); full two-device conflict suite pending manual verification
 - **Created**: 2026-08-07
 - **Scope**: `apps/mobile` client + proposed Flask sync endpoints
 - **Related specs**: [SPEC-013 — Mobile Offline Dictionary](013-mobile-offline-dictionary.md) · [SPEC-018 — Mobile Local Tokenization](018-local-tokenization-mobile.md) · [SPEC-039 — Full Database Migration to Supabase](039-full-database-migration-supabase.md) · [ADR-0015 — Settings UI and Search](../adr/0015-settings-ui-and-search.md)
@@ -549,9 +549,22 @@ tests — never inferred by a generic heuristic.
    pending delete collapses everything. The current bug fails this test
    instantly.
 
-**Status.** Design accepted; implementation planned. Until then, the interim
-shallow-merge fix remains in place and the per-entity invariant tests should
-be added as part of the implementation.
+**Status.** Implemented 2026-08-08:
+
+- Entity registry with schema + domain-owned coalesce:
+  `packages/utils/src/sync-entities.ts` (exported via `@langplayer/utils`).
+- `enqueueOutboxOp` validates every upsert payload against the entity schema
+  and composes coalesced payloads through the domain's `coalesce` — never a
+  generic replace/merge heuristic.
+- Notes now enqueue whole-row payloads (`l2`/`title`/`text`/`translation`),
+  built by merging the caller's patch over the cached note body.
+- Server-side per-entity validation in `utils_sync._validate_upsert_payload`:
+  `/sync/push` rejects partial/malformed payloads per-op instead of writing
+  empty rows.
+- Coalescing invariant tests: `packages/utils/src/sync-entities.test.ts`
+  (create → edit → rename must not drop fields; whole-row replace; every
+  registered entity has a coalesce) and server rejection tests in
+  `test_sync.py`.
 
 ### Offline UX — how users know they are offline
 

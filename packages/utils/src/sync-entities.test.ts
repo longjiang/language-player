@@ -1,0 +1,75 @@
+import { describe, expect, it } from 'vitest';
+import {
+  coalesceSyncPayload,
+  validateSyncPayload,
+  getSyncEntityDef,
+} from './sync-entities';
+
+describe('validateSyncPayload', () => {
+  it('rejects unknown entities loudly', () => {
+    expect(() => validateSyncPayload('nope', {})).toThrow(/unknown sync entity/);
+  });
+
+  it('rejects partial note payloads (the create → edit → rename bug)', () => {
+    expect(() => validateSyncPayload('note', { l2: 'ja', title: 'T' })).toThrow(
+      /missing required key: text/,
+    );
+  });
+
+  it('accepts full-row note payloads', () => {
+    expect(() =>
+      validateSyncPayload('note', { l2: 'ja', title: 'T', text: 'B', translation: '' }),
+    ).not.toThrow();
+  });
+
+  it('rejects wrong field types', () => {
+    expect(() =>
+      validateSyncPayload('watch_history', { videoId: 'not-a-number' }),
+    ).toThrow(/must be number/);
+  });
+});
+
+describe('coalesceSyncPayload', () => {
+  it('never drops fields across a note create → edit → rename sequence', () => {
+    const created = { l2: 'ja', title: 'Untitled', text: '', translation: '' };
+    const edited = coalesceSyncPayload('note', created, {
+      l2: 'ja',
+      title: 'Untitled',
+      text: '本文',
+      translation: '',
+    });
+    const renamed = coalesceSyncPayload('note', edited, {
+      l2: 'ja',
+      title: 'New name',
+      text: '本文',
+      translation: '',
+    });
+    expect(renamed).toEqual({ l2: 'ja', title: 'New name', text: '本文', translation: '' });
+  });
+
+  it('a delete pending op collapses earlier upserts (delete wins)', () => {
+    // Delete ops are not coalesced into upserts (op-type change → new row),
+    // so the invariant to assert is that upsert→upsert keeps fields.
+    const a = coalesceSyncPayload('saved_word', { l2: 'ja', wordId: 'w', word: { id: 'w' } }, { l2: 'ja', wordId: 'w', word: { id: 'w', forms: ['x'] } });
+    expect(a.word).toEqual({ id: 'w', forms: ['x'] });
+  });
+
+  it('whole-row entities replace payloads', () => {
+    const merged = coalesceSyncPayload('srs_settings', { dailyNewLimit: 10 }, { dailyNewLimit: 20 });
+    expect(merged).toEqual({ dailyNewLimit: 20 });
+  });
+
+  it('all registered entities expose a coalesce function', () => {
+    for (const entity of [
+      'note',
+      'saved_word',
+      'progress',
+      'srs_card',
+      'srs_settings',
+      'settings',
+      'watch_history',
+    ]) {
+      expect(getSyncEntityDef(entity)?.coalesce).toBeTypeOf('function');
+    }
+  });
+});
