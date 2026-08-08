@@ -7,6 +7,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
+import { SearchBar } from '@/components/dictionary/SearchBar';
 import { WordListSidebar, isSidebarAvailable, type SidebarListItem } from '@/components/dictionary/WordListSidebar';
 import { useSidebar } from '@/components/ui/sidebar';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -35,10 +36,13 @@ export default function WordDetailScreen() {
     cameFromSearch,
     setDetailHead,
     setSidebarSource,
+    setQuery,
+    doSearch,
   } = useDictionaryContext();
   const dict = useDictionary();
 
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  const [searchInput, setSearchInput] = useState('');
 
   // State for API-fetched entry (deep-link fallback)
   const [apiEntry, setApiEntry] = useState<DictionaryEntry | null>(null);
@@ -139,7 +143,9 @@ export default function WordDetailScreen() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
+        <Pressable onPress={() => router.push('/(tabs)/(vocab)' as any)} className="self-start px-1 py-3">
+          <Text className="text-sm text-primary">← {t('action.back')}</Text>
+        </Pressable>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
@@ -151,7 +157,9 @@ export default function WordDetailScreen() {
   if (!entry) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
+        <Pressable onPress={() => router.push('/(tabs)/(vocab)' as any)} className="self-start px-1 py-3">
+          <Text className="text-sm text-primary">← {t('action.back')}</Text>
+        </Pressable>
         <Text className="text-muted-foreground">{t('msg.no_notes_yet')}</Text>
       </View>
     );
@@ -163,9 +171,22 @@ export default function WordDetailScreen() {
   return (
     <View className="flex-1 bg-background">
       <View className="w-full flex-1 self-center" style={{ maxWidth: 1280 }}>
-        {/* Header bar — dictionary title + sidebar toggle when a list is available */}
-        <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
-          <Text className="text-lg font-bold text-foreground">{t('title.dictionary')}</Text>
+        {/* Header bar — persistent search + sidebar toggle when a list is available */}
+        <View className="flex-row items-center gap-2 border-b border-border px-4 py-2">
+          <View className="flex-1">
+            <SearchBar
+              value={searchInput}
+              onChangeText={setSearchInput}
+              onSubmit={() => {
+                const term = searchInput.trim();
+                if (!term) return;
+                setQuery(term);
+                doSearch(term);
+                router.push('/(tabs)/(vocab)' as any);
+              }}
+              onClear={() => setSearchInput('')}
+            />
+          </View>
           {sidebarAvailable && (
             <Pressable
               onPress={toggle}
