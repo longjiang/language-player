@@ -144,7 +144,10 @@ function waitWithTimeout(p: Promise<boolean>, ms: number): Promise<boolean> {
 function toLemmatized(t: WorkerToken): LemmatizedToken {
   return {
     text: t.surface_form,
-    lemmas: [{ lemma: t.basic_form || t.surface_form }],
+    lemmas: [{
+      lemma: t.basic_form || t.surface_form,
+      part_of_speech: t.pos || undefined,
+    }],
     ...(t.reading ? { pronunciation: t.reading } : {}),
     source: 'ja-kuromoji' as const,
   };
@@ -425,11 +428,23 @@ async function runWarmDict(l2: string): Promise<void> {
     }
     const db = l2Db ?? (await openDictionaryDB());
     const table = `dict_${l2.replace(/-/g, '_')}`;
-    const rows = await db.getAllAsync<{ head: string; pronunciation: string | null }>(
-      `SELECT head, pronunciation FROM ${table} WHERE head != ''
-       UNION
-       SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
-    );
+    // part_of_speech is optional — the column doesn't exist in current zh
+    // downloads (POS parity for zh needs a server sidecar export), so probe
+    // it defensively and fall back to the two-column query.
+    let rows: Array<{ head: string; pronunciation: string | null; part_of_speech: string | null }>;
+    try {
+      rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
+        `SELECT head, pronunciation, part_of_speech FROM ${table} WHERE head != ''
+         UNION
+         SELECT alternate, pronunciation, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      );
+    } catch {
+      rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
+        `SELECT head, pronunciation FROM ${table} WHERE head != ''
+         UNION
+         SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      );
+    }
     if (!rows || rows.length === 0) {
       if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
       dictStatus.set(l2, 'failed');
@@ -440,17 +455,20 @@ async function runWarmDict(l2: string): Promise<void> {
 
     const seen = new Set<string>();
     const pinyin = new Map<string, string>();
+    const posByWord = new Map<string, string>();
     for (const row of rows) {
       if (row.head && !seen.has(row.head)) {
         seen.add(row.head);
         if (row.pronunciation) pinyin.set(row.head, row.pronunciation);
+        if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
       }
     }
     const words = Array.from(seen);
     const pronunciations = words.map((w) => pinyin.get(w) ?? null);
-    // {w: [...heads...], p: [pinyin|null...]} — pinyin drives furigana-style
-    // phonetics (tone-marked client-side, matching the online lemmatizer).
-    const json = JSON.stringify({ w: words, p: pronunciations });
+    const posList = words.map((w) => posByWord.get(w) ?? null);
+    // {w, p, pos} — pinyin drives furigana-style phonetics (tone-marked
+    // client-side); pos is attached to lemmas when the dictionary provides it.
+    const json = JSON.stringify({ w: words, p: pronunciations, pos: posList });
     const encoder = new TextEncoder();
     const total = Math.ceil(json.length / DICT_CHUNK_BYTES);
     dictChunkAcks.set(l2, new Set());
@@ -700,6 +718,7 @@ ${kuromojiSource}
   var dictReadyL2 = null;
   var dictSet = null;
   var dictPinyin = {};
+  var dictPos = {};
   var dictMaxLen = 1;
 
   // CC-CEDICT writes ü as "u:" — canonicalize to "v" like the server does,
@@ -802,11 +821,13 @@ ${kuromojiSource}
       var data = JSON.parse(decoded);
       var words = data.w;
       var pinyinList = data.p;
-      if (!Array.isArray(words) || !Array.isArray(pinyinList)) {
-        throw new Error('dict dataset is not {w,p}');
+      var posList = data.pos;
+      if (!Array.isArray(words) || !Array.isArray(pinyinList) || !Array.isArray(posList)) {
+        throw new Error('dict dataset is not {w,p,pos}');
       }
       dictSet = new Set();
       dictPinyin = {};
+      dictPos = {};
       dictMaxLen = 1;
       for (var w = 0; w < words.length; w++) {
         var word = String(words[w]);
@@ -818,6 +839,11 @@ ${kuromojiSource}
         var pWord = String(words[pi] || '');
         var pPy = pinyinList[pi];
         if (pWord && pPy) dictPinyin[pWord] = String(pPy);
+      }
+      for (var qi = 0; qi < posList.length && qi < words.length; qi++) {
+        var qWord = String(words[qi] || '');
+        var qPos = posList[qi];
+        if (qWord && qPos) dictPos[qWord] = String(qPos);
       }
       dictReadyL2 = l2;
       post({ type: 'ready_dict', l2: l2, words: dictSet.size, maxLen: dictMaxLen });
@@ -864,7 +890,9 @@ ${kuromojiSource}
           }
         }
         var py = dictPinyin[longestMatch] ? toToneMarks(dictPinyin[longestMatch]) : null;
-        var token = { text: longestMatch, lemmas: [{ lemma: longestMatch }], source: 'dict-seg' };
+        var lem = { lemma: longestMatch };
+        if (dictPos[longestMatch]) lem.part_of_speech = dictPos[longestMatch];
+        var token = { text: longestMatch, lemmas: [lem], source: 'dict-seg' };
         if (py) token.pronunciation = py;
         tokens.push(token);
         i += longestMatch.length;
