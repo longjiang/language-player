@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-018
 - **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
-- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e done; 3b deferred)
+- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f done; 3b deferred)
 - **Created**: 2026-07-26
 - **Last updated**: 2026-08-07
 - **Supersedes**: [SPEC-016](../specs/016-mobile-local-tokenization.md)
@@ -32,6 +32,7 @@
 | Phase 3c — Cache eviction & memory hygiene | ✅ Implemented | LRU lemmatize cache (2000) + dict word-set LRU (3 languages) |
 | Phase 3d — Silent error handling | ✅ Implemented | App logger (`logwarn`) with app-wide log gate |
 | Phase 3e — Batch endpoint offline fallback | ✅ Implemented | `use-epub-pagination.ts` falls back to `lemmatizeText()` per block |
+| Phase 3f — Offline Mode setting | ✅ Implemented (2026-08-07) | Settings → Network toggle; local-only network kill switch, never synced |
 
 ## Overview
 
@@ -975,6 +976,33 @@ fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
 
 ---
 
+#### Phase 3f: Offline Mode Setting (Local Network Kill Switch) ✅ IMPLEMENTED
+
+See [SPEC-053 — Mobile Offline Mode](../specs/053-mobile-offline-mode.md) for
+the full feature spec.
+
+Settings → Network → **Offline Mode** is a mobile-only toggle that blocks all
+app networking while leaving downloaded data fully usable:
+
+- Stored separately in SecureStore (`lp_offline_mode`) — **not** inside
+  `SettingsV2`, so it is never included in `PUT /user-settings` and never
+  syncs to the user's account.
+- A global gate rejects future requests from:
+  - global `fetch()` (direct calls + `authenticatedFetch`)
+  - `XMLHttpRequest` (the default axios adapter used by `apiClient`)
+  - `File.downloadFileAsync()` (offline dictionary and tokenizer pack downloads)
+- The gate is installed before any provider mounts, so auth refresh, settings
+  hydration, and other boot-time requests are blocked too. The auth boot check
+  skips refresh while Offline Mode is on, preserving the local session instead
+  of logging the user out.
+- Existing offline dictionaries, lemma tables, kuromoji packs, and the local
+  `lemmatizeText()` fallback chain continue to work normally.
+
+This gives developers and users a deterministic way to exercise the offline
+fallback chain (SPEC-018) without disabling the Mac's network or killing Metro.
+
+---
+
 #### Phase 3 Summary
 
 | Subphase | What | Why | Effort |
@@ -984,8 +1012,9 @@ fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
 | **3c** ✅ | Cache eviction: `lemmatizeCache` (LRU, max 2000) + **`dictWordSets` (LRU, max 3)** | Prevents unbounded memory growth; `dictWordSets` is the higher risk (a full Chinese set is ~120K simplified + ~77K traditional heads) | Small |
 | **3d** ✅ | Silent error handling | Kuromoji init/tokenize failures route through the app-wide `logwarn()` logger (gated by the log switch) instead of raw `console.warn` | Trivial |
 | **3e** ✅ | Batch endpoint offline fallback | `use-epub-pagination.ts` catches batch failure and re-tokenizes visible blocks with `lemmatizeText()` | Trivial |
+| **3f** ✅ | Offline Mode setting | Local network kill switch (fetch/XHR/expo-file-system); stored locally, never synced | Small |
 
-**Status**: 3a, 3c, 3d, 3e implemented; 3b remains deferred (no bundled lemma-table assets — tables are download-only).
+**Status**: 3a, 3c, 3d, 3e, 3f implemented; 3b remains deferred (no bundled lemma-table assets — tables are download-only).
 **Server assets**: 2 zip archives (kuromoji-ipadic, mecab-ko-dic) ✅; 7 gzipped lemma-table JSONs not built.
 
 #### Deferred (research review 2026-08-07)
@@ -1047,6 +1076,7 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy, strategy details, and gotchas
 - [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md) — earlier exploration
 - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — download UX pattern this spec follows
+- [SPEC-053: Mobile Offline Mode](../specs/053-mobile-offline-mode.md) — local-only network kill switch setting
 - [ARCH-016: Server-Side Tokenization Pipeline](../arch/016-server-tokenization.md) — server tokenizer inventory
 - [ADR-0018: Tokenizer Selection](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md) — preference order
 

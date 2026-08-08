@@ -10,7 +10,7 @@ export default function SettingsLayout() {
   const t = useT();
   const { width } = useWindowDimensions();
   const { colorScheme } = useColorScheme();
-  const { settings } = useSettingsContext();
+  const { settings, offlineMode } = useSettingsContext();
   const isWide = width >= LG_BREAKPOINT;
 
   const isDark = colorScheme === 'dark';
@@ -36,7 +36,7 @@ export default function SettingsLayout() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [settings]);
+  }, [settings, offlineMode]);
 
   // On wide screens (iPad split view), don't use Stack navigation.
   // The index.tsx handles split-view layout directly by rendering
@@ -83,6 +83,10 @@ export default function SettingsLayout() {
         <Stack.Screen
           name="review"
           options={{ headerShown: true, title: t('title.review') }}
+        />
+        <Stack.Screen
+          name="network"
+          options={{ headerShown: true, title: t('title.offline_mode') }}
         />
       </Stack>
       {savedVisible && (

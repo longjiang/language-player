@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 // ── API Client Singleton ────────────────────
 
@@ -159,7 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // stored access token already expired, refresh before the first batch
           // of requests fires; a dead refresh token means a clean logout.
           const expiresAt = tokenExpiresAt(storedToken);
-          if (expiresAt > 0 && expiresAt <= Date.now()) {
+          if (expiresAt > 0 && expiresAt <= Date.now() && !isOfflineModeEnabled()) {
+            // Offline Mode blocks the refresh request, so skip it and keep the
+            // local session until the user goes back online.
             const newToken = await refreshAccessToken();
             if (!newToken) {
               await SecureStore.deleteItemAsync('authToken');

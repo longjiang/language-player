@@ -4,6 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { logwarn } from '@/lib/logger';
 import {
+  initOfflineMode,
+  isOfflineModeEnabled,
+  setOfflineModeEnabled,
+} from '@/lib/offline-mode';
+import {
   createSettingsV2,
   L2_DEFAULTS,
 } from '@langplayer/shared';
@@ -31,9 +36,21 @@ export function useSettings() {
   const { getUserSettings, putUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
+  const [offlineMode, setOfflineModeState] = useState<boolean>(() => isOfflineModeEnabled());
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
   const cloudLoaded = useRef(false);
+
+  // Local-only network kill switch: stored separately from SettingsV2 and
+  // never included in the cloud PUT, so it never syncs to the account.
+  useEffect(() => {
+    void initOfflineMode().then((value) => setOfflineModeState(value));
+  }, []);
+
+  const setOfflineMode = useCallback((value: boolean) => {
+    setOfflineModeState(value);
+    return setOfflineModeEnabled(value);
+  }, []);
 
   // ── Load from SecureStore ──
   useEffect(() => {
@@ -51,7 +68,7 @@ export function useSettings() {
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoaded.current) return;
+    if (!user || !loaded || cloudLoaded.current || offlineMode) return;
     cloudLoaded.current = true;
     let cancelled = false;
     (async () => {
@@ -68,10 +85,11 @@ export function useSettings() {
         });
       } catch (err) {
         logwarn('[settings] Could not load from server:', err);
+        cloudLoaded.current = false;
       }
     })();
     return () => { cancelled = true; };
-  }, [user, loaded, getUserSettings]);
+  }, [user, loaded, getUserSettings, offlineMode]);
 
   // ── Persist + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
@@ -164,6 +182,8 @@ export function useSettings() {
     updatePlayback,
     review: settings.review,
     updateReview,
+    offlineMode,
+    setOfflineMode,
     getL2,
     updateL2,
     ensureL2,

@@ -1,7 +1,7 @@
 // Intl polyfills for Hermes (Intl.PluralRules) — MUST be first
 import '@/lib/intl-polyfills';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
 import { logerr } from '@/lib/logger';
 import { useAppFonts } from '@/lib/fonts';
+import { initOfflineMode } from '@/lib/offline-mode';
 
 // ── Custom toast config ──
 
@@ -106,10 +107,17 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
   const [fontsLoaded, fontError] = useAppFonts();
+  const [offlineModeReady, setOfflineModeReady] = useState(false);
+
+  // Install the network gate before any provider mounts so Offline Mode is
+  // active from the very first app request (including auth/settings sync).
+  useEffect(() => {
+    void initOfflineMode().finally(() => setOfflineModeReady(true));
+  }, []);
 
   // Keep the splash visible (and skip the first render) until the vendored
   // Inter fonts are ready. On failure, render with system fonts instead.
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !offlineModeReady) {
     return null;
   }
 

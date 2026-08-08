@@ -22,6 +22,10 @@ interface SettingsContextValue {
   review: ReviewSettings;
   updateReview: (patch: Partial<ReviewSettings>) => void;
 
+  /** Local-only network kill switch (never synced to the account). */
+  offlineMode: boolean;
+  setOfflineMode: (value: boolean) => Promise<void>;
+
   getL2: (code: string) => L2Settings;
   updateL2: (code: string, patch: Partial<L2Settings>) => void;
   ensureL2: (code: string) => void;

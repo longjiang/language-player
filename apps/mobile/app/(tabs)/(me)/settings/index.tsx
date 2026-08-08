@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight } from 'lucide-react-native';
+import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight, WifiOff } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -12,6 +12,7 @@ import { DisplaySettings } from './display';
 import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
 import { ReviewSettings } from './review';
+import { NetworkSettings } from './network';
 import { LG_BREAKPOINT } from '@/lib/constants';
 
 // ── Section/Row types ─────────────────────────
@@ -41,7 +42,7 @@ function SettingsList({
   onSelect: (key: string) => void;
 }) {
   const t = useT();
-  const { display, playback, review, getL2, loaded } = useSettingsContext();
+  const { display, playback, review, getL2, loaded, offlineMode } = useSettingsContext();
   const { l1Lang, l2Lang } = useLanguage();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
@@ -52,6 +53,14 @@ function SettingsList({
     for (const [category, keys] of Object.entries(SETTINGS_SEARCH_KEYS)) {
       result[category] = keys.map((key) => t(key).toLowerCase());
     }
+    // Mobile-only Offline Mode aliases (not in shared search keys, since the
+    // web settings list doesn't have this local-only setting).
+    result.network = [
+      'setting.network',
+      'title.offline_mode',
+      'setting.offline_mode_desc',
+      'msg.offline_mode_not_synced',
+    ].map((key) => t(key).toLowerCase());
     setLocalizedLabels(result);
   }, [l2Lang.code]);
 
@@ -114,6 +123,13 @@ function SettingsList({
         titleKey: '', // no section header for DATA section
         rows: [
           {
+            key: 'network',
+            icon: WifiOff,
+            title: t('title.offline_mode'),
+            subtitle: offlineMode ? t('label.offline') : '',
+            href: '/(tabs)/(me)/settings/network',
+          },
+          {
             key: 'offline',
             icon: Download,
             title: t('title.offline_dictionaries'),
@@ -123,7 +139,7 @@ function SettingsList({
         ],
       },
     ];
-  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, l2Lang.code]);
+  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, l2Lang.code, offlineMode]);
 
   // Filter sections by search query
   const filteredSections = useMemo(() => {
@@ -236,6 +252,9 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
       break;
     case 'review':
       content = <ReviewSettings />;
+      break;
+    case 'network':
+      content = <NetworkSettings />;
       break;
     default:
       content = (
