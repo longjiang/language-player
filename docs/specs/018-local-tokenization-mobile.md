@@ -574,6 +574,16 @@ lemmatizeText(text, l2)
   └─ 4. Return result
 ```
 
+> **Canonical non-words (2026-08-08)**: every local path (kuromoji, dict
+> max-matching, regex, lemma table, snowball, arabic-stem, and the WebView
+> worker results) passes through `canonicalizeLocalTokens()` before caching.
+> It marks whitespace and punctuation/symbol tokens as `lemmas: []`
+> (non-interactive — no popup, no quiz blanking, not counted as words) and
+> restores whitespace gap tokens dropped by the regex path, mirroring the
+> server's `_recover_spaces()`. This guarantees the token list reconstructs
+> the original text on every path, so format ranges and search highlights
+> stay aligned offline too. See ARCH-016 for the same rule on the server.
+
 #### Files to Create/Modify (cumulative)
 
 | File | Change |

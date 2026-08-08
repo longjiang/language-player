@@ -610,6 +610,13 @@ interface Lemma {
 - **`pronunciation` is null for Latin-script languages** — only CJK, Arabic, Persian, Cyrillic, and other non-Latin scripts get pronunciation data
 - **POS tags are NOT normalized** across tokenizers — each tokenizer uses its own tagset. Clients should treat POS tags as opaque strings for display purposes.
 
+> **Non-word rule (2026-08-08)**: whitespace and punctuation/symbol-only tokens
+> are `lemmas: []` in **every** engine. This is enforced centrally in
+> `_filter_empty()` via `_is_nonword()` (Unicode `P`/`S` categories + whitespace),
+> so jieba/MeCab punctuation (`，`/`。`), `_recover_spaces()` gaps, and the
+> regex fallback all agree. Genuine words — CJK ideographs, digits, particles
+> (助詞), and apostrophe-words like `don't` — always keep their lemmas.
+
 ---
 
 ## Caching Architecture
