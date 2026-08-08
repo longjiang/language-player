@@ -82,7 +82,7 @@ function DropdownPicker<T extends string>({
       {/* Android fallback: modal with safe-area-aware top padding */}
       {open && Platform.OS !== 'ios' && (
         <Modal transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-          <Pressable className="flex-1 bg-black/30" onPress={() => setOpen(false)}>
+          <Pressable className="flex-1 bg-foreground/30" onPress={() => setOpen(false)}>
             {/* Invisible spacer to push content below the status bar */}
             <View style={{ height: insets.top + 8 }} />
             <View className="mx-4 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
@@ -306,8 +306,8 @@ export default function TvShowsScreen() {
                   )}
                   {/* Views badge */}
                   {item.avg_views != null && item.avg_views > 0 && (
-                    <View className="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-0.5">
-                      <Text className="text-xs text-white">
+                    <View className="absolute bottom-2 right-2 rounded bg-foreground/60 px-2 py-0.5">
+                      <Text className="text-xs text-background">
                         {item.avg_views.toLocaleString()}
                       </Text>
                     </View>

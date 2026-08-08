@@ -203,7 +203,7 @@ function ShowCard({ show, l1Code, l2Code }: { show: ShowWithMeta; l1Code: string
         )}
         {/* Views badge */}
         {show.avg_views != null && show.avg_views > 0 && (
-          <span className="absolute bottom-2 right-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
+          <span className="absolute bottom-2 right-2 rounded bg-foreground/60 px-2 py-0.5 text-xs text-background">
             {show.avg_views.toLocaleString()} views
           </span>
         )}
