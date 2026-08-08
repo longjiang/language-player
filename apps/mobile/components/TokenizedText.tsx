@@ -701,7 +701,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               return tokens.map((token, i) => {
               if (!isWord(token)) {
                 return (
-                  <View key={i} className="items-center mx-px">
+                  <View key={i} className="items-center">
                     <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
                     {/* Universal definition slot: when showDefinition is on, every token
                         gets a slot of the same height so all word texts share a baseline.
@@ -791,7 +791,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSearchHighlight = !!tokenFormat?.highlight;
 
               return (
-                <View key={i} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                <View key={i} className="items-center" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
                   {/* Segment row + quick gloss: items-end so the gloss (no furigana)
                       baseline-aligns with the word text at the bottom of the segment columns. */}
                   <View className="flex-row items-end">
