@@ -410,6 +410,26 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     return diff.value >= userLevel;
   }, [phoneticsConditions, userLevel, l2Code]);
 
+  // ── Phonetics debug summary (Korean) — why is ruby/romanization missing? ──
+  useEffect(() => {
+    if (!__DEV__ || baseCode(l2Code) !== 'ko' || tokens.length === 0) return;
+    const words = tokens.filter((t) => t.lemmas.length > 0);
+    const withPron = words.filter((t) => t.pronunciation).length;
+    const pronEqWord = words.filter((t) => t.pronunciation && t.pronunciation === t.text).length;
+    const eligible = words.filter(shouldShowPhonetics).length;
+    const rubyShown = words.filter(
+      (t) =>
+        showPhonetics &&
+        phonetics.show === 'ruby' &&
+        shouldShowPhonetics(t) &&
+        !!t.pronunciation &&
+        t.pronunciation !== t.text,
+    ).length;
+    log(
+      `[TokenizedText] 🎙 PHONETICS l2=${l2Code} show=${String(phonetics.show)} conditions=${phoneticsConditions} userLevel=${userLevel ?? 'none'} words=${words.length} eligible=${eligible} withPron=${withPron} pronEqWord=${pronEqWord} rubyShown=${rubyShown} sample=${words.slice(0, 10).map((t) => `${t.text}→${t.pronunciation ?? '∅'}`).join(', ')}`,
+    );
+  }, [tokens, l2Code, showPhonetics, phonetics.show, phoneticsConditions, userLevel, shouldShowPhonetics]);
+
   // ── Preloaded tokens: use directly ──
   useEffect(() => {
     if (preloadedTokens) {
