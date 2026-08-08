@@ -28,6 +28,7 @@ const DICTIONARIES_DIR_URI = `${Paths.document.uri}dictionaries`;
 const DICTIONARIES_DIR_PATH = DICTIONARIES_DIR_URI.replace(/^file:\/\//, '');
 
 const l2DbCache = new Map<string, SQLite.SQLiteDatabase>();
+const l2OpenPromises = new Map<string, Promise<SQLite.SQLiteDatabase | null>>();
 const l2MigratedDefs = new Set<string>();
 
 /** Escape a string for safe inclusion in a SQL string literal. */
@@ -199,16 +200,30 @@ export async function openOfflineDictionaryDB(
   const cached = l2DbCache.get(l2);
   if (cached) return cached;
 
-  await ensureDictionariesDir();
-  log('[DictDB] opening precompiled dict file — l2:', l2, 'file:', dictionaryDbFileName(l2));
-  const db = await SQLite.openDatabaseAsync(
-    dictionaryDbFileName(l2),
-    {},
-    DICTIONARIES_DIR_PATH,
-  );
-  await migratePrecompiledDefinitions(db, l2);
-  l2DbCache.set(l2, db);
-  return db;
+  // Dedupe concurrent opens (e.g. TokenizedText hydrating many tokens at
+  // once) so we don't create N connections or run the migration N times.
+  const existingOpen = l2OpenPromises.get(l2);
+  if (existingOpen) return existingOpen;
+
+  const openPromise = (async (): Promise<SQLite.SQLiteDatabase | null> => {
+    await ensureDictionariesDir();
+    log('[DictDB] opening precompiled dict file — l2:', l2, 'file:', dictionaryDbFileName(l2));
+    const db = await SQLite.openDatabaseAsync(
+      dictionaryDbFileName(l2),
+      {},
+      DICTIONARIES_DIR_PATH,
+    );
+    await migratePrecompiledDefinitions(db, l2);
+    l2DbCache.set(l2, db);
+    return db;
+  })();
+
+  l2OpenPromises.set(l2, openPromise);
+  try {
+    return await openPromise;
+  } finally {
+    l2OpenPromises.delete(l2);
+  }
 }
 
 /**

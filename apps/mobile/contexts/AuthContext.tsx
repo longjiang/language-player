@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { log } from '@/lib/logger';
 
 // ── API Client Singleton ────────────────────
 
@@ -160,18 +161,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // stored access token already expired, refresh before the first batch
           // of requests fires; a dead refresh token means a clean logout.
           const expiresAt = tokenExpiresAt(storedToken);
-          if (expiresAt > 0 && expiresAt <= Date.now() && !isOfflineModeEnabled()) {
-            // Offline Mode blocks the refresh request, so skip it and keep the
-            // local session until the user goes back online.
-            const newToken = await refreshAccessToken();
-            if (!newToken) {
-              await SecureStore.deleteItemAsync('authToken');
-              await SecureStore.deleteItemAsync('authRefreshToken');
-              await SecureStore.deleteItemAsync('userInfo');
-              setToken(null);
-              setUser(null);
+          if (expiresAt > 0 && expiresAt <= Date.now()) {
+            if (isOfflineModeEnabled()) {
+              // Offline Mode blocks the refresh request, so skip it and keep
+              // the local session until the user goes back online.
+              log('[Auth] boot — access token expired but Offline Mode is on; skipping refresh');
+            } else {
+              log('[Auth] boot — access token expired; refreshing');
+              const newToken = await refreshAccessToken();
+              if (!newToken) {
+                await SecureStore.deleteItemAsync('authToken');
+                await SecureStore.deleteItemAsync('authRefreshToken');
+                await SecureStore.deleteItemAsync('userInfo');
+                setToken(null);
+                setUser(null);
+              }
             }
+          } else {
+            log('[Auth] boot — stored access token is still valid; no refresh needed');
           }
+        } else {
+          log('[Auth] boot — no stored session');
         }
       } catch { /* ignore */ }
       setLoading(false);

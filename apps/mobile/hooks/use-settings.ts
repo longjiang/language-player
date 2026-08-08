@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import {
   initOfflineMode,
   isOfflineModeEnabled,
@@ -101,6 +101,8 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
+        log('[settings] PUT /user-settings — payload keys:', Object.keys(s).join(', '),
+          '— offlineMode present:', 'offlineMode' in s);
         await putUserSettings({ settings_v2: s });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
