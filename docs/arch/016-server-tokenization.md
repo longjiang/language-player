@@ -249,9 +249,14 @@ These exist in `utils_nlp.py`'s legacy `tokenizers` dictionary and are used by t
 
 ## Language-Specific Tokenizer Details
 
-### Chinese — jieba + pypinyin (`lemmatize_chinese.py`)
+### Han family — jieba + variant pronunciation (`lemmatize_han.py`)
 
-**Engine**: [jieba](https://github.com/fxsjy/jieba) POS segmentation + [pypinyin](https://github.com/mozillazg/python-pinyin)
+**Engine**: [jieba](https://github.com/fxsjy/jieba) POS segmentation (big dictionary) + per-variant pronunciation
+
+All Han-script languages (`zh`, `zho`, `zh-Hans`, `zh-Hant`, `cmn`, `yue`,
+`nan`, `hak`, `wuu`, `hsn`, `cjy`, `cpx`, `gan`, `lzh`, `och`, `mnp`, `czo`,
+`cdo`, `czh`, `cng`) route through `lemmatize_han.py` (2026-08-08). The
+original `lemmatize_chinese.py` remains for the legacy video path.
 
 **Raw output format**:
 ```python
@@ -260,13 +265,31 @@ These exist in `utils_nlp.py`'s legacy `tokenizers` dictionary and are used by t
 
 **How it works**:
 1. `jieba.posseg.cut(text)` — segments text into words with POS tags
-2. `pypinyin.pinyin(word, style=Style.TONE)` — generates tone-marked pinyin for each word
-3. Pronunciation is space-joined pinyin: `"shì jiè"`
-4. Cache key: `cache/lemmatization/jieba/zho/{md5}`
+   (`dict.txt.big` per ADR-0019, so traditional script segments as well as simplified).
+2. Pronunciation policy (uninflected languages only, per ARCH-018 research):
+   - `zh` / `zho` / `zh-Hans` / `zh-Hant` / `cmn` → tone-marked pinyin via pypinyin
+   - `yue` → jyutping from the **cccanto lexicon** (`data/dictionaries.db`),
+     loaded lazily into jieba's user dictionary (heads + simplified alternates)
+     so Cantonese words segment correctly; pronunciation is the raw jyutping
+     with tone digits (e.g. `nei5`, `se2`)
+   - other Han variants → no pronunciation yet
+3. Cache key: `cache/lemmatization/jieba/{lang}/{md5}`
 
-**POS tags**: Uses jieba's POS tagset (e.g., `n` = noun, `v` = verb, `a` = adjective, `l` = idiom, `x` = punctuation).
+**POS tags**: jieba's POS tagset (e.g., `n` = noun, `v` = verb, `a` = adjective,
+`l` = idiom, `x` = punctuation).
 
-**Chinese is lemma-less**: For Chinese, the surface form IS the lemma. `lemma_from_word()` returns the word unchanged. There is no inflection to reduce.
+**Han is lemma-less**: the surface form IS the lemma for every Han variant.
+There is no inflection to reduce.
+
+### SEA family — ICU word break / regex fallback (`lemmatize_sea.py`)
+
+Thai (`th`), Khmer (`km`), Lao (`lo`), and Tibetan (`bo`) are
+scriptio-continua with no dedicated server segmenter. `lemmatize_sea.py`
+(2026-08-08) uses ICU word break (Unicode UAX #29) via PyICU when the
+optional `icu` package is installed, otherwise falls back to the generic
+punctuation-delimited regex run. All SEA tokens are surface-as-lemma with no
+pronunciation. Burmese (`my`) is not here — it keeps `lemmatize_burmese.py`
+(pyidaungsu).
 
 ---
 
@@ -697,6 +720,44 @@ Known tradeoff: koroman does no morphological analysis, so proper-noun exception
 
 ---
 
+## Language Classes & Segmentation Ladder
+
+Tokenization strategy is driven by **writing system**, not by an ad-hoc
+per-code registry. The unified registry now derives from these classes:
+
+| Class | Scripts | Segmentation | Lemma mode | Examples |
+|---|---|---|---|---|
+| `space` | Latin, Cyrillic, Arabic, … | regex word-split | per-language | en, ru, ar, hi |
+| `han` | CJK ideographs | jieba (big dict) + optional variant lexicon | surface-as-lemma | zh, yue, cmn, nan, hak, wuu, lzh, … |
+| `cjk-morph` | CJK + kana/hangul | morphological analyzer | dictionary form | ja (MeCab), ko (Okt) |
+| `sea` | Thai/Khmer/Lao/Tibetan | ICU word break (or regex fallback) | surface-as-lemma | th, km, lo, bo |
+
+**Segmentation fallback ladder** (applies to every language):
+
+1. Morphological analyzer where one exists (ja, ko, zh via jieba).
+2. Generic Han segmenter (jieba `dict.txt.big`) for all `han` codes, with a
+   per-variant lexicon overlay when available (yue → cccanto).
+3. Dictionary max-match for scriptio-continua languages with a lexicon.
+4. ICU word break (UAX #29) for `sea` languages without a lexicon.
+5. Regex split — only correct for `space` languages.
+
+**Current vs target (2026-08-08):**
+
+| Family | Online status | Pronunciation | Notes |
+|---|---|---|---|
+| zh / cmn | ✅ jieba + pypinyin | ✅ pinyin | unchanged |
+| yue | ✅ jieba + cccanto overlay | ✅ jyutping (lexicon) | new |
+| nan / hak / wuu / hsn / cjy / cpx / gan / lzh / och / … | ✅ jieba segmentation | ⬜ none yet | new |
+| th / km / lo / bo | ✅ ICU word break when `pyicu` installed, else regex | ⬜ none | new; lexicons are the next data goal |
+| my | ✅ pyidaungsu | ⬜ none | unchanged |
+
+**Lexicon contract**: variant/SEA lexicons follow the cedict/cccanto shape —
+`head`, `alternate`, `pronunciation` — so the same data serves both server
+segmentation and mobile offline dictionary max-match (Phase D follow-up:
+download these lexicons on mobile and finish the generic dict worker path).
+
+---
+
 ## Legacy vs. Unified Pipeline
 
 The codebase has two parallel tokenization paths:
@@ -795,8 +856,11 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 5 | Bulgarian | `bg` | `bul` | Simplemma | Yes (ISO 9 romanization) |
 | 6 | Burmese | `my` | `mya` | pyidaungsu | No |
 | 7 | Catalan | `ca` | `cat` | LemmatizationList | No (Latin script) |
-| 8 | Chinese (Simplified) | `zh` | `zho` | jieba + pypinyin | Yes (pinyin) |
-| 9 | Chinese (Traditional) | `zh-Hant` | `zho` | jieba + pypinyin | Yes (pinyin) |
+| 8 | Chinese (Simplified) | `zh` | `zho` | jieba (lemmatize_han) | Yes (pinyin) |
+| 9 | Chinese (Traditional) | `zh-Hant` | `zho` | jieba (lemmatize_han) | Yes (pinyin) |
+| 9b | Cantonese | `yue` | `yue` | jieba + cccanto overlay | Yes (jyutping) |
+| 9c | Other Han variants | `cmn nan hak wuu …` | — | jieba (lemmatize_han) | No |
+| 9d | Thai / Khmer / Lao / Tibetan | `th km lo bo` | `tha khm lao bod` | ICU word break / regex | No |
 | 10 | Croatian | `hr` | `hrv` | spaCy | No (Latin script) |
 | 11 | Czech | `cs` | `ces` | Simplemma | No (Latin script) |
 | 12 | Danish | `da` | `dan` | Simplemma | No (Latin script) |
@@ -838,7 +902,7 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 48 | Turkish | `tr` | `tur` | Zeyrek | No (Latin script, but has vowel harmony) |
 | 49 | Ukrainian | `uk` | `ukr` | LemmatizationList | Yes (ISO 9 romanization) |
 
-> **Notable omissions from unified pipeline**: Vietnamese (`vi`) uses pyvi but falls through to `_fallback_lemmatize` because it's not registered. Klingon, Hebrew, Hindi, Thai, and ~150 other languages use the `_fallback_lemmatize` regex split.
+> **Notable omissions from unified pipeline**: Vietnamese (`vi`) uses pyvi but falls through to `_fallback_lemmatize` because it's not registered. Klingon, Hebrew, Hindi, and ~150 other languages use the `_fallback_lemmatize` regex split. Han variants and Thai/Khmer/Lao/Tibetan are now registered (see Language Classes & Segmentation Ladder).
 
 ---
 
