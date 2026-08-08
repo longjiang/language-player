@@ -756,6 +756,8 @@
         "logging_in": "Sedang masuk...",
         "login_to_save_notes": "Masuk untuk menyimpan catatan Anda.",
         "login_to_verify_pro": "Silakan masuk untuk memverifikasi status Pro Anda.",
+        "logout_offline_title": "Keluar saat luring?",
+        "logout_offline_warning": "Anda sedang luring. Setelah keluar, Anda tidak akan bisa masuk kembali sampai ada koneksi internet. Tetap keluar?",
         "lookup_words_desc": "Cari kata dalam {l2} dengan terjemahan ke {l1}.",
         "making_words_interactive": "Membuat kata interaktif…",
         "money_back_guarantee": "Jaminan uang kembali 14 hari. Ada pertanyaan?",

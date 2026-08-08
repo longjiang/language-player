@@ -756,6 +756,8 @@
         "logging_in": "Prijava u tijeku...",
         "login_to_save_notes": "Prijavite se za spremanje bilješki.",
         "login_to_verify_pro": "Prijavite se kako biste potvrdili svoj Pro status.",
+        "logout_offline_title": "Odjava izvan mreže?",
+        "logout_offline_warning": "Izvan mreže ste. Nakon odjave nećete se moći ponovno prijaviti dok ne uspostavite internetsku vezu. Svejedno se odjaviti?",
         "lookup_words_desc": "Potražite riječi u {l2} s prijevodima na {l1}.",
         "making_words_interactive": "Činjenje riječi interaktivnima…",
         "money_back_guarantee": "Jamstvo povrata novca u roku od 14 dana. Imate pitanja?",

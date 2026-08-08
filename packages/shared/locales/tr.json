@@ -756,6 +756,8 @@
         "logging_in": "Giriş yapılıyor...",
         "login_to_save_notes": "Notlarınızı kaydetmek için giriş yapın.",
         "login_to_verify_pro": "Pro durumunuzu doğrulamak için lütfen giriş yapın.",
+        "logout_offline_title": "Çevrimdışıyken çıkış yapılsın mı?",
+        "logout_offline_warning": "Çevrimdışısınız. Çıkış yaptıktan sonra internet bağlantınız olana kadar tekrar giriş yapamazsınız. Yine de çıkış yapılsın mı?",
         "lookup_words_desc": "{l2} içindeki kelimeleri {l1} diline çevirileriyle arayın.",
         "making_words_interactive": "Kelimeler etkileşimli yapılıyor…",
         "money_back_guarantee": "14 günlük para iade garantisi. Sorularınız mı var?",

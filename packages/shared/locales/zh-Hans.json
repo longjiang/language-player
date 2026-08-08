@@ -739,6 +739,8 @@
         "logging_in": "正在登录...",
         "login_to_save_notes": "登录以保存笔记。",
         "login_to_verify_pro": "请登录以验证您的 Pro 状态。",
+        "logout_offline_title": "离线状态下退出登录？",
+        "logout_offline_warning": "你当前处于离线状态。退出登录后，在恢复网络连接前将无法重新登录。仍要退出吗？",
         "lookup_words_desc": "查询{l2}单词并查看{l1}翻译。",
         "making_words_interactive": "正在让单词可交互…",
         "money_back_guarantee": "14 天退款保证。有问题？",

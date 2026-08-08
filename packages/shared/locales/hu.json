@@ -756,6 +756,8 @@
         "logging_in": "Bejelentkezés...",
         "login_to_save_notes": "Jelentkezzen be a jegyzetek mentéséhez.",
         "login_to_verify_pro": "Jelentkezz be a Pro státuszod ellenőrzéséhez.",
+        "logout_offline_title": "Kijelentkezés offline állapotban?",
+        "logout_offline_warning": "Jelenleg offline állapotban van. A kijelentkezés után nem tud újra bejelentkezni, amíg nincs internetkapcsolata. Mégis kijelentkezik?",
         "lookup_words_desc": "Szavak keresése a {l2} nyelvben, fordításokkal {l1} nyelvre.",
         "making_words_interactive": "A szavak interaktívvá tétele…",
         "money_back_guarantee": "14 napos pénzvisszafizetési garancia. Kérdések?",

@@ -756,6 +756,8 @@
         "logging_in": "Iniciando sesión...",
         "login_to_save_notes": "Inicia sesión para guardar tus notas.",
         "login_to_verify_pro": "Inicia sesión para verificar tu estado Pro.",
+        "logout_offline_title": "¿Cerrar sesión sin conexión?",
+        "logout_offline_warning": "Estás sin conexión. Después de cerrar sesión, no podrás volver a iniciarla hasta que tengas conexión a internet. ¿Cerrar sesión de todos modos?",
         "lookup_words_desc": "Busca palabras en {l2} con traducciones a {l1}.",
         "making_words_interactive": "Haciendo que las palabras sean interactivas…",
         "money_back_guarantee": "Garantía de devolución de 14 días. ¿Preguntas?",

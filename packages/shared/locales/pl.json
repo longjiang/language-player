@@ -756,6 +756,8 @@
         "logging_in": "Logowanie...",
         "login_to_save_notes": "Zaloguj się, aby zapisać notatki.",
         "login_to_verify_pro": "Zaloguj się, aby zweryfikować swój status Pro.",
+        "logout_offline_title": "Wylogować się offline?",
+        "logout_offline_warning": "Jesteś offline. Po wylogowaniu nie będziesz mógł się zalogować, dopóki nie będziesz mieć połączenia z internetem. Wylogować mimo to?",
         "lookup_words_desc": "Szukaj słów w {l2} z tłumaczeniami na {l1}.",
         "making_words_interactive": "Uczynianie słów interaktywnymi…",
         "money_back_guarantee": "14-dniowa gwarancja zwrotu pieniędzy. Pytania?",

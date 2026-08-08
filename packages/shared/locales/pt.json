@@ -756,6 +756,8 @@
         "logging_in": "Entrando...",
         "login_to_save_notes": "Faça login para salvar suas notas.",
         "login_to_verify_pro": "Faça login para verificar o seu estado Pro.",
+        "logout_offline_title": "Sair sem conexão?",
+        "logout_offline_warning": "Você está offline. Depois de sair, não poderá entrar novamente até ter conexão com a internet. Sair mesmo assim?",
         "lookup_words_desc": "Consulte palavras em {l2} com traduções para {l1}.",
         "making_words_interactive": "Tornando as palavras interativas…",
         "money_back_guarantee": "Garantia de reembolso de 14 dias. Dúvidas?",

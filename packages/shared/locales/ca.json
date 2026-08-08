@@ -756,6 +756,8 @@
         "logging_in": "Iniciant sessió...",
         "login_to_save_notes": "Inicia sessió per desar les teves notes.",
         "login_to_verify_pro": "Inicia sessió per verificar el teu estat Pro.",
+        "logout_offline_title": "Tancar sessió fora de línia?",
+        "logout_offline_warning": "Ets fora de línia. Després de tancar sessió, no podràs tornar a iniciar-la fins que tinguis connexió a internet. Tancar sessió igualment?",
         "lookup_words_desc": "Cerca paraules a {l2} amb traduccions a {l1}.",
         "making_words_interactive": "Fent que les paraules siguin interactives…",
         "money_back_guarantee": "Garantia de reemborsament de 14 dies. Tens preguntes?",

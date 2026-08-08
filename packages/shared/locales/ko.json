@@ -756,6 +756,8 @@
         "logging_in": "로그인 중...",
         "login_to_save_notes": "노트를 저장하려면 로그인하세요.",
         "login_to_verify_pro": "Pro 상태를 확인하려면 로그인하세요.",
+        "logout_offline_title": "오프라인 상태에서 로그아웃할까요?",
+        "logout_offline_warning": "현재 오프라인 상태입니다. 로그아웃하면 인터넷에 연결되기 전까지 다시 로그인할 수 없습니다. 그래도 로그아웃할까요?",
         "lookup_words_desc": "{l2}의 단어를 {l1}로 번역하여 찾아보세요.",
         "making_words_interactive": "단어를 상호작용하게 만드는 중…",
         "money_back_guarantee": "14일 환불 보장. 질문이 있으신가요?",

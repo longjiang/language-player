@@ -756,6 +756,8 @@
         "logging_in": "Anmeldung läuft...",
         "login_to_save_notes": "Melde dich an, um Notizen zu speichern.",
         "login_to_verify_pro": "Bitte melde dich an, um deinen Pro-Status zu überprüfen.",
+        "logout_offline_title": "Offline abmelden?",
+        "logout_offline_warning": "Du bist offline. Nach dem Abmelden kannst du dich erst wieder anmelden, wenn du eine Internetverbindung hast. Trotzdem abmelden?",
         "lookup_words_desc": "Schlagen Sie Wörter in {l2} mit Übersetzungen in {l1} nach.",
         "making_words_interactive": "Wörter werden interaktiv gemacht…",
         "money_back_guarantee": "14-tägige Geld-zurück-Garantie. Fragen?",

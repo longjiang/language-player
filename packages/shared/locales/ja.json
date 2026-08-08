@@ -756,6 +756,8 @@
         "logging_in": "ログイン中...",
         "login_to_save_notes": "ログインしてノートを保存しましょう。",
         "login_to_verify_pro": "Proステータスを確認するにはログインしてください。",
+        "logout_offline_title": "オフラインでログアウトしますか？",
+        "logout_offline_warning": "現在オフラインです。ログアウトすると、インターネットに接続するまで再ログインできなくなります。それでもログアウトしますか？",
         "lookup_words_desc": "{l2}の単語を{l1}の翻訳で調べる。",
         "making_words_interactive": "単語を操作可能にしています…",
         "money_back_guarantee": "14日間の返金保証。ご質問は？",

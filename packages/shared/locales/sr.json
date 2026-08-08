@@ -756,6 +756,8 @@
         "logging_in": "Пријављивање...",
         "login_to_save_notes": "Пријавите се да бисте сачували белешке.",
         "login_to_verify_pro": "Пријавите се да бисте потврдили свој Pro статус.",
+        "logout_offline_title": "Одјава ван мреже?",
+        "logout_offline_warning": "Ван мреже сте. Након одјаве нећете моћи поново да се пријавите док немате интернет везу. Свеједно се одјавити?",
         "lookup_words_desc": "Potražite reči u {l2} sa prevodom na {l1}.",
         "making_words_interactive": "Чињење речи интерактивним…",
         "money_back_guarantee": "Garantovan povraćaj novca u roku od 14 dana. Pitanja?",
