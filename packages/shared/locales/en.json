@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "The video is playing, but we couldn't load the transcript and subtitles. Refresh the page or try again in a moment.",
         "failed_to_load_url": "Failed to load URL",
         "failed_to_load_watch_history": "Failed to load watch history",
+        "feature_requires_connection": "This feature needs an internet connection. You're offline.",
         "find_videos_matched": "Find videos matched to your level",
         "for_term": "for {term}",
         "forgot_password": "Forgot password?",

@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "O vídeo está sendo reproduzido, mas não foi possível carregar a transcrição e as legendas. Atualize a página ou tente novamente em instantes.",
         "failed_to_load_url": "Falha ao carregar a URL",
         "failed_to_load_watch_history": "Falha ao carregar o histórico de visualizações",
+        "feature_requires_connection": "Esta função requer ligação à internet. Está offline.",
         "find_videos_matched": "Encontre vídeos adequados ao seu nível",
         "for_term": "para {term}",
         "forgot_password": "Esqueceu a senha?",

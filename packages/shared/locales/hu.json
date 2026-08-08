@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "A videó lejátszódik, de nem sikerült betölteni az átiratot és a feliratokat. Frissítse az oldalt, vagy próbálja újra egy pillanat múlva.",
         "failed_to_load_url": "Nem sikerült betölteni az URL-t",
         "failed_to_load_watch_history": "Nem sikerült betölteni a nézési előzményeket",
+        "feature_requires_connection": "Ehhez a funkcióhoz internetkapcsolat szükséges. Jelenleg offline állapotban van.",
         "find_videos_matched": "Találjon a szintjének megfelelő videókat",
         "for_term": "a {term} számára",
         "forgot_password": "Elfelejtette a jelszavát?",

@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Tá an físeán ag seinm, ach níorbh fhéidir linn an athscríbhinn agus na fotheidil a lódáil. Athnuaigh an leathanach nó bain triail as arís i gceann nóiméid.",
         "failed_to_load_url": "Theip ar an URL a lódáil",
         "failed_to_load_watch_history": "Theip ar stair féachana a lódáil",
+        "feature_requires_connection": "Teastaíonn nasc idirlín ón ngné seo. Tá tú as líne.",
         "find_videos_matched": "Aimsigh físeáin a oireann do do leibhéal",
         "for_term": "do {term}",
         "forgot_password": "Ar dhearmad tú do phasfhocal?",

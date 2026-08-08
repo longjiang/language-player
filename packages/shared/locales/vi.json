@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video đang phát nhưng chúng tôi không thể tải bản ghi và phụ đề. Vui lòng làm mới trang hoặc thử lại sau một lát.",
         "failed_to_load_url": "Không thể tải URL",
         "failed_to_load_watch_history": "Không thể tải lịch sử xem",
+        "feature_requires_connection": "Tính năng này cần kết nối internet. Bạn đang ngoại tuyến.",
         "find_videos_matched": "Tìm video phù hợp với trình độ của bạn",
         "for_term": "cho {term}",
         "forgot_password": "Quên mật khẩu?",

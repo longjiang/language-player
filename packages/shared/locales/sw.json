@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video inachezwa, lakini hatukuweza kupakia maandishi na manukuu. Onyesha upya ukurasa au ujaribu tena baada ya muda mfupi.",
         "failed_to_load_url": "Imeshindwa kupakia URL",
         "failed_to_load_watch_history": "Imeshindwa kupakia historia ya kutazama",
+        "feature_requires_connection": "Kipengele hiki kinahitaji muunganisho wa intaneti. Uko nje ya mtandao.",
         "find_videos_matched": "Tafuta video zinazolingana na kiwango chako",
         "for_term": "kwa {term}",
         "forgot_password": "Umesahau nenosiri?",

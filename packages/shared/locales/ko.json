@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "동영상은 재생 중이지만 자막과 대본을 불러오지 못했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해 주세요.",
         "failed_to_load_url": "URL을 불러오지 못했습니다.",
         "failed_to_load_watch_history": "시청 기록을 불러오지 못했습니다",
+        "feature_requires_connection": "이 기능에는 인터넷 연결이 필요합니다. 현재 오프라인 상태입니다.",
         "find_videos_matched": "내 레벨에 맞는 비디오 찾기",
         "for_term": "{term}의",
         "forgot_password": "비밀번호를 잊으셨나요?",

@@ -13,6 +13,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { gridColumnCount } from '@/lib/constants';
 import { Tv, AlertCircle, ChevronDown } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 interface ShowWithMeta {
   id: string; title: string; locale: string;
@@ -222,6 +223,7 @@ export default function TvShowsScreen() {
           {t('msg.tv_shows_desc', { l2: t('lang.' + l2Lang.code) })}
         </Text>
       </View>
+      <OfflineFeatureNotice />
 
       {/* Toolbar: search + sort + locale filter */}
       <View

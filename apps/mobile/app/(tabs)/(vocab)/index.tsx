@@ -17,6 +17,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 export default function DictionaryScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -169,6 +170,7 @@ export default function DictionaryScreen() {
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       </View>
+      <OfflineFeatureNotice />
 
       <View className="px-4 pt-2">
         <SearchBar

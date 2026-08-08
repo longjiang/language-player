@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "De video wordt afgespeeld, maar we konden het transcript en de ondertitels niet laden. Ververs de pagina of probeer het over een moment opnieuw.",
         "failed_to_load_url": "URL laden mislukt",
         "failed_to_load_watch_history": "Kan kijkgeschiedenis niet laden",
+        "feature_requires_connection": "Deze functie vereist een internetverbinding. Je bent offline.",
         "find_videos_matched": "Vind video's die bij uw niveau passen",
         "for_term": "voor {term}",
         "forgot_password": "Wachtwoord vergeten?",

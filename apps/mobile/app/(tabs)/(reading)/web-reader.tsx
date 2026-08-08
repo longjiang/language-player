@@ -23,6 +23,7 @@ import {
 import { getReadingSuggestions, type ReadingCategory, type ReadingSuggestionItem } from '@langplayer/shared';
 import { Globe, Home, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
@@ -121,6 +122,7 @@ export default function WebReaderScreen() {
 
   return (
     <PageContainer maxWidth="7xl">
+      <OfflineFeatureNotice />
       {/* Main content — persistent panel on wide screens, sheet on narrow */}
       <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
         <View className="flex-1">

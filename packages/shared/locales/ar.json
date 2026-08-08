@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "الفيديو يعمل، لكننا لم نتمكن من تحميل النص والترجمات. حدّث الصفحة أو حاول مرة أخرى بعد قليل.",
         "failed_to_load_url": "فشل تحميل الرابط",
         "failed_to_load_watch_history": "فشل تحميل سجل المشاهدة",
+        "feature_requires_connection": "تتطلب هذه الميزة اتصالاً بالإنترنت. أنت غير متصل.",
         "find_videos_matched": "ابحث عن فيديوهات مناسبة لمستواك",
         "for_term": "لـ {term}",
         "forgot_password": "نسيت كلمة المرور؟",

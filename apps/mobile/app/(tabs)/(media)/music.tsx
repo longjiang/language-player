@@ -6,6 +6,7 @@ import { useVideos } from '@langplayer/api-client';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 export default function MusicScreen() {
   const { l2Lang } = useLanguage();
@@ -25,6 +26,7 @@ export default function MusicScreen() {
   return (
     <PageContainer maxWidth="7xl">
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
+      <OfflineFeatureNotice />
       {loading ? (
         <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" className="text-primary" /></View>
       ) : error ? (

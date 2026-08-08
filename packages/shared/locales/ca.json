@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "El vídeo s'està reproduint, però no hem pogut carregar la transcripció i els subtítols. Refresca la pàgina o torna-ho a provar d'aquí a un moment.",
         "failed_to_load_url": "No s'ha pogut carregar la URL",
         "failed_to_load_watch_history": "No s'ha pogut carregar l'historial de visualització",
+        "feature_requires_connection": "Aquesta funció necessita connexió a internet. Ets fora de línia.",
         "find_videos_matched": "Troba vídeos adequats al teu nivell",
         "for_term": "per a {term}",
         "forgot_password": "Has oblidat la contrasenya?",

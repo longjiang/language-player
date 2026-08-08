@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Il video è in riproduzione, ma non siamo riusciti a caricare la trascrizione e i sottotitoli. Aggiorna la pagina o riprova tra un momento.",
         "failed_to_load_url": "Impossibile caricare l'URL",
         "failed_to_load_watch_history": "Impossibile caricare la cronologia di visione",
+        "feature_requires_connection": "Questa funzione richiede una connessione internet. Sei offline.",
         "find_videos_matched": "Trova video adatti al tuo livello",
         "for_term": "per {term}",
         "forgot_password": "Hai dimenticato la password?",

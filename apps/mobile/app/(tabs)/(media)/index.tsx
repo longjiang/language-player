@@ -9,6 +9,7 @@ import { useProgress } from '@/hooks/use-progress';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import { LevelFilter } from '@/components/video/LevelFilter';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { logwarn } from '@/lib/logger';
@@ -102,6 +103,7 @@ export default function ExploreScreen() {
           {t('msg.find_videos_matched')}
         </Text>
       </View>
+      <OfflineFeatureNotice />
       <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
         {error && videos.length === 0 && (
           <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">

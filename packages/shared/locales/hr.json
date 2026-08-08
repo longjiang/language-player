@@ -724,6 +724,7 @@
         "failed_to_load_transcript": "Video se reproducira, ali nismo uspjeli učitati transkript i titlove. Osvježite stranicu ili pokušajte ponovno za trenutak.",
         "failed_to_load_url": "Neuspjelo učitavanje URL-a",
         "failed_to_load_watch_history": "Neuspjelo učitavanje povijesti gledanja",
+        "feature_requires_connection": "Ova funkcija zahtijeva internetsku vezu. Izvan mreže ste.",
         "find_videos_matched": "Pronađite videozapise prilagođene vašoj razini",
         "for_term": "za {term}",
         "forgot_password": "Zaboravljena lozinka?",
