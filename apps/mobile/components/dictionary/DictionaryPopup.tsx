@@ -418,7 +418,13 @@ export function DictionaryPopup({
                         }
                       }}
                       l2Code={l2}
-                      saveButton={<SaveButton entry={entry} size={20} />}
+                      saveButton={
+                        <SaveButton
+                          entry={entry}
+                          size={20}
+                          context={context ? { form: word, text: context, textTitle: '' } : undefined}
+                        />
+                      }
                     />
                   </View>
                 ))}

@@ -51,7 +51,26 @@ export function SavedWordEntryCard({
       ? (word.context as unknown as SavedWordContext)
       : { form: head, text: head, textTitle: '' };
 
-  // Not yet enriched — loading placeholder.
+  // Not yet enriched — loading placeholder while a lookup is in flight.
+  // Known-unresolvable records (offline + online both missed) render a plain
+  // head + remove row instead of spinning forever.
+  if (!entryForCard && word.unresolvable) {
+    return (
+      <View className="rounded-xl border border-border bg-card px-4 pt-4 pb-2">
+        <View className="flex-row items-center gap-2">
+          <Text className="flex-1 text-lg font-bold text-muted-foreground/60" numberOfLines={1}>
+            {head}
+          </Text>
+          {onRemove && (
+            <Pressable onPress={onRemove} className="rounded p-1" accessibilityLabel={t('action.remove_from_saved')}>
+              <BookmarkCheck size={20} color="#f59e0b" fill="#f59e0b" />
+            </Pressable>
+          )}
+        </View>
+      </View>
+    );
+  }
+
   if (!entryForCard) {
     return (
       <View className="rounded-xl border border-border bg-card px-4 pt-4 pb-2">

@@ -97,6 +97,10 @@ export function DictionaryEntryCard({
         head: entry.head,
         dictionaryId: entry.dictionary?.id ?? '',
         entryId: entry.id,
+        // Preserve the surrounding sentence + surface form so review cards
+        // and the saved-words page can show context (SPEC-053 Phase 2 test).
+        ...(saveContext ? { context: saveContext as unknown as Record<string, unknown> } : {}),
+        ...(saveContext?.form ? { forms: [saveContext.form] } : {}),
       });
       setWordSaved(true);
     }

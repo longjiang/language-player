@@ -719,6 +719,7 @@
         "explore_media_for": "{l2} मीडिया अन्वेषण करें",
         "failed_to_load_images": "चित्र लोड नहीं हो सके।",
         "failed_to_load_note": "नोट लोड करने में विफल",
+        "failed_to_load_notes": "नोट्स लोड करने में विफल",
         "failed_to_load_transcript": "वीडियो चल रहा है, लेकिन हम ट्रांसक्रिप्ट और सबटाइटल लोड नहीं कर सके। कृपया पेज रीफ़्रेश करें या थोड़ी देर बाद फिर से कोशिश करें।",
         "failed_to_load_url": "URL लोड करने में विफल",
         "failed_to_load_watch_history": "देखने का इतिहास लोड करने में विफल",

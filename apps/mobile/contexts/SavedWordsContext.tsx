@@ -10,9 +10,11 @@ import {
   type SavedLexicalItemStore,
   type SavedWordContext,
 } from '@langplayer/shared';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
+import { getOfflineEntryById } from '@/lib/dictionary-db';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 const STORAGE_KEY = 'zthSavedWords';
 const LEGACY_PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
@@ -28,6 +30,8 @@ export interface SavedWordMeta {
   context?: Record<string, unknown>;
   canonicalEntry?: DictionaryEntry;
   llmEntry?: LlmGeneratedEntry;
+  /** Offline + online enrichment both failed; render without a spinner. */
+  unresolvable?: boolean;
 }
 
 type SavedWordsStore = Record<string, SavedWordMeta[]>;
@@ -121,6 +125,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
               });
             }
             await SecureStore.deleteItemAsync(LEGACY_PENDING_OPS_KEY);
+            log(`[SavedWordsContext] migrated ${legacy.length} legacy pending ops into outbox`);
           }
         }
       } catch (err) {
@@ -199,6 +204,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     updatedAt?: number;
   }) => {
     if (!user) return;
+    log(`[SavedWordsContext] enqueue ${op.type} saved_word ${op.l2}::${op.wordId}`);
     void enqueueSyncOp({
       entity: 'saved_word',
       entityId: `${op.l2}::${op.wordId}`,
@@ -254,33 +260,72 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
   const refreshEntry = useCallback(async (l2Code: string, wordId: string) => {
     const words = savedWords[l2Code] ?? [];
     const existing = words.find((w) => w.id === wordId);
-    if (!existing || (existing.head && (existing.canonicalEntry || existing.llmEntry))) return;
+    if (!existing) return;
+    if (existing.head && (existing.canonicalEntry || existing.llmEntry)) return;
+    if (existing.unresolvable && isOfflineModeEnabled()) return;
 
+    const decomposed = decomposeWordId(wordId, l2Code);
+    if (!decomposed) return;
+    const { dict: dictId, id: scopedId } = decomposed;
+    const baseL2 = l2Code.split('-')[0];
+
+    const applyEntry = (entry: DictionaryEntry | null, unresolvable: boolean) => {
+      setSavedWords((prev) => {
+        const updated = { ...prev };
+        updated[l2Code] = (prev[l2Code] ?? []).map((w) =>
+          w.id === wordId
+            ? {
+                ...w,
+                ...(entry
+                  ? {
+                      head: entry.head,
+                      dictionaryId: dictId,
+                      entryId: scopedId,
+                      canonicalEntry: entry,
+                    }
+                  : {}),
+                unresolvable,
+              }
+            : w,
+        );
+        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    };
+
+    // 1. Offline dictionary first — works in airplane mode and avoids the
+    //    network round-trip for downloaded languages.
     try {
-      const decomposed = decomposeWordId(wordId, l2Code);
-      if (!decomposed) return;
-      const { dict: dictId, id: scopedId } = decomposed;
+      const offline = await getOfflineEntryById(baseL2, scopedId);
+      if (offline) {
+        log('[SavedWordsContext] offline entry hit — l2:', baseL2, 'wordId:', wordId, 'head:', offline.head);
+        applyEntry(offline, false);
+        return;
+      }
+    } catch { /* no offline dict / corrupt — try network */ }
+
+    // 2. Network (skip entirely in Offline Mode; the gate would reject it).
+    if (isOfflineModeEnabled()) {
+      applyEntry(null, true);
+      return;
+    }
+    try {
       const { apiClient } = await import('@langplayer/api-client');
       // The endpoint takes query params, not path segments. Using the old
       // path form 404'd, leaving every saved-word card stuck on its spinner.
       const res = await apiClient.get('/dictionary/entry', {
-        params: { l2: l2Code.split('-')[0], dict: dictId, id: scopedId },
+        params: { l2: baseL2, dict: dictId, id: scopedId },
       });
       const entry = (res as any)?.entry as DictionaryEntry | undefined;
-      if (!entry) return;
-
-      setSavedWords((prev) => {
-        const updated = { ...prev };
-        const langWords = (prev[l2Code] ?? []).map((w) =>
-          w.id === wordId
-            ? { ...w, head: entry.head, dictionaryId: dictId, entryId: scopedId, canonicalEntry: entry }
-            : w,
-        );
-        updated[l2Code] = langWords;
-        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    } catch { /* skip */ }
+      if (entry) {
+        applyEntry(entry, false);
+        return;
+      }
+    } catch (e) {
+      logwarn('[SavedWordsContext] entry enrichment failed — l2:', l2Code, 'wordId:', wordId, 'error:', (e as Error)?.message ?? e);
+    }
+    // Unresolvable — stop the spinner rather than hanging forever.
+    applyEntry(null, true);
   }, [savedWords]);
 
   return (

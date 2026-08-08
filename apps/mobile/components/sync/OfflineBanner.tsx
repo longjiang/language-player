@@ -10,7 +10,7 @@ import { e2e } from '@/lib/e2e';
  * pending/error operations. "Sync now" is a no-op while offline (the engine
  * skips network calls), which is intentional.
  */
-export function OfflineBanner() {
+export function OfflineBanner({ topInset = 0 }: { topInset?: number }) {
   const t = useT();
   const { status, syncNow } = useSyncStatus();
   const { effectiveOffline, pendingCount, errorCount } = status;
@@ -19,12 +19,13 @@ export function OfflineBanner() {
 
   return (
     <View
-      className="flex-row items-center justify-between border-b border-border bg-muted px-4 py-2"
+      className="flex-row items-center justify-between border-b border-border bg-muted px-4"
+      style={{ paddingTop: 8 + topInset, paddingBottom: 8 }}
       {...e2e('offline-banner')}
     >
       <Text className="flex-1 pr-3 text-xs font-medium text-foreground">
         {effectiveOffline
-          ? t('msg.offline_changes_saved')
+          ? `${t('msg.offline_changes_saved')}${total > 0 ? ` · ${t('msg.pending_changes', { count: String(total) })}` : ''}`
           : t('msg.pending_changes', { count: String(total) })}
       </Text>
       {total > 0 && (

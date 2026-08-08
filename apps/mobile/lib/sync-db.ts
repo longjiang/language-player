@@ -11,6 +11,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
+import { log } from '@/lib/logger';
 
 const DB_NAME = 'sync.db';
 
@@ -41,6 +42,7 @@ export interface OutboxRow {
 
 let _db: SQLite.SQLiteDatabase | null = null;
 let _dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+let enqueueChain: Promise<void> = Promise.resolve();
 
 /** Stable random id (Hermes-safe; crypto.randomUUID is not guaranteed). */
 export function makeSyncId(): string {
@@ -140,60 +142,76 @@ export async function setEntityCacheDeleted(
   );
 }
 
-/** Insert or coalesce one outbox row + mirror it into entity_cache (same tx). */
-export async function enqueueOutboxOp(input: {
+/**
+ * Insert or coalesce one outbox row + mirror it into entity_cache (same tx).
+ *
+ * expo-sqlite's withTransactionAsync is BEGIN/COMMIT under the hood, so
+ * concurrent enqueues (e.g. rapid note autosave + rename) can collide with
+ * "cannot start a transaction within a transaction". All enqueues are
+ * serialized through a promise chain to keep one transaction at a time.
+ */
+export function enqueueOutboxOp(input: {
   entity: string;
   entityId: string;
   op: OutboxOp;
   payload: Record<string, unknown>;
   updatedAt: number;
 }): Promise<void> {
-  const db = await openSyncDB();
-  const { entity, entityId, op, payload, updatedAt } = input;
-  const payloadJson = JSON.stringify(payload);
+  const run = async () => {
+    const db = await openSyncDB();
+    const { entity, entityId, op, payload, updatedAt } = input;
+    const payloadJson = JSON.stringify(payload);
 
-  await db.withTransactionAsync(async () => {
-    const existing = await db.getFirstAsync<OutboxRow>(
-      `SELECT id, entity, entity_id, op, payload, idempotency_key, created_at,
-              updated_at, attempts, last_error, status
-       FROM outbox WHERE entity = ? AND entity_id = ? AND status IN ('pending', 'error')`,
-      [entity, entityId],
-    );
-
-    if (existing) {
-      // Same op type → coalesce in place, keeping the idempotency key so an
-      // already-applied server op is never replayed. Different op type →
-      // fresh key (the server may have already applied the old op).
-      const keyChanged = existing.op !== op;
-      await db.runAsync(
-        `UPDATE outbox
-         SET op = ?, payload = ?, updated_at = ?, attempts = 0, last_error = NULL,
-             status = 'pending', created_at = ?, idempotency_key = ?
-         WHERE id = ?`,
-        [
-          op,
-          payloadJson,
-          updatedAt,
-          Date.now(),
-          keyChanged ? makeSyncId() : existing.idempotency_key,
-          existing.id,
-        ],
+    await db.withTransactionAsync(async () => {
+      const existing = await db.getFirstAsync<OutboxRow>(
+        `SELECT id, entity, entity_id, op, payload, idempotency_key, created_at,
+                updated_at, attempts, last_error, status
+         FROM outbox WHERE entity = ? AND entity_id = ? AND status IN ('pending', 'error')`,
+        [entity, entityId],
       );
-    } else {
-      await db.runAsync(
-        `INSERT INTO outbox (id, entity, entity_id, op, payload, idempotency_key,
-                             created_at, updated_at, attempts, last_error, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, 'pending')`,
-        [makeSyncId(), entity, entityId, op, payloadJson, makeSyncId(), Date.now(), updatedAt],
-      );
-    }
 
-    await db.runAsync(
-      `INSERT OR REPLACE INTO entity_cache (entity, entity_id, payload, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?)`,
-      [entity, entityId, payloadJson, updatedAt, op === 'delete' ? updatedAt : null],
-    );
-  });
+      if (existing) {
+        // Same op type → coalesce in place, keeping the idempotency key so an
+        // already-applied server op is never replayed. Different op type →
+        // fresh key (the server may have already applied the old op).
+        const keyChanged = existing.op !== op;
+        log(`[sync-db] outbox coalesce ${entity}:${entityId} ${existing.op}→${op} keyChanged=${keyChanged}`);
+        await db.runAsync(
+          `UPDATE outbox
+           SET op = ?, payload = ?, updated_at = ?, attempts = 0, last_error = NULL,
+               status = 'pending', created_at = ?, idempotency_key = ?
+           WHERE id = ?`,
+          [
+            op,
+            payloadJson,
+            updatedAt,
+            Date.now(),
+            keyChanged ? makeSyncId() : existing.idempotency_key,
+            existing.id,
+          ],
+        );
+      } else {
+        log(`[sync-db] outbox insert ${entity}:${entityId} ${op}`);
+        await db.runAsync(
+          `INSERT INTO outbox (id, entity, entity_id, op, payload, idempotency_key,
+                               created_at, updated_at, attempts, last_error, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, 'pending')`,
+          [makeSyncId(), entity, entityId, op, payloadJson, makeSyncId(), Date.now(), updatedAt],
+        );
+      }
+
+      await db.runAsync(
+        `INSERT OR REPLACE INTO entity_cache (entity, entity_id, payload, updated_at, deleted_at)
+         VALUES (?, ?, ?, ?, ?)`,
+        [entity, entityId, payloadJson, updatedAt, op === 'delete' ? updatedAt : null],
+      );
+    });
+    log(`[sync-db] entity_cache updated ${entity}:${entityId} ${op} @${updatedAt}`);
+  };
+
+  const next = enqueueChain.then(run, run);
+  enqueueChain = next.catch(() => {});
+  return next;
 }
 
 export async function listOutbox(): Promise<OutboxRow[]> {
@@ -225,6 +243,7 @@ export async function markOutboxError(
     `UPDATE outbox SET attempts = ?, last_error = ?, status = ? WHERE id = ?`,
     [attempts, error, status, id],
   );
+  log(`[sync-db] outbox error ${id} attempts=${attempts} status=${status} err=${error}`);
 }
 
 export async function resetOutboxErrors(): Promise<number> {
@@ -240,7 +259,8 @@ export async function deleteOutboxRows(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
   const db = await openSyncDB();
   const placeholders = ids.map(() => '?').join(', ');
-  await db.runAsync(`DELETE FROM outbox WHERE id IN (${placeholders})`, ids);
+  const result = await db.runAsync(`DELETE FROM outbox WHERE id IN (${placeholders})`, ids);
+  log(`[sync-db] outbox ack-delete rows=${result.changes}`);
 }
 
 export async function getPendingOutboxCount(): Promise<number> {

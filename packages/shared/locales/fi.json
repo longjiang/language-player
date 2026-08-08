@@ -719,6 +719,7 @@
         "explore_media_for": "Tutki {l2} mediaa",
         "failed_to_load_images": "Kuvia ei voitu ladata.",
         "failed_to_load_note": "Muistiinpanon lataus epäonnistui",
+        "failed_to_load_notes": "Muistiinpanojen lataus epäonnistui",
         "failed_to_load_transcript": "Video soi, mutta emme pystyneet lataamaan transkriptiota ja tekstityksiä. Päivitä sivu tai yritä hetken kuluttua uudelleen.",
         "failed_to_load_url": "URL-osoitteen lataaminen epäonnistui",
         "failed_to_load_watch_history": "Katseluhistorian lataaminen epäonnistui",

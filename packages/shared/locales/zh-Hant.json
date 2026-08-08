@@ -703,6 +703,7 @@
         "explore_media_for": "探索{l2}媒體",
         "failed_to_load_images": "無法載入圖片。",
         "failed_to_load_note": "載入筆記失敗",
+        "failed_to_load_notes": "載入筆記失敗",
         "failed_to_load_transcript": "影片正在播放，但我們無法載入字幕和文稿。請重新整理頁面或稍後再試。",
         "failed_to_load_url": "無法載入網址",
         "failed_to_load_watch_history": "無法載入觀看紀錄",

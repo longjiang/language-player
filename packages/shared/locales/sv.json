@@ -719,6 +719,7 @@
         "explore_media_for": "Utforska {l2} media",
         "failed_to_load_images": "Det gick inte att ladda bilderna.",
         "failed_to_load_note": "Kunde inte ladda anteckning",
+        "failed_to_load_notes": "Kunde inte ladda anteckningar",
         "failed_to_load_transcript": "Videon spelas upp, men vi kunde inte läsa in transkriptionen och undertexterna. Uppdatera sidan eller försök igen om en stund.",
         "failed_to_load_url": "Misslyckades med att ladda URL",
         "failed_to_load_watch_history": "Misslyckades med att ladda visningshistorik",

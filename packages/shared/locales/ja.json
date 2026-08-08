@@ -719,6 +719,7 @@
         "explore_media_for": "{l2}メディアを探索",
         "failed_to_load_images": "画像を読み込めませんでした。",
         "failed_to_load_note": "ノートの読み込みに失敗しました",
+        "failed_to_load_notes": "ノートの読み込みに失敗しました",
         "failed_to_load_transcript": "動画は再生されていますが、字幕とトランスクリプトを読み込めませんでした。ページを更新するか、少し待ってからもう一度お試しください。",
         "failed_to_load_url": "URLの読み込みに失敗しました",
         "failed_to_load_watch_history": "視聴履歴の読み込みに失敗しました",
