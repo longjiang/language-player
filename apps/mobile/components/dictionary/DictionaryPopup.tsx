@@ -18,6 +18,7 @@ import {
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { lookupOfflineByL2 } from '@/lib/dictionary-db';
 import { localizedError } from '@/lib/errors';
+import { log } from '@/lib/logger';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
@@ -175,6 +176,17 @@ export function DictionaryPopup({
       }
     };
 
+    // Log what the popup resolved for a token (surface, lemma, pronunciation,
+    // and the entry ids/heads) so lookup mismatches traceable from Metro.
+    const publishResults = (merged: DictionaryEntry[], source: string) => {
+      for (const e of merged) if (e.id) setCachedEntryById(l2, e);
+      if (!cancelled) {
+        log(`🎙 POPUP-LOOKUP word=${JSON.stringify(word)} lemma=${JSON.stringify(lookupWord)} pron=${JSON.stringify(tokenPron ?? null)} entries=${JSON.stringify(merged.map((e) => ({ id: e.id, head: e.head })))} (${source})`);
+        setResults(merged);
+      }
+      void translateInBackground(merged);
+    };
+
     const run = async () => {
       if (allCached) {
         const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
@@ -184,10 +196,7 @@ export function DictionaryPopup({
             )
           : [];
         const merged = [...primaryResults, ...surfaceResults];
-        // Index by ID for the detail page cache
-        for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-        if (!cancelled) setResults(merged);
-        void translateInBackground(merged);
+        publishResults(merged, 'cache');
         return;
       }
 
@@ -210,9 +219,7 @@ export function DictionaryPopup({
         if (offlineMerged.length > 0) {
           setCachedEntries(l2, lookupWord, offlinePrimary);
           if (alsoLookupSurface) setCachedEntries(l2, word, offlineSurface);
-          for (const e of offlineMerged) if (e.id) setCachedEntryById(l2, e);
-          if (!cancelled) setResults(offlineMerged);
-          void translateInBackground(offlineMerged);
+          publishResults(offlineMerged, 'offline');
           return;
         }
 
@@ -255,10 +262,7 @@ export function DictionaryPopup({
         }
 
         const merged = [...primaryResults, ...surfaceResults];
-        // Index by ID for the detail page cache
-        for (const e of merged) if (e.id) setCachedEntryById(l2, e);
-        if (!cancelled) setResults(merged);
-        void translateInBackground(merged);
+        publishResults(merged, 'online');
       } catch (e: any) {
         if (!cancelled) {
           setError(localizedError(tRef.current, e));
