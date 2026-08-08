@@ -11,10 +11,12 @@ import { SearchBar } from '@/components/dictionary/SearchBar';
 import { WordListSidebar, isSidebarAvailable, type SidebarListItem } from '@/components/dictionary/WordListSidebar';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
+import { log, logwarn } from '@/lib/logger';
 import { useSidebar } from '@/components/ui/sidebar';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { PanelRight, PanelRightClose } from 'lucide-react-native';
 import { getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
+import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { SUPPORTED_L2S, type DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
 
@@ -89,24 +91,51 @@ export default function WordDetailScreen() {
       return;
     }
 
-    const decomposed = decomposeWordId(decodedId, l2);
+    // Sidebar items may carry a composite id (e.g. saved words) even though
+    // the route shows the raw id. Prefer the item's entryId when present.
+    const sidebarItem =
+      sidebarSource.kind === 'wordlist'
+        ? sidebarSource.items.find(
+            (it) =>
+              it.id === entryId ||
+              it.id === decodedId ||
+              it.entryId === entryId ||
+              it.entryId === decodedId,
+          )
+        : null;
+    const lookupId = sidebarItem?.entryId || decodedId;
+    const decomposed = decomposeWordId(lookupId, l2);
     if (!decomposed) {
       setApiError(t('error.entry_not_found'));
       return;
     }
     const { dict: dictId, id: scopedId } = decomposed;
-    setApiLoading(true);
-    setApiError(null);
-    dict.getEntry(l2, dictId, scopedId)
-      .then((res) => {
-        setCachedEntryById(l2, res.entry);
-        setApiEntry(res.entry);
-      })
-      .catch((e) => {
-        setApiError(localizedError(t, e));
-      })
-      .finally(() => setApiLoading(false));
-  }, [contextEntry, entryId, l2Code]);
+
+    void (async () => {
+      // Offline first: the entry may be in the downloaded dictionary even when
+      // the network (or Offline Mode) blocks /dictionary/entry.
+      const offline = await getOfflineEntryById(l2, scopedId);
+      if (offline) {
+        setCachedEntryById(l2, offline);
+        setApiEntry(offline);
+        return;
+      }
+
+      log('[WordDetail] fetching entry — l2:', l2, 'entryId:', decodedId, 'lookupId:', lookupId, 'dict:', dictId, 'scopedId:', scopedId);
+      setApiLoading(true);
+      setApiError(null);
+      dict.getEntry(l2, dictId, scopedId)
+        .then((res) => {
+          setCachedEntryById(l2, res.entry);
+          setApiEntry(res.entry);
+        })
+        .catch((e) => {
+          logwarn('[WordDetail] ❌ getEntry failed — l2:', l2, 'entryId:', decodedId, 'error:', e?.message ?? e);
+          setApiError(localizedError(t, e));
+        })
+        .finally(() => setApiLoading(false));
+    })();
+  }, [contextEntry, entryId, l2Code, sidebarSource]);
 
   const entry = contextEntry ?? apiEntry;
   const loading = ctxLoading || apiLoading;

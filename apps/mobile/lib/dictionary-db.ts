@@ -28,6 +28,7 @@ const DICTIONARIES_DIR_URI = `${Paths.document.uri}dictionaries`;
 const DICTIONARIES_DIR_PATH = DICTIONARIES_DIR_URI.replace(/^file:\/\//, '');
 
 const l2DbCache = new Map<string, SQLite.SQLiteDatabase>();
+const l2MigratedDefs = new Set<string>();
 
 /** Escape a string for safe inclusion in a SQL string literal. */
 function esc(s: string): string {
@@ -205,8 +206,53 @@ export async function openOfflineDictionaryDB(
     {},
     DICTIONARIES_DIR_PATH,
   );
+  await migratePrecompiledDefinitions(db, l2);
   l2DbCache.set(l2, db);
   return db;
+}
+
+/**
+ * Older precompiled files (before `definitions` was added) get a definitions
+ * column backfilled from entry_json so English-definition search works
+ * offline without forcing a re-download.
+ */
+async function migratePrecompiledDefinitions(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<void> {
+  if (l2MigratedDefs.has(l2)) return;
+  const table = dictTableName(l2);
+  try {
+    const cols = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table})`);
+    if (!cols.some((c) => c.name === 'definitions')) {
+      log('[DictDB] 🧬 adding definitions column — l2:', l2, 'table:', table);
+      await db.execAsync(`ALTER TABLE ${table} ADD COLUMN definitions TEXT`);
+    }
+
+    const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
+      `SELECT id, entry_json FROM ${table} WHERE definitions IS NULL OR definitions = ''`,
+    );
+    if (rows.length > 0) {
+      log('[DictDB] 🧬 backfilling definitions — l2:', l2, 'rows:', rows.length);
+      for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+        const chunk = rows.slice(i, i + CHUNK_SIZE);
+        const statements = chunk.map((r) => {
+          let definitions = '';
+          try {
+            const entry = JSON.parse(r.entry_json) as DictionaryEntry;
+            definitions = (entry.definitions ?? []).filter(Boolean).join('|');
+          } catch {
+            // Corrupt row — leave definitions empty.
+          }
+          return `UPDATE ${table} SET definitions='${esc(definitions)}' WHERE id='${esc(r.id)}';`;
+        }).join('');
+        if (statements) await db.execAsync(statements);
+      }
+    }
+    l2MigratedDefs.add(l2);
+  } catch (e) {
+    logwarn('[DictDB] ⚠️ precompiled definitions migration failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+  }
 }
 
 /** Close and drop the cached handle for one language (e.g. before delete). */
@@ -375,30 +421,55 @@ async function migrateDictTables(db: SQLite.SQLiteDatabase): Promise<void> {
 
     for (const { name } of tables) {
       const cols = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${name})`);
-      if (cols.some((c) => c.name === 'alternate')) continue;
+      if (!cols.some((c) => c.name === 'alternate')) {
+        log('[DictDB] 🧬 migrating', name, '— adding alternate column');
+        await db.execAsync(`ALTER TABLE ${name} ADD COLUMN alternate TEXT`);
+        await db.execAsync(
+          `CREATE INDEX IF NOT EXISTS idx_${name}_alternate ON ${name}(alternate COLLATE NOCASE)`
+        );
 
-      log('[DictDB] 🧬 migrating', name, '— adding alternate column');
-      await db.execAsync(`ALTER TABLE ${name} ADD COLUMN alternate TEXT`);
-      await db.execAsync(
-        `CREATE INDEX IF NOT EXISTS idx_${name}_alternate ON ${name}(alternate COLLATE NOCASE)`
-      );
-
-      const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
-        `SELECT id, entry_json FROM ${name} WHERE alternate IS NULL`
-      );
-      for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
-        const statements = rows.slice(i, i + CHUNK_SIZE).map((r) => {
-          let alternate: string | null = null;
-          try {
-            alternate = (JSON.parse(r.entry_json) as DictionaryEntry).alternate ?? null;
-          } catch {
-            // Corrupt row — leave alternate NULL
-          }
-          return `UPDATE ${name} SET alternate=${escOrNull(alternate)} WHERE id='${esc(r.id)}';`;
-        }).join('');
-        if (statements) await db.execAsync(statements);
+        const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
+          `SELECT id, entry_json FROM ${name} WHERE alternate IS NULL`
+        );
+        for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+          const statements = rows.slice(i, i + CHUNK_SIZE).map((r) => {
+            let alternate: string | null = null;
+            try {
+              alternate = (JSON.parse(r.entry_json) as DictionaryEntry).alternate ?? null;
+            } catch {
+              // Corrupt row — leave alternate NULL
+            }
+            return `UPDATE ${name} SET alternate=${escOrNull(alternate)} WHERE id='${esc(r.id)}';`;
+          }).join('');
+          if (statements) await db.execAsync(statements);
+        }
+        log('[DictDB] ✅ migrated', name, '— backfilled', rows.length, 'rows');
       }
-      log('[DictDB] ✅ migrated', name, '— backfilled', rows.length, 'rows');
+
+      // Definitions column for English-definition search (same as server).
+      if (!cols.some((c) => c.name === 'definitions')) {
+        await db.execAsync(`ALTER TABLE ${name} ADD COLUMN definitions TEXT`);
+      }
+      const defRows = await db.getAllAsync<{ id: string; entry_json: string }>(
+        `SELECT id, entry_json FROM ${name} WHERE definitions IS NULL OR definitions = ''`
+      );
+      if (defRows.length > 0) {
+        log('[DictDB] 🧬 migrating', name, '— backfilling definitions');
+        for (let i = 0; i < defRows.length; i += CHUNK_SIZE) {
+          const statements = defRows.slice(i, i + CHUNK_SIZE).map((r) => {
+            let definitions = '';
+            try {
+              const entry = JSON.parse(r.entry_json) as DictionaryEntry;
+              definitions = (entry.definitions ?? []).filter(Boolean).join('|');
+            } catch {
+              // Corrupt row — leave definitions empty.
+            }
+            return `UPDATE ${name} SET definitions='${esc(definitions)}' WHERE id='${esc(r.id)}';`;
+          }).join('');
+          if (statements) await db.execAsync(statements);
+        }
+        log('[DictDB] ✅ migrated', name, '— backfilled definitions', defRows.length, 'rows');
+      }
     }
   } catch (e) {
     log('[DictDB] ⚠️ dict table migration failed:', e);
@@ -415,30 +486,78 @@ export async function lookupOffline(
   db: SQLite.SQLiteDatabase,
   text: string,
   l2: string,
+  byDefinition = false,
 ): Promise<DictionaryEntry[] | null> {
   const table = dictTableName(l2);
+  const seen = new Set<string>();
+  const out: DictionaryEntry[] = [];
+  const addRows = (rows: { entry_json: string }[] | null) => {
+    for (const r of rows ?? []) {
+      if (seen.has(r.entry_json)) continue;
+      seen.add(r.entry_json);
+      try {
+        out.push(JSON.parse(r.entry_json) as DictionaryEntry);
+      } catch {
+        // Corrupt row — skip.
+      }
+    }
+  };
+
   try {
-    log('[DictDB] legacy central lookup — l2:', l2, 'text:', text, 'table:', table);
-    // Primary: head match (simplified for zh). Mirrors the server's
-    // `head = ? OR alternate = ?` lookup so traditional text resolves to
-    // the same entry offline. Two indexed queries keep this fast.
+    log('[DictDB] offline lookup — l2:', l2, 'text:', text, 'table:', table, 'byDefinition:', byDefinition);
+
+    // 1. Exact head / alternate / pronunciation (server EdictLoader step 1–3).
     let rows = await db.getAllAsync<{ entry_json: string }>(
-      `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
-      [text],
+      `SELECT entry_json FROM ${table} WHERE head = ? OR alternate = ? OR pronunciation = ?`,
+      [text, text, text],
     );
-    log('[DictDB] legacy head rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
-    if (!rows || rows.length === 0) {
+    addRows(rows);
+    log('[DictDB] exact rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
+
+    // 2. Fuzzy romaji substring (server EdictLoader step 4, len >= 3).
+    const norm = text.toLowerCase().replace(/\s/g, '');
+    if (norm.length >= 3) {
       rows = await db.getAllAsync<{ entry_json: string }>(
-        `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
+        `SELECT entry_json FROM ${table}
+         WHERE length(pronunciation) >= 3 AND (
+           LOWER(REPLACE(pronunciation, ' ', '')) LIKE ?
+           OR ? LIKE LOWER(REPLACE(pronunciation, ' ', ''))
+         )`,
+        [`%${norm}%`, `%${norm}%`],
+      );
+      addRows(rows);
+      log('[DictDB] romaji fuzzy rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
+    }
+
+    // 3. Query contains dictionary head (server EdictLoader step 5, len >= 2).
+    if (text.length >= 2) {
+      rows = await db.getAllAsync<{ entry_json: string }>(
+        `SELECT entry_json FROM ${table} WHERE length(head) >= 2 AND instr(?, head) > 0`,
         [text],
       );
-      log('[DictDB] legacy alternate rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
+      addRows(rows);
+      log('[DictDB] head-substring rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
     }
-    if (!rows || rows.length === 0) return null;
-    return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
+
+    // 4. English-definition search (server _lookup_word by_definition path,
+    //    only for Latin-script queries like "eat").
+    if (byDefinition && /^[a-zA-Z\s'-]+$/.test(text)) {
+      rows = await db.getAllAsync<{ entry_json: string }>(
+        `SELECT entry_json FROM ${table} WHERE LOWER(definitions) LIKE ?`,
+        [`%${text.toLowerCase()}%`],
+      );
+      addRows(rows);
+      log('[DictDB] definition rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
+    }
+
+    if (out.length > 0) {
+      log('[DictDB] ✅ offline lookup hit — l2:', l2, 'text:', text, 'rows:', out.length);
+      return out.slice(0, byDefinition ? 10 : 5);
+    }
+    return null;
   } catch (e) {
     // Table doesn't exist yet (not downloaded for this language)
-    logwarn('[DictDB] ❌ legacy central lookup failed — l2:', l2, 'text:', text, 'table:', table, 'error:', (e as Error)?.message ?? e);
+    logwarn('[DictDB] ❌ offline lookup failed — l2:', l2, 'text:', text, 'table:', table, 'error:', (e as Error)?.message ?? e);
     return null;
   }
 }
@@ -451,6 +570,7 @@ export async function lookupOffline(
 export async function lookupOfflineByL2(
   l2: string,
   text: string,
+  byDefinition = false,
 ): Promise<DictionaryEntry[] | null> {
   let l2Db: SQLite.SQLiteDatabase | null = null;
   const file = dictionaryDbFile(l2);
@@ -462,23 +582,10 @@ export async function lookupOfflineByL2(
   }
   if (l2Db) {
     try {
-      const table = dictTableName(l2);
-      log('[DictDB] precompiled lookup — l2:', l2, 'text:', text, 'file:', dictionaryDbFileName(l2), 'table:', table);
-      let rows = await l2Db.getAllAsync<{ entry_json: string }>(
-        `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
-        [text],
-      );
-      log('[DictDB] precompiled head rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
-      if (!rows || rows.length === 0) {
-        rows = await l2Db.getAllAsync<{ entry_json: string }>(
-          `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
-          [text],
-        );
-        log('[DictDB] precompiled alternate rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
-      }
-      if (rows && rows.length > 0) {
-        log('[DictDB] ✅ precompiled hit — l2:', l2, 'text:', text, 'rows:', rows.length);
-        return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
+      log('[DictDB] precompiled lookup — l2:', l2, 'text:', text, 'file:', dictionaryDbFileName(l2));
+      const results = await lookupOffline(l2Db, text, l2, byDefinition);
+      if (results && results.length > 0) {
+        return results;
       }
       log('[DictDB] precompiled miss — l2:', l2, 'text:', text, '— falling back to legacy central table');
     } catch (e) {
@@ -489,7 +596,7 @@ export async function lookupOfflineByL2(
   }
 
   const db = await openDictionaryDB();
-  const legacy = await lookupOffline(db, text, l2);
+  const legacy = await lookupOffline(db, text, l2, byDefinition);
   log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
   return legacy;
 }
@@ -505,6 +612,8 @@ export async function autocompleteOffline(
   limit = 20,
 ): Promise<DictionaryEntry[]> {
   const like = `${query}%`;
+  const qLower = query.toLowerCase();
+  const qNorm = qLower.replace(/\s/g, '');
   const table = dictTableName(l2);
 
   let l2Db: SQLite.SQLiteDatabase | null = null;
@@ -517,17 +626,55 @@ export async function autocompleteOffline(
   const parse = (rows: { entry_json: string }[] | null): DictionaryEntry[] =>
     (rows ?? []).map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
 
+  const rank = (entries: DictionaryEntry[]): DictionaryEntry[] =>
+    entries
+      .map((entry) => {
+        const head = (entry.head ?? '').trim();
+        const alt = (entry.alternate ?? '').trim();
+        const pron = (entry.pronunciation ?? '').trim();
+        const headL = head.toLowerCase();
+        const altL = alt.toLowerCase();
+        const pronNorm = pron.toLowerCase().replace(/ /g, '');
+        const defsL = (entry.definitions ?? []).join(' ').toLowerCase();
+        const freq = typeof entry.frequency === 'number' ? entry.frequency : -1;
+
+        let rankScore: number;
+        if (headL === qLower || (altL && altL === qLower)) rankScore = 0;
+        else if (headL.startsWith(qLower) || (altL && altL.startsWith(qLower))) rankScore = 1;
+        else if (pronNorm.startsWith(qNorm)) rankScore = 2;
+        else if (qLower.length > 0 && (headL.includes(qLower) || (altL && altL.includes(qLower)))) rankScore = 3;
+        else if (qNorm.length > 0 && pronNorm.includes(qNorm)) rankScore = 4;
+        else if (defsL.includes(qLower)) rankScore = 5;
+        else rankScore = 6;
+
+        return { entry, rankScore, freq, headLen: head.length };
+      })
+      .sort((a, b) =>
+        a.rankScore - b.rankScore ||
+        b.freq - a.freq ||
+        a.headLen - b.headLen,
+      )
+      .map(({ entry }) => entry);
+
+  const querySql = `SELECT entry_json FROM ${table}
+    WHERE head LIKE ? COLLATE NOCASE
+       OR alternate LIKE ? COLLATE NOCASE
+       OR LOWER(REPLACE(pronunciation, ' ', '')) LIKE ?
+       OR LOWER(definitions) LIKE ?
+    LIMIT 100`;
+
   if (l2Db) {
     try {
-      const rows = await l2Db.getAllAsync<{ entry_json: string }>(
-        `SELECT entry_json FROM ${table}
-         WHERE head LIKE ? COLLATE NOCASE OR alternate LIKE ? COLLATE NOCASE
-         LIMIT ?`,
-        [like, like, limit],
-      );
+      const rows = await l2Db.getAllAsync<{ entry_json: string }>(querySql, [
+        like,
+        like,
+        `%${qNorm}%`,
+        `%${qLower}%`,
+      ]);
       if (rows.length > 0) {
-        log('[DictDB] ✅ offline autocomplete hit — l2:', l2, 'query:', query, 'rows:', rows.length);
-        return parse(rows);
+        const ranked = rank(parse(rows)).slice(0, limit);
+        log('[DictDB] ✅ offline autocomplete hit — l2:', l2, 'query:', query, 'rows:', ranked.length);
+        return ranked;
       }
     } catch (e) {
       logwarn('[DictDB] ❌ offline autocomplete failed — l2:', l2, 'query:', query, 'error:', (e as Error)?.message ?? e);
@@ -536,16 +683,62 @@ export async function autocompleteOffline(
 
   const db = await openDictionaryDB();
   try {
-    const rows = await db.getAllAsync<{ entry_json: string }>(
-      `SELECT entry_json FROM ${table}
-       WHERE head LIKE ? COLLATE NOCASE OR alternate LIKE ? COLLATE NOCASE
-       LIMIT ?`,
-      [like, like, limit],
-    );
-    return parse(rows);
+    const rows = await db.getAllAsync<{ entry_json: string }>(querySql, [
+      like,
+      like,
+      `%${qNorm}%`,
+      `%${qLower}%`,
+    ]);
+    return rank(parse(rows)).slice(0, limit);
   } catch (e) {
     logwarn('[DictDB] ❌ legacy offline autocomplete failed — l2:', l2, 'query:', query, 'error:', (e as Error)?.message ?? e);
     return [];
+  }
+}
+
+/**
+ * Fetch one entry by its raw scoped ID from the offline dictionary. Used by
+ * the word detail page so deep links and suggestion taps work offline.
+ */
+export async function getOfflineEntryById(
+  l2: string,
+  entryId: string,
+): Promise<DictionaryEntry | null> {
+  const table = dictTableName(l2);
+
+  let l2Db: SQLite.SQLiteDatabase | null = null;
+  try {
+    l2Db = await openOfflineDictionaryDB(l2);
+  } catch {
+    l2Db = null;
+  }
+
+  const query = async (db: SQLite.SQLiteDatabase) => {
+    const row = await db.getFirstAsync<{ entry_json: string }>(
+      `SELECT entry_json FROM ${table} WHERE id = ?`,
+      [entryId],
+    );
+    return row ? (JSON.parse(row.entry_json) as DictionaryEntry) : null;
+  };
+
+  if (l2Db) {
+    try {
+      const entry = await query(l2Db);
+      if (entry) {
+        log('[DictDB] ✅ offline entry hit — l2:', l2, 'entryId:', entryId, 'head:', entry.head);
+        return entry;
+      }
+    } catch (e) {
+      logwarn('[DictDB] ❌ offline entry lookup failed — l2:', l2, 'entryId:', entryId, 'error:', (e as Error)?.message ?? e);
+    }
+  }
+
+  const db = await openDictionaryDB();
+  try {
+    return await query(db);
+  } catch (e) {
+    logwarn('[DictDB] ❌ legacy offline entry lookup failed — l2:', l2, 'entryId:', entryId, 'error:', (e as Error)?.message ?? e);
+    return null;
   }
 }
 
