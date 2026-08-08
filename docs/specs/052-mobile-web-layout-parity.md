@@ -137,6 +137,11 @@ Manual checklist review found three more issues, all fixed:
 | TV Shows toolbar | Sort + region filter were always stacked below the search bar, unlike web's inline toolbar | At ≥768 the toolbar is a row: search takes remaining width, sort + region sit to its right; below 768 it stays stacked |
 | Channel page fetch loop | `useT()` returns a new function each render, so `fetchVideos` changed identity and the fetch `useEffect` re-ran forever (visible as a 404/loading loop) | `t` is now held in a ref; `fetchVideos` is stable and the effect runs once per channel |
 | Watch subtitle band | Landscape used an opaque card (`bg-card`) inside the overlay band and dark text on the translucent band; portrait controls were a separate row instead of part of the band | `SubtitleDisplay` gained an `overlay` mode (transparent, white text via `TokenizedText textColor`); landscape shows a translucent `bg-black/70` band, portrait shows a `bg-card` band with controls + active line, matching web |
+| Playlists empty state | The "new playlist" button did nothing on the empty screen because the create `Dialog.Root` was only rendered in the list branch; lucide icons used `className` colors that render black | The create dialog is rendered on every branch; empty/placeholder icons use `ICON_MUTED`; card widths are exact so incomplete last rows don't stretch |
+| Grid last-row widths | `VideoGrid` / TV Shows / playlists cards used `flex: 1`, so an incomplete last row stretched its items full-width | Grids measure their container and give items exact column widths; last rows with fewer items keep normal card size |
+| Dictionary entry shell | Entry page showed a "Dictionary" title and no way to search without going back | The header is now a persistent `SearchBar` (submits back to search results) plus the sidebar toggle; the title is removed |
+| Image search columns | Tile width was computed from the window, not the container, so 4 columns overflowed padded cards on wide screens and wrapped to 3 | Tiles are sized from the measured container (`(width − padding − gaps) / cols`) |
+| Docs TOC sidebar | Docs kept the single-screen inline "On this page" list with no sidebar parity | Implemented web's TOC logic: persistent right sidebar at ≥1280, slide-in drawer below with a floating button, H2/H3 anchors scroll to headings via measured offsets |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -192,8 +197,8 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Local media → `(media)/local-media` | `max-w-7xl`; stacked <lg; `lg:grid-cols-[1fr_320px]` | Full-width; always stacked | ✅ Add ≥1024 player + transcript two-column layout and cap at `max-w-7xl` (review fix) |
 | Watch history → `(media)/watch-history` | `max-w-4xl` flat list | `max-w-3xl` date-grouped list | Widen to `max-w-4xl`; decide whether date grouping stays (mobile-only layout improvement) |
 | Liked videos → `(me)/liked-videos` | `max-w-4xl` row list | `max-w-3xl` row list | Widen to `max-w-4xl` |
-| Playlists → `(me)/playlists` | `max-w-5xl`; cards 1 → 2 → 3 | `max-w-3xl`; single-column rows | Add responsive card grid; widen to `max-w-5xl` |
-| Playlist detail → `(me)/playlists/[playlistId]` | `max-w-4xl` row list | `max-w-3xl` row list | Widen to `max-w-4xl` |
+| Playlists → `(me)/playlists` | `max-w-5xl`; cards 1 → 2 → 3 | `max-w-3xl`; single-column rows | ✅ Responsive card grid (1/2/3 at 640/1024), exact card widths, delete overlay, working empty-state create dialog |
+| Playlist detail → `(me)/playlists/[playlistId]` | `max-w-4xl` row list | `max-w-3xl` row list | ✅ Capped at `max-w-4xl`; list rows unaffected by grid last-row fix |
 
 ### Reading & vocabulary routes
 
@@ -203,7 +208,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Web reader → `(reading)/web-reader` | Same as notes reader + visited-sites sidebar | Same mobile pattern (`max-w-3xl`, sidebar ≥768) | Same changes as notes reader |
 | EPUB reader → `(reading)/epub` | `max-w-7xl`; sidebar sheet <lg, persistent ≥1024; bookshelf 2 → 3 → 4 → 5 | Full-width; sidebar ≥768; bookshelf 2 <520, 3 <720, 4 ≥720 | Sidebar → 1024; bookshelf thresholds 640/768/1280 and 5 columns at xl |
 | Dictionary search → `(vocab)/index` | `max-w-7xl` full-height shell with persistent search bar + word-list sidebar at lg | `max-w-3xl` standalone search page; no persistent shell | Add web-like full-height dictionary shell with persistent search and sidebar |
-| Dictionary entry → `(vocab)/word/[entryId]` | Within `max-w-7xl` dictionary shell; definition/tabs stacked <lg, side-by-side ≥1024; sidebar at lg | Full-width; split at ≥768; sidebar ≥768 | Move split and sidebar to ≥1024; keep within dictionary shell width |
+| Dictionary entry → `(vocab)/word/[entryId]` | Within `max-w-7xl` dictionary shell; definition/tabs stacked <lg, side-by-side ≥1024; sidebar at lg | Full-width; split at ≥768; sidebar ≥768 | ✅ Split/sidebar at ≥1024, capped at 1280, persistent search bar, no "Dictionary" title |
 | Saved words → `(vocab)/saved-words` | `max-w-7xl`; grid 1 → 2 → 3 → 4 | `max-w-3xl`; grid 1 <640, 2 <900, 3 <1200, 4 ≥1200 | Widen to `max-w-7xl`; align thresholds to 640/1024/1280 |
 | Review → `(vocab)/review` | `max-w-2xl`; card padding `p-4 sm:p-8` | `max-w-3xl`; card padding always `p-4` | Use `max-w-2xl`; increase card padding ≥640 |
 
@@ -214,7 +219,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Settings → `(me)/settings` | `max-w-5xl`; single list <lg; `lg:grid-cols-[220px_1fr]` at ≥1024; root redirects to Display; details `max-w-lg` | Split at ≥600 with `min(256, width*0.4)` sidebar; wide root shows placeholder; details full width | Move split to ≥1024; auto-select Display on wide root; align sidebar width and detail max width |
 | Profile → `(me)/profile` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan rows stacked | Add responsive plan row grid (1 <640, 3 ≥640) |
 | Go Pro → `(me)/go-pro` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan cards stacked | Add responsive plan grid (1 <640, 3 ≥640) |
-| Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | Decide scope: route-per-doc + TOC sidebar parity, or keep single-screen docs as documented mobile deviation |
+| Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | ✅ TOC sidebar parity: slide-in below 1280, persistent at ≥1280, H2/H3 anchors scroll to headings (single-screen docs retained) |
 | Tokenizer → `(me)/tokenizer-test` | `max-w-2xl` | Full-width scroll view | Cap at `max-w-2xl` |
 | Language select → `select-language` | Fullscreen; tabs <640, bi-panel ≥640 | Same 640 threshold | No change to the picker itself; header switcher dialog now centered ≥768 instead of a bottom sheet (review fix) |
 | Login/Register/Forgot/Reset/Verify | Centered `max-w-md` card | Full-width form | Wrap auth forms in centered `max-w-md` container |
@@ -235,7 +240,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | `TextActionMenu` translation | Original + translation side-by-side at lg | Always stacked | Add `lg`-equivalent side-by-side mode at ≥1024 |
 | `DictionaryPopup` | ~448px centered dialog | Bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
 | Subs-search list modal | Bottom sheet <640, centered ≥640 | Always bottom sheet | ✅ Centered dialog ≥768, bottom sheet below (bottom-sheet policy) |
-| `ImageSearchResults` | 3 columns <640, 4 ≥640 | Always 3 columns | Use 4 columns ≥640 |
+| `ImageSearchResults` | 3 columns <640, 4 ≥640 | Always 3 columns | ✅ 4 columns at ≥640, tiles sized from measured container |
 | Hamburger drawer | `w-64` | `min(256, width*0.6)` | Keep cap (it's better for split view); align when drawer is removed ≥md |
 
 ---
@@ -315,7 +320,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 2. Cap tokenizer at `max-w-2xl`.
 3. Widen watch history, liked videos, playlist detail, and TV show detail to their web widths.
 4. Add responsive plan grids to Profile and Go Pro (1 → 3 at sm).
-5. Docs: **decision — keep the single-screen mobile docs as a deliberate deviation** (no per-doc routes or TOC sidebar in this pass). Mobile docs remain a mobile-optimized search + reading surface; web docs keep the sidebar/TOC model.
+5. Docs: keep the single-screen mobile docs, but implement web's TOC sidebar logic — slide-in below 1280 with a floating button, persistent sidebar at ≥1280, and H2/H3 "On this page" links that scroll to headings.
 
 **Acceptance:** every route's content cap matches its web counterpart at all widths.
 
@@ -361,8 +366,8 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024; without captions: full-width player; content capped at 1280.
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
-- [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards.
-- [ ] **Playlist detail** — capped at 896.
+- [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards; empty-state "New playlist" opens the dialog; icons use theme tokens.
+- [ ] **Playlist detail** — capped at 896; incomplete last grid rows keep normal card widths.
 
 ### Reading & vocabulary screens
 
@@ -370,10 +375,10 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Reader translation** — translation beside the L2 block at ≥1024, stacked below 1024.
 - [ ] **EPUB bookshelf** — 2/3/4/5 columns at `<640 / 640–767 / 768–1279 / ≥1280`.
 - [ ] **Dictionary search** — capped at 1280; web's persistent search shell is intentionally not ported.
-- [ ] **Dictionary entry** — definition/tabs split and sidebar appear at ≥1024; content capped at 1280.
+- [ ] **Dictionary entry** — definition/tabs split and sidebar appear at ≥1024; content capped at 1280; persistent search bar in the header (no "Dictionary" title).
 - [ ] **Saved Words** — grid 1/2/3/4 at web thresholds; capped at 1280.
 - [ ] **Review** — capped at 672; card padding 16 below 640 and 32 at ≥640.
-- [ ] **Image search** — 3 columns below 640, 4 columns at ≥640.
+- [ ] **Image search** — 3 columns below 640, 4 columns at ≥640, sized from the container width.
 
 ### Settings, profile, and auth screens
 
@@ -382,7 +387,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Tokenizer** — capped at 672.
 - [ ] **Login / Register / Forgot / Reset / Verify / Delete account** — centered 448px container.
 - [ ] **Go Pro success / error** — centered 512px container; action buttons row at ≥640.
-- [ ] **Docs** — single-screen mobile docs, no TOC sidebar (intentional deviation).
+- [ ] **Docs** — TOC sidebar: slide-in below 1280 with a floating button, persistent at ≥1280; "On this page" H2/H3 links scroll to headings.
 
 ### Quick mode matrix
 
@@ -421,6 +426,6 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 
 1. ~~Should mobile Music/Search use the exact same grid as Explore, or keep a denser list variant?~~ **Resolved (2026-08-07)** — they use the same responsive `VideoGrid` as Explore.
 2. ~~Should watch-history date grouping stay as a mobile improvement?~~ **Resolved (2026-08-07)** — keep it; it's a documented mobile-only improvement.
-3. ~~Should docs get full route-per-doc + TOC sidebar parity, or remain a single-screen mobile docs surface?~~ **Resolved (2026-08-07)** — keep the single-screen mobile docs surface; revisit only if docs become a primary mobile surface.
-4. Should the dictionary entry screen get the full web shell (persistent search bar + sidebar)? **Open** — phases 1–6 stop at width/breakpoint/sidebar parity; the full shell is a possible follow-up.
+3. ~~Should docs get full route-per-doc + TOC sidebar parity, or remain a single-screen mobile docs surface?~~ **Resolved (2026-08-07)** — keep the single-screen mobile docs surface with web's TOC sidebar logic (slide-in <1280, persistent ≥1280); revisit per-doc routes only if docs become a primary mobile surface.
+4. Should the dictionary entry screen get the full web shell (persistent search bar + sidebar)? **Partially addressed (2026-08-07)** — persistent search bar added; the persistent word-list shell remains a possible follow-up.
 5. ~~Should auth forms become centered `max-w-md` cards?~~ **Resolved (2026-08-07)** — yes, via `AuthContainer`.
