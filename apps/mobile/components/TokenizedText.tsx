@@ -335,6 +335,21 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     return () => { cancelled = true; };
   }, [tokens, useTraditional, isChinese, l2Code]);
 
+  // ── Render-layer debug: what display text will tokens actually get? ──
+  useEffect(() => {
+    if (!__DEV__ || !isChinese || tokens.length === 0) return;
+    const words = tokens.filter((t) => t.lemmas.length > 0);
+    const mapped = words.filter((t) => {
+      const converted = convertedTexts.get(t.text);
+      return converted !== undefined && converted !== t.text;
+    }).length;
+    const sample = words.slice(0, 8).map((t) => {
+      const converted = convertedTexts.get(t.text);
+      return converted !== undefined && converted !== t.text ? `${t.text}→${converted}` : t.text;
+    }).join(', ');
+    log(`[LP Mobile] 🎙 RENDER-CONV l2=${l2Code} useTraditional=${useTraditional} mapSize=${convertedTexts.size} mapped=${mapped}/${words.length} sample=${sample}`);
+  }, [tokens, convertedTexts, useTraditional, isChinese, l2Code]);
+
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
 
   // ── Map EPUB format ranges (links + search highlights) onto token indices ──
@@ -607,7 +622,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         const hits = await lookupOfflineManyByL2(l2, texts);
         for (const [text, entries] of hits) {
           if (entries.length > 0) {
-            log('[TokenizedText] 📖 offline batch cache hit — l2:', l2, 'text:', text, 'entries:', entries.length);
             setCachedEntries(l2, text, entries);
           }
         }
@@ -760,7 +774,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isKaraokeDimmed = isKaraokeSpoken === false;
 
               const word = token.text;
-              const traditionalText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              // Script conversion map is populated for both directions
+              // (simplified or traditional preference); empty map = identity.
+              const traditionalText = convertedTexts.get(word) ?? word;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
@@ -916,7 +932,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isKaraokeDimmed = isKaraokeSpoken === false;
 
               const word = token.text;
-              const tokenDisplayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              // Script conversion map is populated for both directions
+              // (simplified or traditional preference); empty map = identity.
+              const tokenDisplayText = convertedTexts.get(word) ?? word;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
