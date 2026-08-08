@@ -47,6 +47,7 @@
 
 import Stemmer from 'arabic-stem';
 import Snowball from 'snowball-stemmers';
+import { ExpressionToken } from 'kuromoji-ko';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
@@ -340,6 +341,38 @@ const snowballStemmers = new Map<string, (word: string) => string>();
 const KO_SUPPLETIVE_LEMMAS: Record<string, string> = {
   드시: '들다',
 };
+
+/** Predicate tags that get 다 appended by kuromoji-ko's lemma logic. */
+const KO_VERB_TAGS = new Set(['VV', 'VA', 'VX', 'VCP', 'VCN']);
+
+/**
+ * Dictionary form for a kuromoji-ko Korean token.
+ *
+ * Uses the library's own `ExpressionToken.lemma` (morpheme + 다 for verbs
+ * and adjectives) instead of re-implementing root+다 by hand — the hand-rolled
+ * version missed stems like 읽/아프/없. Falls back to surface + 다 when the
+ * token itself is tagged as a predicate but carries no expression.
+ */
+function koreanDictionaryLemma(
+  surface: string,
+  expression: string | undefined,
+  pos: string | undefined,
+): string {
+  if (expression && expression !== '*' && expression !== surface) {
+    const firstPart = expression.split('+')[0];
+    if (firstPart) {
+      try {
+        return new ExpressionToken(firstPart).lemma;
+      } catch {
+        // Malformed expression — fall through to surface handling.
+      }
+    }
+  }
+  if (pos && KO_VERB_TAGS.has(pos) && !surface.endsWith('다')) {
+    return surface + '다';
+  }
+  return surface;
+}
 
 function getSnowballStemmer(snowballCode: string): (word: string) => string {
   let stemmer = snowballStemmers.get(snowballCode);
@@ -816,33 +849,29 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
         word_type?: string;
       }>;
       for (const t of tokens) {
-        // For verb/adjective inflections, extract the root from expression
-        // Expression format: '먹/VV+었/EP+습니다/EF' → root is '먹' (lemma: '먹다')
-        // For compound words: expression contains '+' separated parts
-        // For simple tokens: surface form is the lemma
-        let lemma = t.surface_form;
+        // Dictionary form comes from the library (ExpressionToken.lemma),
+        // which adds 다 for verbs/adjectives. Expression format:
+        // '먹/VV+었/EP+습니다/EF' → first part '먹/VV' → lemma '먹다'.
+        let lemma = koreanDictionaryLemma(t.surface_form, t.expression, t.pos);
         let lemmaPos = t.pos;
 
         if (t.expression && t.expression !== '*' && t.expression !== t.surface_form) {
-          // Extract the first verb/adjective root from the expression
-          // e.g., '먹/VV+었/EP+습니다/EF' → first part '먹/VV'
           const firstPart = t.expression.split('+')[0];
           if (firstPart) {
-            const [root, pos] = firstPart.split('/');
-            if (root && pos) {
-              // VV = verb, VA = adjective, VX = auxiliary verb
-              if (pos === 'VV' || pos === 'VA' || pos === 'VX') {
-                // Korean dictionary form is root + '다'
-                lemma = KO_SUPPLETIVE_LEMMAS[root] ?? root + '다';
-              } else {
-                lemma = root;
-              }
-              lemmaPos = pos;
-            } else {
-              lemma = root ?? t.surface_form;
+            try {
+              lemmaPos = new ExpressionToken(firstPart).pos;
+            } catch {
+              // Keep the token-level POS on malformed expressions.
             }
           }
         }
+
+        // Suppletive override (드시 → 들다) applies to the dictionary root
+        // (with or without the 다 suffix).
+        const suppletive =
+          KO_SUPPLETIVE_LEMMAS[lemma] ??
+          (lemma.endsWith('다') ? KO_SUPPLETIVE_LEMMAS[lemma.slice(0, -1)] : undefined);
+        if (suppletive) lemma = suppletive;
 
         // Include reading if available; otherwise romanize the surface
         // form with koroman so offline ko matches the server.
