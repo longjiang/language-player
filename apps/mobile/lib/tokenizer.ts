@@ -808,6 +808,53 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
 
 // ── Public API ──────────────────────────────────────────────────────
 
+/** Whitespace or punctuation/symbol-only token → canonical non-word. */
+const NONWORD_RE = /^[\s\p{P}\p{S}]+$/u;
+
+function isNonWordToken(text: string): boolean {
+  return text.length > 0 && NONWORD_RE.test(text);
+}
+
+/**
+ * Canonicalize local tokens to the unified contract (SPEC-018 / ARCH-016):
+ * whitespace and punctuation/symbol tokens become non-interactive
+ * (`lemmas: []`), and any whitespace the tokenizer dropped (regex path,
+ * kuromoji chunking) is restored as gap tokens from the original text —
+ * mirroring the server's `_recover_spaces`. This guarantees the token list
+ * reconstructs `text` exactly, so format ranges and search highlights stay
+ * aligned on every local path.
+ */
+function canonicalizeLocalTokens(tokens: LemmatizedToken[], text: string): LemmatizedToken[] {
+  const result: LemmatizedToken[] = [];
+  let pos = 0;
+  for (const token of tokens) {
+    const tokenText = token.text;
+    if (!tokenText) {
+      result.push(token);
+      continue;
+    }
+    const idx = text.indexOf(tokenText, pos);
+    if (idx > pos) {
+      for (let i = pos; i < idx; i++) {
+        const ch = text[i]!;
+        if (ch === ' ' || ch === '\n' || ch === '\t') {
+          result.push({ text: ch, lemmas: [] });
+        }
+      }
+    }
+    result.push(isNonWordToken(tokenText) ? { ...token, lemmas: [] } : token);
+    pos = idx >= 0 ? idx + tokenText.length : pos + tokenText.length;
+  }
+  // Trailing whitespace after the last token (regex path drops it).
+  for (let i = pos; i < text.length; i++) {
+    const ch = text[i]!;
+    if (ch === ' ' || ch === '\n' || ch === '\t') {
+      result.push({ text: ch, lemmas: [] });
+    }
+  }
+  return result;
+}
+
 /**
  * Run the full local (offline) fallback chain and cache the result.
  *
@@ -818,6 +865,17 @@ async function runLocalFallback(
   text: string,
   l2: string,
   cacheKey: string,
+): Promise<LemmatizedToken[]> {
+  const tokens = await runLocalFallbackRaw(text, l2);
+  const canonical = canonicalizeLocalTokens(tokens, text);
+  cacheSet(cacheKey, canonical);
+  return canonical;
+}
+
+/** Raw fallback chain (no canonicalization/caching — see runLocalFallback). */
+async function runLocalFallbackRaw(
+  text: string,
+  l2: string,
 ): Promise<LemmatizedToken[]> {
   log(`[lemmatize] 🔽 FALLBACK l2=${l2} text="${text.slice(0, 50)}…"`);
   const config = TOKENIZER_CONFIG[l2];
@@ -838,7 +896,6 @@ async function runLocalFallback(
       const workerTokens = await tokenizeJapaneseInWorker(text);
       if (workerTokens && workerTokens.length > 0) {
         log(`[lemmatize] ✅ WEBVIEW-WORKER OK l2=${l2} tokens=${workerTokens.length}`);
-        cacheSet(cacheKey, workerTokens);
         return workerTokens;
       }
       log(`[lemmatize] ⚠️ WEBVIEW-WORKER UNAVAIL l2=${l2} → main-thread kuromoji`);
@@ -849,7 +906,6 @@ async function runLocalFallback(
       const kuromojiTokens = await tokenizeFn(text);
       if (kuromojiTokens) {
         log(`[lemmatize] ✅ KUPOMOJI OK l2=${l2} tokens=${kuromojiTokens.length}`);
-        cacheSet(cacheKey, kuromojiTokens);
         return kuromojiTokens;
       }
       // Data pack not available — fall through to generic path
@@ -866,7 +922,6 @@ async function runLocalFallback(
     const workerTokens = await tokenizeDictSegInWorker(text, l2);
     if (workerTokens && workerTokens.length > 0) {
       log(`[lemmatize] ✅ WEBVIEW-DICT-WORKER OK l2=${l2} tokens=${workerTokens.length}`);
-      cacheSet(cacheKey, workerTokens);
       return workerTokens;
     }
     log(`[lemmatize] ⚠️ WEBVIEW-DICT-WORKER UNAVAIL l2=${l2} → main-thread dict-seg`);
@@ -878,7 +933,6 @@ async function runLocalFallback(
   const annotated = config?.needsDictSegmentation
     ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
     : tokens;
-  cacheSet(cacheKey, annotated);
   return annotated;
 }
 
