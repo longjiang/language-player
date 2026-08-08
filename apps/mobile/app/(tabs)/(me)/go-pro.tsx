@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
@@ -164,7 +165,7 @@ export default function GoProScreen() {
           setError(data?.message ?? t('msg.receipt_validation_failed'));
         }
       } catch (err: any) {
-        setError(err?.message ?? t('msg.receipt_validation_failed'));
+        setError(localizedError(t, err, 'msg.receipt_validation_failed'));
       } finally {
         setIapProcessing(false);
         setIapResult(null);
@@ -221,7 +222,7 @@ export default function GoProScreen() {
         setError(t('msg.no_checkout_url'));
       }
     } catch (err: any) {
-      setError(err?.message ?? t('msg.unexpected_error'));
+      setError(localizedError(t, err, 'msg.unexpected_error'));
     } finally {
       setCheckingOut(false);
     }
@@ -242,7 +243,7 @@ export default function GoProScreen() {
       if (err?.message?.includes('User cancelled')) {
         // User cancelled — don't show error
       } else {
-        setError(err?.message ?? t('msg.iap_purchase_failed'));
+        setError(localizedError(t, err, 'msg.iap_purchase_failed'));
       }
       setIapProcessing(false);
     }

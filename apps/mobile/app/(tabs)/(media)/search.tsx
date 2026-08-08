@@ -3,6 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, TextInput } from 'react-nativ
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoGrid } from '@/components/video/VideoGrid';
@@ -74,7 +75,7 @@ export default function SearchScreen() {
         : await videosApi.searchByTitle({ q: trimmed, l2: baseCode(l2Lang.code), limit: 50 });
       setResults(Array.isArray(res) ? res : []);
     } catch (err: any) {
-      setError(err?.message ?? t('error.something_went_wrong'));
+      setError(localizedError(t, err, 'error.something_went_wrong'));
     } finally {
       setLoading(false);
     }

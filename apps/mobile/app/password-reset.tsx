@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { router, useLocalSearchParams } from 'expo-router';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { e2e } from '@/lib/e2e';
 import { AuthContainer } from '@/components/layout/AuthContainer';
@@ -55,7 +56,7 @@ export default function PasswordResetScreen() {
 
       setSuccess(true);
     } catch (e: any) {
-      setError(e.message || t('error.password_reset') || 'Failed to reset password');
+      setError(localizedError(t, e, 'error.password_reset'));
     } finally {
       setLoading(false);
     }

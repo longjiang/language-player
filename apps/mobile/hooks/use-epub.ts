@@ -24,6 +24,8 @@ import {
 import type { TocItem } from '@/lib/epub-parser';
 import type { ContentBlock } from '@/lib/parse-markdown';
 import { log } from '@/lib/logger';
+import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 
 /** Recursively copy a directory (used for unzipped EPUB folder packages). */
 async function copyDirectoryContents(srcDir: string, destDir: string): Promise<void> {
@@ -88,6 +90,7 @@ export interface UseEpubReturn {
 }
 
 export function useEpub(): UseEpubReturn {
+  const t = useT();
   const [books, setBooks] = useState<EpubSummary[]>([]);
   const [openBookId, setOpenBookId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -289,7 +292,7 @@ export function useEpub(): UseEpubReturn {
       setBooks(prev => prev.map((b) => (b.id === id ? { ...b, lastReadAt: Date.now() } : b)));
       return resume;
     } catch (e: any) {
-      setError(e?.message ?? String(e));
+      setError(localizedError(t, e, 'error.general'));
       return null;
     } finally {
       setLoading(false);
