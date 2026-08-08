@@ -10,6 +10,7 @@ import React, {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
+import { useAuth } from '@/contexts/AuthContext';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeError } from '@/lib/offline-mode';
@@ -28,6 +29,13 @@ import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import {
+  RECENT_STORAGE_PREFIX,
+  recentStorageGet,
+  recentStorageSet,
+  recentStorageRemove,
+  clearRecentSearchesStorage,
+} from '@/lib/recent-searches-storage';
 
 // ── Sidebar / wordlist types ────────────────
 
@@ -89,7 +97,6 @@ interface DictionaryContextValue {
 
 const DictionaryContext = createContext<DictionaryContextValue | null>(null);
 
-import * as SecureStore from 'expo-secure-store';
 
 // ── Session memory cache ────────────────────
 // Caches online lookup results in memory to avoid redundant network
@@ -106,26 +113,11 @@ function stripLlmEntries(entries: DictionaryEntry[]): DictionaryEntry[] {
 
 // ── Provider ────────────────────────────────
 
-const RECENT_STORAGE_KEY = 'zthRecentSearches';
 const MAX_RECENT = 10;
-
-// In-memory fallback — SecureStore can be unavailable on iOS simulators
-const memoryStore: Record<string, string> = {};
-
-async function storageGet(key: string): Promise<string | null> {
-  try { return await SecureStore.getItemAsync(key); } catch {}
-  return memoryStore[key] ?? null;
-}
-async function storageSet(key: string, value: string) {
-  try { await SecureStore.setItemAsync(key, value); } catch { memoryStore[key] = value; }
-}
-async function storageRemove(key: string) {
-  try { await SecureStore.deleteItemAsync(key); } catch { delete memoryStore[key]; }
-}
 
 async function loadRecent(l2Code: string): Promise<string[]> {
   try {
-    const raw = await storageGet(`${RECENT_STORAGE_KEY}:${l2Code}`);
+    const raw = await recentStorageGet(`${RECENT_STORAGE_PREFIX}${l2Code}`);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch { return []; }
 }
@@ -137,7 +129,7 @@ async function saveRecent(l2Code: string, term: string) {
     filtered.unshift(term);
     const items = filtered.slice(0, MAX_RECENT);
     log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
-    await storageSet(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
+    await recentStorageSet(`${RECENT_STORAGE_PREFIX}${l2Code}`, JSON.stringify(items));
   } catch (e) { log('[Dict] saveRecent failed:', e); }
 }
 
@@ -146,6 +138,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const tRef = useRef(t);
   tRef.current = t;
   const { l1Lang, l2Lang } = useLanguage();
+  const { user } = useAuth();
   const dict = useDictionary();
   const l2Code = l2Lang.code;
 
@@ -186,6 +179,19 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     // Clear session memory cache on L2 switch
     sessionCache.clear();
   }, [l2Code]);
+
+  // ── User change (logout/login): clear user-scoped search state ──
+  useEffect(() => {
+    sessionCache.clear();
+    setRecentSearches([]);
+    setQuery('');
+    setResults(null);
+    setMessage(null);
+    setError(null);
+    setSearchedText('');
+    setCameFromSearch(false);
+    void clearRecentSearchesStorage();
+  }, [user?.id]);
 
   // ── 4-tier lookup ──────────────────────────
 
@@ -268,7 +274,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
   const clearRecent = useCallback(async () => {
     try {
-      await storageRemove(`${RECENT_STORAGE_KEY}:${l2Code}`);
+      await recentStorageRemove(`${RECENT_STORAGE_PREFIX}${l2Code}`);
       setRecentSearches([]);
     } catch { /* ignore */ }
   }, [l2Code]);

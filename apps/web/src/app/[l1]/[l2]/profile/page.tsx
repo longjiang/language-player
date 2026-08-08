@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { clearUserData } from '@/lib/user-data-wipe';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@langplayer/api-client';
 import { useLanguage } from '@/providers/language-provider';
@@ -149,11 +150,7 @@ export default function ProfilePage() {
       setDeleting(false);
       return;
     }
-    try {
-      localStorage.removeItem('zthSavedWords');
-      localStorage.removeItem('zthSavedWordsPendingOps');
-      localStorage.removeItem('lpSavedWordsAnonMerged');
-    } catch { /* ignore */ }
+    clearUserData();
     await signOut({ callbackUrl: '/' });
   };
 

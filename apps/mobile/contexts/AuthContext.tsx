@@ -220,6 +220,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await SecureStore.deleteItemAsync('userInfo');
     setToken(null);
     setUser(null);
+    // Remove the previous user's local data (notes, saved words, progress,
+    // SRS, settings, recents, sync db). Offline dictionaries/tokenizers and
+    // the device-local Offline Mode toggle stay.
+    // Dynamic import avoids a module cycle (sync-engine → authenticated-fetch
+    // → AuthContext).
+    const { wipeUserData } = await import('@/lib/user-data-wipe');
+    await wipeUserData().catch((e) => {
+      log('[Auth] logout wipe failed:', (e as Error)?.message ?? e);
+    });
   }, []);
 
   return (

@@ -95,6 +95,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
   const hydratedUserId = useRef<string | null>(null);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   // Load from SecureStore on mount
   useEffect(() => {
@@ -161,6 +162,18 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // ── User change (logout/login): drop the previous user's in-memory state ──
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    const next = user?.id ?? null;
+    prevUserIdRef.current = next;
+    if (prev === undefined) return; // initial boot — keep locally loaded state
+    if (prev !== next) {
+      hydratedUserId.current = null;
+      setSavedWords({});
+    }
+  }, [user?.id]);
 
   // Hydrate from the server (after replaying pending ops)
   useEffect(() => {

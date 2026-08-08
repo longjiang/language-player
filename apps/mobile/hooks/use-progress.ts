@@ -41,7 +41,8 @@ export function useProgress(l2Code: string) {
   const [progress, setProgress] = useState<L2Progress>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cloudLoaded = useRef(false);
+  const cloudLoadedUserId = useRef<string | null>(null);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   const syncToCloud = useCallback(async () => {
     try {
@@ -128,8 +129,8 @@ export function useProgress(l2Code: string) {
 
   // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoaded.current) return;
-    cloudLoaded.current = true;
+    if (!user || !loaded || cloudLoadedUserId.current === user.id) return;
+    cloudLoadedUserId.current = user.id;
     let cancelled = false;
     (async () => {
       try {
@@ -159,6 +160,19 @@ export function useProgress(l2Code: string) {
     })();
     return () => { cancelled = true; };
   }, [user, l2Code, loaded, getProgress]);
+
+  // ── User change (logout/login): drop the previous user's in-memory state ──
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    const next = user?.id ?? null;
+    prevUserIdRef.current = next;
+    if (prev === undefined) return; // initial boot — keep locally loaded state
+    if (prev !== next) {
+      cloudLoadedUserId.current = null;
+      setProgress({});
+      if (syncTimer.current) clearTimeout(syncTimer.current);
+    }
+  }, [user?.id]);
 
   // ── Persist to SecureStore + debounced row sync ──
   const persist = useCallback((updates: Partial<L2Progress>) => {

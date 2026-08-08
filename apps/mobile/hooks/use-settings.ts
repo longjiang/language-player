@@ -40,7 +40,8 @@ export function useSettings() {
   const [loaded, setLoaded] = useState(false);
   const [offlineMode, setOfflineModeState] = useState<boolean>(() => isOfflineModeEnabled());
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cloudLoaded = useRef(false);
+  const cloudLoadedUserId = useRef<string | null>(null);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   // Local-only network kill switch: stored separately from SettingsV2 and
   // never included in the cloud PUT, so it never syncs to the account.
@@ -69,8 +70,8 @@ export function useSettings() {
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoaded.current || offlineMode) return;
-    cloudLoaded.current = true;
+    if (!user || !loaded || cloudLoadedUserId.current === user.id || offlineMode) return;
+    cloudLoadedUserId.current = user.id;
     let cancelled = false;
     (async () => {
       try {
@@ -86,11 +87,24 @@ export function useSettings() {
         });
       } catch (err) {
         logwarn('[settings] Could not load from server:', err);
-        cloudLoaded.current = false;
+        cloudLoadedUserId.current = null;
       }
     })();
     return () => { cancelled = true; };
   }, [user, loaded, getUserSettings, offlineMode]);
+
+  // ── User change (logout/login): drop the previous user's in-memory state ──
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    const next = user?.id ?? null;
+    prevUserIdRef.current = next;
+    if (prev === undefined) return; // initial boot — keep locally loaded state
+    if (prev !== next) {
+      cloudLoadedUserId.current = null;
+      setSettings(createSettingsV2());
+      if (syncTimer.current) clearTimeout(syncTimer.current);
+    }
+  }, [user?.id]);
 
   // ── Persist + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
