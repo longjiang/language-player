@@ -258,6 +258,15 @@ async function loadEntries(
 }
 ```
 
+### Streaming NDJSON (current implementation)
+
+The mobile client requests `?format=ndjson` instead of loading one giant JSON
+array. The server returns a marker line, a metadata line, then one
+`[id, head, pronunciation, entry_json]` row per line. The app streams those
+lines from a cache file straight into SQLite, so it never builds a 60–80 MB
+JS array or re-serializes every entry. The JSON response format remains
+supported for older clients.
+
 ---
 
 ## Implementation Plan

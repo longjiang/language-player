@@ -74,6 +74,11 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
     // ── Clean up orphaned dict tables from crashed downloads ──
     await _cleanupOrphanedDicts(_db);
 
+    // Reclaim free pages left by previous download/delete cycles. This is a
+    // cheap PRAGMA check on normal opens and only VACUUMs when there is
+    // meaningful free space to reclaim.
+    await shrinkDictionaryDB(_db);
+
     return _db;
   })();
 
@@ -97,16 +102,44 @@ async function _cleanupOrphanedDicts(db: SQLite.SQLiteDatabase): Promise<void> {
     const metas = await db.getAllAsync<{ l2: string }>('SELECT l2 FROM dict_meta');
     const validL2s = new Set(metas.map((m) => m.l2));
 
+    let droppedAny = false;
     for (const t of tables) {
-      // Extract l2 from table name: dict_ja → ja
-      const l2 = t.name.slice(5);
+      // Extract l2 from table name: dict_ja → ja, dict_zh_Hans → zh-Hans
+      const l2 = t.name.slice(5).replace(/_/g, '-');
       if (!validL2s.has(l2)) {
         log('[DictDB] 🧹 cleaning up orphaned table:', t.name, '(no dict_meta entry — likely crashed mid-download)');
         await db.execAsync(`DROP TABLE IF EXISTS ${t.name}`);
+        droppedAny = true;
       }
+    }
+    if (droppedAny) {
+      await shrinkDictionaryDB(db);
     }
   } catch {
     // Best-effort cleanup
+  }
+}
+
+/**
+ * Reclaim free pages left behind by dropped dictionary tables.
+ *
+ * SQLite keeps dropped-table pages in the database file unless VACUUM (or
+ * incremental vacuum) reclaims them. Repeated download → delete cycles
+ * otherwise grow dictionary.db forever and slow down later re-downloads.
+ */
+async function shrinkDictionaryDB(db: SQLite.SQLiteDatabase): Promise<void> {
+  try {
+    const row = await db.getFirstAsync<{ freelist_count: number }>(
+      'PRAGMA freelist_count'
+    );
+    if ((row?.freelist_count ?? 0) > 1024) {
+      log('[DictDB] 🧹 VACUUM — reclaiming', row!.freelist_count, 'free pages');
+      const start = Date.now();
+      await db.execAsync('VACUUM');
+      log('[DictDB] ✅ VACUUM done — took', Date.now() - start, 'ms');
+    }
+  } catch (e) {
+    log('[DictDB] ⚠️ VACUUM failed:', e);
   }
 }
 
@@ -226,55 +259,61 @@ export async function storeLLMCacheEntry(
 
 // ── Bulk insert (download) ────────────────────
 
+/** A pre-serialized dictionary row ready for direct SQLite insertion. */
+export interface BulkEntryRow {
+  id: string;
+  head: string;
+  pronunciation: string | null;
+  entry_json: string;
+}
+
 /**
- * Insert downloaded dictionary entries in chunks, yielding to the main
+ * Drop and recreate the dict_{l2} table before a fresh download.
+ *
+ * This avoids `INSERT OR REPLACE` overhead and guarantees a clean table even
+ * if a previous download crashed or was cancelled.
+ */
+export async function resetDictTable(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<void> {
+  const table = dictTableName(l2);
+  await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
+  await ensureDictTable(db, l2);
+}
+
+/**
+ * Insert downloaded dictionary rows in chunks, yielding to the main
  * thread between chunks to keep the UI responsive.
+ *
+ * Rows are pre-serialized (`entry_json` is already a JSON string), so no
+ * per-entry JSON.stringify happens here. The caller must prepare the table
+ * first with `resetDictTable()`.
  *
  * @param onProgress — called after each chunk with percentage 0–100
  */
 export async function bulkInsertEntries(
   db: SQLite.SQLiteDatabase,
   l2: string,
-  entries: DictionaryEntry[],
+  entries: BulkEntryRow[],
   onProgress?: (pct: number) => void,
 ): Promise<void> {
   const startTime = Date.now();
-  await ensureDictTable(db, l2);
   const table = dictTableName(l2);
   const totalChunks = Math.ceil(entries.length / CHUNK_SIZE);
 
   log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
-
-  // Log WAL/journal status before insert
-  try {
-    const jm = await db.getFirstAsync<{ journal_mode: string }>('PRAGMA journal_mode');
-    const wc = await db.getFirstAsync<{ busy: number; log: number; checkpointed: number }>(
-      'PRAGMA wal_checkpoint'
-    );
-    log('[DictDB] 📊 journal:', jm?.journal_mode ?? '?',
-      'WAL pages — log:', wc?.log ?? '?', 'checkpointed:', wc?.checkpointed ?? '?');
-  } catch {}
 
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
     const chunk = entries.slice(i, i + CHUNK_SIZE);
     const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
     const chunkStart = Date.now();
 
-    // Pre-serialize entries to JSON outside the transaction
-    const serializedStart = Date.now();
-    const rows = chunk.map((entry) => ({
-      id: entry.id,
-      head: entry.head,
-      pronunciation: entry.pronunciation ?? null,
-      entry_json: JSON.stringify(entry),
-    }));
-    const serializeMs = Date.now() - serializedStart;
-
     // Build multi-row INSERT to minimize JS↔native bridge roundtrips.
     // Each roundtrip costs 1-4ms; 500 individual runAsync calls = ~2000ms.
     // A single execAsync with all 500 rows = 1 roundtrip.
     const txStart = Date.now();
-    const values = rows
+    const values = chunk
       .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
       .join(',');
     await db.execAsync(
@@ -289,7 +328,7 @@ export async function bulkInsertEntries(
     const shouldLog = chunkNum <= 10 || chunkNum % 10 === 0 || chunkNum === totalChunks;
     if (shouldLog) {
       log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
-        '— json:', serializeMs, 'ms tx:', txMs, 'ms total:', chunkMs, 'ms',
+        '— tx:', txMs, 'ms total:', chunkMs, 'ms',
         '—', ((Date.now() - startTime) / 1000).toFixed(1), 's elapsed');
     }
 
@@ -383,6 +422,7 @@ export async function deleteDictionary(
   } catch {
     // dict_meta may not exist if orphan cleanup dropped it
   }
+  await shrinkDictionaryDB(db);
 }
 
 /**
@@ -394,7 +434,7 @@ export async function deleteAllDictionaries(
   // Drop all dict_* tables
   try {
     const tables = await db.getAllAsync<{ name: string }>(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%'",
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%' AND name != 'dict_meta'",
     );
     for (const t of tables) {
       await db.execAsync(`DROP TABLE IF EXISTS ${t.name}`);
@@ -410,6 +450,7 @@ export async function deleteAllDictionaries(
   log('[DictDB] 🧹 WAL checkpoint after delete-all');
   try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
   log('[DictDB] ✅ WAL checkpoint done');
+  await shrinkDictionaryDB(db);
 }
 
 // ── Storage usage ─────────────────────────────

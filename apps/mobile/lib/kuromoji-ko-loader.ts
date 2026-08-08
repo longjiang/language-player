@@ -22,7 +22,7 @@
  * @module kuromoji-ko-loader
  */
 
-import * as FileSystem from 'expo-file-system/legacy';
+import { File } from 'expo-file-system';
 import pako from 'pako';
 // @ts-ignore – doublearray has no type declarations, used only at runtime
 import doublearray from 'doublearray';
@@ -655,16 +655,7 @@ class DynamicDictionaries {
  */
 async function readAndDecompress(dicPath: string, filename: string): Promise<ArrayBuffer> {
   const uri = `${dicPath}${filename}`;
-  const base64 = await FileSystem.readAsStringAsync(uri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-
-  // Base64 → binary string → Uint8Array
-  const binaryStr = atob(base64);
-  const compressed = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    compressed[i] = binaryStr.charCodeAt(i);
-  }
+  const compressed = await new File(uri).bytes();
 
   // Gzip decompression using pako (pure JS, works in RN)
   // Safe slice: pako's Uint8Array may be a view over a larger buffer,
@@ -687,12 +678,7 @@ async function readAndDecompress(dicPath: string, filename: string): Promise<Arr
  */
 export async function hasKuromojiKoFiles(dicPath: string): Promise<boolean> {
   try {
-    const results = await Promise.all(
-      ALL_DICT_FILES.map((f) =>
-        FileSystem.getInfoAsync(`${dicPath}${f}`).then((r) => r.exists),
-      ),
-    );
-    return results.every(Boolean);
+    return ALL_DICT_FILES.every((f) => new File(`${dicPath}${f}`).exists);
   } catch {
     return false;
   }

@@ -574,6 +574,27 @@ export function resetTokenizer(l2: string): void {
 }
 
 /**
+ * Drop all in-memory tokenizer/lemma state for a language.
+ *
+ * Called when an offline dictionary is deleted so stale headword sets,
+ * kuromoji singletons, and cached lemmatizations don't linger after the
+ * on-device data is gone.
+ */
+export function clearDictionaryCaches(l2: string): void {
+  dictWordSets.delete(l2);
+  dictMaxWordLen.delete(l2);
+  kuromojiTokenizers.delete(l2);
+  lemmaDownloadState.delete(l2);
+
+  for (const key of [...lemmatizeCache.keys()]) {
+    if (key.startsWith(`${l2}:`)) lemmatizeCache.delete(key);
+  }
+  for (const key of [...lemmatizeInflight.keys()]) {
+    if (key.startsWith(`${l2}:`)) lemmatizeInflight.delete(key);
+  }
+}
+
+/**
  * Backward-compatible alias for resetTokenizer('ja').
  */
 export function resetJaTokenizer(): void {

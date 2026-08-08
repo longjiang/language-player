@@ -17,6 +17,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
+import { Directory, File, Paths } from 'expo-file-system';
 import { openDictionaryDB } from './dictionary-db';
 
 // ── Constants ────────────────────────────────
@@ -174,10 +175,11 @@ export async function downloadLemmaTable(
   l2: string,
   apiUrl: string,
   limit: number = 50000,
+  signal?: AbortSignal,
 ): Promise<boolean> {
   try {
     const url = `${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json&limit=${limit}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { signal });
     if (!response.ok) return false;
 
     const data = await response.json() as { table: Record<string, string[]> };
@@ -186,7 +188,8 @@ export async function downloadLemmaTable(
     const entries: Array<[string, string[]]> = Object.entries(data.table);
     await storeLemmaTable(l2, entries);
     return true;
-  } catch {
+  } catch (e) {
+    if (signal?.aborted) throw e;
     return false;
   }
 }
@@ -196,9 +199,7 @@ export async function downloadLemmaTable(
 // filesystem for kuromoji's Japanese morphological analysis.
 // Hosted as a zip archive at GET /lemmatization/download?l2=ja.
 
-import * as FileSystem from 'expo-file-system/legacy';
-
-const TOKENIZER_DIR = `${FileSystem.documentDirectory}tokenizers/`;
+const TOKENIZER_DIR = `${Paths.document.uri}tokenizers/`;
 
 /**
  * Files that make up the kuromoji IPADIC dictionary data pack.
@@ -228,12 +229,7 @@ const KROMOJI_DICT_FILES = [
 export async function hasKuromojiData(l2: string): Promise<boolean> {
   const dir = `${TOKENIZER_DIR}${l2}/`;
   try {
-    const results = await Promise.all(
-      KROMOJI_DICT_FILES.map((f) =>
-        FileSystem.getInfoAsync(`${dir}${f}`).then((r) => r.exists),
-      ),
-    );
-    return results.every(Boolean);
+    return KROMOJI_DICT_FILES.every((f) => new File(`${dir}${f}`).exists);
   } catch {
     return false;
   }
@@ -263,59 +259,69 @@ export function getKuromojiDataPath(l2: string): string {
 export async function downloadKuromojiData(
   l2: string,
   apiUrl: string,
+  onProgress?: (fraction: number) => void,
+  signal?: AbortSignal,
 ): Promise<boolean> {
-  const dir = `${TOKENIZER_DIR}${l2}/`;
+  const dir = new Directory(`${TOKENIZER_DIR}${l2}/`);
   const zipPath = `${TOKENIZER_DIR}${l2}.zip`;
 
   try {
     // Ensure the target directory exists
-    await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+    dir.create({ intermediates: true, idempotent: true });
 
     // Download the zip archive from the server
-    const downloadResult = await FileSystem.downloadAsync(
+    const zipFile = new File(zipPath);
+    if (zipFile.exists) zipFile.delete();
+    await File.downloadFileAsync(
       `${apiUrl}/lemmatization/download?l2=${encodeURIComponent(l2)}`,
-      zipPath,
+      zipFile,
+      {
+        idempotent: true,
+        signal,
+        onProgress: (progress) => {
+          if (progress.totalBytes > 0) {
+            onProgress?.(0.9 * Math.min(1, progress.bytesWritten / progress.totalBytes));
+          } else if (progress.bytesWritten > 0) {
+            onProgress?.(0.9 * 0.1);
+          }
+        },
+      },
     );
-    // Verify the download produced a file
-    if (!downloadResult.uri) return false;
 
-    // Read the zip file as base64
-    const zipBase64 = await FileSystem.readAsStringAsync(downloadResult.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    // Convert base64 → Uint8Array for fflate
-    const binaryStr = atob(zipBase64);
-    const zipData = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      zipData[i] = binaryStr.charCodeAt(i);
-    }
+    // Read the zip as raw bytes (no base64 round-trip)
+    const zipData = await zipFile.bytes();
 
     // Decompress zip using fflate (pure JS, no native deps, already installed)
     const { unzipSync } = await import('fflate');
     const unzipped = unzipSync(zipData);
 
     // Write each extracted file to the tokenizer directory
-    for (const [filePath, content] of Object.entries(unzipped)) {
+    const files = Object.entries(unzipped).filter(([filePath]) =>
+      KROMOJI_DICT_FILES.includes(filePath)
+    );
+    for (let i = 0; i < files.length; i++) {
       // Only extract known .dat.gz files (ignore metadata/readme)
-      if (!KROMOJI_DICT_FILES.includes(filePath)) continue;
-
-      const fullPath = `${dir}${filePath}`;
-      // Convert Uint8Array → base64 for expo-file-system write
-      let binary = '';
-      for (let i = 0; i < content.length; i++) {
-        binary += String.fromCharCode(content[i]);
-      }
-      await FileSystem.writeAsStringAsync(fullPath, btoa(binary), {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      if (signal?.aborted) throw new Error('Download cancelled');
+      const [filePath, content] = files[i]!;
+      const fullPath = `${dir.uri}${filePath}`;
+      const out = new File(fullPath);
+      out.create({ intermediates: true, overwrite: true });
+      out.write(content);
+      onProgress?.(0.9 + 0.1 * ((i + 1) / files.length));
     }
 
     // Clean up the zip file
-    await FileSystem.deleteAsync(downloadResult.uri, { idempotent: true });
+    if (zipFile.exists) zipFile.delete();
 
     return true;
-  } catch {
+  } catch (e) {
+    // Clean up partial extraction so hasKuromojiData doesn't report success
+    try {
+      if (dir.exists) dir.delete();
+      const zipFile = new File(zipPath);
+      if (zipFile.exists) zipFile.delete();
+    } catch {}
+    if (signal?.aborted) throw e;
     // Silent failure — non-fatal, falls back to regex + surface-as-lemma
     return false;
   }
@@ -327,9 +333,9 @@ export async function downloadKuromojiData(
  * @param l2 - Language code
  */
 export async function deleteKuromojiData(l2: string): Promise<void> {
-  const dir = `${TOKENIZER_DIR}${l2}/`;
-  await FileSystem.deleteAsync(dir, { idempotent: true });
+  const dir = new Directory(`${TOKENIZER_DIR}${l2}/`);
+  if (dir.exists) dir.delete();
   // Also clean up any leftover zip
-  const zipPath = `${TOKENIZER_DIR}${l2}.zip`;
-  await FileSystem.deleteAsync(zipPath, { idempotent: true });
+  const zipFile = new File(`${TOKENIZER_DIR}${l2}.zip`);
+  if (zipFile.exists) zipFile.delete();
 }

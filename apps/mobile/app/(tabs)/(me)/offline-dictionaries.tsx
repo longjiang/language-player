@@ -351,7 +351,13 @@ export default function OfflineDictionariesScreen() {
               />
             </View>
             <Text className="mt-0.5 text-xs text-muted-foreground">
-              {t('label.download_progress', { downloaded: String(state.downloaded), total: String(state.total) })}
+              {state.phase === 'insert' ? (
+                t('label.download_progress', { downloaded: String(state.downloaded), total: String(state.total) })
+              ) : state.phase === 'dictionary' || state.phase === 'lemma' || state.phase === 'tokenizer' ? (
+                t('log.downloading')
+              ) : (
+                t('log.processing')
+              )}
             </Text>
           </View>
         )}
