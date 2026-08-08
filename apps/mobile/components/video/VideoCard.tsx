@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { e2e } from '@/lib/e2e';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { ChannelActionsMenu } from './ChannelActionsMenu';
 import type { QueueType } from '@langplayer/utils';
 
@@ -62,7 +63,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
   const views = formatViews(video.views);
   const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2Lang.code]);
   const levelLabel = level != null ? formatNumericLevel(level, primaryScale(l2Lang.code)).short : null;
-  const levelColor = level != null ? (LEVEL_HEX_COLORS[level] ?? '#6b7280') : undefined;
+  const levelColor = level != null ? (LEVEL_HEX_COLORS[level] ?? ICON_MUTED) : undefined;
   const thumbnail = youtubeThumbnail(video.youtube_id);
   const testID = testIDOverride ?? `video-card-${video.youtube_id}`;
 
@@ -85,7 +86,7 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
           <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
           {levelLabel && levelColor && (
             <View className="absolute left-0.5 top-0.5 rounded px-1 py-0" style={{ backgroundColor: levelColor }}>
-              <Text className="text-[9px] font-bold text-white">{levelLabel}</Text>
+              <Text className="text-[9px] font-bold text-primary-foreground">{levelLabel}</Text>
             </View>
           )}
         </View>
@@ -113,12 +114,12 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
         <Image source={{ uri: thumbnail }} className="aspect-video w-full" />
         {levelLabel && levelColor && (
           <View className="absolute left-2 top-2 rounded px-1.5 py-0.5" style={{ backgroundColor: levelColor }}>
-            <Text className="text-xs font-bold text-white">{levelLabel}</Text>
+            <Text className="text-xs font-bold text-primary-foreground">{levelLabel}</Text>
           </View>
         )}
         {duration ? (
-          <View className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5">
-            <Text className="text-xs text-white">{duration}</Text>
+          <View className="absolute bottom-1 right-1 rounded bg-foreground/70 px-1.5 py-0.5">
+            <Text className="text-xs text-background">{duration}</Text>
           </View>
         ) : null}
       </View>

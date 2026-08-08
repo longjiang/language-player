@@ -87,7 +87,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           loading="lazy"
         />
         <span
-          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${levelBgClass(level ?? 1)}`}
+          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-primary-foreground ${levelBgClass(level ?? 1)}`}
         >
           {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short}
         </span>
@@ -114,18 +114,18 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           loading="lazy"
         />
         {/* Play overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
-          <Play className="h-12 w-12 text-white opacity-0 transition-opacity group-hover:opacity-100" fill="white" />
+        <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 text-background transition-colors group-hover:bg-foreground/20">
+          <Play className="h-12 w-12 opacity-0 transition-opacity group-hover:opacity-100" fill="currentColor" />
         </div>
         {/* Duration badge */}
         {duration && (
-          <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
+          <span className="absolute bottom-2 right-2 rounded bg-foreground/80 px-1.5 py-0.5 text-xs font-medium text-background">
             {duration}
           </span>
         )}
         {/* Level badge */}
         <span
-          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-white ${levelBgClass(level ?? 1)}`}
+          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-primary-foreground ${levelBgClass(level ?? 1)}`}
         >
           {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short ?? '?'}
         </span>
