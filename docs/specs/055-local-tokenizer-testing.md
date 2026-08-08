@@ -51,7 +51,7 @@ The local tokenizer families covered:
 
 ## Spot-Check Test Cases
 
-### TC-01 — Japanese (kuromoji)
+### TC-01 — Japanese (kuromoji) ✅ PASS (2026-08-08)
 
 - **Sample**: `銃撃戦、と天吾は思った。そんな話を耳にした覚えがある。`
 - **Steps**: Offline Mode on; open a Japanese book containing the sample.
@@ -61,8 +61,9 @@ The local tokenizer families covered:
   - 耳 shows katakana ruby (ミミ).
   - 銃撃戦 stays one token.
 - **Pass**: No spaces inserted between Japanese tokens — including in ruby mode, where tokens must render flush with no phantom gaps (regression: per-token `mx-px` margins removed 2026-08-08); punctuation (、。…) not clickable; ruby is katakana, not romaji, and sits close to the base text with no large vertical gap (regression: furigana gap trim 2026-08-08); tapping anywhere on a kanji+kana word (including its furigana) opens the popup for the whole token, with a dimming press feedback (regression: one `Pressable` per token added 2026-08-08, pressed-state opacity 0.45).
+- **Verified 2026-08-08**: flush ruby rendering (no phantom gaps), close furigana, whole-token press with dim feedback, katakana readings, and non-clickable punctuation all confirmed in simulator.
 
-### TC-02 — Korean (kuromoji-ko + koroman)
+### TC-02 — Korean (kuromoji-ko + koroman) ✅ PASS (2026-08-08)
 
 - **Sample**: `좋아합니다. 저는 어제 김밥을 먹었습니다.`
 - **Steps**: Offline Mode on; open a Korean book or paste into the reader.
@@ -72,6 +73,7 @@ The local tokenizer families covered:
   - 먹었습니다 → lemma 먹다; honorific suppletive 드시 → 들다 when present.
   - Spaces preserved.
 - **Pass**: Romanization matches server koroman output; no crash; text reconstructs exactly.
+- **Verified 2026-08-08**: romanization shows as Latin koroman ruby (e.g. `joahamnida`, `na`, `geureon`) with `pronEqWord=0` / `rubyShown>0` in debug logs; dictionary-form lemmas via `ExpressionToken.lemma` (`읽→읽다`, `아프→아프다`, suppletive `드시→들다`); spaces preserved.
 
 ### TC-03 — Chinese (dict worker)
 
