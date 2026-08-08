@@ -87,6 +87,7 @@ export async function probeOnline(): Promise<boolean> {
 
 async function probe(): Promise<void> {
   const online = await probeOnline();
+  log(`[LP Mobile] Connectivity probe: ${online ? 'online' : 'offline'}`);
   if (online) publish('online');
   else if (lastNative !== false) publish('offline');
 }

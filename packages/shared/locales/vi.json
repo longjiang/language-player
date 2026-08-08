@@ -719,6 +719,7 @@
         "explore_media_for": "Khám phá phương tiện {l2}",
         "failed_to_load_images": "Không thể tải hình ảnh.",
         "failed_to_load_note": "Không thể tải ghi chú",
+        "failed_to_load_notes": "Không thể tải ghi chú",
         "failed_to_load_transcript": "Video đang phát nhưng chúng tôi không thể tải bản ghi và phụ đề. Vui lòng làm mới trang hoặc thử lại sau một lát.",
         "failed_to_load_url": "Không thể tải URL",
         "failed_to_load_watch_history": "Không thể tải lịch sử xem",

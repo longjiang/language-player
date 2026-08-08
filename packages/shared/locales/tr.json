@@ -719,6 +719,7 @@
         "explore_media_for": "{l2} Medyasını Keşfet",
         "failed_to_load_images": "Görseller yüklenemedi.",
         "failed_to_load_note": "Not yüklenemedi",
+        "failed_to_load_notes": "Notlar yüklenemedi",
         "failed_to_load_transcript": "Video oynatılıyor, ancak transkripti ve altyazıları yükleyemedik. Sayfayı yenileyin veya bir dakika sonra tekrar deneyin.",
         "failed_to_load_url": "URL yüklenemedi",
         "failed_to_load_watch_history": "İzleme geçmişi yüklenemedi",

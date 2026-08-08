@@ -134,6 +134,7 @@ export async function enqueueSyncOp(input: SyncOpInput): Promise<void> {
   log(`[sync] enqueued ${op} ${entity}:${entityId}`);
   await refreshPendingCount();
   scheduleFlush();
+  log(`[sync] outbox now pending=${status.pendingCount} error=${status.errorCount}`);
 }
 
 function scheduleFlush(): void {
@@ -150,8 +151,11 @@ async function pullChanges(userId: string): Promise<void> {
   const cursorKey = `cursor_${userId}`;
   const cursor = Number((await getSyncMeta(cursorKey)) ?? 0);
   let next = cursor;
+  let totalApplied = 0;
+  let totalSkipped = 0;
 
   for (let page = 0; page < 20; page++) {
+    log(`[sync] pull page ${page} user=${userId} cursor=${next} limit=500`);
     const res = await authenticatedFetch(
       `${PYTHON_API_URL}/sync/pull?cursor=${next}&limit=500`,
     );
@@ -173,13 +177,21 @@ async function pullChanges(userId: string): Promise<void> {
       has_more: boolean;
     };
 
+    let applied = 0;
+    let skipped = 0;
     for (const change of data.changes) {
-      await mergeChange(change);
+      const outcome = await mergeChange(change);
+      if (outcome === 'applied') applied++;
+      else skipped++;
     }
     next = data.cursor;
     await setSyncMeta(cursorKey, String(next));
+    totalApplied += applied;
+    totalSkipped += skipped;
+    log(`[sync] pull page ${page} done changes=${data.changes.length} applied=${applied} skipped=${skipped} cursor→${next} has_more=${data.has_more}`);
     if (!data.has_more || data.changes.length === 0) break;
   }
+  log(`[sync] pull complete user=${userId} applied=${totalApplied} skipped=${totalSkipped} cursor=${next}`);
 }
 
 async function mergeChange(change: {
@@ -189,7 +201,7 @@ async function mergeChange(change: {
   payload: Record<string, unknown>;
   updated_at: number;
   deleted: boolean;
-}): Promise<void> {
+}): Promise<'applied' | 'skipped'> {
   const { entity, entity_id: entityId, updated_at: updatedAt, deleted } = change;
   const existing = await getEntityCacheRow(entity, entityId);
 
@@ -197,13 +209,14 @@ async function mergeChange(change: {
     if (!existing || (existing.deleted_at ?? 0) < updatedAt) {
       await setEntityCacheDeleted(entity, entityId, updatedAt);
       notifyEntity(entity, entityId);
+      return 'applied';
     }
-    return;
+    return 'skipped';
   }
   // Local tombstone wins over an older remote upsert.
-  if (existing?.deleted_at != null && existing.deleted_at >= updatedAt) return;
+  if (existing?.deleted_at != null && existing.deleted_at >= updatedAt) return 'skipped';
   // Local newer write wins (it is still in the outbox and will be pushed).
-  if (existing && existing.updated_at > updatedAt) return;
+  if (existing && existing.updated_at > updatedAt) return 'skipped';
 
   await upsertEntityCache(
     entity,
@@ -213,11 +226,13 @@ async function mergeChange(change: {
     null,
   );
   notifyEntity(entity, entityId);
+  return 'applied';
 }
 
 async function pushOutbox(): Promise<number> {
   const rows = await listPendingOutbox();
   if (rows.length === 0) return 0;
+  log(`[sync] push start ops=${rows.length}`);
 
   const res = await authenticatedFetch(`${PYTHON_API_URL}/sync/push`, {
     method: 'POST',
@@ -249,10 +264,14 @@ async function pushOutbox(): Promise<number> {
 
   const acked: string[] = [];
   const byKey = new Map(rows.map((r) => [r.idempotency_key, r]));
+  let okCount = 0;
+  let failedCount = 0;
   for (const result of data.results) {
     const row = byKey.get(result.idempotency_key);
     if (!row) continue;
     if (result.ok) {
+      okCount++;
+      log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
       acked.push(row.id);
       // Temp-ID remap for offline note creates (and any future temp-ID flow).
       if (
@@ -265,6 +284,7 @@ async function pushOutbox(): Promise<number> {
         notifyRemap('note', row.entity_id, result.entity_id, String(payload.l2 ?? ''));
       }
     } else {
+      failedCount++;
       const attempts = row.attempts + 1;
       const failed = attempts >= MAX_PUSH_ATTEMPTS;
       await markOutboxError(
@@ -278,7 +298,7 @@ async function pushOutbox(): Promise<number> {
   }
   if (acked.length > 0) {
     await deleteOutboxRows(acked);
-    log(`[sync] ✅ pushed ${acked.length} op(s)`);
+    log(`[sync] ✅ push done ok=${okCount} failed=${failedCount} acked=${acked.length}`);
   }
   return acked.length;
 }
@@ -288,9 +308,13 @@ async function pushOutbox(): Promise<number> {
  * Safe to call from any trigger; it no-ops when offline, signed out, or busy.
  */
 export async function runSyncNow(): Promise<void> {
-  if (syncing) return;
+  if (syncing) {
+    log('[sync] runSyncNow skipped — already running');
+    return;
+  }
   const { userId } = authProvider();
   if (!userId || isOfflineModeEnabled() || getConnectivity() === 'offline') {
+    log(`[sync] runSyncNow skipped — userId=${userId} offlineMode=${isOfflineModeEnabled()} connectivity=${getConnectivity()}`);
     await refreshPendingCount();
     return;
   }
@@ -298,6 +322,7 @@ export async function runSyncNow(): Promise<void> {
   syncing = true;
   status.syncing = true;
   publishStatus();
+  log(`[sync] ▶ cycle start user=${userId} pending=${status.pendingCount}`);
   try {
     await pullChanges(userId);
     const pushed = await pushOutbox();
@@ -306,6 +331,7 @@ export async function runSyncNow(): Promise<void> {
     status.lastError = null;
     status.syncing = false;
     await setSyncMeta('last_sync_at', String(status.lastSyncAt));
+    log(`[sync] ✅ cycle done pushed=${pushed} lastSyncAt=${status.lastSyncAt}`);
   } catch (e) {
     status.lastError = (e as Error)?.message ?? String(e);
     logwarn('[sync] sync cycle failed:', status.lastError);
@@ -388,6 +414,7 @@ export function startSyncEngine(getAuth: () => { userId: string | null }): () =>
   authProvider = getAuth;
   if (engineStarted) return () => {};
   engineStarted = true;
+  log('[sync] engine started');
 
   const unsubConnectivity = subscribeConnectivity((c) => {
     connectivity = c;
@@ -415,6 +442,7 @@ export function startSyncEngine(getAuth: () => { userId: string | null }): () =>
     if (retryTimer) clearInterval(retryTimer);
     if (flushTimer) clearTimeout(flushTimer);
     engineStarted = false;
+    log('[sync] engine stopped');
   };
 }
 

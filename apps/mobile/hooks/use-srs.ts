@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
 
@@ -91,6 +91,7 @@ export function useSrs() {
       };
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      log(`[srs] queued upsert card ${lang}::${wordId}`);
       enqueueSyncOp({
         entity: 'srs_card',
         entityId: `${lang}::${wordId}`,
@@ -110,6 +111,7 @@ export function useSrs() {
       delete langCards[wordId];
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      log(`[srs] queued delete card ${lang}::${wordId}`);
       enqueueSyncOp({
         entity: 'srs_card',
         entityId: `${lang}::${wordId}`,
@@ -127,6 +129,7 @@ export function useSrs() {
     setStore((prev) => {
       const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      log(`[srs] queued settings dailyNewLimit=${limit}`);
       enqueueSyncOp({
         entity: 'srs_settings',
         entityId: 'default',

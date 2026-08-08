@@ -700,7 +700,12 @@ export async function lookupOfflineManyByL2(
       const db = await openDictionaryDB();
       await collect(db, missing);
     } catch (e) {
-      logwarn('[DictDB] ❌ legacy batch lookup failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+      const msg = (e as Error)?.message ?? String(e);
+      if (msg.includes('no such table')) {
+        log('[DictDB] legacy batch lookup skipped — no legacy table for l2:', l2);
+      } else {
+        logwarn('[DictDB] ❌ legacy batch lookup failed — l2:', l2, 'error:', msg);
+      }
     }
   }
 
@@ -797,7 +802,12 @@ export async function autocompleteOffline(
     ]);
     return rank(parse(rows)).slice(0, limit);
   } catch (e) {
-    logwarn('[DictDB] ❌ legacy offline autocomplete failed — l2:', l2, 'query:', query, 'error:', (e as Error)?.message ?? e);
+    const msg = (e as Error)?.message ?? String(e);
+    if (msg.includes('no such table')) {
+      log('[DictDB] legacy autocomplete skipped — no legacy table for l2:', l2);
+    } else {
+      logwarn('[DictDB] ❌ legacy offline autocomplete failed — l2:', l2, 'query:', query, 'error:', msg);
+    }
     return [];
   }
 }

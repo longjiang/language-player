@@ -719,6 +719,7 @@
         "explore_media_for": "{l2} media verkennen",
         "failed_to_load_images": "Afbeeldingen konden niet worden geladen.",
         "failed_to_load_note": "Notitie laden mislukt",
+        "failed_to_load_notes": "Notities laden mislukt",
         "failed_to_load_transcript": "De video wordt afgespeeld, maar we konden het transcript en de ondertitels niet laden. Ververs de pagina of probeer het over een moment opnieuw.",
         "failed_to_load_url": "URL laden mislukt",
         "failed_to_load_watch_history": "Kan kijkgeschiedenis niet laden",

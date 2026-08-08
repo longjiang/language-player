@@ -66,12 +66,19 @@ export async function enqueue(
   const action = entry.action;
   const op = action === 'delete' ? 'delete' : 'upsert';
   const noteId = entry.noteId;
-  const entityId = noteId != null ? String(noteId) : `tmp-${entry.tempId ?? Date.now()}`;
+  // Offline creates use negative temp ids; updates/deletes on a temp note must
+  // coalesce into the SAME outbox row as the create (or the server would try
+  // to update a negative id and drop it).
+  const isTemp = noteId != null && noteId < 0;
+  const entityId =
+    noteId != null && !isTemp
+      ? String(noteId)
+      : `tmp-${noteId ?? entry.tempId ?? Date.now()}`;
   const payload: Record<string, unknown> = {
     ...(entry.payload ?? {}),
     l2: entry.l2Code,
-    noteId,
-    tempId: entry.tempId,
+    ...(isTemp ? { tempId: noteId } : { noteId }),
+    ...(entry.noteId == null && entry.tempId != null ? { tempId: entry.tempId } : {}),
   };
   log(`[notes-sync] enqueue ${action} note ${entityId}`);
   await enqueueSyncOp({
@@ -146,6 +153,7 @@ async function migrateLegacyQueue(): Promise<void> {
 function startNoteSyncBridge(): void {
   if (bridgeStarted) return;
   bridgeStarted = true;
+  log('[notes-sync] engine bridge started (pull refresh + temp-ID remap)');
   void migrateLegacyQueue();
 
   // Temp-ID remap after an offline create is acknowledged.

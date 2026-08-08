@@ -719,6 +719,7 @@
         "explore_media_for": "Odkrywaj media {l2}",
         "failed_to_load_images": "Nie udało się załadować obrazów.",
         "failed_to_load_note": "Nie udało się załadować notatki",
+        "failed_to_load_notes": "Nie udało się załadować notatek",
         "failed_to_load_transcript": "Film jest odtwarzany, ale nie udało nam się załadować transkrypcji i napisów. Odśwież stronę lub spróbuj ponownie za chwilę.",
         "failed_to_load_url": "Nie udało się załadować adresu URL",
         "failed_to_load_watch_history": "Nie udało się załadować historii oglądania",

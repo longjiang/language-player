@@ -719,6 +719,7 @@
         "explore_media_for": "Istraži {l2} medije",
         "failed_to_load_images": "Nije moguće učitati slike.",
         "failed_to_load_note": "Učitavanje bilješke nije uspjelo",
+        "failed_to_load_notes": "Učitavanje bilješki nije uspjelo",
         "failed_to_load_transcript": "Video se reproducira, ali nismo uspjeli učitati transkript i titlove. Osvježite stranicu ili pokušajte ponovno za trenutak.",
         "failed_to_load_url": "Neuspjelo učitavanje URL-a",
         "failed_to_load_watch_history": "Neuspjelo učitavanje povijesti gledanja",

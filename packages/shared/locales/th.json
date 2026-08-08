@@ -719,6 +719,7 @@
         "explore_media_for": "สำรวจสื่อ {l2}",
         "failed_to_load_images": "ไม่สามารถโหลดรูปภาพได้",
         "failed_to_load_note": "โหลดบันทึกไม่สำเร็จ",
+        "failed_to_load_notes": "โหลดบันทึกไม่สำเร็จ",
         "failed_to_load_transcript": "วิดีโอกำลังเล่นอยู่ แต่เราไม่สามารถโหลดบทและคำบรรยายได้ โปรดรีเฟรชหน้าเว็บหรือลองอีกครั้งในอีกสักครู่",
         "failed_to_load_url": "ไม่สามารถโหลด URL ได้",
         "failed_to_load_watch_history": "ไม่สามารถโหลดประวัติการรับชมได้",

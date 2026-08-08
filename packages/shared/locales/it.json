@@ -719,6 +719,7 @@
         "explore_media_for": "Esplora i media {l2}",
         "failed_to_load_images": "Impossibile caricare le immagini.",
         "failed_to_load_note": "Caricamento nota fallito",
+        "failed_to_load_notes": "Caricamento note fallito",
         "failed_to_load_transcript": "Il video è in riproduzione, ma non siamo riusciti a caricare la trascrizione e i sottotitoli. Aggiorna la pagina o riprova tra un momento.",
         "failed_to_load_url": "Impossibile caricare l'URL",
         "failed_to_load_watch_history": "Impossibile caricare la cronologia di visione",

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '@langplayer/api-client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/hooks/use-t';
 import type { NoteListItem, Note } from '@langplayer/shared';
 import {
   getCachedNotesList,
@@ -21,6 +22,8 @@ import {
   startNotesSyncListener,
   type SyncStatus,
 } from '@/lib/notes-sync';
+import { subscribeRemap } from '@/lib/sync-engine';
+import { getEntityCacheRow } from '@/lib/sync-db';
 
 export interface NoteListItemWithSync extends NoteListItem {
   _syncStatus: SyncStatus;
@@ -52,6 +55,7 @@ function makeTempId(): number {
 
 export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
   const { user } = useAuth();
+  const t = useT();
   const [notes, setNotes] = useState<NoteListItemWithSync[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
@@ -119,7 +123,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     } catch (e: any) {
       // Server fetch failed — cache is already showing
       if (mountedRef.current) {
-        setNotesError(e?.message ?? 'Failed to load notes from server');
+        setNotesError(e?.message ?? t('msg.failed_to_load_notes'));
       }
     } finally {
       if (mountedRef.current) setNotesLoading(false);
@@ -149,10 +153,40 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     setNotesError(null);
 
     // Try cache first
-    const cached = await getCachedNote(noteId);
+    let cached = await getCachedNote(noteId);
     if (cached && mountedRef.current) {
       setCurrentNote(cached);
       setCurrentNoteId(noteId);
+    }
+
+    // Then try the sync.db entity cache (queued locally or pulled from
+    // another device) — lets an existing note load fully offline.
+    if (!cached) {
+      try {
+        const row = await getEntityCacheRow('note', String(noteId));
+        if (row && row.deleted_at == null) {
+          const payload = JSON.parse(row.payload) as Record<string, unknown>;
+          if (typeof payload.title === 'string') {
+            const fromCache: Note = {
+              id: noteId,
+              title: payload.title,
+              text: String(payload.text ?? ''),
+              translation: String(payload.translation ?? ''),
+              l2: 0,
+              owner: 0,
+              created_on: String(payload.created_on ?? ''),
+            };
+            await cacheNote(fromCache);
+            if (mountedRef.current) {
+              setCurrentNote(fromCache);
+              setCurrentNoteId(noteId);
+            }
+            cached = fromCache;
+          }
+        }
+      } catch {
+        // Corrupt cache row — fall through to server fetch.
+      }
     }
 
     // Then try server
@@ -165,13 +199,28 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       }
     } catch {
       if (!cached) {
-        if (mountedRef.current) setNotesError('Failed to load note');
+        if (mountedRef.current) setNotesError(t('msg.failed_to_load_note'));
       }
       // If we had cached data, keep showing it
     }
 
     // Persist selection
     await saveActiveNote(noteId, l2Code);
+  }, [l2Code]);
+
+  // ── Temp-ID remap after an offline create is acknowledged ──
+  useEffect(() => {
+    const unsub = subscribeRemap(async (entity, tempId, serverId) => {
+      if (entity !== 'note') return;
+      const localId = tempId.startsWith('tmp-') ? Number(tempId.slice(4)) : Number(tempId);
+      const serverNumber = Number(serverId);
+      if (!Number.isFinite(localId) || !Number.isFinite(serverNumber)) return;
+      setNotes((prev) => prev.map((n) => (n.id === localId ? { ...n, id: serverNumber } : n)));
+      setCurrentNoteId((prev) => (prev === localId ? serverNumber : prev));
+      setCurrentNote((prev) => (prev && prev.id === localId ? { ...prev, id: serverNumber } : prev));
+      await saveActiveNote(serverNumber, l2Code);
+    });
+    return unsub;
   }, [l2Code]);
 
   // ── Create note ───────────────────────────────────────

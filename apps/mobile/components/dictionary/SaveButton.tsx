@@ -4,18 +4,20 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ICON_SAVED, ICON_UNSAVED } from '@/lib/theme-colors';
 import { Bookmark } from 'lucide-react-native';
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 
 interface SaveButtonProps {
   entry: DictionaryEntry;
   size?: number;
+  /** Surrounding sentence + surface form, preserved with the saved word. */
+  context?: SavedWordContext;
 }
 
 /**
  * Save/unsave button for dictionary entries.
  * Matches Next.js — bookmark icon, toggle on press.
  */
-export function SaveButton({ entry, size = 22 }: SaveButtonProps) {
+export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
   const { l2Lang } = useLanguage();
   const { hasWord, saveWord, removeWord } = useSavedWords();
   const wordId = entry.id;
@@ -31,6 +33,8 @@ export function SaveButton({ entry, size = 22 }: SaveButtonProps) {
         head: entry.head,
         dictionaryId: entry.dictionary.id,
         entryId: entry.id,
+        ...(context ? { context: context as unknown as Record<string, unknown> } : {}),
+        ...(context?.form ? { forms: [context.form] } : {}),
       });
       setSaved(true);
     }

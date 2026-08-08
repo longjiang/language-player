@@ -137,7 +137,7 @@ export default function RootLayout() {
                     <VideoPlayerProvider>
                       <SubscriptionProvider>
                       <UserLibraryProvider>
-                      <OfflineBanner />
+                      <OfflineBanner topInset={insets.top} />
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />
