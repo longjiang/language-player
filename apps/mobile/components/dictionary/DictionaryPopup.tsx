@@ -23,6 +23,7 @@ import type { DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ExternalLink } from 'lucide-react-native';
@@ -95,6 +96,7 @@ export function DictionaryPopup({
   const l2 = baseCode(l2Lang.code);
   const dict = useDictionary();
   const t = useT();
+  const { status } = useSyncStatus();
   // `useDictionary()` and `useT()` return fresh objects/functions on every
   // render. Holding them in refs keeps the lookup effect stable so state
   // changes don't cancel and restart the dictionary fetch on every render.
@@ -361,23 +363,28 @@ export function DictionaryPopup({
                   </Pressable>
                 ) : null}
 
-                {/* AI Explanation — inside scrollable area, matching web + Classic */}
-                <AiExplanation
-                  word={word}
-                  contextText={context}
-                  entryFound={(results?.length ?? 0) > 0}
-                />
+                {/* AI + image sections need the network — hide while offline. */}
+                {!status.effectiveOffline && (
+                  <>
+                    {/* AI Explanation — inside scrollable area, matching web + Classic */}
+                    <AiExplanation
+                      word={word}
+                      contextText={context}
+                      entryFound={(results?.length ?? 0) > 0}
+                    />
 
-                {/* Compact image strip — Openverse thumbnails for the looked-up term */}
-                <View className="mb-3">
-                  <ImageSearchResults
-                    term={results?.[0]?.head ?? lemmaForm ?? word}
-                    l2Code={l2}
-                    l2Name={l2Lang.name}
-                    l1Code={l1Lang.code}
-                    variant="compact"
-                  />
-                </View>
+                    {/* Compact image strip — Openverse thumbnails for the looked-up term */}
+                    <View className="mb-3">
+                      <ImageSearchResults
+                        term={results?.[0]?.head ?? lemmaForm ?? word}
+                        l2Code={l2}
+                        l2Name={l2Lang.name}
+                        l1Code={l1Lang.code}
+                        variant="compact"
+                      />
+                    </View>
+                  </>
+                )}
 
                 {loading && (
                   <View className="items-center py-12">
