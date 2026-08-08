@@ -1,5 +1,8 @@
-import React, { useCallback } from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform } from 'react-native';
+import React, { useCallback, useMemo, useRef } from 'react';
+import {
+  View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform,
+  type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -8,6 +11,10 @@ import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { log } from '@/lib/logger';
+
+/** Tokenize blocks within this many px of the viewport (web parity: 200px rootMargin). */
+const VISIBILITY_BUFFER = 200;
 
 interface PaginatedReaderProps {
   blocks: ContentBlock[] | null;
@@ -52,6 +59,8 @@ interface PaginatedReaderProps {
   highlight?: { blockIndex: number; start: number; end: number } | null;
   /** Text scale for reader blocks (0 = fixed 16px; 1 = user zoom). */
   textScale?: number;
+  /** Reports global block indices currently near the viewport (lazy tokenization). */
+  onVisibleBlocksChange?: (globalIndices: number[]) => void;
 }
 
 export function PaginatedReader({
@@ -64,9 +73,94 @@ export function PaginatedReader({
   onOpenLink,
   highlight,
   textScale = 0,
+  onVisibleBlocksChange,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
+  // ── Visibility-based lazy tokenization (SPEC-019 O2) ──
+  // Track scroll position + viewport height imperatively (refs, no re-render
+  // on every scroll frame) and report only the blocks whose measured rect
+  // intersects the viewport ± VISIBILITY_BUFFER.
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollYRef = useRef(0);
+  const viewportHeightRef = useRef(0);
+  const blockLayoutsRef = useRef<Record<number, { top: number; height: number }>>({});
+  const lastVisibleKeyRef = useRef('');
+  const onVisibleBlocksChangeRef = useRef(onVisibleBlocksChange);
+  onVisibleBlocksChangeRef.current = onVisibleBlocksChange;
+  // The visible page is a contiguous slice of `blocks`; resolve its global
+  // offset once so per-scroll visibility math is O(page) instead of
+  // O(page × book).
+  const visibleStartIdx = useMemo(() => {
+    if (scrollMode || !blocks || !visibleBlocksProp || visibleBlocksProp.length === 0) return 0;
+    const idx = blocks.indexOf(visibleBlocksProp[0]);
+    return idx >= 0 ? idx : 0;
+  }, [scrollMode, blocks, visibleBlocksProp]);
+
+  const computeVisibleIndices = useCallback(() => {
+    const list = scrollMode ? blocks : visibleBlocksProp;
+    if (!list || viewportHeightRef.current <= 0) return [];
+    const top = scrollYRef.current - VISIBILITY_BUFFER;
+    const bottom = scrollYRef.current + viewportHeightRef.current + VISIBILITY_BUFFER;
+    const out: number[] = [];
+    for (let i = 0; i < list.length; i++) {
+      const idx = scrollMode ? i : visibleStartIdx + i;
+      const rect = blockLayoutsRef.current[idx];
+      if (!rect) continue;
+      if (rect.top + rect.height >= top && rect.top <= bottom) out.push(idx);
+    }
+    return out;
+  }, [scrollMode, blocks, visibleBlocksProp, visibleStartIdx]);
+
+  const reportVisible = useCallback(() => {
+    const indices = computeVisibleIndices();
+    const key = indices.join(',');
+    if (key !== lastVisibleKeyRef.current) {
+      lastVisibleKeyRef.current = key;
+      log(`[Reader] 👁 lazy tokenization window: blocks=[${key || 'none'}]`);
+      onVisibleBlocksChangeRef.current?.(indices);
+    }
+  }, [computeVisibleIndices]);
+
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    scrollYRef.current = e.nativeEvent.contentOffset.y;
+    reportVisible();
+  }, [reportVisible]);
+
+  const handleViewportLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    if (h > 0 && h !== viewportHeightRef.current) {
+      viewportHeightRef.current = h;
+      reportVisible();
+    }
+  }, [reportVisible]);
+
+  const handleBlockLayout = useCallback((globalIdx: number, top: number, height: number) => {
+    const prev = blockLayoutsRef.current[globalIdx];
+    if (!prev || prev.top !== top || prev.height !== height) {
+      blockLayoutsRef.current = { ...blockLayoutsRef.current, [globalIdx]: { top, height } };
+      reportVisible();
+    }
+  }, [reportVisible]);
+
+  // Page identity: remount the ScrollView whenever the rendered page slice
+  // changes (page index, slice start, or slice length). Remounting guarantees
+  // every block re-fires onLayout, so measured rects are always fresh for the
+  // current page. Stale rects for other pages are harmless — visibility math
+  // only consults the current slice's global indices.
+  const scrollViewKey = scrollMode
+    ? 'scroll'
+    : `${visibleStartIdx}:${page}:${visibleBlocksProp?.length ?? 0}`;
+
+  // Reset the dedup key synchronously on page identity change so the first
+  // onLayout of the new page re-reports even when the visible index set
+  // string is identical to the previous page's.
+  const prevScrollViewKeyRef = useRef(scrollViewKey);
+  if (prevScrollViewKeyRef.current !== scrollViewKey) {
+    prevScrollViewKeyRef.current = scrollViewKey;
+    lastVisibleKeyRef.current = '';
+  }
+
   const handlePageNumberTap = useCallback(() => {
     if (!goToPage) return;
     if (Platform.OS === 'ios') {
@@ -96,7 +190,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, undefined, false),
           )}
         </View>
         {onToggleTranslation && (
@@ -128,9 +222,16 @@ export function PaginatedReader({
             </View>
           )}
 
-          <ScrollView className="flex-1 px-4">
+          <ScrollView
+            key={scrollViewKey}
+            ref={scrollRef}
+            className="flex-1 px-4"
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            onLayout={handleViewportLayout}
+          >
             {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide),
+              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
             )}
           </ScrollView>
 
@@ -178,26 +279,36 @@ function renderBlock(
   highlight?: { blockIndex: number; start: number; end: number } | null,
   textScale?: number,
   translationSideBySide = false,
+  onBlockLayout?: (globalIdx: number, top: number, height: number) => void,
+  deferTokenization = false,
 ) {
   const scale = textScale ?? 0;
+  const globalIdx = allBlocks.indexOf(block);
+
   if (block.kind === 'image') {
     return (
-      <View key={bi} className="my-3 items-center">
+      <View
+        key={bi}
+        className="my-3 items-center"
+        onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+      >
         <Image source={{ uri: block.uri }} style={{ width: '100%', height: contentWidth * 0.6 }} resizeMode="contain" />
       </View>
     );
   }
 
-  const globalIdx = allBlocks.indexOf(block);
-
   if (block.kind === 'table') {
     return (
-      <View key={bi} className="mb-3 overflow-hidden rounded-lg border border-border">
+      <View
+        key={bi}
+        className="mb-3 overflow-hidden rounded-lg border border-border"
+        onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+      >
         {/* Header row */}
         <View className="flex-row bg-muted/50">
           {block.header.map((cell, ci) => (
             <View key={ci} className={`px-2 py-1.5 ${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} textScale={scale} /></Text>
+              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} /></Text>
             </View>
           ))}
         </View>
@@ -206,7 +317,7 @@ function renderBlock(
           <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
             {row.map((cell, ci) => (
               <View key={ci} className={`px-2 py-1.5 ${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} textScale={scale} />
+                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} deferTokenization={deferTokenization} textScale={scale} />
               </View>
             ))}
           </View>
@@ -234,6 +345,7 @@ function renderBlock(
             text={block.text}
             l2Code={l2Code}
             tokens={cachedTokens}
+            deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
             textScale={scale}
@@ -278,7 +390,11 @@ function renderBlock(
   };
 
   return (
-    <View key={bi} className="mb-3">
+    <View
+      key={bi}
+      className="mb-3"
+      onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+    >
       {block.type === 'heading' && (
         <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>
       )}

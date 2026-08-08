@@ -211,6 +211,7 @@ export default function ReaderScreen() {
               nextPage={pagination.nextPage}
               goToPage={pagination.goToPage}
               handleMeasureBlock={pagination.handleMeasureBlock}
+              onVisibleBlocksChange={pagination.onVisibleBlocksChange}
               contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
               l1Code={l1Lang.code}

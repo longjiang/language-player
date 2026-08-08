@@ -318,6 +318,7 @@ export default function EpubReaderScreen() {
             nextPage={pagination.nextPage}
             goToPage={pagination.goToPage}
             handleMeasureBlock={pagination.handleMeasureBlock}
+            onVisibleBlocksChange={pagination.onVisibleBlocksChange}
             contentWidth={pagination.contentWidth}
             measuredWindow={pagination.measuredWindow}
             l2Code={l2Lang.code}

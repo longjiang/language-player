@@ -56,6 +56,8 @@ interface UseEpubPaginationReturn {
   /** Map a global block index to the page containing it (in-book search). */
   blockPage: (blockIndex: number) => number;
   handleMeasureBlock: (index: number, height: number) => void;
+  /** Called by PaginatedReader as blocks scroll near the viewport (SPEC-019 O2). */
+  onVisibleBlocksChange: (globalIndices: number[]) => void;
   contentWidth: number;
   /** Number of blocks currently rendered in the hidden measuring view. */
   measuredWindow: number;
@@ -79,12 +81,25 @@ export function useEpubPagination({
   const [loadingTokens, setLoadingTokens] = useState(false);
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
+  /** Global block indices currently near the reader viewport (lazy loading). */
+  const [visibleIndices, setVisibleIndices] = useState<number[]>([]);
+  const visibleIndicesKeyRef = useRef('');
 
   const blockHeightsRef = useRef<(number | null)[]>([]);
   const tokenLoadGenRef = useRef(0);
   const translateGenRef = useRef(0);
   const anchorSeenRef = useRef(false);
   const prevPageRef = useRef(0);
+
+  /** Report visible blocks from PaginatedReader (deduped by index set). */
+  const onVisibleBlocksChange = useCallback((indices: number[]) => {
+    const key = indices.join(',');
+    if (key === visibleIndicesKeyRef.current) return;
+    visibleIndicesKeyRef.current = key;
+    setVisibleIndices(indices);
+  }, []);
+
+  const visibleSet = useMemo(() => new Set(visibleIndices), [visibleIndices]);
 
   // ── Reset all state when resetKey changes ──
   useEffect(() => {
@@ -94,6 +109,8 @@ export function useEpubPagination({
     setMeasuredBlockCount(0);
     setTokenCache({});
     setBlockTranslations({});
+    setVisibleIndices([]);
+    visibleIndicesKeyRef.current = '';
     blockHeightsRef.current = [];
     setPage(0);
     anchorSeenRef.current = false;
@@ -137,6 +154,8 @@ export function useEpubPagination({
     setHasMeasured(false);
     setMeasuredBlockCount(0);
     setTokenCache({});
+    setVisibleIndices([]);
+    visibleIndicesKeyRef.current = '';
     blockHeightsRef.current = [];
     setPage(0);
     setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
@@ -224,6 +243,9 @@ export function useEpubPagination({
     const missing: { idx: number; text: string }[] = [];
     for (const tb of textBlocks) {
       const globalIdx = blocks.indexOf(tb);
+      // Visibility-based lazy loading: only tokenize blocks near the viewport;
+      // the rest are tokenized as the user scrolls (SPEC-019 O2).
+      if (!visibleSet.has(globalIdx)) continue;
       if (!(globalIdx in tokenCache)) missing.push({ idx: globalIdx, text: tb.text });
     }
     if (missing.length === 0) return;
@@ -293,7 +315,7 @@ export function useEpubPagination({
         clearTimeout(timeout);
         if (tokenLoadGenRef.current === gen) setLoadingTokens(false);
       });
-  }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code]);
+  }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code, visibleSet]);
 
   // ── Auto-translate visible text blocks (per-page) when showTranslation is on ──
   useEffect(() => {
@@ -372,7 +394,8 @@ export function useEpubPagination({
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
     loadingTokens, tokenCache, blockTranslations, isTranslating,
-    prevPage, nextPage, goToPage, blockPage, handleMeasureBlock, contentWidth,
+    prevPage, nextPage, goToPage, blockPage, handleMeasureBlock,
+    onVisibleBlocksChange, contentWidth,
     measuredWindow,
   };
 }
