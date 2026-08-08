@@ -517,7 +517,16 @@ export default function ReviewScreen() {
         <View className={`max-h-full rounded-xl border border-border bg-card ${isSm ? 'p-8' : 'p-4'}`}>
           <ScrollView>
             {/* Context sentences — loop over saved word instances */}
-          {instances.map((inst, idx) => (
+          {instances.length === 0 ? (
+            /* No saved context (e.g. word saved from dictionary search):
+               show the headword itself so the reviewer knows what's being
+               tested. */
+            <View className="mb-3 rounded-lg bg-muted/50 p-3">
+              <Text className="text-center text-2xl font-bold text-foreground">
+                {wordForm}
+              </Text>
+            </View>
+          ) : instances.map((inst, idx) => (
             <View key={inst.timestamp?.toString() ?? idx} className="mb-3 rounded-lg bg-muted/50 p-3">
               {instances.length > 1 && (
                 <Text className="mb-1 text-[10px] font-medium text-muted-foreground/70">

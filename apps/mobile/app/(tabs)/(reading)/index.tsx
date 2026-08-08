@@ -23,12 +23,23 @@ export default function ReaderScreen() {
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
+
+  // Clear saved-flash timers on unmount.
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (savedFlashTimerRef.current) clearTimeout(savedFlashTimerRef.current);
+    };
+  }, []);
 
   // When current note changes, load its text and saved anchor
   useEffect(() => {
+    setSavedFlash(false);
     if (notes.currentNote) {
       setText(notes.currentNote.text ?? '');
       if (justCreatedRef.current) {
@@ -69,12 +80,26 @@ export default function ReaderScreen() {
 
   // Auto-save with 2s debounce
   const autoSave = useCallback((newText: string) => {
+    // Show "Saving…" from the moment typing stops (the debounce window), not
+    // just during the brief save call.
+    setSaving(true);
+    setSavedFlash(false);
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
-      if (!notes.currentNoteId) return;
-      setSaving(true);
-      await notes.saveNote(notes.currentNoteId, newText, '');
-      setSaving(false);
+      if (!notes.currentNoteId) {
+        setSaving(false);
+        return;
+      }
+      try {
+        await notes.saveNote(notes.currentNoteId, newText, '');
+        setSaving(false);
+        // Keep "Saved locally" visible long enough to notice.
+        setSavedFlash(true);
+        if (savedFlashTimerRef.current) clearTimeout(savedFlashTimerRef.current);
+        savedFlashTimerRef.current = setTimeout(() => setSavedFlash(false), 1500);
+      } catch {
+        setSaving(false);
+      }
     }, 2000);
   }, [notes]);
 
@@ -132,7 +157,11 @@ export default function ReaderScreen() {
           </Text>
         </Pressable>
         <View className="flex-1" />
-        {saving && <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>}
+        {saving
+          ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>
+          : savedFlash
+            ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saved_locally')}</Text>
+            : null}
         <Pressable
           onPress={toggle}
           className="rounded p-1.5 active:bg-muted"

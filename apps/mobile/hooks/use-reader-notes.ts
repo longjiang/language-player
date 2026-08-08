@@ -347,6 +347,13 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       setCurrentNote(prev => prev ? { ...prev, title } : null);
     }
     await patchCachedNotesList(l2Code, 'update', { id: noteId, title });
+    // Keep the body cache in sync too — otherwise the whole-row note builder
+    // reads the stale title from AsyncStorage and reverts the rename on the
+    // next autosave (observed: 春の訪れ became 无标题 after sync).
+    const cachedBody = await getCachedNote(noteId);
+    if (cachedBody) {
+      await cacheNote({ ...cachedBody, title });
+    }
 
     if (online) {
       try {
