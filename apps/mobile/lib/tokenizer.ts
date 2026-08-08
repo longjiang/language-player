@@ -56,6 +56,7 @@ import {
   tokenizeDictSegInWorker,
   tokenizeJapaneseInWorker,
 } from '@/lib/tokenizer-worker';
+import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 
 const arabicStemmer = new Stemmer();
 
@@ -332,6 +333,12 @@ function lemmatizeArabic(words: string[]): LemmatizedToken[] {
 // are pure JS (~25 KB each, bundled at build time) — no data files.
 
 const snowballStemmers = new Map<string, (word: string) => string>();
+
+/** Suppletive Korean honorific lemmas (ARCH-018 kuromoji-ko table):
+ *  드시다 (honorific of 먹다) canonicalizes to 들다, not 드시다. */
+const KO_SUPPLETIVE_LEMMAS: Record<string, string> = {
+  드시: '들다',
+};
 
 function getSnowballStemmer(snowballCode: string): (word: string) => string {
   let stemmer = snowballStemmers.get(snowballCode);
@@ -740,7 +747,7 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
         out.push({
           text: t.surface_form,
           lemmas: [{
-            lemma: t.basic_form || t.surface_form,
+            lemma: cleanJapaneseLemma(t.surface_form, t.basic_form),
             part_of_speech: t.pos || undefined,
           }],
           // Include reading if available (kuromoji provides this for most
@@ -813,7 +820,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
               // VV = verb, VA = adjective, VX = auxiliary verb
               if (pos === 'VV' || pos === 'VA' || pos === 'VX') {
                 // Korean dictionary form is root + '다'
-                lemma = root + '다';
+                lemma = KO_SUPPLETIVE_LEMMAS[root] ?? root + '다';
               } else {
                 lemma = root;
               }

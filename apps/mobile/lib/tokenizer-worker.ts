@@ -17,6 +17,7 @@ import { File } from 'expo-file-system';
 import { KROMOJI_DICT_FILES, getKuromojiDataPath, hasKuromojiData } from '@/lib/tokenizer-db';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
+import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 
 type WorkerStatus = 'idle' | 'loading' | 'ready' | 'failed';
 
@@ -145,7 +146,7 @@ function toLemmatized(t: WorkerToken): LemmatizedToken {
   return {
     text: t.surface_form,
     lemmas: [{
-      lemma: t.basic_form || t.surface_form,
+      lemma: cleanJapaneseLemma(t.surface_form, t.basic_form),
       part_of_speech: t.pos || undefined,
     }],
     ...(t.reading ? { pronunciation: t.reading } : {}),
