@@ -124,6 +124,7 @@ function tokenizeWords(text: string): string[] {
 /** In-memory cache of dict headword sets keyed by L2 code. */
 const dictWordSets = new Map<string, Set<string>>();
 const dictMaxWordLen = new Map<string, number>();
+const dictPosByWord = new Map<string, Map<string, string>>();
 
 /**
  * Load the dictionary headword set for a language from the offline
@@ -131,11 +132,19 @@ const dictMaxWordLen = new Map<string, number>();
  *
  * Returns null if the dictionary is not downloaded for this language.
  */
-async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxWordLen: number } | null> {
+async function loadDictWordSet(l2: string): Promise<{
+  wordSet: Set<string>;
+  maxWordLen: number;
+  posByWord: Map<string, string>;
+} | null> {
   // Check memory cache first
   const cached = dictWordSets.get(l2);
   if (cached) {
-    return { wordSet: cached, maxWordLen: dictMaxWordLen.get(l2) ?? 5 };
+    return {
+      wordSet: cached,
+      maxWordLen: dictMaxWordLen.get(l2) ?? 5,
+      posByWord: dictPosByWord.get(l2) ?? new Map(),
+    };
   }
 
   try {
@@ -149,19 +158,34 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
     }
     const db = l2Db ?? (await openDictionaryDB());
     const table = `dict_${l2.replace(/-/g, '_')}`;
-    const rows = await db.getAllAsync<{ head: string }>(
-      // head = simplified form (zh), alternate = traditional form (zh/yue).
-      // UNION dedupes across both scripts.
-      `SELECT head FROM ${table} WHERE head != ''
-       UNION
-       SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
-    );
+    // part_of_speech is optional (not present in current zh downloads) —
+    // probe defensively and fall back to the head/alternate query.
+    let rows: Array<{ head: string; part_of_speech: string | null }>;
+    try {
+      rows = await db.getAllAsync<{ head: string; part_of_speech: string | null }>(
+        // head = simplified form (zh), alternate = traditional form (zh/yue).
+        // UNION dedupes across both scripts.
+        `SELECT head, part_of_speech FROM ${table} WHERE head != ''
+         UNION
+         SELECT alternate, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      );
+    } catch {
+      rows = await db.getAllAsync<{ head: string; part_of_speech: string | null }>(
+        `SELECT head FROM ${table} WHERE head != ''
+         UNION
+         SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      );
+    }
     if (!rows || rows.length === 0) return null;
 
     const wordSet = new Set<string>();
+    const posByWord = new Map<string, string>();
     let maxWordLen = 1;
     for (const row of rows) {
-      wordSet.add(row.head);
+      if (!wordSet.has(row.head)) {
+        wordSet.add(row.head);
+        if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
+      }
       if (row.head.length > maxWordLen) maxWordLen = row.head.length;
     }
 
@@ -171,12 +195,14 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
       if (firstKey !== undefined) {
         dictWordSets.delete(firstKey);
         dictMaxWordLen.delete(firstKey);
+        dictPosByWord.delete(firstKey);
       }
     }
 
     dictWordSets.set(l2, wordSet);
     dictMaxWordLen.set(l2, maxWordLen);
-    return { wordSet, maxWordLen };
+    dictPosByWord.set(l2, posByWord);
+    return { wordSet, maxWordLen, posByWord };
   } catch {
     // Table doesn't exist (dict not downloaded) or DB error
     return null;
@@ -331,6 +357,11 @@ function getSnowballStemmer(snowballCode: string): (word: string) => string {
  * On first call for a language, fires a background download of the lemma
  * table if one is configured but not yet downloaded. Subsequent calls
  * benefit from the downloaded table.
+ *
+ * POS note: lemma-table / snowball / surface paths have no local POS source,
+ * so their lemmas carry no `part_of_speech` (equivalent to the server's
+ * `''` for LemmatizationList/fallback). POS parity only applies where the
+ * engine itself provides tags (kuromoji ja/ko, dictionary sidecar for zh).
  */
 async function lemmatizeLocal(
   words: string[],
@@ -708,7 +739,10 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
       for (const t of tokens) {
         out.push({
           text: t.surface_form,
-          lemmas: [{ lemma: t.basic_form || t.surface_form }],
+          lemmas: [{
+            lemma: t.basic_form || t.surface_form,
+            part_of_speech: t.pos || undefined,
+          }],
           // Include reading if available (kuromoji provides this for most
           // tokens, useful for furigana rendering in the UI)
           ...(t.reading ? { pronunciation: t.reading } : {}),
@@ -767,6 +801,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
         // For compound words: expression contains '+' separated parts
         // For simple tokens: surface form is the lemma
         let lemma = t.surface_form;
+        let lemmaPos = t.pos;
 
         if (t.expression && t.expression !== '*' && t.expression !== t.surface_form) {
           // Extract the first verb/adjective root from the expression
@@ -782,6 +817,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
               } else {
                 lemma = root;
               }
+              lemmaPos = pos;
             } else {
               lemma = root ?? t.surface_form;
             }
@@ -790,7 +826,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
 
         out.push({
           text: t.surface_form,
-          lemmas: [{ lemma }],
+          lemmas: [{ lemma, part_of_speech: lemmaPos || undefined }],
           // Include reading if available
           ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
           source: 'ko-kuromoji' as const,
@@ -929,11 +965,24 @@ async function runLocalFallbackRaw(
   log(`[lemmatize] 🔽 GENERIC-FALLBACK l2=${l2} (${config?.needsKuromoji ? 'kuromoji unavailable' : 'no kuromoji for this lang'})`);
   const words = await segmentText(text, l2, config);
   const tokens = await lemmatizeLocal(words, l2, config);
-  // If dict segmentation was used, override source for all word tokens
-  const annotated = config?.needsDictSegmentation
-    ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
-    : tokens;
-  return annotated;
+  // If dict segmentation actually ran (dictionary downloaded), attach the
+  // dictionary's POS when available and mark the source. POS is absent from
+  // current zh downloads, so lemmas keep `part_of_speech` undefined until a
+  // server-side head→POS sidecar exists (Phase 1 follow-up).
+  if (config?.needsDictSegmentation) {
+    const dictData = await loadDictWordSet(l2);
+    if (dictData) {
+      const posByWord = dictData.posByWord;
+      return tokens.map(t => t.lemmas.length > 0
+        ? {
+            ...t,
+            lemmas: t.lemmas.map(l => ({ ...l, part_of_speech: l.part_of_speech ?? posByWord.get(l.lemma) })),
+            source: 'dict-seg' as const,
+          }
+        : t);
+    }
+  }
+  return tokens;
 }
 
 /**
