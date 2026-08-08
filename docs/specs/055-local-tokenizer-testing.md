@@ -93,12 +93,13 @@ The local tokenizer families covered:
 - **Verify**: `📖 DICT-SEG` + `🏷️ LOCAL-DONE`; segmentation still correct (not char-by-char).
 - **Pass**: No crash; pinyin may be absent on this path — expected.
 
-### TC-05 — Yue (dict-seg only)
+### TC-05 — Yue (dict-seg only) ✅ PASS (2026-08-08)
 
 - **Sample**: `你好嗎？我很好。`
 - **Steps**: Offline Mode on; any yue content.
 - **Verify**: `📖 DICT-SEG` or worker attempt; words clickable.
-- **Pass**: No crash; no pinyin expected (documented gap); punctuation not clickable.
+- **Pass**: No crash; words clickable; punctuation not clickable; tokens reconstruct text exactly.
+- **Verified 2026-08-08**: dictionary max-match segmentation (WebView dict worker or main-thread); **server tokens carry jyutping** via full cccanto match or sub-segment polyfill (e.g. `動物學 → dung6 mat6 hok6`); dictionary entries from cc-canto and the popup now show **jyutping** (`呢個 → [ni1 go3]`) after the shared `formatPronunciation` fix — Mandarin pinyin is no longer shown for Cantonese. Remaining gap (tracked, Phase D parity): offline main-thread dict-seg tokens still lack token-level jyutping.
 
 ### TC-06 — Russian (lemma table + romanization)
 
