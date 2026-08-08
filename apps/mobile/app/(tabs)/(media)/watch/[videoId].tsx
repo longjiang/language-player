@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { e2e } from '@/lib/e2e';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -228,7 +229,7 @@ export default function WatchScreen() {
           setSubtitleStartTimes(synced.map((l) => l.starttime));
         }
       } catch (err: any) {
-        setError(err?.message ?? t('msg.video_unavailable'));
+        setError(localizedError(t, err, 'msg.video_unavailable'));
       } finally {
         setLoading(false);
       }

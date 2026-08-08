@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import { AuthContainer } from '@/components/layout/AuthContainer';
@@ -36,7 +37,7 @@ export default function LoginScreen() {
         router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}`);
         return;
       }
-      setError(e.message || t('error.login'));
+      setError(localizedError(t, e, 'error.login'));
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { baseCode } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { Clock, AlertCircle, Play, Trash2 } from 'lucide-react-native';
@@ -112,7 +113,7 @@ export default function WatchHistoryScreen() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? t('msg.failed_to_load_watch_history'));
+          setError(localizedError(t, err, 'msg.failed_to_load_watch_history'));
           setLoading(false);
         }
       });

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY, ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { e2e } from '@/lib/e2e';
 import { AuthContainer } from '@/components/layout/AuthContainer';
 import { ACQUISITION_SOURCES } from '@langplayer/shared';
@@ -70,7 +71,7 @@ export default function RegisterScreen() {
       router.dismissAll();
       router.replace(`/verify-email?email=${encodeURIComponent(email.trim())}&first=1`);
     } catch (e: any) {
-      setError(e.message || t('error.registration_failed'));
+      setError(localizedError(t, e, 'error.registration_failed'));
     } finally {
       setLoading(false);
     }

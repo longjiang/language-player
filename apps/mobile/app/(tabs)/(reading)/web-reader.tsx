@@ -5,6 +5,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
@@ -80,7 +81,7 @@ export default function WebReaderScreen() {
       // Track the visit (SPEC-049 §10.3)
       recordVisit(targetUrl, extractedTitle).then(setVisitedSites);
     } catch (e: any) {
-      setError(e?.message || t('msg.failed_to_load_url'));
+      setError(localizedError(t, e, 'msg.failed_to_load_url'));
     } finally {
       setLoading(false);
     }

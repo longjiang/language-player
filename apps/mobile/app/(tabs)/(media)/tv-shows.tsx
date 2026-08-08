@@ -7,6 +7,7 @@ import { baseCode } from '@langplayer/utils';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useResponsive } from '@/hooks/use-responsive';
 import { gridColumnCount } from '@/lib/constants';
@@ -148,7 +149,7 @@ export default function TvShowsScreen() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? t('msg.no_shows_found'));
+          setError(localizedError(t, err, 'msg.no_shows_found'));
           setLoading(false);
         }
       });

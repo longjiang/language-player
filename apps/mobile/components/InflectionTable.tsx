@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { useInflection } from '@langplayer/api-client';
 import type { InflectedForm } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { localizedError } from '@/lib/errors';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 /** ISO 639-1 → ISO 639-3 mappings for languages with inflection support. */
@@ -91,7 +92,7 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? 'Failed to load inflections');
+          setError(localizedError(t, err, 'error.general'));
           setLoading(false);
         }
       });
