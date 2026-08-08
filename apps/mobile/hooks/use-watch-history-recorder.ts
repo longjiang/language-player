@@ -2,8 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { baseCode } from '@langplayer/utils';
-import { PYTHON_API_URL } from '@/lib/api-url';
-import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { enqueueSyncOp } from '@/lib/sync-engine';
 
 const SAVE_INTERVAL_MS = 15_000;
 
@@ -46,16 +45,17 @@ export function useWatchHistoryRecorder(
 
       lastSavedRef.current = { time, videoId };
 
-      authenticatedFetch(`${PYTHON_API_URL}/watch-history`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      enqueueSyncOp({
+        entity: 'watch_history',
+        entityId: String(numericVideoId),
+        op: 'upsert',
+        payload: {
           videoId: numericVideoId,
           l2,
           lastPosition: Math.round(time),
-        }),
+          date: new Date().toISOString(),
+        },
+        updatedAt: Date.now(),
       }).catch(() => {
         // Silently ignore save failures
       });

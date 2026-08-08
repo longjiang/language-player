@@ -88,6 +88,10 @@ export default function SettingsLayout() {
           name="network"
           options={{ headerShown: true, title: t('title.offline_mode') }}
         />
+        <Stack.Screen
+          name="sync-status"
+          options={{ headerShown: true, title: t('title.sync_status') }}
+        />
       </Stack>
       {savedVisible && (
         <View className="absolute top-4 right-4 bg-primary/90 px-3 py-1.5 rounded-full z-50">

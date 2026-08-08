@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-053
 - **Feature**: Offline Mode (local network kill switch) + offline-first sync strategy
-- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 (sync strategy) drafted
+- **Status**: in-progress — Phase 1 (kill switch) implemented 2026-08-07; Phase 2 core (durable outbox engine, server push/pull contract, connectivity + status UI) implemented 2026-08-07; full two-device conflict suite pending manual verification
 - **Created**: 2026-08-07
 - **Scope**: `apps/mobile` client + proposed Flask sync endpoints
 - **Related specs**: [SPEC-013 — Mobile Offline Dictionary](013-mobile-offline-dictionary.md) · [SPEC-018 — Mobile Local Tokenization](018-local-tokenization-mobile.md) · [SPEC-039 — Full Database Migration to Supabase](039-full-database-migration-supabase.md) · [ADR-0015 — Settings UI and Search](../adr/0015-settings-ui-and-search.md)
@@ -207,7 +207,7 @@ Added through the standard CSV workflow (all 31 locales):
 
 ---
 
-## Phase 2 — Offline Sync Strategy (Draft)
+## Phase 2 — Offline Sync Strategy (Core Implemented)
 
 ### Goal
 
@@ -430,6 +430,55 @@ The server should append every user mutation to a per-user change log in the
 same transaction as the row write so the pull cursor is reliable and not
 subject to `updated_at` timestamp ties.
 
+### Implementation — Phase 2 core (2026-08-07)
+
+**Server (`zerotohero-python-server`).**
+
+- `utils_sync.py` + `routes/sync.py`:
+  - `POST /sync/push` — batch `{ idempotency_key, entity, entity_id, op,
+    payload, updated_at, device_id }`; applies each op once (idempotency is
+    stored in `user_sync_ops`), appends to `user_sync_log` in the same
+    transaction, and returns per-op results (including server-issued IDs for
+    offline note creates so temp IDs can be remapped).
+  - `GET /sync/pull?cursor=<id>&limit=<n>` — per-user changes since the cursor
+    including tombstones (`deleted`), with pagination.
+  - Entities: `settings`, `progress`, `srs_settings`, `srs_card`,
+    `saved_word`, `note`, `watch_history`, `bookshelf`.
+- Existing row endpoints (`/progress`, `/srs/...`, `/user-settings`,
+  `/bookshelf`, `/watch-history`, `/saved-words`, `/user-notes`) now append to
+  the same change log, so mutations made by any device/API are visible to
+  other devices via pull.
+- LWW guards were added to `upsert_progress`, `upsert_srs_settings`,
+  `upsert_srs_card`, `upsert_settings`, and `upsert_bookshelf` (a client
+  `updated_at` older than the stored row is ignored).
+
+**Mobile (`apps/mobile`).**
+
+- `lib/sync-db.ts` — `sync.db` with `entity_cache` (payload + tombstone),
+  `outbox` (durable FIFO with idempotency keys), and `sync_meta`.
+- `lib/sync-engine.ts` — write-through enqueue with per-entity coalescing
+  (same op type keeps its idempotency key; op-type change gets a fresh key),
+  pull → merge (LWW + tombstone wins) → push FIFO → ack, temp-ID remap events
+  for notes, exponential retries capped at 5 (then `error` status), and
+  triggers: connectivity regained, app foreground, mutation debounce
+  (1.5 s), periodic retry (30 s), and manual "Sync now".
+- `lib/connectivity.ts` — NetInfo auto-detection (debounced ~1.5 s offline,
+  immediate online) with the existing API health probe as fallback. The
+  manual Offline Mode toggle remains a separate persisted override;
+  `effectiveOffline = offlineMode || connectivity === offline`.
+- `contexts/SyncStatusContext.tsx` — global sync status provider
+  (connectivity, syncing, pending/error counts, last sync time).
+- UI: header cloud icon immediately left of Search (cloud / cloud-off /
+  cloud-upload / cloud-alert + pending badge, tap opens Sync Status), a
+  persistent non-blocking offline/pending banner, and the Sync Status /
+  Outbox screen with per-op status, errors, and manual retry.
+- Wiring: settings, progress, SRS cards/settings, saved words, notes, watch
+  history, and the EPUB bookshelf all write through the durable outbox. The
+  old notes/saved-words queues were replaced by the engine (their public APIs
+  were kept for call-site compatibility). Pull merges refresh local caches
+  for notes, saved words, settings, progress, SRS, and the bookshelf.
+- i18n: 10 new keys added through the standard CSV workflow (all 31 locales).
+
 ### Offline UX — how users know they are offline
 
 **State model.** The app exposes one sync status:
@@ -506,22 +555,31 @@ an accessible label; never rely on color alone.
 
 ### Definition of done (Phase 2)
 
-- A full offline session (write notes, save words, review cards, set progress,
-  watch part of a video, read an EPUB) survives app kill and airplane mode, and
-  syncs both directions with no lost writes and no duplicates.
-- Two devices editing concurrently converge deterministically; deleted items
-  are never resurrected.
-- Replaying the same outbox op (retry, crash, duplicate network response)
-  cannot create a duplicate row.
-- The sync status UI is accurate in every state: online, offline, offline mode,
-  pending, syncing, error.
-- The header cloud icon reflects `synced` / `syncing` / `offline` (plus
+- ✅ A full offline session (write notes, save words, review cards, set
+  progress, watch part of a video, read an EPUB) writes through the durable
+  outbox and survives app kill / airplane mode. Two-way sync is implemented;
+  the full manual checklist (below) still needs device verification.
+- ✅ Two devices editing concurrently converge via LWW + tombstones
+  (server-side LWW guards + client merge; deleted items are not resurrected).
+  Manual two-device verification is still pending.
+- ✅ Replaying the same outbox op (retry, crash, duplicate network response)
+  cannot create a duplicate row (server-side idempotency keys).
+- ✅ The sync status UI covers online / offline / offline mode / pending /
+  syncing / error (banner, header icon, Sync Status screen).
+- ✅ The header cloud icon reflects synced / syncing / offline (plus
   pending/error badges) and opens the Sync Status screen on tap.
-- Existing local stores migrate without data loss; the Phase 1 Offline Mode
+- ⚠️ Existing local stores remain in place (SecureStore/AsyncStorage caches
+  still render); `sync.db` is the durable write path. Full migration of the
+  render caches into `entity_cache` is not yet done. The Phase 1 Offline Mode
   toggle remains device-local and is never included in a sync payload.
-- Auto-detected offline never flips the persisted Offline Mode toggle, and
+- ✅ Auto-detected offline never flips the persisted Offline Mode toggle, and
   manual Offline Mode stays on even when connectivity returns.
-- `npx turbo typecheck` passes before commit.
+- ✅ `npx turbo typecheck` passes before commit; server `test_sync.py` +
+  user-data endpoint tests pass.
+
+**Deferred within Phase 2**: per-item sync badges on saved words / SRS /
+reading progress (notes already has `_syncStatus`), the non-blocking conflict
+prompt for notes, and migration of render caches into `entity_cache`.
 
 ### References
 

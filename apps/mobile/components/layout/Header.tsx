@@ -11,6 +11,7 @@ import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 import { NavBar } from './NavBar';
+import { SyncStatusIcon } from '@/components/sync/SyncStatusIcon';
 
 export function Header() {
   const t = useT();
@@ -46,6 +47,9 @@ export function Header() {
 
           {/* Spacer */}
           <View className="flex-1" />
+
+          {/* Sync status — immediately left of Search (SPEC-053 Phase 2) */}
+          <SyncStatusIcon />
 
           {/* Search icon */}
           <Pressable

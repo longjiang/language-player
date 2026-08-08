@@ -67,12 +67,14 @@ import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { SyncStatusProvider } from '@/contexts/SyncStatusContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { DictionaryProvider } from '@/contexts/DictionaryContext';
 import { SavedWordsProvider } from '@/contexts/SavedWordsContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
+import { OfflineBanner } from '@/components/sync/OfflineBanner';
 import '../global.css';
 
 // ── Error Boundary to surface full stack traces to Metro ──
@@ -128,12 +130,14 @@ export default function RootLayout() {
         <AuthProvider>
           <UserDataProvider>
             <SettingsProvider>
+              <SyncStatusProvider>
               <ThemeProvider>
                 <DictionaryProvider>
                   <SavedWordsProvider>
                     <VideoPlayerProvider>
                       <SubscriptionProvider>
                       <UserLibraryProvider>
+                      <OfflineBanner />
                       <Stack screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="index" />
                         <Stack.Screen name="(tabs)" />
@@ -151,6 +155,7 @@ export default function RootLayout() {
                   </SavedWordsProvider>
                 </DictionaryProvider>
               </ThemeProvider>
+              </SyncStatusProvider>
             </SettingsProvider>
           </UserDataProvider>
         </AuthProvider>

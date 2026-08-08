@@ -3,7 +3,9 @@ import * as SecureStore from 'expo-secure-store';
 import { invalidateLevelCache } from './use-progress-level';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
+import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
+import { getEntityCacheRow } from '@/lib/sync-db';
 
 const STORAGE_KEY = 'zthProgress'; // match Classic for migration compatibility
 const SYNC_DEBOUNCE_MS = 3000;
@@ -35,23 +37,32 @@ function parseLevel(raw: unknown): number | undefined {
  */
 export function useProgress(l2Code: string) {
   const { user } = useAuth();
-  const { getProgress, putProgress } = useUserDataColumns();
+  const { getProgress } = useUserDataColumns();
   const [progress, setProgress] = useState<L2Progress>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSyncing = useRef(false);
   const cloudLoaded = useRef(false);
 
   const syncToCloud = useCallback(async () => {
-    if (isSyncing.current) return;
-    isSyncing.current = true;
     try {
       const raw = await SecureStore.getItemAsync(STORAGE_KEY);
       if (!raw) return;
       const store: ProgressStore = JSON.parse(raw);
       const entry = store[l2Code];
       if (entry) {
-        await putProgress(l2Code, {
+        await enqueueSyncOp({
+          entity: 'progress',
+          entityId: l2Code,
+          op: 'upsert',
+          payload: {
+            l2: l2Code,
+            level: parseLevel(entry.level),
+            time: entry.time,
+            weeklyHours: entry.weeklyHours,
+          },
+          updatedAt: Date.now(),
+        });
+        log('[progress] queued sync — l2:', l2Code, {
           level: parseLevel(entry.level),
           time: entry.time,
           weeklyHours: entry.weeklyHours,
@@ -59,10 +70,44 @@ export function useProgress(l2Code: string) {
       }
     } catch (err) {
       logwarn('[progress] Cloud sync failed:', err);
-    } finally {
-      isSyncing.current = false;
     }
-  }, [l2Code, putProgress]);
+  }, [l2Code]);
+
+  // ── Pull-merge bridge ──
+  useEffect(() => {
+    const unsub = subscribeEntity('progress', () => {
+      void (async () => {
+        try {
+          const row = await getEntityCacheRow('progress', l2Code);
+          if (!row) return;
+          const payload = JSON.parse(row.payload) as {
+            l2?: string;
+            level?: number;
+            time?: number;
+            weeklyHours?: number;
+          };
+          if (payload.l2 !== l2Code) return;
+          const raw = await SecureStore.getItemAsync(STORAGE_KEY);
+          const store: ProgressStore = raw ? JSON.parse(raw) : {};
+          if (row.deleted_at != null) {
+            delete store[l2Code];
+          } else {
+            store[l2Code] = {
+              level: parseLevel(payload.level),
+              time: payload.time,
+              weeklyHours: payload.weeklyHours,
+            };
+          }
+          await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(store));
+          const current = store[l2Code];
+          setProgress(current ? { ...current, level: parseLevel(current.level) } : {});
+        } catch {
+          // Corrupt payload — ignore.
+        }
+      })();
+    });
+    return unsub;
+  }, [l2Code]);
 
   // ── Load from SecureStore on mount ──
   useEffect(() => {

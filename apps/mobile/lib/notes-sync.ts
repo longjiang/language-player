@@ -1,51 +1,44 @@
 /**
- * Notes Sync Queue — offline mutation queue with retry logic.
+ * Notes Sync — engine-backed adapter (SPEC-053 Phase 2).
  *
- * When the device is offline, note operations (create/update/delete)
- * are stored in a local queue. When connectivity returns, the queue
- * is processed in FIFO order.
- *
- * Network detection:
- *   - Try a lightweight HEAD request to the API health endpoint.
- *   - Also triggered by AppState changes (app returning to foreground).
- *   - Periodic retry every 30 seconds when there are pending items.
+ * The old AsyncStorage FIFO queue is replaced by the durable `sync.db`
+ * outbox + `/sync/push` engine. This module keeps the previous public API
+ * (`enqueue`, `getPendingSyncMap`, `processSyncQueue`,
+ * `startNotesSyncListener`, `checkOnline`) so `use-reader-notes.ts` and other
+ * call sites don't change.
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, AppStateStatus } from 'react-native';
-import { apiClient } from '@langplayer/api-client';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import type { Note } from '@langplayer/shared';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { probeOnline } from '@/lib/connectivity';
+import { log } from '@/lib/logger';
 import {
-  cacheNotesList,
+  enqueueSyncOp,
+  getOutboxSnapshot,
+  runSyncNow,
+  subscribeEntity,
+  subscribeRemap,
+} from '@/lib/sync-engine';
+import { getEntityCacheRow } from '@/lib/sync-db';
+import {
   cacheNote,
-  removeCachedNote,
   patchCachedNotesList,
+  removeCachedNote,
   remapLocalNoteId,
-  getCachedNotesList,
-  getCachedNote,
 } from '@/lib/notes-storage';
 
-// ── Types ─────────────────────────────────────────────────
+// ── Types (kept for compatibility) ─────────────────────
 
 export type SyncAction = 'create' | 'update' | 'delete';
 
 export interface SyncQueueEntry {
-  /** Unique ID for this queue item (crypto.randomUUID or Date.now-based). */
   id: string;
-  /** Operation type. */
   action: SyncAction;
-  /** Server note ID (undefined for creates that haven't been synced yet). */
   noteId?: number;
-  /** Temp local ID used for offline creates (negative number). */
   tempId?: number;
-  /** Payload sent to the API. */
   payload?: Record<string, unknown>;
-  /** ISO timestamp when this entry was queued. */
   timestamp: string;
-  /** Number of failed attempts. */
   retryCount: number;
-  /** L2 language code for cache management. */
   l2Code: string;
 }
 
@@ -58,215 +51,161 @@ export interface NoteListItemWithSync {
   _syncStatus: SyncStatus;
 }
 
-const QUEUE_KEY = 'notes_sync_queue';
-const MAX_RETRIES = 3;
-const RETRY_DELAYS = [1000, 2000, 4000]; // ms — exponential-ish
+// ── Network detection (delegates to connectivity) ──────
 
-// ── Network detection ────────────────────────────────────
-
-let _isOnline = true;
-let _lastCheck = 0;
-const CHECK_COOLDOWN = 5000; // don't hammer the server
-
-/**
- * Check connectivity by making a lightweight request to the API.
- * Caches the result for CHECK_COOLDOWN ms to avoid flooding the server.
- */
 export async function checkOnline(): Promise<boolean> {
-  const now = Date.now();
-  if (now - _lastCheck < CHECK_COOLDOWN) return _isOnline;
-  _lastCheck = now;
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    await fetch(`${PYTHON_API_URL}/`, {
-      method: 'HEAD',
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    _isOnline = true;
-  } catch {
-    _isOnline = false;
-  }
-  return _isOnline;
+  return probeOnline();
 }
 
-// ── Queue storage ─────────────────────────────────────────
+// ── Public API ─────────────────────────────────────────
 
-async function getQueue(): Promise<SyncQueueEntry[]> {
-  try {
-    const raw = await AsyncStorage.getItem(QUEUE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function saveQueue(queue: SyncQueueEntry[]): Promise<void> {
-  try {
-    await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  } catch {
-    // non-critical
-  }
-}
-
-// ── Public API ────────────────────────────────────────────
-
-/** Add an operation to the sync queue. */
-export async function enqueue(entry: Omit<SyncQueueEntry, 'id' | 'timestamp' | 'retryCount'>): Promise<void> {
-  const queue = await getQueue();
-  queue.push({
-    ...entry,
-    id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    timestamp: new Date().toISOString(),
-    retryCount: 0,
+/** Add an operation to the durable outbox. */
+export async function enqueue(
+  entry: Omit<SyncQueueEntry, 'id' | 'timestamp' | 'retryCount'>,
+): Promise<void> {
+  const action = entry.action;
+  const op = action === 'delete' ? 'delete' : 'upsert';
+  const noteId = entry.noteId;
+  const entityId = noteId != null ? String(noteId) : `tmp-${entry.tempId ?? Date.now()}`;
+  const payload: Record<string, unknown> = {
+    ...(entry.payload ?? {}),
+    l2: entry.l2Code,
+    noteId,
+    tempId: entry.tempId,
+  };
+  log(`[notes-sync] enqueue ${action} note ${entityId}`);
+  await enqueueSyncOp({
+    entity: 'note',
+    entityId,
+    op,
+    payload,
+    updatedAt: Date.now(),
   });
-  await saveQueue(queue);
 }
 
-/** Check how many pending operations exist for a set of note IDs. */
+/** Pending/error status per note id (server id or temp id as shown in UI). */
 export async function getPendingSyncMap(l2Code: string): Promise<Map<number, SyncStatus>> {
-  const queue = await getQueue();
+  const ops = await getOutboxSnapshot();
   const map = new Map<number, SyncStatus>();
-
-  for (const entry of queue) {
-    if (entry.l2Code !== l2Code) continue;
-    const id = entry.noteId ?? entry.tempId;
-    if (id == null) continue;
-    map.set(id, entry.retryCount >= MAX_RETRIES ? 'error' : 'pending');
+  for (const op of ops) {
+    if (op.entity !== 'note') continue;
+    if (op.payload?.l2 !== l2Code) continue;
+    const raw = op.entity_id;
+    const id = raw.startsWith('tmp-')
+      ? Number(raw.slice(4))
+      : Number(raw);
+    if (!Number.isFinite(id)) continue;
+    map.set(id, op.status === 'error' ? 'error' : 'pending');
   }
-
   return map;
 }
 
-/** Count total pending operations. */
+/** Count pending note operations. */
 export async function getPendingCount(): Promise<number> {
-  const queue = await getQueue();
-  return queue.filter(e => e.retryCount < MAX_RETRIES).length;
+  const ops = await getOutboxSnapshot();
+  return ops.filter((op) => op.entity === 'note' && op.status === 'pending').length;
 }
 
-/** Process the sync queue — call this when online. Returns true if any entries were processed. */
+/** Process the outbox via the sync engine. */
 export async function processSyncQueue(): Promise<boolean> {
-  const online = await checkOnline();
-  if (!online) return false;
+  const before = await getPendingCount();
+  await runSyncNow();
+  const after = await getPendingCount();
+  return before !== after;
+}
 
-  const queue = await getQueue();
-  if (queue.length === 0) return false;
+// ── Engine bridge: keep AsyncStorage caches in sync on pull/remap ──
 
-  let dirty = false;
-  const remaining: SyncQueueEntry[] = [];
+let bridgeStarted = false;
 
-  for (const entry of queue) {
-    if (entry.retryCount >= MAX_RETRIES) {
-      // Keep failed entries for visibility but don't retry
-      remaining.push(entry);
-      continue;
+const LEGACY_QUEUE_KEY = 'notes_sync_queue';
+
+/** Migrate the pre-Phase-2 AsyncStorage queue into the durable outbox once. */
+async function migrateLegacyQueue(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(LEGACY_QUEUE_KEY);
+    if (!raw) return;
+    const entries = JSON.parse(raw) as SyncQueueEntry[];
+    if (!Array.isArray(entries)) return;
+    for (const entry of entries) {
+      await enqueue({
+        action: entry.action,
+        noteId: entry.noteId,
+        tempId: entry.tempId,
+        payload: entry.payload,
+        l2Code: entry.l2Code,
+      });
     }
+    await AsyncStorage.removeItem(LEGACY_QUEUE_KEY);
+    log(`[notes-sync] migrated ${entries.length} legacy queue entries`);
+  } catch {
+    // Non-fatal: migration will retry next launch.
+  }
+}
 
+function startNoteSyncBridge(): void {
+  if (bridgeStarted) return;
+  bridgeStarted = true;
+  void migrateLegacyQueue();
+
+  // Temp-ID remap after an offline create is acknowledged.
+  subscribeRemap(async (entity, tempId, serverId, l2Code) => {
+    if (entity !== 'note' || !l2Code) return;
+    const localId = tempId.startsWith('tmp-') ? Number(tempId.slice(4)) : Number(tempId);
+    const serverNumber = Number(serverId);
+    if (!Number.isFinite(localId) || !Number.isFinite(serverNumber)) return;
+    log(`[notes-sync] remap ${localId} → ${serverNumber}`);
+    await remapLocalNoteId(l2Code, localId, serverNumber);
+  });
+
+  // Remote changes pulled from another device.
+  subscribeEntity('note', async (entityId) => {
     try {
-      switch (entry.action) {
-        case 'create':
-          await _syncCreate(entry);
-          break;
-        case 'update':
-          await _syncUpdate(entry);
-          break;
-        case 'delete':
-          await _syncDelete(entry);
-          break;
+      const row = await getEntityCacheRow('note', entityId);
+      if (!row) return;
+      const payload = JSON.parse(row.payload) as Record<string, unknown>;
+      const id = Number(payload.noteId ?? entityId);
+      if (!Number.isFinite(id)) return;
+      if (row.deleted_at != null) {
+        await removeCachedNote(id);
+        const l2 = String(payload.l2 ?? '');
+        if (l2) await patchCachedNotesList(l2, 'delete', { id, title: '' });
+        return;
       }
-      dirty = true; // successfully processed at least one
-      // Don't push to remaining — it's done
-    } catch {
-      entry.retryCount++;
-      if (entry.retryCount < MAX_RETRIES) {
-        // wait before retrying next entry
-        await _sleep(RETRY_DELAYS[Math.min(entry.retryCount - 1, RETRY_DELAYS.length - 1)]);
+      const note: Note = {
+        id,
+        title: String(payload.title ?? 'Untitled'),
+        text: String(payload.text ?? ''),
+        translation: String(payload.translation ?? ''),
+        l2: 0,
+        owner: 0,
+        created_on: String(payload.created_on ?? ''),
+      };
+      await cacheNote(note);
+      const l2 = String(payload.l2 ?? '');
+      if (l2) {
+        await patchCachedNotesList(l2, 'update', {
+          id,
+          title: note.title,
+          created_on: note.created_on,
+        });
       }
-      remaining.push(entry);
+    } catch (e) {
+      log('[notes-sync] pull bridge failed:', e);
     }
-  }
-
-  await saveQueue(remaining);
-  return dirty;
-}
-
-// ── Per-action sync handlers ─────────────────────────────
-
-async function _syncCreate(entry: SyncQueueEntry): Promise<void> {
-  const payload = entry.payload ?? {};
-  const created = await apiClient.post<Note>('/user-notes', payload);
-
-  // Update cache: replace temp ID with real server ID
-  if (entry.tempId != null) {
-    await remapLocalNoteId(entry.l2Code, entry.tempId, created.id);
-  }
-  await cacheNote(created);
-}
-
-async function _syncUpdate(entry: SyncQueueEntry): Promise<void> {
-  if (entry.noteId == null) throw new Error('Missing noteId for update');
-  const payload = entry.payload ?? {};
-  const updated = await apiClient.patch<Note>(`/user-notes/${entry.noteId}`, payload);
-
-  // Update cache
-  await cacheNote(updated);
-  await patchCachedNotesList(entry.l2Code, 'update', {
-    id: updated.id,
-    title: updated.title,
-    created_on: updated.created_on,
   });
 }
-
-async function _syncDelete(entry: SyncQueueEntry): Promise<void> {
-  if (entry.noteId == null) throw new Error('Missing noteId for delete');
-  await apiClient.delete(`/user-notes/${entry.noteId}`);
-
-  // Remove from cache
-  await removeCachedNote(entry.noteId);
-  await patchCachedNotesList(entry.l2Code, 'delete', {
-    id: entry.noteId,
-    title: '',
-  });
-}
-
-function _sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// ── AppState listener ─────────────────────────────────────
-
-let _appStateSub: ReturnType<typeof AppState.addEventListener> | null = null;
-let _syncInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
- * Start listening for app foreground events and set up periodic sync.
- * Call once at app startup (or first use of notes).
+ * Start the notes sync bridge. The durable outbox/retry/connectivity loops
+ * live in the sync engine (started by SyncStatusProvider), so this only wires
+ * cache refresh + temp-ID remapping.
  */
 export function startNotesSyncListener(): void {
-  if (_appStateSub) return; // already listening
-
-  _appStateSub = AppState.addEventListener('change', (state: AppStateStatus) => {
-    if (state === 'active') {
-      processSyncQueue();
-    }
-  });
-
-  // Periodic retry for pending items
-  _syncInterval = setInterval(() => {
-    processSyncQueue();
-  }, 30000);
+  startNoteSyncBridge();
 }
 
-/** Stop the sync listener (call on cleanup if needed). */
+/** No-op (engine owns the listeners now); kept for compatibility. */
 export function stopNotesSyncListener(): void {
-  if (_appStateSub) {
-    _appStateSub.remove();
-    _appStateSub = null;
-  }
-  if (_syncInterval) {
-    clearInterval(_syncInterval);
-    _syncInterval = null;
-  }
+  // Intentionally empty.
 }

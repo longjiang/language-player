@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { deleteSrsCard, useUserDataColumns } from '@langplayer/api-client';
+import { useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { logwarn } from '@/lib/logger';
+import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
+import { getEntityCache } from '@/lib/sync-db';
 
 const STORAGE_KEY = 'zthSrsProgress';
 
@@ -29,7 +31,7 @@ function mergeSrsCards(local: Record<string, SrsFields>, cloud: Record<string, S
  */
 export function useSrs() {
   const { user } = useAuth();
-  const { getSrs, putSrsCard, putSrsSettings } = useUserDataColumns();
+  const { getSrs } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
   const cloudLoaded = useRef(false);
@@ -89,12 +91,18 @@ export function useSrs() {
       };
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-      putSrsCard(lang, wordId, langCards[wordId]).catch((err) => {
-        logwarn('[srs] Card sync failed:', err);
+      enqueueSyncOp({
+        entity: 'srs_card',
+        entityId: `${lang}::${wordId}`,
+        op: 'upsert',
+        payload: { l2: lang, wordId, state: langCards[wordId] },
+        updatedAt: Date.now(),
+      }).catch((err) => {
+        logwarn('[srs] Card enqueue failed:', err);
       });
       return next;
     });
-  }, [putSrsCard]);
+  }, []);
 
   const removeCard = useCallback((lang: string, wordId: string) => {
     setStore((prev) => {
@@ -102,8 +110,14 @@ export function useSrs() {
       delete langCards[wordId];
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-      deleteSrsCard(lang, wordId).catch((err) => {
-        logwarn('[srs] Card delete failed:', err);
+      enqueueSyncOp({
+        entity: 'srs_card',
+        entityId: `${lang}::${wordId}`,
+        op: 'delete',
+        payload: { l2: lang, wordId },
+        updatedAt: Date.now(),
+      }).catch((err) => {
+        logwarn('[srs] Card delete enqueue failed:', err);
       });
       return next;
     });
@@ -113,12 +127,60 @@ export function useSrs() {
     setStore((prev) => {
       const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-      putSrsSettings(limit).catch((err) => {
-        logwarn('[srs] Settings sync failed:', err);
+      enqueueSyncOp({
+        entity: 'srs_settings',
+        entityId: 'default',
+        op: 'upsert',
+        payload: { dailyNewLimit: limit },
+        updatedAt: Date.now(),
+      }).catch((err) => {
+        logwarn('[srs] Settings enqueue failed:', err);
       });
       return next;
     });
-  }, [putSrsSettings]);
+  }, []);
+
+  // ── Pull-merge bridge: apply remote SRS changes from another device ──
+  useEffect(() => {
+    const refreshFromCache = async () => {
+      try {
+        const cardRows = await getEntityCache('srs_card');
+        const cards: Record<string, Record<string, SrsFields>> = {};
+        for (const row of cardRows) {
+          if (row.deleted_at != null) continue;
+          const payload = JSON.parse(row.payload) as {
+            l2?: string;
+            wordId?: string;
+            state?: SrsFields;
+          };
+          if (!payload.l2 || !payload.wordId || !payload.state) continue;
+          cards[payload.l2] = {
+            ...(cards[payload.l2] ?? {}),
+            [payload.wordId]: payload.state,
+          };
+        }
+        const settingsRow = (await getEntityCache('srs_settings'))[0];
+        let settings = createSrsStore().settings;
+        if (settingsRow && settingsRow.deleted_at == null) {
+          const payload = JSON.parse(settingsRow.payload) as { dailyNewLimit?: number };
+          settings = { ...settings, dailyNewLimit: payload.dailyNewLimit ?? settings.dailyNewLimit };
+        }
+        setStore((prev) => {
+          const next = { settings, cards };
+          SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+          return next;
+        });
+      } catch (e) {
+        logwarn('[srs] pull merge failed:', e);
+      }
+    };
+    const unsubCard = subscribeEntity('srs_card', () => void refreshFromCache());
+    const unsubSettings = subscribeEntity('srs_settings', () => void refreshFromCache());
+    return () => {
+      unsubCard();
+      unsubSettings();
+    };
+  }, []);
 
   const dailyNewLimit = store.settings.dailyNewLimit;
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight, WifiOff } from 'lucide-react-native';
+import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -13,6 +13,7 @@ import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
 import { ReviewSettings } from './review';
 import { NetworkSettings } from './network';
+import SyncStatusScreen from './sync-status';
 import OfflineDictionariesScreen from '../offline-dictionaries';
 import { LG_BREAKPOINT } from '@/lib/constants';
 
@@ -137,6 +138,13 @@ function SettingsList({
             subtitle: '',
             href: '/(tabs)/(me)/offline-dictionaries',
           },
+          {
+            key: 'sync',
+            icon: Cloud,
+            title: t('title.sync_status'),
+            subtitle: '',
+            href: '/(tabs)/(me)/settings/sync-status',
+          },
         ],
       },
     ];
@@ -259,6 +267,9 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
       break;
     case 'offline':
       content = <OfflineDictionariesScreen />;
+      break;
+    case 'sync':
+      content = <SyncStatusScreen />;
       break;
     default:
       content = (
