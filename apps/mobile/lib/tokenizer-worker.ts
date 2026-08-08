@@ -39,8 +39,19 @@ const pending = new Map<
   string,
   { resolve: (tokens: LemmatizedToken[] | null) => void; timer: ReturnType<typeof setTimeout> }
 >();
+/** Dict-based segmentation datasets (Chinese + SEA), keyed by L2. */
+const dictStatus = new Map<string, WorkerStatus>();
+const dictWarmPromises = new Map<string, Promise<boolean>>();
+const dictWarmResolvers = new Map<string, (ok: boolean) => void>();
+const dictInitTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const dictChunkAcks = new Map<string, Set<number>>();
+const dictChunkTotal = new Map<string, number>();
+const dictInitRetried = new Set<string>();
 
 const CHUNK_BYTES = 128 * 1024;
+/** Dict chunks are base64'd before injection (ASCII, proven with kuromoji),
+ *  so 96 KB raw → ~128 KB base64 per call. */
+const DICT_CHUNK_BYTES = 96 * 1024;
 const INIT_TIMEOUT_MS = 30000;
 const TOKENIZE_TIMEOUT_MS = 3000;
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -80,6 +91,53 @@ function bytesToBase64(bytes: Uint8Array): string {
 
 function inject(code: string): void {
   webViewRef?.injectJavaScript(`${code}; true;`);
+}
+
+/**
+ * Serialized injection queue. WKWebView can drop evaluateJavaScript calls when
+ * multiple async loops inject concurrently (observed: ja + dict warm storms),
+ * so every warm loop chains its injections through this promise.
+ */
+let injectChain: Promise<void> = Promise.resolve();
+function injectQueued(code: string): Promise<void> {
+  injectChain = injectChain.then(async () => {
+    inject(code);
+    // Let the native bridge drain between large injections.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  return injectChain;
+}
+
+/**
+ * Build a pure-ASCII JS string literal for `code`. WKWebView's
+ * injectJavaScript drops/corrupts non-ASCII text (observed with Japanese and
+ * Chinese), so every non-ASCII char is emitted as a \uXXXX escape — the
+ * injected source stays ASCII and decodes to the exact original string.
+ */
+function toJsLiteral(s: string): string {
+  let out = '';
+  for (const ch of s) {
+    const code = ch.codePointAt(0)!;
+    if (ch === '"') out += '\\"';
+    else if (ch === '\\') out += '\\\\';
+    else if (code < 0x20) out += `\\u${code.toString(16).padStart(4, '0')}`;
+    else if (code < 0x80) out += ch;
+    else if (code <= 0xFFFF) out += `\\u${code.toString(16).padStart(4, '0')}`;
+    else {
+      const hi = 0xD800 + ((code - 0x10000) >> 10);
+      const lo = 0xDC00 + ((code - 0x10000) & 0x3FF);
+      out += `\\u${hi.toString(16).padStart(4, '0')}\\u${lo.toString(16).padStart(4, '0')}`;
+    }
+  }
+  return out;
+}
+
+/** Resolve the promise, but give up after ms and return false. */
+function waitWithTimeout(p: Promise<boolean>, ms: number): Promise<boolean> {
+  return Promise.race([
+    p,
+    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), ms)),
+  ]);
 }
 
 /** Map a kuromoji token to the app's LemmatizedToken (mirrors tokenizeJapanese). */
@@ -162,20 +220,18 @@ async function runWarm(): Promise<void> {
       totalChunks += total;
       for (let i = 0; i < total; i++) {
         const chunk = b64.slice(i * CHUNK_BYTES, (i + 1) * CHUNK_BYTES);
-        inject(`window.__lpAppend(${JSON.stringify(name)}, ${i}, ${JSON.stringify(chunk)}, ${total})`);
-        // Let the native bridge drain between large injections.
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await injectQueued(`window.__lpAppend(${JSON.stringify(name)}, ${i}, ${JSON.stringify(chunk)}, ${total})`);
       }
     }
     log(`[tokenizer-worker] copied ${KROMOJI_DICT_FILES.length} files, ${totalChunks} chunks — building tokenizer`);
-    inject(`window.__lpInit(${JSON.stringify(KROMOJI_DICT_FILES)})`);
+    await injectQueued(`window.__lpInit(${JSON.stringify(KROMOJI_DICT_FILES)})`);
   } catch (e) {
     markFailed((e as Error)?.message ?? String(e));
   }
 }
 
 export function handleTokenizationWorkerMessage(raw: string): void {
-  let msg: { type: string; id?: string; tokens?: WorkerToken[]; error?: string };
+  let msg: { type: string; id?: string; kind?: string; l2?: string; tokens?: WorkerToken[]; error?: string };
   try {
     msg = JSON.parse(raw);
   } catch {
@@ -195,7 +251,50 @@ export function handleTokenizationWorkerMessage(raw: string): void {
     warmResolve = null;
     return;
   }
+  if (msg.type === 'ready_dict') {
+    const l2 = msg.l2 ?? '';
+    if (l2) {
+      const t = dictInitTimers.get(l2);
+      if (t) clearTimeout(t);
+      dictInitTimers.delete(l2);
+      dictStatus.set(l2, 'ready');
+      log(`[tokenizer-worker] ✅ dict tokenizer ready (${l2})`);
+      dictWarmResolvers.get(l2)?.(true);
+      dictWarmResolvers.delete(l2);
+    }
+    return;
+  }
+  if (msg.type === 'dict_chunk') {
+    const l2 = msg.l2 ?? '';
+    const idx = (msg as { index?: number }).index;
+    if (l2 && typeof idx === 'number') {
+      let set = dictChunkAcks.get(l2);
+      if (!set) {
+        set = new Set();
+        dictChunkAcks.set(l2, set);
+      }
+      set.add(idx);
+    }
+    return;
+  }
   if (msg.type === 'error' && !msg.id) {
+    if (msg.kind === 'dict' && msg.l2) {
+      const t = dictInitTimers.get(msg.l2);
+      if (t) clearTimeout(t);
+      dictInitTimers.delete(msg.l2);
+      dictStatus.set(msg.l2, 'failed');
+      logwarn(
+        `[tokenizer-worker] dict init error (${msg.l2}):`,
+        msg.error ?? 'unknown',
+        (msg as { got?: number; total?: number }).got != null
+          ? `(chunks ${(msg as { got?: number }).got}/${(msg as { total?: number }).total})`
+          : '',
+      );
+      dictWarmResolvers.get(msg.l2)?.(false);
+      dictWarmResolvers.delete(msg.l2);
+      dictWarmPromises.delete(msg.l2);
+      return;
+    }
     markFailed(msg.error ?? 'init error');
     return;
   }
@@ -206,7 +305,9 @@ export function handleTokenizationWorkerMessage(raw: string): void {
     pending.delete(msg.id!);
     entry.resolve(
       msg.type === 'result' && Array.isArray(msg.tokens)
-        ? msg.tokens.map(toLemmatized)
+        ? msg.kind === 'ja'
+          ? msg.tokens.map(toLemmatized)
+          : (msg.tokens as unknown as LemmatizedToken[])
         : null,
     );
   }
@@ -215,14 +316,25 @@ export function handleTokenizationWorkerMessage(raw: string): void {
 let warnedFallback = false;
 
 /** Tokenize one line in the WebView, or null if unavailable/timed out. */
-export function tokenizeJapaneseInWorker(text: string): Promise<LemmatizedToken[] | null> {
-  if (status !== 'ready' || !webViewRef) {
-    if (!warnedFallback) {
-      warnedFallback = true;
-      logwarn(`[tokenizer-worker] not ready (${status}) — main-thread fallback`);
-    }
-    return Promise.resolve(null);
+export async function tokenizeJapaneseInWorker(text: string): Promise<LemmatizedToken[] | null> {
+  if (status === 'ready' && webViewRef) {
+    return requestJaTokenize(text);
   }
+  if (status === 'loading' && warmPromise) {
+    // Warm is already in flight (usually from app launch) — wait briefly so
+    // the first reader page uses the worker instead of falling back.
+    const ok = await waitWithTimeout(warmPromise, 1500);
+    if (ok && webViewRef) return requestJaTokenize(text);
+    return null;
+  }
+  if (!warnedFallback) {
+    warnedFallback = true;
+    logwarn(`[tokenizer-worker] not ready (${status}) — main-thread fallback`);
+  }
+  return null;
+}
+
+function requestJaTokenize(text: string): Promise<LemmatizedToken[] | null> {
   const id = `ja_${++seq}`;
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
@@ -231,16 +343,206 @@ export function tokenizeJapaneseInWorker(text: string): Promise<LemmatizedToken[
       resolve(null);
     }, TOKENIZE_TIMEOUT_MS);
     pending.set(id, { resolve, timer });
-    // postMessage, not injectJavaScript: injectJavaScript drops/fails with
-    // non-ASCII text on WKWebView (observed: all 13 reader tokenize calls
-    // timed out while ASCII chunk injections worked fine).
-    webViewRef?.postMessage(JSON.stringify({ type: 'tokenize', id, text }));
+    // ASCII-escaped inject: the proven large-payload channel (kuromoji chunks
+    // are 128 KB) and immune to WKWebView's non-ASCII injectJavaScript bug.
+    inject(`window.__lpTokenize(${JSON.stringify(id)}, "${toJsLiteral(JSON.stringify(text))}")`);
   });
 }
 
 /** Called when the WebView itself fails to load. */
 export function markTokenizationWorkerFailed(): void {
   markFailed('webview load error');
+}
+
+// ── Dict-based segmentation worker (Chinese + SEA, SPEC-018 Phase 2b) ──
+
+export function isDictTokenizationWorkerReady(l2: string): boolean {
+  return dictStatus.get(l2) === 'ready';
+}
+
+/**
+ * Load a language's dictionary headword set into the WebView. Uses the same
+ * SQLite query as tokenizer.ts loadDictWordSet() — head + alternate from the
+ * offline dictionary — serialized as a JSON array and streamed in chunks.
+ */
+export function warmTokenizationWorkerDict(l2: string): Promise<boolean> {
+  const existing = dictWarmPromises.get(l2);
+  if (existing) return existing;
+  const promise = new Promise<boolean>((resolve) => {
+    dictWarmResolvers.set(l2, resolve);
+  });
+  dictWarmPromises.set(l2, promise);
+  void runWarmDict(l2);
+  return promise;
+}
+
+async function runWarmDict(l2: string): Promise<void> {
+  const finish = (ok: boolean) => {
+    dictWarmResolvers.get(l2)?.(ok);
+    dictWarmResolvers.delete(l2);
+    dictWarmPromises.delete(l2);
+  };
+  const st = dictStatus.get(l2);
+  if (st === 'ready') { finish(true); return; }
+  if (st === 'failed') { finish(false); return; }
+  if (!webViewRef) {
+    // WebView not mounted yet — don't mark failed; the next warm call (after
+    // the host's html is ready) will retry from scratch.
+    finish(false);
+    return;
+  }
+
+  dictStatus.set(l2, 'loading');
+  const timer = setTimeout(() => {
+    // Retry init once before giving up — chunks persist in the page, so a
+    // dropped init call is recoverable.
+    if (!dictInitRetried.has(l2) && webViewRef) {
+      dictInitRetried.add(l2);
+      logwarn(`[tokenizer-worker] dict init timeout (${l2}) — retrying init`);
+      void injectQueued(`window.__lpInitDict(${JSON.stringify(JSON.stringify(l2))}, ${dictChunkTotal.get(l2) ?? 0})`);
+      dictInitTimers.set(l2, setTimeout(() => {
+        dictStatus.set(l2, 'failed');
+        dictInitTimers.delete(l2);
+        logwarn(`[tokenizer-worker] dict init timeout (${l2}) — no ready message from page`);
+        finish(false);
+      }, INIT_TIMEOUT_MS));
+      return;
+    }
+    dictStatus.set(l2, 'failed');
+    dictInitTimers.delete(l2);
+    logwarn(`[tokenizer-worker] dict init timeout (${l2}) — no ready message from page`);
+    finish(false);
+  }, INIT_TIMEOUT_MS);
+  dictInitTimers.set(l2, timer);
+
+  try {
+    const { openOfflineDictionaryDB, openDictionaryDB } = await import('@/lib/dictionary-db');
+    let l2Db: Awaited<ReturnType<typeof openOfflineDictionaryDB>> | null = null;
+    try {
+      l2Db = await openOfflineDictionaryDB(l2);
+    } catch {
+      l2Db = null;
+    }
+    const db = l2Db ?? (await openDictionaryDB());
+    const table = `dict_${l2.replace(/-/g, '_')}`;
+    const rows = await db.getAllAsync<{ head: string }>(
+      `SELECT head FROM ${table} WHERE head != ''
+       UNION
+       SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+    );
+    if (!rows || rows.length === 0) {
+      if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
+      dictStatus.set(l2, 'failed');
+      log(`[tokenizer-worker] no dict data for ${l2} — worker idle (main-thread fallback stays)`);
+      finish(false);
+      return;
+    }
+
+    const seen = new Set<string>();
+    for (const row of rows) {
+      if (row.head) seen.add(row.head);
+    }
+    const words = Array.from(seen);
+    const json = JSON.stringify(words);
+    const encoder = new TextEncoder();
+    const total = Math.ceil(json.length / DICT_CHUNK_BYTES);
+    dictChunkAcks.set(l2, new Set());
+    dictInitRetried.delete(l2);
+    dictChunkTotal.set(l2, total);
+    const chunks: string[] = [];
+    for (let i = 0; i < total; i++) {
+      chunks.push(bytesToBase64(encoder.encode(json.slice(i * DICT_CHUNK_BYTES, (i + 1) * DICT_CHUNK_BYTES))));
+    }
+    log(`[tokenizer-worker] copying dict word set into WebView (${l2}, ${words.length} words)`);
+    // Ack-based streaming: WKWebView unpredictably drops evaluateJavaScript
+    // calls, so keep re-sending unacked chunks until the page confirms all.
+    for (let round = 0; round < 3; round++) {
+      const missing: number[] = [];
+      for (let i = 0; i < total; i++) {
+        if (!dictChunkAcks.get(l2)?.has(i)) missing.push(i);
+      }
+      if (missing.length === 0) break;
+      for (const i of missing) {
+        await injectQueued(`window.__lpAppendDict(${JSON.stringify(l2)}, ${i}, ${JSON.stringify(chunks[i]!)}, ${total})`);
+      }
+      const deadline = Date.now() + 3000;
+      while (Date.now() < deadline) {
+        let done = true;
+        for (let i = 0; i < total; i++) {
+          if (!dictChunkAcks.get(l2)?.has(i)) {
+            done = false;
+            break;
+          }
+        }
+        if (done) break;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      const received = dictChunkAcks.get(l2)?.size ?? 0;
+      log(`[tokenizer-worker] dict chunks acked ${received}/${total} (round ${round + 1})`);
+    }
+    const confirmed = dictChunkAcks.get(l2)?.size ?? 0;
+    if (confirmed < total) {
+      if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
+      dictStatus.set(l2, 'failed');
+      logwarn(`[tokenizer-worker] dict chunks incomplete (${confirmed}/${total}) — giving up`);
+      finish(false);
+      return;
+    }
+    // __lpInitDict expects the JSON *text* for l2 (it JSON.parses it), so the
+    // value must be double-encoded: "zh" → "\"zh\"" in the injected source.
+    log(`[tokenizer-worker] all dict chunks acked — building (${l2})`);
+    await injectQueued(`window.__lpInitDict(${JSON.stringify(JSON.stringify(l2))}, ${total})`);
+  } catch (e) {
+    if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
+    dictStatus.set(l2, 'failed');
+    logwarn(`[tokenizer-worker] dict warm failed (${l2}):`, (e as Error)?.message ?? e);
+    finish(false);
+  }
+}
+
+let warnedDictFallback = false;
+
+/**
+ * Tokenize one line with dict-based segmentation in the WebView, or null if
+ * unavailable/timed out. Mirrors tokenizer.ts maxMatchSegment + surface-as-lemma.
+ */
+export function tokenizeDictSegInWorker(text: string, l2: string): Promise<LemmatizedToken[] | null> {
+  return (async () => {
+    const st = dictStatus.get(l2);
+    if (st === 'ready' && webViewRef) {
+      return requestDictTokenize(text, l2);
+    }
+    // Warm is in flight (launch or a previous call) — wait briefly so the
+    // first reader page uses the worker.
+    const warm = st === 'loading'
+      ? dictWarmPromises.get(l2) ?? null
+      : (st === 'idle' || st === undefined ? warmTokenizationWorkerDict(l2) : null);
+    if (warm) {
+      const ok = await waitWithTimeout(warm, 1500);
+      if (ok && webViewRef) return requestDictTokenize(text, l2);
+      return null;
+    }
+    if (st !== 'ready' && !warnedDictFallback) {
+      warnedDictFallback = true;
+      logwarn(`[tokenizer-worker] dict not ready (${l2}: ${st ?? 'idle'}) — main-thread fallback`);
+    }
+    return null;
+  })();
+}
+
+function requestDictTokenize(text: string, l2: string): Promise<LemmatizedToken[] | null> {
+  const id = `dict_${++seq}`;
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      pending.delete(id);
+      logwarn(`[tokenizer-worker] dict tokenize timeout (${id}) — page did not reply`);
+      resolve(null);
+    }, TOKENIZE_TIMEOUT_MS);
+    pending.set(id, { resolve, timer });
+    inject(
+      `window.__lpTokenizeDict(${JSON.stringify(id)}, ${JSON.stringify(JSON.stringify(l2))}, "${toJsLiteral(JSON.stringify(text))}")`,
+    );
+  });
 }
 
 /** Build the docs-style page: kuromoji in a script tag + in-memory loader. */
@@ -376,28 +678,111 @@ ${kuromojiSource}
           pos: t.pos
         };
       });
-      post({ type: 'result', id: id, tokens: tokens });
+      post({ type: 'result', id: id, kind: 'ja', tokens: tokens });
     } catch (e) {
       post({ type: 'error', id: id, error: String((e && e.stack) || e) });
     }
   };
 
-  // RN sends tokenize requests through webView.postMessage() (JSON string) —
-  // unlike injectJavaScript, this channel is proven to carry Japanese text.
-  window.addEventListener('message', function (event) {
-    var raw = event.data;
-    if (typeof raw !== 'string' || raw.charAt(0) !== '{') return;
-    var req;
+  // ── Dict-based segmentation datasets (Chinese + SEA, SPEC-018 Phase 2b) ──
+  // Data is the offline dictionary headword set (simplified + alternate
+  // forms), serialized as a JSON string array and streamed in chunks.
+  var dictChunks = {};
+  var dictTotals = {};
+  var dictReadyL2 = null;
+  var dictSet = null;
+  var dictMaxLen = 1;
+
+  window.__lpAppendDict = function (l2, index, chunk, total) {
+    if (!dictChunks[l2]) dictChunks[l2] = [];
+    if (dictChunks[l2][index] === undefined) {
+      dictChunks[l2][index] = chunk;
+      dictTotals[l2] = total;
+    }
+    var got = 0;
+    for (var i = 0; i < total; i++) {
+      if (typeof dictChunks[l2] !== 'undefined' && typeof dictChunks[l2][i] === 'string') got++;
+    }
+    post({ type: 'dict_chunk', l2: l2, index: index, got: got, total: total });
+  };
+
+  window.__lpInitDict = function (l2Json, totalJson) {
     try {
-      req = JSON.parse(raw);
+      var l2 = JSON.parse(l2Json);
+      var total = parseInt(totalJson, 10);
+      var got = 0;
+      for (var i = 0; i < total; i++) {
+        if (typeof dictChunks[l2] !== 'undefined' && typeof dictChunks[l2][i] === 'string') got++;
+      }
+      if (got !== total) throw new Error('incomplete dict chunks for ' + l2 + ' (' + got + '/' + total + ')');
+      // Chunks arrive as individually-padded base64 — decoding each separately
+      // and concatenating the bytes avoids invalid mid-string padding.
+      var parts = [];
+      var byteLen = 0;
+      for (var ci = 0; ci < total; ci++) {
+        var part = base64ToUint8(dictChunks[l2][ci]);
+        parts.push(part);
+        byteLen += part.length;
+      }
+      var bytes = new Uint8Array(byteLen);
+      var off = 0;
+      for (var pi = 0; pi < parts.length; pi++) {
+        bytes.set(parts[pi], off);
+        off += parts[pi].length;
+      }
+      var decoded = new TextDecoder('utf-8').decode(bytes);
+      var words = JSON.parse(decoded);
+      if (!Array.isArray(words)) throw new Error('dict dataset is not an array');
+      dictSet = new Set();
+      dictMaxLen = 1;
+      for (var w = 0; w < words.length; w++) {
+        var word = String(words[w]);
+        if (!word) continue;
+        dictSet.add(word);
+        if (word.length > dictMaxLen) dictMaxLen = word.length;
+      }
+      dictReadyL2 = l2;
+      post({ type: 'ready_dict', l2: l2, words: dictSet.size, maxLen: dictMaxLen });
     } catch (e) {
-      post({ type: 'error', error: String((e && e.stack) || e) });
-      return;
+      post({
+        type: 'error',
+        kind: 'dict',
+        l2: l2,
+        error: String((e && e.message) || e),
+        stack: String((e && e.stack) || ''),
+        got: got,
+        total: total,
+      });
     }
-    if (req && req.type === 'tokenize') {
-      window.__lpTokenize(req.id, JSON.stringify(req.text));
+  };
+
+  // Forward maximum matching — same algorithm as tokenizer.ts maxMatchSegment.
+  window.__lpTokenizeDict = function (id, l2Json, textJson) {
+    try {
+      var l2 = JSON.parse(l2Json);
+      if (l2 !== dictReadyL2 || !dictSet) throw new Error('dict dataset not ready for ' + l2);
+      var text = JSON.parse(textJson);
+      var tokens = [];
+      var i = 0;
+      while (i < text.length) {
+        var longestMatch = text.charAt(i);
+        var searchEnd = Math.min(i + dictMaxLen, text.length);
+        for (var len = searchEnd - i; len >= 1; len--) {
+          var candidate = text.slice(i, i + len);
+          if (dictSet.has(candidate)) {
+            longestMatch = candidate;
+            break;
+          }
+        }
+        tokens.push({ text: longestMatch, lemmas: [{ lemma: longestMatch }], source: 'dict-seg' });
+        i += longestMatch.length;
+      }
+      post({ type: 'result', id: id, kind: 'dict', tokens: tokens });
+    } catch (e) {
+      post({ type: 'error', id: id, error: String((e && e.stack) || e) });
     }
-  });
+  };
+
 })();
 <\/script>
 </body>
