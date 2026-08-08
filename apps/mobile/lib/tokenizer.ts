@@ -46,7 +46,7 @@
  */
 
 import Stemmer from 'arabic-stem';
-import Snowball from 'snowball-stemmers';
+import { newStemmer as snowballNewStemmer } from 'snowball-stemmers';
 import { ExpressionToken } from 'kuromoji-ko';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
@@ -374,14 +374,25 @@ function koreanDictionaryLemma(
   return surface;
 }
 
-function getSnowballStemmer(snowballCode: string): (word: string) => string {
-  let stemmer = snowballStemmers.get(snowballCode);
-  if (!stemmer) {
-    const instance = Snowball.newStemmer(snowballCode);
-    stemmer = (word: string) => instance.stem(word);
-    snowballStemmers.set(snowballCode, stemmer);
+function getSnowballStemmer(snowballCode: string): ((word: string) => string) | null {
+  const cached = snowballStemmers.get(snowballCode);
+  if (cached) return cached;
+  if (typeof snowballNewStemmer !== 'function') {
+    // snowball-stemmers is CommonJS; if the bundler interop ever fails to
+    // provide the named export, degrade to surface-as-lemma instead of
+    // crashing the whole offline fallback chain.
+    logwarn(`[Tokenizer] snowball-stemmers unavailable (${snowballCode}) — falling back to surface lemma`);
+    return null;
   }
-  return stemmer;
+  try {
+    const instance = snowballNewStemmer(snowballCode);
+    const stemmer = (word: string) => instance.stem(word);
+    snowballStemmers.set(snowballCode, stemmer);
+    return stemmer;
+  } catch (e) {
+    logwarn(`[Tokenizer] snowball-stemmers init failed (${snowballCode}):`, e);
+    return null;
+  }
 }
 
 // ── Local lemmatization (offline fallback) ───────────────────────────
