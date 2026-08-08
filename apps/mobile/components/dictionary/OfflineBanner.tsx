@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Download, X } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -20,6 +21,7 @@ export function OfflineBanner() {
   const router = useRouter();
   const { l2Lang } = useLanguage();
   const { isOfflineAvailable } = useDictionaryContext();
+  const { status } = useSyncStatus();
 
   const [show, setShow] = useState(false);
 
@@ -37,6 +39,9 @@ export function OfflineBanner() {
   }, [l2Lang.code]);
 
   if (!show) return null;
+  // No point offering a download while offline — the download itself would be
+  // blocked by the network gate. The banner comes back when back online.
+  if (status.effectiveOffline) return null;
 
   const handleDismiss = async () => {
     setShow(false);
