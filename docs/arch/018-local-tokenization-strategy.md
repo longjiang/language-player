@@ -222,6 +222,8 @@ These languages have no spaces between words, but words **do not inflect** — t
 
 > **Note**: Chinese varieties (`zh`, `cmn`, `nan`, `hak`, `lzh`, `gan`, `hsn`, `wuu`, `cjy`, `cpx`, `yue`) are all counted as 11 distinct language codes but share the same segmentation strategy. Chinese has no inflection — words are always their own lemma.
 
+For Chinese varieties, the offline dictionary word set includes **both** the simplified `head` and the traditional `alternate` from CEDICT (e.g. 台湾 and 臺灣). That lets simplified and traditional source text segment the same way, while script display conversion stays at the token render layer (ADR-0019).
+
 ---
 
 ### Category C: Lemmatization-Only (36 languages)

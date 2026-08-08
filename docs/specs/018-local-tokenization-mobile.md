@@ -402,7 +402,9 @@ The server reads LemmatizationList TSV files (`data/lemmatization-lists/lemmatiz
 
 **Goal**: Add word segmentation for Chinese (and fallback for Thai, Khmer, Burmese, Lao) using the offline dictionary's own headword list. No npm dependencies, no data download — reuses the existing SPEC-013 offline dictionary.
 
-**How it works**: The offline dictionary SQLite table already contains all headwords for a language. We extract them with `SELECT DISTINCT head FROM dict_{l2}` and build a `Set<string>`. A forward maximum matching algorithm segments text by finding the longest dictionary match at each position. For unknown characters, emit single-character tokens.
+**How it works**: The offline dictionary SQLite table already contains all headwords for a language. We extract them with `SELECT DISTINCT head FROM dict_{l2}` (plus the traditional-script `alternate` column for zh/yue) and build a `Set<string>`. A forward maximum matching algorithm segments text by finding the longest dictionary match at each position. For unknown characters, emit single-character tokens.
+
+**Both scripts**: CEDICT stores the simplified form in `head` and the traditional form in `alternate` (e.g. 台湾 / 臺灣). The word set includes both, so simplified and traditional source text segment identically. Script conversion stays at the token render layer (ADR-0019), never in the tokenizer. Offline dictionary lookup matches both `head` and `alternate` for the same reason — tapping 臺灣 offline resolves to the same entry as 台湾.
 
 ```typescript
 function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number): string[] {
@@ -426,7 +428,7 @@ function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number)
 
 **Accuracy**: ~90% for Chinese (cedict, 30K entries). ~80-88% for Thai/Khmer/Burmese (varies by dictionary coverage). Chinese characters are always their own lemma (no inflection), so surface-as-lemma is correct.
 
-> **Why not jieba?** jieba is the standard Chinese tokenizer (Python). Its core algorithm IS dictionary-based maximum matching plus an HMM layer for unknown words (~+5% accuracy). JS jieba ports exist (`nodejieba`, `@node-rs/jieba`) but are C++/Rust native bindings — not RN-compatible. WASM ports (`jieba-wasm`) require `expo-webassembly` (experimental). Our dict max-matching approach achieves ~90% accuracy with zero additional dependencies by reusing the existing offline dictionary. If the missing ~5% from HMM proves insufficient in testing, we can explore WASM jieba or implement a lightweight HMM in pure JS using bigram frequencies.
+> **Why not jieba?** jieba is the standard Chinese tokenizer (Python). Its core algorithm IS dictionary-based maximum matching plus an HMM layer for unknown words (~+5% accuracy). JS jieba ports exist (`nodejieba`, `@node-rs/jieba`) but are C++/Rust native bindings — not RN-compatible. WASM ports (`jieba-wasm`) require a WASM runtime that Expo/Hermes does not ship. Research (2026-08-07) confirmed the only jieba options are a native Turbo Module (needs dev builds, unvetted package) or porting a pure-JS engine (~700 lines) plus a ~3 MB downloadable dict pack. Our dict max-matching approach achieves ~90% accuracy with zero additional dependencies by reusing the existing offline dictionary, and including both scripts keeps it usable for simplified and traditional learners alike. If the missing ~5% from HMM proves insufficient in testing, the pure-JS jieba port remains the fallback path.
 
 **Languages covered**: `zh`, `cmn`, `nan`, `hak`, `lzh`, `gan`, `hsn`, `wuu`, `cjy`, `cpx`, `yue` (Chinese varieties) + `th`, `km`, `lo`, `my`, `bo` as fallback when Intl.Segmenter is unavailable.
 

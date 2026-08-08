@@ -7,7 +7,8 @@
  *
  * Schema:
  *   dict_{l2}    — one table per downloaded language, stores full
- *                  DictionaryEntry as JSON with indexed head column
+ *                  DictionaryEntry as JSON with indexed head and alternate
+ *                  columns (alternate = traditional script for zh/yue)
  *   llm_cache     — shared table for LLM-generated entries
  *   dict_meta     — per-language download metadata
  */
@@ -73,6 +74,9 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
 
     // ── Clean up orphaned dict tables from crashed downloads ──
     await _cleanupOrphanedDicts(_db);
+
+    // ── Backfill alternate script column on pre-existing downloads ──
+    await migrateDictTables(_db);
 
     // Reclaim free pages left by previous download/delete cycles. This is a
     // cheap PRAGMA check on normal opens and only VACUUMs when there is
@@ -180,12 +184,62 @@ async function ensureDictTable(db: SQLite.SQLiteDatabase, l2: string): Promise<v
     CREATE TABLE IF NOT EXISTS ${table} (
       id TEXT PRIMARY KEY,
       head TEXT NOT NULL,
+      alternate TEXT,
       pronunciation TEXT,
       entry_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_${table}_head ON ${table}(head COLLATE NOCASE);
+    CREATE INDEX IF NOT EXISTS idx_${table}_alternate ON ${table}(alternate COLLATE NOCASE);
   `);
+}
+
+/**
+ * One-time migration for dict tables downloaded before the alternate column
+ * existed. Adds the column/index and backfills values from entry_json so
+ * existing Chinese downloads segment and look up both simplified and
+ * traditional text without forcing a re-download.
+ *
+ * Idempotent: already-migrated tables are skipped, and the backfill only
+ * touches rows where alternate is still NULL, so a crash mid-migration just
+ * resumes on the next app launch.
+ */
+async function migrateDictTables(db: SQLite.SQLiteDatabase): Promise<void> {
+  try {
+    const tables = await db.getAllAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%' AND name != 'dict_meta'"
+    );
+
+    for (const { name } of tables) {
+      const cols = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${name})`);
+      if (cols.some((c) => c.name === 'alternate')) continue;
+
+      log('[DictDB] 🧬 migrating', name, '— adding alternate column');
+      await db.execAsync(`ALTER TABLE ${name} ADD COLUMN alternate TEXT`);
+      await db.execAsync(
+        `CREATE INDEX IF NOT EXISTS idx_${name}_alternate ON ${name}(alternate COLLATE NOCASE)`
+      );
+
+      const rows = await db.getAllAsync<{ id: string; entry_json: string }>(
+        `SELECT id, entry_json FROM ${name} WHERE alternate IS NULL`
+      );
+      for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+        const statements = rows.slice(i, i + CHUNK_SIZE).map((r) => {
+          let alternate: string | null = null;
+          try {
+            alternate = (JSON.parse(r.entry_json) as DictionaryEntry).alternate ?? null;
+          } catch {
+            // Corrupt row — leave alternate NULL
+          }
+          return `UPDATE ${name} SET alternate=${escOrNull(alternate)} WHERE id='${esc(r.id)}';`;
+        }).join('');
+        if (statements) await db.execAsync(statements);
+      }
+      log('[DictDB] ✅ migrated', name, '— backfilled', rows.length, 'rows');
+    }
+  } catch (e) {
+    log('[DictDB] ⚠️ dict table migration failed:', e);
+  }
 }
 
 // ── Offline lookup ────────────────────────────
@@ -201,10 +255,19 @@ export async function lookupOffline(
 ): Promise<DictionaryEntry[] | null> {
   const table = dictTableName(l2);
   try {
-    const rows = await db.getAllAsync<{ entry_json: string }>(
+    // Primary: head match (simplified for zh). Mirrors the server's
+    // `head = ? OR alternate = ?` lookup so traditional text resolves to
+    // the same entry offline. Two indexed queries keep this fast.
+    let rows = await db.getAllAsync<{ entry_json: string }>(
       `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
       [text],
     );
+    if (!rows || rows.length === 0) {
+      rows = await db.getAllAsync<{ entry_json: string }>(
+        `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
+        [text],
+      );
+    }
     if (!rows || rows.length === 0) return null;
     return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
   } catch {
@@ -263,6 +326,7 @@ export async function storeLLMCacheEntry(
 export interface BulkEntryRow {
   id: string;
   head: string;
+  alternate: string | null;
   pronunciation: string | null;
   entry_json: string;
 }
@@ -314,10 +378,10 @@ export async function bulkInsertEntries(
     // A single execAsync with all 500 rows = 1 roundtrip.
     const txStart = Date.now();
     const values = chunk
-      .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
+      .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.alternate)},${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
       .join(',');
     await db.execAsync(
-      `INSERT OR REPLACE INTO ${table} (id, head, pronunciation, entry_json) VALUES ${values}`
+      `INSERT OR REPLACE INTO ${table} (id, head, alternate, pronunciation, entry_json) VALUES ${values}`
     );
     const txMs = Date.now() - txStart;
 
