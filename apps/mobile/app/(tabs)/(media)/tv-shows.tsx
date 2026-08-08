@@ -123,6 +123,12 @@ export default function TvShowsScreen() {
   const [sortKey, setSortKey] = useState<SortKey>('views');
   const [localeFilter, setLocaleFilter] = useState('all');
   const numColumns = gridColumnCount(width);
+  const [gridWidth, setGridWidth] = useState(0);
+  // Exact card width keeps incomplete last rows at normal size (no flex:1 stretch).
+  const cardWidth =
+    numColumns > 1 && gridWidth > 0
+      ? Math.floor((gridWidth - 32 - 12 * (numColumns - 1)) / numColumns)
+      : undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -267,25 +273,27 @@ export default function TvShowsScreen() {
         </View>
       ) : (
         /* Grid — responsive columns (1/2/3/4 at web breakpoints) */
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          key={`tv-shows-${numColumns}`}
-          numColumns={numColumns}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
-          columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
-          renderItem={({ item }) => {
-            const coverUrl =
-              item.poster ??
-              (item.youtube_id
-                ? `https://img.youtube.com/vi/${item.youtube_id}/hqdefault.jpg`
-                : null);
+        <View className="flex-1" onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item.id}
+            key={`tv-shows-${numColumns}`}
+            numColumns={numColumns}
+            contentContainerStyle={{ padding: 16, gap: 12 }}
+            columnWrapperStyle={numColumns > 1 ? { gap: 12 } : undefined}
+            renderItem={({ item }) => {
+              const coverUrl =
+                item.poster ??
+                (item.youtube_id
+                  ? `https://img.youtube.com/vi/${item.youtube_id}/hqdefault.jpg`
+                  : null);
 
-            return (
-              <Pressable
-                onPress={() => router.push(`/(tabs)/(media)/tv-shows/${item.id}` as any)}
-                className="flex-1 overflow-hidden rounded-xl border border-border bg-card"
-              >
+              return (
+                <Pressable
+                  onPress={() => router.push(`/(tabs)/(media)/tv-shows/${item.id}` as any)}
+                  className="overflow-hidden rounded-xl border border-border bg-card"
+                  style={numColumns > 1 ? { width: cardWidth } : undefined}
+                >
                 {/* Poster */}
                 <View className="relative aspect-video bg-muted">
                   {coverUrl ? (
@@ -319,10 +327,11 @@ export default function TvShowsScreen() {
                     ) : null}
                   </View>
                 </View>
-              </Pressable>
-            );
-          }}
-        />
+                </Pressable>
+              );
+            }}
+          />
+        </View>
       )}
     </PageContainer>
   );
