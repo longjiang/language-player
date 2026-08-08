@@ -12,17 +12,9 @@ import {
   buildWorkerPageHtml,
   handleTokenizationWorkerMessage,
   markTokenizationWorkerFailed,
-  tokenizeDictSegInWorker,
-  tokenizeJapaneseInWorker,
   warmTokenizationWorkerDict,
   warmTokenizationWorker,
 } from '@/lib/tokenizer-worker';
-
-/** Launch self-test: proves the full RN→page→RN tokenize channel works. */
-const LAUNCH_PROBE = '冬の寒さが和らぐと、春になると生物の活動が活発になる。';
-// Reader-sized Chinese paragraph (鲁迅, 呐喊 — 狂人日记) so the launch probe
-// exercises a realistic multi-hundred-char request, not just a short one.
-const LAUNCH_PROBE_ZH = '一、\n\n　　秋天的後半夜，月亮下去了，太陽還沒有出，只剩下一片烏藍的天；除了夜遊的東西，什麼都睡著。';
 
 /**
  * Persistent invisible WebView that runs kuromoji off the RN JS thread.
@@ -45,11 +37,6 @@ export function TokenizationWorkerHost() {
     const base = baseCode(code);
     return TOKENIZER_CONFIG[base]?.needsDictSegmentation ? base : null;
   }, [l2Lang.code]);
-
-  // Dev-only: EXPO_PUBLIC_ZH_WORKER_PROBE=1 forces the Chinese worker warm +
-  // probe even when the active L2 isn't Chinese (used for offline verification
-  // on simulators that have the zh dictionary but ja as the target language).
-  const probeL2 = (__DEV__ && process.env.EXPO_PUBLIC_ZH_WORKER_PROBE === '1') ? 'zh' : dictSegL2;
 
   // Read the vendored build/kuromoji.js (kept as an .html asset so Metro
   // bundles it as raw text) and build the docs-style page.
@@ -83,26 +70,7 @@ export function TokenizationWorkerHost() {
   }, [html]);
 
   const handleLoadEnd = useCallback(() => {
-    void (async () => {
-      const ready = await warmTokenizationWorker();
-      if (!ready) {
-        logwarn('[tokenizer-worker] warm failed — launch probe skipped');
-        return;
-      }
-      const tokens = await tokenizeJapaneseInWorker(LAUNCH_PROBE);
-      if (!tokens) {
-        logwarn('[tokenizer-worker] launch probe failed — page did not reply');
-        return;
-      }
-      log(`[tokenizer-worker] 🎯 launch probe OK — tokens=${tokens.length}`);
-      log(
-        '[tokenizer-worker] 🎯 sample:',
-        tokens
-          .slice(0, 12)
-          .map((t) => `${t.text}→${t.lemmas[0]?.lemma ?? ''}(${t.pronunciation ?? ''})`)
-          .join(' | '),
-      );
-    })();
+    void warmTokenizationWorker();
   }, []);
 
   const handleMessage = useCallback((event: WebViewMessageEvent) => {
@@ -114,36 +82,13 @@ export function TokenizationWorkerHost() {
     markTokenizationWorkerFailed();
   }, []);
 
-  // Warm the dict-segmentation worker for the active L2 and self-test it.
+  // Warm the dict-segmentation worker for the active L2.
   useEffect(() => {
     // The WebView mounts only after the page HTML is ready — warming before
     // that fails instantly on "WebView not attached".
-    if (!probeL2 || !html) return;
-    let cancelled = false;
-    void (async () => {
-      const ready = await warmTokenizationWorkerDict(probeL2);
-      if (!ready) {
-        if (!cancelled) {
-          log(`[tokenizer-worker] dict worker unavailable (${probeL2}) — main-thread fallback`);
-        }
-        return;
-      }
-      const tokens = await tokenizeDictSegInWorker(LAUNCH_PROBE_ZH, probeL2);
-      if (!tokens) {
-        if (!cancelled) logwarn('[tokenizer-worker] dict launch probe failed — page did not reply');
-        return;
-      }
-      if (cancelled) return;
-      log(`[tokenizer-worker] 🎯 dict launch probe OK (${probeL2}) — tokens=${tokens.length}`);
-      log(
-        '[tokenizer-worker] 🎯 sample:',
-        tokens.slice(0, 12).map((t) => `${t.text}→${t.lemmas[0]?.lemma ?? ''}`).join(' | '),
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [probeL2, html]);
+    if (!dictSegL2 || !html) return;
+    void warmTokenizationWorkerDict(dictSegL2);
+  }, [dictSegL2, html]);
 
   return (
     <View
