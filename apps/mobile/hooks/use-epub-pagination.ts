@@ -5,6 +5,7 @@ import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { log } from '@/lib/logger';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 interface UseEpubPaginationOptions {
   text: string;
@@ -230,10 +231,35 @@ export function useEpubPagination({
     const gen = ++tokenLoadGenRef.current;
     setLoadingTokens(true);
     log(`[lemmatize] 📦 BATCH REQ l2=${l2Code} blocks=${missing.length}`);
+
+    // Offline Mode: skip the batch endpoint entirely — lemmatizeText() has
+    // the same fast path and goes straight to the local fallback chain.
+    if (isOfflineModeEnabled()) {
+      log(`[lemmatize] 📦 OFFLINE-MODE l2=${l2Code} → local per-block lemmatizeText()`);
+      void (async () => {
+        if (tokenLoadGenRef.current !== gen) return;
+        const { lemmatizeText } = await import('@/lib/tokenizer');
+        const results = await Promise.all(
+          missing.map(m => lemmatizeText(m.text, l2Code)),
+        );
+        if (tokenLoadGenRef.current !== gen) return;
+        setTokenCache(prev => {
+          const next = { ...prev };
+          missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
+          return next;
+        });
+        setLoadingTokens(false);
+      })();
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
     fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: missing.map(m => m.text), l2: l2Code }),
+      signal: controller.signal,
     })
       .then(res => res.json())
       .then(data => {
@@ -263,7 +289,10 @@ export function useEpubPagination({
           return next;
         });
       })
-      .finally(() => { if (tokenLoadGenRef.current === gen) setLoadingTokens(false); });
+      .finally(() => {
+        clearTimeout(timeout);
+        if (tokenLoadGenRef.current === gen) setLoadingTokens(false);
+      });
   }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code]);
 
   // ── Auto-translate visible text blocks (per-page) when showTranslation is on ──

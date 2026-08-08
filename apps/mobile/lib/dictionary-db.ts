@@ -617,6 +617,97 @@ export async function lookupOfflineByL2(
 }
 
 /**
+ * Batch exact-match offline lookups for many texts in one query per store.
+ *
+ * TokenizedText hydrates its shared cache with one call per language instead
+ * of one SQLite round-trip per word. Matches the first step of
+ * `lookupOffline()` (exact head / alternate / pronunciation); the popup's
+ * on-demand `lookupOfflineByL2()` still runs the full fuzzy/substring chain
+ * when a word is tapped, so no lookup behavior is lost.
+ */
+export async function lookupOfflineManyByL2(
+  l2: string,
+  texts: string[],
+): Promise<Map<string, DictionaryEntry[]>> {
+  const unique = [...new Set(texts.map((t) => t.trim()).filter(Boolean))];
+  const out = new Map<string, DictionaryEntry[]>();
+  const seenRaw = new Map<string, Set<string>>();
+  if (unique.length === 0) return out;
+
+  const collect = async (
+    db: SQLite.SQLiteDatabase,
+    missing: string[],
+  ): Promise<void> => {
+    if (missing.length === 0) return;
+    const table = dictTableName(l2);
+    const clauses = missing
+      .map(() => '(head = ? OR alternate = ? OR pronunciation = ?)')
+      .join(' OR ');
+    const params = missing.flatMap((t) => [t, t, t]);
+    const rows = await db.getAllAsync<{
+      head: string;
+      alternate: string | null;
+      pronunciation: string | null;
+      entry_json: string;
+    }>(
+      `SELECT head, alternate, pronunciation, entry_json FROM ${table} WHERE ${clauses}`,
+      params,
+    );
+
+    for (const r of rows ?? []) {
+      let entry: DictionaryEntry;
+      try {
+        entry = JSON.parse(r.entry_json) as DictionaryEntry;
+      } catch {
+        // Corrupt row — skip.
+        continue;
+      }
+      for (const text of missing) {
+        if (r.head !== text && r.alternate !== text && r.pronunciation !== text) continue;
+        const seen = seenRaw.get(text) ?? new Set<string>();
+        if (seen.has(r.entry_json)) continue;
+        seen.add(r.entry_json);
+        seenRaw.set(text, seen);
+        const list = out.get(text);
+        if (!list) {
+          out.set(text, [entry]);
+        } else if (list.length < 5) {
+          list.push(entry);
+        }
+      }
+    }
+  };
+
+  // Precompiled per-language files first; legacy central tables as fallback
+  // for any words the precompiled store didn't resolve (same per-word
+  // precedence as lookupOfflineByL2).
+  try {
+    const l2Db = await openOfflineDictionaryDB(l2);
+    if (l2Db) {
+      try {
+        await collect(l2Db, unique);
+      } catch (e) {
+        logwarn('[DictDB] ❌ precompiled batch lookup failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+      }
+    }
+  } catch (e) {
+    logwarn('[DictDB] ❌ failed to open precompiled dict — l2:', l2, 'error:', (e as Error)?.message ?? e);
+  }
+
+  const missing = unique.filter((t) => !out.has(t));
+  if (missing.length > 0) {
+    try {
+      const db = await openDictionaryDB();
+      await collect(db, missing);
+    } catch (e) {
+      logwarn('[DictDB] ❌ legacy batch lookup failed — l2:', l2, 'error:', (e as Error)?.message ?? e);
+    }
+  }
+
+  return out;
+}
+
+/**
  * Offline autocomplete: prefix-match headwords/alternates from the downloaded
  * dictionary. Used by the dictionary search bar when Offline Mode blocks the
  * server autocomplete endpoint.

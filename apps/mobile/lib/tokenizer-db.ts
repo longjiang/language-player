@@ -115,6 +115,44 @@ export async function lookupLemma(
 }
 
 /**
+ * Look up lemmas for many surface forms in one query (chunked to stay under
+ * SQLite's variable limit). Returns a map of surface → lemma list for the
+ * forms found; surfaces with no entry are absent from the map.
+ */
+export async function lookupLemmasBatch(
+  l2: string,
+  surfaces: string[],
+): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  const unique = [...new Set(surfaces.filter((s) => s.length > 0))];
+  if (unique.length === 0) return out;
+
+  try {
+    const db = await openDictionaryDB();
+    const safeL2 = l2.replace(/-/g, '_');
+    for (let i = 0; i < unique.length; i += CHUNK_SIZE) {
+      const chunk = unique.slice(i, i + CHUNK_SIZE);
+      const placeholders = chunk.map(() => '?').join(', ');
+      const rows = await db.getAllAsync<{ surface: string; lemmas: string }>(
+        `SELECT surface, lemmas FROM lemma_${safeL2} WHERE surface IN (${placeholders})`,
+        chunk,
+      );
+      for (const row of rows ?? []) {
+        try {
+          out.set(row.surface, JSON.parse(row.lemmas) as string[]);
+        } catch {
+          // Corrupt row — skip
+        }
+      }
+    }
+    return out;
+  } catch {
+    // Table doesn't exist or query failed — no lemma data for this language
+    return out;
+  }
+}
+
+/**
  * Store a full lemma table (batch insert).
  *
  * @param l2 - Language code

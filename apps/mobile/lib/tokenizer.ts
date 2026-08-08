@@ -51,6 +51,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 const arabicStemmer = new Stemmer();
 
@@ -89,6 +90,14 @@ function cacheGet(key: string): LemmatizedToken[] | undefined {
 const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
 
 // ── Tokenization ────────────────────────────────────────────────────
+
+/**
+ * Yield to the UI thread so long synchronous tokenization work can be
+ * time-sliced (keeps scrolling/rendering responsive on long paragraphs).
+ */
+function yieldToUI(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
 
 /**
  * Split text into word tokens using a regex.
@@ -184,11 +193,12 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
  * @param text - The text to segment
  * @param wordSet - Set of known dictionary headwords
  * @param maxWordLen - Maximum word length in the dictionary
- * @returns Array of segmented tokens
+ * @returns Promise of segmented tokens (async so long text can yield to the UI)
  */
-function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number): string[] {
+async function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number): Promise<string[]> {
   const result: string[] = [];
   let i = 0;
+  let charsSinceYield = 0;
   while (i < text.length) {
     let longestMatch = text[i]!;
     const searchEnd = Math.min(i + maxWordLen, text.length);
@@ -201,6 +211,12 @@ function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number)
     }
     result.push(longestMatch);
     i += longestMatch.length;
+    charsSinceYield += longestMatch.length;
+    // Time-slice: let the UI breathe between chunks of long text.
+    if (charsSinceYield >= 200) {
+      charsSinceYield = 0;
+      await yieldToUI();
+    }
   }
   return result;
 }
@@ -221,7 +237,7 @@ async function segmentText(text: string, l2: string, config: TokenizerConfig | u
     const dictData = await loadDictWordSet(l2);
     if (dictData) {
     log(`[lemmatize] 📖 DICT-SEG l2=${l2} words=${dictData.wordSet.size} maxLen=${dictData.maxWordLen}`);
-      return maxMatchSegment(text, dictData.wordSet, dictData.maxWordLen);
+      return await maxMatchSegment(text, dictData.wordSet, dictData.maxWordLen);
     }
     log(`[lemmatize] 📖 DICT-MISS l2=${l2} → falling to regex`);
   }
@@ -290,20 +306,6 @@ function getSnowballStemmer(snowballCode: string): (word: string) => string {
 // ── Local lemmatization (offline fallback) ───────────────────────────
 
 /**
- * Attempt lemma table lookup for a single surface form.
- * Returns lemma strings, or null if not found / table not downloaded.
- */
-async function tryLemmaTable(l2: string, surface: string): Promise<string[] | null> {
-  try {
-    // Dynamic import avoids circular dependency at module load time
-    const { lookupLemma } = await import('@/lib/tokenizer-db');
-    return await lookupLemma(l2, surface);
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Apply the full local (offline) lemmatization chain for a batch of words.
  *
  * Per-word fallback order:
@@ -346,15 +348,13 @@ async function lemmatizeLocal(
   // Pre-warm lemma table lookups if available (batch for efficiency)
   let lemmaMap: Map<string, string[]> | null = null;
   if (tableReady) {
-    const results = await Promise.all(
-      words.map(async (word) => {
-        const lemmas = await tryLemmaTable(l2, word);
-        return { word, lemmas };
-      }),
-    );
-    lemmaMap = new Map();
-    for (const { word, lemmas } of results) {
-      if (lemmas) lemmaMap.set(word, lemmas);
+    try {
+      // One SQLite query per chunk instead of one async round-trip per word.
+      const { lookupLemmasBatch } = await import('@/lib/tokenizer-db');
+      const results = await lookupLemmasBatch(l2, words);
+      if (results.size > 0) lemmaMap = results;
+    } catch {
+      // Table query failed — fall through to snowball/surface.
     }
   }
 
@@ -623,6 +623,44 @@ export function resetKoTokenizer(): void {
 }
 
 /**
+ * Split long text into chunks at natural boundaries so tokenization can
+ * yield to the UI between chunks. Short texts (typical subtitle lines) are
+ * returned untouched as a single chunk.
+ *
+ * Boundaries are chosen at sentence-final punctuation first, then whitespace,
+ * then a hard length split (rare) — never inside a normal word.
+ */
+function chunkTextForYield(text: string, maxChunk = 300): string[] {
+  if (text.length <= maxChunk) return [text];
+  const chunks: string[] = [];
+  const lowerBound = Math.floor(maxChunk / 2);
+  let rest = text;
+  while (rest.length > maxChunk) {
+    let cut = -1;
+    for (let i = maxChunk - 1; i >= lowerBound; i--) {
+      const ch = rest[i];
+      if (ch === '。' || ch === '！' || ch === '？' || ch === '…' || ch === '!' || ch === '?' || ch === '；' || ch === ';') {
+        cut = i + 1;
+        break;
+      }
+    }
+    if (cut === -1) {
+      for (let i = maxChunk - 1; i >= lowerBound; i--) {
+        if (/\s/.test(rest[i]!)) {
+          cut = i + 1;
+          break;
+        }
+      }
+    }
+    if (cut === -1) cut = maxChunk;
+    chunks.push(rest.slice(0, cut));
+    rest = rest.slice(cut);
+  }
+  if (rest.length > 0) chunks.push(rest);
+  return chunks;
+}
+
+/**
  * Tokenize and lemmatize Japanese text using kuromoji.
  *
  * kuromoji performs morphological analysis: segmentation + POS tagging +
@@ -642,22 +680,29 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
   }
 
   try {
-    const tokens = tokenizer.tokenize(text) as Array<{
-      surface_form: string;
-      basic_form: string;
-      reading?: string;
-      pronunciation?: string;
-      pos?: string;
-    }>;
-
-    return tokens.map((t) => ({
-      text: t.surface_form,
-      lemmas: [{ lemma: t.basic_form || t.surface_form }],
-      // Include reading if available (kuromoji provides this for most
-      // tokens, useful for furigana rendering in the UI)
-      ...(t.reading ? { pronunciation: t.reading } : {}),
-      source: 'ja-kuromoji' as const,
-    }));
+    const chunks = chunkTextForYield(text);
+    const out: LemmatizedToken[] = [];
+    for (let ci = 0; ci < chunks.length; ci++) {
+      if (ci > 0) await yieldToUI();
+      const tokens = tokenizer.tokenize(chunks[ci]) as Array<{
+        surface_form: string;
+        basic_form: string;
+        reading?: string;
+        pronunciation?: string;
+        pos?: string;
+      }>;
+      for (const t of tokens) {
+        out.push({
+          text: t.surface_form,
+          lemmas: [{ lemma: t.basic_form || t.surface_form }],
+          // Include reading if available (kuromoji provides this for most
+          // tokens, useful for furigana rendering in the UI)
+          ...(t.reading ? { pronunciation: t.reading } : {}),
+          source: 'ja-kuromoji' as const,
+        });
+      }
+    }
+    return out;
   } catch (e) {
     logwarn('[Tokenizer] kuromoji tokenize error:', e);
     return null;
@@ -690,50 +735,55 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
   }
 
   try {
-    const tokens = tokenizer.tokenize(text) as Array<{
-      surface_form: string;
-      expression?: string;
-      pos?: string;
-      reading?: string;
-      type?: string;
-      word_type?: string;
-    }>;
+    const chunks = chunkTextForYield(text);
+    const out: LemmatizedToken[] = [];
+    for (let ci = 0; ci < chunks.length; ci++) {
+      if (ci > 0) await yieldToUI();
+      const tokens = tokenizer.tokenize(chunks[ci]) as Array<{
+        surface_form: string;
+        expression?: string;
+        pos?: string;
+        reading?: string;
+        type?: string;
+        word_type?: string;
+      }>;
+      for (const t of tokens) {
+        // For verb/adjective inflections, extract the root from expression
+        // Expression format: '먹/VV+었/EP+습니다/EF' → root is '먹' (lemma: '먹다')
+        // For compound words: expression contains '+' separated parts
+        // For simple tokens: surface form is the lemma
+        let lemma = t.surface_form;
 
-    return tokens.map((t) => {
-      // For verb/adjective inflections, extract the root from expression
-      // Expression format: '먹/VV+었/EP+습니다/EF' → root is '먹' (lemma: '먹다')
-      // For compound words: expression contains '+' separated parts
-      // For simple tokens: surface form is the lemma
-      let lemma = t.surface_form;
-
-      if (t.expression && t.expression !== '*' && t.expression !== t.surface_form) {
-        // Extract the first verb/adjective root from the expression
-        // e.g., '먹/VV+었/EP+습니다/EF' → first part '먹/VV'
-        const firstPart = t.expression.split('+')[0];
-        if (firstPart) {
-          const [root, pos] = firstPart.split('/');
-          if (root && pos) {
-            // VV = verb, VA = adjective, VX = auxiliary verb
-            if (pos === 'VV' || pos === 'VA' || pos === 'VX') {
-              // Korean dictionary form is root + '다'
-              lemma = root + '다';
+        if (t.expression && t.expression !== '*' && t.expression !== t.surface_form) {
+          // Extract the first verb/adjective root from the expression
+          // e.g., '먹/VV+었/EP+습니다/EF' → first part '먹/VV'
+          const firstPart = t.expression.split('+')[0];
+          if (firstPart) {
+            const [root, pos] = firstPart.split('/');
+            if (root && pos) {
+              // VV = verb, VA = adjective, VX = auxiliary verb
+              if (pos === 'VV' || pos === 'VA' || pos === 'VX') {
+                // Korean dictionary form is root + '다'
+                lemma = root + '다';
+              } else {
+                lemma = root;
+              }
             } else {
-              lemma = root;
+              lemma = root ?? t.surface_form;
             }
-          } else {
-            lemma = root ?? t.surface_form;
           }
         }
-      }
 
-      return {
-        text: t.surface_form,
-        lemmas: [{ lemma }],
-        // Include reading if available
-        ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
-        source: 'ko-kuromoji' as const,
-      };
-    });
+        out.push({
+          text: t.surface_form,
+          lemmas: [{ lemma }],
+          // Include reading if available
+          ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
+          source: 'ko-kuromoji' as const,
+        });
+      }
+    }
+    return out;
   } catch (e) {
     logwarn('[Tokenizer] kuromoji-ko tokenize error:', e);
     return null;
@@ -745,12 +795,63 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
 // ── Public API ──────────────────────────────────────────────────────
 
 /**
+ * Run the full local (offline) fallback chain and cache the result.
+ *
+ * Order: kuromoji/kuromoji-ko (JA/KO) → dict-based segmentation (CJK/SEA)
+ * → regex word-split → lemma table → snowball → arabic-stem → surface.
+ */
+async function runLocalFallback(
+  text: string,
+  l2: string,
+  cacheKey: string,
+): Promise<LemmatizedToken[]> {
+  log(`[lemmatize] 🔽 FALLBACK l2=${l2} text="${text.slice(0, 50)}…"`);
+  const config = TOKENIZER_CONFIG[l2];
+
+  // Background download for future calls (fire-and-forget)
+  if (config?.hasLemmaTable) {
+    backgroundDownloadLemmaTable(l2, PYTHON_API_URL);
+  }
+
+  // Phase 2c/2d: kuromoji/kuromoji-ko (Japanese & Korean).
+  // Full morphological analysis — handles both segmentation and
+  // lemmatization in one call with best offline accuracy.
+  if (config?.needsKuromoji) {
+    const tokenizeFn = l2 === 'ko' ? tokenizeKorean : l2 === 'ja' ? tokenizeJapanese : null;
+    if (tokenizeFn) {
+      log(`[lemmatize] 🤖 KUPOMOJI l2=${l2} text="${text.slice(0, 50)}…"`);
+      const kuromojiTokens = await tokenizeFn(text);
+      if (kuromojiTokens) {
+        log(`[lemmatize] ✅ KUPOMOJI OK l2=${l2} tokens=${kuromojiTokens.length}`);
+        cacheSet(cacheKey, kuromojiTokens);
+        return kuromojiTokens;
+      }
+      // Data pack not available — fall through to generic path
+      log(`[lemmatize] ⚠️ KUPOMOJI UNAVAIL l2=${l2} → falling to segment+local`);
+    }
+  }
+
+  // Phase 2b: Use dict-based segmentation for CJK/SEA languages
+  // Falls back to regex word-split if dict not downloaded
+  log(`[lemmatize] 🔽 GENERIC-FALLBACK l2=${l2} (${config?.needsKuromoji ? 'kuromoji unavailable' : 'no kuromoji for this lang'})`);
+  const words = await segmentText(text, l2, config);
+  const tokens = await lemmatizeLocal(words, l2, config);
+  // If dict segmentation was used, override source for all word tokens
+  const annotated = config?.needsDictSegmentation
+    ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
+    : tokens;
+  cacheSet(cacheKey, annotated);
+  return annotated;
+}
+
+/**
  * Single entry point for lemmatization on mobile.
  *
  * Pipeline:
  *   1. In-memory cache hit → instant return
- *   2. POST /lemmatize-normalized (server, 3s timeout) → cache & return
- *   3. Local fallback (regex split + surface/stem) → cache & return
+ *   2. Offline Mode active → local fallback (no network attempt at all)
+ *   3. POST /lemmatize-normalized (server, 3s timeout) → cache & return
+ *   4. Local fallback (regex split + surface/stem) → cache & return
  *
  * The server is always preferred when reachable (best accuracy).
  * Local fallback produces lower-accuracy tokens but is always available.
@@ -774,8 +875,8 @@ export async function lemmatizeText(
     return cached;
   }
 
-  // 2. Server (primary) — with in-flight deduplication so concurrent
-  //    callers for the same text share one request.
+  // In-flight deduplication so concurrent callers for the same text share
+  // one request (server or local fallback).
   let inflight = lemmatizeInflight.get(cacheKey);
   if (inflight) {
     log(`[lemmatize] 🔗 REUSE in-flight l2=${l2} text="${text.slice(0, 50)}…"`);
@@ -783,63 +884,29 @@ export async function lemmatizeText(
   }
 
   log(`[lemmatize] 🚀 DISPATCH l2=${l2} text="${text.slice(0, 50)}…"`);
+
+  // 2. Offline Mode: skip the server round-trip entirely. The network gate
+  //    would reject instantly anyway, but skipping keeps the local fallback
+  //    instant and makes the intent explicit in logs.
+  if (isOfflineModeEnabled()) {
+    log(`[lemmatize] 🚫 OFFLINE-MODE l2=${l2} text="${text.slice(0, 50)}…" → local fallback`);
+    inflight = runLocalFallback(text, l2, cacheKey).finally(() => {
+      lemmatizeInflight.delete(cacheKey);
+    });
+    lemmatizeInflight.set(cacheKey, inflight);
+    return inflight;
+  }
+
+  // 3. Server (primary) — with in-flight deduplication so concurrent
+  //    callers for the same text share one request.
   inflight = lemmatizeFromServer(text, l2, signal)
       .then((serverTokens) => {
         if (serverTokens) {
           cacheSet(cacheKey, serverTokens);
           return serverTokens;
         }
-        // 3. Local fallback — extended chain
-        log(`[lemmatize] 🔽 FALLBACK l2=${l2} text="${text.slice(0, 50)}…"`);
-        const config = TOKENIZER_CONFIG[l2];
-
-        // Background download for future calls (fire-and-forget)
-        if (config?.hasLemmaTable) {
-          backgroundDownloadLemmaTable(l2, PYTHON_API_URL);
-        }
-
-        // Phase 2c/2d: kuromoji/kuromoji-ko (Japanese & Korean).
-        // Full morphological analysis — handles both segmentation and
-        // lemmatization in one call with best offline accuracy.
-        if (config?.needsKuromoji) {
-          const tokenizeFn = l2 === 'ko' ? tokenizeKorean : l2 === 'ja' ? tokenizeJapanese : null;
-          if (tokenizeFn) {
-            log(`[lemmatize] 🤖 KUPOMOJI l2=${l2} text="${text.slice(0, 50)}…"`);
-            return tokenizeFn(text).then((kuromojiTokens) => {
-              if (kuromojiTokens) {
-                log(`[lemmatize] ✅ KUPOMOJI OK l2=${l2} tokens=${kuromojiTokens.length}`);
-                cacheSet(cacheKey, kuromojiTokens);
-                return kuromojiTokens;
-              }
-              // Data pack not available — fall through to generic path
-              log(`[lemmatize] ⚠️ KUPOMOJI UNAVAIL l2=${l2} → falling to segment+local`);
-              return segmentText(text, l2, config).then((words) =>
-                lemmatizeLocal(words, l2, config),
-              ).then((tokens) => {
-                // If dict segmentation was used, override source for all word tokens
-                const annotated = config?.needsDictSegmentation
-                  ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
-                  : tokens;
-                cacheSet(cacheKey, annotated);
-                return annotated;
-              });
-            });
-          }
-        }
-
-        // Phase 2b: Use dict-based segmentation for CJK/SEA languages
-        // Falls back to regex word-split if dict not downloaded
-        log(`[lemmatize] 🔽 GENERIC-FALLBACK l2=${l2} (no kuromoji for this lang)`);
-        return segmentText(text, l2, config).then((words) =>
-          lemmatizeLocal(words, l2, config),
-        ).then((tokens) => {
-          // If dict segmentation was used, override source for all word tokens
-          const annotated = config?.needsDictSegmentation
-            ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
-            : tokens;
-          cacheSet(cacheKey, annotated);
-          return annotated;
-        });
+        // 4. Local fallback — extended chain
+        return runLocalFallback(text, l2, cacheKey);
       })
       .finally(() => {
         lemmatizeInflight.delete(cacheKey);
@@ -847,4 +914,20 @@ export async function lemmatizeText(
     lemmatizeInflight.set(cacheKey, inflight);
 
   return inflight;
+}
+
+/**
+ * Pre-warm the local tokenizer machinery (kuromoji data pack + dictionary
+ * headword set) in the background so the first visible line doesn't pay the
+ * full one-time initialization cost. Fire-and-forget; safe to call from
+ * every TokenizedText mount (singletons dedupe the work).
+ */
+export function prewarmLocalLemmatizer(l2: string): void {
+  const config = TOKENIZER_CONFIG[l2];
+  if (config?.needsKuromoji) {
+    void getKuromojiTokenizer(l2);
+  }
+  if (config?.needsDictSegmentation) {
+    void loadDictWordSet(l2).catch(() => null);
+  }
 }

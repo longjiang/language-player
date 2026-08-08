@@ -544,7 +544,10 @@ Manual verification checklist:
 2. Open a downloaded dictionary language and confirm dictionary lookups come
    from SQLite and still work.
 3. Open tokenized text and confirm the local `lemmatizeText()` fallback runs
-   (server call fails fast, no 3s hang).
+   (server call fails fast, no 3s hang). With Offline Mode on,
+   `lemmatizeText()` skips the server entirely and goes straight to the local
+   chain (see SPEC-018 Phase 3g), and `TokenizedText` / the EPUB reader skip
+   their `/lemmatize-normalized/batch` requests the same way.
 4. Start a dictionary download while Offline Mode is on; confirm it fails
    fast and does not replace an existing downloaded dictionary.
 5. Disable Offline Mode; confirm networking resumes immediately.
