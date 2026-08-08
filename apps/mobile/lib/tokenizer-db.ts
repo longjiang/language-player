@@ -243,7 +243,7 @@ const TOKENIZER_DIR = `${Paths.document.uri}tokenizers/`;
  * Files that make up the kuromoji IPADIC dictionary data pack.
  * Same file list as kuromoji's DictionaryLoader.load() expects.
  */
-const KROMOJI_DICT_FILES = [
+export const KROMOJI_DICT_FILES = [
   'base.dat.gz',
   'check.dat.gz',
   'tid.dat.gz',
