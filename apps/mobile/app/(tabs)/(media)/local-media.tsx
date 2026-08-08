@@ -114,9 +114,9 @@ export default function LocalMediaScreen() {
   const FileBar = () => (
     <View className="flex-row items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
       {localMedia.isAudio ? (
-        <FileAudio size={16} className="text-muted-foreground" />
+        <FileAudio size={16} color={ICON_MUTED} />
       ) : (
-        <FileVideo size={16} className="text-muted-foreground" />
+        <FileVideo size={16} color={ICON_MUTED} />
       )}
       <Text className="flex-1 truncate text-sm font-medium text-foreground" numberOfLines={1}>
         {localMedia.fileName ?? t('label.untitled_video')}
@@ -125,7 +125,7 @@ export default function LocalMediaScreen() {
         onPress={localMedia.loadCaptions}
         className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted"
       >
-        <FileText size={14} className="text-muted-foreground" />
+        <FileText size={14} color={ICON_MUTED} />
         <Text className="text-xs text-muted-foreground">
           {hasSubtitles ? `${localMedia.subtitleLines.length} captions` : 'Add captions'}
         </Text>
@@ -134,7 +134,7 @@ export default function LocalMediaScreen() {
         onPress={localMedia.clear}
         className="rounded p-1 active:bg-muted"
       >
-        <X size={14} className="text-muted-foreground" />
+        <X size={14} color={ICON_MUTED} />
       </Pressable>
     </View>
   );
@@ -254,8 +254,18 @@ export default function LocalMediaScreen() {
           </View>
           <View className={isLg && hasSubtitles ? 'flex-1 flex-row gap-6 min-h-0 px-4' : 'flex-1'}>
             <View className={isLg && hasSubtitles ? 'min-w-0 flex-1' : ''}>
-              <PlayerSection />
-              {!isLg && subtitlesPanel}
+              {isLg && hasSubtitles ? (
+                /* Wide + captions: let the player column scroll so the
+                   controls below the player stay reachable. */
+                <ScrollView contentContainerStyle={{ paddingBottom: 12 }}>
+                  <PlayerSection />
+                </ScrollView>
+              ) : (
+                <>
+                  <PlayerSection />
+                  {!isLg && subtitlesPanel}
+                </>
+              )}
             </View>
             {isLg && hasSubtitles && (
               <View className="min-h-0" style={{ width: asideWidth }}>
