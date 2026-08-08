@@ -291,15 +291,17 @@ export default function SettingsScreen() {
   }, [isWide, selectedKey]);
 
   const handleSelect = (key: string) => {
+    // Offline Dictionaries is a full route, not a settings detail panel —
+    // navigate on wide screens too, or the split view shows the placeholder.
+    if (key === 'offline') {
+      router.push('/(tabs)/(me)/offline-dictionaries' as any);
+      return;
+    }
     if (isWide) {
       setSelectedKey(key);
     } else {
       // Navigate via expo-router
-      if (key === 'offline') {
-        router.push('/(tabs)/(me)/offline-dictionaries' as any);
-      } else {
-        router.push(`/(tabs)/(me)/settings/${key}` as any);
-      }
+      router.push(`/(tabs)/(me)/settings/${key}` as any);
     }
   };
 
