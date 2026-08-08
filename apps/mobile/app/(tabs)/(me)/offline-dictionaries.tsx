@@ -82,7 +82,8 @@ function hasLocalTokenizer(l2: string): boolean {
     config.snowballCode ||
       config.hasLemmaTable ||
       config.needsKuromoji ||
-      config.needsDictSegmentation,
+      config.needsDictSegmentation ||
+      config.usesArabicStem,
   );
 }
 

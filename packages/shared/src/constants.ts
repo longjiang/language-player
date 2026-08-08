@@ -204,6 +204,8 @@ export function getLevelFromDifficulty(
  *   Burmese, Lao, and Tibetan where words are not space-separated. Requires
  *   the offline dictionary (SPEC-013) to be downloaded for this language.
  *   Falls back to regex split if the dictionary is not available.
+ * - `usesArabicStem` (Phase 1): use the bundled arabic-stem (pure JS,
+ *   ~15 KB) for Arabic lemmatization. No extra download required.
  *
  * See ARCH-018 and SPEC-018 for the full per-language taxonomy.
  */
@@ -228,6 +230,12 @@ export interface TokenizerConfig {
    * Currently only used for Japanese (ja).
    */
   needsKuromoji?: boolean;
+  /**
+   * Use the bundled arabic-stem (pure JS, ~15 KB) for Arabic lemmatization.
+   * No extra download required — the stemmer ships with the app.
+   * Currently used for Arabic (ar).
+   */
+  usesArabicStem?: boolean;
   /**
    * Estimated download size in bytes for the tokenizer data pack.
    * Used for progress tracking during download.
@@ -254,6 +262,9 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   // ── Phase 2d: kuromoji-ko (full morphological analysis) ──
   // Korean: requires mecab-ko-dic data pack download (~2 MB pruned)
   ko: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsKuromoji: true, tokenizerDataSize: 2_000_000 },
+
+  // ── Phase 1: arabic-stem (bundled, no download) ──
+  ar: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, usesArabicStem: true },
 
   // ── Snowball + Lemma Table (both available, 18 languages) ──
   ca: { snowballCode: 'catalan', hasLemmaTable: true, lemmaTableSize: 200_000 },

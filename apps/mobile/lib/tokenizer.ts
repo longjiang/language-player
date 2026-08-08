@@ -441,8 +441,8 @@ async function lemmatizeLocal(
       }
     }
 
-    // 3. Arabic stemmer (Phase 1)
-    if (l2 === 'ar') {
+    // 3. Arabic stemmer (Phase 1) — bundled arabic-stem, no download
+    if (config.usesArabicStem) {
       return lemmatizeArabic([word])[0]!;
     }
 
