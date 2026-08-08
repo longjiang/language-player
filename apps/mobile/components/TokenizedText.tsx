@@ -301,6 +301,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   useEffect(() => {
     if (!useTraditional || tokens.length === 0) {
       setConvertedTexts(new Map());
+      if (__DEV__ && isChinese) {
+        const hanTokens = [...new Set(tokens.map((t) => t.text))].filter((t) => /[\u4E00-\u9FFF]/.test(t));
+        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=false direction=none uniqueHan=${hanTokens.length} skipped — sample=${hanTokens.slice(0, 10).join('|') || '(none)'}`);
+      }
       return;
     }
     let cancelled = false;
@@ -310,16 +314,25 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         if (cancelled) return;
         const uniqueTexts = [...new Set(tokens.map(t => t.text))];
         const mapping = new Map<string, string>();
+        let converted = 0;
+        const changes: string[] = [];
         for (const text of uniqueTexts) {
-          mapping.set(text, converter(text));
+          const result = converter(text);
+          mapping.set(text, result);
+          if (result !== text) {
+            converted++;
+            if (changes.length < 10) changes.push(`${text}→${result}`);
+          }
         }
+        log(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} useTraditional=true direction=toTraditional unique=${uniqueTexts.length} converted=${converted} sample=${changes.join(', ') || '(none changed)'}`);
         if (!cancelled) setConvertedTexts(mapping);
       } catch {
+        logwarn(`[LP Mobile] 🎙 SCRIPT-CONV l2=${l2Code} OpenCC load failed — falling back to original text`);
         // OpenCC failed to load — fall back to original text (map stays empty)
       }
     })();
     return () => { cancelled = true; };
-  }, [tokens, useTraditional]);
+  }, [tokens, useTraditional, isChinese, l2Code]);
 
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
 
