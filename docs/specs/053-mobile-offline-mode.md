@@ -152,7 +152,11 @@ Deliberately **not** a field on `SettingsV2`:
 **Logout**: logging out turns Offline Mode **off** (the toggle stays
 device-local and is not synced, but a logged-out login screen must not be
 blocked by the network gate). The logout wipe (`wipeUserData`) resets the
-persisted flag, and the settings UI state follows.
+persisted flag, and the settings UI state follows. More generally, Offline
+Mode can only be **on while a session exists**: boot with no stored session,
+any session clear (expired refresh, logout), and auth screens all force it
+off, so login / register / forgot-password are never blocked. The login
+screen also shows a "Turn Off Offline Mode" escape hatch as a fallback.
 
 ### Network Gate (`apps/mobile/lib/offline-mode.ts`)
 

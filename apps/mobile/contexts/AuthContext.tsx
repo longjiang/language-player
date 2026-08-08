@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { isOfflineModeEnabled, setOfflineModeEnabled } from '@/lib/offline-mode';
 import { log } from '@/lib/logger';
 
 // ── API Client Singleton ────────────────────
@@ -141,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const bootFinishedRef = useRef(false);
 
   // API client must be initialized synchronously — useEffect runs after
   // the first render, but child components (like WatchScreen) may call
@@ -175,6 +176,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 await SecureStore.deleteItemAsync('userInfo');
                 setToken(null);
                 setUser(null);
+                // No session → Offline Mode must not block auth screens.
+                await setOfflineModeEnabled(false);
               }
             }
           } else {
@@ -182,11 +185,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else {
           log('[Auth] boot — no stored session');
+          // Offline Mode is only allowed while a session exists.
+          await setOfflineModeEnabled(false);
         }
       } catch { /* ignore */ }
       setLoading(false);
+      bootFinishedRef.current = true;
     })();
   }, []);
+
+  // Invariant: Offline Mode can only be ON while a token is present. If the
+  // session is ever cleared outside logout (expiry, API failure, manual
+  // reset), force the gate off so login/register/forgot-password work.
+  useEffect(() => {
+    if (!bootFinishedRef.current) return;
+    if (!token) {
+      void setOfflineModeEnabled(false).catch(() => {});
+    }
+  }, [token]);
 
   // Keep the context token in sync whenever the apiClient refreshes it.
   useEffect(() => {
