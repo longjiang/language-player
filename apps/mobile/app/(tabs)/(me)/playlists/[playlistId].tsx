@@ -159,7 +159,7 @@ export default function PlaylistDetailScreen() {
     return (
       <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center px-8">
-          <ListVideo size={40} className="mb-3 text-muted-foreground" />
+          <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
           <Text className="text-center text-muted-foreground">{t('msg.playlist_not_found')}</Text>
           <Pressable
             onPress={() => router.push('/(tabs)/(me)/playlists' as any)}
@@ -183,7 +183,7 @@ export default function PlaylistDetailScreen() {
           </Text>
         </View>
         <View className="flex-1 items-center justify-center px-8">
-          <ListVideo size={40} className="mb-3 text-muted-foreground" />
+          <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
           <Text className="text-center text-muted-foreground">{t('msg.playlist_empty')}</Text>
         </View>
       </PageContainer>
