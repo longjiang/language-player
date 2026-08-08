@@ -1159,6 +1159,7 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md) — earlier exploration
 - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — download UX pattern this spec follows
 - [SPEC-053: Mobile Offline Mode](../specs/053-mobile-offline-mode.md) — local-only network kill switch setting
+- [SPEC-055: Local Tokenizer Testing Checklist](../specs/055-local-tokenizer-testing.md) — manual spot-check QA for the local tokenizers
 - [ARCH-016: Server-Side Tokenization Pipeline](../arch/016-server-tokenization.md) — server tokenizer inventory
 - [ADR-0018: Tokenizer Selection](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md) — preference order
 
