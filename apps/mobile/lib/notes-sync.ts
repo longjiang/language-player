@@ -90,14 +90,30 @@ export async function enqueue(
       cached = null;
     }
   }
+  // entity_cache fallback — covers notes pulled from another device but never
+  // opened (no AsyncStorage body yet) and legacy partial rows.
+  let cachedPayload: Record<string, unknown> | null = null;
+  try {
+    const row = await getEntityCacheRow('note', entityId);
+    if (row && row.deleted_at == null) {
+      cachedPayload = JSON.parse(row.payload) as Record<string, unknown>;
+    }
+  } catch {
+    cachedPayload = null;
+  }
+  const pick = (v: unknown) => (typeof v === 'string' ? v : undefined);
   const patch = entry.payload ?? {};
+  const title = pick(patch.title) ?? cached?.title ?? pick(cachedPayload?.title) ?? 'Untitled';
+  const text = pick(patch.text) ?? cached?.text ?? pick(cachedPayload?.text) ?? '';
+  const translation =
+    pick(patch.translation) ?? cached?.translation ?? pick(cachedPayload?.translation) ?? '';
   const payload: Record<string, unknown> = {
     l2: entry.l2Code,
     ...(isTemp ? { tempId: noteId } : { noteId }),
     ...(entry.noteId == null && entry.tempId != null ? { tempId: entry.tempId } : {}),
-    title: typeof patch.title === 'string' ? patch.title : (cached?.title ?? 'Untitled'),
-    text: typeof patch.text === 'string' ? patch.text : (cached?.text ?? ''),
-    translation: typeof patch.translation === 'string' ? patch.translation : (cached?.translation ?? ''),
+    title,
+    text,
+    translation,
   };
   log(`[notes-sync] enqueue ${action} note ${entityId}`);
   await enqueueSyncOp({
@@ -199,14 +215,18 @@ function startNoteSyncBridge(): void {
         if (l2) await patchCachedNotesList(l2, 'delete', { id, title: '' });
         return;
       }
+      // MERGE the change-log payload over the existing cached body — a
+      // partial log entry (e.g. a rename that only carries title) must never
+      // overwrite a fuller local body with empty text.
+      const existing = await getCachedNote(id);
       const note: Note = {
         id,
-        title: String(payload.title ?? 'Untitled'),
-        text: String(payload.text ?? ''),
-        translation: String(payload.translation ?? ''),
-        l2: 0,
-        owner: 0,
-        created_on: String(payload.created_on ?? ''),
+        title: typeof payload.title === 'string' ? payload.title : (existing?.title ?? 'Untitled'),
+        text: typeof payload.text === 'string' ? payload.text : (existing?.text ?? ''),
+        translation: typeof payload.translation === 'string' ? payload.translation : (existing?.translation ?? ''),
+        l2: existing?.l2 ?? 0,
+        owner: existing?.owner ?? 0,
+        created_on: typeof payload.created_on === 'string' ? payload.created_on : (existing?.created_on ?? ''),
       };
       await cacheNote(note);
       const l2 = String(payload.l2 ?? '');

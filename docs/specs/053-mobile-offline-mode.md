@@ -569,6 +569,31 @@ tests — never inferred by a generic heuristic.
   registered entity has a coalesce) and server rejection tests in
   `test_sync.py`.
 
+**Follow-up hardening (2026-08-08).**
+
+- **Ack version-check + in-flight coalesce block.** Rows captured in a push
+  batch can no longer be coalesced into (a concurrent edit inserts a fresh
+  row with a new idempotency key instead), and ack-deletes only remove rows
+  whose `idempotency_key`/`updated_at` still match the snapshot — so a lost
+  ack or a mid-flight edit can never drop the newer op.
+- **Notes server-side LWW.** `create_note`/`update_note` accept the op's
+  `updated_at` (epoch ms) and `update_note` only applies when the incoming op
+  is at least as new as the stored row; sync pushes pass it through. Direct
+  PATCH keeps `now()`.
+- **Note whole-row builder fallback + merge-based pull bridge.** The adapter
+  now falls back to `entity_cache` when AsyncStorage has no body, and the
+  pull bridge merges partial change-log payloads over the existing cached body
+  instead of overwriting it (a rename log can no longer wipe text). The PATCH
+  route also logs the full row (not the partial payload) to the change log.
+- **Progress NULL preservation.** `upsert_progress` coalesces `level`, `hours`,
+  and `weekly_hours` with the stored row, so a client that omits a field can
+  no longer wipe a value written by another client.
+- **Minor**: coalescing preserves the original `created_at` (FIFO ordering);
+  `canCoalesceOps` is a pure, tested helper for the coalesce-vs-new-row
+  decision; legacy saved-word ops without a `word` payload are dropped with a
+  warning instead of stranding the migration forever; per-op migration
+  failures are kept for retry.
+
 ### Offline UX — how users know they are offline
 
 **State model.** The app exposes one sync status:

@@ -11,7 +11,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
-import { coalesceSyncPayload, validateSyncPayload } from '@langplayer/utils';
+import { canCoalesceOps, coalesceSyncPayload, validateSyncPayload } from '@langplayer/utils';
 import { log } from '@/lib/logger';
 
 const DB_NAME = 'sync.db';
@@ -157,10 +157,12 @@ export function enqueueOutboxOp(input: {
   op: OutboxOp;
   payload: Record<string, unknown>;
   updatedAt: number;
+  /** Rows currently in an in-flight push batch — never coalesce into these. */
+  skipCoalesceIds?: Set<string>;
 }): Promise<void> {
   const run = async () => {
     const db = await openSyncDB();
-    const { entity, entityId, op, payload, updatedAt } = input;
+    const { entity, entityId, op, payload, updatedAt, skipCoalesceIds } = input;
     // Whole-row contract: upsert payloads must match the entity schema.
     // (Delete payloads are intentionally minimal and skip validation.)
     if (op === 'upsert') {
@@ -175,12 +177,16 @@ export function enqueueOutboxOp(input: {
          FROM outbox WHERE entity = ? AND entity_id = ? AND status IN ('pending', 'error')`,
         [entity, entityId],
       );
+      // A row currently in an in-flight push batch must not be coalesced:
+      // the snapshot is already on the wire, and mutating it would let a
+      // stale ack delete the newer edit. Insert a fresh row instead.
+      const inFlight = !!(existing && skipCoalesceIds?.has(existing.id));
 
-      if (existing) {
+      if (existing && !inFlight) {
         // Same op type → coalesce in place, keeping the idempotency key so an
         // already-applied server op is never replayed. Different op type →
         // fresh key (the server may have already applied the old op).
-        const keyChanged = existing.op !== op;
+        const keyChanged = !canCoalesceOps(existing.op, op);
         log(`[sync-db] outbox coalesce ${entity}:${entityId} ${existing.op}→${op} keyChanged=${keyChanged}`);
         // Domain-owned composition: the entity decides merge vs. replace.
         let mergedPayloadJson = payloadJson;
@@ -197,13 +203,12 @@ export function enqueueOutboxOp(input: {
         await db.runAsync(
           `UPDATE outbox
            SET op = ?, payload = ?, updated_at = ?, attempts = 0, last_error = NULL,
-               status = 'pending', created_at = ?, idempotency_key = ?
+               status = 'pending', idempotency_key = ?
            WHERE id = ?`,
           [
             op,
             mergedPayloadJson,
             updatedAt,
-            Date.now(),
             keyChanged ? makeSyncId() : existing.idempotency_key,
             existing.id,
           ],
@@ -223,7 +228,7 @@ export function enqueueOutboxOp(input: {
         );
       }
 
-      if (!existing) {
+      if (!existing || inFlight) {
         await db.runAsync(
           `INSERT OR REPLACE INTO entity_cache (entity, entity_id, payload, updated_at, deleted_at)
            VALUES (?, ?, ?, ?, ?)`,
@@ -286,6 +291,35 @@ export async function deleteOutboxRows(ids: string[]): Promise<void> {
   const placeholders = ids.map(() => '?').join(', ');
   const result = await db.runAsync(`DELETE FROM outbox WHERE id IN (${placeholders})`, ids);
   log(`[sync-db] outbox ack-delete rows=${result.changes}`);
+}
+
+/**
+ * Ack-delete ONLY rows whose idempotency key + updated_at still match what
+ * was actually sent. If the row was coalesced/edited after the push snapshot
+ * (or a stale ack arrives for a replaced row), the delete is skipped so the
+ * newer op survives and is pushed in the next cycle.
+ */
+export async function deleteOutboxRowsIfUnchanged(
+  entries: Array<{ id: string; idempotencyKey: string; updatedAt: number }>,
+): Promise<number> {
+  if (entries.length === 0) return 0;
+  const db = await openSyncDB();
+  let deleted = 0;
+  await db.withTransactionAsync(async () => {
+    for (const entry of entries) {
+      const result = await db.runAsync(
+        `DELETE FROM outbox WHERE id = ? AND idempotency_key = ? AND updated_at = ?`,
+        [entry.id, entry.idempotencyKey, entry.updatedAt],
+      );
+      deleted += result.changes;
+    }
+  });
+  if (deleted !== entries.length) {
+    log(`[sync-db] outbox ack-delete skipped ${entries.length - deleted} row(s) — changed mid-flight`);
+  } else {
+    log(`[sync-db] outbox ack-delete rows=${deleted}`);
+  }
+  return deleted;
 }
 
 export async function getPendingOutboxCount(): Promise<number> {

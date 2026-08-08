@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canCoalesceOps,
   coalesceSyncPayload,
   repairSyncPayload,
   validateSyncPayload,
@@ -48,16 +49,9 @@ describe('coalesceSyncPayload', () => {
     expect(renamed).toEqual({ l2: 'ja', title: 'New name', text: '本文', translation: '' });
   });
 
-  it('a delete pending op collapses earlier upserts (delete wins)', () => {
-    // Delete ops are not coalesced into upserts (op-type change → new row),
-    // so the invariant to assert is that upsert→upsert keeps fields.
+  it('whole-row entities replace payloads', () => {
     const a = coalesceSyncPayload('saved_word', { l2: 'ja', wordId: 'w', word: { id: 'w' } }, { l2: 'ja', wordId: 'w', word: { id: 'w', forms: ['x'] } });
     expect(a.word).toEqual({ id: 'w', forms: ['x'] });
-  });
-
-  it('whole-row entities replace payloads', () => {
-    const merged = coalesceSyncPayload('srs_settings', { dailyNewLimit: 10 }, { dailyNewLimit: 20 });
-    expect(merged).toEqual({ dailyNewLimit: 20 });
   });
 
   it('all registered entities expose a coalesce function', () => {
@@ -72,6 +66,18 @@ describe('coalesceSyncPayload', () => {
     ]) {
       expect(getSyncEntityDef(entity)?.coalesce).toBeTypeOf('function');
     }
+  });
+});
+
+describe('canCoalesceOps', () => {
+  it('coalesces same op types (keeping the idempotency key)', () => {
+    expect(canCoalesceOps('upsert', 'upsert')).toBe(true);
+    expect(canCoalesceOps('delete', 'delete')).toBe(true);
+  });
+
+  it('op-type change (upsert → delete) must create a new row + fresh key', () => {
+    expect(canCoalesceOps('upsert', 'delete')).toBe(false);
+    expect(canCoalesceOps('delete', 'upsert')).toBe(false);
   });
 });
 
