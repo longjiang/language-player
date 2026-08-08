@@ -10,6 +10,7 @@ import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-mes
 import { logerr } from '@/lib/logger';
 import { useAppFonts } from '@/lib/fonts';
 import { initOfflineMode } from '@/lib/offline-mode';
+import { WorkerProbeWebView } from '@/components/WorkerProbeWebView';
 
 // ── Custom toast config ──
 
@@ -147,6 +148,7 @@ export default function RootLayout() {
                       </Stack>
                       <PortalHost />
                       <Toast config={toastConfig} topOffset={insets.top + 8} />
+                      <WorkerProbeWebView />
                       </UserLibraryProvider>
                       </SubscriptionProvider>
                     </VideoPlayerProvider>
