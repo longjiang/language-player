@@ -57,6 +57,7 @@ import {
   tokenizeJapaneseInWorker,
 } from '@/lib/tokenizer-worker';
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
+import { romanize, ROMANIZABLE_LANGS } from '@/lib/romanize';
 
 const arabicStemmer = new Stemmer();
 
@@ -449,12 +450,24 @@ async function lemmatizeLocal(
     return { text: word, lemmas: [{ lemma: word }], source: 'surface' as const };
   });
 
-  const stemmed = result.filter(t => t.lemmas[0]?.lemma !== t.text).length;
-  const sample = result.filter(t => t.lemmas[0]?.lemma !== t.text).slice(0, 10)
-    .map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
-  log(`[lemmatize] 🏷️ LOCAL-DONE l2=${l2} words=${result.length} stemmed=${stemmed} table=${tableHits} snowball=${snowballHits} sample="${sample}"`);
+  // Attach romanization for the non-Latin scripts the server romanizes
+  // (ko/ru/bg/uk/el/hy/ka) so offline tokens match online output. Word
+  // tokens only — non-word tokens keep `lemmas: []` and no pronunciation.
+  const romanizer = ROMANIZABLE_LANGS.has(l2) ? (word: string) => romanize(word, l2) : null;
+  const romanized = romanizer
+    ? result.map((t) => {
+        if (t.lemmas.length === 0) return t;
+        const pron = romanizer(t.text);
+        return pron ? { ...t, pronunciation: pron } : t;
+      })
+    : result;
 
-  return result;
+  const stemmed = romanized.filter(t => t.lemmas[0]?.lemma !== t.text).length;
+  const sample = romanized.filter(t => t.lemmas[0]?.lemma !== t.text).slice(0, 10)
+    .map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
+  log(`[lemmatize] 🏷️ LOCAL-DONE l2=${l2} words=${romanized.length} stemmed=${stemmed} table=${tableHits} snowball=${snowballHits} sample="${sample}"`);
+
+  return romanized;
 }
 
 // Track which languages we've already attempted background download for,
@@ -831,11 +844,19 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
           }
         }
 
+        // Include reading if available; otherwise romanize the surface
+        // form with koroman so offline ko matches the server.
+        const pron =
+          t.reading && t.reading !== '*'
+            ? t.reading
+            : /[\uAC00-\uD7A3]/.test(t.surface_form)
+              ? romanize(t.surface_form, 'ko')
+              : undefined;
+
         out.push({
           text: t.surface_form,
           lemmas: [{ lemma, part_of_speech: lemmaPos || undefined }],
-          // Include reading if available
-          ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
+          ...(pron ? { pronunciation: pron } : {}),
           source: 'ko-kuromoji' as const,
         });
       }
