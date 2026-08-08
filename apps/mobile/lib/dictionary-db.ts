@@ -582,6 +582,14 @@ export async function lookupOffline(
     addRows(rows);
     log('[DictDB] exact rows — l2:', l2, 'text:', text, 'rows:', rows?.length ?? 0);
 
+    // Exact matches win — mirror the server lookup, which returns immediately
+    // on an exact hit. Without this short-circuit, substring steps below add
+    // noise for a tapped word (e.g. "остановиться" pulling in heads "но"/"ст").
+    if (out.length > 0) {
+      log('[DictDB] ✅ offline lookup exact hit — l2:', l2, 'text:', text, 'rows:', out.length);
+      return out.slice(0, byDefinition ? 10 : 5);
+    }
+
     // 2. Fuzzy romaji substring (server EdictLoader step 4, len >= 3).
     const norm = text.toLowerCase().replace(/\s/g, '');
     if (norm.length >= 3) {
