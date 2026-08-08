@@ -29,7 +29,7 @@ import {
   setEntityCacheDeleted,
   setSyncMeta,
   upsertEntityCache,
-  deleteOutboxRows,
+  deleteOutboxRowsIfUnchanged,
   resetOutboxErrors,
   type OutboxOp,
 } from '@/lib/sync-db';
@@ -83,6 +83,8 @@ let retryTimer: ReturnType<typeof setInterval> | null = null;
 let syncing = false;
 let connectivity = 'unknown' as SyncStatusSnapshot['connectivity'];
 let offlineMode = false;
+/** Outbox rows captured in the current push batch — never coalesce into them. */
+const inFlightOutboxIds = new Set<string>();
 
 const status: SyncStatusSnapshot = {
   connectivity: 'unknown',
@@ -131,6 +133,7 @@ export async function enqueueSyncOp(input: SyncOpInput): Promise<void> {
     op,
     payload,
     updatedAt: updatedAt ?? Date.now(),
+    skipCoalesceIds: inFlightOutboxIds.size > 0 ? inFlightOutboxIds : undefined,
   });
   log(`[sync] enqueued ${op} ${entity}:${entityId}`);
   await refreshPendingCount();
@@ -235,93 +238,110 @@ async function pushOutbox(): Promise<number> {
   if (rows.length === 0) return 0;
   log(`[sync] push start ops=${rows.length}`);
 
-  const res = await authenticatedFetch(`${PYTHON_API_URL}/sync/push`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      ops: await Promise.all(rows.map(async (r) => {
-        let payload = JSON.parse(r.payload) as Record<string, unknown>;
-        // Self-heal legacy partial payloads (queued before the whole-row
-        // contract) so strict server validation can't strand them forever.
-        if (r.op === 'upsert') {
-          try {
-            const cached = await getEntityCacheRow(r.entity, r.entity_id);
-            const source = cached && cached.deleted_at == null
-              ? JSON.parse(cached.payload) as Record<string, unknown>
-              : null;
-            const repaired = repairSyncPayload(r.entity, payload, source);
-            if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
-              log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
-            }
-            payload = repaired;
-          } catch {
-            // Unrepairable — leave as-is; the server will reject loudly.
-          }
-        }
-        return {
-          idempotency_key: r.idempotency_key,
-          entity: r.entity,
-          entity_id: r.entity_id,
-          op: r.op,
-          payload,
-          updated_at: r.updated_at,
-        };
-      })),
-    }),
-  });
-  if (!res.ok) {
-    if (res.status === 401) throw new Error('Unauthorized');
-    throw new Error(`push failed: HTTP ${res.status}`);
-  }
-  const data = (await res.json()) as {
-    results: Array<{
-      ok: boolean;
-      idempotency_key: string;
-      entity?: string;
-      entity_id?: string;
-      error?: string;
-    }>;
-  };
+  // Mark this batch as in-flight so concurrent edits can't coalesce into the
+  // rows being sent (which would let a stale ack delete the newer edit).
+  inFlightOutboxIds.clear();
+  for (const r of rows) inFlightOutboxIds.add(r.id);
 
-  const acked: string[] = [];
-  const byKey = new Map(rows.map((r) => [r.idempotency_key, r]));
-  let okCount = 0;
-  let failedCount = 0;
-  for (const result of data.results) {
-    const row = byKey.get(result.idempotency_key);
-    if (!row) continue;
-    if (result.ok) {
-      okCount++;
-      log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
-      acked.push(row.id);
-      // Temp-ID remap for offline note creates (and any future temp-ID flow).
-      if (
-        result.entity === 'note' &&
-        row.op === 'upsert' &&
-        result.entity_id &&
-        result.entity_id !== row.entity_id
-      ) {
-        const payload = JSON.parse(row.payload) as Record<string, unknown>;
-        notifyRemap('note', row.entity_id, result.entity_id, String(payload.l2 ?? ''));
-      }
-    } else {
-      failedCount++;
-      const attempts = row.attempts + 1;
-      const failed = attempts >= MAX_PUSH_ATTEMPTS;
-      await markOutboxError(
-        row.id,
-        result.error ?? 'sync push rejected',
-        attempts,
-        failed ? 'error' : 'pending',
-      );
-      logwarn(`[sync] push op failed ${row.entity}:${row.entity_id}`, result.error);
+  try {
+    const res = await authenticatedFetch(`${PYTHON_API_URL}/sync/push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ops: await Promise.all(rows.map(async (r) => {
+          let payload = JSON.parse(r.payload) as Record<string, unknown>;
+          // Self-heal legacy partial payloads (queued before the whole-row
+          // contract) so strict server validation can't strand them forever.
+          if (r.op === 'upsert') {
+            try {
+              const cached = await getEntityCacheRow(r.entity, r.entity_id);
+              const source = cached && cached.deleted_at == null
+                ? JSON.parse(cached.payload) as Record<string, unknown>
+                : null;
+              const repaired = repairSyncPayload(r.entity, payload, source);
+              if (JSON.stringify(repaired) !== JSON.stringify(payload)) {
+                log(`[sync] repaired ${r.entity}:${r.entity_id} legacy payload — ${Object.keys(repaired).join(',')}`);
+              }
+              payload = repaired;
+            } catch {
+              // Unrepairable — leave as-is; the server will reject loudly.
+            }
+          }
+          return {
+            idempotency_key: r.idempotency_key,
+            entity: r.entity,
+            entity_id: r.entity_id,
+            op: r.op,
+            payload,
+            updated_at: r.updated_at,
+          };
+        })),
+      }),
+    });
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('Unauthorized');
+      throw new Error(`push failed: HTTP ${res.status}`);
     }
+    const data = (await res.json()) as {
+      results: Array<{
+        ok: boolean;
+        idempotency_key: string;
+        entity?: string;
+        entity_id?: string;
+        error?: string;
+      }>;
+    };
+
+    const acked: string[] = [];
+    const byKey = new Map(rows.map((r) => [r.idempotency_key, r]));
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    let okCount = 0;
+    let failedCount = 0;
+    for (const result of data.results) {
+      const row = byKey.get(result.idempotency_key);
+      if (!row) continue;
+      if (result.ok) {
+        okCount++;
+        log(`[sync] push ok ${row.entity}:${row.entity_id} idem=${row.idempotency_key}`);
+        acked.push(row.id);
+        // Temp-ID remap for offline note creates (and any future temp-ID flow).
+        if (
+          result.entity === 'note' &&
+          row.op === 'upsert' &&
+          result.entity_id &&
+          result.entity_id !== row.entity_id
+        ) {
+          const payload = JSON.parse(row.payload) as Record<string, unknown>;
+          notifyRemap('note', row.entity_id, result.entity_id, String(payload.l2 ?? ''));
+        }
+      } else {
+        failedCount++;
+        const attempts = row.attempts + 1;
+        const failed = attempts >= MAX_PUSH_ATTEMPTS;
+        await markOutboxError(
+          row.id,
+          result.error ?? 'sync push rejected',
+          attempts,
+          failed ? 'error' : 'pending',
+        );
+        logwarn(`[sync] push op failed ${row.entity}:${row.entity_id}`, result.error);
+      }
+    }
+    if (acked.length > 0) {
+      // Version-checked ack: only delete rows that still match the snapshot
+      // (idempotency key + updated_at). A row edited mid-flight keeps a
+      // separate newer row and must survive this ack.
+      const ackEntries = acked
+        .map((id) => byId.get(id))
+        .filter((r): r is NonNullable<typeof r> => !!r)
+        .map((r) => ({ id: r.id, idempotencyKey: r.idempotency_key, updatedAt: r.updated_at }));
+      await deleteOutboxRowsIfUnchanged(ackEntries);
+      log(`[sync] ✅ push done ok=${okCount} failed=${failedCount} acked=${acked.length}`);
+    }
+    return acked.length;
+  } finally {
+    inFlightOutboxIds.clear();
   }
-  if (acked.length > 0) {
-    await deleteOutboxRows(acked);
-    log(`[sync] ✅ push done ok=${okCount} failed=${failedCount} acked=${acked.length}`);
-  }
-  return acked.length;
 }
 
 /**

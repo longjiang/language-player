@@ -78,5 +78,6 @@ export {
   validateSyncPayload,
   coalesceSyncPayload,
   repairSyncPayload,
+  canCoalesceOps,
 } from './sync-entities';
-export type { SyncEntityDef, SyncFieldType } from './sync-entities';
+export type { SyncEntityDef, SyncFieldType, SyncOutboxOp } from './sync-entities';

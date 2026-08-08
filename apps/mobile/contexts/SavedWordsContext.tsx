@@ -117,22 +117,40 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
             updatedAt?: number;
           }>;
           if (Array.isArray(legacy)) {
+            const remaining: typeof legacy = [];
+            let migrated = 0;
             for (const op of legacy) {
               if (!op || !op.l2 || !op.wordId) continue;
-              await enqueueSyncOp({
-                entity: 'saved_word',
-                entityId: `${op.l2}::${op.wordId}`,
-                op: op.type === 'delete' ? 'delete' : 'upsert',
-                payload: {
-                  l2: op.l2,
-                  wordId: op.wordId,
-                  ...(op.word ? { word: op.word } : {}),
-                },
-                updatedAt: op.updatedAt ?? Date.now(),
-              });
+              if (op.type === 'put' && !op.word) {
+                // Unrepairable legacy op — the local word still exists and
+                // will be re-queued on its next save. Don't strand it forever.
+                logwarn('[SavedWordsContext] dropping legacy pending op without word payload:', op.l2, op.wordId);
+                continue;
+              }
+              try {
+                await enqueueSyncOp({
+                  entity: 'saved_word',
+                  entityId: `${op.l2}::${op.wordId}`,
+                  op: op.type === 'delete' ? 'delete' : 'upsert',
+                  payload: {
+                    l2: op.l2,
+                    wordId: op.wordId,
+                    ...(op.word ? { word: op.word } : {}),
+                  },
+                  updatedAt: op.updatedAt ?? Date.now(),
+                });
+                migrated++;
+              } catch (e) {
+                logwarn('[SavedWordsContext] legacy op migration failed, keeping it for retry:', op.l2, op.wordId, (e as Error)?.message ?? e);
+                remaining.push(op);
+              }
             }
-            await SecureStore.deleteItemAsync(LEGACY_PENDING_OPS_KEY);
-            log(`[SavedWordsContext] migrated ${legacy.length} legacy pending ops into outbox`);
+            if (remaining.length === 0) {
+              await SecureStore.deleteItemAsync(LEGACY_PENDING_OPS_KEY);
+            } else {
+              await SecureStore.setItemAsync(LEGACY_PENDING_OPS_KEY, JSON.stringify(remaining));
+            }
+            log(`[SavedWordsContext] migrated ${migrated} legacy pending ops into outbox`);
           }
         }
       } catch (err) {

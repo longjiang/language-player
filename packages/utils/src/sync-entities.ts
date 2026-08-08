@@ -8,6 +8,7 @@
  */
 
 export type SyncFieldType = 'string' | 'number' | 'boolean' | 'object' | 'array';
+export type SyncOutboxOp = 'upsert' | 'delete';
 
 export interface SyncEntityDef {
   entity: string;
@@ -146,4 +147,14 @@ export function repairSyncPayload(
     }
   }
   return out;
+}
+
+/**
+ * Whether two consecutive ops on the same (entity, entity_id) can coalesce
+ * into one outbox row. Same op type → coalesce (keeping the idempotency key).
+ * Op-type change (e.g. upsert → delete) → new row + fresh key so the server
+ * never replays the old op under the new semantics.
+ */
+export function canCoalesceOps(existingOp: SyncOutboxOp, nextOp: SyncOutboxOp): boolean {
+  return existingOp === nextOp;
 }
