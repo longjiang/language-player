@@ -54,7 +54,6 @@ export default function DocsScreen() {
   const [tocOpen, setTocOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const headingOffsets = useRef<Record<string, number>>({});
-  const [contentCardY, setContentCardY] = useState(0);
   const [markdownY, setMarkdownY] = useState(0);
 
   const localeDocs = useMemo(() => DOCS_BY_LOCALE[l1Lang.code] ?? DOCS, [l1Lang.code]);
@@ -97,7 +96,7 @@ export default function DocsScreen() {
   };
 
   const scrollToHeading = (id: string) => {
-    const y = (headingOffsets.current[id] ?? 0) + markdownY + contentCardY - 12;
+    const y = (headingOffsets.current[id] ?? 0) + markdownY - 12;
     scrollRef.current?.scrollTo({ y: Math.max(0, y), animated: true });
     setTocOpen(false);
   };
@@ -204,21 +203,16 @@ export default function DocsScreen() {
           </Text>
         )}
 
-        {/* ── Markdown content (headings report offsets for the TOC) ── */}
-        <View
-          className="rounded-xl border border-border bg-card p-4"
-          onLayout={(e) => setContentCardY(e.nativeEvent.layout.y)}
-        >
-          <View onLayout={(e) => setMarkdownY(e.nativeEvent.layout.y)}>
-            <MarkdownText
-              rules={{
-                heading2: makeHeadingRule(2),
-                heading3: makeHeadingRule(3),
-              }}
-            >
-              {selectedDoc.content}
-            </MarkdownText>
-          </View>
+        {/* ── Markdown content — web-style prose, no card panel ── */}
+        <View onLayout={(e) => setMarkdownY(e.nativeEvent.layout.y)}>
+          <MarkdownText
+            rules={{
+              heading2: makeHeadingRule(2),
+              heading3: makeHeadingRule(3),
+            }}
+          >
+            {selectedDoc.content}
+          </MarkdownText>
         </View>
       </>
     );
