@@ -60,7 +60,7 @@ The local tokenizer families covered:
   - Tap 思った → dictionary popup lemma 思う.
   - 耳 shows katakana ruby (ミミ).
   - 銃撃戦 stays one token.
-- **Pass**: No spaces inserted between Japanese tokens; punctuation (、。…) not clickable; ruby is katakana, not romaji.
+- **Pass**: No spaces inserted between Japanese tokens — including in ruby mode, where tokens must render flush with no phantom gaps (regression: per-token `mx-px` margins removed 2026-08-08); punctuation (、。…) not clickable; ruby is katakana, not romaji.
 
 ### TC-02 — Korean (kuromoji-ko + koroman)
 
@@ -154,7 +154,7 @@ The local tokenizer families covered:
 
 | ID | Check | How | Pass criteria |
 |---|---|---|---|
-| CC-01 | **Space recovery** | Open a multi-line paragraph; copy rendered text | Tokens reconstruct the original exactly: no doubled/missing spaces, newlines preserved, trailing whitespace kept |
+| CC-01 | **Space recovery** | Open a multi-line paragraph; copy rendered text (test both plain and ruby render paths) | Tokens reconstruct the original exactly: no doubled/missing spaces, newlines preserved, trailing whitespace kept; ruby mode adds no visual gaps between adjacent tokens |
 | CC-02 | **Phonetics modes** | Settings → Display → Phonetics: Above / Replace / Off | Above = ruby row; Replace = only romanization; Off = nothing; toggles apply without reload |
 | CC-03 | **Hard-words-only** | Set a proficiency level; mixed paragraph | Only over-level words get ruby; easy words stay bare |
 | CC-04 | **Batch reader fallback** | Open an EPUB; scroll several chapters with Offline Mode on | `👁 lazy tokenization window` grows; `📦 BATCH REQ` → `🚫 OFFLINE-MODE … per-block`; no freeze on long chapters |
