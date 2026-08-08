@@ -146,6 +146,7 @@ Manual checklist review found three more issues, all fixed:
 | Watch player overflow | `YouTubePlayer` sized itself to the full window when no `containerWidth` was passed, so in landscape it overflowed the left column and ran behind the transcript | The player column is measured with `onLayout` and passed as `containerWidth` in every watch mode |
 | Local Media reachability/icons | The lg+ player column wasn't scrollable, so controls below the player could be unreachable; file-bar lucide icons used `className` colors that render black | Player column scrolls at ≥1024 with captions; file-bar icons use `ICON_MUTED` |
 | Dictionary entry lg layout | Definition card and tabs panel stayed stacked inside the scroll view even at ≥1024, unlike web's two-column layout | At ≥1024 the panels render side-by-side (`flex-1` definition + `flex-[2]` tabs), matching web; still stacked below lg |
+| Docs content panel | Doc markdown was wrapped in a rounded `bg-card` panel, unlike web's plain prose article | Content now renders as capped (`max-w-3xl`) prose directly on the page background; TOC heading offsets still work without the card wrapper |
 
 ### Bottom-sheet policy (2026-08-07)
 
@@ -223,7 +224,7 @@ Legend for web behavior: `default → sm → md → lg → xl` where a value cha
 | Settings → `(me)/settings` | `max-w-5xl`; single list <lg; `lg:grid-cols-[220px_1fr]` at ≥1024; root redirects to Display; details `max-w-lg` | Split at ≥600 with `min(256, width*0.4)` sidebar; wide root shows placeholder; details full width | Move split to ≥1024; auto-select Display on wide root; align sidebar width and detail max width |
 | Profile → `(me)/profile` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan rows stacked | Add responsive plan row grid (1 <640, 3 ≥640) |
 | Go Pro → `(me)/go-pro` | `max-w-3xl`; plan cards 1 → 3 at sm | `max-w-3xl`; plan cards stacked | Add responsive plan grid (1 <640, 3 ≥640) |
-| Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | ✅ TOC sidebar parity: slide-in below 1280, persistent at ≥1280, H2/H3 anchors scroll to headings (single-screen docs retained) |
+| Docs → `(me)/docs` | List `max-w-2xl`; detail `max-w-3xl` + TOC sidebar; slide-in <xl, sticky ≥1280 | `max-w-3xl` single screen; inline "On this page" list, no persistent sidebar | ✅ TOC sidebar parity: slide-in below 1280, persistent at ≥1280, H2/H3 anchors scroll to headings; content is capped `max-w-3xl` prose (no card panel) |
 | Tokenizer → `(me)/tokenizer-test` | `max-w-2xl` | Full-width scroll view | Cap at `max-w-2xl` |
 | Language select → `select-language` | Fullscreen; tabs <640, bi-panel ≥640 | Same 640 threshold | No change to the picker itself; header switcher dialog now centered ≥768 instead of a bottom sheet (review fix) |
 | Login/Register/Forgot/Reset/Verify | Centered `max-w-md` card | Full-width form | Wrap auth forms in centered `max-w-md` container |
@@ -391,7 +392,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **Tokenizer** — capped at 672.
 - [ ] **Login / Register / Forgot / Reset / Verify / Delete account** — centered 448px container.
 - [ ] **Go Pro success / error** — centered 512px container; action buttons row at ≥640.
-- [ ] **Docs** — TOC sidebar: slide-in below 1280 with a floating button, persistent at ≥1280; "On this page" H2/H3 links scroll to headings.
+- [ ] **Docs** — TOC sidebar: slide-in below 1280 with a floating button, persistent at ≥1280; "On this page" H2/H3 links scroll to headings; content is width-capped prose matching web (no rounded card panel).
 
 ### Quick mode matrix
 
