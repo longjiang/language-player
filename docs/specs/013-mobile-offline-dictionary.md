@@ -267,6 +267,21 @@ lines from a cache file straight into SQLite, so it never builds a 60–80 MB
 JS array or re-serializes every entry. The JSON response format remains
 supported for older clients.
 
+### Precompiled SQLite (`format=db`, current implementation)
+
+The server can also precompile the same entries into a ready-to-open SQLite
+database (`dict_{l2}` table + `head`/`alternate` indexes + embedded
+`dict_meta`) and return it gzip-compressed. The gzip file is cached on disk
+and only rebuilt when the dictionary DB mtime changes, so the first request
+for a language pays the precompile cost and every later one is a cache hit.
+
+The mobile client downloads `?format=db`, decompresses the payload with
+`fflate`, and atomically replaces
+`Documents/dictionaries/dict_{l2}.db`. Lookups open that file directly
+instead of inserting rows into the shared `dictionary.db`. Dictionaries
+downloaded with the older NDJSON/insert path remain readable through the
+legacy central-table fallback.
+
 ---
 
 ## Implementation Plan

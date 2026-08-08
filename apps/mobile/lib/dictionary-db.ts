@@ -14,6 +14,7 @@
  */
 
 import * as SQLite from 'expo-sqlite';
+import { Directory, File, Paths } from 'expo-file-system';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 import { log } from '@/lib/logger';
 
@@ -21,6 +22,12 @@ import { log } from '@/lib/logger';
 
 const DB_NAME = 'dictionary.db';
 const CHUNK_SIZE = 500;
+
+/** Per-language precompiled dictionary files live in Documents/dictionaries. */
+const DICTIONARIES_DIR_URI = `${Paths.document.uri}dictionaries`;
+const DICTIONARIES_DIR_PATH = DICTIONARIES_DIR_URI.replace(/^file:\/\//, '');
+
+const l2DbCache = new Map<string, SQLite.SQLiteDatabase>();
 
 /** Escape a string for safe inclusion in a SQL string literal. */
 function esc(s: string): string {
@@ -161,6 +168,145 @@ export async function closeDictionaryDB(): Promise<void> {
   }
 }
 
+// ── Per-language precompiled dictionaries ─────────────────
+
+/** Stable file name for a language's precompiled dictionary. */
+export function dictionaryDbFileName(l2: string): string {
+  return `dict_${l2.replace(/-/g, '_')}.db`;
+}
+
+/** File handle for a language's precompiled dictionary. */
+export function dictionaryDbFile(l2: string): File {
+  return new File(DICTIONARIES_DIR_URI, dictionaryDbFileName(l2));
+}
+
+async function ensureDictionariesDir(): Promise<void> {
+  const dir = new Directory(DICTIONARIES_DIR_URI);
+  dir.create({ intermediates: true, idempotent: true });
+}
+
+/**
+ * Open a downloaded per-language dictionary DB, or null if it hasn't been
+ * downloaded yet. Handles are cached per language for fast lookups.
+ */
+export async function openOfflineDictionaryDB(
+  l2: string,
+): Promise<SQLite.SQLiteDatabase | null> {
+  const file = dictionaryDbFile(l2);
+  if (!file.exists) return null;
+
+  const cached = l2DbCache.get(l2);
+  if (cached) return cached;
+
+  await ensureDictionariesDir();
+  const db = await SQLite.openDatabaseAsync(
+    dictionaryDbFileName(l2),
+    {},
+    DICTIONARIES_DIR_PATH,
+  );
+  l2DbCache.set(l2, db);
+  return db;
+}
+
+/** Close and drop the cached handle for one language (e.g. before delete). */
+export async function closeOfflineDictionaryDB(l2: string): Promise<void> {
+  const db = l2DbCache.get(l2);
+  if (db) {
+    try { await db.closeAsync(); } catch { /* already closed */ }
+    l2DbCache.delete(l2);
+  }
+}
+
+/**
+ * Atomically replace a language's dictionary file. The gzipped payload has
+ * already been decompressed by the caller; this writes to a temp file, then
+ * moves it over the destination so a failed write never corrupts the
+ * previously downloaded dictionary.
+ */
+export async function savePrecompiledDictionary(
+  l2: string,
+  dbBytes: Uint8Array,
+): Promise<DictMeta> {
+  await ensureDictionariesDir();
+  await closeOfflineDictionaryDB(l2);
+
+  const finalFile = dictionaryDbFile(l2);
+  const tmpFile = new File(
+    DICTIONARIES_DIR_URI,
+    `${dictionaryDbFileName(l2)}.tmp`,
+  );
+  if (tmpFile.exists) tmpFile.delete();
+
+  tmpFile.write(dbBytes);
+  try {
+    await tmpFile.move(finalFile, { overwrite: true });
+  } catch (e) {
+    try { tmpFile.delete(); } catch { /* best effort */ }
+    throw e;
+  }
+
+  let db: SQLite.SQLiteDatabase | null = null;
+  try {
+    db = await openOfflineDictionaryDB(l2);
+  } catch {
+    await closeOfflineDictionaryDB(l2);
+    try { finalFile.delete(); } catch { /* best effort */ }
+    throw new Error('Precompiled dictionary could not be opened');
+  }
+  if (!db) {
+    await closeOfflineDictionaryDB(l2);
+    try { finalFile.delete(); } catch { /* best effort */ }
+    throw new Error('Precompiled dictionary could not be opened');
+  }
+
+  try {
+    const table = dictTableName(l2);
+    const tableCheck = await db.getFirstAsync<{ cnt: number }>(
+      `SELECT COUNT(*) AS cnt FROM ${table}`,
+    );
+    if (tableCheck === undefined) {
+      throw new Error(`Precompiled dictionary is missing table ${table}`);
+    }
+
+    const meta = await db.getFirstAsync<DictMeta>(
+      'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM dict_meta WHERE l2 = ?',
+      [l2],
+    );
+    if (!meta) {
+      throw new Error('Precompiled dictionary is missing dict_meta');
+    }
+    meta.size_bytes = finalFile.size;
+    return meta;
+  } catch (e) {
+    // Don't leave a corrupt file in place when validation fails.
+    await closeOfflineDictionaryDB(l2);
+    try { finalFile.delete(); } catch { /* best effort */ }
+    throw e;
+  }
+}
+
+/**
+ * Read metadata embedded in a per-language DB file. Falls back to the central
+ * dict_meta table for dictionaries downloaded with the old insert path.
+ */
+export async function getDictMetaForL2(l2: string): Promise<DictMeta | null> {
+  let l2Db: SQLite.SQLiteDatabase | null = null;
+  try {
+    l2Db = await openOfflineDictionaryDB(l2);
+  } catch {
+    l2Db = null;
+  }
+  if (l2Db) {
+    const fileMeta = await l2Db.getFirstAsync<DictMeta>(
+      'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM dict_meta WHERE l2 = ?',
+      [l2],
+    );
+    if (fileMeta) return fileMeta;
+  }
+  const db = await openDictionaryDB();
+  return getDictMeta(db, l2);
+}
+
 // ── Table helpers ─────────────────────────────
 
 /**
@@ -289,6 +435,46 @@ export async function lookupOffline(
     // Table doesn't exist yet (not downloaded for this language)
     return null;
   }
+}
+
+/**
+ * Look up a word in the per-language precompiled DB, falling back to the
+ * legacy central dictionary.db table for dictionaries downloaded before
+ * precompiled files existed.
+ */
+export async function lookupOfflineByL2(
+  l2: string,
+  text: string,
+): Promise<DictionaryEntry[] | null> {
+  let l2Db: SQLite.SQLiteDatabase | null = null;
+  try {
+    l2Db = await openOfflineDictionaryDB(l2);
+  } catch {
+    l2Db = null;
+  }
+  if (l2Db) {
+    try {
+      const table = dictTableName(l2);
+      let rows = await l2Db.getAllAsync<{ entry_json: string }>(
+        `SELECT entry_json FROM ${table} WHERE head = ? COLLATE NOCASE`,
+        [text],
+      );
+      if (!rows || rows.length === 0) {
+        rows = await l2Db.getAllAsync<{ entry_json: string }>(
+          `SELECT entry_json FROM ${table} WHERE alternate = ? COLLATE NOCASE`,
+          [text],
+        );
+      }
+      if (rows && rows.length > 0) {
+        return rows.map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
+      }
+    } catch {
+      // Corrupt file or table — fall through to legacy central DB.
+    }
+  }
+
+  const db = await openDictionaryDB();
+  return lookupOffline(db, text, l2);
 }
 
 // ── LLM cache ─────────────────────────────────
@@ -510,6 +696,12 @@ export async function deleteDictionary(
   db: SQLite.SQLiteDatabase,
   l2: string,
 ): Promise<void> {
+  await closeOfflineDictionaryDB(l2);
+  const file = dictionaryDbFile(l2);
+  if (file.exists) {
+    file.delete();
+    log('[DictDB] 🗑 deleted precompiled dictionary file — l2:', l2);
+  }
   const table = dictTableName(l2);
   try {
     await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
@@ -534,6 +726,18 @@ export async function deleteDictionary(
 export async function deleteAllDictionaries(
   db: SQLite.SQLiteDatabase,
 ): Promise<void> {
+  for (const l2 of [...l2DbCache.keys()]) {
+    await closeOfflineDictionaryDB(l2);
+  }
+  const dir = new Directory(DICTIONARIES_DIR_URI);
+  if (dir.exists) {
+    for (const entry of dir.list()) {
+      if (entry instanceof File && entry.name.endsWith('.db')) {
+        try { entry.delete(); } catch { /* already gone */ }
+      }
+    }
+  }
+
   // Drop all dict_* tables
   try {
     const tables = await db.getAllAsync<{ name: string }>(
@@ -576,10 +780,28 @@ export async function getStorageUsage(
     `);
     // Fallback: if pragma fails, estimate from sqlite_master
     if (!rows || rows.length === 0) {
-      return { usedBytes: 0 };
+      let usedBytes = 0;
+      const dir = new Directory(DICTIONARIES_DIR_URI);
+      if (dir.exists) {
+        for (const entry of dir.list()) {
+          if (entry instanceof File && entry.name.endsWith('.db')) {
+            usedBytes += entry.size;
+          }
+        }
+      }
+      return { usedBytes };
     }
     const r = rows[0]!;
-    return { usedBytes: (r.pgsize || 4096) * (r.total_pages || 0) };
+    let usedBytes = (r.pgsize || 4096) * (r.total_pages || 0);
+    const dir = new Directory(DICTIONARIES_DIR_URI);
+    if (dir.exists) {
+      for (const entry of dir.list()) {
+        if (entry instanceof File && entry.name.endsWith('.db')) {
+          usedBytes += entry.size;
+        }
+      }
+    }
+    return { usedBytes };
   } catch {
     return { usedBytes: 0 };
   }
@@ -595,4 +817,20 @@ export async function hasOfflineDictionary(
 ): Promise<boolean> {
   const meta = await getDictMeta(db, l2);
   return meta !== null && meta.entry_count > 0;
+}
+
+/**
+ * Check whether a language is downloaded, preferring the per-language
+ * precompiled file and falling back to the legacy central table.
+ */
+export async function hasOfflineDictionaryByL2(l2: string): Promise<boolean> {
+  if (dictionaryDbFile(l2).exists) return true;
+  const db = await openDictionaryDB();
+  return hasOfflineDictionary(db, l2);
+}
+
+/** Entry count for a language from either the file's dict_meta or central DB. */
+export async function getDownloadedCountByL2(l2: string): Promise<number> {
+  const meta = await getDictMetaForL2(l2);
+  return meta?.entry_count ?? 0;
 }
