@@ -144,7 +144,7 @@ Manual checklist review found three more issues, all fixed:
 | Docs TOC sidebar | Docs kept the single-screen inline "On this page" list with no sidebar parity | Implemented web's TOC logic: persistent right sidebar at ≥1280, slide-in drawer below with a floating button, H2/H3 anchors scroll to headings via measured offsets |
 | Channel 404 | Mobile called `/channels/{id}` but the backend only exposes `/channels/{id}/videos`, so every channel page hit a raw axios 404; the error was shown as hard-coded English | Fetch now uses the `/videos` endpoint; errors are mapped to localized copy (`msg.page_not_found_desc` for 404, `error.failed_to_load` otherwise) |
 | Watch player overflow | `YouTubePlayer` sized itself to the full window when no `containerWidth` was passed, so in landscape it overflowed the left column and ran behind the transcript | The player column is measured with `onLayout` and passed as `containerWidth` in every watch mode |
-| Local Media reachability/icons | The lg+ player column wasn't scrollable, so controls below the player could be unreachable; file-bar lucide icons used `className` colors that render black | Player column scrolls at ≥1024 with captions; file-bar icons use `ICON_MUTED` |
+| Local Media reachability/icons | Without captions (and in stacked mode) the page couldn't scroll, so controls below the tall player were unreachable; file-bar lucide icons used `className` colors that render black | Page scrolls in stacked/no-captions modes; at ≥1024 with captions the player column and transcript each scroll independently; file-bar icons use `ICON_MUTED` |
 | Dictionary entry lg layout | Definition card and tabs panel stayed stacked inside the scroll view even at ≥1024, unlike web's two-column layout | At ≥1024 the panels render side-by-side (`flex-1` definition + `flex-[2]` tabs), matching web; still stacked below lg |
 | Docs content panel | Doc markdown was wrapped in a rounded `bg-card` panel, unlike web's plain prose article | Content now renders as capped (`max-w-3xl`) prose directly on the page background; TOC heading offsets still work without the card wrapper |
 
@@ -368,7 +368,7 @@ buckets follow Tailwind: `<640`, `640–767`, `768–1023`, `1024–1279`, `≥1
 - [ ] **TV Show detail** — row list capped at 896.
 - [ ] **Channel** — Explore-style grid; channel header card intact; loads once (no 404/loading refetch loop); 404 shows localized copy (no raw axios English).
 - [ ] **Watch** — portrait: subtitle band below player (controls + active line in one card band); landscape: translucent subtitle band overlay on the video (white text, no opaque card); the iframe stays inside the player column.
-- [ ] **Local Media** — with captions: stacked below 1024, player + 320px transcript at ≥1024 with the player column scrollable; without captions: full-width player; content capped at 1280; file-bar icons use theme tokens.
+- [ ] **Local Media** — with captions: stacked below 1024 with the page scrollable, player + 320px transcript at ≥1024 with independently scrolling columns; without captions: full-width player with the page scrollable so controls are reachable; content capped at 1280; file-bar icons use theme tokens.
 - [ ] **Watch History** — capped at 896; date grouping retained (documented mobile improvement).
 - [ ] **Liked Videos** — capped at 896.
 - [ ] **Playlists** — card grid 1/2/3 at `<640 / 640–1023 / ≥1024`; delete overlay on cards; empty-state "New playlist" opens the dialog; icons use theme tokens.
