@@ -149,6 +149,11 @@ Deliberately **not** a field on `SettingsV2`:
 - Cloud hydration merges `{ ...cloud, ...local }`, so there is no field to
   clobber or resurrect on another device.
 
+**Logout**: logging out turns Offline Mode **off** (the toggle stays
+device-local and is not synced, but a logged-out login screen must not be
+blocked by the network gate). The logout wipe (`wipeUserData`) resets the
+persisted flag, and the settings UI state follows.
+
 ### Network Gate (`apps/mobile/lib/offline-mode.ts`)
 
 - `OfflineModeError` — a named error for blocked requests.

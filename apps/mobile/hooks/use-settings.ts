@@ -103,6 +103,10 @@ export function useSettings() {
       cloudLoadedUserId.current = null;
       setSettings(createSettingsV2());
       if (syncTimer.current) clearTimeout(syncTimer.current);
+      if (next === null) {
+        // Logged out: reflect the wipe's Offline Mode reset in the UI state.
+        setOfflineModeState(false);
+      }
     }
   }, [user?.id]);
 
