@@ -3,9 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-018
 - **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
-- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred)
+- **Status**: draft — Phase 1–2 implemented; Phase 3 partially implemented (3a, 3c, 3d, 3e, 3f, 3g done; 3b deferred); Phase 4 (offline romanization parity) implemented
 - **Created**: 2026-07-26
-- **Last updated**: 2026-08-07
+- **Last updated**: 2026-08-08
 - **Supersedes**: [SPEC-016](../specs/016-mobile-local-tokenization.md)
 - **See also**:
   - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy and strategy reference
@@ -34,6 +34,7 @@
 | Phase 3e — Batch endpoint offline fallback | ✅ Implemented | `use-epub-pagination.ts` falls back to `lemmatizeText()` per block |
 | Phase 3f — Offline Mode setting | ✅ Implemented (2026-08-07) | Settings → Network toggle; local-only network kill switch, never synced |
 | Phase 3g — Tokenization performance | ✅ Implemented (2026-08-07) | Offline Mode skips network; batched lemma/dict lookups; time-sliced tokenization |
+| Phase 4 — Offline romanization parity | ✅ Implemented (2026-08-08) | `romanize.ts` (server char-map port) + `koroman` npm; server Korean switched to PyPI `koroman`; byte-identical online/offline for ko/ru/bg/uk/el/hy/ka |
 
 ## Overview
 
@@ -1088,6 +1089,21 @@ janks in real usage.
 - **Intl.Segmenter** — not viable for Chinese on Hermes: no native support, and the `@formatjs/intl-segmenter` polyfill emits one segment per Han character (verified 2026-08-07). Keep it out of the CJK path.
 - **WASM tokenizers** (`jieba-wasm`) — blocked: Expo/Hermes has no WASM runtime (`expo-webassembly` is not published on npm as of 2026-08-07). Revisit only if a supported runtime ships.
 - **Jieba (pure-JS port or native module)** — `react-native-jieba` (cppjieba Turbo Module) fits RN 0.86/New Architecture but is brand-new/unvetted and forces development builds; a pure-JS port of `jieba-node` (~700 lines) plus a ~3 MB downloadable dict pack would match server accuracy but adds memory/effort. Decision: keep dict max-matching (with both scripts) as the offline fallback; revisit if the ~5% HMM gap proves insufficient.
+
+### Phase 4 — Offline Pronunciation / Romanization Parity ✅ IMPLEMENTED (2026-08-08)
+
+Phase 4 makes offline `pronunciation` match the online API for the seven romanized languages (ko, ru, bg, uk, el, hy, ka).
+
+**Work done**:
+- Server: `zerotohero-python-server/romanize.py` now uses the `koroman` PyPI package (1.0.16, MIT, pure Python) for Korean instead of the hand-written decomposer, which produced non-standard RR (`jotahapnida`, `eopsda`, `dalkgogi`). Commit `39bd078` (server repo).
+- Mobile: `apps/mobile/lib/romanize.ts` — 1:1 TS port of the server's Cyrillic/Greek/Armenian/Georgian char maps, plus `koroman` npm (same codebase as PyPI) for Korean. Zero new data downloads (~20 KB bundled).
+- Wiring: kuromoji-ko tokens get romanized surface forms (`tokenizeKorean()`); the lemma-table/snowball/surface fallback attaches romanization for all seven languages (`lemmatizeLocal()`). Non-word tokens stay pronunciation-free.
+- Tests: `zerotohero-python-server/test_romanize.py` and `apps/mobile/lib/romanize.test.ts` share the same corpus; `vitest.config.ts` now includes `apps/mobile/lib/**/*.test.ts`.
+
+**Known gaps (not part of this phase)**:
+- Arabic/Persian — server engines (Mishkal + Araby SAMPA, PersianG2p) are Python-only; no portable JS G2P. Offline Arabic still uses `arabic-stem` output (see [ARCH-018](../arch/018-local-tokenization-strategy.md)).
+- Thai — no RN-portable romanizer (Node binary / WASM only); server has none either.
+- yue — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
 
 ---
 
