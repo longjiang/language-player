@@ -197,25 +197,27 @@ CREATE TABLE IF NOT EXISTS dict_meta (
 
 ### Download Sizing
 
-The `/dictionary/download` endpoint returns English-definition entries ordered by frequency. A `limit` parameter is still supported, but the mobile client now omits it and downloads every entry (cap-removal trial, 2026-08-08). If storage or download time becomes a problem, the old 125,000-entry default can be restored:
+The `/dictionary/download` endpoint returns English-definition entries ordered by frequency. The mobile client downloads **every entry** — the old 125,000-entry cap is removed permanently ([ADR-0031](../adr/0031-full-offline-dictionary-downloads.md)). A `limit` parameter is still supported server-side for testing/compatibility; omitting it (or `0`/`all`/`none`) means full.
+
+The table below shows current full-entry counts. The size/time columns are rough historical estimates from the JSON/NDJSON era; actual transfers are gzipped precompiled SQLite databases (e.g. Spanish full = ~17 MB gzip / ~170 MB on device, English full = ~46 MB gzip).
 
 | L2 | ISO 639-3 | Dict Table | Total Wiktionary | Freq Entries | Non-Freq Entries | Downloaded | Gzip Download | Est. Time |
 |---|---|---|---|---|---|---|---|---|
-| en | eng | wiktionary | 511,526 | 36,050 | 88,950 | 125,000 | ~9.0 MB | ~55s |
-| zh | zho | cedict | 142,937 | 0 | 125,000 | 125,000 | ~8.7 MB | ~55s |
+| en | eng | wiktionary | 511,526 | 36,050 | 475,476 | 511,526 | ~46 MB | varies |
+| zh | zho | cedict | 142,937 | 0 | 142,937 | 142,937 | ~8.7 MB | varies |
 | ja | jpn | edict | 122,679 | 0 | 122,679 | 122,679 | ~4.8 MB | ~54s |
-| fr | fra | wiktionary | 381,102 | 20,112 | 104,888 | 125,000 | ~3.4 MB | ~55s |
-| it | ita | wiktionary | 598,609 | 19,773 | 105,227 | 125,000 | ~3.2 MB | ~55s |
+| fr | fra | wiktionary | 381,102 | 20,112 | 360,990 | 381,102 | ~3.4 MB | varies |
+| it | ita | wiktionary | 598,609 | 19,773 | 578,836 | 598,609 | ~3.2 MB | varies |
 | ko | kor | kengdic | 34,706 | 0 | 34,706 | 34,706 | ~1.5 MB | ~15s |
 | nl | nld | wiktionary | 117,361 | 18,057 | 99,304 | 117,361 | ~3.8 MB | ~52s |
-| de | deu | wiktionary | 290,619 | 17,686 | 107,314 | 125,000 | ~4.2 MB | ~55s |
-| pt | por | wiktionary | 297,974 | 17,317 | 107,683 | 125,000 | ~3.4 MB | ~55s |
-| es | spa | wiktionary | 243,711 | 15,895 | 109,105 | 125,000 | ~2.9 MB | ~55s |
+| de | deu | wiktionary | 290,619 | 17,686 | 272,933 | 290,619 | ~4.2 MB | varies |
+| pt | por | wiktionary | 297,974 | 17,317 | 280,657 | 297,974 | ~3.4 MB | varies |
+| es | spa | wiktionary | 243,711 | 15,895 | 227,816 | 243,711 | ~17 MB | varies |
 | ar | ara | wiktionary | 122,123 | 14,726 | 107,397 | 122,123 | ~3.3 MB | ~54s |
-| ca | cat | wiktionary | 136,259 | 14,449 | 110,551 | 125,000 | ~2.7 MB | ~55s |
+| ca | cat | wiktionary | 136,259 | 14,449 | 121,810 | 136,259 | ~2.7 MB | varies |
 | hu | hun | wiktionary | 68,991 | 13,810 | 55,181 | 68,991 | ~2.4 MB | ~31s |
-| fi | fin | wiktionary | 214,142 | 13,272 | 111,728 | 125,000 | ~4.6 MB | ~55s |
-| ru | rus | wiktionary | 419,467 | 12,825 | 112,175 | 125,000 | ~4.7 MB | ~55s |
+| fi | fin | wiktionary | 214,142 | 13,272 | 200,870 | 214,142 | ~4.6 MB | varies |
+| ru | rus | wiktionary | 419,467 | 12,825 | 406,642 | 419,467 | ~4.7 MB | varies |
 | sv | swe | wiktionary | 109,133 | 12,570 | 96,563 | 109,133 | ~2.4 MB | ~48s |
 | no | nob | wiktionary | 71,605 | 12,249 | 59,356 | 71,605 | ~1.6 MB | ~32s |
 | ro | ron | wiktionary | 59,192 | 10,966 | 48,226 | 59,192 | ~1.5 MB | ~26s |
@@ -511,7 +513,7 @@ Add a session-level `Map<string, DictionaryEntry[]>` to `DictionaryContext` that
 | `/dictionary/lookup` | POST | ✅ Exists | Online word lookup with LLM fallback + L1 translation |
 | `/dictionary/lookup-batch` | POST | ✅ Exists | Batch lookup for multiple words |
 | `/dictionary/entry` | GET | ✅ Exists | Fetch single entry by dict ID + scoped entry ID |
-| `/dictionary/download` | GET | ⬜ **NEW** | Bulk-export entries using two-tier selection: frequency-ranked first, then by definition length; optional `limit` (default: every entry) |
+| `/dictionary/download` | GET | ✅ Exists | Bulk-export entries using two-tier selection: frequency-ranked first, then by definition length; optional `limit` (default: every entry — see ADR-0031) |
 
 ---
 
