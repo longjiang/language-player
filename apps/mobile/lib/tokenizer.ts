@@ -215,6 +215,12 @@ async function loadDictWordSet(l2: string): Promise<{
       }
       if (row.head.length > maxWordLen) maxWordLen = row.head.length;
     }
+    if (l2 === 'th') {
+      const pronCount = pronByWord.size;
+      const sample = Array.from(pronByWord.entries()).slice(0, 8)
+        .map(([w, p]) => `${w}→${p}`).join(', ');
+      log(`[lemmatize] 📖 DICT-PRON l2=th ${pronCount}/${rows.length} words have pronunciation; sample: ${sample}`);
+    }
 
     // Evict oldest language if at capacity (keep only last 3 to cap at ~3–6 MB)
     if (dictWordSets.size >= 3) {

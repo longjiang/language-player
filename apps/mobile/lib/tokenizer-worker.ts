@@ -492,6 +492,11 @@ async function runWarmDict(l2: string): Promise<void> {
     const words = Array.from(seen);
     const pronunciations = words.map((w) => pinyin.get(w) ?? null);
     const posList = words.map((w) => posByWord.get(w) ?? null);
+    if (l2 === 'th') {
+      const pronCount = pronunciations.filter((p) => !!p).length;
+      const sample = words.slice(0, 8).map((w) => `${w}→${pinyin.get(w) ?? '∅'}`).join(', ');
+      log(`[tokenizer-worker] th dict pron map: ${pronCount}/${words.length} words have pronunciation; sample: ${sample}`);
+    }
     // {w, p, pos} — pinyin drives furigana-style phonetics (tone-marked
     // client-side); pos is attached to lemmas when the dictionary provides it.
     const json = JSON.stringify({ w: words, p: pronunciations, pos: posList });
