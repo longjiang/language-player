@@ -27,7 +27,7 @@ import {
   downloadPrecompiledDictionary,
 } from '@/lib/dictionary-download';
 import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
-import { TOKENIZER_CONFIG } from '@langplayer/shared';
+import { LEMMA_TABLE_CAP_LIMIT, LEMMA_TABLE_CAPPED_LANGS, TOKENIZER_CONFIG } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import {
@@ -435,7 +435,12 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         });
         log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
         try {
-          const ok = await downloadLemmaTable(l2, PYTHON_API_URL, 50000, controller.signal);
+          const ok = await downloadLemmaTable(
+            l2,
+            PYTHON_API_URL,
+            LEMMA_TABLE_CAPPED_LANGS.has(l2) ? LEMMA_TABLE_CAP_LIMIT : undefined,
+            controller.signal,
+          );
           log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
         } catch (e: any) {
           if (cancelMap.get(l2)) throw new Error('Download cancelled');
