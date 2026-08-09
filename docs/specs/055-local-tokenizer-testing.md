@@ -180,12 +180,22 @@ The local tokenizer families covered:
   surface-form entries (`е` shows съм + е cards) — cosmetic; web is
   lemma-only. Ukrainian char map unchanged.
 
-### TC-11 — Arabic (arabic-stem)
+### TC-11 — Arabic (arabic-stem) ⚠️ WARNING
 
 - **Sample**: `العربية لغة غنية وجميلة.`
 - **Steps**: Offline Mode on.
 - **Verify**: Tokens clickable; lemmas stemmed.
 - **Pass**: No crash; lemmas stemmed.
+
+> **Warning (2026-08-08)**: offline Arabic lemmatization is **not at parity
+> with web**. Web/server Qalsadi is mostly correct but has known bugs
+> (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`); offline `arabic-stem` mangles
+> pronouns and conjunctions (`أنا→اني`, `هنا→هني`, `وكيف→وكف`) and resolves
+> most inflected words to roots instead of dictionary forms (`صديقي→صدق`,
+> `مرحبًا→رحب`). Pronunciation: web = Mishkal-vocalized SAMPA; offline =
+> SAMPA char-map transliteration (readable Latin, no added vowels). Do not
+> treat offline lemma parity as pass (tracked in ROADMAP Known Issues).
+
 - **Pronunciation (2026-08-08)**: offline ruby now shows a **Latin SAMPA-style
   transliteration** (port of the server's `pyarabic` Arabic→SAMPA char map:
   `مرحبًا → mrxbana:`, `الإنسان → a:l?nsa:n`, `أنا → ?na:`) instead of the
@@ -237,3 +247,4 @@ These run in CI / `npm test` and should pass before manual QA:
 - **Yue** — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
 - **Russian** — offline lemmas come from a generated wordfreq+pymorphy2 table (~500k surfaces; SPEC-018 Phase 2a). No JS library matched pymorphy2 quality, so the table is required: without it, snowball stems appear (`начал→нача`, `остановиться→останов`). Pre-reform orthography (`Въ`, `отпускъ`, `ѣ`/`і`) is not covered by any modern lemmatizer — surface-as-lemma is expected and matches the server.
 - **Armenian** — offline lemmatization uses the snowball stemmer and does not match server Simplemma (`որքան→որ`, `ամյակին→ամ`, `ուզում→ուզ` vs web `որքան→որքան`, `100-ամյակին→100-ամյակ`, `ուզում→ուզել`), which can surface wrong dictionary cards. A generated Simplemma table is not viable (no wordfreq `hy` frequencies — falls back to Russian — and sparse hy dictionary), so snowball stems offline are expected (TC-08 warning).
+- **Arabic** — web/server Qalsadi has known lemma bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`); offline `arabic-stem` is not at parity (pronouns mangled `أنا→اني`, `هنا→هني`; conjunction `وكيف→وكف`; roots instead of headwords `صديقي→صدق`). Pronunciation: web = vocalized SAMPA; offline = SAMPA char-map transliteration without Mishkal vowels (TC-11 warning).
