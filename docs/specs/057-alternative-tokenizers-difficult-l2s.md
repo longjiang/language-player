@@ -172,6 +172,16 @@ verified **CC BY 4.0**, so the commercially usable path is a lemma-table
 export from DictaBERT-lex (ADR-0029), tracked in Phase 3, rather than a live
 Stanza engine.
 
+**Follow-up recommendations (2026-08-09, v2 eval)**:
+
+- When the DictaBERT-lex table ships, register `he` in
+  `TOKENIZER_CONFIG` so mobile downloads and uses it (today it has no entry
+  at all — regex + surface everywhere).
+- Add clitic-aware dictionary lookup (strip `ב/כ/ל/ה/ו/ש` prefixes for
+  lookup, or include prefixed forms in the table). The Stanza prototype
+  showed this alone raises dict coverage 41% → 59%, which is the difference
+  between B and A for `he`.
+
 ### 4.3 Hindi (`hi`) — C, target A
 
 **Current**: regex fallback despite ARCH-016 listing Simplemma for `hin`.
@@ -189,7 +199,7 @@ The near-char-level Devanagari split is the tokenizer bug, not a lemma gap.
 **Action**: fix matra tokenization, register Simplemma, re-run eval; escalate to
 Stanza only if lemma spot-checks still fail.
 
-### 4.4 Turkish (`tr`) — D, target B/A
+### 4.4 Turkish (`tr`) — D (v1) → B (v2), target A
 
 **Current**: Zeyrek (server). Lemma spot-checks pass (`gittim→gitmek`,
 `aldım→almak`); the D comes from apostrophe loss (`1933'te → 1933te`,
@@ -204,6 +214,20 @@ Stanza only if lemma spot-checks still fail.
 
 **Action**: fix apostrophe preservation; improve dictionary coverage; only then
 consider Stanza.
+
+**Follow-up recommendations (2026-08-09, v2 eval)**:
+
+- **Fix Zeyrek analysis ranking before replacing it.** For `yıl` and `Dil`
+  the correct noun lemma is already candidate #2 — primary spot 7/9 vs
+  any-candidate 9/9. Prefer a nominal analysis when one of the candidates is
+  a dictionary headword (`yıl`, `dil`), which converts the remaining two
+  hard-spot failures without an engine swap.
+- **Export a Zeyrek surface→headword table for offline** (ADR-0029). Snowball
+  stems (`git`, `al`) are not dictionary lemmas, so offline taps miss even
+  when the base word is in the dictionary. Turkish is agglutinative; a
+  table of common forms (same pattern as Persian) is the practical fix.
+- **Lemma-based dictionary lookup** is worth 42 → 76% weighted coverage for
+  `tr` in the v2 eval — the single largest scorecard lever.
 
 ### 4.5 Indonesian (`id`) — D, target B/A
 
@@ -221,6 +245,150 @@ percent signs are mangled (`90% → 90`) — plus the 20% dictionary hit rate.
 **Action**: exclude pipe-table blocks from SPEC-056 paragraph selection (fix
 the artifact), improve dictionary coverage, re-run eval.
 
+### 4.6 German / Italian / Spanish (de / it / es) — B in v2, target A
+
+**Current**: all three route to `lemmatize_lemmatization_lists` — static ODbL
+TSV tables (`data/lemmatization-lists/`), regex tokenization, **no POS**.
+Lookup is context-free: when a surface has multiple lemma candidates, the
+file's first candidate wins. Mobile offline uses the exported table; when the
+table is installed, misses fall back to surface (snowball only when the table
+is not downloaded).
+
+**v2 scorecard symptoms**:
+
+- de 89.0 B — `Gesetzestexte`/`staatliche` left unchanged (forms missing from
+  the table).
+- it 88.1 B — `corsi→correre`, `attraverso→attraversare` (the verb sense is
+  listed first); any-candidate 7/8, primary 6/8.
+- es 87.0 B — `como→comer`, `considerárseles` unchanged.
+
+**Why not just enable spaCy?** ARCH-016's concern is real: the full spaCy
+pipeline (tagger + parser + NER + lemmatizer) is **10–50× slower** than
+LemmatizationList, which is why ADR-0018 demoted it to last resort. That
+measurement applies to the full pipeline, not to a trimmed
+tagger+lemmatizer-only configuration.
+
+**Alternatives**:
+
+| Option | Context-aware | Latency | License | Fit |
+|---|---|---|---|---|
+| Current LemmatizationList | No | baseline (~5 ms/block) | ODbL | keep as fallback + offline table source |
+| **Curated LemmatizationList** (Phase A) | No (deterministic ordering) | baseline | ODbL | **recommended first** — zero deps; add missing inflections; order candidates by dictionary-headword preference |
+| **Trimmed spaCy sm** (tagger + lemmatizer only, exclude parser/NER) | Yes | **verified 2026-08-09**: de 20.8 ms, it 16.0 ms, es 14.0 ms per 200-token block (warm, best of 3, local Mac) — ~2× faster than the full pipeline (31–42 ms) | MIT (models MIT) | **recommended Phase B** when POS context matters (`como`, `corsi`, `attraverso`) |
+| Simplemma | No | fast | MIT code; per-language data verify | alternative table source; already in the stack |
+| Stanza de/es/it (UD GSD/ISDT) | Yes | slow (~hundreds ms/block) | Apache-2.0 code; UD treebanks CC BY-SA 4.0 — commercial OK with attribution, verify model card | fallback only if accuracy demands |
+| UDPipe de/es/it | Yes | fast | models CC BY-NC-SA 4.0 | **blocker** |
+
+**Verified (2026-08-09)** — spaCy 3.7.5, `de_core_news_sm` /
+`it_core_news_sm` / `es_core_news_sm`, loaded with
+`exclude=["parser","ner"]`:
+
+- The trimmed pipeline keeps
+  `tok2vec → tagger → morphologizer → lemmatizer → attribute_ruler`. The
+  spaCy lemmatizer is a **separate rule-based component that consumes
+  `token.tag_`/`pos_`** — it does not need the parser or NER, and lemma
+  output is identical to the full pipeline on every hard form.
+- de: `Gesetzestexte→Gesetzestext`, `staatliche→staatlich`,
+  `Ausschreibungen→Ausschreibung`, `französischen→französisch`,
+  `Fassungen→Fassung` — **5/5 fixed**.
+- it: `corsi→corso`, `attraverso→attraverso` (ADP),
+  `italiana→italiano`, `assicura→assicurare`, `promozione→promozione` —
+  **5/5 fixed**.
+- es: `como→como` (SCONJ), `tienen→tener`, `otros→otro`,
+  `española→español` — **4/5**; `considerárseles→considerársel` (spaCy
+  tags the enclitic as NOUN) remains wrong. Cover it with an
+  `attribute_ruler` rule or a table entry.
+- Warm latency per 200-token block (best of 3, local Mac): trimmed
+  de 20.8 / it 16.0 / es 14.0 ms vs full 41.8 / 35.7 / 31.2 ms — well
+  inside the proposed < 50 ms budget.
+
+**Action**:
+
+1. ✅ **Implemented 2026-08-09 — trimmed spaCy.** `LEMMATIZER_REGISTRY`
+   routes de/es/it to `lemmatize_spacy` with `exclude=("parser","ner")` and
+   cache namespace `spacy-trim-v2`. Hard spots verified via the module
+   directly: de 5/5, it 5/5, es 4/5 (`considerárseles` still wrong — needs
+   an `attribute_ruler` rule or table entry). LemmatizationList remains the
+   transitional offline-table source for mobile.
+2. **Remaining — table curation (no new dependencies).** Add
+   `considerárseles→considerar` and the missing German forms to the TSVs for
+   offline parity until spaCy-backed tables land.
+3. **Pending — regenerate mobile lemma tables** from the trimmed spaCy
+   engine (ADR-0029) so offline headwords match the server's POS-aware
+   output. Until then `/lemmatization/export` serves the existing TSVs
+   (transitional `SPACY_TSV_EXPORT_LANGS`).
+
+### 4.7 Thai (th) — B in v2, target A
+
+**Current**: server PyThaiNLP `newmm` segmentation + `thaiphon`
+pronunciation, surface-as-lemma; mobile dictionary max-matching + surface.
+Thai does not inflect, so there is no lemma engine to replace — the gap is
+data.
+
+**v2 scorecard symptoms**: segmentation and word pronunciation are fine
+(pronunciationCoverageWords 75%; the misses are digits and CEFR labels such
+as `A1`–`C2`). Dictionary coverage is 57% weighted, with common words
+(`แตกตัว`, `รวมทั้งหมด`) missing.
+
+**Alternatives**:
+
+| Option | Fit |
+|---|---|
+| **Keep newmm** | Correct segmentation for normal text; no change needed |
+| AttaCut (MIT) | Optional spike for OOV-heavy subtitle text; neural segmenter, still surface-as-lemma |
+| **Dictionary headword/alternate export** | The actual fix — same `head UNION alternate` pattern that fixed zh in SPEC-058 |
+
+**Action** (Phase 6): expand the th dictionary export used by mobile
+max-matching; target weighted dict coverage ≥ 60%; optional AttaCut spike if
+OOV splits regress on subtitle corpora.
+
+### 4.8 Cantonese (yue) — B in v2, target A
+
+**Current**: server jieba + cccanto lexicon overlay + jyutping polyfill
+(surface-as-lemma); mobile dictionary max-matching. The mobile main-thread
+dict-seg path lacks jyutping (the WebView worker covers it per SPEC-058).
+
+**v2 scorecard symptoms**: dict coverage 37% weighted — **粵語 itself has no
+dictionary entry**; pronunciation 96% with common function words missing
+(`但`, `喺`, `年`, `快`). Segmentation is otherwise fine.
+
+**Alternatives**:
+
+| Option | Fit |
+|---|---|
+| **Expand cccanto / CC-Canto headwords + alternates** | Raise coverage in both the jieba overlay and the mobile word set; 粵語/生存環境/前所未有 are the first targets |
+| **ToJyutping** (BSD-2-Clause/MIT) | Fill jyutping gaps (`但`→`daan6`, `喺`→`hai2`); verify data attribution |
+| **PyCantonese** (MIT code; bundled data mixed: HKCanCor CC BY, CantoMap GPL-3.0, Common Voice MPL-2.0) | Alternative jyutping/segmentation source; server-side OK under the existing GPL policy, verify redistribution |
+| Mobile main-thread jyutping parity | Ship jyutping via dictionary rows or the worker path so main-thread matches SPEC-058's worker score |
+
+**Action** (Phase 6): expand the Cantonese dictionary export; spike ToJyutping
+or PyCantonese for pronunciation; re-run v2 (target weighted dict ≥ 60%,
+word-like pron 100% on the corpus).
+
+### 4.9 Korean (ko) — B in v2, target A
+
+**Current**: server konlpy **Okt** (`norm=True`, `stem=True`) — the eval
+shows particle lemmas are wrong (`는→늘다`, `서→서다`). Mobile uses
+kuromoji-ko (mecab-ko-dic) + koroman romanization, with a known
+pronunciation gap (per-token surfaces vs word-level romanization).
+
+**v2 scorecard symptoms**: hard spots 5/7; lemma-based dictionary lookup
+would raise coverage 48→65%.
+
+**Alternatives**:
+
+| Option | Fit |
+|---|---|
+| **Kiwi (`kiwipiepy`, LGPL-3.0)** | **Recommended server engine.** Fast C++ core, accurate lemma+POS output, fixes particle lemmas; LGPL is acceptable under the same policy that already accepts GPL Qalsadi/CAMeL server-side — verify model-data terms |
+| mecab-ko (eunjeon) | Alternative if LGPL/JVM concerns; same MeCab family as mobile |
+| **Keep kuromoji-ko on mobile** | Engine is fine; fix pronunciation by romanizing dictionary headwords/lemmas instead of every surface token |
+| Lemma-based dictionary lookup | 48→65% weighted coverage; integration fix, not an engine swap |
+
+**Action** (Phase 5): prototype Kiwi on the SPEC-056 Korean corpus + hard
+spots (`는`, `서`, `불렀으나`, `쓰는`, `부른다`, `먹었습니다`); if adopted,
+rewrite `lemmatize_korean` around Kiwi and register it; re-run v2 (target
+hard spots 7/7). Separately fix mobile per-token romanization.
+
 ---
 
 ## 5. Licensing Matrix
@@ -231,11 +399,16 @@ Verified 2026-08-09 from project homepages/model cards:
 |---|---|---|---|
 | CAMeL Tools | MIT | Data packages download separately: MSA morphology/MLE (`calima-msa-r13`) GPL v2; `morphology-db-msa-s31` LDC (SAMA 3.1); Levantine/Gulf DBs CC BY 4.0; dialect-id MIT | **Accepted server-side** (GPL v2, not distributed to clients; LDC `s31` excluded) |
 | UDPipe | MPL-2.0 | Models CC BY-NC-SA 4.0 | **Blocker** (non-commercial) unless separately licensed |
-| Stanza | Apache-2.0 | Hebrew model card Apache-2.0, but trained on UD Hebrew HTB (CC BY-NC-SA 4.0) | **Blocker for `he`**; verify per model for other languages |
+| Stanza | Apache-2.0 | Hebrew model card Apache-2.0, but trained on UD Hebrew HTB (CC BY-NC-SA 4.0); de/es/it trained on UD GSD/ISDT (CC BY-SA 4.0) | **Blocker for `he`**; de/es/it commercial OK with attribution — verify per model card |
 | Zeyrek | MIT | n/a | OK |
 | Simplemma | MIT | Per-language linguistic databases have separate licenses | Verify databases in use |
 | Qalsadi | GPL-3.0 | n/a | Already in tree; note copyleft consideration |
 | DictaBERT-lex | CC BY 4.0 (HF model card) | CC BY 4.0 | OK with attribution — recommended `he` table source |
+| spaCy de/es/it sm | MIT | MIT (model cards; TIGER/GSD-derived) | OK |
+| Kiwi (`kiwipiepy`) | LGPL-3.0 | verify model/data terms | Acceptable server-side (same policy as GPL Qalsadi/CAMeL); not for client distribution |
+| AttaCut | MIT | MIT | OK |
+| ToJyutping | BSD-2-Clause (MIT on some channels) | verify data attribution | OK |
+| PyCantonese | MIT | bundled data mixed: HKCanCor CC BY, CantoMap GPL-3.0, Common Voice MPL-2.0 | Server-side OK; verify redistribution |
 
 ---
 
@@ -338,6 +511,56 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
 13. Generate lemma tables (ADR-0029) from **DictaBERT-lex** (CC BY 4.0,
     verified 2026-08-09) for offline use per SPEC-018.
 
+### Phase 4 — de / it / es: table curation + trimmed spaCy prototype
+
+14. Curate the de/it/es `lemmatization-lists` tables for the remaining gaps
+    (`considerárseles→considerar`, plus any forms trimmed spaCy still
+    misses) and for offline parity until spaCy-backed tables land.
+15. ✅ **Implemented 2026-08-09** — de/es/it route to trimmed spaCy
+    (`de_core_news_sm` / `it_core_news_sm` / `es_core_news_sm` with
+    `exclude=("parser","ner")`, cache `spacy-trim-v2`). Verified identical
+    lemmas to the full pipeline at de 20.8 / it 16.0 / es 14.0 ms per
+    200-token block (full: 41.8 / 35.7 / 31.2). Hard spots: de 5/5, it 5/5,
+    es 4/5. `/lemmatization/export` keeps serving the existing TSVs
+    (transitional).
+16. Pending — regenerate mobile lemma tables from the trimmed spaCy engine
+    (ADR-0029) so offline output matches server POS-aware lemmas.
+
+### Phase 5 — Korean server engine spike
+
+17. Prototype **Kiwi** (`kiwipiepy`, LGPL-3.0) on the SPEC-056 Korean corpus
+    + hard spots (`는`, `서`, `불렀으나`, `쓰는`, `부른다`, `먹었습니다`);
+    record latency, lemma coverage, and spot pass rate; verify model-data
+    license terms (LGPL accepted under the existing GPL server-side policy).
+18. If adopted: rewrite `lemmatize_korean` around Kiwi, register in
+    `LEMMATIZER_REGISTRY`, re-run SPEC-056 v2 (target hard spots 7/7).
+19. Mobile: keep kuromoji-ko; fix per-token pronunciation by romanizing
+    dictionary headwords/lemmas (addresses the SPEC-058 ~11% coverage gap).
+
+### Phase 6 — th / yue dictionary data + pronunciation
+
+20. Expand th and yue dictionary exports (`head UNION alternate`) used by
+    mobile max-matching and the jieba/cccanto overlay; first targets: th
+    `แตกตัว`/`รวมทั้งหมด`, yue `粵語`/`生存環境`/`前所未有`; target weighted
+    dict coverage ≥ 60% for both.
+21. Spike **ToJyutping** or **PyCantonese** for yue jyutping gaps (`但`,
+    `喺`, `年`, `快`); target 100% word-like pronunciation on the corpus.
+    Optionally spike **AttaCut** (MIT) for th OOV-heavy text.
+22. Ship yue jyutping on the mobile main-thread path (dictionary rows or
+    worker fallback) for SPEC-058 parity.
+
+### Phase 7 — he / tr offline parity + lemma lookup
+
+23. Generate the **DictaBERT-lex** `he` lemma table (CC BY 4.0); add
+    clitic-aware lookup or prefixed forms (target dict coverage 41 → 59%+);
+    register `he` in `TOKENIZER_CONFIG`.
+24. Turkish: rank Zeyrek analyses to prefer dictionary-headword candidates
+    (`yıl`, `dil`); export a Zeyrek surface→headword table for offline use,
+    replacing the snowball-only path.
+25. Lemma-based dictionary lookup across inflected languages (en 84→94,
+    es 71→89, ru 48→80, tr 42→76, ar 58→89, ko 48→65 in the v2 eval) —
+    integration change in the lookup step, not the lemmatizers.
+
 ---
 
 ## 7. Definition of Done
@@ -352,6 +575,14 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
    remains in this spec — ✅ Arabic re-run and promoted into SPEC-056;
    Hebrew/Stanza blocker documented (CC BY-NC-SA).
 4. SPEC-055 test cases updated where behavior changes.
+5. de/it/es: curated tables committed and v2 hard spots at target (8/8, 8/8,
+   7/7), or the trimmed-spaCy benchmark is recorded with a go/no-go decision.
+6. Kiwi prototype recorded with LGPL-3.0 verification and a go/no-go note for
+   `ko`.
+7. th/yue dictionary exports expanded and re-run (weighted dict ≥ 60%); yue
+   pronunciation gaps closed or explicitly documented.
+8. he/tr offline lemma tables generated, `TOKENIZER_CONFIG` entries registered,
+   and lemma-based dictionary lookup landed or tracked in its owning spec.
 
 ---
 
@@ -365,3 +596,11 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
   exported as offline lemma tables?
 - Is the dictionary-coverage gap part of this spec, SPEC-056, or a separate
   data spec?
+- Is < 50 ms per 200-token block the right p95 budget for trimmed spaCy on
+  de/es/it, or should it match the current LemmatizationList latency (~5 ms)?
+- Is LGPL-3.0 (Kiwi) acceptable server-side under the same policy as GPL
+  Qalsadi/CAMeL? If yes, record it in the accepted-license list.
+- Should lemma-based dictionary lookup land in SPEC-057, SPEC-056, or a
+  separate integration spec?
+- Are AttaCut / ToJyutping / PyCantonese runtime dependencies or offline data
+  generators (tables/exports) only?

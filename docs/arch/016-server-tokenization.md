@@ -192,14 +192,14 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Burmese | `my`, `mya` | `lemmatize_burmese` | pyidaungsu | No |
 | Catalan | `ca` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
 | Danish | `da` | `lemmatize_simple` | Simplemma | Yes |
-| German | `de` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
+| German | `de` | `lemmatize_spacy` | spaCy `de_core_news_sm` (trimmed — parser/NER excluded) | Yes |
 | Greek | `el` | `lemmatize_simple` | Simplemma | Yes |
 | English | `en` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Spanish | `es` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
+| Spanish | `es` | `lemmatize_spacy` | spaCy `es_core_news_sm` (trimmed — parser/NER excluded) | Yes |
 | Finnish | `fi` | `lemmatize_simple` | Simplemma | Yes |
 | French | `fr` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
 | Croatian | `hr` | `lemmatize_spacy` | spaCy (`hr_core_news_sm`) | Yes |
-| Italian | `it` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
+| Italian | `it` | `lemmatize_spacy` | spaCy `it_core_news_sm` (trimmed — parser/NER excluded) | Yes |
 | Lithuanian | `lt` | `lemmatize_simple` | Simplemma | Yes |
 | Macedonian | `mk` | `lemmatize_simple` | Simplemma | Yes |
 | Norwegian Bokmål | `nb` | `lemmatize_simple` | Simplemma | Yes |
@@ -468,20 +468,34 @@ no pronunciation. Burmese (`my`) is not here — it keeps
 
 Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is treated as a **last resort** tokenizer. It is the most accurate but also the slowest. In the unified pipeline, only **Croatian (`hrv`)** actively uses spaCy — all other languages previously routed to spaCy now use Simplemma or LemmatizationList.
 
-**Model mapping** (for reference — only `hr_core_news_sm` is actively dispatched):
+**Exception (SPEC-057 §4.6, implemented 2026-08-09)**: `de`/`es`/`it` use
+spaCy again, but in **trimmed** form — the models are loaded with
+`exclude=("parser", "ner")`. The spaCy lemmatizer is a rule-based component
+that consumes `token.tag_`/`pos_` from the tagger/morphologizer, so the
+parser and NER are irrelevant to lemma extraction. The static
+LemmatizationList tables cannot disambiguate POS (`como→comer`,
+`corsi→correre`) and miss inflected forms (`Gesetzestexte`, `staatliche`);
+trimmed spaCy fixes both. Verified on the SPEC-056 corpus: identical lemmas
+to the full pipeline at **de 20.8 / it 16.0 / es 14.0 ms** per 200-token
+block (full pipeline: 41.8 / 35.7 / 31.2 ms) — roughly half the full-pipeline
+latency and comfortably inside the < 50 ms budget. Cache namespace is
+`spacy-trim-v2` for these three so stale full-pipeline cache entries are
+never served.
+
+**Model mapping** (for reference — `hr_core_news_sm` runs full; `de_core_news_sm`/`it_core_news_sm`/`es_core_news_sm` run trimmed):
 
 | ISO 639-3 | spaCy Model | Language | Unified Pipeline |
 |---|---|---|---|
 | `cat` | `ca_core_news_sm` | Catalan | LemmatizationList |
 | `dan` | `da_core_news_sm` | Danish | Simplemma |
-| `deu` | `de_core_news_sm` | German | LemmatizationList |
+| `deu` | `de_core_news_sm` | German | ⚠️ **spaCy (trimmed — parser/NER excluded)** |
 | `ell` | `el_core_news_sm` | Greek | Simplemma |
 | `eng` | `en_core_web_sm` | English | LemmatizationList |
-| `spa` | `es_core_news_sm` | Spanish | LemmatizationList |
+| `spa` | `es_core_news_sm` | Spanish | ⚠️ **spaCy (trimmed — parser/NER excluded)** |
 | `fin` | `fi_core_news_sm` | Finnish | Simplemma |
 | `fra` | `fr_core_news_sm` | French | LemmatizationList |
 | `hrv` | `hr_core_news_sm` | Croatian | ⚠️ **spaCy (only active user)** |
-| `ita` | `it_core_news_sm` | Italian | LemmatizationList |
+| `ita` | `it_core_news_sm` | Italian | ⚠️ **spaCy (trimmed — parser/NER excluded)** |
 | `lit` | `lt_core_news_sm` | Lithuanian | Simplemma |
 | `mkd` | `mk_core_news_sm` | Macedonian | Simplemma |
 | `nob` | `nb_core_news_sm` | Norwegian Bokmål | Simplemma |
@@ -505,13 +519,17 @@ Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is t
 **How it works**:
 1. Lazy-load spaCy models (kept in memory after first use)
 2. `spacy.prefer_gpu()` for GPU acceleration
-3. `nlp(text)` — full NLP pipeline (tokenization, POS tagging, lemmatization, dependency parsing)
+3. `nlp(text)` — full NLP pipeline for other languages; for de/es/it the model is loaded with `exclude=("parser", "ner")`, leaving `tok2vec → tagger → morphologizer → lemmatizer → attribute_ruler`
 4. Extracts `token.text`, `token.lemma_`, `token.pos_` for each token
-5. Cache key: `cache/lemmatization/spacy/{lang}/{md5}`
+5. Cache key: `cache/lemmatization/spacy-trim-v2/{lang}/{md5}` for de/es/it, `cache/lemmatization/spacy/{lang}/{md5}` otherwise
 
 **POS tags**: spaCy's Universal Dependencies tagset (e.g., `DET`, `NOUN`, `VERB`, `ADJ`, `PROPN`, `PUNCT`).
 
-> **⚠️ Still needed for**: Croatian (`hrv`), which has no Simplemma or LemmatizationList coverage. Also used by the **legacy video cache** — cached subtitle data for 19 languages was tokenized with spaCy before ADR-0018 was applied. See [Legacy vs. Unified Pipeline](#legacy-vs-unified-pipeline).
+> **⚠️ Still needed for**: Croatian (`hrv`, full pipeline — no Simplemma or
+> LemmatizationList coverage) and de/es/it (`deu`/`spa`/`ita`, trimmed —
+> POS-aware lemmatization per SPEC-057 §4.6). Also used by the **legacy
+> video cache** — cached subtitle data for 19 languages was tokenized with
+> spaCy before ADR-0018 was applied. See [Legacy vs. Unified Pipeline](#legacy-vs-unified-pipeline).
 
 ---
 
@@ -945,7 +963,7 @@ Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canoni
 
 ### Preference Rationale
 
-- **Performance**: spaCy's full NLP pipeline (dependency parsing, NER) is unnecessary for simple lemma extraction, adding 10–50× latency.
+- **Performance**: spaCy's full NLP pipeline (dependency parsing, NER) is unnecessary for simple lemma extraction, adding 10–50× latency. **Exception**: de/es/it re-enabled spaCy in trimmed form (parser/NER excluded) because the static lists cannot disambiguate POS; trimmed latency is ~14–21 ms per 200-token block vs 31–42 ms full (SPEC-057 §4.6).
 - **Proven in production**: The Classic Nuxt app has been using Simplemma/LemmatizationList for 18 of 19 spaCy languages for years without user complaints.
 - **Zero-runtime-cost**: LemmatizationList is a static dictionary lookup after initial load. Simplemma is a lightweight dictionary-based lemmatizer.
 
@@ -972,14 +990,14 @@ These 19 languages previously routed to spaCy are now dispatched as follows:
 |---|---|---|---|---|---|---|---|
 | 1 | Catalan | `cat` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
 | 2 | Danish | `dan` | ✅ | ✅ | ❌ | **Simplemma** | No |
-| 3 | German | `deu` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 3 | German | `deu` | ✅ | ✅ | ✅ | **spaCy (trimmed)** | ⚠️ **Yes** |
 | 4 | Greek | `ell` | ✅ | ✅ | ❌ | **Simplemma** | No |
 | 5 | English | `eng` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
-| 6 | Spanish | `spa` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 6 | Spanish | `spa` | ✅ | ✅ | ✅ | **spaCy (trimmed)** | ⚠️ **Yes** |
 | 7 | Finnish | `fin` | ✅ | ✅ | ❌ | **Simplemma** | No |
 | 8 | French | `fra` | ✅ | ~~excluded~~ | ✅ | **LemmatizationList** | No |
 | 9 | **Croatian** | `hrv` | ✅ | ❌ | ❌ | **spaCy** | ⚠️ **Yes** |
-| 10 | Italian | `ita` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 10 | Italian | `ita` | ✅ | ✅ | ✅ | **spaCy (trimmed)** | ⚠️ **Yes** |
 | 11 | Lithuanian | `lit` | ✅ | ✅ | ❌ | **Simplemma** | No |
 | 12 | Macedonian | `mkd` | ✅ | ✅ | ❌ | **Simplemma** | No |
 | 13 | Norwegian Bokmål | `nob` | ✅ | ✅ | ❌ | **Simplemma** | No |
@@ -998,7 +1016,11 @@ These 19 languages previously routed to spaCy are now dispatched as follows:
 | `hin` | Hindi | Simplemma breaks too many words | spaCy or BaseTokenizer |
 | `fra` | French | Simplemma fails to lemmatize verbs | LemmatizationList |
 
-Of the 19 spaCy languages, **only Croatian (`hrv`) still requires spaCy** — it has no Simplemma or LemmatizationList coverage. For the other 18, spaCy could be removed as the primary tokenizer without losing lemmatization.
+Of the 19 spaCy languages, **Croatian (`hrv`, full pipeline) and
+de/es/it (`deu`/`spa`/`ita`, trimmed pipeline) still require spaCy** —
+Croatian has no Simplemma or LemmatizationList coverage, and de/es/it need
+POS-aware lemmatization that the static lists cannot provide (SPEC-057
+§4.6). For the other 16, spaCy is not used as the primary tokenizer.
 
 ### Simplemma-only languages (unchanged)
 
@@ -1020,7 +1042,7 @@ These 21 languages only have Simplemma available among the general-purpose token
 | Persian | `hazm`, `PersianG2p` | Pure Python |
 | Turkish | `zeyrek` | Pure Python |
 | Burmese | `pyidaungsu` | Pure Python |
-| spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()`. Only Croatian (`hrv`) actively dispatched in unified pipeline per ADR-0018. |
+| spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()`. Croatian (`hrv`) runs the full pipeline; de/es/it run trimmed (`exclude=("parser","ner")`, cache `spacy-trim-v2`) per SPEC-057 §4.6. |
 | Simplemma (27 langs) | `simplemma` | Pure Python. Preferred over spaCy per ADR-0018. |
 | LemmatizationList (24 langs) | None (TSV files) | Pre-computed lookup tables at `data/lemmatization-lists/`. Highest-priority general-purpose tokenizer per ADR-0018. |
 | Vietnamese | `pyvi` | Pure Python |
