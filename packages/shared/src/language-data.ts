@@ -25,7 +25,7 @@ export const POPULAR_L1S: readonly string[] = [
  * ARCH-021 and ADR-0030.
  */
 export const POPULAR_L2S: readonly string[] = [
-  'en', 'zh', 'ja', 'ko', 'fr', 'de', 'es',
+  'zh', 'en', 'ja', 'ko', 'fr', 'de', 'es',
   'vi', 'ru', 'ar', 'tr', 'it', 'hi', 'yue', 'th', 'id', 'nl', 'he', 'pt',
 ];
 
