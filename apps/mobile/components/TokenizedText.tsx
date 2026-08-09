@@ -731,13 +731,30 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
               if (!isWord(token)) {
+                // Whitespace gap tokens must get explicit dimensions: in this
+                // View-based (ruby/definition) path every token is a flex
+                // item, and Yoga collapses whitespace-only <Text> items to
+                // zero width — words would render flush together (regression
+                // surfaced with space-separated non-Latin text, e.g. Greek).
+                const isSpace = token.text === ' ';
+                const isTab = token.text === '\t';
+                const isNewline = token.text === '\n';
+                const whitespaceStyle = isSpace
+                  ? { width: Math.max(2, Math.round(tokenFontSize * 0.28)) }
+                  : isTab
+                    ? { width: Math.max(2, Math.round(tokenFontSize * 1.1)) }
+                    : isNewline
+                      ? { flexBasis: '100%' as const, height: 0 }
+                      : undefined;
                 return (
-                  <View key={i} className="items-center">
-                    <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
+                  <View key={i} className="items-center" style={whitespaceStyle}>
+                    {!isNewline && (
+                      <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
+                    )}
                     {/* Universal definition slot: when showDefinition is on, every token
                         gets a slot of the same height so all word texts share a baseline.
                         Punctuation gets an empty spacer. */}
-                    {showDefinition && (
+                    {showDefinition && !isNewline && (
                       <View style={{ height: readingSize + 2 }} />
                     )}
                   </View>
