@@ -57,6 +57,18 @@ function stripFragment(href: string): string {
   return idx === -1 ? href : href.slice(0, idx);
 }
 
+/**
+ * Prefer the first non-English language when an OPF lists several
+ * <dc:language> elements — Calibre exports commonly put 'en' first followed
+ * by the real language, which would otherwise shelve books under English.
+ */
+function pickPreferredLanguage(languages: string[]): string | null {
+  if (languages.length === 0) return null;
+  const primary = (code: string) => code.trim().split(/[-_]/)[0]?.toLowerCase() || null;
+  const nonEnglish = languages.find((l) => primary(l) !== 'en');
+  return primary(nonEnglish ?? languages[0]!);
+}
+
 /** Extract one XML attribute value, supporting both double and single quotes. */
 function extractAttr(attrsStr: string, name: string): string | undefined {
   const m = attrsStr.match(new RegExp(`${name}\\s*=\\s*"([^"]*)"`)) ??
@@ -168,8 +180,9 @@ export function parseOPF(
   let language: string | null = null;
   if (metaMatch) {
     const metaXml = metaMatch[1]!;
-    const langM = metaXml.match(/<dc:language[^>]*>([^<]+)<\/dc:language>/i);
-    if (langM) language = langM[1]!.trim() || null;
+    const langMatches = metaXml.matchAll(/<dc:language[^>]*>([^<]+)<\/dc:language>/gi);
+    const languages = [...langMatches].map((m) => m[1]!.trim()).filter(Boolean);
+    language = pickPreferredLanguage(languages);
   }
 
   return { spine, toc, coverBase64, coverItemId, opfDir, title, author, language };
