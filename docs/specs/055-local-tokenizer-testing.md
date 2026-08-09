@@ -259,11 +259,12 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
   also clears in-memory/WebView tokenizer caches so the new readings apply
   without an app restart.
 
-### TC-13 — Generic fallback (e.g. Spanish)
+### TC-13 — Generic fallback (e.g. Spanish) ✅ PASS (2026-08-09)
 
 - **Sample**: `Los estudiantes estudian todos los días.`
 - **Verify**: `📝 REGEX-SPLIT` + snowball/lemma table; no pronunciation shown (Latin script).
 - **Pass**: Every word clickable; spaces/punctuation intact; lemma-table hits where downloaded.
+- **Verified 2026-08-09**: regex split + snowball/lemma-table path; words clickable, spaces/punctuation intact, no ruby row.
 
 ### TC-14 — English (lemma table + snowball)
 
