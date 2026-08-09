@@ -257,6 +257,17 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   // Offline + no downloaded dictionary: words can't be interactive. Render
   // plain text immediately (no pulsing tokenization) and explain on tap.
   const offlineNoDict = status.effectiveOffline && dictAvailable === false;
+
+  // Warm the per-language SQLite handle (including its one-time schema
+  // migration) as early as possible — on mount and again once availability
+  // resolves — so the first popup tap doesn't pay the open cost on the hot
+  // path. openOfflineDictionaryDB is a no-op when no file exists yet.
+  useEffect(() => {
+    void import('@/lib/dictionary-db')
+      .then(({ openOfflineDictionaryDB }) => openOfflineDictionaryDB(l2Code))
+      .catch(() => {});
+  }, [l2Code, dictAvailable]);
+
   // Opacity pulse shown while lemmatization is in flight.
   const pulseAnim = useRef(new Animated.Value(0.4)).current;
 

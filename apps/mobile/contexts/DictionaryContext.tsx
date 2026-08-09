@@ -17,6 +17,7 @@ import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeError } from '@/lib/offline-mode';
 import {
   openDictionaryDB,
+  openOfflineDictionaryDB,
   lookupOfflineByL2,
   deleteDictionary as deleteDictDB,
   hasOfflineDictionaryByL2,
@@ -174,6 +175,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setDictAvailable(null);
     void hasOfflineDictionaryByL2(l2Code).then((value) => {
       if (!cancelled) setDictAvailable(value);
+      // Warm the per-language SQLite handle in the background so the first
+      // popup tap doesn't pay the open + one-time migration cost.
+      if (value) {
+        void openOfflineDictionaryDB(l2Code).catch(() => {});
+      }
     });
     return () => {
       cancelled = true;
