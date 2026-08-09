@@ -402,6 +402,75 @@ would raise coverage 48→65%.
 3. **Pending** — mobile per-token romanization fix (romanize dictionary
    headwords/lemmas instead of every surface token).
 
+### 4.10 Vietnamese (vi) — A in v2, low priority
+
+**Current**: `vi`/`vie` route to `lemmatize_vietnamese` — a **dictionary-first
+word merge** over Vietnamese Wiktionary headwords (surface-as-lemma).
+Implemented 2026-08-09; the legacy pyvi wrapper (unregistered, buggy cache,
+lowercased lemmas) was replaced. The v2 scorecard is A (97.5) — Vietnamese is
+analytic, so surface-as-lemma is linguistically correct.
+
+**Verified 2026-08-09 on the SPEC-056 vi result JSON**:
+
+- Tokenization is syllable-level: `Chữ Quốc ngữ` → `Chữ`/`Quốc`/`ngữ`,
+  `tiếng Việt` → `tiếng`/`Việt`, `Việt Nam` → `Việt`/`Nam`. No content token
+  contains a space; lemma = surface exactly.
+- The dictionary **does** contain word-level headwords (`tiếng Việt`,
+  `chữ Nôm`, `Việt Nam`) that the tokenizer never produces, so they are never
+  looked up. `Quốc ngữ` has **no** entry as a phrase, while its syllables
+  `Quốc`/`ngữ` both hit individually — the 92% coverage is partly an artifact
+  of syllable-level splitting counting each syllable as a hit.
+
+**Verified 2026-08-09 (pyvi 0.1.1, MIT)**:
+
+- pyvi does real word-level segmentation: `Quốc ngữ` → `Quốc_ngữ`,
+  `Việt Nam` → `Việt_Nam`, `Hà Nội` → `Hà_Nội`, `đại học bách khoa` →
+  `đại_học bách_khoa`, `văn hóa` → `văn_hóa`. But it is inconsistent:
+  `tiếng Việt` and `chữ Nôm` are **not** merged even though the dictionary
+  has word-level headwords for them.
+- Raw output is not byte-aligned (pyvi inserts a space before commas:
+  `phát triển , nhưng`; 871 → 884 chars). Feeding it through the unified
+  `_recover_spaces` realigns it and reconstruction is **exact** (verified).
+- Word-level tokens **lower** weighted dictionary coverage: 87.7% vs 91.5%
+  for the current syllable split. The corpus's `Quốc ngữ` (×4) misses as a
+  phrase, and so do `bắt đầu từ`, `truyền bá`, `dân trí`, `Cải cách`,
+  `bóc lột`, `Thực dân` — while their syllables individually hit.
+- The legacy `lemmatize_vietnamese` wrapper is not usable as-is: it
+  lowercases lemmas (`Hà Nội` → `hà nội`, `Việt Nam` → `việt nam` — both
+  lowercase forms miss the dictionary) and its cache namespace is hardcoded
+  to `qalsadi`/`ara`.
+- Speed is fine (~0.9 ms per 200-char block, warm); license is MIT; the
+  package is effectively unmaintained (0.1.1 is the latest PyPI release).
+
+**Full benchmark (2026-08-09, SPEC-056 vi block, weighted dict coverage)**:
+
+| Candidate | Dict coverage (CI) | Multiword tokens | Warm ms/block |
+|---|---:|---:|---:|
+| regex baseline (current at the time) | 96.5% | 0 | 0.03 |
+| pyvi 0.1.1 (MIT) | 94.2% | 36 | 0.9 |
+| underthesea 9.5 (GPL-3.0) | 91.8% | 43 | 4.8 |
+| **dict-first merge (adopted)** | **97.3%** | 38 | 0.34 |
+| dict-first + pyvi lexicon | 90.5% | 43 | 1.3 |
+
+VnCoreNLP (GPL-3.0, Java) was researched but not benchmarked: the 1.2
+release has no direct download assets (Google Drive distribution), and a
+Java server dependency is not viable for this stack.
+
+**Implemented (Phase 8)**:
+
+1. `lemmatize_vietnamese.py` rewritten as a dictionary-first merge (greedy
+   longest match over wiktionary heads, ≤ 4 syllables, phrase/proverb
+   excluded, casing preserved, cache `vi-dictfirst-v1`) and registered for
+   `vi`/`vie` in `LEMMATIZER_REGISTRY`.
+2. `WiktionaryLoader.batch_lookup` gained a case-insensitive fallback
+   (Python-lowered index, capped at 350k keys, alternates included) — fixes
+   capitalized forms and Unicode case pairs (`Đ/đ`) for all wiktionary-backed
+   languages.
+3. Verified on the corpus: 146 content tokens, 38 merged words (`Quốc ngữ`,
+   `tiếng Việt`, `Việt Nam`, `chữ Nôm`, `phổ biến`, …), weighted dict
+   coverage **97.3%** (CI), reconstruction exact, warm ~0.37 ms; the only
+   misses are numbers (`200`, `19`, `1906`) and the rare word `súy`.
+
 ---
 
 ## 5. Licensing Matrix
@@ -578,6 +647,17 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
 25. Lemma-based dictionary lookup across inflected languages (en 84→94,
     es 71→89, ru 48→80, tr 42→76, ar 58→89, ko 48→65 in the v2 eval) —
     integration change in the lookup step, not the lemmatizers.
+
+### Phase 8 — Vietnamese word-level segmentation (optional)
+
+26. ✅ **Implemented 2026-08-09** — benchmarked pyvi 0.1.1 (94.2% CI),
+    underthesea 9.5 (91.8% CI), dict-first merge (97.3% CI), and
+    dict-first+pyvi (90.5% CI) on the SPEC-056 vi block; VnCoreNLP skipped
+    (no direct download; Java dependency). Adopted **dict-first merging**
+    (no new deps, casing preserved, cache `vi-dictfirst-v1`) plus a
+    case-insensitive batch-lookup fallback in `WiktionaryLoader`. Registered
+    `vi`/`vie`; corpus re-check: 97.3% weighted coverage, exact
+    reconstruction, ~0.37 ms/block.
 
 ---
 
