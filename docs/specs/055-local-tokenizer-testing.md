@@ -130,6 +130,11 @@ The local tokenizer families covered:
 - **Sample**: `Καλημέρα, πώς είσαι;`
 - **Verify**: Ruby = `Kalimera, pos eisai;`.
 - **Pass**: Accent-stripped ISO-843-style output, byte-identical to online.
+- **Offline lemmas (2026-08-08)**: Greek now has a Simplemma-generated lemma
+  table (`/lemmatization/export?l2=el`, SPEC-018) — spot-check
+  `γεννήθηκε→γεννάω`, `σπουδές→σπουδή`, `υπήρξαν→υπάρχω`,
+  `το/της/η/Η→ο`, `άνεμο→άνεμος` with Offline Mode on; without the table
+  downloaded, surface-as-lemma is expected (not a pass).
 
 ### TC-08 — Armenian (char map)
 

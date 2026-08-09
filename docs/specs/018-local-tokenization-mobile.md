@@ -442,6 +442,19 @@ surface-as-lemma, which matches the online server exactly (offline parity by
 construction). Modernizing old orthography would be a separate normalization
 project.
 
+##### Greek — Simplemma-backed table (2026-08-08)
+
+The same generated-table pattern covers Greek: the online lemmatizer uses
+Simplemma (`lemmatize_simple.py`) but `el` has no LemmatizationList TSV, so
+offline mobile fell back to surface-as-lemma. `lemmatize_export.py` now
+builds `data/lemmatization-lists/lemmatization-el-simplemma.txt` from
+Simplemma's own Greek dictionary (`data/el.plzma`, 184,701 forms + title-case
+variants, ~363k surfaces / 14 MB), reordered with a diacritic/final-sigma
+insensitive wordfreq pass so the mobile client's 50k-row cap keeps the most
+common forms (`γεννήθηκε→γεννάω`, `σπουδές→σπουδή`, `υπήρξαν→υπάρχω`,
+`το/της/η/Η→ο`, `άνεμο→άνεμος`). Self-lemma rows are included, matching the
+Russian table rationale.
+
 **Files touched**:
 
 | File | Change |
