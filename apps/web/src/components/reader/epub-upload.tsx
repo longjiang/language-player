@@ -4,8 +4,15 @@ import { useState, useRef, useCallback } from 'react';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import {
-  Upload, FileText,
+  Upload, FileText, FolderOpen,
 } from 'lucide-react';
+import {
+  folderFilesFromDrop,
+  folderFilesFromInput,
+  folderNameFromFiles,
+  zipEpubFolder,
+  type EpubFolderFile,
+} from '@/lib/epub-folder';
 
 /** A successfully read .epub file, ready to be stored. */
 export interface EpubFileInput {
@@ -45,6 +52,7 @@ export function EpubUpload({
 }: EpubUploadProps) {
   const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
@@ -71,11 +79,50 @@ export function EpubUpload({
     onFilesProcessed({ files: loaded, failures });
   }, [onFilesProcessed]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const importFolderFiles = useCallback(async (folderFiles: EpubFolderFile[]) => {
+    const folderName = folderNameFromFiles(folderFiles);
+    const looksLikeEpub = folderFiles.some(
+      (f) => f.path === 'mimetype' || /(^|\/)content\.opf$/i.test(f.path),
+    );
+    if (!looksLikeEpub) {
+      onFilesProcessed({
+        files: [],
+        failures: [{ fileName: folderName, fileSize: 0, reasonKey: 'msg.epub_not_supported' }],
+      });
+      return;
+    }
+    try {
+      const data = await zipEpubFolder(folderFiles);
+      const fileName = folderName.toLowerCase().endsWith('.epub')
+        ? folderName
+        : `${folderName}.epub`;
+      onFilesProcessed({
+        files: [{ data, fileName, fileSize: data.byteLength }],
+        failures: [],
+      });
+    } catch {
+      onFilesProcessed({
+        files: [],
+        failures: [{ fileName: folderName, fileSize: 0, reasonKey: 'msg.epub_file_unreadable' }],
+      });
+    }
+  }, [onFilesProcessed]);
+
+  const handleFolderInput = useCallback(async (files: FileList) => {
+    const folderFiles = folderFilesFromInput(files);
+    if (folderFiles.length > 0) await importFolderFiles(folderFiles);
+  }, [importFolderFiles]);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
+    const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
+    if (folderFiles && folderFiles.length > 0) {
+      await importFolderFiles(folderFiles);
+      return;
+    }
     if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  }, [handleFiles, importFolderFiles]);
 
   const input = (
     <input
@@ -89,6 +136,34 @@ export function EpubUpload({
         e.target.value = '';
       }}
     />
+  );
+
+  const folderInput = (
+    <input
+      ref={folderInputRef}
+      type="file"
+      multiple
+      hidden
+      {...({ webkitdirectory: '' } as React.InputHTMLAttributes<HTMLInputElement>)}
+      onChange={(e) => {
+        if (e.target.files && e.target.files.length > 0) handleFolderInput(e.target.files);
+        e.target.value = '';
+      }}
+    />
+  );
+
+  const folderButton = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        folderInputRef.current?.click();
+      }}
+    >
+      <FolderOpen className="mr-1.5 h-4 w-4" />
+      {t('action.browse_folder')}
+    </Button>
   );
 
   if (slot) {
@@ -129,7 +204,9 @@ export function EpubUpload({
             <FileText className="mr-1.5 h-4 w-4" />
             {t('action.browse')}
           </Button>
+          {folderButton}
           {input}
+          {folderInput}
           {error && (
             <p className="text-xs text-destructive">{error}</p>
           )}
@@ -165,7 +242,9 @@ export function EpubUpload({
           <FileText className="mr-1.5 h-4 w-4" />
           {t('action.browse')}
         </Button>
+        {folderButton}
         {input}
+        {folderInput}
         {error && (
           <p className="mt-4 text-sm text-destructive">{error}</p>
         )}
