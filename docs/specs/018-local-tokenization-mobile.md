@@ -1198,7 +1198,10 @@ Phase 4 makes offline `pronunciation` match the online API for the seven romaniz
 
 **Known gaps (not part of this phase)**:
 - Arabic/Persian — server engines (Mishkal + Araby SAMPA, PersianG2p) are Python-only. Offline Arabic now has a portable **Arabic→SAMPA char-map transliteration** (2026-08-08, mirrors the server's `pyarabic` scheme; no Mishkal vocalization), replacing the unreadable `arabic-stem` Arabic string. Persian G2P remains unavailable offline (see [ARCH-018](../arch/018-local-tokenization-strategy.md)).
-- Thai — no RN-portable romanizer (Node binary / WASM only); server has none either.
+- Thai — no RN-portable G2P engine, so offline ruby uses a server-generated
+  **Paiboon+** reading embedded in the dictionary download (same
+  `thai_g2p.py` source as online; 2026-08-08). Tokens outside the downloaded
+  dictionary have no ruby offline.
 - yue — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
 
 ---

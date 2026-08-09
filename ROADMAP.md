@@ -139,10 +139,9 @@
   عنى/أعنى), `تقرأ→أقرأ` (should be قرأ). Offline: pronouns/conjunctions
   mangled (`أنا→اني`, `هنا→هني`, `وكيف→وكف`), inflected words resolve to
   roots (`صديقي→صدق`). See SPEC-055 TC-11.
-- **Thai (server)** — logged 2026-08-08: no Thai pronunciation (web ruby
-  absent) and PyICU not installed, so the `lemmatize_sea` regex fallback
-  splits Thai vowel marks from consonants. Fix: install PyICU and optionally a
-  Thai G2P so web tokens carry IPA like mobile's dictionary-sourced readings.
+- **Thai (server)** — resolved 2026-08-08: PyThaiNLP `newmm` segmentation +
+  `thaiphon` Paiboon+ pronunciation (`thai_g2p.py`); offline mobile gets the
+  same readings from the re-downloaded dictionary. No PyICU needed for Thai.
   See SPEC-055 TC-12.
 
 ---

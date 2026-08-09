@@ -167,7 +167,8 @@ export interface LemmatizedToken {
    *     ru, bg, uk — Cyrillic→Latin (e.g. privet)
    *     el — Greek→Latin (e.g. kaliméra)
    *     hy — Armenian→Latin   ka — Georgian→Latin
-   *     th — Thai→Latin (when lemmatizer is available)
+   *     th — Paiboon+ learner romanization via thaiphon (e.g. sà-wàt-dii),
+   *          syllable-separated with tone diacritics
    *
    * Absent (null/undefined) for languages where phonetics are suppressed
    * by isPhoneticsEligible() (packages/utils/src/language.ts):
