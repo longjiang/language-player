@@ -47,26 +47,12 @@ export interface EpubMetadata {
   opfDir: string;
   title: string;
   author: string;
-  /** Primary language subtag from the OPF metadata (e.g. "ja"), or null. */
-  language: string | null;
 }
 
 /** Strip fragment identifier (#...) from a URI. */
 function stripFragment(href: string): string {
   const idx = href.indexOf('#');
   return idx === -1 ? href : href.slice(0, idx);
-}
-
-/**
- * Prefer the first non-English language when an OPF lists several
- * <dc:language> elements — Calibre exports commonly put 'en' first followed
- * by the real language, which would otherwise shelve books under English.
- */
-function pickPreferredLanguage(languages: string[]): string | null {
-  if (languages.length === 0) return null;
-  const primary = (code: string) => code.trim().split(/[-_]/)[0]?.toLowerCase() || null;
-  const nonEnglish = languages.find((l) => primary(l) !== 'en');
-  return primary(nonEnglish ?? languages[0]!);
 }
 
 /** Extract one XML attribute value, supporting both double and single quotes. */
@@ -176,16 +162,7 @@ export function parseOPF(
     if (creatorM) author = creatorM[1]!.trim();
   }
 
-  // ── DC metadata: language (for the language-specific bookshelf, SPEC-049 §9.3) ──
-  let language: string | null = null;
-  if (metaMatch) {
-    const metaXml = metaMatch[1]!;
-    const langMatches = metaXml.matchAll(/<dc:language[^>]*>([^<]+)<\/dc:language>/gi);
-    const languages = [...langMatches].map((m) => m[1]!.trim()).filter(Boolean);
-    language = pickPreferredLanguage(languages);
-  }
-
-  return { spine, toc, coverBase64, coverItemId, opfDir, title, author, language };
+  return { spine, toc, coverBase64, coverItemId, opfDir, title, author };
 }
 
 // ── EPUB 3 nav document parser ──

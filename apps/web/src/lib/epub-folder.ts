@@ -118,3 +118,69 @@ export async function zipEpubFolder(files: EpubFolderFile[]): Promise<ArrayBuffe
     mimeType: 'application/epub+zip',
   });
 }
+
+/**
+ * Unwrap a `.epub.zip` / `.zip` archive that wraps an EPUB.
+ *
+ * Three common shapes are handled:
+ * - the archive already IS an EPUB (container at root) — use the bytes as-is
+ * - the archive contains a single inner `.epub` file — extract it
+ * - the archive contains the EPUB's extracted folder — rezip it with the
+ *   folder as root
+ *
+ * Returns null when the zip doesn't contain an EPUB.
+ */
+export async function unwrapEpubZip(
+  file: File,
+): Promise<{ data: ArrayBuffer; fileName: string } | null> {
+  let zip: JSZip;
+  try {
+    zip = await JSZip.loadAsync(await file.arrayBuffer());
+  } catch {
+    return null;
+  }
+  const entries = Object.values(zip.files).filter((f) => !f.dir);
+  const baseName = file.name.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '') + '.epub';
+
+  // Already an EPUB archive (META-INF/container.xml at the zip root).
+  if (zip.file('META-INF/container.xml')) {
+    return { data: await file.arrayBuffer(), fileName: baseName };
+  }
+
+  // Zip wraps a single .epub file.
+  const innerEpubs = entries.filter((f) => /\.epub$/i.test(f.name));
+  if (innerEpubs.length === 1) {
+    const epub = innerEpubs[0]!;
+    return {
+      data: await epub.async('arraybuffer'),
+      fileName: epub.name.split('/').pop()!,
+    };
+  }
+
+  // Zip contains the extracted EPUB folder (container.xml nested under a
+  // top-level folder) — rezip with the folder stripped from every path.
+  const container = entries.find((f) => /(^|\/)META-INF\/container\.xml$/i.test(f.name));
+  if (container) {
+    const prefix = container.name.replace(/META-INF\/container\.xml$/i, '');
+    const rezip = new JSZip();
+    for (const f of entries) {
+      if (f.name.startsWith('__MACOSX/')) continue;
+      const rel = f.name.startsWith(prefix) ? f.name.slice(prefix.length) : f.name;
+      if (!rel) continue;
+      const data = await f.async('arraybuffer');
+      if (rel === 'mimetype') {
+        rezip.file(rel, data, { compression: 'STORE' });
+      } else {
+        rezip.file(rel, data);
+      }
+    }
+    const data = await rezip.generateAsync({
+      type: 'arraybuffer',
+      compression: 'DEFLATE',
+      mimeType: 'application/epub+zip',
+    });
+    return { data, fileName: baseName };
+  }
+
+  return null;
+}

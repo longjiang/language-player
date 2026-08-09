@@ -5,7 +5,6 @@ import {
   findSpineIndex,
   fullTocHref,
   normalizeLanguageCode,
-  pickPreferredLanguage,
   resolveNavDir,
   resolveLinkHref,
   resolvePath,
@@ -134,16 +133,6 @@ describe('normalizeLanguageCode', () => {
     expect(normalizeLanguageCode(undefined)).toBeNull();
     expect(normalizeLanguageCode('')).toBeNull();
     expect(normalizeLanguageCode(null)).toBeNull();
-  });
-});
-
-describe('pickPreferredLanguage', () => {
-  it('prefers the first non-English language (Calibre en+real order)', () => {
-    expect(pickPreferredLanguage(['en', 'ar'])).toBe('ar');
-    expect(pickPreferredLanguage(['ar', 'en'])).toBe('ar');
-    expect(pickPreferredLanguage(['en', 'ja-JP'])).toBe('ja');
-    expect(pickPreferredLanguage(['en'])).toBe('en');
-    expect(pickPreferredLanguage([])).toBeNull();
   });
 });
 

@@ -4,12 +4,12 @@ import { useState, useRef, useCallback } from 'react';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import {
-  Upload, FileText, FolderOpen,
+  Upload, FileText,
 } from 'lucide-react';
 import {
   folderFilesFromDrop,
-  folderFilesFromInput,
   folderNameFromFiles,
+  unwrapEpubZip,
   zipEpubFolder,
   type EpubFolderFile,
 } from '@/lib/epub-folder';
@@ -52,29 +52,40 @@ export function EpubUpload({
 }: EpubUploadProps) {
   const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const list = Array.from(files);
     const failures: EpubFileError[] = [];
-    const epubFiles: File[] = [];
+    const loaded: EpubFileInput[] = [];
     for (const f of list) {
       if (f.name.toLowerCase().endsWith('.epub')) {
-        epubFiles.push(f);
-      } else {
-        failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_not_supported' });
+        try {
+          const data = await f.arrayBuffer();
+          loaded.push({ data, fileName: f.name, fileSize: f.size });
+        } catch {
+          failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_file_unreadable' });
+        }
+        continue;
       }
-    }
-
-    const loaded: EpubFileInput[] = [];
-    for (const file of epubFiles) {
-      try {
-        const data = await file.arrayBuffer();
-        loaded.push({ data, fileName: file.name, fileSize: file.size });
-      } catch {
-        failures.push({ fileName: file.name, fileSize: file.size, reasonKey: 'msg.epub_file_unreadable' });
+      // .epub.zip / .zip — an EPUB (or extracted EPUB folder) wrapped in a
+      // ZIP container; unwrap it before importing.
+      if (/\.(epub\.)?zip$/i.test(f.name)) {
+        try {
+          const unwrapped = await unwrapEpubZip(f);
+          if (unwrapped) {
+            loaded.push({
+              data: unwrapped.data,
+              fileName: unwrapped.fileName,
+              fileSize: unwrapped.data.byteLength,
+            });
+            continue;
+          }
+        } catch {
+          // Fall through to the not-supported error below.
+        }
       }
+      failures.push({ fileName: f.name, fileSize: f.size, reasonKey: 'msg.epub_not_supported' });
     }
     onFilesProcessed({ files: loaded, failures });
   }, [onFilesProcessed]);
@@ -108,16 +119,18 @@ export function EpubUpload({
     }
   }, [onFilesProcessed]);
 
-  const handleFolderInput = useCallback(async (files: FileList) => {
-    const folderFiles = folderFilesFromInput(files);
-    if (folderFiles.length > 0) await importFolderFiles(folderFiles);
-  }, [importFolderFiles]);
-
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const folderFiles = await folderFilesFromDrop(e.dataTransfer.items);
     if (folderFiles && folderFiles.length > 0) {
+      // A single dropped file (e.g. book.epub or book.epub.zip) isn't an
+      // extracted folder — route it through the normal file handler.
+      const isSingleFile = folderFiles.length === 1 && !folderFiles[0]!.path.includes('/');
+      if (isSingleFile) {
+        handleFiles(e.dataTransfer.files);
+        return;
+      }
       await importFolderFiles(folderFiles);
       return;
     }
@@ -128,7 +141,7 @@ export function EpubUpload({
     <input
       ref={fileInputRef}
       type="file"
-      accept=".epub"
+      accept=".epub,.epub.zip,.zip"
       multiple
       hidden
       onChange={(e) => {
@@ -136,34 +149,6 @@ export function EpubUpload({
         e.target.value = '';
       }}
     />
-  );
-
-  const folderInput = (
-    <input
-      ref={folderInputRef}
-      type="file"
-      multiple
-      hidden
-      {...({ webkitdirectory: '' } as React.InputHTMLAttributes<HTMLInputElement>)}
-      onChange={(e) => {
-        if (e.target.files && e.target.files.length > 0) handleFolderInput(e.target.files);
-        e.target.value = '';
-      }}
-    />
-  );
-
-  const folderButton = (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={(e) => {
-        e.stopPropagation();
-        folderInputRef.current?.click();
-      }}
-    >
-      <FolderOpen className="mr-1.5 h-4 w-4" />
-      {t('action.browse_folder')}
-    </Button>
   );
 
   if (slot) {
@@ -204,9 +189,7 @@ export function EpubUpload({
             <FileText className="mr-1.5 h-4 w-4" />
             {t('action.browse')}
           </Button>
-          {folderButton}
           {input}
-          {folderInput}
           {error && (
             <p className="text-xs text-destructive">{error}</p>
           )}
@@ -242,9 +225,7 @@ export function EpubUpload({
           <FileText className="mr-1.5 h-4 w-4" />
           {t('action.browse')}
         </Button>
-        {folderButton}
         {input}
-        {folderInput}
         {error && (
           <p className="mt-4 text-sm text-destructive">{error}</p>
         )}

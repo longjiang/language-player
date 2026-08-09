@@ -224,6 +224,17 @@ The search index is rebuilt per **spine item** (each exactly once, in spine orde
 - **Migration**: `epub-store` DB bump to v3. When opening a stored book that has the old fields and no `lastLocation`, resolve `lastChapterHref` (+ fragment) through the new `resolveHref` and persist `lastLocation`, then drop the old fields. Books reparse automatically since we store the raw ArrayBuffer.
 - The bookshelf, covers, remove/import flows, and progress bars are unchanged.
 
+**Language scoping**: the bookshelf filters to the current L2 using the L2 the
+book was uploaded under — the app does not read the book's OPF language. Books
+imported before per-L2 tagging (no stored L2) remain visible in every language
+so they never silently disappear; re-importing them under the correct L2
+assigns that L2.
+
+**Zip-wrapped EPUBs**: imports accept `.epub.zip` / `.zip` archives that wrap
+an EPUB — either the archive is itself an EPUB, it contains a single inner
+`.epub`, or it contains an extracted EPUB folder. The wrapper is unwrapped
+before parsing.
+
 ### 7. Web reader UX changes
 
 - **Sidebar TOC**: renders the `TocNode` tree with real hierarchy and indentation; the current entry is highlighted **including its ancestors** (determined from `lastLocation` → containing TOC branch, not string comparison of hrefs).
