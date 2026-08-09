@@ -492,6 +492,15 @@ or table source changes so existing installs automatically re-download on the
 next background refresh instead of keeping the previous table (e.g. the old
 50k-capped slices).
 
+**Single source of truth (ADR-0029)**: the offline lemma-table export derives
+each language's data source from `LEMMATIZER_REGISTRY` — TSV for
+LemmatizationList-routed languages, Simplemma for Simplemma-routed languages,
+the generated pymorphy2 table for Russian, and no table for dedicated
+analyzers or fallback languages. `TOKENIZER_CONFIG.hasLemmaTable` mirrors
+exportability (`cy`/`fa`/`gd`/`hr`/`tr` off; `hy`/`id`/`ms`/`tl` on).
+Override only with a specific reason — e.g. an engine unavailable in React
+Native (MeCab→kuromoji, Okt→kuromoji-ko, jieba→dict max-matching; ARCH-018).
+
 **Files touched**:
 
 | File | Change |
