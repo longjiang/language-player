@@ -442,9 +442,12 @@ function getSnowballStemmer(snowballCode: string): ((word: string) => string) | 
  *
  * Per-word fallback order:
  *   1. Lemma table SQLite lookup (if hasLemmaTable and table is downloaded)
- *   2. Snowball stemmer (if snowballCode is configured)
- *   3. arabic-stem (if l2 === 'ar')
- *   4. Surface form as lemma (always available)
+ *   2. Surface form as lemma when the lemma table is present but misses —
+ *      mirrors the server's LemmatizationList/Simplemma fallback and avoids
+ *      Snowball stems (blancura→blancur) that never match dictionary heads.
+ *   3. Snowball stemmer (if snowballCode is configured and no table exists)
+ *   4. arabic-stem (if l2 === 'ar')
+ *   5. Surface form as lemma (always available)
  *
  * On first call for a language, fires a background download of the lemma
  * table if one is configured but not yet downloaded. Subsequent calls
@@ -499,6 +502,10 @@ async function lemmatizeLocal(
   const stemmer = config.snowballCode
     ? getSnowballStemmer(config.snowballCode)
     : null;
+  // When the real lemma table is installed, a miss should fall back to the
+  // surface form (server parity) instead of Snowball. Snowball remains the
+  // approximate path only when no lemma table is available at all.
+  const preferSurfaceOnMiss = tableReady;
 
   // Process each word through the fallback chain
   const result = words.map((word) => {
@@ -512,8 +519,8 @@ async function lemmatizeLocal(
       };
     }
 
-    // 2. Snowball stemmer
-    if (stemmer) {
+    // 2. Snowball stemmer (only when no lemma table is installed)
+    if (!preferSurfaceOnMiss && stemmer) {
       try {
         const stem = stemmer(word);
         if (stem && stem !== word) {
