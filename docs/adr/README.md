@@ -35,3 +35,4 @@ NNNN-title-with-dashes.md
 | 0025 | Next.js 14 App Router → Next.js 16.3 (Turbopack + React 19.2) | accepted | 2026-08-04 |
 | 0026 | Subs-search indexing for continua languages (monograms & bigrams) | accepted | 2026-08-05 |
 | 0027 | Defer automated E2E (Maestro) — checklist-based human QA | accepted | 2026-08-06 |
+| 0030 | Data-driven popular target-language (L2) list | accepted | 2026-08-09 |

@@ -5,10 +5,28 @@
  * instead of duplicating inline arrays.
  */
 
-/** Top languages shown first in the language picker, matching Classic. */
+/** Legacy combined list used by both L1 and L2 pickers. Prefer
+ *  `POPULAR_L1S` / `POPULAR_L2S` so each column can be ordered independently. */
 export const POPULAR_LANGUAGES: readonly string[] = [
   'en', 'zh-Hans', 'zh-Hant', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
   'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
+];
+
+/** Top native (L1) languages shown first in the L1 column. */
+export const POPULAR_L1S: readonly string[] = [
+  'en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
+  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
+];
+
+/**
+ * Top target (L2) languages shown first in the L2 column.
+ *
+ * Ordered by observed study activity (watch events) as of 2026-08-09 — see
+ * ARCH-021 and ADR-0030.
+ */
+export const POPULAR_L2S: readonly string[] = [
+  'en', 'zh', 'ja', 'ko', 'fr', 'de', 'es',
+  'vi', 'ru', 'ar', 'tr', 'it', 'hi', 'yue', 'th', 'id', 'nl', 'he', 'pt',
 ];
 
 /**

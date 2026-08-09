@@ -15,7 +15,7 @@ import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useLocaleSwitcher } from '@/providers/locale-provider';
-import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES, useLanguagePicker } from '@langplayer/shared';
+import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_L1S, POPULAR_L2S, useLanguagePicker } from '@langplayer/shared';
 import { languageName, isRTL } from '@/lib/language-data';
 import { LanguagePickerNarrow } from '@/components/language-picker-narrow';
 import { LanguagePickerWide } from '@/components/language-picker-wide';
@@ -90,7 +90,8 @@ export function LanguagePicker({
     getNameL2: getName,
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: SUPPORTED_L2S,
-    popularLanguages: POPULAR_LANGUAGES,
+    popularL1s: POPULAR_L1S,
+    popularL2s: POPULAR_L2S,
     popularTitle: t('msg.popular_languages'),
     allTitle: t('msg.all_languages'),
   });

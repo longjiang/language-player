@@ -13,7 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES } from '@langplayer/shared';
+import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_L1S, POPULAR_L2S } from '@langplayer/shared';
 import { useLanguagePicker, type UseLanguagePickerReturn } from '@langplayer/shared';
 import { LanguagePickerNarrow } from './LanguagePickerNarrow';
 import { LanguagePickerWide } from './LanguagePickerWide';
@@ -72,7 +72,8 @@ export function LanguagePicker({
     getName,
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: SUPPORTED_L2S,
-    popularLanguages: POPULAR_LANGUAGES,
+    popularL1s: POPULAR_L1S,
+    popularL2s: POPULAR_L2S,
     popularTitle: t('msg.popular_languages'),
     allTitle: t('msg.all_languages'),
   });

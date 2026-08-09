@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
-import { SUPPORTED_L2S, TOKENIZER_CONFIG } from '@langplayer/shared';
+import { SUPPORTED_L2S, TOKENIZER_CONFIG, POPULAR_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
 import { ContextMenu } from '@/components/ui/context-menu';
 import type { ContextMenuItem } from '@/components/ui/context-menu';
@@ -57,11 +57,9 @@ interface LangStatus {
   checked: boolean;
 }
 
-// ── Popular languages (same as language picker) ──
-const POPULAR_LANGUAGES = [
-  'en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
-  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
-];
+// ── Popular target languages — see ARCH-021 / ADR-0030 for the data-driven
+// ordering. ──
+const POPULAR_LANGUAGES = POPULAR_L2S;
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
