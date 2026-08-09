@@ -182,7 +182,7 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 
 | Language | Codes | Tokenizer Module | Engine | needs_lang |
 |---|---|---|---|---|
-| Chinese | `zh`, `zho`, `zh-Hans`, `zh-Hant` | `lemmatize_chinese` | jieba (POS) + pypinyin | No |
+| Chinese | `zh`, `zho`, `zh-Hans`, `zh-Hant` | `lemmatize_han` | jieba (POS) + pypinyin | No |
 | Japanese | `ja`, `jpn` | `lemmatize_japanese` | MeCab (Tagger) | No |
 | Korean | `ko`, `kor` | `lemmatize_korean` | Okt (konlpy) | No |
 | Russian | `ru`, `rus` | `lemmatize_russian` | pymorphy2 | No |
@@ -232,6 +232,14 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Tagalog | `tl` | `lemmatize_simple` | Simplemma | Yes |
 
 > **Note**: Vietnamese (`vi`/`vie`) has its own tokenizer module (`lemmatize_vietnamese.py` using pyvi) but is **not registered** in `LEMMATIZER_REGISTRY`. It is listed in the legacy `utils_nlp.tokenizers` dictionary but is not dispatched through the unified pipeline. Vietnamese falls through to `_fallback_lemmatize`.
+
+> **Single source of truth (ADR-0029)**: `LEMMATIZER_REGISTRY` is
+> authoritative for lemmatizer selection — including the offline lemma-table
+> export, which derives its data source from the registry engine
+> (`lemmatize_export.py`). Override only with a specific reason (e.g. engine
+> unavailable in React Native: MeCab→kuromoji, Okt→kuromoji-ko, jieba→dict
+> max-matching — see ARCH-018). The Chinese row above was updated 2026-08-08:
+> the Han family routes via `lemmatize_han`.
 
 ### Additional Lemmatizers Not in Unified Pipeline
 
