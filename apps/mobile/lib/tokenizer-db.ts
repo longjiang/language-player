@@ -18,7 +18,7 @@
 
 import * as SQLite from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
-import { openDictionaryDB } from './dictionary-db';
+import { openDictionaryDB, withDictionaryDbWrite } from './dictionary-db';
 import { log } from '@/lib/logger';
 
 // ── Constants ────────────────────────────────
@@ -201,56 +201,60 @@ export async function storeLemmaTable(
   sizeBytes?: number,
   onProgress?: (processed: number, total: number) => void,
 ): Promise<void> {
-  const db = await openDictionaryDB();
-  await ensureLemmaMeta(db);
-  await ensureLemmaTable(db, l2);
+  return withDictionaryDbWrite(async () => {
+    const db = await openDictionaryDB();
+    await ensureLemmaMeta(db);
+    await ensureLemmaTable(db, l2);
 
-  const safeL2 = l2.replace(/-/g, '_');
-  const started = Date.now();
-  log(`[DictDB] lemma table insert start — l2: ${l2} rows: ${entries.length}`);
+    const safeL2 = l2.replace(/-/g, '_');
+    const started = Date.now();
+    log(`[DictDB] lemma table insert start — l2: ${l2} rows: ${entries.length}`);
 
-  // Bulk insert in a single transaction: each execAsync previously committed
-  // on its own (fsync per chunk), which made full-table downloads (e.g. bg
-  // 427k rows) take minutes. One commit at the end makes it seconds.
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    // Delete existing data (re-download scenario)
-    await txn.execAsync(`DELETE FROM lemma_${safeL2}`);
+    // Bulk insert in a single transaction: each execAsync previously committed
+    // on its own (fsync per chunk), which made full-table downloads (e.g. bg
+    // 427k rows) take minutes. One commit at the end makes it seconds.
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      // Delete existing data (re-download scenario)
+      await txn.execAsync(`DELETE FROM lemma_${safeL2}`);
 
-    let lastProgressAt = 0;
-    for (let i = 0; i < entries.length; i += LEMMA_INSERT_CHUNK_SIZE) {
-      const chunk = entries.slice(i, i + LEMMA_INSERT_CHUNK_SIZE);
-      const values = chunk
-        .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
-        .join(', ');
-      await txn.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
-      // Throttle UI progress to ~4 Hz; always report the final row so the
-      // bar lands at 100%. Without this, a 500k-row table fires ~1000 state
-      // updates and React chokes ("Maximum update depth exceeded").
-      const processed = Math.min(i + chunk.length, entries.length);
-      const now = Date.now();
-      if (processed === entries.length || now - lastProgressAt >= 250) {
-        lastProgressAt = now;
-        onProgress?.(processed, entries.length);
+      let lastProgressAt = 0;
+      for (let i = 0; i < entries.length; i += LEMMA_INSERT_CHUNK_SIZE) {
+        const chunk = entries.slice(i, i + LEMMA_INSERT_CHUNK_SIZE);
+        const values = chunk
+          .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
+          .join(', ');
+        await txn.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
+        // Throttle UI progress to ~4 Hz; always report the final row so the
+        // bar lands at 100%. Without this, a 500k-row table fires ~1000 state
+        // updates and React chokes ("Maximum update depth exceeded").
+        const processed = Math.min(i + chunk.length, entries.length);
+        const now = Date.now();
+        if (processed === entries.length || now - lastProgressAt >= 250) {
+          lastProgressAt = now;
+          onProgress?.(processed, entries.length);
+        }
       }
-    }
-  });
+    });
 
-  // Store metadata
-  await db.runAsync(
-    'INSERT OR REPLACE INTO lemma_meta (l2, downloaded_at, entry_count, size_bytes, version) VALUES (?, datetime(\'now\'), ?, ?, ?)',
-    [l2, entries.length, sizeBytes ?? null, LEMMA_TABLE_VERSION],
-  );
-  log(`[DictDB] ✅ lemma table insert done — l2: ${l2} rows: ${entries.length} took: ${Date.now() - started}ms`);
+    // Store metadata
+    await db.runAsync(
+      'INSERT OR REPLACE INTO lemma_meta (l2, downloaded_at, entry_count, size_bytes, version) VALUES (?, datetime(\'now\'), ?, ?, ?)',
+      [l2, entries.length, sizeBytes ?? null, LEMMA_TABLE_VERSION],
+    );
+    log(`[DictDB] ✅ lemma table insert done — l2: ${l2} rows: ${entries.length} took: ${Date.now() - started}ms`);
+  });
 }
 
 /**
  * Delete a lemma table for a language (e.g., when dictionary is deleted).
  */
 export async function deleteLemmaTable(l2: string): Promise<void> {
-  const db = await openDictionaryDB();
-  const safeL2 = l2.replace(/-/g, '_');
-  await db.execAsync(`DROP TABLE IF EXISTS lemma_${safeL2}`);
-  await db.runAsync('DELETE FROM lemma_meta WHERE l2 = ?', [l2]);
+  await withDictionaryDbWrite(async () => {
+    const db = await openDictionaryDB();
+    const safeL2 = l2.replace(/-/g, '_');
+    await db.execAsync(`DROP TABLE IF EXISTS lemma_${safeL2}`);
+    await db.runAsync('DELETE FROM lemma_meta WHERE l2 = ?', [l2]);
+  });
 }
 
 /**

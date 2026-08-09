@@ -48,6 +48,26 @@ let _db: SQLite.SQLiteDatabase | null = null;
 let _dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 /**
+ * Serialize writes to the shared dictionary.db.
+ *
+ * Lemma-table inserts use an exclusive SQLite transaction on their own
+ * connection. Without a queue, a concurrent download (or delete) writing to
+ * the same database from the main connection fails immediately with
+ * SQLITE_BUSY ("database is locked"). The queue makes writers wait for each
+ * other instead.
+ */
+let dictionaryDbWriteQueue: Promise<unknown> = Promise.resolve();
+
+export function withDictionaryDbWrite<T>(fn: () => Promise<T>): Promise<T> {
+  const run = dictionaryDbWriteQueue.then(fn, fn);
+  dictionaryDbWriteQueue = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+/**
  * Open (or reuse) the dictionary SQLite database.
  * Idempotent — safe to call multiple times.
  */
@@ -63,6 +83,9 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
     await _db.execAsync('PRAGMA synchronous=NORMAL');
     // Larger page cache for bulk downloads and lookups (~8 MB).
     await _db.execAsync('PRAGMA cache_size=-8192');
+    // Backstop for writers that bypass the queue: wait up to 30s for a
+    // lock held by an exclusive transaction instead of failing immediately.
+    await _db.execAsync('PRAGMA busy_timeout=30000');
 
     // ── Shared tables (created once) ──
     await _db.execAsync(`
@@ -1125,10 +1148,12 @@ export async function saveDictMeta(
   db: SQLite.SQLiteDatabase,
   meta: DictMeta,
 ): Promise<void> {
-  await db.runAsync(
-    `INSERT OR REPLACE INTO dict_meta (l2, downloaded_at, entry_count, size_bytes, version)
-     VALUES (?, ?, ?, ?, ?)`,
-    [meta.l2, meta.downloaded_at, meta.entry_count, meta.size_bytes, meta.version],
+  await withDictionaryDbWrite(() =>
+    db.runAsync(
+      `INSERT OR REPLACE INTO dict_meta (l2, downloaded_at, entry_count, size_bytes, version)
+       VALUES (?, ?, ?, ?, ?)`,
+      [meta.l2, meta.downloaded_at, meta.entry_count, meta.size_bytes, meta.version],
+    ),
   );
 }
 
@@ -1175,6 +1200,13 @@ export async function deleteDictionary(
   db: SQLite.SQLiteDatabase,
   l2: string,
 ): Promise<void> {
+  await withDictionaryDbWrite(() => deleteDictionaryUnlocked(db, l2));
+}
+
+async function deleteDictionaryUnlocked(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<void> {
   await closeOfflineDictionaryDB(l2);
   const file = dictionaryDbFile(l2);
   if (file.exists) {
@@ -1203,6 +1235,12 @@ export async function deleteDictionary(
  * Delete ALL offline dictionaries and LLM cache.
  */
 export async function deleteAllDictionaries(
+  db: SQLite.SQLiteDatabase,
+): Promise<void> {
+  await withDictionaryDbWrite(() => deleteAllDictionariesUnlocked(db));
+}
+
+async function deleteAllDictionariesUnlocked(
   db: SQLite.SQLiteDatabase,
 ): Promise<void> {
   for (const l2 of [...l2DbCache.keys()]) {
