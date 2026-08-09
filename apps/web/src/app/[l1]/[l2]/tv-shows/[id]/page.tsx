@@ -6,6 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { baseCode } from '@/lib/language-data';
 import { ArrowLeft, Loader2, AlertCircle, Tv, Eye, Clock } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
@@ -53,7 +54,7 @@ export default function TvShowEpisodesPage() {
     // Fetch show info + episodes in parallel
     Promise.all([
       fetch(`${PYTHON_API_URL}/tv-shows/${showId}`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
-      fetch(`${PYTHON_API_URL}/tv-shows/${showId}/episodes?sort=title`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+      fetch(`${PYTHON_API_URL}/tv-shows/${showId}/episodes?l2=${baseCode(l2.code)}&sort=title`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
     ])
       .then(([showData, episodesData]) => {
         if (!cancelled) {
@@ -70,7 +71,7 @@ export default function TvShowEpisodesPage() {
       });
 
     return () => { cancelled = true; };
-  }, [showId]);
+  }, [showId, l2.code]);
 
   // Map episodes to YouTubeVideo format for the queue
   const episodeVideos = useCallback((): YouTubeVideo[] => {
