@@ -101,15 +101,29 @@ The local tokenizer families covered:
 - **Pass**: No crash; words clickable; punctuation not clickable; tokens reconstruct text exactly.
 - **Verified 2026-08-08**: dictionary max-match segmentation (WebView dict worker or main-thread); **server tokens carry jyutping** via full cccanto match or sub-segment polyfill (e.g. `動物學 → dung6 mat6 hok6`); dictionary entries from cc-canto and the popup now show **jyutping** (`呢個 → [ni1 go3]`) after the shared `formatPronunciation` fix — Mandarin pinyin is no longer shown for Cantonese. Remaining gap (tracked, Phase D parity): offline main-thread dict-seg tokens still lack token-level jyutping.
 
-### TC-06 — Russian (lemma table + romanization)
+### TC-06 — Russian (lemma table + romanization) ⚠️ WARNING
 
-- **Sample**: `Привет, как дела? Я читаю книгу.`
+> **Warning (2026-08-08)**: offline Russian lemma parity depends on the
+> pymorphy2-generated lemma table — no JS library matched pymorphy2 quality
+> (see [SPEC-018 Phase 2a](018-local-tokenization-mobile.md#russian--generated-pymorphy2-table-research-2026-08-08)).
+> Without the table downloaded, inflected forms fall back to snowball stems
+> (`начал→нача`, `его→ег`, `собой→соб`, `остановиться→останов`) — expected
+> only when the pack is missing, not a pass. Pre-reform orthography (`Въ`,
+> `отпускъ`) is a known limitation and returns surface-as-lemma both online
+> and offline.
+
+- **Sample**: `Привет, как дела? Я читаю книгу.` (plus the spot forms below)
 - **Steps**: Offline Mode on; then repeat with Offline Mode off.
 - **Verify**:
   - `🏷️ LOCAL-DONE` with `table=…` hits.
   - Ruby shows `Privet, kak dela? Ya chitayu knigu.`-style romanization.
   - Inflected form resolves to lemma (читаю → читать).
-- **Pass**: Romanization identical online vs offline for the same text.
+  - Table hits match server pymorphy2: начал → начать, года → год,
+    вернулся → вернуться, его → он, собой → себя,
+    остановиться → остановиться (self-row — must NOT become `останов`).
+- **Pass**: Romanization identical online vs offline for the same text;
+  lemma table hits match pymorphy2 server output for the spot forms;
+  self-lemma dictionary forms do not fall through to snowball.
 
 ### TC-07 — Greek (char map)
 
@@ -182,3 +196,4 @@ These run in CI / `npm test` and should pass before manual QA:
 - **Arabic / Persian** — server engines (Mishkal + Araby SAMPA, PersianG2p) are Python-only; no portable JS G2P. Offline Arabic pronunciation is the `arabic-stem` normalized string.
 - **Thai** — no RN-portable romanizer (Node binary / WASM only); server has none either.
 - **Yue** — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
+- **Russian** — offline lemmas come from a generated wordfreq+pymorphy2 table (~500k surfaces; SPEC-018 Phase 2a). No JS library matched pymorphy2 quality, so the table is required: without it, snowball stems appear (`начал→нача`, `остановиться→останов`). Pre-reform orthography (`Въ`, `отпускъ`, `ѣ`/`і`) is not covered by any modern lemmatizer — surface-as-lemma is expected and matches the server.
