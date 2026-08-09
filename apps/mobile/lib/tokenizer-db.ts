@@ -186,17 +186,21 @@ export async function storeLemmaTable(
 
   const safeL2 = l2.replace(/-/g, '_');
 
-  // Delete existing data (re-download scenario)
-  await db.execAsync(`DELETE FROM lemma_${safeL2}`);
+  // Bulk insert in a single transaction: each execAsync previously committed
+  // on its own (fsync per chunk), which made full-table downloads (e.g. bg
+  // 427k rows) take minutes. One commit at the end makes it seconds.
+  await db.withTransactionAsync(async () => {
+    // Delete existing data (re-download scenario)
+    await db.execAsync(`DELETE FROM lemma_${safeL2}`);
 
-  // Bulk insert in chunks
-  for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-    const chunk = entries.slice(i, i + CHUNK_SIZE);
-    const values = chunk
-      .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
-      .join(', ');
-    await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
-  }
+    for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+      const chunk = entries.slice(i, i + CHUNK_SIZE);
+      const values = chunk
+        .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
+        .join(', ');
+      await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
+    }
+  });
 
   // Store metadata
   await db.runAsync(
