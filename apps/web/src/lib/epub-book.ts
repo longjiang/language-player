@@ -137,6 +137,36 @@ export function normalizeLanguageCode(code: string | null | undefined): string |
 }
 
 /**
+ * Prefer the first non-English language when an OPF lists several
+ * <dc:language> elements — Calibre exports commonly put 'en' first followed
+ * by the real language, which would otherwise shelve books under English.
+ */
+export function pickPreferredLanguage(languages: string[]): string | null {
+  if (languages.length === 0) return null;
+  const primary = (code: string) => code.trim().split(/[-_]/)[0]?.toLowerCase() || null;
+  const nonEnglish = languages.find((l) => primary(l) !== 'en');
+  return primary(nonEnglish ?? languages[0]!);
+}
+
+/** Read all <dc:language> values from the OPF via the epubjs archive. */
+async function readBookLanguage(book: any): Promise<string | null> {
+  const opfPath = book.container?.packagePath ?? '';
+  try {
+    const opfXml = await book.archive?.getText?.(opfPath);
+    if (opfXml) {
+      const languages = [...opfXml.matchAll(/<dc:language[^>]*>([^<]+)<\/dc:language>/gi)]
+        .map((m) => m[1]!.trim())
+        .filter(Boolean);
+      const preferred = pickPreferredLanguage(languages);
+      if (preferred) return preferred;
+    }
+  } catch {
+    // Fall through to epubjs's first-value metadata.
+  }
+  return normalizeLanguageCode(book?.package?.metadata?.language);
+}
+
+/**
  * Lightweight language extraction from the OPF metadata only — avoids the
  * spine/nav/cover work of `EpubBook.open`, for backfilling stored books.
  */
@@ -145,11 +175,10 @@ export async function readEpubLanguage(data: ArrayBuffer): Promise<string | null
     const ePub = (await import('epubjs')).default;
     const book: any = ePub(data);
     // Timeout so a pathological book can't hang the bookshelf backfill.
-    const metadata = await Promise.race([
-      book.loaded.metadata,
-      new Promise(resolve => setTimeout(resolve, 5000)),
+    return await Promise.race([
+      readBookLanguage(book),
+      new Promise<null>(resolve => setTimeout(resolve, 5000)),
     ]);
-    return normalizeLanguageCode(metadata?.language);
   } catch {
     return null;
   }
@@ -404,6 +433,7 @@ export class EpubBook {
     toc: TocNode[],
     coverUrl: string | null,
     pageProgressionDir: 'ltr' | 'rtl',
+    language: string | null,
   ) {
     this.book = book;
     this.spineRaw = spineRaw;
@@ -413,14 +443,18 @@ export class EpubBook {
     this.pageProgressionDir = pageProgressionDir;
     this.title = book?.package?.metadata?.title ?? '';
     this.author = book?.package?.metadata?.creator ?? '';
-    this.language = normalizeLanguageCode(book?.package?.metadata?.language);
+    this.language = language;
   }
 
   static async open(data: ArrayBuffer): Promise<EpubBook> {
     const ePub = (await import('epubjs')).default;
     // epubjs's public typings don't cover archive/container/packaging internals.
     const book: any = ePub(data);
-    const [nav, spineRaw] = await Promise.all([book.loaded.navigation, book.loaded.spine]);
+    const [nav, spineRaw, language] = await Promise.all([
+      book.loaded.navigation,
+      book.loaded.spine,
+      readBookLanguage(book),
+    ]);
 
     const opfPath = book.container?.packagePath ?? '';
     const opfDir = dirname(opfPath);
@@ -476,6 +510,7 @@ export class EpubBook {
       toc,
       coverUrl,
       progression === 'rtl' ? 'rtl' : 'ltr',
+      language,
     );
   }
 
