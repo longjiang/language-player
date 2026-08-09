@@ -50,6 +50,10 @@ const LEMMATIZE_BATCH_MAX = 12;
 const LEMMATIZE_BATCH_DELAY_MS = 60;
 let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** RTL-script languages: the View-based ruby layout must reverse its flex
+ *  row, otherwise words and their readings render in mirrored (LTR) order. */
+const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
+
 /** Queue a line for batched lemmatization; resolves with its tokens. */
 function enqueueLemmatize(text: string, l2Code: string): Promise<LemmatizedToken[]> {
   const key = `${l2Code}:${text}`;
@@ -704,6 +708,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
+    const isRtl = RTL_L2S.has(baseCode(l2Code));
     const tokenFontSize = textStyle.fontSize ?? 16;
     const readingSize = Math.max(8, Math.round(tokenFontSize * 0.55));
     const baseLeading = leadingRatio ? Math.round(tokenFontSize * leadingRatio) : undefined;
@@ -726,7 +731,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       <>
         {/* View-based flex row: used for ruby readings-above-characters or interlinear definitions */}
         {(showPhonetics && phonetics.show === 'ruby') || showDefinition ? (
-          <View testID={testID} className="flex-row flex-wrap items-end">
+          <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {

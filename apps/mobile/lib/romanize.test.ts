@@ -55,6 +55,14 @@ describe('romanize', () => {
     );
   });
 
+  it('transliterates Arabic to the server SAMPA scheme', () => {
+    expect(romanize('مرحبًا', 'ar')).toBe('mrxbana:');
+    expect(romanize('الإنسان', 'ar')).toBe('a:l?nsa:n');
+    expect(romanize('أنا', 'ar')).toBe('?na:');
+    expect(romanize('صديقي', 'ar')).toBe("s'djqj");
+    expect(romanize('لحظة', 'ar')).toBe("lxD'h");
+  });
+
   it('handles registry aliases and unsupported languages', () => {
     expect(ROMANIZABLE_LANGS.has('ko')).toBe(true);
     expect(ROMANIZABLE_LANGS.has('kor')).toBe(true);

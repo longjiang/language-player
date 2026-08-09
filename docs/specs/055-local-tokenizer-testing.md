@@ -185,7 +185,14 @@ The local tokenizer families covered:
 - **Sample**: `العربية لغة غنية وجميلة.`
 - **Steps**: Offline Mode on.
 - **Verify**: Tokens clickable; lemmas stemmed.
-- **Pass**: No crash. **Known gap**: pronunciation shows an Arabic-script normalized string, not SAMPA — do not treat as a regression (SPEC-018 Phase 4d).
+- **Pass**: No crash; lemmas stemmed.
+- **Pronunciation (2026-08-08)**: offline ruby now shows a **Latin SAMPA-style
+  transliteration** (port of the server's `pyarabic` Arabic→SAMPA char map:
+  `مرحبًا → mrxbana:`, `الإنسان → a:l?nsa:n`, `أنا → ?na:`) instead of the
+  arabic-stem Arabic-script string. Still not byte-identical to the server
+  for words lacking diacritics (server vocalizes with Mishkal first) —
+  expected. Ruby-mode RTL layout fixed: readings and word order render
+  right-to-left like the popup dictionary.
 
 ### TC-12 — Thai (dict-seg)
 
