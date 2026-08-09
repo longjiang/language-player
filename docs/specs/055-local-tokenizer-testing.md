@@ -160,11 +160,18 @@ The local tokenizer families covered:
 > back to Russian), and Simplemma's hy dictionary is sparse for common forms.
 > Snowball stems offline are expected — do not treat as a pass.
 
-### TC-09 — Georgian (char map)
+### TC-09 — Georgian (char map + Simplemma table) ✅ PASS (2026-08-08)
 
 - **Sample**: `გამარჯობა, როგორ ხარ?`
 - **Verify**: Ruby = `gamarjoba, rogor khar?`.
 - **Pass**: Matches online exactly, including apostrophes (`k'artuli`-style) if present.
+- **Verified 2026-08-08**: offline lemmas match web — both surface-as-lemma
+  for the sample (`ვეფხისტყაოსანი`, `დასაწყისი`, `შექმნა`, `რომელმან`,
+  `ძალითა`, `არსნი`, `ჩვენ`); romanization byte-identical; the offline table
+  is now served from Simplemma (ADR-0029) and maps `არის→არე` like the
+  server. Dictionary cards return the same ids/heads as web for entries that
+  exist offline. LLM-generated entries (`ka-…`) are online-only, and the
+  server-fuzzy `ტყვნა` hit is not shown offline (exact-only) — both expected.
 
 ### TC-10 — Bulgarian / Ukrainian (char maps) ✅ PASS (2026-08-08)
 
