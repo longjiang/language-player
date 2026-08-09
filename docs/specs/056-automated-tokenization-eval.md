@@ -305,7 +305,7 @@ by total score, descending).
 | es | 196 | 100% | 2/2 | 56% | 0% | 9.9 | 100.0 | A |  |
 | vi | 200 | 100% | 2/2 | 88% | 0% | 8.3 | 100.0 | A | surface-as-lemma; syllable-level splitting acceptable |
 | it | 200 | 100% | 3/3 | 74% | 0% | 11.0 | 100.0 | A |  |
-| hi | 200 | 100% | 2/2 | 68% | 0% | 8.0 | 100.0 | A | BaseTokenizer (ADR-0018 excludes Simplemma); combining marks fixed |
+| hi | 200 | 100% | 2/2 | 74% | 0% | 296.7 | 100.0 | A | spaCy xx_ent_wiki_sm (multilingual; no lemmatizer, surface-as-lemma) |
 | id | 200 | 100% | 1/1 | 57% | 0% | 144.7 | 100.0 | A | Simplemma table only; pipe-table blocks excluded from selection |
 | nl | 200 | 100% | 3/3 | 73% | 0% | 15.5 | 100.0 | A |  |
 | pt | 200 | 100% | 2/2 | 82% | 0% | 11.3 | 100.0 | A | popular by historical weight; low recent activity |
@@ -324,11 +324,14 @@ one corpus-selection fix; this snapshot is the re-run after those changes.
 
 **Fixed in Phase 1:**
 
-- **Hindi (C → A, 100.0)** — `_fallback_lemmatize` now keeps Unicode combining
-  marks (Mn/Mc/Me; Devanagari matras are Mc) inside word tokens, so
-  `हिन्दी` tokenizes as one word instead of `ह ि न ् द ी`. Both
-  surface-as-lemma spot-checks pass. Hindi intentionally stays on
-  BaseTokenizer: ADR-0018 excludes Simplemma.
+- **Hindi (C → A, 100.0)** — Phase 1 first fixed `_fallback_lemmatize` to keep
+  Unicode combining marks (Mn/Mc/Me; Devanagari matras are Mc) inside word
+  tokens, so `हिन्दी` tokenizes as one word instead of `ह ि न ् द ी`. Hindi was
+  then swapped to spaCy's multilingual `xx_ent_wiki_sm` (ADR-0018 names spaCy
+  as the `hin` fallback; no Hindi-specific spaCy model exists). That model has
+  no lemmatizer, so `lemmatize_spacy` falls back to surface-as-lemma; both
+  spot-checks still pass and the dictionary hit rate improved from 68% (after
+  Phase 1) to 74%.
 - **Arabic (C → A, 98.5)** — `_recover_spaces` emits every gap character and
   repairs tokens merged across a gap, so `النصر»؛ «من` reconstructs exactly.
   The known Qalsadi lemma bugs remain documented gaps.

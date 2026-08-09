@@ -49,7 +49,7 @@ WEIGHTS = {
 
 KNOWN_NOTES = {
     "tr": "Turkish: Zeyrek stems; apostrophe preservation fixed (SPEC-057 P1)",
-    "hi": "Hindi: BaseTokenizer (ADR-0018 excludes Simplemma); surface-as-lemma; combining marks fixed",
+    "hi": "Hindi: spaCy xx_ent_wiki_sm (multilingual; no lemmatizer, surface-as-lemma)",
     "he": "Hebrew: surface-as-lemma offline",
     "vi": "Vietnamese: surface-as-lemma; syllable-level splitting acceptable",
     "id": "Indonesian: Simplemma table only; affix coverage depends on table; pipe-table blocks excluded from selection",

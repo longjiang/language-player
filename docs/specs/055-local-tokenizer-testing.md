@@ -326,7 +326,7 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 
 - **Sample**: `मैं हिंदी सीख रहा हूँ।`
 - **Verify**: `📝 REGEX-SPLIT`; words clickable; offline surface-as-lemma.
-- **Pass**: No crash; text reconstructs exactly; no ruby row offline (no Devanagari char map). Server fallback keeps Devanagari words whole since SPEC-057 Phase 1 (combining marks stay attached), so online/offline token parity is expected; surface-as-lemma remains the lemma behavior on both sides.
+- **Pass**: No crash; text reconstructs exactly; no ruby row offline (no Devanagari char map). Server routes Hindi through spaCy `xx_ent_wiki_sm` (multilingual) since SPEC-057 — no lemmatizer, so surface-as-lemma remains the lemma behavior on both sides; Devanagari words stay whole.
 
 ### TC-24 — Hebrew (regex split + surface)
 
