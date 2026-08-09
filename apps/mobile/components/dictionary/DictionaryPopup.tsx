@@ -20,7 +20,7 @@ import { lookupOfflineByL2 } from '@/lib/dictionary-db';
 import { localizedError } from '@/lib/errors';
 import { log } from '@/lib/logger';
 import { ErrorNotice } from '@/components/ui/error-notice';
-import type { DictionaryEntry } from '@langplayer/shared';
+import { TOKENIZER_CONFIG, type DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
@@ -214,8 +214,10 @@ export function DictionaryPopup({
         // Offline SQLite first (precompiled file or legacy central table).
         // Popup uses exact-only lookups so substring heads (но/ст inside
         // "остановиться") never pollute the cards — mirroring web's exact
-        // short-circuit. If neither lemma nor surface has an exact hit,
-        // fall back to the full fuzzy/substring chain for unknown/old forms.
+        // short-circuit. The full fuzzy/substring chain only runs for
+        // scriptio-continua languages (dict-segmentation), where a longer
+        // surface legitimately contains dictionary heads (e.g. お寿司屋 → 寿司).
+        // For space-separated languages it returns noise (σι inside Γκράτσια).
         const offlinePrimary = (await lookupOfflineByL2(l2, lookupWord, false, true)) ?? [];
         const offlineSurface = alsoLookupSurface
           ? ((await lookupOfflineByL2(l2, word, false, true)) ?? [])
@@ -228,9 +230,14 @@ export function DictionaryPopup({
           return;
         }
 
-        const offlinePrimaryFuzzy = (await lookupOfflineByL2(l2, lookupWord)) ?? [];
+        const allowSubstringFallback = TOKENIZER_CONFIG[l2]?.needsDictSegmentation === true;
+        const offlinePrimaryFuzzy = allowSubstringFallback
+          ? ((await lookupOfflineByL2(l2, lookupWord)) ?? [])
+          : [];
         const offlineSurfaceFuzzy = alsoLookupSurface
-          ? ((await lookupOfflineByL2(l2, word)) ?? [])
+          ? allowSubstringFallback
+            ? ((await lookupOfflineByL2(l2, word)) ?? [])
+            : []
           : [];
         const offlineMerged = dedupe([...offlinePrimaryFuzzy, ...offlineSurfaceFuzzy]);
         if (offlineMerged.length > 0) {

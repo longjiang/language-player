@@ -115,7 +115,11 @@ function yieldToUI(): Promise<void> {
  * - `[^\w\s']+` — non-word, non-space, non-apostrophe characters (punctuation)
  */
 function tokenizeWords(text: string): string[] {
-  const matches = text.match(/[\w']+|[^\w\s']+/g);
+  // Unicode-aware: JS \w is ASCII-only, so Greek/Cyrillic/Armenian/… words
+  // were falling into the punctuation class and glued to adjacent commas
+  // (e.g. "αιώνα," became one token). \p{M} keeps decomposed accents inside
+  // the word run (e.g. pre-2018 normalized EPUB text).
+  const matches = text.match(/[\p{L}\p{N}\p{M}']+|[^\p{L}\p{N}\p{M}\s']+/gu);
   return matches ?? [];
 }
 
