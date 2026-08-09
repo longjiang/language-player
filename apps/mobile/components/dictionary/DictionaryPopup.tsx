@@ -203,22 +203,39 @@ export function DictionaryPopup({
       // Cache miss — fetch from server
       setLoading(true);
       try {
-        // Offline SQLite first (precompiled file or legacy central table).
-        // This is what makes popups work when Offline Mode blocks the network.
-        const offlinePrimary = (await lookupOfflineByL2(l2, lookupWord)) ?? [];
-        const offlineSurface = alsoLookupSurface
-          ? ((await lookupOfflineByL2(l2, word)) ?? [])
-          : [];
         const seenIds = new Set<string>();
-        const offlineMerged = [...offlinePrimary, ...offlineSurface].filter((e) => {
+        const dedupe = (list: DictionaryEntry[]) => list.filter((e) => {
           if (!e.id) return true;
           if (seenIds.has(e.id)) return false;
           seenIds.add(e.id);
           return true;
         });
-        if (offlineMerged.length > 0) {
+
+        // Offline SQLite first (precompiled file or legacy central table).
+        // Popup uses exact-only lookups so substring heads (но/ст inside
+        // "остановиться") never pollute the cards — mirroring web's exact
+        // short-circuit. If neither lemma nor surface has an exact hit,
+        // fall back to the full fuzzy/substring chain for unknown/old forms.
+        const offlinePrimary = (await lookupOfflineByL2(l2, lookupWord, false, true)) ?? [];
+        const offlineSurface = alsoLookupSurface
+          ? ((await lookupOfflineByL2(l2, word, false, true)) ?? [])
+          : [];
+        const offlineExact = dedupe([...offlinePrimary, ...offlineSurface]);
+        if (offlineExact.length > 0) {
           setCachedEntries(l2, lookupWord, offlinePrimary);
           if (alsoLookupSurface) setCachedEntries(l2, word, offlineSurface);
+          publishResults(offlineExact, 'offline-exact');
+          return;
+        }
+
+        const offlinePrimaryFuzzy = (await lookupOfflineByL2(l2, lookupWord)) ?? [];
+        const offlineSurfaceFuzzy = alsoLookupSurface
+          ? ((await lookupOfflineByL2(l2, word)) ?? [])
+          : [];
+        const offlineMerged = dedupe([...offlinePrimaryFuzzy, ...offlineSurfaceFuzzy]);
+        if (offlineMerged.length > 0) {
+          setCachedEntries(l2, lookupWord, offlinePrimaryFuzzy);
+          if (alsoLookupSurface) setCachedEntries(l2, word, offlineSurfaceFuzzy);
           publishResults(offlineMerged, 'offline');
           return;
         }

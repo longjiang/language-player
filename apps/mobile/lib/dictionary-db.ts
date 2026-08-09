@@ -555,6 +555,7 @@ export async function lookupOffline(
   text: string,
   l2: string,
   byDefinition = false,
+  exactOnly = false,
 ): Promise<DictionaryEntry[] | null> {
   const table = dictTableName(l2);
   const seen = new Set<string>();
@@ -588,6 +589,13 @@ export async function lookupOffline(
     if (out.length > 0) {
       log('[DictDB] ✅ offline lookup exact hit — l2:', l2, 'text:', text, 'rows:', out.length);
       return out.slice(0, byDefinition ? 10 : 5);
+    }
+
+    // Exact-only mode (popup): don't pollute results with substring heads
+    // like но/ст inside "остановиться". Full mode still runs below.
+    if (exactOnly) {
+      log('[DictDB] exact-only — no exact match, skipping fuzzy/substring — l2:', l2, 'text:', text);
+      return null;
     }
 
     // 2. Fuzzy romaji substring (server EdictLoader step 4, len >= 3).
@@ -647,6 +655,7 @@ export async function lookupOfflineByL2(
   l2: string,
   text: string,
   byDefinition = false,
+  exactOnly = false,
 ): Promise<DictionaryEntry[] | null> {
   let l2Db: SQLite.SQLiteDatabase | null = null;
   const file = dictionaryDbFile(l2);
@@ -659,7 +668,7 @@ export async function lookupOfflineByL2(
   if (l2Db) {
     try {
       log('[DictDB] precompiled lookup — l2:', l2, 'text:', text, 'file:', dictionaryDbFileName(l2));
-      const results = await lookupOffline(l2Db, text, l2, byDefinition);
+      const results = await lookupOffline(l2Db, text, l2, byDefinition, exactOnly);
       if (results && results.length > 0) {
         return results;
       }
@@ -672,7 +681,7 @@ export async function lookupOfflineByL2(
   }
 
   const db = await openDictionaryDB();
-  const legacy = await lookupOffline(db, text, l2, byDefinition);
+  const legacy = await lookupOffline(db, text, l2, byDefinition, exactOnly);
   log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
   return legacy;
 }
