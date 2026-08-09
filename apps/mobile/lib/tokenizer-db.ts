@@ -19,10 +19,20 @@
 import * as SQLite from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
 import { openDictionaryDB } from './dictionary-db';
+import { log } from '@/lib/logger';
 
 // ── Constants ────────────────────────────────
 
 const CHUNK_SIZE = 500;
+
+export interface LemmaTableProgress {
+  phase: 'fetch' | 'parse' | 'insert';
+  /** Fetched JSON payload size in bytes (fetch phase). */
+  bytes?: number;
+  /** Rows processed so far / total rows (insert phase). */
+  processed?: number;
+  total?: number;
+}
 
 /**
  * Version stamp for downloaded lemma tables (SPEC-018 cap policy, 2026-08-08).
@@ -179,12 +189,15 @@ export async function storeLemmaTable(
   l2: string,
   entries: Array<[string, string[]]>,
   sizeBytes?: number,
+  onProgress?: (processed: number, total: number) => void,
 ): Promise<void> {
   const db = await openDictionaryDB();
   await ensureLemmaMeta(db);
   await ensureLemmaTable(db, l2);
 
   const safeL2 = l2.replace(/-/g, '_');
+  const started = Date.now();
+  log(`[DictDB] lemma table insert start — l2: ${l2} rows: ${entries.length}`);
 
   // Bulk insert in a single transaction: each execAsync previously committed
   // on its own (fsync per chunk), which made full-table downloads (e.g. bg
@@ -199,6 +212,7 @@ export async function storeLemmaTable(
         .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
         .join(', ');
       await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
+      onProgress?.(Math.min(i + chunk.length, entries.length), entries.length);
     }
   });
 
@@ -207,6 +221,7 @@ export async function storeLemmaTable(
     'INSERT OR REPLACE INTO lemma_meta (l2, downloaded_at, entry_count, size_bytes, version) VALUES (?, datetime(\'now\'), ?, ?, ?)',
     [l2, entries.length, sizeBytes ?? null, LEMMA_TABLE_VERSION],
   );
+  log(`[DictDB] ✅ lemma table insert done — l2: ${l2} rows: ${entries.length} took: ${Date.now() - started}ms`);
 }
 
 /**
@@ -234,19 +249,36 @@ export async function downloadLemmaTable(
   apiUrl: string,
   limit?: number,
   signal?: AbortSignal,
+  onProgress?: (progress: LemmaTableProgress) => void,
 ): Promise<boolean> {
   try {
     const url = `${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json${limit ? `&limit=${limit}` : ''}`;
+    const started = Date.now();
+    log(`[DictDB] lemma table download start — l2: ${l2} url: ${url}`);
+    onProgress?.({ phase: 'fetch' });
     const response = await fetch(url, { signal });
     if (!response.ok) return false;
 
-    const data = await response.json() as { table: Record<string, string[]> };
+    const buf = await response.arrayBuffer();
+    const bytes = buf.byteLength;
+    log(`[DictDB] lemma table fetched — l2: ${l2} bytes: ${bytes} took: ${Date.now() - started}ms`);
+    onProgress?.({ phase: 'parse', bytes });
+    const data = JSON.parse(new TextDecoder().decode(buf)) as { table: Record<string, string[]> };
     if (!data.table || Object.keys(data.table).length === 0) return false;
 
     const entries: Array<[string, string[]]> = Object.entries(data.table);
-    await storeLemmaTable(l2, entries);
+    log(`[DictDB] lemma table parsed — l2: ${l2} rows: ${entries.length}`);
+    onProgress?.({ phase: 'insert', total: entries.length });
+    await storeLemmaTable(
+      l2,
+      entries,
+      bytes,
+      (processed, total) => onProgress?.({ phase: 'insert', processed, total }),
+    );
+    log(`[DictDB] ✅ lemma table download done — l2: ${l2} took: ${Date.now() - started}ms`);
     return true;
   } catch (e) {
+    log(`[DictDB] ❌ lemma table download failed — l2: ${l2} error: ${(e as Error)?.message ?? e}`);
     if (signal?.aborted) throw e;
     return false;
   }
