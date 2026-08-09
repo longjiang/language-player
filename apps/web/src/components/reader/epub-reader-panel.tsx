@@ -34,10 +34,10 @@ function blockClass(tb: EpubTextBlock): string {
       };
       return `${base} ${sizes[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4`;
     }
-    case 'list-item': return `${base} ml-4 list-disc`;
-    case 'blockquote': return `${base} border-l-4 border-muted pl-4 italic text-muted-foreground`;
+    case 'list-item': return `${base} ml-4 list-disc whitespace-pre-line`;
+    case 'blockquote': return `${base} border-l-4 border-muted pl-4 italic text-muted-foreground whitespace-pre-line`;
     case 'pre': return `${base} whitespace-pre-wrap bg-muted p-4 rounded-lg overflow-x-auto`;
-    default: return base;
+    default: return `${base} whitespace-pre-line`;
   }
 }
 
