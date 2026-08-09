@@ -125,16 +125,24 @@ The local tokenizer families covered:
   lemma table hits match pymorphy2 server output for the spot forms;
   self-lemma dictionary forms do not fall through to snowball.
 
-### TC-07 — Greek (char map)
+### TC-07 — Greek (char map + Simplemma lemma table) ✅ PASS (2026-08-08)
 
 - **Sample**: `Καλημέρα, πώς είσαι;`
 - **Verify**: Ruby = `Kalimera, pos eisai;`.
 - **Pass**: Accent-stripped ISO-843-style output, byte-identical to online.
-- **Offline lemmas (2026-08-08)**: Greek now has a Simplemma-generated lemma
-  table (`/lemmatization/export?l2=el`, SPEC-018) — spot-check
+- **Offline lemmas**: Greek uses the Simplemma-generated lemma table
+  (`/lemmatization/export?l2=el`, SPEC-018) — spot-check
   `γεννήθηκε→γεννάω`, `σπουδές→σπουδή`, `υπήρξαν→υπάρχω`,
   `το/της/η/Η→ο`, `άνεμο→άνεμος` with Offline Mode on; without the table
-  downloaded, surface-as-lemma is expected (not a pass).
+  downloaded, surface-as-lemma is expected.
+- **Verified 2026-08-08**: romanization byte-identical online vs offline;
+  offline lemmas match Simplemma (`γεννήθηκε→γεννάω`, `σπουδές→σπουδή`,
+  `υπήρξαν→υπάρχω`, `το/της/η/Η→ο`); spaces render correctly between words in
+  ruby mode (whitespace gap tokens get explicit width — regression fixed
+  2026-08-08); punctuation splits from words (`αιώνα,` → `αιώνα` + `,`,
+  Unicode-aware tokenizer); popup no longer returns substring garbage
+  (`σι` inside `Γκράτσια` — substring fallback gated to dict-segmentation
+  languages).
 
 ### TC-08 — Armenian (char map)
 
