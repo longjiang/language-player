@@ -455,6 +455,43 @@ common forms (`γεννήθηκε→γεννάω`, `σπουδές→σπουδ�
 `το/της/η/Η→ο`, `άνεμο→άνεμος`). Self-lemma rows are included, matching the
 Russian table rationale.
 
+##### Lemma table download cap policy (2026-08-08)
+
+Most languages download the **full** lemma table — the client no longer
+hardcodes a 50k-row limit. Only the four largest tables stay capped at
+`LEMMA_TABLE_CAP_LIMIT` (50k rows):
+
+| Lang | Full raw JSON | Full gzip | Rows (incl. title variants) |
+|---|---|---:|---:|
+| sw (Swahili) | ~252 MB | ~40 MB | ~9.7M |
+| fi (Finnish) | ~187 MB | ~20 MB | ~6.3M |
+| pl (Polish) | ~173 MB | ~23 MB | ~6.2M |
+| tr (Turkish) | ~60 MB | ~7.4 MB | ~2.5M |
+
+Rationale: full tables beyond ~60 MB raw JSON / ~2.4M rows cost 60–250 MB of
+on-device SQLite storage and minutes of insert time; everything else is a few
+MB gzipped and inserts in well under a minute. `LEMMA_TABLE_CAPPED_LANGS` in
+`packages/shared/src/constants.ts` is the single source of truth.
+
+Server-side, Simplemma-routed languages without a LemmatizationList TSV (da,
+fi, hy, id, is, ka, la, lt, lv, mk, ms, nb, nl, nn, pl, sq, sw, tl) are now
+served on demand from the installed Simplemma package dictionaries — no
+committed TSV files — with full builds cached (LRU, 4 languages) and capped
+builds stopping early so sw/fi/pl never materialize server-side.
+
+Known caveats: capped languages receive the first 50k dictionary rows
+(alphabetical, not frequency-ordered) — acceptable while they're capped;
+streaming/NDJSON downloads and a storage opt-in prompt for the giants remain
+future work. `tr` is included in the cap list for forward compatibility but
+currently has no server export (server Turkish uses zeyrek, not Simplemma), so
+it falls back to snowball until a table exists.
+
+Stored lemma tables carry a version stamp (`lemma_meta.version`,
+`LEMMA_TABLE_VERSION` in `tokenizer-db.ts`). Bump it when the download policy
+or table source changes so existing installs automatically re-download on the
+next background refresh instead of keeping the previous table (e.g. the old
+50k-capped slices).
+
 **Files touched**:
 
 | File | Change |

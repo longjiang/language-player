@@ -337,3 +337,19 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   my: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
   bo: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
 };
+
+/**
+ * Lemma-table download cap policy (SPEC-018, 2026-08-08).
+ *
+ * Most languages download the FULL lemma table (no row limit). Only the four
+ * largest tables stay capped at `LEMMA_TABLE_CAP_LIMIT` rows: their full
+ * Simplemma exports exceed ~60 MB raw JSON / ~2.4M rows, which would cost
+ * 60–250 MB of on-device SQLite storage and minutes of insert time.
+ */
+export const LEMMA_TABLE_CAP_LIMIT = 50_000;
+export const LEMMA_TABLE_CAPPED_LANGS: ReadonlySet<string> = new Set([
+  'sw', // Swahili  ~252 MB raw JSON
+  'fi', // Finnish  ~187 MB raw JSON
+  'pl', // Polish   ~173 MB raw JSON
+  'tr', // Turkish  ~60 MB raw JSON
+]);

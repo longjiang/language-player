@@ -49,7 +49,7 @@ import Stemmer from 'arabic-stem';
 import { newStemmer as snowballNewStemmer } from 'snowball-stemmers';
 import { ExpressionToken } from 'kuromoji-ko';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { TOKENIZER_CONFIG } from '@langplayer/shared';
+import { LEMMA_TABLE_CAP_LIMIT, LEMMA_TABLE_CAPPED_LANGS, TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
@@ -539,7 +539,8 @@ function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
 
   // Don't await — fire and forget
   import('@/lib/tokenizer-db').then(({ downloadLemmaTable }) => {
-    downloadLemmaTable(l2, apiUrl, 50000).catch(() => { /* silent */ });
+    downloadLemmaTable(l2, apiUrl, LEMMA_TABLE_CAPPED_LANGS.has(l2) ? LEMMA_TABLE_CAP_LIMIT : undefined)
+      .catch(() => { /* silent */ });
   });
 }
 

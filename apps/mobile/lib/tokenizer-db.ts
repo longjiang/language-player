@@ -24,6 +24,13 @@ import { openDictionaryDB } from './dictionary-db';
 
 const CHUNK_SIZE = 500;
 
+/**
+ * Version stamp for downloaded lemma tables (SPEC-018 cap policy, 2026-08-08).
+ * Bump when the download policy or table source changes so existing installs
+ * re-download instead of keeping stale rows (e.g. old 50k-capped tables).
+ */
+const LEMMA_TABLE_VERSION = 2;
+
 /** Escape a string for safe inclusion in a SQL string literal. */
 function esc(s: string): string {
   return s.replace(/'/g, "''");
@@ -41,9 +48,17 @@ async function ensureLemmaMeta(db: SQLite.SQLiteDatabase): Promise<void> {
       l2 TEXT PRIMARY KEY,
       downloaded_at TEXT NOT NULL,
       entry_count INTEGER NOT NULL,
-      size_bytes INTEGER
+      size_bytes INTEGER,
+      version INTEGER NOT NULL DEFAULT 1
     );
   `);
+  // Migrate tables created before the version column existed (default to v1,
+  // which is stale after the cap-policy change — hasLemmaTable will miss it).
+  try {
+    await db.execAsync('ALTER TABLE lemma_meta ADD COLUMN version INTEGER NOT NULL DEFAULT 1');
+  } catch {
+    // Column already exists — fine.
+  }
 }
 
 /**
@@ -69,8 +84,8 @@ async function ensureLemmaTable(db: SQLite.SQLiteDatabase, l2: string): Promise<
 export async function hasLemmaTable(l2: string): Promise<boolean> {
   const db = await openDictionaryDB();
   const row = await db.getFirstAsync<{ cnt: number }>(
-    'SELECT COUNT(*) as cnt FROM lemma_meta WHERE l2 = ?',
-    [l2],
+    'SELECT COUNT(*) as cnt FROM lemma_meta WHERE l2 = ? AND version >= ?',
+    [l2, LEMMA_TABLE_VERSION],
   );
   return (row?.cnt ?? 0) > 0;
 }
@@ -83,10 +98,11 @@ export async function getLemmaMeta(l2: string): Promise<{
   downloaded_at: string;
   entry_count: number;
   size_bytes: number | null;
+  version: number;
 } | null> {
   const db = await openDictionaryDB();
   return db.getFirstAsync(
-    'SELECT l2, downloaded_at, entry_count, size_bytes FROM lemma_meta WHERE l2 = ?',
+    'SELECT l2, downloaded_at, entry_count, size_bytes, version FROM lemma_meta WHERE l2 = ?',
     [l2],
   );
 }
@@ -184,8 +200,8 @@ export async function storeLemmaTable(
 
   // Store metadata
   await db.runAsync(
-    'INSERT OR REPLACE INTO lemma_meta (l2, downloaded_at, entry_count, size_bytes) VALUES (?, datetime(\'now\'), ?, ?)',
-    [l2, entries.length, sizeBytes ?? null],
+    'INSERT OR REPLACE INTO lemma_meta (l2, downloaded_at, entry_count, size_bytes, version) VALUES (?, datetime(\'now\'), ?, ?, ?)',
+    [l2, entries.length, sizeBytes ?? null, LEMMA_TABLE_VERSION],
   );
 }
 
@@ -204,7 +220,7 @@ export async function deleteLemmaTable(l2: string): Promise<void> {
  *
  * @param l2 - Language code (ISO 639-1 or 639-3)
  * @param apiUrl - Python server base URL
- * @param limit - Max unique surface forms to download (default 50000, per SPEC-018)
+ * @param limit - Optional row cap (SPEC-018 cap policy). Omitted = full table.
  *
  * Returns true if download succeeded, false if it failed (network error,
  * server doesn't have data for this language, etc.).
@@ -212,11 +228,11 @@ export async function deleteLemmaTable(l2: string): Promise<void> {
 export async function downloadLemmaTable(
   l2: string,
   apiUrl: string,
-  limit: number = 50000,
+  limit?: number,
   signal?: AbortSignal,
 ): Promise<boolean> {
   try {
-    const url = `${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json&limit=${limit}`;
+    const url = `${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json${limit ? `&limit=${limit}` : ''}`;
     const response = await fetch(url, { signal });
     if (!response.ok) return false;
 
