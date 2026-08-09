@@ -257,11 +257,19 @@ function convertDocument(body: Element): EpubBlock[] {
 
   const nearestId = (): string | undefined => idStack[idStack.length - 1];
 
-  function appendText(s: string) {
+  function appendText(s: string, keepLineBreaks = false) {
     if (!s) return;
-    let t = s.replace(/\s+/g, ' ');
-    if (!text && t.startsWith(' ')) t = t.trimStart();
-    if (text.endsWith(' ') && t.startsWith(' ')) t = t.slice(1);
+    let t = keepLineBreaks
+      ? s.replace(/[ \t\f\v]+/g, ' ')
+      : s.replace(/\s+/g, ' ');
+    if (!text && t) t = t.replace(/^\s+/, '');
+    if (text && t) {
+      const prev = text[text.length - 1]!;
+      const next = t[0]!;
+      if ((prev === ' ' || prev === '\n') && (next === ' ' || next === '\n')) {
+        t = t.slice(1);
+      }
+    }
     if (!t) return;
     const start = text.length;
     for (const f of activeFormats) {
@@ -328,7 +336,7 @@ function convertDocument(body: Element): EpubBlock[] {
     const id = el.getAttribute('id') || el.getAttribute('name') || undefined;
 
     if (tag === 'br') {
-      appendText(' ');
+      appendText('\n', true);
       return;
     }
     if (tag === 'img') {
