@@ -197,6 +197,20 @@ export default function OfflineDictionariesScreen() {
     } catch (e: any) {
       const wasCancelled = e?.message === 'Download cancelled';
       log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
+      // A failed re-download may have removed the previous dictionary (the
+      // context deletes the new file when post-install steps fail), so
+      // re-check disk instead of trusting the stale "downloaded" state.
+      const stillAvailable = await isOfflineAvailable(l2).catch(() => false);
+      setDownloaded((prev) => {
+        const next = new Set(prev);
+        if (stillAvailable) next.add(l2);
+        else next.delete(l2);
+        return next;
+      });
+      if (stillAvailable) {
+        const count = await getDownloadedCount(l2).catch(() => 0);
+        setDownloadedCounts((prev) => new Map(prev).set(l2, count));
+      }
     }
   };
 
