@@ -432,6 +432,18 @@ function dictTableName(l2: string): string {
   return `dict_${sanitizeL2(l2).replace(/-/g, '_')}`;
 }
 
+/** True when the legacy central dictionary.db has a table for this L2. */
+async function hasLegacyDictTable(
+  db: SQLite.SQLiteDatabase,
+  l2: string,
+): Promise<boolean> {
+  const row = await db.getFirstAsync<{ cnt: number }>(
+    "SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name = ?",
+    [dictTableName(l2)],
+  );
+  return (row?.cnt ?? 0) > 0;
+}
+
 /**
  * Create the dict_{l2} table (if it doesn't exist). Lookup indexes are
  * created separately by createDictIndexes() so bulk downloads can defer
@@ -681,6 +693,10 @@ export async function lookupOfflineByL2(
   }
 
   const db = await openDictionaryDB();
+  if (!(await hasLegacyDictTable(db, l2))) {
+    log('[DictDB] legacy lookup skipped — no legacy table for l2:', l2);
+    return null;
+  }
   const legacy = await lookupOffline(db, text, l2, byDefinition, exactOnly);
   log('[DictDB] legacy result — l2:', l2, 'text:', text, 'rows:', legacy?.length ?? 0);
   return legacy;
@@ -920,6 +936,10 @@ export async function getOfflineEntryById(
   }
 
   const db = await openDictionaryDB();
+  if (!(await hasLegacyDictTable(db, l2))) {
+    log('[DictDB] legacy entry lookup skipped — no legacy table for l2:', l2);
+    return null;
+  }
   try {
     return await query(db);
   } catch (e) {
