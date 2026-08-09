@@ -56,6 +56,7 @@ import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import {
   tokenizeDictSegInWorker,
   tokenizeJapaneseInWorker,
+  resetDictWorker,
 } from '@/lib/tokenizer-worker';
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 import { romanize, ROMANIZABLE_LANGS } from '@/lib/romanize';
@@ -740,8 +741,11 @@ export function resetTokenizer(l2: string): void {
 export function clearDictionaryCaches(l2: string): void {
   dictWordSets.delete(l2);
   dictMaxWordLen.delete(l2);
+  dictPosByWord.delete(l2);
+  dictPronByWord.delete(l2);
   kuromojiTokenizers.delete(l2);
   lemmaDownloadState.delete(l2);
+  resetDictWorker(l2);
 
   for (const key of [...lemmatizeCache.keys()]) {
     if (key.startsWith(`${l2}:`)) lemmatizeCache.delete(key);

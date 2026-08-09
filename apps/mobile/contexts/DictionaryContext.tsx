@@ -403,6 +403,14 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         throw new Error('Download cancelled');
       }
 
+      // A fresh dictionary file is on disk now — drop every in-memory copy
+      // (main-thread headword/pronunciation maps, WebView dict worker, cached
+      // lemmatizations) so the next read uses the new data.
+      try {
+        const { clearDictionaryCaches } = await import('@/lib/tokenizer');
+        clearDictionaryCaches(l2);
+      } catch {}
+
       // Save metadata in the central DB so the offline dictionaries list and
       // storage accounting work without opening every per-language file.
       const meta: DictMeta = {
