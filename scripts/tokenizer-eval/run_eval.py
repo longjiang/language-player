@@ -68,7 +68,7 @@ KNOWN_NOTES = {
     "vi": "Vietnamese: surface-as-lemma; syllable-level splitting acceptable",
     "id": "Indonesian: Simplemma table only; affix coverage depends on table; pipe-table blocks excluded from selection",
     "yue": "Yue: dict-seg; offline main-thread lacks jyutping",
-    "ar": "Arabic: known Qalsadi lemma bugs; SAMPA pronunciation; punctuation-adjacent spaces recovered",
+    "ar": "Arabic: CAMeL MLE calima-msa-r13 (GPL v2 server-side); Qalsadi fallback; SAMPA pronunciation; punctuation-adjacent spaces recovered",
     "pt": "Portuguese: popular by historical weight; low recent activity",
 }
 

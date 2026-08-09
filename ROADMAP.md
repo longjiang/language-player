@@ -134,11 +134,12 @@
 
 ## Known Issues
 
-- **Arabic lemmatization (server Qalsadi + offline arabic-stem)** — logged
-  2026-08-08. Server: `كتبتها→تب` (should be كتب), `أعني→أعنة` (should be
-  عنى/أعنى), `تقرأ→أقرأ` (should be قرأ). Offline: pronouns/conjunctions
-  mangled (`أنا→اني`, `هنا→هني`, `وكيف→وكف`), inflected words resolve to
-  roots (`صديقي→صدق`). See SPEC-055 TC-11.
+- **Arabic lemmatization (offline arabic-stem)** — logged 2026-08-08. Server
+  resolved 2026-08-09 via CAMeL Tools MLE (`calima-msa-r13`): the Qalsadi
+  bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`) are fixed and pronunciation
+  comes from CAMeL diacritization. Offline `arabic-stem` still mangles
+  pronouns/conjunctions (`أنا→اني`, `هنا→هني`, `وكيف→وكف`) and resolves
+  inflected words to roots (`صديقي→صدق`). See SPEC-055 TC-11.
 - **Thai (server)** — resolved 2026-08-08: PyThaiNLP `newmm` segmentation +
   `thaiphon` Paiboon+ pronunciation (`thai_g2p.py`); offline mobile gets the
   same readings from the re-downloaded dictionary. No PyICU needed for Thai.

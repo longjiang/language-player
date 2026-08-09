@@ -324,7 +324,7 @@ by total score, descending).
 | id | 200 | 100% | 1/1 | 57% | 0% | 144.7 | 100.0 | A | Simplemma table only; pipe-table blocks excluded from selection |
 | nl | 200 | 100% | 3/3 | 73% | 0% | 15.5 | 100.0 | A |  |
 | pt | 200 | 100% | 2/2 | 82% | 0% | 11.3 | 100.0 | A | popular by historical weight; low recent activity |
-| ar | 200 | 99% | 0/0 | 46% | 98% | 8.2 | 98.5 | A | known Qalsadi lemma bugs; punctuation-adjacent spaces recovered |
+| ar | 200 | 100% | 0/0 | 46% | 99% | 5.2 | 98.8 | A | CAMeL MLE calima-msa-r13; Qalsadi fallback; SAMPA pronunciation; punctuation-adjacent spaces recovered |
 | ko | 60 | 100% | 2/2 | 43% | 100% | 14.6 | 98.0 | A |  |
 | ru | 196 | 100% | 2/2 | 41% | 100% | 13.4 | 97.4 | A |  |
 | he | 200 | 100% | 2/2 | 41% | 0% | 18.5 | 97.2 | A | surface-as-lemma; table-like blocks excluded from selection |
@@ -347,9 +347,12 @@ one corpus-selection fix; this snapshot is the re-run after those changes.
   no lemmatizer, so `lemmatize_spacy` falls back to surface-as-lemma; both
   spot-checks still pass and the dictionary hit rate improved from 68% (after
   Phase 1) to 74%.
-- **Arabic (C → A, 98.5)** — `_recover_spaces` emits every gap character and
-  repairs tokens merged across a gap, so `النصر»؛ «من` reconstructs exactly.
-  The known Qalsadi lemma bugs remain documented gaps.
+- **Arabic (C → A, 98.5 → 98.8)** — `_recover_spaces` emits every gap
+  character and repairs tokens merged across a gap, so `النصر»؛ «من`
+  reconstructs exactly. Phase 1 kept Qalsadi as the engine; Phase 2 then
+  adopted CAMeL Tools MLE (`calima-msa-r13`), which fixes the known lemma
+  bugs (`كتبتها→تب` → `كتب`, `أعني→أعنة` → `عنى`) and raised lemma coverage
+  to 100%.
 - **Turkish (D → A, 95.0)** — `lemmatize_turkish` splits suffixed forms on the
   apostrophe (`1933'te` → `1933` + `'` + `te`), so reconstruction is byte-exact
   while Zeyrek still lemmatizes the stem (`Kurultayı → kurultay`).
@@ -369,15 +372,17 @@ These are dictionary/data gaps (SPEC-057 Phase 3), not lemmatizer failures.
 runs are single-digit ms. Treat the Avg ms column as indicative, not a
 benchmark.
 
-**SPEC-057 Phase 2 prototypes are measured but not in this scorecard.**
-CAMeL Tools (`ar`) and Stanza (`he`) were compared against the current engines
-on the same corpora with `scripts/tokenizer-eval/compare_prototypes.py`
-(results under `tmp/tokenizer-eval/prototypes/`). Both improve lemma
-spot-checks (5/5 vs 2/5 for Arabic; 4/4 vs 0/4 for Hebrew) and Stanza raises
-the Hebrew dictionary hit rate from 41% to 59% via clitic tokenization, but
-their data licenses (GPL v2/LDC for CAMeL MSA; CC BY-NC-SA training data for
-Stanza Hebrew) are production blockers. No engine changed, so the scorecard
-above is the current production truth.
+**SPEC-057 Phase 2: CAMeL adopted for Arabic, Stanza measured but not
+adopted.** CAMeL Tools MLE (`calima-msa-r13`) replaced Qalsadi as the primary
+Arabic engine (GPL v2 data accepted server-side, same policy as Qalsadi's
+GPL-3.0; Qalsadi remains the automatic fallback). The Arabic row above and the
+v2 row in §4.3 reflect the post-CAMeL re-run: known lemma bugs fixed, lemma
+coverage 100%, and the single-word `/lemmatize-normalized` path no longer 500s.
+Stanza (`he`) was measured with `scripts/tokenizer-eval/compare_prototypes.py`
+(results under `tmp/tokenizer-eval/prototypes/`) — it improves spot-checks
+(4/4 vs 0/4) and raises Hebrew dictionary hit from 41% to 59% via clitic
+tokenization, but its CC BY-NC-SA training data remains a production blocker,
+so the Hebrew engine is unchanged.
 
 ### 4.3 Scorecard snapshot — v2 regime (2026-08-09)
 
@@ -405,15 +410,17 @@ Source: `tmp/tokenizer-eval/results/scorecard.md`.
 | yue | 99 | 100% | 5/5 | 37% | 37% | 96% | 3.3 | 94.5 | 83.1 | B | dict-seg; 粵語 itself not in dict |
 | ko | 60 | 100% | 5/7 | 48% | 65% | 100% | 5.9 | 98.0 | 82.0 | B | particles `는`/`서` wrong; lemma lookup 48%→65% |
 | tr | 200 | 100% | 7/9 | 42% | 76% | — | 21.3 | 95.0 | 81.8 | B | Zeyrek primary stems wrong; any-candidate 9/9; lemma lookup 42%→76% |
-| ar | 200 | 99% | 0/4 | 58% | 89% | 98% | 9.8 | 98.5 | 65.6 | D | all 4 spot checks 500 (SQLite threading); Qalsadi bugs; lemma lookup 58%→89% |
+| ar | 200 | 100% | 2/4 | 58% | 84% | 99% | 5.2 | 98.8 | 81.0 | B | CAMeL MLE calima-msa-r13; hard spots `لأن→أن`/`العربية→عربي` vs surface expectations; lemma lookup 58%→84% |
 
 **What the v2 regime changed:**
 
-- Grades now discriminate: 9 A, 9 B, 1 D (old regime: 19 A, 94.5–100).
+- Grades now discriminate: 9 A, 10 B, 0 D (old regime: 19 A, 94.5–100).
 - Lemma correctness is visible for the first time. Hard spots catch the
   noun/verb errors (`fr partie`, `es como`, `pt parte`, `it corsi`), German
-  inflection misses, Korean particle lemmas, Turkish primary-stem errors,
-  and Arabic's complete single-word lemmatization failure.
+  inflection misses, Korean particle lemmas, and Turkish primary-stem errors.
+  Arabic's hard spots now exercise the new CAMeL engine — `لأن→أن` and
+  `العربية→عربي` are arguably correct lemmas, so the Arabic hard map may want
+  surface-consistency expectations updated if the v2 regime is adopted.
 - The **Dict lem.** column is the biggest actionable signal: lemmatizing
   before dictionary lookup would raise coverage from 48→80% (ru), 42→76%
   (tr), 71→89% (es), 58→89% (ar), and 84→94% (en). Surface-form lookup is
@@ -422,11 +429,13 @@ Source: `tmp/tokenizer-eval/results/scorecard.md`.
   ru's bibliography initials (53% single-letter tokens) and th/tr's digit
   and CEFR labels are called out in the notes.
 
-**Arabic dropped to D because it is genuinely broken in this run:** the
-single-word `/lemmatize-normalized` path 500s for `فصل`, `لأن`, `كلمة`, and
-`العربية` (SQLite cross-thread error), so every hard spot errored and the
-reliability criterion zeroed. Batch lemmatization still returns Qalsadi
-roots, but the word-tap path the app uses is failing server-side.
+**Arabic went D → B with CAMeL.** Before the Phase 2 engine swap, the
+single-word `/lemmatize-normalized` path 500ed for `فصل`, `لأن`, `كلمة`, and
+`العربية` (SQLite cross-thread error in the Qalsadi cache path), zeroing the
+spot and reliability criteria (65.6, D). With CAMeL those calls return 200
+(spot errors 4/4 → 0/4), lemma coverage is 100%, and Arabic scores 81.0 (B).
+The two remaining hard-spot misses are `لأن→أن` and `العربية→عربي` — CAMeL
+produces the linguistic lemma while v2's Arabic hard map expects the surface.
 
 ---
 

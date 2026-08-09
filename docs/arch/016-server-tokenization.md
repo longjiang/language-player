@@ -186,7 +186,7 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Japanese | `ja`, `jpn` | `lemmatize_japanese` | MeCab (Tagger) | No |
 | Korean | `ko`, `kor` | `lemmatize_korean` | Okt (konlpy) | No |
 | Russian | `ru`, `rus` | `lemmatize_russian` | pymorphy2 | No |
-| Arabic | `ar`, `ara` | `lemmatize_arabic` | Qalsadi + Mishkal | No |
+| Arabic | `ar`, `ara` | `lemmatize_camel` | CAMeL MLE + calima-msa-r13 (Qalsadi + Mishkal fallback) | No |
 | Persian | `fa`, `fas` | `lemmatize_persian` | Hazm + PersianG2p | No |
 | Turkish | `tr`, `tur` | `lemmatize_turkish` | Zeyrek | No |
 | Burmese | `my`, `mya` | `lemmatize_burmese` | pyidaungsu | No |

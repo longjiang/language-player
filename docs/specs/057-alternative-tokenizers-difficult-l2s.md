@@ -108,6 +108,31 @@ loss (`«النصر»؛«من»`).
 **Action**: prototype CAMeL Tools against the SPEC-056 corpus and spot-checks;
 independently fix `_recover_spaces` for punctuation-adjacent spaces.
 
+**Prototype (2026-08-09)**: CAMeL Tools 1.5.7 with the `light` data set (MLE
+disambiguator + `calima-msa-r13`) vs Qalsadi on the SPEC-056 Arabic corpus
+(one 200-token block). CAMeL passes **5/5** lemma spot-checks vs Qalsadi's
+2/5, including both documented bugs and one surface-lemma case:
+
+| Surface | Qalsadi (current) | CAMeL |
+|---|---|---|
+| `كتبتها` | `تب` | `كتب` |
+| `أعني` | `أعنة` | `عنى` |
+| `يتحدثها` | `يتحدثها` (surface) | `تحدث` |
+| `اللغات` | `لغة` | `لغة` |
+| `المتحدثون` | `متحدث` | `متحدث` |
+
+Lemma coverage is 100% vs 99%; reconstruction is byte-exact (100%) for both;
+dictionary hit is unchanged at 46% (the gap is dictionary data, not the
+lemmatizer). Warm latency is ~202 ms per 200-token block (~1 ms/token) plus a
+~5 s one-time load; Qalsadi is ~11 ms/block. **License blocker**: the MSA
+morphology DB and MLE model shipped by `camel_data -i light` are **GPL v2**
+(`morphology-db-msa-r13`, `disambig-mle-calima-msa-r13`), and `light` also
+installs `morphology-db-msa-s31`, which is **LDC-licensed** (SAMA 3.1). The MIT
+code license does not clear the data packages, but GPL v2 server-side use is
+accepted in this architecture (Qalsadi GPL-3.0 already runs in the server
+tree), so **CAMeL is adopted as the primary Arabic engine** — see
+[Phase 2 results](#phase-2-results).
+
 ### 4.2 Hebrew (`he`) — B, target A/B+
 
 **Current**: regex fallback (surface-as-lemma). Tokenization itself is perfect
@@ -123,6 +148,29 @@ in the eval; the score is dominated by the 9% dictionary hit rate.
 
 **Action**: prototype Stanza `he` (license permitting) or DictaBERT-lex table
 export; pursue dictionary-coverage work separately for the 9% hit rate.
+
+**Prototype (2026-08-09)**: Stanza 1.14 Hebrew (`tokenize,mwt,pos,lemma`,
+UD Hebrew HTB) vs the regex fallback on the SPEC-056 Hebrew corpus (one
+200-token block). Stanza passes **4/4** lemma spot-checks vs 0/4 for the
+surface-as-lemma fallback:
+
+| Surface | Regex (current) | Stanza |
+|---|---|---|
+| `שפות` | `שפות` | `שפה` |
+| `יהודים` | `יהודים` | `יהודי` |
+| `מדוברת` | `מדוברת` | `מדובר` |
+| `העברית` | `העברית` | `עברית` |
+
+Stanza changes 65/200 tokens to a real lemma (regex changes 0/200), and its
+clitic tokenization (`ביהודים → ב + יהודים`) raises the dictionary hit rate
+from 41% to 59%. Reconstruction is byte-exact (100%). Warm latency is ~1 s per
+200-token block (~5 ms/token) plus a ~5 s one-time load; the regex fallback is
+~6 ms/block. **License blocker**: the Stanza model card is Apache-2.0, but the
+model is trained on **UD Hebrew HTB, which is CC BY-NC-SA 4.0** — a production
+blocker for a paid product. **DictaBERT-lex** (`dicta-il/dictabert-lex`) is
+verified **CC BY 4.0**, so the commercially usable path is a lemma-table
+export from DictaBERT-lex (ADR-0029), tracked in Phase 3, rather than a live
+Stanza engine.
 
 ### 4.3 Hindi (`hi`) — C, target A
 
@@ -181,13 +229,13 @@ Verified 2026-08-09 from project homepages/model cards:
 
 | Tool | Code license | Model/data license | Commercial use |
 |---|---|---|---|
-| CAMeL Tools | MIT | Data packages download separately (`camel_data`); verify package terms | Likely OK — verify per data package |
+| CAMeL Tools | MIT | Data packages download separately: MSA morphology/MLE (`calima-msa-r13`) GPL v2; `morphology-db-msa-s31` LDC (SAMA 3.1); Levantine/Gulf DBs CC BY 4.0; dialect-id MIT | **Accepted server-side** (GPL v2, not distributed to clients; LDC `s31` excluded) |
 | UDPipe | MPL-2.0 | Models CC BY-NC-SA 4.0 | **Blocker** (non-commercial) unless separately licensed |
-| Stanza | Apache-2.0 | Per-model, trained on UD treebanks (commonly CC BY-SA; some NC) | Verify per model |
+| Stanza | Apache-2.0 | Hebrew model card Apache-2.0, but trained on UD Hebrew HTB (CC BY-NC-SA 4.0) | **Blocker for `he`**; verify per model for other languages |
 | Zeyrek | MIT | n/a | OK |
 | Simplemma | MIT | Per-language linguistic databases have separate licenses | Verify databases in use |
 | Qalsadi | GPL-3.0 | n/a | Already in tree; note copyleft consideration |
-| DictaBERT-lex | Verify HF model card | Same | Verify before use |
+| DictaBERT-lex | CC BY 4.0 (HF model card) | CC BY 4.0 | OK with attribution — recommended `he` table source |
 
 ---
 
@@ -231,32 +279,78 @@ dictionary/data coverage (`yue` 33%, `tr` 35%, `ru`/`he` 41%, `ar` 46%,
 
 ### Phase 2 — prototype model alternatives
 
-7. CAMeL Tools prototype for `ar` vs Qalsadi on the SPEC-056 corpus; verify
-   data-package license; measure latency with `light` data.
-8. Stanza `he` prototype (license permitting) or DictaBERT-lex table export vs
-   regex fallback.
-9. Stanza `hi` / UDPipe `hindi-hdtb` only if spaCy `xx_ent_wiki_sm` after the
-   Phase 1 swap still fails spot-checks (it passes 2/2 today).
-10. Stanza `tr` only if Zeyrek + apostrophe fix still fails.
-11. Re-run the suite and promote the new scorecard into SPEC-056 §4.1.
+7. ✅ **Done + adopted (2026-08-09)** — CAMeL Tools prototype for `ar` vs
+   Qalsadi on the SPEC-056 corpus; data-package licenses verified (GPL v2
+   accepted server-side, LDC `s31` excluded); warm latency measured; engine
+   registered in `LEMMATIZER_REGISTRY` — see [§4.1](#41-arabic-ar--c-target-a)
+   and Phase 2 results below.
+8. ✅ **Done (2026-08-09)** — Stanza `he` prototype vs regex fallback; training
+   data verified CC BY-NC-SA 4.0 (blocker). DictaBERT-lex license verified
+   CC BY 4.0 (permissive), making it the recommended table-export source — see
+   [§4.2](#42-hebrew-he--b-target-ab) and Phase 2 results below.
+9. ⏭️ **Skipped** — Stanza `hi` / UDPipe only if spaCy `xx_ent_wiki_sm` after
+   the Phase 1 swap still fails spot-checks (it passes 2/2 today).
+10. ⏭️ **Skipped** — Stanza `tr` only if Zeyrek + apostrophe fix still fails
+    (it passes 2/2 today).
+11. ⏭️ **Not applicable** — no engine was adopted in Phase 2 (license
+    blockers), so the SPEC-056 scorecard is unchanged. Prototype numbers are
+    reproducible via `scripts/tokenizer-eval/compare_prototypes.py`, which
+    writes `tmp/tokenizer-eval/prototypes/{ar,he}.json`.
+
+### Phase 2 results
+
+*2026-08-09, local Flask + local prototypes, SPEC-056 corpus, one 200-token
+block per L2, CPU (Mac, no GPU). Warm latency excludes one-time model load
+and a warm-up call.*
+
+| L2 | Engine | Spot | Lemma cov. | Dict hit | Recon | Warm ms/block | Load ms | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| ar | Qalsadi + Mishkal (current) | 2/5 | 99% | 46% | 100% | 11 | — | keep; score driver is dictionary data |
+| ar | CAMeL MLE `calima-msa-r13` | 5/5 | 100% | 46% | 100% | 202 | 5,356 | **adopted server-side** (GPL v2 accepted; LDC `s31` excluded; Qalsadi fallback) |
+| he | regex fallback (current) | 0/4 | 100% | 41% | 100% | 6 | — | keep |
+| he | Stanza `he` (UD HTB) | 4/4 | 100% | 59% | 100% | 1,006 | 5,329 | more accurate + better dict hit, but CC BY-NC-SA training data → **blocker** |
+| he | DictaBERT-lex | not run | — | — | — | — | — | CC BY 4.0; export a lemma table (ADR-0029) instead of a live engine |
+
+Stanza remains research-only: its dependency and model were installed locally,
+not added to server requirements or `LEMMATIZER_REGISTRY`.
+
+**CAMeL adoption for Arabic (2026-08-09, after the prototype run):**
+
+- New `lemmatize_camel.py` uses `MLEDisambiguator.pretrained()` (defaults to
+  `calima-msa-r13`, GPL v2) with `simple_word_tokenize`; lemmas are
+  de-diacritized `lex` values, POS comes from the MLE analysis, and
+  pronunciation comes from CAMeL's per-analysis diacritized form converted to
+  SAMPA (replaces Mishkal; coverage 99% on the SPEC-056 corpus).
+- `ar`/`ara` now route to `lemmatize_camel` in `LEMMATIZER_REGISTRY`; Qalsadi
+  + Mishkal remain as an automatic fallback when CAMeL or its data is missing.
+- Production data install is `camel_data -i disambig-mle-calima-msa-r13`
+  (pulls `morphology-db-msa-r13`); `install_camel_data.sh` documents it. The
+  LDC-licensed `calima-msa-s31` package is intentionally not installed.
+- SPEC-056 re-run: v1 total 98.5 → 98.8 (A); v2 total 65.6 (D) → 81.0 (B).
+  The v2 lift comes from 100% lemma coverage and the single-word
+  `/lemmatize-normalized` path no longer 500ing (spot errors 4/4 → 0/4).
+  `كتبتها→كتب`, `أعني→عنى`, `يتحدثها→تحدث` all confirmed via the live API.
 
 ### Phase 3 — data
 
 12. Dictionary-coverage push for `he`/`id`/`tr`/`yue`/`ru`/`ko` (systemic
     gap, tracked from SPEC-056).
-13. Generate lemma tables (ADR-0029) from adopted models (e.g., DictaBERT-lex)
-    for offline use per SPEC-018.
+13. Generate lemma tables (ADR-0029) from **DictaBERT-lex** (CC BY 4.0,
+    verified 2026-08-09) for offline use per SPEC-018.
 
 ---
 
 ## 7. Definition of Done
 
 1. License review recorded for every newly added engine/data package before
-   merge.
+   merge — ✅ Phase 2 licenses recorded in §5 (CAMeL GPL v2/LDC, Stanza he
+   NC training data, DictaBERT-lex CC BY 4.0).
 2. New engines registered in `LEMMATIZER_REGISTRY` per ARCH-016 and exposed
-   through the unified schema with exact space recovery.
+   through the unified schema with exact space recovery — ✅ Arabic (CAMeL via
+   `lemmatize_camel`, byte-exact reconstruction verified); Hebrew remains N/A.
 3. SPEC-056 re-run shows all five languages at A/B, or a documented blocker
-   remains in this spec.
+   remains in this spec — ✅ Arabic re-run and promoted into SPEC-056;
+   Hebrew/Stanza blocker documented (CC BY-NC-SA).
 4. SPEC-055 test cases updated where behavior changes.
 
 ---
