@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -294,9 +294,21 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
 export default function SettingsScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ section?: string }>();
+  const sectionParam = typeof params.section === 'string' ? params.section : null;
+  const [selectedKey, setSelectedKey] = useState<string | null>(sectionParam);
+  const lastSectionParam = useRef(sectionParam);
   const sidebarWidth = Math.min(220, width * 0.4);
   const isWide = width >= LG_BREAKPOINT && (width - sidebarWidth) >= 320;
+
+  // The header sync cloud can land here with ?section=sync while the settings
+  // root is already mounted; keep the detail panel in sync with the param.
+  useEffect(() => {
+    if (sectionParam && sectionParam !== lastSectionParam.current) {
+      setSelectedKey(sectionParam);
+    }
+    lastSectionParam.current = sectionParam;
+  }, [sectionParam]);
 
   // Match web: the wide settings root opens the Display detail by default.
   useEffect(() => {
@@ -308,6 +320,7 @@ export default function SettingsScreen() {
   const handleSelect = (key: string) => {
     if (isWide) {
       setSelectedKey(key);
+      router.setParams({ section: key });
     } else {
       // Navigate via expo-router
       if (key === 'offline') {
