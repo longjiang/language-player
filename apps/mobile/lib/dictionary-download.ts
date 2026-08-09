@@ -242,7 +242,7 @@ export async function downloadDictionaryData(
   const url =
     `${PYTHON_API_URL}/dictionary/download` +
     `?l2=${encodeURIComponent(l2)}&l1=${encodeURIComponent(l1)}` +
-    `&limit=125000&format=ndjson`;
+    `&format=ndjson`;
 
   log('[DictDownload] 📥 downloading dictionary — l2:', l2, 'l1:', l1);
   let file: File | null = null;
@@ -300,7 +300,7 @@ export async function downloadPrecompiledDictionary(
   const url =
     `${PYTHON_API_URL}/dictionary/download` +
     `?l2=${encodeURIComponent(l2)}&l1=${encodeURIComponent(l1)}` +
-    `&limit=125000&format=db`;
+    `&format=db`;
 
   log('[DictDownload] 📦 downloading precompiled dictionary — l2:', l2, 'l1:', l1);
   const gzFile = await downloadToCache(url, l2, onDownloadProgress, signal);

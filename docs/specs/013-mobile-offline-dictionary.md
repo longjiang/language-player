@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS dict_meta (
 
 ### Download Sizing
 
-The `/dictionary/download` endpoint returns English-definition entries ordered by frequency, capped at a configurable limit (default: 30,000). This keeps downloads small and fast while covering the vocabulary a typical learner needs:
+The `/dictionary/download` endpoint returns English-definition entries ordered by frequency. A `limit` parameter is still supported, but the mobile client now omits it and downloads every entry (cap-removal trial, 2026-08-08). If storage or download time becomes a problem, the old 125,000-entry default can be restored:
 
 | L2 | ISO 639-3 | Dict Table | Total Wiktionary | Freq Entries | Non-Freq Entries | Downloaded | Gzip Download | Est. Time |
 |---|---|---|---|---|---|---|---|---|
@@ -511,7 +511,7 @@ Add a session-level `Map<string, DictionaryEntry[]>` to `DictionaryContext` that
 | `/dictionary/lookup` | POST | ✅ Exists | Online word lookup with LLM fallback + L1 translation |
 | `/dictionary/lookup-batch` | POST | ✅ Exists | Batch lookup for multiple words |
 | `/dictionary/entry` | GET | ✅ Exists | Fetch single entry by dict ID + scoped entry ID |
-| `/dictionary/download` | GET | ⬜ **NEW** | Bulk-export entries using two-tier selection: frequency-ranked first, then by definition length, capped at 125,000 |
+| `/dictionary/download` | GET | ⬜ **NEW** | Bulk-export entries using two-tier selection: frequency-ranked first, then by definition length; optional `limit` (default: every entry) |
 
 ---
 
