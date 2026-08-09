@@ -212,11 +212,19 @@ The local tokenizer families covered:
   `direction: rtl`, and web `<rt>` annotations are forced LTR so Latin/SAMPA
   readings don't get bidi-scrambled.
 
-### TC-12 — Thai (dict-seg)
+### TC-12 — Thai (dict-seg) ⚠️ WARNING
 
 - **Sample**: `ฉันรักภาษาไทย`
-- **Verify**: Segmentation into clickable words; no ruby.
-- **Pass**: No crash, no hang; pronunciation absent is expected.
+- **Verify**: Segmentation into clickable words; ruby shows dictionary IPA on mobile.
+- **Pass**: No crash, no hang.
+- **Warning (2026-08-08)**: web has **no Thai phonetic ruby** — server tokens
+  carry no pronunciation (no Thai G2P), and the server's regex fallback mangles
+  normal Thai because PyICU is not installed (vowel marks split from
+  consonants). Mobile shows dictionary IPA (Wiktionary) with `wiki.local`
+  source labels stripped, and Thai spacing marks stay attached to their
+  consonant (fix 2026-08-08) so ruby mode doesn't disjoin glyphs. The first
+  Thai sample book is OCR-broken (a space between every glyph — identical in
+  iBooks) and is not a tokenizer regression.
 
 ### TC-13 — Generic fallback (e.g. Spanish)
 
@@ -255,3 +263,4 @@ These run in CI / `npm test` and should pass before manual QA:
 - **Russian** — offline lemmas come from a generated wordfreq+pymorphy2 table (~500k surfaces; SPEC-018 Phase 2a). No JS library matched pymorphy2 quality, so the table is required: without it, snowball stems appear (`начал→нача`, `остановиться→останов`). Pre-reform orthography (`Въ`, `отпускъ`, `ѣ`/`і`) is not covered by any modern lemmatizer — surface-as-lemma is expected and matches the server.
 - **Armenian** — offline lemmatization uses the snowball stemmer and does not match server Simplemma (`որքան→որ`, `ամյակին→ամ`, `ուզում→ուզ` vs web `որքան→որքան`, `100-ամյակին→100-ամյակ`, `ուզում→ուզել`), which can surface wrong dictionary cards. A generated Simplemma table is not viable (no wordfreq `hy` frequencies — falls back to Russian — and sparse hy dictionary), so snowball stems offline are expected (TC-08 warning).
 - **Arabic** — web/server Qalsadi has known lemma bugs (`كتبتها→تب`, `أعني→أعنة`, `تقرأ→أقرأ`); offline `arabic-stem` is not at parity (pronouns mangled `أنا→اني`, `هنا→هني`; conjunction `وكيف→وكف`; roots instead of headwords `صديقي→صدق`). Pronunciation: web = vocalized SAMPA; offline = SAMPA char-map transliteration without Mishkal vowels (TC-11 warning).
+- **Thai** — server has no Thai G2P (web ruby absent) and PyICU is not installed, so normal Thai text falls back to a regex that splits vowel marks from consonants (e.g. `ฉันรักภาษาไทย` → `ฉ|ั|นร|ั|กภาษาไทย`). Mobile offline dict-seg attaches marks and shows dictionary IPA (TC-12 warning).

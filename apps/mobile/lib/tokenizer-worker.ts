@@ -16,6 +16,7 @@ import type { WebView } from 'react-native-webview';
 import { File } from 'expo-file-system';
 import { KROMOJI_DICT_FILES, getKuromojiDataPath, hasKuromojiData } from '@/lib/tokenizer-db';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { cleanPronunciation } from '@langplayer/utils';
 import { log, logwarn } from '@/lib/logger';
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 
@@ -460,7 +461,8 @@ async function runWarmDict(l2: string): Promise<void> {
     for (const row of rows) {
       if (row.head && !seen.has(row.head)) {
         seen.add(row.head);
-        if (row.pronunciation) pinyin.set(row.head, row.pronunciation);
+        const cleaned = cleanPronunciation(row.pronunciation);
+        if (cleaned) pinyin.set(row.head, cleaned);
         if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
       }
     }
@@ -889,6 +891,16 @@ ${kuromojiSource}
             longestMatch = candidate;
             break;
           }
+        }
+        // Thai/SEA spacing marks (Unicode \p{M}) must stay attached to the
+        // previous token — as standalone tokens they render disjoined in ruby
+        // mode (marks need to share the same text run as their consonant).
+        if (longestMatch.length === 1 && /\\p{M}/u.test(ch) && tokens.length > 0) {
+          var prevTok = tokens[tokens.length - 1];
+          prevTok.text += ch;
+          prevTok.lemmas = [{ lemma: prevTok.text }];
+          i++;
+          continue;
         }
         var py = dictPinyin[longestMatch] ? toToneMarks(dictPinyin[longestMatch]) : null;
         var lem = { lemma: longestMatch };
