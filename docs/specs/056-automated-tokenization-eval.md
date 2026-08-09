@@ -226,19 +226,33 @@ without re-running the pipeline.
 
 ### 3.1 Criteria
 
+The v1 regime (25/25/20/15/10/5 with a 50% dict band and no hard spot
+checks) saturated at ~95–100 for every language, so v2 reweights and
+sharpens the measures. The v1 total is still computed and stored as
+`legacyScore` so regressions in either regime stay visible.
+
 | Criterion | Weight | Measure |
 |---|---:|---|
-| **Tokenization fidelity** | 25% | Reconstructed text (concat token `text` incl. gap tokens) == original block, byte-for-byte. Full credit for exact; partial credit = 1 − (diff chars / total chars). Granularity flags: dict-seg languages (zh/yue/th) fail if average content-token length < 1.5 (char-by-char); any language fails if a whole paragraph collapses to 1 token. |
-| **Lemma coverage** | 25% | Content tokens with ≥ 1 non-empty lemma ÷ content tokens. Punctuation and whitespace excluded. |
-| **Lemma spot-checks** | 20% | Per-language expected-lemma map (see 3.2). Correct matches ÷ expected forms. Languages with known surface-as-lemma behavior use the surface-consistency variant. |
-| **Dictionary hit rate** | 15% | Unique content tokens with ≥ 1 dictionary entry ÷ unique content tokens. Full credit ≥ 50%, partial 30–49%, 0 below 30% (proper nouns/rare words are expected to miss). |
-| **Pronunciation coverage** | 10% | Content tokens with non-empty `pronunciation` ÷ content tokens, **only for languages where the server emits pronunciation** (zh, ja, ko, ru, yue, ar, th). N/A for Latin-script/surface languages (en, fr, de, es, vi, tr, it, hi, id, nl, he, pt); weights renormalize. |
-| **Reliability & latency** | 5% | No HTTP/5xx errors; p95 block time < 2 s (configurable). Any hard error on a language zeroes this criterion. |
+| **Tokenization fidelity** | 15% | Reconstructed text (concat token `text` incl. gap tokens) == original block, byte-for-byte. Full credit for exact; partial credit = 1 − (diff chars / total chars). A whole paragraph collapsing to 1 token fails. |
+| **Tokenization sanity** | 10% | 100 − 100 × whitespace-containing token fraction − 50 × punctuation-glued token fraction − 50 × over-merged token fraction (scriptio-continua only, content token > 20 chars). Dict-seg languages (zh/yue/th) are capped at 50 when average content-token length < 1.5 (char-by-char fallback). |
+| **Lemma coverage** | 10% | Content tokens with ≥ 1 non-empty lemma ÷ content tokens. Coverage only — correctness is scored by spot-checks, since "any lemma" accepts wrong lemmas. |
+| **Lemma spot-checks** | 20% | Seed (`expected_lemmas.json`) + hard (`hard_lemmas.json`) forms per language (see 3.2). Primary lemma must equal the expected form; an any-candidate match is recorded as `spotPassedAny` but does not pass. |
+| **Dictionary hit (surface)** | 15% | Frequency-weighted content tokens whose surface has ≥ 1 dictionary entry. Linear: score = rate × 100 (no 50% full-credit band). |
+| **Dictionary hit (lemma)** | 10% | Frequency-weighted content tokens whose **primary lemma** has ≥ 1 dictionary entry. Linear. Measures the surface-vs-lemma integration gap directly. |
+| **Pronunciation coverage** | 10% | Word-like content tokens (`text.isalpha()`, excludes digits/labels) with non-empty `pronunciation`, **only for languages where the server emits pronunciation** (zh, ja, ko, ru, yue, ar, th). Weights renormalize; N/A shown as —. |
+| **Reliability & latency** | 5% | No HTTP/5xx errors; **p95** block time < 2 s (configurable). Any hard error zeroes this criterion. |
 
 Total = weighted sum of applicable criteria, 0–100. Grades: **A** ≥ 90,
 **B** 80–89, **C** 70–79, **D** 60–69, **F** < 60.
 
-### 3.2 Expected-lemma spot maps (initial seed)
+### 3.2 Expected-lemma spot maps (seed + hard)
+
+The seed map lives in `expected_lemmas.json` and covers the classic easy
+forms. The hard map (`hard_lemmas.json`) adds corpus-derived failure modes:
+noun/verb ambiguity (`fr partie`, `es como`, `pt parte`), particles (`ko
+는/서`), Turkish Zeyrek stem errors (`yıl`/`Dil`), Arabic root-stripping
+(`فصل`/`لأن`/`كلمة`), and German/Italian inflection misses. Surface-as-lemma
+languages (vi/hi/he) and dict-seg languages (zh/yue/th) expect the surface.
 
 | L2 | Expected forms |
 |---|---|
@@ -263,14 +277,15 @@ Total = weighted sum of applicable criteria, 0–100. Grades: **A** ≥ 90,
 
 `results/scorecard.md` (also `scorecard.json`):
 
-| L2 | Tokens | Lemma cov. | Spot-check | Dict hit | Pron. | p95 (ms) | Total | Grade |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| zh | 840 | 87% | — | 64% | 92% | 310 | 91 | A |
-| … | | | | | | | | |
+| L2 | Tokens | Lemma cov. | Spot | Dict surf. | Dict lem. | Pron. | p95 (ms) | Old | New | Grade |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| zh | 89 | 100% | 5/5 | 90% | 90% | 100% | 22 | 100.0 | 96.5 | A |
+| … | | | | | | | | | | | |
 
 Each language also gets a short **notes** column entry for warnings (e.g.,
 "Arabic Qalsadi known bugs", "Turkish snowball stems only", "Hebrew surface
-lemmas").
+lemmas", corpus artifacts such as digit-heavy or initial-heavy samples).
+"Old" is the v1 total (kept as `legacyScore`), "New" is the v2 total.
 
 The first committed snapshot of a real run is in
 [Section 4.1](#41-scorecard-snapshot-2026-08-09).
@@ -287,7 +302,7 @@ The first committed snapshot of a real run is in
 | `yue` | Offline main-thread dict-seg lacks token-level jyutping; server output should have it. |
 | `ar` | Server Qalsadi has known lemma bugs; offline arabic-stem is root-oriented. Pronunciation is SAMPA-style. |
 | `pt` | In the popular list by historical weight; zero recent watch activity (not a tokenizer issue). |
-| Corpus quality | A Wikipedia article may include names/foreign terms that dictionaries don't cover — dictionary hit-rate scoring uses generous bands. |
+| Corpus quality | A Wikipedia article may include names/foreign terms that dictionaries don't cover — v2 scores dict linearly and flags corpus artifacts (initials, digit/Latin labels) in the notes. |
 
 ### 4.1 Scorecard snapshot (2026-08-09)
 
@@ -353,6 +368,65 @@ These are dictionary/data gaps (SPEC-057 Phase 3), not lemmatizer failures.
 (399 ms avg) rows include post-reload model warm-up on the first block; later
 runs are single-digit ms. Treat the Avg ms column as indicative, not a
 benchmark.
+
+**SPEC-057 Phase 2 prototypes are measured but not in this scorecard.**
+CAMeL Tools (`ar`) and Stanza (`he`) were compared against the current engines
+on the same corpora with `scripts/tokenizer-eval/compare_prototypes.py`
+(results under `tmp/tokenizer-eval/prototypes/`). Both improve lemma
+spot-checks (5/5 vs 2/5 for Arabic; 4/4 vs 0/4 for Hebrew) and Stanza raises
+the Hebrew dictionary hit rate from 41% to 59% via clitic tokenization, but
+their data licenses (GPL v2/LDC for CAMeL MSA; CC BY-NC-SA training data for
+Stanza Hebrew) are production blockers. No engine changed, so the scorecard
+above is the current production truth.
+
+### 4.3 Scorecard snapshot — v2 regime (2026-08-09)
+
+Same corpus, same server, 200-token budget, but scored with the §3.1 v2
+weights (linear dictionary rates, hard spot checks, sanity score, p95).
+Source: `tmp/tokenizer-eval/results/scorecard.md`.
+
+| L2 | Tokens | Lemma cov. | Spot | Dict surf. | Dict lem. | Pron. | p95 ms | Old | New | Grade | Notes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| vi | 200 | 100% | 6/6 | 92% | 92% | — | 4.4 | 100.0 | 97.5 | A | surface-as-lemma; syllable-level splitting acceptable |
+| zh | 89 | 100% | 5/5 | 90% | 90% | 100% | 17.0 | 100.0 | 97.1 | A | |
+| ja | 109 | 100% | 6/6 | 87% | 86% | 100% | 3.3 | 100.0 | 96.5 | A | |
+| en | 200 | 100% | 8/8 | 84% | 94% | — | 6.8 | 100.0 | 96.4 | A | lemma lookup would raise dict coverage 84%→94% |
+| nl | 200 | 100% | 6/6 | 80% | 88% | — | 4.6 | 100.0 | 95.1 | A | lemma lookup would raise dict coverage 80%→88% |
+| hi | 200 | 100% | 6/6 | 80% | 80% | — | 7.0 | 100.0 | 94.3 | A | spaCy xx_ent_wiki_sm; surface-as-lemma |
+| fr | 176 | 100% | 5/6 | 89% | 89% | — | 5.5 | 100.0 | 92.8 | A | hard spot `partie→partir` fails |
+| id | 200 | 100% | 5/5 | 69% | 76% | — | 3.1 | 100.0 | 91.8 | A | lemma lookup would raise dict coverage 69%→76% |
+| pt | 200 | 100% | 5/6 | 80% | 83% | — | 4.6 | 100.0 | 90.6 | A | hard spot `parte→partir` fails; 16% single-letter tokens |
+| ru | 196 | 100% | 6/6 | 48% | 80% | 100% | 9.5 | 97.4 | 89.8 | B | 53% single-letter initials; lemma lookup 48%→80% |
+| de | 200 | 100% | 6/8 | 82% | 82% | — | 5.7 | 100.0 | 89.0 | B | hard spots `Gesetzestexte`/`staatliche` un-lemmatized |
+| it | 200 | 100% | 6/8 | 80% | 80% | — | 9.9 | 100.0 | 88.1 | B | hard spots `attraverso`/`corsi` wrong; any-candidate 7/8 |
+| es | 196 | 100% | 5/7 | 71% | 89% | — | 5.4 | 100.0 | 87.0 | B | hard spots `como`/`considerárseles` fail; lemma lookup 71%→89% |
+| th | 49 | 100% | 6/6 | 57% | 57% | 75% | 3.4 | 97.0 | 86.0 | B | 20% digit/CEFR labels in sample |
+| he | 200 | 100% | 5/5 | 44% | 44% | — | 5.1 | 97.2 | 83.7 | B | surface-as-lemma; prefixed forms miss dict |
+| yue | 99 | 100% | 5/5 | 37% | 37% | 96% | 3.3 | 94.5 | 83.1 | B | dict-seg; 粵語 itself not in dict |
+| ko | 60 | 100% | 5/7 | 48% | 65% | 100% | 5.9 | 98.0 | 82.0 | B | particles `는`/`서` wrong; lemma lookup 48%→65% |
+| tr | 200 | 100% | 7/9 | 42% | 76% | — | 21.3 | 95.0 | 81.8 | B | Zeyrek primary stems wrong; any-candidate 9/9; lemma lookup 42%→76% |
+| ar | 200 | 99% | 0/4 | 58% | 89% | 98% | 9.8 | 98.5 | 65.6 | D | all 4 spot checks 500 (SQLite threading); Qalsadi bugs; lemma lookup 58%→89% |
+
+**What the v2 regime changed:**
+
+- Grades now discriminate: 9 A, 9 B, 1 D (old regime: 19 A, 94.5–100).
+- Lemma correctness is visible for the first time. Hard spots catch the
+  noun/verb errors (`fr partie`, `es como`, `pt parte`, `it corsi`), German
+  inflection misses, Korean particle lemmas, Turkish primary-stem errors,
+  and Arabic's complete single-word lemmatization failure.
+- The **Dict lem.** column is the biggest actionable signal: lemmatizing
+  before dictionary lookup would raise coverage from 48→80% (ru), 42→76%
+  (tr), 71→89% (es), 58→89% (ar), and 84→94% (en). Surface-form lookup is
+  the main fixable gap, and the old scorecard could not see it.
+- Corpus artifacts are now flagged instead of silently dragging scores:
+  ru's bibliography initials (53% single-letter tokens) and th/tr's digit
+  and CEFR labels are called out in the notes.
+
+**Arabic dropped to D because it is genuinely broken in this run:** the
+single-word `/lemmatize-normalized` path 500s for `فصل`, `لأن`, `كلمة`, and
+`العربية` (SQLite cross-thread error), so every hard spot errored and the
+reliability criterion zeroed. Batch lemmatization still returns Qalsadi
+roots, but the word-tap path the app uses is failing server-side.
 
 ---
 
