@@ -11,6 +11,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "vitest run",
+    "test:tokenizer-mobile": "vitest run --config vitest.mobile.config.ts",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean",
     "typecheck": "turbo typecheck",
