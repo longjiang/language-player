@@ -226,7 +226,9 @@ The local tokenizer families covered:
   consonant so ruby mode doesn't disjoin glyphs. The first Thai sample book
   is OCR-broken (a space between every glyph — identical in iBooks) and is
   not a tokenizer regression. Existing installs must re-download the Thai
-  offline dictionary to pick up the Paiboon+ column.
+  offline dictionary to pick up the Paiboon+ column; the update button now
+  also clears in-memory/WebView tokenizer caches so the new readings apply
+  without an app restart.
 
 ### TC-13 — Generic fallback (e.g. Spanish)
 

@@ -381,6 +381,29 @@ export function warmTokenizationWorkerDict(l2: string): Promise<boolean> {
   return promise;
 }
 
+/**
+ * Drop a language's dict-segmentation state after its offline dictionary is
+ * re-downloaded or deleted. The WebView keeps a copy of the old headword set
+ * and pronunciations, so it must be reset too — otherwise the next warm call
+ * would see `ready` and keep using stale data.
+ */
+export function resetDictWorker(l2: string): void {
+  dictStatus.delete(l2);
+  dictWarmPromises.delete(l2);
+  dictWarmResolvers.delete(l2);
+  const timer = dictInitTimers.get(l2);
+  if (timer) {
+    clearTimeout(timer);
+    dictInitTimers.delete(l2);
+  }
+  dictChunkAcks.delete(l2);
+  dictChunkTotal.delete(l2);
+  dictInitRetried.delete(l2);
+  if (webViewRef) {
+    void injectQueued(`window.__lpResetDict(${JSON.stringify(JSON.stringify(l2))})`).catch(() => {});
+  }
+}
+
 async function runWarmDict(l2: string): Promise<void> {
   const finish = (ok: boolean) => {
     dictWarmResolvers.get(l2)?.(ok);
@@ -794,6 +817,20 @@ ${kuromojiSource}
       if (typeof dictChunks[l2] !== 'undefined' && typeof dictChunks[l2][i] === 'string') got++;
     }
     post({ type: 'dict_chunk', l2: l2, index: index, got: got, total: total });
+  };
+
+  window.__lpResetDict = function (l2Json) {
+    var l2 = JSON.parse(l2Json);
+    if (dictChunks[l2]) delete dictChunks[l2];
+    if (dictTotals[l2]) delete dictTotals[l2];
+    if (dictReadyL2 === l2) {
+      dictReadyL2 = null;
+      dictSet = null;
+      dictPinyin = {};
+      dictPos = {};
+      dictMaxLen = 1;
+    }
+    post({ type: 'dict_reset', l2: l2 });
   };
 
   window.__lpInitDict = function (l2Json, totalJson) {
