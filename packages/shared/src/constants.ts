@@ -284,37 +284,40 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   ru: { snowballCode: 'russian', hasLemmaTable: true, lemmaTableSize: 350_000 },
   sl: { snowballCode: 'slovene', hasLemmaTable: true, lemmaTableSize: 180_000 },
   sv: { snowballCode: 'swedish', hasLemmaTable: true, lemmaTableSize: 200_000 },
-  tr: { snowballCode: 'turkish', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  hy: { snowballCode: 'armenian', hasLemmaTable: true, lemmaTableSize: 250_000 },
 
   // ── Snowball only (no lemma table, 5 languages) ──
   eu: { snowballCode: 'basque', hasLemmaTable: false, lemmaTableSize: 0 },
-  hy: { snowballCode: 'armenian', hasLemmaTable: false, lemmaTableSize: 0 },
   nb: { snowballCode: 'norwegian', hasLemmaTable: false, lemmaTableSize: 0 },
   no: { snowballCode: 'norwegian', hasLemmaTable: false, lemmaTableSize: 0 },
   ta: { snowballCode: 'tamil', hasLemmaTable: false, lemmaTableSize: 0 },
+  // Turkish server engine is Zeyrek (no static export) — snowball only.
+  tr: { snowballCode: 'turkish', hasLemmaTable: false, lemmaTableSize: 0 },
 
-  // ── Lemma Table only (no snowball, 22 languages) ──
+  // ── Lemma Table only (no snowball, 21 languages) ──
+  // hasLemmaTable mirrors the server's registry exportability (ADR-0028):
+  // cy/fa/gd/hr were removed — the server uses fallback/Hazm/spaCy for them,
+  // so no offline table exists. id/ms/tl are Simplemma-routed with exports.
   ast: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 180_000 },
   bg: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 200_000 },
-  cy: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 80_000 },
   el: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   et: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
-  fa: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
-  gd: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 60_000 },
   gl: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   gv: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 40_000 },
-  hr: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 300_000 },
+  id: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 25_000 },
   is: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 120_000 },
   ka: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   la: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   lt: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   lv: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
   mk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 120_000 },
+  ms: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 20_000 },
   nn: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
   pl: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 250_000 },
   sk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 200_000 },
   sq: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
   sw: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 80_000 },
+  tl: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 45_000 },
   uk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 250_000 },
 
   // ── Dict-based segmentation only (Phase 2b, 16 languages) ──
