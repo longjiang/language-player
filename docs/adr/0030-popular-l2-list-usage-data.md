@@ -38,7 +38,7 @@ popular L1 section, where they are legitimate common native languages).
    - `POPULAR_L2S` — L2 list, ordered by observed study activity (ARCH-021):
 
      ```ts
-     ['en', 'zh', 'ja', 'ko', 'fr', 'de', 'es',
+     ['zh', 'en', 'ja', 'ko', 'fr', 'de', 'es',
       'vi', 'ru', 'ar', 'tr', 'it', 'hi', 'yue', 'th', 'id', 'nl', 'he', 'pt']
      ```
 
@@ -60,6 +60,10 @@ popular L1 section, where they are legitimate common native languages).
   Japanese, English, Korean, French, and German first, with Vietnamese,
   Russian, Arabic, and Turkish promoted; Cantonese and Hebrew added; Polish
   and Swedish demoted out of the shortlist.
+- Chinese is first because it dominates every activity window (1,850 watch
+  events in the last 30 days vs. 140 for English; 106,786 all-time vs.
+  18,798). English remains second — it is the #2 all-time L2 and the platform
+  default L1, so it stays visible for product familiarity.
 - The L1 column is untouched — `pl`/`sv` remain popular native-language
   options and `zh-Hans`/`zh-Hant` stay in place.
 - One source of truth in `@langplayer/shared`; the web duplicate is gone.

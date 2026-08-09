@@ -55,8 +55,8 @@ The local tokenizer families covered:
 
 | `POPULAR_L2S` | Test case |
 |---|---|
-| `en` | TC-14 |
 | `zh` | TC-03 / TC-04 |
+| `en` | TC-14 |
 | `ja` | TC-01 |
 | `ko` | TC-02 |
 | `fr` | TC-16 |
