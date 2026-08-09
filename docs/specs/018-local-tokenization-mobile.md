@@ -482,9 +482,11 @@ builds stopping early so sw/fi/pl never materialize server-side.
 Known caveats: capped languages receive the first 50k dictionary rows
 (alphabetical, not frequency-ordered) — acceptable while they're capped;
 streaming/NDJSON downloads and a storage opt-in prompt for the giants remain
-future work. `tr` is included in the cap list for forward compatibility but
-currently has no server export (server Turkish uses zeyrek, not Simplemma), so
-it falls back to snowball until a table exists.
+future work. Export responses are gzipped (Content-Encoding) and the client
+inserts tables in a single transaction, so full downloads are ~10× smaller and
+insert in seconds. `tr` is included in the cap list for forward compatibility
+but currently has no server export (server Turkish uses zeyrek, not
+Simplemma), so it falls back to snowball until a table exists.
 
 Stored lemma tables carry a version stamp (`lemma_meta.version`,
 `LEMMA_TABLE_VERSION` in `tokenizer-db.ts`). Bump it when the download policy
