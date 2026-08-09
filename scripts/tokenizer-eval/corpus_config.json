@@ -1,0 +1,21 @@
+{
+  "zh": { "lang": "zh", "titles": ["汉语", "中国"] },
+  "en": { "lang": "en", "titles": ["English language"] },
+  "ja": { "lang": "ja", "titles": ["日本語"] },
+  "ko": { "lang": "ko", "titles": ["한국어"] },
+  "fr": { "lang": "fr", "titles": ["Français", "Langue française"] },
+  "de": { "lang": "de", "titles": ["Deutsche Sprache"] },
+  "es": { "lang": "es", "titles": ["Idioma español"] },
+  "vi": { "lang": "vi", "titles": ["Tiếng Việt"] },
+  "ru": { "lang": "ru", "titles": ["Русский язык"] },
+  "ar": { "lang": "ar", "titles": ["اللغة العربية"] },
+  "tr": { "lang": "tr", "titles": ["Türkçe"] },
+  "it": { "lang": "it", "titles": ["Lingua italiana"] },
+  "hi": { "lang": "hi", "titles": ["हिन्दी"] },
+  "yue": { "lang": "zh-yue", "titles": ["粵語"] },
+  "th": { "lang": "th", "titles": ["ภาษาไทย"] },
+  "id": { "lang": "id", "titles": ["Bahasa Indonesia"] },
+  "nl": { "lang": "nl", "titles": ["Nederlands"] },
+  "he": { "lang": "he", "titles": ["עברית"] },
+  "pt": { "lang": "pt", "titles": ["Língua portuguesa"] }
+}

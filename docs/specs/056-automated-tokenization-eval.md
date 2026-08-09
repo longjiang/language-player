@@ -81,9 +81,9 @@ Exactly the 19 languages in `POPULAR_L2S` (`packages/shared/src/language-data.ts
 
 ### 1.2 Fetcher
 
-`tmp/tokenizer-eval/fetch_corpus.py` (new):
+`scripts/tokenizer-eval/fetch_corpus.py` (new, tracked):
 
-1. Read `tmp/tokenizer-eval/corpus_config.json` — `{ "l2": { "title": "...", "lang": "zh" } }`.
+1. Read `scripts/tokenizer-eval/corpus_config.json` — `{ "l2": { "lang": "zh", "titles": ["…"] } }`.
 2. Fetch the article HTML from the Wikipedia REST API:
    `GET https://{lang}.wikipedia.org/api/rest_v1/page/html/{title}`
 3. Convert HTML → Markdown with `pandoc` if available, else a Python HTML→MD
@@ -96,14 +96,19 @@ Exactly the 19 languages in `POPULAR_L2S` (`packages/shared/src/language-data.ts
 ### 1.3 Corpus folder layout
 
 ```
+scripts/tokenizer-eval/
+├── corpus_config.json        ← pinned titles + Wikipedia lang codes (tracked)
+├── expected_lemmas.json      ← seed spot-check maps (tracked)
+├── fetch_corpus.py           ← corpus fetcher (tracked)
+└── run_eval.py               ← pipeline runner + scorer (tracked)
+
 tmp/tokenizer-eval/
-├── corpus/
-│   ├── corpus_config.json      ← pinned titles + Wikipedia lang codes
+├── corpus/                     ← generated artifacts (gitignored)
 │   ├── manifest.json           ← title, URL, fetched_at, revision, word counts
 │   ├── zh.md
 │   ├── en.md
 │   └── … (one .md per popular L2)
-└── results/
+└── results/                    ← generated artifacts (gitignored)
     ├── zh.json
     ├── en.json
     ├── …
@@ -115,15 +120,18 @@ tmp/tokenizer-eval/
 
 ## 2. Pipeline Runner
 
-`tmp/tokenizer-eval/run_eval.py` (new) runs each language through the live Flask
+`scripts/tokenizer-eval/run_eval.py` (new) runs each language through the live Flask
 server. It must **never start or stop the Flask server** — the developer starts
 it (per repo rules) and the script reads `PYTHON_SERVER` (default
 `http://127.0.0.1:5001/`) or `PYTHON_API_URL`.
 
 ### 2.1 Step 1 — Tokenize / lemmatize
 
-Split each corpus `.md` into blocks (headings, paragraphs, list items). Send one
-batch request per language:
+Strip Markdown markup (headings, links, bold/italic, list markers) and select
+the **longest paragraphs**, filling a **200-token total budget per language**
+(`--max-tokens`, default 200; scriptio-continua languages count characters).
+The last paragraph is truncated to the remaining budget. Send one batch request
+per language:
 
 ```http
 POST {PYTHON_SERVER}lemmatize-normalized/batch
@@ -146,6 +154,10 @@ Response (already normalized by the server):
 ```
 
 `results[i]` corresponds to `texts[i]` by index.
+
+Reconstruction fidelity is scored against the **normalized plain-text
+paragraphs** (Markdown stripped, `\u202f`/`\xa0` normalized to spaces), not the
+raw Markdown source — the pipeline is a tokenizer, not a Markdown renderer.
 
 ### 2.2 Step 2 — Batch dictionary lookup
 
@@ -236,7 +248,7 @@ Total = weighted sum of applicable criteria, 0–100. Grades: **A** ≥ 90,
 | `ru` | `читаю→читать`, `начал→начать` |
 | `zh` / `yue` | segmentation-only: verify `围城` / `動物學` stay one token; lemma = surface expected |
 | `th` | segmentation-only: no spaces inserted; lemma = surface expected |
-| `tr` | surface/snowball-consistent: `gittim→git` (stem) expected — do **not** require dictionary-form lemma |
+| `tr` | server (Zeyrek) expects dictionary lemmas `gittim→gitmek`, `aldım→almak`; offline snowball stems (`git`, `al`) are the expected fallback, not a pass for the server path |
 | `id` | `membeli→beli` where table covers it; otherwise surface-as-lemma acceptable |
 | `vi` / `hi` / `he` | surface-as-lemma expected |
 | `ar` | known server Qalsadi bugs (`كتبتها→تب`, `أعني→أعنة`) are **documented gaps**, not score-killers; flag in report |
@@ -268,6 +280,15 @@ lemmas").
 | `pt` | In the popular list by historical weight; zero recent watch activity (not a tokenizer issue). |
 | Corpus quality | A Wikipedia article may include names/foreign terms that dictionaries don't cover — dictionary hit-rate scoring uses generous bands. |
 
+### Initial findings (2026-08-09, local Flask, 200-token budget)
+
+- **Turkish** — the tokenizer drops apostrophes in suffixed forms (`1933'te → 1933te`, `Kurultayı'nın → Kurultayının`), breaking reconstruction fidelity.
+- **Arabic** — some punctuation-adjacent spaces are lost (`«النصر»؛«من»` style sequences), also breaking fidelity.
+- **Indonesian** — table blocks and percent signs are mangled (`90% → 90`); tables should be excluded from paragraph selection or normalized before sending.
+- **Hindi** — the server currently splits Devanagari near char-level (avg token length ≈ 1.36); surface-as-lemma spot-checks fail (`हिन्दी → ह`).
+- **Hebrew** — tokenization/lemmas are fine, but dictionary hit rate is very low (9% on the first run), likely a dictionary-coverage issue rather than a tokenizer one.
+- **Dictionary coverage** — `tr` (31%), `yue` (33%), `id` (20%), `he` (9%) are the weakest popular-L2 dictionaries in this corpus.
+
 ---
 
 ## 5. Reproducibility & Hygiene
@@ -275,8 +296,11 @@ lemmas").
 - Pin `corpus_config.json` titles; never silently randomize.
 - Record `fetched_at` + source revision in `manifest.json` so a re-fetch after a
   Wikipedia edit is detectable.
-- Keep raw request/response JSON in `results/`; they are generated artifacts and
-  should be gitignored if large. `scorecard.md` is the tracked summary.
+- Keep raw request/response JSON in `tmp/tokenizer-eval/results/`; they are
+  generated artifacts and are gitignored. `scorecard.md` there is the working
+  summary; copy it into a tracked location when a run is promoted to a report.
+- Scripts (`scripts/tokenizer-eval/`) are tracked and reusable; corpora/results
+  under `tmp/tokenizer-eval/` are regenerated per run.
 - Use `python3.10` for all scripts (repo rule).
 - Flask must already be running (local or `PYTHON_SERVER` override); the runner
   never starts/stops it.

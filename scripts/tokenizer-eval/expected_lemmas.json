@@ -1,0 +1,21 @@
+{
+  "ja": { "思った": "思う", "食べた": "食べる" },
+  "ko": { "먹었습니다": "먹다", "드시": "들다" },
+  "en": { "went": "go", "better": "good", "children": "child" },
+  "de": { "gelesen": "lesen", "gegangen": "gehen", "besser": "gut" },
+  "fr": { "suis": "être", "allé": "aller", "acheté": "acheter" },
+  "es": { "estudiantes": "estudiante", "son": "ser" },
+  "it": { "sono": "essere", "andato": "andare", "comprato": "comprare" },
+  "pt": { "fui": "ir", "comprei": "comprar" },
+  "nl": { "ben": "zijn", "geweest": "zijn", "gekocht": "kopen" },
+  "ru": { "читаю": "читать", "начал": "начать" },
+  "tr": { "gittim": "gitmek", "aldım": "almak" },
+  "id": { "membeli": "beli" },
+  "zh": { "围城": "围城", "汉语": "汉语" },
+  "yue": { "粵語": "粵語", "動物學": "動物學" },
+  "th": { "ภาษา": "ภาษา", "ไทย": "ไทย" },
+  "vi": { "tiếng": "tiếng", "Việt": "Việt" },
+  "hi": { "हिन्दी": "हिन्दी", "भाषा": "भाषा" },
+  "he": { "עברית": "עברית", "שפה": "שפה" },
+  "ar": {}
+}
