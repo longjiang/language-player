@@ -14,6 +14,20 @@ import type { DictionaryEntry } from '@langplayer/shared';
 import { formatJapanesePron, circledPattern } from './pitch-accent';
 
 /**
+ * Strip trailing pronunciation source labels that some dictionary exports
+ * embed in the pronunciation field ("t͡ɕaːk̚˨˩, wiki.local" → "t͡ɕaːk̚˨˩").
+ */
+export function cleanPronunciation(
+  pron: string | null | undefined,
+): string | null {
+  if (!pron) return null;
+  const cleaned = pron
+    .replace(/,?\s*wiki\.local\s*$/i, '')
+    .trim();
+  return cleaned || null;
+}
+
+/**
  * Compile a pronunciation string from a dictionary entry.
  *
  * Returns e.g.:
@@ -32,9 +46,11 @@ export function formatPronunciation(
   if (!entry) return null;
 
   const pd = entry.phonetic_detail;
-  const pron = entry.pronunciation && entry.pronunciation !== entry.head
-    ? entry.pronunciation
-    : null;
+  const pron = cleanPronunciation(
+    entry.pronunciation && entry.pronunciation !== entry.head
+      ? entry.pronunciation
+      : null,
+  );
 
   // ── Japanese: pitch-accented kana + romaji, or kana, or romaji ──
   if (l2Code === 'ja') {
@@ -45,10 +61,10 @@ export function formatPronunciation(
       return `[${formatJapanesePron(pd.kana, romaji, p)}]${circledPattern(p)}`;
     }
     // Kana without pitch
-    if (pd?.kana) return `[${pd.kana}]`;
+    if (pd?.kana) return `[${cleanPronunciation(pd.kana)}]`;
     // Fallbacks
-    if (pd?.romanization) return `[${pd.romanization}]`;
-    if (pd?.romaji) return `[${pd.romaji}]`;
+    if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
+    if (pd?.romaji) return `[${cleanPronunciation(pd.romaji)}]`;
     if (pron) return `[${pron}]`;
   }
 
@@ -59,19 +75,19 @@ export function formatPronunciation(
   // default (phonetic_detail variants remain as fallbacks for sparse rows).
   if (l2Code === 'zh' || l2Code === 'yue') {
     if (pron) return `[${pron}]`;
-    if (pd?.pinyin) return `[${pd.pinyin}]`;
-    if (pd?.jyutping) return `[${pd.jyutping}]`;
+    if (pd?.pinyin) return `[${cleanPronunciation(pd.pinyin)}]`;
+    if (pd?.jyutping) return `[${cleanPronunciation(pd.jyutping)}]`;
   }
 
   // ── Korean: romanization ──
   if (l2Code === 'ko') {
-    if (pd?.romanization) return `[${pd.romanization}]`;
+    if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
     if (pron) return `[${pron}]`;
   }
 
   // ── Other languages: IPA > romanization > pronunciation ──
-  if (pd?.ipa) return `[${pd.ipa}]`;
-  if (pd?.romanization) return `[${pd.romanization}]`;
+  if (pd?.ipa) return `[${cleanPronunciation(pd.ipa)}]`;
+  if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
   if (pron) return `[${pron}]`;
 
   return null;

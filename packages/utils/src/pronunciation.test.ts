@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPronunciation } from './pronunciation';
+import { cleanPronunciation, formatPronunciation } from './pronunciation';
 import type { DictionaryEntry } from '@langplayer/shared';
 
 function entry(overrides: Partial<DictionaryEntry>): DictionaryEntry {
@@ -40,5 +40,16 @@ describe('formatPronunciation', () => {
       phonetic_detail: { pinyin: 'nǐ hǎo' },
     });
     expect(formatPronunciation(e, 'zh')).toBe('[nǐ hǎo]');
+  });
+
+  it('strips wiki.local source labels from displayed pronunciation', () => {
+    const e = entry({
+      head: 'จาก',
+      pronunciation: 't͡ɕaːk̚˨˩, wiki.local',
+    });
+    expect(formatPronunciation(e, 'th')).toBe('[t͡ɕaːk̚˨˩]');
+    expect(cleanPronunciation('t͡ɕon˧, wiki.local')).toBe('t͡ɕon˧');
+    expect(cleanPronunciation('pʰim˧')).toBe('pʰim˧');
+    expect(cleanPronunciation('')).toBeNull();
   });
 });

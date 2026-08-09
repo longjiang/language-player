@@ -256,6 +256,14 @@ async function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: n
         break;
       }
     }
+    // Thai/SEA spacing marks (\p{M}) must stay attached to the previous token
+    // — standalone marks render disjoined in ruby mode (same text-run rule as
+    // the worker's dict segmentation).
+    if (longestMatch.length === 1 && /\p{M}/u.test(text[i]!) && result.length > 0) {
+      result[result.length - 1]! += text[i]!;
+      i++;
+      continue;
+    }
     result.push(longestMatch);
     i += longestMatch.length;
     charsSinceYield += longestMatch.length;
