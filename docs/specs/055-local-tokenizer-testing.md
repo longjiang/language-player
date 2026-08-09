@@ -144,11 +144,21 @@ The local tokenizer families covered:
   (`σι` inside `Γκράτσια` — substring fallback gated to dict-segmentation
   languages).
 
-### TC-08 — Armenian (char map)
+### TC-08 — Armenian (char map) ⚠️ WARNING
 
 - **Sample**: `Բարև ձեզ։ Հայերեն լեզու`
 - **Verify**: Ruby = `Barev jez։ Hayeren lezow`.
 - **Pass**: Matches online exactly, including `ow` and the untouched `։`.
+
+> **Warning (2026-08-08)**: romanization is pass, but offline **lemmatization
+> is not parity**. Offline Armenian uses the snowball stemmer, producing stems
+> that never match the server's Simplemma lemmas (`որքան→որ`,
+> `ամյակին→ամ`, `ուզում→ուզ` vs web `որքան→որքան`, `100-ամյակին→100-ամյակ`,
+> `ուզում→ուզել`) and can open wrong dictionary cards (tapping `ամյակին`
+> shows the `ամ` entry). A Simplemma-generated table (the Greek pattern) is
+> not viable here: wordfreq has no Armenian frequencies (it silently falls
+> back to Russian), and Simplemma's hy dictionary is sparse for common forms.
+> Snowball stems offline are expected — do not treat as a pass.
 
 ### TC-09 — Georgian (char map)
 
@@ -210,3 +220,4 @@ These run in CI / `npm test` and should pass before manual QA:
 - **Thai** — no RN-portable romanizer (Node binary / WASM only); server has none either.
 - **Yue** — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
 - **Russian** — offline lemmas come from a generated wordfreq+pymorphy2 table (~500k surfaces; SPEC-018 Phase 2a). No JS library matched pymorphy2 quality, so the table is required: without it, snowball stems appear (`начал→нача`, `остановиться→останов`). Pre-reform orthography (`Въ`, `отпускъ`, `ѣ`/`і`) is not covered by any modern lemmatizer — surface-as-lemma is expected and matches the server.
+- **Armenian** — offline lemmatization uses the snowball stemmer and does not match server Simplemma (`որքան→որ`, `ամյակին→ամ`, `ուզում→ուզ` vs web `որքան→որքան`, `100-ամյակին→100-ամյակ`, `ուզում→ուզել`), which can surface wrong dictionary cards. A generated Simplemma table is not viable (no wordfreq `hy` frequencies — falls back to Russian — and sparse hy dictionary), so snowball stems offline are expected (TC-08 warning).
