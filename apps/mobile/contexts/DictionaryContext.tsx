@@ -409,6 +409,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       try {
         const { clearDictionaryCaches } = await import('@/lib/tokenizer');
         clearDictionaryCaches(l2);
+        log('[DictContext] 🧹 cleared in-memory tokenizer/dict caches — l2:', l2);
       } catch {}
 
       // Save metadata in the central DB so the offline dictionaries list and
