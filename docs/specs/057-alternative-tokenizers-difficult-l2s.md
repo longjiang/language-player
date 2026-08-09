@@ -367,10 +367,11 @@ word-like pron 100% on the corpus).
 
 ### 4.9 Korean (ko) — B in v2, target A
 
-**Current**: server konlpy **Okt** (`norm=True`, `stem=True`) — the eval
-shows particle lemmas are wrong (`는→늘다`, `서→서다`). Mobile uses
-kuromoji-ko (mecab-ko-dic) + koroman romanization, with a known
-pronunciation gap (per-token surfaces vs word-level romanization).
+**Current**: server **Kiwi** (`kiwipiepy`, LGPL-3.0) — adopted 2026-08-09,
+replacing konlpy **Okt** (`norm=True`, `stem=True`) whose particle lemmas
+were wrong (`는→늘다`, `서→서다`). Mobile uses kuromoji-ko (mecab-ko-dic) +
+koroman romanization, with a known pronunciation gap (per-token surfaces vs
+word-level romanization).
 
 **v2 scorecard symptoms**: hard spots 5/7; lemma-based dictionary lookup
 would raise coverage 48→65%.
@@ -384,10 +385,22 @@ would raise coverage 48→65%.
 | **Keep kuromoji-ko on mobile** | Engine is fine; fix pronunciation by romanizing dictionary headwords/lemmas instead of every surface token |
 | Lemma-based dictionary lookup | 48→65% weighted coverage; integration fix, not an engine swap |
 
-**Action** (Phase 5): prototype Kiwi on the SPEC-056 Korean corpus + hard
-spots (`는`, `서`, `불렀으나`, `쓰는`, `부른다`, `먹었습니다`); if adopted,
-rewrite `lemmatize_korean` around Kiwi and register it; re-run v2 (target
-hard spots 7/7). Separately fix mobile per-token romanization.
+**Action** (Phase 5):
+
+1. ✅ **Implemented 2026-08-09** — `lemmatize_korean` rewritten around Kiwi:
+   `text` is the exact surface substring (Kiwi's `form` can be a normalized
+   morpheme, e.g. `부르` for surface `불` in `불렀`), `stem` is Kiwi's lemma
+   plus the suppletive override (`드시→들다`, ported from mobile), cache
+   namespace `kiwi-v2`. Verified on the SPEC-056 corpus: particles correct in
+   context, no >20-char tokens, weighted dict coverage surface 48→61% /
+   lemma 65→68%, warm latency 1.6 ms vs Okt 84 ms per block.
+2. **Eval follow-up** — the standalone single-character particle spots
+   (`는`, `서`) are ambiguous in isolation: Kiwi analyzes `는` alone as
+   `늘+는`, though it is correct in corpus context (`현재는 → 는/는`).
+   Move the ko hard spots to contextual phrases so the scorecard measures
+   real subtitle behavior.
+3. **Pending** — mobile per-token romanization fix (romanize dictionary
+   headwords/lemmas instead of every surface token).
 
 ---
 
@@ -405,7 +418,7 @@ Verified 2026-08-09 from project homepages/model cards:
 | Qalsadi | GPL-3.0 | n/a | Already in tree; note copyleft consideration |
 | DictaBERT-lex | CC BY 4.0 (HF model card) | CC BY 4.0 | OK with attribution — recommended `he` table source |
 | spaCy de/es/it sm | MIT | MIT (model cards; TIGER/GSD-derived) | OK |
-| Kiwi (`kiwipiepy`) | LGPL-3.0 | verify model/data terms | Acceptable server-side (same policy as GPL Qalsadi/CAMeL); not for client distribution |
+| Kiwi (`kiwipiepy`) | LGPL-3.0 | verify model/data terms | **Adopted server-side 2026-08-09** (same policy as GPL Qalsadi/CAMeL); not for client distribution |
 | AttaCut | MIT | MIT | OK |
 | ToJyutping | BSD-2-Clause (MIT on some channels) | verify data attribution | OK |
 | PyCantonese | MIT | bundled data mixed: HKCanCor CC BY, CantoMap GPL-3.0, Common Voice MPL-2.0 | Server-side OK; verify redistribution |
@@ -528,14 +541,19 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
 
 ### Phase 5 — Korean server engine spike
 
-17. Prototype **Kiwi** (`kiwipiepy`, LGPL-3.0) on the SPEC-056 Korean corpus
-    + hard spots (`는`, `서`, `불렀으나`, `쓰는`, `부른다`, `먹었습니다`);
-    record latency, lemma coverage, and spot pass rate; verify model-data
-    license terms (LGPL accepted under the existing GPL server-side policy).
-18. If adopted: rewrite `lemmatize_korean` around Kiwi, register in
-    `LEMMATIZER_REGISTRY`, re-run SPEC-056 v2 (target hard spots 7/7).
-19. Mobile: keep kuromoji-ko; fix per-token pronunciation by romanizing
-    dictionary headwords/lemmas (addresses the SPEC-058 ~11% coverage gap).
+17. ✅ **Done 2026-08-09** — Kiwi prototype vs Okt on the SPEC-056 Korean
+    corpus + hard spots. Results: warm 1.6 ms vs 84 ms per block; weighted
+    dict coverage surface 48→61% / lemma 65→68%; fixes `서→서` and corpus
+    `는→는`; `드시` needs the suppletive override. LGPL-3.0 verified
+    acceptable under the existing GPL server-side policy.
+18. ✅ **Implemented 2026-08-09** — `lemmatize_korean` rewritten around Kiwi
+    (surface-slice `text`, lemma `stem`, suppletive override, cache
+    `kiwi-v2`); `/lemmatize-korean` fixture regenerated; unit tests added.
+    Re-run SPEC-056 v2 after server restart; the ko hard-spot set should move
+    to contextual phrases (see §4.9).
+19. Pending — mobile: keep kuromoji-ko; fix per-token pronunciation by
+    romanizing dictionary headwords/lemmas (addresses the SPEC-058 ~11%
+    coverage gap).
 
 ### Phase 6 — th / yue dictionary data + pronunciation
 

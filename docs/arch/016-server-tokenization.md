@@ -184,7 +184,7 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 |---|---|---|---|---|
 | Chinese | `zh`, `zho`, `zh-Hans`, `zh-Hant` | `lemmatize_han` | jieba (POS) + pypinyin | No |
 | Japanese | `ja`, `jpn` | `lemmatize_japanese` | MeCab (Tagger) | No |
-| Korean | `ko`, `kor` | `lemmatize_korean` | Okt (konlpy) | No |
+| Korean | `ko`, `kor` | `lemmatize_korean` | Kiwi (kiwipiepy, LGPL-3.0) | No |
 | Russian | `ru`, `rus` | `lemmatize_russian` | pymorphy2 | No |
 | Arabic | `ar`, `ara` | `lemmatize_camel` | CAMeL MLE + calima-msa-r13 (Qalsadi + Mishkal fallback) | No |
 | Persian | `fa`, `fas` | `lemmatize_persian` | Hazm + PersianG2p | No |
@@ -237,7 +237,7 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 > authoritative for lemmatizer selection — including the offline lemma-table
 > export, which derives its data source from the registry engine
 > (`lemmatize_export.py`). Override only with a specific reason (e.g. engine
-> unavailable in React Native: MeCab→kuromoji, Okt→kuromoji-ko, jieba→dict
+> unavailable in React Native: MeCab→kuromoji, Kiwi→kuromoji-ko, jieba→dict
 > max-matching — see ARCH-018). The Chinese row above was updated 2026-08-08:
 > the Han family routes via `lemmatize_han`.
 
@@ -336,26 +336,45 @@ no pronunciation. Burmese (`my`) is not here — it keeps
 
 ---
 
-### Korean — Okt / Open Korean Text (`lemmatize_korean.py`)
+### Korean — Kiwi (`lemmatize_korean.py`)
 
-**Engine**: [Okt](https://github.com/konlpy/konlpy) (Open Korean Text) from konlpy
+**Engine**: [Kiwi](https://github.com/bab2min/kiwipiepy) (`kiwipiepy`,
+LGPL-3.0, C++ core with Python bindings)
 
-**Requirements**: Java 17+ (Temurin), `JAVA_HOME` set to `/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home`
+Replaces konlpy Okt (Java 17) — adopted 2026-08-09 after the SPEC-057 §4.9
+prototype. Verified on the SPEC-056 Korean corpus:
 
-**Raw output format**:
+- fixes particle lemmas in context (`는→는`, `서→서` — Okt returned
+  `늘다`/`서다`)
+- splits Okt's 34-char glued token into proper morphemes
+- weighted dictionary coverage: surface 48% → 61%, lemma 65% → 68%
+- warm latency ~1.6 ms per 200-char block vs Okt ~84 ms (cache-free); the
+  ~0.9 s one-time model load is lazy, once per process
+- the suppletive override (`드시→들다`) is ported from the mobile
+  kuromoji-ko path so online/offline output stays in sync
+
+**Raw output format** (same shape as the old Okt path, so
+`_normalize_okt` is unchanged):
 ```python
-[{"stem": "먹", "text": "먹어요", "pos": "Verb", "offset": 0, "length": 3, "unknown": False}, ...]
+[{"stem": "먹다", "text": "먹", "pos": "VV", "offset": 0, "length": 1, "unknown": False}, ...]
 ```
 
 **How it works**:
-1. `Okt.pos(text, norm=True)` — first pass: POS tagging with normalization
-2. For each token: `Okt.pos(token, stem=True, norm=True)` — second pass: stem extraction
-3. `stem` field contains the base form (e.g., `먹` from `먹어요`)
-4. `text` field contains the surface form
-5. Offsets are tracked for potential text reconstruction
-6. Cache key: `cache/lemmatization/openkoreantext/kor/{md5}`
+1. `Kiwi.tokenize(text)` — morphological analysis (surface morphemes,
+   lemmas, POS, byte offsets)
+2. `text` is the exact surface substring `original[start:end]` — Kiwi's
+   `form` is the canonical morpheme (e.g., `부르` for surface `불` in
+   `불렀`), so the surface slice keeps `_recover_spaces` and format ranges
+   byte-aligned
+3. `stem` is Kiwi's lemma (e.g., `부르다`) with the suppletive override
+   applied (`드시→들다`)
+4. Offsets (`start`/`end` from Kiwi) tile the original text exactly
+5. Cache key: `cache/lemmatization/kiwi-v2/kor/{md5}` (namespace bumped so
+   stale Okt caches are never served)
 
-**POS tags**: Okt's tagset (e.g., `Noun`, `Verb`, `Adjective`, `Punctuation`, `Josa`, `Eomi`).
+**POS tags**: Kiwi's Sejong-style tagset (e.g., `NNG` = common noun, `NNP` =
+proper noun, `VV` = verb, `JX`/`JKO` = particles, `SF` = sentence-final
+punctuation).
 
 ---
 
@@ -508,7 +527,7 @@ never served.
 
 **Special mappings**:
 - Norwegian Nynorsk (`nno`) and generic Norwegian (`nor`) → use `nob` (Bokmål model)
-- `jpn`, `kor`, `rus`, `zho` also have spaCy models but are **not used** — dedicated tokenizers (MeCab, Okt, pymorphy2, jieba) are preferred
+- `jpn`, `kor`, `rus`, `zho` also have spaCy models but are **not used** — dedicated tokenizers (MeCab, Kiwi, pymorphy2, jieba) are preferred
 - `xx_ent_wiki_sm` (multi-language NER) is available for fallback
 
 **Raw output format**:
@@ -780,7 +799,7 @@ per-code registry. The unified registry now derives from these classes:
 |---|---|---|---|---|
 | `space` | Latin, Cyrillic, Arabic, … | regex word-split | per-language | en, ru, ar, hi |
 | `han` | CJK ideographs | jieba (big dict) + optional variant lexicon | surface-as-lemma | zh, yue, cmn, nan, hak, wuu, lzh, … |
-| `cjk-morph` | CJK + kana/hangul | morphological analyzer | dictionary form | ja (MeCab), ko (Okt) |
+| `cjk-morph` | CJK + kana/hangul | morphological analyzer | dictionary form | ja (MeCab), ko (Kiwi) |
 | `sea` | Thai/Khmer/Lao/Tibetan | Thai: PyThaiNLP `newmm`; km/lo/bo: ICU word break (or regex fallback) | surface-as-lemma | th, km, lo, bo |
 
 **Segmentation fallback ladder** (applies to every language):
@@ -882,7 +901,7 @@ For backward compatibility, each lemmatizer also has its own endpoint:
 - `GET/POST /lemmatize-arabic` — Qalsadi (no lang param needed)
 - `GET/POST /lemmatize-persian` — Hazm (no lang param needed)
 - `GET/POST /lemmatize-japanese` — MeCab (no lang param needed)
-- `GET/POST /lemmatize-korean` — Okt (no lang param needed)
+- `GET/POST /lemmatize-korean` — Kiwi (no lang param needed)
 - `GET/POST /lemmatize-russian` — pymorphy2 (no lang param needed)
 - `GET/POST /lemmatize-burmese` — pyidaungsu (no lang param needed)
 
@@ -930,7 +949,7 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 25 | Irish | `ga` | `gle` | Simplemma | No (Latin script) |
 | 26 | Italian | `it` | `ita` | LemmatizationList | No (Latin script) |
 | 27 | Japanese | `ja` | `jpn` | MeCab | Yes (katakana) |
-| 28 | Korean | `ko` | `kor` | Okt (konlpy) | Yes (Revised Romanization) |
+| 28 | Korean | `ko` | `kor` | Kiwi (kiwipiepy) | Yes (Revised Romanization) |
 | 29 | Latin | `la` | `lat` | Simplemma | No (Latin script) |
 | 30 | Latvian | `lv` | `lav` | Simplemma | No (Latin script) |
 | 31 | Lithuanian | `lt` | `lit` | Simplemma | No (Latin script) |
@@ -977,7 +996,7 @@ These 8 languages use dedicated engines — the preference rule does not apply:
 | Burmese | `mya` | pyidaungsu |
 | Chinese | `zho` | jieba + pypinyin |
 | Japanese | `jpn` | MeCab |
-| Korean | `kor` | Okt (konlpy) |
+| Korean | `kor` | Kiwi (kiwipiepy) |
 | Persian | `fas` | Hazm + PersianG2p |
 | Russian | `rus` | pymorphy2 |
 | Turkish | `tur` | Zeyrek |
@@ -1036,7 +1055,7 @@ These 21 languages only have Simplemma available among the general-purpose token
 |---|---|---|
 | Chinese | `jieba`, `pypinyin` | Pure Python |
 | Japanese | `mecab-python3` | Requires libmecab-dev system library |
-| Korean | `konlpy` | Requires Java 17 (Temurin) |
+| Korean | `kiwipiepy` | Pure Python bindings over C++ core; LGPL-3.0; replaces konlpy/Java 17 |
 | Russian | `pymorphy2` | Pure Python |
 | Arabic | `qalsadi`, `mishkal`, `pyarabic` | Pure Python |
 | Persian | `hazm`, `PersianG2p` | Pure Python |

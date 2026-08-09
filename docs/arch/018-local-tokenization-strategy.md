@@ -52,7 +52,7 @@ These languages cannot be split by spaces AND have inflectional morphology.
 | Code | Language | Segmentation Strategy | Lemmatization Strategy | Server Engine |
 |---|---|---|---|---|
 | `ja` | Japanese | **kuromoji** (pure JS, same IPADIC dict as MeCab) | **kuromoji** — `basic_form` gives lemma directly（食べた→食べる, 美味しかった→美味しい） | MeCab |
-| `ko` | Korean | **kuromoji-ko** (pure TS, based on mecab-ko-dic) | **kuromoji-ko** — `basic_form` gives stem directly（먹었겠습니다→먹다, 했어요→하다） | Okt (konlpy) |
+| `ko` | Korean | **kuromoji-ko** (pure TS, based on mecab-ko-dic) | **kuromoji-ko** — `basic_form` gives stem directly（먹었겠습니다→먹다, 했어요→하다） | Kiwi (kiwipiepy) |
 | `ar` | Arabic | Spaces exist ✅ | **`arabic-stem`** (pure JS, 15 KB) — zero-dep prefix/suffix stemmer（المستنقعات→نقع）; supplemental Qalsadi export table for production accuracy | Qalsadi + Mishkal |
 | `fa` | Persian | Spaces exist ✅ | **No JS lemmatizer exists.** Pre-built lemma table from server Hazm export（دارد→داشتن）is the only viable approach. | Hazm + PersianG2p |
 | `tr` | Turkish | Spaces exist ✅ | **`snowball-stemmers`** (Turkish Snowball, ~50 KB, pure JS) — rule-based suffix stripping; ~80% accuracy. Primary lemmatizer for Turkish. **nlptoolkit dropped** — Node-only (`fs` dependency, no browser/RN build). | Zeyrek |
