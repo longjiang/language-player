@@ -217,12 +217,40 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             errors.append(f"lemmatize batch failed: {exc}")
 
+        # ── Cap stored/processed output at max_tokens content tokens per L2 ──
+        capped_tokens = []
+        included_content = 0
+        cut_index = None  # (block_index, token_index_exclusive) when capped
+        for bi, toks in enumerate(all_tokens):
+            if cut_index is not None:
+                capped_tokens.append([])
+                continue
+            out = []
+            for ti, tok in enumerate(toks):
+                out.append(tok)
+                if is_content_token(tok):
+                    included_content += 1
+                    if included_content >= args.max_tokens:
+                        cut_index = (bi, ti + 1)
+                        break
+            capped_tokens.append(out)
+        all_tokens = capped_tokens
+
         # ── Stats from token stream ──
         content = []
         reconstruction_exact = 0
-        for block, toks in zip(blocks, all_tokens):
-            if "".join(t.get("text", "") for t in toks) == block:
-                reconstruction_exact += 1
+        reconstruction_total = 0
+        for bi, (block, toks) in enumerate(zip(blocks, all_tokens)):
+            if not toks:
+                continue
+            reconstruction_total += 1
+            joined = "".join(t.get("text", "") for t in toks)
+            if cut_index is not None and bi == cut_index[0]:
+                # Partially included block: compare the token prefix against the
+                # matching prefix of the original paragraph.
+                reconstruction_exact += 1 if joined == block[: len(joined)] else 0
+            else:
+                reconstruction_exact += 1 if joined == block else 0
             for tok in toks:
                 if is_content_token(tok):
                     content.append(tok)
@@ -302,13 +330,18 @@ def main() -> int:
         avg_ms = statistics.mean(per_block_ms) if per_block_ms else None
 
         stats = {
-            "blocks": len(blocks),
+            "blocks": reconstruction_total,
+            "contentTokenCap": args.max_tokens,
+            "contentTokensIncluded": len(content),
+            "capped": cut_index is not None,
             "tokenBudget": args.max_tokens,
             "tokens": n_content,
             "uniqueContentTokens": n_unique,
             "reconstructionExact": reconstruction_exact,
             "reconstructionPct": (
-                reconstruction_exact / len(blocks) * 100 if blocks else 0
+                reconstruction_exact / reconstruction_total * 100
+                if reconstruction_total
+                else 0
             ),
             "lemmaCoverage": round(lemma_cov, 4),
             "dictHitRate": round(dict_hit, 4),

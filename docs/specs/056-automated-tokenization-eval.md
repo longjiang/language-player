@@ -159,6 +159,12 @@ Reconstruction fidelity is scored against the **normalized plain-text
 paragraphs** (Markdown stripped, `\u202f`/`\xa0` normalized to spaces), not the
 raw Markdown source — the pipeline is a tokenizer, not a Markdown renderer.
 
+The stored/processed output is **additionally capped at 200 content tokens per
+L2**. If a tokenizer expands the input beyond the budget (e.g., Hindi splits
+Devanagari into ~2 tokens per character), the token stream is truncated at the
+200-token boundary; a partially included paragraph is scored by comparing the
+token prefix against the matching prefix of the original text.
+
 ### 2.2 Step 2 — Batch dictionary lookup
 
 Collect **unique content tokens** (non-gap tokens; punctuation may be included
