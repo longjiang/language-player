@@ -16,7 +16,7 @@ import {
   bulkLookupWords,
 } from '@/lib/dictionary-cache';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { lookupOfflineByL2 } from '@/lib/dictionary-db';
+import { lookupOfflineByL2, lookupOfflineManyByL2 } from '@/lib/dictionary-db';
 import { localizedError } from '@/lib/errors';
 import { log } from '@/lib/logger';
 import { ErrorNotice } from '@/components/ui/error-notice';
@@ -220,27 +220,29 @@ export function DictionaryPopup({
         // scriptio-continua languages (dict-segmentation), where a longer
         // surface legitimately contains dictionary heads (e.g. お寿司屋 → 寿司).
         // For space-separated languages it returns noise (σι inside Γκράτσια).
-        const offlinePrimary = (await lookupOfflineByL2(l2, lookupWord, false, true)) ?? [];
-        const offlineSurface = alsoLookupSurface
-          ? ((await lookupOfflineByL2(l2, word, false, true)) ?? [])
-          : [];
+        // One exact-match query for both the lemma and surface form (same
+        // semantics as lookupOfflineByL2 exactOnly, but a single SQLite
+        // round-trip instead of two).
+        const offlineMap = await lookupOfflineManyByL2(l2, textBatch);
+        const offlinePrimary = offlineMap.get(lookupWord) ?? [];
+        const offlineSurface = alsoLookupSurface ? (offlineMap.get(word) ?? []) : [];
         const offlineExact = dedupe([...offlinePrimary, ...offlineSurface]);
         if (offlineExact.length > 0) {
-          setCachedEntries(l2, lookupWord, offlinePrimary);
-          if (alsoLookupSurface) setCachedEntries(l2, word, offlineSurface);
+          if (offlinePrimary.length > 0) setCachedEntries(l2, lookupWord, offlinePrimary);
+          if (alsoLookupSurface && offlineSurface.length > 0) setCachedEntries(l2, word, offlineSurface);
           publishResults(offlineExact, 'offline-exact');
           return;
         }
 
         const allowSubstringFallback = TOKENIZER_CONFIG[l2]?.needsDictSegmentation === true;
-        const offlinePrimaryFuzzy = allowSubstringFallback
-          ? ((await lookupOfflineByL2(l2, lookupWord)) ?? [])
-          : [];
-        const offlineSurfaceFuzzy = alsoLookupSurface
-          ? allowSubstringFallback
-            ? ((await lookupOfflineByL2(l2, word)) ?? [])
-            : []
-          : [];
+        const [offlinePrimaryFuzzy, offlineSurfaceFuzzy] = await Promise.all([
+          allowSubstringFallback
+            ? lookupOfflineByL2(l2, lookupWord).then((r) => r ?? [])
+            : Promise.resolve([]),
+          alsoLookupSurface && allowSubstringFallback
+            ? lookupOfflineByL2(l2, word).then((r) => r ?? [])
+            : Promise.resolve([]),
+        ]);
         const offlineMerged = dedupe([...offlinePrimaryFuzzy, ...offlineSurfaceFuzzy]);
         if (offlineMerged.length > 0) {
           setCachedEntries(l2, lookupWord, offlinePrimaryFuzzy);
