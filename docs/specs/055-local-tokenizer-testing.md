@@ -53,6 +53,11 @@ The local tokenizer families covered:
 
 ### Popular L2 coverage
 
+Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
+(ADR-0030), in display order:
+
+`zh, en, ja, ko, fr, de, es, vi, ru, ar, tr, it, hi, yue, th, id, nl, he, pt`
+
 | `POPULAR_L2S` | Test case |
 |---|---|
 | `zh` | TC-03 / TC-04 |
