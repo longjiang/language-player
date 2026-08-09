@@ -407,6 +407,41 @@ The server reads LemmatizationList TSV files (`data/lemmatization-lists/lemmatiz
 
 **Fallback chain order**: Snowball stemmer (if available for the language) → downloaded lemma table lookup → regex + surface-as-lemma.
 
+##### Russian — generated pymorphy2 table (research 2026-08-08)
+
+**Problem**: the original `ru` LemmatizationList TSV missed common inflected
+forms (`начал`, `года`, `вернулся`, `его`, `собой`, …), so offline Russian
+fell through to the snowball stemmer and produced stems that never match the
+server's pymorphy2 lemmas (`вернул`/`ег`/`соб`/`останов` vs
+`вернуться`/`он`/`себя`/`остановиться`).
+
+**JS library research (2026-08-08)** — before committing to a generated
+table, we explored every viable pure-JS Russian lemmatizer:
+
+| Candidate | Finding |
+|---|---|
+| `grachev/node-lemmer` | Native C++ addon (AOT/lemmatizer.org data), GitHub-only, LGPL, unmaintained since 2014 — does not compile on Node 22, and native addons are not portable to Hermes or the WebView worker |
+| `@nlpjs/lang-ru` | Snowball stemmer only (same stems as `snowball-stemmers`); not a lemmatizer |
+| `@hg0428/diverse-lemmas` (Simplemma JS port) | Pure JS/MIT and browser-friendly, but Russian quality is poor: 18.5% of inflected wordfreq top-5000 forms are missing or wrong (`будет→бздеть`, `домой→домыть`, `начал→начало`, `скоро→скорый`; pronouns `его`/`себя`/`меня` missing). Simplemma's own docs report ~0.89 ru accuracy and recommend pymorphy2 |
+| `mystem3` / `mystem3-promise` / `@webrofl/mystem3` | Wrappers around the native `mystem` binary — server/desktop only |
+| pymorphy2-WASM / AOT-WASM | No maintained JS/WASM build exists; Pyodide is too heavy for RN |
+
+**Decision**: generate the offline Russian table from wordfreq's top-250k
+surface forms normalized through pymorphy2 — the exact engine the server uses
+online (`zerotohero-python-server/lemmatize_export.py` builds and persists
+`data/lemmatization-lists/lemmatization-ru-pymorphy.txt`, lemma<TAB>surface,
+~500k surfaces / 17 MB). **Self-lemma rows (surface == lemma) are included**
+so dictionary-form words like `остановиться` hit the table instead of falling
+through to the snowball stemmer. Verified coverage: `начал→начать`,
+`года→год`, `вернулся→вернуться`, `его→он`, `собой→себя`,
+`Николай→николай`, `остановиться→остановиться`.
+
+**Known limitation**: pre-reform orthography (`Въ`, `отпускъ`, `ѣ`/`і`) is
+not handled by pymorphy2 or any modern JS lemmatizer; those surfaces return
+surface-as-lemma, which matches the online server exactly (offline parity by
+construction). Modernizing old orthography would be a separate normalization
+project.
+
 **Files touched**:
 
 | File | Change |
@@ -1172,6 +1207,9 @@ Tokenizer/lemma packs download automatically as invisible sidecars when the user
 - [jieba](https://github.com/fxsjy/jieba) — Chinese tokenizer (Python; server uses dict.txt.big)
 - [jieba-node](https://www.npmjs.com/package/jieba-node) — pure-JS jieba port (Node-only loader; core is RN-portable)
 - [react-native-jieba](https://github.com/leonsilicon/react-native-jieba) — cppjieba Turbo Module (RN 0.85+, New Architecture)
+- [grachev/node-lemmer](https://github.com/grachev/node-lemmer) — Russian/English lemmatizer (native C++ addon; rejected for RN, see Phase 2a)
+- [@hg0428/diverse-lemmas](https://www.npmjs.com/package/@hg0428/diverse-lemmas) — pure-JS Simplemma port (rejected for Russian quality; candidate for other languages)
+- [mystem3-promise](https://www.npmjs.com/package/mystem3-promise) — mystem binary wrapper (server/desktop only)
 - [thai-segmenter](https://github.com/rayriffy/thai-segmenter) — Thai word segmentation (JS)
 - [compromise](https://github.com/spencermountain/compromise) — English NLP (JS)
 - [wink-nlp](https://github.com/winkjs/wink-nlp) — English NLP (JS)
