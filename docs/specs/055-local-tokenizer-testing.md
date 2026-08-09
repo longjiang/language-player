@@ -266,12 +266,13 @@ Source of truth: `POPULAR_L2S` in `packages/shared/src/language-data.ts`
 - **Pass**: Every word clickable; spaces/punctuation intact; lemma-table hits where downloaded.
 - **Verified 2026-08-09**: regex split + snowball/lemma-table path; words clickable, spaces/punctuation intact, no ruby row.
 
-### TC-14 — English (lemma table + snowball)
+### TC-14 — English (lemma table + snowball) ✅ PASS (2026-08-09)
 
 - **Sample**: `The quick brown fox jumps over the lazy dog.` (plus spot forms below)
 - **Steps**: Offline Mode on; open an English book or paste into the reader.
 - **Verify**: `🏷️ LOCAL-DONE` with `table=…` hits; irregular forms resolve to dictionary forms: `went → go`, `better → good`, `children → child`.
 - **Pass**: No ruby row (Latin script); words clickable; spaces/punctuation intact; table hits match online.
+- **Verified 2026-08-09**: table hits resolve irregulars (`went → go`, `better → good`, `children → child`); no ruby row; words clickable and text reconstructs exactly.
 
 ### TC-15 — German (lemma table + snowball)
 
