@@ -1,0 +1,119 @@
+{
+  "en": {
+    "composed": "compose",
+    "clauses": "clause",
+    "lying": "lie",
+    "received": "receive",
+    "includes": "include"
+  },
+  "fr": {
+    "partie": "partie",
+    "désignant": "désigner",
+    "appelle": "appeler"
+  },
+  "de": {
+    "Gesetzestexte": "Gesetzestext",
+    "staatliche": "staatlich",
+    "Ausschreibungen": "Ausschreibung",
+    "französischen": "französisch",
+    "Fassungen": "Fassung"
+  },
+  "es": {
+    "como": "como",
+    "considerárseles": "considerar",
+    "tienen": "tener",
+    "otros": "otro",
+    "española": "español"
+  },
+  "it": {
+    "attraverso": "attraverso",
+    "corsi": "corso",
+    "italiana": "italiano",
+    "assicura": "assicurare",
+    "promozione": "promozione"
+  },
+  "pt": {
+    "parte": "parte",
+    "palavras": "palavra",
+    "usadas": "usado",
+    "portuguesa": "português"
+  },
+  "nl": {
+    "opgestelde": "opstellen",
+    "werden": "worden",
+    "geschreven": "schrijven"
+  },
+  "ru": {
+    "годах": "год",
+    "русского": "русский",
+    "языка": "язык",
+    "изучение": "изучение"
+  },
+  "tr": {
+    "yıl": "yıl",
+    "Dil": "dil",
+    "oranında": "oran",
+    "gazetesinde": "gazete",
+    "yılında": "yıl",
+    "sözcüklerin": "sözcük",
+    "kullanılmışken": "kullanmak"
+  },
+  "ko": {
+    "는": "는",
+    "서": "서",
+    "불렀으나": "부르다",
+    "쓰는": "쓰다",
+    "부른다": "부르다"
+  },
+  "ar": {
+    "فصل": "فصل",
+    "لأن": "لأن",
+    "كلمة": "كلمة",
+    "العربية": "العربية"
+  },
+  "hi": {
+    "जाने": "जाने",
+    "बोली": "बोली",
+    "भाषा": "भाषा",
+    "हिन्दी": "हिन्दी"
+  },
+  "he": {
+    "בערבית": "בערבית",
+    "העברית": "העברית",
+    "נכתבו": "נכתבו"
+  },
+  "vi": {
+    "tiếng": "tiếng",
+    "Việt": "Việt",
+    "Quốc": "Quốc",
+    "ngữ": "ngữ"
+  },
+  "zh": {
+    "短語": "短語",
+    "語素": "語素",
+    "分成": "分成"
+  },
+  "yue": {
+    "粵語": "粵語",
+    "生存環境": "生存環境",
+    "前所未有": "前所未有"
+  },
+  "th": {
+    "แตกตัว": "แตกตัว",
+    "รวมทั้งหมด": "รวมทั้งหมด",
+    "เสียง": "เสียง",
+    "วรรณยุกต์": "วรรณยุกต์"
+  },
+  "ja": {
+    "用いれ": "用いる",
+    "著し": "著わす",
+    "論じ": "論ずる",
+    "誤っ": "誤る"
+  },
+  "id": {
+    "digunakan": "digunakan",
+    "menggabungkan": "gabung",
+    "bahasa": "bahasa",
+    "baku": "baku"
+  }
+}
