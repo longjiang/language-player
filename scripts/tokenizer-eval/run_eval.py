@@ -384,6 +384,7 @@ def main() -> int:
         )
 
     # ── Scorecard ──
+    rows.sort(key=lambda item: item[1]["stats"]["score"]["total"], reverse=True)
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     lines = [
         f"# Tokenizer Eval Scorecard ({now})",
