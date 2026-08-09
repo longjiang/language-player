@@ -25,8 +25,13 @@ export interface UseLanguagePickerOptions {
   supportedL1s: readonly string[];
   /** All languages supported as L2. */
   supportedL2s: readonly string[];
-  /** Languages to show in the "popular" section. */
-  popularLanguages: readonly string[];
+  /** Legacy shared popular list (used for both columns when per-column lists
+   *  are not provided). */
+  popularLanguages?: readonly string[];
+  /** Optional L1-specific popular list (defaults to popularLanguages). */
+  popularL1s?: readonly string[];
+  /** Optional L2-specific popular list (defaults to popularLanguages). */
+  popularL2s?: readonly string[];
   /** Optional resolver for L1 names (defaults to getName). Use to show self-names. */
   getNameL1?: (code: string) => string;
   /** Optional resolver for L2 names (defaults to getName). */
@@ -119,7 +124,9 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
     getNameL2 = getName,
     supportedL1s,
     supportedL2s,
-    popularLanguages,
+    popularLanguages = [],
+    popularL1s = popularLanguages,
+    popularL2s = popularLanguages,
     popularTitle = 'Popular',
     allTitle = 'All',
     initialL1 = 'en',
@@ -139,26 +146,26 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
     () =>
       filterLanguages(
         supportedL1s,
-        popularLanguages,
+        popularL1s,
         searchL1,
         getNameL1,
         popularTitle,
         allTitle,
       ),
-    [supportedL1s, popularLanguages, searchL1, getNameL1, popularTitle, allTitle],
+    [supportedL1s, popularL1s, searchL1, getNameL1, popularTitle, allTitle],
   );
 
   const filteredL2 = useMemo(
     () =>
       filterLanguages(
         supportedL2s,
-        popularLanguages,
+        popularL2s,
         searchL2,
         getNameL2,
         popularTitle,
         allTitle,
       ),
-    [supportedL2s, popularLanguages, searchL2, getNameL2, popularTitle, allTitle],
+    [supportedL2s, popularL2s, searchL2, getNameL2, popularTitle, allTitle],
   );
 
   // ── Derived ──

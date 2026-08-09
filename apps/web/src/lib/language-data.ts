@@ -1,4 +1,4 @@
-import { SUPPORTED_L1S, SUPPORTED_L2S, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
+import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { LOCALIZED_LANGUAGE_NAMES } from './language-names-i18n';
 
@@ -206,12 +206,6 @@ export function getLanguageMeta(code: string): LanguageMeta | null {
     },
   };
 }
-
-/** Top languages to show first in the language selector. */
-export const POPULAR_LANGUAGES = [
-  'en', 'zh-Hans', 'zh-Hant', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
-  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
-] as const;
 
 /** Group language codes into common categories for the selector UI. */
 export function getLanguageGroups(): { label: string; codes: readonly string[] }[] {
