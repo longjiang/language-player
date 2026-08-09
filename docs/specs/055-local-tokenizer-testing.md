@@ -166,11 +166,19 @@ The local tokenizer families covered:
 - **Verify**: Ruby = `gamarjoba, rogor khar?`.
 - **Pass**: Matches online exactly, including apostrophes (`k'artuli`-style) if present.
 
-### TC-10 — Bulgarian / Ukrainian (char maps)
+### TC-10 — Bulgarian / Ukrainian (char maps) ✅ PASS (2026-08-08)
 
 - **Sample**: bg `Щъркелът лети` · uk `Привіт, як справи?`
 - **Verify**: Ruby = `Shtarkelat leti` / `Privit, yak spravi?`.
 - **Pass**: Bulgarian щ → `sht`, ъ → `a`; Ukrainian і/ї/ґ handled; matches online.
+- **Verified 2026-08-08**: Bulgarian offline lemmatization parity — the
+  offline table now comes from the server's Simplemma engine (ADR-0029) and
+  matches web for the spot forms (`роден→роден`, `Родното→роден`, `му→то`,
+  `знае→знам`, `е→съм`, `казва→казвам`, `години→година`). Residual gaps:
+  `Той` (case — Simplemma dict lacks `той`) and `запитат` (affix-rule
+  lemmatization a static table can't express). Mobile popups still merge
+  surface-form entries (`е` shows съм + е cards) — cosmetic; web is
+  lemma-only. Ukrainian char map unchanged.
 
 ### TC-11 — Arabic (arabic-stem)
 
