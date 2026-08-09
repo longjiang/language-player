@@ -28,10 +28,10 @@ const CHUNK_SIZE = 500;
 /**
  * Lemma-table insert batch size. Larger than CHUNK_SIZE on purpose: the
  * 500-row statements made a 491k-row Spanish table take ~5 minutes because
- * each execAsync is a native bridge call. 2,000 rows keeps each statement
- * well under SQLite's limits while cutting bridge round-trips ~4x.
+ * each execAsync is a native bridge call. 10,000 rows keeps each statement
+ * well under SQLite's limits while cutting bridge round-trips ~20x.
  */
-const LEMMA_INSERT_CHUNK_SIZE = 2000;
+const LEMMA_INSERT_CHUNK_SIZE = 10_000;
 
 export interface LemmaTableProgress {
   phase: 'fetch' | 'parse' | 'insert';
@@ -90,8 +90,10 @@ async function ensureLemmaTable(db: SQLite.SQLiteDatabase, l2: string): Promise<
       lemmas TEXT NOT NULL
     );
   `);
-  // Index for fast lookups
-  await db.execAsync(`CREATE INDEX IF NOT EXISTS idx_lemma_${safeL2}_surface ON lemma_${safeL2}(surface);`);
+  // surface is already indexed by the PRIMARY KEY. Older installs also carry
+  // a redundant idx_lemma_*_surface index that doubles every insert's B-tree
+  // work; drop it on re-download.
+  await db.execAsync(`DROP INDEX IF EXISTS idx_lemma_${safeL2}_surface`);
 }
 
 // ── Public API ───────────────────────────────
@@ -210,9 +212,9 @@ export async function storeLemmaTable(
   // Bulk insert in a single transaction: each execAsync previously committed
   // on its own (fsync per chunk), which made full-table downloads (e.g. bg
   // 427k rows) take minutes. One commit at the end makes it seconds.
-  await db.withTransactionAsync(async () => {
+  await db.withExclusiveTransactionAsync(async (txn) => {
     // Delete existing data (re-download scenario)
-    await db.execAsync(`DELETE FROM lemma_${safeL2}`);
+    await txn.execAsync(`DELETE FROM lemma_${safeL2}`);
 
     let lastProgressAt = 0;
     for (let i = 0; i < entries.length; i += LEMMA_INSERT_CHUNK_SIZE) {
@@ -220,13 +222,13 @@ export async function storeLemmaTable(
       const values = chunk
         .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
         .join(', ');
-      await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
-      // Throttle UI progress to ~10 Hz; always report the final row so the
+      await txn.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
+      // Throttle UI progress to ~4 Hz; always report the final row so the
       // bar lands at 100%. Without this, a 500k-row table fires ~1000 state
       // updates and React chokes ("Maximum update depth exceeded").
       const processed = Math.min(i + chunk.length, entries.length);
       const now = Date.now();
-      if (processed === entries.length || now - lastProgressAt >= 100) {
+      if (processed === entries.length || now - lastProgressAt >= 250) {
         lastProgressAt = now;
         onProgress?.(processed, entries.length);
       }
