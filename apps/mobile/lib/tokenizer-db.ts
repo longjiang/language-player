@@ -206,13 +206,22 @@ export async function storeLemmaTable(
     // Delete existing data (re-download scenario)
     await db.execAsync(`DELETE FROM lemma_${safeL2}`);
 
+    let lastProgressAt = 0;
     for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
       const chunk = entries.slice(i, i + CHUNK_SIZE);
       const values = chunk
         .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
         .join(', ');
       await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
-      onProgress?.(Math.min(i + chunk.length, entries.length), entries.length);
+      // Throttle UI progress to ~10 Hz; always report the final row so the
+      // bar lands at 100%. Without this, a 500k-row table fires ~1000 state
+      // updates and React chokes ("Maximum update depth exceeded").
+      const processed = Math.min(i + chunk.length, entries.length);
+      const now = Date.now();
+      if (processed === entries.length || now - lastProgressAt >= 100) {
+        lastProgressAt = now;
+        onProgress?.(processed, entries.length);
+      }
     }
   });
 

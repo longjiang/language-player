@@ -444,6 +444,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         });
         log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
         const lemmaStart = Date.now();
+        let lastLemmaPct = -1;
         try {
           const ok = await downloadLemmaTable(
             l2,
@@ -459,6 +460,8 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
               } else if (p.phase === 'insert' && p.total) {
                 const processed = p.processed ?? 0;
                 const pct = 92 + Math.min(6, Math.round((processed / p.total) * 6));
+                if (pct === lastLemmaPct) return;
+                lastLemmaPct = pct;
                 update({
                   status: 'downloading',
                   phase: 'insert',
