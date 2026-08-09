@@ -443,14 +443,33 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
           total,
         });
         log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
+        const lemmaStart = Date.now();
         try {
           const ok = await downloadLemmaTable(
             l2,
             PYTHON_API_URL,
             LEMMA_TABLE_CAPPED_LANGS.has(l2) ? LEMMA_TABLE_CAP_LIMIT : undefined,
             controller.signal,
+            (p) => {
+              if (p.phase === 'fetch') {
+                update({ status: 'downloading', phase: 'lemma', progress: 92, downloaded: total, total });
+              } else if (p.phase === 'parse') {
+                log('[DictContext] lemma table payload — l2:', l2, 'bytes:', p.bytes ?? 0);
+                update({ status: 'downloading', phase: 'lemma', progress: 93, downloaded: total, total });
+              } else if (p.phase === 'insert' && p.total) {
+                const processed = p.processed ?? 0;
+                const pct = 92 + Math.min(6, Math.round((processed / p.total) * 6));
+                update({
+                  status: 'downloading',
+                  phase: 'insert',
+                  progress: pct,
+                  downloaded: processed,
+                  total: p.total,
+                });
+              }
+            },
           );
-          log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
+          log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable', 'took:', Date.now() - lemmaStart, 'ms');
         } catch (e: any) {
           if (cancelMap.get(l2)) throw new Error('Download cancelled');
           log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);
