@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { EpubBook, readEpubLanguage } from '@/lib/epub-book';
+import { EpubBook, normalizeLanguageCode } from '@/lib/epub-book';
 import type { BookLocation, TocMarker, TocNode } from '@/lib/epub-book-types';
 import {
   saveEpub,
@@ -78,7 +78,7 @@ export interface UseEpubReturn {
   /** Search the open book's whole text, returning located snippets. */
   searchBook: (query: string) => Promise<EpubSearchResult[]>;
   /** Add a file to the bookshelf without opening it. */
-  addBook: (data: ArrayBuffer, fileName: string) => Promise<{ id: string } | null>;
+  addBook: (data: ArrayBuffer, fileName: string, importLanguage?: string | null) => Promise<{ id: string } | null>;
   /** Remove a stored book from the bookshelf (deletes its handle + index). */
   removeBook: (id: string) => Promise<void>;
   /** Close the book and return to the bookshelf (the handle is kept). */
@@ -170,34 +170,11 @@ export function useEpub(): UseEpubReturn {
   const markersRef = useRef<TocMarker[] | null>(null);
   const indexRef = useRef<SpineIndexRecord[] | null>(null);
   const indexingRef = useRef<Map<string, Promise<void>>>(new Map());
-  const languageBackfillRef = useRef<Set<string>>(new Set());
 
   /** Reload the bookshelf list from IndexedDB. */
   const refreshBooks = useCallback(async (): Promise<EpubSummary[]> => {
     const list = await listEpubs();
     setBooks(list);
-    // Backfill language for books stored before EpubMeta gained the field,
-    // so the language-filtered shelf is correct without reopening each book.
-    const missing = list.filter(b => !b.language);
-    if (missing.length > 0) {
-      void (async () => {
-        for (const summary of missing) {
-          if (languageBackfillRef.current.has(summary.id)) continue;
-          languageBackfillRef.current.add(summary.id);
-          try {
-            const stored = await loadEpub(summary.id);
-            if (!stored) continue;
-            const language = await readEpubLanguage(stored.data);
-            if (language !== summary.language) {
-              await updateEpubMeta(summary.id, { language });
-              setBooks(prev => prev.map(b => (b.id === summary.id ? { ...b, language } : b)));
-            }
-          } catch {
-            // Unreadable book — leave untagged (shown in every language).
-          }
-        }
-      })();
-    }
     return list;
   }, []);
 
@@ -265,6 +242,7 @@ export function useEpub(): UseEpubReturn {
   const parseAndStore = useCallback(async (
     data: ArrayBuffer,
     fName: string,
+    importLanguage?: string | null,
   ): Promise<{ b: EpubBook; id: string; existing: boolean } | null> => {
     let id: string;
     try {
@@ -285,7 +263,11 @@ export function useEpub(): UseEpubReturn {
     await saveEpub(id, data, {
       id,
       fileName: fName,
-      language: b.language,
+      // Books are scoped to the L2 they were uploaded under — no OPF
+      // language sniffing. Opening a stored book keeps its existing tag.
+      language: importLanguage
+        ? normalizeLanguageCode(importLanguage)
+        : existing?.meta.language ?? null,
       coverUrl: b.coverUrl,
       lastReadAt: Date.now(),
     });
@@ -336,8 +318,9 @@ export function useEpub(): UseEpubReturn {
   const addBook = useCallback(async (
     data: ArrayBuffer,
     fName: string,
+    importLanguage?: string | null,
   ): Promise<{ id: string } | null> => {
-    const parsed = await parseAndStore(data, fName);
+    const parsed = await parseAndStore(data, fName, importLanguage);
     if (!parsed) return null;
     await refreshBooks();
     return { id: parsed.id };

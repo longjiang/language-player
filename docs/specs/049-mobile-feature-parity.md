@@ -166,7 +166,7 @@ The web EPUB experience (SPEC-032) is fully ported:
 |---|---|---|---|
 | 9.1 | Whole-book model re-engineering of the EPUB reader | `78134763` (SPEC-032) | **Ported (mobile equivalent)** — `lib/epub-book.ts` converts every linear spine item once into a global block stream, resolves TOC entries (fragments kept) to `BookLocation { blockIndex, offset }`, paginates continuously across the whole book, and restores by location (no text anchors) |
 | 9.2 | Per-book EPUB bookshelf with reading progress | `af91c627`, `204130ba`, `1bd69f54`, `d4af42e6` | **Ported** — `lib/epub-store.ts` (AsyncStorage) keeps one handle per book with `lastLocation`, `readChars`/`totalChars`; `EpubBookshelf` shows cover tiles + progress bars with add/remove actions |
-| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | **Ported** — OPF `dc:language` is stored per book; the shelf filters to the current L2 (books without a detected language appear everywhere) |
+| 9.3 | Language-specific EPUB bookshelf | `d7c987f8` | **Ported** — each book is tagged with the L2 it was uploaded under (no OPF language sniffing); the shelf filters to the current L2. Legacy untagged books still appear everywhere so they never disappear (re-import to assign an L2) |
 | 9.4 | In-book search with snippets + chapter navigation | `cec93152`, `f32df70d` | **Ported** — new `BookSearchDialog` searches the current chapter's text blocks with highlighted snippets |
 | 9.5 | Highlight EPUB search matches in the reader | `7f11764f`, `e4920f2e` | **Ported** — search results highlight the term and jump to the matching page (`blockPage` added to `use-epub-pagination`) |
 | 9.6 | Open EPUBs straight to content + page-number estimates | `08f95227`, `4de9a652` | **Ported** — bookshelf clicks open straight to the saved location (no cover tap); the reader shows continuous whole-book page numbers (`n / total`); page-number estimates N/A |
@@ -178,6 +178,9 @@ block stream, so results cover every spine item exactly once and include the
 nearest preceding TOC chapter label. Pages are continuous across the entire
 book, and progress on the bookshelf is character-based
 (`readChars`/`totalChars`), so it never depends on the viewport.
+
+`.epub.zip` / `.zip` wrappers are unwrapped on import (archive itself, single
+inner `.epub`, or extracted EPUB folder).
 
 ## 10. Web Reader (article/text) — `apps/web` only
 

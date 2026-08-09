@@ -115,8 +115,8 @@ export default function EpubReaderScreen() {
   const handleAddBook = useCallback(async () => {
     setLocation(null);
     historyRef.current = [];
-    await epub.pickFile();
-  }, [epub]);
+    await epub.pickFile(l2Lang.code);
+  }, [epub, l2Lang.code]);
 
   const handleCoverOpen = useCallback(() => {
     epub.dismissCover();

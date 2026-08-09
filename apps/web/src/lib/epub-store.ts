@@ -36,7 +36,8 @@ export interface EpubMeta {
   id: string;
   fileName: string;
   fileSize: number;
-  /** Primary language subtag from the OPF metadata (e.g. "ja"), or null. */
+  /** L2 the book was uploaded under (normalized primary subtag), or null
+   *  for legacy books imported before per-L2 tagging. */
   language: string | null;
   /** Cover image as a data URL — shown on the bookshelf without reopening the book. */
   coverUrl: string | null;

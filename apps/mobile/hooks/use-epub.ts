@@ -4,6 +4,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import {
   openEpubBook,
   sanitizeEpubId,
+  unwrapEpubZipFile,
   type EpubBookModel,
   type BookLocation,
   type TocMarker,
@@ -74,7 +75,7 @@ export interface UseEpubReturn {
   /** Reload the bookshelf from storage (runs legacy migration once). */
   refreshBooks: () => Promise<void>;
   /** Import one EPUB from the document picker and open it at its cover. */
-  pickFile: () => Promise<void>;
+  pickFile: (importLanguage?: string) => Promise<void>;
   /** Open a stored book; returns the location to resume at. */
   openBook: (id: string, opts?: { skipCover?: boolean }) => Promise<BookLocation | null>;
   /** Close the book and return to the bookshelf (the handle is kept). */
@@ -148,7 +149,9 @@ export function useEpub(): UseEpubReturn {
             id,
             fileName: legacy.fileName,
             fileSize: sizeInfo.exists ? (sizeInfo as { size: number }).size : 0,
-            language: m.language,
+            // Legacy single-book state has no L2 context — leave untagged
+            // (visible everywhere) until the user re-imports it.
+            language: null,
             coverUrl: null,
             title: m.title,
             author: m.author,
@@ -179,7 +182,7 @@ export function useEpub(): UseEpubReturn {
 
   /** Import one or more EPUBs from the document picker. A single selection
    *  opens immediately; multiple selections are added to the bookshelf. */
-  const pickFile = useCallback(async () => {
+  const pickFile = useCallback(async (importLanguage?: string) => {
     const result = await DocumentPicker.getDocumentAsync({
       // Some EPUBs (especially older ones like 鲁迅's 呐喊) are reported with
       // nonstandard MIME types; accept any file so they can be selected.
@@ -201,7 +204,11 @@ export function useEpub(): UseEpubReturn {
       await ensureLibraryDir();
       for (const asset of assets) {
         try {
-          const id = sanitizeEpubId(asset.name);
+          const isZipName = /\.(epub\.)?zip$/i.test(asset.name);
+          let displayName = isZipName
+            ? `${asset.name.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '')}.epub`
+            : asset.name;
+          const id = sanitizeEpubId(displayName);
           const dest = libraryFileUri(id);
           const assetInfo = await FileSystem.getInfoAsync(asset.uri);
           const existing = await FileSystem.getInfoAsync(dest);
@@ -218,7 +225,17 @@ export function useEpub(): UseEpubReturn {
             await FileSystem.copyAsync({ from: asset.uri, to: dest });
           }
 
-          const m = await openEpubBook(dest, asset.name);
+          if (isZipName) {
+            const unwrappedName = await unwrapEpubZipFile(dest, asset.name, dest);
+            if (!unwrappedName) {
+              throw new Error('Not an EPUB zip');
+            }
+            // Use the unwrapped file's name (e.g. "X.epub", or the inner
+            // .epub's own name when the zip wraps a single book file).
+            displayName = unwrappedName;
+          }
+
+          const m = await openEpubBook(dest, displayName);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
             const src = coverUrl.slice(7);
@@ -230,11 +247,16 @@ export function useEpub(): UseEpubReturn {
             } catch { /* keep temp cover */ }
           }
           const info = await FileSystem.getInfoAsync(dest);
+          const fallbackLanguage = importLanguage
+            ? importLanguage.trim().split(/[-_]/)[0]?.toLowerCase() || null
+            : null;
           const meta: EpubMeta = {
             id,
-            fileName: asset.name,
+            fileName: displayName,
             fileSize: info.exists ? (info as { size: number }).size : 0,
-            language: m.language,
+            // Books are scoped to the L2 they were uploaded under — no OPF
+            // language sniffing.
+            language: fallbackLanguage,
             coverUrl,
             title: m.title,
             author: m.author,

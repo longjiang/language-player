@@ -83,8 +83,9 @@ export function EpubBookshelf({
   // Localized name in the current UI locale (e.g. 英语 for zh-Hans), so the
   // empty state never shows "No English books" inside a Chinese UI.
   const l2LocalizedName = displayLanguageName(l2Code, locale);
-  // Books without a detected language are shown in every language so they
-  // can never silently disappear from the shelf.
+  // Books are tagged with the L2 they were uploaded under — no OPF language
+  // sniffing. Only legacy untagged books still show in every language so
+  // they can never silently disappear from the shelf.
   const visibleBooks = books.filter(
     b => !b.language || normalizeLanguageCode(b.language) === l2Primary,
   );

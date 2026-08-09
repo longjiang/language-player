@@ -31,8 +31,9 @@ interface EpubBookshelfProps {
 /**
  * Per-book EPUB bookshelf (SPEC-049 §9.2/9.3): cover tiles with reading
  * progress, a remove action, an add-a-book slot, and a language filter that
- * only shows books whose OPF language matches the current L2 (books without a
- * detected language appear everywhere so they never disappear).
+ * only shows books tagged with the current L2 (books are tagged with the L2
+ * they were uploaded under — no OPF language sniffing; only legacy untagged
+ * books appear everywhere so they never disappear).
  */
 export function EpubBookshelf({
   books,

@@ -41,7 +41,6 @@ export interface EpubBookModel {
   fileName: string;
   title: string;
   author: string;
-  language: string | null;
   toc: TocItem[];
   markers: TocMarker[];
   /** Whole-book flow: every linear spine item's blocks, in spine order. */
@@ -89,6 +88,80 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 export function sanitizeEpubId(fileName: string): string {
   const base = fileName.replace(/\.epub$/i, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 80);
   return (base || 'book') + '.epub';
+}
+
+/**
+ * Normalize a `.epub.zip` / `.zip` archive that wraps an EPUB into a real
+ * EPUB file at `destUri`.
+ *
+ * Three common shapes are handled:
+ * - the archive already IS an EPUB (container at root) — bytes are fine as-is
+ * - the archive contains a single inner `.epub` file — extract it
+ * - the archive contains the EPUB's extracted folder — rezip it with the
+ *   folder as root
+ *
+ * Returns the display file name to use, or null when the zip doesn't contain
+ * an EPUB. Non-zip names pass through unchanged.
+ */
+export async function unwrapEpubZipFile(
+  fileUri: string,
+  fileName: string,
+  destUri: string,
+): Promise<string | null> {
+  if (!/\.(epub\.)?zip$/i.test(fileName)) return fileName;
+
+  let zip: JSZip;
+  try {
+    const data = await new File(fileUri).arrayBuffer();
+    zip = await JSZip.loadAsync(data);
+  } catch {
+    return null;
+  }
+
+  const entries = Object.values(zip.files).filter((f) => !f.dir);
+  const baseName = fileName.replace(/\.epub\.zip$/i, '').replace(/\.zip$/i, '') + '.epub';
+
+  // Already an EPUB archive (META-INF/container.xml at the zip root).
+  if (zip.file('META-INF/container.xml')) {
+    return baseName;
+  }
+
+  // Zip wraps a single .epub file.
+  const innerEpubs = entries.filter((f) => /\.epub$/i.test(f.name));
+  if (innerEpubs.length === 1) {
+    const epub = innerEpubs[0]!;
+    const b64 = await epub.async('base64');
+    await FileSystem.writeAsStringAsync(destUri, b64, { encoding: FileSystem.EncodingType.Base64 });
+    return epub.name.split('/').pop()!;
+  }
+
+  // Zip contains the extracted EPUB folder (container.xml nested under a
+  // top-level folder) — rezip with the folder stripped from every path.
+  const container = entries.find((f) => /(^|\/)META-INF\/container\.xml$/i.test(f.name));
+  if (container) {
+    const prefix = container.name.replace(/META-INF\/container\.xml$/i, '');
+    const rezip = new JSZip();
+    for (const f of entries) {
+      if (f.name.startsWith('__MACOSX/')) continue;
+      const rel = f.name.startsWith(prefix) ? f.name.slice(prefix.length) : f.name;
+      if (!rel) continue;
+      const b64 = await f.async('base64');
+      if (rel === 'mimetype') {
+        rezip.file(rel, b64, { base64: true, compression: 'STORE' });
+      } else {
+        rezip.file(rel, b64, { base64: true });
+      }
+    }
+    const out = await rezip.generateAsync({
+      type: 'base64',
+      compression: 'DEFLATE',
+      mimeType: 'application/epub+zip',
+    });
+    await FileSystem.writeAsStringAsync(destUri, out, { encoding: FileSystem.EncodingType.Base64 });
+    return baseName;
+  }
+
+  return null;
 }
 
 /** Flatten a TOC tree into document-order entries. */
@@ -292,7 +365,6 @@ export async function openEpubBook(
     fileName,
     title: meta.title,
     author: meta.author,
-    language: meta.language,
     toc,
     markers,
     blocks,

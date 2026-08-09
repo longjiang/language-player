@@ -193,14 +193,14 @@ export default function EpubPage() {
   const handleFilesProcessed = useCallback(async ({ files, failures }: EpubUploadResult) => {
     const failed: EpubFileError[] = [...failures];
     for (const file of files) {
-      const added = await epub.addBook(file.data, file.fileName);
+      const added = await epub.addBook(file.data, file.fileName, l2.code);
       if (!added) {
         failed.push({ fileName: file.fileName, fileSize: file.fileSize, reasonKey: 'msg.epub_parse_error' });
       }
     }
     epub.clearError();
     setImportFailures(failed);
-  }, [epub]);
+  }, [epub, l2.code]);
 
   // Close the book and return to the bookshelf (the handle is kept).
   const handleClose = useCallback(async () => {
