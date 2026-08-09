@@ -1,0 +1,78 @@
+{
+  "zh": [
+    { "sample": "《围城》是钱锺书所著的长篇小说。", "expectToken": "围城", "mode": "segment" }
+  ],
+  "yue": [
+    { "sample": "語言是人類溝通嘅重要工具。", "expectToken": "語言", "mode": "segment" }
+  ],
+  "th": [
+    { "sample": "สวัสดีครับ", "expectToken": "สวัสดี", "mode": "segment" }
+  ],
+  "ja": [
+    { "sample": "思った", "expected": "思う", "mode": "lemma" },
+    { "sample": "食べた", "expected": "食べる", "mode": "lemma" }
+  ],
+  "ko": [
+    { "sample": "먹었습니다", "expected": "먹다", "mode": "lemma" },
+    { "sample": "드시", "expected": "들다", "mode": "lemma" },
+    { "sample": "안녕", "expected": "annyeong", "mode": "pron" }
+  ],
+  "en": [
+    { "sample": "went", "expected": "go", "mode": "lemma" },
+    { "sample": "better", "expected": "good", "mode": "lemma" },
+    { "sample": "children", "expected": "child", "mode": "lemma" }
+  ],
+  "de": [
+    { "sample": "gelesen", "expected": "lesen", "mode": "lemma" },
+    { "sample": "gegangen", "expected": "gehen", "mode": "lemma" },
+    { "sample": "besser", "expected": "gut", "mode": "lemma" }
+  ],
+  "fr": [
+    { "sample": "suis", "expected": "être", "mode": "lemma" },
+    { "sample": "allé", "expected": "aller", "mode": "lemma" },
+    { "sample": "acheté", "expected": "acheter", "mode": "lemma" }
+  ],
+  "es": [
+    { "sample": "estudiantes", "expected": "estudiante", "mode": "lemma" },
+    { "sample": "son", "expected": "ser", "mode": "lemma" }
+  ],
+  "it": [
+    { "sample": "sono", "expected": "essere", "mode": "lemma" },
+    { "sample": "andato", "expected": "andare", "mode": "lemma" },
+    { "sample": "comprato", "expected": "comprare", "mode": "lemma" }
+  ],
+  "pt": [
+    { "sample": "fui", "expected": "ir", "mode": "lemma" },
+    { "sample": "comprei", "expected": "comprar", "mode": "lemma" }
+  ],
+  "nl": [
+    { "sample": "ben", "expected": "zijn", "mode": "lemma" },
+    { "sample": "geweest", "expected": "zijn", "mode": "lemma" },
+    { "sample": "gekocht", "expected": "kopen", "mode": "lemma" }
+  ],
+  "ru": [
+    { "sample": "начал", "expected": "начать", "mode": "lemma" },
+    { "sample": "его", "expected": "он", "mode": "lemma" },
+    { "sample": "собой", "expected": "себя", "mode": "lemma" },
+    { "sample": "остановиться", "expected": "остановиться", "mode": "lemma" }
+  ],
+  "ar": [
+    { "sample": "المستنقعات", "expected": "نقع", "mode": "stem" }
+  ],
+  "tr": [
+    { "sample": "gittim", "expected": "git", "mode": "stem" },
+    { "sample": "aldım", "expected": "al", "mode": "stem" }
+  ],
+  "id": [
+    { "sample": "membeli", "expected": "beli", "mode": "lemma" }
+  ],
+  "vi": [
+    { "sample": "tiếng", "expected": "tiếng", "mode": "surface" }
+  ],
+  "hi": [
+    { "sample": "मैं", "expected": "मैं", "mode": "surface" }
+  ],
+  "he": [
+    { "sample": "אני", "expected": "אני", "mode": "surface" }
+  ]
+}

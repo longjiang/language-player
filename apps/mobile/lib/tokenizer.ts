@@ -1217,3 +1217,9 @@ export function prewarmLocalLemmatizer(l2: string): void {
     void loadDictWordSet(l2).catch(() => null);
   }
 }
+
+// ── Eval/test hooks (SPEC-058) ─────────────────────────────────────
+// Exported for the automated offline tokenizer eval suite
+// (apps/mobile/tests/tokenizer-eval). Production behavior is unchanged —
+// these are the same functions the app's local fallback chain calls.
+export { runLocalFallback, runLocalFallbackRaw, canonicalizeLocalTokens };
