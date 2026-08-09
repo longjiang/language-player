@@ -191,8 +191,9 @@ The local tokenizer families covered:
   `مرحبًا → mrxbana:`, `الإنسان → a:l?nsa:n`, `أنا → ?na:`) instead of the
   arabic-stem Arabic-script string. Still not byte-identical to the server
   for words lacking diacritics (server vocalizes with Mishkal first) —
-  expected. Ruby-mode RTL layout fixed: readings and word order render
-  right-to-left like the popup dictionary.
+  expected. RTL ruby rendering fixed on both platforms: mobile ruby rows use
+  `direction: rtl`, and web `<rt>` annotations are forced LTR so Latin/SAMPA
+  readings don't get bidi-scrambled.
 
 ### TC-12 — Thai (dict-seg)
 
