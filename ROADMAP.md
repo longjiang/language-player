@@ -132,6 +132,14 @@
 - ⬜ Testing infrastructure (unit + E2E)
 - ⬜ Monitoring + error tracking
 
+## Known Issues
+
+- **Arabic lemmatization (server Qalsadi + offline arabic-stem)** — logged
+  2026-08-08. Server: `كتبتها→تب` (should be كتب), `أعني→أعنة` (should be
+  عنى/أعنى), `تقرأ→أقرأ` (should be قرأ). Offline: pronouns/conjunctions
+  mangled (`أنا→اني`, `هنا→هني`, `وكيف→وكف`), inflected words resolve to
+  roots (`صديقي→صدق`). See SPEC-055 TC-11.
+
 ---
 
 ## Currently Working On
