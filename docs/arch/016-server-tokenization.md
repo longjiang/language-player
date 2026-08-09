@@ -573,6 +573,11 @@ Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is t
 | `tur` | `tr` | Turkish |
 | `ukr` | `uk` | Ukrainian |
 
+> **Registry note**: despite the `hin` mapping above, Hindi is **not**
+> registered to Simplemma — [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md)
+> excludes it ("breaks too many words"). `hi` stays on `_fallback_lemmatize`
+> (BaseTokenizer) with combining-mark-aware tokenization (SPEC-057 Phase 1).
+
 **Raw output format**:
 ```python
 [{"lemma": "the", "word": "The"}, {"lemma": "cat", "word": "cat"}, ...]

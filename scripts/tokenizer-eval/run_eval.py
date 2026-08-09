@@ -48,15 +48,14 @@ WEIGHTS = {
 }
 
 KNOWN_NOTES = {
-    "tr": "Turkish: snowball/Zeyrek stems expected, not dictionary lemmas",
-    "hi": "Hindi: surface-as-lemma offline; server may differ",
+    "tr": "Turkish: Zeyrek stems; apostrophe preservation fixed (SPEC-057 P1)",
+    "hi": "Hindi: BaseTokenizer (ADR-0018 excludes Simplemma); surface-as-lemma; combining marks fixed",
     "he": "Hebrew: surface-as-lemma offline",
     "vi": "Vietnamese: surface-as-lemma; syllable-level splitting acceptable",
-    "id": "Indonesian: Simplemma table only; affix coverage depends on table",
+    "id": "Indonesian: Simplemma table only; affix coverage depends on table; pipe-table blocks excluded from selection",
     "yue": "Yue: dict-seg; offline main-thread lacks jyutping",
-    "ar": "Arabic: known Qalsadi lemma bugs; SAMPA pronunciation",
+    "ar": "Arabic: known Qalsadi lemma bugs; SAMPA pronunciation; punctuation-adjacent spaces recovered",
     "pt": "Portuguese: popular by historical weight; low recent activity",
-    "hi": "Hindi: server splits Devanagari near char-level (avg token len < 1.5)",
 }
 
 
@@ -92,7 +91,12 @@ def normalize_paragraph(text: str) -> str:
 
 
 def is_paragraph(text: str) -> bool:
-    return not text.lstrip().startswith(("#", "-", "*", "|", ">"))
+    if text.lstrip().startswith(("#", "-", "*", "|", ">")):
+        return False
+    # Exclude pipe-table blocks entirely, including caption lines merged with
+    # a table (e.g. the Indonesian numerals table): any row line starting with
+    # '|' marks a Markdown table block.
+    return not any(line.lstrip().startswith("|") for line in text.splitlines())
 
 
 def is_content_token(tok) -> bool:
