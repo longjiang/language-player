@@ -112,6 +112,24 @@ const KA_MAP: Record<string, string> = {
   'Ⴞ': 'kh', 'Ⴟ': 'j', 'Ⴠ': 'h',
 };
 
+// ── Arabic → SAMPA (port of pyarabic.trans.convert(…,'arabic','sampa')) ──
+// Mirrors the server's Qalsadi Arabic pronunciation scheme so offline
+// phonetics are readable Latin instead of the arabic-stem normalized Arabic
+// string. Short vowels are only emitted when the source text carries them
+// (the server additionally vocalizes with Mishkal before converting).
+const AR_MAP: Record<string, string> = {
+  'ا': 'a:', 'ب': 'b', 'ت': 't', 'ث': 'T', 'ج': 'g', 'ح': 'x', 'خ': 'X',
+  'د': 'd', 'ذ': 'D', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'S', 'ص': "s'",
+  'ض': "d'", 'ط': "t'", 'ظ': "D'", 'ع': "?'", 'غ': 'G', 'ف': 'f', 'ق': 'q',
+  'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n', 'ه': 'h', 'و': 'w', 'ي': 'j',
+  'ء': '?', 'آ': '?a:', 'أ': '?', 'ؤ': '?', 'إ': '?', 'ئ': '?', 'ى': ':',
+  'ة': 'h',
+  // Diacritics (fatha/damma/kasra/shadda/sukun/tanwin/dagger-alif/tatweel)
+  '\u064e': 'a', '\u064f': 'u', '\u0650': 'i',
+  '\u0651': '', '\u0652': '', '\u064b': 'an', '\u064c': 'un', '\u064d': 'in',
+  '\u0670': 'a:', '\u0640': '',
+};
+
 function romanizeCyrillic(text: string, mapping: Record<string, string>): string {
   return [...text].map((ch) => mapping[ch] ?? ch).join('');
 }
@@ -134,6 +152,8 @@ const ROMANIZERS: Record<string, (text: string) => string> = {
   hy: (t) => romanizeCharMap(t, HY_MAP),
   hye: (t) => romanizeCharMap(t, HY_MAP),
   ka: (t) => romanizeCharMap(t, KA_MAP),
+  ar: (t) => romanizeCharMap(t, AR_MAP),
+  ara: (t) => romanizeCharMap(t, AR_MAP),
 };
 
 /** Language codes (with ISO 639-3 aliases) that have an offline romanizer. */

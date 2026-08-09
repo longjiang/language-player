@@ -1197,7 +1197,7 @@ Phase 4 makes offline `pronunciation` match the online API for the seven romaniz
 - Tests: `zerotohero-python-server/test_romanize.py` and `apps/mobile/lib/romanize.test.ts` share the same corpus; `vitest.config.ts` now includes `apps/mobile/lib/**/*.test.ts`.
 
 **Known gaps (not part of this phase)**:
-- Arabic/Persian — server engines (Mishkal + Araby SAMPA, PersianG2p) are Python-only; no portable JS G2P. Offline Arabic still uses `arabic-stem` output (see [ARCH-018](../arch/018-local-tokenization-strategy.md)).
+- Arabic/Persian — server engines (Mishkal + Araby SAMPA, PersianG2p) are Python-only. Offline Arabic now has a portable **Arabic→SAMPA char-map transliteration** (2026-08-08, mirrors the server's `pyarabic` scheme; no Mishkal vocalization), replacing the unreadable `arabic-stem` Arabic string. Persian G2P remains unavailable offline (see [ARCH-018](../arch/018-local-tokenization-strategy.md)).
 - Thai — no RN-portable romanizer (Node binary / WASM only); server has none either.
 - yue — pinyin/jyutping dictionary columns exist (`cccanto`) but the WebView dict worker is zh-only for now.
 
