@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -124,10 +124,6 @@ export default function OfflineDictionariesScreen() {
   // Downloaded languages (checked on mount)
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
   const [downloadedCounts, setDownloadedCounts] = useState<Map<string, number>>(new Map());
-  // Force re-render for progress bars
-  const [, setTick] = useState(0);
-
-  const downloadingRef = useRef<Set<string>>(new Set());
 
   // ── Load downloaded status on mount ──
   useEffect(() => {
@@ -187,20 +183,10 @@ export default function OfflineDictionariesScreen() {
     })();
   }, []);
 
-  // ── Tick poll: triggers re-renders for progress bars during download ──
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (downloadingRef.current.size > 0) setTick((t) => t + 1);
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-
   // ── Actions ──
 
   const handleDownload = async (l2: string) => {
     log('[OfflineDict] 🚀 handleDownload — l2:', l2, '— timestamp:', Date.now());
-    downloadingRef.current.add(l2);
-    setTick((t) => t + 1);
     try {
       await startDownload(l2);
       // Move from available → downloaded immediately on success
@@ -211,17 +197,12 @@ export default function OfflineDictionariesScreen() {
     } catch (e: any) {
       const wasCancelled = e?.message === 'Download cancelled';
       log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
-    } finally {
-      downloadingRef.current.delete(l2);
-      setTick((t) => t + 1);
     }
   };
 
   const handleCancel = (l2: string) => {
     log('[OfflineDict] 🛑 handleCancel — l2:', l2);
     cancelDownload(l2);
-    downloadingRef.current.delete(l2);
-    setTick((t) => t + 1);
   };
 
   const handleDelete = (l2: string) => {
