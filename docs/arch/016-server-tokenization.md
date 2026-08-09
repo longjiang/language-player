@@ -190,6 +190,7 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Persian | `fa`, `fas` | `lemmatize_persian` | Hazm + PersianG2p | No |
 | Turkish | `tr`, `tur` | `lemmatize_turkish` | Zeyrek | No |
 | Burmese | `my`, `mya` | `lemmatize_burmese` | pyidaungsu | No |
+| Vietnamese | `vi`, `vie` | `lemmatize_vietnamese` | Dictionary-first merge over wiktionary heads (surface-as-lemma) | No |
 | Catalan | `ca` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
 | Danish | `da` | `lemmatize_simple` | Simplemma | Yes |
 | German | `de` | `lemmatize_spacy` | spaCy `de_core_news_sm` (trimmed — parser/NER excluded) | Yes |
@@ -231,8 +232,6 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Swahili | `sw` | `lemmatize_simple` | Simplemma | Yes |
 | Tagalog | `tl` | `lemmatize_simple` | Simplemma | Yes |
 
-> **Note**: Vietnamese (`vi`/`vie`) has its own tokenizer module (`lemmatize_vietnamese.py` using pyvi) but is **not registered** in `LEMMATIZER_REGISTRY`. It is listed in the legacy `utils_nlp.tokenizers` dictionary but is not dispatched through the unified pipeline. Vietnamese falls through to `_fallback_lemmatize`.
-
 > **Single source of truth (ADR-0029)**: `LEMMATIZER_REGISTRY` is
 > authoritative for lemmatizer selection — including the offline lemma-table
 > export, which derives its data source from the registry engine
@@ -247,7 +246,6 @@ These exist in `utils_nlp.py`'s legacy `tokenizers` dictionary and are used by t
 
 | Tokenizer Module | Languages | Engine |
 |---|---|---|
-| `lemmatize_vietnamese` | `vie` | pyvi (ViTokenizer) |
 | `lemmatize_lemmatization_lists` | 24 languages (see below) | Pre-computed CSV lookup tables |
 
 **Lemmatization list languages** (static lookup tables at `data/lemmatization-lists/lemmatization-{code}.txt`):
@@ -651,22 +649,40 @@ Uses pre-computed TSV lookup tables.
 
 ---
 
-### Vietnamese — pyvi (`lemmatize_vietnamese.py`)
+### Vietnamese — dictionary-first merge (`lemmatize_vietnamese.py`)
 
-Not in the unified pipeline. Uses [pyvi](https://github.com/trungtv/pyvi) (ViTokenizer).
+**Engine**: no external package — greedy longest-match word merging over the
+Vietnamese Wiktionary headwords in `data/dictionaries.db` (surface-as-lemma;
+Vietnamese is analytic). Adopted 2026-08-09 after benchmarking pyvi 0.1.1,
+underthesea 9.5, and a dictionary-first merge on the SPEC-056 vi corpus
+(SPEC-057 §4.10). Only adjacent syllables that form a dictionary headword
+(≤ 4 syllables, phrase/proverb entries excluded) are merged, so every merged
+token is a guaranteed dictionary hit; unmerged syllables keep the current
+behavior. Casing is preserved (`Hà Nội` stays `Hà Nội` — no lowercasing).
 
-**Raw output format**:
-```python
-[{"word": "Trường đại học", "lemma": "trường đại học"}, ...]
-```
+Benchmark (weighted dict coverage, case-insensitive lookup):
+
+| Candidate | Dict coverage | Multiword tokens | Warm ms/block |
+|---|---:|---:|---:|
+| regex baseline | 96.5% | 0 | 0.03 |
+| pyvi 0.1.1 | 94.2% | 36 | 0.9 |
+| underthesea 9.5 | 91.8% | 43 | 4.8 |
+| **dict-first merge (adopted)** | **97.3%** | 38 | **0.34** |
+
+**Raw output format**: `[{"word": "Quốc ngữ", "lemma": "Quốc ngữ"}, ...]`
 
 **How it works**:
-1. `ViTokenizer.tokenize(text)` — word segmentation with underscores (e.g., `Trường đại_học bách_khoa hà_nội`)
-2. Split by spaces, replace `_` with space for display
-3. Lemma = lowercased surface form
-4. Cache key: `cache/lemmatization/pyvi/vie/{md5}`
+1. Regex word-split (`[\w']+|[^\w\s']+`) — same as the generic fallback
+2. Greedy longest match: merge adjacent alphabetic syllables when
+   `' '.join(...)` lowercased is a Wiktionary headword
+3. Lemma = surface (no inflection; casing preserved)
+4. Cache key: `cache/lemmatization/vi-dictfirst-v1/vie/{md5}` (the legacy
+   pyvi wrapper's `qalsadi`/`ara` cache bug is gone)
 
-> **Note**: Cache key is buggy — it uses `'qalsadi'` and `'ara'` hardcoded rather than `'pyvi'` and `'vie'`.
+**Dictionary lookup**: `WiktionaryLoader.batch_lookup` now falls back to a
+case-insensitive match (Python-lowered index, capped at 350k keys) so
+capitalized sentence-initial forms and `Đ/đ`-style Unicode case pairs hit.
+This is language-agnostic and also fixes other wiktionary-backed languages.
 
 ---
 
@@ -972,7 +988,7 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 48 | Turkish | `tr` | `tur` | Zeyrek | No (Latin script, but has vowel harmony) |
 | 49 | Ukrainian | `uk` | `ukr` | LemmatizationList | Yes (ISO 9 romanization) |
 
-> **Notable omissions from unified pipeline**: Vietnamese (`vi`) uses pyvi but falls through to `_fallback_lemmatize` because it's not registered. Klingon, Hebrew, Hindi, and ~150 other languages use the `_fallback_lemmatize` regex split. Han variants and Thai/Khmer/Lao/Tibetan are now registered (see Language Classes & Segmentation Ladder).
+> **Notable omissions from unified pipeline**: Klingon, Hebrew, Hindi, and ~150 other languages use the `_fallback_lemmatize` regex split. Han variants, Thai/Khmer/Lao/Tibetan, and Vietnamese are now registered (see Language Classes & Segmentation Ladder).
 
 ---
 
@@ -1064,7 +1080,7 @@ These 21 languages only have Simplemma available among the general-purpose token
 | spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()`. Croatian (`hrv`) runs the full pipeline; de/es/it run trimmed (`exclude=("parser","ner")`, cache `spacy-trim-v2`) per SPEC-057 §4.6. |
 | Simplemma (27 langs) | `simplemma` | Pure Python. Preferred over spaCy per ADR-0018. |
 | LemmatizationList (24 langs) | None (TSV files) | Pre-computed lookup tables at `data/lemmatization-lists/`. Highest-priority general-purpose tokenizer per ADR-0018. |
-| Vietnamese | `pyvi` | Pure Python |
+| Vietnamese | None | Dictionary-first merge over the wiktionary table (no new deps) |
 
 ---
 
