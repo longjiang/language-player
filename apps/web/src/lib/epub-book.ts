@@ -427,13 +427,19 @@ export class EpubBook {
     const navPath = book.packaging?.navPath || book.packaging?.ncxPath || '';
     const navDir = resolveNavDir(opfDir, navPath);
 
-    const spine: EpubSpineItem[] = (spineRaw.items as any[]).map((s: any, index: number) => ({
-      index,
-      idref: s.idref,
-      href: resolvePath(opfDir, s.href),
-      hrefRaw: s.href,
-      linear: s.linear !== 'no',
-    }));
+    // Some EPUBs carry dangling spine itemrefs (e.g. <itemref idref="cover"/>
+    // with no matching manifest item — 1926 Չարենց - Երկիր Նաիրի.epub).
+    // epubjs keeps those items with href=undefined; resolving them would
+    // throw, so drop them like the mobile parser does.
+    const spine: EpubSpineItem[] = (spineRaw.items as any[])
+      .map((s: any, index: number) => ({
+        index,
+        idref: s.idref,
+        href: s.href ? resolvePath(opfDir, s.href) : '',
+        hrefRaw: s.href,
+        linear: s.linear !== 'no',
+      }))
+      .filter((s) => s.href);
 
     const mapToc = (items: EpubjsTocItem[] | undefined): TocNode[] =>
       (items ?? []).map(item => {
