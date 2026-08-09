@@ -574,9 +574,27 @@ function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
   lemmaDownloadState.set(l2, Date.now());
 
   // Don't await — fire and forget
-  import('@/lib/tokenizer-db').then(({ downloadLemmaTable }) => {
-    downloadLemmaTable(l2, apiUrl, LEMMA_TABLE_CAPPED_LANGS.has(l2) ? LEMMA_TABLE_CAP_LIMIT : undefined)
-      .catch(() => { /* silent */ });
+  void import('@/lib/tokenizer-db').then(async ({ hasLemmaTable, downloadLemmaTable }) => {
+    // The table may already be installed (from a manual offline-dictionary
+    // download). Don't re-download it in the background — especially not in
+    // Offline Mode, where the fetch is blocked and just logs a scary error.
+    if (await hasLemmaTable(l2)) {
+      log(`[lemmatize] ✅ lemma table already installed — l2=${l2}`);
+      return;
+    }
+    if (isOfflineModeEnabled()) {
+      log(`[lemmatize] ⏭ skip background lemma download — offline mode — l2=${l2}`);
+      return;
+    }
+    try {
+      await downloadLemmaTable(
+        l2,
+        apiUrl,
+        LEMMA_TABLE_CAPPED_LANGS.has(l2) ? LEMMA_TABLE_CAP_LIMIT : undefined,
+      );
+    } catch {
+      // Non-fatal — the next local fallback retries after the throttle window.
+    }
   });
 }
 
