@@ -28,6 +28,8 @@ Nothing. The dictionary download UI is unchanged — the tokenizer is downloaded
 
 In the Offline Dictionaries settings screen (SPEC-013, Phase 5), each language card shows whether the language has a downloadable tokenizer pack. This helps users understand which languages will have fully interactive text (tappable subtitles, lemmatized dictionary lookup) when offline.
 
+Word counts reflect **full dictionary downloads** — the old 125,000-entry cap is removed (see [ADR-0031](../adr/0031-full-offline-dictionary-downloads.md)).
+
 ### Wireframe — Language with Local Tokenizer (no warning)
 
 Languages in `TOKENIZER_CONFIG` (Categories A, C1–C4, plus dict-based segmentation in Category B) have a downloadable pack. No warning is shown.
@@ -37,10 +39,10 @@ Languages in `TOKENIZER_CONFIG` (Categories A, C1–C4, plus dict-based segmenta
 │  Spanish                         Download │
 │  es                                      │
 │  ─────────────────────────────────────── │
-│  125,000 words · ~3.4 MB                 │
+│  243,711 words · ~17 MB                  │
 │                                          │
 │  [===========                    ]  42%   │  ← During download (transient)
-│  52,000 of 125,000 words                 │
+│  52,000 of 243,711 words                 │
 └──────────────────────────────────────────┘
 ```
 
@@ -77,7 +79,7 @@ After download, the warning persists so the user knows that even though the dict
 │  Spanish                    [↻] [🗑]     │
 │  es                                      │
 │  ─────────────────────────────────────── │
-│  ✅ Downloaded · 125,000 words           │
+│  ✅ Downloaded · 243,711 words           │
 │                                          │  ← No warning (tokenizer available)
 └──────────────────────────────────────────┘
 ```

@@ -36,3 +36,4 @@ NNNN-title-with-dashes.md
 | 0026 | Subs-search indexing for continua languages (monograms & bigrams) | accepted | 2026-08-05 |
 | 0027 | Defer automated E2E (Maestro) — checklist-based human QA | accepted | 2026-08-06 |
 | 0030 | Data-driven popular target-language (L2) list | accepted | 2026-08-09 |
+| 0031 | Full offline dictionary downloads (remove 125k cap) | accepted | 2026-08-09 |

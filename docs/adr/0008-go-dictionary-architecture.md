@@ -2,6 +2,7 @@
 
 > **Status:** Proposed
 > **Date:** 2026-07-21
+> **Updated:** 2026-08-09 — the offline download cap was removed; see [ADR-0031](./0031-full-offline-dictionary-downloads.md)
 > **Replaces:** Current mobile offline CSV-based dictionary (`apps/mobile-go-legacy/src/dictionary.ts`, `apps/mobile-go-legacy/src/dictionary-db.ts`, `apps/mobile-go-legacy/src/dictionary-profile.ts`)
 > **See also:**
 > - `docs/adr/lp-nextjs-dictionary-architecture.md` — Next.js server-side dictionary
@@ -111,7 +112,7 @@ Each `DictionaryEntry` includes `match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm'
 
 ### Download Sizing
 
-The `/dictionary/download` endpoint returns English-definition entries ordered by frequency, capped at a configurable limit (default: 30,000). This keeps downloads small and fast while covering the vocabulary a typical learner needs:
+The `/dictionary/download` endpoint returns English-definition entries ordered by frequency, originally capped at a configurable limit (default: 30,000) to keep downloads small. The cap was later raised to 125,000 and then removed entirely — see [ADR-0031](./0031-full-offline-dictionary-downloads.md). The table below is the historical sizing from the capped era:
 
 | L2 | Dict Table | Freq-Covered Pool | Default Cap | Est. Download |
 |---|---|---|---|---|
