@@ -14,7 +14,7 @@
 
 ## Overview
 
-This spec is a manual QA checklist for the local tokenizers. It is intentionally a **spot-check**, not an exhaustive per-language pass: one representative language per tokenizer family, plus cross-cutting checks that every path must satisfy (space recovery, phonetics rendering, batch reader fallback, online/offline parity).
+This spec is a manual QA checklist for the local tokenizers. It is intentionally a **spot-check**, not an exhaustive per-language pass: one representative language per tokenizer family, plus cross-cutting checks that every path must satisfy (space recovery, phonetics rendering, batch reader fallback, online/offline parity). Every language on the data-driven popular L2 list (ADR-0030) now has at least one spot-check — see the [coverage map](#popular-l2-coverage) below.
 
 The local tokenizer families covered:
 
@@ -50,6 +50,30 @@ The local tokenizer families covered:
 | `📦 BATCH REQ / BATCH FAIL` | Reader batch endpoint request / fallback |
 
 ## Spot-Check Test Cases
+
+### Popular L2 coverage
+
+| `POPULAR_L2S` | Test case |
+|---|---|
+| `en` | TC-14 |
+| `zh` | TC-03 / TC-04 |
+| `ja` | TC-01 |
+| `ko` | TC-02 |
+| `fr` | TC-16 |
+| `de` | TC-15 |
+| `es` | TC-13 |
+| `vi` | TC-22 |
+| `ru` | TC-06 |
+| `ar` | TC-11 |
+| `tr` | TC-20 |
+| `it` | TC-17 |
+| `hi` | TC-23 |
+| `yue` | TC-05 |
+| `th` | TC-12 |
+| `id` | TC-21 |
+| `nl` | TC-19 |
+| `he` | TC-24 |
+| `pt` | TC-18 |
 
 ### TC-01 — Japanese (kuromoji) ✅ PASS (2026-08-08)
 
@@ -236,6 +260,73 @@ The local tokenizer families covered:
 - **Verify**: `📝 REGEX-SPLIT` + snowball/lemma table; no pronunciation shown (Latin script).
 - **Pass**: Every word clickable; spaces/punctuation intact; lemma-table hits where downloaded.
 
+### TC-14 — English (lemma table + snowball)
+
+- **Sample**: `The quick brown fox jumps over the lazy dog.` (plus spot forms below)
+- **Steps**: Offline Mode on; open an English book or paste into the reader.
+- **Verify**: `🏷️ LOCAL-DONE` with `table=…` hits; irregular forms resolve to dictionary forms: `went → go`, `better → good`, `children → child`.
+- **Pass**: No ruby row (Latin script); words clickable; spaces/punctuation intact; table hits match online.
+
+### TC-15 — German (lemma table + snowball)
+
+- **Sample**: `Ich habe gestern ein Buch gelesen und bin nach Hause gegangen.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits: `gelesen → lesen`, `gegangen → gehen`, `besser → gut`.
+- **Pass**: No ruby row; words clickable; text reconstructs exactly; table hits match online.
+
+### TC-16 — French (lemma table + snowball)
+
+- **Sample**: `Je suis allé au marché et j'ai acheté du pain.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits: `suis → être`, `allé → aller`, `acheté → acheter`.
+- **Pass**: No ruby row; words clickable; apostrophes and punctuation intact; table hits match online.
+
+### TC-17 — Italian (lemma table + snowball)
+
+- **Sample**: `Ieri sono andato al mercato e ho comprato il pane.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits: `sono → essere`, `andato → andare`, `comprato → comprare`.
+- **Pass**: No ruby row; words clickable; text reconstructs exactly; table hits match online.
+
+### TC-18 — Portuguese (lemma table + snowball)
+
+- **Sample**: `Ontem fui ao mercado e comprei pão.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits: `fui → ir`, `comprei → comprar`.
+- **Pass**: No ruby row; words clickable; accents/punctuation intact; table hits match online.
+
+### TC-19 — Dutch (lemma table + snowball)
+
+- **Sample**: `Ik ben gisteren naar de markt geweest en heb brood gekocht.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits: `ben → zijn`, `geweest → zijn`, `gekocht → kopen`.
+- **Pass**: No ruby row; words clickable; text reconstructs exactly; table hits match online.
+
+### TC-20 — Turkish (snowball only)
+
+- **Sample**: `Dün okula gittim ve ekmek aldım.`
+- **Verify**: `🏷️ LOCAL-DONE` snowball hits (e.g. `gittim → git`, `aldım → al`).
+- **Pass**: No crash; words clickable; no ruby row. Snowball stems are stems, not dictionary lemmas — Turkish ships **no** offline lemma table (the server uses Zeyrek, which has no static export), so stem-vs-lemma mismatch is expected.
+
+### TC-21 — Indonesian (lemma table only)
+
+- **Sample**: `Kemarin saya pergi ke pasar dan membeli roti.`
+- **Verify**: `🏷️ LOCAL-DONE` table hits where downloaded (e.g. `membeli → beli`); no ruby row.
+- **Pass**: No crash; words clickable; text reconstructs exactly. Indonesian is analytic — surface-as-lemma is acceptable when a table hit is missing.
+
+### TC-22 — Vietnamese (regex split + surface)
+
+- **Sample**: `Tôi đang học tiếng Việt mỗi ngày.`
+- **Verify**: `📝 REGEX-SPLIT`; words clickable; no ruby row (Latin script with tone marks).
+- **Pass**: No crash; spaces/punctuation intact. Compounds may split at syllable boundaries — acceptable per ARCH-018 (surface = lemma; pyvi-style joining is a nice-to-have).
+
+### TC-23 — Hindi (regex split + surface)
+
+- **Sample**: `मैं हिंदी सीख रहा हूँ।`
+- **Verify**: `📝 REGEX-SPLIT`; words clickable; offline surface-as-lemma.
+- **Pass**: No crash; text reconstructs exactly; no ruby row offline (no Devanagari char map). Online/offline lemma parity is expected to differ — server fallback is better, and this is a known gap, not a pass failure.
+
+### TC-24 — Hebrew (regex split + surface)
+
+- **Sample**: `אני לומד עברית כל יום.`
+- **Verify**: `📝 REGEX-SPLIT`; RTL rendering; words clickable; offline surface-as-lemma.
+- **Pass**: No crash; RTL text renders without bidi scrambling; no ruby row offline; tokens reconstruct text exactly.
+
 ## Cross-Cutting Checks
 
 | ID | Check | How | Pass criteria |
@@ -250,6 +341,8 @@ The local tokenizer families covered:
 ## Quick Pass Bar
 
 A clean spot-check round requires **TC-01, TC-02, TC-03, TC-06, TC-09** (one per engine family) plus **CC-01** and **CC-05**. That covers every pipeline stage — worker, kuromoji, dict-seg, lemma table, romanization — without testing all 60+ languages.
+
+Full popular-L2 coverage (every language in `POPULAR_L2S`, ADR-0030) requires **TC-01 … TC-24**.
 
 ## Automated Tests
 
