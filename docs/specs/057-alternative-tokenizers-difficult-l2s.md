@@ -72,14 +72,17 @@ the tokenizer/lemmatizer side; dictionary coverage is tracked as a data task in
 - `tr` → `lemmatize_turkish` (Zeyrek)
 - `id` → `lemmatize_simple` (Simplemma)
 - `hi` and `he` are **not** in `LEMMATIZER_REGISTRY` — both fall through to
-  `_fallback_lemmatize` (regex `[\w']+`, surface-as-lemma). This contradicts
-  ARCH-016's table, which lists Simplemma for Hindi (`hin`); the live registry
-  has no `hi`/`hin` entry.
+  `_fallback_lemmatize` (regex `[\w']+`, surface-as-lemma). This matches
+  ADR-0018, which excludes Hindi from Simplemma (`hin` → "spaCy or
+  BaseTokenizer"). ARCH-016's mapping table listing `hin` is simplemma's
+  supported ISO mapping, not a registry assignment — the registry has no
+  `hi`/`hin` entry by design.
 
 The Hindi char-splitting is therefore the fallback regex: Python `re`'s `\w`
-excludes Unicode combining marks (category Mn/Me), so Devanagari matras split
-off (`हिन्दी → ह`). Hebrew letters are `\w`, so Hebrew tokenization through the
-same fallback is fine — its B grade is entirely the 9% dictionary hit rate.
+excludes Unicode combining marks (category Mn/Mc/Me — Devanagari matras are
+mostly Mc), so Devanagari matras split off (`हिन्दी → ह`). Hebrew letters are
+`\w`, so Hebrew tokenization through the same fallback is fine — its B grade
+is entirely the dictionary hit rate.
 
 ---
 
@@ -129,8 +132,8 @@ The near-char-level Devanagari split is the tokenizer bug, not a lemma gap.
 
 | Tool | Notes |
 |---|---|
-| **Fix the fallback tokenizer first** | Treat Unicode combining marks (Mn/Me — Devanagari matras, and all Indic scripts) as part of the preceding token. Zero new dependencies; expected to recover most of the score. |
-| **Register `hi`/`hin` → Simplemma** | Matches ARCH-016's intent; dictionary-based lemmatization (surface forms where table lacks coverage). |
+| **Fix the fallback tokenizer first** | Treat Unicode combining marks (Mn/Mc/Me — Devanagari matras, and all Indic scripts) as part of the preceding token. Zero new dependencies; expected to recover most of the score. |
+| **Keep `hi`/`hin` on BaseTokenizer** | ADR-0018 excludes Hindi from Simplemma ("breaks too many words"); spaCy has no Hindi model installed. The fixed BaseTokenizer (whole Devanagari words, surface-as-lemma) is the pragmatic Phase 1 engine. |
 | UDPipe `hindi-hdtb` | Accurate + fast; CC BY-NC-SA models → blocker. |
 | Stanza `hi` | Accurate; slower; per-model license — verify. Only if Simplemma still fails after the tokenizer fix. |
 
@@ -189,18 +192,39 @@ Verified 2026-08-09 from project homepages/model cards:
 
 ## 6. Implementation Plan
 
-### Phase 1 — fixes with no new dependencies (highest ROI)
+### Phase 1 — fixes with no new dependencies (highest ROI) ✅ DONE 2026-08-09
 
-1. Fix `_fallback_lemmatize` to keep Unicode combining marks (Mn/Me) attached
-   to the preceding token — fixes Hindi and all Indic scripts.
-2. Register `hi`/`hin` → Simplemma in `LEMMATIZER_REGISTRY` (matches
-   ARCH-016).
-3. Fix Turkish apostrophe preservation through analysis + `_recover_spaces`.
-4. Fix Arabic `_recover_spaces` for punctuation-adjacent spaces.
-5. Exclude pipe-table blocks from SPEC-056 paragraph selection (Indonesian
-   corpus artifact).
-6. Re-run `run_eval.py`; expect `tr`/`id` to recover significantly and `hi` to
-   reach A.
+1. ✅ Fix `_fallback_lemmatize` to keep Unicode combining marks (Mn/Mc/Me —
+   Devanagari matras are Mc, not Mn) attached to the preceding token — fixes
+   Hindi and all Indic scripts.
+2. ❌ **Superseded** — do not register `hi`/`hin` → Simplemma. ADR-0018
+   excludes Hindi from Simplemma ("breaks too many words"), so the §4.3
+   BaseTokenizer fix above is the actual Phase 1 engine change.
+3. ✅ Fix Turkish apostrophe preservation: `lemmatize_turkish` splits on
+   apostrophe boundaries, analyzes each side with Zeyrek, and re-emits `'` as a
+   punctuation token. Cache namespace bumped to `zeyrek-v2`.
+4. ✅ Fix `_recover_spaces` to emit every gap character (not just whitespace)
+   and to repair tokens a lemmatizer merged across a gap — Arabic
+   punctuation-adjacent spaces now reconstruct byte-exactly.
+5. ✅ Exclude pipe-table blocks (including captions merged with table rows)
+   from SPEC-056 paragraph selection — fixes the Indonesian corpus artifact.
+6. ✅ Re-run `run_eval.py` — see [Phase 1 results](#phase-1-results).
+
+### Phase 1 results
+
+*2026-08-09, local Flask, 200-token budget.*
+
+| L2 | Before | After | Grade before → after | Notes |
+|---|---:|---:|---|---|
+| `he` | 86.3 | 97.2 | B → A | Paragraph selection now excludes table-like blocks; dict hit 9% → 41% |
+| `hi` | 77.8 | 100.0 | C → A | Whole-word Devanagari tokens; spot-checks 0/2 → 2/2; dict hit 55% → 68% |
+| `ar` | 73.5 | 98.5 | C → A | Punctuation-adjacent spaces recovered; Qalsadi lemma bugs remain (no seeded spot-checks) |
+| `tr` | 65.8 | 95.0 | D → A | Apostrophes preserved (`1933'te` reconstructs); dict hit 31% → 35% |
+| `id` | 62.1 | 100.0 | D → A | Pipe-table block no longer selected; dict hit 20% → 57% |
+
+All 19 SPEC-056 languages now score A. The remaining weak spots are
+dictionary/data coverage (`yue` 33%, `tr` 35%, `ru`/`he` 41%, `ar` 46%,
+`ko` 43%), tracked in Phase 3 — not tokenization.
 
 ### Phase 2 — prototype model alternatives
 
@@ -208,8 +232,8 @@ Verified 2026-08-09 from project homepages/model cards:
    data-package license; measure latency with `light` data.
 8. Stanza `he` prototype (license permitting) or DictaBERT-lex table export vs
    regex fallback.
-9. Stanza `hi` / UDPipe `hindi-hdtb` only if Simplemma after Phase 1 fails
-   spot-checks.
+9. Stanza `hi` / UDPipe `hindi-hdtb` only if BaseTokenizer after Phase 1
+   still fails spot-checks (it passes 2/2 today).
 10. Stanza `tr` only if Zeyrek + apostrophe fix still fails.
 11. Re-run the suite and promote the new scorecard into SPEC-056 §4.1.
 
