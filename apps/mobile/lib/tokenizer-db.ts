@@ -25,6 +25,14 @@ import { log } from '@/lib/logger';
 
 const CHUNK_SIZE = 500;
 
+/**
+ * Lemma-table insert batch size. Larger than CHUNK_SIZE on purpose: the
+ * 500-row statements made a 491k-row Spanish table take ~5 minutes because
+ * each execAsync is a native bridge call. 2,000 rows keeps each statement
+ * well under SQLite's limits while cutting bridge round-trips ~4x.
+ */
+const LEMMA_INSERT_CHUNK_SIZE = 2000;
+
 export interface LemmaTableProgress {
   phase: 'fetch' | 'parse' | 'insert';
   /** Fetched JSON payload size in bytes (fetch phase). */
@@ -207,8 +215,8 @@ export async function storeLemmaTable(
     await db.execAsync(`DELETE FROM lemma_${safeL2}`);
 
     let lastProgressAt = 0;
-    for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-      const chunk = entries.slice(i, i + CHUNK_SIZE);
+    for (let i = 0; i < entries.length; i += LEMMA_INSERT_CHUNK_SIZE) {
+      const chunk = entries.slice(i, i + LEMMA_INSERT_CHUNK_SIZE);
       const values = chunk
         .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
         .join(', ');
