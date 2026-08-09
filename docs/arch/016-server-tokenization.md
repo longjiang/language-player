@@ -293,15 +293,25 @@ original `lemmatize_chinese.py` remains for the legacy video path.
 **Han is lemma-less**: the surface form IS the lemma for every Han variant.
 There is no inflection to reduce.
 
-### SEA family — ICU word break / regex fallback (`lemmatize_sea.py`)
+### SEA family (`lemmatize_sea.py` + `thai_g2p.py`)
 
-Thai (`th`), Khmer (`km`), Lao (`lo`), and Tibetan (`bo`) are
-scriptio-continua with no dedicated server segmenter. `lemmatize_sea.py`
-(2026-08-08) uses ICU word break (Unicode UAX #29) via PyICU when the
-optional `icu` package is installed, otherwise falls back to the generic
-punctuation-delimited regex run. All SEA tokens are surface-as-lemma with no
-pronunciation. Burmese (`my`) is not here — it keeps `lemmatize_burmese.py`
-(pyidaungsu).
+Thai (`th`) is the one SEA language with a real server segmenter and a
+rule-based pronunciation engine:
+
+- **Segmentation**: PyThaiNLP `newmm` word tokenizer (dictionary + HMM).
+  ASCII runs (ISBNs, URLs, Latin names) are kept as single tokens.
+- **Pronunciation**: `thaiphon` **Paiboon+** — hyphen-separated syllables,
+  doubled long vowels, and tone diacritics (`สวัสดี → sà-wàt-dii`,
+  `ภาษาไทย → paa-sǎa-tai`). This is the "RTGS-style romanization with tone
+  marks" shown as ruby. Single alphabet letters use their letter-name
+  readings (`ก → gɔɔ`, `ส → sɔ̌ɔ`), which the generic rules cannot infer.
+- Tokens are surface-as-lemma (Thai is uninflected).
+
+Khmer (`km`), Lao (`lo`), and Tibetan (`bo`) remain scriptio-continua with
+no dedicated server segmenter: ICU word break (Unicode UAX #29) via PyICU
+when installed, otherwise the generic punctuation-delimited regex. They have
+no pronunciation. Burmese (`my`) is not here — it keeps
+`lemmatize_burmese.py` (pyidaungsu).
 
 ---
 
@@ -712,6 +722,7 @@ Non-Latin scripts get Latin transliteration via `romanize.py`. The romanization 
 | Greek (`el`, `ell`) | Greek | ISO 843 | `_EL_MAP` char lookup |
 | Armenian (`hy`, `hye`) | Armenian | ISO 9985 | `_HY_MAP` char lookup |
 | Georgian (`ka`) | Georgian (Mkhedruli) | ISO 9984 | `_KA_MAP` char lookup |
+| Thai (`th`, `tha`) | Thai | Paiboon+ (tone-marked learner romanization) | `thai_g2p.thai_romanize_tone_marked()` via `thaiphon` |
 
 ### Korean Romanization Details
 
@@ -728,7 +739,11 @@ Known tradeoff: koroman does no morphological analysis, so proper-noun exception
 
 > **History**: this replaced a hand-written Hangul decomposer (`_romanize_korean`) whose output was not standard RR (e.g. `jotahapnida`, `eopsda`, `dalkgogi`). Commit `39bd078` (server).
 
-**Not romanized**: Chinese (uses pinyin directly from jieba), Japanese (uses katakana from MeCab), Arabic (uses Buckwalter/SAMPA from Qalsadi), Persian (uses Latin from PersianG2p), Burmese.
+**Not romanized by `romanize.py`**: Chinese (uses pinyin directly from
+jieba), Japanese (uses katakana from MeCab), Arabic (uses Buckwalter/SAMPA
+from Qalsadi), Persian (uses Latin from PersianG2p), Burmese. Thai is also
+not in `romanize.py`; it uses `thaiphon` Paiboon+ directly in
+`thai_g2p.py` (same output is embedded in the offline dictionary download).
 
 ---
 
@@ -742,7 +757,7 @@ per-code registry. The unified registry now derives from these classes:
 | `space` | Latin, Cyrillic, Arabic, … | regex word-split | per-language | en, ru, ar, hi |
 | `han` | CJK ideographs | jieba (big dict) + optional variant lexicon | surface-as-lemma | zh, yue, cmn, nan, hak, wuu, lzh, … |
 | `cjk-morph` | CJK + kana/hangul | morphological analyzer | dictionary form | ja (MeCab), ko (Okt) |
-| `sea` | Thai/Khmer/Lao/Tibetan | ICU word break (or regex fallback) | surface-as-lemma | th, km, lo, bo |
+| `sea` | Thai/Khmer/Lao/Tibetan | Thai: PyThaiNLP `newmm`; km/lo/bo: ICU word break (or regex fallback) | surface-as-lemma | th, km, lo, bo |
 
 **Segmentation fallback ladder** (applies to every language):
 
@@ -750,7 +765,7 @@ per-code registry. The unified registry now derives from these classes:
 2. Generic Han segmenter (jieba `dict.txt.big`) for all `han` codes, with a
    per-variant lexicon overlay when available (yue → cccanto).
 3. Dictionary max-match for scriptio-continua languages with a lexicon.
-4. ICU word break (UAX #29) for `sea` languages without a lexicon.
+4. ICU word break (UAX #29) for `sea` languages without a lexicon (km/lo/bo).
 5. Regex split — only correct for `space` languages.
 
 **Current vs target (2026-08-08):**
@@ -872,7 +887,7 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 9 | Chinese (Traditional) | `zh-Hant` | `zho` | jieba (lemmatize_han) | Yes (pinyin) |
 | 9b | Cantonese | `yue` | `yue` | jieba + cccanto overlay | Yes (jyutping) |
 | 9c | Other Han variants | `cmn nan hak wuu …` | — | jieba (lemmatize_han) | No |
-| 9d | Thai / Khmer / Lao / Tibetan | `th km lo bo` | `tha khm lao bod` | ICU word break / regex | No |
+| 9d | Thai / Khmer / Lao / Tibetan | `th km lo bo` | `tha khm lao bod` | th: PyThaiNLP `newmm`; km/lo/bo: ICU word break / regex | th: Paiboon+ (tone-marked); km/lo/bo: No |
 | 10 | Croatian | `hr` | `hrv` | spaCy | No (Latin script) |
 | 11 | Czech | `cs` | `ces` | Simplemma | No (Latin script) |
 | 12 | Danish | `da` | `dan` | Simplemma | No (Latin script) |

@@ -8,22 +8,32 @@
  *          else kana > romanization > pronunciation
  *   zh, yue → pinyin (tone-marked) > pronunciation
  *   ko  → romanization > pronunciation
+ *   th  → Paiboon+ romanization (tone-marked) > pronunciation > IPA
  *   other → ipa > romanization > pronunciation
  */
 import type { DictionaryEntry } from '@langplayer/shared';
 import { formatJapanesePron, circledPattern } from './pitch-accent';
 
 /**
+ * Grammatical labels Wiktionary sometimes prepends to a pronunciation field
+ * ("bound form, pra˨˩.tʰeːt̚˥˩, ..." → "pra˨˩.tʰeːt̚˥˩, ..."). They are not
+ * part of the reading and must never be shown in ruby or the popup.
+ */
+const PRON_LABEL_RE = /^(?:bound form|classifier|prefix|suffix|particle|determiner|interjection|conjunction|preposition|pronoun|numeral|adverb|adjective|verb|noun|formal|informal|colloquial|slang|archaic|obsolete|rare|literary|poetic|UK|US)\s*,\s*/i;
+
+/**
  * Strip trailing pronunciation source labels that some dictionary exports
- * embed in the pronunciation field ("t͡ɕaːk̚˨˩, wiki.local" → "t͡ɕaːk̚˨˩").
+ * embed in the pronunciation field ("t͡ɕaːk̚˨˩, wiki.local" → "t͡ɕaːk̚˨˩")
+ * and leading grammatical labels ("bound form, ..." → "...").
  */
 export function cleanPronunciation(
   pron: string | null | undefined,
 ): string | null {
   if (!pron) return null;
-  const cleaned = pron
-    .replace(/,?\s*wiki\.local\s*$/i, '')
-    .trim();
+  let cleaned = pron.trim().replace(PRON_LABEL_RE, '');
+  cleaned = cleaned.replace(/,?\s*wiki\.local\s*$/i, '').trim();
+  // Trailing periods are artifacts of Wiktionary list markup ("...sa˨˩.").
+  cleaned = cleaned.replace(/[.\s]+$/, '');
   return cleaned || null;
 }
 
@@ -35,6 +45,7 @@ export function cleanPronunciation(
  *   "[なごり]"           — Japanese without pitch (kana only)
  *   "[nǐ hǎo]"          — Chinese pinyin (tone-marked)
  *   "[nagori]"          — fallback romaji
+ *   "[sà-wàt-dii]"      — Thai Paiboon+ (tone-marked romanization)
  *   "[ipa]" / "[rom]"   — other languages
  *
  * Returns null if no pronunciation data is available.
@@ -83,6 +94,13 @@ export function formatPronunciation(
   if (l2Code === 'ko') {
     if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
     if (pron) return `[${pron}]`;
+  }
+
+  // ── Thai: learner romanization with tone marks, IPA as fallback ──
+  if (l2Code === 'th') {
+    if (pd?.romanization) return `[${cleanPronunciation(pd.romanization)}]`;
+    if (pron) return `[${pron}]`;
+    if (pd?.ipa) return `[${cleanPronunciation(pd.ipa)}]`;
   }
 
   // ── Other languages: IPA > romanization > pronunciation ──

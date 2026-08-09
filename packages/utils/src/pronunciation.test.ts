@@ -52,4 +52,27 @@ describe('formatPronunciation', () => {
     expect(cleanPronunciation('pʰim˧')).toBe('pʰim˧');
     expect(cleanPronunciation('')).toBeNull();
   });
+
+  it('prefers Thai Paiboon+ romanization over IPA', () => {
+    const e = entry({
+      head: 'ประเทศ',
+      pronunciation: 'bprà-têet',
+      phonetic_detail: {
+        ipa: 'pra˨˩.tʰeːt̚˥˩',
+        romanization: 'bprà-têet',
+      },
+    });
+    expect(formatPronunciation(e, 'th')).toBe('[bprà-têet]');
+  });
+
+  it('strips Wiktionary grammatical labels from Thai pronunciation', () => {
+    const e = entry({
+      head: 'ประเทศ',
+      pronunciation: 'bound form, pra˨˩.tʰeːt̚˥˩, pra˨˩.tʰeːt̚˥˩.sa˨˩.',
+    });
+    expect(cleanPronunciation(e.pronunciation)).toBe(
+      'pra˨˩.tʰeːt̚˥˩, pra˨˩.tʰeːt̚˥˩.sa˨˩',
+    );
+    expect(cleanPronunciation('bound form, wiktionary')).toBe('wiktionary');
+  });
 });

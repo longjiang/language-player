@@ -59,6 +59,7 @@ import {
 } from '@/lib/tokenizer-worker';
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 import { romanize, ROMANIZABLE_LANGS } from '@/lib/romanize';
+import { cleanPronunciation } from '@langplayer/utils';
 
 const arabicStemmer = new Stemmer();
 
@@ -132,6 +133,7 @@ function tokenizeWords(text: string): string[] {
 const dictWordSets = new Map<string, Set<string>>();
 const dictMaxWordLen = new Map<string, number>();
 const dictPosByWord = new Map<string, Map<string, string>>();
+const dictPronByWord = new Map<string, Map<string, string>>();
 
 /**
  * Load the dictionary headword set for a language from the offline
@@ -143,6 +145,7 @@ async function loadDictWordSet(l2: string): Promise<{
   wordSet: Set<string>;
   maxWordLen: number;
   posByWord: Map<string, string>;
+  pronByWord: Map<string, string>;
 } | null> {
   // Check memory cache first
   const cached = dictWordSets.get(l2);
@@ -151,6 +154,7 @@ async function loadDictWordSet(l2: string): Promise<{
       wordSet: cached,
       maxWordLen: dictMaxWordLen.get(l2) ?? 5,
       posByWord: dictPosByWord.get(l2) ?? new Map(),
+      pronByWord: dictPronByWord.get(l2) ?? new Map(),
     };
   }
 
@@ -167,31 +171,46 @@ async function loadDictWordSet(l2: string): Promise<{
     const table = `dict_${l2.replace(/-/g, '_')}`;
     // part_of_speech is optional (not present in current zh downloads) —
     // probe defensively and fall back to the head/alternate query.
-    let rows: Array<{ head: string; part_of_speech: string | null }>;
+    let rows: Array<{
+      head: string;
+      pronunciation: string | null;
+      part_of_speech: string | null;
+    }>;
     try {
-      rows = await db.getAllAsync<{ head: string; part_of_speech: string | null }>(
+      rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
         // head = simplified form (zh), alternate = traditional form (zh/yue).
         // UNION dedupes across both scripts.
-        `SELECT head, part_of_speech FROM ${table} WHERE head != ''
+        `SELECT head, pronunciation, part_of_speech FROM ${table} WHERE head != ''
          UNION
-         SELECT alternate, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+         SELECT alternate, pronunciation, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
       );
     } catch {
-      rows = await db.getAllAsync<{ head: string; part_of_speech: string | null }>(
-        `SELECT head FROM ${table} WHERE head != ''
-         UNION
-         SELECT alternate FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
-      );
+      try {
+        rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
+          `SELECT head, pronunciation FROM ${table} WHERE head != ''
+           UNION
+           SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+        );
+      } catch {
+        rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
+          `SELECT head, NULL AS pronunciation FROM ${table} WHERE head != ''
+           UNION
+           SELECT alternate, NULL AS pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+        );
+      }
     }
     if (!rows || rows.length === 0) return null;
 
     const wordSet = new Set<string>();
     const posByWord = new Map<string, string>();
+    const pronByWord = new Map<string, string>();
     let maxWordLen = 1;
     for (const row of rows) {
       if (!wordSet.has(row.head)) {
         wordSet.add(row.head);
         if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
+        const pron = cleanPronunciation(row.pronunciation);
+        if (pron) pronByWord.set(row.head, pron);
       }
       if (row.head.length > maxWordLen) maxWordLen = row.head.length;
     }
@@ -203,13 +222,15 @@ async function loadDictWordSet(l2: string): Promise<{
         dictWordSets.delete(firstKey);
         dictMaxWordLen.delete(firstKey);
         dictPosByWord.delete(firstKey);
+        dictPronByWord.delete(firstKey);
       }
     }
 
     dictWordSets.set(l2, wordSet);
     dictMaxWordLen.set(l2, maxWordLen);
     dictPosByWord.set(l2, posByWord);
-    return { wordSet, maxWordLen, posByWord };
+    dictPronByWord.set(l2, pronByWord);
+    return { wordSet, maxWordLen, posByWord, pronByWord };
   } catch {
     // Table doesn't exist (dict not downloaded) or DB error
     return null;
@@ -1058,13 +1079,17 @@ async function runLocalFallbackRaw(
     const dictData = await loadDictWordSet(l2);
     if (dictData) {
       const posByWord = dictData.posByWord;
-      return tokens.map(t => t.lemmas.length > 0
-        ? {
-            ...t,
-            lemmas: t.lemmas.map(l => ({ ...l, part_of_speech: l.part_of_speech ?? posByWord.get(l.lemma) })),
-            source: 'dict-seg' as const,
-          }
-        : t);
+      const pronByWord = dictData.pronByWord;
+      return tokens.map(t => {
+        if (t.lemmas.length === 0) return t;
+        const pron = t.pronunciation ?? pronByWord.get(t.lemmas[0]?.lemma ?? t.text);
+        return {
+          ...t,
+          ...(pron ? { pronunciation: pron } : {}),
+          lemmas: t.lemmas.map(l => ({ ...l, part_of_speech: l.part_of_speech ?? posByWord.get(l.lemma) })),
+          source: 'dict-seg' as const,
+        };
+      });
     }
   }
   return tokens;
