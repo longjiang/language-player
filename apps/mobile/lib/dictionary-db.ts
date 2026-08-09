@@ -589,7 +589,10 @@ export async function lookupOffline(
 
     // 1. Exact head / alternate / pronunciation (server EdictLoader step 1–3).
     let rows = await db.getAllAsync<{ entry_json: string }>(
-      `SELECT entry_json FROM ${table} WHERE head = ? OR alternate = ? OR pronunciation = ?`,
+      `SELECT entry_json FROM ${table}
+       WHERE head = ? COLLATE NOCASE
+          OR alternate = ? COLLATE NOCASE
+          OR pronunciation = ? COLLATE NOCASE`,
       [text, text, text],
     );
     addRows(rows);
@@ -727,7 +730,7 @@ export async function lookupOfflineManyByL2(
     if (missing.length === 0) return;
     const table = dictTableName(l2);
     const clauses = missing
-      .map(() => '(head = ? OR alternate = ? OR pronunciation = ?)')
+      .map(() => '(head = ? COLLATE NOCASE OR alternate = ? COLLATE NOCASE OR pronunciation = ? COLLATE NOCASE)')
       .join(' OR ');
     const params = missing.flatMap((t) => [t, t, t]);
     const rows = await db.getAllAsync<{
@@ -749,7 +752,12 @@ export async function lookupOfflineManyByL2(
         continue;
       }
       for (const text of missing) {
-        if (r.head !== text && r.alternate !== text && r.pronunciation !== text) continue;
+        const t = text.toLowerCase();
+        if (
+          r.head?.toLowerCase() !== t &&
+          r.alternate?.toLowerCase() !== t &&
+          r.pronunciation?.toLowerCase() !== t
+        ) continue;
         const seen = seenRaw.get(text) ?? new Set<string>();
         if (seen.has(r.entry_json)) continue;
         seen.add(r.entry_json);
