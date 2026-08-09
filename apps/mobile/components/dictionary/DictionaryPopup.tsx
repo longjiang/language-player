@@ -112,6 +112,8 @@ export function DictionaryPopup({
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scrollContentHeight, setScrollContentHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // ── Slide-up animation ──
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -308,6 +310,9 @@ export function DictionaryPopup({
   if (!visible && !wasVisible) return null;
 
   const popupHeight = isMd ? Math.min(screenHeight * 0.75, 640) : screenHeight * 0.75;
+  // pt-4 (16) + header mb-3 (12) + pb-8 (32) around the scroll area.
+  const FIXED_VERTICAL_SPACE = 60;
+  const maxScrollHeight = Math.max(0, popupHeight - headerHeight - FIXED_VERTICAL_SPACE);
 
   return (
     <DialogPrimitive.Root open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
@@ -335,15 +340,14 @@ export function DictionaryPopup({
             className={isMd ? 'w-full max-w-lg overflow-hidden rounded-xl bg-background' : 'rounded-t-xl bg-background'}
             style={{
               maxHeight: popupHeight,
-              minHeight: isMd ? undefined : screenHeight * 0.35,
             }}
           >
-            <View
-              className="px-4 pt-4 pb-8"
-              style={{ height: popupHeight }}
-            >
+            <View className="px-4 pt-4 pb-8">
               {/* Header — surface form as headline, lemma below when different */}
-              <View className="mb-3 flex-row items-center justify-between">
+              <View
+                className="mb-3 flex-row items-center justify-between"
+                onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+              >
                 <View className="flex-1 mr-2">
                   <View className="flex-row items-baseline gap-2 flex-wrap">
                     <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
@@ -370,9 +374,13 @@ export function DictionaryPopup({
 
               {/* Results */}
               <ScrollView
-                className="flex-1"
+                style={{
+                  flexShrink: 1,
+                  height: scrollContentHeight > 0 ? Math.min(scrollContentHeight, maxScrollHeight) : undefined,
+                }}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
+                onContentSizeChange={(_w, h) => setScrollContentHeight(h)}
               >
                 {linkUrl ? (
                   <Pressable
