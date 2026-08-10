@@ -900,6 +900,74 @@ legacy columns and old-id accept-and-map code.
 - `tmp/supabase-test/supabase-migrate.py`, `tmp/db-backup/`, and the SPEC-034
   migration tools — patterns and verification reference
 
+## Operational Notes (post-migration learnings)
+
+These are the Supabase-specific gotchas discovered while building SPEC-060's
+admin console against the migrated database. They are the first things to
+check when a new feature misbehaves against Supabase data.
+
+### Identity has two layers — always resolve both
+
+- `auth.users.id` (the JWT `sub` claim) is the canonical user id.
+- `public.user_id_map` maps legacy Directus numeric ids ↔ auth UUIDs (plus
+  email) for the ~75k imported users. Users registered after the GoTrue
+  cutover exist only in `auth.users`.
+- New endpoints must accept **both** forms (see
+  `routes/admin_users.py::_resolve_user_id` and
+  `utils_subscription.py::_user_by_email`). A UUID passes through; a numeric
+  id is looked up in `user_id_map` first.
+
+### `user_progress.l2` is ISO codes since 2026-08-04, but legacy rows may be numeric
+
+The WS-3 backfill originally stored Directus language ids; the
+2026-08-04 normalization switched the column to ISO codes (`'zh'`, `'ja'`…).
+Do **not** pass `user_progress.l2` straight into `languages.id` lookups —
+numeric rows must be mapped via `utils_user_data.lang_code_by_id`, and ISO
+codes pass through untouched (`routes/admin_users.py::_progress_l2_code`
+handles both). The same dual-form assumption applies anywhere else that
+accepts legacy ids.
+
+### `user_subscriptions.id` has no auto-increment default
+
+The WS-6 backfill copied Directus subscription ids explicitly, and the column
+was created without `bigserial`/identity. Any `insert into
+public.user_subscriptions` **must supply `id`** or Postgres fails with
+`null value in column "id" ... violates not-null constraint`.
+`utils_subscription.add_subscription` now assigns `max(id)+1` inside a
+`pg_advisory_xact_lock` transaction so concurrent inserts (Stripe/PayPal
+webhooks, admin grants) cannot collide.
+
+### CORS is per-origin and server-side calls bypass it
+
+Flask-CORS only adds headers for origins in `app.py`'s allowlist. Browser
+fetches from a new client origin fail with a CORS error even when the request
+would have succeeded; server-side fetches (e.g. NextAuth `authorize()`) have
+no CORS and can mask this. When adding a client app (the admin console uses
+`http://localhost:3100`), add its origin to the allowlist **and** verify the
+browser request actually carries `Authorization` — the two failures look
+identical from the console.
+
+### JWT verification, admin gating, and refresh rotation
+
+- Flask verifies Supabase access tokens on every authenticated request
+  (ES256 via JWKS, HS256 fallback via `SUPABASE_JWT_SECRET`) — see ADR-0023.
+- Admin routes gate on `app_metadata.is_admin` through
+  `utils_auth.require_admin()`; never rely on client-side flags alone.
+- Access tokens expire (~1h) and GoTrue refresh tokens rotate: concurrent
+  refreshes with the same token 401, so a single-flight refresh is required
+  (see `apps/web/src/components/api-client-provider.tsx` and
+  `apps/admin/src/components/session-token-mirror.tsx`). A dead refresh token
+  should clean-logout instead of retrying forever.
+
+### psycopg2 placeholder errors are literal
+
+`IndexError: tuple index out of range` from `cursor.execute` means the SQL has
+more `%s` placeholders than the params tuple — not a data problem. After
+fixing the count, verify **column order** too: a past bug cast `notes` as a
+`timestamptz` because the second `coalesce(..., now())` sat on the wrong
+column. Fake-cursor tests should assert both placeholder count and positional
+alignment (see `test_admin_users.py::test_add_subscription_sql_matches_params`).
+
 ## Open Questions
 
 1. Subs-search replacement: pg_trgm interim or embeddings before sunset?
