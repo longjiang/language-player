@@ -413,11 +413,11 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — Phase 0 mock suites pass (46 subscription +
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (50 subscription +
 18 admin + 21 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
-cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
-disposable-schema concurrency) are pending.
+cascade FKs); manual smoke and the remaining B-rows (disposable-schema
+concurrency) are pending.
 
 Scope:
 
@@ -471,12 +471,16 @@ Scope:
   safe (no crash; grant still succeeds)
 - ✅ B68 — admin grant/change/remove routes trigger MailerLite group sync
   through the shared `utils_subscription` path
+- ✅ B15 — legacy Directus numeric owner ids resolve through `user_id_map`
+  to the canonical auth UUID before insert
+- ✅ B16 — post-GoTrue users with no `user_id_map` row are found through
+  `auth.users` (`_user_by_email` / `_email_for_user`)
 
 **⬜ Not yet done:**
 
-- ⬜ B11–B16 — id reuse after delete, concurrent inserts, first-purchase race,
-  duplicate webhook delivery, legacy Directus remap (needs disposable schema;
-  the unique `payment_id` index and `ON CONFLICT` now exist)
+- ⬜ B11–B14 — id reuse after delete, concurrent inserts, first-purchase race,
+  duplicate webhook delivery (needs disposable schema; the unique
+  `payment_id` index and `ON CONFLICT` now exist)
 - ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
   app-level ban feature exists in the GoTrue flow
 - ⬜ B53 — `/go-pro-success` UI polling loop (backend covered; browser loop
@@ -495,14 +499,15 @@ Exit criteria:
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 46 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 50 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
   UUID + legacy numeric `user_id`), subscriber-not-found/empty-token fail-safe
-  (B66–B67), free-trial logic + GoTrue verify-email hook (B40–B43),
-  cancellation (B50–B52), admin expiry helpers (B70–B72), and payment
-  validation/price parity (B82–B88).
+  (B66–B67), legacy Directus remap + post-GoTrue auth.users lookup (B15–B16),
+  free-trial logic + GoTrue verify-email hook (B40–B43), cancellation
+  (B50–B52), admin expiry helpers (B70–B72), and payment validation/price
+  parity (B82–B88).
 - ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
