@@ -335,9 +335,9 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 |---|---|---|
 | B50 | Cancel a valid Stripe subscription | Stripe `cancel_at_period_end=true`; local `payment_customer_id` cleared; MailerLite group `disengaged`; `/user-subscription` no longer advertises auto-renew |
 | B51 | Cancel with a missing/invalid customer id | Defined 4xx (currently likely 500 on a Stripe error — fix or explicitly accept) |
-| B52 | Cancel a lifetime subscription / no customer id | API does not clear the lifetime row; frontends hide the cancel control |
-| B53 | `/go-pro-success` polling | After a grant, `/user-subscription` returns active within ~20s; success page flips to Pro |
-| B54 | Delete account while an auto-renewing subscription is active | Blocked until cancelled (SPEC-041) |
+| B52 | Cancel a lifetime subscription / no customer id | API does not clear the lifetime row — only the Stripe customer association is removed; missing `customer_id` → 400 |
+| B53 | `/go-pro-success` polling | Backend covered: after a grant, `/user-subscription` returns the active row; the ~20s UI polling loop stays a manual Phase 1 check |
+| B54 | Delete account while an auto-renewing subscription is active | Blocked with 409 until cancelled (SPEC-041); expired or lifetime rows do not block |
 | B55 | Delete account (no active auto-renew) | GoTrue user removed; `user_subscriptions`, `user_acquisition`, and `user_id_map` rows removed; MailerLite subscriber GDPR-forgotten via `/api/subscribers/{id}/forget`, best-effort and never blocking deletion (SPEC-039 M6, resolved 2026-08-10) |
 
 #### 2.6.7 MailerLite sync
@@ -413,8 +413,8 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — Phase 0 mock suites pass (45 subscription +
-18 admin + 19 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (46 subscription +
+18 admin + 21 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
 disposable-schema concurrency) are pending.
@@ -438,6 +438,10 @@ Scope:
   event → 400
 - ✅ B30–B33 — renewal expiry recompute (monthly +32d, annual +367d, early
   renewal resets rather than stacks, cancelled customer → 400 no re-grant)
+- ✅ B52 — lifetime cancel keeps the row (only `payment_customer_id` is
+  cleared); missing customer id → 400
+- ✅ B54 — delete-account returns 409 while an active auto-renewing
+  subscription exists; expired/lifetime rows don't block
 - ✅ B44 — wrong verification token_hash returns 400 and grants no trial
 - ✅ B46–B48 — acquisition persists via `/acquisition_survey` (B17); expired
   trial row returned by `/user-subscription`; MailerLite down during
@@ -475,8 +479,8 @@ Scope:
   the unique `payment_id` index and `ON CONFLICT` now exist)
 - ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
   app-level ban feature exists in the GoTrue flow
-- ⬜ B52–B54 — lifetime-cancel protection, success-page polling,
-  delete-account block
+- ⬜ B53 — `/go-pro-success` UI polling loop (backend covered; browser loop
+  stays manual)
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow; admin
@@ -491,22 +495,22 @@ Exit criteria:
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 45 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 46 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
   UUID + legacy numeric `user_id`), subscriber-not-found/empty-token fail-safe
   (B66–B67), free-trial logic + GoTrue verify-email hook (B40–B43),
-  cancellation (B50–B51), admin expiry helpers (B70–B72), and payment
+  cancellation (B50–B52), admin expiry helpers (B70–B72), and payment
   validation/price parity (B82–B88).
 - ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
-- ✅ `zerotohero-python-server/test_auth.py` — 19 auth-proxy tests including
+- ✅ `zerotohero-python-server/test_auth.py` — 21 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
   valid-access-token paths, wrong-token rejection with no trial (B44),
-  MailerLite-down verification success (B48), and delete-account MailerLite
-  GDPR-forget (B55).
+  MailerLite-down verification success (B48), delete-account block for active
+  auto-renew (B54), and delete-account MailerLite GDPR-forget (B55).
 - ✅ `zerotohero-python-server/test_phase0_webhooks.py` — 14 mocked Stripe
   webhook tests (B20–B33): checkout.session.completed grant/unpaid/missing
   reference/Payment-Link-no-customer, invoice.paid monthly/annual/early/
