@@ -318,7 +318,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 | # | Case | Expected result |
 |---|---|---|
-| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | Trial row created (`type=trial`, `expires_on` = +7d) and MailerLite subscriber created with `user_id` = auth UUID and group `trial` — hook implemented 2026-08-10 (SPEC-039 M1/M2); live smoke still pending |
+| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | Trial row created (`type=trial`, `expires_on` = +7d) and MailerLite subscriber created with `auth_user_id` = auth UUID (TEXT field) and group `trial` — hook implemented 2026-08-10 (SPEC-039 M1/M2); live smoke still pending |
 | B41 | Re-verify the same email | No second trial; no duplicate row |
 | B42 | User already has an active monthly or lifetime subscription | No trial granted |
 | B43 | User has an expired subscription | No trial granted — any existing subscription row (active, lifetime, or expired) blocks the trial |
@@ -344,7 +344,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 | # | Case | Expected result |
 |---|---|---|
-| B60 | New subscriber creation payload | `email`, `name`, `last_name`, `role`, `user_id` sent; group `trial` when a trial was granted |
+| B60 | New subscriber creation payload | `email`, `name`, `last_name`, `role` sent; `auth_user_id` = auth UUID (TEXT field) for GoTrue users; legacy numeric `user_id` only when a Directus id is known; group `trial` when a trial was granted |
 | B61 | `add_subscription` | Subscriber assigned to `trial` / `monthly` / `annual` / `lifetime` matching the row type |
 | B62 | `update_subscription` type change | Subscriber moved to the new group (e.g. monthly → lifetime) |
 | B63 | Monthly/annual row without `payment_customer_id` | Assigned `disengaged` |
@@ -435,6 +435,8 @@ Scope:
   200; rate-limited/unreachable Stripe returns 429/502; other Stripe errors
   return 400
 - ✅ B61–B65 — MailerLite group assignment on add/update/delete + failure isolation
+- ✅ B60 — MailerLite new-subscriber payload: `auth_user_id` UUID for GoTrue
+  users, legacy numeric `user_id` preserved when known
 - ✅ B70–B73 — admin expiry helpers (B70–B72) + admin remove (B73, existing
   `test_admin_users.py`)
 - ✅ B74 — admin search: basic query, admin gating, and SQL coverage for
@@ -454,7 +456,6 @@ Scope:
   acquisition persistence, trial expiry, MailerLite down, legacy routes)
 - ⬜ B52–B55 — lifetime-cancel protection, success-page polling,
   delete-account block + cleanup
-- ⬜ B60 — MailerLite new-subscriber creation payload
 - ⬜ B66–B68 — subscriber-not-found, missing `MAILER_LITE_TOKEN`, admin MailerLite path
 - ⬜ B82–B88 — invalid price/mode, missing success-callback params, unpaid
   session, price parity, PayPal params/unapproved, IAP missing fields
@@ -470,11 +471,12 @@ Exit criteria:
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 32 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 34 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
-  group sync (B10/B60–B65), free-trial logic + GoTrue verify-email hook
-  (B40–B43), cancellation (B50–B51), and admin expiry helpers (B70–B72).
+  group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
+  UUID + legacy numeric `user_id`), free-trial logic + GoTrue verify-email
+  hook (B40–B43), cancellation (B50–B51), and admin expiry helpers (B70–B72).
 - ✅ `zerotohero-python-server/test_auth.py` — 15 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
   and valid-access-token paths.

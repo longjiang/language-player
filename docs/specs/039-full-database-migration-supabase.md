@@ -1117,21 +1117,47 @@ end-to-end yet:
 numeric ids (or nothing), not GoTrue UUIDs, so MailerLite records cannot be
 joined to the migrated identity layer.
 
+**Backfill completed 2026-08-10:**
+
+- Added a TEXT `auth_user_id` field in MailerLite (field id `1420757`) so
+  `auth.users` UUIDs can be stored alongside the legacy NUMBER `user_id`.
+- Wrote `zerotohero-python-server/backfill_mailerlite_auth_user_id.py`:
+  sources the nine Language Player groups only (CZH groups are never used as
+  a source; a subscriber in both an LP and a CZH group is still updated
+  because they are also an LP user), across all statuses (active,
+  unsubscribed, bounced, junk, unconfirmed), deduped by subscriber id.
+- Mapping: numeric Directus `user_id` → `auth_user_id` via
+  `public.user_id_map`, with a `lower(email)` fallback to `user_id_map` +
+  `auth.users` (covers post-GoTrue signups).
+- Counts: **58,185 memberships** across the nine LP groups → **51,840 unique
+  subscribers**; **51,647 mapped via `user_id`**, **91 via email**,
+  **51,738 updated** (batched `PUT`s to `connect.mailerlite.com`, 50 per
+  call, 0 failures), **61 already correct** before the run. **41 remain
+  unresolved** (test accounts such as `test.*@zerotohero.ca`, junk emails
+  like `you@you.com`, and addresses absent from `auth.users`/`user_id_map`)
+  — see the backup JSON under `/tmp/mailerlite_auth_user_id_backup_*.json`.
+- `new_mailer_lite_subscriber` now writes `auth_user_id` (UUID) and keeps
+  the legacy numeric `user_id` only when a Directus id is known;
+  `grant_trial_and_enroll_mailerlite` passes `auth_user_id=user["id"]`.
+- SPEC-054 B60 payload unit tests added; the live GoTrue trial smoke (new
+  signup → MailerLite `trial` with a UUID) still needs a disposable user.
+
 **Recommended fixes (needed before T-complete):**
 
-1. Add a TEXT `user_id` / `auth_user_id` field in MailerLite (or convert the
-   existing field) so UUIDs can be stored.
-2. Backfill existing subscribers: map each numeric Directus `user_id` to
-   `auth_user_id` via `public.user_id_map` and update the MailerLite field;
-   resolve the 26 missing by email against `auth.users` / `user_id_map`
-   where possible.
-3. Update `new_mailer_lite_subscriber` to write the UUID (and stop relying
-   on the NUMBER field); verify group assignment still works.
-4. Reconcile LP groups after backfill (overlaps are documented in ARCH-022)
-   and add a SPEC-054 regression asserting a new GoTrue signup appears in
-   MailerLite `trial` with a UUID `user_id`.
-5. Keep CZH subscribers out of the backfill scope — they belong to the
-   Chinese Zero to Hero site, not Language Player.
+1. ✅ Add a TEXT `user_id` / `auth_user_id` field in MailerLite (or convert
+   the existing field) so UUIDs can be stored — done (`auth_user_id`).
+2. ✅ Backfill existing subscribers via `public.user_id_map` (email
+   fallback); 51,738 updated, 41 unresolved remain for manual review.
+3. ✅ Update `new_mailer_lite_subscriber` to write the UUID (legacy numeric
+   `user_id` kept only when known); group assignment verified by existing
+   B61–B65 tests.
+4. ⚠️ Reconcile LP groups after backfill (overlaps are documented in
+   ARCH-022) and add a SPEC-054 regression asserting a new GoTrue signup
+   appears in MailerLite `trial` with a UUID — unit payload tests added;
+   live smoke still pending a disposable user.
+5. ✅ Keep CZH subscribers out of the backfill scope — only the nine LP
+   groups were enumerated; shared LP+CZH subscribers were updated via their
+   LP membership.
 
 ### M3 — `user_subscriptions.id` allocation and webhook idempotency are not tested (resolved 2026-08-09)
 
@@ -1204,18 +1230,19 @@ assume “cascade” but there is no verification that:
 **Required**: add a delete-account regression to the 5.9 cycle and define
 MailerLite cleanup semantics (SPEC-041).
 
-### M7 — 5.9 does not reference the payment test matrix
+### M7 — 5.9 does not reference the payment test matrix (resolved 2026-08-10)
 
-WS-6 marks paid-event regression as “part of the 5.9 cross-app test cycle,” but
-5.9 never enumerates it. Reference [SPEC-054](054-subscription-payment-testing.md) and make
-its S/W/P/A + B1–B90 rows a prerequisite for T-complete.
+**Resolved 2026-08-10:** the 5.9 T-complete gate now references
+[SPEC-054](054-subscription-payment-testing.md) (S/W/P/A provider flows +
+B1–B90 backend/data-layer rows) as a prerequisite, including free-trial/
+MailerLite enrollment, id allocation/idempotency, and delete-account cleanup.
 
-### M8 — Sunset checklist is missing backend/mailer items
+### M8 — Sunset checklist is missing backend/mailer items (resolved 2026-08-10)
 
-The readiness checklist covers auth, counts, apps, Directus traffic, and saved-
-words scaffolding, but not: paid-event regression, free-trial/MailerLite
-enrollment, subscription id allocation/idempotency, delete-account cleanup, or
-removal of the legacy `/verification_email*` paths.
+**Resolved 2026-08-10:** the sunset readiness checklist now includes the
+payment test matrix (SPEC-054), free-trial/MailerLite enrollment, id
+allocation/idempotency, delete-account cleanup + MailerLite unsubscribe, and
+legacy `/verification_email*` removal.
 
 ## Open Questions
 
