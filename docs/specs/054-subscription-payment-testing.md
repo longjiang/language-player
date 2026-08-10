@@ -46,7 +46,7 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 | Web UI | `apps/web/src/app/[l1]/[l2]/go-pro/page.tsx`, `apps/web/src/lib/prices.ts` |
 | Mobile UI | `apps/mobile/app/(tabs)/(me)/go-pro.tsx`, `apps/mobile/lib/iap.ts`, `apps/mobile/app/go-pro-success.tsx`, `apps/mobile/app/go-pro-error.tsx` |
 | Backend | `zerotohero-python-server/routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `data/prices.csv` |
-| Backend data layer | `zerotohero-python-server/routes/subscriptions.py`, `utils_subscription.py`, `app_email_verification.py`, `utils_user_data.py` |
+| Backend data layer | `zerotohero-python-server/routes/subscriptions.py`, `utils_subscription.py`, `auto_verify_email.py`, `utils_user_data.py` |
 | MailerLite | `zerotohero-python-server/utils_mailer_lite.py` |
 | Admin | `zerotohero-python-server/routes/admin_users.py`, `apps/admin` |
 | Subscription state | `apps/web/src/providers/subscription-provider.tsx`, `apps/web/src/hooks/use-subscription.ts`, `apps/mobile/contexts/SubscriptionContext.tsx`, `apps/mobile/app/(tabs)/(me)/profile.tsx` |
@@ -327,7 +327,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B46 | Acquisition source submitted with verification | `user_acquisition` row saved with source/details |
 | B47 | Trial expiry | `/user-subscription` returns the expired trial row; frontends compute free; gates close |
 | B48 | MailerLite down during verification | Document/decide: current code calls MailerLite unwrapped, so verification may fail; consider isolating it |
-| B49 | Legacy `/verification_email` / `/verification_email/verify` routes | No active client calls them after GoTrue cutover; they still hit Directus (`app_email_verification.py`). Decide remove-or-migrate before decommission (SPEC-039 M5) |
+| B49 | Legacy `/verification_email` / `/verification_email/verify` routes | Resolved 2026-08-10: routes and `app_email_verification.py` removed (SPEC-039 M5); `verify_email@zerotohero.ca` support pipe migrated to GoTrue admin + `grant_trial_and_enroll_mailerlite` |
 
 #### 2.6.6 Cancellation & subscription management
 
@@ -444,6 +444,9 @@ Scope:
   (test_admin_users.py)
 - ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
 - ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
+- ✅ B49 — legacy `/verification_email*` routes removed (SPEC-039 M5); the
+  migrated `verify_email@zerotohero.ca` support pipe is covered by
+  `test_auto_verify_email.py`
 
 **⬜ Not yet done:**
 
@@ -452,8 +455,8 @@ Scope:
   the unique `payment_id` index and `ON CONFLICT` now exist)
 - ⬜ B20–B29 — webhook processing/idempotency (mocked Stripe events not written yet)
 - ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
-- ⬜ B44–B49 — verification edge cases (wrong code, banned email, re-verify,
-  acquisition persistence, trial expiry, MailerLite down, legacy routes)
+- ⬜ B44–B48 — verification edge cases (wrong code, banned email, re-verify,
+  acquisition persistence, trial expiry, MailerLite down)
 - ⬜ B52–B55 — lifetime-cancel protection, success-page polling,
   delete-account block + cleanup
 - ⬜ B66–B68 — subscriber-not-found, missing `MAILER_LITE_TOKEN`, admin MailerLite path
@@ -480,6 +483,10 @@ Exit criteria:
 - ✅ `zerotohero-python-server/test_auth.py` — 15 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
   and valid-access-token paths.
+- ✅ `zerotohero-python-server/test_auto_verify_email.py` — 4 tests covering
+  the migrated DreamHost support pipe: GoTrue admin confirm
+  (`email_confirm: true`) + trial/MailerLite enrollment, user-not-found,
+  GoTrue rejection, and unreachable GoTrue (B49/M5).
 - ✅ `zerotohero-python-server/test_phase0_schema.py` — 22 read-only Supabase
   schema checks, all passing: identity on all 19 converted tables, id defaults,
   cascade FKs to `auth.users` (M6), and the unique `payment_id` index (M3).
@@ -549,7 +556,7 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 | Before every App Store submission | A1–A7 + S1–S15 + W1–W7 + C1–C7 | Real iPhone (sandbox account) + simulators + browser | ~60 min |
 | Before every web release | S9–S15 + W5–W7 + C1, C5, C7 | Browser (test backend) | ~25 min |
 | After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S15, W1–W7, P1–P4, A1–A7 | As appropriate per change | ~45 min |
-| After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `app_email_verification.py`, `utils_mailer_lite.py`) | B1–B90 | CI/test schema (automated where possible) | ~30 min |
+| After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `auto_verify_email.py`, `utils_mailer_lite.py`) | B1–B90 | CI/test schema (automated where possible) | ~30 min |
 | Quarterly (renewal regression) | S13, C6 + test-mode renewals | Browser + real device | ~20 min |
 
 ---

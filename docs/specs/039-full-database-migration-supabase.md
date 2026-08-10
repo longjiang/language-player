@@ -93,7 +93,7 @@ Already in Supabase: video content family (SPEC-038) and saved words
 Flask's remaining Directus dependencies: `routes/auth.py`, `routes/user_data.py`,
 `routes/user_notes.py`, `routes/video.py`, `utils_directus.py`,
 `utils_subscription.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`,
-`app_in_app_purchase.py`, `app_email_verification.py`, `app_directus.py`.
+`app_in_app_purchase.py`, `app_directus.py`.
 
 ## Target Architecture
 
@@ -470,7 +470,7 @@ Flask; verify Pro gating before T-complete.
   and acquisition survey all write through it. **Note (M1/M2):** the free-trial
   and MailerLite subscriber-creation entry point is now the GoTrue
   `/auth/verify-email` path (resolved 2026-08-10); the legacy
-  `/verification_email` flow still exists as a fallback — see the
+  `/verification_email` HTTP flow was removed in M5 — see the
   [Post-Migration Audit](#post-migration-audit--missed-items--follow-ups-2026-08-09).
 - ✅ Verified read paths: user 1 (14 subs, lifetime) returns through
   `/user-subscription`; `get_subscription_by_id` and
@@ -872,8 +872,10 @@ T-complete → T+30):**
   idempotency verified; duplicate grants impossible (M3/M4).
 - [ ] Delete-account verified to remove subscription, acquisition, and
   `user_id_map` rows and to unsubscribe/remove the MailerLite subscriber (M6).
-- [ ] Legacy `/verification_email*` routes, `app_email_verification.py`, and
-  `auto_verify_email.py` removed or migrated off Directus (M5).
+- ✅ Legacy `/verification_email*` routes and `app_email_verification.py`
+  removed; `auto_verify_email.py` (`verify_email@zerotohero.ca` support pipe)
+  migrated to GoTrue admin + `grant_trial_and_enroll_mailerlite` (M5,
+  resolved 2026-08-10).
 - [ ] Zero `DIRECTUS_URL` / `directusvps` references in any app source.
 - [ ] Zero Directus traffic for 7 consecutive days.
 - [ ] Saved-words scaffolding removed.
@@ -909,7 +911,7 @@ legacy columns and old-id accept-and-map code.
 | Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B90 regression; id-allocation/idempotency fixes (M3/M4) |
 | New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2) — **resolved 2026-08-10** on `/auth/verify-email`; SPEC-054 regression rows cover it |
 | Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | Verify FK cascades; add explicit cleanup + MailerLite unsubscribe (M6) |
-| Legacy Directus verification code breaks decommission | Medium | Medium | Remove or migrate `/verification_email*`, `app_email_verification.py`, `auto_verify_email.py` (M5) |
+| Legacy Directus verification code breaks decommission | Medium | Medium | Resolved 2026-08-10: routes + module removed; `auto_verify_email.py` migrated to GoTrue/Supabase (M5) |
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; Mary/Bob regression per sub-phase |
 | Subs-search replacement not ready | Medium | Medium | pg_trgm interim; ship before WS-8 |
@@ -1051,12 +1053,12 @@ access-token paths). The trial is granted only when the user has no
 subscription row of any type (active, lifetime, or expired).
 
 The original caller of `give_free_trial_if_no_subscription_exists` was
-`app_email_verification.process_verified_user`, which is reached exclusively
-through the legacy `POST /verification_email` / `POST /verification_email/verify`
-routes (`routes/subscriptions.py`) and the DreamHost `auto_verify_email.py`
-script. No active web/mobile/Classic client calls those routes anymore —
-registration and verification go through `POST /auth/register` and
-`POST /auth/verify-email` (GoTrue), which **do not grant a trial**.
+`app_email_verification.process_verified_user`, reached only through the
+legacy `POST /verification_email` routes and the DreamHost
+`auto_verify_email.py` script. Those routes were removed and the support pipe
+was migrated to GoTrue/Supabase in M5 (2026-08-10). Active clients register
+and verify through `POST /auth/register` and `POST /auth/verify-email`
+(GoTrue), which **did not grant a trial** before M1 was fixed.
 
 **Impact**: new users who sign up after the GoTrue cutover get no 7-day free
 trial.
@@ -1200,14 +1202,24 @@ column has no `bigserial`/identity default (like `user_subscriptions`),
 every acquisition-survey submission after the migration will fail with a null
 violation. Verify the DDL and add a test.
 
-### M5 — Legacy Directus-backed email-verification code still exists
+### M5 — Legacy Directus-backed email-verification code still exists (resolved 2026-08-10)
 
-`app_email_verification.py` imports `utils_directus`, writes to Directus
-`items/email_verification`, and is still wired to `routes/subscriptions.py`
-(`/verification_email*`) plus `auto_verify_email.py`. It is unused by active
-clients, but it is Directus-dependent and would either fail or write to a dead
-source during decommission. It must be removed (or migrated to GoTrue/Supabase)
-before WS-8; `auto_verify_email.py` needs the same treatment.
+**Resolved 2026-08-10:** the `/verification_email*` HTTP routes and
+`app_email_verification.py` were removed — no active client used them.
+`auto_verify_email.py` (the `verify_email@zerotohero.ca` DreamHost support
+pipe) was rewritten to look up the user in `auth.users`, confirm their email
+through the GoTrue admin API (`email_confirm: true`), and call
+`grant_trial_and_enroll_mailerlite` so the trial + MailerLite enrollment
+behave exactly like `/auth/verify-email`. `/acquisition_survey` now imports
+`add_user_acquisition` from `utils_subscription` directly, and the legacy
+fixture tests/template were deleted. No remaining code path writes to
+Directus for verification. `test_auto_verify_email.py` covers the GoTrue
+admin confirm + trial/MailerLite enrollment paths of the support pipe.
+
+The removed module generated and stored verification codes in Directus
+(`items/email_verification`) and activated users through `utils_directus`.
+It was unused by active clients and would have written to a dead source
+during decommission.
 
 ### M6 — Delete-account cleanup is not verified (resolved 2026-08-09)
 
@@ -1250,8 +1262,9 @@ legacy `/verification_email*` removal.
 2. Classic PHP tools: which `LP_DIRECTUS_TOOLS_URL` endpoints are still used?
 3. Classic legacy columns (`saved_hits`, `saved_collocations`, `bookshelf`,
    `history`): row-level or JSONB until Classic retires?
-4. Email verification: GoTrue-native flows vs Flask codes? (M1/M5: where should
-   trial + MailerLite hooks live now that GoTrue owns verification?)
+4. **Resolved 2026-08-10:** GoTrue owns email verification; trial +
+   MailerLite hooks live on `/auth/verify-email` (M1) and in the migrated
+   `auto_verify_email.py` support pipe (M5). (M1/M5)
 5. Rollout signal for old-Classic bundles (for scaffolding teardown).
 6. Anonymous-local merge on web first login: ship or keep server-wins?
 7. **Resolved 2026-08-10:** the free trial is granted after `/auth/verify-email`
@@ -1264,5 +1277,6 @@ legacy `/verification_email*` removal.
    CASCADE` FKs. (M6)
 10. Should MailerLite `user_id` custom-field values be migrated from Directus
     numeric ids to auth UUIDs, or replaced by email-only segmentation? (M2)
-11. Remove or migrate the legacy `/verification_email*` routes,
-    `app_email_verification.py`, and `auto_verify_email.py` before WS-8? (M5)
+11. **Resolved 2026-08-10:** legacy `/verification_email*` routes +
+    `app_email_verification.py` removed; `auto_verify_email.py` migrated to
+    GoTrue/Supabase. (M5)
