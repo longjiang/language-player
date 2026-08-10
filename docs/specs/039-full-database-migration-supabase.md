@@ -6,7 +6,7 @@
 - **Status**: in-progress
 - **Created**: 2026-08-04 (split out of SPEC-034)
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (cross-cutting)
-- **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-038 (Video Content, complete)](038-video-content-supabase.md), [ADR-0021 (Video Content)](../adr/0021-migrate-video-content-to-supabase.md), [ADR-0023 (Proxy GoTrue Through Flask)](../adr/0023-proxy-supabase-auth-through-flask.md), [SPEC-024 (Consolidate Directus Calls)](024-consolidate-directus-calls.md)
+- **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-038 (Video Content, complete)](038-video-content-supabase.md), [ADR-0021 (Video Content)](../adr/0021-migrate-video-content-to-supabase.md), [ADR-0023 (Proxy GoTrue Through Flask)](../adr/0023-proxy-supabase-auth-through-flask.md), [SPEC-024 (Consolidate Directus Calls)](024-consolidate-directus-calls.md), [SPEC-054 (Payment Testing)](054-payment-testing.md), [SPEC-060 (Admin Console)](060-admin-console-user-management.md), [SPEC-041 (Delete Account)](041-delete-account.md), [ARCH-022 (Payment, Subscription & MailerLite)](../arch/022-payment-subscription-mailerlite.md)
 
 ## Overview
 
@@ -467,12 +467,18 @@ Flask; verify Pro gating before T-complete.
   response shapes; `owner` = Directus user id until 5.7; `user_id_map` for
   email→user lookups with Directus fallback). `/user-subscription`,
   admin update/check, Stripe/PayPal/IAP flows, webhook upserts, free trial,
-  and acquisition survey all write through it.
+  and acquisition survey all write through it. **Note (M1/M2):** the free-trial
+  and MailerLite subscriber-creation entry point is the legacy
+  `/verification_email` flow, which active clients no longer call — see the
+  [Post-Migration Audit](#post-migration-audit--missed-items--follow-ups-2026-08-09).
 - ✅ Verified read paths: user 1 (14 subs, lifetime) returns through
   `/user-subscription`; `get_subscription_by_id` and
   `get_subscription_by_payment_customer_id` resolve.
 - ⏳ Paid-event regression (Stripe/PayPal/IAP test transactions, free-vs-Pro
-  matrix) runs as part of the 5.9 cross-app test cycle.
+  matrix) runs as part of the 5.9 cross-app test cycle — see SPEC-054 2.6 for
+  the backend/data-layer rows (B1–B92), including id allocation, webhook
+  idempotency, free-trial/GoTrue, MailerLite sync, and delete-account cleanup
+  (M1–M4, M6–M7).
 
 ### WS-7 — Classic Directus Call Consolidation
 
@@ -662,9 +668,16 @@ Steps:
    Flask into Supabase.
 4. Free-vs-Pro regression matrix on web/mobile/Classic (limits, saved-words
    transcript access, dictionary features).
+5. Port the free-trial + MailerLite subscriber-creation hooks from the legacy
+   `/verification_email` flow into the GoTrue signup/verify path (M1/M2).
+6. Verify `user_subscriptions` id allocation (max(id)+1), concurrent-grant
+   idempotency, `user_acquisition.id` default, and delete-account cascade
+   (M3/M4/M6).
 
 **Acceptance**: `/user-subscription` returns correct state for Mary/Bob and
-paid test accounts; webhook events upsert rows; no payment regressions.
+paid test accounts; webhook events upsert rows exactly once; new GoTrue users
+receive the free trial and MailerLite enrollment; no payment regressions; the
+SPEC-054 2.6 backend matrix (B1–B92) passes against a disposable schema.
 
 **Rollback**: revert payment modules; keep Directus subscriptions until the
 cutover is proven.
@@ -824,7 +837,11 @@ assign-lesson-videos, phrasebook admin) and the formal 5.9 cross-app matrix.
 Steps:
 1. **T-complete gate**: full cross-app test matrix (login, saved words, SRS,
    progress, settings, watch history, likes, playlists, notes, subscriptions,
-   videos, search) on web/mobile/Classic with Mary/Bob + paid test accounts.
+   videos, search) on web/mobile/Classic with Mary/Bob + paid test accounts,
+   **plus** the payment matrix in [SPEC-054](054-payment-testing.md)
+   (S/W/P/A provider flows and backend/data-layer rows B1–B92), including
+   free-trial/GoTrue enrollment, MailerLite sync, subscription id allocation
+   and webhook idempotency, and delete-account cleanup (M1–M4, M6–M7).
 2. **30-day window**: monitor error rates, reconcile diffs, and Directus
    traffic; require 7 consecutive days of zero Directus traffic.
 3. **Teardown**: stop the sweep cron, remove mirror/reconciler code, drop
@@ -847,6 +864,14 @@ T-complete → T+30):**
 - [ ] Every remaining table migrated with matching counts; user-data remapped
   to `auth.users.id`.
 - [ ] Full cross-app test cycle passed (Mary/Bob + regression on all apps).
+- [ ] Payment test matrix passed (SPEC-054 S/W/P/A + B1–B92), including
+  free-trial/MailerLite enrollment for new GoTrue users.
+- [ ] `user_subscriptions` / `user_acquisition` id allocation and webhook
+  idempotency verified; duplicate grants impossible (M3/M4).
+- [ ] Delete-account verified to remove subscription, acquisition, and
+  `user_id_map` rows and to unsubscribe/remove the MailerLite subscriber (M6).
+- [ ] Legacy `/verification_email*` routes, `app_email_verification.py`, and
+  `auto_verify_email.py` removed or migrated off Directus (M5).
 - [ ] Zero `DIRECTUS_URL` / `directusvps` references in any app source.
 - [ ] Zero Directus traffic for 7 consecutive days.
 - [ ] Saved-words scaffolding removed.
@@ -866,6 +891,12 @@ legacy columns and old-id accept-and-map code.
   old-id mapping view until decommission.
 - Draft users must verify email before login (GoTrue blocks unconfirmed).
 - Payments/Pro gating must be verified before decommission.
+- New GoTrue signups must still receive the free trial and MailerLite
+  enrollment (M1/M2).
+- Delete-account must clean subscription/acquisition/`user_id_map` rows and
+  the MailerLite subscriber (M6).
+- Concurrent first purchase (success callback + webhook) must not create
+  duplicate subscription rows (M3).
 
 ## Risks & Mitigations
 
@@ -873,7 +904,10 @@ legacy columns and old-id accept-and-map code.
 |---|---|---|---|
 | Migration drags on / testing gaps | Medium | High | Parallel workstreams; T-complete gated on the test cycle; no fixed calendar |
 | Auth import breaks passwords | Low (tested) | High | `$2y$` verified compatible; `user_id_map` for recovery; smoke import applied |
-| Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; free-vs-Pro regression across apps |
+| Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B92 regression; id-allocation/idempotency fixes (M3/M4) |
+| New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2); add SPEC-054 regression rows |
+| Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | Verify FK cascades; add explicit cleanup + MailerLite unsubscribe (M6) |
+| Legacy Directus verification code breaks decommission | Medium | Medium | Remove or migrate `/verification_email*`, `app_email_verification.py`, `auto_verify_email.py` (M5) |
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; Mary/Bob regression per sub-phase |
 | Subs-search replacement not ready | Medium | Medium | pg_trgm interim; ship before WS-8 |
@@ -887,6 +921,9 @@ legacy columns and old-id accept-and-map code.
 3. Zero Directus traffic for 7 consecutive days; decommission at T+30 with an
    archived final backup.
 4. Zero planned downtime; every phase rolls back with a revert.
+5. New GoTrue signups receive the free trial and MailerLite enrollment;
+   payment/subscription backend rows (SPEC-054 B1–B92) pass against a
+   disposable schema; delete-account cleans all user data (M1–M4, M6–M7).
 
 ## Dependencies
 
@@ -897,6 +934,10 @@ legacy columns and old-id accept-and-map code.
   contract
 - `docs/adr/0023-proxy-supabase-auth-through-flask.md` — auth decision
 - `docs/specs/024-consolidate-directus-calls.md` — Flask-as-single-gateway
+- `docs/specs/054-payment-testing.md` — payment/subscription backend matrix
+- `docs/specs/060-admin-console-user-management.md` — admin API + operational notes
+- `docs/specs/041-delete-account.md` — delete-account flow to extend with cleanup
+- `docs/arch/022-payment-subscription-mailerlite.md` — payment/subscription/MailerLite as-built
 - `tmp/supabase-test/supabase-migrate.py`, `tmp/db-backup/`, and the SPEC-034
   migration tools — patterns and verification reference
 
@@ -968,12 +1009,123 @@ fixing the count, verify **column order** too: a past bug cast `notes` as a
 column. Fake-cursor tests should assert both placeholder count and positional
 alignment (see `test_admin_users.py::test_add_subscription_sql_matches_params`).
 
+## Post-Migration Audit — Missed Items & Follow-ups (2026-08-09)
+
+An audit of the payment/subscription pipeline after the WS-6/5.7 cutover found
+several gaps that are not covered by the original workstreams, acceptance
+criteria, or sunset checklist. Fixes/decisions are required before T-complete.
+
+### M1 — Free trial is not granted in the GoTrue signup/verify flow
+
+The only caller of `give_free_trial_if_no_active_subscription_exists` is
+`app_email_verification.process_verified_user`, which is reached exclusively
+through the legacy `POST /verification_email` / `POST /verification_email/verify`
+routes (`routes/subscriptions.py`) and the DreamHost `auto_verify_email.py`
+script. No active web/mobile/Classic client calls those routes anymore —
+registration and verification go through `POST /auth/register` and
+`POST /auth/verify-email` (GoTrue), which **do not grant a trial**.
+
+**Impact**: new users who sign up after the GoTrue cutover get no 7-day free
+trial.
+
+**Required**: move the trial grant into the GoTrue signup/verify path (e.g.
+after `/auth/verify-email` or on first confirmed login), or explicitly decide
+to drop the free trial.
+
+### M2 — MailerLite is absent from the migration scope
+
+`SPEC-039` never mentions MailerLite. The mailing list is coupled to the
+migrated code in three ways:
+
+- New subscriber creation happens only in `process_verified_user` (same dead
+  legacy path as M1), so **new GoTrue users are never added to MailerLite**.
+- Existing MailerLite subscribers store `user_id` as a Directus numeric id;
+  post-GoTrue users have auth UUIDs. No plan exists to migrate/reconcile the
+  `user_id` custom field.
+- `assign_mailer_lite_subscriber_to_group` only works for emails that already
+  exist as MailerLite subscribers; for everyone else it fails silently.
+
+**Required**: define MailerLite as part of the migration (subscriber creation
+on GoTrue signup/verify, `user_id` field strategy, group sync verification,
+and behavior when a subscriber does not exist).
+
+### M3 — `user_subscriptions.id` allocation and webhook idempotency are not tested
+
+The operational note documents `max(id)+1` with an advisory lock, but:
+
+- The lock only guards the id select inside `add_subscription`; the
+  check-then-insert in `update_or_add_subscription` is not atomic, so two
+  concurrent first purchases (success redirect + webhook) can still create
+  duplicate rows.
+- No unique constraint or idempotency key on `payment_id` /
+  `payment_customer_id` is visible in the migration tooling or data layer
+  (verify the DDL).
+- Neither the WS-6 acceptance nor the 5.9 test cycle covers id allocation,
+  concurrency, or duplicate webhook delivery.
+
+**Required**: add these cases to the 5.9 cycle (see SPEC-054 B10–B14/B20–B29)
+and decide on a unique index/idempotency key before relying on webhook retries.
+
+### M4 — `user_acquisition.id` default is unverified
+
+The WS-6 backfill inserts explicit Directus ids into `user_acquisition`
+(`tmp/supabase-subscriptions-migrate.py`), but
+`utils_subscription.add_user_acquisition` inserts without an `id`. If the
+column has no `bigserial`/identity default (like `user_subscriptions`),
+every acquisition-survey submission after the migration will fail with a null
+violation. Verify the DDL and add a test.
+
+### M5 — Legacy Directus-backed email-verification code still exists
+
+`app_email_verification.py` imports `utils_directus`, writes to Directus
+`items/email_verification`, and is still wired to `routes/subscriptions.py`
+(`/verification_email*`) plus `auto_verify_email.py`. It is unused by active
+clients, but it is Directus-dependent and would either fail or write to a dead
+source during decommission. It must be removed (or migrated to GoTrue/Supabase)
+before WS-8; `auto_verify_email.py` needs the same treatment.
+
+### M6 — Delete-account cleanup is not verified
+
+`DELETE /auth/delete-account` only deletes the GoTrue user. SPEC-039/SPEC-041
+assume “cascade” but there is no verification that:
+
+- `user_subscriptions`, `user_acquisition`, and `user_id_map` rows are removed
+  (FK cascade may not exist for all tables).
+- The MailerLite subscriber is unsubscribed/removed (no code does this today).
+
+**Required**: add a delete-account regression to the 5.9 cycle and define
+MailerLite cleanup semantics (SPEC-041).
+
+### M7 — 5.9 does not reference the payment test matrix
+
+WS-6 marks paid-event regression as “part of the 5.9 cross-app test cycle,” but
+5.9 never enumerates it. Reference [SPEC-054](054-payment-testing.md) and make
+its S/W/P/A + B1–B92 rows a prerequisite for T-complete.
+
+### M8 — Sunset checklist is missing backend/mailer items
+
+The readiness checklist covers auth, counts, apps, Directus traffic, and saved-
+words scaffolding, but not: paid-event regression, free-trial/MailerLite
+enrollment, subscription id allocation/idempotency, delete-account cleanup, or
+removal of the legacy `/verification_email*` paths.
+
 ## Open Questions
 
 1. Subs-search replacement: pg_trgm interim or embeddings before sunset?
 2. Classic PHP tools: which `LP_DIRECTUS_TOOLS_URL` endpoints are still used?
 3. Classic legacy columns (`saved_hits`, `saved_collocations`, `bookshelf`,
    `history`): row-level or JSONB until Classic retires?
-4. Email verification: GoTrue-native flows vs Flask codes?
+4. Email verification: GoTrue-native flows vs Flask codes? (M1/M5: where should
+   trial + MailerLite hooks live now that GoTrue owns verification?)
 5. Rollout signal for old-Classic bundles (for scaffolding teardown).
 6. Anonymous-local merge on web first login: ship or keep server-wins?
+7. Where should the free trial be granted now — after GoTrue signup, after
+   `/auth/verify-email`, or on first confirmed login? (M1)
+8. Does `user_acquisition.id` have a `bigserial`/identity default after the
+   backfill? `add_user_acquisition` does not supply an id. (M4)
+9. Does deleting an `auth.users` row cascade to `user_subscriptions`,
+   `user_acquisition`, and `user_id_map`? (M6)
+10. Should MailerLite `user_id` custom-field values be migrated from Directus
+    numeric ids to auth UUIDs, or replaced by email-only segmentation? (M2)
+11. Remove or migrate the legacy `/verification_email*` routes,
+    `app_email_verification.py`, and `auto_verify_email.py` before WS-8? (M5)
