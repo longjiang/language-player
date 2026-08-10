@@ -437,8 +437,9 @@ Scope:
 - ✅ B61–B65 — MailerLite group assignment on add/update/delete + failure isolation
 - ✅ B70–B73 — admin expiry helpers (B70–B72) + admin remove (B73, existing
   `test_admin_users.py`)
-- ⚠️ B74 — admin search: basic query + admin gating automated; payment-id /
-  customer-id / legacy-id search cases still pending
+- ✅ B74 — admin search: basic query, admin gating, and SQL coverage for
+  payment-id / customer-id / legacy Directus id / payment-email search
+  (test_admin_users.py)
 - ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
 - ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
 
