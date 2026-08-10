@@ -282,10 +282,10 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | # | Case | Expected result |
 |---|---|---|
 | B10 | Seed `user_subscriptions` with max id `30669` (Directus backfill scale), then insert a new subscription | New row gets id `30670` |
-| B11 | Delete the current max-id row, then insert | New id comes from the identity sequence (not `max(remaining)+1`); no collision or constraint error |
-| B12 | Two concurrent `add_subscription` calls for different users | Both succeed with unique ids (identity sequence; manual `max(id)+1` / advisory lock removed 2026-08-09) |
-| B13 | Concurrent first purchase for the same user (success callback + webhook race) | Exactly one subscription row — partial unique `payment_id` index + `ON CONFLICT` added 2026-08-09; disposable-schema race test still pending |
-| B14 | Same Stripe event / `payment_id` delivered twice sequentially | Second delivery updates the existing row (`get_subscription_by_payment_id` + `ON CONFLICT`); no duplicate row |
+| ⚠️ B11 | Delete the current max-id row, then insert | New id comes from the identity sequence (not `max(remaining)+1`); no collision or constraint error — **deferred**: needs disposable-schema harness |
+| ⚠️ B12 | Two concurrent `add_subscription` calls for different users | Both succeed with unique ids (identity sequence; manual `max(id)+1` / advisory lock removed 2026-08-09) — **deferred**: needs disposable-schema harness |
+| ⚠️ B13 | Concurrent first purchase for the same user (success callback + webhook race) | Exactly one subscription row — partial unique `payment_id` index + `ON CONFLICT` added 2026-08-09 — **deferred**: needs disposable-schema harness |
+| ⚠️ B14 | Same Stripe event / `payment_id` delivered twice sequentially | Second delivery updates the existing row (`get_subscription_by_payment_id` + `ON CONFLICT`); no duplicate row — **deferred**: needs disposable-schema harness |
 | B15 | Backfilled row with a legacy Directus numeric owner id | Resolved through `user_id_map`; `/user-subscription` and admin detail return the canonical auth UUID |
 | B16 | Post-GoTrue user with no `user_id_map` entry | Found via `auth.users` email lookup (`_user_by_email` / `_email_for_user`) |
 | B17 | `POST /acquisition_survey` for a fresh user | Row saved **without an explicit id**; verifies `user_acquisition.id` has a real default (SPEC-039 M4 — fixed 2026-08-09) |
@@ -336,7 +336,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B50 | Cancel a valid Stripe subscription | Stripe `cancel_at_period_end=true`; local `payment_customer_id` cleared; MailerLite group `disengaged`; `/user-subscription` no longer advertises auto-renew |
 | B51 | Cancel with a missing/invalid customer id | Defined 4xx (currently likely 500 on a Stripe error — fix or explicitly accept) |
 | B52 | Cancel a lifetime subscription / no customer id | API does not clear the lifetime row — only the Stripe customer association is removed; missing `customer_id` → 400 |
-| B53 | `/go-pro-success` polling | Backend covered: after a grant, `/user-subscription` returns the active row; the ~20s UI polling loop stays a manual Phase 1 check |
+| B53 | `/go-pro-success` polling | Backend covered with a mocked paid `/stripe_checkout_success` (grant + redirect) and `/user-subscription` returning the active row; the ~20s browser polling loop stays a manual Phase 1 check |
 | B54 | Delete account while an auto-renewing subscription is active | Blocked with 409 until cancelled (SPEC-041); expired or lifetime rows do not block |
 | B55 | Delete account (no active auto-renew) | GoTrue user removed; `user_subscriptions`, `user_acquisition`, and `user_id_map` rows removed; MailerLite subscriber GDPR-forgotten via `/api/subscribers/{id}/forget`, best-effort and never blocking deletion (SPEC-039 M6, resolved 2026-08-10) |
 
@@ -413,7 +413,7 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — Phase 0 mock suites pass (50 subscription +
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (51 subscription +
 18 admin + 21 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (disposable-schema
@@ -463,6 +463,9 @@ Scope:
   (302 error redirect), unpaid Stripe session (no grant), price parity vs
   `prices.csv`, PayPal missing params/unapproved (no grant), IAP missing
   fields (400)
+- ✅ B53 backend — mocked paid `/stripe_checkout_success` grants the
+  subscription and redirects to `/go-pro-success`; `/user-subscription`
+  returns the active row — no real payment needed
 - ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
 - ✅ B49 — legacy `/verification_email*` routes removed (SPEC-039 M5); the
   migrated `verify_email@zerotohero.ca` support pipe is covered by
@@ -478,13 +481,14 @@ Scope:
 
 **⬜ Not yet done:**
 
-- ⬜ B11–B14 — id reuse after delete, concurrent inserts, first-purchase race,
-  duplicate webhook delivery (needs disposable schema; the unique
-  `payment_id` index and `ON CONFLICT` now exist)
+- ⚠️ B11–B14 — id reuse after delete, concurrent inserts, first-purchase race,
+  duplicate webhook delivery — **deferred to a later phase**: requires the
+  disposable-schema harness (the unique `payment_id` index and `ON CONFLICT`
+  already exist; mocked coverage for the surrounding logic is green)
 - ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
   app-level ban feature exists in the GoTrue flow
-- ⬜ B53 — `/go-pro-success` UI polling loop (backend covered; browser loop
-  stays manual)
+- ⬜ B53 — `/go-pro-success` browser polling loop only (backend covered by
+  mocked tests)
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow; admin
@@ -499,15 +503,16 @@ Exit criteria:
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 50 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 51 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
   UUID + legacy numeric `user_id`), subscriber-not-found/empty-token fail-safe
   (B66–B67), legacy Directus remap + post-GoTrue auth.users lookup (B15–B16),
   free-trial logic + GoTrue verify-email hook (B40–B43), cancellation
-  (B50–B52), admin expiry helpers (B70–B72), and payment validation/price
-  parity (B82–B88).
+  (B50–B52), mocked paid/unpaid success callbacks (B53 backend/B84),
+  admin expiry helpers (B70–B72), and payment validation/price parity
+  (B82–B88).
 - ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
