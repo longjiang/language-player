@@ -545,14 +545,20 @@ Exit criteria:
   fixture updated from the legacy Directus duplicate-key shape), Stripe/IAP
   success callbacks with legacy-id resolution.
 
-**Still manual / needs a disposable schema:**
+**Live smokes (disposable user, completed 2026-08-10):**
 
-- ⬜ GoTrue free-trial + MailerLite live smoke (hook implemented; needs a
-  disposable/fresh user to observe end-to-end)
-- ⬜ Concurrency/idempotency against a real schema (B12–B14)
-- ⬜ Live delete-account cascade (B55; MailerLite forget + GoTrue delete are
-  mocked and passing)
-- ⬜ Live MailerLite group movement
+- ✅ GoTrue free-trial + MailerLite live smoke — disposable user
+  `lp-smoke-1786398358@zerotohero.ca`: trial row `active` (+7d) and MailerLite
+  subscriber in `trial` with the correct `auth_user_id` UUID.
+- ✅ Live MailerLite group movement — admin grant/change/delete moved the
+  subscriber through `monthly` → `annual` → `lifetime` → `disengaged`
+  (verified via the MailerLite connect API).
+- ✅ Live delete-account cascade (B55) — `DELETE /auth/delete-account` returned
+  200; `auth.users`, `user_subscriptions`, `user_acquisition` rows gone;
+  MailerLite lookup 404 (GDPR-forgotten).
+- ⚠️ Concurrency/idempotency against a real schema (B12–B14) — still deferred:
+  needs the disposable-schema harness (local Postgres, Supabase preview
+  branch, or a dedicated temp schema).
 
 ### Phase 1 — Classic (Nuxt) payment E2E — first frontend
 
