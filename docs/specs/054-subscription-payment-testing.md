@@ -296,12 +296,12 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 |---|---|---|
 | B20 | Valid `checkout.session.completed` with `payment_status=paid` | Grant created/updated; `client_reference_id` → owner; `payment_customer_id` and `payment_email` stored |
 | B21 | `checkout.session.completed` with `payment_status != paid` | 400; no grant |
-| B22 | `checkout.session.completed` missing `client_reference_id` | Defined error / no grant (current code would attempt an empty owner — verify behavior) |
+| B22 | `checkout.session.completed` missing `client_reference_id` | 400 `Missing client_reference_id`; no grant |
 | B23 | Payment Link webhook with `session.customer = null` | Grant still succeeds via `customer_details.email`; `payment_customer_id` null; MailerLite group mapping verified |
 | B24 | `invoice.paid` for a known Stripe customer | Expiry set to now + 32d (monthly) / 367d (annual); `payment_date` and notes updated |
 | B25 | `invoice.paid` with an unknown customer id | 400 “Subscription not found”; no crash |
 | B26 | `invoice.paid` when the local row has no owner but has `payment_email` | Owner resolved from email; renewal succeeds |
-| B27 | `invoice.paid` with an unknown price id / type | No crash; handler logs and returns (currently still 200 with a null result — decide intended behavior) |
+| B27 | `invoice.paid` with an unknown price id / type | 400 `Unknown subscription type`; no crash |
 | B28 | Webhook with an invalid or missing Stripe signature | 400; no grant |
 | B29 | Webhook with an unexpected event type | 400 |
 
@@ -414,7 +414,7 @@ Do not start provider payment E2E until Phase 0 is green.
 admin, and MailerLite behavior before any payment is made.
 
 **Status: ⚠️ In progress** — Phase 0 mock suites pass (45 subscription +
-18 admin + 19 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+18 admin + 19 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
 disposable-schema concurrency) are pending.
@@ -430,6 +430,14 @@ Scope:
   identity (M4 fixed); endpoint test passes against live Supabase
 - ✅ B40–B43 — free-trial helper logic + GoTrue verify-email hook
   (`grant_trial_and_enroll_mailerlite`; any existing subscription blocks)
+- ✅ B20–B29 — Stripe webhook processing: paid checkout grants with
+  `client_reference_id` → owner and customer/email storage; unpaid + missing
+  `client_reference_id` → 400 no grant; Payment Link with `customer=null`
+  still grants via `customer_details.email`; invoice.paid renewal/unknown
+  customer/unknown price → defined 400s; invalid payload/signature/unexpected
+  event → 400
+- ✅ B30–B33 — renewal expiry recompute (monthly +32d, annual +367d, early
+  renewal resets rather than stacks, cancelled customer → 400 no re-grant)
 - ✅ B44 — wrong verification token_hash returns 400 and grants no trial
 - ✅ B46–B48 — acquisition persists via `/acquisition_survey` (B17); expired
   trial row returned by `/user-subscription`; MailerLite down during
@@ -465,8 +473,6 @@ Scope:
 - ⬜ B11–B16 — id reuse after delete, concurrent inserts, first-purchase race,
   duplicate webhook delivery, legacy Directus remap (needs disposable schema;
   the unique `payment_id` index and `ON CONFLICT` now exist)
-- ⬜ B20–B29 — webhook processing/idempotency (mocked Stripe events not written yet)
-- ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
 - ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
   app-level ban feature exists in the GoTrue flow
 - ⬜ B52–B54 — lifetime-cancel protection, success-page polling,
@@ -501,6 +507,11 @@ Exit criteria:
   valid-access-token paths, wrong-token rejection with no trial (B44),
   MailerLite-down verification success (B48), and delete-account MailerLite
   GDPR-forget (B55).
+- ✅ `zerotohero-python-server/test_phase0_webhooks.py` — 14 mocked Stripe
+  webhook tests (B20–B33): checkout.session.completed grant/unpaid/missing
+  reference/Payment-Link-no-customer, invoice.paid monthly/annual/early/
+  unknown-customer/no-owner/unknown-price/cancelled, invalid payload,
+  invalid signature, and unexpected event type.
 - ✅ `zerotohero-python-server/test_auto_verify_email.py` — 4 tests covering
   the migrated DreamHost support pipe: GoTrue admin confirm
   (`email_confirm: true`) + trial/MailerLite enrollment, user-not-found,
