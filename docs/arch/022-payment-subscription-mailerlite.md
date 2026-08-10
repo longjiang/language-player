@@ -27,7 +27,7 @@
   - `zerotohero-python-server/utils_subscription.py` — subscription CRUD + MailerLite group sync
   - `zerotohero-python-server/utils_mailer_lite.py` — MailerLite API helpers
   - `zerotohero-python-server/utils_subscription.py` — free trial + MailerLite enrollment (hooked into `/auth/verify-email`)
-  - `zerotohero-python-server/app_email_verification.py` — legacy verification flow
+  - `zerotohero-python-server/auto_verify_email.py` — DreamHost support pipe (GoTrue-backed, SPEC-039 M5)
   - `zerotohero-python-server/data/prices.csv` — price definitions
 
 ---
@@ -217,8 +217,10 @@ signup → POST /auth/register
 ```
 
 Enrollment failures are logged and never fail the verification response. The
-legacy `/verification_email*` flow still exists and uses the same trial helper,
-but active clients go through GoTrue.
+legacy `/verification_email*` HTTP flow was removed in SPEC-039 M5. The only
+survivor is the DreamHost support pipe (`auto_verify_email.py`, reached via
+`verify_email@zerotohero.ca`), which confirms the user through the GoTrue
+admin API and calls the same `grant_trial_and_enroll_mailerlite` hook.
 
 ---
 
@@ -424,8 +426,6 @@ Ways to mitigate:
 | POST | `/in_app_purchase_success` | Validate Apple receipt, grant lifetime | Public (app call) |
 | GET | `/user-subscription` | Return current subscription | Supabase JWT |
 | POST | `/cancel-subscription-at-end-of-period` | Cancel Stripe subscription at period end | Public (app call) |
-| POST | `/verification_email` | Send verification code — **legacy/unused by active clients** (still Directus-backed; see SPEC-039 M5) | Public |
-| POST | `/verification_email/verify` | Verify code, activate user, grant trial, create MailerLite subscriber — **legacy/unused by active clients** | Public |
 | POST | `/admin/update_or_add_subscription` | Legacy admin upsert by email | Ungated (Classic compat; see ADR-0032) |
 | GET | `/admin/check_user_subscription?email=` | Legacy admin lookup | Ungated |
 | POST | `/admin/users/<user_id>/subscriptions` | Admin grant | Admin JWT |
