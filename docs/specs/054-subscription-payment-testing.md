@@ -147,7 +147,12 @@ Reference: <https://developer.paypal.com/sandbox-testing/overview>. PayPal sandb
 1. Create a **business** (merchant) sandbox account and a **personal** (buyer) sandbox account at <https://developer.paypal.com/developer/accounts>.
 2. Set `PAYPAL_SANDBOX_CLIENT_ID` and `PAYPAL_SANDBOX_SECRET` env vars to the **sandbox business app's** credentials (the existing `PAYPAL_CLIENT_ID`/`PAYPAL_SECRET` in `.env` are **live** credentials — do not overwrite them).
 3. ✅ Backend sandbox switch implemented 2026-08-10: `PAYPAL_MODE=sandbox` makes `app_paypal_checkout.py` use `https://api-m.sandbox.paypal.com` plus the sandbox credentials; default stays live. (PayPal's Payments v1 API is deprecated — see Open Questions.)
-4. **Required local edit (precondition):** `PurchasePayPal.vue` hardcodes `env="production"` (though it already carries `sandbox` client credentials). Switch to `env="sandbox"` locally, or make it follow the `TEST` flag. **Never ship `env="sandbox"` in production.**
+4. ✅ Client ids + env moved out of source (2026-08-10): `PurchasePayPal.vue`
+   now reads `PAYPAL_ENV`, `PAYPAL_SANDBOX_CLIENT_ID`, and `PAYPAL_CLIENT_ID`
+   from `.env` (via `nuxt.config.js` env block; production id has a fallback).
+   Local sandbox testing: set `PAYPAL_ENV=sandbox` and
+   `PAYPAL_SANDBOX_CLIENT_ID` in `zerotohero-nuxt/.env`, then restart Classic.
+   **Never ship `PAYPAL_ENV=sandbox` in production.**
 5. In Classic go-pro, choose Lifetime → PayPal, log in as the sandbox **buyer** account, approve the payment.
 6. Expected: Classic redirects to `{PYTHON_SERVER}/paypal_checkout_success?pay_id=...&user_id=...&host=...`; backend verifies `state == 'approved'` and grants a **lifetime** subscription (`expires_on` null, `payment_processor = 'paypal'`); user lands on `/go-pro-success`.
 7. Cancel test: abandon/close the PayPal approval dialog → user returns to go-pro with the cancelled/error message; no subscription record.
