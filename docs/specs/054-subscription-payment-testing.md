@@ -415,8 +415,9 @@ admin, and MailerLite behavior before any payment is made.
 
 **Status: ⚠️ In progress** — 58+ Phase 0 tests pass and all 22 schema checks are
 green (M3 idempotency key and M6 cascade FKs are in place); the
-acquisition-survey 500 and the cancel-at-period-end logging crash are fixed
-(invalid Stripe customer is now a no-op 200); manual items pending.
+acquisition-survey 500 and the cancel-at-period-end error handling are fixed
+(unknown Stripe customer = no-op 200, Stripe failures = 429/502/400);
+manual items pending.
 
 Scope:
 
@@ -439,8 +440,9 @@ Scope:
 
 **⚠️ Partial / known gaps (coverage exists but behavior is not green):**
 
-- ✅ B51 — cancel with invalid customer id is a no-op 200 (unknown customers
-  are treated as already-canceled; no 500 crash)
+- ✅ B51 — cancel with unknown Stripe customer (`resource_missing`) is a no-op
+  200; rate-limited/unreachable Stripe returns 429/502; other Stripe errors
+  return 400
 
 **❌ Failing / blocked:**
 
