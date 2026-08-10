@@ -149,10 +149,11 @@ Reference: <https://developer.paypal.com/sandbox-testing/overview>. PayPal sandb
 3. ✅ Backend sandbox switch implemented 2026-08-10: `PAYPAL_MODE=sandbox` makes `app_paypal_checkout.py` use `https://api-m.sandbox.paypal.com` plus the sandbox credentials; default stays live. (PayPal's Payments v1 API is deprecated — see Open Questions.)
 4. ✅ Client ids + env moved out of source (2026-08-10): `PurchasePayPal.vue`
    now reads `PAYPAL_ENV`, `PAYPAL_SANDBOX_CLIENT_ID`, and `PAYPAL_CLIENT_ID`
-   from `.env` (via `nuxt.config.js` env block; production id has a fallback).
-   Local sandbox testing: set `PAYPAL_ENV=sandbox` and
-   `PAYPAL_SANDBOX_CLIENT_ID` in `zerotohero-nuxt/.env`, then restart Classic.
-   **Never ship `PAYPAL_ENV=sandbox` in production.**
+   from `.env` (via `nuxt.config.js` env block; hardcoded fallbacks removed
+   2026-08-10 — `PAYPAL_CLIENT_ID` is required on the Netlify production
+   build, which has it set). Local sandbox testing: set `PAYPAL_ENV=sandbox`
+   and `PAYPAL_SANDBOX_CLIENT_ID` in `zerotohero-nuxt/.env`, then restart
+   Classic. **Never ship `PAYPAL_ENV=sandbox` in production.**
 5. In Classic go-pro, choose Lifetime → PayPal, log in as the sandbox **buyer** account, approve the payment.
 6. Expected: Classic redirects to `{PYTHON_SERVER}/paypal_checkout_success?pay_id=...&user_id=...&host=...`; backend verifies `state == 'approved'` and grants a **lifetime** subscription (`expires_on` null, `payment_processor = 'paypal'`); user lands on `/go-pro-success`.
 7. Cancel test: abandon/close the PayPal approval dialog → user returns to go-pro with the cancelled/error message; no subscription record.
