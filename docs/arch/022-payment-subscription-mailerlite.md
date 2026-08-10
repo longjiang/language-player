@@ -347,14 +347,45 @@ Side paths:
 
 ### Group mapping
 
-| Local subscription state | MailerLite group |
-|---|---|
-| Trial granted | `trial` |
-| Monthly | `monthly` |
-| Annual | `annual` |
-| Lifetime | `lifetime` |
-| Monthly/annual cancelled (no Stripe customer id) | `disengaged` |
-| Subscription removed | `disengaged` |
+All Language Player MailerLite groups (CZH groups excluded — see the [Automations](#automations-workflows) footnote):
+
+| Group | Active users | How subscribers enter | Role / what happens next |
+|---|---|---|---|
+| `trial` | 897 | New signup verified with a trial grant | Triggers Onboarding Sequence; openers → `engaged`, non-openers → `disengaged` |
+| `engaged` | 192 | Opened the onboarding welcome email | Triggers Sales Sequence; Pro users are removed, remaining non-Pros → `disengaged` after email 3 |
+| `disengaged` | 3,558 | Onboarding non-opener; non-Pro after Sales Sequence; cancelled monthly/annual; subscription removed | Triggers Re-engagement Sequence; openers → `re-engaged`, non-openers → `bucket` |
+| `re-engaged` | 6,659 | Opened a re-engagement email | Triggers Sales Sequence 2nd Attempt; Pro users removed, others end after email 4 |
+| `bucket` | 1,134 | Didn't open re-engagement emails | Triggers Resurrection Sequence; paid users skipped, openers → `re-engaged`, non-openers → `delete` |
+| `delete` | 4,281 | Didn't open the resurrection email | Marked as unsubscribed |
+| `monthly` | 243 | Monthly subscription granted | Pro group; `Once Pro, remove from other groups` removes non-Pro groups |
+| `annual` | 41 | Annual subscription granted | Pro group; same |
+| `lifetime` | 493 | Lifetime purchase granted | Pro group; same |
+| **Total (sum)** | **17,498** | — | Sum of active counts across groups; not a unique-subscriber count because overlaps exist |
+
+Active-user counts are a snapshot from 2026-08-10. All other groups in the account are CZH, legacy, or internal lists:[^other-groups]
+
+[^other-groups]: **CZH (Chinese Zero to Hero):** `Affiliates - Chinese Zero To Hero`, `CZH buyer funnel nurture (students who bought our courses already)`, `czh-disengaged`, `czh-engaged-high-quality`, `CZH final funnel nurture`, `czh-free-course`, `czh-free-course-active`, `czh-free-course-inactive`, `czh-free-course-step1`, `czh-inactive-engaged`, `czh-intro-to-Chinese-students`, `czh-non-ultimate`, `czh-popup-leads`, `CZH post-welcome-funnel`. **Legacy/internal:** `missing_imported_from_directus_may_22_2024`, `paid-students-exclude-from-sales`, `ultimate-bundle-students`, `unknown`.
+
+### Group exclusivity — intended vs actual
+
+The lifecycle is designed so each subscriber sits in exactly one Language Player group at a time: transitions use `move_to_group` (which removes from the source group), and the "Once Pro, remove from other groups" automation removes non-Pro groups when someone becomes paid.
+
+That intent does not match reality. A 2026-08-10 sample of up to 1,000 subscribers per group found **761 subscribers in more than one Language Player group**. Examples: 229 in `disengaged` + `re-engaged`, 144 in `bucket` + `re-engaged`, 128 in `disengaged` + `trial`, 60 in `disengaged` + `re-engaged` + `trial`, 15 in `lifetime` + `monthly`, and 5 in `annual` + `monthly`. Groups with more than 1,000 members were only partially sampled, so the true overlap is likely higher.
+
+Why overlaps happen:
+
+- `move_to_group` only removes from the source group named in the step, not from every other group.
+- Some `remove_from_group` steps do not expose their target groups in the API and do not cover all combinations — paid groups overlap each other too.
+- Backend group assignment (`assign_mailer_lite_subscriber_to_group`) adds a subscriber to a group without removing old groups first.
+- Legacy imports and manual list management can leave subscribers in multiple groups.
+
+Ways to mitigate:
+
+1. Add explicit `remove_from_group` steps (or a single "move to canonical group" pattern) so every transition leaves all other Language Player groups.
+2. Change the backend to remove the subscriber from the other Language Player groups before assigning the new one, or use a group-replacement operation if MailerLite supports one.
+3. Make "Once Pro, remove from other groups" also remove from the other paid groups (`monthly`/`annual`/`lifetime`) so paid groups are exclusive too.
+4. Run a one-time cleanup to find subscribers in multiple groups and move them to the group matching their current subscription/lifecycle state.
+5. Add a recurring overlap check that compares group subscriber lists and flags new mismatches.
 
 ### Behavior notes
 
