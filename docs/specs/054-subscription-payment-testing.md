@@ -478,6 +478,8 @@ Scope:
   to the canonical auth UUID before insert
 - ✅ B16 — post-GoTrue users with no `user_id_map` row are found through
   `auth.users` (`_user_by_email` / `_email_for_user`)
+- ✅ B53 — `/go-pro-success` browser polling loop verified 2026-08-10
+  (backend mocked + neutral fallback + spinner during the ~20s poll)
 
 **⬜ Not yet done:**
 
@@ -485,11 +487,6 @@ Scope:
   duplicate webhook delivery — **deferred to a later phase**: requires the
   disposable-schema harness (the unique `payment_id` index and `ON CONFLICT`
   already exist; mocked coverage for the surrounding logic is green)
-- ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
-  app-level ban feature exists in the GoTrue flow
-- ⬜ B53 — `/go-pro-success` browser polling loop: backend covered by mocked
-  tests; fallback copy + spinner fix implemented 2026-08-10; final re-smoke
-  (Steps 2–3) pending
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ✅ Manual smoke: admin grant/change/remove — completed 2026-08-10 (also
@@ -503,11 +500,12 @@ Scope:
 
 Exit criteria:
 
-- ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
-  not met: remaining B-rows (B11–B14 deferred to the disposable-schema
-  harness, B53 browser loop) are still pending (M1–M4/M6 are fixed; manual
-  smoke is complete; the live-Stripe cancel test passes).
-- ⬜ **No payment testing before Phase 0 is green** — gate still pending.
+- ✅ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
+  the only remaining rows are B11–B14, explicitly deferred to the
+  disposable-schema harness (M1–M4/M6 fixed; manual smoke complete; B53
+  verified; the live-Stripe cancel test passes).
+- ✅ **Phase 0 is green — payment testing may begin** (B11–B14 remain
+  deferred to the disposable-schema harness).
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
@@ -549,7 +547,6 @@ Exit criteria:
 
 **Still manual / needs a disposable schema:**
 
-- ⬜ Mary/Bob `/user-subscription` smoke
 - ⬜ GoTrue free-trial + MailerLite live smoke (hook implemented; needs a
   disposable/fresh user to observe end-to-end)
 - ⬜ Concurrency/idempotency against a real schema (B12–B14)
