@@ -631,7 +631,11 @@ Verification per row:
   `type=monthly`, expiry ≈ +32d, `payment_customer_id` + test `payment_id`
   set; `/user-subscription` returns it; MailerLite `monthly` group assigned to
   the account email (Mary), not the Stripe form email.
-- ⬜ S2–S8 — pending.
+- ✅ S2 — Annual success (2026-08-10): DB row `31140` = `status=active`,
+  `type=annual`, expiry ≈ +367d (2027-08-12), `payment_customer_id` set;
+  `/user-subscription` returns it; MailerLite `annual` group on the account
+  email.
+- ⬜ S3–S8 — pending.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
