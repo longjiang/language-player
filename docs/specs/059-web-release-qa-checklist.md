@@ -7,7 +7,7 @@
 - **Status**: draft
 - **Created**: 2026-08-09
 - **Scope**: `apps/web` only. The mobile counterpart is [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md).
-- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred; source catalog) · [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md) · [SPEC-054 — Payment Testing Across Classic, Web & Mobile](054-payment-testing.md) · [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) · [SPEC-030 — Radix UI Migration](030-radix-ui-migration.md)
+- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred; source catalog) · [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) · [SPEC-030 — Radix UI Migration](030-radix-ui-migration.md)
 
 ## Overview
 
@@ -299,6 +299,6 @@ production API host is actually being hit (Network tab), and that the
 - [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) — why releases use human QA, not browser automation
 - [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) — deferred; source catalog for the checklist tiers
 - [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) — the mobile checklist this spec mirrors
-- [SPEC-054 — Payment Testing Across Classic, Web & Mobile](054-payment-testing.md) — detailed payment checklist
+- [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) — detailed payment checklist
 - [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) — plan/pricing and gate behavior
 - [AGENTS.md](../../AGENTS.md) — dev-server conventions, Node 22, “never run builds un-prompted”

@@ -14,7 +14,7 @@
 - **See also**:
   - [ARCH-015 — Payment Methods & Renewal Strategy](015-payment-methods-plan-support.md)
   - [SPEC-014 — Subscription & Payment System](../specs/014-subscription-payment-system.md)
-  - [SPEC-054 — Payment Testing Across Classic, Web & Mobile](../specs/054-payment-testing.md)
+  - [SPEC-054 — Subscription & Payment Testing](../specs/054-subscription-payment-testing.md)
   - [SPEC-060 — Admin Console User Management](../specs/060-admin-console-user-management.md)
   - [SPEC-039 — Full Database Migration to Supabase](../specs/039-full-database-migration-supabase.md) (WS-6: subscriptions)
   - [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md)
@@ -342,7 +342,7 @@ The Stripe subscription continues until the paid period ends; the local row stop
 
 - [ARCH-015 — Payment Methods & Renewal Strategy](015-payment-methods-plan-support.md)
 - [SPEC-014 — Subscription & Payment System](../specs/014-subscription-payment-system.md)
-- [SPEC-054 — Payment Testing Across Classic, Web & Mobile](../specs/054-payment-testing.md)
+- [SPEC-054 — Subscription & Payment Testing](../specs/054-subscription-payment-testing.md)
 - [SPEC-060 — Admin Console User Management](../specs/060-admin-console-user-management.md)
 - [SPEC-039 — Full Database Migration to Supabase](../specs/039-full-database-migration-supabase.md)
 - [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md)
