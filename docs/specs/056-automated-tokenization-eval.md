@@ -47,7 +47,7 @@ Exactly the 19 languages in `POPULAR_L2S` (`packages/shared/src/language-data.ts
 | `fr` | `fr` | spaCy / lemma table |
 | `de` | `de` | spaCy / lemma table |
 | `es` | `es` | spaCy / lemma table |
-| `vi` | `vi` | dictionary-first merge over wiktionary heads / surface (SPEC-057 §4.10) |
+| `vi` | `vi` | pyvi word segmentation / surface (SPEC-057 §4.10) |
 | `ru` | `ru` | pymorphy2 / lemma table |
 | `ar` | `ar` | Qalsadi / arabic-stem |
 | `tr` | `tr` | Zeyrek (server) / snowball (offline) |
