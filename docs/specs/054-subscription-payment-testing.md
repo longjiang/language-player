@@ -323,10 +323,10 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B42 | User already has an active monthly or lifetime subscription | No trial granted |
 | B43 | User has an expired subscription | No trial granted — any existing subscription row (active, lifetime, or expired) blocks the trial |
 | B44 | Wrong verification code | 400; no activation and no trial |
-| B45 | Banned email | Verification blocked |
-| B46 | Acquisition source submitted with verification | `user_acquisition` row saved with source/details |
-| B47 | Trial expiry | `/user-subscription` returns the expired trial row; frontends compute free; gates close |
-| B48 | MailerLite down during verification | Document/decide: current code calls MailerLite unwrapped, so verification may fail; consider isolating it |
+| B45 | Banned email | Dropped 2026-08-10: the legacy hardcoded banned-email list was removed with M5; GoTrue has no app-level ban concept — re-add only if real email bans are needed |
+| B46 | Acquisition source submitted with verification | Covered by the separate `/acquisition_survey` endpoint (B17) — current clients submit acquisition right after registration, not in the verify payload |
+| B47 | Trial expiry | `/user-subscription` returns the expired trial row; frontends compute free; gates close (covered by the expired-row test with `type=trial`) |
+| B48 | MailerLite down during verification | Verification still returns 200 and the trial is granted; MailerLite failure is logged (hook + endpoint tests) |
 | B49 | Legacy `/verification_email` / `/verification_email/verify` routes | Resolved 2026-08-10: routes and `app_email_verification.py` removed (SPEC-039 M5); `verify_email@zerotohero.ca` support pipe migrated to GoTrue admin + `grant_trial_and_enroll_mailerlite` |
 
 #### 2.6.6 Cancellation & subscription management
@@ -414,7 +414,7 @@ Do not start provider payment E2E until Phase 0 is green.
 admin, and MailerLite behavior before any payment is made.
 
 **Status: ⚠️ In progress** — Phase 0 mock suites pass (45 subscription +
-18 admin + 17 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+18 admin + 19 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
 disposable-schema concurrency) are pending.
@@ -430,6 +430,10 @@ Scope:
   identity (M4 fixed); endpoint test passes against live Supabase
 - ✅ B40–B43 — free-trial helper logic + GoTrue verify-email hook
   (`grant_trial_and_enroll_mailerlite`; any existing subscription blocks)
+- ✅ B44 — wrong verification token_hash returns 400 and grants no trial
+- ✅ B46–B48 — acquisition persists via `/acquisition_survey` (B17); expired
+  trial row returned by `/user-subscription`; MailerLite down during
+  verification still returns 200 with the trial granted
 - ✅ B50 — cancel at period end (mocked Stripe)
 - ✅ B51 — cancel with unknown Stripe customer (`resource_missing`) is a no-op
   200; rate-limited/unreachable Stripe returns 429/502; other Stripe errors
@@ -463,8 +467,8 @@ Scope:
   the unique `payment_id` index and `ON CONFLICT` now exist)
 - ⬜ B20–B29 — webhook processing/idempotency (mocked Stripe events not written yet)
 - ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
-- ⬜ B44–B48 — verification edge cases (wrong code, banned email, re-verify,
-  acquisition persistence, trial expiry, MailerLite down)
+- ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
+  app-level ban feature exists in the GoTrue flow
 - ⬜ B52–B54 — lifetime-cancel protection, success-page polling,
   delete-account block
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
@@ -492,9 +496,11 @@ Exit criteria:
 - ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
-- ✅ `zerotohero-python-server/test_auth.py` — 17 auth-proxy tests including
+- ✅ `zerotohero-python-server/test_auth.py` — 19 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
-  valid-access-token paths, and delete-account MailerLite GDPR-forget (B55).
+  valid-access-token paths, wrong-token rejection with no trial (B44),
+  MailerLite-down verification success (B48), and delete-account MailerLite
+  GDPR-forget (B55).
 - ✅ `zerotohero-python-server/test_auto_verify_email.py` — 4 tests covering
   the migrated DreamHost support pipe: GoTrue admin confirm
   (`email_confirm: true`) + trial/MailerLite enrollment, user-not-found,
