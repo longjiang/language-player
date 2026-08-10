@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useT } from '@/hooks/use-t';
 import { changeSubscription, grantSubscription } from '@/lib/admin-api';
-import { logerr } from '@/lib/logger';
+import { logAction, logerr } from '@/lib/logger';
 import type { AdminSubscription, SubscriptionInput } from '@/types/admin';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -114,6 +114,17 @@ export function SubscriptionDialog({
         payment_email: paymentEmail || undefined,
         notes: notes || undefined,
       };
+      logAction('subscription.save', {
+        mode,
+        type,
+        status,
+        processor: processor || undefined,
+        paymentEmail: paymentEmail || undefined,
+        paymentId: paymentId || undefined,
+        customerId: customerId || undefined,
+        expiresDate: expiresDate || undefined,
+        notes: notes || undefined,
+      });
 
       if (mode === 'grant') {
         if (expiresDate) payload.expires_on = `${expiresDate}T00:00:00Z`;

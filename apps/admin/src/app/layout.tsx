@@ -3,6 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { SessionProvider } from '@/providers/session-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { ActionLoggerProvider } from '@/components/action-logger-provider';
+import { SessionTokenMirror } from '@/components/session-token-mirror';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,8 +19,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans">
         <NextIntlClientProvider messages={messages}>
           <SessionProvider>
-            {children}
-            <Toaster richColors closeButton={false} position="top-center" />
+            <SessionTokenMirror />
+            <ActionLoggerProvider>
+              {children}
+              <Toaster richColors closeButton={false} position="top-center" />
+            </ActionLoggerProvider>
           </SessionProvider>
         </NextIntlClientProvider>
       </body>
