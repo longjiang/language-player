@@ -143,6 +143,8 @@
   acquisition source
 - ✅ Subscription management — grant, change, and remove via gated Flask
   admin endpoints
+- ✅ Admin privilege management — grant/remove admin via the GoTrue admin API
+  (self-demotion blocked)
 - ⬜ Content moderation (videos / shows / talks) in the admin console
 - ⬜ Payment log viewer and account actions (delete / reset / demote admin)
 

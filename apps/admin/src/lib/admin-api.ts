@@ -1,6 +1,7 @@
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import type {
+  AdminPrivilegeResult,
   AdminSubscription,
   AdminUserSummary,
   SubscriptionInput,
@@ -71,4 +72,19 @@ export async function removeSubscription(
     { method: 'DELETE' },
   );
   return parseJson<{ success: boolean }>(res);
+}
+
+export async function setUserAdmin(
+  userId: string,
+  isAdmin: boolean,
+): Promise<AdminPrivilegeResult> {
+  const res = await authenticatedFetch(
+    `${PYTHON_API_URL}/admin/users/${encodeURIComponent(userId)}/admin`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isAdmin }),
+    },
+  );
+  return parseJson<AdminPrivilegeResult>(res);
 }

@@ -63,6 +63,7 @@ All routes require `Authorization: Bearer <Supabase access token>` with
 | GET | `/admin/users/search?q=&limit=` | Substring search across auth.users (id, email, phone, first/last name), user_id_map (legacy id, email), and user_subscriptions (id, payment email/id/customer id, notes). Returns compact user rows with subscription summary, saved-word count, watch count, and total hours. |
 | GET | `/admin/users/<user_id>` | Full profile (auth + legacy ids, admin flag, dates) plus subscriptions, per-L2 progress, saved words (totals, per-L2 counts, recent 50 with contexts), watch history (recent 30), likes, playlists, notes, phrases, bookshelf, history, SRS, settings, and acquisition survey. Accepts a legacy Directus numeric id too. |
 | POST | `/admin/users/<user_id>/subscriptions` | Grant a subscription. `type` is required (`monthly` / `annual` / `lifetime` / `trial`); `expires_on` is auto-computed from the plan when omitted; optional `status`, payment fields, and `notes`. |
+| PATCH | `/admin/users/<user_id>/admin` | Grant (`{"isAdmin": true}`) or remove (`{"isAdmin": false}`) a user's admin privilege. Fetches the current GoTrue `app_metadata`, merges `is_admin`, and persists via the GoTrue admin API. Admins cannot demote themselves (400). |
 | PATCH | `/admin/subscriptions/<id>` | Change subscription fields. When `type` changes and `expires_on` is not supplied, the expiry is recomputed from the new plan. |
 | DELETE | `/admin/subscriptions/<id>` | Remove a subscription entirely. |
 
@@ -98,7 +99,8 @@ and the existing `user_subscriptions` row shape are preserved.
 - `/users/[id]` — user detail page with four tabs:
   - **Overview**: profile (email, phone, IDs, dates, acquisition source),
     subscription manager (grant/edit/remove dialogs), SRS summary, settings
-    presence.
+    presence, and admin-privilege control (grant/remove admin with a confirm
+    dialog; self-demotion is disabled).
   - **Learning Progress**: per-L2 table with level, time watched, weekly goal.
   - **Saved Words**: totals, per-L2 breakdown, and the 50 most recent words
     with their saved contexts.
@@ -183,6 +185,14 @@ At `NEXT_PUBLIC_LOG_LEVEL=3` (default in dev), `ActionLoggerProvider` emits
 entered field values), field changes, and keyboard activation. Password
 fields are never captured. See `docs/specs/039-full-database-migration-supabase.md`
 for the Supabase-specific operational notes these fixes were learned from.
+
+### Admin privilege changes take effect on the next token
+
+`app_metadata.is_admin` is read from the JWT by `require_admin()`, but JWTs are
+issued at login/refresh. After demoting a user, their **current** access token
+stays valid until it expires (~1h) or they refresh; a newly signed-in (or
+refreshed) session is immediately denied. The UI and endpoint both block
+self-demotion so the last admin can't lock themselves out.
 
 ## Open Questions
 
