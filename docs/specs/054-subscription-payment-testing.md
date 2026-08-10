@@ -625,6 +625,15 @@ Verification per row:
 - Cleanup: delete the disposable user via `DELETE /auth/delete-account`
   (also GDPR-forgets MailerLite), or remove the subscription via admin.
 
+#### Phase 1 progress
+
+- ✅ S1 — Monthly success (2026-08-10): DB row `31139` = `status=active`,
+  `type=monthly`, expiry ≈ +32d, `payment_customer_id` + test `payment_id`
+  set; `/user-subscription` returns it; MailerLite `monthly` group assigned to
+  the account email (Mary), not the Stripe form email.
+- ⬜ S2–S8 — pending.
+- ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
+
 ### Phase 2 — Web (`apps/web`) payment E2E
 
 - S9–S10 — Stripe credit card
