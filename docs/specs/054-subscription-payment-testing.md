@@ -646,7 +646,10 @@ Verification per row:
 - ✅ S5 — Insufficient funds (2026-08-10): `4000 0000 0000 9995` shows
   "insufficient funds" in Stripe; no subscription row created
   (DB count 0, `/user-subscription` null).
-- ⬜ S6–S8 — pending.
+- ✅ S6 — Processing error (2026-08-10): `4000 0000 0000 0119` shows a
+  processing error in Stripe; no subscription row created (DB count 0,
+  `/user-subscription` null).
+- ⬜ S7–S8 — pending.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
