@@ -781,20 +781,17 @@ async function loadYouTubeSubtitles() {
 /** CSV-style locale → Chrome _locales/ directory name.
  *  Used to look up endonyms in lang-names.json. */
 const CSV_TO_CHROME_LOCALE = {
-  'en': 'en', 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW', 'af': 'af', 'ar': 'ar',
-  'ca': 'ca', 'de': 'de', 'el': 'el', 'es': 'es', 'fi': 'fi', 'fr': 'fr',
-  'ga': 'ga', 'hi': 'hi', 'hr': 'hr', 'hu': 'hu', 'id': 'id', 'it': 'it',
-  'ja': 'ja', 'ko': 'ko', 'nl': 'nl', 'no': 'no', 'pl': 'pl', 'pt': 'pt',
-  'ro': 'ro', 'ru': 'ru', 'sr': 'sr', 'sv': 'sv', 'sw': 'sw', 'th': 'th',
-  'tr': 'tr', 'vi': 'vi',
+  'en': 'en', 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW', 'ar': 'ar', 'de': 'de',
+  'es': 'es', 'fr': 'fr', 'id': 'id', 'it': 'it', 'ja': 'ja', 'ko': 'ko',
+  'nl': 'nl', 'pl': 'pl', 'pt': 'pt', 'ru': 'ru', 'th': 'th', 'tr': 'tr',
+  'vi': 'vi',
 };
 
 /** UI languages for the L1 (interface) dropdown.
- *  These are the 31 Chrome locales supported by the extension. */
+ *  These are the 18 Chrome locales supported by the extension. */
 const UI_LANGUAGES = [
-  'en', 'zh-Hans', 'zh-Hant', 'af', 'ar', 'ca', 'de', 'el', 'es', 'fi',
-  'fr', 'ga', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl',
-  'pt', 'ro', 'ru', 'sr', 'sv', 'sw', 'th', 'tr', 'vi',
+  'en', 'zh-Hans', 'zh-Hant', 'ar', 'de', 'es', 'fr', 'id', 'it',
+  'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'th', 'tr', 'vi',
 ];
 
 /** Handle L1 (interface) language change */
