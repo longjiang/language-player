@@ -635,7 +635,11 @@ Verification per row:
   `type=annual`, expiry ≈ +367d (2027-08-12), `payment_customer_id` set;
   `/user-subscription` returns it; MailerLite `annual` group on the account
   email.
-- ⬜ S3–S8 — pending.
+- ✅ S3 — Lifetime success (2026-08-10): DB row `31141` = `status=active`,
+  `type=lifetime`, `expires_on=null`, `payment_customer_id` set;
+  `/user-subscription` returns it; MailerLite `lifetime` group on the account
+  email.
+- ⬜ S4–S8 — pending.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
