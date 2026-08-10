@@ -69,6 +69,7 @@ docs/
 | 011 | [Settings Architecture](arch/011-settings-architecture.md) | Cross-app settings analysis: storage, mutation, sync patterns |
 | 012 | [Metro Debugging Process](arch/012-metro-debugging-process.md) | Mobile debugging workflow: Metro, idb, iOS Simulator |
 | 020 | [Sketch Engine Architecture](arch/020-sketch-engine-architecture.md) | Corpus features (collocations, examples, thesaurus, mistakes) — Classic PHP proxy ported to Flask with server-side parsing for web/mobile |
+| 022 | [Payment, Subscription & MailerLite](arch/022-payment-subscription-mailerlite.md) | End-to-end payment/subscription flows, free trial, renewal, subscription management, and MailerLite group sync |
 
 ## Quick Reference
 
