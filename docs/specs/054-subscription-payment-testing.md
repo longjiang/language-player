@@ -427,6 +427,28 @@ Exit criteria:
 - All Phase 0 rows pass, or known gaps are explicitly accepted/fixed.
 - **No payment testing before Phase 0 is green.**
 
+**Programmatic coverage (batch 1, 2026-08-09):**
+
+- `zerotohero-python-server/test_phase0_subscriptions.py` — 21 mocked unit/API
+  tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
+  validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
+  group sync (B10/B60–B65), free-trial logic (B40–B43), cancellation
+  (B50–B51), and admin expiry helpers (B70–B72).
+- `zerotohero-python-server/test_phase0_schema.py` — 3 read-only Supabase
+  schema checks, currently **xfail** because they assert the desired state:
+  id defaults on `user_subscriptions`/`user_acquisition` (M3/M4), FKs to
+  `auth.users` (M6), and a unique payment idempotency key (M3). Live schema
+  audit confirmed all three are missing.
+- Existing `test_app.py` payment tests: 10 pass; 2 fail today —
+  `test_cancel_subscription_at_end_of_period_endpoint` calls live Stripe
+  (`cus_123`) and hits a logging bug, and `test_acquisition_survey_endpoint`
+  returns 500 because `user_acquisition.id` has no default (M4).
+
+**Still manual / needs a disposable schema:** Mary/Bob `/user-subscription`
+smoke, GoTrue free-trial + MailerLite enrollment (needs the M1/M2 fix first),
+concurrency/idempotency against a real schema (B12–B14), delete-account
+cascade (B55), and live MailerLite group movement.
+
 ### Phase 1 — Classic (Nuxt) payment E2E — first frontend
 
 **Goal**: prove each payment method through the most complete legacy frontend
