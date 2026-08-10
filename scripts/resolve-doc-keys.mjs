@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build docs-i18n JSON for one or all docs across ALL 31 locales.
+ * Build docs-i18n JSON for one or all docs across ALL 18 locales.
  * Pure key resolution only — no machine translation (no Python needed).
  *
  * Usage:

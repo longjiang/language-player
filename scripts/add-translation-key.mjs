@@ -14,7 +14,7 @@
  *     "zh-Hans": "...",
  *     "zh-Hant": "...",
  *     "af": "...",
- *     ...all 31 locale codes...
+ *     ...all 18 locale codes...
  *   }
  *
  * Rules:

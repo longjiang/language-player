@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Rebuild docs-i18n JSONs for a single doc across ALL 31 locales.
+ * Rebuild docs-i18n JSONs for a single doc across ALL 18 locales.
  *
  * Requires Node.js >= 20 (for stable fetch API).
  *

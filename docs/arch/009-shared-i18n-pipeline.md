@@ -18,7 +18,7 @@ translations.csv                    ← The one and only source
 sync-translations.mjs csv-to-json   ← One command, no flags needed
         │
         ▼
-packages/shared/locales/*.json      ← 31 nested locale JSONs
+packages/shared/locales/*.json      ← 18 nested locale JSONs
         │
    ┌────┴────┐
    ▼         ▼
@@ -30,7 +30,7 @@ apps/web   apps/mobile              ← Both apps import from here
 | Benefit | Detail |
 |---|---|
 | **No drift** | A string added in one app is immediately available in the other. Zero per-app translation copies. |
-| **One edit surface** | Adding a new key touches one CSV row. The script regenerates all 31 locale JSONs. |
+| **One edit surface** | Adding a new key touches one CSV row. The script regenerates all 18 locale JSONs. |
 | **Flat diff** | CSV diffs in PRs are readable — one line per key, not nested JSON restructuring noise. |
 | **Tooling** | Scripts for adding keys, finding dead keys, validating ICU syntax, batch translating, and document key resolution all operate on the CSV. |
 
@@ -55,13 +55,13 @@ Both apps use nested JSON (`{ "action": { "cancel": "Cancel" } }`). `next-intl` 
 ### Commands
 
 ```bash
-# CSV → 31 locale JSONs (writes to packages/shared/locales/ by default)
+# CSV → 18 locale JSONs (writes to packages/shared/locales/ by default)
 node scripts/sync-translations.mjs csv-to-json
 
 # Override output directory (rarely needed)
 node scripts/sync-translations.mjs csv-to-json --out some/other/dir
 
-# 31 locale JSONs → CSV (reads from packages/shared/locales/ by default)
+# 18 locale JSONs → CSV (reads from packages/shared/locales/ by default)
 node scripts/sync-translations.mjs json-to-csv
 ```
 
@@ -69,14 +69,14 @@ node scripts/sync-translations.mjs json-to-csv
 
 Per `AGENTS.md` i18n workflow:
 
-1. **Create a JSON payload file** with the key + English text + all 31 locale translations (all-or-nothing — the script rejects partial data):
+1. **Create a JSON payload file** with the key + English text + all 18 locale translations (all-or-nothing — the script rejects partial data):
 
 ```json
 {
   "key": "msg.my_new_key",
   "en": "English text here",
   "zh-Hans": "...",
-  "...": "all 31 locales required"
+  "...": "all 18 locales required"
 }
 ```
 
@@ -102,7 +102,7 @@ node scripts/translate-doc.mjs apps/web/content/docs/<path>.md
 
 | Script | Purpose |
 |---|---|
-| `add-translation-key.mjs` | Safely insert/update a single row in the CSV with all 31 locales |
+| `add-translation-key.mjs` | Safely insert/update a single row in the CSV with all 18 locales |
 | `sync-translations.mjs` | Bidirectional CSV ↔ JSON sync |
 | `audit-translations.mjs` | Check CSV for missing/empty cells |
 | `batch-translate.mjs` | Machine-translate empty cells for a specific locale (skips ICU) |
@@ -167,7 +167,7 @@ ICU keywords (`one`, `other`, `plural`, `select`, `#`) must **never** be transla
 | `lang.*` | Language names | `lang.zh`, `lang.ja` |
 | `level.*` | Proficiency levels | `level.exam_cefr`, `level.exam_hsk` |
 
-## Supported Locales (31)
+## Supported Locales (18)
 
 `en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
 
