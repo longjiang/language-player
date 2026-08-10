@@ -78,13 +78,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     (async () => {
       const storedL1 = await SecureStore.getItemAsync(L1_STORAGE_KEY);
       const storedL2 = await SecureStore.getItemAsync(L2_STORAGE_KEY);
-      if (storedL1 && SUPPORTED_L1S.includes(storedL1 as typeof SUPPORTED_L1S[number])) {
-        setL1CodeState(storedL1);
+      const hasStoredL1 = !!storedL1 && SUPPORTED_L1S.includes(storedL1 as typeof SUPPORTED_L1S[number]);
+      if (hasStoredL1) setL1CodeState(storedL1!);
+      if (storedL1 && !hasStoredL1) {
+        // Deprecated L1 (SPEC-063) — clear it so a stale pair doesn't stick.
+        await SecureStore.deleteItemAsync(L1_STORAGE_KEY);
       }
       if (storedL2) {
         setL2CodeState(storedL2);
       }
-      if (storedL1 && storedL2) {
+      if (hasStoredL1 && storedL2) {
         setHasStoredPair(true);
       }
       setReady(true);
