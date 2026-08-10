@@ -992,8 +992,12 @@ metadata-only (no table rewrite), and the sequence was set to `max(id)` =
 140,000,015,875. `utils_content.create_video` now lets the identity column
 assign ids instead of allocating `max(id)+1` manually.
 
-Still pending the same conversion (all app-written): `user_subscriptions`,
-`user_acquisition`, `tv_shows`, `talks`, and `phrasebooks`.
+`tv_shows`, `talks`, and `phrasebooks` were converted the same day, and
+`utils_content.create_show` / `create_phrasebook` likewise let the identity
+column assign ids.
+
+Still pending the same conversion (all app-written): `user_subscriptions` and
+`user_acquisition`.
 
 ### CORS is per-origin and server-side calls bypass it
 
