@@ -5,6 +5,13 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/password-reset'
 const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
 
+/** Locales removed by SPEC-063/ADR-0033, mapped to their fallback UI locale. */
+const DEPRECATED_L1_FALLBACK: Record<string, string> = {
+  af: 'en', ca: 'en', el: 'en', fi: 'en', ga: 'en',
+  hi: 'en', hr: 'en', hu: 'en', no: 'en', ro: 'en',
+  sr: 'en', sv: 'en', sw: 'en',
+};
+
 /** Pages that don't count toward the guest navigation limit (content consumption). */
 const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'music', 'live-tv', 'tv-shows', 'reader', 'web-reader', 'epub', 'channel', 'docs'];
 
@@ -45,7 +52,10 @@ export default function proxy(req: NextRequest) {
     // Set NEXT_LOCALE so i18n works on these pages
     const l1Cookie = req.cookies.get('l1');
     const response = NextResponse.next();
-    if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
+    if (l1Cookie?.value && DEPRECATED_L1_FALLBACK[l1Cookie.value]) {
+      response.cookies.set('l1', 'en', { path: '/', maxAge: 365 * 24 * 60 * 60 });
+      response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    } else if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
       response.cookies.set('NEXT_LOCALE', l1Cookie.value, { path: '/', maxAge: 365 * 24 * 60 * 60 });
     } else {
       const detected = detectLocale(req);
@@ -95,7 +105,10 @@ export default function proxy(req: NextRequest) {
 
     const l1Cookie = req.cookies.get('l1');
     const response = NextResponse.next();
-    if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
+    if (l1Cookie?.value && DEPRECATED_L1_FALLBACK[l1Cookie.value]) {
+      response.cookies.set('l1', 'en', { path: '/', maxAge: 365 * 24 * 60 * 60 });
+      response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    } else if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
       response.cookies.set('NEXT_LOCALE', l1Cookie.value, { path: '/', maxAge: 365 * 24 * 60 * 60 });
     } else {
       // No L1 cookie yet — detect from browser Accept-Language
@@ -108,6 +121,17 @@ export default function proxy(req: NextRequest) {
   }
 
   // 3. App pages under /[l1]/[l2] — allow guest access with nav limit
+  if (l1 && l2 && DEPRECATED_L1_FALLBACK[l1] && SUPPORTED_L2S.includes(l2 as any)) {
+    const fallback = DEPRECATED_L1_FALLBACK[l1]!;
+    const rest = pathname.slice(`/${l1}`.length);
+    const url = new URL(`${fallback}${rest}${req.nextUrl.search}`, req.url);
+    const response = NextResponse.redirect(url, 308);
+    response.cookies.set('l1', fallback, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    response.cookies.set('l2', l2, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    response.cookies.set('NEXT_LOCALE', fallback, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    return response;
+  }
+
   if (l1 && l2 && SUPPORTED_L1S.includes(l1 as any) && SUPPORTED_L2S.includes(l2 as any)) {
     const response = NextResponse.next();
     response.cookies.set('l1', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
