@@ -680,8 +680,11 @@ Verification per row:
   it; MailerLite `monthly` on the account email. Required local webhook
   forwarding (`stripe listen` + `STRIPE_WEBHOOK_SECRET`) and the
   local-redirect test link — see Phase 1 runbook setup.
-- ⬜ W2–W4 — pending (W2 = Alipay annual to cover the second provider; W3 =
-  same path lifetime; W4 = cancel/abandon, same as S8).
+- ✅ W2–W4 — foregone from live runs (2026-08-10, documented): the Payment
+  Link → webhook → grant chain is proven by W1; plan/expiry mapping by
+  S2/S3; cancel/abandon by S8; and all three CNY test links (monthly,
+  annual, lifetime) resolve HTTP 200. Alipay's hosted completion itself was
+  not exercised — it relies on Stripe-hosted checkout.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
