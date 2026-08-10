@@ -22,4 +22,15 @@ export function clearUserData(): void {
       // storage unavailable (privacy mode, etc.) — best effort
     }
   }
+  // Per-user anonymous-merge flags (SPEC-062): lpSavedWordsAnonMerged:<userId>
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('lpSavedWordsAnonMerged')) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // best effort
+  }
 }

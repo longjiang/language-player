@@ -28,6 +28,7 @@ export function useSavedWords() {
   const [loaded, setLoaded] = useState(false);
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   const readLocalStore = useCallback((): SavedLexicalItemStore => {
     if (typeof window === 'undefined') return {};
@@ -81,6 +82,20 @@ export function useSavedWords() {
     setLoaded(true);
   }, [status, loaded, readLocalStore, savePendingOps, loadPendingOps]);
 
+  // ── Auth change (logout/login/switch): drop the previous user's in-memory
+  // state and force rehydration — including logout → login as the SAME user,
+  // which previously skipped hydration via hydratedUserId (SPEC-062). ──
+  useEffect(() => {
+    const next = session?.user?.id ?? null;
+    if (prevUserIdRef.current === next) return;
+    const changed = prevUserIdRef.current !== undefined;
+    prevUserIdRef.current = next;
+    if (changed) {
+      hydratedUserId.current = null;
+      setSavedWords({});
+    }
+  }, [session?.user?.id]);
+
   // ── Flush pending ops, then hydrate from the server ──
   const flushPending = useCallback(async () => {
     if (!session) return;
@@ -94,8 +109,9 @@ export function useSavedWords() {
   useEffect(() => {
     if (status === 'loading' || !loaded) return;
     if (status !== 'authenticated' || !session?.user?.id) return;
-    if (hydratedUserId.current === session.user.id) return;
-    hydratedUserId.current = session.user.id;
+    const userId = session.user.id;
+    if (hydratedUserId.current === userId) return;
+    hydratedUserId.current = userId;
 
     let cancelled = false;
     (async () => {
@@ -106,7 +122,8 @@ export function useSavedWords() {
         let next: SavedLexicalItemStore = res.words ?? {};
 
         // Optional one-time merge of anonymous localStorage words into the account.
-        if (mergeAnon && typeof window !== 'undefined' && !localStorage.getItem(ANON_MERGED_KEY)) {
+        const anonMergedKey = `${ANON_MERGED_KEY}:${userId}`;
+        if (mergeAnon && typeof window !== 'undefined' && !localStorage.getItem(anonMergedKey)) {
           const local = readLocalStore();
           const toMerge = collectMissingLocalWords(next, local);
           if (toMerge.length > 0) {
@@ -115,7 +132,7 @@ export function useSavedWords() {
             if (cancelled) return;
             next = res.words ?? {};
           }
-          try { localStorage.setItem(ANON_MERGED_KEY, '1'); } catch { /* ignore */ }
+          try { localStorage.setItem(anonMergedKey, '1'); } catch { /* ignore */ }
         }
 
         sanitizeStore(next);
@@ -147,22 +164,27 @@ export function useSavedWords() {
   const saveWord = useCallback((l2Code: string, word: SavedLexicalItemRecord) => {
     setSavedWords(prev => {
       const langWords = [...(prev[l2Code] ?? [])];
-      const existing = langWords.find(w => w.id === word.id);
-      if (existing) {
+      const existingIdx = langWords.findIndex(w => w.id === word.id);
+      if (existingIdx >= 0) {
+        const existing = langWords[existingIdx]!;
         const existingInsts = normalizeInstances(existing);
         const newInsts = normalizeInstances(word);
         const seen = new Set(existingInsts.map(i => `${i.timestamp}|${i.form}|${i.context.text}`));
+        const mergedInsts = [...existingInsts];
         for (const ni of newInsts) {
           const key = `${ni.timestamp}|${ni.form}|${ni.context.text}`;
           if (!seen.has(key)) {
-            existingInsts.push(ni);
+            mergedInsts.push(ni);
             seen.add(key);
           }
         }
-        existing.instances = existingInsts;
-        existing.forms = [...new Set([...(existing.forms ?? []), ...(word.forms ?? [])])];
-        existing.date = Math.max(existing.date, word.date);
-        existing.context = existingInsts[existingInsts.length - 1]!.context;
+        langWords[existingIdx] = {
+          ...existing,
+          instances: mergedInsts,
+          forms: [...new Set([...(existing.forms ?? []), ...(word.forms ?? [])])],
+          date: Math.max(existing.date ?? 0, word.date ?? 0),
+          context: mergedInsts[mergedInsts.length - 1]!.context,
+        };
       } else {
         if (!word.instances || word.instances.length === 0) {
           word.instances = normalizeInstances(word);
