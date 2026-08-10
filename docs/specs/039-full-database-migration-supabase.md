@@ -1065,7 +1065,7 @@ trial.
 after `/auth/verify-email` or on first confirmed login), or explicitly decide
 to drop the free trial.
 
-### M2 — MailerLite is absent from the migration scope (resolved 2026-08-10)
+### M2 — MailerLite is absent from the migration scope (partially resolved 2026-08-10 — see audit below)
 
 **Resolved 2026-08-10:** verified users are enrolled through the same
 `/auth/verify-email` hook with `user_id` = auth.users UUID; the group is
@@ -1087,6 +1087,51 @@ migrated code in three ways:
 **Required**: define MailerLite as part of the migration (subscriber creation
 on GoTrue signup/verify, `user_id` field strategy, group sync verification,
 and behavior when a subscriber does not exist).
+
+#### M2 audit (2026-08-10) — MailerLite subscribers still have no GoTrue user ids
+
+A full MailerLite audit of all nine Language Player groups (including
+unsubscribed, bounced, and junk members) shows the M1/M2 hook is not
+end-to-end yet:
+
+- **16,067 unique subscribers** in the Language Player groups (17,499
+  memberships before dedupe): **16,041 have a numeric Directus `user_id`,
+  0 have a GoTrue UUID, and 26 have no `user_id` at all**.
+- The `trial` group contains **5,223 members**: 897 active, 3,269
+  unsubscribed, 1,044 bounced, 13 junk. Fourteen subscribers were created
+  into `trial` between 2026-06-06 and 2026-08-04 — all via API with numeric
+  Directus IDs, all now unsubscribed. Only `tester.mary@zerotohero.ca`
+  (bounced, `user_id = null`) was created after the 2026-08-10 fix.
+- **1,398 subscribers were created into LP groups between 2026-06-05 and
+  2026-08-04**, all with numeric Directus IDs — the legacy pipeline kept
+  running until the GoTrue cutover.
+- Since the 2026-08-05 cutover, **no real Language Player signup has been
+  added to MailerLite**: the only LP-group subscriber at cutover was
+  `evandaniels1@protonmail.com` (00:08, numeric ID `86190`, `disengaged`),
+  and the only post-fix one is the bounced test account.
+- Root cause: the MailerLite `user_id` field is a **NUMBER** type, so it
+  cannot store an `auth.users` UUID. The M1/M2 hook passes the UUID, but
+  MailerLite drops it (`tester.mary` has `user_id = null`).
+
+**Gap**: Language Player users on MailerLite are keyed by legacy Directus
+numeric ids (or nothing), not GoTrue UUIDs, so MailerLite records cannot be
+joined to the migrated identity layer.
+
+**Recommended fixes (needed before T-complete):**
+
+1. Add a TEXT `user_id` / `auth_user_id` field in MailerLite (or convert the
+   existing field) so UUIDs can be stored.
+2. Backfill existing subscribers: map each numeric Directus `user_id` to
+   `auth_user_id` via `public.user_id_map` and update the MailerLite field;
+   resolve the 26 missing by email against `auth.users` / `user_id_map`
+   where possible.
+3. Update `new_mailer_lite_subscriber` to write the UUID (and stop relying
+   on the NUMBER field); verify group assignment still works.
+4. Reconcile LP groups after backfill (overlaps are documented in ARCH-022)
+   and add a SPEC-054 regression asserting a new GoTrue signup appears in
+   MailerLite `trial` with a UUID `user_id`.
+5. Keep CZH subscribers out of the backfill scope — they belong to the
+   Chinese Zero to Hero site, not Language Player.
 
 ### M3 — `user_subscriptions.id` allocation and webhook idempotency are not tested (resolved 2026-08-09)
 
