@@ -211,7 +211,8 @@ signup → POST /auth/register
             {type: "trial", expires_on: now + 7 days, notes: "Free trial subscription."}
           - any existing row (active, lifetime, or expired)? → no trial
       • new_mailer_lite_subscriber(email, first_name, last_name,
-                                   role=metadata role, user_id=auth UUID,
+                                   role=metadata role,
+                                   auth_user_id=auth UUID,
                                    group_name="trial" if a trial was granted)
 ```
 
@@ -258,9 +259,24 @@ The Stripe subscription continues until the paid period ends; the local row stop
 
 | Helper | What it does |
 |---|---|
-| `new_mailer_lite_subscriber(...)` | Creates a subscriber with custom fields `role`, `last_name`, `user_id`, then optionally assigns a group |
+| `new_mailer_lite_subscriber(...)` | Creates a subscriber with custom fields `role`, `last_name`, and `auth_user_id` (TEXT — GoTrue UUID); keeps the legacy numeric `user_id` when a Directus id is known; then optionally assigns a group |
 | `fetch_subscriber_by_email(email)` | Looks up an existing subscriber |
 | `assign_mailer_lite_subscriber_to_group(email, group_name)` | Fetches the subscriber and assigns them to the named group |
+| `update_subscriber_auth_user_id(id, auth_user_id)` | Backfills/updates the `auth_user_id` field via the connect API (used by the SPEC-039 M2 backfill) |
+
+### Subscriber identity (SPEC-039 M2)
+
+MailerLite has two user-id fields with different jobs:
+
+- `user_id` (NUMBER) — legacy Directus numeric id, kept for imported records.
+- `auth_user_id` (TEXT) — Supabase `auth.users` UUID; written for all new
+  GoTrue subscribers and backfilled for existing Language Player group
+  members (2026-08-10).
+
+The backfill sources only the nine Language Player groups (CZH groups are
+excluded; a subscriber who is in both an LP and a CZH group is still updated
+because they are an LP user). The mapping comes from
+`public.user_id_map`, with an email fallback to `auth.users`.
 
 ### Where sync happens
 
@@ -390,8 +406,8 @@ Ways to mitigate:
 ### Behavior notes
 
 - The `role` custom field is copied from the user record at subscriber creation; the code comment documents `3` = Free User, `4` = Pro User.
-- Group assignment only works if the email already exists as a MailerLite subscriber. Subscriber creation currently happens only in the legacy email-verification flow, which active GoTrue signups no longer reach (SPEC-039 M2), so new users and imported users may not receive group updates until a subscriber exists.
-- Every assignment call is wrapped in `try/except` in `utils_subscription.py`; a MailerLite error is logged and the subscription grant still succeeds. Email verification is the one place subscriber creation is not wrapped, so a MailerLite outage there could surface as a verification error.
+- Subscriber creation now happens on the GoTrue `/auth/verify-email` path (SPEC-039 M1/M2), not the legacy Directus flow. Group assignment still only works if the email already exists as a MailerLite subscriber, so payment/renewal paths do not upsert missing subscribers yet (SPEC-054 B66).
+- Every assignment call is wrapped in `try/except` in `utils_subscription.py`; a MailerLite error is logged and the subscription grant still succeeds. Subscriber creation inside `grant_trial_and_enroll_mailerlite` is also wrapped, so a MailerLite outage never fails email verification.
 
 ---
 
@@ -427,7 +443,7 @@ Ways to mitigate:
 | `prices.csv` + `/stripe-prices` as single price source | One place to change plans/prices; frontends never hardcode ids |
 | Local row updates in place (`update_or_add_subscription`) | Simple state model: one current subscription per user |
 | MailerLite sync as best-effort side effect | Mailing list must not block revenue-critical payment processing |
-| Free trial logic lives in the legacy verification flow | Historically one controlled, one-time 7-day entry point; needs re-homing to the GoTrue path (SPEC-039 M1) |
+| Free trial logic lives on `/auth/verify-email` | One controlled, one-time 7-day entry point after GoTrue confirms the email (SPEC-039 M1/M2, resolved 2026-08-10) |
 
 ---
 
@@ -437,8 +453,7 @@ Ways to mitigate:
 - **PayPal and Apple IAP are lifetime-only.**
 - **Mobile IAP is not implemented yet** (SPEC-014); the React Native app still relies on web-based Stripe/Payment-Link flows.
 - **Renewal recomputes expiry from payment time** (`now + 32/367 days`) rather than stacking onto the previous expiry.
-- **MailerLite creation is limited to email verification**, so group assignment for pre-existing subscribers depends on them already being in MailerLite.
-- **Free trial + MailerLite subscriber creation are not wired to the GoTrue signup/verify flow** (SPEC-039 M1/M2) — new users currently get neither.
+- **MailerLite creation is limited to email verification**, so group assignment for pre-existing subscribers depends on them already being in MailerLite (SPEC-054 B66).
 - **Legacy admin subscription endpoints are still ungated** server-side for Classic compatibility; gating/retiring them is tracked in ADR-0032.
 
 ---
