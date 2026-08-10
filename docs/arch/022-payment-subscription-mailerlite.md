@@ -7,7 +7,7 @@
 - **Type**: as-built
 - **Status**: draft
 - **Created**: 2026-08-09
-- **Last Updated**: 2026-08-09
+- **Last Updated**: 2026-08-10
 - **ROADMAP Phase**: Cross-cutting (payment infrastructure)
 - **Scope**: Python backend (active), Classic Nuxt (legacy), Next.js Web (active), React Native Mobile (active), Admin console (active)
 - **Supersedes**: None
@@ -270,6 +270,80 @@ The Stripe subscription continues until the paid period ends; the local row stop
 | `add_subscription` | Assign subscriber to the new row's `type` |
 | `update_subscription` | Assign subscriber to the new `type`; `monthly`/`annual` without `payment_customer_id` → `disengaged` |
 | `delete_subscription` (admin remove) | Assign subscriber to `disengaged` |
+
+### Automations (workflows)
+
+Snapshot taken 2026-08-10 from `GET https://connect.mailerlite.com/api/automations` (current MailerLite API). The enabled automations that belong to Language Player are:
+
+| Automation | MailerLite ID | Status | Workflow description |
+|---|---|---|---|
+| Onboarding Sequence | `61912654912947520` | enabled | Welcomes new trial users; openers move to `engaged`, non-openers to `disengaged`. |
+| Sales Sequence | `62273710862632085` | enabled | 3-email nurture for `engaged` users; removes Pro users and moves remaining non-Pros to `disengaged`. |
+| Once Pro, remove from other groups | `62432521040692992` | enabled | Removes users from non-Pro groups when they join a paid group. |
+| Re-engagement Sequence | `62909029161109329` | enabled | Re-engagement emails to `disengaged` users; openers return to `re-engaged`, non-openers to `bucket`. |
+| Resurrection Sequence | `121528698643940659` | enabled | Miss-you email to `bucket` users after 1 month; skips paid users, openers go to `re-engaged`, non-openers to `delete`. |
+
+Automations that belong to the separate Chinese Zero to Hero website are excluded from the Language Player list, even when the workflow name lacks the CZH prefix.[^czh]
+
+[^czh]: Enabled CZH automations (Chinese Zero to Hero site): CZH Free Students Main Welcome (`125958017445267029`), CZH Free Students Initial Welcome (`159592479797020241`), CZH popup Workflow (`159594997014856996`), Intro To Chinese Course Upsell (`175774798873363491`). Intro To Chinese Course Upsell has no CZH prefix but triggers on the `czh-intro-to-Chinese-students` group. The remaining CZH automations are currently disabled.
+
+#### New-user flow through the automations
+
+```text
+NEW USER
+  |
+  v
+trial group
+  |
+  v
+Onboarding Sequence
+  |  5 min -> welcome email
+  |  3 days -> opened email?
+  |
+  +-- yes -> engaged group -> Sales Sequence
+  |
+  +-- no -> disengaged group -> Re-engagement Sequence
+
+Sales Sequence (engaged group)
+  |  7d -> sales email 1
+  |  7d -> sales email 2
+  |  7d -> sales email 3
+  |
+  +-- becomes monthly/annual/lifetime -> exit (Once Pro cleanup)
+  |
+  +-- still not paid after email 3 -> disengaged group -> Re-engagement Sequence
+
+Re-engagement Sequence (disengaged group)
+  |  7d -> "Plan your return" email
+  |  6d -> "Watch Live TV" email
+  |  6d -> opened either email?
+  |
+  +-- yes -> re-engaged group -> Sales Sequence 2nd Attempt
+  |
+  +-- no -> bucket group -> Resurrection Sequence
+
+Sales Sequence 2nd Attempt (re-engaged group)
+  |  7d -> email 1; then 3d between emails 2-4
+  |
+  +-- becomes monthly/annual/lifetime at any check -> exit
+  |
+  +-- not paid after email 4 -> end
+
+Resurrection Sequence (bucket group)
+  |  1 month -> "We miss you" email
+  |  7 days -> opened email?
+  |
+  +-- yes -> re-engaged group
+  |
+  +-- no -> delete group (marked unsubscribed)
+
+Side paths:
+  Any stage: becomes monthly/annual/lifetime
+    -> Once Pro, remove from other groups removes non-Pro groups
+       (trial/engaged/disengaged/re-engaged/bucket);
+       remaining email steps stop at the next paid check
+  Monthly/annual cancellation -> disengaged group -> Re-engagement Sequence
+```
 
 ### Group mapping
 
