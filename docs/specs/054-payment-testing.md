@@ -7,7 +7,8 @@
 - **Status**: draft
 - **Created**: 2026-08-08
 - **Scope**: All three active frontends + `zerotohero-python-server` payment endpoints (no production data should be touched by these tests)
-- **Related specs**: [SPEC-014 — Subscription & Payment System](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E Testing](025-payment-e2e-testing.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md)
+- **Related specs**: [SPEC-014 — Subscription & Payment System](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md)
+- **Supersedes**: [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md)
 - **Related architecture/ADRs**: [ARCH-015 — Payment Methods & Renewal Strategy](../arch/015-payment-methods-plan-support.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md)
 
 ---

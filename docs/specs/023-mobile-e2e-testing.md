@@ -863,7 +863,7 @@ This phase separates "building the tests" from "making the tests trustworthy." B
 | 9 | Deep Links & Cross-Flow | 4 | 3 | 7 | 57% |
 | | **Total** | **78** | **20** | **98** | **80%** |
 
-> **Note:** Payment & Pro Gates testing (including IAP, Stripe, WeChat Pay, Alipay, PayPal, subscription management, free-tier gates) has been moved to [SPEC-025](./025-payment-e2e-testing.md). All payment tests are human-only pending a mocked payment backend.
+> **Note:** Payment & Pro Gates testing (including IAP, Stripe, WeChat Pay, Alipay, PayPal, subscription management, free-tier gates) has been moved to [SPEC-025](./archive/025-payment-e2e-testing.md) (archived; superseded by [SPEC-054](./054-payment-testing.md)). All payment tests are human-only pending a mocked payment backend.
 
 **80% of all test cases run fully unattended on your local machine.** The remaining 20 human tests cluster into 4 categories, each with a path to convert to auto:
 
