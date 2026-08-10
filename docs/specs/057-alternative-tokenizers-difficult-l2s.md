@@ -624,8 +624,12 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
 18. ✅ **Implemented 2026-08-09** — `lemmatize_korean` rewritten around Kiwi
     (surface-slice `text`, lemma `stem`, suppletive override, cache
     `kiwi-v2`); `/lemmatize-korean` fixture regenerated; unit tests added.
-    Re-run SPEC-056 v2 after server restart; the ko hard-spot set should move
-    to contextual phrases (see §4.9).
+    **2026-08-10**: overlapping/same-span Kiwi morphemes (`부른다` → `부른`
+    [0:2] + `른다` [1:3]; `밀접한` → `한`/`한`) are flattened into
+    non-overlapping surfaces in `lemmatize_korean` (cache `kiwi-v3`), so
+    `_recover_spaces` no longer degrades the rest of a Korean block to
+    char-level gap tokens. Re-run SPEC-056 v2 after server restart; the ko
+    hard-spot set should move to contextual phrases (see §4.9).
 19. Pending — mobile: keep kuromoji-ko; fix per-token pronunciation by
     romanizing dictionary headwords/lemmas (addresses the SPEC-058 ~11%
     coverage gap).

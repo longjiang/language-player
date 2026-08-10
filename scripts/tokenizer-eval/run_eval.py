@@ -38,7 +38,7 @@ HARD_LEMMAS_PATH = HERE / "hard_lemmas.json"
 
 PRON_LANGS = {"zh", "ja", "ko", "ru", "yue", "ar", "th"}
 DICT_SEG = {"zh", "yue", "th"}
-CHARS_MODE = {"zh", "ja", "ko", "yue", "th"}
+CHARS_MODE = {"zh", "ja", "yue", "th"}
 SCRIPTIO_CONTINUA = CHARS_MODE
 PUNCT_RE = re.compile(r"^[\W_]+$", re.UNICODE)
 GRADES = [(90, "A"), (80, "B"), (70, "C"), (60, "D"), (0, "F")]
