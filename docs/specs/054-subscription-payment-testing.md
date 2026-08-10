@@ -318,7 +318,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 | # | Case | Expected result |
 |---|---|---|
-| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | Trial row created (`type=trial`, `expires_on` = +7d) and MailerLite subscriber created with `auth_user_id` = auth UUID (TEXT field) and group `trial` — hook implemented 2026-08-10 (SPEC-039 M1/M2); live smoke still pending |
+| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | Trial row created (`type=trial`, `status=active`, `expires_on` = +7d) and MailerLite subscriber created with `auth_user_id` = auth UUID (TEXT field) and group `trial` — hook implemented 2026-08-10 (SPEC-039 M1/M2); live smoke still pending |
 | B41 | Re-verify the same email | No second trial; no duplicate row |
 | B42 | User already has an active monthly or lifetime subscription | No trial granted |
 | B43 | User has an expired subscription | No trial granted — any existing subscription row (active, lifetime, or expired) blocks the trial |
@@ -414,7 +414,7 @@ Do not start provider payment E2E until Phase 0 is green.
 admin, and MailerLite behavior before any payment is made.
 
 **Status: ⚠️ In progress** — Phase 0 mock suites pass (51 subscription +
-18 admin + 21 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+23 admin + 21 auth + 14 webhook tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (disposable-schema
 concurrency) are pending.
@@ -493,15 +493,19 @@ Scope:
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ✅ Manual smoke: admin grant/change/remove — completed 2026-08-10 (also
   covered by mocked B68/B70–B74)
-- ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow
+- ✅ Manual smoke: Mary/Bob `/user-subscription` — completed 2026-08-10
+  (backend smoke + UI pass: Mary returns the active trial row, Bob returns
+  `{"subscription": null}`)
+- ✅ Manual smoke: cancel flow — completed 2026-08-10 (unknown-customer
+  no-op 200 against the live server, missing `customer_id` → 400, DB
+  unchanged; the full Stripe-dashboard cancel stays in Phase 1)
 
 Exit criteria:
 
 - ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
   not met: remaining B-rows (B11–B14 deferred to the disposable-schema
-  harness, B53 browser loop) and manual smoke (Mary/Bob `/user-subscription`,
-  cancel flow) are still pending (M1–M4/M6 are fixed; the live-Stripe cancel
-  test passes).
+  harness, B53 browser loop) are still pending (M1–M4/M6 are fixed; manual
+  smoke is complete; the live-Stripe cancel test passes).
 - ⬜ **No payment testing before Phase 0 is green** — gate still pending.
 
 **Programmatic coverage (batch 1, 2026-08-09):**
@@ -516,7 +520,7 @@ Exit criteria:
   (B50–B52), mocked paid/unpaid success callbacks (B53 backend/B84),
   admin expiry helpers (B70–B72), and payment validation/price parity
   (B82–B88).
-- ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
+- ✅ `zerotohero-python-server/test_admin_users.py` — 23 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
 - ✅ `zerotohero-python-server/test_auth.py` — 21 auth-proxy tests including
