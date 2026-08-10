@@ -57,7 +57,11 @@ export default function GoProSuccessPage() {
 
   if (status === 'loading' || checking) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+      <div
+        className="flex min-h-[60vh] flex-col items-center justify-center gap-4"
+        role="status"
+        aria-live="polite"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         <p className="text-sm text-muted-foreground">{t('msg.verifying_pro_subscription')}</p>
       </div>
@@ -86,9 +90,9 @@ export default function GoProSuccessPage() {
         </>
       ) : session ? (
         <>
-          <h1 className="text-2xl font-bold">{t('msg.payment_received')}</h1>
+          <h1 className="text-2xl font-bold">{t('msg.subscription_not_confirmed')}</h1>
           <p className="mt-2 text-muted-foreground">
-            {t('msg.payment_processing')}
+            {t('msg.payment_may_take_longer')}
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
             {t('msg.contact_support_if_delayed')}
@@ -101,7 +105,7 @@ export default function GoProSuccessPage() {
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-bold">{t('msg.payment_successful')}</h1>
+          <h1 className="text-2xl font-bold">{t('msg.subscription_not_confirmed')}</h1>
           <p className="mt-2 text-muted-foreground">
             {t('msg.login_to_verify_pro')}
           </p>
