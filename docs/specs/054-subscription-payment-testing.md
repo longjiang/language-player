@@ -685,6 +685,15 @@ Verification per row:
   S2/S3; cancel/abandon by S8; and all three CNY test links (monthly,
   annual, lifetime) resolve HTTP 200. Alipay's hosted completion itself was
   not exercised — it relies on Stripe-hosted checkout.
+- ✅ S13 — Renewal (2026-08-10): created a real Stripe test subscription
+  (monthly price, test customer `cus_V38q6Pow7afUWf`) and replayed the
+  `invoice.paid` event against the running Flask with a valid signature →
+  200, row `31145` expiry extended to now + 32d (reset, not stacked). Live
+  delivery needed `stripe listen` running; it had been stopped, so the
+  replay covered the handler path (live webhook delivery itself proven by W1).
+- ✅ S14 — Webhook auth (2026-08-10): bogus `Stripe-Signature` → 400
+  ("No signatures found…"); missing signature → 400 ("Unable to extract
+  timestamp…"); no grant applied (row count unchanged).
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
