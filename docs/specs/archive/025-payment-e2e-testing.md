@@ -1,10 +1,12 @@
-# SPEC-025: Payment & Pro Gates E2E Testing
+# SPEC-025: Payment & Pro Gates E2E Testing (Archived)
 
 ## Metadata
 - **Spec ID**: SPEC-025
 - **Feature**: End-to-End Testing for Payment Flows (Stripe, IAP, WeChat Pay, Alipay, PayPal)
-- **Status**: draft
+- **Status**: **superseded**
 - **Created**: 2026-07-27
+- **Archived**: 2026-08-09
+- **Superseded by**: [SPEC-054 — Payment Testing Across Classic, Web & Mobile](../054-payment-testing.md)
 
 ## Overview
 

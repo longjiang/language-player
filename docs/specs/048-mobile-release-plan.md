@@ -5,7 +5,7 @@
 - **Feature**: Pre-release (informal, human) testing + releasing `apps/mobile/` to the Apple App Store and Google Play Store
 - **Status**: draft
 - **Created**: 2026-08-06
-- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E](025-payment-e2e-testing.md) · [SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md)
+- **Related**: [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) (deferred) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E (archived)](archive/025-payment-e2e-testing.md) · [SPEC-054 — Payment Testing Across Classic, Web & Mobile](054-payment-testing.md) · [SPEC-052 — Mobile Large Screen (iPad) Layout Parity with Web](052-mobile-large-screen-ipad-layout-parity-with-web.md)
 
 ## Overview
 
@@ -265,7 +265,7 @@ Tester comments are kept in brackets.
 - ⬜ L2 switch in deeplinking
 - ⬜ forgot & reset password (deep link) [missing deeplinking (website can also reset fine]
 
-#### Pay. Payments  **· SPEC-023 ref:** SPEC-025 · **Run on:** Device
+#### Pay. Payments  **· SPEC-023 ref:** SPEC-054 · **Run on:** Device
 
 - ⬜ Stripe card
 - ⬜ WeChat / Alipay / PayPal
@@ -274,7 +274,7 @@ Tester comments are kept in brackets.
 
 > Audio, visual-layout, offline, and payment checks require a human and
 > (mostly) a real device — exactly why they are human checks rather than Maestro
-> automation. See SPEC-025 for the detailed payment checklist. The `Run on`
+> automation. See SPEC-054 for the detailed payment checklist. The `Run on`
 > column is **iOS-first** — see
 > [§ 1.3](#13-platform-split--ios-first-android-subset) for the Android subset.
 
@@ -662,5 +662,5 @@ command-line env var is the source of truth for release builds.
 - [ADR-0013 — App Store Strategy & Product Naming](../adr/0013-app-store-strategy.md) — *which* app/listing, bundle ID, IAP, Play gap
 - [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) — deferred; source of the human QA checklist
 - [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) — IAP + Play Billing caveats
-- [SPEC-025 — Payment E2E Testing](025-payment-e2e-testing.md) — detailed payment checklist
+- [SPEC-054 — Payment Testing Across Classic, Web & Mobile](054-payment-testing.md) — detailed payment checklist
 - [AGENTS.md](../../AGENTS.md) — dev-server conventions, Node 22 requirement, "never run builds un-prompted"
