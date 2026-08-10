@@ -284,8 +284,8 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B10 | Seed `user_subscriptions` with max id `30669` (Directus backfill scale), then insert a new subscription | New row gets id `30670` |
 | B11 | Delete the current max-id row, then insert | New id comes from the identity sequence (not `max(remaining)+1`); no collision or constraint error |
 | B12 | Two concurrent `add_subscription` calls for different users | Both succeed with unique ids (identity sequence; manual `max(id)+1` / advisory lock removed 2026-08-09) |
-| B13 | Concurrent first purchase for the same user (success callback + webhook race) | Exactly one subscription row. Duplicates would be a bug — there is no dedupe/idempotency key today |
-| B14 | Same Stripe event / `payment_id` delivered twice sequentially | Second delivery updates the existing row; no duplicate row |
+| B13 | Concurrent first purchase for the same user (success callback + webhook race) | Exactly one subscription row — partial unique `payment_id` index + `ON CONFLICT` added 2026-08-09; disposable-schema race test still pending |
+| B14 | Same Stripe event / `payment_id` delivered twice sequentially | Second delivery updates the existing row (`get_subscription_by_payment_id` + `ON CONFLICT`); no duplicate row |
 | B15 | Backfilled row with a legacy Directus numeric owner id | Resolved through `user_id_map`; `/user-subscription` and admin detail return the canonical auth UUID |
 | B16 | Post-GoTrue user with no `user_id_map` entry | Found via `auth.users` email lookup (`_user_by_email` / `_email_for_user`) |
 | B17 | `POST /acquisition_survey` for a fresh user | Row saved **without an explicit id**; verifies `user_acquisition.id` has a real default (SPEC-039 M4 — fixed 2026-08-09) |
@@ -413,10 +413,10 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — 21 new mocked tests pass; 2 schema gaps confirmed
-(xfail, unfixed: unique payment key M3, delete-account FK M6); the
-acquisition-survey 500 is fixed; 1 existing test still fails (live-Stripe
-cancel); manual items pending.
+**Status: ⚠️ In progress** — 58+ Phase 0 tests pass and all 22 schema checks are
+green (M3 idempotency key and M6 cascade FKs are in place); the
+acquisition-survey 500 and the cancel-at-period-end logging crash are fixed
+(invalid Stripe customer is now a no-op 200); manual items pending.
 
 Scope:
 
@@ -439,8 +439,8 @@ Scope:
 
 **⚠️ Partial / known gaps (coverage exists but behavior is not green):**
 
-- ⚠️ B51 — cancel with invalid customer id currently returns 500 instead of a
-  defined 4xx (test documents the gap)
+- ✅ B51 — cancel with invalid customer id is a no-op 200 (unknown customers
+  are treated as already-canceled; no 500 crash)
 
 **❌ Failing / blocked:**
 
@@ -450,7 +450,8 @@ Scope:
 **⬜ Not yet done:**
 
 - ⬜ B11–B16 — id reuse after delete, concurrent inserts, first-purchase race,
-  duplicate webhook delivery, legacy Directus remap (needs disposable schema)
+  duplicate webhook delivery, legacy Directus remap (needs disposable schema;
+  the unique `payment_id` index and `ON CONFLICT` now exist)
 - ⬜ B20–B29 — webhook processing/idempotency (mocked Stripe events not written yet)
 - ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
 - ⬜ B44–B49 — verification edge cases (wrong code, banned email, re-verify,
@@ -467,8 +468,8 @@ Scope:
 Exit criteria:
 
 - ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
-  not met: 1 existing test fails (live-Stripe cancel) and the M1/M2/
-  M3-idempotency/M6 gaps are open (M4 id defaults are fixed).
+  not met: 1 existing test fails (live-Stripe cancel) and the M1/M2 gaps are
+  open (M3/M4/M6 are fixed).
 - ⬜ **No payment testing before Phase 0 is green** — gate still pending.
 
 **Programmatic coverage (batch 1, 2026-08-09):**
@@ -478,10 +479,9 @@ Exit criteria:
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), free-trial logic (B40–B43), cancellation
   (B50–B51), and admin expiry helpers (B70–B72).
-- ⚠️ `zerotohero-python-server/test_phase0_schema.py` — 22 read-only Supabase
-  schema checks: 20 pass (identity on all 19 converted tables + id defaults on
-  `user_subscriptions`/`user_acquisition`), 2 still **xfail**: FKs to
-  `auth.users` (M6) and the unique payment idempotency key (M3).
+- ✅ `zerotohero-python-server/test_phase0_schema.py` — 22 read-only Supabase
+  schema checks, all passing: identity on all 19 converted tables, id defaults,
+  cascade FKs to `auth.users` (M6), and the unique `payment_id` index (M3).
 - ❌ Existing `test_app.py` payment tests: `test_cancel_subscription_at_end_of_period_endpoint`
   still fails — it calls live Stripe (`cus_123`) and hits a logging bug.
   `test_acquisition_survey_endpoint` now passes (M4 fixed; expected fixture
@@ -561,7 +561,11 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 5. **Google Play Billing is not implemented** — the sandbox guide in 1.5 is reference-only until SPEC-014 work lands.
 6. **Payment Link purchases have no return redirect** — verification relies on webhooks. The test must confirm the `checkout.session.completed` event arrives with `client_reference_id` intact; if webhooks are down, grants silently fail.
 7. **Automation** (SPEC-025's mock backend: `/mock-stripe-checkout`, `/mock-wechat-pay`, etc.) is still future work; provider-hosted UI rows remain human-run, but the backend/data-layer rows in 2.6 are automatable with mocks.
-8. **No idempotency key on subscription grants:** no unique constraint on `payment_id` / `payment_customer_id` is visible in the migration tooling/data layer (verify DDL), and `update_or_add_subscription` is check-then-insert. A concurrent first purchase (success redirect + webhook) can create duplicate rows. Add a unique partial index or an idempotency key, and cover with B13/B14.
+8. **Idempotency key — resolved 2026-08-09:** `user_subscriptions(payment_id)`
+   now has a partial unique index (`payment_id is not null and <> ''`),
+   `add_subscription` upserts with `ON CONFLICT`, and
+   `update_or_add_subscription` looks up an existing row by `payment_id`
+   first. B13/B14 disposable-schema race tests are still pending.
 9. **`max(id)+1` id allocation — resolved 2026-08-09:** all backfilled id
    tables now use `GENERATED BY DEFAULT AS IDENTITY`, and `add_subscription`
    no longer allocates ids manually or takes the advisory lock. The remaining
@@ -573,7 +577,10 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 13. **`user_acquisition.id` default — resolved 2026-08-09:** converted to
     identity; `add_user_acquisition`'s id-less insert works and the endpoint
     test passes (SPEC-039 M4; B17).
-14. **Delete-account does not remove the MailerLite subscriber:** `DELETE /auth/delete-account` only deletes the GoTrue user; define unsubscribe/removal semantics and verify cascades (SPEC-039 M6; B55).
+14. **Delete-account MailerLite cleanup:** DB rows now cascade (`user_id`
+    FKs to `auth.users` with `ON DELETE CASCADE`, 2026-08-09) and
+    `user_id_map` was added to the explicit cleanup list; unsubscribing the
+    MailerLite subscriber is still undefined (SPEC-039 M6; B55).
 
 ---
 

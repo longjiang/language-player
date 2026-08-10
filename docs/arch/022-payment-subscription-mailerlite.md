@@ -93,6 +93,11 @@ Subscriptions live in Supabase `public.user_subscriptions` (one row per user rec
 | `notes` | Human-readable grant note |
 | `payment_customer_id` | Stripe customer id (used for renewal lookup and cancellation) |
 
+`payment_id` has a partial unique index (idempotency key; empty strings are
+excluded), and `user_id` is a `uuid` FK to `auth.users` with `ON DELETE
+CASCADE` so deleting an account removes subscriptions, acquisition rows, and
+`user_id_map` entries.
+
 ### Status endpoint
 
 `GET /user-subscription` authenticates the caller via Supabase JWT and returns the most recent active subscription — defined as `type == 'lifetime'` or `expires_on` in the future. If there are no active rows it returns the first row anyway; if the user has none at all it returns `{"subscription": null}`.
