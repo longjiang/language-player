@@ -4,10 +4,8 @@
 
 /** Languages supported as a user's native language (L1). */
 export const SUPPORTED_L1S = [
-  'en', 'zh-Hans', 'zh-Hant', 'af', 'ar', 'ca', 'de', 'el',
-  'es', 'fi', 'fr', 'ga', 'hi', 'hr', 'hu', 'id', 'it',
-  'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sr',
-  'sv', 'sw', 'th', 'tr', 'vi',
+  'en', 'zh-Hans', 'zh-Hant', 'ar', 'de', 'es', 'fr', 'id', 'it',
+  'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'th', 'tr', 'vi',
 ] as const;
 
 export type SupportedL1 = (typeof SUPPORTED_L1S)[number];
