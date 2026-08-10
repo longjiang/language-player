@@ -26,6 +26,14 @@ export interface AdminUserSummary {
   totalTimeMs: number;
 }
 
+export interface AdminPrivilegeResult {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
+}
+
 export interface AdminSubscription {
   id: number;
   status: string;

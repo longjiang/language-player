@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SubscriptionManager } from '@/components/users/subscription-manager';
+import { AdminPrivilegeControl } from '@/components/users/admin-privilege';
 import { useT } from '@/hooks/use-t';
 import { fetchUserDetail } from '@/lib/admin-api';
 import { formatDate, formatHours, formatSeconds, initials } from '@/lib/format';
@@ -70,13 +71,14 @@ function OverviewTab({ detail, onChanged }: { detail: UserDetail; onChanged: () 
             <dt className="text-muted-foreground">{t('label.acquisition_source')}:</dt>
             <dd>{acquisition?.source ?? t('label.none')}</dd>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {user.isAdmin && <Badge variant="warning">{t('label.admin')}</Badge>}
             {detail.subscriptionSummary.hasActive ? (
               <Badge variant="success">{planLabel(t, detail.subscriptionSummary.plan)}</Badge>
             ) : (
               <Badge variant="secondary">{t('label.free_user')}</Badge>
             )}
+            <AdminPrivilegeControl user={user} onChanged={onChanged} />
           </div>
         </CardContent>
       </Card>
