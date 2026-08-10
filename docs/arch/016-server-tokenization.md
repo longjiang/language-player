@@ -651,14 +651,14 @@ Uses pre-computed TSV lookup tables.
 
 ### Vietnamese — dictionary-first merge (`lemmatize_vietnamese.py`)
 
-**Engine**: no external package — greedy longest-match word merging over the
-Vietnamese Wiktionary headwords in `data/dictionaries.db` (surface-as-lemma;
-Vietnamese is analytic). Adopted 2026-08-09 after benchmarking pyvi 0.1.1,
-underthesea 9.5, and a dictionary-first merge on the SPEC-056 vi corpus
-(SPEC-057 §4.10). Only adjacent syllables that form a dictionary headword
-(≤ 4 syllables, phrase/proverb entries excluded) are merged, so every merged
-token is a guaranteed dictionary hit; unmerged syllables keep the current
-behavior. Casing is preserved (`Hà Nội` stays `Hà Nội` — no lowercasing).
+**Engine**: [pyvi](https://github.com/trungtv/pyvi) `ViTokenizer` (MIT).
+Adopted 2026-08-09 after benchmarking pyvi 0.1.1, underthesea 9.5, and a
+dictionary-first merge on the SPEC-056 vi corpus (SPEC-057 §4.10). pyvi was
+chosen for its MIT license, speed, and correct merging of reduplicatives
+(`líu lo`, `ríu rít`, `lấp lánh`) that the application dictionary lacks.
+Merged tokens that are not dictionary headwords resolve through the existing
+LLM fallback — the gap is dictionary data, not segmentation. Surface = lemma
+(Vietnamese is analytic); casing is preserved (`Hà Nội` stays `Hà Nội`).
 
 Benchmark (weighted dict coverage, case-insensitive lookup):
 
@@ -667,17 +667,18 @@ Benchmark (weighted dict coverage, case-insensitive lookup):
 | regex baseline | 96.5% | 0 | 0.03 |
 | pyvi 0.1.1 | 94.2% | 36 | 0.9 |
 | underthesea 9.5 | 91.8% | 43 | 4.8 |
-| **dict-first merge (adopted)** | **97.3%** | 38 | **0.34** |
+| **pyvi 0.1.1 (adopted)** | **94.2%** | 36 | **0.9** |
+| dict-first merge | 97.3% | 38 | 0.34 |
 
 **Raw output format**: `[{"word": "Quốc ngữ", "lemma": "Quốc ngữ"}, ...]`
 
 **How it works**:
-1. Regex word-split (`[\w']+|[^\w\s']+`) — same as the generic fallback
-2. Greedy longest match: merge adjacent alphabetic syllables when
-   `' '.join(...)` lowercased is a Wiktionary headword
+1. `ViTokenizer.tokenize(text)` — word segmentation with underscores
+   (`Chim hót líu_lo trên cành .`)
+2. Split by spaces, replace `_` with space for display
 3. Lemma = surface (no inflection; casing preserved)
-4. Cache key: `cache/lemmatization/vi-dictfirst-v1/vie/{md5}` (the legacy
-   pyvi wrapper's `qalsadi`/`ara` cache bug is gone)
+4. Cache key: `cache/lemmatization/vi-pyvi-v1/vie/{md5}` (the legacy
+   wrapper's `qalsadi`/`ara` cache bug is gone)
 
 **Dictionary lookup**: `WiktionaryLoader.batch_lookup` now falls back to a
 case-insensitive match (Python-lowered index, capped at 350k keys) so
@@ -1080,7 +1081,7 @@ These 21 languages only have Simplemma available among the general-purpose token
 | spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()`. Croatian (`hrv`) runs the full pipeline; de/es/it run trimmed (`exclude=("parser","ner")`, cache `spacy-trim-v2`) per SPEC-057 §4.6. |
 | Simplemma (27 langs) | `simplemma` | Pure Python. Preferred over spaCy per ADR-0018. |
 | LemmatizationList (24 langs) | None (TSV files) | Pre-computed lookup tables at `data/lemmatization-lists/`. Highest-priority general-purpose tokenizer per ADR-0018. |
-| Vietnamese | None | Dictionary-first merge over the wiktionary table (no new deps) |
+| Vietnamese | `pyvi` | Pure Python; MIT |
 
 ---
 

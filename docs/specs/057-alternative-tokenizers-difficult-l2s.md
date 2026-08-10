@@ -404,11 +404,13 @@ would raise coverage 48→65%.
 
 ### 4.10 Vietnamese (vi) — A in v2, low priority
 
-**Current**: `vi`/`vie` route to `lemmatize_vietnamese` — a **dictionary-first
-word merge** over Vietnamese Wiktionary headwords (surface-as-lemma).
-Implemented 2026-08-09; the legacy pyvi wrapper (unregistered, buggy cache,
-lowercased lemmas) was replaced. The v2 scorecard is A (97.5) — Vietnamese is
-analytic, so surface-as-lemma is linguistically correct.
+**Current**: `vi`/`vie` route to `lemmatize_vietnamese` — **pyvi
+ViTokenizer** (MIT), surface-as-lemma. Adopted 2026-08-09 after benchmarking
+pyvi, underthesea, and dictionary-first merging (table below); the legacy
+unregistered wrapper (buggy cache, lowercased lemmas) was replaced with a
+clean implementation. Merged tokens that are not dictionary headwords (e.g.
+`líu lo`, `truyền bá`) resolve through the existing LLM fallback — the gap is
+dictionary data, not segmentation. The v2 scorecard is A (97.5).
 
 **Verified 2026-08-09 on the SPEC-056 vi result JSON**:
 
@@ -449,7 +451,8 @@ analytic, so surface-as-lemma is linguistically correct.
 | regex baseline (current at the time) | 96.5% | 0 | 0.03 |
 | pyvi 0.1.1 (MIT) | 94.2% | 36 | 0.9 |
 | underthesea 9.5 (GPL-3.0) | 91.8% | 43 | 4.8 |
-| **dict-first merge (adopted)** | **97.3%** | 38 | 0.34 |
+| **pyvi 0.1.1 (adopted)** | **94.2%** | 36 | **0.9** |
+| dict-first merge | 97.3% | 38 | 0.34 |
 | dict-first + pyvi lexicon | 90.5% | 43 | 1.3 |
 
 VnCoreNLP (GPL-3.0, Java) was researched but not benchmarked: the 1.2
@@ -458,18 +461,21 @@ Java server dependency is not viable for this stack.
 
 **Implemented (Phase 8)**:
 
-1. `lemmatize_vietnamese.py` rewritten as a dictionary-first merge (greedy
-   longest match over wiktionary heads, ≤ 4 syllables, phrase/proverb
-   excluded, casing preserved, cache `vi-dictfirst-v1`) and registered for
-   `vi`/`vie` in `LEMMATIZER_REGISTRY`.
+1. `lemmatize_vietnamese.py` rewritten around **pyvi ViTokenizer** (MIT):
+   underscore-joined words → spaced tokens, surface-as-lemma, casing
+   preserved, cache `vi-pyvi-v1` (the legacy `qalsadi`/`ara` cache bug is
+   gone); `pyvi` re-added to `requirements.txt`; registered for `vi`/`vie`
+   in `LEMMATIZER_REGISTRY`.
 2. `WiktionaryLoader.batch_lookup` gained a case-insensitive fallback
    (Python-lowered index, capped at 350k keys, alternates included) — fixes
    capitalized forms and Unicode case pairs (`Đ/đ`) for all wiktionary-backed
    languages.
-3. Verified on the corpus: 146 content tokens, 38 merged words (`Quốc ngữ`,
-   `tiếng Việt`, `Việt Nam`, `chữ Nôm`, `phổ biến`, …), weighted dict
-   coverage **97.3%** (CI), reconstruction exact, warm ~0.37 ms; the only
-   misses are numbers (`200`, `19`, `1906`) and the rare word `súy`.
+3. Verified on the corpus: 154 content tokens, 36 merged words (`Quốc ngữ`,
+   `líu lo`, `phổ biến`, `văn tự`, `Việt Nam`, …), weighted dict coverage
+   **94.2%** (CI), reconstruction exact, warm ~0.4 ms; remaining misses are
+   numbers, the rare word `súy`, and pyvi-merged compounds the dictionary
+   lacks (`truyền bá`, `dân trí`, `bóc lột`, `bắt đầu từ`, `Tuy vậy`) —
+   those resolve via the LLM fallback.
 
 ---
 
@@ -653,11 +659,12 @@ not added to server requirements or `LEMMATIZER_REGISTRY`.
 26. ✅ **Implemented 2026-08-09** — benchmarked pyvi 0.1.1 (94.2% CI),
     underthesea 9.5 (91.8% CI), dict-first merge (97.3% CI), and
     dict-first+pyvi (90.5% CI) on the SPEC-056 vi block; VnCoreNLP skipped
-    (no direct download; Java dependency). Adopted **dict-first merging**
-    (no new deps, casing preserved, cache `vi-dictfirst-v1`) plus a
-    case-insensitive batch-lookup fallback in `WiktionaryLoader`. Registered
-    `vi`/`vie`; corpus re-check: 97.3% weighted coverage, exact
-    reconstruction, ~0.37 ms/block.
+    (no direct download; Java dependency). **Adopted pyvi ViTokenizer**
+    (MIT, ~0.9 ms/block, correct reduplicative merges like `líu lo`) with
+    surface-as-lemma and casing preserved; pyvi-only compounds that the
+    dictionary lacks resolve through the LLM fallback. Also shipped the
+    case-insensitive batch-lookup fallback in `WiktionaryLoader`. Corpus
+    re-check: 94.2% weighted coverage (CI), exact reconstruction.
 
 ---
 
