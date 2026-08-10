@@ -468,8 +468,9 @@ Flask; verify Pro gating before T-complete.
   email→user lookups with Directus fallback). `/user-subscription`,
   admin update/check, Stripe/PayPal/IAP flows, webhook upserts, free trial,
   and acquisition survey all write through it. **Note (M1/M2):** the free-trial
-  and MailerLite subscriber-creation entry point is the legacy
-  `/verification_email` flow, which active clients no longer call — see the
+  and MailerLite subscriber-creation entry point is now the GoTrue
+  `/auth/verify-email` path (resolved 2026-08-10); the legacy
+  `/verification_email` flow still exists as a fallback — see the
   [Post-Migration Audit](#post-migration-audit--missed-items--follow-ups-2026-08-09).
 - ✅ Verified read paths: user 1 (14 subs, lifetime) returns through
   `/user-subscription`; `get_subscription_by_id` and
@@ -669,7 +670,8 @@ Steps:
 4. Free-vs-Pro regression matrix on web/mobile/Classic (limits, saved-words
    transcript access, dictionary features).
 5. Port the free-trial + MailerLite subscriber-creation hooks from the legacy
-   `/verification_email` flow into the GoTrue signup/verify path (M1/M2).
+   `/verification_email` flow into the GoTrue signup/verify path (M1/M2) —
+   **done 2026-08-10** (`/auth/verify-email` → `grant_trial_and_enroll_mailerlite`).
 6. Verify `user_subscriptions`/`user_acquisition` id allocation (both now
    identity — done 2026-08-09), concurrent-grant idempotency (M3 — unique key
    still open), and delete-account cascade (M6).
@@ -905,7 +907,7 @@ legacy columns and old-id accept-and-map code.
 | Migration drags on / testing gaps | Medium | High | Parallel workstreams; T-complete gated on the test cycle; no fixed calendar |
 | Auth import breaks passwords | Low (tested) | High | `$2y$` verified compatible; `user_id_map` for recovery; smoke import applied |
 | Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B90 regression; id-allocation/idempotency fixes (M3/M4) |
-| New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2); add SPEC-054 regression rows |
+| New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2) — **resolved 2026-08-10** on `/auth/verify-email`; SPEC-054 regression rows cover it |
 | Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | Verify FK cascades; add explicit cleanup + MailerLite unsubscribe (M6) |
 | Legacy Directus verification code breaks decommission | Medium | Medium | Remove or migrate `/verification_email*`, `app_email_verification.py`, `auto_verify_email.py` (M5) |
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
@@ -1040,9 +1042,15 @@ An audit of the payment/subscription pipeline after the WS-6/5.7 cutover found
 several gaps that are not covered by the original workstreams, acceptance
 criteria, or sunset checklist. Fixes/decisions are required before T-complete.
 
-### M1 — Free trial is not granted in the GoTrue signup/verify flow
+### M1 — Free trial is not granted in the GoTrue signup/verify flow (resolved 2026-08-10)
 
-The only caller of `give_free_trial_if_no_active_subscription_exists` is
+**Resolved 2026-08-10:** `/auth/verify-email` now calls
+`utils_subscription.grant_trial_and_enroll_mailerlite(email)` after a
+successful GoTrue verification (token-hash, email+token, and valid
+access-token paths). The trial is granted only when the user has no
+subscription row of any type (active, lifetime, or expired).
+
+The original caller of `give_free_trial_if_no_subscription_exists` was
 `app_email_verification.process_verified_user`, which is reached exclusively
 through the legacy `POST /verification_email` / `POST /verification_email/verify`
 routes (`routes/subscriptions.py`) and the DreamHost `auto_verify_email.py`
@@ -1057,7 +1065,13 @@ trial.
 after `/auth/verify-email` or on first confirmed login), or explicitly decide
 to drop the free trial.
 
-### M2 — MailerLite is absent from the migration scope
+### M2 — MailerLite is absent from the migration scope (resolved 2026-08-10)
+
+**Resolved 2026-08-10:** verified users are enrolled through the same
+`/auth/verify-email` hook with `user_id` = auth.users UUID; the group is
+`trial` when a trial was granted. MailerLite failures are logged and never
+fail verification. The Directus-role `role` field has no GoTrue equivalent
+for new users (falls back to metadata if present).
 
 `SPEC-039` never mentions MailerLite. The mailing list is coupled to the
 migrated code in three ways:
@@ -1168,8 +1182,8 @@ removal of the legacy `/verification_email*` paths.
    trial + MailerLite hooks live now that GoTrue owns verification?)
 5. Rollout signal for old-Classic bundles (for scaffolding teardown).
 6. Anonymous-local merge on web first login: ship or keep server-wins?
-7. Where should the free trial be granted now — after GoTrue signup, after
-   `/auth/verify-email`, or on first confirmed login? (M1)
+7. **Resolved 2026-08-10:** the free trial is granted after `/auth/verify-email`
+   via `grant_trial_and_enroll_mailerlite`; any existing subscription blocks it. (M1)
 8. **Resolved 2026-08-09:** `user_acquisition.id` (and `user_subscriptions.id`)
    now have identity defaults; `add_user_acquisition` does not supply an id
    and works. (M4)

@@ -26,7 +26,8 @@
   - `zerotohero-python-server/app_in_app_purchase.py` — Apple receipt validation
   - `zerotohero-python-server/utils_subscription.py` — subscription CRUD + MailerLite group sync
   - `zerotohero-python-server/utils_mailer_lite.py` — MailerLite API helpers
-  - `zerotohero-python-server/app_email_verification.py` — free trial + MailerLite subscriber creation
+  - `zerotohero-python-server/utils_subscription.py` — free trial + MailerLite enrollment (hooked into `/auth/verify-email`)
+  - `zerotohero-python-server/app_email_verification.py` — legacy verification flow
   - `zerotohero-python-server/data/prices.csv` — price definitions
 
 ---
@@ -195,34 +196,28 @@ Note: the handler recomputes `expires_on` from the payment time (`now + 32/367 d
 
 ---
 
-## Free Trial — Legacy Flow (Not Wired to the GoTrue Path)
+## Free Trial — Granted on GoTrue Email Verification
 
-The code that grants the trial lives in the legacy email-verification flow,
-which active clients no longer call:
+New users get their trial from `POST /auth/verify-email` (SPEC-039 M1/M2,
+resolved 2026-08-10). After GoTrue confirms the email, the route calls
+`utils_subscription.grant_trial_and_enroll_mailerlite(email)`:
 
 ```
-signup → POST /verification_email {email} → sends code
-  → POST /verification_email/verify {email, code, acquisition_source?, acquisition_details?}
-  → process_verified_user(email)
-      • user status draft → active
-      • give_free_trial_if_no_active_subscription_exists(user_id)
-          - no active row (lifetime or future expires_on)? → insert
+signup → POST /auth/register
+  → verification link/code → POST /auth/verify-email
+  → grant_trial_and_enroll_mailerlite(email)
+      • give_free_trial_if_no_subscription_exists(user_id)
+          - no subscription row of any type? → insert
             {type: "trial", expires_on: now + 7 days, notes: "Free trial subscription."}
-          - active subscription already exists? → no trial
+          - any existing row (active, lifetime, or expired)? → no trial
       • new_mailer_lite_subscriber(email, first_name, last_name,
-                                   role=user.role, user_id=user.id,
+                                   role=metadata role, user_id=auth UUID,
                                    group_name="trial" if a trial was granted)
 ```
 
-> ⚠️ **Current gap (SPEC-039 M1/M2):** active clients register and verify
-> through GoTrue (`POST /auth/register` → `POST /auth/verify-email`), which
-> does **not** call `process_verified_user`. As of the GoTrue cutover, new
-> users therefore receive **no** free trial and are **not** added to MailerLite
-> through this path. The legacy `/verification_email*` routes still exist, but
-> no active web/mobile/Classic client calls them.
-
-The legacy flow, when invoked, grants one 7-day trial only if the user has no
-active subscription at that moment.
+Enrollment failures are logged and never fail the verification response. The
+legacy `/verification_email*` flow still exists and uses the same trial helper,
+but active clients go through GoTrue.
 
 ---
 

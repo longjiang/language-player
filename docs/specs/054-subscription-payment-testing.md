@@ -318,10 +318,10 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 | # | Case | Expected result |
 |---|---|---|
-| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | **Desired:** trial row created (`type=trial`, `expires_on` = +7d) and MailerLite subscriber created with `role`/`user_id` fields and group `trial`. **Known gap:** the current GoTrue path grants neither (SPEC-039 audit M1/M2) — this row fails until the hooks are ported |
+| B40 | New user signs up and verifies through GoTrue (`/auth/register` → `/auth/verify-email` or confirmation link) | Trial row created (`type=trial`, `expires_on` = +7d) and MailerLite subscriber created with `user_id` = auth UUID and group `trial` — hook implemented 2026-08-10 (SPEC-039 M1/M2); live smoke still pending |
 | B41 | Re-verify the same email | No second trial; no duplicate row |
 | B42 | User already has an active monthly or lifetime subscription | No trial granted |
-| B43 | User has an expired subscription | Trial granted by updating the expired row; new 7-day window |
+| B43 | User has an expired subscription | No trial granted — any existing subscription row (active, lifetime, or expired) blocks the trial |
 | B44 | Wrong verification code | 400; no activation and no trial |
 | B45 | Banned email | Verification blocked |
 | B46 | Acquisition source submitted with verification | `user_acquisition` row saved with source/details |
@@ -413,11 +413,11 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — 58+ Phase 0 tests pass and all 22 schema checks are
-green (M3 idempotency key and M6 cascade FKs are in place); the
-acquisition-survey 500 and the cancel-at-period-end error handling are fixed
-(unknown Stripe customer = no-op 200, Stripe failures = 429/502/400);
-manual items pending.
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (32 subscription +
+15 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
+cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
+disposable-schema concurrency) are pending.
 
 Scope:
 
@@ -428,8 +428,12 @@ Scope:
   `max(id)+1` / advisory lock removed)
 - ✅ B17 — acquisition-survey insert omits `id`; `user_acquisition.id` is
   identity (M4 fixed); endpoint test passes against live Supabase
-- ✅ B40–B43 — free-trial helper logic (no sub / active / lifetime / expired)
+- ✅ B40–B43 — free-trial helper logic + GoTrue verify-email hook
+  (`grant_trial_and_enroll_mailerlite`; any existing subscription blocks)
 - ✅ B50 — cancel at period end (mocked Stripe)
+- ✅ B51 — cancel with unknown Stripe customer (`resource_missing`) is a no-op
+  200; rate-limited/unreachable Stripe returns 429/502; other Stripe errors
+  return 400
 - ✅ B61–B65 — MailerLite group assignment on add/update/delete + failure isolation
 - ✅ B70–B73 — admin expiry helpers (B70–B72) + admin remove (B73, existing
   `test_admin_users.py`)
@@ -437,17 +441,6 @@ Scope:
   customer-id / legacy-id search cases still pending
 - ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
 - ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
-
-**⚠️ Partial / known gaps (coverage exists but behavior is not green):**
-
-- ✅ B51 — cancel with unknown Stripe customer (`resource_missing`) is a no-op
-  200; rate-limited/unreachable Stripe returns 429/502; other Stripe errors
-  return 400
-
-**❌ Failing / blocked:**
-
-- ❌ B40 GoTrue signup/verify path — free trial + MailerLite enrollment missing
-  after the GoTrue cutover (SPEC-039 M1/M2)
 
 **⬜ Not yet done:**
 
@@ -470,30 +463,34 @@ Scope:
 Exit criteria:
 
 - ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
-  not met: 1 existing test fails (live-Stripe cancel) and the M1/M2 gaps are
-  open (M3/M4/M6 are fixed).
+  not met: remaining B-rows and manual smoke are still pending (M1–M4/M6 are
+  fixed; the live-Stripe cancel test passes).
 - ⬜ **No payment testing before Phase 0 is green** — gate still pending.
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 21/21 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 32 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
-  group sync (B10/B60–B65), free-trial logic (B40–B43), cancellation
-  (B50–B51), and admin expiry helpers (B70–B72).
+  group sync (B10/B60–B65), free-trial logic + GoTrue verify-email hook
+  (B40–B43), cancellation (B50–B51), and admin expiry helpers (B70–B72).
+- ✅ `zerotohero-python-server/test_auth.py` — 15 auth-proxy tests including
+  `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
+  and valid-access-token paths.
 - ✅ `zerotohero-python-server/test_phase0_schema.py` — 22 read-only Supabase
   schema checks, all passing: identity on all 19 converted tables, id defaults,
   cascade FKs to `auth.users` (M6), and the unique `payment_id` index (M3).
-- ❌ Existing `test_app.py` payment tests: `test_cancel_subscription_at_end_of_period_endpoint`
-  still fails — it calls live Stripe (`cus_123`) and hits a logging bug.
-  `test_acquisition_survey_endpoint` now passes (M4 fixed; expected fixture
-  updated from the legacy Directus duplicate-key shape to the Supabase success
-  shape).
+- ✅ Existing `test_app.py` payment tests now pass:
+  `test_cancel_subscription_at_end_of_period_endpoint` (unknown Stripe
+  customer is a no-op 200), `test_acquisition_survey_endpoint` (M4 fixed;
+  fixture updated from the legacy Directus duplicate-key shape), Stripe/IAP
+  success callbacks with legacy-id resolution.
 
 **Still manual / needs a disposable schema:**
 
 - ⬜ Mary/Bob `/user-subscription` smoke
-- ⬜ GoTrue free-trial + MailerLite enrollment (needs the M1/M2 fix first)
+- ⬜ GoTrue free-trial + MailerLite live smoke (hook implemented; needs a
+  disposable/fresh user to observe end-to-end)
 - ⬜ Concurrency/idempotency against a real schema (B12–B14)
 - ⬜ Delete-account cascade (B55)
 - ⬜ Live MailerLite group movement
