@@ -145,9 +145,9 @@ Note: Language Player does not use WeChat Pay's own sandbox (`https://pay.weixin
 Reference: <https://developer.paypal.com/sandbox-testing/overview>. PayPal sandbox provides personal (buyer) and business (merchant) accounts and a separate API base URL (`https://api-m.sandbox.paypal.com`).
 
 1. Create a **business** (merchant) sandbox account and a **personal** (buyer) sandbox account at <https://developer.paypal.com/developer/accounts>.
-2. Set `PAYPAL_CLIENT_ID` and `PAYPAL_SECRET` env vars to the **sandbox business app's** credentials.
-3. **Required code change (precondition):** the backend `app_paypal_checkout.py` currently hardcodes the live URL `https://api-m.paypal.com/v1/payments/payment/{pay_id}`. For sandbox testing it must call `https://api-m.sandbox.paypal.com/...` — e.g. a `PAYPAL_MODE=sandbox` env switch (PayPal's Payments v1 API is also deprecated; see Open Questions).
-4. **Required code change (precondition):** `PurchasePayPal.vue` hardcodes `env="production"` (though it already carries `sandbox` client credentials). Switch to `env="sandbox"` or make it follow the `TEST` flag. **Never ship `env="sandbox"` in production.**
+2. Set `PAYPAL_SANDBOX_CLIENT_ID` and `PAYPAL_SANDBOX_SECRET` env vars to the **sandbox business app's** credentials (the existing `PAYPAL_CLIENT_ID`/`PAYPAL_SECRET` in `.env` are **live** credentials — do not overwrite them).
+3. ✅ Backend sandbox switch implemented 2026-08-10: `PAYPAL_MODE=sandbox` makes `app_paypal_checkout.py` use `https://api-m.sandbox.paypal.com` plus the sandbox credentials; default stays live. (PayPal's Payments v1 API is deprecated — see Open Questions.)
+4. **Required local edit (precondition):** `PurchasePayPal.vue` hardcodes `env="production"` (though it already carries `sandbox` client credentials). Switch to `env="sandbox"` locally, or make it follow the `TEST` flag. **Never ship `env="sandbox"` in production.**
 5. In Classic go-pro, choose Lifetime → PayPal, log in as the sandbox **buyer** account, approve the payment.
 6. Expected: Classic redirects to `{PYTHON_SERVER}/paypal_checkout_success?pay_id=...&user_id=...&host=...`; backend verifies `state == 'approved'` and grants a **lifetime** subscription (`expires_on` null, `payment_processor = 'paypal'`); user lands on `/go-pro-success`.
 7. Cancel test: abandon/close the PayPal approval dialog → user returns to go-pro with the cancelled/error message; no subscription record.
@@ -613,6 +613,12 @@ before touching web/mobile.
    `https://buy.stripe.com/test_7sY7sL97ba825OzgTrbo40b`
    (`plink_1U32LDG5EbMGvOafOEppFX9W`), appended with
    `?client_reference_id=<user-uuid>`.
+6. **PayPal sandbox (P rows)** — sandbox accounts exist
+   (`ken-facilitator@chinesezerotohero.com` business,
+   `ken-buyer@chinesezerotohero.com` buyer). Put the business app's sandbox
+   Client ID/Secret in `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET`,
+   restart Flask with `PAYPAL_MODE=sandbox`, and locally set
+   `PurchasePayPal.vue` `env="sandbox"` (revert before deploy).
 
 #### S1–S8 — Stripe credit card (Classic)
 
