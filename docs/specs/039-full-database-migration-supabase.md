@@ -1051,7 +1051,8 @@ criteria, or sunset checklist. Fixes/decisions are required before T-complete.
 `utils_subscription.grant_trial_and_enroll_mailerlite(email)` after a
 successful GoTrue verification (token-hash, email+token, and valid
 access-token paths). The trial is granted only when the user has no
-subscription row of any type (active, lifetime, or expired).
+subscription row of any type (active, lifetime, or expired), and is inserted
+with `status = 'active'` (2026-08-10).
 
 The original caller of `give_free_trial_if_no_subscription_exists` was
 `app_email_verification.process_verified_user`, reached only through the
