@@ -265,6 +265,7 @@ The Stripe subscription continues until the paid period ends; the local row stop
 | `fetch_subscriber_by_email(email)` | Looks up an existing subscriber |
 | `assign_mailer_lite_subscriber_to_group(email, group_name)` | Fetches the subscriber and assigns them to the named group |
 | `update_subscriber_auth_user_id(id, auth_user_id)` | Backfills/updates the `auth_user_id` field via the connect API (used by the SPEC-039 M2 backfill) |
+| `forget_mailer_lite_subscriber(email)` | GDPR-forgets a subscriber via `POST /api/subscribers/{id}/forget` (SPEC-039 M6; called by delete-account) |
 
 ### Subscriber identity (SPEC-039 M2)
 
@@ -286,6 +287,7 @@ because they are an LP user). The mapping comes from
 |---|---|
 | Email verification (new user) | Create subscriber; assign to `trial` when a trial was granted |
 | `add_subscription` | Assign subscriber to the new row's `type` |
+| Delete account | GDPR-forget the subscriber (best-effort; never blocks deletion) |
 | `update_subscription` | Assign subscriber to the new `type`; `monthly`/`annual` without `payment_customer_id` → `disengaged` |
 | `delete_subscription` (admin remove) | Assign subscriber to `disengaged` |
 

@@ -37,11 +37,15 @@ an active auto-renewing subscription are asked to cancel it first.
 2. If an active auto-renewing subscription exists, deletion is blocked until it is cancelled.
 3. The user opens the confirmation dialog, reads the permanent-deletion warning, and types `DELETE`.
 4. The client calls `DELETE /auth/delete-account` (Flask → GoTrue admin delete).
-5. On success, local user data is cleared and the user is signed out.
+5. Before deleting the GoTrue user, Flask best-effort GDPR-forgets the user's
+   MailerLite subscriber (`/api/subscribers/{id}/forget`); a MailerLite
+   failure is logged and never blocks deletion (SPEC-039 M6).
+6. On success, local user data is cleared and the user is signed out.
 
 ### API Endpoints
 
-- `DELETE /auth/delete-account` — existing Flask endpoint (SPEC-039 5.7).
+- `DELETE /auth/delete-account` — existing Flask endpoint (SPEC-039 5.7);
+  also GDPR-forgets the MailerLite subscriber best-effort (M6).
 
 ### States
 

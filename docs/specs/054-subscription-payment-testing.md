@@ -338,7 +338,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B52 | Cancel a lifetime subscription / no customer id | API does not clear the lifetime row; frontends hide the cancel control |
 | B53 | `/go-pro-success` polling | After a grant, `/user-subscription` returns active within ~20s; success page flips to Pro |
 | B54 | Delete account while an auto-renewing subscription is active | Blocked until cancelled (SPEC-041) |
-| B55 | Delete account (no active auto-renew) | GoTrue user removed; `user_subscriptions`, `user_acquisition`, and `user_id_map` rows removed; MailerLite subscriber unsubscribed/removed (SPEC-039 M6 — MailerLite cleanup currently missing) |
+| B55 | Delete account (no active auto-renew) | GoTrue user removed; `user_subscriptions`, `user_acquisition`, and `user_id_map` rows removed; MailerLite subscriber GDPR-forgotten via `/api/subscribers/{id}/forget`, best-effort and never blocking deletion (SPEC-039 M6, resolved 2026-08-10) |
 
 #### 2.6.7 MailerLite sync
 
@@ -413,8 +413,8 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — Phase 0 mock suites pass (32 subscription +
-15 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (34 subscription +
+17 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
 disposable-schema concurrency) are pending.
@@ -457,8 +457,10 @@ Scope:
 - ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
 - ⬜ B44–B48 — verification edge cases (wrong code, banned email, re-verify,
   acquisition persistence, trial expiry, MailerLite down)
-- ⬜ B52–B55 — lifetime-cancel protection, success-page polling,
-  delete-account block + cleanup
+- ⬜ B52–B54 — lifetime-cancel protection, success-page polling,
+  delete-account block
+- ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
+  (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ⬜ B66–B68 — subscriber-not-found, missing `MAILER_LITE_TOKEN`, admin MailerLite path
 - ⬜ B82–B88 — invalid price/mode, missing success-callback params, unpaid
   session, price parity, PayPal params/unapproved, IAP missing fields
@@ -480,9 +482,9 @@ Exit criteria:
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
   UUID + legacy numeric `user_id`), free-trial logic + GoTrue verify-email
   hook (B40–B43), cancellation (B50–B51), and admin expiry helpers (B70–B72).
-- ✅ `zerotohero-python-server/test_auth.py` — 15 auth-proxy tests including
+- ✅ `zerotohero-python-server/test_auth.py` — 17 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
-  and valid-access-token paths.
+  valid-access-token paths, and delete-account MailerLite GDPR-forget (B55).
 - ✅ `zerotohero-python-server/test_auto_verify_email.py` — 4 tests covering
   the migrated DreamHost support pipe: GoTrue admin confirm
   (`email_confirm: true`) + trial/MailerLite enrollment, user-not-found,
@@ -586,10 +588,11 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 13. **`user_acquisition.id` default — resolved 2026-08-09:** converted to
     identity; `add_user_acquisition`'s id-less insert works and the endpoint
     test passes (SPEC-039 M4; B17).
-14. **Delete-account MailerLite cleanup:** DB rows now cascade (`user_id`
-    FKs to `auth.users` with `ON DELETE CASCADE`, 2026-08-09) and
-    `user_id_map` was added to the explicit cleanup list; unsubscribing the
-    MailerLite subscriber is still undefined (SPEC-039 M6; B55).
+14. **Delete-account MailerLite cleanup — resolved 2026-08-10:** DB rows
+    cascade (`user_id` FKs to `auth.users` with `ON DELETE CASCADE`,
+    2026-08-09), `user_id_map` is in the explicit cleanup list, and
+    `DELETE /auth/delete-account` now GDPR-forgets the MailerLite subscriber
+    best-effort (`/api/subscribers/{id}/forget`; SPEC-039 M6; B55).
 
 ---
 
