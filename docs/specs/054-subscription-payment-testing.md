@@ -1,9 +1,9 @@
-# SPEC-054 — Payment Testing Across Classic, Web & Mobile
+# SPEC-054 — Subscription & Payment Testing
 
 ## Metadata
 
 - **Spec ID**: SPEC-054
-- **Feature**: Payment testing across `zerotohero-nuxt` (Classic), `apps/web` and `apps/mobile`, covering all payment methods
+- **Feature**: Subscription & payment testing across `zerotohero-nuxt` (Classic), `apps/web` and `apps/mobile`, covering subscription endpoints, all payment methods, renewal, trial, cancellation, and MailerLite sync
 - **Status**: draft
 - **Created**: 2026-08-08
 - **Scope**: All three active frontends + admin console + `zerotohero-python-server` payment, subscription, auth, and MailerLite paths (no production data should be touched by these tests)
@@ -402,7 +402,76 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 ---
 
-## 4. Test execution cadence
+## 4. Pre-Launch Phased Testing Plan
+
+Order matters: payments write through the subscription endpoints, so the
+backend subscription/data-layer tests come **first** and are the launch gate.
+Do not start provider payment E2E until Phase 0 is green.
+
+### Phase 0 — Subscription endpoints & data layer (blocking, do first)
+
+**Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
+admin, and MailerLite behavior before any payment is made.
+
+Scope:
+
+- B1–B17 — auth/JWT, `user_subscriptions` storage, id allocation, `user_id_map`
+- B40–B55 — free trial via GoTrue, cancellation, delete-account
+- B60–B68 — MailerLite sync; B70–B74 — admin API
+- B80–B92 — endpoint validation, `user_acquisition.id` default, expired-row behavior
+- Manual smoke: Mary/Bob `/user-subscription`; free-trial grant (known gap —
+  see SPEC-039 M1/M2, fix before launch); cancel flow; admin grant/change/remove
+
+Exit criteria:
+
+- All Phase 0 rows pass, or known gaps are explicitly accepted/fixed.
+- **No payment testing before Phase 0 is green.**
+
+### Phase 1 — Classic (Nuxt) payment E2E — first frontend
+
+**Goal**: prove each payment method through the most complete legacy frontend
+before touching web/mobile.
+
+- S1–S8 — Stripe credit card (monthly/annual/lifetime, declined, 3DS, cancel)
+- W1–W4 — WeChat Pay / Alipay via Payment Links
+- P1–P4 — PayPal lifetime direct checkout + failure/cancel/idempotency
+- S13/S14 — renewal webhook + webhook auth
+- C4 (existing subscription not overwritten), C6 (cancel), C7 (error screens)
+
+**IAP is deliberately deferred to Phase 4.**
+
+### Phase 2 — Web (`apps/web`) payment E2E
+
+- S9–S10 — Stripe credit card
+- W5 — WeChat Pay / Alipay
+- P5 — PayPal link-out (sandbox limitation; document only, do not complete)
+- S13/S14, C1 (price parity), C2 (subscription sync), C5 (gates), C7
+
+### Phase 3 — Mobile (`apps/mobile`) payment E2E
+
+- S11–S12 — Stripe credit card
+- W6 — WeChat Pay / Alipay
+- P6 — PayPal link-out (document only)
+- C2 (subscription sync), C5 (gates), C6 (cancel), C7; verify mobile
+  subscription state refreshes after purchase
+
+### Phase 4 — IAP last (Classic + mobile)
+
+**Why last**: the Apple sandbox/bundle-id mismatch (open question 1) can block
+it, and IAP is lifetime-only — it is not required for the core launch gate.
+
+- A1–A7 — Classic + mobile purchase, restore, cancel, bogus receipt
+- C3 — cross-platform lifetime sync
+- Resolve the bundle-id question before A2 is expected to pass
+
+### Phase 5 — Cross-app & launch gate
+
+- C1–C7 full matrix on all three frontends
+- Re-run B1–B92 against a disposable schema after any backend change
+- SPEC-039 sunset-readiness payment items: paid-event regression, MailerLite
+  enrollment for new GoTrue users, delete-account cleanup
+
+### 4.5 Execution cadence (post-launch / regression)
 
 | Trigger | Scope | Device | Estimated time |
 |---|---|---|---|

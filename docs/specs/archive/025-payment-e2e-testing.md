@@ -6,11 +6,11 @@
 - **Status**: **superseded**
 - **Created**: 2026-07-27
 - **Archived**: 2026-08-09
-- **Superseded by**: [SPEC-054 — Payment Testing Across Classic, Web & Mobile](../054-payment-testing.md)
+- **Superseded by**: [SPEC-054 — Subscription & Payment Testing](../054-subscription-payment-testing.md)
 
 ## Overview
 
-Payment and subscription E2E testing has been separated from [SPEC-023](./023-mobile-e2e-testing.md) (the general mobile E2E plan) because:
+Payment and subscription E2E testing has been separated from [SPEC-023](../023-mobile-e2e-testing.md) (the general mobile E2E plan) because:
 
 1. **Every payment flow requires human verification** — Maestro cannot reliably interact with embedded third-party web views (Stripe Checkout, WeChat Pay, Alipay) or Apple App Store sandbox dialogs (IAP).
 2. **Payment flows need a real device** — IAP requires Apple sandbox on a physical device; simulator IAP is unreliable.

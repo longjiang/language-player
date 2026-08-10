@@ -6,7 +6,7 @@
 - **Status**: in-progress
 - **Created**: 2026-08-04 (split out of SPEC-034)
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (cross-cutting)
-- **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-038 (Video Content, complete)](038-video-content-supabase.md), [ADR-0021 (Video Content)](../adr/0021-migrate-video-content-to-supabase.md), [ADR-0023 (Proxy GoTrue Through Flask)](../adr/0023-proxy-supabase-auth-through-flask.md), [SPEC-024 (Consolidate Directus Calls)](024-consolidate-directus-calls.md), [SPEC-054 (Payment Testing)](054-payment-testing.md), [SPEC-060 (Admin Console)](060-admin-console-user-management.md), [SPEC-041 (Delete Account)](041-delete-account.md), [ARCH-022 (Payment, Subscription & MailerLite)](../arch/022-payment-subscription-mailerlite.md)
+- **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-038 (Video Content, complete)](038-video-content-supabase.md), [ADR-0021 (Video Content)](../adr/0021-migrate-video-content-to-supabase.md), [ADR-0023 (Proxy GoTrue Through Flask)](../adr/0023-proxy-supabase-auth-through-flask.md), [SPEC-024 (Consolidate Directus Calls)](024-consolidate-directus-calls.md), [SPEC-054 (Subscription & Payment Testing)](054-subscription-payment-testing.md), [SPEC-060 (Admin Console)](060-admin-console-user-management.md), [SPEC-041 (Delete Account)](041-delete-account.md), [ARCH-022 (Payment, Subscription & MailerLite)](../arch/022-payment-subscription-mailerlite.md)
 
 ## Overview
 
@@ -838,7 +838,7 @@ Steps:
 1. **T-complete gate**: full cross-app test matrix (login, saved words, SRS,
    progress, settings, watch history, likes, playlists, notes, subscriptions,
    videos, search) on web/mobile/Classic with Mary/Bob + paid test accounts,
-   **plus** the payment matrix in [SPEC-054](054-payment-testing.md)
+   **plus** the payment matrix in [SPEC-054](054-subscription-payment-testing.md)
    (S/W/P/A provider flows and backend/data-layer rows B1–B92), including
    free-trial/GoTrue enrollment, MailerLite sync, subscription id allocation
    and webhook idempotency, and delete-account cleanup (M1–M4, M6–M7).
@@ -934,7 +934,7 @@ legacy columns and old-id accept-and-map code.
   contract
 - `docs/adr/0023-proxy-supabase-auth-through-flask.md` — auth decision
 - `docs/specs/024-consolidate-directus-calls.md` — Flask-as-single-gateway
-- `docs/specs/054-payment-testing.md` — payment/subscription backend matrix
+- `docs/specs/054-subscription-payment-testing.md` — subscription/payment backend matrix
 - `docs/specs/060-admin-console-user-management.md` — admin API + operational notes
 - `docs/specs/041-delete-account.md` — delete-account flow to extend with cleanup
 - `docs/arch/022-payment-subscription-mailerlite.md` — payment/subscription/MailerLite as-built
@@ -1099,7 +1099,7 @@ MailerLite cleanup semantics (SPEC-041).
 ### M7 — 5.9 does not reference the payment test matrix
 
 WS-6 marks paid-event regression as “part of the 5.9 cross-app test cycle,” but
-5.9 never enumerates it. Reference [SPEC-054](054-payment-testing.md) and make
+5.9 never enumerates it. Reference [SPEC-054](054-subscription-payment-testing.md) and make
 its S/W/P/A + B1–B92 rows a prerequisite for T-complete.
 
 ### M8 — Sunset checklist is missing backend/mailer items
