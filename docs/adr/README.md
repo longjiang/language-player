@@ -38,3 +38,4 @@ NNNN-title-with-dashes.md
 | 0030 | Data-driven popular target-language (L2) list | accepted | 2026-08-09 |
 | 0031 | Full offline dictionary downloads (remove 125k cap) | accepted | 2026-08-09 |
 | 0032 | Admin console as a separate Next.js app | accepted | 2026-08-09 |
+| 0033 | UI translation locale support list | accepted | 2026-08-10 |
