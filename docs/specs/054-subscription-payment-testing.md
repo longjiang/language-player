@@ -649,7 +649,11 @@ Verification per row:
 - ✅ S6 — Processing error (2026-08-10): `4000 0000 0000 0119` shows a
   processing error in Stripe; no subscription row created (DB count 0,
   `/user-subscription` null).
-- ⬜ S7–S8 — pending.
+- ✅ S7 — 3DS (2026-08-10): `4000 0025 0000 3155` — completed challenge
+  granted a monthly row (`31142`, `status=active`, ≈ +32d, MailerLite
+  `monthly`); failed challenge (after cancel) created no new row (count 1);
+  cancel cleared `payment_customer_id` and added MailerLite `disengaged`.
+- ⬜ S8 — pending.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
