@@ -4,6 +4,12 @@
 > This is the backend that powers both Classic and GO apps. The Next.js app also uses it.
 > **DO NOT EDIT** this directory unless explicitly needed.
 
+> **Current state (2026-08):** auth and data now run on Supabase, not Directus
+> — see SPEC-039 and ADR-0023. This doc remains accurate for Flask structure,
+> blueprints, and route organization, but the "Auth: Directus JWT" /
+> "Database: MySQL" lines below describe the legacy era. Flask CORS now also
+> allows `http://localhost:3100` (admin console, SPEC-060).
+
 ## Tech Stack
 
 - **Framework**: Flask 2.x with Blueprints

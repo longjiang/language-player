@@ -138,6 +138,52 @@ The admin app is part of the npm workspace, so `npx turbo dev`,
 repo root. Only users whose Supabase `app_metadata.is_admin` is `true` can
 log in, and every Flask admin endpoint independently re-verifies that claim.
 
+## Operational Notes
+
+### Raw fetches need the session token mirror
+
+`authenticatedFetch` reads the access token from `lib/auth-tokens.ts`, which
+is populated by `SessionTokenMirror` during render. Without it every admin
+API call goes out with no `Authorization` header and Flask answers 401.
+The mirror also owns single-flight refresh and clean sign-out on a dead
+refresh token.
+
+### Flask CORS must allow the admin origin
+
+`zerotohero-python-server/app.py` allows `http://localhost:3100` and
+`http://127.0.0.1:3100` for local dev. A deployed admin origin must be added
+to that allowlist, or browser requests will fail with a CORS error while
+login (which happens server-side in NextAuth) keeps working.
+
+### Subscription grants hit shared-util pitfalls
+
+Granting a subscription revealed three latent bugs in
+`utils_subscription.add_subscription`, all fixed in 2026-08-09:
+
+1. The INSERT had more `%s` placeholders than params → psycopg2
+   `IndexError: tuple index out of range`.
+2. The second `coalesce(%s::timestamptz, now())` was on `notes` instead of
+   `payment_date`, so text notes failed the timestamp cast.
+3. `user_subscriptions.id` has no auto-increment default (WS-6 backfill),
+   so inserts must assign `max(id)+1` explicitly under an advisory lock.
+
+The endpoint also passes `status` through (default `draft` when absent), so
+admin grants persist the status shown in the dialog.
+
+### Progress `l2` values may be codes or ids
+
+`user_progress.l2` stores ISO codes since 2026-08-04, but legacy rows can be
+numeric Directus language ids. The detail endpoint maps numeric ids to codes
+and passes ISO codes through untouched.
+
+### Debug action logging
+
+At `NEXT_PUBLIC_LOG_LEVEL=3` (default in dev), `ActionLoggerProvider` emits
+`[LP Admin] action=...` lines for navigation, clicks, form submits (with
+entered field values), field changes, and keyboard activation. Password
+fields are never captured. See `docs/specs/039-full-database-migration-supabase.md`
+for the Supabase-specific operational notes these fixes were learned from.
+
 ## Open Questions
 
 - Should the legacy `/admin/update_or_add_subscription` and

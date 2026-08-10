@@ -42,6 +42,11 @@ management and subscription fixes). The options:
 - Admin code never ships inside the public web bundle.
 - A non-admin can never complete login, and a demoted admin's stale session
   still gets 403s from every Flask admin endpoint.
+- Browser API calls depend on two things beyond the NextAuth session: a
+  client-side token mirror (`SessionTokenMirror`) so raw fetches carry
+  `Authorization`, and Flask's CORS allowlist containing the admin origin
+  (`http://localhost:3100` locally; add the deployed origin). Both were
+  missing initially and caused 401/CORS failures that looked identical.
 - Some shared setup is duplicated (login page, auth tokens, UI primitives),
    but UI components are intentionally not shared across apps (ADR-0003).
 - **Follow-up**: the legacy `/admin/update_or_add_subscription` and
