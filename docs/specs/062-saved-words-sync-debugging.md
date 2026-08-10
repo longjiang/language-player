@@ -133,6 +133,26 @@
 - Move `syncSavedWords` out of the `setState` updater; use the same optimistic + retry pattern as web/mobile.
 - Rebuild the extension after edits (`node apps/chrome-extension/build.mjs`).
 
+### Phase 3 — Performance optimization (single-l2 loading)
+
+- **Users should load saved words for a single `l2` at a time, not the whole
+  multi-language store.** Today `SavedWordsProvider` is mounted in the web
+  root layout and calls `GET /saved-words` with no `l2`, so every authenticated
+  page downloads the user's entire vocabulary (~1.35MB for Mary's polluted
+  set; grows linearly with word count). Combined with the 15s client timeout,
+  heavy users hit `NETWORK_ERROR` and fall back to stale local data.
+- Hydrate only the current language's words per page; the saved-words page
+  fetches the l2s it displays (paginated if large). Keep the store keyed by
+  `l2` so cross-language lookups remain cheap without one giant fetch.
+- Backend: make `GET /saved-words?l2=<code>` the primary read path and add
+  pagination for large l2 sets; keep the no-l2 response for the saved-words
+  page only if it remains within timeout budget.
+- Client: load instances/contexts lazily per word where a list view doesn't
+  need them, instead of bundling every context into the hydration payload.
+- Acceptance for this phase: page-load cost must not scale with total
+  vocabulary size — a heavy user's first hydration completes inside the
+  client timeout regardless of how many words they have saved.
+
 ## Verification Plan
 
 1. **Cross-device matrix** (production): web on iPad Safari + iPhone Safari, mobile, Classic, extension — save on A, refresh B → word appears; delete on A, refresh B → gone; counts equal after hydration on both.
@@ -140,6 +160,7 @@
 3. **Logout wipe matrix**: for each app, log in as Mary, save a word, log out, log in as Bob → Bob's saved words don't include Mary's; localStorage/AsyncStorage/SecureStore keys for saved words are gone.
 4. **Mary cleanup verification**: overlap with Jon = 0; count stable over 24h; Bob 4 rows unchanged.
 5. Re-run the production smoke after the extension ships: `/saved-words` 200, `/user-data` 404, `/saved-words/reconcile-sweep` 404.
+6. **Single-l2 performance**: time `GET /saved-words?l2=zh` vs no-`l2` for a heavy user; confirm first page load hydrates within the client timeout and no longer downloads all languages.
 
 ## Open Questions
 
@@ -154,4 +175,7 @@
 - Deleting a word on any app/device removes it everywhere; no resurrection.
 - Logging out on any app removes that user's saved-words (and other user-data) state from the device.
 - Mary's account no longer contains Jon's words; test accounts are clean.
+- A user with any vocabulary size loads quickly: page hydration fetches only
+  the current l2's saved words (or paginated), never the full multi-language
+  store on every page load.
 - All four clients (web, mobile, Classic, extension) call the row API only; zero `/user-data`, `/user-data/sync`, or Directus auth references remain in active source.
