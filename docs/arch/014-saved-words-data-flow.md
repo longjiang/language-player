@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-25
-- **Last Updated**: 2026-07-25
+- **Last Updated**: 2026-08-10
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Next.js Web (active), Python Backend (active)
 - **Supersedes**: None
@@ -20,7 +20,7 @@
   - `apps/web/src/components/save-button.tsx` — Save UI entry point
   - `apps/web/src/components/dictionary/inline-definition.tsx` — Lazy-loaded definition fetch
   - `packages/shared/src/word-id-resolver.ts` — Word ID decomposition
-  - `packages/api-client/src/user-data.ts` — Cloud sync API client
+  - `packages/api-client/src/saved-words.ts` — Row-API saved-words client (SPEC-034)
   - `zerotohero-python-server/routes/dictionary.py` — `/dictionary/lookup`, `/dictionary/entry`, `/dictionary/lookup-batch`
   - `zerotohero-python-server/utils_dictionary.py` — Language-specific dictionary loaders
 
@@ -29,6 +29,12 @@
 ## Overview
 
 The saved-words system lets users bookmark vocabulary words from the video player or reader, persist them across sessions and devices, and browse them with inline definitions and pronunciations. It spans six layers across the full stack:
+
+> **Superseded (2026-08-10):** the Directus blob flow described in the
+> diagrams below was replaced by the Supabase row API (SPEC-034). The blob
+> mirror/reconciler/sweep scaffolding was removed in SPEC-039 WS-8;
+> `routes/user_data.py` and `packages/api-client/src/user-data.ts` no longer
+> exist, and `UserDataProvider` is a no-op placeholder on web and mobile.
 
 | Layer | Where | What |
 |---|---|---|
@@ -574,8 +580,8 @@ On re-save, new instances are appended (deduped by `timestamp|form|text`), forms
 | **Entry card** | `apps/web/src/components/dictionary-entry-card.tsx` | Renders lookup result with SaveButton |
 | **Core hook** | `apps/web/src/hooks/use-saved-words.ts` | `useSavedWords()` — state, localStorage, cloud sync, `normalizeInstances()` |
 | **Provider** | `apps/web/src/providers/saved-words-provider.tsx` | `SavedWordsProvider` — React Context wrapper |
-| **Cloud provider** | `apps/web/src/providers/user-data-provider.tsx` | Fetches `GET /user-data` once per session |
-| **API client** | `packages/api-client/src/user-data.ts` | `useUserData()` — typed wrappers for `/user-data` endpoints |
+| **Cloud provider** | `apps/web/src/providers/user-data-provider.tsx` | No-op placeholder since WS-8 (legacy `GET /user-data` removed) |
+| **API client** | `packages/api-client/src/saved-words.ts` | Typed wrappers for the row API (`/saved-words`) |
 | **Saved page** | `apps/web/src/app/[l1]/[l2]/saved-words/page.tsx` | Full page: sort, filter, date grouping |
 | **Row component** | `apps/web/src/components/dictionary/saved-word-row.tsx` | Single row: head + definitions + source |
 | **List components** | `apps/web/src/components/dictionary/word-list.tsx` | `WordListItem`, `WordList` — reusable primitives |
@@ -588,7 +594,7 @@ On re-save, new instances are appended (deduped by `timestamp|form|text`), forms
 | **Backend lookup** | `zerotohero-python-server/routes/dictionary.py` | `/dictionary/lookup`, `/dictionary/lookup-batch`, `/dictionary/entry` |
 | **Backend loaders** | `zerotohero-python-server/utils_dictionary.py` | `CedictLoader`, `EdictLoader`, `WiktionaryLoader`, etc. |
 | **Backend DB** | `zerotohero-python-server/data/dictionaries.db` | SQLite dictionary database (see ARCH-004) |
-| **Backend user sync** | `zerotohero-python-server/routes/user_data.py` | `GET /user-data`, `POST /user-data/sync` |
+| **Backend saved words** | `zerotohero-python-server/routes/saved_words.py` | Row API (`GET/PUT /saved-words`, `DELETE /saved-words/<l2>/<id>`) |
 | **Inflection endpoints** | `zerotohero-python-server/inflect_*.py` | Language-specific inflection generation |
 
 ---

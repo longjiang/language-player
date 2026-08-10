@@ -2,8 +2,6 @@ export { apiClient, createApiClient } from './client';
 export { useAuth } from './auth';
 export { useVideos } from './videos';
 export { useDictionary } from './dictionary';
-export { useUserData } from './user-data';
-export type { UserDataResponse } from './user-data';
 export { useSavedWordApi } from './saved-words';
 export type { SavedWordsResponse, SavedWordUpsertResponse } from './saved-words';
 export { useUserLibrary } from './user-library';
