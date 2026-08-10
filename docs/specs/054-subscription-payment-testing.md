@@ -597,6 +597,22 @@ before touching web/mobile.
 4. **Test user** — log in as an existing account or create a disposable one
    (see Phase 0 live-smoke pattern). Use a fresh user for declined/cancel
    rows so no stray subscriptions accumulate.
+5. **Local webhook forwarding (required for Payment Links / W rows)** — the
+   Stripe test account's registered webhook endpoints point at a `loca.lt`
+   tunnel, not local Flask. Forward events locally instead:
+
+   ```bash
+   stripe listen --forward-to localhost:5001/webhook-stripe-checkout-session-completed
+   ```
+
+   Copy the printed `whsec_…` signing secret and restart Flask with
+   `STRIPE_WEBHOOK_SECRET=<whsec>` (code reads it before falling back to the
+   hardcoded test/live secrets). Also note the dashboard-created CNY Payment
+   Links redirect to the **production** success page; for local W tests use
+   the local-redirect test link created 2026-08-10:
+   `https://buy.stripe.com/test_7sY7sL97ba825OzgTrbo40b`
+   (`plink_1U32LDG5EbMGvOafOEppFX9W`), appended with
+   `?client_reference_id=<user-uuid>`.
 
 #### S1–S8 — Stripe credit card (Classic)
 
