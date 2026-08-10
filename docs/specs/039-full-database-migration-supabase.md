@@ -871,7 +871,8 @@ T-complete → T+30):**
 - [ ] `user_subscriptions` / `user_acquisition` id allocation and webhook
   idempotency verified; duplicate grants impossible (M3/M4).
 - [ ] Delete-account verified to remove subscription, acquisition, and
-  `user_id_map` rows and to unsubscribe/remove the MailerLite subscriber (M6).
+  `user_id_map` rows and to GDPR-forget the MailerLite subscriber
+  (M6, resolved 2026-08-10).
 - ✅ Legacy `/verification_email*` routes and `app_email_verification.py`
   removed; `auto_verify_email.py` (`verify_email@zerotohero.ca` support pipe)
   migrated to GoTrue admin + `grant_trial_and_enroll_mailerlite` (M5,
@@ -898,7 +899,7 @@ legacy columns and old-id accept-and-map code.
 - New GoTrue signups must still receive the free trial and MailerLite
   enrollment (M1/M2).
 - Delete-account must clean subscription/acquisition/`user_id_map` rows and
-  the MailerLite subscriber (M6).
+  GDPR-forget the MailerLite subscriber (M6, resolved 2026-08-10).
 - Concurrent first purchase (success callback + webhook) must not create
   duplicate subscription rows (M3).
 
@@ -910,7 +911,7 @@ legacy columns and old-id accept-and-map code.
 | Auth import breaks passwords | Low (tested) | High | `$2y$` verified compatible; `user_id_map` for recovery; smoke import applied |
 | Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B90 regression; id-allocation/idempotency fixes (M3/M4) |
 | New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2) — **resolved 2026-08-10** on `/auth/verify-email`; SPEC-054 regression rows cover it |
-| Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | Verify FK cascades; add explicit cleanup + MailerLite unsubscribe (M6) |
+| Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | FK cascades verified 2026-08-09; MailerLite GDPR-forget added 2026-08-10 (M6, B55) |
 | Legacy Directus verification code breaks decommission | Medium | Medium | Resolved 2026-08-10: routes + module removed; `auto_verify_email.py` migrated to GoTrue/Supabase (M5) |
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; Mary/Bob regression per sub-phase |
@@ -1221,7 +1222,7 @@ The removed module generated and stored verification codes in Directus
 It was unused by active clients and would have written to a dead source
 during decommission.
 
-### M6 — Delete-account cleanup is not verified (resolved 2026-08-09)
+### M6 — Delete-account cleanup is not verified (resolved 2026-08-09/2026-08-10)
 
 **Resolved 2026-08-09:** `user_subscriptions.user_id` and
 `user_acquisition.user_id` were converted from `text` to `uuid`, orphan rows
@@ -1230,17 +1231,23 @@ have `ON DELETE CASCADE` FKs to `auth.users`. `DELETE /auth/delete-account`
 also cleans `user_id_map` explicitly. `utils_subscription` resolves legacy
 numeric owner ids through `user_id_map` (with a payment-email fallback) so
 Classic success callbacks keep working. MailerLite unsubscription is still
-undefined.
+undefined — **resolved 2026-08-10**: `DELETE /auth/delete-account` now
+GDPR-forgets the MailerLite subscriber via the connect API
+(`/api/subscribers/{id}/forget`) before deleting the GoTrue user. The call is
+best-effort: a MailerLite failure is logged and never blocks account
+deletion.
 
 `DELETE /auth/delete-account` only deletes the GoTrue user. SPEC-039/SPEC-041
 assume “cascade” but there is no verification that:
 
 - `user_subscriptions`, `user_acquisition`, and `user_id_map` rows are removed
   (FK cascade may not exist for all tables).
-- The MailerLite subscriber is unsubscribed/removed (no code does this today).
+- The MailerLite subscriber is GDPR-forgotten (resolved 2026-08-10 — see
+  above; B55 tests cover the forget call and failure isolation).
 
-**Required**: add a delete-account regression to the 5.9 cycle and define
-MailerLite cleanup semantics (SPEC-041).
+**Resolved 2026-08-10**: MailerLite cleanup semantics are GDPR-forget
+(SPEC-041); a delete-account regression is added to SPEC-054 (B55) and the
+5.9 cycle still needs the full cross-app run.
 
 ### M7 — 5.9 does not reference the payment test matrix (resolved 2026-08-10)
 
