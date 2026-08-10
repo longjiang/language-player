@@ -476,7 +476,7 @@ Flask; verify Pro gating before T-complete.
   `get_subscription_by_payment_customer_id` resolve.
 - ⏳ Paid-event regression (Stripe/PayPal/IAP test transactions, free-vs-Pro
   matrix) runs as part of the 5.9 cross-app test cycle — see SPEC-054 2.6 for
-  the backend/data-layer rows (B1–B92), including id allocation, webhook
+  the backend/data-layer rows (B1–B90), including id allocation, webhook
   idempotency, free-trial/GoTrue, MailerLite sync, and delete-account cleanup
   (M1–M4, M6–M7).
 
@@ -677,7 +677,7 @@ Steps:
 **Acceptance**: `/user-subscription` returns correct state for Mary/Bob and
 paid test accounts; webhook events upsert rows exactly once; new GoTrue users
 receive the free trial and MailerLite enrollment; no payment regressions; the
-SPEC-054 2.6 backend matrix (B1–B92) passes against a disposable schema.
+SPEC-054 2.6 backend matrix (B1–B90) passes against a disposable schema.
 
 **Rollback**: revert payment modules; keep Directus subscriptions until the
 cutover is proven.
@@ -839,7 +839,7 @@ Steps:
    progress, settings, watch history, likes, playlists, notes, subscriptions,
    videos, search) on web/mobile/Classic with Mary/Bob + paid test accounts,
    **plus** the payment matrix in [SPEC-054](054-subscription-payment-testing.md)
-   (S/W/P/A provider flows and backend/data-layer rows B1–B92), including
+   (S/W/P/A provider flows and backend/data-layer rows B1–B90), including
    free-trial/GoTrue enrollment, MailerLite sync, subscription id allocation
    and webhook idempotency, and delete-account cleanup (M1–M4, M6–M7).
 2. **30-day window**: monitor error rates, reconcile diffs, and Directus
@@ -864,7 +864,7 @@ T-complete → T+30):**
 - [ ] Every remaining table migrated with matching counts; user-data remapped
   to `auth.users.id`.
 - [ ] Full cross-app test cycle passed (Mary/Bob + regression on all apps).
-- [ ] Payment test matrix passed (SPEC-054 S/W/P/A + B1–B92), including
+- [ ] Payment test matrix passed (SPEC-054 S/W/P/A + B1–B90), including
   free-trial/MailerLite enrollment for new GoTrue users.
 - [ ] `user_subscriptions` / `user_acquisition` id allocation and webhook
   idempotency verified; duplicate grants impossible (M3/M4).
@@ -904,7 +904,7 @@ legacy columns and old-id accept-and-map code.
 |---|---|---|---|
 | Migration drags on / testing gaps | Medium | High | Parallel workstreams; T-complete gated on the test cycle; no fixed calendar |
 | Auth import breaks passwords | Low (tested) | High | `$2y$` verified compatible; `user_id_map` for recovery; smoke import applied |
-| Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B92 regression; id-allocation/idempotency fixes (M3/M4) |
+| Payments/Pro gating broken at sunset | Low | High | WS-6 before T-complete; SPEC-054 S/W/P/A + B1–B90 regression; id-allocation/idempotency fixes (M3/M4) |
 | New users lose free trial / MailerLite enrollment after GoTrue cutover | High (already occurring) | High | Port trial + MailerLite hooks into the GoTrue flow (M1/M2); add SPEC-054 regression rows |
 | Delete-account leaves orphan rows or MailerLite subscribers | Medium | Medium–High | Verify FK cascades; add explicit cleanup + MailerLite unsubscribe (M6) |
 | Legacy Directus verification code breaks decommission | Medium | Medium | Remove or migrate `/verification_email*`, `app_email_verification.py`, `auto_verify_email.py` (M5) |
@@ -922,7 +922,7 @@ legacy columns and old-id accept-and-map code.
    archived final backup.
 4. Zero planned downtime; every phase rolls back with a revert.
 5. New GoTrue signups receive the free trial and MailerLite enrollment;
-   payment/subscription backend rows (SPEC-054 B1–B92) pass against a
+   payment/subscription backend rows (SPEC-054 B1–B90) pass against a
    disposable schema; delete-account cleans all user data (M1–M4, M6–M7).
 
 ## Dependencies
@@ -1100,7 +1100,7 @@ MailerLite cleanup semantics (SPEC-041).
 
 WS-6 marks paid-event regression as “part of the 5.9 cross-app test cycle,” but
 5.9 never enumerates it. Reference [SPEC-054](054-subscription-payment-testing.md) and make
-its S/W/P/A + B1–B92 rows a prerequisite for T-complete.
+its S/W/P/A + B1–B90 rows a prerequisite for T-complete.
 
 ### M8 — Sunset checklist is missing backend/mailer items
 

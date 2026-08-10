@@ -382,7 +382,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 
 ### 2.7 Automation notes
 
-- B1–B6, B10–B17, and B20–B92 can be automated in CI with mocked Stripe / PayPal / Apple / MailerLite and a disposable Supabase schema. The existing `test_app.py` / `test_admin_users.py` cover a few of these shallowly (several are marked “to be implemented” or compare against stale recorded fixtures); most rows are missing.
+- B1–B6, B10–B17, and B20–B90 can be automated in CI with mocked Stripe / PayPal / Apple / MailerLite and a disposable Supabase schema. The existing `test_app.py` / `test_admin_users.py` cover a few of these shallowly (several are marked “to be implemented” or compare against stale recorded fixtures); most rows are missing.
 - Concurrency rows (B12, B13) need a threaded Flask test client or two parallel processes against the same schema.
 - Provider-hosted UI rows (S/W/P/A) remain human-run per ADR-0027.
 
@@ -413,41 +413,84 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
+**Status: ⚠️ In progress** — 21 new mocked tests pass; 3 schema gaps confirmed
+(xfail, unfixed); 2 existing tests fail; manual items pending.
+
 Scope:
 
-- B1–B17 — auth/JWT, `user_subscriptions` storage, id allocation, `user_id_map`
-- B40–B55 — free trial via GoTrue, cancellation, delete-account
-- B60–B68 — MailerLite sync; B70–B74 — admin API
-- B80–B92 — endpoint validation, `user_acquisition.id` default, expired-row behavior
-- Manual smoke: Mary/Bob `/user-subscription`; free-trial grant (known gap —
-  see SPEC-039 M1/M2, fix before launch); cancel flow; admin grant/change/remove
+**✅ Green (automated & passing):**
+
+- ✅ B1–B6 — auth/JWT: 401s, valid-token lookup, admin gating
+- ✅ B10 — `add_subscription` id allocation (`max(id)+1` via fake DB)
+- ✅ B40–B43 — free-trial helper logic (no sub / active / lifetime / expired)
+- ✅ B50 — cancel at period end (mocked Stripe)
+- ✅ B61–B65 — MailerLite group assignment on add/update/delete + failure isolation
+- ✅ B70–B73 — admin expiry helpers (B70–B72) + admin remove (B73, existing
+  `test_admin_users.py`)
+- ⚠️ B74 — admin search: basic query + admin gating automated; payment-id /
+  customer-id / legacy-id search cases still pending
+- ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
+- ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
+
+**⚠️ Partial / known gaps (coverage exists but behavior is not green):**
+
+- ⚠️ B17 — acquisition-survey insert omits `id`; schema check xfails (M4) and
+  the endpoint currently returns 500
+- ⚠️ B51 — cancel with invalid customer id currently returns 500 instead of a
+  defined 4xx (test documents the gap)
+
+**❌ Failing / blocked:**
+
+- ❌ B40 GoTrue signup/verify path — free trial + MailerLite enrollment missing
+  after the GoTrue cutover (SPEC-039 M1/M2)
+
+**⬜ Not yet done:**
+
+- ⬜ B11–B16 — id reuse after delete, concurrent inserts, first-purchase race,
+  duplicate webhook delivery, legacy Directus remap (needs disposable schema)
+- ⬜ B20–B29 — webhook processing/idempotency (mocked Stripe events not written yet)
+- ⬜ B30–B33 — renewal logic (`invoice.paid` + expiry recompute)
+- ⬜ B44–B49 — verification edge cases (wrong code, banned email, re-verify,
+  acquisition persistence, trial expiry, MailerLite down, legacy routes)
+- ⬜ B52–B55 — lifetime-cancel protection, success-page polling,
+  delete-account block + cleanup
+- ⬜ B60 — MailerLite new-subscriber creation payload
+- ⬜ B66–B68 — subscriber-not-found, missing `MAILER_LITE_TOKEN`, admin MailerLite path
+- ⬜ B82–B88 — invalid price/mode, missing success-callback params, unpaid
+  session, price parity, PayPal params/unapproved, IAP missing fields
+- ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow; admin
+  grant/change/remove
 
 Exit criteria:
 
-- All Phase 0 rows pass, or known gaps are explicitly accepted/fixed.
-- **No payment testing before Phase 0 is green.**
+- ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
+  not met: 2 existing tests fail and the M1–M4/M6 gaps are open.
+- ⬜ **No payment testing before Phase 0 is green** — gate still pending.
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- `zerotohero-python-server/test_phase0_subscriptions.py` — 21 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 21/21 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), free-trial logic (B40–B43), cancellation
   (B50–B51), and admin expiry helpers (B70–B72).
-- `zerotohero-python-server/test_phase0_schema.py` — 3 read-only Supabase
+- ⚠️ `zerotohero-python-server/test_phase0_schema.py` — 3 read-only Supabase
   schema checks, currently **xfail** because they assert the desired state:
   id defaults on `user_subscriptions`/`user_acquisition` (M3/M4), FKs to
   `auth.users` (M6), and a unique payment idempotency key (M3). Live schema
   audit confirmed all three are missing.
-- Existing `test_app.py` payment tests: 10 pass; 2 fail today —
+- ❌ Existing `test_app.py` payment tests: 10 pass; 2 fail today —
   `test_cancel_subscription_at_end_of_period_endpoint` calls live Stripe
   (`cus_123`) and hits a logging bug, and `test_acquisition_survey_endpoint`
   returns 500 because `user_acquisition.id` has no default (M4).
 
-**Still manual / needs a disposable schema:** Mary/Bob `/user-subscription`
-smoke, GoTrue free-trial + MailerLite enrollment (needs the M1/M2 fix first),
-concurrency/idempotency against a real schema (B12–B14), delete-account
-cascade (B55), and live MailerLite group movement.
+**Still manual / needs a disposable schema:**
+
+- ⬜ Mary/Bob `/user-subscription` smoke
+- ⬜ GoTrue free-trial + MailerLite enrollment (needs the M1/M2 fix first)
+- ⬜ Concurrency/idempotency against a real schema (B12–B14)
+- ⬜ Delete-account cascade (B55)
+- ⬜ Live MailerLite group movement
 
 ### Phase 1 — Classic (Nuxt) payment E2E — first frontend
 
@@ -489,7 +532,7 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 ### Phase 5 — Cross-app & launch gate
 
 - C1–C7 full matrix on all three frontends
-- Re-run B1–B92 against a disposable schema after any backend change
+- Re-run B1–B90 against a disposable schema after any backend change
 - SPEC-039 sunset-readiness payment items: paid-event regression, MailerLite
   enrollment for new GoTrue users, delete-account cleanup
 
@@ -500,7 +543,7 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 | Before every App Store submission | A1–A7 + S1–S15 + W1–W7 + C1–C7 | Real iPhone (sandbox account) + simulators + browser | ~60 min |
 | Before every web release | S9–S15 + W5–W7 + C1, C5, C7 | Browser (test backend) | ~25 min |
 | After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S15, W1–W7, P1–P4, A1–A7 | As appropriate per change | ~45 min |
-| After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `app_email_verification.py`, `utils_mailer_lite.py`) | B1–B92 | CI/test schema (automated where possible) | ~30 min |
+| After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `app_email_verification.py`, `utils_mailer_lite.py`) | B1–B90 | CI/test schema (automated where possible) | ~30 min |
 | Quarterly (renewal regression) | S13, C6 + test-mode renewals | Browser + real device | ~20 min |
 
 ---
@@ -540,4 +583,4 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 2. Platform limitations are respected: IAP only on iOS, Play Billing absent (documented), PayPal direct only in Classic.
 3. Renewal, cancellation, restore, and error paths verified, not just the happy path.
 4. The blocking gaps in §5 (IAP bundle ID, PayPal sandbox switch, Stripe env toggles) are resolved or explicitly accepted by the team before shipping the affected flow.
-5. Backend/data-layer rows B1–B92 pass against a disposable Supabase schema (or the gaps in §5 items 8–14 are explicitly accepted/fixed).
+5. Backend/data-layer rows B1–B90 pass against a disposable Supabase schema (or the gaps in §5 items 8–14 are explicitly accepted/fixed).
