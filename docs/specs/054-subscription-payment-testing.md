@@ -491,14 +491,17 @@ Scope:
   mocked tests)
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
-- ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow; admin
-  grant/change/remove
+- ✅ Manual smoke: admin grant/change/remove — completed 2026-08-10 (also
+  covered by mocked B68/B70–B74)
+- ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow
 
 Exit criteria:
 
 - ❌ All Phase 0 rows pass, or known gaps are explicitly accepted/fixed —
-  not met: remaining B-rows and manual smoke are still pending (M1–M4/M6 are
-  fixed; the live-Stripe cancel test passes).
+  not met: remaining B-rows (B11–B14 deferred to the disposable-schema
+  harness, B53 browser loop) and manual smoke (Mary/Bob `/user-subscription`,
+  cancel flow) are still pending (M1–M4/M6 are fixed; the live-Stripe cancel
+  test passes).
 - ⬜ **No payment testing before Phase 0 is green** — gate still pending.
 
 **Programmatic coverage (batch 1, 2026-08-09):**
