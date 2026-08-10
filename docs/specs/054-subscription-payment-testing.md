@@ -370,13 +370,13 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 |---|---|---|
 | B80 | `POST /create-stripe-checkout-session` missing `price_id` | 400 |
 | B81 | `POST /create-stripe-checkout-session` missing `user_id` | 400 |
-| B82 | `POST /create-stripe-checkout-session` with an invalid price/mode | Defined error (currently 500 — verify) |
-| B83 | `GET /stripe_checkout_success` missing `session_id` / `user_id` / `host` | Defined redirect/error (currently likely 500 — verify) |
+| B82 | `POST /create-stripe-checkout-session` with an invalid price/mode | 400 for invalid `mode` or malformed `price_id` |
+| B83 | `GET /stripe_checkout_success` missing `session_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params` (host defaults when absent) |
 | B84 | `GET /stripe_checkout_success` with an unpaid session | Redirect to error page; no grant |
 | B85 | `GET /stripe-prices` live vs test | IDs/links/amounts match `prices.csv` (10/90/169 USD; 73/653/1227 CNY; sale lifetime 84.50/608; legacy 6/59) |
-| B86 | `GET /paypal_checkout_success` missing `pay_id` / `user_id` / `host` | Defined behavior; no crash |
+| B86 | `GET /paypal_checkout_success` missing `pay_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params`; no crash |
 | B87 | PayPal unapproved state | Redirect to error; no grant |
-| B88 | `POST /in_app_purchase_success` missing `user_id` / `receipt` | 400 / error; no grant |
+| B88 | `POST /in_app_purchase_success` missing `user_id` / `receipt` | 400 `Missing user_id or receipt`; no grant |
 | B89 | `GET /user-subscription` with no rows | `{"subscription": null}` |
 | B90 | `GET /user-subscription` with only an expired row | Returns the expired row; frontends treat it as free |
 
@@ -413,8 +413,8 @@ Do not start provider payment E2E until Phase 0 is green.
 **Goal**: prove `/user-subscription`, auth, storage, free trial, cancellation,
 admin, and MailerLite behavior before any payment is made.
 
-**Status: ⚠️ In progress** — Phase 0 mock suites pass (34 subscription +
-17 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
+**Status: ⚠️ In progress** — Phase 0 mock suites pass (45 subscription +
+18 admin + 17 auth tests) and all 22 schema checks are green; M1–M4/M6 code/schema gaps
 are fixed (trial + MailerLite on `/auth/verify-email`, idempotency key,
 cascade FKs); manual smoke and the remaining B-rows (webhooks/renewal/
 disposable-schema concurrency) are pending.
@@ -443,10 +443,18 @@ Scope:
   payment-id / customer-id / legacy Directus id / payment-email search
   (test_admin_users.py)
 - ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
+- ✅ B82–B88 — invalid price/mode (400), missing success-callback params
+  (302 error redirect), unpaid Stripe session (no grant), price parity vs
+  `prices.csv`, PayPal missing params/unapproved (no grant), IAP missing
+  fields (400)
 - ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
 - ✅ B49 — legacy `/verification_email*` routes removed (SPEC-039 M5); the
   migrated `verify_email@zerotohero.ca` support pipe is covered by
   `test_auto_verify_email.py`
+- ✅ B66–B67 — MailerLite subscriber-not-found and empty-token paths fail
+  safe (no crash; grant still succeeds)
+- ✅ B68 — admin grant/change/remove routes trigger MailerLite group sync
+  through the shared `utils_subscription` path
 
 **⬜ Not yet done:**
 
@@ -461,9 +469,6 @@ Scope:
   delete-account block
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
-- ⬜ B66–B68 — subscriber-not-found, missing `MAILER_LITE_TOKEN`, admin MailerLite path
-- ⬜ B82–B88 — invalid price/mode, missing success-callback params, unpaid
-  session, price parity, PayPal params/unapproved, IAP missing fields
 - ⬜ Manual smoke: Mary/Bob `/user-subscription`; cancel flow; admin
   grant/change/remove
 
@@ -476,12 +481,17 @@ Exit criteria:
 
 **Programmatic coverage (batch 1, 2026-08-09):**
 
-- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 34 mocked unit/API
+- ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 45 mocked unit/API
   tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
   validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
-  UUID + legacy numeric `user_id`), free-trial logic + GoTrue verify-email
-  hook (B40–B43), cancellation (B50–B51), and admin expiry helpers (B70–B72).
+  UUID + legacy numeric `user_id`), subscriber-not-found/empty-token fail-safe
+  (B66–B67), free-trial logic + GoTrue verify-email hook (B40–B43),
+  cancellation (B50–B51), admin expiry helpers (B70–B72), and payment
+  validation/price parity (B82–B88).
+- ✅ `zerotohero-python-server/test_admin_users.py` — 18 tests including
+  admin grant/change/remove MailerLite group sync through the shared
+  `utils_subscription` path (B68).
 - ✅ `zerotohero-python-server/test_auth.py` — 17 auth-proxy tests including
   `/auth/verify-email` trial + MailerLite enrollment on token-hash, email+token,
   valid-access-token paths, and delete-account MailerLite GDPR-forget (B55).
@@ -504,7 +514,8 @@ Exit criteria:
 - ⬜ GoTrue free-trial + MailerLite live smoke (hook implemented; needs a
   disposable/fresh user to observe end-to-end)
 - ⬜ Concurrency/idempotency against a real schema (B12–B14)
-- ⬜ Delete-account cascade (B55)
+- ⬜ Live delete-account cascade (B55; MailerLite forget + GoTrue delete are
+  mocked and passing)
 - ⬜ Live MailerLite group movement
 
 ### Phase 1 — Classic (Nuxt) payment E2E — first frontend
