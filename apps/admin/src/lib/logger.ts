@@ -16,3 +16,21 @@ export function logwarn(...args: unknown[]): void {
 export function logerr(...args: unknown[]): void {
   if (LOG_LEVEL >= 1) console.error('[LP Admin]', ...args);
 }
+
+/**
+ * Verbose user-action log — shown at LOG_LEVEL >= 3. Emits a compact,
+ * greppable line: `[LP Admin] action=<name> <json details>` so a session can
+ * be replayed from the devtools console.
+ */
+export function logAction(action: string, details?: Record<string, unknown>): void {
+  if (LOG_LEVEL < 3) return;
+  let detailText = '';
+  if (details !== undefined) {
+    try {
+      detailText = ` ${JSON.stringify(details)}`;
+    } catch {
+      detailText = ` ${String(details)}`;
+    }
+  }
+  console.log(`[LP Admin] action=${action}${detailText}`);
+}
