@@ -336,7 +336,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B50 | Cancel a valid Stripe subscription | Stripe `cancel_at_period_end=true`; local `payment_customer_id` cleared; MailerLite group `disengaged`; `/user-subscription` no longer advertises auto-renew |
 | B51 | Cancel with a missing/invalid customer id | Defined 4xx (currently likely 500 on a Stripe error — fix or explicitly accept) |
 | B52 | Cancel a lifetime subscription / no customer id | API does not clear the lifetime row — only the Stripe customer association is removed; missing `customer_id` → 400 |
-| B53 | `/go-pro-success` polling | Backend covered with a mocked paid `/stripe_checkout_success` (grant + redirect) and `/user-subscription` returning the active row; the ~20s browser polling loop stays a manual Phase 1 check |
+| B53 | `/go-pro-success` polling | Backend covered with a mocked paid `/stripe_checkout_success` (grant + redirect) and `/user-subscription` returning the active row; ~20s browser polling loop verified with spinner. Finding (2026-08-10): the old timeout fallback claimed "payment received/processing" with no evidence — now a neutral "couldn't confirm subscription yet" state with a spinner during polling |
 | B54 | Delete account while an auto-renewing subscription is active | Blocked with 409 until cancelled (SPEC-041); expired or lifetime rows do not block |
 | B55 | Delete account (no active auto-renew) | GoTrue user removed; `user_subscriptions`, `user_acquisition`, and `user_id_map` rows removed; MailerLite subscriber GDPR-forgotten via `/api/subscribers/{id}/forget`, best-effort and never blocking deletion (SPEC-039 M6, resolved 2026-08-10) |
 
@@ -487,8 +487,9 @@ Scope:
   already exist; mocked coverage for the surrounding logic is green)
 - ⬜ B45 dropped — the legacy banned-email list was removed with M5; no
   app-level ban feature exists in the GoTrue flow
-- ⬜ B53 — `/go-pro-success` browser polling loop only (backend covered by
-  mocked tests)
+- ⬜ B53 — `/go-pro-success` browser polling loop: backend covered by mocked
+  tests; fallback copy + spinner fix implemented 2026-08-10; final re-smoke
+  (Steps 2–3) pending
 - ✅ B55 — delete-account MailerLite GDPR-forget + failure isolation
   (`test_auth.py`; GoTrue delete still runs when MailerLite is down)
 - ✅ Manual smoke: admin grant/change/remove — completed 2026-08-10 (also
@@ -642,6 +643,12 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     2026-08-09), `user_id_map` is in the explicit cleanup list, and
     `DELETE /auth/delete-account` now GDPR-forgets the MailerLite subscriber
     best-effort (`/api/subscribers/{id}/forget`; SPEC-039 M6; B55).
+15. **`/go-pro-success` fallback overclaimed — fixed 2026-08-10 (B53/C7):**
+    after the ~20s poll found no subscription, the page claimed "payment
+    received / processing" even when no payment evidence existed (direct URL
+    visit, failed/never-started payment). The fallback is now a neutral
+    "couldn't confirm your subscription yet" state with a spinner during the
+    poll; final browser re-smoke (Steps 2–3) pending.
 
 ---
 
