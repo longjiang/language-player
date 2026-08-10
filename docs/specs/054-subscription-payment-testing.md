@@ -573,6 +573,57 @@ before touching web/mobile.
 
 **IAP is deliberately deferred to Phase 4.**
 
+#### Phase 1 runbook — Stripe test-mode setup (do once)
+
+1. **Backend test mode** — `app_stripe_checkout.py` now honors
+   `STRIPE_TEST_MODE=1` (added 2026-08-10; default remains live). Restart
+   Flask with that env var set:
+
+   ```bash
+   STRIPE_TEST_MODE=1 python3.10 app.py   # or add it to the gunicorn env
+   ```
+
+   Verify: `curl "http://127.0.0.1:5001/stripe-prices?test=true"` returns
+   `price_1PSNOW…` test ids and `…test_bIY…` payment links; the no-`test`
+   variant still returns live ids.
+2. **Classic in test mode** — `TEST` is hardcoded to `false` in
+   `zerotohero-nuxt/lib/utils/variables.js`. For local E2E only, set it to
+   `true` (uncommitted; revert before deploying). This switches Classic's
+   publishable key, product, and price fetch to Stripe test mode. Classic is
+   reference-only for us, so this is a manual one-line local edit.
+3. **Servers** — Classic dev (`npm run dev` in `zerotohero-nuxt/`) with
+   `PYTHON_SERVER=http://127.0.0.1:5001/` in its `.env`; Flask running in
+   test mode from step 1.
+4. **Test user** — log in as an existing account or create a disposable one
+   (see Phase 0 live-smoke pattern). Use a fresh user for declined/cancel
+   rows so no stray subscriptions accumulate.
+
+#### S1–S8 — Stripe credit card (Classic)
+
+Flow for every success row: `/go-pro` → pick the plan → Credit Card →
+Stripe Checkout → pay with the listed test card → backend
+`/stripe_checkout_success` → `/go-pro-success` page.
+
+| # | Plan | Card | Steps | Expected |
+|---|---|---|---|---|
+| S1 | Monthly | `4242 4242 4242 4242` | Full flow | `/go-pro-success` shows Pro; DB row `type=monthly`, `status=active`, `payment_processor=stripe`, `payment_customer_id` set, `expires_on` ≈ now + 32d; MailerLite group `monthly` |
+| S2 | Annual | `4242 4242 4242 4242` | Full flow | Same, `type=annual`, expiry ≈ now + 367d |
+| S3 | Lifetime | `4242 4242 4242 4242` | Full flow | Same, `type=lifetime`, `expires_on=null` |
+| S4 | Monthly | `4000 0000 0000 0002` | Full flow | Stripe shows "Your card was declined"; no subscription row; user stays on Checkout |
+| S5 | Monthly | `4000 0000 0000 9995` | Full flow | "Insufficient funds" error; no row |
+| S6 | Monthly | `4000 0000 0000 0119` | Full flow | "Processing error" (generic decline); no row |
+| S7 | Monthly | `4000 0025 0000 3155` | Full flow; complete the 3DS challenge | Success + row as S1; repeat and **abort** the challenge → failure, no row |
+| S8 | Monthly | any card | Start Checkout, then close/cancel | Redirect to `/go-pro` (cancel URL); no subscription row |
+
+Verification per row:
+
+- DB: `select type, status, expires_on, payment_processor, payment_customer_id from user_subscriptions where user_id = '<uuid>' order by id desc limit 1;`
+- API: login + `GET /user-subscription` → expected type/expiry.
+- MailerLite: after S1–S3 and S7-success, the subscriber's groups include
+  the plan group; after S4–S6/S7-abort/S8, no group change and no new row.
+- Cleanup: delete the disposable user via `DELETE /auth/delete-account`
+  (also GDPR-forgets MailerLite), or remove the subscription via admin.
+
 ### Phase 2 — Web (`apps/web`) payment E2E
 
 - S9–S10 — Stripe credit card
