@@ -620,7 +620,8 @@ Verification per row:
 - DB: `select type, status, expires_on, payment_processor, payment_customer_id from user_subscriptions where user_id = '<uuid>' order by id desc limit 1;`
 - API: login + `GET /user-subscription` → expected type/expiry.
 - MailerLite: after S1–S3 and S7-success, the subscriber's groups include
-  the plan group; after S4–S6/S7-abort/S8, no group change and no new row.
+  the plan group — assigned to the **account email**, not the email typed in
+  the Stripe form; after S4–S6/S7-abort/S8, no group change and no new row.
 - Cleanup: delete the disposable user via `DELETE /auth/delete-account`
   (also GDPR-forgets MailerLite), or remove the subscription via admin.
 
@@ -703,6 +704,12 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     visit, failed/never-started payment). The fallback is now a neutral
     "couldn't confirm your subscription yet" state with a spinner during the
     poll; final browser re-smoke (Steps 2–3) pending.
+16. **Payment grants `status='active'` + MailerLite uses the account email —
+    fixed 2026-08-10 (found during S1):** Stripe/PayPal/IAP/webhook grants now
+    insert `status='active'` (previously defaulted to `draft`), and MailerLite
+    group assignment prefers `_email_for_user(owner)` over the Stripe
+    `payment_email`, so a checkout form email that differs from the account
+    email no longer mis-assigns the mailing-list group.
 
 ---
 
