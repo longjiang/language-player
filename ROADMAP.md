@@ -132,6 +132,20 @@
 - ⬜ Testing infrastructure (unit + E2E)
 - ⬜ Monitoring + error tracking
 
+## Phase 10: Admin Console
+
+- ✅ Admin console app (`apps/admin`) — separate Next.js 16 app, admin-only
+  NextAuth login, proxy route guard (SPEC-060, ADR-0032)
+- ✅ User search — email, name, phone, auth/legacy IDs, payment and
+  subscription information
+- ✅ User detail — subscriptions, learning progress, saved words, watch
+  history, likes, playlists, notes, phrases, bookshelf, SRS, settings,
+  acquisition source
+- ✅ Subscription management — grant, change, and remove via gated Flask
+  admin endpoints
+- ⬜ Content moderation (videos / shows / talks) in the admin console
+- ⬜ Payment log viewer and account actions (delete / reset / demote admin)
+
 ## Known Issues
 
 - **Arabic lemmatization (offline arabic-stem)** — logged 2026-08-08. Server
@@ -149,3 +163,4 @@
 
 ## Currently Working On
 - Phase 7: Mobile Integration — porting all Next.js pages to React Native
+- Phase 10: Admin Console — user management shipped; next surfaces TBD
