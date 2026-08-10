@@ -639,7 +639,11 @@ Verification per row:
   `type=lifetime`, `expires_on=null`, `payment_customer_id` set;
   `/user-subscription` returns it; MailerLite `lifetime` group on the account
   email.
-- ⬜ S4–S8 — pending.
+- ✅ S4 — Declined (2026-08-10): `4000 0000 0000 0002` shows "card declined"
+  in Stripe; no subscription row created (DB count 0, `/user-subscription`
+  null); MailerLite groups unchanged. (S1–S3 rows were manually removed
+  after verification.)
+- ⬜ S5–S8 — pending.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
