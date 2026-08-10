@@ -2,11 +2,10 @@
 
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import type { UserDataResponse } from '@langplayer/api-client';
 
 interface UserDataContextValue {
-  /** The full user-data response from GET /user-data, or null if not yet fetched / error. */
-  data: UserDataResponse | null;
+  /** Always null — the legacy full-blob GET /user-data was removed in WS-8. */
+  data: null;
   /** True once the cloud fetch has completed (or failed). */
   loaded: boolean;
 }
@@ -14,17 +13,13 @@ interface UserDataContextValue {
 const UserDataContext = createContext<UserDataContextValue>({ data: null, loaded: false });
 
 /**
- * Fetches GET /user-data ONCE when the user is authenticated, then
- * distributes the result via React Context. Downstream hooks (useSrs,
- * useSettings, useProgress) read from this context instead of calling
- * getUserData() independently. Saved words hydrate from GET /saved-words
- * (SPEC-034) and do not use this context.
- *
- * Re-fetches automatically when the user ID changes (login/logout/switch).
+ * No-op placeholder since WS-8 (2026-08-10). The legacy full-blob
+ * GET /user-data was removed; all user-data fields use the row APIs
+ * (SPEC-034 / SPEC-039 5.2+). Kept for layout compatibility.
  */
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const [data, setData] = useState<UserDataResponse | null>(null);
+  const [data, setData] = useState<null>(null);
   const [loaded, setLoaded] = useState(false);
   // Track which user ID was last fetched so we re-fetch on user change
   const lastUserId = useRef<string | null>(null);

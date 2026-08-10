@@ -1,23 +1,21 @@
 import React, { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
-import { useUserData, type UserDataResponse } from '@langplayer/api-client';
 import { useAuth } from './AuthContext';
 
 interface UserDataContextValue {
-  data: UserDataResponse | null;
+  /** Always null — the legacy full-blob GET /user-data was removed in WS-8. */
+  data: null;
   loaded: boolean;
 }
 
 const UserDataContext = createContext<UserDataContextValue>({ data: null, loaded: false });
 
 /**
- * Fetches GET /user-data ONCE when the user is authenticated, then
- * distributes the result via React Context. All downstream hooks
- * (useSavedWords, useSrs, useSettings) read from this context.
+ * Placeholder provider kept for layout compatibility. All user-data fields use
+ * the row APIs (SPEC-039 5.2+ / SPEC-034); the legacy full-blob GET /user-data
+ * was removed with the saved-words scaffolding (WS-8, 2026-08-10).
  */
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { getUserData } = useUserData();
-  const [data, setData] = useState<UserDataResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
   const lastUserId = useRef<string | null>(null);
 
@@ -27,27 +25,18 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
     if (authLoading) return;
 
     if (!userId) {
-      setData(null);
       setLoaded(true);
       lastUserId.current = null;
       return;
     }
 
     if (loaded && lastUserId.current === userId) return;
-
-    let cancelled = false;
     lastUserId.current = userId;
-
-    getUserData()
-      .then((result) => { if (!cancelled) setData(result); })
-      .catch(() => { if (!cancelled) setData(null); })
-      .finally(() => { if (!cancelled) setLoaded(true); });
-
-    return () => { cancelled = true; };
-  }, [userId, authLoading, loaded, getUserData]);
+    setLoaded(true);
+  }, [userId, authLoading, loaded]);
 
   return (
-    <UserDataContext.Provider value={{ data, loaded }}>
+    <UserDataContext.Provider value={{ data: null, loaded }}>
       {children}
     </UserDataContext.Provider>
   );

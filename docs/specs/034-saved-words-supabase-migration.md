@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Spec ID**: SPEC-034
-- **Feature**: Move saved-words storage from the Directus `user_data.saved_words` JSON blob to normalized `user_saved_words` tables in Supabase, with row-level CRUD through Flask on all three apps and a Directus blob mirror/reconciler for legacy Classic bundles
+- **Feature**: Move saved-words storage from the Directus `user_data.saved_words` JSON blob to normalized `user_saved_words` tables in Supabase, with row-level CRUD through Flask on all three apps and a Directus blob mirror/reconciler for legacy Nuxt/Classic browser bundles
 - **Status**: complete (2026-08-04)
 - **Created**: 2026-08-02
 - **Updated**: 2026-08-04 — split out of the full-database migration spec; remaining Directus migration → SPEC-039; video content migration → SPEC-038
@@ -24,6 +24,12 @@ client-side feature flags — both apps always use `/saved-words`, and the legac
 full-blob sync path was removed from their code. Classic's new bundle also uses
 the row API.
 
+**Terminology**: "Classic" (a.k.a. Nuxt/Classic) is the legacy Vue 2/Nuxt 2 web
+app in `zerotohero-nuxt/`. An "old-Classic bundle" is a stale, pre-rollout
+browser bundle of that app that still writes saved words to the Directus blob —
+it is not a separate app or codebase. The updated Nuxt/Classic bundle uses the
+Flask row API (Phases 2–4).
+
 ## Status (2026-08-04)
 
 Implemented end-to-end and verified:
@@ -36,13 +42,21 @@ Implemented end-to-end and verified:
 - **Phases 2–4** — web, mobile, and Classic all read/write saved words through
   Flask → Supabase (**T-switch achieved**).
 - **Gap catch-up** — full diff-based reconcile absorbed all adds/deletes made
-  by live Classic between backfill and rollout; final verify: word delta 0,
+  by live Nuxt/Classic between backfill and rollout; final verify: word delta 0,
   instance delta 0; Mary PASS (2,186/2,186), Bob PASS (4/4).
-- **Live sweep** — per-minute cron (`/saved-words/reconcile-sweep`) absorbs
-  old-bundle writes during rollout; sha-skip keeps unchanged users cheap.
+- **Live sweep** — (historical) per-minute cron
+  (`/saved-words/reconcile-sweep`) absorbed old-bundle writes during rollout;
+  sha-skip kept unchanged users cheap. **Removed 2026-08-10.**
 
-The mirror/reconciler/sweep scaffolding is retained until Directus is
-decommissioned (SPEC-039, sub-phase 5.9 / WS-8).
+**Teardown (2026-08-10, SPEC-039 WS-8)**: the mirror/reconciler/sweep
+scaffolding was removed — `routes/saved_words.py` is now row-API only,
+`routes/user_data.py` (`GET /user-data`, `POST /user-data/sync`) was deleted,
+the reconcile endpoints and lazy reconcile were removed, and
+`user_saved_word_sync` + `saved_words_sweep_state` were dropped (backed up as
+`*_backup_20260810`). Nuxt/Classic source (`zerotohero-nuxt/store/savedWords.js`)
+was verified to use only the row API (`GET`/`PUT /saved-words`,
+`DELETE /saved-words/{l2}/{wordId}`) — no Directus blob I/O or `user_data`
+PATCH calls remain.
 
 ## Supabase Schema
 
@@ -68,7 +82,7 @@ create table saved_word_instances (
   unique (saved_word_id, dedupe_key)
 );
 
-create table user_saved_word_sync (   -- scaffolding; dropped at SPEC-039 teardown
+create table user_saved_word_sync (   -- scaffolding; dropped 2026-08-10 (SPEC-039 WS-8)
   user_id bigint primary key,
   last_classic_blob jsonb,
   blob_sha256 text,
@@ -84,21 +98,25 @@ create index on user_saved_words (user_id, updated_at);
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/saved-words?l2=zh` | GET | Rows grouped by L2 into `{ words: SavedLexicalItemStore }`; lazy-reconciles the user (scaffolding) |
+| `/saved-words?l2=zh` | GET | Rows grouped by L2 into `{ words: SavedLexicalItemStore }` |
 | `/saved-words` | PUT | Upsert word: union `forms`, append/merge instance, `first_saved_at` = min, `updated_at` = max |
 | `/saved-words/{l2}/{wordId}` | DELETE | Hard-delete word row (instances cascade) |
-| `/saved-words/reconcile` | POST | Internal (scaffolding): reconcile one user; optional `skip_if_unchanged` |
-| `/saved-words/reconcile-sweep` | POST | Internal (scaffolding): dirty-user sweep, cron-invoked; compact count-only response |
+
+The internal `/saved-words/reconcile` and `/saved-words/reconcile-sweep`
+endpoints were removed 2026-08-10 (SPEC-039 WS-8).
 
 ## Write Path
 
-1. Apply the row op to Supabase in one transaction (bulk upserts for the
-   reconciler; single-record upsert for client PUT).
-2. Scaffolding: rebuild the canonical Directus blob, PATCH `user_data` with
-   `activity_skip=1` (preserving the other columns). Mirror failure sets
-   `mirror_pending`; Supabase stays authoritative.
+1. Apply the row op to Supabase in one transaction (single-record upsert for
+   client PUT; hard delete for client DELETE).
+
+(Historical scaffolding: the write path also rebuilt the canonical Directus
+blob and PATCHed `user_data` with `activity_skip=1` until 2026-08-10.)
 
 ## Reconciler (scaffolding)
+
+**Removed 2026-08-10 (SPEC-039 WS-8).** Historical behavior retained below for
+the record.
 
 Diff `last_classic_blob` → current blob and apply only real changes: appeared →
 insert, disappeared → delete, both → merge (union, idempotent), unchanged →
@@ -129,19 +147,19 @@ psycopg2) — idempotent, per-user checksum skipping:
 
 | Case | Behavior |
 |---|---|
-| Old Classic bundle with stale cache PATCHes the blob (rollout window) | Old→new diff treats unchanged words as no-op; only real adds/deletes apply (scaffolding) |
-| Old Classic re-adds a word after a web delete | Treated as a Classic add (consistent with its visible state); ends when the bundle is gone |
+| Old Nuxt/Classic bundle (stale pre-rollout browser bundle) PATCHes the blob (rollout window) | Historical (scaffolding removed 2026-08-10): old→new diff treated unchanged words as no-op; only real adds/deletes applied |
+| Old Nuxt/Classic re-adds a word after a web delete | Historical (scaffolding removed 2026-08-10): treated as a Classic add |
 | Web/mobile offline | Per-op queue with `updated_at`; server LWW; instance union prevents loss on concurrent adds |
 | Duplicate instances | `dedupe_key = sha1(timestamp\|form\|context.text)` |
-| Mirror (Directus) failure | Supabase authoritative; `mirror_pending` retry |
-| Reconcile with null `last_classic_blob` | Import the whole blob — never treat as "Classic deleted everything" |
+| Mirror (Directus) failure | Historical (scaffolding removed 2026-08-10): Supabase was authoritative; `mirror_pending` retried |
+| Reconcile with null `last_classic_blob` | Historical (scaffolding removed 2026-08-10): imported the whole blob |
 | Re-save of an existing word | Union merge in `upsert_word`; dates min/max; no instance loss |
 
 ## Success Criteria (met)
 
 1. A word added on any app appears on all apps.
 2. A word deleted on any app disappears everywhere (≤ one sweep interval for
-   Classic-originated changes during rollout).
+   Nuxt/Classic-originated changes during rollout).
 3. No full-blob `saved_words` sync calls remain in web/mobile/Classic source.
 4. Backfill + reconcile idempotent, verified delta 0 against the source.
 5. Zero planned downtime; rollback by revert (no feature flags).

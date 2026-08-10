@@ -28,6 +28,16 @@ Directus is sunset **30 days after everything is transferred and thoroughly
 tested** (T-complete + 30) — the window is an observation period, not a
 countdown from the saved-words switch.
 
+### Terminology
+
+- **Classic (a.k.a. Nuxt/Classic)**: the legacy Vue 2/Nuxt 2 web app at
+  `zerotohero-nuxt/`.
+- **Old-Classic bundle**: a stale, pre-rollout browser bundle of that app —
+  e.g. one that still PATCHes `user_data` blobs to Directus. It is not a
+  separate app or codebase. The current Nuxt/Classic source has zero Directus
+  calls since 5.8; "old-Classic" appears only in rollout-monitoring and
+  scaffolding-teardown contexts (SPEC-034, WS-8).
+
 ## Decisions
 
 1. **Classic will be edited** (already started; the AGENTS.md reference-only
@@ -85,12 +95,12 @@ Already in Supabase: video content family (SPEC-038) and saved words
 
 | Layer | Auth | Data access |
 |---|---|---|
-| **Classic (Nuxt)** | nuxt-auth `local` strategy → Directus | Directus API directly: videos, channels, tv shows, subs search, PHP tools, remaining `user_data` blob PATCHes, likes, watch history, notes, subscriptions |
+| **Classic (Nuxt)** | nuxt-auth `local` strategy → Directus | Directus API directly: videos, channels, tv shows, subs search, PHP tools, legacy `user_data` blob PATCHes (removed 5.8/WS-8), likes, watch history, notes, subscriptions |
 | **Web (Next.js)** | NextAuth → Flask `/auth/login` (Directus proxy) | Flask; three Next.js API routes still query Directus (`/api/videos/*`, `/api/channels/*`) per SPEC-024 |
 | **Mobile (Expo)** | `AuthContext` → Flask `/auth/login` (Directus proxy) | Flask; one direct Directus call for watch-history delete (SPEC-024) |
-| **Flask** | accepts Directus JWT; **base64-decodes without signature verification** (safe only because Directus validates downstream) | Directus for: auth, user_data, user_notes (`items/text`), subscriptions/payments, videos/channels/tv shows, plus `utils_subscription.py` and payment apps |
+| **Flask** | accepts Directus JWT; **base64-decodes without signature verification** (safe only because Directus validates downstream) | Directus for: auth, user_notes (`items/text`), subscriptions/payments, videos/channels/tv shows, plus `utils_subscription.py` and payment apps |
 
-Flask's remaining Directus dependencies: `routes/auth.py`, `routes/user_data.py`,
+Flask's remaining Directus dependencies: `routes/auth.py`,
 `routes/user_notes.py`, `routes/video.py`, `utils_directus.py`,
 `utils_subscription.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`,
 `app_in_app_purchase.py`, `app_directus.py`.
@@ -98,8 +108,9 @@ Flask's remaining Directus dependencies: `routes/auth.py`, `routes/user_data.py`
 ## Target Architecture
 
 Transition (until T-complete): Flask is the single gateway; Directus stays
-alive only as auth import source, old-Classic bundle blob store, and
-not-yet-cut-over paths. Permanent (after decommission): Flask → Supabase +
+alive only as auth import source and not-yet-cut-over paths (the saved-words
+blob store was removed with the scaffolding, WS-8). Permanent (after
+decommission): Flask → Supabase +
 GoTrue (proxied); no Directus, no client SDKs.
 
 ## Workstreams
@@ -255,8 +266,10 @@ Follow the SPEC-034 row pattern:
 | `bookshelf` | `user_bookshelf` | Small; JSONB acceptable |
 | `history` | folded into `user_progress` or own rows | Verify Classic `store/history.js` |
 
-`GET /user-data` / `POST /user-data/sync` stay alive until every field moves;
-each field is removed from `_USER_DATA_SYNC_FIELDS` as its client switch lands.
+`GET /user-data` / `POST /user-data/sync` stayed alive until every field moved;
+each field was removed from `_USER_DATA_SYNC_FIELDS` as its client switch
+landed. With `saved_words` as the last field, both routes were removed with
+the WS-8 scaffolding teardown (2026-08-10).
 
 **Progress (2026-08-04):**
 
@@ -498,9 +511,17 @@ Classic. See the 5.8 sub-phase for the endpoint inventory.
 
 ### WS-8 — Scaffolding Teardown & Decommission
 
-1. After no old-Classic bundles remain and all workstreams are live: stop
-   mirror + reconciler + sweep, drop `user_saved_word_sync` +
-   `saved_words_sweep_state`, remove `saved_words` from `_USER_DATA_SYNC_FIELDS`.
+1. ✅ **Teardown implemented 2026-08-10.** Old Nuxt/Classic bundle precondition
+   satisfied: current `zerotohero-nuxt` source uses only the row API and has
+   zero blob I/O, so no rollout signal is needed. Code changes: mirror +
+   reconciler + sweep removed from `routes/saved_words.py` and
+   `utils_saved_words.py`; `routes/user_data.py` (`GET /user-data`,
+   `POST /user-data/sync`) deleted; `saved_words` removed from
+   `_USER_DATA_SYNC_FIELDS` (module removed); the legacy API-client wrapper and
+   web/mobile UserDataProvider fetches removed. Deploy steps: stop the sweep
+   cron, deploy Flask, then run
+   `zerotohero-python-server/tmp/supabase-saved-words-teardown.sql` (backs up
+   and drops `user_saved_word_sync` + `saved_words_sweep_state`).
 2. Freeze Directus writes; final full export archived off-box.
 3. Zero Directus traffic for 7 consecutive days.
 4. Cut DNS; remove Directus credentials and `directus_*` code paths.
@@ -828,9 +849,14 @@ mobile source); endpoints exercised via Flask test client (admin gate 401/403,
 video/phrasebook/show CRUD round-trips, stats, content wrapper, classic
 dictionary, feedback, tag cloud); live regression on local dev + production —
 login, profile (name display), notes CRUD incl. rename, watch history,
-subscription check, explore-media page loads. Remaining for full acceptance:
-admin-page browser regression (VideoAdmin, db-audit, ngram, phrase-survey,
-assign-lesson-videos, phrasebook admin) and the formal 5.9 cross-app matrix.
+subscription check, explore-media page loads.
+
+**Decision (2026-08-10):** admin-page browser regression (VideoAdmin, db-audit,
+ngram, phrase-survey, assign-lesson-videos, phrasebook admin) is **not
+required** and is removed from the 5.9 gate — Classic admin pages are out of
+scope (the admin console, SPEC-060/ADR-0032, is the replacement path).
+
+Remaining for full acceptance: the formal 5.9 cross-app matrix.
 
 #### 5.9 — Test cycle → 30-day sunset window → teardown + decommission
 
@@ -846,9 +872,11 @@ Steps:
    and webhook idempotency, and delete-account cleanup (M1–M4, M6–M7).
 2. **30-day window**: monitor error rates, reconcile diffs, and Directus
    traffic; require 7 consecutive days of zero Directus traffic.
-3. **Teardown**: stop the sweep cron, remove mirror/reconciler code, drop
-   `user_saved_word_sync` + `saved_words_sweep_state`, remove `saved_words`
-   from `_USER_DATA_SYNC_FIELDS`.
+3. **Teardown**: saved-words scaffolding teardown implemented 2026-08-10
+   (stop sweep cron, remove mirror/reconciler code, drop `user_saved_word_sync`
+   + `saved_words_sweep_state`, remove `saved_words` from
+   `_USER_DATA_SYNC_FIELDS`); deployment still needs the cron removal + SQL
+   table drop.
 4. **Decommission**: freeze writes, final full MySQL export archived off-box,
    cut DNS, remove Directus credentials from Flask `.env`, delete
    `directus_*`-dependent code paths.
@@ -879,7 +907,9 @@ T-complete → T+30):**
   resolved 2026-08-10).
 - [ ] Zero `DIRECTUS_URL` / `directusvps` references in any app source.
 - [ ] Zero Directus traffic for 7 consecutive days.
-- [ ] Saved-words scaffolding removed.
+- [ ] Saved-words scaffolding removed (code teardown 2026-08-10; the
+  `user_saved_word_sync` / `saved_words_sweep_state` drop is staged via
+  `tmp/supabase-saved-words-teardown.sql` — finish on deploy).
 - [ ] Final Directus backup archived off-box; credentials removed from `.env`.
 
 ### Phase 6 — Post-Sunset
@@ -889,7 +919,9 @@ legacy columns and old-id accept-and-map code.
 
 ## Edge Cases
 
-- Old-Classic stale blobs: covered by the SPEC-034 diff reconciler.
+- Old Nuxt/Classic stale blobs: no longer possible — current Nuxt/Classic
+  source is on the row API and the blob reconciler was removed (WS-8,
+  2026-08-10).
 - User-id remap: every user table joins through `user_id_map`; orphan check
   (unmapped user ids = 0) after each migration.
 - Video-ID remap: deterministic prefix function; count/join verification; keep
@@ -916,7 +948,7 @@ legacy columns and old-id accept-and-map code.
 | Video-ID remap errors | Medium | Medium | Deterministic prefix; count/join verification; old-id mapping view until decommission |
 | Classic regressions while consolidating | Medium | High | One area at a time; Mary/Bob regression per sub-phase |
 | Subs-search replacement not ready | Medium | Medium | pg_trgm interim; ship before WS-8 |
-| Old Classic bundles linger | Medium | Low–Medium | SPEC-034 scaffolding; monitor blob PATCH traffic |
+| Old Nuxt/Classic browser bundles linger | Low (resolved 2026-08-10) | Low | Current Nuxt/Classic source is on the row API (5.8); SPEC-034 verified zero blob I/O; no rollout signal needed — scaffolding teardown unblocked |
 
 ## Success Criteria
 
@@ -1273,7 +1305,11 @@ legacy `/verification_email*` removal.
 4. **Resolved 2026-08-10:** GoTrue owns email verification; trial +
    MailerLite hooks live on `/auth/verify-email` (M1) and in the migrated
    `auto_verify_email.py` support pipe (M5). (M1/M5)
-5. Rollout signal for old-Classic bundles (for scaffolding teardown).
+5. **Resolved 2026-08-10:** rollout signal for old Nuxt/Classic browser
+   bundles (for scaffolding teardown). Current Nuxt/Classic source is fully on
+   the Flask row API since 5.8, and SPEC-034 verification found zero blob I/O /
+   `user_data` PATCH calls in `zerotohero-nuxt` — old bundles are no longer
+   tracked and scaffolding teardown is unblocked.
 6. Anonymous-local merge on web first login: ship or keep server-wins?
 7. **Resolved 2026-08-10:** the free trial is granted after `/auth/verify-email`
    via `grant_trial_and_enroll_mailerlite`; any existing subscription blocks it. (M1)

@@ -50,7 +50,7 @@ register_routes(MyApp)       # 10 blueprints
 | **analytics_bp** | `routes/analytics.py` | `/ga-active-users-by-city`, `/ga-popular-language-pairs`, `/ga-popular-features`, `/video-tags` |
 | **payments_bp** | `routes/payments.py` | `/paypal_checkout_success`, `/in_app_purchase_success`, `/stripe_checkout_success`, Stripe webhooks |
 | **subscriptions_bp** | `routes/subscriptions.py` | `/admin/update_or_add_subscription`, `/admin/check_user_subscription`, `/cancel-subscription-at-end-of-period`, `/verification_email`, `/acquisition_survey` |
-| **user_data_bp** | `routes/user_data.py` | `/user-data` (GET), `/user-data/sync` (POST) — per-user saved words + progress |
+| **saved_words_bp** | `routes/saved_words.py` | `/saved-words` (GET/PUT), `/saved-words/<l2>/<id>` (DELETE) — row-level saved words (SPEC-034) |
 
 ---
 
@@ -119,12 +119,16 @@ Each returns: `{ "md5_hash": [ {word, lemma, pos}, ... ] }`
 | `/recommend-videos` | GET | AI-powered video recommendations. Params: `user_id`, `l2`, `level`, `preferred_categories`, `exclude_ids`, `made_for_kids`, `limit`, `music`. |
 | `/subs-search` | GET | Search subtitles for terms. Params: `terms`, `l2`, `category`, `tv_show`, `limit`, `context`, `sort`. Returns matched subtitle lines with context. |
 
-### User Data (`routes/user_data.py`)
+### Saved Words (`routes/saved_words.py`)
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/user-data` | GET | Fetch user's saved_words + progress from Directus. Auth via `Authorization: Bearer <jwt>`. Auto-creates record if not found. |
-| `/user-data/sync` | POST | Sync saved_words to Directus. Body: `{saved_words: "<JSON string>"}`. |
+| `/saved-words?l2=zh` | GET | Fetch the user's saved-word rows from Supabase, grouped by L2. Auth via Supabase JWT (ADR-0023). |
+| `/saved-words` | PUT | Upsert one word row (union forms/instances, min/max timestamps). |
+| `/saved-words/{l2}/{wordId}` | DELETE | Hard-delete one word row (instances cascade). |
+
+The legacy Directus blob endpoints (`GET /user-data`, `POST /user-data/sync`)
+were removed in SPEC-039 WS-8 (2026-08-10).
 
 ### Payments (`routes/payments.py`)
 
@@ -368,9 +372,9 @@ The Next.js app currently uses this Python backend. Important notes:
 
 1. **Dictionary lookup is server-side**: Unlike GO's local SQLite dictionary, the web app calls `/dictionary/lookup` (Flask endpoint). The GO app downloads the full dictionary DB to the device; the web app does not.
 
-2. **User data sync**: Next.js app uses `/user-data` and `/user-data/sync` endpoints (same as GO). Both apps use Directus `user_data` collection.
+2. **User data sync**: saved words use the Flask row API (`/saved-words`) backed by Supabase (SPEC-034). The legacy Directus blob endpoints (`/user-data`, `/user-data/sync`) were removed in SPEC-039 WS-8.
 
-3. **Saved words storage**: Classic stores saved words in localStorage + Directus. GO stores in UserDataContext + Directus. Next.js uses `useSavedWords` hook + Directus.
+3. **Saved words storage**: Classic (`zerotohero-nuxt`) uses a localStorage cache + the Flask row API. GO stores in UserDataContext + the Flask row API. Next.js uses the `useSavedWords` hook + the Flask row API. All backed by Supabase rows (SPEC-034).
 
 4. **Lemmatization**: All lemmatization is done server-side via Flask. Neither frontend does local tokenization.
 
