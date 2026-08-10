@@ -155,8 +155,17 @@ Reference: <https://developer.paypal.com/sandbox-testing/overview>. PayPal sandb
    and `PAYPAL_SANDBOX_CLIENT_ID` in `zerotohero-nuxt/.env`, then restart
    Classic. **Never ship `PAYPAL_ENV=sandbox` in production.**
 5. In Classic go-pro, choose Lifetime → PayPal, log in as the sandbox **buyer** account, approve the payment.
-6. Expected: Classic redirects to `{PYTHON_SERVER}/paypal_checkout_success?pay_id=...&user_id=...&host=...`; backend verifies `state == 'approved'` and grants a **lifetime** subscription (`expires_on` null, `payment_processor = 'paypal'`); user lands on `/go-pro-success`.
-7. Cancel test: abandon/close the PayPal approval dialog → user returns to go-pro with the cancelled/error message; no subscription record.
+6. **Flow (Orders v2, implemented 2026-08-10):** the JS SDK button calls
+   `POST /create-paypal-order` (backend creates `POST /v2/checkout/orders`),
+   the buyer approves in the popup, then the client redirects to
+   `{PYTHON_SERVER}/paypal_checkout_success?order_id=...&user_id=...&host=...`;
+   the backend captures the order (`POST /v2/checkout/orders/{id}/capture`),
+   verifies `status=COMPLETED`, and grants a **lifetime** subscription
+   (`expires_on` null, `payment_processor = 'paypal'`); user lands on
+   `/go-pro-success`. Retry-safe: an already-captured COMPLETED order is
+   verified via GET and grants idempotently.
+7. Cancel test: abandon/close the PayPal approval dialog → `onCancel` shows
+   the cancelled message; no subscription record.
 
 Web and Mobile only link to `https://languageplayer.io/go-pro` for PayPal — in test mode that link goes to **production Classic**, so the PayPal flow cannot be safely end-tested from Web/Mobile without a test build of Classic running on a test host. Record this limitation rather than clicking the production link.
 
@@ -243,8 +252,8 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 
 | # | App | Steps | Expected result |
 |---|---|---|---|
-| P1 | Classic | Sandbox preconditions (1.3) → Lifetime → PayPal → log in as sandbox buyer → approve | Redirect to `/paypal_checkout_success`; backend verifies approved state; lifetime granted: `payment_processor=paypal`, `expires_on=null`, no `payment_customer_id`; lands on `/go-pro-success` |
-| P2 | Classic | Approve with a **declined/failed** sandbox payment (or force an unapproved state) | Redirect to `/go-pro-error?paypal_pay_id=...`; no subscription row |
+| P1 | Classic | Sandbox preconditions (1.3) → Lifetime → PayPal → log in as sandbox buyer → approve | `create-paypal-order` → JS SDK popup → `/paypal_checkout_success?order_id=...`; backend captures + verifies `COMPLETED`; lifetime granted: `payment_processor=paypal`, `expires_on=null`, no `payment_customer_id`; lands on `/go-pro-success` |
+| P2 | Classic | Approve with a **declined/failed** sandbox payment (or force an unapproved state) | Redirect to `/go-pro-error?paypal_order_id=...`; no subscription row |
 | P3 | Classic | Cancel the PayPal dialog | `paypalPaymentStatus = 'cancelled'` warning on go-pro; no subscription |
 | P4 | Classic | Purchase twice with two sandbox buyers | Second purchase updates/keeps one lifetime record per user (no duplicate charge without consent; verify idempotency) |
 | P5 | Web | Lifetime → PayPal link | Opens `https://languageplayer.io/go-pro` (**production Classic**) — do **not** complete; document that Web has no sandbox PayPal path until a test Classic host exists |
@@ -706,7 +715,10 @@ Verification per row:
 - ✅ S14 — Webhook auth (2026-08-10): bogus `Stripe-Signature` → 400
   ("No signatures found…"); missing signature → 400 ("Unable to extract
   timestamp…"); no grant applied (row count unchanged).
-- ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
+- ✅ W rows complete — W1 live + W2–W4 foregone (see above).
+- ⬜ P1–P4 — PayPal sandbox UI run pending (backend Orders v2 flow
+  implemented + mocked; Classic button migrated to JS SDK v6).
+- ⬜ C4/C6/C7 — cross-app checks pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
 
@@ -793,6 +805,13 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     group assignment prefers `_email_for_user(owner)` over the Stripe
     `payment_email`, so a checkout form email that differs from the account
     email no longer mis-assigns the mailing-list group.
+17. **PayPal migrated to Orders v2 + JS SDK v6 — 2026-08-10 (P rows):** the
+    deprecated Payments v1 lookup and `vue-paypal-checkout` v4 SDK 401'd in
+    sandbox (PayPal disabled the legacy client auth). Classic now loads the
+    current JS SDK, creates orders via `POST /create-paypal-order`, and the
+    backend captures/verifies via `/v2/checkout/orders/{id}/capture` before
+    granting. Backend covered by `test_paypal_orders_v2.py`; sandbox UI run
+    pending.
 
 ---
 
