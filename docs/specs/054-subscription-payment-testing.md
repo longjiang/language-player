@@ -653,7 +653,10 @@ Verification per row:
   granted a monthly row (`31142`, `status=active`, ≈ +32d, MailerLite
   `monthly`); failed challenge (after cancel) created no new row (count 1);
   cancel cleared `payment_customer_id` and added MailerLite `disengaged`.
-- ⬜ S8 — pending.
+- ✅ S8 — Cancel/close Checkout (2026-08-10): closing the Stripe window
+  redirects back to `/go-pro`; no subscription row created (DB count 0,
+  `/user-subscription` null).
+- ✅ **S1–S8 complete** — Stripe credit-card batch on Classic is done.
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
