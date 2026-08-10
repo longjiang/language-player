@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const CSV_TO_CHROME_LOCALE = { 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
 
   /** Popular languages shown first in each column (matches the sidebar modal). */
-  const POPULAR_L1 = ['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'pt', 'ru', 'ar', 'hi'];
+  const POPULAR_L1 = ['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'pt', 'ru', 'ar'];
   const POPULAR_L2 = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi'];
 
   /** { code: { chromeLocale: name } } from dist/lang-names.json */
