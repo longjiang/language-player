@@ -673,6 +673,15 @@ Verification per row:
   redirects back to `/go-pro`; no subscription row created (DB count 0,
   `/user-subscription` null).
 - ✅ **S1–S8 complete** — Stripe credit-card batch on Classic is done.
+- ✅ W1 — Monthly WeChat Pay via test Payment Link (2026-08-10): completed
+  the simulated test payment; `checkout.session.completed` webhook granted
+  row `31145` (`status=active`, `type=monthly`, ≈ +32d,
+  `payment_customer_id=null`, webhook notes); `/user-subscription` returns
+  it; MailerLite `monthly` on the account email. Required local webhook
+  forwarding (`stripe listen` + `STRIPE_WEBHOOK_SECRET`) and the
+  local-redirect test link — see Phase 1 runbook setup.
+- ⬜ W2–W4 — pending (W2 = Alipay annual to cover the second provider; W3 =
+  same path lifetime; W4 = cancel/abandon, same as S8).
 - ⬜ W1–W4, P1–P4, S13/S14, C4/C6/C7 — pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
