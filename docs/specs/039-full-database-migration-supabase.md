@@ -518,10 +518,11 @@ Classic. See the 5.8 sub-phase for the endpoint inventory.
    `utils_saved_words.py`; `routes/user_data.py` (`GET /user-data`,
    `POST /user-data/sync`) deleted; `saved_words` removed from
    `_USER_DATA_SYNC_FIELDS` (module removed); the legacy API-client wrapper and
-   web/mobile UserDataProvider fetches removed. Deploy steps: stop the sweep
-   cron, deploy Flask, then run
-   `zerotohero-python-server/tmp/supabase-saved-words-teardown.sql` (backs up
-   and drops `user_saved_word_sync` + `saved_words_sweep_state`).
+   web/mobile UserDataProvider fetches removed. Deployed: sweep cron stopped
+   (commented out on the VPS), gunicorn restarted on the new code, and
+   `tmp/supabase-saved-words-teardown.sql` ran against production —
+   `user_saved_word_sync` (6,475 rows) and `saved_words_sweep_state` (1 row)
+   backed up as `*_backup_20260810` and dropped.
 2. Freeze Directus writes; final full export archived off-box.
 3. Zero Directus traffic for 7 consecutive days.
 4. Cut DNS; remove Directus credentials and `directus_*` code paths.
@@ -872,11 +873,10 @@ Steps:
    and webhook idempotency, and delete-account cleanup (M1–M4, M6–M7).
 2. **30-day window**: monitor error rates, reconcile diffs, and Directus
    traffic; require 7 consecutive days of zero Directus traffic.
-3. **Teardown**: saved-words scaffolding teardown implemented 2026-08-10
-   (stop sweep cron, remove mirror/reconciler code, drop `user_saved_word_sync`
-   + `saved_words_sweep_state`, remove `saved_words` from
-   `_USER_DATA_SYNC_FIELDS`); deployment still needs the cron removal + SQL
-   table drop.
+3. **Teardown**: saved-words scaffolding teardown **complete** 2026-08-10 —
+   sweep cron stopped, mirror/reconciler code removed, `user_saved_word_sync`
+   + `saved_words_sweep_state` dropped (backed up), `saved_words` removed from
+   `_USER_DATA_SYNC_FIELDS`.
 4. **Decommission**: freeze writes, final full MySQL export archived off-box,
    cut DNS, remove Directus credentials from Flask `.env`, delete
    `directus_*`-dependent code paths.
@@ -907,9 +907,9 @@ T-complete → T+30):**
   resolved 2026-08-10).
 - [ ] Zero `DIRECTUS_URL` / `directusvps` references in any app source.
 - [ ] Zero Directus traffic for 7 consecutive days.
-- [ ] Saved-words scaffolding removed (code teardown 2026-08-10; the
-  `user_saved_word_sync` / `saved_words_sweep_state` drop is staged via
-  `tmp/supabase-saved-words-teardown.sql` — finish on deploy).
+- ✅ Saved-words scaffolding removed (code + cron + tables, 2026-08-10;
+  `user_saved_word_sync` / `saved_words_sweep_state` backed up as
+  `*_backup_20260810` and dropped).
 - [ ] Final Directus backup archived off-box; credentials removed from `.env`.
 
 ### Phase 6 — Post-Sunset

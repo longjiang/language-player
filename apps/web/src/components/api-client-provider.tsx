@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { logerr } from '@/lib/logger';
 import { setAuthTokens } from '@/lib/auth-tokens';
+import { clearUserData } from '@/lib/user-data-wipe';
 
 /** Decode the JWT `exp` claim client-side (mirrors auth.ts's server-side helper). */
 function tokenExpiry(token: string): number {
@@ -59,6 +60,7 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
           // Refresh token is dead — GoTrue answers a rejected/rotated refresh
           // token with 400 invalid_grant (not 401), so treat both as a dead
           // session and clean-logout. Otherwise the app loops 401/400 forever.
+          clearUserData();
           signOut({ redirect: false }).catch(() => {});
           return null;
         }
