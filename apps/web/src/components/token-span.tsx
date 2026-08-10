@@ -251,16 +251,28 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     const isVi = base === 'vi';
     if (!isKo && !isVi) return null;
     for (const lemma of token.lemmas) {
-      const entries = getCachedEntries(l2Code, lemma.lemma);
-      if (!entries) continue;
-      for (const entry of entries) {
-        if (!entry.han_script) continue;
-        if (isKo && entry.han_script.hanja) return entry.han_script.hanja;
-        if (isVi && entry.han_script.han) return entry.han_script.han;
+      // The batch dictionary lookup is case-sensitive on the server, while
+      // Vietnamese lemmatization keeps sentence-initial capitals (e.g. "Bạn").
+      // Try the exact form first, then the lowercase form — dictionary heads
+      // are stored lowercase, so both keys may be populated in the cache.
+      const lookupTexts = lemma.lemma === lemma.lemma.toLowerCase()
+        ? [lemma.lemma]
+        : [lemma.lemma, lemma.lemma.toLowerCase()];
+      for (const lookupText of lookupTexts) {
+        const entries = getCachedEntries(base, lookupText);
+        if (!entries) continue;
+        for (const entry of entries) {
+          if (!entry.han_script) continue;
+          if (isKo && entry.han_script.hanja) return entry.han_script.hanja;
+          if (isVi && entry.han_script.han) return entry.han_script.han;
+        }
       }
     }
+    // cacheVersion is a dependency (below) so this memo re-runs once the async
+    // batch lookup populates the dictionary cache — otherwise the first
+    // (cache-miss) render would lock in null.
     return null;
-  }, [byeonggi, base, l2Code, token.lemmas]);
+  }, [byeonggi, base, l2Code, token.lemmas, cacheVersion]);
 
   // ── Byeonggi node: small muted text, same size as furigana <rt>, no brackets ──
   const byeonggiNode = (byeonggiText && !isQuizBlanking) ? (

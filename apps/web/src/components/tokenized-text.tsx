@@ -520,11 +520,22 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         if (!uniqueLemmas.has(t)) {
           uniqueLemmas.set(t, lemma.part_of_speech ?? '');
         }
+        // Batch lookup is case-sensitive, but Vietnamese (and other Latin
+        // script) lemmatization keeps sentence-initial capitals. Enqueue the
+        // lowercase form too so dictionary entries populate for "Bạn"/"bạn".
+        const lower = t.toLowerCase();
+        if (lower !== t && !uniqueLemmas.has(lower)) {
+          uniqueLemmas.set(lower, lemma.part_of_speech ?? '');
+        }
       }
       // Also include the surface form if it differs from all lemmas
       const surface = token.text.trim();
       if (surface && surface.length > 0 && !/^[\s\p{P}]+$/u.test(surface) && !uniqueLemmas.has(surface)) {
         uniqueLemmas.set(surface, '');
+      }
+      const surfaceLower = surface.toLowerCase();
+      if (surfaceLower !== surface && !uniqueLemmas.has(surfaceLower)) {
+        uniqueLemmas.set(surfaceLower, '');
       }
     }
 

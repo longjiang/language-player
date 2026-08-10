@@ -582,11 +582,22 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         if (!uniqueLemmas.has(t)) {
           uniqueLemmas.set(t, lemma.part_of_speech ?? '');
         }
+        // Batch lookup is case-sensitive, but Vietnamese (and other Latin
+        // script) lemmatization keeps sentence-initial capitals. Enqueue the
+        // lowercase form too so dictionary entries populate for "Bạn"/"bạn".
+        const lower = t.toLowerCase();
+        if (lower !== t && !uniqueLemmas.has(lower)) {
+          uniqueLemmas.set(lower, lemma.part_of_speech ?? '');
+        }
       }
       // Also include surface form if different from lemmas
       const surface = token.text.trim();
       if (surface && surface.length > 0 && !/^[\s\p{P}]+$/u.test(surface) && !uniqueLemmas.has(surface)) {
         uniqueLemmas.set(surface, '');
+      }
+      const surfaceLower = surface.toLowerCase();
+      if (surfaceLower !== surface && !uniqueLemmas.has(surfaceLower)) {
+        uniqueLemmas.set(surfaceLower, '');
       }
     }
 
@@ -644,19 +655,25 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     const firstLemma = token.lemmas[0]!.lemma;
     // Cache/backend keys use the base L2 code (e.g. "zh" not "zh-Hans"), but
     // components may be mounted with the regional code. Check both so quick
-    // glosses work everywhere (including video subtitles).
+    // glosses work everywhere (including video subtitles). Also check the
+    // lowercase form — the batch lookup is case-sensitive on the server, while
+    // Vietnamese lemmatization keeps sentence-initial capitals ("Bạn").
     const entries =
       getCachedEntries(l2Code, firstLemma) ??
-      getCachedEntries(baseCode(l2Code), firstLemma);
+      getCachedEntries(baseCode(l2Code), firstLemma) ??
+      getCachedEntries(l2Code, firstLemma.toLowerCase()) ??
+      getCachedEntries(baseCode(l2Code), firstLemma.toLowerCase());
     if (!entries || entries.length === 0) {
       // Try surface form if lemma didn't match
       const surfaceEntries =
         getCachedEntries(l2Code, token.text) ??
-        getCachedEntries(baseCode(l2Code), token.text);
+        getCachedEntries(baseCode(l2Code), token.text) ??
+        getCachedEntries(l2Code, token.text.toLowerCase()) ??
+        getCachedEntries(baseCode(l2Code), token.text.toLowerCase());
       if (surfaceEntries && surfaceEntries.length > 0) {
         const e = surfaceEntries[0]!;
         return {
-          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? null,
+          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? e.han_script?.han ?? null,
           firstDef: e.definitions ? firstGloss(e.definitions) : null,
         };
       }
@@ -664,7 +681,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     }
     const firstEntry = entries[0]!;
     return {
-      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? null,
+      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? firstEntry.han_script?.han ?? null,
       firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
     };
   }, [l2Code, cacheVersion]);
