@@ -96,7 +96,7 @@ export default function GoProPage() {
 
   const selectedPlanData = PLANS.find(p => p.planKey === selectedPlan);
 
-  // Option A (SPEC-054 #20, commit a8471782): an active auto-renewing
+  // Purchase gating (ARCH-022, commit a8471782): an active auto-renewing
   // subscription blocks new purchases until cancelled — matches Classic.
   // Non-trial + unexpired + payment_customer_id set (i.e. live Stripe
   // auto-renew). Lifetime rows have no payment_customer_id and instead get

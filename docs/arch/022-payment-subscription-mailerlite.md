@@ -115,7 +115,7 @@ All purchase paths converge on `update_or_add_subscription(payload)`:
 - If the user has no row, a new one is **inserted**.
 - After either write, the row's owner email is assigned to the matching MailerLite group (see [MailerLite](#mailerlite-mailing-list-integration)).
 
-### Purchase gating — active auto-renew blocks new purchases (SPEC-054 #20)
+### Purchase gating — active auto-renew blocks new purchases
 
 Web and mobile prevent a user from buying any plan while they have an
 **active auto-renewing subscription** — matching Classic's

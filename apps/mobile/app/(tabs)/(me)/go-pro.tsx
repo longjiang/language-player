@@ -208,8 +208,8 @@ export default function GoProScreen() {
   const lifetimeSalePrice = saleActive ? salePrice(prices, 'lifetime') : null;
 
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
-  // Option A (SPEC-054): an active auto-renewing subscription blocks new
-  // purchases until cancelled — matches Classic (commit a8471782).
+  // Purchase gating (ARCH-022): an active auto-renewing subscription blocks
+  // new purchases until cancelled — matches Classic (commit a8471782).
   // Only non-trial, unexpired subscriptions WITH payment_customer_id (i.e.
   // auto-renewing Stripe) show the "cancel first" gate. Lifetime IAP rows
   // have no payment_customer_id and instead get the "already owned" state
