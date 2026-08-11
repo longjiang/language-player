@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { useSubscription } from '@/hooks/use-subscription';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getStripePrices, findUsdPrice, findCnyPrice, type StripePrice } from '@/lib/prices';
 import {
@@ -70,6 +71,7 @@ export default function GoProPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const userId = session?.user?.id;
+  const { sub: subscription } = useSubscription();
 
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [prices, setPrices] = useState<StripePrice[]>([]);
@@ -93,6 +95,16 @@ export default function GoProPage() {
   }, []);
 
   const selectedPlanData = PLANS.find(p => p.planKey === selectedPlan);
+
+  // Option A (SPEC-054): an active non-trial subscription blocks all new
+  // purchases until cancelled — matches Classic.
+  const activeNonTrial = !!subscription
+    && subscription.type !== 'trial'
+    && (
+      subscription.type === 'lifetime'
+      || (subscription.expires_on
+        && new Date(subscription.expires_on.replace(' ', 'T')) > new Date())
+    );
 
   // ── Stripe Credit Card checkout ──
   const handleStripeCheckout = useCallback(async () => {
@@ -209,6 +221,21 @@ export default function GoProPage() {
             {t('title.choose_payment_method')}
           </h2>
 
+          {activeNonTrial ? (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-center">
+              <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
+              <p className="mt-2 text-sm font-medium">
+                {t('msg.cancel_existing_subscription_first')}
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => router.push(`/${l1.code}/${l2.code}/profile`)}
+              >
+                {t('action.view_profile')}
+              </Button>
+            </div>
+          ) : (
           <div className="space-y-3">
             {/* Credit Card (USD) */}
             {findUsdPrice(prices, selectedPlan) && (
@@ -282,6 +309,7 @@ export default function GoProPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* Error */}
           {error && (
