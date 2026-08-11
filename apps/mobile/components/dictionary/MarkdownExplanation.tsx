@@ -1,6 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { View, Text } from 'react-native';
-import { TokenizedText } from '@/components/TokenizedText';
+
+// Loaded on demand to break the static require cycle:
+// TokenizedText → DictionaryPopup → AiExplanation → MarkdownExplanation → TokenizedText.
+// Metro warns about the cycle; lazy-loading keeps rendering synchronous after first use.
+const LazyTokenizedText = React.lazy(async () => ({
+  default: (await import('@/components/TokenizedText')).TokenizedText,
+}));
 
 interface MarkdownExplanationProps {
   /** Markdown text to render (the AI explanation response). */
@@ -77,7 +83,15 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
           // Interactive tokenized L2 span — bold, no chip background.
           return (
             <View key={i} className="flex-row items-baseline">
-              <TokenizedText text={part.value} l2Code={l2Code} leading="loose" phonetics={false} textScale={0} />
+              <Suspense fallback={<Text className="text-foreground">{part.value}</Text>}>
+                <LazyTokenizedText
+                  text={part.value}
+                  l2Code={l2Code}
+                  leading="loose"
+                  phonetics={false}
+                  textScale={0}
+                />
+              </Suspense>
             </View>
           );
         }
