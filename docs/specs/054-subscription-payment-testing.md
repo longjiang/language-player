@@ -972,13 +972,21 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 - ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
   (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
   Device check still pending in 3.4.
-- ⬜ C3 — cross-platform lifetime sync (IAP → web/Classic)
-- ⬜ C5 — free/Pro gates flip on mobile (code wired; device check pending)
+- ⬜ C3 — cross-platform lifetime sync (IAP → web/Classic) — device check
+  pending (restore lifetime on iPad, then verify web shows Lifetime)
+- ✅ C5 — free/Pro gates flip on mobile — verified 2026-08-11: Bob (free)
+  shows 10 transcript lines + 5 word-example hits + Subtitles Search
+  greyed/off; Mary (lifetime) shows full transcript + uncapped examples +
+  editable toggle
 - ⬜ C6 — cancel at period end from the mobile profile (code wired; device
   check pending)
-- ⬜ C7 — IAP success/error screens (code wired; sandbox check pending)
-- ⬜ Verify subscription state refreshes after a **website** purchase (code
-  refetch implemented; device check pending)
+- ⬜ C7 — IAP success/error screens — success screen verified in A2;
+  error/cancel path pending (A4, needs a fresh sandbox account)
+- ✅ Subscription state refreshes after a **website/admin** purchase —
+  verified 2026-08-11: profile refetches `/user-subscription` on app
+  foreground (`AppState` listener added in
+  `apps/mobile/app/(tabs)/(me)/profile.tsx`); delete-then-foreground test
+  showed the updated state
 - ✅ **Store compliance** — code check 2026-08-10: iOS renders only the Apple
   IAP (`pro_go`) panel + Restore Purchases; the languageplayer.io/go-pro link
   is Android-only (`!IAP_AVAILABLE`). No Stripe/PayPal/WeChat/Alipay links
