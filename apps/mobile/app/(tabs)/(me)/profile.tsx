@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -282,9 +282,14 @@ export default function ProfileScreen() {
               <Text className="text-sm font-semibold text-primary-foreground">{t('action.upgrade_to_pro')}</Text>
               <ArrowRight size={14} color="#fff" />
             </Pressable>
-            <Text className="mt-3 text-center text-xs text-muted-foreground">
-              {t('msg.money_back_guarantee')}
-            </Text>
+            <View className="mt-3 flex-row items-center justify-center gap-1 flex-wrap">
+              <Text className="text-center text-xs text-muted-foreground">
+                {t('msg.money_back_guarantee')}
+              </Text>
+              <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
+                <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
+              </Pressable>
+            </View>
           </View>
         ) : (
           /* ── Pro user — show subscription status ── */
@@ -518,17 +523,17 @@ export default function ProfileScreen() {
             {deleteError && (
               <Text className="mt-2 text-sm text-destructive">{t('msg.delete_account_error')}</Text>
             )}
-            <View className="mt-4 flex-row justify-end gap-2">
+            <View className="mt-4 flex-col gap-2">
               <Pressable
                 onPress={closeDeleteDialog}
-                className="rounded-lg border border-border px-4 py-2.5"
+                className="w-full rounded-lg border border-border px-4 py-2.5 items-center"
               >
                 <Text className="text-sm text-foreground">{t('action.cancel')}</Text>
               </Pressable>
               <Pressable
                 onPress={handleDeleteAccount}
                 disabled={deleteConfirm !== 'DELETE' || deleting}
-                className={`flex-row items-center gap-2 rounded-lg bg-destructive px-4 py-2.5 ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
+                className={`w-full flex-row items-center justify-center gap-2 rounded-lg bg-destructive px-4 py-2.5 ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
               >
                 {deleting ? (
                   <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />

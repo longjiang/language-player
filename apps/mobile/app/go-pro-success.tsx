@@ -7,6 +7,7 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
+import { log, logwarn } from '@/lib/logger';
 
 /**
  * Top-level success page shown after a payment completes (IAP in the app,
@@ -23,8 +24,16 @@ export default function GoProSuccessPage() {
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
+    log('[IAP] go-pro-success mounted', {
+      authLoading,
+      userId: user?.id,
+    });
+  }, [authLoading, user]);
+
+  useEffect(() => {
     if (authLoading || !user?.id) {
       setChecking(false);
+      logwarn('[IAP] go-pro-success: no user/auth yet, showing not-confirmed');
       return;
     }
 
@@ -39,6 +48,7 @@ export default function GoProSuccessPage() {
           if (data?.type && data.type !== 'free') {
             setIsPro(true);
             setChecking(false);
+            log('[IAP] go-pro-success: confirmed pro');
             return;
           }
         }
@@ -49,6 +59,7 @@ export default function GoProSuccessPage() {
       attempts++;
       if (attempts >= maxAttempts) {
         setChecking(false);
+        logwarn('[IAP] go-pro-success: max attempts reached, not confirmed');
         return;
       }
       setTimeout(check, 2000);
