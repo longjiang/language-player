@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/ano",
-        "monthly": "/mês"
+        "monthly": "/mês",
+        "one_time": "pagamento único"
     },
     "label": {
         "acquisition_source": "Fonte de aquisição",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Excluir {title}? Esta ação não pode ser desfeita.",
         "confirm_remove_video": "Remover este vídeo da lista de reprodução?",
         "contact_support": "Se encontrou problemas, entre em contacto com o suporte.",
+        "contact_support_email": "Contato: {email}",
         "contact_support_if_delayed": "Se sua assinatura não aparecer em alguns minutos, entre em contato com o suporte.",
         "content_tailored": "Conteúdo personalizado para você",
         "copy_success": "Texto copiado para a área de transferência",

@@ -239,7 +239,8 @@
     },
     "interval": {
         "annual": "/年",
-        "monthly": "/月"
+        "monthly": "/月",
+        "one_time": "一次性"
     },
     "label": {
         "acquisition_source": "獲取來源",
@@ -716,6 +717,7 @@
         "confirm_delete_playlist": "刪除{title}？此操作無法復原。",
         "confirm_remove_video": "從播放清單中移除這個影片？",
         "contact_support": "如果您遇到問題，請聯繫支持。",
+        "contact_support_email": "聯絡我們：{email}",
         "contact_support_if_delayed": "如果您的訂閱在幾分鐘內未生效，請聯絡客服。",
         "content_tailored": "為您量身定制的內容",
         "copy_success": "已經複製到剪貼簿囉",
@@ -1058,11 +1060,13 @@
         "monthly": "${price}/月"
     },
     "pro": {
+        "desc": "解鎖完整體驗，暢享 600,000+ 影片，涵蓋 207+ 種語言。",
         "feature_ai": "AI 單字解釋",
         "feature_examples": "影片中數百個單字範例",
         "feature_saved_words": "不限數量的已儲存單字",
         "feature_srs": "SRS 複習系統",
-        "feature_transcripts": "附翻譯的完整互動逐字稿"
+        "feature_transcripts": "附翻譯的完整互動逐字稿",
+        "features_title": "Pro 功能"
     },
     "prompt": {
         "explain_block_header": "請對以下{l2Code}文本進行清晰的分析。包括：",

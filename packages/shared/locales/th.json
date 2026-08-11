@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/ปี",
-        "monthly": "/เดือน"
+        "monthly": "/เดือน",
+        "one_time": "ชำระครั้งเดียว"
     },
     "label": {
         "acquisition_source": "แหล่งที่มา",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "ลบ {title} หรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "confirm_remove_video": "ลบวิดีโอนี้ออกจากเพลย์ลิสต์หรือไม่",
         "contact_support": "หากคุณพบปัญหา โปรดติดต่อฝ่ายสนับสนุน",
+        "contact_support_email": "ติดต่อ: {email}",
         "contact_support_if_delayed": "หากการสมัครสมาชิกของคุณไม่ปรากฏภายในไม่กี่นาที กรุณาติดต่อฝ่ายสนับสนุน",
         "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
         "copy_success": "คัดลอกข้อความไปยังคลิปบอร์ดแล้ว",

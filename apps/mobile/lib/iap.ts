@@ -150,6 +150,9 @@ export async function setPurchaseHandler(
 
   _purchaseSubscription = purchaseUpdatedListener((purchase: Purchase) => {
     if (purchase.productId !== IOS_IAP_PRODUCT_ID) return;
+    // Restore validates + finishes these purchases itself — see
+    // `_restoreInProgress` above.
+    if (_restoreInProgress) return;
     const transactionId = purchase.transactionId;
     if (!transactionId) return;
     // Unfinished iOS transactions replay on every launch until finished —
@@ -173,6 +176,13 @@ export async function setPurchaseHandler(
 
 /** Transaction ids already surfaced to the caller (avoid replay duplicates). */
 const _handledTransactions = new Set<string>();
+
+/** True while restorePurchases() is running. StoreKit may emit purchase
+ *  updates for the restored transaction while the restore query is in
+ *  flight; the restore loop validates those purchases itself, so the
+ *  listener must not also surface them (that double-posts and pushes the
+ *  success screen once per replay). */
+let _restoreInProgress = false;
 
 // ── Initiate Purchase ──
 
@@ -211,6 +221,7 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
   if (!IAP_AVAILABLE) return [];
 
   await connectIap();
+  _restoreInProgress = true;
 
   try {
     const purchases = await getAvailablePurchases();
@@ -219,13 +230,20 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
 
     const jws = matches[0]?.purchaseToken ?? undefined;
     const receipt = await fetchAppStoreReceipt(jws);
-    return matches.map((purchase) => ({
-      purchase,
-      receipt: receipt || undefined,
-      jws,
-    }));
+    return matches.map((purchase) => {
+      const txnId =
+        purchase.transactionId ?? purchase.id ?? purchase.purchaseToken;
+      if (txnId) _handledTransactions.add(String(txnId));
+      return {
+        purchase,
+        receipt: receipt || undefined,
+        jws: purchase.purchaseToken ?? undefined,
+      };
+    });
   } catch (err) {
     logwarn('[IAP] restore failed:', err);
     return [];
+  } finally {
+    _restoreInProgress = false;
   }
 }

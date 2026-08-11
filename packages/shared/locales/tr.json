@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/yıl",
-        "monthly": "/ay"
+        "monthly": "/ay",
+        "one_time": "tek seferlik"
     },
     "label": {
         "acquisition_source": "Edinme kaynağı",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "{title} silinsin mi? Bu işlem geri alınamaz.",
         "confirm_remove_video": "Bu video çalma listesinden kaldırılsın mı?",
         "contact_support": "Sorunlarla karşılaştıysanız, lütfen destekle iletişime geçin.",
+        "contact_support_email": "İletişim: {email}",
         "contact_support_if_delayed": "Aboneliğiniz birkaç dakika içinde görünmezse lütfen destek ekibiyle iletişime geçin.",
         "content_tailored": "Size Özel İçerik",
         "copy_success": "Metin panoya kopyalandı",

@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/anno",
-        "monthly": "/mese"
+        "monthly": "/mese",
+        "one_time": "una tantum"
     },
     "label": {
         "acquisition_source": "Fonte di acquisizione",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Eliminare {title}? Questa azione non può essere annullata.",
         "confirm_remove_video": "Rimuovere questo video dalla playlist?",
         "contact_support": "Se hai riscontrato problemi, contatta l'assistenza.",
+        "contact_support_email": "Contatti: {email}",
         "contact_support_if_delayed": "Se il tuo abbonamento non compare entro pochi minuti, contatta l'assistenza.",
         "content_tailored": "Contenuti su misura per te",
         "copy_success": "Testo copiato negli appunti",
