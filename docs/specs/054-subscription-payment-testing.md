@@ -21,22 +21,35 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 
 **Platform limitations** (enforced by the providers, not by us):
 
-- **Apple In-App Purchase** exists only on iOS. It is implemented in Classic (Capacitor) and `apps/mobile` (Expo), and it is lifetime-only (`pro`, non-consumable).
+- **Apple In-App Purchase** exists only on iOS. It is lifetime-only and
+  non-consumable: Classic uses `pro` (`ca.zerotohero.app`); `apps/mobile`
+  uses `pro_go` (`ca.zerotohero.go`, the GO listing's product).
 - **Google Play Billing** is **not implemented** in any frontend. Android users pay through the web-based flows (Stripe / WeChat / Alipay). The Play test-lab setup below is documented for when Billing is implemented, per SPEC-014.
+- **Mobile iOS** — Apple IAP (`pro_go`) is the store-compliant in-app method.
+  Lifetime is also offered via browser checkout today (policy risk); the
+  SPEC-014 target is IAP-only in-app, with card/WeChat/Alipay/PayPal moved to
+  the website.
 - **PayPal** is implemented as a direct checkout only in Classic. Web and Mobile offer a link out to Classic's go-pro page instead.
 - **WeChat Pay / Alipay** are processed through Stripe Payment Links (CNY, one-time only) on all three frontends.
 - **Stripe Credit Card** is the only method supporting recurring monthly/annual subscriptions (Stripe webhook `invoice.paid`).
 
-### Current payment matrix
+### Current payment matrix (2026-08-10)
 
-| Payment method | Classic (`zerotohero-nuxt`) | Web (`apps/web`) | Mobile (`apps/mobile`) |
-|---|---|---|---|
-| Stripe Credit Card (USD) | ✅ Checkout (vue-stripe) | ✅ backend Checkout session | ✅ backend Checkout session |
-| WeChat Pay (CNY) | ✅ Payment Link | ✅ Payment Link | ✅ Payment Link |
-| Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | ✅ Payment Link |
-| PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | ⬜ links to Classic |
-| Apple IAP (`pro`, lifetime) | ✅ Capacitor IAP | N/A (browser) | ✅ iOS only (`expo-in-app-purchases`) |
-| Google Play Billing | N/A | N/A | ⬜ not implemented |
+| Payment method | Classic | Web (`apps/web`) | Mobile iOS | Mobile Android |
+|---|---|---|---|---|
+| Stripe Credit Card (USD) | ✅ Checkout (vue-stripe) | ✅ backend Checkout session | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
+| WeChat Pay (CNY) | ✅ Payment Link | ✅ Payment Link | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
+| Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
+| PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 hidden on iOS (IAP available) | 🟡 links to Classic (stopgap) |
+| Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-in-app-purchases`) | — |
+| Google Play Billing | N/A | N/A | — | ⬜ not implemented |
+
+**Target (SPEC-014):** in-app mobile payments are store billing only — Apple
+IAP on iOS (`pro_go`), Play Billing on Android (planned). Stripe card /
+WeChat / Alipay / PayPal move to the website; the same backend grant applies
+once the user logs in. The current iOS browser checkout and Android
+web-checkout stopgap are policy risks / launch stopgaps to revisit before
+store submission.
 
 ### Key implementation files
 
@@ -61,14 +74,18 @@ Stripe's test mode is a full sandbox: separate API keys, prices, payment links, 
 
 **Backend (`zerotohero-python-server`)**
 
-1. In `app_stripe_checkout.py`, set `stripe_test = True` so the backend uses `STRIPE_TEST_KEY` and test price IDs/links from `prices.csv`.
+1. Start the backend with `STRIPE_TEST_MODE=1` so it uses `STRIPE_TEST_KEY`
+   and test price IDs/links from `prices.csv` (env-driven since 2026-08-10).
 2. Set environment variables (e.g. in the run script / shell):
    - `STRIPE_TEST_KEY` — test secret key `sk_test_...` from the Stripe Dashboard → Developers → API keys.
    - Keep `APPLE_SHARED_SECRET`, `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET` unset or irrelevant for Stripe-only runs.
 3. Restart the Flask process (the user's responsibility — do not manage the server process from Codex).
 4. Sanity check: `GET /stripe-prices?test=true` returns the test price IDs (`price_1PSNOW...`, etc.) and `test_payment_link` URLs; `GET /stripe-prices` (no query) returns live IDs.
 
-> ⚠️ **Known gap:** `stripe_test` and both webhook signing secrets are hardcoded in `app_stripe_checkout.py` (lines ~17 and ~194/267). There is no env toggle. Before test mode can be run safely, move these to env vars (e.g. `STRIPE_MODE=test`, `STRIPE_WEBHOOK_SECRET_TEST`, `STRIPE_WEBHOOK_SECRET_LIVE`). This is a **precondition** for running the Stripe tests against a shared server and is tracked in [Open Questions](#5-open-questions-and-known-gaps).
+> ✅ **Resolved 2026-08-10:** the backend toggle is env-driven
+> (`STRIPE_TEST_MODE=1`) and webhook secrets are env-only
+> (`STRIPE_CHECKOUT_WEBHOOK_SECRET`, `STRIPE_INVOICE_WEBHOOK_SECRET`, or the
+> shared `STRIPE_WEBHOOK_SECRET`); a missing secret fails closed with 500.
 
 **Classic Nuxt**
 
@@ -109,7 +126,9 @@ stripe listen --forward-to localhost:5001/webhook-stripe-checkout-session-comple
   --forward-to localhost:5001/webhook-stripe-subscription-invoice-paid
 ```
 
-The CLI prints a signing secret (`whsec_...`) — use the **test** secret currently hardcoded in `app_stripe_checkout.py` (or, after the env-var cleanup, `STRIPE_WEBHOOK_SECRET_TEST`) when running the backend in test mode. Trigger canned events with:
+The CLI prints a signing secret (`whsec_...`) — restart the backend with
+`STRIPE_WEBHOOK_SECRET=<whsec>` (or the per-endpoint vars) before triggering
+events. Trigger canned events with:
 
 ```bash
 stripe trigger checkout.session.completed
@@ -632,8 +651,8 @@ before touching web/mobile.
    ```
 
    Copy the printed `whsec_…` signing secret and restart Flask with
-   `STRIPE_WEBHOOK_SECRET=<whsec>` (code reads it before falling back to the
-   hardcoded test/live secrets). Also note the dashboard-created CNY Payment
+   `STRIPE_WEBHOOK_SECRET=<whsec>` (env-only; missing secret → 500, fail
+   closed). Also note the dashboard-created CNY Payment
    Links redirect to the **production** success page; for local W tests use
    the local-redirect test link created 2026-08-10:
    `https://buy.stripe.com/test_7sY7sL97ba825OzgTrbo40b`
@@ -835,6 +854,8 @@ Coverage notes for the rest of Phase 2:
 - P6 — PayPal link-out (document only)
 - C2 (subscription sync), C5 (gates), C6 (cancel), C7; verify mobile
   subscription state refreshes after purchase
+- Scope note: current mobile payments are the browser web-checkout stopgap
+  (SPEC-014). Play Billing is out of scope until implemented.
 
 ### Phase 4 — IAP last (Classic + mobile)
 
@@ -846,6 +867,10 @@ resolved 2026-08-10.)
 - C3 — cross-platform lifetime sync
 - ✅ Bundle-ID question resolved 2026-08-10 — backend validates
   `ca.zerotohero.go`; A2 can now run
+- ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
+  (Non-Consumable, Approved) — matches `apps/mobile/lib/iap.ts`
+- ⬜ Store-policy cleanup before submission: remove in-app browser checkout
+  from iOS so IAP is the only in-app purchase path (SPEC-014 target)
 
 ### Phase 5 — Cross-app & launch gate
 
@@ -876,8 +901,18 @@ resolved 2026-08-10.)
    Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
    endpoint; if Classic IAP must be re-supported later, add a per-request
    bundle override.
-2. **PayPal has no sandbox switch:** backend hardcodes `https://api-m.paypal.com` and Classic hardcodes `env="production"`. Sandbox testing requires temporary local edits or an env-driven `PAYPAL_MODE` switch. PayPal's Payments v1 API is deprecated — worth flagging for a future migration to Orders v2, which also has proper sandbox support.
-3. **Stripe test/live toggles are hardcoded:** `stripe_test = False` and webhook secrets in `app_stripe_checkout.py`; `TEST = false` in `zerotohero-nuxt/lib/utils/variables.js`. These must become env/flag-driven (and never committed as `True`) before teams share a backend for test runs.
+2. **PayPal sandbox — backend resolved 2026-08-10:** `PAYPAL_MODE=sandbox`
+   switches `app_paypal_checkout.py` to `https://api-m.sandbox.paypal.com` +
+   sandbox credentials; default stays live. Classic's client still needs a
+   temporary `env="sandbox"` edit for sandbox UI runs (revert before deploy).
+   PayPal's Payments v1 API is deprecated; Orders v2 is now in use.
+3. **Stripe test/live toggles — backend resolved 2026-08-10:**
+   `STRIPE_TEST_MODE=1` switches keys/prices, and webhook secrets are
+   env-only (`STRIPE_CHECKOUT_WEBHOOK_SECRET`, `STRIPE_INVOICE_WEBHOOK_SECRET`,
+   or shared `STRIPE_WEBHOOK_SECRET`). Remaining: Classic
+   `zerotohero-nuxt/lib/utils/variables.js` has `TEST = false` as a committed
+   constant — keep it false in production; sandbox runs use a temporary edit
+   (revert before deploy) or make it env-driven.
 4. **Web/Mobile PayPal cannot be sandbox-tested** because they link to the production Classic go-pro page. Options: run a test Classic deployment on a test host and point the links there, or implement PayPal directly in Web/Mobile (SPEC-014).
 5. **Google Play Billing is not implemented** — the sandbox guide in 1.5 is reference-only until SPEC-014 work lands.
 6. **Payment Link purchases have no return redirect** — verification relies on webhooks. The test must confirm the `checkout.session.completed` event arrives with `client_reference_id` intact; if webhooks are down, grants silently fail.
@@ -946,6 +981,13 @@ resolved 2026-08-10.)
     Cancelling auto-renew clears `payment_customer_id`, which lifts the
     block — exactly Classic's `hasActiveNonTrialSubscription` logic. Trials
     are exempt.
+21. **iOS in-app browser checkout — policy risk (SPEC-014 target):** the iOS
+    app currently lets lifetime buyers pay via Stripe card / WeChat / Alipay
+    in a browser checkout. Apple policy wants digital entitlements sold only
+    through IAP. Decide before App Store submission whether to remove those
+    buttons (SPEC-014 target matrix marks them 🚫 in-app) or accept review
+    risk. Android web-checkout is the documented launch stopgap until Play
+    Billing lands.
 
 ---
 
