@@ -1,4 +1,4 @@
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 # ════════════════════════════════════════════════════════════════════
 # Full Regression Suite
@@ -8,7 +8,7 @@ appId: ca.zerotohero.app
 #   maestro test apps/mobile/e2e/regression.yaml
 #
 # ⚠️  Must run from a CLEAN simulator state:
-#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl uninstall booted ca.zerotohero.go
 #   xcrun simctl install booted <path>/ZeroToHero.app
 #
 # ⚠️  Tests are ORDER-DEPENDENT. The auth suite creates a new user

@@ -1,4 +1,4 @@
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 env:
   FLOW: "A4-A12"
   REGISTER_EMAIL: "e2e.register.test@zerotohero.ca"

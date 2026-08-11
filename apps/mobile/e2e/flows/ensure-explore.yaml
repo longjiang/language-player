@@ -1,4 +1,4 @@
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 # ════════════════════════════════════════════════════════════════════
 # Reusable flow: ensure user is logged in and on the Explore screen.

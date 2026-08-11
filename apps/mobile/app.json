@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1b1e3c"
       },
-      "package": "ca.zerotohero.app"
+      "package": "ca.zerotohero.go"
     },
     "web": {
       "bundler": "metro",

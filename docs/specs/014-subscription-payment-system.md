@@ -99,6 +99,7 @@ App mount → fetch /stripe-prices
 | Nuxt/Capacitor production | `ca.zerotohero.app` | App Store listing "Language Player 2" |
 | GO legacy production | `ca.zerotohero.go` | App Store listing "Language Player GO" |
 | New mobile (all builds) | `ca.zerotohero.go` | `apps/mobile/app.json` — replaces the GO listing as "Language Player 3" (SPEC-048) |
+| New mobile Android | `ca.zerotohero.go` | Google Play package (new launch, SPEC-048) |
 
 ### Apple Shared Secret
 
