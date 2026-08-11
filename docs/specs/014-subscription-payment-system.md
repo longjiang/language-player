@@ -93,7 +93,11 @@ app, and Pro is already there — same `user_subscriptions` row.
 
 ## Identifiers & IAP
 
-### App identifiers and IAP products
+### App identifiers and IAP products (CANONICAL — keep in sync everywhere)
+
+> This table is the single source of truth for which public app uses which
+> identifier and IAP product. If anything contradicts it (specs, ADRs,
+> code comments), fix the contradiction — do not edit this table to match.
 
 | App | Store | Identifier | IAP product | Status |
 |---|---|---|---|---|
@@ -101,6 +105,7 @@ app, and Pro is already there — same `user_subscriptions` row.
 | GO Legacy — "Language Player GO" | App Store | `ca.zerotohero.go` | `pro_go` (non-consumable) | ✅ Shipped 2024-07; being replaced |
 | New mobile — "Language Player 3" | App Store (replaces GO) | `ca.zerotohero.go` | `pro_go` | ✅ Configured; ASC-verified 2026-08-10 |
 | New mobile — "Language Player 3" | Google Play (new launch) | `ca.zerotohero.go` | ⬜ Play Billing product TBD | ⬜ Not started |
+| Web — `apps/web` | browser | — (no IAP) | — | ✅ Stripe card / WeChat / Alipay / PayPal |
 
 Key facts:
 
@@ -108,16 +113,20 @@ Key facts:
   Non-Consumable, Approved). The new iOS app keeps the GO bundle ID and
   product, so existing GO buyers can restore.
 - Classic's `pro` belongs to `ca.zerotohero.app` and is a separate product.
-- The backend cannot distinguish which app sent a receipt — it does not need
-  to; it validates against Apple and grants lifetime.
+- **Both iOS apps stay public**, so the backend accepts receipts from
+  **both** bundles: `ca.zerotohero.go` (new mobile) and
+  `ca.zerotohero.app` (Classic). Apple's response identifies the receipt's
+  own bundle, so the backend does not need a client-supplied flag — it tries
+  each bundle and grants lifetime on the first success.
 
 ### Apple receipt validation
 
 - `APPLE_SHARED_SECRET` env var (`zerotohero-python-server/.env`, gitignored)
   — account-level, works for every bundle under the developer account.
 - `app_in_app_purchase.py` validates with `bundle_id = 'ca.zerotohero.go'`
-  (updated 2026-08-10) via `inapppy`'s `AppStoreValidator`; sandbox/live
-  retry is automatic (`auto_retry_wrong_env_request = True`).
+  **and** `bundle_id = 'ca.zerotohero.app'` (both public iOS apps) via
+  `inapppy`'s `AppStoreValidator`, trying `.go` first then `.app`; sandbox/
+  live retry is automatic (`auto_retry_wrong_env_request = True`).
 - Always grants **lifetime** (`type=lifetime`, `payment_processor=app-store`);
   only the `transaction_id` is stored.
 
@@ -269,7 +278,9 @@ Open work:
 ## Backward compatibility
 
 - Classic and existing subscriptions are unaffected.
-- Backend endpoints are shared and unchanged.
+- Backend endpoints are shared and unchanged; the IAP validator accepts
+  receipts from both public iOS apps (`ca.zerotohero.go` and
+  `ca.zerotohero.app`), so Classic IAP keeps working.
 - The new mobile app inherits the GO listing's bundle + IAP product, so
   existing GO buyers keep restore continuity.
 

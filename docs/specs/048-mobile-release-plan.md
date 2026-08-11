@@ -53,6 +53,10 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   receipt-validation / restore continuity. It does **not** inherit the Classic
   app's `ca.zerotohero.app` IAP product — that stays with Classic. Signing must
   use a Distribution profile for `ca.zerotohero.go`.
+  **Backend note:** Classic stays live on `ca.zerotohero.app` (product `pro`)
+  and the new app uses `ca.zerotohero.go` (product `pro_go`); the Python
+  validator accepts receipts from **both** bundles (`.go` first, then
+  `.app`). Canonical identity table: SPEC-014 "Identifiers & IAP".
 - **Google Play — new launch**: a brand-new **"Language Player 3"** listing on
   a new Play Developer account (see § 4). It uses the same identifier
   `ca.zerotohero.go` as iOS (Android packages and iOS bundle IDs are separate

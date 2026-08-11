@@ -225,14 +225,17 @@ Web and mobile currently link out to Classic's go-pro page for PayPal rather tha
 PurchaseiOS → Apple payment sheet → receipt
   → POST /in_app_purchase_success {user_id, receipt}
   → backend validates receipt with Apple via inapppy
-    (bundle ca.zerotohero.go — new app replaces the GO listing, SPEC-048)
+    (accepts both public iOS bundles: ca.zerotohero.go — new mobile,
+    product pro_go — and ca.zerotohero.app — Classic, product pro)
   → update_or_add_subscription({type: "lifetime", processor: "app-store", ...})
   → {type: "success"} → /go-pro-success
 ```
 
 IAP is a non-consumable product and always grants lifetime. The new mobile
 app purchases the GO listing's `pro_go` product (bundle `ca.zerotohero.go`);
-Classic's IAP uses `pro` under `ca.zerotohero.app`.
+Classic's IAP uses `pro` under `ca.zerotohero.app`. Both apps stay public,
+so the backend validates receipts for both bundles (`.go` first, then
+`.app`). Canonical identity table: SPEC-014 "Identifiers & IAP".
 
 ### Admin grant
 

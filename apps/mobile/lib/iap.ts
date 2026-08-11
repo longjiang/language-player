@@ -7,6 +7,9 @@
 // The new app replaces the GO listing (bundle ca.zerotohero.go), so it
 // inherits the GO app's non-consumable product — NOT Classic's "pro", which
 // belongs to ca.zerotohero.app.
+// Backend: the Python IAP endpoint accepts receipts for BOTH public bundles
+// (ca.zerotohero.go and ca.zerotohero.app), so purchases from this app and
+// from Classic both validate. Canonical reference: SPEC-014 "Identifiers & IAP".
 //
 // Flow:
 //   1. Connect to the payment queue on mount
