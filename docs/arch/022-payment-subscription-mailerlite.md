@@ -142,6 +142,25 @@ Stripe, so a manipulated link can bypass the UI/API guard and complete a
 purchase. The UI hides the links while blocked (same as Classic); a
 webhook-side guard would be needed to close this fully.
 
+### Pro feature gating — advertised vs implemented
+
+What Classic's go-pro advertises (`FeatureComparison.vue`) and where the
+limits are actually enforced:
+
+| Advertised | Free | Pro | Implementation | Notes |
+|---|---|---|---|---|
+| Interactive transcript lines | first **10** lines | complete | `SyncedTranscript.vue` slices to `NON_PRO_MAX_LINES = 15`; the "you need Pro" prompt obscures 7, so ~8 lines are visible | ⚠️ advertised 10 ≠ implemented 15/8 |
+| Word video examples | **2** examples | all examples, incl. TV shows | subs-search hits in `SearchSubsComp.vue`, limited by `NON_PRO_MAX_SUBS_SEARCH_HITS = 5` | ⚠️ advertised 2 ≠ implemented 5 |
+| Videos/languages + dictionary | ✅ | ✅ | not gated | — |
+
+The word-example limit **is** the subs-search hits mechanism — the two
+advertised Pro gates map to exactly two code constants
+(`NON_PRO_MAX_LINES`, `NON_PRO_MAX_SUBS_SEARCH_HITS`).
+
+Both are mismatched against the marketing copy (10 vs 15/8, 2 vs 5). SPEC-054
+C5 asserts the advertised values, so before launch either align the
+constants to 10/2 or update the go-pro copy to match the implemented limits.
+
 ### Stripe credit card (web, mobile, Classic)
 
 ```
