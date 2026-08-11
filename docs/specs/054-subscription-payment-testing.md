@@ -797,7 +797,11 @@ Coverage notes for the rest of Phase 2:
   `prices.csv`; 10 plans).
 - ✅ S9 backend preflight — `/create-stripe-checkout-session` with the web
   payload returns a valid test Checkout URL (no payment).
-- ⬜ S9–S10 — browser run pending.
+- ✅ S9 — Web monthly success (2026-08-10): web go-pro → Stripe test checkout
+  `4242…` → row `31147` = `status=active`, `type=monthly`, expiry ≈ +32d,
+  `payment_customer_id` set, web success-callback notes; `/user-subscription`
+  returns it; MailerLite `monthly` on Mary.
+- ⬜ S10 — annual success + declined card — pending.
 - ✅ W5/P5/S13/S14 — covered/foregone per notes above.
 - ⬜ C2/C5/C7 — pending until S9–S10 pass.
 
