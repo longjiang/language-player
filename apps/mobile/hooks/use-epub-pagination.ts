@@ -457,7 +457,6 @@ export function useEpubPagination({
       .finally(() => {
         if (translateGenRef.current !== gen) return;
         translateInFlightRef.current = false;
-        setIsTranslating(false);
         // Keep going until every visible paragraph has a non-empty translation.
         // Back off only when a pass made no progress (failed / all-empty).
         if (translateDoneRef.current.size < textBlocks.length) {
@@ -474,7 +473,11 @@ export function useEpubPagination({
             translateRetryTimerRef.current = null;
             setTranslateRetry(c => c + 1);
           }, delay);
+          // Stay in the "translating" state during the backoff gap so the
+          // skeleton bars don't flicker between chunks.
+          setIsTranslating(true);
         } else {
+          setIsTranslating(false);
           translationLogger.log(`complete — all ${textBlocks.length} visible paragraphs translated`);
         }
       });

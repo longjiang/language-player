@@ -327,6 +327,7 @@ export default function EpubReaderScreen() {
             loadingTokens={pagination.loadingTokens}
             tokenCache={pagination.tokenCache}
             blockTranslations={pagination.blockTranslations}
+            isTranslating={pagination.isTranslating}
             prevPage={pagination.prevPage}
             nextPage={pagination.nextPage}
             goToPage={pagination.goToPage}

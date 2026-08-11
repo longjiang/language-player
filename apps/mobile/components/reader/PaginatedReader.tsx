@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
 import { Root as Switch } from '@/components/ui/switch';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -64,12 +65,14 @@ interface PaginatedReaderProps {
   textScale?: number;
   /** Reports global block indices currently near the viewport (lazy tokenization). */
   onVisibleBlocksChange?: (globalIndices: number[]) => void;
+  /** True while the current page's paragraphs are being translated (skeleton bars). */
+  isTranslating?: boolean;
 }
 
 export function PaginatedReader({
   blocks, visibleBlocks: visibleBlocksProp, page = 0, totalPages = 1,
   hasMeasured: hasMeasuredProp, loadingTokens: loadingTokensProp,
-  tokenCache = {}, blockTranslations = {},
+  tokenCache = {}, blockTranslations = {}, isTranslating = false,
   prevPage, nextPage, goToPage, handleMeasureBlock,
   contentWidth: contentWidthProp = 300,
   measuredWindow,
@@ -210,7 +213,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, undefined, false),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, undefined, false),
           )}
         </View>
         {onToggleTranslation && (
@@ -251,7 +254,7 @@ export function PaginatedReader({
             onLayout={handleViewportLayout}
           >
             {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
+              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
             )}
           </ScrollView>
 
@@ -293,7 +296,7 @@ export function PaginatedReader({
 function renderBlock(
   block: ContentBlock, bi: number, allBlocks: ContentBlock[],
   visibleBlocks: ContentBlock[], tokenCache: Record<number, LemmatizedToken[]>,
-  blockTranslations: Record<number, string>, showTranslation: boolean,
+  blockTranslations: Record<number, string>, isTranslating: boolean, showTranslation: boolean,
   l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean, onOpenLink?: (href: string) => void,
   highlight?: { blockIndex: number; start: number; end: number } | null,
@@ -388,6 +391,10 @@ function renderBlock(
     );
     const transEl = showTranslation && translation ? (
       <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{translation}</Text>
+    ) : showTranslation && isTranslating ? (
+      <View className="mt-1">
+        <TranslationSkeleton text={block.text} />
+      </View>
     ) : null;
     const sideBySide = translationSideBySide && transEl;
 
