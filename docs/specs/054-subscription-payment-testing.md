@@ -735,8 +735,13 @@ Verification per row:
   `payment_customer_id` cleared; row `31146` stays `monthly`/active;
   `/user-subscription` still returns it until expiry. Post-expiry free
   fallback covered by B90.
-- ⬜ C7 — PayPal-cancel UI check pending (all other failure screens verified
-  via S4–S8/W/P1).
+- ✅ C7 — success/error screens verified (2026-08-10): declined/insufficient/
+  processing/3DS-fail/abandoned-checkout via S4–S8, WeChat success via W1,
+  PayPal success via P1, PayPal-cancel UI shows the cancelled message with no
+  row, and the `/go-pro-success` neutral fallback (B53) is fixed.
+- ✅ **Phase 1 complete** — Classic Nuxt payment E2E: S1–S8, W1–W4
+  (W1 live, W2–W4 foregone), P1–P4 (P1 live, P2–P4 foregone), S13/S14,
+  C4/C6/C7.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
 
