@@ -219,6 +219,24 @@
         "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
         "verification_failed": "Weryfikacja nie powiodła się."
     },
+    "family": {
+        "afroasiatic": "Afrykano-azjatyckie",
+        "austroasiatic": "Austroazjatyckie",
+        "austronesian": "Austronezyjskie",
+        "constructed": "Języki sztuczne",
+        "dravidian": "Drawidyjskie",
+        "indoeuropean": "Indoeuropejskie",
+        "isolates": "Języki izolowane",
+        "kartvelian": "Kartwelskie",
+        "mongolic": "Mongolska",
+        "nigercongo": "Nigero-kongijskie",
+        "quechuan": "Języki keczua",
+        "signlanguages": "Języki migowe",
+        "sinotibetan": "Sino-tybetańskie",
+        "taikadai": "Taj-kadajskie",
+        "turkic": "Tureckie",
+        "uralic": "Uralskie"
+    },
     "feature": {
         "ai_explain_desc": "Otrzymuj jasne, kontekstowe wyjaśnienia AI dotyczące słów i gramatyki, z pytaniami uzupełniającymi.",
         "corpus_desc": "Poznawaj kolokacje, przykładowe zdania, słowa pokrewne i typowe błędy uczniów z prawdziwych korpusów.",

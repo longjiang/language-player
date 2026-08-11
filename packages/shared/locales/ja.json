@@ -219,6 +219,24 @@
         "user_info_not_found": "ユーザー情報が見つかりません",
         "verification_failed": "確認に失敗しました。"
     },
+    "family": {
+        "afroasiatic": "アフロ・アジア語族",
+        "austroasiatic": "オーストロアジア語族",
+        "austronesian": "オーストロネシア語族",
+        "constructed": "人工言語",
+        "dravidian": "ドラヴィダ語族",
+        "indoeuropean": "インド・ヨーロッパ語族",
+        "isolates": "孤立言語",
+        "kartvelian": "カルトヴェリ語族",
+        "mongolic": "モンゴル語族",
+        "nigercongo": "ニジェール・コンゴ語族",
+        "quechuan": "ケチュア語族",
+        "signlanguages": "手話",
+        "sinotibetan": "シナ・チベット語族",
+        "taikadai": "タイ・カダイ語族",
+        "turkic": "チュルク語族",
+        "uralic": "ウラル語族"
+    },
     "feature": {
         "ai_explain_desc": "単語や文法について、文脈に沿った分かりやすいAI解説とフォローアップ質問を利用できます。",
         "corpus_desc": "実際の言語コーパスから、コロケーション、例文、関連語、学習者によくある間違いを探せます。",

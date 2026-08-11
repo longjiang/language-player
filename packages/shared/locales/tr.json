@@ -219,6 +219,24 @@
         "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
         "verification_failed": "Doğrulama başarısız oldu."
     },
+    "family": {
+        "afroasiatic": "Afro-Asyatik",
+        "austroasiatic": "Avustroasya",
+        "austronesian": "Avustronezya",
+        "constructed": "Yapay diller",
+        "dravidian": "Dravid",
+        "indoeuropean": "Hint-Avrupa",
+        "isolates": "İzole diller",
+        "kartvelian": "Kartvel",
+        "mongolic": "Moğol",
+        "nigercongo": "Nijer-Kongo",
+        "quechuan": "Keçuva",
+        "signlanguages": "İşaret dilleri",
+        "sinotibetan": "Çin-Tibet",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Türkik",
+        "uralic": "Ural"
+    },
     "feature": {
         "ai_explain_desc": "Kelimeler ve dil bilgisi için bağlam içinde net yapay zeka açıklamaları ve takip soruları alın.",
         "corpus_desc": "Gerçek dil derlemlerinden eşdizimleri, örnek cümleleri, ilgili kelimeleri ve öğrenci hatalarını keşfedin.",

@@ -219,6 +219,24 @@
         "user_info_not_found": "Info pengguna tidak ditemukan",
         "verification_failed": "Verifikasi gagal."
     },
+    "family": {
+        "afroasiatic": "Afro-Asia",
+        "austroasiatic": "Austro-Asia",
+        "austronesian": "Austronesia",
+        "constructed": "Bahasa buatan",
+        "dravidian": "Dravidia",
+        "indoeuropean": "Indo-Eropa",
+        "isolates": "Bahasa isolat",
+        "kartvelian": "Kartvelia",
+        "mongolic": "Mongolik",
+        "nigercongo": "Niger-Kongo",
+        "quechuan": "Quechua",
+        "signlanguages": "Bahasa isyarat",
+        "sinotibetan": "Sino-Tibet",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Turkik",
+        "uralic": "Uralik"
+    },
     "feature": {
         "ai_explain_desc": "Dapatkan penjelasan AI yang jelas dan sesuai konteks untuk kata dan tata bahasa, dengan pertanyaan lanjutan.",
         "corpus_desc": "Jelajahi kolokasi, kalimat contoh, kata terkait, dan kesalahan pelajar dari korpus bahasa nyata.",

@@ -37,7 +37,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadjik','th':'Thai','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turkse','tsd':'Tossakanian','tt':'Tataar','ug':'Uighur','uk':'Oekraïense','ur':'Oerdoe',
     'uz':'Oesbeekse','vec':'Venesies','vi':'Viëtnamese','vo':'Wolapuk','wo':'Wolof-taal','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberiese Keperje','ybe':'Westerse Yugur-taal','yi':'Jiddisj','yo':'Yoruba','yue':'Kantonees',
+    'xh':'Xhosa','xpe':'Liberiese Keperje','ybe':'Westerse Yugur-taal','yi':'Jiddisj','yo':'Yoruba','yue':'Kantonees','nan':'Min Nan','lzh':'Literêre Chinees',
     'za':'Zhuang','zh':'Chinees','zu':'Zoeloe'
   },
   'ar': {
@@ -76,7 +76,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'الطاجيكي','th':'التايلندية','ti':'التغرينية','tl':'التغالوغيه','tlh':'كلينجون','tpi':'توكبيسينغ',
     'tr':'التركية','tsd':'توساكانيان','tt':'التتارية','ug':'اليوغور','uk':'الأوكرانية','ur':'الأوردية',
     'uz':'الأوزبكية','vec':'بندقاني','vi':'الفيتنامية','vo':'وولابوك','wo':'لغة الولوف','wuu':'وو',
-    'xh':'زوسا','xpe':'كيبيرجي الليبيري','ybe':'لغة يوغور الغربية','yi':'الييديه','yo':'اليوروبا','yue':'كَانْتُونِيَّة',
+    'xh':'زوسا','xpe':'كيبيرجي الليبيري','ybe':'لغة يوغور الغربية','yi':'الييديه','yo':'اليوروبا','yue':'كَانْتُونِيَّة','nan':'مين نان','lzh':'الصينية الأدبية',
     'za':'تشوانغ','zh':'الصينية','zu':'الزولوية'
   },
   'ca': {
@@ -115,7 +115,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadjik','th':'Tailandès','ti':'Tigrinya','tl':'Tagàlog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turc','tsd':'Tossakanià','tt':'Tàtar','ug':'Uigur','uk':'Ucraïnès','ur':'Urdú',
     'uz':'Uzbek','vec':'Venecià','vi':'Vietnamita','vo':'Wolapuk','wo':'Llengua wòlof','wuu':'Wu',
-    'xh':'Xosa','xpe':'Keperje liberià','ybe':'Llengua iugur occidental','yi':'Jiddisch','yo':'Ioruba','yue':'Cantonès',
+    'xh':'Xosa','xpe':'Keperje liberià','ybe':'Llengua iugur occidental','yi':'Jiddisch','yo':'Ioruba','yue':'Cantonès','nan':'Min Nan','lzh':'Xinès literari',
     'za':'Zhuang','zh':'Xinès','zu':'Zulú'
   },
   'de': {
@@ -154,7 +154,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadschikisch','th':'Thailändisch','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingonisch','tpi':'Tokppissen',
     'tr':'Türkisch','tsd':'Tossakanian','tt':'Tatarisch','ug':'Uigurisch','uk':'Ukrainisch','ur':'Urdu',
     'uz':'Usbekisch','vec':'Venezianisch','vi':'Vietnamesisch','vo':'Wolapuk','wo':'Wolof-Sprache','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberianische Keperje','ybe':'Westliche Yugur-Sprache','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonesisch',
+    'xh':'Xhosa','xpe':'Liberianische Keperje','ybe':'Westliche Yugur-Sprache','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonesisch','nan':'Min Nan','lzh':'Klassisches Chinesisch',
     'za':'Zhuang','zh':'Chinesisch','zu':'Zulu'
   },
   'el': {
@@ -193,7 +193,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Τατζικιστάν','th':'Ταϊλανδικά','ti':'Τιγκρίνια','tl':'Ταγκαλόγκ','tlh':'Κλίνγκον','tpi':'Tokpissing',
     'tr':'Τουρκικά','tsd':'Τοσακανιάν','tt':'Ταταρικά','ug':'Ουιγούροι','uk':'Ουκρανικά','ur':'Ουρντού',
     'uz':'Ουζμπεκικά','vec':'Ενετικός','vi':'Βιετναμικά','vo':'Βολαπούκ','wo':'Γλώσσα Wolof','wuu':'Γου',
-    'xh':'Ξόσα','xpe':'Λιβεριανό Keperje','ybe':'Δυτική γλώσσα Yugur','yi':'Γίντις','yo':'Γιορούμπα','yue':'Καντονέζικα',
+    'xh':'Ξόσα','xpe':'Λιβεριανό Keperje','ybe':'Δυτική γλώσσα Yugur','yi':'Γίντις','yo':'Γιορούμπα','yue':'Καντονέζικα','nan':'Μιν Ναν','lzh':'Κλασικά Κινεζικά',
     'za':'Ζουάνγκ','zh':'Κινεζικά','zu':'Ζουλού'
   },
   'en': {
@@ -232,7 +232,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tajik','th':'Thai','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tok Pisin',
     'tr':'Turkish','tsd':'Tsakonian','tt':'Tatar','ug':'Uyghur','uk':'Ukrainian','ur':'Urdu',
     'uz':'Uzbek','vec':'Venetian','vi':'Vietnamese','vo':'Volapük','wo':'Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberia Kpelle','ybe':'Western Yugur','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese',
+    'xh':'Xhosa','xpe':'Liberia Kpelle','ybe':'Western Yugur','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese','nan':'Min Nan','lzh':'Literary Chinese',
     'za':'Zhuang','zh':'Chinese','zu':'Zulu'
   },
   'es': {
@@ -271,7 +271,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tayiko','th':'Tailandés','ti':'Tigriña','tl':'Tagalo','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turco','tsd':'Tossakanian','tt':'Tártaro','ug':'Uigur','uk':'Ucraniano','ur':'Urdu',
     'uz':'Uzbek','vec':'Veneciano','vi':'Vietnamita','vo':'Wolapuk','wo':'Idioma wolof','wuu':'Wu',
-    'xh':'Xosa','xpe':'Keperje liberiano','ybe':'Idioma yugur occidental','yi':'Yiddish','yo':'Yoruba','yue':'Cantonés',
+    'xh':'Xosa','xpe':'Keperje liberiano','ybe':'Idioma yugur occidental','yi':'Yiddish','yo':'Yoruba','yue':'Cantonés','nan':'Min Nan','lzh':'Chino literario',
     'za':'Zhuang','zh':'Chino','zu':'Zulú'
   },
   'fi': {
@@ -310,7 +310,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadžikki','th':'Thai','ti':'Tigrinja','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turkki','tsd':'Tossakanian','tt':'Tataari','ug':'Uiguuri','uk':'Ukraina','ur':'Urdu',
     'uz':'Uzbekki','vec':'Venetsialainen','vi':'Vietnam','vo':'Wolapuk','wo':'Wolofin kieli','wuu':'Wu-kiina',
-    'xh':'Xhosa','xpe':'Liberian Keperje','ybe':'Länsi-Yugurin kieli','yi':'Jiddiš','yo':'Joruba','yue':'Kantoninkiina',
+    'xh':'Xhosa','xpe':'Liberian Keperje','ybe':'Länsi-Yugurin kieli','yi':'Jiddiš','yo':'Joruba','yue':'Kantoninkiina','nan':'Min Nan','lzh':'Klassinen kiina',
     'za':'Zhuang','zh':'Kiina','zu':'Zulu'
   },
   'fr': {
@@ -349,7 +349,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadjik','th':'Thaï','ti':'Tigrigna','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turc','tsd':'Tossakanien','tt':'Tatar','ug':'Ouïgour','uk':'Ukrainien','ur':'Urdu',
     'uz':'Ouzbek','vec':'Vénitien','vi':'Vietnamien','vo':'Wolapuk','wo':'Langue wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje libérien','ybe':'Langue occidentale Yugur','yi':'Yiddish','yo':'Yoruba','yue':'Cantonais',
+    'xh':'Xhosa','xpe':'Keperje libérien','ybe':'Langue occidentale Yugur','yi':'Yiddish','yo':'Yoruba','yue':'Cantonais','nan':'Min Nan','lzh':'Chinois littéraire',
     'za':'Zhuang','zh':'Chinois','zu':'Zoulou'
   },
   'ga': {
@@ -388,7 +388,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Táidsíceastáin','th':'Téalainnis','ti':'Tigrinya','tl':'Tagálaigis','tlh':'KlingonGenericName','tpi':'Tokpissing',
     'tr':'Tuircis','tsd':'Tossakanian','tt':'Tatairis','ug':'Uighur','uk':'Úcráinis','ur':'Urdúis',
     'uz':'Úisbéiceastáinis','vec':'Veinéiseach','vi':'Vítneaimis','vo':'WolapukName','wo':'Teanga Wolof','wuu':'WuName',
-    'xh':'Cóisis','xpe':'Keperje na Libéire','ybe':'Teanga Yugur an Iarthair','yi':'Giúdais','yo':'YorubaName','yue':'Cantainis',
+    'xh':'Cóisis','xpe':'Keperje na Libéire','ybe':'Teanga Yugur an Iarthair','yi':'Giúdais','yo':'YorubaName','yue':'Cantainis','nan':'Min Nan','lzh':'Sínis Liteartha',
     'za':'ZhuangName','zh':'Sínis','zu':'Súlúis'
   },
   'hi': {
@@ -427,7 +427,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'ताजिक','th':'थाई','ti':'तिग्रीन्या','tl':'तागालोग','tlh':'क्लिंगन','tpi':'टोकपिसिंग',
     'tr':'तुर्की','tsd':'तोसाकानियन','tt':'तातार','ug':'उइघुर','uk':'यूक्रेनियाई','ur':'उर्दू',
     'uz':'उज़बेक','vec':'वेनिस','vi':'वियतनामी','vo':'वोलापुक','wo':'वोलोफ़ भाषा','wuu':'वू',
-    'xh':'ज़ोसा','xpe':'लाइबेरियन केपरजे','ybe':'पश्चिमी युगुर भाषा','yi':'यिडिश','yo':'योरूबा','yue':'कैंटोनीज़',
+    'xh':'ज़ोसा','xpe':'लाइबेरियन केपरजे','ybe':'पश्चिमी युगुर भाषा','yi':'यिडिश','yo':'योरूबा','yue':'कैंटोनीज़','nan':'मिन नान','lzh':'साहित्यिक चीनी',
     'za':'झुआंग','zh':'चीनी','zu':'ज़ुलु'
   },
   'hr': {
@@ -466,7 +466,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadžički','th':'Tajlandski','ti':'Tigrinija','tl':'Tagalog','tlh':'Klingonac','tpi':'Tokpissing',
     'tr':'Turski','tsd':'Tossakanian','tt':'Tatarski','ug':'Ujguri','uk':'Ukrajinski','ur':'Urdu',
     'uz':'Uzbečki','vec':'Venecijanski','vi':'Vijetnamski','vo':'Wolapuk','wo':'Wolof jezik','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberijski Keperje','ybe':'Zapadni Yugur jezik','yi':'Jidiš','yo':'Joruba','yue':'Kantonski',
+    'xh':'Xhosa','xpe':'Liberijski Keperje','ybe':'Zapadni Yugur jezik','yi':'Jidiš','yo':'Joruba','yue':'Kantonski','nan':'Min Nan','lzh':'Književni kineski',
     'za':'Zhuang','zh':'Kineski','zu':'Zulu'
   },
   'hu': {
@@ -505,7 +505,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tádzsik','th':'Thai','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Török','tsd':'Tossakanian','tt':'Tatár','ug':'Ujgur','uk':'Ukrán','ur':'Urdu',
     'uz':'Üzbég','vec':'Velencei','vi':'Vietnami','vo':'Wolapuk','wo':'Wolof nyelv','wuu':'Wu',
-    'xh':'Xhosza','xpe':'Libériai Keperje','ybe':'Nyugati yugur nyelv','yi':'Jiddis','yo':'Joruba','yue':'Kantoni',
+    'xh':'Xhosza','xpe':'Libériai Keperje','ybe':'Nyugati yugur nyelv','yi':'Jiddis','yo':'Joruba','yue':'Kantoni','nan':'Min Nan','lzh':'Irodalmi kínai',
     'za':'Csuang','zh':'Kínai','zu':'Zulu'
   },
   'id': {
@@ -544,7 +544,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Bahasa Tajik','th':'Thai','ti':'Tigrinya','tl':'Bahasa tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turki','tsd':'Bahasa Tossakania','tt':'Tatar','ug':'Uighur','uk':'Ukraina','ur':'Urdu',
     'uz':'Uzbek','vec':'Venesia','vi':'Vietnam','vo':'Wolapuk','wo':'Bahasa Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje Liberia','ybe':'Bahasa Yugur Barat','yi':'Bahasa Yiddish','yo':'Yoruba','yue':'Kantonis',
+    'xh':'Xhosa','xpe':'Keperje Liberia','ybe':'Bahasa Yugur Barat','yi':'Bahasa Yiddish','yo':'Yoruba','yue':'Kantonis','nan':'Min Nan','lzh':'Tionghoa Klasik',
     'za':'Zhuang','zh':'Cina','zu':'Zulu'
   },
   'it': {
@@ -583,7 +583,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tagico','th':'Tailandese','ti':'Tigrigna','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turco','tsd':'Tossakaniano','tt':'Tataro','ug':'Uighur','uk':'Ucraino','ur':'Urdu',
     'uz':'Uzbeco','vec':'Veneziano','vi':'Vietnamita','vo':'Wolapuk','wo':'Lingua wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje liberiano','ybe':'Lingua Yugur occidentale','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese',
+    'xh':'Xhosa','xpe':'Keperje liberiano','ybe':'Lingua Yugur occidentale','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese','nan':'Min Nan','lzh':'Cinese letterario',
     'za':'Zhuang','zh':'Cinese','zu':'Zulù'
   },
   'ja': {
@@ -622,7 +622,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'タジク','th':'タイ語','ti':'ティグリニャ語','tl':'タガログ語','tlh':'クリンゴン語','tpi':'トクピッシング',
     'tr':'トルコ語','tsd':'トサカニアン','tt':'タタール語','ug':'ウイグル語','uk':'ウクライナ語','ur':'ウルドゥ語',
     'uz':'ウズベク語','vec':'ベネチア','vi':'ベトナム語','vo':'ウォラプク','wo':'ウォロフ語','wuu':'呉方言',
-    'xh':'コサ語','xpe':'リベリアのKeperje','ybe':'西ユグル語','yi':'イディッシュ語','yo':'ヨルバ語','yue':'広東語',
+    'xh':'コサ語','xpe':'リベリアのKeperje','ybe':'西ユグル語','yi':'イディッシュ語','yo':'ヨルバ語','yue':'広東語','nan':'閩南語','lzh':'文言文',
     'za':'チワン','zh':'中国語','zu':'ズールー語'
   },
   'ko': {
@@ -661,7 +661,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'타지크어','th':'태국어','ti':'티그리냐어','tl':'타갈로그어','tlh':'클링온어','tpi':'톡피싱',
     'tr':'터키어','tsd':'토사카니아어','tt':'타타르어','ug':'위구르어','uk':'우크라이나어','ur':'우르두어',
     'uz':'우즈베크어','vec':'베네치아','vi':'베트남어','vo':'월라푹','wo':'Wolof 언어','wuu':'우어',
-    'xh':'코사어','xpe':'라이베리아 Keperje','ybe':'Western Yugur 언어','yi':'이디시어','yo':'요루바어','yue':'광둥어',
+    'xh':'코사어','xpe':'라이베리아 Keperje','ybe':'Western Yugur 언어','yi':'이디시어','yo':'요루바어','yue':'광둥어','nan':'민난어','lzh':'문어 중국어',
     'za':'좡어','zh':'중국어','zu':'줄루어'
   },
   'nl': {
@@ -700,7 +700,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadzjieks','th':'Thais','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turks','tsd':'Tossakanian','tt':'Tataars','ug':'Uighur','uk':'Oekraïens','ur':'Urdu',
     'uz':'Oezbeeks','vec':'Venetiaans','vi':'Vietnamees','vo':'Wolapuk','wo':'De taal van Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberiaanse Keperje','ybe':'Westelijke Yugur-taal','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonees',
+    'xh':'Xhosa','xpe':'Liberiaanse Keperje','ybe':'Westelijke Yugur-taal','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonees','nan':'Min Nan','lzh':'Literair Chinees',
     'za':'Zhuang','zh':'Chinees','zu':'Zulu'
   },
   'no': {
@@ -739,7 +739,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadsjikisk','th':'Thai','ti':'Tigrinja','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Tyrkisk','tsd':'Tossakanisk','tt':'Tatarisk','ug':'Uigurisk','uk':'Ukrainsk','ur':'Urdu',
     'uz':'Usbekisk','vec':'Venetiansk','vi':'Vietnamesisk','vo':'Wolapuk','wo':'Wolof språk','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberiske Keperje','ybe':'Vestlig Yugur språk','yi':'Jiddisch','yo':'Joruba','yue':'Kantonesisk',
+    'xh':'Xhosa','xpe':'Liberiske Keperje','ybe':'Vestlig Yugur språk','yi':'Jiddisch','yo':'Joruba','yue':'Kantonesisk','nan':'Min Nan','lzh':'Litterær kinesisk',
     'za':'Zhuang','zh':'Kinesisk','zu':'Zulu'
   },
   'pl': {
@@ -778,7 +778,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadżycki','th':'Tajski','ti':'Tigrinia','tl':'Tagalog','tlh':'Klingoński','tpi':'Tokpissing powiedział:',
     'tr':'Turecki','tsd':'Tossakanian','tt':'Tatarski','ug':'Ujgurski','uk':'Ukraiński','ur':'Urdu',
     'uz':'Uzbecki','vec':'Wenecki','vi':'Wietnamski','vo':'Wolapuk','wo':'Język wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje liberyjskie','ybe':'Zachodni język Yugur','yi':'Jidysz','yo':'Joruba','yue':'Kantoński',
+    'xh':'Xhosa','xpe':'Keperje liberyjskie','ybe':'Zachodni język Yugur','yi':'Jidysz','yo':'Joruba','yue':'Kantoński','nan':'Min Nan','lzh':'Chiński literacki',
     'za':'Zhuang powiedział:','zh':'Chiński','zu':'Zulu'
   },
   'pt': {
@@ -817,7 +817,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadjique','th':'Tailandês','ti':'Tigrinya','tl':'Tagalo','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Turco','tsd':'Tossakaniano','tt':'Tártaro','ug':'Uighur','uk':'Ucraniano','ur':'Urdu',
     'uz':'Uzbeque','vec':'Vêneto','vi':'Vietnamita','vo':'Wolapuk','wo':'Língua Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje liberiano','ybe':'Língua Yugur ocidental','yi':'Iídiche','yo':'Ioruba','yue':'Cantonês',
+    'xh':'Xhosa','xpe':'Keperje liberiano','ybe':'Língua Yugur ocidental','yi':'Iídiche','yo':'Ioruba','yue':'Cantonês','nan':'Min Nan','lzh':'Chinês literário',
     'za':'Zhuang','zh':'Chinês','zu':'Zulu'
   },
   'ro': {
@@ -856,7 +856,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadjică','th':'Thai','ti':'Tigrinya','tl':'Tagalogă','tlh':'Klingoniană','tpi':'Tokpissing',
     'tr':'Turcă','tsd':'Tossakanian','tt':'Tătară','ug':'Uighur','uk':'Ucraineană','ur':'Urdu',
     'uz':'Uzbekă','vec':'Venețian','vi':'Vietnameză','vo':'Wolapuk','wo':'Limba Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberian Keperje','ybe':'Limba Yugur de Vest','yi':'Idiș','yo':'Yoruba','yue':'Cantoneză',
+    'xh':'Xhosa','xpe':'Liberian Keperje','ybe':'Limba Yugur de Vest','yi':'Idiș','yo':'Yoruba','yue':'Cantoneză','nan':'Min Nan','lzh':'Chineză literară',
     'za':'Zhuang','zh':'Chineză','zu':'Zulu'
   },
   'ru': {
@@ -895,7 +895,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Таджикский','th':'Тайский','ti':'Тигринья','tl':'Тагальский','tlh':'Клингонский','tpi':'Токписсинг',
     'tr':'Турецкий','tsd':'Тоссаканян','tt':'Татарский','ug':'Уйгурский','uk':'Украинский','ur':'Урду',
     'uz':'Узбекский','vec':'Венецианский','vi':'Вьетнамский','vo':'Волапук','wo':'Язык волоф','wuu':'Ву',
-    'xh':'Коса','xpe':'Либерийский Кеперье','ybe':'Западно-юйгурский язык','yi':'Идиш','yo':'Йоруба','yue':'Кантонский',
+    'xh':'Коса','xpe':'Либерийский Кеперье','ybe':'Западно-юйгурский язык','yi':'Идиш','yo':'Йоруба','yue':'Кантонский','nan':'Минь-нань','lzh':'Литературный китайский',
     'za':'Чжуан','zh':'Китайский','zu':'Зулусский'
   },
   'sr': {
@@ -934,7 +934,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadžikistanski','th':'Tajlandski','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingonac','tpi':'Tokpissing',
     'tr':'Turski','tsd':'Tossakanian','tt':'Tatarski','ug':'Uighur','uk':'Ukrajinski','ur':'Urdu',
     'uz':'Uzbekistanski','vec':'venecijanski','vi':'Vijetnamski','vo':'Wolapuk','wo':'Wolof jezik','wuu':'Wu',
-    'xh':'Kosa','xpe':'Liberijski Keperje','ybe':'Zapadni Jugour jezik','yi':'Jevrejski','yo':'Joruba','yue':'Kantonski',
+    'xh':'Kosa','xpe':'Liberijski Keperje','ybe':'Zapadni Jugour jezik','yi':'Jevrejski','yo':'Joruba','yue':'Kantonski','nan':'Мин Нан','lzh':'Књижевни кинески',
     'za':'Zuang','zh':'Kineski','zu':'Zulu'
   },
   'sv': {
@@ -973,7 +973,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tadzjikiska','th':'Thai','ti':'Tigrinja','tl':'Tagalog','tlh':'Klingonska','tpi':'Tokpissing',
     'tr':'Turkiska','tsd':'Tossakanian','tt':'Tatariska','ug':'Uiguriska','uk':'Ukrainska','ur':'Urdu',
     'uz':'Uzbekiska','vec':'Venetianska','vi':'Vietnamesiska','vo':'Wolapuk Wolapuk','wo':'Wolof språk','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Liberianska Keperje','ybe':'Västerländskt yugurspråk','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonesiska',
+    'xh':'Xhosa','xpe':'Liberianska Keperje','ybe':'Västerländskt yugurspråk','yi':'Jiddisch','yo':'Yoruba','yue':'Kantonesiska','nan':'Min Nan','lzh':'Litterär kinesiska',
     'za':'Zhuang Zhuang','zh':'Kinesiska','zu':'Zulu'
   },
   'sw': {
@@ -1012,7 +1012,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tajik','th':'Kithai','ti':'Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Kituruki','tsd':'Tossakanian','tt':'Kitatari','ug':'Uighur','uk':'Kiukreini','ur':'Kiurdu',
     'uz':'Kiuzbeki','vec':'Venetian','vi':'Kivietinamu','vo':'Wolapuk','wo':'Lugha ya Wolof','wuu':'Wu',
-    'xh':'Kikosa','xpe':'Keperje ya Liberia','ybe':'Lugha ya Yugur ya Magharibi','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese',
+    'xh':'Kikosa','xpe':'Keperje ya Liberia','ybe':'Lugha ya Yugur ya Magharibi','yi':'Yiddish','yo':'Yoruba','yue':'Cantonese','nan':'Min Nan','lzh':'Kichina cha fasihi',
     'za':'Zhuang','zh':'Kichina','zu':'Kizulu'
   },
   'th': {
@@ -1051,7 +1051,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'ภาษาทาจิก','th':'ไทย','ti':'ติกรินยา','tl':'ภาษาตากาล็อก','tlh':'คลิงออน','tpi':'ต๊อกพิสซิง',
     'tr':'ตุรกี','tsd':'โทสซาคาเนียน','tt':'ทาทาร์','ug':'อุยกูร์','uk':'ยูเครน','ur':'เออร์ดู',
     'uz':'อุซเบค','vec':'เว นิ ส','vi':'เวียดนาม','vo':'โวลาปุก','wo':'ภาษา Wolof','wuu':'วู',
-    'xh':'โซซ่า','xpe':'ไลบีเรีย Keperje','ybe':'ภาษา Western Yugur','yi':'ภาษายิดดิช','yo':'โยรูบา','yue':'ภาษาจีนกวางตุ้ง',
+    'xh':'โซซ่า','xpe':'ไลบีเรีย Keperje','ybe':'ภาษา Western Yugur','yi':'ภาษายิดดิช','yo':'โยรูบา','yue':'ภาษาจีนกวางตุ้ง','nan':'หมิ่นหนาน','lzh':'ภาษาจีนวรรณกรรม',
     'za':'ภาษาจ้วง','zh':'จีน','zu':'ซูลู'
   },
   'tr': {
@@ -1090,7 +1090,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tacik','th':'Tay dili','ti':'Tigrinya Belediyesi','tl':'Tagalog','tlh':'Klingonca','tpi':'Tokpişe',
     'tr':'Türkçe','tsd':'Tossakanyan','tt':'Tatarca','ug':'Uygurca','uk':'Ukrayna dili','ur':'Urduca',
     'uz':'Özbekçe','vec':'Venedikli','vi':'Vietnam dili','vo':'Wolapuk Belediyesi','wo':'Wolof dili','wuu':'Wu',
-    'xh':'Zosa dili','xpe':'Liberya Keperje','ybe':'Batı Uygur dili','yi':'Yidiş','yo':'Yoruba dili','yue':'Kanton',
+    'xh':'Zosa dili','xpe':'Liberya Keperje','ybe':'Batı Uygur dili','yi':'Yidiş','yo':'Yoruba dili','yue':'Kanton','nan':'Min Nan','lzh':'Edebi Çince',
     'za':'Zhuang Belediyesi','zh':'Çince','zu':'Zulu dili'
   },
   'vi': {
@@ -1129,7 +1129,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'Tiếng Tajik','th':'Thái','ti':'Tiếng Tigrinya','tl':'Tagalog','tlh':'Klingon','tpi':'Tokpissing',
     'tr':'Tiếng Thổ Nhĩ Kỳ','tsd':'Tiếng Tossakanian','tt':'Tatar','ug':'Người Duy Ngô Nhĩ','uk':'Tiếng U-kren','ur':'Tiếng Urdu',
     'uz':'Tiếng Uzbekistan','vec':'Venetian','vi':'Tiếng Việt','vo':'Wolapuk','wo':'Ngôn ngữ Wolof','wuu':'Wu',
-    'xh':'Xhosa','xpe':'Keperje Liberia','ybe':'Ngôn ngữ Tây Yugur','yi':'Yiddish','yo':'Tiếng Yoruba','yue':'Tiếng Quảng Đông',
+    'xh':'Xhosa','xpe':'Keperje Liberia','ybe':'Ngôn ngữ Tây Yugur','yi':'Yiddish','yo':'Tiếng Yoruba','yue':'Tiếng Quảng Đông','nan':'Tiếng Mân Nam','lzh':'Hán văn',
     'za':'Trang','zh':'Trung quốc','zu':'Zulu'
   },
   'zh': {
@@ -1168,7 +1168,7 @@ export const LOCALIZED_LANGUAGE_NAMES: Record<string, Record<string, string>> = 
     'tg':'塔吉克语','th':'泰语','ti':'提格利尼亚语','tl':'他加禄语','tlh':'克林贡语','tpi':'托克皮辛语',
     'tr':'土耳其语','tsd':'托萨科尼亚语','tt':'塔塔尔语','ug':'维吾尔语','uk':'乌克兰语','ur':'乌尔都语',
     'uz':'乌兹别克语','vec':'威尼斯语','vi':'越南语','vo':'沃拉普克语','wo':'沃洛夫语','wuu':'吴语',
-    'xh':'科萨语','xpe':'利比里亚克珀列语','ybe':'西域裕固语','yi':'依地语','yo':'约鲁巴语','yue':'粤语',
+    'xh':'科萨语','xpe':'利比里亚克珀列语','ybe':'西域裕固语','yi':'依地语','yo':'约鲁巴语','yue':'粤语','nan':'闽南语','lzh':'文言文',
     'za':'壮语','zh':'汉语','zu':'祖鲁语'
   },
 };

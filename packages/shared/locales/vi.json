@@ -219,6 +219,24 @@
         "user_info_not_found": "Không tìm thấy thông tin người dùng",
         "verification_failed": "Xác minh thất bại."
     },
+    "family": {
+        "afroasiatic": "Phi-Á",
+        "austroasiatic": "Nam Á",
+        "austronesian": "Nam Đảo",
+        "constructed": "Ngôn ngữ nhân tạo",
+        "dravidian": "Dravida",
+        "indoeuropean": "Ấn-Âu",
+        "isolates": "Ngôn ngữ tách biệt",
+        "kartvelian": "Kartvel",
+        "mongolic": "Mông Cổ",
+        "nigercongo": "Niger-Congo",
+        "quechuan": "Quechua",
+        "signlanguages": "Ngôn ngữ ký hiệu",
+        "sinotibetan": "Hán-Tạng",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Turk",
+        "uralic": "Ural"
+    },
     "feature": {
         "ai_explain_desc": "Nhận giải thích AI rõ ràng theo ngữ cảnh về từ vựng và ngữ pháp, kèm câu hỏi tiếp theo.",
         "corpus_desc": "Khám phá cụm từ kết hợp, câu ví dụ, từ liên quan và lỗi người học từ kho ngữ liệu thực.",

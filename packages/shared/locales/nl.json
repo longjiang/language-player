@@ -219,6 +219,24 @@
         "user_info_not_found": "Gebruikersinformatie niet gevonden",
         "verification_failed": "Verificatie mislukt."
     },
+    "family": {
+        "afroasiatic": "Afro-Aziatisch",
+        "austroasiatic": "Austro-Aziatisch",
+        "austronesian": "Austronesisch",
+        "constructed": "Kunsttalen",
+        "dravidian": "Dravidisch",
+        "indoeuropean": "Indo-Europees",
+        "isolates": "Geïsoleerde talen",
+        "kartvelian": "Kartvelisch",
+        "mongolic": "Mongools",
+        "nigercongo": "Niger-Congo",
+        "quechuan": "Quechua",
+        "signlanguages": "Gebarentalen",
+        "sinotibetan": "Sino-Tibetaans",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Turkse",
+        "uralic": "Oeraals"
+    },
     "feature": {
         "ai_explain_desc": "Krijg duidelijke, contextuele AI-uitleg over woorden en grammatica, met vervolgvragen.",
         "corpus_desc": "Ontdek collocaties, voorbeeldzinnen, verwante woorden en veelgemaakte fouten uit echte corpora.",

@@ -211,6 +211,24 @@
         "user_info_not_found": "未找到用户信息",
         "verification_failed": "验证失败。"
     },
+    "family": {
+        "afroasiatic": "亚非语系",
+        "austroasiatic": "南亚语系",
+        "austronesian": "南岛语系",
+        "constructed": "人工语言",
+        "dravidian": "达罗毗荼语系",
+        "indoeuropean": "印欧语系",
+        "isolates": "孤立语言",
+        "kartvelian": "卡尔特维尔语系",
+        "mongolic": "蒙古语族",
+        "nigercongo": "尼日尔-刚果语系",
+        "quechuan": "克丘亚语系",
+        "signlanguages": "手语",
+        "sinotibetan": "汉藏语系",
+        "taikadai": "侗台语系",
+        "turkic": "突厥语族",
+        "uralic": "乌拉尔语系"
+    },
     "feature": {
         "ai_explain_desc": "获取单词和语法的清晰上下文 AI 解释，并支持追问。",
         "corpus_desc": "从真实语料库中探索搭配、例句、相关词和常见学习者错误。",

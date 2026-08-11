@@ -219,6 +219,24 @@
         "user_info_not_found": "Benutzerinformationen nicht gefunden",
         "verification_failed": "Überprüfung fehlgeschlagen."
     },
+    "family": {
+        "afroasiatic": "Afroasiatisch",
+        "austroasiatic": "Austroasiatisch",
+        "austronesian": "Austronesisch",
+        "constructed": "Konstruierte Sprachen",
+        "dravidian": "Dravidisch",
+        "indoeuropean": "Indoeuropäisch",
+        "isolates": "Isolierte Sprachen",
+        "kartvelian": "Kartwelisch",
+        "mongolic": "Mongolisch",
+        "nigercongo": "Niger-Kongo",
+        "quechuan": "Quechua",
+        "signlanguages": "Gebärdensprachen",
+        "sinotibetan": "Sinotibetisch",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Turkisch",
+        "uralic": "Uralisch"
+    },
     "feature": {
         "ai_explain_desc": "Erhalte klare, kontextbezogene KI-Erklärungen zu Wörtern und Grammatik, inklusive Rückfragen.",
         "corpus_desc": "Entdecke Kollokationen, Beispielsätze, verwandte Wörter und typische Lernfehler aus echten Sprachkorpora.",

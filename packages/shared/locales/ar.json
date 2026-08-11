@@ -219,6 +219,24 @@
         "user_info_not_found": "لم يتم العثور على معلومات المستخدم",
         "verification_failed": "فشل التحقق."
     },
+    "family": {
+        "afroasiatic": "أفروآسيوية",
+        "austroasiatic": "أوستروآسيوية",
+        "austronesian": "أسترونيزية",
+        "constructed": "لغات اصطناعية",
+        "dravidian": "درافيدية",
+        "indoeuropean": "هندو أوروبية",
+        "isolates": "لغات معزولة",
+        "kartvelian": "كارتفلية",
+        "mongolic": "منغولية",
+        "nigercongo": "نيجر-كونغو",
+        "quechuan": "كيشوا",
+        "signlanguages": "لغات الإشارة",
+        "sinotibetan": "صينية تبتية",
+        "taikadai": "تاي كاداي",
+        "turkic": "تركية",
+        "uralic": "أورالية"
+    },
     "feature": {
         "ai_explain_desc": "احصل على شروحات ذكاء اصطناعي واضحة وسياقية للكلمات والقواعد، مع أسئلة متابعة.",
         "corpus_desc": "استكشف المتلازمات اللفظية والجمل المثال والكلمات ذات الصلة والأخطاء الشائعة من مدونات لغوية حقيقية.",

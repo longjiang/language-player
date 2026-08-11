@@ -219,6 +219,24 @@
         "user_info_not_found": "사용자 정보를 찾을 수 없습니다",
         "verification_failed": "인증에 실패했습니다."
     },
+    "family": {
+        "afroasiatic": "아프로아시아어족",
+        "austroasiatic": "오스트로아시아어족",
+        "austronesian": "오스트로네시아어족",
+        "constructed": "인공어",
+        "dravidian": "드라비다어족",
+        "indoeuropean": "인도유럽어족",
+        "isolates": "고립어",
+        "kartvelian": "카르트벨리어족",
+        "mongolic": "몽골어족",
+        "nigercongo": "니제르콩고어족",
+        "quechuan": "케추아어족",
+        "signlanguages": "수어",
+        "sinotibetan": "중국티베트어족",
+        "taikadai": "타이카다이어족",
+        "turkic": "튀르크어족",
+        "uralic": "우랄어족"
+    },
     "feature": {
         "ai_explain_desc": "단어와 문법에 대한 명확하고 맥락에 맞는 AI 설명과 후속 질문을 받아보세요.",
         "corpus_desc": "실제 언어 코퍼스에서 연어, 예문, 관련 단어, 학습자 오류를 탐색하세요.",
