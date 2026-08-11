@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput, Linking, AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -126,17 +126,32 @@ export default function ProfileScreen() {
   const [subLoading, setSubLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
+  const fetchSub = useCallback(async () => {
     if (!user?.id) { setSubLoading(false); return; }
     setSubLoading(true);
-    authenticatedFetch(`${PYTHON_API_URL}/user-subscription`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        setSub(data?.id ? data : null);
-        setSubLoading(false);
-      })
-      .catch(() => setSubLoading(false));
+    try {
+      const res = await authenticatedFetch(`${PYTHON_API_URL}/user-subscription`);
+      const data = res.ok ? await res.json() : null;
+      setSub(data?.id ? data : null);
+    } catch {
+      setSub(null);
+    } finally {
+      setSubLoading(false);
+    }
   }, [user?.id]);
+
+  useEffect(() => {
+    fetchSub();
+  }, [fetchSub]);
+
+  // Refetch when the app returns to the foreground so a website/admin
+  // subscription change shows up without restarting the app.
+  useEffect(() => {
+    const s = AppState.addEventListener('change', (state) => {
+      if (state === 'active') fetchSub();
+    });
+    return () => s.remove();
+  }, [fetchSub]);
 
   const planType = sub?.type ?? 'free';
   const isFree = !sub || planType === 'free';
