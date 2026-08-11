@@ -32,47 +32,36 @@ mismatch is testable and will fail.
 The product goal: let users try the value, then pay — without making the
 free experience feel broken.
 
-## Decision
+## Options Considered
 
-### 1. Transcripts — keep per-video truncation, no daily quota yet
+### 1. Transcript gating
 
-The per-video line cap remains the primary transcript gate. We will **not**
-add a daily "open N full transcripts" quota at launch; the per-video sample
-is the simplest, most honest gate. A daily quota is a fallback only if
-conversion data later warrants it.
+- **Option A — per-video line cap.** Every free transcript is truncated to
+  the visible line count. Simple, backend-free (client-side constant), and
+  honest.
+- **Option B — daily full-transcript quota.** Free users may open a small
+  number of full transcripts per day (e.g., 3), then fall back to Option A.
+  Requires a backend daily counter per user. Gives a real taste of the full
+  product after the 7-day trial expires.
 
-Align implementation to the advertised copy: **10 visible lines** for free
-users. Concretely, set `NON_PRO_MAX_LINES = 17` so 10 lines remain visible
-behind the 7-line upgrade prompt (or restyle the prompt so it doesn't obscure
-content and set the constant to 10 — the visible count is the contract).
+New users already get a **7-day full free trial** (granted on GoTrue email
+verification; see ARCH-022 "Free Trial" and SPEC-039 M1). Option B would
+extend a "taste of the full product" to free users *after* their trial
+expires — it does not replace the trial.
 
-**Options considered:**
+### 2. Word examples
 
-- **Option A — per-video line cap (chosen).** Every free transcript is
-  truncated to the visible line count. Simple, backend-free (client-side
-  constant), and honest.
-- **Option B — daily full-transcript quota (deferred, candidate).** Free
-  users may open a small number of full transcripts per day (e.g., 3), then
-  fall back to Option A. Requires a backend daily counter per user. Revisit
-  only if post-trial conversion data warrants it.
+- **Align the copy to the implementation (5 hits).** Keep free = first 5
+  corpus-wide hits and Pro = up to 500 (default 50 for speed, expandable in
+  Settings); update go-pro copy from "2 examples" to "5 examples".
+- **Reduce the implementation to the copy (2 hits).** Change
+  `NON_PRO_MAX_SUBS_SEARCH_HITS = 2` and update SPEC-054 C5 accordingly;
+  shrinks the free benefit.
 
-Note: new users already get a **7-day full free trial** (granted on GoTrue
-email verification; see ARCH-022 "Free Trial" and SPEC-039 M1), so Option B
-would extend a "taste of the full product" to free users *after* their trial
-expires — not replace the trial.
+### 3. Quota-based gating pattern
 
-### 2. Word examples — keep corpus-wide search, align the copy to 5
-
-Keep the existing behavior (free = first 5 corpus-wide hits; Pro = up to 500,
-default 50 for speed, expandable in Settings). Align the go-pro copy from
-"2 examples" to "5 examples" rather than reducing the free benefit. If the
-product later wants 2, change the constant and the C5 test together.
-
-### 3. Quota-based gating pattern (candidate features, staged rollout)
-
-Adopt one pattern for new gates: **daily, backend-enforced, visible quota**,
-with an upgrade prompt at the limit. Roll out incrementally and measure
-conversion. Candidates, in priority order:
+One pattern for new gates: **daily, backend-enforced, visible quota**, with
+an upgrade prompt at the limit. Candidate features, in priority order:
 
 1. **AI explanations** — free daily quota (e.g., 5/day), Pro unlimited.
    Currently hard Pro-only; a quota converts the highest-wow feature into a
@@ -81,23 +70,22 @@ conversion. Candidates, in priority order:
    readable (never hold data hostage); new saves blocked until upgrade.
 3. **SRS daily reviews** — free daily cap (e.g., 20 reviews/day, matching
    the current default setting). Pro can raise the existing daily-max
-   setting. Do **not** lock the setting control (Model B rejected); bound the
-   effective daily count by plan instead.
+   setting. The alternative — locking the setting control and dropping the
+   default to 10 (Model B) — was considered and rejected.
 4. **Full-text translation** — free daily character budget (e.g., 2,000
    chars/day), Pro unlimited. Also caps LLM/translation cost.
 
-Quotas are enforced in the Flask backend (shared by web, mobile, and
+Quotas would be enforced in the Flask backend (shared by web, mobile, and
 Classic), using the same constant pattern as `NON_PRO_MAX_*`. The UI shows
 remaining quota and the upgrade prompt; quotas reset daily per user.
 
-### 4. Non-goals
+### 4. Rejected options / non-goals
 
-- No paywalling of videos, languages, or the dictionary (core value stays
-  free).
+- Paywalling videos, languages, or the dictionary (core value stays free).
 - Phrasebook gating — phrasebooks are not being implemented at this time.
 - "Current-video-only" examples — no such concept exists; the subs search is
   corpus-wide by design.
-- Locking the SRS setting or reducing the default below the free cap.
+- Locking the SRS setting or reducing its default below the free cap.
 
 ## Consequences
 
@@ -110,3 +98,26 @@ remaining quota and the upgrade prompt; quotas reset daily per user.
   quota instead of a hard gate).
 - Rollout is staged (AI quota first), so conversion impact can be measured
   before adding more gates.
+
+## Decision
+
+1. **Transcripts: adopt Option A.** Keep the per-video line cap as the only
+   transcript gate at launch; do not ship a daily full-transcript quota yet.
+   Set the visible count to **10 lines** (e.g., `NON_PRO_MAX_LINES = 17`
+   with the 7-line prompt overlay, or 10 with a non-obscuring prompt — the
+   visible count is the contract). Revisit Option B only if post-trial
+   conversion data warrants it.
+2. **Word examples: keep the corpus-wide search and align the copy to 5.**
+   Free users keep 5 hits; Pro keeps up to 500 (default 50, Settings
+   expandable). Marketing copy changes from "2 examples" to "5 examples";
+   SPEC-054 C5 asserts 5.
+3. **Adopt the quota-based pattern** for the candidate gates, rolled out
+   incrementally starting with **AI explanations (5/day)**:
+   - AI explanations — 5/day free, unlimited Pro.
+   - Saved words — 30 free, unlimited Pro (existing words stay readable).
+   - SRS reviews — 20/day free; Pro can raise the existing setting (control
+     is not locked).
+   - Full-text translation — 2,000 chars/day free, unlimited Pro.
+   Enforcement is backend-side with daily reset and visible remaining quota.
+4. **Rejected:** paywalling core content, phrasebook gating, "current-video
+   only" examples, and locking the SRS setting.
