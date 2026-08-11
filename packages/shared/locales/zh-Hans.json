@@ -713,6 +713,7 @@
         "all_done_for_now": "暂时全部完成！",
         "all_forms": "所有形式",
         "all_languages": "所有语言",
+        "all_languages_count": "所有{count}种语言",
         "all_languages_downloaded": "所有语言已下载。",
         "already_have_account": "已有账户？",
         "already_lifetime": "您已拥有终身访问权限，无需购买。",
@@ -814,7 +815,7 @@
         "ios_lifetime_only": "iOS 上仅支持终身版。",
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "landing_cta_desc": "加入成千上万通过真实视频掌握新语言的学习者。",
-        "landing_hero_badge": "支持 200 多种语言",
+        "landing_hero_badge": "支持 {count} 种语言",
         "landing_hero_desc": "观看真实的 YouTube 视频、音乐、电视节目和直播电视，配有交互式双语字幕。点击任意单词即可即时查词，再通过阅读和复习巩固记忆。",
         "landing_hero_title_1": "通过",
         "landing_hero_title_2": "视频学习语言",
@@ -1108,7 +1109,7 @@
         "monthly": "${price}/月"
     },
     "pro": {
-        "desc": "解锁完整体验，畅享 600,000+ 视频，覆盖 207+ 种语言。",
+        "desc": "解锁完整体验，畅享 600,000+ 视频，覆盖 {count}+ 种语言。",
         "feature_ai": "AI 单词解释",
         "feature_examples": "视频中数百个单词例句",
         "feature_saved_words": "无限保存单词",

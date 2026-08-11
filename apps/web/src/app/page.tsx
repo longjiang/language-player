@@ -18,6 +18,10 @@ import {
   Library,
 } from 'lucide-react';
 import { LanguageVideoList } from '@/components/landing/language-video-list';
+import { LANGUAGE_VIDEO_COUNTS } from '@/data/language-video-counts';
+import { SUPPORTED_L2_COUNT } from '@langplayer/shared';
+
+const LANGUAGE_COUNT = Object.keys(LANGUAGE_VIDEO_COUNTS).length;
 
 export default function HomePage() {
   const t = useT();
@@ -31,7 +35,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-300">
             <Sparkles className="h-4 w-4" />
-            {t('msg.landing_hero_badge')}
+            {t('msg.landing_hero_badge', { count: SUPPORTED_L2_COUNT })}
           </div>
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
             {t('msg.landing_hero_title_1')}{' '}
@@ -85,7 +89,9 @@ export default function HomePage() {
       {/* ── Languages ── */}
       <section className="border-t border-border px-4 py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold">{t('msg.all_languages')}</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold">
+            {t('msg.all_languages_count', { count: LANGUAGE_COUNT })}
+          </h2>
           <LanguageVideoList />
         </div>
       </section>

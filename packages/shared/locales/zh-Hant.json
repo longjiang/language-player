@@ -713,6 +713,7 @@
         "all_done_for_now": "全部完成！",
         "all_forms": "所有形式",
         "all_languages": "所有語言",
+        "all_languages_count": "所有{count}種語言",
         "all_languages_downloaded": "所有語言已下載。",
         "already_have_account": "已經有帳號了嗎？",
         "already_lifetime": "您已擁有終身存取權限，無需購買。",
@@ -814,7 +815,7 @@
         "ios_lifetime_only": "iOS 上僅支援終身版。",
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
         "landing_cta_desc": "加入數千名使用真實影片精通新語言的學習者。",
-        "landing_hero_badge": "支援 200 多種語言",
+        "landing_hero_badge": "支援 {count} 種語言",
         "landing_hero_desc": "觀看真實的 YouTube 影片、音樂、電視節目和直播電視，搭配互動式雙語字幕。點擊任何單字即可即時查詢字典，再用閱讀和複習加深記憶。",
         "landing_hero_title_1": "透過",
         "landing_hero_title_2": "影片學習語言",
@@ -1099,7 +1100,7 @@
         "monthly": "${price}/月"
     },
     "pro": {
-        "desc": "解鎖完整體驗，暢享 600,000+ 影片，涵蓋 207+ 種語言。",
+        "desc": "解鎖完整體驗，暢享 600,000+ 影片，涵蓋 {count}+ 種語言。",
         "feature_ai": "AI 單字解釋",
         "feature_examples": "影片中數百個單字範例",
         "feature_saved_words": "不限數量的已儲存單字",

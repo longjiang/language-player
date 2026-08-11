@@ -727,6 +727,7 @@
         "all_done_for_now": "Na razie wszystko gotowe!",
         "all_forms": "Wszystkie formy",
         "all_languages": "Wszystkie języki",
+        "all_languages_count": "Wszystkie {count} języki",
         "all_languages_downloaded": "Wszystkie języki pobrane.",
         "already_have_account": "Masz już konto?",
         "already_lifetime": "Masz już dożywotni dostęp. Zakup nie jest potrzebny.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Na iOS dostępny jest tylko plan dożywotni.",
         "keep_or_reset_time": "Czy chcesz zachować bieżący czas czy zresetować go do zera?",
         "landing_cta_desc": "Dołącz do tysięcy uczących się, którzy używają autentycznych filmów do opanowania nowych języków.",
-        "landing_hero_badge": "Obsługa ponad 200 języków",
+        "landing_hero_badge": "Obsługa ponad {count} języków",
         "landing_hero_desc": "Oglądaj autentyczne filmy YouTube, muzykę, programy telewizyjne i telewizję na żywo z interaktywnymi podwójnymi napisami. Dotknij dowolnego słowa, aby natychmiast sprawdzić je w słowniku, a potem utrwal je przez czytanie i powtórki.",
         "landing_hero_title_1": "Ucz się języków poprzez",
         "landing_hero_title_2": "filmy",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/mies"
     },
     "pro": {
-        "desc": "Odblokuj pełne doświadczenie nauki z ponad 600 000 filmów w ponad 207 językach.",
+        "desc": "Odblokuj pełne doświadczenie nauki z ponad 600 000 filmów w ponad {count} językach.",
         "feature_ai": "Wyjaśnienia słów AI",
         "feature_examples": "Setki przykładów słów w filmach",
         "feature_saved_words": "Nieograniczona liczba zapisanych słów",

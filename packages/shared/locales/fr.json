@@ -727,6 +727,7 @@
         "all_done_for_now": "Tout est terminé pour l'instant !",
         "all_forms": "Toutes les formes",
         "all_languages": "Toutes les langues",
+        "all_languages_count": "Les {count} langues",
         "all_languages_downloaded": "Toutes les langues téléchargées.",
         "already_have_account": "Vous avez déjà un compte ?",
         "already_lifetime": "Vous avez déjà un accès à vie. Aucun achat nécessaire.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Seul l'abonnement à vie est disponible sur iOS.",
         "keep_or_reset_time": "Voulez-vous garder votre temps actuel ou le remettre à zéro ?",
         "landing_cta_desc": "Rejoignez des milliers d'apprenants qui utilisent des vidéos authentiques pour maîtriser de nouvelles langues.",
-        "landing_hero_badge": "Plus de 200 langues prises en charge",
+        "landing_hero_badge": "Plus de {count} langues prises en charge",
         "landing_hero_desc": "Regardez des vidéos YouTube authentiques, de la musique, des émissions de télévision et la TV en direct avec des sous-titres doubles interactifs. Touchez un mot pour une recherche instantanée au dictionnaire, puis lisez et révisez pour mémoriser.",
         "landing_hero_title_1": "Apprenez des langues grâce aux",
         "landing_hero_title_2": "vidéos",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/mois"
     },
     "pro": {
-        "desc": "Débloquez une expérience d'apprentissage complète avec plus de 600 000 vidéos dans plus de 207 langues.",
+        "desc": "Débloquez une expérience d'apprentissage complète avec plus de 600 000 vidéos dans plus de {count} langues.",
         "feature_ai": "Explications des mots par IA",
         "feature_examples": "Des centaines d'exemples de mots dans des vidéos",
         "feature_saved_words": "Mots sauvegardés illimités",

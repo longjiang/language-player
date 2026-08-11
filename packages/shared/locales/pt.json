@@ -727,6 +727,7 @@
         "all_done_for_now": "Tudo pronto por agora!",
         "all_forms": "Todas as formas",
         "all_languages": "Todos os idiomas",
+        "all_languages_count": "Todos os {count} idiomas",
         "all_languages_downloaded": "Todos os idiomas baixados.",
         "already_have_account": "Já tem uma conta?",
         "already_lifetime": "Você já tem acesso vitalício. Não é necessário comprar.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Apenas o plano vitalício está disponível no iOS.",
         "keep_or_reset_time": "Você quer manter seu tempo atual ou redefini-lo para zero?",
         "landing_cta_desc": "Junte-se a milhares de alunos que usam vídeos autênticos para dominar novos idiomas.",
-        "landing_hero_badge": "Mais de 200 idiomas",
+        "landing_hero_badge": "Mais de {count} idiomas",
         "landing_hero_desc": "Assista a vídeos autênticos do YouTube, música, programas de TV e TV ao vivo com legendas duplas interativas. Toque em qualquer palavra para uma consulta instantânea ao dicionário e depois leia e revise para fixar.",
         "landing_hero_title_1": "Aprenda idiomas através de",
         "landing_hero_title_2": "vídeos",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/mês"
     },
     "pro": {
-        "desc": "Desbloqueie a experiência completa de aprendizado com mais de 600.000 vídeos em mais de 207 idiomas.",
+        "desc": "Desbloqueie a experiência completa de aprendizado com mais de 600.000 vídeos em mais de {count} idiomas.",
         "feature_ai": "Explicações de palavras por IA",
         "feature_examples": "Centenas de exemplos de palavras em vídeos",
         "feature_saved_words": "Palavras salvas ilimitadas",

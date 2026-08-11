@@ -727,6 +727,7 @@
         "all_done_for_now": "지금은 모두 완료했습니다!",
         "all_forms": "모든 형태",
         "all_languages": "모든 언어",
+        "all_languages_count": "전체 {count}개 언어",
         "all_languages_downloaded": "모든 언어가 다운로드되었습니다.",
         "already_have_account": "이미 계정이 있으신가요?",
         "already_lifetime": "이미 평생 이용권이 있습니다. 구매할 필요가 없습니다.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "iOS에서는 평생 요금제만 이용 가능합니다.",
         "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?",
         "landing_cta_desc": "수천 명의 학습자와 함께 실제 동영상으로 새로운 언어를 마스터하세요.",
-        "landing_hero_badge": "200개 이상 언어 지원",
+        "landing_hero_badge": "{count}개 이상 언어 지원",
         "landing_hero_desc": "실제 YouTube 동영상, 음악, TV 프로그램, 라이브 TV를 양방향 이중 자막으로 시청하세요. 단어를 탭하면 즉시 사전 검색이 가능하며, 읽고 복습하며 오래 기억할 수 있습니다.",
         "landing_hero_title_1": "영상으로 배우는",
         "landing_hero_title_2": "언어 학습",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/월"
     },
     "pro": {
-        "desc": "207개 이상의 언어로 제공되는 60만 개 이상의 동영상으로 완전한 학습 경험을 잠금 해제하세요.",
+        "desc": "60만 개 이상의 동영상과 {count}+개 언어로 완전한 학습 경험을 잠금 해제하세요.",
         "feature_ai": "AI 단어 설명",
         "feature_examples": "영상 속 수백 개의 단어 예문",
         "feature_saved_words": "무제한 저장 단어",
