@@ -780,11 +780,13 @@ Verification per row:
 
 ### Phase 2 — Web (`apps/web`) payment E2E
 
-- S9–S10 — Stripe credit card
-- W5 — WeChat Pay / Alipay
-- P5 — PayPal link-out (sandbox limitation; document only, do not complete)
-- S13/S14, C1 (price parity), C5 (gates), C7 — C2 (subscription sync)
-  deferred to Phase 5
+- ✅ S9–S10 — Stripe credit card (complete)
+- ✅ W5 — WeChat Pay / Alipay (covered via W1 + backend link checks; same
+  Payment Link path)
+- ✅ P5 — PayPal link-out (document-only — web links to production Classic;
+  do not complete)
+- ✅ S13/S14, C1 (price parity), C5 (gates), C7 — verified; C2 (subscription
+  sync) deferred to Phase 5
 
 #### Phase 2 runbook — Web Stripe (S9–S10)
 
