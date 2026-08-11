@@ -1,534 +1,282 @@
-# SPEC-014: Subscription & Payment System — Unified Implementation
+# SPEC-014: Subscription & Payment System
 
 ## Metadata
+
 - **Spec ID**: SPEC-014
-- **Feature**: Subscription purchase, verification, and management across web and mobile
-- **Status**: draft
-- **Created**: 2026-07-25
-- **ROADMAP Phase**: Cross-cutting (payment infrastructure)
-- **Based on**: ARCH-015 (payment methods), ADR-0013 (app store strategy)
+- **Feature**: Subscription purchase, verification, and management across web, mobile, and Classic
+- **Status**: Active — implementation mostly landed; testing is tracked in SPEC-054
+- **Created**: 2026-07-25 · **Updated**: 2026-08-10
+- **Based on**: ARCH-015 (payment method constraints), ADR-0013 (app store strategy), SPEC-048 (store release)
 - **See also**:
-  - `docs/arch/015-payment-methods-plan-support.md` — Payment method constraints
-  - `docs/adr/0013-app-store-strategy.md` — App Store naming + IAP strategy
-  - `zerotohero-python/routes/payments.py` — Python payment routes
-  - `zerotohero-python/routes/subscriptions.py` — Python subscription routes
-  - `zerotohero-python/app_stripe_checkout.py` — Stripe integration
-  - `zerotohero-python/app_paypal_checkout.py` — PayPal integration
-  - `zerotohero-python/app_in_app_purchase.py` — Apple IAP receipt validation
-  - `zerotohero-python/utils_subscription.py` — Directus subscription CRUD
-  - `zerotohero-python/data/prices.csv` — Single source of truth for pricing
-  - `zerotohero-nuxt/components/PurchaseiOS.vue` — Reference IAP UI + flow
-  - `zerotohero-nuxt/plugins/ios-in-app-purchase.js` — Reference IAP plugin setup
+  - `docs/arch/022-payment-subscription-mailerlite.md` — as-built architecture
+  - `docs/specs/054-subscription-payment-testing.md` — phased test plan
+  - `docs/specs/048-mobile-release-plan.md` — App Store / Play release plan
+  - `zerotohero-python-server/routes/payments.py` — payment routes + `/stripe-prices`
+  - `zerotohero-python-server/routes/subscriptions.py` — subscription routes
+  - `zerotohero-python-server/app_stripe_checkout.py` — Stripe integration
+  - `zerotohero-python-server/app_paypal_checkout.py` — PayPal integration
+  - `zerotohero-python-server/app_in_app_purchase.py` — Apple IAP receipt validation
+  - `zerotohero-python-server/utils_subscription.py` — subscription CRUD + grants
+  - `zerotohero-python-server/data/prices.csv` — single source of truth for pricing
 
 ---
 
-## Overview
+## TL;DR
 
-Language Player has a mature payment and subscription system in the Python backend and Classic Nuxt app, but the implementation across the four frontend codebases is inconsistent. The GO legacy mobile app had a partial implementation that was broken during the SDK 57 migration. The Next.js web app and React Native mobile app have Stripe credit card + WeChat/Alipay working but lack subscription state management, PayPal integration, and IAP.
+One Python backend owns pricing, purchase verification, and subscription grants.
+All frontends read the same `/stripe-prices` and `/user-subscription` endpoints,
+and every purchase flow ends in the same `user_subscriptions` row.
 
-This spec defines a unified architecture for `apps/web` and `apps/mobile` that:
-1. Reuses the proven Python backend endpoints unchanged
-2. Adds shared subscription state management (web hook + mobile context)
-3. Fills the remaining gaps (PayPal for web, IAP for mobile)
-4. Handles all edge cases (existing subscriptions, cancellation, expiry)
-
----
-
-## Architecture
-
-### Data Flow (All Frontends)
-
-```
-User taps "Buy" on plan card
-  │
-  ├─ ► Stripe Credit Card: POST /create-stripe-checkout-session
-  │     → { url } → redirect to Stripe Checkout
-  │     → Webhook: checkout.session.completed → create subscription in Directus
-  │     → User redirected to /go-pro-success
-  │     → /go-pro-success polls /user-subscription until active
-  │
-  ├─ ► WeChat / Alipay: Open Stripe Payment Link
-  │     → Webhook: checkout.session.completed → create subscription
-  │     → User redirected to /go-pro-success
-  │
-  ├─ ► PayPal: POST /create-paypal-order (NEW) or redirect to classic
-  │     → PayPal approval → POST /paypal_checkout_success
-  │     → Hardcodes lifetime subscription
-  │
-  └─ ► IAP (mobile only): Purchase via RevenueCat / StoreKit
-        → Verify receipt via POST /in_app_purchase_success
-        → Hardcodes lifetime subscription
-```
-
-### Subscription Status Flow
-
-```
-App launch → check auth → fetch /user-subscription?user_id=X
-  → set isPro / planType / expiresOn / autoRenew
-  → UI adapts (show/hide pro features, show subscription card)
-  → On expiry: isPro = false, prompt to re-subscribe
-```
-
-### Price Loading
-
-```
-App mount → fetch /stripe-prices
-  → cache in memory for session
-  → filter status=current, type=regular
-  → display plan cards (monthly $10, annual $90, lifetime $169)
-```
+**Store-policy rule:** digital Pro sold inside a mobile app must go through the
+store's billing (Apple IAP on iOS, Google Play Billing on Android). Stripe card,
+WeChat, Alipay, and PayPal are website payments (and Classic payments) — the
+same backend grant makes them work in the apps once the user logs in.
 
 ---
 
----
+## Payment methods by platform
 
-## IAP Configuration (Concrete Values)
+### Target (what we want to support)
 
-### Product IDs
+| Payment method | Plans | Classic | Web | Mobile iOS | Mobile Android |
+|---|---|---|---|---|---|
+| Stripe credit card (USD) | monthly / annual / lifetime | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| WeChat Pay (CNY) | all | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| Alipay (CNY) | all | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| PayPal | lifetime only | ✅ | ✅ (direct, planned) | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| Apple IAP | lifetime | ✅ (`pro`) | — | ✅ (`pro_go`) | — |
+| Google Play Billing | lifetime | — | — | — | ⬜ planned (blocked on Play account) |
 
-| Codebase | Product ID | Type | Status |
-|---|---|---|---|
-| Nuxt Classic (`zerotohero-nuxt/`) | `"pro"` | Non-consumable | ✅ Live on App Store since 2023 |
-| GO Legacy (`language-player-3/`) | `"pro_go"` | Non-consumable | ✅ Implemented + shipped 2024-07; `react-native-iap` removed in SDK 57 upgrade (`b6fe809`), stub now returns null |
-| New mobile (`apps/mobile/`) | `"pro_go"` | Non-consumable | ✅ Confirmed in App Store Connect 2026-08-10 (GO listing: "Lifetime Pro Account", Non-Consumable, Approved) — the app replaces GO under `ca.zerotohero.go` |
+Legend: ✅ supported · 🟡 partial (link-out / not yet direct) · ⬜ planned ·
+🚫 intentionally not offered in-app (use the website).
 
-### Bundle IDs
+### Today (2026-08-10)
 
-| Build | Bundle ID | Used By |
-|---|---|---|
-| Nuxt/Capacitor production | `ca.zerotohero.app` | App Store listing "Language Player 2" |
-| GO legacy production | `ca.zerotohero.go` | App Store listing "Language Player GO" |
-| New mobile (all builds) | `ca.zerotohero.go` | `apps/mobile/app.json` — replaces the GO listing as "Language Player 3" (SPEC-048) |
-| New mobile Android | `ca.zerotohero.go` | Google Play package (new launch, SPEC-048) |
-
-### Apple Shared Secret
-
-The shared secret is stored in the environment variable `APPLE_SHARED_SECRET` in `zerotohero-python-server/.env`. It is **account-level** (not app-specific). It works for all bundle IDs under this developer account.
-
-### Python Backend Receipt Validation (`app_in_app_purchase.py`)
-
-- Uses `inapppy`'s `AppStoreValidator`
-- Hardcodes `bundle_id = 'ca.zerotohero.go'` — this is the bundle ID expected in the receipt
-- Auto-retries on wrong environment (sandbox vs production) via `auto_retry_wrong_env_request = True`
-- Always grants **lifetime** subscription (the only IAP product type)
-- Strips receipt data to just `transaction_id` for storage in Directus
-- Endpoint: `POST /in_app_purchase_success` with `{ user_id, receipt }`
-- Returns `{ type: 'success', message, user_id, receipt, validation_result }` on success
-
-### Nuxt IAP Flow (Reference for Mobile Port)
-
-Source: `zerotohero-nuxt/components/PurchaseiOS.vue`
-
-1. **Register**: `$inAppPurchase2.register([{ id: "pro", type: NON_CONSUMABLE }])`
-2. **Refresh**: `$inAppPurchase2.refresh()` — loads product info + restores past purchases
-3. **Purchase**: `$inAppPurchase2.order("pro")` → shows Apple payment sheet
-4. **Approve**: `.approved()` handler calls `product.verify()` (server-side receipt check)
-5. **Verified**: `.verified()` handler extracts `product.transaction.appStoreReceipt`
-6. **Elevate**: `POST /in_app_purchase_success` with `{ user_id, receipt }`
-7. **Redirect**: On success → `/go-pro-success`
-8. **Finish**: `product.finish()` — marks transaction as complete
-
-For mobile port, map:
-- `$inAppPurchase2.register()` → `InAppPurchases.connectAsync()`
-- `$inAppPurchase2.order()` → `InAppPurchases.purchaseItemAsync()`
-- `product.transaction.appStoreReceipt` → result from `purchaseItemAsync`
-- The receipt POST endpoint and payload shape are identical
-
-### GO Legacy IAP (Failed Attempt — Learn From)
-
-The GO legacy app at `apps/mobile-go-legacy/` removed `react-native-iap` during SDK 57 migration. The stubbed `IOSPaymentMethods.tsx` returns `null`. The git history (`git show b6fe809^`) shows the original used `react-native-iap` with product ID `'pro_go'` — a **different** product from the Nuxt app's `"pro"`. This means:
-- Users who purchased via the GO app used product `"pro_go"` under bundle
-  `ca.zerotohero.go`
-- The Python backend validates it fine (shared secret is account-level, and
-  the validator now uses the `.go` bundle)
-- The new mobile app keeps the GO listing/bundle and therefore **inherits
-  `"pro_go"`** — existing GO buyers can restore their purchase
-
-**Lesson**: Use the GO listing's product ID **`"pro_go"`**, not Classic's
-`"pro"`. `"pro"` belongs to `ca.zerotohero.app` (Classic / Language Player
-2) and is **not** visible under the GO listing's bundle.
-
----
-
-## Current State Audit
-
-### What Works Across All Frontends
-
-| Component | Classic Nuxt | GO Legacy | Web (apps/web) | Mobile (apps/mobile) |
+| Payment method | Classic | Web | Mobile iOS | Mobile Android |
 |---|---|---|---|---|
-| Stripe Credit Card | ✅ | ✅ (stub) | ✅ | ✅ |
-| WeChat Pay (CNY) | ✅ | ✅ (stub) | ✅ | ✅ |
-| Alipay (CNY) | ✅ | ✅ (stub) | ✅ | ✅ |
-| PayPal | ✅ Lifetime only | ❌ | 🟡 Link to classic | 🟡 Link to classic |
-| iOS IAP | ✅ Lifetime only | ❌ Stubbed | N/A | ❌ Missing |
-| Google Play Billing | ❌ No Play listing | ❌ No Play listing | N/A | ❌ Missing |
-| Subscription status check | ✅ Vuex store | ✅ SubscriptionContext | ✅ useSubscription hook | ❌ Missing |
-| Auto-renew check | ✅ | ✅ | ✅ | ❌ Missing |
-| Cancel subscription | ✅ | ✅ | ✅ | ❌ Missing |
-| Sale pricing | ✅ | ❌ | ❌ | ❌ |
-| Feature comparison | ✅ FeatureComparison | ❌ | ✅ | ✅ Inline per-plan |
+| Stripe credit card | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
+| WeChat Pay | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
+| Alipay | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
+| PayPal | ✅ | 🟡 links to Classic | 🚫 hidden on iOS (IAP available) | 🟡 links to Classic (stopgap) |
+| Apple IAP | ✅ | — | ✅ | — |
+| Google Play Billing | — | — | — | ⬜ not implemented |
 
-### API Client State
+Per-platform notes:
 
-| Endpoint | Nuxt | GO Legacy | apps/web | apps/mobile |
-|---|---|---|---|---|
-| `GET /stripe-prices` | ✅ | ✅ | ✅ `lib/prices.ts` | ✅ Inline fetch |
-| `GET /user-subscription` | ✅ | ✅ | ✅ `use-subscription.ts` | ❌ Missing |
-| `POST /create-stripe-checkout-session` | ❌ (uses old stripe-checkout.js) | ❌ | ✅ | ✅ |
-| `POST /in_app_purchase_success` | ✅ | ✅ `subscription.ts` | N/A | ❌ Missing |
-| `POST /cancel-subscription-at-end-of-period` | ✅ Vuex action | ✅ CancelSubscription | ❌ Missing | ❌ Missing |
+- **Classic** — full set: Stripe card, WeChat, Alipay, PayPal (lifetime), and
+  Apple IAP (`pro`, lifetime). Legacy; stays live as "Language Player 2".
+- **Web** — Stripe card, WeChat, Alipay for all plans. PayPal currently links
+  out to Classic; direct PayPal is planned. Sale UI is still missing.
+- **Mobile iOS** — only lifetime is selectable; monthly/annual are gated off
+  (store policy). Today the app also offers Stripe card / WeChat / Alipay via
+  browser checkout, which is a review risk; target is Apple IAP only in-app.
+- **Mobile Android** — all plans via browser web-checkout today (launch
+  stopgap per SPEC-048). Play Billing is the target in-app method once the
+  Play account + billing setup exist.
+
+### Why the split (store policy)
+
+- **Apple (Guideline 3.1.1):** digital goods/subscriptions consumed in the app
+  must use IAP. External payment links inside the app are circumvention (narrow
+  EU/US external-purchase entitlements exist but come with fees and consent
+  flows).
+- **Google Play:** digital content consumed in the app must use Play Billing;
+  external payment links are prohibited outside Google's limited
+  alternative-billing programs.
+- **Web / Classic:** not store-distributed, so they can offer Stripe, WeChat,
+  Alipay, and PayPal directly.
+
+The practical pattern: buy on the website (or Classic), log into the mobile
+app, and Pro is already there — same `user_subscriptions` row.
 
 ---
 
-## Implementation Plan
+## Identifiers & IAP
 
-### Phase 1: Shared Types
+### App identifiers and IAP products
 
-**File**: `packages/shared/src/types.ts`
+| App | Store | Identifier | IAP product | Status |
+|---|---|---|---|---|
+| Classic — "Language Player 2" | App Store | `ca.zerotohero.app` | `pro` (non-consumable) | ✅ Live since 2023 |
+| GO Legacy — "Language Player GO" | App Store | `ca.zerotohero.go` | `pro_go` (non-consumable) | ✅ Shipped 2024-07; being replaced |
+| New mobile — "Language Player 3" | App Store (replaces GO) | `ca.zerotohero.go` | `pro_go` | ✅ Configured; ASC-verified 2026-08-10 |
+| New mobile — "Language Player 3" | Google Play (new launch) | `ca.zerotohero.go` | ⬜ Play Billing product TBD | ⬜ Not started |
 
-Add subscription types:
+Key facts:
 
-```typescript
-/** Raw subscription record from the Directus `subscriptions` collection. */
-interface Subscription {
-  id: number;
-  owner: number;
-  type: 'monthly' | 'annual' | 'lifetime' | 'trial';
-  expires_on: string | null; // ISO date string, null for lifetime
-  payment_processor: 'stripe' | 'paypal' | 'app-store' | null;
-  payment_customer_id: string | null;
-  payment_id: string | null;
-  payment_date: string | null;
-  payment_email: string | null;
-  status: string;
-  notes: string | null;
-}
+- The GO listing's product is **`pro_go`** ("Lifetime Pro Account",
+  Non-Consumable, Approved). The new iOS app keeps the GO bundle ID and
+  product, so existing GO buyers can restore.
+- Classic's `pro` belongs to `ca.zerotohero.app` and is a separate product.
+- The backend cannot distinguish which app sent a receipt — it does not need
+  to; it validates against Apple and grants lifetime.
 
-/** Computed subscription state resolved by hooks/contexts. */
-interface SubscriptionState {
-  sub: Subscription | null;
-  loaded: boolean;
-  isPro: boolean; // lifetime = true, or expires_on > now
-  planType: 'monthly' | 'annual' | 'lifetime' | 'trial' | null;
-  isLifetime: boolean;
-  isExpired: boolean;
-  willAutoRenew: boolean;
-  daysUntilExpiry: number | null;
-}
-```
+### Apple receipt validation
 
-### Phase 2: Shared Price Utilities
+- `APPLE_SHARED_SECRET` env var (`zerotohero-python-server/.env`, gitignored)
+  — account-level, works for every bundle under the developer account.
+- `app_in_app_purchase.py` validates with `bundle_id = 'ca.zerotohero.go'`
+  (updated 2026-08-10) via `inapppy`'s `AppStoreValidator`; sandbox/live
+  retry is automatic (`auto_retry_wrong_env_request = True`).
+- Always grants **lifetime** (`type=lifetime`, `payment_processor=app-store`);
+  only the `transaction_id` is stored.
 
-**File**: `packages/api-client/src/prices.ts`
+### GO Legacy lesson
 
-```typescript
-interface StripePrice {
-  plan: 'monthly' | 'annual' | 'lifetime';
-  type: 'regular' | 'sale';
-  mode: 'subscription' | 'payment';
-  currency: 'usd' | 'cny';
-  amount: number;
-  id: string;
-  paymentLink?: string;
-}
+The old GO app shipped with `react-native-iap` and product `pro_go`; the SDK 57
+migration removed it (`b6fe809`) and left `IOSPaymentMethods.tsx` as a stub.
+The new app does **not** copy Classic's `pro` — it uses the GO listing's
+`pro_go`, which is the only product visible under `ca.zerotohero.go`.
 
-async function fetchPrices(): Promise<StripePrice[]>;
-function findUsdPrice(prices: StripePrice[], plan: string, type?: string): StripePrice | undefined;
-function findCnyPrice(prices: StripePrice[], plan: string, type?: string): StripePrice | undefined;
-function getActivePrices(prices: StripePrice[]): StripePrice[];
-```
+---
 
-### Phase 3: Web — Subscription Hook & API Client
+## Flows
 
-**File**: `packages/api-client/src/subscriptions.ts`
+### Stripe — card, WeChat, Alipay
 
-```typescript
-async function getUserSubscription(userId: string): Promise<Subscription | null>;
-async function createStripeCheckoutSession(priceId: string, userId: string, host: string, mode: string): Promise<{ url: string }>;
-async function cancelSubscriptionAtEndOfPeriod(customerId: string): Promise<void>;
-```
+1. `GET /stripe-prices` → plan cards (USD prices + CNY payment links).
+2. Card: `POST /create-stripe-checkout-session` → Stripe Checkout URL.
+   WeChat/Alipay: open the CNY Stripe Payment Link directly.
+3. `checkout.session.completed` webhook → grant/update subscription row.
+4. User lands on `/go-pro-success`, which polls `/user-subscription`.
 
-**File**: `apps/web/src/hooks/use-subscription.ts` (already exists — verify and extend)
+### PayPal (lifetime only)
 
-The existing hook fetches `/user-subscription?user_id=X`. Ensure it also exposes:
-- `willAutoRenew`: `['monthly','annual'].includes(type) && payment_customer_id !== null && !isExpired`
-- `cancelAtEndOfPeriod()`: POSTs to `/cancel-subscription-at-end-of-period`
+1. `POST /create-paypal-order` → PayPal order.
+2. Buyer approves → `POST /paypal_checkout_success` with `order_id`.
+3. Backend captures/verifies via Orders v2 and grants lifetime.
 
-**File**: `apps/web/src/app/[l1]/[l2]/go-pro/page.tsx` (already exists — verify gaps)
+### Apple IAP (lifetime, iOS)
 
-Gaps to fill:
-- **PayPal**: Add a button that creates a checkout on the web (Stripe-hosted) or links to languageplayer.io/go-pro. Currently shows a text message; replace with a direct PayPal button using the PayPal JS SDK.
-- **Sale**: Add sale banner + sale price logic when {SALE} is active (prices with `type: 'sale'`).
-- **Cancel subscription**: Add a cancel button in the subscription status section.
-- **Caching**: The price fetch should have a stale-while-revalidate pattern (currently plain fetch).
+1. `connectAsync()` to the payment queue.
+2. `purchaseItemAsync("pro_go")` → Apple payment sheet.
+3. Receipt → `POST /in_app_purchase_success { user_id, receipt }`.
+4. On success: `finishTransactionAsync()` → refresh subscription → success screen.
+5. Restore: `getPurchaseHistoryAsync()` → validate each receipt via the same
+   endpoint (idempotent).
 
-### Phase 4: Mobile — Subscription Context
-
-**New file**: `apps/mobile/contexts/SubscriptionContext.tsx`
-
-Modeled after the GO legacy's `SubscriptionContext.tsx` but with the same API as the web's `useSubscription` hook.
-
-```typescript
-interface SubscriptionContextValue {
-  subscription: Subscription | null;
-  isPro: boolean;
-  planType: string | null;
-  isLifetime: boolean;
-  willAutoRenew: boolean;
-  daysUntilExpiry: number | null;
-  loaded: boolean;
-  fetchSubscription: () => Promise<void>;
-  cancelSubscription: () => Promise<void>;
-}
-
-function SubscriptionProvider({ children }: { children: ReactNode }): JSX.Element;
-function useSubscription(): SubscriptionContextValue;
-```
-
-Key behaviors:
-- On mount: if user is logged in, fetch `/user-subscription?user_id=X`
-- `subscriptionIsActive`: lifetime = true; else `new Date(expires_on) > new Date()`
-- `subscriptionWillAutoRenew`: monthly or annual + has `payment_customer_id` + active
-- `cancelSubscription`: POST `/cancel-subscription-at-end-of-period` with `customer_id`
-- Store result in context, accessible via `useSubscription()`
-
-### Phase 5: Mobile — IAP Implementation
-
-**New file**: `apps/mobile/lib/iap.ts`
-
-Use `expo-in-app-purchases` (Expo SDK 57 supports this natively via `expo-in-app-purchases` package — the same package that replaced `react-native-iap` post-SDK-51).
-
-```typescript
-/** Product ID must match App Store Connect. Use "pro_go" — the GO listing's
- *  non-consumable product. The new app replaces the GO app under
- *  `ca.zerotohero.go`, so existing GO buyers can restore via this ID.
- *  Classic's "pro" belongs to `ca.zerotohero.app` and is NOT used here. */
-const IOS_IAP_PRODUCT_ID = "pro_go";
-const NON_CONSUMABLE = "non-consumable"; // or use expo-in-app-purchases constant
-
-interface PurchaseResult {
-  /** Base64-encoded App Store receipt (same as `product.transaction.appStoreReceipt` in Nuxt) */
-  receipt: string;
-  transactionId: string;
-}
-
-async function purchaseLifetime(): Promise<PurchaseResult>;
-async function restorePurchases(): Promise<boolean>;
-```
-
-**Purchase flow** (mapped from Nuxt `PurchaseiOS.vue`):
+Nuxt reference (`PurchaseiOS.vue`) → mobile (`expo-in-app-purchases`):
 
 | Nuxt (`@ionic-native/in-app-purchase-2`) | Mobile (`expo-in-app-purchases`) |
 |---|---|
-| `register([{ id: "pro", type: NON_CONSUMABLE }])` | Connect on mount: `InAppPurchases.connectAsync()` |
+| `register([{ id: "pro", type: NON_CONSUMABLE }])` | `InAppPurchases.connectAsync()` |
 | `order("pro")` | `InAppPurchases.purchaseItemAsync("pro_go")` |
-| `.approved()` → `product.verify()` | (Handled by StoreKit automatically) |
-| `.verified()` → `product.transaction.appStoreReceipt` | Result contains receipt data |
-| `POST /in_app_purchase_success { user_id, receipt }` | **Same endpoint, same payload shape** |
-| `/go-pro-success` redirect | Navigate to success screen |
-| `product.finish()` | `InAppPurchases.finishTransactionAsync()` |
+| `.approved()` → `product.verify()` | Handled by StoreKit |
+| `product.transaction.appStoreReceipt` | Purchase result contains receipt |
+| `POST /in_app_purchase_success` | Same endpoint, same payload |
+| `product.finish()` | `finishTransactionAsync()` |
 
-**Full flow**:
-1. On mount: `connectAsync()` to set up the payment queue
-2. User taps "Pay $169" on lifetime plan → `purchaseItemAsync("pro_go")`
-3. Apple shows payment sheet → user approves → resolves with receipt + transaction data
-4. POST `{ user_id, receipt }` to `PYTHON_API_URL + "/in_app_purchase_success"`
-5. Python backend validates via `AppStoreValidator` with `bundle_id = 'ca.zerotohero.go'`
-6. On success (`res.data.type === "success"`): call `finishTransactionAsync()` and navigate to success
-7. Refresh subscription state via `fetchSubscription()`
+### Subscription state
 
-**Restore purchases**:
-- Add a "Restore Purchases" button below payment options
-- Calls `InAppPurchases.getPurchaseHistoryAsync()` (iOS 15+, falls back to StoreKit receipt refresh)
-- Finds the "pro_go" purchase, extracts receipt
-- POST the receipt to `/in_app_purchase_success` (same endpoint — idempotent, skips if already granted)
-- On success: refresh subscription state, show "Restore complete" toast
-- If no purchase found: show "No purchases to restore" message
+`GET /user-subscription?user_id=X` → `SubscriptionContext` (mobile) /
+`useSubscription` (web). Derived state: `isPro`, `planType`, `isLifetime`,
+`isExpired`, `willAutoRenew`, `daysUntilExpiry`. Expired rows render as free.
 
-**Important**: The bundle ID is now `ca.zerotohero.go` for all builds (dev,
-TestFlight, production) — the GO listing's bundle, which the new app
-replaces (SPEC-048). Apple's `verifyReceipt` works against the GO listing,
-and `restorePurchases()` finds the existing GO `"pro_go"` product. Classic's
-`ca.zerotohero.app` / `"pro"` stays with the Classic app.
+### Renewal & cancellation
 
-**Important**: The Python backend hardcodes `bundle_id = 'ca.zerotohero.go'`
-in `app_in_app_purchase.py`. This must match the production app's bundle
-ID — it now does (2026-08-10).
+- Stripe renewals arrive as `invoice.paid` webhooks; expiry recomputes
+  monthly +32d / annual +367d.
+- Cancel at period end: `POST /cancel-subscription-at-end-of-period` (Stripe
+  only). Auto-renewing subscriptions block new purchases until cancelled
+  (Option A, SPEC-054).
 
-**Important**: Since `expo-in-app-purchases` uses the same StoreKit framework, the receipt format is identical to what the Nuxt app sends. The Python backend cannot distinguish between a purchase from the old app and the new app — which is the desired behavior for Option B.
-
-### Phase 6: Mobile — Go Pro Screen Refinements
-
-**File**: `apps/mobile/app/(tabs)/(me)/go-pro.tsx`
-
-Gaps to fill:
-- **Subscription status**: Show current plan badge if user has active subscription, with expiry date and auto-renew status. Add "Cancel" button for auto-renewing plans.
-- **Plan restrictions on iOS**: Follow GO legacy pattern — on iOS, only show lifetime plan (no monthly/annual) unless the user already has an active monthly/annual subscription. Show "Only lifetime plan available on iOS" message (reuse `OnlyLifetimePlan` pattern).
-- **IAP button**: Add "Pay with Apple Pay / Buy" button for lifetime plan on iOS.
-- **Restore Purchases**: Add restore button below payment options.
-- **Sale banner**: Add sale pricing when applicable (prices with `type: 'sale'`).
-- **Feature comparison**: Consider adding a side-by-side comparison like the web's FeatureComparison.
-
-### Phase 7: Mobile — Subscription-Aware UI
-
-Files that need subscription awareness:
-- `apps/mobile/app/(tabs)/(me)/profile.tsx` — Show subscription card (plan type, expiry, cancel button)
-- `apps/mobile/app/(tabs)/(me)/index.tsx` — Show "Go Pro" badge or "Pro" badge on profile menu
-- Settings screen — Add "Subscription" row that navigates to Go Pro or shows status
-- Various pro-feature gates (transcript lines, examples count) — already partially implemented?
-
-### Phase 8: Web — PayPal Direct Integration
-
-Replace the current "PayPal available on the Classic app" text with a direct PayPal button:
-
-```typescript
-// apps/web/src/app/[l1]/[l2]/go-pro/page.tsx
-// For lifetime plan only (PayPal only supports lifetime):
-// Use @paypal/react-paypal-js
-// Flow: createOrder → onApprove → POST /paypal_checkout_success
-// Redirect to /go-pro-success on completion
-```
-
-### Phase 9: Sale Pricing
-
-The Python backend already has sale pricing in `prices.csv` (type: 'sale', e.g. $84.50 lifetime USD). The Classic app shows a sale banner and applies the sale price. The web and mobile apps should do the same:
-
-1. Check if any prices with `type: 'sale'` exist in the price list
-2. If yes, show a sale banner with discount percentage
-3. Replace the regular price with the sale price for the affected plan
-
-**Sale detection** (from `zerotohero-nuxt/lib/utils/variables.js`):
-```typescript
-const SALE = SALE_START_DATE && SALE_END_DATE && new Date() >= SALE_START_DATE && new Date() <= SALE_END_DATE;
-```
-
-Move this to `packages/shared` or `packages/api-client` so both apps share the same logic.
+See ARCH-022 for the full as-built flow diagrams.
 
 ---
 
-## Files to Touch
-
-| Phase | File | Change |
-|---|---|---|
-| 1 | `packages/shared/src/types.ts` | Add `Subscription`, `SubscriptionState` types |
-| 2 | `packages/api-client/src/prices.ts` | **NEW** — Price fetching + helpers |
-| 2 | `packages/api-client/src/subscriptions.ts` | **NEW** — Subscription API client |
-| 3 | `apps/web/src/hooks/use-subscription.ts` | Extend with cancel, auto-renew |
-| 3 | `apps/web/src/app/[l1]/[l2]/go-pro/page.tsx` | Add PayPal, sale, cancel button |
-| 4 | `apps/mobile/contexts/SubscriptionContext.tsx` | **NEW** — Subscription state |
-| 5 | `apps/mobile/lib/iap.ts` | **NEW** — IAP purchase + restore |
-| 5 | `apps/mobile/app/_layout.tsx` | Wrap with SubscriptionProvider |
-| 6 | `apps/mobile/app/(tabs)/(me)/go-pro.tsx` | Add IAP, subscription status, iOS gating, restore, sale |
-| 7 | `apps/mobile/app/(tabs)/(me)/profile.tsx` | Add subscription card |
-| 7 | `apps/mobile/app/(tabs)/(me)/index.tsx` | Add Pro badge |
-| 8 | `apps/web/src/app/[l1]/[l2]/go-pro/page.tsx` | Direct PayPal button |
-| 9 | `packages/shared/src/sale.ts` | **NEW** — Sale detection logic |
-| — | `translations.csv` | Add any new i18n keys for subscription status |
-
----
-
-## Python Backend — No Changes Needed
-
-All existing Python endpoints are production-tested and unchanged:
+## Backend API
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/stripe-prices` | GET | Returns parsed `prices.csv` |
-| `/user-subscription` | GET | Returns user's current subscription |
-| `/create-stripe-checkout-session` | POST | Creates Stripe Checkout Session, returns URL |
+| `/stripe-prices` | GET | Parsed `prices.csv` (regular + sale) |
+| `/user-subscription` | GET | Current subscription for a user |
+| `/create-stripe-checkout-session` | POST | Create Stripe Checkout session, return URL |
 | `/stripe_checkout_success` | GET | Stripe success callback |
-| `/webhook-stripe-checkout-session-completed` | POST | Stripe webhook — initial purchase |
-| `/webhook-stripe-subscription-invoice-paid` | POST | Stripe webhook — recurring payment |
-| `/paypal_checkout_success` | GET | PayPal success callback |
-| `/in_app_purchase_success` | POST | Apple receipt validation |
-| `/cancel-subscription-at-end-of-period` | POST | Cancel Stripe subscription |
-| `/admin/update_or_add_subscription` | POST | Admin — create/update subscription |
-| `/admin/check_user_subscription` | GET | Admin — lookup by email |
+| `/webhook-stripe-checkout-session-completed` | POST | Initial-purchase grant |
+| `/webhook-stripe-subscription-invoice-paid` | POST | Renewal grant |
+| `/create-paypal-order` | POST | Create PayPal order (Orders v2) |
+| `/paypal_checkout_success` | GET | Verify/capture + grant lifetime |
+| `/in_app_purchase_success` | POST | Apple receipt validation + grant |
+| `/cancel-subscription-at-end-of-period` | POST | Cancel Stripe auto-renew |
+| `/admin/update_or_add_subscription` | POST | Admin grant/change |
+| `/admin/check_user_subscription` | GET | Admin lookup |
 
 ---
 
-## Edge Cases & States
+## Edge cases & states
 
 | State | Handling |
 |---|---|
-| **User has active subscription** | Show plan card with "Current Plan" badge, expiry date, cancel button |
-| **User has lifetime subscription** | Show lifetime badge, no expiry, no cancel (non-consumable) |
-| **User has auto-renewing subscription** | Show "Cancels on X" after cancellation, "Auto-renews in X days" otherwise |
-| **Subscription expired** | Show expired badge with "Renew" button. Allow re-purchase of same or higher plan |
-| **User on iOS, no IAP** | Show only lifetime plan. Non-lifetime plans show "Only lifetime available on iOS" message |
-| **Sale active** | Show colored banner at top. Discounted price on lifetime plan card |
-| **Price fetch fails** | Show plan cards with hardcoded defaults, retry in background |
-| **Subscription fetch fails** | Assume free tier (no pro features). Retry on next mount |
-| **Stripe Checkout fails** | Show error message with retry button |
-| **IAP purchase fails** | Show error, log receipt for debugging |
-| **Receipt validation fails** | Show "Contact support" with receipt data |
-| **IAP restore finds no purchases** | Show "No purchases to restore" message |
-| **Multiple devices, same Apple ID** | `restorePurchases()` returns the purchase on any device; backend uses the same receipt validation |
+| Active subscription | "Current Plan" badge, expiry, cancel button |
+| Lifetime | Lifetime badge, no expiry, no cancel |
+| Auto-renewing | "Auto-renews in X days"; after cancel, "Cancels on X" |
+| Expired | Expired badge + renew; re-purchase allowed |
+| iOS non-IAP plans | Monthly/annual gated with "Only lifetime available on iOS" |
+| Sale active | Banner + discounted lifetime price |
+| Price fetch fails | Fall back to hardcoded defaults, retry |
+| Subscription fetch fails | Treat as free tier; retry on next mount |
+| Stripe Checkout fails | Error + retry button |
+| IAP fails / receipt invalid | Error (keep receipt for support) |
+| IAP restore finds nothing | "No purchases to restore" |
+| Same Apple ID, multiple devices | `restorePurchases()` + backend idempotency |
 
 ---
 
-## Backward Compatibility
+## Implementation status
 
-- Existing Nuxt and GO apps continue working unchanged
-- Python backend endpoints are untouched — no migration needed
-- Existing subscriptions in Directus are unaffected
-- The new `packages/api-client` modules wrap existing endpoints
-- The mobile `SubscriptionContext` mirrors the GO legacy's API for easy migration
+Implemented (see SPEC-048 checklist / SPEC-054 for verification):
+
+- Shared subscription/price utilities and web `useSubscription` hook
+- Mobile `SubscriptionContext` + subscription-aware profile/go-pro UI
+- Stripe card + WeChat/Alipay on web and mobile
+- Apple IAP (`pro_go`) with restore on mobile
+- Cancel-at-period-end on web and mobile
+- Sale pricing on Classic and mobile
+
+Open work:
+
+- **Web sale UI** — price helpers exist; banner/discount display still missing
+- **Web direct PayPal** — currently links to Classic
+- **Play Billing (Android)** — blocked on new Play Developer account + billing
+  setup; web-checkout is the launch stopgap
+- **Store-policy cleanup** — remove in-app browser checkout from iOS (and
+  eventually Android) so the apps only use store billing in-app
+- **Mobile IAP sandbox verification** — SPEC-054 Phase 4 (A1/A2)
+
+---
 
 ## Prerequisites
 
-1. **Apple App Store**: No new IAP product needed. The GO listing's existing
-   non-consumable `"pro_go"` under bundle ID `ca.zerotohero.go` is already
-   live (shipped with the GO app). The new app keeps that bundle ID and
-   product, so existing GO buyers can restore. Classic's `"pro"` under
-   `ca.zerotohero.app` is untouched.
-2. **IAP Dependency**: Install `expo-in-app-purchases` in `apps/mobile` — Expo SDK 57 compatible, replaces `react-native-iap` used by the GO legacy.
-3. **PayPal Dependency**: Install `@paypal/react-paypal-js` in `apps/web` (optional — can use link-to-classic approach).
-4. **Google Play**: No Google Play listing exists (developer account was deleted after failure to renew business info). Before Google Play Billing can work, the following chain is needed:
-   - Create a new Google Play Developer account ($25 fee)
-   - Create the app in Play Console (complete store listing, content rating, etc.)
-   - Configure IAP product IDs in Play Console (e.g. `"pro"` — these must match what the code uses)
-   - Build the AAB with `expo-in-app-purchases` referencing the configured IDs
-   - Upload the AAB to an internal test track and add testers
-   
-   Until that chain is complete, Google Play Billing is blocked at the Play Console setup step. Android IAP is out of scope for this spec — focus on iOS IAP first.
-5. **Env variables** (already in `zerotohero-python-server/.env`, gitignored — values not listed here to avoid committing secrets):
-   - `APPLE_SHARED_SECRET`
-   - `STRIPE_TEST_KEY`, `STRIPE_LIVE_KEY`
-   - `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`
-   - `DIRECTUS_TOKEN`
+1. **Apple App Store** — done: the GO listing's `pro_go` (Non-Consumable,
+   Approved) is reused; no new product needed. Classic's `pro` is untouched.
+2. **IAP dependency** — `expo-in-app-purchases` installed in `apps/mobile`
+   (SDK 57 compatible).
+3. **PayPal for web** — optional `@paypal/react-paypal-js`; link-to-Classic
+   works until direct integration lands.
+4. **Google Play** — no Play listing exists yet (developer account was deleted
+   after a failed business-info renewal). Before Play Billing:
+   create the Play account, create the app under `ca.zerotohero.go`, configure
+   the billing product, build the AAB, and roll through test tracks.
+5. **Env vars** (`zerotohero-python-server/.env`, gitignored):
+   `APPLE_SHARED_SECRET`, `STRIPE_TEST_KEY`, `STRIPE_LIVE_KEY`,
+   `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `DIRECTUS_TOKEN`/Supabase equivalents.
 
-## Pricing Reference
+---
 
-Single source of truth: `zerotohero-python-server/data/prices.csv`
+## Backward compatibility
 
-### Current Regular Prices
+- Classic and existing subscriptions are unaffected.
+- Backend endpoints are shared and unchanged.
+- The new mobile app inherits the GO listing's bundle + IAP product, so
+  existing GO buyers keep restore continuity.
 
-| Plan | USD | CNY | Mode |
-|---|---|---|---|
-| Monthly | $10 | ¥73 | Subscription |
-| Annual | $90 | ¥653 | Subscription |
-| Lifetime | $169 | ¥1,227 | One-time payment |
+---
 
-### Sale Prices (when `SALE` flag is active)
+## References
 
-| Plan | USD | CNY |
-|---|---|---|
-| Lifetime (sale) | $84.50 (50% off) | ¥608 |
-
-### Legacy Prices (grandfathered, `status=legacy`)
-
-| Plan | USD |
-|---|---|
-| Monthly (legacy) | $6 |
-| Annual (legacy) | $59 |
-
-Sale detection logic (from `zerotohero-nuxt/lib/utils/variables.js`):
-
-```typescript
-const SALE_START_DATE = new Date('2024-07-01');  // Placeholder — check actual dates
-const SALE_END_DATE = new Date('2024-08-01');
-const SALE = SALE_START_DATE && SALE_END_DATE && new Date() >= SALE_START_DATE && new Date() <= SALE_END_DATE;
-```
-
-Actual sale dates should be verified from the Classic app or `prices.csv` metadata before implementing Phase 9.
+- ARCH-015 — payment method constraints
+- ARCH-022 — as-built payment/subscription/MailerLite architecture
+- ADR-0013 — app store strategy & naming
+- SPEC-048 — mobile release plan (QA + stores)
+- SPEC-054 — subscription & payment testing
+- Stripe test mode docs · PayPal Orders v2 docs · Apple StoreKit docs
