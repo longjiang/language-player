@@ -13,21 +13,77 @@ present in Expo Go, and the app's bundle id is `ca.zerotohero.go`, not
 
 ## 2. Prerequisites (one-time)
 
-- **Node 22**: Expo SDK 57 requires Node ≥ 20.19.4. Always run:
-  ```bash
-  source ~/.nvm/nvm.sh && nvm use 22
-  ```
-- **Xcode + Command Line Tools** installed on the Mac.
-- **Apple Developer account** with a development certificate/profile that
-  covers the device. The project's profile supports `ca.zerotohero.go`.
-- **Device registered** in the Apple Developer portal / Xcode (the iPad's
-  UDID must be in the provisioning profile).
-- **Metro not already running** on port 8081:
-  ```bash
-  lsof -ti:8081   # must print nothing
-  ```
-- **Flask server** running and reachable from the device over your LAN
-  (see § 5).
+### 2.1 Node 22 (Mac)
+
+1. Open Terminal.
+2. Run:
+   ```bash
+   source ~/.nvm/nvm.sh && nvm use 22
+   ```
+3. Confirm the version:
+   ```bash
+   node -v   # must print v22.x
+   ```
+
+### 2.2 Xcode + Command Line Tools (Mac)
+
+1. Install Xcode from the App Store (or confirm it's installed).
+2. Run:
+   ```bash
+   xcode-select -p   # must print /Applications/Xcode.app/Contents/Developer
+   ```
+3. If it prints nothing or the wrong path:
+   ```bash
+   sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+   ```
+4. Accept the license if prompted:
+   ```bash
+   sudo xcodebuild -license accept
+   ```
+
+### 2.3 Developer Mode (iPad — required)
+
+1. On the iPad, open **Settings** (the gray gear icon).
+2. Tap **Privacy & Security** (left sidebar on iPad).
+3. Scroll down to **Developer Mode** (near the bottom).
+4. Tap the toggle to **ON**.
+5. Tap **Restart** when the dialog asks you to restart.
+6. After the restart, confirm the prompt to enable Developer Mode
+   (enter the passcode if asked).
+
+> Without this, Xcode cannot install or launch a development-signed build —
+> the build fails before it even starts.
+
+### 2.4 Register the iPad with your Apple Developer account (Mac)
+
+1. Get the iPad's UDID: connect the iPad to the Mac via cable, open Xcode,
+   go to **Window → Devices and Simulators**, select the iPad, and copy the
+   **Identifier** shown. (Or, on the iPad: Settings → General → About →
+   tap the serial number until the UDID appears.)
+2. Open **https://developer.apple.com/account** in a browser and sign in.
+3. Click **Certificates, Identifiers & Profiles**.
+4. Click **Devices** in the left menu.
+5. Click the **+** button.
+6. Give it a name (e.g. "Jiang's iPad M4") and paste the UDID into the
+   **Device ID** field.
+7. Click **Continue** → **Register**.
+8. Make sure the development **provisioning profile** used by the project
+   includes this device. If the project uses automatic signing in Xcode,
+   run the build with `-allowProvisioningUpdates` so Xcode updates the
+   profile automatically.
+
+> The project's signing identity/profile supports `ca.zerotohero.go`. If
+> Xcode errors on signing during the build, the device is missing from the
+> profile (see § 7.6).
+
+### 2.5 No stale servers (Mac)
+
+1. Confirm Metro isn't already running:
+   ```bash
+   lsof -ti:8081   # must print nothing
+   ```
+2. Confirm Flask is running and reachable from the device's LAN
+   (see § 5 for the exact URL check).
 
 ## 3. Build the development build
 
@@ -125,6 +181,15 @@ icon (`app.json` / `assets/icon.png`) and rebuild.
 First build takes 15–20+ minutes and blocks the machine; it also died
 mid-build once when the Mac restarted. Don't start other heavy work during
 the build, and warn the user before starting.
+
+### 7.6 Build won't start: signing / device registration
+`npx expo run:ios --device` can fail before compiling when the iPad isn't
+ready for development installs. Known blockers:
+- **Developer Mode off** on the device (Settings → Privacy & Security →
+  Developer Mode) — enable it and restart the iPad.
+- **UDID not in the provisioning profile** — Xcode errors on signing; add
+  the device in the Apple Developer portal (or let Xcode auto-register with
+  `-allowProvisioningUpdates`).
 
 ## 8. Verification checklist
 
