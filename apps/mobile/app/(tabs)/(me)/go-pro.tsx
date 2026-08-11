@@ -229,7 +229,7 @@ export default function GoProScreen() {
     try {
       // initiatePurchase() fires the purchase listener — the result is
       // handled by the useEffect that watches iapResult state.
-      await initiatePurchase();
+      await initiatePurchase(user.id);
     } catch (err: any) {
       if (err?.message?.includes('User cancelled')) {
         // User cancelled — don't show error

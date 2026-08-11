@@ -86,6 +86,21 @@ The backend endpoint (`/in_app_purchase_success`) accepts `jws` **first**;
 the legacy `receipt` path remains only for StoreKit 1 clients that cannot
 produce a JWS.
 
+## User binding (security)
+
+StoreKit transactions are **bound to the purchasing user** via Apple's
+`appAccountToken`:
+
+- At purchase time, `apps/mobile/lib/iap.ts` passes `appAccountToken =
+  user.id` (the Supabase auth UUID) to `requestPurchase`. Apple stores it in
+  the transaction JWS.
+- The backend rejects any JWS whose `appAccountToken` is missing or does not
+  match the requesting `user_id` — so a purchase cannot be restored/claimed
+  by a different account (the "10 friends share one purchase" attack).
+- The legacy receipt path still grants by `user_id` without binding; it is
+  only reachable by StoreKit 1 clients (Classic) and remains a known
+  limitation until Classic is migrated.
+
 ## Restore flow
 
 `restorePurchases()` calls `getAvailablePurchases()` and returns matching

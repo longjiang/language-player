@@ -187,14 +187,16 @@ let _restoreInProgress = false;
 // ── Initiate Purchase ──
 
 /** Initiate a lifetime "pro" purchase.
- *  The actual result arrives via the purchase listener set by `setPurchaseHandler`. */
-export async function initiatePurchase(): Promise<void> {
+ *  The actual result arrives via the purchase listener set by `setPurchaseHandler`.
+ *  `appAccountToken` binds the Apple transaction to the logged-in user so the
+ *  backend can reject restore/claim attempts from other accounts. */
+export async function initiatePurchase(userId: string): Promise<void> {
   if (!IAP_AVAILABLE) {
     throw new Error('IAP is not available on this platform');
   }
   await connectIap();
   await requestPurchase({
-    request: { apple: { sku: IOS_IAP_PRODUCT_ID } },
+    request: { apple: { sku: IOS_IAP_PRODUCT_ID, appAccountToken: userId } },
     type: 'in-app',
   });
 }
