@@ -981,13 +981,6 @@ resolved 2026-08-10.)
     Cancelling auto-renew clears `payment_customer_id`, which lifts the
     block — exactly Classic's `hasActiveNonTrialSubscription` logic. Trials
     are exempt.
-21. **iOS in-app browser checkout — policy risk (SPEC-014 target):** the iOS
-    app currently lets lifetime buyers pay via Stripe card / WeChat / Alipay
-    in a browser checkout. Apple policy wants digital entitlements sold only
-    through IAP. Decide before App Store submission whether to remove those
-    buttons (SPEC-014 target matrix marks them 🚫 in-app) or accept review
-    risk. Android web-checkout is the documented launch stopgap until Play
-    Billing lands.
 
 ---
 
