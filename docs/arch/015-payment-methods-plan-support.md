@@ -25,11 +25,11 @@
   - `apps/mobile-go-legacy/app/go-pro.tsx` — GO Go Pro screen
   - `apps/mobile-go-legacy/components/IOSPaymentMethods.tsx` — Stubbed (removed for SDK 57)
   - `apps/mobile/app/(tabs)/(me)/go-pro.tsx` — Mobile Go Pro screen
-  - `zerotohero-python/app_stripe_checkout.py` — Stripe checkout, webhooks, auto-renewal
-  - `zerotohero-python/app_paypal_checkout.py` — PayPal verification (lifetime hardcoded)
-  - `zerotohero-python/app_in_app_purchase.py` — iOS receipt validation (lifetime hardcoded)
-  - `zerotohero-python/utils_subscription.py` — CRUD for Directus `subscriptions` collection
-  - `zerotohero-python/data/prices.csv` — Price definitions (USD + CNY)
+  - `zerotohero-python-server/app_stripe_checkout.py` — Stripe checkout, webhooks, auto-renewal
+  - `zerotohero-python-server/app_paypal_checkout.py` — PayPal verification (lifetime hardcoded)
+  - `zerotohero-python-server/app_in_app_purchase.py` — iOS receipt validation (lifetime hardcoded)
+  - `zerotohero-python-server/utils_subscription.py` — CRUD for Directus `subscriptions` collection
+  - `zerotohero-python-server/data/prices.csv` — Price definitions (USD + CNY)
 
 ---
 
@@ -39,12 +39,17 @@ Language Player offers three subscription plans (monthly $10, annual $90, lifeti
 
 Two of the four frontend codebases have payment implementations:
 
-| App | Payment Support | IAP |
-|---|---|---|
-| **Nuxt Classic** (`zerotohero-nuxt/`) | ✅ Stripe, PayPal, iOS IAP, WeChat, Alipay | ✅ `@ionic-native/in-app-purchase-2` (Capacitor/Cordova) |
-| **GO legacy** (`apps/mobile-go-legacy/`) | ✅ Stripe (web-based) | ❌ Stubbed (`react-native-iap` removed for SDK 57) |
-| **Next.js Web** (`apps/web/`) | ✅ Stripe, WeChat, Alipay | N/A (browser-based) |
-| **React Native Mobile** (`apps/mobile/`) | ✅ Stripe, WeChat, Alipay, PayPal | ❌ Not implemented |
+| App | Payment Support | IAP | Identifier / product |
+|---|---|---|---|
+| **Nuxt Classic** (`zerotohero-nuxt/`) | ✅ Stripe, PayPal, iOS IAP, WeChat, Alipay | ✅ `@ionic-native/in-app-purchase-2` (Capacitor/Cordova) | `ca.zerotohero.app` / `pro` |
+| **GO legacy** (`apps/mobile-go-legacy/`) | ✅ Stripe (web-based) | ❌ Stubbed (`react-native-iap` removed for SDK 57) | `ca.zerotohero.go` / `pro_go` (shipped; being replaced) |
+| **Next.js Web** (`apps/web/`) | ✅ Stripe, WeChat, Alipay | N/A (browser-based) | — |
+| **React Native Mobile** (`apps/mobile/`) | ✅ Apple IAP (iOS); browser web-checkout today (being removed — SPEC-014) | ✅ `expo-in-app-purchases` (`pro_go`) | `ca.zerotohero.go` (iOS + Android) / `pro_go` |
+
+> Canonical identity reference (bundle IDs + IAP products):
+> [SPEC-014 "Identifiers & IAP"](../specs/014-subscription-payment-system.md).
+> The backend validator accepts **both** `ca.zerotohero.go` and
+> `ca.zerotohero.app` receipts — both iOS apps stay public.
 
 ---
 
@@ -53,12 +58,12 @@ Two of the four frontend codebases have payment implementations:
 | Payment Method | Monthly | Annual | Lifetime | Auto-Renewal | Processor Integration |
 |---|---|---|---|---|---|
 | **Stripe (Credit Card)** | ✅ $10/mo | ✅ $90/yr | ✅ $169 | ✅ (Stripe webhook `invoice.paid`) | Stripe Checkout + Webhooks |
-| **PayPal** | ❌ | ❌ | ✅ $169 | ❌ | PayPal Payments API v1 |
+| **PayPal** | ❌ | ❌ | ✅ $169 | ❌ | PayPal Orders v2 (create/capture) |
 | **iOS In-App Purchase** | ❌ | ❌ | ✅ $169 | ❌ | Apple App Store (`inapppy` validator) |
 | **WeChat Pay** | ✅ ¥73/mo | ✅ ¥653/yr | ✅ ¥1,227 | ❌ | Stripe Payment Links (CNY) |
 | **Alipay** | ✅ ¥73/mo | ✅ ¥653/yr | ✅ ¥1,227 | ❌ | Stripe Payment Links (CNY) |
 
-Pricing is defined in `zerotohero-python/data/prices.csv` and fetched from Stripe via the `/stripe-prices` endpoint.
+Pricing is defined in `zerotohero-python-server/data/prices.csv` and fetched from Stripe via the `/stripe-prices` endpoint.
 
 ---
 
@@ -72,11 +77,18 @@ PayPal supports recurring subscriptions via its newer Subscriptions API, but thi
 
 ### iOS In-App Purchase
 
-Apple IAP is registered as a **non-consumable** product (`IOS_IAP_PRODUCT_ID = "pro"` in `PurchaseiOS.vue`). Non-consumables are purchased once and persist forever — they cannot be used for auto-renewable subscriptions (which require a different product type).
+Apple IAP is a **non-consumable** product on both public iOS apps:
+Classic uses `IOS_IAP_PRODUCT_ID = "pro"` (`PurchaseiOS.vue`); the new
+mobile app uses `pro_go` (`apps/mobile/lib/iap.ts`). Non-consumables are
+purchased once and persist forever — they cannot be used for auto-renewable
+subscriptions (which require a different product type).
 
 The Nuxt frontend (`PaymentMethods.vue:8`) explicitly gates `PurchaseiOS` behind `v-if="selectedPlan.name === 'lifetime'"` and shows a warning for non-lifetime plans.
 
-The backend (`app_in_app_purchase.py`) validates receipts via Apple's `verifyReceipt` endpoint and hardcodes `type: 'lifetime'` with `expires_on: None`.
+The backend (`app_in_app_purchase.py`) validates receipts via Apple's
+`verifyReceipt` endpoint against **both** public bundles
+(`ca.zerotohero.go` first, then `ca.zerotohero.app`) and hardcodes
+`type: 'lifetime'` with `expires_on: None`.
 
 ### WeChat Pay & Alipay
 
@@ -155,7 +167,7 @@ All methods create a subscription record in the Directus `subscriptions` collect
 | Component | File | Purpose |
 |---|---|---|
 | Go Pro screen | `apps/mobile/app/(tabs)/(me)/go-pro.tsx` | Stripe, WeChat, Alipay, PayPal (lifetime) via Stripe Payment Links |
-| IAP | — | ❌ Not implemented |
+| IAP | `apps/mobile/lib/iap.ts` | ✅ iOS `pro_go` (lifetime) — purchase + restore |
 
 ---
 
@@ -163,11 +175,11 @@ All methods create a subscription record in the Directus `subscriptions` collect
 
 | File | Purpose |
 |---|---|
-| `zerotohero-python/app_stripe_checkout.py` | Stripe checkout, webhooks, auto-renewal |
-| `zerotohero-python/app_paypal_checkout.py` | PayPal verification (lifetime hardcoded) |
-| `zerotohero-python/app_in_app_purchase.py` | iOS receipt validation (lifetime hardcoded) |
-| `zerotohero-python/utils_subscription.py` | CRUD for Directus `subscriptions` collection |
-| `zerotohero-python/data/prices.csv` | Price definitions (USD + CNY) |
+| `zerotohero-python-server/app_stripe_checkout.py` | Stripe checkout, webhooks, auto-renewal |
+| `zerotohero-python-server/app_paypal_checkout.py` | PayPal verification (lifetime hardcoded) |
+| `zerotohero-python-server/app_in_app_purchase.py` | iOS receipt validation (lifetime hardcoded) |
+| `zerotohero-python-server/utils_subscription.py` | CRUD for Directus `subscriptions` collection |
+| `zerotohero-python-server/data/prices.csv` | Price definitions (USD + CNY) |
 
 ---
 
@@ -176,4 +188,6 @@ All methods create a subscription record in the Directus `subscriptions` collect
 - **WeChat/Alipay users on monthly/annual plans must manually re-purchase** when their plan expires. No recurring billing.
 - **iOS users cannot purchase monthly/annual plans** in-app. They must use the web (Stripe) for recurring plans. On the React Native app, non-lifetime iOS plans show an `OnlyLifetimePlan` message.
 - **PayPal users cannot purchase recurring plans.** Lifetime is the only option.
-- **React Native mobile has no IAP.** The GO legacy's `react-native-iap` was removed during SDK 57 upgrade and never replaced.
+- **React Native mobile has Apple IAP on iOS** (`pro_go`, lifetime). Its
+  non-IAP in-app browser checkout is being removed (SPEC-014); Android gets
+  Play Billing later.

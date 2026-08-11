@@ -222,11 +222,11 @@ Setup:
 Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 
 > ✅ **Resolved 2026-08-10:** `app_in_app_purchase.py` now validates with
-> `bundle_id = 'ca.zerotohero.go'` and the app uses the GO listing's
-> non-consumable product `pro_go` — the new app replaces the GO listing in
-> the App Store and keeps the GO bundle ID + product (SPEC-048 / ADR-0013
-> revised). Classic's `ca.zerotohero.app` / `pro` IAP is no longer validated
-> by this endpoint.
+> **both** bundle IDs — `ca.zerotohero.go` (new mobile, product `pro_go`)
+> and `ca.zerotohero.app` (Classic, product `pro`) — trying `.go` first.
+> The new app replaces the GO listing and keeps its bundle + product
+> (SPEC-048 / ADR-0013 revised); Classic stays live and its IAP keeps
+> working.
 
 ### 1.5 Google Play Billing (Phase 3 — Android)
 
@@ -328,8 +328,8 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | A7 | Backend | Post a bogus receipt (`user_id` + garbage string) | `type: 'error'` response from Apple validation; no subscription granted |
 
 > ✅ A1/A2 bundle-ID question resolved 2026-08-10: the backend validates
-> `ca.zerotohero.go` receipts (the new app replaces the GO listing; see
-> [1.4](#14-apple-in-app-purchase-ios)).
+> `ca.zerotohero.go` **and** `ca.zerotohero.app` receipts (new mobile + live
+> Classic; see [1.4](#14-apple-in-app-purchase-ios)).
 
 ### 2.5 Google Play Billing (Phase 3 — Android)
 
@@ -906,9 +906,6 @@ configuration, license testers, and test-track testing).
   Android shows a "buy on our website" notice until Play Billing lands.
   S11–S12 / W6 / P6 are fully obsolete. `msg.buy_on_website` added to all 18
   locales.
-- ✅ **Store compliance:** no Stripe/WeChat/Alipay/PayPal buttons render in
-  `apps/mobile`; iOS has no external payment links, and Android keeps only
-  the interim buy-on-website notice until Play Billing lands.
 
 #### 3.2 Classic (iOS only)
 
@@ -922,7 +919,7 @@ the `pro` IAP product (`ca.zerotohero.app`).
 - ⬜ A5 — Repeat purchase of the same non-consumable → no duplicate grant
 - ⬜ A7 — bogus receipt → no grant (backend coverage can be automated with
   mocks)
-- ✅ **Store compliance:** Classic's native iOS build shows only the `pro` IAP
+- ⬜ **Store compliance:** Classic's native iOS build shows only the `pro` IAP
   purchase (`PaymentMethods.vue` gates on
   `Capacitor.getPlatform() === "ios"`); Stripe / PayPal / WeChat / Alipay and
   web checkout are not surfaced in the iOS app.
@@ -944,15 +941,13 @@ payment path.
 - ⬜ C7 — IAP success/error screens (code wired; sandbox check pending)
 - ⬜ Verify subscription state refreshes after a **website** purchase (code
   refetch implemented; device check pending)
-- ✅ **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
+- ⬜ **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
   PayPal, or website checkout) in the iOS app; Apple IAP (`pro_go`) is the
   only purchase path.
 - ✅ Bundle-ID question resolved 2026-08-10 — backend validates
-  `ca.zerotohero.go`; A2 can now run.
+  `ca.zerotohero.go` and `ca.zerotohero.app`; A1/A2 can run.
 - ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
   (Non-Consumable, Approved) — matches `apps/mobile/lib/iap.ts`.
-- ✅ Store-policy cleanup: in-app browser checkout removed from iOS and
-  Android (2026-08-10) — IAP is the only in-app purchase path on iOS.
 - ✅ `/go-pro-success` neutral fallback (2026-08-10): mobile success page no
   longer overclaims "payment received/processing" after the poll times out —
   it now shows `msg.subscription_not_confirmed` + `msg.payment_may_take_longer`
@@ -1007,12 +1002,11 @@ interim path until it lands.
 ## 5. Open Questions and Known Gaps
 
 1. **Backend IAP bundle ID — resolved 2026-08-10:** `app_in_app_purchase.py`
-   now validates with `bundle_id='ca.zerotohero.go'`, matching the new app's
-   bundle (it replaces the GO listing per SPEC-048 / ADR-0013 revised). The
-   app also uses the GO listing's IAP product `pro_go` (not Classic's `pro`).
-   Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
-   endpoint; if Classic IAP must be re-supported later, add a per-request
-   bundle override.
+   validates receipts against **both** public iOS bundles:
+   `ca.zerotohero.go` (new mobile, product `pro_go`) and
+   `ca.zerotohero.app` (Classic, product `pro`), trying `.go` first. Both
+   apps stay live, so both must keep working. Canonical reference:
+   SPEC-014 "Identifiers & IAP".
 2. **PayPal sandbox — backend resolved 2026-08-10:** `PAYPAL_MODE=sandbox`
    switches `app_paypal_checkout.py` to `https://api-m.sandbox.paypal.com` +
    sandbox credentials; default stays live. Classic's client still needs a

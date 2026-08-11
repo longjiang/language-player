@@ -16,7 +16,7 @@
 
 ## Overview
 
-The mobile app (`apps/mobile/`) has 30+ screens across 4 tabs (Media, Reading, Vocab, Me), 9 React Contexts, 20 hooks, and native modules (SQLite, SecureStore, expo-video, expo-speech, expo-in-app-purchases, etc.). Currently there are **zero E2E tests** and only unit tests exist in `apps/web/` (vitest for shared utils). As the app prepares for App Store submission (replacing the Classic Nuxt binary per ADR-0013), E2E tests are critical to catch regressions in auth flows, language state, offline tokenization, and user flows that unit tests can't cover.
+The mobile app (`apps/mobile/`) has 30+ screens across 4 tabs (Media, Reading, Vocab, Me), 9 React Contexts, 20 hooks, and native modules (SQLite, SecureStore, expo-video, expo-speech, expo-in-app-purchases, etc.). Currently there are **zero E2E tests** and only unit tests exist in `apps/web/` (vitest for shared utils). As the app prepares for App Store submission (replacing the **GO Legacy** binary under bundle `ca.zerotohero.go` per ADR-0013 revised / SPEC-048), E2E tests are critical to catch regressions in auth flows, language state, offline tokenization, and user flows that unit tests can't cover.
 
 This spec covers the full E2E testing strategy: tool selection, test environment setup, and a prioritized test case catalog covering every major user flow.
 
@@ -43,7 +43,7 @@ The app uses `newArchEnabled: true` (Fabric renderer + TurboModules). Maestro in
 
 Tests always run on an **iOS simulator** — whether using Expo Go or a dev build. Maestro drives the simulator programmatically (taps, scrolls, reads elements) the same way in both cases. The choice is about *which binary* is installed on that simulator. **Use a dev build, not Expo Go**, for these reasons:
 
-1. **`appId` mismatch** — Expo Go runs as `host.exp.Exponent`, not `ca.zerotohero.app`. Maestro identifies the app by `appId`, so targeting `ca.zerotohero.app` won't find your app when running inside Expo Go.
+1. **`appId` mismatch** — Expo Go runs as `host.exp.Exponent`, not `ca.zerotohero.go`. Maestro identifies the app by `appId`, so targeting `ca.zerotohero.go` won't find your app when running inside Expo Go.
 2. **Native module availability** — Several features used by tests (SQLite, SecureStore, expo-video, expo-speech) require native modules that are already bundled in a dev build.
 3. **New Architecture compatibility** — A dev build uses the exact same build pipeline (Fabric, TurboModules) as the production binary. Expo Go uses its own pre-built RN binary.
 4. **Deterministic install** — A pre-built `.app` can be installed on the simulator programmatically via `xcrun simctl install`, unlike Expo Go's deep-link dance.
@@ -118,7 +118,7 @@ apps/mobile/
 ### Maestro Configuration (`e2e/config.yaml`)
 
 ```yaml
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 env:
   FREE_EMAIL: e2e.free@zerotohero.ca
   FREE_PASS: "${E2E_FREE_PASS}"
@@ -385,7 +385,7 @@ Each Maestro flow is designed to start from a known state (logged out or logged 
 Maestro's `clearState: true` is **Android-only**. On iOS, there is no way to programmatically clear Keychain (`expo-secure-store`) or app sandbox data. The iOS Keychain also **survives app deletion** — entries are tied to the bundle ID, not the app installation. This means:
 
 - Parallel test execution won't work — tests must be order-dependent
-- Every test run should start with `xcrun simctl uninstall booted ca.zerotohero.app` to guarantee a clean state
+- Every test run should start with `xcrun simctl uninstall booted ca.zerotohero.go` to guarantee a clean state
 - `expo-secure-store` auth tokens from a previous run will prevent the login screen from appearing
 
 #### Strategy: Order-Dependent Suites + Preflight Check
@@ -403,13 +403,13 @@ Maestro's `clearState: true` is **Android-only**. On iOS, there is no way to pro
 # Preflight script
 xcrun simctl shutdown booted 2>/dev/null || true
 xcrun simctl boot "iPhone 15 Pro"
-xcrun simctl uninstall booted ca.zerotohero.app
+xcrun simctl uninstall booted ca.zerotohero.go
 xcrun simctl install booted path/to/build.app
 ```
 
 ```yaml
 # e2e/flows/preflight-check.yaml
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 # Verify we're on the login screen; if not, navigate to logout
 - assertVisible:
@@ -514,7 +514,7 @@ Tests M4 and M5 should assert video metadata and subtitle interaction, not the p
 Example Maestro flow using testIDs:
 
 ```yaml
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 - tapOn:
     id: "login-email-input"

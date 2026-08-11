@@ -5,23 +5,33 @@
 
 **See also**: [SPEC-048 — Mobile Release Plan (Human QA + App Store & Play Store)](../specs/048-mobile-release-plan.md) for the build/upload process for both stores (including the production `EXPO_PUBLIC_API_URL` requirement), and [ADR-0027](0027-defer-automated-e2e-human-qa.md) for the decision to gate releases on human QA instead of automated E2E.
 
-## Update (2026-08-06) — Revised iOS & Play Store strategy
+## Current decision (revised 2026-08-06, updated 2026-08-10)
 
-This supersedes the "replace the Nuxt binary" decision in the original
-[Decision](#decision) below (old Option B):
+This is the **active** decision and supersedes everything below in
+[Superseded — old Option B decision](#superseded--old-option-b-decision-historical),
+which is kept only as history.
 
-- **iOS — Classic stays**: the Classic Nuxt app remains live and is renamed
-  **"Language Player 2"** (its existing listing).
+- **iOS — Classic stays**: the Classic Nuxt app remains live as
+  **"Language Player 2"** under `ca.zerotohero.app`, IAP product `pro`.
 - **iOS — GO replaced**: the GO Legacy app is replaced by the new
-  `apps/mobile` build and renamed **"Language Player 3"**. Because a store
-  listing's bundle ID cannot change, the new iOS binary must use the GO
-  bundle ID **`ca.zerotohero.go`** (currently the new app is configured as
-  `ca.zerotohero.app` in `apps/mobile/app.json` — see SPEC-048 § 3).
-- **Google Play — new launch**: a brand-new **"Language Player 3"** listing on
-  a new Play Developer account (see SPEC-048 § 4).
+  `apps/mobile` build, renamed **"Language Player 3"**, using the GO
+  listing's bundle ID **`ca.zerotohero.go`** and IAP product **`pro_go`**
+  (a listing's bundle ID cannot change, so the GO ID is preserved).
+- **Google Play — new launch**: a brand-new **"Language Player 3"** listing
+  on a new Play Developer account, package `ca.zerotohero.go` (SPEC-048 § 4).
 
-The bundle-ID and IAP consequences of this revised plan are tracked in
-[SPEC-048 — Mobile Release Plan](../specs/048-mobile-release-plan.md).
+**Canonical identity table** (also in SPEC-014 "Identifiers & IAP"):
+
+| App | Store | Identifier | IAP product |
+|---|---|---|---|
+| Classic — "Language Player 2" | App Store | `ca.zerotohero.app` | `pro` |
+| New mobile — "Language Player 3" | App Store (replaces GO) | `ca.zerotohero.go` | `pro_go` |
+| New mobile — "Language Player 3" | Google Play (new) | `ca.zerotohero.go` | Play Billing TBD |
+
+**IAP validation:** both iOS apps are public, so `app_in_app_purchase.py`
+accepts receipts from **both** bundles (`ca.zerotohero.go` first, then
+`ca.zerotohero.app`) and grants lifetime on the first success. Do **not**
+hardcode a single bundle — see SPEC-014 for the canonical reference.
 
 ## Context
 
@@ -52,21 +62,23 @@ Both apps have their own separate (but functionally identical) non-consumable IA
 ### The New App
 
 The new React Native/Expo app at `apps/mobile/` (Expo SDK 57) is now the active development target. It has:
-- Stripe credit card, WeChat Pay, Alipay, and PayPal payment flows
-- **No IAP yet** (the GO legacy's `react-native-iap` was removed for SDK 57 compatibility)
+- Apple IAP on iOS (`pro_go`, lifetime) with restore
+- Browser web-checkout flows today (Stripe card, WeChat, Alipay, PayPal) —
+  being removed per SPEC-014; mobile in-app payments become store billing
+  only (IAP on iOS, Play Billing later on Android)
 - Feature parity with `apps/web`
 - Offline tokenization for most supported L2s
 - Offline dictionary downloads for English L1
 
 ---
 
-## Decision
+## Superseded — old Option B decision (historical)
 
 **Option B** is selected: remove the GO app from the store, replace the Nuxt app's binary with the new `apps/mobile` build under the existing bundle ID `ca.zerotohero.app`, and rename the listing to "Language Player 3". See the full evaluation below.
 
 ---
 
-## Decision Options
+## Superseded — decision options (historical)
 
 ### Option A: Three Apps — Keep Both Legacy Apps, Launch New App
 
@@ -135,7 +147,7 @@ Create a brand-new app listing with a distinct name (not "Language Player X") an
 
 ---
 
-## Recommendations
+## Superseded — recommendations (historical)
 
 | Criteria | A (3 apps) | B (Replace+rename) | D (New name) |
 |---|---|---|---|
@@ -159,7 +171,7 @@ Create a brand-new app listing with a distinct name (not "Language Player X") an
 4. Remove the GO app from the store
 5. Push the update as a new version of "Language Player 3"
 
-## Consequences
+## Superseded — consequences (historical)
 
 The critical dependency for Options B is IAP. The new app needs a working IAP implementation before it can replace the Nuxt binary (otherwise existing users lose the ability to purchase the lifetime subscription in-app on iOS).
 
@@ -185,7 +197,7 @@ The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing 
 4. Remove the GO app from the store
 5. Push the update as a new version of "Language Player 2"
 
-## Consequences
+## Superseded — consequences (historical)
 
 - If we remove the GO app, its IAP product becomes inaccessible for new purchases. Existing purchasers can still restore via App Store (the product remains in their purchase history).
 - The Google Play Store gap remains. If we want Android distribution, we'd need to re-register and submit as a new developer account with the new app.
