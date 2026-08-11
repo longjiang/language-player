@@ -6,11 +6,21 @@ import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemIns
 import { useSavedWordApi } from '@langplayer/api-client';
 import { enqueuePendingOp, flushPendingOps, type PendingSavedWordOp } from '@langplayer/utils';
 import { mergeAnonymousSavedWordsEnabled } from '@/lib/saved-words-feature';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
 const PENDING_OPS_KEY = 'zthSavedWordsPendingOps';
 const ANON_MERGED_KEY = 'lpSavedWordsAnonMerged';
+
+/** Compact per-language counts for debug logs — never logs word content. */
+function storeCounts(store: SavedLexicalItemStore | undefined | null): Record<string, number> {
+  if (!store || typeof store !== 'object' || Array.isArray(store)) return {};
+  const counts: Record<string, number> = {};
+  for (const [l2, words] of Object.entries(store)) {
+    counts[l2] = Array.isArray(words) ? words.length : -1;
+  }
+  return counts;
+}
 
 /**
  * Hook for managing saved words (SPEC-034 row API).
@@ -29,6 +39,8 @@ export function useSavedWords() {
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
 
   const readLocalStore = useCallback((): SavedLexicalItemStore => {
     if (typeof window === 'undefined') return {};
@@ -77,6 +89,12 @@ export function useSavedWords() {
 
     const parsed = readLocalStore();
     sanitizeStore(parsed);
+    log('[savedWords] local store loaded', {
+      status,
+      l2Keys: Object.keys(parsed),
+      counts: storeCounts(parsed),
+      jaCount: parsed.ja?.length ?? 0,
+    });
     setSavedWords(parsed);
     savePendingOps(loadPendingOps());
     setLoaded(true);
@@ -89,6 +107,12 @@ export function useSavedWords() {
     const next = session?.user?.id ?? null;
     if (prevUserIdRef.current === next) return;
     const changed = prevUserIdRef.current !== undefined;
+    log('[savedWords] auth change detected', {
+      next,
+      prev: prevUserIdRef.current,
+      changed,
+      hasAccessToken: Boolean((sessionRef.current?.user as any)?.accessToken),
+    });
     prevUserIdRef.current = next;
     if (changed) {
       hydratedUserId.current = null;
@@ -98,27 +122,44 @@ export function useSavedWords() {
 
   // ── Flush pending ops, then hydrate from the server ──
   const flushPending = useCallback(async () => {
-    if (!session) return;
+    if (!sessionRef.current) return;
     const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
     if (remaining.length > 0) {
       logwarn('[savedWords] Pending ops remain after flush:', remaining.length);
     }
     savePendingOps(remaining);
-  }, [session, putSavedWord, deleteSavedWord, savePendingOps]);
+  }, [putSavedWord, deleteSavedWord, savePendingOps]);
 
   useEffect(() => {
     if (status === 'loading' || !loaded) return;
-    if (status !== 'authenticated' || !session?.user?.id) return;
-    const userId = session.user.id;
+    if (status !== 'authenticated') return;
+    const userId = session?.user?.id ?? null;
+    if (!userId) return;
     if (hydratedUserId.current === userId) return;
-    hydratedUserId.current = userId;
+
+    log('[savedWords] hydration start', {
+      status,
+      loaded,
+      userId,
+      hasAccessToken: Boolean((sessionRef.current?.user as any)?.accessToken),
+      mergeAnon,
+    });
 
     let cancelled = false;
     (async () => {
       try {
         await flushPending();
         let res = await fetchSavedWordRows();
-        if (cancelled) return;
+        if (cancelled) {
+          log('[savedWords] hydration cancelled after fetch');
+          return;
+        }
+        log('[savedWords] server response', {
+          responseKeys: Object.keys(res),
+          wordsType: typeof res.words,
+          counts: storeCounts(res.words),
+          jaCount: res.words?.ja?.length ?? 0,
+        });
         let next: SavedLexicalItemStore = res.words ?? {};
 
         // Optional one-time merge of anonymous localStorage words into the account.
@@ -129,13 +170,22 @@ export function useSavedWords() {
           if (toMerge.length > 0) {
             await Promise.all(toMerge.map(({ l2, word }) => putSavedWord(l2, word)));
             res = await fetchSavedWordRows();
-            if (cancelled) return;
+            if (cancelled) {
+              log('[savedWords] hydration cancelled after anon merge refetch');
+              return;
+            }
             next = res.words ?? {};
           }
           try { localStorage.setItem(anonMergedKey, '1'); } catch { /* ignore */ }
         }
 
         sanitizeStore(next);
+        hydratedUserId.current = userId;
+        log('[savedWords] hydration complete', {
+          l2Keys: Object.keys(next),
+          counts: storeCounts(next),
+          jaCount: next.ja?.length ?? 0,
+        });
         setSavedWords(next);
         writeLocalStore(next);
       } catch (err) {
@@ -144,7 +194,7 @@ export function useSavedWords() {
     })();
     return () => { cancelled = true; };
   }, [
-    status, loaded, session, mergeAnon,
+    status, loaded, session?.user?.id, mergeAnon,
     flushPending, fetchSavedWordRows, putSavedWord,
     readLocalStore, writeLocalStore,
   ]);
