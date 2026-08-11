@@ -129,6 +129,7 @@
         "sign_up": "Registreren",
         "speak": "Spreken",
         "start_learning": "Begin met leren",
+        "start_learning_lang": "Begin met {name} leren",
         "start_watching": "Beginnen met kijken",
         "start_writing": "Begin met schrijven",
         "stop": "Stoppen",

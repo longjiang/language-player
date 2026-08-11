@@ -117,15 +117,3 @@ export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'yue': 7697,
   'zh': 121834,
 };
-
-/**
- * Table C — experimental languages (no dedicated server tokenizer; regex
- * fallback only). Matches ARCH-025 Table C.
- */
-export const EXPERIMENTAL_LANGUAGE_CODES: readonly string[] = [
-  'af', 'am', 'ami', 'as', 'ase', 'az', 'be', 'bn', 'br', 'ceb',
-  'ckb', 'cnr', 'eo', 'eu', 'fo', 'grc', 'gsw', 'gu', 'hsh', 'ins',
-  'jv', 'kac', 'kk', 'kn', 'ku', 'ky', 'mg', 'mi', 'ml', 'mn',
-  'mr', 'mt', 'nsl', 'pa', 'qu', 'sa', 'si', 'sm', 'so', 'su',
-  'svk', 'ta', 'te', 'tlh', 'tt', 'ur', 'uz', 'wo', 'yo',
-];

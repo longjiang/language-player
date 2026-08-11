@@ -129,6 +129,7 @@
         "sign_up": "Daftar",
         "speak": "Bicara",
         "start_learning": "Mulai Belajar",
+        "start_learning_lang": "Mulai belajar {name}",
         "start_watching": "Mulai Menonton",
         "start_writing": "Mulai menulis",
         "stop": "Berhenti",

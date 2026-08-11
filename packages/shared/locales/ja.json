@@ -129,6 +129,7 @@
         "sign_up": "登録",
         "speak": "読み上げ",
         "start_learning": "学習を開始する",
+        "start_learning_lang": "{name}の学習を始める",
         "start_watching": "視聴を開始",
         "start_writing": "書き始める",
         "stop": "停止",

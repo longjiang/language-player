@@ -12,6 +12,7 @@ import React from 'react';
 import { useT } from '@/hooks/use-t';
 import { Search, X, Check, ArrowRight } from 'lucide-react';
 import { languageName, isRTL, flagEmoji } from '@/lib/language-data';
+import { isExperimentalL2 } from '@langplayer/shared';
 import type {
   LanguageSection,
   UseLanguagePickerReturn,
@@ -34,10 +35,6 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
 // ── Helpers ───────────────────────────────────
 
 const TABS = ['l1', 'l2'] as const;
-
-function shortCode(code: string): string {
-  return code.split('-')[0]!.toUpperCase();
-}
 
 // ── Component ─────────────────────────────────
 
@@ -89,7 +86,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       {/* Header / title */}
       {showTitle && (
         <div className="mb-6 text-center">
@@ -133,35 +130,37 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
       {/* Bordered panel: search + language list */}
       <div className="mb-4 rounded-xl border border-border bg-card">
         {/* Search */}
-        <div className="px-4 pt-4 pb-2">
-          <div className="flex items-center rounded-lg border border-input bg-background px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="ml-2 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-              placeholder={t('placeholder.search_languages')}
-              autoCapitalize="none"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-                aria-label={t('action.clear')}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+        {!isL1 && (
+          <div className="px-4 pt-4 pb-2">
+            <div className="flex items-center rounded-lg border border-input bg-background px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="ml-2 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                placeholder={t('placeholder.search_languages')}
+                autoCapitalize="none"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label={t('action.clear')}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Language list */}
         <div className="max-h-80 overflow-y-auto px-4 pb-4">
           {hasResults ? (
             sections.map((section: LanguageSection) => (
               <div key={section.title} className="space-y-1 pb-2">
-                {section.title && (
+                {!isL1 && section.title && (
                   <div className="sticky top-0 z-10 bg-card px-1 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {section.title}
                   </div>
@@ -182,10 +181,17 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
                       }`}
                       dir={rowRtl ? 'rtl' : 'ltr'}
                     >
-                      <span className="text-base leading-none" aria-hidden="true">
-                        {flagEmoji(code)}
-                      </span>
+                      {!isL1 && (
+                        <span className="text-base leading-none" aria-hidden="true">
+                          {flagEmoji(code)}
+                        </span>
+                      )}
                       <span className="min-w-0 flex-1 truncate">{resolveName(code)}</span>
+                      {!isL1 && isExperimentalL2(code) && (
+                        <span className="shrink-0 rounded-full border border-warm-500/30 bg-warm-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warm-600 dark:text-warm-400">
+                          {t('label.experimental')}
+                        </span>
+                      )}
                       {isSelected ? (
                         <Check className="h-4 w-4 shrink-0 opacity-80" aria-hidden="true" />
                       ) : (
@@ -234,35 +240,25 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
           </div>
         )}
 
-        {/* Selection + button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5 text-sm">
-            <span aria-hidden="true">{flagEmoji(selectedL1 || 'en')}</span>
-            <span className="font-bold text-foreground">{shortCode(selectedL1 || 'en')}</span>
-            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span aria-hidden="true">{flagEmoji(selectedL2 || '')}</span>
-            <span className={`truncate font-bold ${selectedL2 ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {selectedL2 ? shortCode(selectedL2) : '?'}
-            </span>
-          </div>
-
-          {/* On L1 tab: "Next" switches to L2 */}
+        {/* Bottom action: Next (L1) or Start Learning (L2) */}
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {activeTab === 'l1' && (
             <button
               onClick={() => setActiveTab('l2')}
-              className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-left text-sm font-bold text-primary-foreground shadow-sm transition-colors whitespace-normal hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('action.next')}
+              <ArrowRight className="h-4 w-4" />
             </button>
           )}
 
-          {/* On L2 tab with L2 picked: "Confirm" */}
           {activeTab === 'l2' && selectedL2 && (
             <button
               onClick={onConfirm}
-              className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-bold text-accent-foreground shadow-sm transition-colors hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-left text-sm font-bold text-accent-foreground shadow-sm transition-colors whitespace-normal hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {t('action.confirm')}
+              {t('action.start_learning_lang', { name: getName(selectedL2) })}
+              <ArrowRight className="h-4 w-4" />
             </button>
           )}
         </div>

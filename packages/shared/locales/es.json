@@ -129,6 +129,7 @@
         "sign_up": "Registrarse",
         "speak": "Hablar",
         "start_learning": "Comenzar a aprender",
+        "start_learning_lang": "Empieza a aprender {name}",
         "start_watching": "Comenzar a ver",
         "start_writing": "Empezar a escribir",
         "stop": "Detener",

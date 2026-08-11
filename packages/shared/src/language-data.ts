@@ -55,6 +55,62 @@ export type ContentL2 = (typeof CONTENT_L2S)[number];
 export const CONTENT_L2_COUNT = CONTENT_L2S.length;
 
 /**
+ * Native self-names for the supported L1 languages. The L1 picker shows
+ * each language in its own script (English, Français, Deutsch, Español…)
+ * rather than translated into the UI locale.
+ */
+const NATIVE_LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  'zh-Hans': '中文（简体）',
+  'zh-Hant': '中文（繁體）',
+  zh: '中文',
+  ar: 'العربية',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  id: 'Bahasa Indonesia',
+  it: 'Italiano',
+  ja: '日本語',
+  ko: '한국어',
+  nl: 'Nederlands',
+  pl: 'Polski',
+  pt: 'Português',
+  ru: 'Русский',
+  th: 'ไทย',
+  tr: 'Türkçe',
+  vi: 'Tiếng Việt',
+};
+
+/** Native self-name for a language code (fallback: English name). */
+export function nativeLanguageName(code: string): string {
+  return (
+    NATIVE_LANGUAGE_NAMES[code] ??
+    NATIVE_LANGUAGE_NAMES[code.split('-')[0]!] ??
+    code.toUpperCase()
+  );
+}
+
+/**
+ * Table C — experimental L2s with no dedicated server tokenizer (regex
+ * fallback only). ARCH-025 Table C (2026-08-11). Pickers show a badge for
+ * these languages.
+ */
+export const EXPERIMENTAL_L2S: readonly string[] = [
+  'af', 'am', 'ami', 'as', 'ase', 'az', 'be', 'bn', 'br', 'ceb',
+  'ckb', 'cnr', 'eo', 'eu', 'fo', 'grc', 'gsw', 'gu', 'hsh', 'ins',
+  'jv', 'kac', 'kk', 'kn', 'ku', 'ky', 'mg', 'mi', 'ml', 'mn',
+  'mr', 'mt', 'nsl', 'pa', 'qu', 'sa', 'si', 'sm', 'so', 'su',
+  'svk', 'ta', 'te', 'tlh', 'tt', 'ur', 'uz', 'wo', 'yo',
+];
+
+const EXPERIMENTAL_L2_SET: ReadonlySet<string> = new Set(EXPERIMENTAL_L2S);
+
+/** True when an L2 is experimental (Table C, no dedicated tokenizer). */
+export function isExperimentalL2(code: string): boolean {
+  return EXPERIMENTAL_L2_SET.has(code.split('-')[0]!);
+}
+
+/**
  * Languages written without spaces between words (scriptio continua) — CJK
  * varieties, Japanese, Thai, Khmer, Lao, Burmese, Tibetan, Vietnamese, and a
  * few related varieties. Ported from

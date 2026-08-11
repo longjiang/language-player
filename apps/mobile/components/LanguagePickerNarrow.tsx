@@ -15,14 +15,15 @@ import {
   SectionList,
   type SectionListData,
 } from 'react-native';
-import { X, Search } from 'lucide-react-native';
+import { X, Search, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
-import { PLACEHOLDER_COLOR, ICON_MUTED } from '@/lib/theme-colors';
+import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY, ICON_ON_ACCENT } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import type {
   LanguageSection,
   UseLanguagePickerReturn,
 } from '@langplayer/shared';
+import { flagEmoji, isExperimentalL2 } from '@langplayer/shared';
 
 // ── Props ─────────────────────────────────────
 
@@ -37,6 +38,8 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
   onDismiss?: () => void;
   /** Platform getName callback (passed through for use in rendering). */
   getName: (code: string) => string;
+  /** Resolver for L1 names (self-names). Defaults to getName. */
+  getNameL1?: (code: string) => string;
   /** Root container classes. Defaults to `flex-1 bg-background` (fullscreen). */
   containerClassName?: string;
 }
@@ -44,11 +47,6 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
 // ── Tab segments ──────────────────────────────
 
 const TABS = ['l1', 'l2'] as const;
-
-/** Short code for compact display (e.g. 'zh-Hans' → 'ZH', 'en' → 'EN'). */
-function shortCode(code: string): string {
-  return code.split('-')[0]!.toUpperCase();
-}
 
 // ── Component ─────────────────────────────────
 
@@ -74,6 +72,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
     showClose,
     onDismiss,
     getName,
+    getNameL1,
     containerClassName,
   } = props;
 
@@ -99,6 +98,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
     const isSelected = item === selectedCode;
     const accentBg = isL1 ? 'bg-primary' : 'bg-accent';
     const accentText = 'text-primary-foreground';
+    const resolveName = (code: string) => (isL1 ? getNameL1 ?? getName : getName)(code);
 
     return (
       <Pressable
@@ -107,11 +107,19 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
         }`}
         onPress={() => handleSelect(item)}
       >
+        {!isL1 && (
+          <Text className="text-base leading-none mr-2">{flagEmoji(item)}</Text>
+        )}
         <Text
-          className={`text-sm ${isSelected ? accentText : 'text-foreground'}`}
+          className={`text-sm flex-1 flex-shrink mr-2 ${isSelected ? accentText : 'text-foreground'}`}
         >
-          {getName(item)}
+          {resolveName(item)}
         </Text>
+        {!isL1 && isExperimentalL2(item) && (
+          <Text className="rounded-full border border-warm-500/30 bg-warm-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warm-600 dark:text-warm-400">
+            {t('label.experimental')}
+          </Text>
+        )}
         <Text
           className={`text-xs ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}
         >
@@ -126,7 +134,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
   }: {
     section: SectionListData<string, LanguageSection>;
   }) => {
-    if (!section.title) return <View className="h-2" />;
+    if (!section.title || isL1) return <View className="h-2" />;
     return (
       <Text className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2 mt-1">
         {section.title}
@@ -187,21 +195,23 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
       {/* Bordered panel: search + language list */}
       <View className="mx-6 mb-3 rounded-xl border border-border bg-card">
         {/* Search */}
-        <View className="px-3 pt-3 pb-1">
-          <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2">
-            <Search size={16} color={ICON_MUTED} />
-            <TextInput
-              className="flex-1 ml-2 text-foreground text-sm"
-              placeholder={t('placeholder.search_languages')}
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              value={search}
-              onChangeText={setSearch}
-              autoCapitalize="none"
-              autoFocus={false}
-              {...e2e('picker-search-input')}
-            />
+        {!isL1 && (
+          <View className="px-3 pt-3 pb-1">
+            <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2">
+              <Search size={16} color={ICON_MUTED} />
+              <TextInput
+                className="flex-1 ml-2 text-foreground text-sm"
+                placeholder={t('placeholder.search_languages')}
+                placeholderTextColor={PLACEHOLDER_COLOR}
+                value={search}
+                onChangeText={setSearch}
+                autoCapitalize="none"
+                autoFocus={false}
+                {...e2e('picker-search-input')}
+              />
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Language list */}
         <SectionList
@@ -253,41 +263,31 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
           </View>
         )}
 
-        {/* Selection + Next/Confirm */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-1.5">
-            <Text className="text-sm text-foreground font-medium">
-              {shortCode(selectedL1 || 'en')}
-            </Text>
-            <Text className="text-sm text-muted-foreground">→</Text>
-            <Text className="text-sm text-foreground font-medium">
-              {selectedL2 ? shortCode(selectedL2) : ''}
-            </Text>
-          </View>
-
-          {/* On L1 tab: "Next" switches to L2 tab */}
+        {/* Bottom action: Next (L1) or Start Learning (L2) */}
+        <View className="flex-row flex-wrap items-center justify-end">
           {activeTab === 'l1' && (
             <Pressable
               onPress={() => setActiveTab('l2')}
-              className="bg-primary px-4 py-2 rounded-lg"
+              className="bg-primary px-4 py-2 rounded-lg flex-row flex-wrap items-center gap-1.5 max-w-full"
               {...e2e('picker-next-button')}
             >
-              <Text className="text-primary-foreground font-bold text-sm">
+              <Text className="text-primary-foreground font-bold text-sm flex-shrink">
                 {t('action.next')}
               </Text>
+              <ArrowRight size={16} color={ICON_ON_PRIMARY} />
             </Pressable>
           )}
 
-          {/* On L2 tab with L2 picked: orange "Confirm" */}
           {activeTab === 'l2' && selectedL2 && (
             <Pressable
               onPress={onConfirm}
-              className="bg-accent px-4 py-2 rounded-lg"
+              className="bg-accent px-4 py-2 rounded-lg flex-row flex-wrap items-center gap-1.5 max-w-full"
               {...e2e('picker-confirm-button')}
             >
-              <Text className="text-accent-foreground font-bold text-sm">
-                {t('action.confirm')}
+              <Text className="text-accent-foreground font-bold text-sm flex-shrink">
+                {t('action.start_learning_lang', { name: getName(selectedL2) })}
               </Text>
+              <ArrowRight size={16} color={ICON_ON_ACCENT} />
             </Pressable>
           )}
         </View>

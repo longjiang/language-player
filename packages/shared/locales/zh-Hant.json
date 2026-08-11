@@ -125,6 +125,7 @@
         "sign_up": "註冊",
         "speak": "朗讀",
         "start_learning": "開始學習囉",
+        "start_learning_lang": "開始學習{name}",
         "start_watching": "開始觀看",
         "start_writing": "開始寫作",
         "stop": "停止",

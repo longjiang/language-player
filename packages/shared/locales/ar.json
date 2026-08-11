@@ -129,6 +129,7 @@
         "sign_up": "التسجيل",
         "speak": "تحدث",
         "start_learning": "ابدأ التعلم",
+        "start_learning_lang": "ابدأ تعلم {name}",
         "start_watching": "بدء المشاهدة",
         "start_writing": "ابدأ الكتابة",
         "stop": "إيقاف",
