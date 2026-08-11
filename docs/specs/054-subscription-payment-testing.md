@@ -753,7 +753,8 @@ Verification per row:
 - S9–S10 — Stripe credit card
 - W5 — WeChat Pay / Alipay
 - P5 — PayPal link-out (sandbox limitation; document only, do not complete)
-- S13/S14, C1 (price parity), C2 (subscription sync), C5 (gates), C7
+- S13/S14, C1 (price parity), C5 (gates), C7 — C2 (subscription sync)
+  deferred to Phase 5
 
 #### Phase 2 runbook — Web Stripe (S9–S10)
 
@@ -784,11 +785,12 @@ Coverage notes for the rest of Phase 2:
 - S13/S14 — already verified in Phase 1 (backend/account-level, app-agnostic).
 - C1 — price parity covered by B85/S15 + a visual comparison of web go-pro
   amounts vs `prices.csv`.
-- C2 — after S9, confirm `/user-subscription` (same backend) returns the row;
-  the cross-device sync matrix stays in Phase 5.
-- C5 — before S9, a web video page shows first 10 transcript lines/5
-  word-example hits; after the grant, full transcript + up to 500 hits
-  (default 50, expandable via Settings → Subtitles Search).
+- C2 — deferred to Phase 5 (full cross-device sync matrix); the same-backend
+  row was confirmed during S9.
+- C5 — verified 2026-08-10: before the grant a video page shows first 10
+  transcript lines/5 word-example hits; after the grant, full transcript +
+  up to 500 hits (default 50, Pro-only toggle in Settings → Subtitles
+  Search).
 - C7 — web success/error pages render correctly (S9/S10 cover both paths;
   neutral fallback from B53).
 
@@ -811,8 +813,9 @@ Coverage notes for the rest of Phase 2:
 - ✅ **S9–S10 complete** — web Stripe credit-card batch done.
 - ✅ W5/P5/S13/S14 — covered/foregone per notes above.
 - ✅ C7 — web success/error screens covered by S9/S10 + B53 neutral fallback.
-- ⬜ C2/C5 — pending (C2 full cross-device matrix in Phase 5; C5 needs a
-  video-page gate check before/after a grant).
+- ✅ C5 — verified 2026-08-10: video-page gates flip with subscription state
+  (10 transcript lines + 5 hits free → full transcript + 500 hits Pro).
+- ⬜ C2 — deferred to Phase 5 (full cross-device subscription sync matrix).
 
 ### Phase 3 — Mobile (`apps/mobile`) payment E2E
 
@@ -833,7 +836,8 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 
 ### Phase 5 — Cross-app & launch gate
 
-- C1–C7 full matrix on all three frontends
+- C2 (subscription sync) — deferred from Phase 2 — plus the C1–C7 full
+  matrix on all three frontends
 - Re-run B1–B90 against a disposable schema after any backend change
 - SPEC-039 sunset-readiness payment items: paid-event regression, MailerLite
   enrollment for new GoTrue users, delete-account cleanup
