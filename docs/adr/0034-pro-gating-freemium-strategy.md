@@ -79,10 +79,14 @@ Quotas would be enforced in the Flask backend (shared by web, mobile, and
 Classic), using the same constant pattern as `NON_PRO_MAX_*`. The UI shows
 remaining quota and the upgrade prompt; quotas reset daily per user.
 
-### 4. Rejected options / non-goals
+### 4. Other options considered (rejected)
 
-- Paywalling videos, languages, or the dictionary (core value stays free).
-- Locking the SRS setting or reducing its default below the free cap.
+- **Paywalling videos, languages, or the dictionary.** Rejected: the core
+  value stays free — paywalling it would shrink the audience before the
+  paid features can convert anyone.
+- **Locking the SRS setting / reducing its default below the free cap.**
+  Rejected: instead, the free tier is bounded by the effective daily review
+  count, while Pro users can keep adjusting the existing daily-max setting.
 
 ## Consequences
 
