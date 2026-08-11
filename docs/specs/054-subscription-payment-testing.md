@@ -871,16 +871,21 @@ W6 (WeChat/Alipay), and P6 (PayPal link-out) are **obsolete**; do not run new
 E2E against them. Until the code cleanup lands, they still exist as the
 browser web-checkout stopgap.
 
-Remaining mobile checks:
+1. **Code cleanup (do first)** — remove the non-IAP payment UI from
+   `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card, WeChat, Alipay,
+   PayPal buttons), leaving Apple IAP on iOS and a "buy on our website"
+   notice on Android (SPEC-014 target). After this lands, S11–S12 / W6 / P6
+   are fully obsolete.
+2. **Remaining mobile checks:**
 
-- C5 (gates) — free/Pro gates flip on mobile
-- C6 (cancel) — cancel at period end from the mobile profile
-- C7 (success/error screens) — IAP paths only
-- Verify subscription state refreshes after a **website** purchase (buy on
-  web → open the app → Pro appears)
-- C2 (subscription sync) — deferred to Phase 5
-- Apple IAP purchase + restore — Phase 4
-- Play Billing — out of scope until implemented
+   - C5 (gates) — free/Pro gates flip on mobile
+   - C6 (cancel) — cancel at period end from the mobile profile
+   - C7 (success/error screens) — IAP paths only
+   - Verify subscription state refreshes after a **website** purchase (buy
+     on web → open the app → Pro appears)
+   - C2 (subscription sync) — deferred to Phase 5
+   - Apple IAP purchase + restore — Phase 4
+   - Play Billing — out of scope until implemented
 
 ### Phase 4 — IAP last (Classic + mobile)
 
