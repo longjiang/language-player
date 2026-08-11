@@ -6,10 +6,7 @@ import { useUserDataColumns } from '@langplayer/api-client';
 import { logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
-  TOKENIZED_TEXT_DEFAULTS,
-  DISPLAY_DEFAULTS,
-  PLAYBACK_DEFAULTS,
-  REVIEW_DEFAULTS,
+  normalizeSettingsV2,
   L2_DEFAULTS,
 } from '@langplayer/shared';
 import type {
@@ -18,6 +15,7 @@ import type {
   DisplaySettings,
   PlaybackSettings,
   ReviewSettings,
+  SearchSettings,
   L2Settings,
 } from '@langplayer/shared';
 
@@ -111,7 +109,7 @@ export function useSettings() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && parsed.v === 2) {
-          setSettings(parsed as SettingsV2);
+          setSettings(normalizeSettingsV2(parsed));
           setLoaded(true);
           return;
         }
@@ -137,12 +135,11 @@ export function useSettings() {
         const cloud = res.settings_v2;
         if (!cloud || cloud.v !== 2) return;
         setSettings((prev) => {
-          const merged: SettingsV2 = {
+          const merged = normalizeSettingsV2({
             ...prev,
             ...(cloud.ts > prev.ts ? cloud : {}),
-            v: 2,
             ts: new Date().toISOString(),
-          };
+          });
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
           return merged;
         });
@@ -203,6 +200,18 @@ export function useSettings() {
     });
   }, [persist]);
 
+  const updateSearch = useCallback((patch: Partial<SearchSettings>) => {
+    setSettings((prev) => {
+      const next: SettingsV2 = {
+        ...prev,
+        ts: new Date().toISOString(),
+        search: { ...prev.search, ...patch },
+      };
+      persist(next);
+      return next;
+    });
+  }, [persist]);
+
   // ── Per-L2 setter ──
 
   const updateL2 = useCallback((l2Code: string, patch: Partial<L2Settings>) => {
@@ -251,6 +260,8 @@ export function useSettings() {
     updatePlayback,
     review: settings.review,
     updateReview,
+    search: settings.search,
+    updateSearch,
 
     getL2: (code: string): L2Settings => settings.l2[code] ?? L2_DEFAULTS,
     updateL2,

@@ -85,6 +85,10 @@ export default function SettingsLayout() {
           options={{ headerShown: true, title: t('title.review') }}
         />
         <Stack.Screen
+          name="search"
+          options={{ headerShown: true, title: t('setting.subs_search') }}
+        />
+        <Stack.Screen
           name="network"
           options={{ headerShown: true, title: t('title.offline_mode') }}
         />

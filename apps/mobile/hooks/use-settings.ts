@@ -12,6 +12,7 @@ import {
 } from '@/lib/offline-mode';
 import {
   createSettingsV2,
+  normalizeSettingsV2,
   L2_DEFAULTS,
 } from '@langplayer/shared';
 import type {
@@ -20,6 +21,7 @@ import type {
   DisplaySettings,
   PlaybackSettings,
   ReviewSettings,
+  SearchSettings,
   L2Settings,
 } from '@langplayer/shared';
 
@@ -60,8 +62,8 @@ export function useSettings() {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw) as SettingsV2;
-          if (parsed.v === 2) setSettings(parsed);
+          const parsed = JSON.parse(raw) as Partial<SettingsV2>;
+          if (parsed.v === 2) setSettings(normalizeSettingsV2(parsed));
         }
       } catch { /* corrupted or not found */ }
       setLoaded(true);
@@ -81,7 +83,12 @@ export function useSettings() {
         if (!cloud || cloud.v !== 2) return;
         setSettings((prev) => {
           if (cloud.ts <= prev.ts) return prev;
-          const merged = { ...cloud, ...prev, v: 2 as const, ts: new Date().toISOString() };
+          const merged = normalizeSettingsV2({
+            ...cloud,
+            ...prev,
+            v: 2 as const,
+            ts: new Date().toISOString(),
+          });
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
@@ -145,7 +152,12 @@ export function useSettings() {
           if (!cloud || cloud.v !== 2) return;
           setSettings((prev) => {
             if (cloud.ts <= prev.ts) return prev;
-            const merged = { ...cloud, ...prev, v: 2 as const, ts: new Date().toISOString() };
+            const merged = normalizeSettingsV2({
+              ...cloud,
+              ...prev,
+              v: 2 as const,
+              ts: new Date().toISOString(),
+            });
             SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
             return merged;
           });
@@ -193,6 +205,12 @@ export function useSettings() {
     [update, settings.review],
   );
 
+  const updateSearch = useCallback(
+    (patch: Partial<SearchSettings>) =>
+      update({ search: { ...settings.search, ...patch } }),
+    [update, settings.search],
+  );
+
   const getL2 = useCallback(
     (code: string): L2Settings => settings.l2[code] ?? { ...L2_DEFAULTS },
     [settings.l2],
@@ -229,6 +247,8 @@ export function useSettings() {
     updatePlayback,
     review: settings.review,
     updateReview,
+    search: settings.search,
+    updateSearch,
     offlineMode,
     setOfflineMode,
     getL2,
