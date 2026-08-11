@@ -219,6 +219,24 @@
         "user_info_not_found": "User info not found",
         "verification_failed": "Verification failed."
     },
+    "family": {
+        "afroasiatic": "Afro-Asiatic",
+        "austroasiatic": "Austroasiatic",
+        "austronesian": "Austronesian",
+        "constructed": "Constructed",
+        "dravidian": "Dravidian",
+        "indoeuropean": "Indo-European",
+        "isolates": "Isolates",
+        "kartvelian": "Kartvelian",
+        "mongolic": "Mongolic",
+        "nigercongo": "Niger-Congo",
+        "quechuan": "Quechuan",
+        "signlanguages": "Sign languages",
+        "sinotibetan": "Sino-Tibetan",
+        "taikadai": "Tai-Kadai",
+        "turkic": "Turkic",
+        "uralic": "Uralic"
+    },
     "feature": {
         "ai_explain_desc": "Get clear, in-context AI explanations of words and grammar, with follow-up questions.",
         "corpus_desc": "Explore collocations, example sentences, related words, and learner mistakes from real language corpora.",

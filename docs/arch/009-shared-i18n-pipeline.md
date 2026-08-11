@@ -11,6 +11,10 @@ ADR-0009 migrated the GO mobile app from `i18n-js` to `react-intl`, aligning bot
 
 ## Single Source of Truth
 
+This section covers **UI strings** (`action.*`, `msg.*`, etc.). Language
+names (`lang.*`-style lookups) have a separate source of truth — see
+[Language Name Translations](#language-name-translations-lang) below.
+
 ```
 translations.csv                    ← The one and only source
         │
@@ -111,6 +115,54 @@ node scripts/translate-doc.mjs apps/web/content/docs/<path>.md
 | `translate-icu.mjs` | Reference for manual ICU plural translations |
 | `translate-doc.mjs` | Resolve `{$key}` in doc markdown, machine-translate body |
 | `resolve-doc-keys.mjs` | Resolve `{$key}` in doc markdown without translation |
+
+## Language Name Translations (`lang.*`)
+
+Language names are **not** stored in `translations.csv`. The source of truth
+is `apps/web/src/lib/language-names-i18n.ts`, which exports
+`LOCALIZED_LANGUAGE_NAMES` — a `Record<locale, Record<code, name>>` covering
+all locales shipped in the app.
+
+> The original generator input,
+> `zerotohero-nuxt/static/translations-csv/translations-languages.csv`, is
+> **legacy / reference-only**. Per AGENTS.md the Nuxt app must not be edited,
+> so edits happen directly in the generated TypeScript file, which is now
+> canonical.
+
+### Resolution order
+
+`languageName(code, uiLocale)` in `apps/web/src/lib/language-data.ts`:
+
+1. `LOCALIZED_LANGUAGE_NAMES[uiLocale][code]` — current UI locale
+   (`zh-Hans` / `zh-Hant` normalize to `zh`).
+2. `LOCALIZED_LANGUAGE_NAMES.en[code]` — English fallback.
+3. Static `LANGUAGE_NAMES[code]` in the same file — native/English fallback.
+4. `code.toUpperCase()` — last resort.
+
+`displayLanguageName(code, uiLocale)` additionally tries
+`Intl.DisplayNames` before falling back to `languageName()`.
+
+### Editing workflow
+
+Edit `language-names-i18n.ts` directly:
+
+1. Add or update the code in **every locale block** (30 blocks as of
+   2026-08-11). Missing a locale means that locale silently falls back to
+   English.
+2. Keep entries near their alphabetical neighbors for readability.
+3. Run the web typecheck (`tsc -p apps/web/tsconfig.json --noEmit`).
+
+No CSV or `sync-translations.mjs` step is involved.
+
+### Coverage notes
+
+- `nan` (Min Nan) and `lzh` (Literary Chinese) were backfilled for all
+  locales on 2026-08-11. The legacy CSV caused this gap: its "Min Nan" row
+  had empty ISO code columns, and "Literary Chinese" had no row at all.
+- `LANGUAGE_NAMES` in `language-data.ts` is the English/native fallback and
+  should cover every code that appears in the localized table.
+- The file contains more locale blocks (30) than the 18 shipped locale JSONs;
+  that is a legacy superset and is fine to keep.
 
 ## The `useT()` Hook
 
