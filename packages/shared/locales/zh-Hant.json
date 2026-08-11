@@ -1057,6 +1057,13 @@
         "lifetime": "${price}/終身",
         "monthly": "${price}/月"
     },
+    "pro": {
+        "feature_ai": "AI 單字解釋",
+        "feature_examples": "影片中數百個單字範例",
+        "feature_saved_words": "不限數量的已儲存單字",
+        "feature_srs": "SRS 複習系統",
+        "feature_transcripts": "附翻譯的完整互動逐字稿"
+    },
     "prompt": {
         "explain_block_header": "請對以下{l2Code}文本進行清晰的分析。包括：",
         "explain_block_item1": "其在{l1Name}中的整體含義",

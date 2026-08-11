@@ -1066,6 +1066,13 @@
         "lifetime": "${price}/终身",
         "monthly": "${price}/月"
     },
+    "pro": {
+        "feature_ai": "AI 单词解释",
+        "feature_examples": "视频中数百个单词例句",
+        "feature_saved_words": "无限保存单词",
+        "feature_srs": "SRS 复习系统",
+        "feature_transcripts": "带翻译的完整互动字幕"
+    },
     "prompt": {
         "explain_block_header": "请对以下{l2Code}文本进行清晰的分析。包括：",
         "explain_block_item1": "其在{l1Name}中的整体含义",

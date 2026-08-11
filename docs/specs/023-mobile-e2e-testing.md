@@ -653,6 +653,14 @@ Before shipping the E2E testing pipeline:
    >
    > Status: ✅ Done — build succeeds with Podfile `post_install` hook.
    > Attempt 14 was the first and only attempt with the hook in place.
+   >
+   > **Final resolution (2026-08-11):** the header stubs only made the build
+   > succeed — the module still could not be reached from JS. Expo SDK 57
+   > removed the iOS legacy bridge (`EXNativeModulesProxy`) that
+   > `expo-in-app-purchases` (legacy ObjC) depends on, so runtime failed with
+   > `Cannot find native module 'ExpoInAppPurchases'`. `apps/mobile` migrated
+   > to `expo-iap` (SPEC-054 Phase 3, 2026-08-11); the Podfile stub hook can
+   > be removed once `expo-in-app-purchases` is fully out of the lockfile.
 
 5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 

@@ -44,7 +44,7 @@ Two of the four frontend codebases have payment implementations:
 | **Nuxt Classic** (`zerotohero-nuxt/`) | ✅ Stripe, PayPal, iOS IAP, WeChat, Alipay | ✅ `@ionic-native/in-app-purchase-2` (Capacitor/Cordova) | `ca.zerotohero.app` / `pro` |
 | **GO legacy** (`apps/mobile-go-legacy/`) | ✅ Stripe (web-based) | ❌ Stubbed (`react-native-iap` removed for SDK 57) | `ca.zerotohero.go` / `pro_go` (shipped; being replaced) |
 | **Next.js Web** (`apps/web/`) | ✅ Stripe, WeChat, Alipay | N/A (browser-based) | — |
-| **React Native Mobile** (`apps/mobile/`) | ✅ Apple IAP (iOS); browser web-checkout today (being removed — SPEC-014) | ✅ `expo-in-app-purchases` (`pro_go`) | `ca.zerotohero.go` (iOS + Android) / `pro_go` |
+| **React Native Mobile** (`apps/mobile/`) | ✅ Apple IAP (iOS); browser web-checkout today (being removed — SPEC-014) | ✅ `expo-iap` (`pro_go`) | `ca.zerotohero.go` (iOS + Android) / `pro_go` |
 
 > Canonical identity reference (bundle IDs + IAP products):
 > [SPEC-014 "Identifiers & IAP"](../specs/014-subscription-payment-system.md).
