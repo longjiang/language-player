@@ -1,7 +1,7 @@
-# ADR-0034: Pro Gating — "Try Then Pay" Options
+# ADR-0034: Pro Gating — "Try Then Pay" Strategy
 
 **Date**: 2026-08-10
-**Status**: proposed — decisions open
+**Status**: accepted
 **See also**:
 - [SPEC-054 — Subscription & Payment Testing](../specs/054-subscription-payment-testing.md) (C5 gates)
 - [ARCH-022 — Payment, Subscription & MailerLite](../arch/022-payment-subscription-mailerlite.md) (gating matrix)
@@ -13,7 +13,7 @@
 Classic's go-pro page advertises two Pro gates:
 
 - Interactive transcripts: free users see the **first 10 lines**.
-- Word video examples: free users see **2 examples**.
+- Word examples (i.e., Subtitles Search): free users see **2 examples**.
 
 The implementation does not match the copy:
 
@@ -30,7 +30,8 @@ SPEC-054 C5 asserts the advertised values (10 lines, 2 examples), so the
 mismatch is testable and will fail.
 
 The product goal: let users try the value, then pay — without making the
-free experience feel broken.
+free experience feel broken. For this pass we want to **ship quickly and
+minimize change**.
 
 ## Options
 
@@ -49,7 +50,7 @@ verification; see ARCH-022 "Free Trial" and SPEC-039 M1). Option B would
 extend a "taste of the full product" to free users *after* their trial
 expires — it does not replace the trial.
 
-### 2. Word examples
+### 2. Word examples (i.e., Subtitles Search)
 
 - **Align the copy to the implementation (5 hits).** Keep free = first 5
   corpus-wide hits and Pro = up to 500 (default 50 for speed, expandable in
@@ -93,16 +94,34 @@ Paywalling videos, languages, or the dictionary was considered and rejected:
 the core value stays free — paywalling it would shrink the audience before
 the paid features can convert anyone.
 
-## Open Decisions
+## Decisions
 
-- **D1 — Transcript gate.** OPEN: choose Option A (per-video line cap) or
-  Option B (daily full-transcript quota, or A+B). If A, pick the visible line
-  count (current ~8 vs advertised 10).
-- **D2 — Word-example gate.** OPEN: align the copy to 5 hits, or reduce the
-  constant to 2.
-- **D3 — Quota gates.** OPEN: adopt the quota-based pattern? If yes, which
-  features and limits (AI 5/day, saved words 30, SRS 20/day, translation
-  2,000 chars/day), and the rollout order.
-- **D4 — SRS setting control.** OPEN: bound the effective daily count by
-  plan, or lock the setting.
-- **D5 — Paywalling core content.** CLOSED: rejected.
+To ship quickly, we adopt the minimal set of changes now:
+
+1. **D1 — Transcript gating: Option A.** Per-video line cap, **10 visible
+   lines** for free users (e.g., `NON_PRO_MAX_LINES = 17` with the 7-line
+   prompt overlay, or 10 with a non-obscuring prompt — the visible count is
+   the contract). No daily full-transcript quota in this pass.
+2. **D2 — Word examples (i.e., Subtitles Search): align the copy to the
+   implementation.** Keep free = first 5 corpus-wide hits; update go-pro
+   copy from "2 examples" to "5 examples".
+3. **D3 — AI explanations: hard Pro-only.** Keep the current hard gate; do
+   not add a free daily quota in this pass.
+4. **D4 — SRS daily reviews (new): free daily cap of 20.** Bound the
+   effective daily review count for free users at 20; Pro can raise the
+   existing daily-max setting (the control is not locked).
+5. **D5 — Paywalling core content: rejected** (closed).
+
+Not adopted in this pass (deferred, future candidates): saved-words cap,
+full-text translation budget, and the AI explanation quota.
+
+## Consequences
+
+- Constants, marketing copy, and SPEC-054 C5 agree on exact numbers:
+  **10 visible transcript lines** and **5 word-example hits**.
+- The SRS free daily cap (20) is backend-enforced and gains a SPEC-054 test
+  row.
+- AI explanations stay hard Pro-only (no quota change).
+- Rollout stays small: transcript constant + copy, word-example copy, SRS
+  cap. Conversion impact can be measured before revisiting the deferred
+  candidates.
