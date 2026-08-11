@@ -648,6 +648,57 @@ order by watch_events desc;
 
 ---
 
+## 9. Downstream usage — Tables A–C in the product (2026-08-11)
+
+The Tables A–C union (110 codes) is now the platform-wide "All Languages"
+list, with a single source of truth in
+`packages/shared/src/language-data.ts`:
+
+- `CONTENT_L2S` — the 110 codes (Tables A + B + C).
+- `CONTENT_L2_COUNT` — `110`, derived from the list.
+- `ContentL2` — the union type, used to type-check consumer data.
+
+### Language switchers
+
+Every platform's language picker now uses `CONTENT_L2S` as its "All
+Languages" list instead of the 209-code `SUPPORTED_L2S`:
+
+- **Web** — `apps/web/src/components/language-picker.tsx` (and
+  `getLanguageGroups()` in `apps/web/src/lib/language-data.ts`).
+- **Mobile** — `apps/mobile/components/LanguagePicker.tsx`.
+- **Chrome extension** — `apps/chrome-extension/src/popup-options.js`
+  (popup options) and `apps/chrome-extension/src/content-entry.js` (L2
+  dropdown); the extension also imports the shared `POPULAR_L2S` instead of
+  its own duplicate list.
+
+`SUPPORTED_L2S` (209) remains for route validation, last-language-pair
+checks, and offline-dictionary availability — it is not used for picker
+lists or count claims.
+
+### Count claims
+
+All user-facing language-count strings use `CONTENT_L2_COUNT` (110):
+
+- Web home hero badge (`msg.landing_hero_badge`) — "Over 110 languages
+  supported" / 支持 110 种语言.
+- Web home Languages heading (`msg.all_languages_count`) — 所有110种语言.
+- Mobile go-pro (`pro.desc`) — "…across 110+ languages" / 覆盖 110+ 种语言.
+
+### Video counts & landing list
+
+- `apps/web/src/data/language-video-counts.ts` is typed
+  `Record<ContentL2, number>`, so its 110 entries must always match
+  `CONTENT_L2S` exactly (missing or extra codes fail typecheck).
+- The home page Languages section renders Tables A–C grouped by language
+  family (16 families, with `family.*` translation keys), marks Table C
+  languages with an **Experimental** badge, and shows flags via the shared
+  `flagEmoji()` helper (sign languages use 👋).
+- Language display names resolve through `language-names-i18n.ts` (now
+  canonical per ARCH-009); `nan` (Min Nan) and `lzh` (Literary Chinese) were
+  backfilled for all locales on 2026-08-11.
+
+---
+
 ## Related Documents
 
 - [SPEC-038 — Video Content → Supabase](../specs/038-video-content-supabase.md)

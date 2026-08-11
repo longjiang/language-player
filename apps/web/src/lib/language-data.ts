@@ -1,4 +1,4 @@
-import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
+import { SUPPORTED_L1S, SUPPORTED_L2S, CONTENT_L2S, POPULAR_LANGUAGES, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import { LOCALIZED_LANGUAGE_NAMES } from './language-names-i18n';
 
@@ -179,7 +179,7 @@ export function getLanguageMeta(code: string): LanguageMeta | null {
 export function getLanguageGroups(): { label: string; codes: readonly string[] }[] {
   return [
     { label: 'Popular', codes: POPULAR_LANGUAGES },
-    { label: 'All Languages', codes: SUPPORTED_L2S },
+    { label: 'All Languages', codes: CONTENT_L2S },
   ];
 }
 

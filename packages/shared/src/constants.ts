@@ -34,10 +34,6 @@ export const SUPPORTED_L2S = [
 
 export type SupportedL2 = (typeof SUPPORTED_L2S)[number];
 
-/** Number of supported target languages — single source of truth for UI
- *  strings like "200+ languages" (home hero, go-pro, etc.). */
-export const SUPPORTED_L2_COUNT = SUPPORTED_L2S.length;
-
 /** "How did you hear about us?" registration survey options (matches Classic).
  *  `labelKey` is a translations.csv key; values are what the Flask
  *  `/acquisition_survey` endpoint stores in `user_acquisition.source`. */

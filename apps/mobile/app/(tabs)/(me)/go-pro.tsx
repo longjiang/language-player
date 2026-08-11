@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { IAP_AVAILABLE, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
-import { isSaleActive, getSaleDiscount, findUsdPrice, SUPPORTED_L2_COUNT } from '@langplayer/shared';
+import { isSaleActive, getSaleDiscount, findUsdPrice, CONTENT_L2_COUNT } from '@langplayer/shared';
 import type { StripePrice } from '@langplayer/shared';
 import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -310,7 +310,7 @@ export default function GoProScreen() {
         <Crown size={48} color={ICON_PRIMARY} />
         <Text className="mt-3 text-2xl font-bold text-foreground">{t('action.go_pro')}</Text>
         <Text className="mt-2 text-center text-sm text-muted-foreground">
-          {t('pro.desc', { count: SUPPORTED_L2_COUNT })}
+          {t('pro.desc', { count: CONTENT_L2_COUNT })}
         </Text>
       </View>
 

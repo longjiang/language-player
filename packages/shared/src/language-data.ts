@@ -30,6 +30,31 @@ export const POPULAR_L2S: readonly string[] = [
 ];
 
 /**
+ * The 110 target languages shown as "All Languages" in every platform's
+ * language picker (web, mobile, Chrome extension). These are the languages
+ * with measured video content — ARCH-025 Tables A–C (2026-08-11). Single
+ * source of truth; platform pickers must not define their own list.
+ */
+export const CONTENT_L2S: readonly string[] = [
+  'af', 'am', 'ami', 'ar', 'as', 'ase', 'az', 'be', 'bg', 'bn',
+  'bo', 'br', 'ca', 'ceb', 'ckb', 'cnr', 'cs', 'cy', 'da', 'de',
+  'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fo', 'fr',
+  'ga', 'gd', 'gl', 'grc', 'gsw', 'gu', 'hak', 'he', 'hi', 'hr',
+  'hsh', 'hu', 'hy', 'id', 'ins', 'is', 'it', 'ja', 'jv', 'ka',
+  'kac', 'kk', 'km', 'kn', 'ko', 'ku', 'ky', 'la', 'lb', 'lo',
+  'lt', 'lv', 'lzh', 'mg', 'mi', 'mk', 'ml', 'mn', 'mr', 'ms',
+  'mt', 'my', 'nan', 'nl', 'no', 'nsl', 'och', 'pa', 'pl', 'pt',
+  'qu', 'ro', 'ru', 'sa', 'si', 'sk', 'sl', 'sm', 'so', 'sq',
+  'sr', 'su', 'sv', 'svk', 'sw', 'ta', 'te', 'th', 'tl', 'tlh',
+  'tr', 'tt', 'uk', 'ur', 'uz', 'vi', 'wo', 'yo', 'yue', 'zh',
+];
+
+export type ContentL2 = (typeof CONTENT_L2S)[number];
+
+/** Number of picker "All Languages" (110) — same as CONTENT_L2S.length. */
+export const CONTENT_L2_COUNT = CONTENT_L2S.length;
+
+/**
  * Languages written without spaces between words (scriptio continua) — CJK
  * varieties, Japanese, Thai, Khmer, Lao, Burmese, Tibetan, Vietnamese, and a
  * few related varieties. Ported from

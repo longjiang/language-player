@@ -9,7 +9,7 @@
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
-import { SUPPORTED_L2S } from '@langplayer/shared';
+import { CONTENT_L2S, POPULAR_L2S } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import {
   parseTimeToSeconds, stripTags, decodeEntities,
@@ -42,12 +42,6 @@ const TRACE_PHASES = {
 function trace(phase, msg) {
   log(`[${phase}] ${msg}`);
 }
-
-/** Popular languages shown first in the L2 dropdown */
-const POPULAR_L2S = [
-  'en', 'zh', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
-  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
-];
 
 // ── State ────────────────────────────────────────────────────────────────
 const STATE = {
@@ -462,8 +456,8 @@ function languageName(code) {
 /** Build the sorted L2 list: popular first, then rest alphabetically by name */
 function getSortedL2List() {
   const popularSet = new Set(POPULAR_L2S);
-  const popular = POPULAR_L2S.filter(c => SUPPORTED_L2S.includes(c));
-  const rest = SUPPORTED_L2S.filter(c => !popularSet.has(c));
+  const popular = POPULAR_L2S.filter(c => CONTENT_L2S.includes(c));
+  const rest = CONTENT_L2S.filter(c => !popularSet.has(c));
   // Sort rest by display name
   rest.sort((a, b) => languageName(a).localeCompare(languageName(b)));
   return { popular, rest };
@@ -819,7 +813,7 @@ async function onL1Change(newCode) {
 async function loadSavedLanguagePreferences() {
   try {
     const result = await chrome.storage.local.get(['l2Language', 'l1Language']);
-    if (result.l2Language && SUPPORTED_L2S.includes(result.l2Language)) {
+    if (result.l2Language && CONTENT_L2S.includes(result.l2Language)) {
       savedL2Code = result.l2Language;
       log('Loaded saved L2 preference:', savedL2Code);
     }
