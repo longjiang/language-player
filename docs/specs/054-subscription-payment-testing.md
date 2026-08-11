@@ -898,7 +898,7 @@ purchase ready for submission and approval — including the Google Play
 developer sign-up process (Play Console account, billing setup, product
 configuration, license testers, and test-track testing).
 
-#### Code cleanup
+#### 3.1 Code cleanup
 
 ✅ **done 2026-08-10:** non-IAP payment UI removed from
 `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card, WeChat, Alipay, PayPal
@@ -916,7 +916,7 @@ P6 are fully obsolete.
   iOS is Apple IAP + restore only, Android shows a buy-on-website notice
   (`msg.buy_on_website` added to all 18 locales).
 
-#### Classic (iOS only)
+#### 3.2 Classic (iOS only)
 
 Classic is the legacy Nuxt app (`zerotohero-nuxt`); its Capacitor build uses
 the `pro` IAP product (`ca.zerotohero.app`).
@@ -937,7 +937,7 @@ the `pro` IAP product (`ca.zerotohero.app`).
 - ⬜ A1/A3–A5 sandbox purchase, restore, cancel, and repeat on Classic
   (A7 backend coverage can be automated with mocks).
 
-#### apps/mobile (iOS)
+#### 3.3 apps/mobile (iOS)
 
 The new mobile app uses `expo-in-app-purchases` and the GO listing's
 non-consumable `pro_go` (`ca.zerotohero.go`). Apple IAP is the only in-app
@@ -977,7 +977,7 @@ payment path.
 - ⬜ Human-run checks: C5/C6/C7 on a device, website-purchase refresh, C3
   lifetime sync.
 
-#### apps/mobile (Android)
+#### 3.4 apps/mobile (Android)
 
 Play Billing is not implemented yet; the "buy on our website" notice is the
 interim path until it lands.
