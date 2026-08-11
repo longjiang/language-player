@@ -151,7 +151,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
           {rubySegs.map((seg, j) => (
             <View key={j} className="items-center">
               {seg.reading && (
-                <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className="text-muted-foreground">{seg.reading}</Text>
+                <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}>{seg.reading}</Text>
               )}
               {/* Spacer: align kana-only segments with kanji segments that have ruby above.
                   Matches the reading text's lineHeight so base texts share a baseline. */}
@@ -163,7 +163,9 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
                   <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
                 ) : (
                   <Text style={[textStyle, { lineHeight: baseLeading }]}
-                    className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                    className={isTokenSelected
+                      ? 'text-primary'
+                      : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
                     {seg.text}
                   </Text>
                 )}
@@ -279,7 +281,7 @@ const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) 
       {isBlanked ? (
         <Text className={textColor}>▯</Text>
       ) : (
-        <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+        <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
