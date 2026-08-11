@@ -987,8 +987,11 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
   shows 10 transcript lines + 5 word-example hits + Subtitles Search
   greyed/off; Mary (lifetime) shows full transcript + uncapped examples +
   editable toggle
-- ⬜ C6 — cancel at period end from the mobile profile (code wired; device
-  check pending)
+- ✅ C6 — cancel at period end from the mobile profile — verified 2026-08-11:
+  row reshaped to `monthly` + `payment_customer_id=cus_test_c6` via admin;
+  profile showed Monthly + Auto-Renews; tapping Cancel Auto-Renewal cleared
+  the badge and set `payment_customer_id` to null while the row stayed
+  `monthly` until expiry (row restored to lifetime after the test)
 - ⬜ C7 — IAP success/error screens — success screen verified in A2;
   error/cancel path pending (A4, needs a fresh sandbox account)
 - ✅ Subscription state refreshes after a **website/admin** purchase —
