@@ -100,6 +100,7 @@ export default function GoProPage() {
   // purchases until cancelled — matches Classic.
   const activeNonTrial = !!subscription
     && subscription.type !== 'trial'
+    && !!subscription.payment_customer_id
     && (
       subscription.type === 'lifetime'
       || (subscription.expires_on
