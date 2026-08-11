@@ -137,6 +137,64 @@ Enforcement (implemented 2026-08-10):
   so the API can't be bypassed.
 - Classic already gated in the UI; web/mobile now match.
 
+#### State machine
+
+```mermaid
+flowchart TD
+    FREE[Free / no row]
+    TRIAL[Trial]
+    MONTHLY_AUTO[Monthly<br/>auto-renew]
+    MONTHLY_OFF[Monthly<br/>cancelled / no auto-renew]
+    ANNUAL_AUTO[Annual<br/>auto-renew]
+    ANNUAL_OFF[Annual<br/>cancelled / no auto-renew]
+    LIFETIME[Lifetime]
+    EXPIRED[Expired]
+
+    FREE -->|sign up - trial granted at /auth/verify-email| TRIAL
+    TRIAL -->|buy| MONTHLY_AUTO
+    TRIAL -->|buy| ANNUAL_AUTO
+    TRIAL -->|buy| LIFETIME
+
+    MONTHLY_AUTO -->|cancel auto-renew| MONTHLY_OFF
+    MONTHLY_OFF -->|buy| MONTHLY_AUTO
+    MONTHLY_OFF -->|buy| ANNUAL_AUTO
+    MONTHLY_OFF -->|buy| LIFETIME
+
+    ANNUAL_AUTO -->|cancel auto-renew| ANNUAL_OFF
+    ANNUAL_OFF -->|buy| MONTHLY_AUTO
+    ANNUAL_OFF -->|buy| ANNUAL_AUTO
+    ANNUAL_OFF -->|buy| LIFETIME
+
+    EXPIRED -->|renew / buy| MONTHLY_AUTO
+    EXPIRED -->|renew / buy| ANNUAL_AUTO
+    EXPIRED -->|buy| LIFETIME
+
+    classDef terminal fill:#fef3c7,stroke:#d97706,color:#000;
+    classDef blocked fill:#fee2e2,stroke:#dc2626,color:#000;
+    class LIFETIME terminal;
+    class MONTHLY_AUTO,ANNUAL_AUTO blocked;
+```
+
+Red = auto-renew active: purchase blocked (see table). Amber = terminal.
+
+Allowed plan transitions (from → to):
+
+| From | Can go to | Condition |
+|---|---|---|
+| Free | Trial | Sign up — free trial granted automatically |
+| Free / Trial | Monthly, Annual, Lifetime | No gate (trial is exempt) |
+| Monthly (auto-renew) | — | Blocked until auto-renew is cancelled |
+| Monthly (cancelled / one-time) | Monthly, Annual, Lifetime | Any |
+| Annual (auto-renew) | — | Blocked until auto-renew is cancelled |
+| Annual (cancelled / one-time) | Monthly, Annual, Lifetime | Any |
+| Lifetime | — | Terminal — already owns lifetime; UI hides the buy control |
+| Expired (monthly/annual) | Monthly, Annual, Lifetime | Any |
+
+The "blocked" rows are the only gate: **active auto-renew** (non-trial,
+unexpired, `payment_customer_id` set) must be cancelled before a new
+purchase. Cancelling keeps the current plan until its expiry — it only lifts
+the purchase gate.
+
 Known limitation: CNY WeChat/Alipay **Payment Links** are opened directly on
 Stripe, so a manipulated link can bypass the UI/API guard and complete a
 purchase. The UI hides the links while blocked (same as Classic); a

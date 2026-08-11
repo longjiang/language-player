@@ -208,12 +208,16 @@ export default function GoProScreen() {
   const lifetimeSalePrice = saleActive ? salePrice(prices, 'lifetime') : null;
 
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
-  // Option A (SPEC-054): an active non-trial subscription blocks all new
-  // purchases until cancelled — matches Classic.
-  // Matches Classic: only an auto-renewing (payment_customer_id set),
-  // non-trial, unexpired subscription blocks new purchases.
+  // Option A (SPEC-054): an active auto-renewing subscription blocks new
+  // purchases until cancelled — matches Classic (commit a8471782).
+  // Only non-trial, unexpired subscriptions WITH payment_customer_id (i.e.
+  // auto-renewing Stripe) show the "cancel first" gate. Lifetime IAP rows
+  // have no payment_customer_id and instead get the "already owned" state
+  // below (see isLifetimeOwner).
   const activeNonTrial =
     !!sub && sub.type !== 'trial' && !!sub.payment_customer_id && !isExpired;
+  /** User already owns lifetime (IAP/Stripe/PayPal) — no repurchase possible. */
+  const isLifetimeOwner = !!sub && sub.type === 'lifetime';
 
   // ── IAP Purchase (iOS only) ──
   const handleIapPurchase = useCallback(async () => {
@@ -447,6 +451,13 @@ export default function GoProScreen() {
                   </Text>
                 </Pressable>
               </View>
+            ) : isLifetimeOwner ? (
+              <View className="rounded-lg border border-border bg-muted/40 p-4 items-center">
+                <Crown size={28} color={ICON_PRIMARY} />
+                <Text className="mt-2 text-center text-sm font-medium text-foreground">
+                  {t('msg.already_lifetime')}
+                </Text>
+              </View>
             ) : (
               <View className="gap-3">
                 {/* Apple In-App Purchase (iOS only — lifetime) */}
@@ -473,19 +484,21 @@ export default function GoProScreen() {
               </View>
             )}
 
-            {/* Restore Purchases (iOS) */}
-            <Pressable
-              onPress={handleRestorePurchases}
-              disabled={restoring}
-              className="mt-3 flex-row items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-2.5"
-            >
-              {restoring ? (
-                <ActivityIndicator size="small" color={ICON_MUTED} />
-              ) : (
-                <RefreshCw size={16} color={ICON_MUTED} />
-              )}
-              <Text className="text-sm text-muted-foreground">{t('action.restore_purchases')}</Text>
-            </Pressable>
+            {/* Restore Purchases (iOS) — hidden for lifetime owners (A5) */}
+            {!isLifetimeOwner && (
+              <Pressable
+                onPress={handleRestorePurchases}
+                disabled={restoring}
+                className="mt-3 flex-row items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-2.5"
+              >
+                {restoring ? (
+                  <ActivityIndicator size="small" color={ICON_MUTED} />
+                ) : (
+                  <RefreshCw size={16} color={ICON_MUTED} />
+                )}
+                <Text className="text-sm text-muted-foreground">{t('action.restore_purchases')}</Text>
+              </Pressable>
+            )}
 
             {/* Error */}
             {error && (

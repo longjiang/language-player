@@ -147,6 +147,7 @@
         "verify": "验证",
         "verify_email": "验证邮箱",
         "view_on_youtube": "在 YouTube 上观看",
+        "view_plans": "查看方案",
         "view_profile": "查看个人资料",
         "watch": "观看"
     },
@@ -690,6 +691,7 @@
         "all_languages": "所有语言",
         "all_languages_downloaded": "所有语言已下载。",
         "already_have_account": "已有账户？",
+        "already_lifetime": "您已拥有终身访问权限，无需购买。",
         "and_n_other_forms": "等{n}个其他形式",
         "auto_renews_in": "{days} 天后自动续订",
         "buy_on_website": "在我们的网站上购买",

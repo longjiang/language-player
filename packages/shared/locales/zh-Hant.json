@@ -147,6 +147,7 @@
         "verify": "驗證",
         "verify_email": "驗證電子郵件",
         "view_on_youtube": "在 YouTube 上觀看",
+        "view_plans": "查看方案",
         "view_profile": "檢視個人資料",
         "watch": "看看"
     },
@@ -690,6 +691,7 @@
         "all_languages": "所有語言",
         "all_languages_downloaded": "所有語言已下載。",
         "already_have_account": "已經有帳號了嗎？",
+        "already_lifetime": "您已擁有終身存取權限，無需購買。",
         "and_n_other_forms": "等{n}個其他形式",
         "auto_renews_in": "{days} 天後自動續訂",
         "buy_on_website": "在我們的網站購買",

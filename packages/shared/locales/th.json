@@ -153,6 +153,7 @@
         "verify": "ยืนยัน",
         "verify_email": "ยืนยันอีเมล",
         "view_on_youtube": "ดูบน YouTube",
+        "view_plans": "ดูแผน",
         "view_profile": "ดูโปรไฟล์",
         "watch": "ดู"
     },
@@ -704,6 +705,7 @@
         "all_languages": "ภาษาทั้งหมด",
         "all_languages_downloaded": "ดาวน์โหลดทุกภาษาแล้ว",
         "already_have_account": "มีบัญชีอยู่แล้ว?",
+        "already_lifetime": "คุณมีสิทธิ์ใช้งานตลอดชีพแล้ว ไม่จำเป็นต้องซื้อ",
         "and_n_other_forms": "และอีก {n} รูปแบบ",
         "auto_renews": "ต่ออายุอัตโนมัติในอีก {time}",
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {days} วัน",

@@ -153,6 +153,7 @@
         "verify": "Verifikasi",
         "verify_email": "Verifikasi Email",
         "view_on_youtube": "Lihat di YouTube",
+        "view_plans": "Lihat paket",
         "view_profile": "Lihat Profil",
         "watch": "Tonton"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Semua Bahasa",
         "all_languages_downloaded": "Semua bahasa telah diunduh.",
         "already_have_account": "Sudah memiliki akun?",
+        "already_lifetime": "Anda sudah memiliki akses seumur hidup. Tidak perlu membeli.",
         "and_n_other_forms": "dan {n} bentuk lainnya",
         "auto_renews": "Memperbarui otomatis dalam {time}.",
         "auto_renews_in": "Perpanjangan otomatis dalam {days} hari",
