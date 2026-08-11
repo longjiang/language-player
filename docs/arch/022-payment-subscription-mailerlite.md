@@ -230,7 +230,9 @@ PurchaseiOS → Apple payment sheet → receipt
   → {type: "success"} → /go-pro-success
 ```
 
-IAP is a non-consumable product and always grants lifetime.
+IAP is a non-consumable product and always grants lifetime. The new mobile
+app purchases the GO listing's `pro_go` product (bundle `ca.zerotohero.go`);
+Classic's IAP uses `pro` under `ca.zerotohero.app`.
 
 ### Admin grant
 
