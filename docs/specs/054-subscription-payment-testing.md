@@ -793,9 +793,13 @@ Coverage notes for the rest of Phase 2:
 
 #### Phase 2 progress
 
-- ⬜ S9–S10 — pending.
+- ✅ C1 — price parity verified 2026-08-10 (local + production both match
+  `prices.csv`; 10 plans).
+- ✅ S9 backend preflight — `/create-stripe-checkout-session` with the web
+  payload returns a valid test Checkout URL (no payment).
+- ⬜ S9–S10 — browser run pending.
 - ✅ W5/P5/S13/S14 — covered/foregone per notes above.
-- ⬜ C1/C2/C5/C7 — pending until S9–S10 pass.
+- ⬜ C2/C5/C7 — pending until S9–S10 pass.
 
 ### Phase 3 — Mobile (`apps/mobile`) payment E2E
 
