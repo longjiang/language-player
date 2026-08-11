@@ -240,9 +240,11 @@ Open work:
 
 - **Web sale UI** — price helpers exist; banner/discount display still missing
 - **Web direct PayPal** — currently links to Classic
-- **Play Billing (Android)** — blocked on new Play Developer account + billing
-  setup; buy-on-website is the interim path (SPEC-054 Phase 3)
-- **Mobile IAP sandbox verification** — SPEC-054 Phase 4 (A1/A2)
+- **Mobile IAP sandbox verification** — SPEC-054 Phase 3 (A1/A2)
+- **Play Billing (Android)** — SPEC-054 Phase 3: Play Console developer
+  sign-up (blocked on a new Play Developer account), billing setup, product
+  configuration, implementation, and test-track testing; buy-on-website is
+  the interim path
 
 ---
 

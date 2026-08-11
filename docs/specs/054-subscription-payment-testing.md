@@ -26,8 +26,8 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
   uses `pro_go` (`ca.zerotohero.go`, the GO listing's product).
 - **Google Play Billing** is **not implemented** in any frontend. Android
   users buy on the website today (the non-IAP in-app payment UI was removed
-  in Phase 3, 2026-08-10); the target is Play Billing later. The Play
-  test-lab setup below is documented for when Billing is implemented.
+  in Phase 3, 2026-08-10). Play Billing implementation, the Play Console
+  developer sign-up, and sandbox testing are Phase 3 work — see [1.5](#15-google-play-billing-phase-3--android).
 - **Mobile iOS** — Apple IAP (`pro_go`) is the store-compliant in-app method.
   Card/WeChat/Alipay/PayPal are website payments (the in-app browser checkout
   was removed in Phase 3, 2026-08-10).
@@ -48,10 +48,10 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 | Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-in-app-purchases`) | — |
-| Google Play Billing | N/A | N/A | — | ⬜ not implemented |
+| Google Play Billing | N/A | N/A | — | ⬜ Phase 3 — developer sign-up + implementation |
 
 **Target (SPEC-014):** in-app mobile payments are store billing only — Apple
-IAP on iOS (`pro_go`), Play Billing on Android (planned). Stripe card /
+IAP on iOS (`pro_go`), Play Billing on Android (Phase 3 work). Stripe card /
 WeChat / Alipay / PayPal are on the website; the same backend grant applies
 once the user logs in. The mobile non-IAP payment UI was removed 2026-08-10
 (SPEC-054 Phase 3).
@@ -228,16 +228,31 @@ Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 > revised). Classic's `ca.zerotohero.app` / `pro` IAP is no longer validated
 > by this endpoint.
 
-### 1.5 Google Play Billing (future)
+### 1.5 Google Play Billing (Phase 3 — Android)
 
 Reference: <https://developer.android.com/google/play/billing/test>.
 
-Google Play Billing is **not implemented** in any frontend (SPEC-014 / SPEC-048). When it lands, test with:
+Google Play Billing is **not implemented** in any frontend yet (SPEC-014 /
+SPEC-048). Phase 3 includes the Google developer sign-up process, billing
+setup, implementation, and testing:
 
-1. **License testers** — Play Console → Setup → License testing → add tester Gmail accounts. License testers bypass real charges.
-2. **Test payment instruments** — Play Console test accounts get "Test card" instruments (always approves, always declines, slow) and can use the payment methods page to simulate outcomes.
-3. **Test tracks** — publish an internal/closed test build and test purchases from it; test purchases are not refundable but also not charged to the account.
-4. **Accelerated renewals** — Play's sandbox speeds up subscriptions (monthly renews ~5 min, yearly ~30 min, max 6 renewals) — useful for renewal/webhook testing. Play Billing Lab covers trials, price changes, and paused subscriptions.
+1. **Google Play developer sign-up** — create the Play Console developer
+   account (one-time registration fee), accept the agreements, and complete
+   account details before Play Billing can be configured.
+2. **Play Console billing setup** — create the app / internal test track,
+   define the Play Billing product (lifetime, non-consumable; product ID TBD
+   until SPEC-014 implementation), and add **license testers** (Play Console
+   → Setup → License testing). License testers bypass real charges.
+3. **Test payment instruments** — Play Console test accounts get "Test card"
+   instruments (always approves, always declines, slow) and can use the
+   payment methods page to simulate outcomes.
+4. **Test tracks** — publish an internal/closed test build and test purchases
+   from it; test purchases are not refundable but also not charged to the
+   account.
+5. **Accelerated renewals** — Play's sandbox speeds up subscriptions (monthly
+   renews ~5 min, yearly ~30 min, max 6 renewals) — useful for
+   renewal/webhook testing. Play Billing Lab covers trials, price changes, and
+   paused subscriptions.
 
 ### 1.6 Supabase migration & backend test setup
 
@@ -309,16 +324,24 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | A3 | Both | Tap **Restore Purchases** after reinstall / second device with same sandbox account | Restored purchase list non-empty; receipts re-validated; Pro re-granted; no duplicate transaction |
 | A4 | Both | Cancel the sandbox confirmation dialog | Purchase callback errors (`USER_CANCELED`); app returns to go-pro with an error message; no grant |
 | A5 | Both | Purchase the same non-consumable again (`pro` Classic / `pro_go` mobile) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency) |
-| A6 | Mobile | Run on Android | IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); no in-app payment methods on Android (buy on website, SPEC-014); plan cards remain informational |
+| A6 | Mobile | Run on Android | Apple IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); Android uses Play Billing once implemented (Phase 3); plan cards remain informational |
 | A7 | Backend | Post a bogus receipt (`user_id` + garbage string) | `type: 'error'` response from Apple validation; no subscription granted |
 
 > ✅ A1/A2 bundle-ID question resolved 2026-08-10: the backend validates
 > `ca.zerotohero.go` receipts (the new app replaces the GO listing; see
 > [1.4](#14-apple-in-app-purchase-ios)).
 
-### 2.5 Google Play Billing
+### 2.5 Google Play Billing (Phase 3 — Android)
 
-No rows yet — method is not implemented. When Play Billing lands (SPEC-014), add rows here for: license-tester purchase, always-declines instrument, internal-track purchase, subscription renewal acceleration, and restore/entitlement sync, using the setup in [1.5](#15-google-play-billing-future).
+| # | App | Steps | Expected result |
+|---|---|---|---|
+| G1 | Mobile Android | License tester account → go-pro → Play Billing button → confirm | Play test purchase completes; backend grants `type=lifetime`, `payment_processor=play-billing`; Pro unlocks |
+| G2 | Mobile Android | Always-declines test instrument | Purchase fails; no subscription row; app shows an error without a stuck state |
+| G3 | Mobile Android | Internal/closed test track build | Purchase + grant succeed in the test track; same backend grant path as production |
+| G4 | Mobile Android | Restore/entitlement sync after reinstall or second device | Restored purchase re-validated; Pro re-granted; no duplicate transaction |
+| G5 | Backend | Bogus purchase token / unverified payload | No grant; defined error response |
+
+Run with the setup in [1.5](#15-google-play-billing-phase-3--android).
 
 ### 2.6 Backend, Auth & Data-Layer Tests (Supabase Migration)
 
@@ -629,7 +652,7 @@ before touching web/mobile.
 - S13/S14 — renewal webhook + webhook auth
 - C4 (existing subscription not overwritten), C6 (cancel), C7 (error screens)
 
-**IAP is deliberately deferred to Phase 4.**
+**IAP and Play Billing are covered in Phase 3 (mobile + Classic IAP).**
 
 #### Phase 1 runbook — Stripe test-mode setup (do once)
 
@@ -862,29 +885,55 @@ Coverage notes for the rest of Phase 2:
   (10 transcript lines + 5 hits free → full transcript + 500 hits Pro).
 - ⬜ C2 — deferred to Phase 5 (full cross-device subscription sync matrix).
 
-### Phase 3 — Mobile (`apps/mobile`) payment E2E
+### Phase 3 — Mobile in-app purchase & payment E2E (iOS + Android)
 
-**Scope change (2026-08-10):** non-IAP payment UI is being removed from the
-mobile app (SPEC-014 target — store billing only in-app). S11–S12 (Stripe),
-W6 (WeChat/Alipay), and P6 (PayPal link-out) are **obsolete**; do not run new
-E2E against them. The code cleanup landed 2026-08-10, so the browser
-web-checkout stopgap no longer exists in the mobile app.
+Native mobile apps can only sell digital Pro through store billing: Apple IAP
+on iOS and Google Play Billing on Android. No other payment methods exist
+in-app (Stripe card / WeChat / Alipay / PayPal are website payments), so this
+phase covers both store setups plus the remaining mobile checks.
+
+**Exit criterion:** at the end of Phase 3, both iOS and Android have in-app
+purchase ready for submission and approval — including the Google Play
+developer sign-up process (Play Console account, billing setup, product
+configuration, license testers, and test-track testing).
 
 1. **Code cleanup (do first)** — ✅ **done 2026-08-10:** non-IAP payment UI
    removed from `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card,
    WeChat, Alipay, PayPal buttons). iOS shows Apple IAP (lifetime) + Restore
-   Purchases only; Android shows a "buy on our website" notice. S11–S12 / W6
-   / P6 are fully obsolete.
+   Purchases only; Android shows a "buy on our website" notice until Play
+   Billing lands. S11–S12 / W6 / P6 are fully obsolete.
 2. **Remaining mobile checks:**
 
    - C5 (gates) — free/Pro gates flip on mobile
    - C6 (cancel) — cancel at period end from the mobile profile
-   - C7 (success/error screens) — IAP paths only
+   - C7 (success/error screens) — IAP paths only (iOS) / Play Billing paths
+     (Android)
    - Verify subscription state refreshes after a **website** purchase (buy
      on web → open the app → Pro appears)
    - C2 (subscription sync) — deferred to Phase 5
-   - Apple IAP purchase + restore — Phase 4
-   - Play Billing — out of scope until implemented
+   - C3 — cross-platform lifetime sync (IAP + Play Billing + web/Classic)
+3. **Apple IAP (iOS + Classic) — A1–A7:**
+
+   - A1–A7 — purchase, restore, cancel, bogus receipt (Classic + mobile)
+   - ✅ Bundle-ID question resolved 2026-08-10 — backend validates
+     `ca.zerotohero.go`; A2 can now run
+   - ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
+     (Non-Consumable, Approved) — matches `apps/mobile/lib/iap.ts`
+   - ✅ Store-policy cleanup: in-app browser checkout removed from iOS and
+     Android (2026-08-10) — IAP is the only in-app purchase path on iOS
+4. **Google Play Billing (Android):**
+
+   - Complete the Play Console developer sign-up process (new developer
+     account + one-time registration fee)
+   - Create the Play Billing product (lifetime, non-consumable) and add
+     license testers
+   - Implement Play Billing in `apps/mobile` (SPEC-014 target; product ID TBD)
+   - Run G1–G5 from [2.5](#25-google-play-billing-phase-3--android):
+     license-tester purchase, always-declines instrument, internal/closed
+     test-track purchase, restore/entitlement sync, bogus token
+   - Verify the backend grant + MailerLite sync through the shared
+     subscription path
+   - Exit: Android in-app purchase ready for submission and approval
 
 #### Phase 3 progress
 
@@ -901,24 +950,11 @@ web-checkout stopgap no longer exists in the mobile app.
   C7 IAP success/error paths render correctly; `SubscriptionContext` now
   refetches when the app returns to the foreground so a website purchase
   appears without restarting the app.
-- ⬜ Human-run checks pending: C5/C6/C7 on a device, website-purchase →
-  open-app refresh, and Phase 4 Apple IAP sandbox purchase + restore.
-
-### Phase 4 — IAP last (Classic + mobile)
-
-**Why last**: IAP is lifetime-only and sandbox testing needs Apple tooling —
-it is not required for the core launch gate. (The bundle-ID blocker was
-resolved 2026-08-10.)
-
-- A1–A7 — Classic + mobile purchase, restore, cancel, bogus receipt
-- C3 — cross-platform lifetime sync
-- ✅ Bundle-ID question resolved 2026-08-10 — backend validates
-  `ca.zerotohero.go`; A2 can now run
-- ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
-  (Non-Consumable, Approved) — matches `apps/mobile/lib/iap.ts`
-- ✅ Store-policy cleanup before submission: in-app browser checkout removed
-  from iOS and Android (SPEC-054 Phase 3, 2026-08-10) — IAP is the only
-  in-app purchase path on iOS; Android buys on the website until Play Billing
+- ⬜ Apple IAP sandbox purchase + restore (A1–A7)
+- ⬜ Google Play developer sign-up + Play Billing implementation/testing
+  (G1–G5)
+- ⬜ Human-run mobile checks: C5/C6/C7 on a device, website-purchase refresh,
+  C3 lifetime sync
 
 ### Phase 5 — Cross-app & launch gate
 
@@ -932,9 +968,9 @@ resolved 2026-08-10.)
 
 | Trigger | Scope | Device | Estimated time |
 |---|---|---|---|
-| Before every App Store submission | A1–A7 + S1–S10/S13–S15 + W1–W5/W7 + C1–C7 | Real iPhone (sandbox account) + simulators + browser | ~60 min |
+| Before every store submission (App Store or Play) | A1–A7 + G1–G5 + S1–S10/S13–S15 + W1–W5/W7 + C1–C7 | Real iPhone (sandbox account) + Android test track + simulators + browser | ~60 min |
 | Before every web release | S9–S10 + S13–S15 + W5/W7 + C1, C5, C7 | Browser (test backend) | ~25 min |
-| After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S10/S13–S15, W1–W5/W7, P1–P5, A1–A7 | As appropriate per change | ~45 min |
+| After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S10/S13–S15, W1–W5/W7, P1–P5, A1–A7, G1–G5 | As appropriate per change | ~45 min |
 | After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `auto_verify_email.py`, `utils_mailer_lite.py`) | B1–B90 | CI/test schema (automated where possible) | ~30 min |
 | Quarterly (renewal regression) | S13, C6 + test-mode renewals | Browser + real device | ~20 min |
 
@@ -966,7 +1002,9 @@ resolved 2026-08-10.)
    PayPal in-app (SPEC-014; buy on website). Options: run a test Classic
    deployment on a test host and point the link there, or implement PayPal
    directly in Web (SPEC-014).
-5. **Google Play Billing is not implemented** — the sandbox guide in 1.5 is reference-only until SPEC-014 work lands.
+5. **Google Play Billing is not implemented yet** — Phase 3 includes the
+   Play Console developer sign-up, billing setup, implementation, and the
+   G1–G5 sandbox/test-track rows (setup in [1.5](#15-google-play-billing-phase-3--android)).
 6. **Payment Link purchases have no return redirect** — verification relies on webhooks. The test must confirm the `checkout.session.completed` event arrives with `client_reference_id` intact; if webhooks are down, grants silently fail.
 7. **Automation** (SPEC-025's mock backend: `/mock-stripe-checkout`, `/mock-wechat-pay`, etc.) is still future work; provider-hosted UI rows remain human-run, but the backend/data-layer rows in 2.6 are automatable with mocks.
 8. **Idempotency key — resolved 2026-08-09:** `user_subscriptions(payment_id)`
@@ -1048,8 +1086,8 @@ resolved 2026-08-10.)
 
 ## 8. Success criteria
 
-1. Every row in the test matrix (2.1–2.4) passes in test/sandbox mode with **zero production charges**.
-2. Platform limitations are respected: IAP only on iOS, Play Billing absent (documented), PayPal direct only in Classic.
+1. Every row in the test matrix (2.1–2.5) passes in test/sandbox mode with **zero production charges**.
+2. Platform limitations are respected: Apple IAP only on iOS, Play Billing on Android (Phase 3), PayPal direct only in Classic.
 3. Renewal, cancellation, restore, and error paths verified, not just the happy path.
 4. The blocking gaps in §5 (IAP bundle ID, PayPal sandbox switch, Stripe env toggles) are resolved or explicitly accepted by the team before shipping the affected flow.
 5. Backend/data-layer rows B1–B90 pass against a disposable Supabase schema (or the gaps in §5 items 8–14 are explicitly accepted/fixed).
