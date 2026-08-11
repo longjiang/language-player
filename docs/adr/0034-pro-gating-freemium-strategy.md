@@ -46,6 +46,21 @@ users. Concretely, set `NON_PRO_MAX_LINES = 17` so 10 lines remain visible
 behind the 7-line upgrade prompt (or restyle the prompt so it doesn't obscure
 content and set the constant to 10 — the visible count is the contract).
 
+**Options considered:**
+
+- **Option A — per-video line cap (chosen).** Every free transcript is
+  truncated to the visible line count. Simple, backend-free (client-side
+  constant), and honest.
+- **Option B — daily full-transcript quota (deferred, candidate).** Free
+  users may open a small number of full transcripts per day (e.g., 3), then
+  fall back to Option A. Requires a backend daily counter per user. Revisit
+  only if post-trial conversion data warrants it.
+
+Note: new users already get a **7-day full free trial** (granted on GoTrue
+email verification; see ARCH-022 "Free Trial" and SPEC-039 M1), so Option B
+would extend a "taste of the full product" to free users *after* their trial
+expires — not replace the trial.
+
 ### 2. Word examples — keep corpus-wide search, align the copy to 5
 
 Keep the existing behavior (free = first 5 corpus-wide hits; Pro = up to 500,
