@@ -129,15 +129,10 @@ Then go to `chrome://extensions` → refresh Language Player → reload the vide
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
 
-**⚠️ Never use `npx tsc` in the sandboxed VS Code terminal.** `npx` fails silently (exit code 255, no output), making it look like typecheck passed when it didn't. Always invoke the local TypeScript binary directly:
-```bash
-cd apps/mobile && ./node_modules/.bin/tsc --noEmit
-cd apps/web && ./node_modules/.bin/tsc --noEmit
-```
-
-**⚠️ Never run `tsc` against the root `tsconfig.json`.** The root config is a shared base config that the packages/apps extend — it has no `include`, so a bare `tsc --noEmit` (or `npx tsc`) from the repo root tries to typecheck the entire tree, including the legacy repos (`zerotohero-nuxt/`, `language-player-3/`, `apps/mobile-go-legacy/`, ~3.4 GB combined). It dies with `FATAL ERROR: Reached heap limit — JavaScript heap out of memory`. From the repo root, always use `npx turbo typecheck`; for a single package, `cd` into it and run its local binary (e.g., `cd apps/web && ./node_modules/.bin/tsc --noEmit`). Note that `apps/chrome-extension/` and `packages/docs/` have no `typecheck` script and no tsconfig of their own, so they are NOT covered by `npx turbo typecheck` — any editor errors there come from the root config being used as a fallback.
-
-**⚠️ Always verify against current documentation before giving instructions.** Do not guess syntax, parameters, return types, UI paths, or OS behavior — check the official docs. This applies to everything: Maestro YAML commands, Expo APIs, Directus endpoints, Flask decorators, and version-specific settings that change between releases (e.g., iOS 26 moved the sandbox-account setting out of Settings → App Store). If the user is on a newer release, or a step feels off / contradicts what the user reports, look it up first — never answer from memory alone. The `fetch_webpage` tool can retrieve live documentation pages.
+**⚠️ Typechecking and documentation-verification rules live in
+[Debugging & Verification](#debugging--verification)** — including the
+`npx tsc` silent-failure warning, the root-tsconfig heap-OOM warning, and
+the always-verify-against-current-docs rule.
 
 ### Test Credentials
 
@@ -398,6 +393,67 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
   are still present before committing, or Netlify's Linux build will fail.
 - Never edit files in `zerotohero-nuxt/`, `language-player-3/`, or `apps/mobile-go-legacy/` — they are reference-only
 - Always do a type check with `npx turbo typecheck` and build check with `npm run build:check -w apps/web` before committing. Never push.
+
+### Debugging & Verification
+
+**Core practices:**
+
+- **Verify what is actually running before debugging behavior.** Is the
+  running bundle/build the same as the code on disk? Check bundle/build
+  timestamps, reload markers, and cache state. A large share of reported
+  bugs are stale bundles, old sessions, or cached state — but prove it, do
+  not assume it.
+- **Reason from the user's context, not ambient signals.** Screenshots, the
+  user's last actions, and the actual screen/app being tested are the
+  evidence. Ambient metadata (e.g. an open browser tab) does not tell you
+  which environment the user means. When in doubt, the user's description
+  wins.
+- **Log the actual value, don't guess it.** If you need to know what error
+  code, response body, or state arrives, add a log line and observe it.
+  One log line beats any number of hypotheses.
+- **Log persistently.** Live terminal buffers scroll away and the one line
+  you need is gone. When debugging a long-running server or device session,
+  tee output to a file (e.g. `/tmp/metro.log`) so history can be grepped
+  later.
+- **Small steps, verify each.** Change one thing, observe it, move on.
+  Fixing several suspected causes at once makes it impossible to know which
+  change actually mattered.
+
+**Logging conventions:** all `console.log` / `console.warn` / `console.error`
+calls must start with the app's bracketed prefix (`[LP Extension]`,
+`[LP Web]`, `[LP Mobile]`) so logs can be filtered by app, and all logging
+must be gated by the app-wide `LOG_LEVEL` switch. Use the exported `log()`,
+`logwarn()`, `logerr()` helpers — never call `console.log` directly in
+application code. (Detailed prefix/switch table is in [Commands](#commands).)
+
+**Typechecking:**
+
+- **Never use `npx tsc` in the sandboxed VS Code terminal.** `npx` fails
+  silently (exit code 255, no output), making it look like typecheck passed
+  when it didn't. Always invoke the local TypeScript binary directly:
+  ```bash
+  cd apps/mobile && ./node_modules/.bin/tsc --noEmit
+  cd apps/web && ./node_modules/.bin/tsc --noEmit
+  ```
+- **Never run `tsc` against the root `tsconfig.json`.** The root config is a
+  shared base config with no `include`; a bare `tsc --noEmit` from the repo
+  root tries to typecheck the entire tree (including ~3.4 GB of legacy
+  repos) and dies with a heap OOM. Use `npx turbo typecheck` from the root;
+  for a single package, `cd` into it and run its local binary.
+
+**Documentation & verification:** never answer from memory alone — check the
+official docs for syntax, parameters, return types, UI paths, and OS
+behavior (e.g. iOS 26 moved the sandbox-account setting out of
+Settings → App Store). If the user is on a newer release or a step feels
+off, look it up first. When a response looks wrong, log the actual shape
+before changing access paths — one
+`console.log(Object.keys(res), JSON.stringify(res).slice(0, 200))` beats
+multiple wrong commits.
+
+Operational guidance lives near the relevant workflows:
+[Terminal & Server Start Conventions](#terminal--server-start-conventions)
+(Metro escalation) and the [API Client Precautions](#api-client-precautions-for-mobile-porting)
+section (response-shape validation rules).
 
 ### Terminal & Server Start Conventions
 
