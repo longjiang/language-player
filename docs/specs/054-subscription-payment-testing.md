@@ -980,8 +980,9 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 - ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
   (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
   Device check still pending in 3.4.
-- ⬜ C3 — cross-platform lifetime sync (IAP → web/Classic) — device check
-  pending (restore lifetime on iPad, then verify web shows Lifetime)
+- ✅ C3 — cross-platform lifetime sync (IAP → web) — verified 2026-08-11:
+  fresh sandbox purchase on iPad → web profile shows Lifetime (same backend
+  row); Classic check optional
 - ✅ C5 — free/Pro gates flip on mobile — verified 2026-08-11: Bob (free)
   shows 10 transcript lines + 5 word-example hits + Subtitles Search
   greyed/off; Mary (lifetime) shows full transcript + uncapped examples +
