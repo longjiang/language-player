@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/Jahr",
-        "monthly": "/Monat"
+        "monthly": "/Monat",
+        "one_time": "einmalig"
     },
     "label": {
         "acquisition_source": "Erwerbsquelle",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "{title} löschen? Das kann nicht rückgängig gemacht werden.",
         "confirm_remove_video": "Dieses Video aus der Wiedergabeliste entfernen?",
         "contact_support": "Wenn Sie auf Probleme gestoßen sind, wenden Sie sich bitte an den Support.",
+        "contact_support_email": "Kontakt: {email}",
         "contact_support_if_delayed": "Wenn dein Abonnement nicht innerhalb weniger Minuten angezeigt wird, kontaktiere bitte den Support.",
         "content_tailored": "Auf Sie zugeschnittene Inhalte",
         "copy_success": "Text in die Zwischenablage kopiert",

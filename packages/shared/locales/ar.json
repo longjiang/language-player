@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/سنة",
-        "monthly": "/شهر"
+        "monthly": "/شهر",
+        "one_time": "دفعة واحدة"
     },
     "label": {
         "acquisition_source": "مصدر الاكتساب",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "حذف {title}؟ لا يمكن التراجع عن هذا.",
         "confirm_remove_video": "هل تريد إزالة هذا الفيديو من قائمة التشغيل؟",
         "contact_support": "إذا واجهت مشاكل، يرجى الاتصال بالدعم.",
+        "contact_support_email": "اتصل بنا: {email}",
         "contact_support_if_delayed": "إذا لم يظهر اشتراكك خلال بضع دقائق، يرجى الاتصال بالدعم.",
         "content_tailored": "محتوى مخصص لك",
         "copy_success": "تم نسخ النص إلى الحافظة",

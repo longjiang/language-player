@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/jaar",
-        "monthly": "/mnd"
+        "monthly": "/mnd",
+        "one_time": "eenmalig"
     },
     "label": {
         "acquisition_source": "Acquisitiebron",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "{title} verwijderen? Dit kan niet ongedaan worden gemaakt.",
         "confirm_remove_video": "Deze video uit de afspeellijst verwijderen?",
         "contact_support": "Als u problemen bent tegengekomen, neem dan contact op met de ondersteuning.",
+        "contact_support_email": "Contact: {email}",
         "contact_support_if_delayed": "Als je abonnement niet binnen een paar minuten verschijnt, neem dan contact op met de ondersteuning.",
         "content_tailored": "Op maat gemaakte inhoud voor jou",
         "copy_success": "Tekst gekopieerd naar klembord",

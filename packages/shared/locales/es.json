@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/año",
-        "monthly": "/mes"
+        "monthly": "/mes",
+        "one_time": "pago único"
     },
     "label": {
         "acquisition_source": "Fuente de adquisición",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "¿Eliminar {title}? Esta acción no se puede deshacer.",
         "confirm_remove_video": "¿Eliminar este video de la lista de reproducción?",
         "contact_support": "Si ha encontrado problemas, por favor contacte con soporte.",
+        "contact_support_email": "Contacto: {email}",
         "contact_support_if_delayed": "Si tu suscripción no aparece en unos minutos, por favor contacta al soporte.",
         "content_tailored": "Contenido adaptado para ti",
         "copy_success": "Texto copiado al portapapeles",

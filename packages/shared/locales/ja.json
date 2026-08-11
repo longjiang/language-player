@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/年",
-        "monthly": "/月"
+        "monthly": "/月",
+        "one_time": "一括払い"
     },
     "label": {
         "acquisition_source": "獲得元",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "{title}を削除しますか？この操作は元に戻せません。",
         "confirm_remove_video": "この動画をプレイリストから削除しますか？",
         "contact_support": "問題が発生した場合は、サポートにお問い合わせください。",
+        "contact_support_email": "お問い合わせ：{email}",
         "contact_support_if_delayed": "数分経ってもサブスクリプションが表示されない場合は、サポートにお問い合わせください。",
         "content_tailored": "あなたに合わせたコンテンツ",
         "copy_success": "テキストがクリップボードにコピーされました",

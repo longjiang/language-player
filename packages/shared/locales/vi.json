@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/năm",
-        "monthly": "/tháng"
+        "monthly": "/tháng",
+        "one_time": "một lần"
     },
     "label": {
         "acquisition_source": "Nguồn tiếp cận",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Xóa {title}? Hành động này không thể hoàn tác.",
         "confirm_remove_video": "Xóa video này khỏi danh sách phát?",
         "contact_support": "Nếu bạn gặp sự cố, vui lòng liên hệ bộ phận hỗ trợ.",
+        "contact_support_email": "Liên hệ: {email}",
         "contact_support_if_delayed": "Nếu gói đăng ký của bạn không xuất hiện trong vài phút, vui lòng liên hệ bộ phận hỗ trợ.",
         "content_tailored": "Nội dung được điều chỉnh cho bạn",
         "copy_success": "Đã sao chép văn bản vào bộ nhớ tạm",

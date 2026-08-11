@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/tahun",
-        "monthly": "/bulan"
+        "monthly": "/bulan",
+        "one_time": "sekali bayar"
     },
     "label": {
         "acquisition_source": "Sumber akuisisi",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Hapus {title}? Tindakan ini tidak dapat dibatalkan.",
         "confirm_remove_video": "Hapus video ini dari daftar putar?",
         "contact_support": "Jika Anda mengalami masalah, silakan hubungi dukungan.",
+        "contact_support_email": "Hubungi kami: {email}",
         "contact_support_if_delayed": "Jika langganan Anda tidak muncul dalam beberapa menit, harap hubungi dukungan.",
         "content_tailored": "Konten yang Disesuaikan untuk Anda",
         "copy_success": "Teks disalin ke clipboard",

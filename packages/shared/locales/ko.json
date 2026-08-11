@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/년",
-        "monthly": "/월"
+        "monthly": "/월",
+        "one_time": "일회성"
     },
     "label": {
         "acquisition_source": "유입 경로",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "{title}을(를) 삭제할까요? 이 작업은 취소할 수 없습니다.",
         "confirm_remove_video": "이 동영상을 재생 목록에서 제거할까요?",
         "contact_support": "문제가 발생한 경우 지원팀에 문의하세요.",
+        "contact_support_email": "문의: {email}",
         "contact_support_if_delayed": "구독이 몇 분 내에 표시되지 않으면 고객 지원에 문의해 주세요.",
         "content_tailored": "맞춤형 콘텐츠",
         "copy_success": "텍스트가 클립보드에 복사되었습니다",

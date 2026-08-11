@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/yr",
-        "monthly": "/mo"
+        "monthly": "/mo",
+        "one_time": "one-time"
     },
     "label": {
         "acquisition_source": "Acquisition Source",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Delete {title}? This cannot be undone.",
         "confirm_remove_video": "Remove this video from the playlist?",
         "contact_support": "If you have encountered issues, please contact support.",
+        "contact_support_email": "Contact: {email}",
         "contact_support_if_delayed": "If your subscription doesn't appear within a few minutes, please contact support.",
         "content_tailored": "Content Tailored to You",
         "copy_success": "Text copied to clipboard",

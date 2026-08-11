@@ -247,7 +247,8 @@
     },
     "interval": {
         "annual": "/an",
-        "monthly": "/mois"
+        "monthly": "/mois",
+        "one_time": "paiement unique"
     },
     "label": {
         "acquisition_source": "Source d'acquisition",
@@ -731,6 +732,7 @@
         "confirm_delete_playlist": "Supprimer {title} ? Cette action est irréversible.",
         "confirm_remove_video": "Retirer cette vidéo de la liste de lecture ?",
         "contact_support": "Si vous avez rencontré des problèmes, veuillez contacter le support.",
+        "contact_support_email": "Contact : {email}",
         "contact_support_if_delayed": "Si votre abonnement n'apparaît pas dans les quelques minutes, veuillez contacter le support.",
         "content_tailored": "Contenu personnalisé pour vous",
         "copy_success": "Texte copié dans le presse-papiers",

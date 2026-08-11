@@ -239,7 +239,8 @@
     },
     "interval": {
         "annual": "/年",
-        "monthly": "/月"
+        "monthly": "/月",
+        "one_time": "一次性"
     },
     "label": {
         "acquisition_source": "获客来源",
@@ -716,6 +717,7 @@
         "confirm_delete_playlist": "删除{title}？此操作无法撤销。",
         "confirm_remove_video": "从播放列表中移除这个视频？",
         "contact_support": "如果您遇到问题，请联系支持。",
+        "contact_support_email": "联系我们：{email}",
         "contact_support_if_delayed": "如果您的订阅在几分钟内未出现，请联系客服。",
         "content_tailored": "为您量身定制的内容",
         "copy_success": "文本已复制到剪贴板",
@@ -1067,11 +1069,13 @@
         "monthly": "${price}/月"
     },
     "pro": {
+        "desc": "解锁完整体验，畅享 600,000+ 视频，覆盖 207+ 种语言。",
         "feature_ai": "AI 单词解释",
         "feature_examples": "视频中数百个单词例句",
         "feature_saved_words": "无限保存单词",
         "feature_srs": "SRS 复习系统",
-        "feature_transcripts": "带翻译的完整互动字幕"
+        "feature_transcripts": "带翻译的完整互动字幕",
+        "features_title": "Pro 功能"
     },
     "prompt": {
         "explain_block_header": "请对以下{l2Code}文本进行清晰的分析。包括：",

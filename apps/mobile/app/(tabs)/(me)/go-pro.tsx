@@ -19,7 +19,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 interface PlanCard {
   nameKey: 'subscription.monthly_cap' | 'subscription.annual_cap' | 'subscription.lifetime_cap';
   defaultPrice: string;
-  interval: string;
+  intervalKey: 'interval.monthly' | 'interval.annual' | 'interval.one_time';
   planKey: string;
   benefits: string[];
 }
@@ -28,21 +28,21 @@ const PLANS: PlanCard[] = [
   {
     nameKey: 'subscription.monthly_cap',
     defaultPrice: '$10',
-    interval: '/mo',
+    intervalKey: 'interval.monthly',
     planKey: 'monthly',
     benefits: ['pro.feature_transcripts', 'pro.feature_examples', 'pro.feature_saved_words'],
   },
   {
     nameKey: 'subscription.annual_cap',
     defaultPrice: '$90',
-    interval: '/yr',
+    intervalKey: 'interval.annual',
     planKey: 'annual',
     benefits: ['pro.feature_transcripts', 'pro.feature_examples', 'pro.feature_saved_words', 'pro.feature_srs'],
   },
   {
     nameKey: 'subscription.lifetime_cap',
     defaultPrice: '$169',
-    interval: 'one-time',
+    intervalKey: 'interval.one_time',
     planKey: 'lifetime',
     benefits: ['pro.feature_transcripts', 'pro.feature_examples', 'pro.feature_saved_words', 'pro.feature_srs', 'pro.feature_ai'],
   },
@@ -55,6 +55,12 @@ const FEATURE_KEYS = [
   'pro.feature_srs',
   'pro.feature_ai',
 ];
+
+/** StoreKit replays the same purchase event multiple times (esp. during
+ *  restore), and the listener can fire more than once before the transaction
+ *  is finished. Track transaction ids that we've already surfaced so we
+ *  validate + navigate exactly once per purchase. */
+const _processedTransactions = new Set<string>();
 
 // ── Helpers ──
 
@@ -149,6 +155,19 @@ export default function GoProScreen() {
   useEffect(() => {
     if (!iapResult || !user?.id) return;
     const { purchase, receipt, jws } = iapResult;
+    const txnId =
+      (purchase as { transactionId?: string | null } | undefined)?.transactionId ??
+      (purchase as { id?: string | null } | undefined)?.id ??
+      jws;
+    if (txnId) {
+      if (_processedTransactions.has(String(txnId))) {
+        // Already validating (or validated) this exact transaction — the
+        // listener replayed it; don't POST again or push another success page.
+        setIapResult(null);
+        return;
+      }
+      _processedTransactions.add(String(txnId));
+    }
 
     (async () => {
       try {
@@ -362,7 +381,7 @@ export default function GoProScreen() {
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
                     <Text className="text-lg font-bold text-foreground">{t(plan.nameKey)}</Text>
-                    <Text className="text-sm text-muted-foreground">{plan.interval}</Text>
+                    <Text className="text-sm text-muted-foreground">{t(plan.intervalKey)}</Text>
                     {restrictedOnIOS && (
                       <Text className="text-xs text-muted-foreground mt-1 italic">
                         {t('msg.ios_lifetime_only')}
@@ -513,7 +532,7 @@ export default function GoProScreen() {
       </View>
 
       <Text className="mt-6 text-center text-xs text-muted-foreground">
-        Contact: jon.long@zerotohero.ca
+        {t('msg.contact_support_email', { email: 'jon.long@zerotohero.ca' })}
       </Text>
       </ScrollView>
     </PageContainer>
