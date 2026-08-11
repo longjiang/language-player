@@ -323,7 +323,7 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | A2 | Mobile (Expo) | Sandbox account → go-pro → Apple IAP button → confirm | `expo-iap` listener gets the purchase; receipt POSTed to backend; on success `finishTransaction({ purchase, isConsumable: false })`; app pushes `/go-pro-success`; Pro state updates |
 | A3 | Both | Tap **Restore Purchases** after reinstall / second device with same sandbox account | Restored purchase list non-empty; receipts re-validated; Pro re-granted; no duplicate transaction |
 | A4 | Both | Cancel the sandbox confirmation dialog | Purchase callback errors (`USER_CANCELED`); app returns to go-pro with an error message; no grant |
-| A5 | Both | Purchase the same non-consumable again (`pro` Classic / `pro_go` mobile) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency) |
+| A5 | Both | Purchase the same non-consumable again (`pro` Classic / `pro_go` mobile) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency). UI: lifetime owners see the "already lifetime" state (ARCH-022) instead of the buy button |
 | A6 | Mobile | Run on Android | Apple IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); Android uses Play Billing once implemented (Phase 3); plan cards remain informational |
 | A7 | Backend | Post a bogus receipt (`user_id` + garbage string) | `type: 'error'` response from Apple validation; no subscription granted |
 
@@ -966,9 +966,9 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 - ✅ A3 — Restore Purchases → single re-grant, no duplicate transaction
 - ⬜ A4 — cancel the sandbox confirmation dialog → no grant (device check
   pending)
-- ⬜ A5 — repeat purchase of the same non-consumable → no duplicate grant
-  (code: `activeNonTrial` gate blocks the buy button when a paid subscription
-  exists; device check pending)
+- ✅ A5 — repeat purchase: lifetime owner sees "already lifetime" (no buy
+  button, no restore button) — verified on iPad 2026-08-11; backend grant is
+  idempotent via `payment_id` + `ON CONFLICT` (B14/B83–B85)
 - ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
   (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
   Device check still pending in 3.4.
