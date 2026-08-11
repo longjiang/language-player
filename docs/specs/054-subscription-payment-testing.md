@@ -906,6 +906,10 @@ buttons). iOS shows Apple IAP (lifetime) + Restore Purchases only; Android
 shows a "buy on our website" notice until Play Billing lands. S11–S12 / W6 /
 P6 are fully obsolete.
 
+- **Store compliance:** no Stripe/WeChat/Alipay/PayPal buttons render in
+  `apps/mobile`; iOS has no external payment links, and Android keeps only
+  the interim buy-on-website notice until Play Billing lands.
+
 **Progress:**
 
 - ✅ Code cleanup (2026-08-10): non-IAP payment UI removed from mobile go-pro;
@@ -923,6 +927,10 @@ the `pro` IAP product (`ca.zerotohero.app`).
 - A4 — Cancel the sandbox confirmation dialog → no grant
 - A5 — Repeat purchase of the same non-consumable → no duplicate grant
 - A7 — bogus receipt → no grant (backend)
+- **Store compliance:** Classic's native iOS build shows only the `pro` IAP
+  purchase (`PaymentMethods.vue` gates on
+  `Capacitor.getPlatform() === "ios"`); Stripe / PayPal / WeChat / Alipay and
+  web checkout are not surfaced in the iOS app.
 
 **Progress:**
 
@@ -944,6 +952,9 @@ payment path.
 - C6 — cancel at period end from the mobile profile
 - C7 — IAP success/error screens
 - Verify subscription state refreshes after a **website** purchase
+- **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
+  PayPal, or website checkout) in the iOS app; Apple IAP (`pro_go`) is the
+  only purchase path.
 
 **Progress:**
 
@@ -982,6 +993,9 @@ interim path until it lands.
 - Verify the backend grant + MailerLite sync through the shared subscription
   path
 - Exit: Android in-app purchase ready for submission and approval
+- **Store compliance:** no external payment links in the Android app; the
+  buy-on-website notice is interim only and must be replaced by Play Billing
+  before submission (Google Play policy).
 
 **Progress:**
 
