@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { flagEmoji, languageName } from '@/lib/language-data';
-import { LANGUAGE_VIDEO_COUNTS } from '@/data/language-video-counts';
+import { EXPERIMENTAL_LANGUAGE_CODES, LANGUAGE_VIDEO_COUNTS } from '@/data/language-video-counts';
 
 /** Alphabetical list of languages with flags + measured video counts (ARCH-025). */
 export function LanguageVideoList() {
@@ -30,6 +30,11 @@ export function LanguageVideoList() {
             {flagEmoji(code)}
           </span>
           <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
+          {EXPERIMENTAL_LANGUAGE_CODES.includes(code) && (
+            <span className="shrink-0 rounded-full border border-warm-500/30 bg-warm-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warm-600 dark:text-warm-400">
+              {t('label.experimental')}
+            </span>
+          )}
           <span className="shrink-0 text-xs text-muted-foreground">
             {t('msg.playlist_video_count', { count: numberFormat.format(videoCount) })}
           </span>
