@@ -1,9 +1,11 @@
+import { type ContentL2 } from '@langplayer/shared';
+
 /**
  * Measured video counts per L2 code — 2026-08-11 snapshot (ARCH-025).
  * Includes Tables A (Popular L2s), B (Secondary inventory), and C
  * (Experimental) only. Counts are `public.youtube_videos` row counts.
  */
-export const LANGUAGE_VIDEO_COUNTS: Record<string, number> = {
+export const LANGUAGE_VIDEO_COUNTS: Record<ContentL2, number> = {
   'af': 109,
   'am': 89,
   'ami': 122,
