@@ -82,9 +82,6 @@ remaining quota and the upgrade prompt; quotas reset daily per user.
 ### 4. Rejected options / non-goals
 
 - Paywalling videos, languages, or the dictionary (core value stays free).
-- Phrasebook gating — phrasebooks are not being implemented at this time.
-- "Current-video-only" examples — no such concept exists; the subs search is
-  corpus-wide by design.
 - Locking the SRS setting or reducing its default below the free cap.
 
 ## Consequences
@@ -119,5 +116,4 @@ remaining quota and the upgrade prompt; quotas reset daily per user.
      is not locked).
    - Full-text translation — 2,000 chars/day free, unlimited Pro.
    Enforcement is backend-side with daily reset and visible remaining quota.
-4. **Rejected:** paywalling core content, phrasebook gating, "current-video
-   only" examples, and locking the SRS setting.
+4. **Rejected:** paywalling core content and locking the SRS setting.
