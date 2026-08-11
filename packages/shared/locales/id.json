@@ -727,6 +727,7 @@
         "all_done_for_now": "Selesai untuk Saat Ini!",
         "all_forms": "Semua bentuk",
         "all_languages": "Semua Bahasa",
+        "all_languages_count": "Semua {count} bahasa",
         "all_languages_downloaded": "Semua bahasa telah diunduh.",
         "already_have_account": "Sudah memiliki akun?",
         "already_lifetime": "Anda sudah memiliki akses seumur hidup. Tidak perlu membeli.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Hanya paket seumur hidup yang tersedia di iOS.",
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
         "landing_cta_desc": "Bergabunglah dengan ribuan pembelajar yang menggunakan video autentik untuk menguasai bahasa baru.",
-        "landing_hero_badge": "200+ bahasa didukung",
+        "landing_hero_badge": "Lebih dari {count} bahasa didukung",
         "landing_hero_desc": "Tonton video YouTube autentik, musik, acara TV, dan TV langsung dengan subtitle ganda interaktif. Ketuk kata apa pun untuk pencarian kamus instan, lalu baca dan ulangi agar lebih melekat.",
         "landing_hero_title_1": "Belajar bahasa melalui",
         "landing_hero_title_2": "video",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/bulan"
     },
     "pro": {
-        "desc": "Buka pengalaman belajar penuh dengan 600.000+ video di 207+ bahasa.",
+        "desc": "Buka pengalaman belajar penuh dengan 600.000+ video di {count}+ bahasa.",
         "feature_ai": "Penjelasan kata menggunakan AI",
         "feature_examples": "Ratusan contoh kata dalam video",
         "feature_saved_words": "Kosakata tersimpan tanpa batas",

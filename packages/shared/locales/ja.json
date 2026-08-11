@@ -727,6 +727,7 @@
         "all_done_for_now": "一旦すべて完了！",
         "all_forms": "すべての活用形",
         "all_languages": "すべての言語",
+        "all_languages_count": "全{count}言語",
         "all_languages_downloaded": "すべての言語がダウンロードされました。",
         "already_have_account": "すでにアカウントをお持ちですか？",
         "already_lifetime": "すでに生涯アクセスをご利用です。購入は不要です。",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "iOSではライフタイムプランのみ利用可能です。",
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",
         "landing_cta_desc": "本物の動画を使って新しい言語を習得する何千人もの学習者に加わりましょう。",
-        "landing_hero_badge": "200以上の言語に対応",
+        "landing_hero_badge": "{count}以上の言語に対応",
         "landing_hero_desc": "本物のYouTube動画、音楽、テレビ番組、ライブTVをインタラクティブな二重字幕で視聴できます。単語をタップするだけで辞書を引け、読書と復習で定着させられます。",
         "landing_hero_title_1": "動画で学ぶ",
         "landing_hero_title_2": "言語学習",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/月"
     },
     "pro": {
-        "desc": "207以上の言語で60万以上の動画を使い、完全な学習体験を解放しましょう。",
+        "desc": "60万以上の動画、{count}+の言語で完全な学習体験を解放しましょう。",
         "feature_ai": "AIによる単語解説",
         "feature_examples": "動画内の単語例が数百件",
         "feature_saved_words": "保存単語数無制限",

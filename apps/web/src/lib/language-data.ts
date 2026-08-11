@@ -149,40 +149,8 @@ export function isHan(code: string): boolean {
 
 // ── Language flags ───────────────────────────
 
-/**
- * Flag emoji per language code (regional-indicator approximations).
- * Curated for the supported/popular set — anything unmapped falls back to
- * a globe emoji. Lookup normalizes via baseCode (zh-Hans → zh) and falls
- * back to the raw code first so regional variants can override.
- */
-const LANGUAGE_FLAGS: Record<string, string> = {
-  en: '🇬🇧',
-  'zh-Hans': '🇨🇳', 'zh-Hant': '🌐', zh: '🇨🇳', yue: '🇭🇰',
-  af: '🇿🇦', ar: '🇸🇦', ca: '🇦🇩', de: '🇩🇪', el: '🇬🇷',
-  es: '🇪🇸', fi: '🇫🇮', fr: '🇫🇷', ga: '🇮🇪', hi: '🇮🇳',
-  hr: '🇭🇷', hu: '🇭🇺', id: '🇮🇩', it: '🇮🇹', ja: '🇯🇵',
-  ko: '🇰🇷', nl: '🇳🇱', no: '🇳🇴', pl: '🇵🇱', pt: '🇵🇹',
-  ro: '🇷🇴', ru: '🇷🇺', sr: '🇷🇸', sv: '🇸🇪', sw: '🇰🇪',
-  th: '🇹🇭', tr: '🇹🇷', vi: '🇻🇳',
-  uk: '🇺🇦', cs: '🇨🇿', da: '🇩🇰', bg: '🇧🇬', et: '🇪🇪',
-  fa: '🇮🇷', he: '🇮🇱', sk: '🇸🇰', sl: '🇸🇮', lt: '🇱🇹',
-  lv: '🇱🇻', sq: '🇦🇱', mk: '🇲🇰', ms: '🇲🇾', bn: '🇧🇩',
-  ta: '🇮🇳', te: '🇮🇳', ml: '🇮🇳', kn: '🇮🇳', mr: '🇮🇳',
-  gu: '🇮🇳', pa: '🇮🇳', ur: '🇵🇰', km: '🇰🇭', lo: '🇱🇦',
-  my: '🇲🇲', ne: '🇳🇵', si: '🇱🇰', ka: '🇬🇪', hy: '🇦🇲',
-  az: '🇦🇿', kk: '🇰🇿', ky: '🇰🇬', uz: '🇺🇿', tg: '🇹🇯',
-  mn: '🇲🇳', am: '🇪🇹', ti: '🇪🇷', so: '🇸🇴', yo: '🇳🇬',
-  ig: '🇳🇬', ha: '🇳🇬', xh: '🇿🇦', zu: '🇿🇦', wo: '🇸🇳',
-  mg: '🇲🇬', is: '🇮🇸', lb: '🇱🇺', mt: '🇲🇹', bs: '🇧🇦',
-  sh: '🇷🇸', cy: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', gd: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-};
-
-const FALLBACK_FLAG = '🌐';
-
-/** Flag emoji for a language code (fallback: globe). */
-export function flagEmoji(code: string): string {
-  return LANGUAGE_FLAGS[code] ?? LANGUAGE_FLAGS[baseCode(code)] ?? FALLBACK_FLAG;
-}
+/** Flag emoji for a language code — shared source of truth. */
+export { flagEmoji } from '@langplayer/shared';
 
 /** Get full language metadata for a given code. */
 export function getLanguageMeta(code: string): LanguageMeta | null {

@@ -727,6 +727,7 @@
         "all_done_for_now": "All Done for Now!",
         "all_forms": "All forms",
         "all_languages": "All Languages",
+        "all_languages_count": "All {count} languages",
         "all_languages_downloaded": "All languages downloaded.",
         "already_have_account": "Already have an account?",
         "already_lifetime": "You already have Lifetime access. No purchase needed.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Only lifetime plan available on iOS.",
         "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
         "landing_cta_desc": "Join thousands of learners using authentic videos to master new languages.",
-        "landing_hero_badge": "200+ languages supported",
+        "landing_hero_badge": "Over {count} languages supported",
         "landing_hero_desc": "Watch authentic YouTube videos, music, TV shows, and live TV with interactive dual subtitles. Tap any word for an instant dictionary lookup, then read and review to make it stick.",
         "landing_hero_title_1": "Learn languages through",
         "landing_hero_title_2": "video",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/mo"
     },
     "pro": {
-        "desc": "Unlock the full learning experience with 600,000+ videos across 207+ languages.",
+        "desc": "Unlock the full learning experience with 600,000+ videos across {count}+ languages.",
         "feature_ai": "AI word explanations",
         "feature_examples": "Hundreds of examples of words in videos",
         "feature_saved_words": "Unlimited saved words",

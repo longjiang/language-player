@@ -727,6 +727,7 @@
         "all_done_for_now": "Klaar voor nu!",
         "all_forms": "Alle vormen",
         "all_languages": "Alle talen",
+        "all_languages_count": "Alle {count} talen",
         "all_languages_downloaded": "Alle talen gedownload.",
         "already_have_account": "Heb je al een account?",
         "already_lifetime": "U heeft al levenslange toegang. Geen aankoop nodig.",
@@ -830,7 +831,7 @@
         "ios_lifetime_only": "Alleen het levenslange abonnement is beschikbaar op iOS.",
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
         "landing_cta_desc": "Sluit je aan bij duizenden leerlingen die authentieke video's gebruiken om nieuwe talen te beheersen.",
-        "landing_hero_badge": "200+ talen ondersteund",
+        "landing_hero_badge": "Meer dan {count} talen ondersteund",
         "landing_hero_desc": "Bekijk authentieke YouTube-video's, muziek, tv-programma's en live-tv met interactieve dubbele ondertiteling. Tik op een woord voor een directe woordenboekopzoeking en leer het vervolgens met lezen en herhalen.",
         "landing_hero_title_1": "Leer talen via",
         "landing_hero_title_2": "video",
@@ -1131,7 +1132,7 @@
         "monthly": "${price}/mnd"
     },
     "pro": {
-        "desc": "Ontgrendel de volledige leerervaring met 600.000+ video's in 207+ talen.",
+        "desc": "Ontgrendel de volledige leerervaring met 600.000+ video's in {count}+ talen.",
         "feature_ai": "AI-woorduitleg",
         "feature_examples": "Honderden voorbeelden van woorden in video's",
         "feature_saved_words": "Onbeperkt opgeslagen woorden",
