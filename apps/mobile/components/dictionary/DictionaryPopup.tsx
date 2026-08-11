@@ -114,6 +114,9 @@ export function DictionaryPopup({
   const [error, setError] = useState<string | null>(null);
   const [scrollContentHeight, setScrollContentHeight] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const popupLookupStartRef = useRef<number | null>(null);
+  const popupShownLoggedRef = useRef(false);
+  const popupRenderStartLoggedRef = useRef(false);
 
   // ── Slide-up animation ──
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -151,10 +154,27 @@ export function DictionaryPopup({
     }
   }, [visible, screenHeight, slideAnim, overlayOpacity, isMd]);
 
+  // ── Popup shown timestamp (once per open) ──
+  useEffect(() => {
+    if (visible) {
+      if (!popupShownLoggedRef.current) {
+        popupShownLoggedRef.current = true;
+        log(`[DictionaryPopup] ⏱ SHOWN t=${Date.now()} word="${word}"`);
+      }
+    } else {
+      popupShownLoggedRef.current = false;
+      popupRenderStartLoggedRef.current = false;
+    }
+  }, [visible, word]);
+
   // ── Look up the word when the popup opens (cache-first) ──
   useEffect(() => {
     if (!visible || !word) return;
     let cancelled = false;
+    if (popupLookupStartRef.current === null) {
+      popupLookupStartRef.current = Date.now();
+      log(`[DictionaryPopup] ⏱ OPEN word="${word}" lemma="${lemma ?? ''}"`);
+    }
     setError(null);
     setResults(null);
 
@@ -184,6 +204,9 @@ export function DictionaryPopup({
       for (const e of merged) if (e.id) setCachedEntryById(l2, e);
       if (!cancelled) {
         log(`🎙 POPUP-LOOKUP word=${JSON.stringify(word)} lemma=${JSON.stringify(lookupWord)} pron=${JSON.stringify(tokenPron ?? null)} entries=${JSON.stringify(merged.map((e) => ({ id: e.id, head: e.head })))} (${source})`);
+        if (popupLookupStartRef.current !== null) {
+          log(`[DictionaryPopup] ⏱ LOOKUP-READY ${source} latency=${Date.now() - popupLookupStartRef.current}ms entries=${merged.length}`);
+        }
         setResults(merged);
       }
       void translateInBackground(merged);
@@ -304,7 +327,21 @@ export function DictionaryPopup({
     return () => { cancelled = true; };
   }, [visible, word, lemma, l2Lang.code, l1Lang.code]);
 
+  useEffect(() => {
+    if (!visible) popupLookupStartRef.current = null;
+  }, [visible]);
+
   const lemmaForm = lemma && lemma !== word ? lemma : null;
+
+  // ── Popup render timing (phase 2) ──
+  // When the popup subtree begins rendering on this open. Combined with the
+  // SHOWN log above: SHOWN - RENDER-START = popup render + commit cost;
+  // RENDER-START (popup) - RENDER-START (TokenizedText) = time spent
+  // rendering the tapped block before reaching the popup in the tree.
+  if (visible && !popupRenderStartLoggedRef.current) {
+    popupRenderStartLoggedRef.current = true;
+    log(`[DictionaryPopup] ⏱ POPUP-RENDER-START word="${word}" t=${Date.now()}`);
+  }
 
   // ── Force-mount so exit slide-down animation plays ──
   const [wasVisible, setWasVisible] = useState(false);

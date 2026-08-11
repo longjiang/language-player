@@ -851,6 +851,7 @@ function chunkTextForYield(text: string, maxChunk = 300): string[] {
  */
 async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null> {
   log(`[lemmatize] 🤖 JA-TOKENIZE start text="${text.slice(0, 40)}…"`);
+  const t0 = Date.now();
   const tokenizer = await getKuromojiTokenizer('ja');
   if (!tokenizer) {
     log(`[lemmatize] 🤖 JA-NO-TOKENIZER`);
@@ -888,7 +889,7 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
     logwarn('[Tokenizer] kuromoji tokenize error:', e);
     return null;
   } finally {
-    log(`[lemmatize] 🤖 JA-TOKENIZE done`);
+    log(`[lemmatize] 🤖 JA-TOKENIZE done took=${Date.now() - t0}ms`);
   }
 }
 
