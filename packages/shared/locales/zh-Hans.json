@@ -785,6 +785,7 @@
         "grant_subscription_hint": "为此用户授予新的订阅。",
         "hsk_explanation": "HSK是官方HSK，1级为最低，9级为最高。",
         "iap_purchase_failed": "应用内购买失败。请重试。",
+        "iap_purchase_not_for_account": "此购买不属于当前登录的账户。",
         "initializing": "正在初始化...",
         "ios_lifetime_only": "iOS 上仅支持终身版。",
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",

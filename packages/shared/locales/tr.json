@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Bu kullanıcıya yeni bir abonelik verin.",
         "hsk_explanation": "HSK, seviye 1 en düşük ve seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
         "iap_purchase_failed": "Uygulama içi satın alma başarısız oldu. Lütfen tekrar deneyin.",
+        "iap_purchase_not_for_account": "Bu satın alma, oturum açılmış hesaba ait değil.",
         "initializing": "Başlatılıyor...",
         "ios_lifetime_only": "iOS'ta yalnızca ömür boyu plan mevcuttur.",
         "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",

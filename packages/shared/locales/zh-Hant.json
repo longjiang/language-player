@@ -785,6 +785,7 @@
         "grant_subscription_hint": "為此使用者授予新的訂閱。",
         "hsk_explanation": "「HSK」是官方的HSK，1級最簡單，9級最難喔。",
         "iap_purchase_failed": "應用程式內購買失敗。請重試。",
+        "iap_purchase_not_for_account": "此購買不屬於目前登入的帳戶。",
         "initializing": "初始化中...",
         "ios_lifetime_only": "iOS 上僅支援終身版。",
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",

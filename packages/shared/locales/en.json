@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Grant a new subscription to this user.",
         "hsk_explanation": "HSK is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
         "iap_purchase_failed": "In-app purchase failed. Please try again.",
+        "iap_purchase_not_for_account": "This purchase does not belong to the signed-in account.",
         "initializing": "Initializing...",
         "ios_lifetime_only": "Only lifetime plan available on iOS.",
         "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",

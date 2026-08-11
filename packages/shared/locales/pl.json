@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Przyznaj temu użytkownikowi nową subskrypcję.",
         "hsk_explanation": "HSK to oficjalny test znajomości języka chińskiego, gdzie Poziom 1 jest najniższy, a Poziom 9 najwyższy.",
         "iap_purchase_failed": "Zakup w aplikacji nie powiódł się. Spróbuj ponownie.",
+        "iap_purchase_not_for_account": "Ten zakup nie należy do zalogowanego konta.",
         "initializing": "Inicjalizacja...",
         "ios_lifetime_only": "Na iOS dostępny jest tylko plan dożywotni.",
         "keep_or_reset_time": "Czy chcesz zachować bieżący czas czy zresetować go do zera?",
