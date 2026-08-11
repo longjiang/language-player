@@ -706,6 +706,7 @@
         "and_n_other_forms": "他{n}件の活用形",
         "auto_renews": "{time}後に自動更新",
         "auto_renews_in": "{days}日後に自動更新",
+        "cancel_existing_subscription_first": "新しいサブスクリプションを購入する前に、既存のサブスクリプションを解約する必要があります。",
         "cancelling": "キャンセル中…",
         "cannot_demote_self": "自分自身の管理者権限は削除できません。",
         "cannot_make_text_interactive_offline": "オフラインではテキストを操作可能にできません",

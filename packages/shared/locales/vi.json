@@ -706,6 +706,7 @@
         "and_n_other_forms": "và {n} dạng khác",
         "auto_renews": "Tự động gia hạn sau {time}.",
         "auto_renews_in": "Tự động gia hạn sau {days} ngày",
+        "cancel_existing_subscription_first": "Bạn phải hủy đăng ký hiện tại trước khi mua gói mới.",
         "cancelling": "Đang hủy...",
         "cannot_demote_self": "Bạn không thể gỡ quyền quản trị của chính mình.",
         "cannot_make_text_interactive_offline": "Không thể làm văn bản tương tác khi ngoại tuyến",

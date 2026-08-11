@@ -706,6 +706,7 @@
         "and_n_other_forms": "และอีก {n} รูปแบบ",
         "auto_renews": "ต่ออายุอัตโนมัติในอีก {time}",
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {days} วัน",
+        "cancel_existing_subscription_first": "คุณต้องยกเลิกการสมัครสมาชิกปัจจุบันก่อนซื้อใหม่",
         "cancelling": "กำลังยกเลิก...",
         "cannot_demote_self": "คุณไม่สามารถนำสิทธิ์ผู้ดูแลระบบของตัวเองออกได้",
         "cannot_make_text_interactive_offline": "ไม่สามารถทำให้ข้อความโต้ตอบได้เมื่อออฟไลน์",

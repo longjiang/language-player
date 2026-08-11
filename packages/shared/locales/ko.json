@@ -706,6 +706,7 @@
         "and_n_other_forms": "외 {n}개의 다른 형태",
         "auto_renews": "{time} 후 자동 갱신됩니다.",
         "auto_renews_in": "{days}일 후 자동 갱신",
+        "cancel_existing_subscription_first": "새 구독을 구매하기 전에 기존 구독을 취소해야 합니다.",
         "cancelling": "취소 중...",
         "cannot_demote_self": "자신의 관리자 권한은 제거할 수 없습니다.",
         "cannot_make_text_interactive_offline": "오프라인에서는 텍스트를 상호작용할 수 없습니다",

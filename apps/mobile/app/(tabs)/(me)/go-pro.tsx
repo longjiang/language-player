@@ -178,6 +178,9 @@ export default function GoProScreen() {
   const lifetimeSalePrice = saleActive ? salePrice(prices, 'lifetime') : null;
 
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
+  // Option A (SPEC-054): an active non-trial subscription blocks all new
+  // purchases until cancelled — matches Classic.
+  const activeNonTrial = isPro && planType !== 'trial';
   const cnyPriceObj = selectedPlan ? findCnyPrice(prices, selectedPlan) : undefined;
   const cnyPaymentLink = cnyPriceObj?.paymentLink
     ? `${cnyPriceObj.paymentLink}?client_reference_id=${user?.id ?? ''}`
@@ -453,6 +456,22 @@ export default function GoProScreen() {
             <Text className="text-base font-semibold text-foreground">{t('title.choose_payment_method')}</Text>
           </View>
 
+          {activeNonTrial ? (
+            <View className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 items-center">
+              <AlertCircle size={28} color={ICON_WARNING} />
+              <Text className="mt-2 text-center text-sm font-medium text-foreground">
+                {t('msg.cancel_existing_subscription_first')}
+              </Text>
+              <Pressable
+                onPress={() => router.push('/(tabs)/(me)/profile' as any)}
+                className="mt-4 rounded-lg border border-border px-4 py-2"
+              >
+                <Text className="text-sm font-medium text-foreground">
+                  {t('action.view_profile')}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
           <View className="gap-3">
             {/* Credit Card (USD) */}
             {findUsdPrice(prices, selectedPlan) && (
@@ -551,6 +570,7 @@ export default function GoProScreen() {
               </Pressable>
             )}
           </View>
+          )}
 
           {/* Restore Purchases (iOS) */}
           {IAP_AVAILABLE && (

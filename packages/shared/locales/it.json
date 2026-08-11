@@ -706,6 +706,7 @@
         "and_n_other_forms": "e {n} altre forme",
         "auto_renews": "Si rinnova automaticamente tra {time}.",
         "auto_renews_in": "Si rinnova automaticamente tra {days} giorni",
+        "cancel_existing_subscription_first": "Devi annullare l'abbonamento esistente prima di acquistarne uno nuovo.",
         "cancelling": "Annullamento...",
         "cannot_demote_self": "Non puoi rimuovere il tuo accesso amministratore.",
         "cannot_make_text_interactive_offline": "Impossibile rendere il testo interattivo offline",

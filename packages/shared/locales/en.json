@@ -706,6 +706,7 @@
         "and_n_other_forms": "and {n} other forms",
         "auto_renews": "Auto-renews in {time}.",
         "auto_renews_in": "Auto-renews in {days} days",
+        "cancel_existing_subscription_first": "You must cancel your existing subscription before purchasing a new one.",
         "cancelling": "Cancelling...",
         "cannot_demote_self": "You cannot remove your own administrator access.",
         "cannot_make_text_interactive_offline": "Cannot make text interactive offline",
