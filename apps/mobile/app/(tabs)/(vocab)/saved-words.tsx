@@ -257,16 +257,18 @@ export default function SavedWordsScreen() {
         renderItem={({ item }) => {
           if (item.kind === 'header') {
             return (
-              <View className="mt-2 flex-row items-center gap-2 bg-muted/50 px-4 py-1.5">
-                <Text className="text-xs font-medium text-muted-foreground">{item.title}</Text>
-                <Text className="text-xs text-muted-foreground/70">{item.count}</Text>
+              <View className="mb-3 flex-row items-center gap-2 px-4 py-1.5">
+                <Text className="text-lg font-semibold text-muted-foreground">{item.title}</Text>
+                <View className="rounded-full bg-muted px-2 py-0.5">
+                  <Text className="text-xs text-muted-foreground">{item.count}</Text>
+                </View>
               </View>
             );
           }
           // Words row — tile cards horizontally, matching explore's grid.
           return (
             <View
-              className="mb-3 flex-row px-1"
+              className="mb-3 flex-row px-4"
               style={numColumns > 1 ? { gap: 8 } : { gap: 0 }}
             >
               {item.items.map((w) => (
