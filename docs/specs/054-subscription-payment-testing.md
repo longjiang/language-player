@@ -716,8 +716,14 @@ Verification per row:
   ("No signatures found…"); missing signature → 400 ("Unable to extract
   timestamp…"); no grant applied (row count unchanged).
 - ✅ W rows complete — W1 live + W2–W4 foregone (see above).
-- ⬜ P1–P4 — PayPal sandbox UI run pending (backend Orders v2 flow
-  implemented + mocked; Classic button migrated to JS SDK v6).
+- ✅ P1 — PayPal lifetime success (2026-08-10, sandbox buyer approved):
+  `create-paypal-order` → JS SDK popup → `/paypal_checkout_success?order_id=…`
+  → backend captured/verified `COMPLETED`; row `31145` =
+  `status=active`, `type=lifetime`, `expires_on=null`,
+  `payment_processor=paypal`, `payment_id` = PayPal order id; MailerLite
+  `lifetime` group on the account email.
+- ⬜ P2–P4 — declined/failed sandbox payment, cancel dialog, double-purchase
+  idempotency — pending.
 - ⬜ C4/C6/C7 — cross-app checks pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
