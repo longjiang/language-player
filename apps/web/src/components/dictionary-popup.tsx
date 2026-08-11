@@ -475,26 +475,23 @@ export function DictionaryPopup({
           />
 
           {/* Canonical phrase cards from /extract-phrases (selection popup) */}
-          {extractPhrases && (phraseLoading || visiblePhraseCards.length > 0) && (
+          {extractPhrases && !phraseLoading && visiblePhraseCards.length > 0 && (
             <div className="pt-1">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">{t('label.phrases')}</span>
-                {phraseLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
               </div>
-              {!phraseLoading && (
-                <WordList>
-                  {visiblePhraseCards.map((entry) => (
-                    <DictionaryEntryCard
-                      key={entry.id}
-                      entry={entry}
-                      onClick={handleEntryClick}
-                      saveContext={context}
-                      pronunciation={formatPronunciation(entry, l2Code)}
-                      l2Code={l2Code}
-                    />
-                  ))}
-                </WordList>
-              )}
+              <WordList>
+                {visiblePhraseCards.map((entry) => (
+                  <DictionaryEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onClick={handleEntryClick}
+                    saveContext={context}
+                    pronunciation={formatPronunciation(entry, l2Code)}
+                    l2Code={l2Code}
+                  />
+                ))}
+              </WordList>
             </div>
           )}
 
@@ -564,7 +561,7 @@ export function DictionaryPopup({
             ))}
           </WordList>
 
-          {loading && (
+          {(loading || phraseLoading) && (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>

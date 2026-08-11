@@ -424,15 +424,6 @@ export function DictionaryPopup({
                   </>
                 )}
 
-                {loading && (
-                  <View className="items-center py-12">
-                    <ActivityIndicator size="large" className="text-primary" />
-                    <Text className="mt-3 text-sm text-muted-foreground">
-                      {t('msg.loading')}
-                    </Text>
-                  </View>
-                )}
-
                 {error && (
                   <ErrorNotice message={error} className="mb-3" />
                 )}
@@ -473,6 +464,15 @@ export function DictionaryPopup({
                     />
                   </View>
                 ))}
+
+                {loading && (
+                  <View className="items-center py-12">
+                    <ActivityIndicator size="large" className="text-primary" />
+                    <Text className="mt-3 text-sm text-muted-foreground">
+                      {t('msg.loading')}
+                    </Text>
+                  </View>
+                )}
               </ScrollView>
             </View>
           </View>
