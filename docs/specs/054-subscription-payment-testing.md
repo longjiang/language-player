@@ -900,42 +900,32 @@ configuration, license testers, and test-track testing).
 
 #### 3.1 Code cleanup
 
-✅ **done 2026-08-10:** non-IAP payment UI removed from
-`apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card, WeChat, Alipay, PayPal
-buttons). iOS shows Apple IAP (lifetime) + Restore Purchases only; Android
-shows a "buy on our website" notice until Play Billing lands. S11–S12 / W6 /
-P6 are fully obsolete.
-
-- **Store compliance:** no Stripe/WeChat/Alipay/PayPal buttons render in
+- ✅ Non-IAP payment UI removed (2026-08-10) from
+  `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card, WeChat, Alipay,
+  PayPal buttons). iOS shows Apple IAP (lifetime) + Restore Purchases only;
+  Android shows a "buy on our website" notice until Play Billing lands.
+  S11–S12 / W6 / P6 are fully obsolete. `msg.buy_on_website` added to all 18
+  locales.
+- ✅ **Store compliance:** no Stripe/WeChat/Alipay/PayPal buttons render in
   `apps/mobile`; iOS has no external payment links, and Android keeps only
   the interim buy-on-website notice until Play Billing lands.
-
-**Progress:**
-
-- ✅ Code cleanup (2026-08-10): non-IAP payment UI removed from mobile go-pro;
-  iOS is Apple IAP + restore only, Android shows a buy-on-website notice
-  (`msg.buy_on_website` added to all 18 locales).
 
 #### 3.2 Classic (iOS only)
 
 Classic is the legacy Nuxt app (`zerotohero-nuxt`); its Capacitor build uses
 the `pro` IAP product (`ca.zerotohero.app`).
 
-- A1 — sandbox account → Classic go-pro → Lifetime → IAP confirm → receipt
+- ⬜ A1 — sandbox account → Classic go-pro → Lifetime → IAP confirm → receipt
   validated → `/go-pro-success`
-- A3 — Restore Purchases after reinstall / second device
-- A4 — Cancel the sandbox confirmation dialog → no grant
-- A5 — Repeat purchase of the same non-consumable → no duplicate grant
-- A7 — bogus receipt → no grant (backend)
-- **Store compliance:** Classic's native iOS build shows only the `pro` IAP
+- ⬜ A3 — Restore Purchases after reinstall / second device
+- ⬜ A4 — Cancel the sandbox confirmation dialog → no grant
+- ⬜ A5 — Repeat purchase of the same non-consumable → no duplicate grant
+- ⬜ A7 — bogus receipt → no grant (backend coverage can be automated with
+  mocks)
+- ✅ **Store compliance:** Classic's native iOS build shows only the `pro` IAP
   purchase (`PaymentMethods.vue` gates on
   `Capacitor.getPlatform() === "ios"`); Stripe / PayPal / WeChat / Alipay and
   web checkout are not surfaced in the iOS app.
-
-**Progress:**
-
-- ⬜ A1/A3–A5 sandbox purchase, restore, cancel, and repeat on Classic
-  (A7 backend coverage can be automated with mocks).
 
 #### 3.3 apps/mobile (iOS)
 
@@ -943,21 +933,20 @@ The new mobile app uses `expo-in-app-purchases` and the GO listing's
 non-consumable `pro_go` (`ca.zerotohero.go`). Apple IAP is the only in-app
 payment path.
 
-- A2 — sandbox account → mobile go-pro → Apple IAP → receipt validated →
+- ⬜ A2 — sandbox account → mobile go-pro → Apple IAP → receipt validated →
   finish transaction → `/go-pro-success`
-- A3/A4/A5 — restore, cancel dialog, repeat purchase
-- A6 — Apple IAP hidden on Android (checked in the Android sub-phase)
-- C3 — cross-platform lifetime sync (IAP → web/Classic)
-- C5 — free/Pro gates flip on mobile
-- C6 — cancel at period end from the mobile profile
-- C7 — IAP success/error screens
-- Verify subscription state refreshes after a **website** purchase
-- **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
+- ⬜ A3/A4/A5 — restore, cancel dialog, repeat purchase
+- ⬜ A6 — Apple IAP hidden on Android (code implemented; device check in 3.4)
+- ⬜ C3 — cross-platform lifetime sync (IAP → web/Classic)
+- ⬜ C5 — free/Pro gates flip on mobile (code wired; device check pending)
+- ⬜ C6 — cancel at period end from the mobile profile (code wired; device
+  check pending)
+- ⬜ C7 — IAP success/error screens (code wired; sandbox check pending)
+- ⬜ Verify subscription state refreshes after a **website** purchase (code
+  refetch implemented; device check pending)
+- ✅ **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
   PayPal, or website checkout) in the iOS app; Apple IAP (`pro_go`) is the
   only purchase path.
-
-**Progress:**
-
 - ✅ Bundle-ID question resolved 2026-08-10 — backend validates
   `ca.zerotohero.go`; A2 can now run.
 - ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
@@ -973,36 +962,27 @@ payment path.
   cancel-at-period-end, and C7 IAP success/error paths are wired in the mobile
   app; `SubscriptionContext` refetches when the app returns to the foreground
   so a website purchase appears without restarting the app.
-- ⬜ A2–A5 sandbox purchase/restore/cancel on mobile iOS.
-- ⬜ Human-run checks: C5/C6/C7 on a device, website-purchase refresh, C3
-  lifetime sync.
 
 #### 3.4 apps/mobile (Android)
 
 Play Billing is not implemented yet; the "buy on our website" notice is the
 interim path until it lands.
 
-- Complete the Play Console developer sign-up process (new developer account
+- ⬜ Complete the Play Console developer sign-up process (new developer account
   + one-time registration fee)
-- Create the Play Billing product (lifetime, non-consumable) and add license
+- ⬜ Create the Play Billing product (lifetime, non-consumable) and add license
   testers
-- Implement Play Billing in `apps/mobile` (SPEC-014 target; product ID TBD)
-- Run G1–G5 from [2.5](#25-google-play-billing-phase-3--android):
+- ⬜ Implement Play Billing in `apps/mobile` (SPEC-014 target; product ID TBD)
+- ⬜ Run G1–G5 from [2.5](#25-google-play-billing-phase-3--android):
   license-tester purchase, always-declines instrument, internal/closed
   test-track purchase, restore/entitlement sync, bogus token
-- Verify the backend grant + MailerLite sync through the shared subscription
+- ⬜ Verify the backend grant + MailerLite sync through the shared subscription
   path
-- Exit: Android in-app purchase ready for submission and approval
-- **Store compliance:** no external payment links in the Android app; the
+- ⬜ Exit: Android in-app purchase ready for submission and approval
+- ⬜ **Store compliance:** no external payment links in the Android app; the
   buy-on-website notice is interim only and must be replaced by Play Billing
   before submission (Google Play policy).
-
-**Progress:**
-
-- ⬜ Google Play developer sign-up + Play Billing implementation/testing
-  (G1–G5).
-- ⬜ Human-run checks: C5/C6/C7 on Android once Play Billing lands, C3
-  lifetime sync.
+- ⬜ C5/C6/C7 on Android once Play Billing lands, C3 lifetime sync.
 
 ### Phase 5 — Cross-app & launch gate
 
