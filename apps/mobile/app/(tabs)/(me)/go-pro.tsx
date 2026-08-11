@@ -89,6 +89,7 @@ export default function GoProScreen() {
   const { isSm } = useResponsive();
   const { user } = useAuth();
   const {
+    sub,
     isPro,
     planType,
     isLifetime,
@@ -180,7 +181,10 @@ export default function GoProScreen() {
   const selectedPlanData = PLANS.find((p) => p.planKey === selectedPlan);
   // Option A (SPEC-054): an active non-trial subscription blocks all new
   // purchases until cancelled — matches Classic.
-  const activeNonTrial = isPro && planType !== 'trial';
+  // Matches Classic: only an auto-renewing (payment_customer_id set),
+  // non-trial, unexpired subscription blocks new purchases.
+  const activeNonTrial =
+    !!sub && sub.type !== 'trial' && !!sub.payment_customer_id && !isExpired;
   const cnyPriceObj = selectedPlan ? findCnyPrice(prices, selectedPlan) : undefined;
   const cnyPaymentLink = cnyPriceObj?.paymentLink
     ? `${cnyPriceObj.paymentLink}?client_reference_id=${user?.id ?? ''}`

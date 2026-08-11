@@ -909,14 +909,15 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     different secrets, so both vars are required in production.
     Verified in production 2026-08-10: bogus signature → 400; signed
     simulated `invoice.paid` → 200 + renewal.
-20. **Active non-trial subscription blocks new purchases — Option A,
-    implemented 2026-08-10:** web + mobile go-pro show a "cancel your
-    existing subscription first" notice instead of payment methods, and
-    `POST /create-stripe-checkout-session` returns 400 for users with an
-    active non-trial subscription (lifetime or unexpired monthly/annual).
-    Trials are exempt. Classic already behaved this way; this makes web and
-    mobile match. Same-tier re-purchases and upgrades are blocked until the
-    existing subscription is cancelled.
+20. **Active auto-renewing subscription blocks new purchases — Option A,
+    implemented 2026-08-10, matching Classic:** web + mobile go-pro show a
+    "cancel your existing subscription first" notice instead of payment
+    methods, and `POST /create-stripe-checkout-session` returns 400 when the
+    user has a non-trial, unexpired subscription **with a
+    `payment_customer_id`** (i.e., an auto-renewing Stripe subscription).
+    Cancelling auto-renew clears `payment_customer_id`, which lifts the
+    block — exactly Classic's `hasActiveNonTrialSubscription` logic. Trials
+    are exempt.
 
 ---
 
