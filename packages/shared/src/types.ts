@@ -954,7 +954,7 @@ export const PLAYBACK_DEFAULTS: PlaybackSettings = {
   karaokeMode: true,
   smoothScroll: false,
   collapsedVideo: false,
-  transcriptMode: 'subtitles',
+  transcriptMode: 'transcript',
 };
 
 export const REVIEW_DEFAULTS: ReviewSettings = {
