@@ -9,9 +9,10 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 /**
- * Top-level success page redirected to by the Python backend after a
- * successful Stripe / PayPal payment. Not under a tab because the
- * Python backend uses a fixed URL: {host}/go-pro-success
+ * Top-level success page shown after a payment completes (IAP in the app,
+ * or Stripe/PayPal on the website when the backend redirects here).
+ * Not under a tab because the Python backend uses a fixed URL:
+ * {host}/go-pro-success
  */
 export default function GoProSuccessPage() {
   const { user, loading: authLoading } = useAuth();
@@ -27,7 +28,6 @@ export default function GoProSuccessPage() {
       return;
     }
 
-    const userId = user.id;
     let attempts = 0;
     const maxAttempts = 10;
 
@@ -109,10 +109,10 @@ export default function GoProSuccessPage() {
         ) : user ? (
           <>
             <Text className="text-2xl font-bold text-foreground text-center">
-              {t('msg.payment_received')}
+              {t('msg.subscription_not_confirmed')}
             </Text>
             <Text className="mt-2 text-muted-foreground text-center">
-              {t('msg.payment_processing')}
+              {t('msg.payment_may_take_longer')}
             </Text>
             <Text className="mt-4 text-sm text-muted-foreground text-center">
               {t('msg.contact_support_if_delayed')}
@@ -134,10 +134,10 @@ export default function GoProSuccessPage() {
         ) : (
           <>
             <Text className="text-2xl font-bold text-foreground text-center">
-              {t('msg.payment_successful')}
+              {t('msg.subscription_not_confirmed')}
             </Text>
             <Text className="mt-2 text-muted-foreground text-center">
-              {t('msg.log_in_to_verify_pro_status')}
+              {t('msg.login_to_verify_pro')}
             </Text>
             <View className="mt-8 w-full max-w-sm">
               <Pressable

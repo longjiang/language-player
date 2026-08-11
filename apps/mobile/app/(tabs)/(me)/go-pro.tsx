@@ -8,9 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { IAP_AVAILABLE, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
-import { isSaleActive, getSaleDiscount, findUsdPrice, findCnyPrice } from '@langplayer/shared';
+import { isSaleActive, getSaleDiscount, findUsdPrice } from '@langplayer/shared';
 import type { StripePrice } from '@langplayer/shared';
-import { Crown, Check, ArrowRight, CreditCard, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
+import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -104,7 +104,6 @@ export default function GoProScreen() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [prices, setPrices] = useState<StripePrice[]>([]);
   const [loadingPrices, setLoadingPrices] = useState(true);
-  const [checkingOut, setCheckingOut] = useState(false);
   const [iapProcessing, setIapProcessing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -185,55 +184,6 @@ export default function GoProScreen() {
   // non-trial, unexpired subscription blocks new purchases.
   const activeNonTrial =
     !!sub && sub.type !== 'trial' && !!sub.payment_customer_id && !isExpired;
-  const cnyPriceObj = selectedPlan ? findCnyPrice(prices, selectedPlan) : undefined;
-  const cnyPaymentLink = cnyPriceObj?.paymentLink
-    ? `${cnyPriceObj.paymentLink}?client_reference_id=${user?.id ?? ''}`
-    : null;
-
-  // ── Stripe Credit Card checkout ──
-  const handleStripeCheckout = useCallback(async () => {
-    if (!selectedPlan || !user?.id) return;
-    setCheckingOut(true);
-    setError(null);
-
-    try {
-      const usdPrice = findUsdPrice(prices, selectedPlan);
-      if (!usdPrice) {
-        setError(t('msg.no_usd_price'));
-        setCheckingOut(false);
-        return;
-      }
-
-      const res = await fetch(`${PYTHON_API_URL}/create-stripe-checkout-session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          price_id: usdPrice.id,
-          user_id: String(user.id),
-          host: 'https://languageplayer.io',
-          mode: usdPrice.mode,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setError(err?.error ?? t('msg.checkout_error'));
-        setCheckingOut(false);
-        return;
-      }
-
-      const { url } = await res.json();
-      if (url) {
-        await Linking.openURL(url);
-      } else {
-        setError(t('msg.no_checkout_url'));
-      }
-    } catch (err: any) {
-      setError(localizedError(t, err, 'msg.unexpected_error'));
-    } finally {
-      setCheckingOut(false);
-    }
-  }, [selectedPlan, user?.id, prices, t]);
 
   // ── IAP Purchase (iOS only) ──
   const handleIapPurchase = useCallback(async () => {
@@ -301,15 +251,6 @@ export default function GoProScreen() {
       setRestoring(false);
     }
   }, [user?.id, fetchSubscription, t]);
-
-  // ── WeChat / Alipay ──
-  const openPaymentLink = useCallback(async (url: string) => {
-    try {
-      await Linking.openURL(url);
-    } catch {
-      setError(t('msg.could_not_open_link'));
-    }
-  }, [t]);
 
   // ── Render ──
 
@@ -452,132 +393,57 @@ export default function GoProScreen() {
         )}
       </View>
 
-      {/* ── Payment Methods ── */}
-      {selectedPlan && selectedPlanData && !isIOSGatedPlan(selectedPlan) && (
-        <View className="mt-8 rounded-xl border border-border bg-card p-4">
-          <View className="flex-row items-center gap-2 mb-4">
-            <CreditCard size={20} color={ICON_PRIMARY} />
-            <Text className="text-base font-semibold text-foreground">{t('title.choose_payment_method')}</Text>
-          </View>
-
-          {activeNonTrial ? (
-            <View className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 items-center">
-              <AlertCircle size={28} color={ICON_WARNING} />
-              <Text className="mt-2 text-center text-sm font-medium text-foreground">
-                {t('msg.cancel_existing_subscription_first')}
-              </Text>
-              <Pressable
-                onPress={() => router.push('/(tabs)/(me)/profile' as any)}
-                className="mt-4 rounded-lg border border-border px-4 py-2"
-              >
-                <Text className="text-sm font-medium text-foreground">
-                  {t('action.view_profile')}
-                </Text>
-              </Pressable>
+      {/* ── Purchase (store billing only, SPEC-014) ── */}
+      {IAP_AVAILABLE ? (
+        selectedPlan === 'lifetime' && selectedPlanData && (
+          <View className="mt-8 rounded-xl border border-border bg-card p-4">
+            <View className="flex-row items-center gap-2 mb-4">
+              <Apple size={20} color={ICON_PRIMARY} />
+              <Text className="text-base font-semibold text-foreground">{t('title.choose_payment_method')}</Text>
             </View>
-          ) : (
-          <View className="gap-3">
-            {/* Credit Card (USD) */}
-            {findUsdPrice(prices, selectedPlan) && (
-              <Pressable
-                onPress={handleStripeCheckout}
-                disabled={checkingOut}
-                className="flex-row items-center justify-between rounded-lg bg-primary px-4 py-3"
-              >
-                <View className="flex-row items-center gap-2">
-                  <CreditCard size={18} color={ICON_ON_PRIMARY} />
-                  <Text className="text-sm font-semibold text-primary-foreground">{t('payment.credit_card')}</Text>
-                </View>
-                {checkingOut ? (
-                  <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
-                ) : (
-                  <View className="flex-row items-center gap-1">
-                    <Text className="text-xs text-primary-foreground/70">
-                      {displayPrice(prices, selectedPlan, selectedPlanData.defaultPrice)} {selectedPlanData.interval}
-                    </Text>
-                    <ArrowRight size={14} color={ICON_ON_PRIMARY} />
-                  </View>
-                )}
-              </Pressable>
-            )}
 
-            {/* Apple In-App Purchase (iOS only — lifetime) */}
-            {IAP_AVAILABLE && selectedPlan === 'lifetime' && (
-              <Pressable
-                onPress={handleIapPurchase}
-                disabled={iapProcessing}
-                className="flex-row items-center justify-between rounded-lg bg-black dark:bg-gray-800 px-4 py-3"
-              >
-                <View className="flex-row items-center gap-2">
-                  <Apple size={18} color={ICON_ON_PRIMARY} />
-                  <Text className="text-sm font-semibold text-white">{t('payment.apple_pay')}</Text>
-                </View>
-                {iapProcessing ? (
-                  <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
-                ) : (
-                  <View className="flex-row items-center gap-1">
-                    <Text className="text-xs text-white/70">
-                      {lifetimeSalePrice ?? displayPrice(prices, 'lifetime', '$169')}
-                    </Text>
-                    <ArrowRight size={14} color={ICON_ON_PRIMARY} />
-                  </View>
-                )}
-              </Pressable>
-            )}
-
-            {/* WeChat Pay (CNY) */}
-            {cnyPaymentLink && (
-              <Pressable
-                onPress={() => openPaymentLink(cnyPaymentLink)}
-                className="flex-row items-center justify-between rounded-lg bg-green-600 px-4 py-3"
-              >
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-lg">💬</Text>
-                  <Text className="text-sm font-semibold text-white">{t('payment.wechat_pay')}</Text>
-                </View>
-                <View className="flex-row items-center gap-1">
-                  <Text className="text-xs text-white/80">¥{cnyPriceObj?.amount}</Text>
-                  <ArrowRight size={14} color={ICON_ON_PRIMARY} />
-                </View>
-              </Pressable>
-            )}
-
-            {/* Alipay (CNY) */}
-            {cnyPaymentLink && (
-              <Pressable
-                onPress={() => openPaymentLink(cnyPaymentLink)}
-                className="flex-row items-center justify-between rounded-lg bg-blue-600 px-4 py-3"
-              >
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-lg">🔵</Text>
-                  <Text className="text-sm font-semibold text-white">{t('payment.alipay')}</Text>
-                </View>
-                <View className="flex-row items-center gap-1">
-                  <Text className="text-xs text-white/80">¥{cnyPriceObj?.amount}</Text>
-                  <ArrowRight size={14} color={ICON_ON_PRIMARY} />
-                </View>
-              </Pressable>
-            )}
-
-            {/* PayPal — lifetime only */}
-            {selectedPlan === 'lifetime' && !IAP_AVAILABLE && (
-              <Pressable
-                onPress={() => openPaymentLink('https://languageplayer.io/go-pro')}
-                className="rounded-lg border border-border bg-muted/30 px-4 py-3"
-              >
-                <Text className="text-sm text-center text-muted-foreground">
-                  {t('msg.paypal_available')}
+            {activeNonTrial ? (
+              <View className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 items-center">
+                <AlertCircle size={28} color={ICON_WARNING} />
+                <Text className="mt-2 text-center text-sm font-medium text-foreground">
+                  {t('msg.cancel_existing_subscription_first')}
                 </Text>
-                <Text className="text-sm text-center font-medium text-primary mt-1">
-                  {t('msg.use_paypal_classic')}
-                </Text>
-              </Pressable>
+                <Pressable
+                  onPress={() => router.push('/(tabs)/(me)/profile' as any)}
+                  className="mt-4 rounded-lg border border-border px-4 py-2"
+                >
+                  <Text className="text-sm font-medium text-foreground">
+                    {t('action.view_profile')}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View className="gap-3">
+                {/* Apple In-App Purchase (iOS only — lifetime) */}
+                <Pressable
+                  onPress={handleIapPurchase}
+                  disabled={iapProcessing}
+                  className="flex-row items-center justify-between rounded-lg bg-black dark:bg-gray-800 px-4 py-3"
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Apple size={18} color={ICON_ON_PRIMARY} />
+                    <Text className="text-sm font-semibold text-white">{t('payment.apple_pay')}</Text>
+                  </View>
+                  {iapProcessing ? (
+                    <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
+                  ) : (
+                    <View className="flex-row items-center gap-1">
+                      <Text className="text-xs text-white/70">
+                        {lifetimeSalePrice ?? displayPrice(prices, 'lifetime', '$169')}
+                      </Text>
+                      <ArrowRight size={14} color={ICON_ON_PRIMARY} />
+                    </View>
+                  )}
+                </Pressable>
+              </View>
             )}
-          </View>
-          )}
 
-          {/* Restore Purchases (iOS) */}
-          {IAP_AVAILABLE && (
+            {/* Restore Purchases (iOS) */}
             <Pressable
               onPress={handleRestorePurchases}
               disabled={restoring}
@@ -590,9 +456,34 @@ export default function GoProScreen() {
               )}
               <Text className="text-sm text-muted-foreground">{t('action.restore_purchases')}</Text>
             </Pressable>
-          )}
 
-          {/* Error */}
+            {/* Error */}
+            {error && (
+              <View className="mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+                <AlertCircle size={16} color={ICON_PRIMARY} />
+                <Text className="text-sm text-destructive flex-1">{error}</Text>
+              </View>
+            )}
+
+            {/* Money-back guarantee */}
+            <Text className="mt-4 text-center text-xs text-muted-foreground">
+              {t('msg.money_back_guarantee')}
+            </Text>
+          </View>
+        )
+      ) : (
+        <View className="mt-8 rounded-xl border border-border bg-card p-4">
+          <Text className="text-sm text-muted-foreground mb-4">
+            {t('msg.upgrade_to_pro_banner')}
+          </Text>
+          <Pressable
+            onPress={() => Linking.openURL('https://languageplayer.io/go-pro')}
+            className="flex-row items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3"
+          >
+            <Text className="text-sm font-semibold text-primary-foreground">{t('msg.buy_on_website')}</Text>
+            <ArrowRight size={14} color={ICON_ON_PRIMARY} />
+          </Pressable>
+
           {error && (
             <View className="mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
               <AlertCircle size={16} color={ICON_PRIMARY} />

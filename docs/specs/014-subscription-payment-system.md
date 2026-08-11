@@ -54,10 +54,10 @@ Legend: ✅ supported · 🟡 partial (link-out / not yet direct) · ⬜ planned
 
 | Payment method | Classic | Web | Mobile iOS | Mobile Android |
 |---|---|---|---|---|
-| Stripe credit card | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
-| WeChat Pay | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
-| Alipay | ✅ | ✅ | ⚠️ browser checkout in-app (policy risk) | ✅ web checkout (stopgap) |
-| PayPal | ✅ | 🟡 links to Classic | 🚫 hidden on iOS (IAP available) | 🟡 links to Classic (stopgap) |
+| Stripe credit card | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| WeChat Pay | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| Alipay | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
+| PayPal | ✅ | 🟡 links to Classic | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
 | Apple IAP | ✅ | — | ✅ | — |
 | Google Play Billing | — | — | — | ⬜ not implemented |
 
@@ -68,11 +68,11 @@ Per-platform notes:
 - **Web** — Stripe card, WeChat, Alipay for all plans. PayPal currently links
   out to Classic; direct PayPal is planned. Sale UI is still missing.
 - **Mobile iOS** — only lifetime is selectable; monthly/annual are gated off
-  (store policy). Today the app also offers Stripe card / WeChat / Alipay via
-  browser checkout, which is a review risk; target is Apple IAP only in-app.
-- **Mobile Android** — all plans via browser web-checkout today (launch
-  stopgap per SPEC-048). Play Billing is the target in-app method once the
-  Play account + billing setup exist.
+  (store policy). Apple IAP is the only in-app payment path; Stripe card /
+  WeChat / Alipay / PayPal are website payments (SPEC-054 Phase 3 cleanup).
+- **Mobile Android** — no in-app payment methods today; users buy on the
+  website (SPEC-054 Phase 3 cleanup). Play Billing is the target in-app
+  method once the Play account + billing setup exist.
 
 ### Why the split (store policy)
 
@@ -228,19 +228,20 @@ Implemented (see SPEC-048 checklist / SPEC-054 for verification):
 
 - Shared subscription/price utilities and web `useSubscription` hook
 - Mobile `SubscriptionContext` + subscription-aware profile/go-pro UI
-- Stripe card + WeChat/Alipay on web and mobile
+- Stripe card + WeChat/Alipay on web (mobile moved to the website per
+  store policy)
 - Apple IAP (`pro_go`) with restore on mobile
 - Cancel-at-period-end on web and mobile
 - Sale pricing on Classic and mobile
+- Store-policy cleanup: non-IAP payment UI removed from the mobile app
+  (SPEC-054 Phase 3) — iOS is Apple IAP only, Android buys on the website
 
 Open work:
 
 - **Web sale UI** — price helpers exist; banner/discount display still missing
 - **Web direct PayPal** — currently links to Classic
 - **Play Billing (Android)** — blocked on new Play Developer account + billing
-  setup; web-checkout is the launch stopgap
-- **Store-policy cleanup** — remove in-app browser checkout from iOS (and
-  eventually Android) so the apps only use store billing in-app
+  setup; buy-on-website is the interim path (SPEC-054 Phase 3)
 - **Mobile IAP sandbox verification** — SPEC-054 Phase 4 (A1/A2)
 
 ---

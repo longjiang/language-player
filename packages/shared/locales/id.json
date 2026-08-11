@@ -706,6 +706,7 @@
         "and_n_other_forms": "dan {n} bentuk lainnya",
         "auto_renews": "Memperbarui otomatis dalam {time}.",
         "auto_renews_in": "Perpanjangan otomatis dalam {days} hari",
+        "buy_on_website": "Beli di situs web kami",
         "cancel_existing_subscription_first": "Anda harus membatalkan langganan yang ada sebelum membeli yang baru.",
         "cancelling": "Membatalkan...",
         "cannot_demote_self": "Anda tidak dapat menghapus akses admin Anda sendiri.",

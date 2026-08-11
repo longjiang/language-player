@@ -25,39 +25,36 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
   non-consumable: Classic uses `pro` (`ca.zerotohero.app`); `apps/mobile`
   uses `pro_go` (`ca.zerotohero.go`, the GO listing's product).
 - **Google Play Billing** is **not implemented** in any frontend. Android
-  users currently use the browser web-checkout stopgap; the target is Play
-  Billing later, with purchases on the website in the interim (SPEC-014).
-  The Play test-lab setup below is documented for when Billing is
-  implemented.
+  users buy on the website today (the non-IAP in-app payment UI was removed
+  in Phase 3, 2026-08-10); the target is Play Billing later. The Play
+  test-lab setup below is documented for when Billing is implemented.
 - **Mobile iOS** — Apple IAP (`pro_go`) is the store-compliant in-app method.
-  Lifetime is also offered via browser checkout today (policy risk); the
-  SPEC-014 target is IAP-only in-app, with card/WeChat/Alipay/PayPal moved to
-  the website (code cleanup pending).
+  Card/WeChat/Alipay/PayPal are website payments (the in-app browser checkout
+  was removed in Phase 3, 2026-08-10).
 - **PayPal** is implemented as a direct checkout only in Classic. Web offers
   a link out to Classic's go-pro page; Mobile does not offer PayPal in-app
   (buy on website, SPEC-014).
 - **WeChat Pay / Alipay** are processed through Stripe Payment Links (CNY,
-  one-time only) on Classic and Web; mobile N/A once the non-IAP payment UI
-  is removed (SPEC-014).
+  one-time only) on Classic and Web; mobile N/A (non-IAP payment UI removed
+  in Phase 3, 2026-08-10).
 - **Stripe Credit Card** is the only method supporting recurring monthly/annual subscriptions (Stripe webhook `invoice.paid`).
 
 ### Current payment matrix (2026-08-10)
 
 | Payment method | Classic | Web (`apps/web`) | Mobile iOS | Mobile Android |
 |---|---|---|---|---|
-| Stripe Credit Card (USD) | ✅ Checkout (vue-stripe) | ✅ backend Checkout session | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
-| WeChat Pay (CNY) | ✅ Payment Link | ✅ Payment Link | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
-| Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | ⚠️ browser checkout in-app (lifetime only; policy risk) | ✅ web checkout (stopgap) |
-| PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 hidden on iOS (IAP available) | 🟡 links to Classic (stopgap) |
+| Stripe Credit Card (USD) | ✅ Checkout (vue-stripe) | ✅ backend Checkout session | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
+| WeChat Pay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
+| Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
+| PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-in-app-purchases`) | — |
 | Google Play Billing | N/A | N/A | — | ⬜ not implemented |
 
 **Target (SPEC-014):** in-app mobile payments are store billing only — Apple
 IAP on iOS (`pro_go`), Play Billing on Android (planned). Stripe card /
-WeChat / Alipay / PayPal move to the website; the same backend grant applies
-once the user logs in. The current iOS browser checkout and Android
-web-checkout stopgap are policy risks / launch stopgaps to revisit before
-store submission.
+WeChat / Alipay / PayPal are on the website; the same backend grant applies
+once the user logs in. The mobile non-IAP payment UI was removed 2026-08-10
+(SPEC-054 Phase 3).
 
 ### Key implementation files
 
@@ -108,8 +105,10 @@ Stripe's test mode is a full sandbox: separate API keys, prices, payment links, 
 
 **Mobile (`apps/mobile`)**
 
-1. Same as Web: mobile posts to `/create-stripe-checkout-session` and opens `session.url` in the browser/WebView, so the backend test flag is the only switch needed.
-2. Note mobile passes `host: 'https://languageplayer.io'` to the backend, so after a successful test payment the redirect lands on **Classic's** `/go-pro-success` in the browser, not the app. Verify the subscription syncs back to the mobile app (see [Cross-app checks](#3-cross-app-checks)).
+1. Mobile no longer posts to `/create-stripe-checkout-session` — the
+   non-IAP payment UI was removed in SPEC-054 Phase 3 (2026-08-10). Stripe
+   tests happen on Classic/Web; after a website purchase, verify the
+   subscription syncs back to the mobile app (see [Cross-app checks](#3-cross-app-checks)).
 
 **Test cards** (from Stripe docs — all succeed unless noted):
 
@@ -272,7 +271,7 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | S8 | Classic | Monthly | Cancel/close Checkout | Redirect to `/go-pro` (cancel URL); no subscription row |
 | S9 | Web | Monthly | go-pro → Credit Card → `4242...` | Backend session created; Stripe test Checkout; success redirects to web `/go-pro-success` (host passed by web); Pro unlocks |
 | S10 | Web | Annual + declined card | Repeat S9 with annual price and `4000...0002` | Annual success; declined shows error and no grant |
-| S11 | Mobile | Monthly | ~~go-pro → Credit Card~~ — **obsolete** | Non-IAP payment UI is being removed from mobile (SPEC-014); do not run new E2E against the browser web-checkout stopgap |
+| S11 | Mobile | Monthly | ~~go-pro → Credit Card~~ — **obsolete** | Non-IAP payment UI removed from mobile (SPEC-054 Phase 3); do not run new E2E |
 | S12 | Mobile | Annual + lifetime | ~~`4242...` for each~~ — **obsolete** | Same as S11; removed with the non-IAP payment UI |
 | S13 | All | Renewal | With an active monthly test subscription, run `stripe trigger invoice.paid` (or wait for test-mode renewal) | Backend extends expiry via `invoice.paid` webhook; `/user-subscription` shows new expiry |
 | S14 | All | Webhook auth | Send `checkout.session.completed` with wrong signature / no signature | Backend returns 400; no grant applied |
@@ -287,7 +286,7 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | W3 | Classic | Lifetime → WeChat or Alipay | Lifetime test link `test_4gwdRk6Xr5XlfuwaEN` | Granted `type=lifetime`, no expiry |
 | W4 | Classic | Any | Cancel/abandon before authorizing | No webhook, no subscription; user returns to Stripe-hosted page |
 | W5 | Web | Monthly/Annual/Lifetime | Open Web go-pro → WeChat/Alipay link | Same as W1–W3; `client_reference_id` present in URL; grant lands on the same user |
-| W6 | Mobile | Monthly/Annual/Lifetime | ~~Open Mobile go-pro → WeChat/Alipay link~~ — **obsolete** | Non-IAP payment UI is being removed from mobile (SPEC-014); do not run new E2E against the browser web-checkout stopgap |
+| W6 | Mobile | Monthly/Annual/Lifetime | ~~Open Mobile go-pro → WeChat/Alipay link~~ — **obsolete** | Non-IAP payment UI removed from mobile (SPEC-054 Phase 3); do not run new E2E |
 | W7 | All | Recurrence check | Inspect the created subscription after a monthly/annual Payment Link purchase | `payment_processor=stripe` with **no** `payment_customer_id` / no Stripe subscription — verify renewal is **not** possible (one-time only) |
 
 ### 2.3 PayPal (Classic direct; Web link out; Mobile N/A)
@@ -868,14 +867,14 @@ Coverage notes for the rest of Phase 2:
 **Scope change (2026-08-10):** non-IAP payment UI is being removed from the
 mobile app (SPEC-014 target — store billing only in-app). S11–S12 (Stripe),
 W6 (WeChat/Alipay), and P6 (PayPal link-out) are **obsolete**; do not run new
-E2E against them. Until the code cleanup lands, they still exist as the
-browser web-checkout stopgap.
+E2E against them. The code cleanup landed 2026-08-10, so the browser
+web-checkout stopgap no longer exists in the mobile app.
 
-1. **Code cleanup (do first)** — remove the non-IAP payment UI from
-   `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card, WeChat, Alipay,
-   PayPal buttons), leaving Apple IAP on iOS and a "buy on our website"
-   notice on Android (SPEC-014 target). After this lands, S11–S12 / W6 / P6
-   are fully obsolete.
+1. **Code cleanup (do first)** — ✅ **done 2026-08-10:** non-IAP payment UI
+   removed from `apps/mobile/app/(tabs)/(me)/go-pro.tsx` (Stripe card,
+   WeChat, Alipay, PayPal buttons). iOS shows Apple IAP (lifetime) + Restore
+   Purchases only; Android shows a "buy on our website" notice. S11–S12 / W6
+   / P6 are fully obsolete.
 2. **Remaining mobile checks:**
 
    - C5 (gates) — free/Pro gates flip on mobile
@@ -886,6 +885,24 @@ browser web-checkout stopgap.
    - C2 (subscription sync) — deferred to Phase 5
    - Apple IAP purchase + restore — Phase 4
    - Play Billing — out of scope until implemented
+
+#### Phase 3 progress
+
+- ✅ Code cleanup (2026-08-10): non-IAP payment UI removed from mobile go-pro;
+  iOS is Apple IAP + restore only, Android shows a buy-on-website notice
+  (`msg.buy_on_website` added to all 18 locales).
+- ✅ `/go-pro-success` neutral fallback (2026-08-10): mobile success page no
+  longer overclaims "payment received/processing" after the poll times out —
+  it now shows `msg.subscription_not_confirmed` + `msg.payment_may_take_longer`
+  (matching the web B53 fix).
+- ✅ Code inspection (2026-08-10): C5 gates (10 transcript lines / 5
+  subs-search hits free; full transcript + up to 500 hits Pro) are wired to
+  `useSubscription()`; C6 cancel-at-period-end is on the mobile profile;
+  C7 IAP success/error paths render correctly; `SubscriptionContext` now
+  refetches when the app returns to the foreground so a website purchase
+  appears without restarting the app.
+- ⬜ Human-run checks pending: C5/C6/C7 on a device, website-purchase →
+  open-app refresh, and Phase 4 Apple IAP sandbox purchase + restore.
 
 ### Phase 4 — IAP last (Classic + mobile)
 
@@ -899,8 +916,9 @@ resolved 2026-08-10.)
   `ca.zerotohero.go`; A2 can now run
 - ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
   (Non-Consumable, Approved) — matches `apps/mobile/lib/iap.ts`
-- ⬜ Store-policy cleanup before submission: remove in-app browser checkout
-  from iOS so IAP is the only in-app purchase path (SPEC-014 target)
+- ✅ Store-policy cleanup before submission: in-app browser checkout removed
+  from iOS and Android (SPEC-054 Phase 3, 2026-08-10) — IAP is the only
+  in-app purchase path on iOS; Android buys on the website until Play Billing
 
 ### Phase 5 — Cross-app & launch gate
 

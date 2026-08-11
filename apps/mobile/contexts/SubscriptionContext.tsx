@@ -7,6 +7,7 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
+import { AppState } from 'react-native';
 import { useAuth } from './AuthContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
@@ -126,6 +127,17 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Fetch on mount and when user changes
   useEffect(() => {
     fetchSubscription();
+  }, [fetchSubscription]);
+
+  // Refetch when the app returns to the foreground — a purchase made on the
+  // website (or another device) should show up without restarting the app.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        fetchSubscription();
+      }
+    });
+    return () => sub.remove();
   }, [fetchSubscription]);
 
   const value = useMemo<SubscriptionContextValue>(
