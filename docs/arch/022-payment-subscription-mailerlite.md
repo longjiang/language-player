@@ -162,8 +162,8 @@ a third, **non-advertised** gate.
 Both are mismatched against the marketing copy (10 vs 15/8, 2 vs 5). SPEC-054
 C5 asserts the advertised values, so before launch either align the
 constants to 10/2 or update the go-pro copy to match the implemented limits.
-The candidate gating strategies (per-video transcript cap, word-example
-limits, quota-based gates) are recorded in
+The accepted gating strategy (10-line transcript cap, word-example copy
+aligned to 5, hard Pro-only AI, SRS free cap of 20) is recorded in
 [ADR-0034](../adr/0034-pro-gating-freemium-strategy.md).
 
 ### Stripe credit card (web, mobile, Classic)
