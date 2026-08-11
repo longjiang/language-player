@@ -99,7 +99,8 @@ StoreKit transactions are **bound to the purchasing user** via Apple's
   by a different account (the "10 friends share one purchase" attack).
 - The legacy receipt path still grants by `user_id` without binding; it is
   only reachable by StoreKit 1 clients (Classic) and remains a known
-  limitation until Classic is migrated.
+  limitation until Classic is migrated — **accepted** (ADR-0035) because
+  Classic is sunsetting.
 
 ## Restore flow
 
