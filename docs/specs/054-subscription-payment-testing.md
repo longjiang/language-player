@@ -184,7 +184,8 @@ Setup:
 5. The product is the non-consumable `pro_go` (lifetime) on the GO listing
    (`ca.zerotohero.go`) — the new app replaces the GO app and inherits its
    product. Classic's `pro` belongs to `ca.zerotohero.app` and is not used
-   here. It must exist in App Store Connect → In-App Purchases with that ID.
+   here. Verified in App Store Connect 2026-08-10: GO listing has
+   "Lifetime Pro Account" / `pro_go` / Non-Consumable / Approved.
 
 Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 

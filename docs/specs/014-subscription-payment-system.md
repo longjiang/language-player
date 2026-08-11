@@ -90,7 +90,7 @@ App mount → fetch /stripe-prices
 |---|---|---|---|
 | Nuxt Classic (`zerotohero-nuxt/`) | `"pro"` | Non-consumable | ✅ Live on App Store since 2023 |
 | GO Legacy (`language-player-3/`) | `"pro_go"` | Non-consumable | ✅ Implemented + shipped 2024-07; `react-native-iap` removed in SDK 57 upgrade (`b6fe809`), stub now returns null |
-| New mobile (`apps/mobile/`) | `"pro_go"` | Non-consumable | ⬜ Use the GO listing's ID — the app replaces GO under `ca.zerotohero.go` (Phase 5) |
+| New mobile (`apps/mobile/`) | `"pro_go"` | Non-consumable | ✅ Confirmed in App Store Connect 2026-08-10 (GO listing: "Lifetime Pro Account", Non-Consumable, Approved) — the app replaces GO under `ca.zerotohero.go` |
 
 ### Bundle IDs
 
