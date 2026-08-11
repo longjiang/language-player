@@ -150,7 +150,7 @@ limits are actually enforced:
 | Advertised | Free | Pro | Implementation | Notes |
 |---|---|---|---|---|
 | Interactive transcript lines | first **10** lines | complete | `SyncedTranscript.vue` slices to `NON_PRO_MAX_LINES = 15`; the "you need Pro" prompt obscures 7, so ~8 lines are visible | ⚠️ advertised 10 ≠ implemented 15/8 |
-| Word video examples | **2** examples (advertised) — actually first **5** corpus-wide subs-search hits | all hits (search default 50, sanity cap 500), incl. TV-show filters | `SearchSubsComp.vue` renders only `hitIndex < NON_PRO_MAX_SUBS_SEARCH_HITS = 5` for free; powers the dictionary "examples" tab, phrasebook, compare | ⚠️ advertised 2 ≠ implemented 5; **corpus-wide search — no "current video" concept** |
+| Word video examples | **2** examples (advertised) — actually first **5** corpus-wide subs-search hits | up to **500** hits (default 50 for speed; expandable via the Settings `subsSearchLimit` toggle), incl. TV-show filters | `SearchSubsComp.vue` renders only `hitIndex < NON_PRO_MAX_SUBS_SEARCH_HITS = 5` for free; powers the dictionary "examples" tab, phrasebook, compare | ⚠️ advertised 2 ≠ implemented 5; **corpus-wide search — no "current video" concept** |
 | AI explanation ("Let DeepSeek Explain") | — | Pro-only | web `AiExplanation` (`apps/web/src/components/ai-explanation.tsx`) + Classic `WordBlockPopup.vue` | ⚠️ **not advertised on go-pro** — a real gate the marketing page omits |
 | Videos/languages + dictionary | ✅ | ✅ | not gated | — |
 
