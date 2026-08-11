@@ -3,9 +3,11 @@ import * as SecureStore from 'expo-secure-store';
 import { invalidateLevelCache } from './use-progress-level';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { log, logwarn } from '@/lib/logger';
+import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCacheRow } from '@/lib/sync-db';
+
+const { log, logwarn } = syncLogger;
 
 const STORAGE_KEY = 'zthProgress'; // match Classic for migration compatibility
 const SYNC_DEBOUNCE_MS = 3000;

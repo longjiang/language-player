@@ -17,8 +17,10 @@ import { File } from 'expo-file-system';
 import { KROMOJI_DICT_FILES, getKuromojiDataPath, hasKuromojiData } from '@/lib/tokenizer-db';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { cleanPronunciation } from '@langplayer/utils';
-import { log, logwarn } from '@/lib/logger';
+import { tokenizerLogger } from '@/lib/logger';
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
+
+const { log, logwarn } = tokenizerLogger;
 
 type WorkerStatus = 'idle' | 'loading' | 'ready' | 'failed';
 

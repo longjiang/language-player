@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
-import { log, logwarn } from '@/lib/logger';
+import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
+
+const { log, logwarn } = syncLogger;
 
 const STORAGE_KEY = 'zthSrsProgress';
 

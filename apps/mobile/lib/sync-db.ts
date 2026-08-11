@@ -12,7 +12,9 @@
 
 import * as SQLite from 'expo-sqlite';
 import { canCoalesceOps, coalesceSyncPayload, validateSyncPayload } from '@langplayer/utils';
-import { log } from '@/lib/logger';
+import { syncLogger } from '@/lib/logger';
+
+const { log } = syncLogger;
 
 const DB_NAME = 'sync.db';
 

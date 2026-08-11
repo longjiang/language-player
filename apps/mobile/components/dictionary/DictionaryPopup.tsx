@@ -18,7 +18,7 @@ import {
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { lookupOfflineByL2, lookupOfflineManyByL2 } from '@/lib/dictionary-db';
 import { localizedError } from '@/lib/errors';
-import { log } from '@/lib/logger';
+import { popupLogger } from '@/lib/logger';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { TOKENIZER_CONFIG, type DictionaryEntry } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
@@ -29,6 +29,8 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ExternalLink } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+
+const { log } = popupLogger;
 
 interface DictionaryPopupProps {
   visible: boolean;
