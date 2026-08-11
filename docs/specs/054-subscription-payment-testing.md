@@ -939,9 +939,31 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 > `getReceiptDataIOS`, `finishTransaction`); product and backend are
 > unchanged.
 
-- ⬜ A2 — sandbox account → mobile go-pro → Apple IAP → receipt validated →
+> ✅ **A2/A3 verified end-to-end 2026-08-11** on iPad (development build,
+> sandbox Canada, `tester.mary@zerotohero.ca`):
+> - A2 purchase → StoreKit 2 JWS verified by Flask (`app_store_jws.py`) →
+>   lifetime grant (`payment_id` = Apple transactionId) → success screen
+>   mounted and confirmed Pro. Metro trace shows exactly one
+>   `POST /in_app_purchase_success` per purchase.
+> - A3 restore → exactly one backend grant (no replay burst); success screen
+>   **not** pushed (restore updates go-pro in place — matches web restore);
+>   `transaction already processed` Metro warning is the replay guard working.
+> - Replay/dedupe hardening in `apps/mobile/lib/iap.ts` + go-pro purchase
+>   effect: StoreKit replays of the same transaction no longer double-POST or
+>   push `/go-pro-success` more than once.
+> - Sandbox accounts must use an **accessible** email (Apple sends sign-in
+>   verification codes to it); `iossandboxtester3@zerotohero.ca` had no
+>   readable inbox and looped the password prompt until a readable address
+>   was used.
+
+- ✅ A2 — sandbox account → mobile go-pro → Apple IAP → receipt/JWS validated →
   finish transaction → `/go-pro-success`
-- ⬜ A3/A4/A5 — restore, cancel dialog, repeat purchase
+- ✅ A3 — Restore Purchases → single re-grant, no duplicate transaction
+- ⬜ A4 — cancel the sandbox confirmation dialog → no grant (device check
+  pending)
+- ⬜ A5 — repeat purchase of the same non-consumable → no duplicate grant
+  (code: `activeNonTrial` gate blocks the buy button when a paid subscription
+  exists; device check pending)
 - ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
   (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
   Device check still pending in 3.4.
