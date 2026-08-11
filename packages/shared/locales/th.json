@@ -129,6 +129,7 @@
         "sign_up": "สมัครสมาชิก",
         "speak": "พูด",
         "start_learning": "เริ่มเรียนรู้",
+        "start_learning_lang": "เริ่มเรียน{name}",
         "start_watching": "เริ่มรับชม",
         "start_writing": "เริ่มเขียน",
         "stop": "หยุด",

@@ -15,7 +15,7 @@ import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useLocaleSwitcher } from '@/providers/locale-provider';
-import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L1S, POPULAR_L2S, useLanguagePicker } from '@langplayer/shared';
+import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L2S, useLanguagePicker, nativeLanguageName } from '@langplayer/shared';
 import { languageName, isRTL } from '@/lib/language-data';
 import { LanguagePickerNarrow } from '@/components/language-picker-narrow';
 import { LanguagePickerWide } from '@/components/language-picker-wide';
@@ -73,7 +73,7 @@ export function LanguagePicker({
   const l2Rtl = isRTL(locale);
 
   // L1 list: show each language's self-name (Français, Deutsch, 中文（简体）…)
-  const getNameL1 = useCallback((code: string) => languageName(code), []);
+  const getNameL1 = useCallback((code: string) => nativeLanguageName(code), []);
 
   // L2 list: localized into the current UI locale
   const getName = useCallback(
@@ -90,7 +90,7 @@ export function LanguagePicker({
     getNameL2: getName,
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: CONTENT_L2S,
-    popularL1s: POPULAR_L1S,
+    popularL1s: [],
     popularL2s: POPULAR_L2S,
     popularTitle: t('msg.popular_languages'),
     allTitle: t('msg.all_languages'),

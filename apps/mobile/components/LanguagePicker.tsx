@@ -13,7 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L1S, POPULAR_L2S } from '@langplayer/shared';
+import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L2S, nativeLanguageName } from '@langplayer/shared';
 import { useLanguagePicker, type UseLanguagePickerReturn } from '@langplayer/shared';
 import { LanguagePickerNarrow } from './LanguagePickerNarrow';
 import { LanguagePickerWide } from './LanguagePickerWide';
@@ -64,15 +64,17 @@ export function LanguagePicker({
 
   // Platform-specific getName callback
   const getName = useCallback((code: string) => t('lang.' + code), [t]);
+  const getNameL1 = useCallback((code: string) => nativeLanguageName(code), []);
 
   // Shared hook
   const picker = useLanguagePicker({
     initialL1,
     initialL2,
     getName,
+    getNameL1,
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: CONTENT_L2S,
-    popularL1s: POPULAR_L1S,
+    popularL1s: [],
     popularL2s: POPULAR_L2S,
     popularTitle: t('msg.popular_languages'),
     allTitle: t('msg.all_languages'),
@@ -113,6 +115,7 @@ export function LanguagePicker({
     showClose,
     onDismiss,
     getName,
+    getNameL1,
     // In dialog mode the picker sizes to its content; `flex-1` collapses to a
     // sliver inside the centered Dialog.Content wrapper.
     containerClassName: variant === 'dialog' ? 'w-full bg-background' : undefined,
@@ -125,6 +128,7 @@ export function LanguagePicker({
         onConfirm={handleConfirm}
         showTitle={showTitle}
         getName={getName}
+        getNameL1={getNameL1}
       />
     );
   }

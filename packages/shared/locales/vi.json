@@ -129,6 +129,7 @@
         "sign_up": "Đăng ký",
         "speak": "Nói",
         "start_learning": "Bắt đầu học",
+        "start_learning_lang": "Bắt đầu học {name}",
         "start_watching": "Bắt đầu xem",
         "start_writing": "Bắt đầu viết",
         "stop": "Dừng",

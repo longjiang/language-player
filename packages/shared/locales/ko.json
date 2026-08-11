@@ -129,6 +129,7 @@
         "sign_up": "가입하기",
         "speak": "말하기",
         "start_learning": "학습 시작",
+        "start_learning_lang": "{name} 학습 시작하기",
         "start_watching": "시청 시작",
         "start_writing": "쓰기 시작",
         "stop": "중지",

@@ -12,6 +12,7 @@ import React from 'react';
 import { useT } from '@/hooks/use-t';
 import { Search, Globe, BookOpen, ArrowRight, Check, X } from 'lucide-react';
 import { languageName, isRTL, flagEmoji } from '@/lib/language-data';
+import { isExperimentalL2 } from '@langplayer/shared';
 import type {
   LanguageSection,
   UseLanguagePickerReturn,
@@ -43,6 +44,8 @@ function LanguagePanel({
   accentColor,
   nativeNames,
   rtl = false,
+  showSearch = true,
+  showTitles = true,
   getName,
 }: {
   title: string;
@@ -59,6 +62,10 @@ function LanguagePanel({
   nativeNames: boolean;
   /** Whether translated names (L2) render RTL — follows the UI locale. */
   rtl?: boolean;
+  /** Show the search field. L1 panel hides it. */
+  showSearch?: boolean;
+  /** Show section titles. L1 panel hides them. */
+  showTitles?: boolean;
   getName: (code: string) => string;
 }) {
   const t = useT();
@@ -85,33 +92,35 @@ function LanguagePanel({
       </div>
 
       {/* Search */}
-      <div className="mb-3 flex items-center rounded-lg border border-input bg-background px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
-        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="ml-2 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-          placeholder={t('placeholder.search_languages')}
-          autoCapitalize="none"
-        />
-        {search && (
-          <button
-            onClick={() => onSearchChange('')}
-            className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label={t('action.clear')}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      {showSearch !== false && (
+        <div className="mb-3 flex items-center rounded-lg border border-input bg-background px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="ml-2 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            placeholder={t('placeholder.search_languages')}
+            autoCapitalize="none"
+          />
+          {search && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="ml-1 shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={t('action.clear')}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Language list */}
       <div className="h-80 overflow-y-auto pr-1">
         {hasResults ? (
           sections.map((section: LanguageSection) => (
             <div key={section.title} className="space-y-1 pb-2">
-              {section.title && (
+              {showTitles && section.title && (
                 <div className="sticky top-0 z-10 bg-card px-1 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {section.title}
                 </div>
@@ -130,10 +139,17 @@ function LanguagePanel({
                     }`}
                     dir={isRtlRow ? 'rtl' : 'ltr'}
                   >
-                    <span className="text-base leading-none" aria-hidden="true">
-                      {flagEmoji(code)}
-                    </span>
+                    {!isPrimary && (
+                      <span className="text-base leading-none" aria-hidden="true">
+                        {flagEmoji(code)}
+                      </span>
+                    )}
                     <span className="min-w-0 flex-1 truncate">{getName(code)}</span>
+                    {!isPrimary && isExperimentalL2(code) && (
+                      <span className="shrink-0 rounded-full border border-warm-500/30 bg-warm-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warm-600 dark:text-warm-400">
+                        {t('label.experimental')}
+                      </span>
+                    )}
                     {isSelected ? (
                       <Check className="h-4 w-4 shrink-0 opacity-80" aria-hidden="true" />
                     ) : (
@@ -206,6 +222,8 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
             onSelect={setSelectedL1}
             accentColor="primary"
             nativeNames
+            showSearch={false}
+            showTitles={false}
             getName={getNameL1}
           />
 
@@ -231,26 +249,6 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
       {(selectedL1 || selectedL2) && (
         <div className="rounded-xl border border-border bg-card px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Selection pills */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1.5 rounded-full border border-border bg-muted py-1 pl-2 pr-3 text-sm">
-                <span aria-hidden="true">{flagEmoji(selectedL1 || 'en')}</span>
-                <span className="text-muted-foreground">{t('title.i_speak')}</span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-bold text-foreground">
-                  {selectedL1 ? getNameL1(selectedL1) : '?'}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-border bg-muted py-1 pl-2 pr-3 text-sm">
-                <span aria-hidden="true">{flagEmoji(selectedL2 || '')}</span>
-                <span className="text-muted-foreground">{t('title.learning_label')}</span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-bold text-foreground">
-                  {selectedL2 ? getName(selectedL2) : '?'}
-                </span>
-              </div>
-            </div>
-
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Script toggle for Chinese */}
@@ -279,13 +277,22 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
                 </div>
               )}
 
-              {/* Continue button */}
-              {selectedL1 && selectedL2 && (
+              {/* Bottom action: Next (no L2 yet) or Start Learning */}
+              {!selectedL2 ? (
+                <button
+                  disabled
+                  aria-disabled="true"
+                  className="flex max-w-full cursor-not-allowed items-center gap-1.5 rounded-lg bg-primary/50 px-5 py-2 text-left text-sm font-bold text-primary-foreground shadow-sm whitespace-normal"
+                >
+                  {t('action.next')}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
                 <button
                   onClick={onConfirm}
-                  className="flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex max-w-full items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-left text-sm font-bold text-primary-foreground shadow-sm transition-colors whitespace-normal hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  {t('action.continue')}
+                  {t('action.start_learning_lang', { name: getName(selectedL2) })}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               )}
