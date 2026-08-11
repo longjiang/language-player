@@ -47,7 +47,7 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 | WeChat Pay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
-| Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-in-app-purchases`) | — |
+| Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-iap`) | — |
 | Google Play Billing | N/A | N/A | — | ⬜ Phase 3 — developer sign-up + implementation |
 
 **Target (SPEC-014):** in-app mobile payments are store billing only — Apple
@@ -320,7 +320,7 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | # | App | Steps | Expected result |
 |---|---|---|---|
 | A1 | Classic (Capacitor) | Sandbox account → go-pro → Lifetime → "Pay & Upgrade to Pro Now" → confirm in sandbox dialog | Receipt POSTed to `/in_app_purchase_success`; backend validates via Apple sandbox (`auto_retry_wrong_env_request=True` handles test/live endpoints); success → `/go-pro-success`; `type=lifetime`, `payment_processor=app-store`, `payment_id=transaction_id` |
-| A2 | Mobile (Expo) | Sandbox account → go-pro → Apple IAP button → confirm | `expo-in-app-purchases` listener gets the purchase; receipt POSTed to backend; on success `finishTransactionAsync(purchase, false)`; app pushes `/go-pro-success`; Pro state updates |
+| A2 | Mobile (Expo) | Sandbox account → go-pro → Apple IAP button → confirm | `expo-iap` listener gets the purchase; receipt POSTed to backend; on success `finishTransaction({ purchase, isConsumable: false })`; app pushes `/go-pro-success`; Pro state updates |
 | A3 | Both | Tap **Restore Purchases** after reinstall / second device with same sandbox account | Restored purchase list non-empty; receipts re-validated; Pro re-granted; no duplicate transaction |
 | A4 | Both | Cancel the sandbox confirmation dialog | Purchase callback errors (`USER_CANCELED`); app returns to go-pro with an error message; no grant |
 | A5 | Both | Purchase the same non-consumable again (`pro` Classic / `pro_go` mobile) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency) |
@@ -926,9 +926,18 @@ the `pro` IAP product (`ca.zerotohero.app`).
 
 #### 3.3 apps/mobile (iOS)
 
-The new mobile app uses `expo-in-app-purchases` and the GO listing's
-non-consumable `pro_go` (`ca.zerotohero.go`). Apple IAP is the only in-app
-payment path.
+The new mobile app uses `expo-iap` and the GO listing's non-consumable
+`pro_go` (`ca.zerotohero.go`). Apple IAP is the only in-app payment path.
+
+> ⚠️ **IAP library migrated 2026-08-11:** Expo SDK 57 removed the iOS legacy
+> bridge (`EXNativeModulesProxy` / `ExpoBridgeModule`) that
+> `expo-in-app-purchases` (a legacy ObjC module, last published 2023)
+> depended on. Tapping the Apple pay button failed with
+> `Cannot find native module 'ExpoInAppPurchases'` even though the native
+> class was linked. `apps/mobile/lib/iap.ts` now uses `expo-iap`
+> (`initConnection`, `purchaseUpdatedListener`, `requestPurchase`,
+> `getReceiptDataIOS`, `finishTransaction`); product and backend are
+> unchanged.
 
 - ⬜ A2 — sandbox account → mobile go-pro → Apple IAP → receipt validated →
   finish transaction → `/go-pro-success`

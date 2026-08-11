@@ -13,10 +13,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#1b1e3c"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "ca.zerotohero.go"
-    },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "ca.zerotohero.go"
+        },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

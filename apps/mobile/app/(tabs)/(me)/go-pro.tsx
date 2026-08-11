@@ -107,7 +107,7 @@ export default function GoProScreen() {
   const [iapProcessing, setIapProcessing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [iapResult, setIapResult] = useState<{ purchase: any; receipt: string } | null>(null);
+  const [iapResult, setIapResult] = useState<{ purchase: any; receipt?: string; jws?: string } | null>(null);
   const [iapErrorCode, setIapErrorCode] = useState<string | null>(null);
 
   // Fetch Stripe prices from backend
@@ -134,25 +134,28 @@ export default function GoProScreen() {
         (errorCode) => {
           if (mountedRef.current) {
             setIapErrorCode(errorCode !== undefined ? String(errorCode) : 'unknown');
+            if (errorCode !== 'user-cancelled') {
+              setError(t('msg.iap_purchase_failed'));
+            }
             setIapProcessing(false);
           }
         },
       );
     });
     return () => { mountedRef.current = false; };
-  }, []);
+  }, [t]);
 
   // Process IAP result: validate receipt on backend, then finish transaction
   useEffect(() => {
     if (!iapResult || !user?.id) return;
-    const { purchase, receipt } = iapResult;
+    const { purchase, receipt, jws } = iapResult;
 
     (async () => {
       try {
         const res = await fetch(`${PYTHON_API_URL}/in_app_purchase_success`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: String(user.id), receipt }),
+          body: JSON.stringify({ user_id: String(user.id), receipt, jws }),
         });
 
         const data = await res.json();
@@ -224,11 +227,11 @@ export default function GoProScreen() {
 
       // Validate each restored receipt (usually just one)
       let successCount = 0;
-      for (const { purchase, receipt } of purchases) {
+      for (const { purchase, receipt, jws } of purchases) {
         const res = await fetch(`${PYTHON_API_URL}/in_app_purchase_success`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: String(user.id), receipt }),
+          body: JSON.stringify({ user_id: String(user.id), receipt, jws }),
         });
 
         const data = await res.json();

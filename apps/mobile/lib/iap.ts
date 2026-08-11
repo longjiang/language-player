@@ -2,7 +2,11 @@
 // In-App Purchase (IAP) — iOS only
 // ──────────────────────────────────────────────
 //
-// Uses expo-in-app-purchases (Expo SDK 57+).
+// Uses expo-iap (the maintained successor to expo-in-app-purchases /
+// react-native-iap). Expo SDK 57 removed the legacy ObjC bridge
+// (EXNativeModulesProxy) that expo-in-app-purchases relied on, so that
+// package can no longer be reached from JS — see SPEC-054 Phase 3.
+//
 // Product ID "pro_go" matches the GO listing's existing App Store product.
 // The new app replaces the GO listing (bundle ca.zerotohero.go), so it
 // inherits the GO app's non-consumable product — NOT Classic's "pro", which
@@ -12,42 +16,30 @@
 // from Classic both validate. Canonical reference: SPEC-014 "Identifiers & IAP".
 //
 // Flow:
-//   1. Connect to the payment queue on mount
-//   2. Fetch product details via getProductsAsync
-//   3. Set purchase listener globally
-//   4. User taps "Buy" → purchaseItemAsync("pro_go")
-//   5. Purchase result arrives via the listener callback
-//   6. POST receipt to Python backend for validation
-//   7. On success → finishTransactionAsync(purchase, false)
+//   1. Connect to the store on mount (initConnection)
+//   2. Register purchaseUpdatedListener / purchaseErrorListener
+//   3. User taps "Buy" → requestPurchase({ request: { apple: { sku } } })
+//   4. Purchase arrives via the listener; fetch the base64 App Store receipt
+//      (getReceiptDataIOS) and pass both to the caller
+//   5. POST receipt to Python backend for validation
+//   6. On success → finishTransaction({ purchase, isConsumable: false })
 //
 // See docs/specs/014-subscription-payment-system.md Phase 5 for full spec.
-//
-// NOTE: expo-in-app-purchases is loaded lazily (dynamic import) because the
-// native module is NOT available in Expo Go. A static top-level import would
-// crash immediately with "Cannot find native module 'ExpoInAppPurchases'".
 
 import { Platform } from 'react-native';
-import type { InAppPurchase, IAPErrorCode, IAPQueryResponse, IAPResponseCode } from 'expo-in-app-purchases';
+import {
+  initConnection,
+  endConnection,
+  purchaseUpdatedListener,
+  purchaseErrorListener,
+  getReceiptDataIOS,
+  requestReceiptRefreshIOS,
+  getAvailablePurchases,
+  requestPurchase,
+  finishTransaction,
+} from 'expo-iap';
+import type { Purchase } from 'expo-iap';
 import { logwarn } from '@/lib/logger';
-
-// ── Lazy module loader ──
-
-type IapModule = typeof import('expo-in-app-purchases');
-
-let _module: IapModule | null = null;
-let _moduleLoadError: Error | null = null;
-
-async function iap(): Promise<IapModule> {
-  if (_module) return _module;
-  if (_moduleLoadError) throw _moduleLoadError;
-  try {
-    _module = await import('expo-in-app-purchases');
-    return _module;
-  } catch (err: any) {
-    _moduleLoadError = new Error(`Failed to load IAP module: ${err?.message ?? err}`);
-    throw _moduleLoadError;
-  }
-}
 
 /** Product ID — must match App Store Connect.
  *  "pro_go" is the GO listing's non-consumable product (shipped with the GO
@@ -58,10 +50,12 @@ const IOS_IAP_PRODUCT_ID = 'pro_go';
 // ── Types ──
 
 export interface PurchaseResult {
-  /** The InAppPurchase object from the App Store. */
-  purchase: InAppPurchase;
-  /** Base64-encoded App Store receipt. */
-  receipt: string;
+  /** The Purchase object from the store (expo-iap). */
+  purchase: Purchase;
+  /** Best-effort legacy App Store receipt (StoreKit 2 often has none). */
+  receipt?: string;
+  /** StoreKit 2 signed transaction (JWS) — the backend's preferred proof. */
+  jws?: string;
 }
 
 export type IapConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -79,15 +73,14 @@ export function getConnectionState(): IapConnectionState {
 
 // ── Connection ──
 
-/** Connect to the App Store payment queue.
+/** Connect to the store.
  *  Must be called before any purchase/restore operations.
  *  Safe to call multiple times — returns immediately if already connected. */
 export async function connectIap(): Promise<void> {
   if (!IAP_AVAILABLE || _connectionState === 'connected') return;
   _connectionState = 'connecting';
   try {
-    const m = await iap();
-    await m.connectAsync();
+    await initConnection();
     _connectionState = 'connected';
   } catch (err) {
     logwarn('[IAP] connect failed:', err);
@@ -96,12 +89,11 @@ export async function connectIap(): Promise<void> {
   }
 }
 
-/** Disconnect from the payment queue. */
+/** Disconnect from the store. */
 export async function disconnectIap(): Promise<void> {
   if (!IAP_AVAILABLE || _connectionState === 'disconnected') return;
   try {
-    const m = await iap();
-    await m.disconnectAsync();
+    await endConnection();
   } finally {
     _connectionState = 'disconnected';
   }
@@ -110,13 +102,42 @@ export async function disconnectIap(): Promise<void> {
 // ── Purchase Listener ──
 
 type PurchaseCallback = (result: PurchaseResult) => void;
-type ErrorCallback = (errorCode: IAPErrorCode | undefined) => void;
+type ErrorCallback = (errorCode: string | undefined) => void;
 
 let _purchaseCallback: PurchaseCallback | null = null;
 let _errorCallback: ErrorCallback | null = null;
+let _purchaseSubscription: { remove: () => void } | null = null;
+let _errorSubscription: { remove: () => void } | null = null;
 
-/** Set the global purchase listener.
- *  Must be called once after connectAsync, before any purchase. */
+/** Best-effort legacy App Store receipt.
+ *
+ *  This is ONLY used when a StoreKit 2 JWS is not available. Do NOT call
+ *  `requestReceiptRefreshIOS()` when we already have the JWS — it runs
+ *  `AppStore.sync()`, which re-prompts for the sandbox/production Apple ID
+ *  password even after the purchase already succeeded (observed during
+ *  SPEC-054 Phase 3 A2 testing). The backend prefers the JWS anyway, so the
+ *  legacy receipt is purely a fallback for old StoreKit 1 paths. */
+async function fetchAppStoreReceipt(jws?: string): Promise<string> {
+  if (jws) return '';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      let receipt = await getReceiptDataIOS();
+      if (receipt) return receipt;
+      // RequestReceiptRefreshIOS calls AppStore.sync() then re-reads the file.
+      receipt = await requestReceiptRefreshIOS();
+      if (receipt) return receipt;
+    } catch {
+      // sync can throw (e.g. "Request Canceled"); retry, then fall back to JWS.
+    }
+    if (attempt < 2) {
+      await new Promise((resolve) => setTimeout(resolve, 750));
+    }
+  }
+  return '';
+}
+
+/** Set the global purchase/error listeners.
+ *  Must be called once after connectIap, before any purchase. */
 export async function setPurchaseHandler(
   onPurchase: PurchaseCallback,
   onError?: ErrorCallback,
@@ -124,27 +145,34 @@ export async function setPurchaseHandler(
   _purchaseCallback = onPurchase;
   _errorCallback = onError ?? null;
 
-  const m = await iap();
-  m.setPurchaseListener(
-    ({ responseCode, results, errorCode }: IAPQueryResponse<InAppPurchase>) => {
-      if (responseCode === m.IAPResponseCode.OK && results) {
-        for (const purchase of results) {
-          if (purchase.productId === IOS_IAP_PRODUCT_ID && !purchase.acknowledged) {
-            const receipt = purchase.transactionReceipt;
-            if (receipt) {
-              _purchaseCallback?.({ purchase, receipt });
-            }
-          }
-        }
-      } else if (
-        responseCode === m.IAPResponseCode.ERROR ||
-        responseCode === m.IAPResponseCode.USER_CANCELED
-      ) {
-        _errorCallback?.(errorCode);
-      }
-    },
-  );
+  _purchaseSubscription?.remove();
+  _errorSubscription?.remove();
+
+  _purchaseSubscription = purchaseUpdatedListener((purchase: Purchase) => {
+    if (purchase.productId !== IOS_IAP_PRODUCT_ID) return;
+    const transactionId = purchase.transactionId;
+    if (!transactionId) return;
+    // Unfinished iOS transactions replay on every launch until finished —
+    // ignore ones we've already surfaced to the caller.
+    if (_handledTransactions.has(transactionId)) return;
+    _handledTransactions.add(transactionId);
+
+    void (async () => {
+      // JWS (signed transaction) is the reliable proof from StoreKit 2;
+      // the legacy receipt is best-effort for backward compatibility.
+      const jws = purchase.purchaseToken ?? undefined;
+      const receipt = await fetchAppStoreReceipt(jws);
+      _purchaseCallback?.({ purchase, receipt: receipt || undefined, jws });
+    })();
+  });
+
+  _errorSubscription = purchaseErrorListener((error) => {
+    _errorCallback?.(error.code);
+  });
 }
+
+/** Transaction ids already surfaced to the caller (avoid replay duplicates). */
+const _handledTransactions = new Set<string>();
 
 // ── Initiate Purchase ──
 
@@ -155,23 +183,22 @@ export async function initiatePurchase(): Promise<void> {
     throw new Error('IAP is not available on this platform');
   }
   await connectIap();
-  const m = await iap();
-  await m.purchaseItemAsync(IOS_IAP_PRODUCT_ID);
+  await requestPurchase({
+    request: { apple: { sku: IOS_IAP_PRODUCT_ID } },
+    type: 'in-app',
+  });
 }
 
 // ── Finish Transaction ──
 
 /** Finish a completed purchase transaction.
  *  Must be called AFTER the backend has confirmed receipt validation. */
-export async function finishPurchaseTransaction(
-  purchase: InAppPurchase,
-): Promise<void> {
+export async function finishPurchaseTransaction(purchase: Purchase): Promise<void> {
   if (!IAP_AVAILABLE) return;
   try {
-    const m = await iap();
-    await m.finishTransactionAsync(purchase, false);
+    await finishTransaction({ purchase, isConsumable: false });
   } catch (err) {
-    logwarn('[IAP] finishTransactionAsync failed:', err);
+    logwarn('[IAP] finishTransaction failed:', err);
   }
 }
 
@@ -186,23 +213,17 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
   await connectIap();
 
   try {
-    const m = await iap();
-    const { responseCode, results } =
-      await m.getPurchaseHistoryAsync();
+    const purchases = await getAvailablePurchases();
+    const matches = purchases.filter((p) => p.productId === IOS_IAP_PRODUCT_ID);
+    if (matches.length === 0) return [];
 
-    if (responseCode !== m.IAPResponseCode.OK || !results) {
-      return [];
-    }
-
-    // Find all "pro" purchases with receipts
-    return results
-      .filter((p): p is InAppPurchase =>
-        p.productId === IOS_IAP_PRODUCT_ID && !!p.transactionReceipt,
-      )
-      .map((p) => ({
-        purchase: p,
-        receipt: p.transactionReceipt!,
-      }));
+    const jws = matches[0]?.purchaseToken ?? undefined;
+    const receipt = await fetchAppStoreReceipt(jws);
+    return matches.map((purchase) => ({
+      purchase,
+      receipt: receipt || undefined,
+      jws,
+    }));
   } catch (err) {
     logwarn('[IAP] restore failed:', err);
     return [];

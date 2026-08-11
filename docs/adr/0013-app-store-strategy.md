@@ -165,7 +165,7 @@ Create a brand-new app listing with a distinct name (not "Language Player X") an
 4. Drops the GO app which is the older codebase
 
 **Prerequisites before executing Option B:**
-1. Implement IAP in `apps/mobile` using RevenueCat or `expo-in-app-purchases`
+1. Implement IAP in `apps/mobile` using RevenueCat or `expo-iap`
 2. Verify receipt validation against the existing `ca.zerotohero.app` bundle ID
 3. Test `restorePurchases()` with an account that has the legacy IAP product
 4. Remove the GO app from the store
@@ -191,7 +191,7 @@ The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing 
 ---
 
 **Prerequisites before executing Option C:**
-1. Implement IAP in `apps/mobile` using RevenueCat or `expo-in-app-purchases`
+1. Implement IAP in `apps/mobile` using RevenueCat or `expo-iap`
 2. Verify receipt validation against the existing `ca.zerotohero.app` bundle ID
 3. Test `restorePurchases()` with an account that has the legacy IAP product
 4. Remove the GO app from the store

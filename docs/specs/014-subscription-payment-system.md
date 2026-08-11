@@ -119,14 +119,24 @@ Key facts:
   own bundle, so the backend does not need a client-supplied flag — it tries
   each bundle and grants lifetime on the first success.
 
-### Apple receipt validation
+### Apple IAP validation (receipt + StoreKit 2 JWS)
 
 - `APPLE_SHARED_SECRET` env var (`zerotohero-python-server/.env`, gitignored)
   — account-level, works for every bundle under the developer account.
-- `app_in_app_purchase.py` validates with `bundle_id = 'ca.zerotohero.go'`
+- **Legacy receipts (Classic):** `app_in_app_purchase.py` validates with
+  `bundle_id = 'ca.zerotohero.go'`
   **and** `bundle_id = 'ca.zerotohero.app'` (both public iOS apps) via
   `inapppy`'s `AppStoreValidator`, trying `.go` first then `.app`; sandbox/
   live retry is automatic (`auto_retry_wrong_env_request = True`).
+- **StoreKit 2 JWS (new mobile, 2026-08-11):** `expo-iap` purchases via
+  StoreKit 2, which does not reliably produce the legacy receipt file
+  (sandbox `Request Canceled` / empty `appStoreReceiptURL`). The app now
+  POSTs the signed transaction (`jws`, from `purchase.purchaseToken`) to
+  `/in_app_purchase_success`; `app_store_jws.py` verifies the ES256/RS256
+  signature against the `x5c` certificate chain anchored to Apple Root CA
+  G3 (`data/apple-certs/`), then checks `bundleId` / `productId` /
+  `transactionId` / `environment`. No shared secret or Apple call-back is
+  needed for the JWS path.
 - Always grants **lifetime** (`type=lifetime`, `payment_processor=app-store`);
   only the `transaction_id` is stored.
 
@@ -157,23 +167,27 @@ The new app does **not** copy Classic's `pro` — it uses the GO listing's
 
 ### Apple IAP (lifetime, iOS)
 
-1. `connectAsync()` to the payment queue.
-2. `purchaseItemAsync("pro_go")` → Apple payment sheet.
-3. Receipt → `POST /in_app_purchase_success { user_id, receipt }`.
-4. On success: `finishTransactionAsync()` → refresh subscription → success screen.
-5. Restore: `getPurchaseHistoryAsync()` → validate each receipt via the same
-   endpoint (idempotent).
+1. `initConnection()` → register `purchaseUpdatedListener` /
+   `purchaseErrorListener`.
+2. `requestPurchase({ request: { apple: { sku: "pro_go" } } })` → Apple sheet.
+3. On purchase event → `POST /in_app_purchase_success { user_id, jws }`
+   (JWS = `purchase.purchaseToken`; legacy `receipt` sent too when available).
+4. On success: `finishTransaction({ purchase, isConsumable: false })` →
+   refresh subscription → success screen.
+5. Restore: `getAvailablePurchases()` (no `AppStore.sync()` — it fails in
+   sandbox without a store session) → validate each JWS via the same endpoint
+   (idempotent).
 
-Nuxt reference (`PurchaseiOS.vue`) → mobile (`expo-in-app-purchases`):
+Nuxt reference (`PurchaseiOS.vue`) → mobile (`expo-iap`):
 
-| Nuxt (`@ionic-native/in-app-purchase-2`) | Mobile (`expo-in-app-purchases`) |
+| Nuxt (`@ionic-native/in-app-purchase-2`) | Mobile (`expo-iap`) |
 |---|---|
-| `register([{ id: "pro", type: NON_CONSUMABLE }])` | `InAppPurchases.connectAsync()` |
-| `order("pro")` | `InAppPurchases.purchaseItemAsync("pro_go")` |
+| `register([{ id: "pro", type: NON_CONSUMABLE }])` | `initConnection()` |
+| `order("pro")` | `requestPurchase({ request: { apple: { sku: "pro_go" } } })` |
 | `.approved()` → `product.verify()` | Handled by StoreKit |
-| `product.transaction.appStoreReceipt` | Purchase result contains receipt |
-| `POST /in_app_purchase_success` | Same endpoint, same payload |
-| `product.finish()` | `finishTransactionAsync()` |
+| `product.transaction.appStoreReceipt` | `purchase.purchaseToken` (JWS) + best-effort receipt |
+| `POST /in_app_purchase_success` | Same endpoint; body now `{ user_id, jws }` |
+| `product.finish()` | `finishTransaction({ purchase, isConsumable: false })` |
 
 ### Subscription state
 
@@ -261,7 +275,7 @@ Open work:
 
 1. **Apple App Store** — done: the GO listing's `pro_go` (Non-Consumable,
    Approved) is reused; no new product needed. Classic's `pro` is untouched.
-2. **IAP dependency** — `expo-in-app-purchases` installed in `apps/mobile`
+2. **IAP dependency** — `expo-iap` installed in `apps/mobile`
    (SDK 57 compatible).
 3. **PayPal for web** — optional `@paypal/react-paypal-js`; link-to-Classic
    works until direct integration lands.

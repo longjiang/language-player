@@ -222,9 +222,14 @@ Web and mobile currently link out to Classic's go-pro page for PayPal rather tha
 ### Apple IAP (Classic today; mobile per SPEC-014)
 
 ```
-PurchaseiOS → Apple payment sheet → receipt
+Classic (StoreKit 1): PurchaseiOS → sheet → appStoreReceipt
   → POST /in_app_purchase_success {user_id, receipt}
-  → backend validates receipt with Apple via inapppy
+  → backend validates via inapppy (verifyReceipt, shared secret)
+
+Mobile (StoreKit 2, 2026-08-11): requestPurchase → signed transaction JWS
+  → POST /in_app_purchase_success {user_id, jws}
+  → backend verifies ES256/RS256 signature + x5c chain anchored to
+    Apple Root CA G3 (app_store_jws.py) — no shared secret needed
     (accepts both public iOS bundles: ca.zerotohero.go — new mobile,
     product pro_go — and ca.zerotohero.app — Classic, product pro)
   → update_or_add_subscription({type: "lifetime", processor: "app-store", ...})
@@ -521,7 +526,8 @@ Ways to mitigate:
 
 - **WeChat Pay / Alipay do not auto-renew.** Monthly/annual CNY purchases are one-time Payment Links; the user must re-purchase when the plan expires.
 - **PayPal and Apple IAP are lifetime-only.**
-- **Mobile IAP is not implemented yet** (SPEC-014); the React Native app still relies on web-based Stripe/Payment-Link flows.
+- **Mobile IAP is implemented (2026-08-11)** via `expo-iap` + StoreKit 2 JWS
+  validation; Classic keeps its StoreKit 1 receipt path.
 - **Renewal recomputes expiry from payment time** (`now + 32/367 days`) rather than stacking onto the previous expiry.
 - **MailerLite creation is limited to email verification**, so group assignment for pre-existing subscribers depends on them already being in MailerLite (SPEC-054 B66).
 - **Legacy admin subscription endpoints are still ungated** server-side for Classic compatibility; gating/retiring them is tracked in ADR-0032.
