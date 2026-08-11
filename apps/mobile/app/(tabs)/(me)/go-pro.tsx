@@ -13,6 +13,7 @@ import type { StripePrice } from '@langplayer/shared';
 import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { log, logwarn } from '@/lib/logger';
 
 // ── Plan Definitions ──
 
@@ -135,6 +136,7 @@ export default function GoProScreen() {
       await setPurchaseHandler(
         (result) => {
           // Purchase received from listener — set state to process it
+          log('[IAP] purchase event received:', result.jws?.slice(0, 40) ?? '(no jws)');
           if (mountedRef.current) setIapResult(result);
         },
         (errorCode) => {
@@ -163,11 +165,13 @@ export default function GoProScreen() {
       if (_processedTransactions.has(String(txnId))) {
         // Already validating (or validated) this exact transaction — the
         // listener replayed it; don't POST again or push another success page.
+        logwarn('[IAP] transaction already processed, skipping:', String(txnId).slice(0, 40));
         setIapResult(null);
         return;
       }
       _processedTransactions.add(String(txnId));
     }
+    log('[IAP] processing purchase, txnId:', txnId ? String(txnId).slice(0, 40) : '(none)');
 
     (async () => {
       try {
@@ -178,15 +182,19 @@ export default function GoProScreen() {
         });
 
         const data = await res.json();
+        log('[IAP] backend response type:', data?.type);
 
         if (data?.type === 'success') {
           await finishPurchaseTransaction(purchase);
           await fetchSubscription();
+          log('[IAP] pushing go-pro-success');
           router.push('/go-pro-success' as any);
         } else {
+          logwarn('[IAP] backend did not confirm:', data?.message);
           setError(data?.message ?? t('msg.receipt_validation_failed'));
         }
       } catch (err: any) {
+        logwarn('[IAP] purchase processing error:', err);
         setError(localizedError(t, err, 'msg.receipt_validation_failed'));
       } finally {
         setIapProcessing(false);
@@ -488,9 +496,14 @@ export default function GoProScreen() {
             )}
 
             {/* Money-back guarantee */}
-            <Text className="mt-4 text-center text-xs text-muted-foreground">
-              {t('msg.money_back_guarantee')}
-            </Text>
+            <View className="mt-4 flex-row items-center justify-center gap-1 flex-wrap">
+              <Text className="text-center text-xs text-muted-foreground">
+                {t('msg.money_back_guarantee')}
+              </Text>
+              <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
+                <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
+              </Pressable>
+            </View>
           </View>
         )
       ) : (
@@ -514,9 +527,14 @@ export default function GoProScreen() {
           )}
 
           {/* Money-back guarantee */}
-          <Text className="mt-4 text-center text-xs text-muted-foreground">
-            {t('msg.money_back_guarantee')}
-          </Text>
+          <View className="mt-4 flex-row items-center justify-center gap-1 flex-wrap">
+            <Text className="text-center text-xs text-muted-foreground">
+              {t('msg.money_back_guarantee')}
+            </Text>
+            <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
+              <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 

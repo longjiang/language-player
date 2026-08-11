@@ -198,14 +198,14 @@ export function AddToPlaylistDialog({ open, onOpenChange, video }: AddToPlaylist
             </ScrollView>
           )}
 
-          <View className="mt-4 flex-row justify-end gap-2">
-            <Dialog.Close className="rounded-lg px-4 py-2.5">
+          <View className="mt-4 flex-col gap-2">
+            <Dialog.Close className="w-full items-center rounded-lg px-4 py-2.5">
               <Text className="text-sm text-muted-foreground">{t('action.cancel')}</Text>
             </Dialog.Close>
             <Pressable
               onPress={() => void handleSave()}
               disabled={!isSignedIn || !loaded || saving || (!createNew && selected.size === 0)}
-              className="flex-row items-center rounded-lg bg-primary px-4 py-2.5 disabled:opacity-50"
+              className="w-full flex-row items-center justify-center rounded-lg bg-primary px-4 py-2.5 disabled:opacity-50"
             >
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
