@@ -4,8 +4,10 @@ import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { log } from '@/lib/logger';
+import { tokenizerLogger, translationLogger } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+
+const { log } = tokenizerLogger;
 
 interface UseEpubPaginationOptions {
   text: string;
@@ -30,6 +32,9 @@ interface UseEpubPaginationOptions {
    *  hidden views — much faster and non-blocking for large EPUBs. */
   estimate?: boolean;
 }
+
+/** Translate at most this many paragraphs per request (progressive/lazy). */
+const TRANSLATE_CHUNK_SIZE = 10;
 
 /** Rough block height estimate used for non-blocking EPUB pagination. */
 function estimateBlockHeight(block: ContentBlock, contentWidth: number): number {
@@ -88,6 +93,12 @@ export function useEpubPagination({
   const blockHeightsRef = useRef<(number | null)[]>([]);
   const tokenLoadGenRef = useRef(0);
   const translateGenRef = useRef(0);
+  const translateDoneRef = useRef<Set<number>>(new Set());
+  const translateInFlightRef = useRef(false);
+  const pageTextKeyRef = useRef('');
+  const translateRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const translateRetryDelayRef = useRef(1000);
+  const [translateRetry, setTranslateRetry] = useState(0);
   const anchorSeenRef = useRef(false);
   const prevPageRef = useRef(0);
 
@@ -322,34 +333,102 @@ export function useEpubPagination({
   }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code, visibleSet]);
 
   // ── Auto-translate visible text blocks (per-page) when showTranslation is on ──
+  // Fetches in small chunks and only counts non-empty results as done. The
+  // server fills LLM-truncated numbered lines with "", so accepting those
+  // would permanently skip every paragraph after the cutoff. Missing/failed
+  // lines are retried with backoff; each retry is a different numbered subset,
+  // so it misses the truncated server-cache entry and gets a fresh translation.
   useEffect(() => {
     if (!showTranslation || !hasMeasured || !blocks || !visibleBlocks) return;
-    if (Object.keys(blockTranslations).length > 0) return;
     if (loadingTokens) return;
     const textBlocks = visibleBlocks.filter(
       (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
     );
     if (textBlocks.length === 0) return;
+
+    // Local indices repeat on every page, so reset per-page progress whenever
+    // the page's text-block set changes (navigation, seek, chapter change).
+    const pageKey = textBlocks.map((b) => blocks.indexOf(b)).join(',');
+    if (pageTextKeyRef.current !== pageKey) {
+      pageTextKeyRef.current = pageKey;
+      translateGenRef.current++;
+      translateInFlightRef.current = false;
+      translateDoneRef.current = new Set();
+      translateRetryDelayRef.current = 1000;
+      if (translateRetryTimerRef.current) {
+        clearTimeout(translateRetryTimerRef.current);
+        translateRetryTimerRef.current = null;
+      }
+      setBlockTranslations({});
+    }
+
+    const pending: { localIdx: number; text: string }[] = [];
+    for (let i = 0; i < textBlocks.length; i++) {
+      if (translateDoneRef.current.has(i)) continue;
+      pending.push({ localIdx: i, text: textBlocks[i].text });
+    }
+    if (pending.length === 0 || translateInFlightRef.current) return;
+
+    const chunk = pending.slice(0, TRANSLATE_CHUNK_SIZE);
     const gen = ++translateGenRef.current;
+    translateInFlightRef.current = true;
     setIsTranslating(true);
+    let madeProgress = false;
+
     fetch(`${PYTHON_API_URL}/translate_array`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts: textBlocks.map(b => b.text), l1: l1Code, l2: l2Code }),
+      body: JSON.stringify({ texts: chunk.map(p => p.text), l1: l1Code, l2: l2Code }),
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) throw new Error(`translate_array HTTP ${res.status}`);
+        return res.json() as Promise<{ translated_texts?: unknown }>;
+      })
       .then(data => {
         if (translateGenRef.current !== gen) return;
-        const translated = data?.translated_texts ?? [];
-        if (translated.length > 0) {
-          const map: Record<number, string> = {};
-          textBlocks.forEach((_, i) => { if (i < translated.length) map[i] = translated[i]!; });
-          setBlockTranslations(map);
+        const translated = Array.isArray(data?.translated_texts) ? data.translated_texts : [];
+        const additions: Record<number, string> = {};
+        chunk.forEach((p, i) => {
+          const tr = typeof translated[i] === 'string' ? translated[i] : '';
+          if (tr.trim().length > 0) {
+            additions[p.localIdx] = tr;
+            translateDoneRef.current.add(p.localIdx);
+          }
+        });
+        madeProgress = Object.keys(additions).length > 0;
+        if (madeProgress) {
+          setBlockTranslations(prev => ({ ...prev, ...additions }));
         }
       })
-      .catch(() => {})
-      .finally(() => { if (translateGenRef.current === gen) setIsTranslating(false); });
-  }, [visibleBlocks, hasMeasured, showTranslation, loadingTokens, blocks]);
+      .catch((e: any) => {
+        translationLogger.logwarn(`translate chunk failed (${chunk.length} blocks):`, e?.message ?? e);
+      })
+      .finally(() => {
+        if (translateGenRef.current !== gen) return;
+        translateInFlightRef.current = false;
+        setIsTranslating(false);
+        // Keep going until every visible paragraph has a non-empty translation.
+        // Back off only when a pass made no progress (failed / all-empty).
+        if (translateDoneRef.current.size < textBlocks.length) {
+          const delay = madeProgress ? 1000 : translateRetryDelayRef.current;
+          if (!madeProgress) {
+            translateRetryDelayRef.current = Math.min(15000, delay * 2);
+          }
+          if (translateRetryTimerRef.current) clearTimeout(translateRetryTimerRef.current);
+          translateRetryTimerRef.current = setTimeout(() => {
+            translateRetryTimerRef.current = null;
+            setTranslateRetry(c => c + 1);
+          }, delay);
+        }
+      });
+  }, [visibleBlocks, hasMeasured, showTranslation, loadingTokens, blocks, l1Code, l2Code, translateRetry]);
+
+  // Clear the retry timer if the hook unmounts.
+  useEffect(() => {
+    return () => {
+      if (translateRetryTimerRef.current) clearTimeout(translateRetryTimerRef.current);
+    };
+  }, []);
 
   // ── Page navigation ──
   const prevPage = useCallback(() => {
