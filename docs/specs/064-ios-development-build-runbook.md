@@ -97,43 +97,34 @@ affect native code) require a **full rebuild**: repeat § 3.
 
 ## 7. Gotchas (learned the hard way)
 
-### 7.1 Sandbox Apple ID must have a readable email
-Apple sends sign-in verification codes to the sandbox account's address.
-`iossandboxtester3@zerotohero.ca` had no readable inbox and looped the
-password prompt forever. Use a plus-alias of a mailbox you can read
-(e.g. `youraddress+lpiap@gmail.com`).
+### 7.1 Metro can fail to start: `EMFILE: too many open files, watch`
+macOS watcher limits can block Metro even with Watchman installed. Raise the
+file-descriptor limit in the same shell before starting:
+`ulimit -n 65536 && npx expo start`. If Watchman is blocked (e.g. a sandboxed
+shell can't write `~/Library/LaunchAgents`), start Metro outside the
+sandbox.
 
-### 7.2 Clear purchase history ≠ clear device StoreKit state
-Clearing sandbox purchase history in App Store Connect did **not** clear the
-device's local StoreKit queue — the old transaction replayed. A **fresh
-sandbox tester account** was the only reliable reset.
+### 7.2 "No script URL provided" after install
+The freshly built app shows `No script URL provided. Make sure the packager
+is running…` when Metro isn't running. Fix: start Metro (§ 4), then
+force-quit and reopen the app on the device.
 
-### 7.3 IAP requires a development build
-`expo-in-app-purchases` is dead on SDK 57 (missing native bridge); the app
-uses `expo-iap`. Native IAP only works in a development build — never in
-Expo Go on a physical device.
+### 7.3 Missing IAP native module on the first build
+The first dev build failed at runtime with
+`Cannot find native module 'ExpoInAppPurchases'` — Expo SDK 57 removed the
+legacy bridge that `expo-in-app-purchases` depended on. The fix required a
+**code change + full rebuild**: migrate to `expo-iap` and repeat § 3.
+Native IAP only works in a development build — never in Expo Go on a
+physical device.
 
-### 7.4 Stale bundles masquerade as bugs
-After editing JS, the device can still run the previous bundle. Symptoms
-included: a spinner that "never resolves", missing success-screen
-navigation, and debug logs that never appear. **Force-quit and reopen the
-app** before assuming the code is wrong.
+### 7.4 Default (yellow) app icon
+The installed app showed Expo's default icon. Apply the Language Player
+icon (`app.json` / `assets/icon.png`) and rebuild.
 
-### 7.5 Metro session buffers are small
-Live terminal buffers scroll away; the one log line you need is gone. Tee
-Metro output to a file (`tee /tmp/metro.log`) and grep it instead of relying
-on a live window.
-
-### 7.6 Flask must be restarted after backend edits
-The Flask server does not hot-reload reliably in this setup. After changing
-Python code (e.g. `app_in_app_purchase.py`), restart Flask or the app talks
-to stale logic.
-
-### 7.7 `appAccountToken` binds purchases to users
-New IAP purchases must carry `appAccountToken = user.id`; the backend rejects
-transactions without a matching token. Old test transactions (pre-binding)
-are unclaimable — delete the subscription row and make a fresh purchase with
-a fresh tester.
+### 7.5 Builds are long and fragile
+First build takes 15–20+ minutes and blocks the machine; it also died
+mid-build once when the Mac restarted. Don't start other heavy work during
+the build, and warn the user before starting.
 
 ## 8. Verification checklist
 
