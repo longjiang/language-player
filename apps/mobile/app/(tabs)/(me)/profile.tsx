@@ -347,14 +347,14 @@ export default function ProfileScreen() {
                   </Text>
                 </Pressable>
               )}
-              {!isLifetime && (
-                <Pressable
-                  onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
-                  className="rounded-lg border border-border px-3 py-2"
-                >
-                  <Text className="text-sm text-foreground">{isExpired ? t('action.renew') : t('action.upgrade')}</Text>
-                </Pressable>
-              )}
+              <Pressable
+                onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
+                className="rounded-lg border border-border px-3 py-2"
+              >
+                <Text className="text-sm text-foreground">
+                  {isExpired ? t('action.renew') : t('action.view_plans')}
+                </Text>
+              </Pressable>
             </View>
 
             {/* Lifetime upsell */}

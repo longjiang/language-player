@@ -153,6 +153,7 @@
         "verify": "Verifizieren",
         "verify_email": "E-Mail bestätigen",
         "view_on_youtube": "Auf YouTube ansehen",
+        "view_plans": "Pläne anzeigen",
         "view_profile": "Profil anzeigen",
         "watch": "Ansehen"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Alle Sprachen",
         "all_languages_downloaded": "Alle Sprachen heruntergeladen.",
         "already_have_account": "Haben Sie bereits ein Konto?",
+        "already_lifetime": "Sie haben bereits lebenslangen Zugriff. Kein Kauf erforderlich.",
         "and_n_other_forms": "und {n} weitere Formen",
         "auto_renews": "Verlängert sich automatisch in {time}.",
         "auto_renews_in": "Automatische Erneuerung in {days} Tagen",

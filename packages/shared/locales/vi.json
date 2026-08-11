@@ -153,6 +153,7 @@
         "verify": "Xác minh",
         "verify_email": "Xác minh email",
         "view_on_youtube": "Xem trên YouTube",
+        "view_plans": "Xem gói",
         "view_profile": "Xem Hồ sơ",
         "watch": "Xem"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Tất cả ngôn ngữ",
         "all_languages_downloaded": "Tất cả ngôn ngữ đã được tải xuống.",
         "already_have_account": "Bạn đã có tài khoản?",
+        "already_lifetime": "Bạn đã có quyền truy cập trọn đời. Không cần mua.",
         "and_n_other_forms": "và {n} dạng khác",
         "auto_renews": "Tự động gia hạn sau {time}.",
         "auto_renews_in": "Tự động gia hạn sau {days} ngày",

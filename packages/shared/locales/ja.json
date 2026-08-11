@@ -153,6 +153,7 @@
         "verify": "確認する",
         "verify_email": "メールを確認",
         "view_on_youtube": "YouTubeで見る",
+        "view_plans": "プランを見る",
         "view_profile": "プロフィールを表示",
         "watch": "見る"
     },
@@ -704,6 +705,7 @@
         "all_languages": "すべての言語",
         "all_languages_downloaded": "すべての言語がダウンロードされました。",
         "already_have_account": "すでにアカウントをお持ちですか？",
+        "already_lifetime": "すでに生涯アクセスをご利用です。購入は不要です。",
         "and_n_other_forms": "他{n}件の活用形",
         "auto_renews": "{time}後に自動更新",
         "auto_renews_in": "{days}日後に自動更新",

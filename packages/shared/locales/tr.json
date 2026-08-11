@@ -153,6 +153,7 @@
         "verify": "Doğrula",
         "verify_email": "E-postayı Doğrula",
         "view_on_youtube": "YouTube'da görüntüle",
+        "view_plans": "Planları Gör",
         "view_profile": "Profili Görüntüle",
         "watch": "İzle"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Tüm Diller",
         "all_languages_downloaded": "Tüm diller indirildi.",
         "already_have_account": "Zaten hesabınız var mı?",
+        "already_lifetime": "Zaten ömür boyu erişiminiz var. Satın almanıza gerek yok.",
         "and_n_other_forms": "ve {n} diğer biçim",
         "auto_renews": "{time} gün sonra otomatik yenilenir.",
         "auto_renews_in": "{days} gün içinde otomatik yenilenir",

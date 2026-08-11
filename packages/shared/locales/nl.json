@@ -153,6 +153,7 @@
         "verify": "Verifiëren",
         "verify_email": "E-mail verifiëren",
         "view_on_youtube": "Bekijk op YouTube",
+        "view_plans": "Plannen bekijken",
         "view_profile": "Profiel bekijken",
         "watch": "Bekijken"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Alle talen",
         "all_languages_downloaded": "Alle talen gedownload.",
         "already_have_account": "Heb je al een account?",
+        "already_lifetime": "U heeft al levenslange toegang. Geen aankoop nodig.",
         "and_n_other_forms": "en {n} andere vormen",
         "auto_renews": "Verloopt automatisch over {time}.",
         "auto_renews_in": "Automatisch verlengen over {days} dagen",

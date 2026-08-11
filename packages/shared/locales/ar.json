@@ -153,6 +153,7 @@
         "verify": "التحقق",
         "verify_email": "تأكيد البريد الإلكتروني",
         "view_on_youtube": "عرض على يوتيوب",
+        "view_plans": "عرض الخطط",
         "view_profile": "عرض الملف الشخصي",
         "watch": "مشاهدة"
     },
@@ -704,6 +705,7 @@
         "all_languages": "جميع اللغات",
         "all_languages_downloaded": "تم تنزيل جميع اللغات.",
         "already_have_account": "هل لديك حساب بالفعل؟",
+        "already_lifetime": "لديك بالفعل وصول مدى الحياة. لا حاجة للشراء.",
         "and_n_other_forms": "و{n} صيغ أخرى",
         "auto_renews": "يتجدد تلقائيًا خلال {time}.",
         "auto_renews_in": "يتجدد تلقائيًا خلال {days} أيام",

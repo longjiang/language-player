@@ -153,6 +153,7 @@
         "verify": "Подтвердить",
         "verify_email": "Подтвердить email",
         "view_on_youtube": "Смотреть на YouTube",
+        "view_plans": "Посмотреть тарифы",
         "view_profile": "Просмотреть профиль",
         "watch": "Смотреть"
     },
@@ -704,6 +705,7 @@
         "all_languages": "Все языки",
         "all_languages_downloaded": "Все языки загружены.",
         "already_have_account": "Уже есть аккаунт?",
+        "already_lifetime": "У вас уже есть пожизненный доступ. Покупка не нужна.",
         "and_n_other_forms": "и ещё {n} форм",
         "auto_renews": "Автопродление через {time}.",
         "auto_renews_in": "Автоматическое продление через {days} дней",

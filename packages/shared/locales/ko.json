@@ -153,6 +153,7 @@
         "verify": "확인",
         "verify_email": "이메일 인증",
         "view_on_youtube": "YouTube에서 보기",
+        "view_plans": "요금제 보기",
         "view_profile": "프로필 보기",
         "watch": "보기"
     },
@@ -704,6 +705,7 @@
         "all_languages": "모든 언어",
         "all_languages_downloaded": "모든 언어가 다운로드되었습니다.",
         "already_have_account": "이미 계정이 있으신가요?",
+        "already_lifetime": "이미 평생 이용권이 있습니다. 구매할 필요가 없습니다.",
         "and_n_other_forms": "외 {n}개의 다른 형태",
         "auto_renews": "{time} 후 자동 갱신됩니다.",
         "auto_renews_in": "{days}일 후 자동 갱신",
