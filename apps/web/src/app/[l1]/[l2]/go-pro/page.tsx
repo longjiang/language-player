@@ -321,9 +321,9 @@ export default function GoProPage() {
 
           {/* Money-back guarantee */}
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            14-day money-back guarantee. Questions?{' '}
+            {t('msg.money_back_guarantee')}{' '}
             <a href="mailto:jon.long@zerotohero.ca" className="underline">
-              Contact us
+              {t('action.contact_us')}
             </a>
           </p>
         </div>
