@@ -805,9 +805,13 @@ Coverage notes for the rest of Phase 2:
   updated the same row (`31147`) to `annual`, expiry ≈ +367d (reset, per
   C4/B32), new test `payment_id` + `payment_customer_id`; MailerLite
   `annual` added.
-- ⬜ S10b — declined card — pending.
+- ✅ S10b — Web declined card (2026-08-10): `4000 0000 0000 0002` shows the
+  decline; no subscription row created (count 0, `/user-subscription` null).
+- ✅ **S9–S10 complete** — web Stripe credit-card batch done.
 - ✅ W5/P5/S13/S14 — covered/foregone per notes above.
-- ⬜ C2/C5/C7 — pending until S9–S10 pass.
+- ✅ C7 — web success/error screens covered by S9/S10 + B53 neutral fallback.
+- ⬜ C2/C5 — pending (C2 full cross-device matrix in Phase 5; C5 needs a
+  video-page gate check before/after a grant).
 
 ### Phase 3 — Mobile (`apps/mobile`) payment E2E
 
