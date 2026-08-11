@@ -430,19 +430,51 @@ export class EpubBook {
       }))
       .filter((s) => s.href);
 
-    const mapToc = (items: EpubjsTocItem[] | undefined): TocNode[] =>
+    const mapToc = (items: EpubjsTocItem[] | undefined, baseDir = navDir): TocNode[] =>
       (items ?? []).map(item => {
         const { fragment } = splitFragment(item.href);
         return {
           id: item.id || undefined,
           label: item.label.replace(/\s+/g, ' ').trim(),
-          href: resolvePath(navDir, item.href),
+          href: resolvePath(baseDir, item.href),
           ...(fragment ? { fragment } : {}),
-          children: mapToc(item.subitems),
+          children: mapToc(item.subitems, baseDir),
         };
       });
 
     let toc = mapToc(nav.toc as EpubjsTocItem[]);
+    if (toc.length === 0) {
+      // epubjs only recognizes <nav epub:type="toc">. Some EPUB 3 books
+      // (e.g. 1Q84) ship a nav doc whose TOC nav only has id="toc" — epubjs
+      // returns [] and would fall back to "Chapter N". Try the NCX first,
+      // then the nav by id, to match the mobile parser.
+      const ncxPath = book.packaging?.ncxPath;
+      if (ncxPath) {
+        try {
+          const ncxDoc = await book.load(ncxPath);
+          if (ncxDoc && typeof ncxDoc.nodeType === 'number') {
+            nav.parse(ncxDoc);
+            toc = mapToc(nav.toc as EpubjsTocItem[], opfDir);
+          }
+        } catch (err) {
+          epubWarn(`NCX TOC fallback failed (${ncxPath}) — falling back to spine labels`, err);
+        }
+      }
+      if (toc.length === 0 && book.packaging?.navPath) {
+        try {
+          const navDoc = await book.load(book.packaging.navPath);
+          const tocNav =
+            navDoc?.querySelector?.('nav#toc') ??
+            navDoc?.querySelector?.('nav[role="doc-toc"]');
+          const navList = tocNav?.querySelector('ol') ?? undefined;
+          if (navList) {
+            toc = mapToc(nav.parseNavList(navList) as EpubjsTocItem[]);
+          }
+        } catch (err) {
+          epubWarn('nav-by-id TOC fallback failed — falling back to spine labels', err);
+        }
+      }
+    }
     if (toc.length === 0) {
       toc = spine.map((s, i) => ({
         label: `Chapter ${i + 1}`,
