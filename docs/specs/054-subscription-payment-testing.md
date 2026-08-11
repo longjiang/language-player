@@ -712,6 +712,11 @@ Verification per row:
   200, row `31145` expiry extended to now + 32d (reset, not stacked). Live
   delivery needed `stripe listen` running; it had been stopped, so the
   replay covered the handler path (live webhook delivery itself proven by W1).
+  **Production simulated renewal also verified 2026-08-10 (zero money):**
+  after deploying the env-secret webhook code, a signed `invoice.paid` event
+  posted to `pythonvps.zerotohero.ca/webhook-stripe-subscription-invoice-paid`
+  returned 200 and extended row `31149` to now + 32d; bogus signature → 400;
+  disposable user cleaned up.
 - ✅ S14 — Webhook auth (2026-08-10): bogus `Stripe-Signature` → 400
   ("No signatures found…"); missing signature → 400 ("Unable to extract
   timestamp…"); no grant applied (row count unchanged).
@@ -890,6 +895,8 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     closed). Deployers must set the matching secrets in `.env`/server env —
     the account has separate checkout and invoice webhook endpoints with
     different secrets, so both vars are required in production.
+    Verified in production 2026-08-10: bogus signature → 400; signed
+    simulated `invoice.paid` → 200 + renewal.
 
 ---
 
