@@ -16,7 +16,8 @@ let cachedPrices: StripePrice[] | null = null;
 /** Fetch prices from the Python backend. Result is cached in memory. */
 export async function getStripePrices(): Promise<StripePrice[]> {
   if (cachedPrices) return cachedPrices;
-  const res = await fetch(`${PYTHON_API_URL}/stripe-prices`);
+  const test = process.env.NEXT_PUBLIC_STRIPE_TEST === 'true';
+  const res = await fetch(`${PYTHON_API_URL}/stripe-prices${test ? '?test=true' : ''}`);
   if (!res.ok) throw new Error(`Failed to fetch prices: ${res.status}`);
   cachedPrices = (await res.json()) as StripePrice[];
   return cachedPrices!;

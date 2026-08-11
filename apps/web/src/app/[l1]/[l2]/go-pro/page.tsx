@@ -19,7 +19,11 @@ import { Button } from '@/components/ui/button';
 
 // ── Constants ──
 
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_9lnc7wrGHtcFdPKIWZdy9p17'; // TODO: use test key in dev
+// NEXT_PUBLIC_STRIPE_TEST=true switches to the Stripe test publishable key +
+// test prices for local payment E2E (SPEC-054 Phase 2).
+const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_TEST === 'true'
+  ? 'pk_test_kjsYSddsuYbdHnea22KggNe4'
+  : 'pk_live_9lnc7wrGHtcFdPKIWZdy9p17';
 
 /** The frontend host, used for post-payment redirect URLs. */
 const APP_HOST = typeof window !== 'undefined' ? window.location.origin : 'https://languageplayer.io';

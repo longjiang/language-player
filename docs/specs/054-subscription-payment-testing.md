@@ -750,6 +750,48 @@ Verification per row:
 - P5 — PayPal link-out (sandbox limitation; document only, do not complete)
 - S13/S14, C1 (price parity), C2 (subscription sync), C5 (gates), C7
 
+#### Phase 2 runbook — Web Stripe (S9–S10)
+
+Prerequisites (2026-08-10):
+
+- Web dev server on a non-Classic port (Classic owns :3000), e.g.
+  `npm run dev -w apps/web -- -p 3001` with `NEXT_PUBLIC_STRIPE_TEST=true` in
+  `apps/web/.env` (web now fetches test prices/publishable key when set).
+- Backend already in test mode (`STRIPE_TEST_MODE=1`, `STRIPE_WEBHOOK_SECRET`
+  if Payment Links are used).
+- Log in as Mary on the web app.
+
+| # | Plan | Card | Steps | Expected |
+|---|---|---|---|---|
+| S9 | Monthly | `4242 4242 4242 4242` | Web `/go-pro` → Monthly → Credit Card → Stripe test Checkout | Redirect back to web `/go-pro-success`; Pro unlocks; DB row `monthly`, `status=active`, ≈ +32d; MailerLite `monthly` on Mary |
+| S10a | Annual | `4242 4242 4242 4242` | Same, Annual plan | `type=annual`, expiry ≈ +367d |
+| S10b | Monthly | `4000 0000 0000 0002` | Same, declined card | Stripe decline; no row; web shows error screen |
+
+Verification: same DB/API/MailerLite checks as S1–S3; web `/go-pro-success`
+polling is already covered by B53.
+
+Coverage notes for the rest of Phase 2:
+
+- W5 — same Payment Link path as W1; web CNY buttons use the test links when
+  `NEXT_PUBLIC_STRIPE_TEST=true` (covered by W1 + link-resolution checks;
+  local-redirect link applies).
+- P5 — document-only (links to production Classic; do not complete).
+- S13/S14 — already verified in Phase 1 (backend/account-level, app-agnostic).
+- C1 — price parity covered by B85/S15 + a visual comparison of web go-pro
+  amounts vs `prices.csv`.
+- C2 — after S9, confirm `/user-subscription` (same backend) returns the row;
+  the cross-device sync matrix stays in Phase 5.
+- C5 — before S9, a web video page shows truncated transcript/2 examples;
+  after the grant, full transcript/unlimited examples.
+- C7 — web success/error pages render correctly (S9/S10 cover both paths;
+  neutral fallback from B53).
+
+#### Phase 2 progress
+
+- ⬜ S9–S10 — pending.
+- ✅ W5/P5/S13/S14 — covered/foregone per notes above.
+- ⬜ C1/C2/C5/C7 — pending until S9–S10 pass.
+
 ### Phase 3 — Mobile (`apps/mobile`) payment E2E
 
 - S11–S12 — Stripe credit card
