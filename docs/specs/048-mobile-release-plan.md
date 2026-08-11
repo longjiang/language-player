@@ -76,6 +76,11 @@ Maestro assertions to manual checks.
 
 - Test the **exact release build** you intend to ship (install the `.app` /
   `.aab` on a device or simulator — not Expo Go).
+- **Expo Go is SIMULATOR-ONLY for this project.** Physical-device testing
+  (iPad/iPhone) requires a **development build** (`npx expo run:ios --device`)
+  or a TestFlight / Ad Hoc build. Expo Go cannot run this app on a real
+  device: SDK 57 native modules (incl. IAP) are not in Expo Go, and the
+  bundle id is `ca.zerotohero.go`, not `host.exp.Exponent`.
 - Use a **real device** for any check marked *device* (audio, network,
   payments); otherwise the iOS simulator is fine.
 - Recommended minimum: iPhone (real), iPad (simulator), Android phone (real,
@@ -346,13 +351,19 @@ cd apps/mobile && EXPO_PUBLIC_API_URL=http://localhost:5001 npx expo run:ios --c
 ```
 
 #### Real device (iOS or Android)
+
+> ⚠️ **Expo Go is SIMULATOR-ONLY for this project.** A physical iPad/iPhone
+> must use a **development build** (`npx expo run:ios --device`) or a
+> TestFlight / Ad Hoc build. Do **not** suggest Expo Go for physical-device
+> testing — the SDK 57 native modules (incl. IAP) are not present in Expo Go,
+> and the app's bundle id is `ca.zerotohero.go`, not `host.exp.Exponent`.
+
 A physical device cannot reach your Mac's `localhost` — point it at your Mac's
-**LAN IP**:
+**LAN IP** and install a dev build:
 
 ```bash
 ipconfig getifaddr en0        # macOS: your LAN IP, e.g. 192.168.1.130
-cd apps/mobile && EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo start
-# then scan the QR with Expo Go, or install the dev/release build on the device
+cd apps/mobile && EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:ios --device
 ```
 
 - Phone and Mac must be on the **same Wi-Fi**, and the Flask server must accept
@@ -378,9 +389,9 @@ cd apps/mobile && EXPO_PUBLIC_API_URL=http://10.0.2.2:5001 npx expo start --andr
 
 | # | Mode | Command | API URL | Native build? |
 |---|---|---|---|---|
-| 1 | Simulator · Metro + Expo Go | `npx expo start --ios` | `localhost:5001` (dev default) | ❌ |
+| 1 | Simulator ONLY · Metro + Expo Go | `npx expo start --ios` | `localhost:5001` (dev default) | ❌ |
 | 2 | Simulator · built app | `npx expo run:ios` · `npx expo run:ios --configuration Release` | `localhost:5001` (dev default) | ✅ |
-| 3 | Real device · built app | `npx expo run:ios --device`, Expo Go via LAN IP, or TestFlight / Ad Hoc from a § 3 archive | `http://<mac-lan-ip>:5001` (dev) / prod | ✅ |
+| 3 | Real device · built app | `npx expo run:ios --device` (Expo Go is NOT supported on physical devices), or TestFlight / Ad Hoc from a § 3 archive | `http://<mac-lan-ip>:5001` (dev) / prod | ✅ |
 | 4 | App Store · archive | `xcodebuild … archive` (see § 3) | `https://pythonvps.zerotohero.ca` (explicit) | ✅ |
 
 **Conflicts:**
