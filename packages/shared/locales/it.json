@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Concedi un nuovo abbonamento a questo utente.",
         "hsk_explanation": "HSK è il test ufficiale di competenza in cinese, con il Livello 1 come il più basso e il Livello 9 come il più alto.",
         "iap_purchase_failed": "Acquisto in-app fallito. Riprova.",
+        "iap_purchase_not_for_account": "Questo acquisto non appartiene all'account con cui hai effettuato l'accesso.",
         "initializing": "Inizializzazione...",
         "ios_lifetime_only": "Solo il piano a vita è disponibile su iOS.",
         "keep_or_reset_time": "Vuoi mantenere il tempo attuale o azzerarlo?",

@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Cấp đăng ký mới cho người dùng này.",
         "hsk_explanation": "HSK là bài kiểm tra năng lực tiếng Trung chính thức, với Cấp 1 là thấp nhất và Cấp 9 là cao nhất.",
         "iap_purchase_failed": "Mua trong ứng dụng thất bại. Vui lòng thử lại.",
+        "iap_purchase_not_for_account": "Giao dịch mua này không thuộc về tài khoản đã đăng nhập.",
         "initializing": "Đang khởi tạo...",
         "ios_lifetime_only": "Chỉ gói trọn đời khả dụng trên iOS.",
         "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",

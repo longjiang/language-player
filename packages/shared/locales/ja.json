@@ -801,6 +801,7 @@
         "grant_subscription_hint": "このユーザーに新しいサブスクリプションを付与します。",
         "hsk_explanation": "「HSK」は公式の中国語能力試験で、レベル1が最も低く、レベル9が最も高いです。",
         "iap_purchase_failed": "アプリ内購入に失敗しました。もう一度お試しください。",
+        "iap_purchase_not_for_account": "この購入はログイン中のアカウントのものではありません。",
         "initializing": "初期化中...",
         "ios_lifetime_only": "iOSではライフタイムプランのみ利用可能です。",
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",

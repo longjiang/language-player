@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Berikan langganan baru kepada pengguna ini.",
         "hsk_explanation": "HSK adalah tes kemahiran bahasa Mandarin resmi, dengan Level 1 sebagai yang terendah dan Level 9 sebagai yang tertinggi.",
         "iap_purchase_failed": "Pembelian dalam aplikasi gagal. Silakan coba lagi.",
+        "iap_purchase_not_for_account": "Pembelian ini bukan milik akun yang masuk.",
         "initializing": "Memulai...",
         "ios_lifetime_only": "Hanya paket seumur hidup yang tersedia di iOS.",
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",

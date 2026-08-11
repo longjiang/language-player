@@ -191,11 +191,20 @@ export default function GoProScreen() {
           router.push('/go-pro-success' as any);
         } else {
           logwarn('[IAP] backend did not confirm:', data?.message);
-          setError(data?.message ?? t('msg.receipt_validation_failed'));
+          // Backend messages are English (Flask); map the known ones to
+          // localized keys instead of showing raw text.
+          const msg = data?.message as string | undefined;
+          setError(
+            msg?.includes('does not belong to the signed-in account')
+              ? t('msg.iap_purchase_not_for_account')
+              : msg?.includes('could not be verified from Apple')
+                ? t('msg.receipt_validation_failed')
+                : t('msg.receipt_validation_failed'),
+          );
         }
       } catch (err: any) {
         logwarn('[IAP] purchase processing error:', err);
-        setError(localizedError(t, err, 'msg.receipt_validation_failed'));
+        setError(t('msg.receipt_validation_failed'));
       } finally {
         setIapProcessing(false);
         setIapResult(null);
@@ -234,7 +243,13 @@ export default function GoProScreen() {
       if (err?.message?.includes('User cancelled')) {
         // User cancelled — don't show error
       } else {
-        setError(localizedError(t, err, 'msg.iap_purchase_failed'));
+        // expo-iap throws the raw English "Failed to request purchase" for
+        // any native request failure — show the localized message instead.
+        setError(
+          err?.message?.includes('Failed to request purchase')
+            ? t('msg.iap_purchase_failed')
+            : localizedError(t, err, 'msg.iap_purchase_failed'),
+        );
       }
       setIapProcessing(false);
     }

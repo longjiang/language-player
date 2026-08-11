@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Ken dit account een nieuw abonnement toe.",
         "hsk_explanation": "HSK is de officiële Chinese vaardigheidstest, waarbij niveau 1 het laagste is en niveau 9 het hoogste.",
         "iap_purchase_failed": "Aankoop in app mislukt. Probeer het opnieuw.",
+        "iap_purchase_not_for_account": "Deze aankoop behoort niet tot het aangemelde account.",
         "initializing": "Initialiseren...",
         "ios_lifetime_only": "Alleen het levenslange abonnement is beschikbaar op iOS.",
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",

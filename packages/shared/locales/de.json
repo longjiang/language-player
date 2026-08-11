@@ -801,6 +801,7 @@
         "grant_subscription_hint": "Erteilen Sie diesem Benutzer ein neues Abonnement.",
         "hsk_explanation": "HSK ist der offizielle chinesische Sprachtest, wobei Stufe 1 die niedrigste und Stufe 9 die höchste ist.",
         "iap_purchase_failed": "In-App-Kauf fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        "iap_purchase_not_for_account": "Dieser Kauf gehört nicht dem angemeldeten Konto.",
         "initializing": "Wird initialisiert...",
         "ios_lifetime_only": "Nur der Lifetime-Plan ist auf iOS verfügbar.",
         "keep_or_reset_time": "Möchten Sie Ihre aktuelle Zeit behalten oder auf Null zurücksetzen?",

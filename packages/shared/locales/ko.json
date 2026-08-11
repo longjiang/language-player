@@ -801,6 +801,7 @@
         "grant_subscription_hint": "이 사용자에게 새 구독을 부여합니다.",
         "hsk_explanation": "HSK는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
         "iap_purchase_failed": "인앱 구매에 실패했습니다. 다시 시도해 주세요.",
+        "iap_purchase_not_for_account": "이 구매는 로그인한 계정의 것이 아닙니다.",
         "initializing": "초기화 중...",
         "ios_lifetime_only": "iOS에서는 평생 요금제만 이용 가능합니다.",
         "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?",
