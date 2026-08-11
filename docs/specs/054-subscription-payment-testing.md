@@ -4,8 +4,8 @@
 
 - **Spec ID**: SPEC-054
 - **Feature**: Subscription & payment testing across `zerotohero-nuxt` (Classic), `apps/web` and `apps/mobile`, covering subscription endpoints, all payment methods, renewal, trial, cancellation, and MailerLite sync
-- **Status**: draft
-- **Created**: 2026-08-08
+- **Status**: Active
+- **Created**: 2026-08-08 · **Updated**: 2026-08-10
 - **Scope**: All three active frontends + admin console + `zerotohero-python-server` payment, subscription, auth, and MailerLite paths (no production data should be touched by these tests)
 - **Related specs**: [SPEC-014 — Subscription & Payment System](014-subscription-payment-system.md) · [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) · [SPEC-039 — Full Database Migration (Supabase)](039-full-database-migration-supabase.md) · [SPEC-060 — Admin Console User Management](060-admin-console-user-management.md) · [SPEC-041 — Delete Account](041-delete-account.md)
 - **Supersedes**: [SPEC-025 — Payment E2E Testing (archived)](archive/025-payment-e2e-testing.md)
@@ -24,13 +24,21 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 - **Apple In-App Purchase** exists only on iOS. It is lifetime-only and
   non-consumable: Classic uses `pro` (`ca.zerotohero.app`); `apps/mobile`
   uses `pro_go` (`ca.zerotohero.go`, the GO listing's product).
-- **Google Play Billing** is **not implemented** in any frontend. Android users pay through the web-based flows (Stripe / WeChat / Alipay). The Play test-lab setup below is documented for when Billing is implemented, per SPEC-014.
+- **Google Play Billing** is **not implemented** in any frontend. Android
+  users currently use the browser web-checkout stopgap; the target is Play
+  Billing later, with purchases on the website in the interim (SPEC-014).
+  The Play test-lab setup below is documented for when Billing is
+  implemented.
 - **Mobile iOS** — Apple IAP (`pro_go`) is the store-compliant in-app method.
   Lifetime is also offered via browser checkout today (policy risk); the
   SPEC-014 target is IAP-only in-app, with card/WeChat/Alipay/PayPal moved to
-  the website.
-- **PayPal** is implemented as a direct checkout only in Classic. Web and Mobile offer a link out to Classic's go-pro page instead.
-- **WeChat Pay / Alipay** are processed through Stripe Payment Links (CNY, one-time only) on all three frontends.
+  the website (code cleanup pending).
+- **PayPal** is implemented as a direct checkout only in Classic. Web offers
+  a link out to Classic's go-pro page; Mobile does not offer PayPal in-app
+  (buy on website, SPEC-014).
+- **WeChat Pay / Alipay** are processed through Stripe Payment Links (CNY,
+  one-time only) on Classic and Web; mobile N/A once the non-IAP payment UI
+  is removed (SPEC-014).
 - **Stripe Credit Card** is the only method supporting recurring monthly/annual subscriptions (Stripe webhook `invoice.paid`).
 
 ### Current payment matrix (2026-08-10)
@@ -151,8 +159,10 @@ In test mode, each frontend uses the `test_payment_link` values from `prices.csv
 
 Steps:
 
-1. Backend in test mode (`stripe_test = True`).
-2. On Classic/Web/Mobile go-pro, select the plan and click **WeChat Pay** or **Alipay**; the app opens the test link with `?client_reference_id=<user_id>` appended.
+1. Backend in test mode (`STRIPE_TEST_MODE=1`).
+2. On Classic/Web go-pro (mobile N/A once the non-IAP payment UI is removed,
+   SPEC-014), select the plan and click **WeChat Pay** or **Alipay**; the app
+   opens the test link with `?client_reference_id=<user_id>` appended.
 3. In the Stripe-hosted page, choose WeChat Pay or Alipay. Stripe test mode shows a QR code; scanning it (or opening the hosted page) routes to a Stripe-hosted page that simulates authorizing the test payment.
 4. Backend webhook `checkout.session.completed` fires and grants the subscription.
 5. Because these are one-time links, there is **no auto-renewal**; verify the subscription is the one-time type (lifetime has no expiry; monthly/annual via Payment Link record the initial expiry only).
@@ -186,7 +196,11 @@ Reference: <https://developer.paypal.com/sandbox-testing/overview>. PayPal sandb
 7. Cancel test: abandon/close the PayPal approval dialog → `onCancel` shows
    the cancelled message; no subscription record.
 
-Web and Mobile only link to `https://languageplayer.io/go-pro` for PayPal — in test mode that link goes to **production Classic**, so the PayPal flow cannot be safely end-tested from Web/Mobile without a test build of Classic running on a test host. Record this limitation rather than clicking the production link.
+Web links to `https://languageplayer.io/go-pro` for PayPal — in test mode
+that link goes to **production Classic**, so the PayPal flow cannot be safely
+end-tested from Web without a test build of Classic running on a test host.
+Record this limitation rather than clicking the production link. Mobile no
+longer offers PayPal in-app (SPEC-014; P6 obsolete).
 
 ### 1.4 Apple In-App Purchase (iOS)
 
@@ -258,8 +272,8 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | S8 | Classic | Monthly | Cancel/close Checkout | Redirect to `/go-pro` (cancel URL); no subscription row |
 | S9 | Web | Monthly | go-pro → Credit Card → `4242...` | Backend session created; Stripe test Checkout; success redirects to web `/go-pro-success` (host passed by web); Pro unlocks |
 | S10 | Web | Annual + declined card | Repeat S9 with annual price and `4000...0002` | Annual success; declined shows error and no grant |
-| S11 | Mobile | Monthly | go-pro → Credit Card → `4242...` (opens in browser) | Test Checkout succeeds; mobile app's subscription state flips to Pro after refetch (may need pull-to-refresh / re-mount) |
-| S12 | Mobile | Annual + lifetime | `4242...` for each | Both grant; lifetime has no expiry |
+| S11 | Mobile | Monthly | ~~go-pro → Credit Card~~ — **obsolete** | Non-IAP payment UI is being removed from mobile (SPEC-014); do not run new E2E against the browser web-checkout stopgap |
+| S12 | Mobile | Annual + lifetime | ~~`4242...` for each~~ — **obsolete** | Same as S11; removed with the non-IAP payment UI |
 | S13 | All | Renewal | With an active monthly test subscription, run `stripe trigger invoice.paid` (or wait for test-mode renewal) | Backend extends expiry via `invoice.paid` webhook; `/user-subscription` shows new expiry |
 | S14 | All | Webhook auth | Send `checkout.session.completed` with wrong signature / no signature | Backend returns 400; no grant applied |
 | S15 | All | Price parity | Open `/stripe-prices` and `/stripe-prices?test=true` | Test endpoint returns test IDs/links; live endpoint returns live IDs/links; amounts match `prices.csv` (10/90/169 USD; 73/653/1227 CNY; sale lifetime 84.50 USD / 608 CNY if `SALE` enabled) |
@@ -273,10 +287,10 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | W3 | Classic | Lifetime → WeChat or Alipay | Lifetime test link `test_4gwdRk6Xr5XlfuwaEN` | Granted `type=lifetime`, no expiry |
 | W4 | Classic | Any | Cancel/abandon before authorizing | No webhook, no subscription; user returns to Stripe-hosted page |
 | W5 | Web | Monthly/Annual/Lifetime | Open Web go-pro → WeChat/Alipay link | Same as W1–W3; `client_reference_id` present in URL; grant lands on the same user |
-| W6 | Mobile | Monthly/Annual/Lifetime | Open Mobile go-pro → WeChat/Alipay link | Same; mobile subscription state updates after refetch |
+| W6 | Mobile | Monthly/Annual/Lifetime | ~~Open Mobile go-pro → WeChat/Alipay link~~ — **obsolete** | Non-IAP payment UI is being removed from mobile (SPEC-014); do not run new E2E against the browser web-checkout stopgap |
 | W7 | All | Recurrence check | Inspect the created subscription after a monthly/annual Payment Link purchase | `payment_processor=stripe` with **no** `payment_customer_id` / no Stripe subscription — verify renewal is **not** possible (one-time only) |
 
-### 2.3 PayPal (Classic direct; Web/Mobile link out)
+### 2.3 PayPal (Classic direct; Web link out; Mobile N/A)
 
 | # | App | Steps | Expected result |
 |---|---|---|---|
@@ -285,7 +299,7 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | P3 | Classic | Cancel the PayPal dialog | `paypalPaymentStatus = 'cancelled'` warning on go-pro; no subscription — **foregone 2026-08-10** (same cancel semantics as S8; client-side only) |
 | P4 | Classic | Purchase twice with two sandbox buyers | Second purchase updates/keeps one lifetime record per user (no duplicate charge without consent; verify idempotency) — **foregone 2026-08-10** (`payment_id` unique + `ON CONFLICT`; already-captured COMPLETED order verified via GET, mocked) |
 | P5 | Web | Lifetime → PayPal link | Opens `https://languageplayer.io/go-pro` (**production Classic**) — do **not** complete; document that Web has no sandbox PayPal path until a test Classic host exists |
-| P6 | Mobile | Lifetime → PayPal link (non-iOS) | Same as P5 — link out only; skip completion in test |
+| P6 | Mobile | Lifetime → PayPal link (non-iOS) | **Obsolete** — mobile no longer offers PayPal in-app (SPEC-014; buy on website) |
 
 ### 2.4 Apple IAP (iOS only)
 
@@ -295,8 +309,8 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | A2 | Mobile (Expo) | Sandbox account → go-pro → Apple IAP button → confirm | `expo-in-app-purchases` listener gets the purchase; receipt POSTed to backend; on success `finishTransactionAsync(purchase, false)`; app pushes `/go-pro-success`; Pro state updates |
 | A3 | Both | Tap **Restore Purchases** after reinstall / second device with same sandbox account | Restored purchase list non-empty; receipts re-validated; Pro re-granted; no duplicate transaction |
 | A4 | Both | Cancel the sandbox confirmation dialog | Purchase callback errors (`USER_CANCELED`); app returns to go-pro with an error message; no grant |
-| A5 | Both | Purchase `pro` again on an account that already has it (non-consumable) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency) |
-| A6 | Mobile | Run on Android | IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); monthly/annual plans show the iOS gate message; lifetime still offers Stripe/WeChat/Alipay |
+| A5 | Both | Purchase the same non-consumable again (`pro` Classic / `pro_go` mobile) | App Store returns "You're already subscribed" / no new charge; backend must not create a second lifetime row (verify idempotency) |
+| A6 | Mobile | Run on Android | IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); no in-app payment methods on Android (buy on website, SPEC-014); plan cards remain informational |
 | A7 | Backend | Post a bogus receipt (`user_id` + garbage string) | `type: 'error'` response from Apple validation; no subscription granted |
 
 > ✅ A1/A2 bundle-ID question resolved 2026-08-10: the backend validates
@@ -851,13 +865,22 @@ Coverage notes for the rest of Phase 2:
 
 ### Phase 3 — Mobile (`apps/mobile`) payment E2E
 
-- S11–S12 — Stripe credit card
-- W6 — WeChat Pay / Alipay
-- P6 — PayPal link-out (document only)
-- C2 (subscription sync), C5 (gates), C6 (cancel), C7; verify mobile
-  subscription state refreshes after purchase
-- Scope note: current mobile payments are the browser web-checkout stopgap
-  (SPEC-014). Play Billing is out of scope until implemented.
+**Scope change (2026-08-10):** non-IAP payment UI is being removed from the
+mobile app (SPEC-014 target — store billing only in-app). S11–S12 (Stripe),
+W6 (WeChat/Alipay), and P6 (PayPal link-out) are **obsolete**; do not run new
+E2E against them. Until the code cleanup lands, they still exist as the
+browser web-checkout stopgap.
+
+Remaining mobile checks:
+
+- C5 (gates) — free/Pro gates flip on mobile
+- C6 (cancel) — cancel at period end from the mobile profile
+- C7 (success/error screens) — IAP paths only
+- Verify subscription state refreshes after a **website** purchase (buy on
+  web → open the app → Pro appears)
+- C2 (subscription sync) — deferred to Phase 5
+- Apple IAP purchase + restore — Phase 4
+- Play Billing — out of scope until implemented
 
 ### Phase 4 — IAP last (Classic + mobile)
 
@@ -886,9 +909,9 @@ resolved 2026-08-10.)
 
 | Trigger | Scope | Device | Estimated time |
 |---|---|---|---|
-| Before every App Store submission | A1–A7 + S1–S15 + W1–W7 + C1–C7 | Real iPhone (sandbox account) + simulators + browser | ~60 min |
-| Before every web release | S9–S15 + W5–W7 + C1, C5, C7 | Browser (test backend) | ~25 min |
-| After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S15, W1–W7, P1–P4, A1–A7 | As appropriate per change | ~45 min |
+| Before every App Store submission | A1–A7 + S1–S10/S13–S15 + W1–W5/W7 + C1–C7 | Real iPhone (sandbox account) + simulators + browser | ~60 min |
+| Before every web release | S9–S10 + S13–S15 + W5/W7 + C1, C5, C7 | Browser (test backend) | ~25 min |
+| After any payment backend change (`routes/payments.py`, `app_stripe_checkout.py`, `app_paypal_checkout.py`, `app_in_app_purchase.py`, `prices.csv`) | S1–S10/S13–S15, W1–W5/W7, P1–P5, A1–A7 | As appropriate per change | ~45 min |
 | After any Supabase/auth/data-layer change (`utils_subscription.py`, `routes/subscriptions.py`, `routes/admin_users.py`, `auto_verify_email.py`, `utils_mailer_lite.py`) | B1–B90 | CI/test schema (automated where possible) | ~30 min |
 | Quarterly (renewal regression) | S13, C6 + test-mode renewals | Browser + real device | ~20 min |
 
@@ -915,7 +938,11 @@ resolved 2026-08-10.)
    `zerotohero-nuxt/lib/utils/variables.js` has `TEST = false` as a committed
    constant — keep it false in production; sandbox runs use a temporary edit
    (revert before deploy) or make it env-driven.
-4. **Web/Mobile PayPal cannot be sandbox-tested** because they link to the production Classic go-pro page. Options: run a test Classic deployment on a test host and point the links there, or implement PayPal directly in Web/Mobile (SPEC-014).
+4. **Web PayPal cannot be sandbox-tested** because it links to the
+   production Classic go-pro page (P5 document-only). Mobile no longer offers
+   PayPal in-app (SPEC-014; buy on website). Options: run a test Classic
+   deployment on a test host and point the link there, or implement PayPal
+   directly in Web (SPEC-014).
 5. **Google Play Billing is not implemented** — the sandbox guide in 1.5 is reference-only until SPEC-014 work lands.
 6. **Payment Link purchases have no return redirect** — verification relies on webhooks. The test must confirm the `checkout.session.completed` event arrives with `client_reference_id` intact; if webhooks are down, grants silently fail.
 7. **Automation** (SPEC-025's mock backend: `/mock-stripe-checkout`, `/mock-wechat-pay`, etc.) is still future work; provider-hosted UI rows remain human-run, but the backend/data-layer rows in 2.6 are automatable with mocks.
@@ -957,8 +984,8 @@ resolved 2026-08-10.)
     sandbox (PayPal disabled the legacy client auth). Classic now loads the
     current JS SDK, creates orders via `POST /create-paypal-order`, and the
     backend captures/verifies via `/v2/checkout/orders/{id}/capture` before
-    granting. Backend covered by `test_paypal_orders_v2.py`; sandbox UI run
-    pending.
+    granting. Backend covered by `test_paypal_orders_v2.py`; sandbox UI
+    verified via P1 (2026-08-10); P2–P4 foregone with mocked coverage.
 18. **UTC-consistent payment timestamps — fixed 2026-08-10:** `expires_on`
     and `payment_date` are computed from `datetime.now(timezone.utc)`
     (previously naive server-local time stamped `Z`). The 32/367-day cadence
