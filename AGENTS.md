@@ -411,6 +411,8 @@ cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
 ```
 The `nvm use 22` is **not optional** — the shell loses nvm context between terminal sessions, and `npx expo start` run from the repo root will pick up the wrong project config.
 
+**Expo Go is SIMULATOR-ONLY for this project (Expo SDK 57 / RN 0.86).** Physical devices (iPad/iPhone) require a development build (`npx expo run:ios --device`) or TestFlight/Ad Hoc. Never suggest Expo Go for physical-device testing — SDK 57 native modules (incl. IAP) are missing from Expo Go, and the bundle id is `ca.zerotohero.go`, not `host.exp.Exponent`. See SPEC-048 § 1.4.
+
 **Never use `--clear` unless proven necessary.** It wipes the bundle cache, forcing a full rebuild of 2000+ modules. Use `r` in the Metro terminal to reload instead.
 
 **Escalation for Metro issues:**
@@ -419,7 +421,7 @@ The `nvm use 22` is **not optional** — the shell loses nvm context between ter
 3. `--clear` only as last resort (~minutes)
 4. If unclear, check with the user
 
-**For Metro, `npx expo run:ios`** does a full native build (needs CocoaPods). Prefer `npx expo start --ios` for development, which uses Expo Go. If you must use `run:ios`, the RVM Ruby has an x86_64 nkf gem on ARM Macs — work around it with:
+**For Metro, `npx expo run:ios`** does a full native build (needs CocoaPods). Prefer `npx expo start --ios` for development, which uses Expo Go (**simulator only**). If you must use `run:ios`, the RVM Ruby has an x86_64 nkf gem on ARM Macs — work around it with:
 ```bash
 EXPO_NO_POD_INSTALL=1 npx expo prebuild --platform ios && \
 /usr/bin/ruby -S pod install --project-directory=ios && \
