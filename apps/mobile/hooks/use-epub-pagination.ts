@@ -4,10 +4,10 @@ import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { tokenizerLogger, translationLogger } from '@/lib/logger';
+import { lemmatizeLogger, translationLogger } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
-const { log } = tokenizerLogger;
+const { log } = lemmatizeLogger;
 
 interface UseEpubPaginationOptions {
   text: string;
@@ -35,6 +35,24 @@ interface UseEpubPaginationOptions {
 
 /** Translate at most this many paragraphs per request (progressive/lazy). */
 const TRANSLATE_CHUNK_SIZE = 10;
+/** How many times a suspected-truncated paragraph is retried before accepting it. */
+const MAX_TRUNCATED_ATTEMPTS = 3;
+
+const TERMINAL_PUNCTUATION = /[。．.！？!?…"”』」"')\]]$/;
+
+/**
+ * Heuristic: a paragraph translation is probably truncated when it is much
+ * shorter than the source (LLM output-token cutoff) and ends without any
+ * sentence-final punctuation. Purely a signal for logging/retry — a short
+ * legitimate translation can match it, which is why retries are capped.
+ */
+function isSuspectedTruncated(source: string, translation: string): boolean {
+  const src = source.trim();
+  const tr = translation.trim();
+  if (src.length < 30 || tr.length === 0) return false;
+  if (tr.length / src.length >= 0.5) return false;
+  return !TERMINAL_PUNCTUATION.test(tr);
+}
 
 /** Rough block height estimate used for non-blocking EPUB pagination. */
 function estimateBlockHeight(block: ContentBlock, contentWidth: number): number {
@@ -94,6 +112,7 @@ export function useEpubPagination({
   const tokenLoadGenRef = useRef(0);
   const translateGenRef = useRef(0);
   const translateDoneRef = useRef<Set<number>>(new Set());
+  const translateAttemptsRef = useRef<Map<number, number>>(new Map());
   const translateInFlightRef = useRef(false);
   const pageTextKeyRef = useRef('');
   const translateRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -350,10 +369,12 @@ export function useEpubPagination({
     // the page's text-block set changes (navigation, seek, chapter change).
     const pageKey = textBlocks.map((b) => blocks.indexOf(b)).join(',');
     if (pageTextKeyRef.current !== pageKey) {
+      translationLogger.log(`page=${pageKey} textBlocks=${textBlocks.length} — decision: reset per-page translation state`);
       pageTextKeyRef.current = pageKey;
       translateGenRef.current++;
       translateInFlightRef.current = false;
       translateDoneRef.current = new Set();
+      translateAttemptsRef.current = new Map();
       translateRetryDelayRef.current = 1000;
       if (translateRetryTimerRef.current) {
         clearTimeout(translateRetryTimerRef.current);
@@ -362,10 +383,10 @@ export function useEpubPagination({
       setBlockTranslations({});
     }
 
-    const pending: { localIdx: number; text: string }[] = [];
+    const pending: { localIdx: number; globalIdx: number; text: string }[] = [];
     for (let i = 0; i < textBlocks.length; i++) {
       if (translateDoneRef.current.has(i)) continue;
-      pending.push({ localIdx: i, text: textBlocks[i].text });
+      pending.push({ localIdx: i, globalIdx: blocks.indexOf(textBlocks[i]), text: textBlocks[i].text });
     }
     if (pending.length === 0 || translateInFlightRef.current) return;
 
@@ -373,7 +394,11 @@ export function useEpubPagination({
     const gen = ++translateGenRef.current;
     translateInFlightRef.current = true;
     setIsTranslating(true);
+    const requestStart = Date.now();
     let madeProgress = false;
+    translationLogger.log(
+      `request chunk=${chunk.length} pending=${pending.length} local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}] l1=${l1Code} l2=${l2Code}`,
+    );
 
     fetch(`${PYTHON_API_URL}/translate_array`, {
       method: 'POST',
@@ -388,20 +413,46 @@ export function useEpubPagination({
         if (translateGenRef.current !== gen) return;
         const translated = Array.isArray(data?.translated_texts) ? data.translated_texts : [];
         const additions: Record<number, string> = {};
+        const missing: { localIdx: number; globalIdx: number; text: string }[] = [];
+        const suspected: { localIdx: number; globalIdx: number; text: string; attempts?: number; acceptedAfter?: number }[] = [];
         chunk.forEach((p, i) => {
           const tr = typeof translated[i] === 'string' ? translated[i] : '';
-          if (tr.trim().length > 0) {
-            additions[p.localIdx] = tr;
-            translateDoneRef.current.add(p.localIdx);
+          if (tr.trim().length === 0) {
+            missing.push(p);
+            return;
           }
+          if (isSuspectedTruncated(p.text, tr)) {
+            const attempts = (translateAttemptsRef.current.get(p.localIdx) ?? 0) + 1;
+            translateAttemptsRef.current.set(p.localIdx, attempts);
+            if (attempts >= MAX_TRUNCATED_ATTEMPTS) {
+              // Don't loop forever — accept the best effort after the cap.
+              additions[p.localIdx] = tr;
+              translateDoneRef.current.add(p.localIdx);
+              suspected.push({ ...p, acceptedAfter: attempts });
+            } else {
+              suspected.push({ ...p, attempts });
+            }
+            return;
+          }
+          additions[p.localIdx] = tr;
+          translateDoneRef.current.add(p.localIdx);
         });
         madeProgress = Object.keys(additions).length > 0;
         if (madeProgress) {
           setBlockTranslations(prev => ({ ...prev, ...additions }));
         }
+        translationLogger.log(
+          `response elapsed=${Date.now() - requestStart}ms got=${translated.length} added=${Object.keys(additions).length} done=${translateDoneRef.current.size}/${textBlocks.length}`
+          + (missing.length > 0
+            ? ` missing=[${missing.map(p => `${p.localIdx}:${p.globalIdx}`).join(',')}] texts=[${missing.map(p => JSON.stringify(p.text.slice(0, 40))).join(', ')}]`
+            : '')
+          + (suspected.length > 0
+            ? ` suspectedTruncated=[${suspected.map(p => `${p.localIdx}:${p.globalIdx}${p.acceptedAfter ? `(acceptedAfter${p.acceptedAfter})` : `(attempt${p.attempts})`}`).join(',')}] texts=[${suspected.map(p => JSON.stringify(p.text.slice(0, 40))).join(', ')}]`
+            : ''),
+        );
       })
       .catch((e: any) => {
-        translationLogger.logwarn(`translate chunk failed (${chunk.length} blocks):`, e?.message ?? e);
+        translationLogger.logwarn(`request failed elapsed=${Date.now() - requestStart}ms local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}]:`, e?.message ?? e);
       })
       .finally(() => {
         if (translateGenRef.current !== gen) return;
@@ -414,11 +465,17 @@ export function useEpubPagination({
           if (!madeProgress) {
             translateRetryDelayRef.current = Math.min(15000, delay * 2);
           }
+          translationLogger.log(
+            `retry scheduled in=${delay}ms pending=${textBlocks.length - translateDoneRef.current.size}`
+            + ` blocks=[${pending.map(p => `${p.localIdx}:${p.globalIdx}`).join(',')}]`,
+          );
           if (translateRetryTimerRef.current) clearTimeout(translateRetryTimerRef.current);
           translateRetryTimerRef.current = setTimeout(() => {
             translateRetryTimerRef.current = null;
             setTranslateRetry(c => c + 1);
           }, delay);
+        } else {
+          translationLogger.log(`complete — all ${textBlocks.length} visible paragraphs translated`);
         }
       });
   }, [visibleBlocks, hasMeasured, showTranslation, loadingTokens, blocks, l1Code, l2Code, translateRetry]);

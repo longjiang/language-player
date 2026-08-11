@@ -53,8 +53,10 @@ Rules:
 - A **domain override replaces the global level** for that domain. `setLogLevel(0, 'sync')`
   silences even sync errors; `setLogLevel(3, 'translation')` shows every
   translation line even when the global level is `1`.
-- The `[LP Mobile]` app prefix is still prepended to every line, so existing
-  console filtering by app continues to work; the domain is orthogonal.
+- Every line is emitted as `[LP Mobile] [domain] message` (e.g.
+  `[LP Mobile] [translation] request …`), so both the app and the domain can
+  be filtered in a shared console; messages without a domain stay
+  `[LP Mobile] message`.
 
 ### API
 
@@ -103,4 +105,3 @@ All domain loggers are exported from `apps/mobile/lib/logger.ts`.
 | Env suffix is the domain in upper-snake case | Predictable per-domain build-time control (`TRANSLATION`, `TOKENIZER`, `SYNC`, …). |
 | `sync` defaults off in mobile | Sync is the noisiest background subsystem; it can be re-enabled at runtime (`setLogLevel(3, 'sync')`) or build time. |
 | Resolution order runtime → env → global | Runtime toggles are immediate for debugging; env pins the default for a session/build. |
-

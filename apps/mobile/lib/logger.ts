@@ -27,18 +27,32 @@ export const translationLogger = createLogger('[LP Mobile]', 'translation');
 export const tokenizerLogger = createLogger('[LP Mobile]', 'tokenizer');
 export const readerLogger = createLogger('[LP Mobile]', 'reader');
 export const popupLogger = createLogger('[LP Mobile]', 'popup');
+export const lemmatizeLogger = createLogger('[LP Mobile]', 'lemmatize');
+export const tokenizedTextLogger = createLogger('[LP Mobile]', 'tokenized-text');
+export const dictDbLogger = createLogger('[LP Mobile]', 'dictdb');
 export const syncLogger = createLogger('[LP Mobile]', 'sync');
 
-// Sync chatter is off by default — re-enable with setLogLevel(3, 'sync') or
-// EXPO_PUBLIC_LOG_LEVEL_SYNC=3. The env override wins when explicitly set.
-let syncLevelRaw: string | undefined;
-try {
-  syncLevelRaw = process.env.EXPO_PUBLIC_LOG_LEVEL_SYNC ?? process.env.NEXT_PUBLIC_LOG_LEVEL_SYNC;
-} catch {
-  syncLevelRaw = undefined;
+/**
+ * Default a domain to OFF unless its env override is explicitly set, e.g.
+ * EXPO_PUBLIC_LOG_LEVEL_SYNC=3. Re-enable at runtime with
+ * setLogLevel(0|1|2|3, 'sync').
+ */
+function defaultOff(domain: string): void {
+  const key = domain.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+  let raw: string | undefined;
+  try {
+    raw = process.env[`EXPO_PUBLIC_LOG_LEVEL_${key}`] ?? process.env[`NEXT_PUBLIC_LOG_LEVEL_${key}`];
+  } catch {
+    raw = undefined;
+  }
+  if (raw === undefined || raw === '') {
+    setLogLevel(0, domain);
+  }
 }
-if (syncLevelRaw === undefined || syncLevelRaw === '') {
-  setLogLevel(0, 'sync');
-}
+
+defaultOff('sync');
+defaultOff('lemmatize');
+defaultOff('tokenized-text');
+defaultOff('dictdb');
 
 export { getLogLevel, setLogLevel };

@@ -11,9 +11,10 @@ import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { readerLogger } from '@/lib/logger';
+import { readerLogger, translationLogger } from '@/lib/logger';
 
 const { log } = readerLogger;
+const displayLoggedState = new WeakMap<ContentBlock, boolean>();
 
 /** Tokenize blocks within this many px of the viewport (web parity: 200px rootMargin). */
 const VISIBILITY_BUFFER = 200;
@@ -351,6 +352,17 @@ function renderBlock(
   const localIdx = visibleTextBlocks.indexOf(block as TextBlock);
   const translation = localIdx >= 0 ? blockTranslations[localIdx] : undefined;
   const cachedTokens = tokenCache[globalIdx];
+
+  // ── Translation display transition (per block, once per state) ──
+  // Logs when a visible paragraph first renders without a translation
+  // ("pending") and again when the translation appears ("shown").
+  if (showTranslation && localIdx >= 0) {
+    const shown = !!translation;
+    if (displayLoggedState.get(block) !== shown) {
+      displayLoggedState.set(block, shown);
+      translationLogger.log(`display block=${globalIdx} local=${localIdx} ${shown ? 'shown' : 'pending'}`);
+    }
+  }
 
   // ── Body block content (tokenized text + optional translation) ──
   const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item') => {

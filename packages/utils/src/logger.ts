@@ -140,8 +140,18 @@ export interface Logger {
  * always prepended first so logs can be filtered by app in a shared console.
  */
 export function createLogger(appPrefix: string, category?: string): Logger {
-  const prefixed = (msg: string): string =>
-    msg.startsWith(appPrefix) ? msg : `${appPrefix} ${msg}`;
+  // Always emit the app prefix, then the domain tag when present:
+  //   [LP Mobile] [translation] request …
+  // Messages that already start with the app prefix have it stripped first
+  // so it is never duplicated.
+  const prefixed = (msg: string): string => {
+    const withoutAppPrefix = msg.startsWith(appPrefix)
+      ? msg.slice(appPrefix.length).trimStart()
+      : msg;
+    return category
+      ? `${appPrefix} [${category}] ${withoutAppPrefix}`
+      : `${appPrefix} ${withoutAppPrefix}`;
+  };
 
   const enabled = (level: number): boolean => {
     const effective = category
