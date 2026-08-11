@@ -691,6 +691,7 @@
         "already_have_account": "已有账户？",
         "and_n_other_forms": "等{n}个其他形式",
         "auto_renews_in": "{days} 天后自动续订",
+        "buy_on_website": "在我们的网站上购买",
         "cancel_existing_subscription_first": "您必须先取消现有订阅，才能购买新订阅。",
         "cancelling": "正在取消...",
         "cannot_demote_self": "您不能移除自己的管理员权限。",

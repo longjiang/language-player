@@ -706,6 +706,7 @@
         "and_n_other_forms": "و{n} صيغ أخرى",
         "auto_renews": "يتجدد تلقائيًا خلال {time}.",
         "auto_renews_in": "يتجدد تلقائيًا خلال {days} أيام",
+        "buy_on_website": "اشترِ من موقعنا الإلكتروني",
         "cancel_existing_subscription_first": "يجب عليك إلغاء اشتراكك الحالي قبل شراء اشتراك جديد.",
         "cancelling": "جار الإلغاء...",
         "cannot_demote_self": "لا يمكنك إزالة صلاحية المسؤول الخاصة بك.",

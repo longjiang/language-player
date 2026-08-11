@@ -706,6 +706,7 @@
         "and_n_other_forms": "y {n} otras formas",
         "auto_renews": "Se renueva automáticamente en {time}.",
         "auto_renews_in": "Se renueva automáticamente en {days} días",
+        "buy_on_website": "Comprar en nuestra página web",
         "cancel_existing_subscription_first": "Debes cancelar tu suscripción actual antes de comprar una nueva.",
         "cancelling": "Cancelando...",
         "cannot_demote_self": "No puedes eliminar tu propio acceso de administrador.",
