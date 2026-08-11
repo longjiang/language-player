@@ -1,4 +1,4 @@
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 # ════════════════════════════════════════════════════════════════════
 # Tier 0 — Smoke Test (pre-commit gate, ~30s)
@@ -10,7 +10,7 @@ appId: ca.zerotohero.app
 # S4: Logout → returns to login screen
 #
 # ⚠️  Run from a CLEAN simulator state for reliable results:
-#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl uninstall booted ca.zerotohero.go
 #   xcrun simctl install booted <path>/ZeroToHero.app
 # ════════════════════════════════════════════════════════════════════
 

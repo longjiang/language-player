@@ -62,7 +62,7 @@ Before running tests, ensure:
 
 - [ ] Simulator is booted (`xcrun simctl boot "iPhone 15 Pro"`)
 - [ ] App is installed (`xcrun simctl install booted <path>/ZeroToHero.app`)
-- [ ] No stale auth token (run preflight or `xcrun simctl uninstall booted ca.zerotohero.app`)
+- [ ] No stale auth token (run preflight or `xcrun simctl uninstall booted ca.zerotohero.go`)
 - [ ] Flask server is running on `http://127.0.0.1:5001`
 - [ ] Test accounts exist (`bash scripts/setup-e2e-env.sh` — rerun if backend data was reset)
 
@@ -70,7 +70,7 @@ Full reset:
 ```bash
 xcrun simctl shutdown booted 2>/dev/null || true
 xcrun simctl boot "iPhone 15 Pro"
-xcrun simctl uninstall booted ca.zerotohero.app
+xcrun simctl uninstall booted ca.zerotohero.go
 xcrun simctl install booted apps/mobile/ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
 ```
 
@@ -79,7 +79,7 @@ xcrun simctl install booted apps/mobile/ios/build/Build/Products/Release-iphones
 | Symptom | Likely Cause | Fix |
 |---|---|---|
 | Maestro can't find element | `testID` not forwarded to native view | Check if element is wrapped in `@rn-primitives/*` — use `nativeID` or `id` prop instead of `testID` |
-| App stays on login screen when it should be logged in | Stale Keychain token from previous run | `xcrun simctl uninstall booted ca.zerotohero.app` then reinstall |
+| App stays on login screen when it should be logged in | Stale Keychain token from previous run | `xcrun simctl uninstall booted ca.zerotohero.go` then reinstall |
 | Login succeeds but tabs don't appear | Network timeout / Flask not running | Start Flask: `cd zerotohero-python-server && python3.10 app.py` |
 | "No entries found" in dictionary tests | Dictionary data not available | Check `bash scripts/setup-e2e-env.sh` dictionary validation |
 | Flaky assertions | Timing — element not yet rendered | Increase `TIMEOUT` in `config.yaml` or add `waitFor` before assert |

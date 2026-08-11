@@ -28,7 +28,7 @@ remain documented here so future releases are one-command and correct.
 | Property | iOS | Android |
 |---|---|---|
 | App name | Language Player 3 | Language Player 3 |
-| Identifier | `ca.zerotohero.go` (bundle ID — replaces the GO listing) | `ca.zerotohero.app` (package, new Play launch) |
+| Identifier | `ca.zerotohero.go` (bundle ID — replaces the GO listing) | `ca.zerotohero.go` (package, new Play launch) |
 | Version | `3.0.0` (build `1`) | `3.0.0` (versionCode `1`) |
 | Min OS | iOS 16.4 | set in `app.json` |
 | Production API URL | `https://pythonvps.zerotohero.ca` | same |
@@ -54,7 +54,9 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   app's `ca.zerotohero.app` IAP product — that stays with Classic. Signing must
   use a Distribution profile for `ca.zerotohero.go`.
 - **Google Play — new launch**: a brand-new **"Language Player 3"** listing on
-  a new Play Developer account (see § 4).
+  a new Play Developer account (see § 4). It uses the same identifier
+  `ca.zerotohero.go` as iOS (Android packages and iOS bundle IDs are separate
+  namespaces; keeping them identical avoids confusion).
 
 ## 1. Testing strategy — informal, checklist-based human QA
 
@@ -289,7 +291,7 @@ simulator / iPhone / iPad). You do **not** run the full checklist twice:
 2. **On Android, run a targeted platform-specific subset** — these genuinely
    differ per OS and must be verified on the Android build:
    - **Build / install / signing** — AAB install, `versionCode`, package
-     `ca.zerotohero.app` (vs iOS bundle `ca.zerotohero.go`).
+     `ca.zerotohero.go` (same identifier as iOS).
    - **Native modules** — SQLite, SecureStore, expo-video, expo-speech,
      expo-sharing (share sheet), TTS voices/rate.
    - **OS UI** — Android back button, permission dialogs, keyboard, status

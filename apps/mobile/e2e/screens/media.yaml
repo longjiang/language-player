@@ -1,4 +1,4 @@
-appId: ca.zerotohero.app
+appId: ca.zerotohero.go
 ---
 # ════════════════════════════════════════════════════════════════════
 # Tier 2 — Media Tab (M1–M16)
@@ -6,7 +6,7 @@ appId: ca.zerotohero.app
 #
 # ⚠️  Order matters — tests are interdependent due to iOS Keychain
 # persistence. Run from a CLEAN simulator state:
-#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl uninstall booted ca.zerotohero.go
 #   xcrun simctl install booted <path>/ZeroToHero.app
 #
 # Each test file is independently runnable:
