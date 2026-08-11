@@ -16,6 +16,7 @@ import { lookupL1Text } from '@/lib/l1-lookup';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,9 @@ import {
 } from 'lucide-react';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
+
+/** ADR-0034: free users can complete 20 SRS reviews per day. */
+const FREE_SRS_DAILY_CAP = 20;
 
 /** Quality → SM-2 quality mapping */
 const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
@@ -75,6 +79,7 @@ export default function ReviewPage() {
   const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
   const { display } = useSettingsContext();
+  const { isPro } = useSubscriptionContext();
   const t = useT();
   const router = useRouter();
   const RATING_LABELS = useRatingLabels();
@@ -100,6 +105,16 @@ export default function ReviewPage() {
   const undoRef = useRef<UndoState | null>(null);
   /** Toast ID of the most recent rating toast, so undo can dismiss it. */
   const ratingToastIdRef = useRef<string | number | null>(null);
+  const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
+  const reviewCounterKey = useMemo(() => {
+    const uid = session?.user?.id;
+    return uid ? `lpSrsReviewsDone:${uid}:${new Date().toISOString().slice(0, 10)}` : null;
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!reviewCounterKey) return;
+    setReviewsDoneToday(Number(localStorage.getItem(reviewCounterKey) ?? 0));
+  }, [reviewCounterKey]);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -230,6 +245,7 @@ export default function ReviewPage() {
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
+    if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     setShowDefinition(false); // hide answer immediately for next card
 
@@ -276,6 +292,14 @@ export default function ReviewPage() {
     const updated = sm2(card.srs, sm2Quality);
     updateCard(l2Code, card.word.id, updated);
 
+    if (!isPro) {
+      const next = reviewsDoneToday + 1;
+      setReviewsDoneToday(next);
+      if (reviewCounterKey) {
+        localStorage.setItem(reviewCounterKey, String(next));
+      }
+    }
+
     if (wasLastCard) {
       setJustCompleted(true);
     }
@@ -283,7 +307,7 @@ export default function ReviewPage() {
     setTimeout(() => {
       setRated(false);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -819,6 +843,17 @@ export default function ReviewPage() {
       {/* Rating buttons (only visible after reveal) */}
       {showDefinition && (
         <>
+          {!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP && (
+            <div className="mb-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-center">
+              <p className="text-sm font-medium">{t('msg.upgrade_to_pro_banner')}</p>
+              <Link
+                href={`/${l1.code}/${l2.code}/go-pro`}
+                className="mt-1 inline-block text-sm font-semibold text-primary underline"
+              >
+                {t('action.upgrade_to_pro')}
+              </Link>
+            </div>
+          )}
           <div className="grid grid-cols-4 gap-3">
             {RATING_LABELS.map(({ key, label, hint, color, keyShortcut }) => (
               <button

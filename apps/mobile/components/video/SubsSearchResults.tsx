@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useVideos } from '@langplayer/api-client';
@@ -34,6 +35,9 @@ interface SubsSearchResultsProps {
   onExactToggle?: (exact: boolean) => void;
   formCount?: number;
 }
+
+/** ADR-0034: free users see the first 5 subs-search hits. */
+const FREE_SUBS_SEARCH_HITS = 5;
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -73,6 +77,7 @@ function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
 export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { display } = useSettingsContext();
+  const { isPro } = useSubscription();
   const t = useT();
   const router = useRouter();
   const videosApi = useVideos();
@@ -83,6 +88,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const videoHeight = (containerWidth / 16) * 9;
 
   const [videos, setVideos] = useState<SubsSearchVideo[]>([]);
+  const [totalHits, setTotalHits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -101,6 +107,11 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     () => term.split(',').map((t) => t.trim()).filter(Boolean),
     [term],
   );
+
+  const applyVideos = useCallback((all: SubsSearchVideo[]) => {
+    setTotalHits(all.length);
+    setVideos(isPro ? all : all.slice(0, FREE_SUBS_SEARCH_HITS));
+  }, [isPro]);
 
   // Truncated display: "a, b, c, and X other forms" (localized).
   const termDisplay = useMemo(() => {
@@ -206,7 +217,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
           );
-        setVideos(parsed);
+        applyVideos(parsed);
         setCurrentIndex(0);
         setLoading(false);
       })
@@ -435,6 +446,19 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           <Text className="text-xs font-medium text-muted-foreground">{t('action.list_all')}</Text>
         </Pressable>
       </View>
+
+      {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
+        <View className="flex-row items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
+          <Text className="flex-1 text-xs text-muted-foreground">
+            {t('msg.upgrade_to_pro_banner')}
+          </Text>
+          <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}>
+            <Text className="text-xs font-semibold text-primary underline">
+              {t('action.upgrade_to_pro')}
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* Player */}
       <View style={{ width: containerWidth, height: videoHeight }} className="bg-black">
