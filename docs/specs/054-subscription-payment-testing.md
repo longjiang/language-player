@@ -410,7 +410,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | C1 | Price parity | Load go-pro on all three apps in test mode | Same plans/amounts (USD + CNY); sale lifetime price appears only when `SALE`/`status=sale` applies consistently |
 | C2 | Subscription sync | Purchase monthly via Stripe on Web → open Mobile with same user | Mobile shows Pro with matching expiry; profile shows processor `stripe` |
 | C3 | Purchase on iOS device → same account on Android/Web | Buy IAP lifetime on iOS → log into Web | Lifetime Pro active everywhere; profile shows `app-store` processor |
-| C4 | Existing subscription not overwritten | Have an active annual subscription → complete a second purchase of the same plan | Expiry extends rather than resets (verify `update_or_add_subscription` behavior in test mode) |
+| C4 | Existing subscription not overwritten | Have an active annual subscription → complete a second purchase of the same plan | Same row updated, no duplicate. **Expiry resets to now + 32/367d** (B32 — intentional: purchases happen after expiry, and each period is a fresh same-day cadence with a 1-day grace; stacking is not a supported flow). |
 | C5 | Free tier gates after payment | Before purchase, transcript truncated + 2 word examples; after grant, full transcript + unlimited examples | Gates flip with subscription state on all frontends |
 | C6 | Cancel at period end (Stripe only) | Cancel subscription in Stripe test Dashboard or via cancel flow | `cancel_at_period_end` set; user keeps Pro until expiry, then falls back to free |
 | C7 | Success/error screens | Force each failure path (declined card, cancelled PayPal, bogus receipt, abandoned Payment Link) | `/go-pro-error` or inline error shown; no Pro grant; no stuck loading state |
@@ -821,6 +821,11 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     backend captures/verifies via `/v2/checkout/orders/{id}/capture` before
     granting. Backend covered by `test_paypal_orders_v2.py`; sandbox UI run
     pending.
+18. **UTC-consistent payment timestamps — fixed 2026-08-10:** `expires_on`
+    and `payment_date` are computed from `datetime.now(timezone.utc)`
+    (previously naive server-local time stamped `Z`). The 32/367-day cadence
+    is unchanged; this just makes the same-day math stable across timezones
+    (B32/C4).
 
 ---
 
