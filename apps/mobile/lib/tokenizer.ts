@@ -51,7 +51,7 @@ import { ExpressionToken } from 'kuromoji-ko';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { LEMMA_TABLE_CAP_LIMIT, LEMMA_TABLE_CAPPED_LANGS, TOKENIZER_CONFIG } from '@langplayer/shared';
 import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
-import { log, logwarn } from '@/lib/logger';
+import { tokenizerLogger } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import {
   tokenizeDictSegInWorker,
@@ -61,6 +61,8 @@ import {
 import { cleanJapaneseLemma } from '@/lib/japanese-lemma';
 import { romanize, ROMANIZABLE_LANGS } from '@/lib/romanize';
 import { cleanPronunciation } from '@langplayer/utils';
+
+const { log, logwarn } = tokenizerLogger;
 
 const arabicStemmer = new Stemmer();
 

@@ -13,6 +13,17 @@
  *   2 = warnings    — logerr() + logwarn()
  *   3 = verbose     — logerr() + logwarn() + log()
  *
+ * Per-aspect overrides: a logger created with a category (e.g. "translation")
+ * uses the category's level when one is set, otherwise the global level.
+ * This lets you keep the console quiet globally while still following one
+ * aspect in detail:
+ *
+ *   - Build/deploy env: EXPO_PUBLIC_LOG_LEVEL=1 EXPO_PUBLIC_LOG_LEVEL_TRANSLATION=3
+ *                       NEXT_PUBLIC_LOG_LEVEL=1 NEXT_PUBLIC_LOG_LEVEL_TRANSLATION=3
+ *   - Runtime (devtools / JS console):
+ *                       setLogLevel(1)           // quiet everything
+ *                       setLogLevel(3, 'translation')  // but keep translation
+ *
  * How to control it:
  *   - Build/deploy env:  NEXT_PUBLIC_LOG_LEVEL=0|1|2|3  (Next.js)
  *                        EXPO_PUBLIC_LOG_LEVEL=0|1|2|3  (Expo/Metro)
@@ -58,8 +69,38 @@ function defaultLogLevel(): number {
 
 let logLevel = envLogLevel() ?? defaultLogLevel();
 
-/** Current log level: 0 = off, 1 = errors, 2 = warnings, 3 = verbose. */
-export function getLogLevel(): number {
+const categoryLevels = new Map<string, number>();
+const categoryEnvCache = new Map<string, number | undefined>();
+
+function categoryEnvKey(category: string): string {
+  return category.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+}
+
+function envCategoryLogLevel(category: string): number | undefined {
+  const key = categoryEnvKey(category);
+  if (categoryEnvCache.has(key)) return categoryEnvCache.get(key);
+  let raw: string | undefined;
+  try {
+    raw = process.env[`NEXT_PUBLIC_LOG_LEVEL_${key}`] ?? process.env[`EXPO_PUBLIC_LOG_LEVEL_${key}`];
+  } catch {
+    raw = undefined;
+  }
+  let level: number | undefined;
+  if (raw !== undefined && raw !== '') {
+    const n = Number(raw);
+    level = Number.isInteger(n) ? clampLevel(n) : undefined;
+  }
+  categoryEnvCache.set(key, level);
+  return level;
+}
+
+/**
+ * Current log level: 0 = off, 1 = errors, 2 = warnings, 3 = verbose.
+ * Pass a category to read that aspect's effective level (its override if
+ * set, otherwise the global level).
+ */
+export function getLogLevel(category?: string): number {
+  if (category) return categoryLevels.get(category) ?? envCategoryLogLevel(category) ?? logLevel;
   return logLevel;
 }
 
@@ -67,12 +108,15 @@ export function getLogLevel(): number {
  * Set the log level at runtime, e.g. from the devtools / JS console:
  *   setLogLevel(0)  // silence everything
  *   setLogLevel(3)  // show everything
+ *   setLogLevel(3, 'translation')  // only the translation aspect
  * Values are clamped to the valid 0–3 range.
  */
-export function setLogLevel(level: number): void {
+export function setLogLevel(level: number, category?: string): void {
   const n = Number(level);
   if (Number.isFinite(n)) {
-    logLevel = clampLevel(Math.trunc(n));
+    const clamped = clampLevel(Math.trunc(n));
+    if (category) categoryLevels.set(category, clamped);
+    else logLevel = clamped;
   }
 }
 
@@ -95,19 +139,26 @@ export interface Logger {
  * Create a logger bound to an app prefix (e.g. `[LP Web]`). The prefix is
  * always prepended first so logs can be filtered by app in a shared console.
  */
-export function createLogger(appPrefix: string): Logger {
+export function createLogger(appPrefix: string, category?: string): Logger {
   const prefixed = (msg: string): string =>
     msg.startsWith(appPrefix) ? msg : `${appPrefix} ${msg}`;
 
+  const enabled = (level: number): boolean => {
+    const effective = category
+      ? categoryLevels.get(category) ?? envCategoryLogLevel(category) ?? logLevel
+      : logLevel;
+    return effective >= level;
+  };
+
   return {
     log(msg: string, ...args: unknown[]): void {
-      if (logLevel >= 3) console.log(prefixed(msg), ...args);
+      if (enabled(3)) console.log(prefixed(msg), ...args);
     },
     logwarn(msg: string, ...args: unknown[]): void {
-      if (logLevel >= 2) console.warn(prefixed(msg), ...args);
+      if (enabled(2)) console.warn(prefixed(msg), ...args);
     },
     logerr(msg: string, ...args: unknown[]): void {
-      if (logLevel >= 1) console.error(prefixed(msg), ...args);
+      if (enabled(1)) console.error(prefixed(msg), ...args);
     },
   };
 }

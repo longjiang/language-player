@@ -17,7 +17,7 @@ import {
   subscribeConnectivity,
   startConnectivity,
 } from '@/lib/connectivity';
-import { log, logwarn } from '@/lib/logger';
+import { syncLogger } from '@/lib/logger';
 import {
   enqueueOutboxOp,
   getEntityCache,
@@ -33,6 +33,8 @@ import {
   resetOutboxErrors,
   type OutboxOp,
 } from '@/lib/sync-db';
+
+const { log, logwarn } = syncLogger;
 
 const MAX_PUSH_ATTEMPTS = 5;
 const FLUSH_DEBOUNCE_MS = 1500;

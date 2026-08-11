@@ -11,7 +11,7 @@
 import type { Note } from '@langplayer/shared';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { probeOnline } from '@/lib/connectivity';
-import { log } from '@/lib/logger';
+import { syncLogger } from '@/lib/logger';
 import {
   enqueueSyncOp,
   getOutboxSnapshot,
@@ -27,6 +27,8 @@ import {
   removeCachedNote,
   remapLocalNoteId,
 } from '@/lib/notes-storage';
+
+const { log } = syncLogger;
 
 // ── Types (kept for compatibility) ─────────────────────
 

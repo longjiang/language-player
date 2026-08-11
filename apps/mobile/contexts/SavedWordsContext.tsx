@@ -10,7 +10,7 @@ import {
   type SavedLexicalItemStore,
   type SavedWordContext,
 } from '@langplayer/shared';
-import { log, logwarn } from '@/lib/logger';
+import { log, logwarn, syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
@@ -125,7 +125,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
               if (op.type === 'put' && !op.word) {
                 // Unrepairable legacy op — the local word still exists and
                 // will be re-queued on its next save. Don't strand it forever.
-                logwarn('[SavedWordsContext] dropping legacy pending op without word payload:', op.l2, op.wordId);
+                syncLogger.logwarn('[SavedWordsContext] dropping legacy pending op without word payload:', op.l2, op.wordId);
                 continue;
               }
               try {
@@ -142,7 +142,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
                 });
                 migrated++;
               } catch (e) {
-                logwarn('[SavedWordsContext] legacy op migration failed, keeping it for retry:', op.l2, op.wordId, (e as Error)?.message ?? e);
+                syncLogger.logwarn('[SavedWordsContext] legacy op migration failed, keeping it for retry:', op.l2, op.wordId, (e as Error)?.message ?? e);
                 remaining.push(op);
               }
             }
@@ -151,11 +151,11 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
             } else {
               await SecureStore.setItemAsync(LEGACY_PENDING_OPS_KEY, JSON.stringify(remaining));
             }
-            log(`[SavedWordsContext] migrated ${migrated} legacy pending ops into outbox`);
+            syncLogger.log(`[SavedWordsContext] migrated ${migrated} legacy pending ops into outbox`);
           }
         }
       } catch (err) {
-        logwarn('[SavedWordsContext] error loading from SecureStore:', err);
+        syncLogger.logwarn('[SavedWordsContext] error loading from SecureStore:', err);
       } finally {
         if (!cancelled) setLoaded(true);
       }
@@ -189,7 +189,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         setSavedWords(local);
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(local)).catch(() => {});
       } catch (err) {
-        logwarn('[SavedWordsContext] Hydration failed:', err);
+        syncLogger.logwarn('[SavedWordsContext] Hydration failed:', err);
       }
     })();
     return () => { cancelled = true; };
@@ -225,7 +225,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
           return next;
         });
       } catch (e) {
-        logwarn('[SavedWordsContext] pull merge failed:', e);
+        syncLogger.logwarn('[SavedWordsContext] pull merge failed:', e);
       }
     };
     const unsub = subscribeEntity('saved_word', () => {
@@ -242,7 +242,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     updatedAt?: number;
   }) => {
     if (!user) return;
-    log(`[SavedWordsContext] enqueue ${op.type} saved_word ${op.l2}::${op.wordId}`);
+    syncLogger.log(`[SavedWordsContext] enqueue ${op.type} saved_word ${op.l2}::${op.wordId}`);
     void enqueueSyncOp({
       entity: 'saved_word',
       entityId: `${op.l2}::${op.wordId}`,
@@ -254,7 +254,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       },
       updatedAt: op.updatedAt ?? Date.now(),
     }).catch((e) => {
-      logwarn('[SavedWordsContext] enqueue failed:', e);
+      syncLogger.logwarn('[SavedWordsContext] enqueue failed:', e);
     });
   }, [user]);
 

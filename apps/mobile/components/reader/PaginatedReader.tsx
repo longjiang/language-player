@@ -11,7 +11,9 @@ import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { log } from '@/lib/logger';
+import { readerLogger } from '@/lib/logger';
+
+const { log } = readerLogger;
 
 /** Tokenize blocks within this many px of the viewport (web parity: 200px rootMargin). */
 const VISIBILITY_BUFFER = 200;
