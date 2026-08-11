@@ -27,7 +27,7 @@ This spec covers the full E2E testing strategy: tool selection, test environment
 | Criteria | Maestro | Detox | Appium |
 |---|---|---|---|
 | Setup complexity | Low — install CLI, no native config | High — native build config, device registry | High — server setup, driver config |
-| Expo compatibility | ✅ Works with Expo Go + dev builds | ⚠️ Requires dev build + detox-native setup | ⚠️ Works but needs appium-xcuitest-driver |
+| Expo compatibility | ✅ Works with Expo Go (**iOS simulator only**) + dev builds (**required on physical devices**) | ⚠️ Requires dev build + detox-native setup | ⚠️ Works but needs appium-xcuitest-driver |
 | Flow authoring | YAML (human-readable, git-friendly) | JS/TS (Jest + async/await) | JS/TS (WebDriverIO or similar) |
 | Platform integration | ✅ Native CLI, easy to script | ✅ via Detox CLI | ✅ via Appium service |
 | Wait-for-element | ✅ Built-in, no manual sleep | ✅ Built-in | ✅ But more verbose |
@@ -38,6 +38,13 @@ This spec covers the full E2E testing strategy: tool selection, test environment
 **Decision: Maestro** — It's the simplest to set up, has native-first YAML syntax, and is recommended by the Expo team for E2E testing.
 
 ### Expo Go vs Dev Build
+
+> ⚠️ **Expo Go is SIMULATOR-ONLY for this project (Expo SDK 57 / RN 0.86).**
+> Physical devices (iPad/iPhone) require a **development build**
+> (`npx expo run:ios --device`) or TestFlight / Ad Hoc. Expo Go cannot run
+> this app on a real device: SDK 57 native modules (incl.
+> `expo-in-app-purchases`) are not present in Expo Go, and the app's bundle
+> id is `ca.zerotohero.go`, not `host.exp.Exponent`.
 
 The app uses `newArchEnabled: true` (Fabric renderer + TurboModules). Maestro interacts with the native view hierarchy, and Fabric may expose elements differently to accessibility APIs.
 
