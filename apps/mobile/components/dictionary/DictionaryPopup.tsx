@@ -177,6 +177,11 @@ export function DictionaryPopup({
     }
     setError(null);
     setResults(null);
+    // Every new lookup starts with the spinner off. A previous lookup that
+    // was cancelled mid-flight (popup closed / word switched) may have left
+    // `loading` stuck true; if this open hits the cache it would otherwise
+    // show cached cards with a dead spinner below them.
+    setLoading(false);
 
     const l1 = l1Lang.code;
     const lookupWord = lemma && lemma !== word ? lemma : word;
