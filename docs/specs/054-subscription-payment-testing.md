@@ -727,7 +727,16 @@ Verification per row:
   capture-retry (`422` → GET COMPLETED) and `payment_id` `ON CONFLICT` are
   mocked/covered by `test_paypal_orders_v2.py` + M3/B14 groundwork. PayPal's
   hosted declined/cancel UI itself relies on PayPal.
-- ⬜ C4/C6/C7 — cross-app checks pending.
+- ✅ C4 — expectation updated 2026-08-10: second purchase resets expiry to
+  now + 32/367d (same row, no duplicate; B32/product rule). Same-row update
+  and reset are covered by the S13 renewal run + unit tests.
+- ✅ C6 — cancel at period end verified live (2026-08-10): Stripe Dashboard
+  cancel → `cancel_at_period_end=true`; cancel endpoint 200 → local
+  `payment_customer_id` cleared; row `31146` stays `monthly`/active;
+  `/user-subscription` still returns it until expiry. Post-expiry free
+  fallback covered by B90.
+- ⬜ C7 — PayPal-cancel UI check pending (all other failure screens verified
+  via S4–S8/W/P1).
 
 ### Phase 2 — Web (`apps/web`) payment E2E
 
