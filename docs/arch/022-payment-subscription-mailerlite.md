@@ -115,6 +115,33 @@ All purchase paths converge on `update_or_add_subscription(payload)`:
 - If the user has no row, a new one is **inserted**.
 - After either write, the row's owner email is assigned to the matching MailerLite group (see [MailerLite](#mailerlite-mailing-list-integration)).
 
+### Purchase gating — active auto-renew blocks new purchases (SPEC-054 #20)
+
+Web and mobile prevent a user from buying any plan while they have an
+**active auto-renewing subscription** — matching Classic's
+`hasActiveNonTrialSubscription`:
+
+- Blocks when the user's subscription is non-trial, unexpired, **and has a
+  `payment_customer_id`** (i.e., a live Stripe subscription with auto-renew).
+- Trials are exempt.
+- Cancelling auto-renew clears `payment_customer_id`, which lifts the block —
+  the user keeps Pro until expiry but may buy a new plan (e.g., upgrade to
+  lifetime) immediately.
+
+Enforcement (implemented 2026-08-10):
+
+- Web (`apps/web` go-pro) and mobile (`apps/mobile` go-pro) show a
+  "cancel your existing subscription first" notice instead of payment
+  methods, with a link to the profile page.
+- `POST /create-stripe-checkout-session` returns **400** for blocked users,
+  so the API can't be bypassed.
+- Classic already gated in the UI; web/mobile now match.
+
+Known limitation: CNY WeChat/Alipay **Payment Links** are opened directly on
+Stripe, so a manipulated link can bypass the UI/API guard and complete a
+purchase. The UI hides the links while blocked (same as Classic); a
+webhook-side guard would be needed to close this fully.
+
 ### Stripe credit card (web, mobile, Classic)
 
 ```
