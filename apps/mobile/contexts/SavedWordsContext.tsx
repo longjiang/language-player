@@ -84,7 +84,7 @@ interface SavedWordsContextValue {
   removeWord: (l2Code: string, wordId: string) => void;
   hasWord: (l2Code: string, wordId: string) => boolean;
   clearAll: (l2Code: string) => void;
-  refreshEntry: (l2Code: string, wordId: string) => Promise<void>;
+  refreshEntry: (l2Code: string, wordId: string, l1Code: string) => Promise<void>;
 }
 
 const SavedWordsContext = createContext<SavedWordsContextValue | null>(null);
@@ -295,7 +295,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     }
   }, [queueRowOp, savedWords]);
 
-  const refreshEntry = useCallback(async (l2Code: string, wordId: string) => {
+  const refreshEntry = useCallback(async (l2Code: string, wordId: string, l1Code: string) => {
     const words = savedWords[l2Code] ?? [];
     const existing = words.find((w) => w.id === wordId);
     if (!existing) return;
@@ -306,6 +306,17 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     const baseL2 = l2Code.split('-')[0];
     const scopedId = decomposed?.id ?? wordId;
     const dictId = decomposed?.dict ?? '';
+    log('[SavedWordsContext] entry enrichment start', {
+      l2Code,
+      wordId,
+      l1Code,
+      decomposed,
+      baseL2,
+      scopedId,
+      dictId,
+      offlineMode: isOfflineModeEnabled(),
+      unresolvable: existing.unresolvable,
+    });
 
     const applyEntry = (entry: DictionaryEntry | null, unresolvable: boolean) => {
       setSavedWords((prev) => {
@@ -317,8 +328,8 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
                 ...(entry
                   ? {
                       head: entry.head,
-                      dictionaryId: dictId,
-                      entryId: scopedId,
+                      dictionaryId: entry.dictionary?.id ?? dictId,
+                      entryId: entry.id ?? scopedId,
                       canonicalEntry: entry,
                     }
                   : {}),
@@ -347,25 +358,91 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       applyEntry(null, true);
       return;
     }
-    if (!decomposed) {
-      // Unknown id format — don't spin forever; there's no endpoint to hit.
-      applyEntry(null, true);
-      return;
-    }
     try {
       const { apiClient } = await import('@langplayer/api-client');
-      // The endpoint takes query params, not path segments. Using the old
-      // path form 404'd, leaving every saved-word card stuck on its spinner.
-      const res = await apiClient.get('/dictionary/entry', {
-        params: { l2: baseL2, dict: dictId, id: scopedId },
-      });
-      const entry = (res as any)?.entry as DictionaryEntry | undefined;
-      if (entry) {
-        applyEntry(entry, false);
-        return;
+      const baseURL = apiClient.instance.defaults.baseURL;
+      try {
+        if (decomposed) {
+          // The endpoint takes query params, not path segments. Using the old
+          // path form 404'd, leaving every saved-word card stuck on its spinner.
+          const res = await apiClient.get('/dictionary/entry', {
+            params: { l2: baseL2, dict: dictId, id: scopedId, l1: l1Code },
+          });
+          const entry = (res as any)?.entry as DictionaryEntry | undefined;
+          log('[SavedWordsContext] entry enrichment response', {
+            wordId,
+            baseURL,
+            ok: !!entry,
+            entryId: entry?.id,
+            head: entry?.head,
+            kind: (entry as any)?.kind,
+          });
+          if (entry) {
+            applyEntry(entry, false);
+            return;
+          }
+        }
+      } catch (e) {
+        logwarn(
+          '[SavedWordsContext] entry enrichment failed — l2:',
+          l2Code,
+          'wordId:',
+          wordId,
+          'error:',
+          (e as Error)?.message ?? e,
+          'details:',
+          (e as any)?.details ?? null,
+        );
+      }
+
+      // Legacy/unrecognized IDs (e.g. LLM words saved without the `llm-`
+      // prefix) — find the entry by its head form, matching web's fallback.
+      if (existing.head) {
+        try {
+          const lookupRes = await apiClient.post('/dictionary/lookup', {
+            text: existing.head,
+            l2: baseL2,
+            l1: l1Code,
+          });
+          const results = (lookupRes as any)?.results as DictionaryEntry[] | undefined;
+          const fallbackEntry =
+            results?.find((e) => e.match_type === 'exact') ?? results?.[0] ?? null;
+          log('[SavedWordsContext] entry enrichment fallback response', {
+            wordId,
+            baseURL,
+            ok: !!fallbackEntry,
+            entryId: fallbackEntry?.id,
+            head: fallbackEntry?.head,
+            kind: (fallbackEntry as any)?.kind,
+          });
+          if (fallbackEntry) {
+            applyEntry(fallbackEntry, false);
+            return;
+          }
+        } catch (e) {
+          logwarn(
+            '[SavedWordsContext] entry enrichment fallback failed — l2:',
+            l2Code,
+            'wordId:',
+            wordId,
+            'head:',
+            existing.head,
+            'error:',
+            (e as Error)?.message ?? e,
+            'details:',
+            (e as any)?.details ?? null,
+          );
+        }
       }
     } catch (e) {
-      logwarn('[SavedWordsContext] entry enrichment failed — l2:', l2Code, 'wordId:', wordId, 'error:', (e as Error)?.message ?? e);
+      logwarn(
+        '[SavedWordsContext] entry enrichment setup failed — l2:',
+        l2Code,
+        'wordId:',
+        wordId,
+        'error:',
+        (e as Error)?.message ?? e,
+      );
     }
     // Unresolvable — stop the spinner rather than hanging forever.
     applyEntry(null, true);

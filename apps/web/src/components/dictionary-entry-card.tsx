@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, ExternalLink, Video } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useScriptPreference } from '@/hooks/use-script-preference';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { normalizeInstances } from '@/hooks/use-saved-words';
+import { log } from '@/lib/logger';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -87,6 +88,23 @@ export function DictionaryEntryCard({
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
+  const lastLoggedEntryRef = useRef<DictionaryEntry | null>(null);
+
+  // Log the full entry details as soon as a card receives a loaded entry.
+  useEffect(() => {
+    if (lastLoggedEntryRef.current === entry) return;
+    lastLoggedEntryRef.current = entry;
+    log('[dictionaryEntry] loaded', {
+      id: entry.id,
+      head: entry.head,
+      l2: l2Code,
+      l1: l1Code,
+      variant,
+      source: entry.dictionary?.name ?? entry.source,
+      definitions: entry.definitions,
+      entry,
+    });
+  }, [entry, l2Code, l1Code, variant]);
 
   const scale = primaryScale(l2Code ?? '');
   const levels = entry.levels ?? [];

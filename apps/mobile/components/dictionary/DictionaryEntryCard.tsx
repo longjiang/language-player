@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
@@ -11,6 +11,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { log } from '@/lib/logger';
 import { WebViewSheet } from '@/components/WebViewSheet';
 
 interface DictionaryEntryCardProps {
@@ -81,6 +82,23 @@ export function DictionaryEntryCard({
   const [showImageSearch, setShowImageSearch] = useState(false);
   const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
   const [wordSaved, setWordSaved] = React.useState(false);
+  const lastLoggedEntryRef = useRef<DictionaryEntry | null>(null);
+
+  // Log the full entry details as soon as a card receives a loaded entry.
+  useEffect(() => {
+    if (lastLoggedEntryRef.current === entry) return;
+    lastLoggedEntryRef.current = entry;
+    log('[dictionaryEntry] loaded', {
+      id: entry.id,
+      head: entry.head,
+      l2: l2Code,
+      l1: l1Code,
+      variant,
+      source: entry.dictionary?.name ?? entry.source,
+      definitions: entry.definitions,
+      entry,
+    });
+  }, [entry, l2Code, l1Code, variant]);
 
   // Sync wordSaved with the async SecureStore load
   React.useEffect(() => {

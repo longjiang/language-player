@@ -160,11 +160,11 @@ export default function SavedWordsScreen() {
           if (w.head && (w.canonicalEntry || w.llmEntry)) continue; // already enriched
           if (enrichedRef.current.has(w.id)) continue; // already requested
           enrichedRef.current.add(w.id);
-          refreshEntry(l2Lang.code, w.id);
+          refreshEntry(l2Lang.code, w.id, l1Lang.code);
         }
       }
     },
-    [l2Lang.code, refreshEntry],
+    [l1Lang.code, l2Lang.code, refreshEntry],
   );
 
   const viewabilityConfig = useRef({
