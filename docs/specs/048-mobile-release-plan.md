@@ -49,7 +49,7 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   `ios.bundleIdentifier` and the native project).
   **Why this ID:** a store listing's bundle ID cannot be changed, so updating
   the GO listing requires keeping `ca.zerotohero.go`. Doing so also preserves
-  the GO app's IAP product (non-consumable `pro`) and existing installs'
+  the GO app's IAP product (non-consumable `pro_go`) and existing installs'
   receipt-validation / restore continuity. It does **not** inherit the Classic
   app's `ca.zerotohero.app` IAP product — that stays with Classic. Signing must
   use a Distribution profile for `ca.zerotohero.go`.
@@ -567,9 +567,10 @@ cd android && ./gradlew bundleRelease
 - **Google Play Billing is not implemented** (SPEC-014) — Android IAP is
   blocked until the new Play account and billing setup exist. Launch with
   free-tier features + web-based payments; add Play Billing later.
-- The `pro` lifetime product exists as **iOS IAP only** today, but Pro grants
-  are backend-driven — an Android user who purchased via iOS still gets Pro
-  through the shared subscription grant.
+- The GO listing's `pro_go` lifetime product exists as **iOS IAP only**
+  today, and the new app uses it (Classic's `pro` belongs to
+  `ca.zerotohero.app`). Pro grants are backend-driven — an Android user who
+  purchased via iOS still gets Pro through the shared subscription grant.
 
 ## 5. Post-release
 

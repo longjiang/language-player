@@ -3,13 +3,16 @@
 // ──────────────────────────────────────────────
 //
 // Uses expo-in-app-purchases (Expo SDK 57+).
-// Product ID "pro" matches the Nuxt Capacitor app's existing App Store listing.
+// Product ID "pro_go" matches the GO listing's existing App Store product.
+// The new app replaces the GO listing (bundle ca.zerotohero.go), so it
+// inherits the GO app's non-consumable product — NOT Classic's "pro", which
+// belongs to ca.zerotohero.app.
 //
 // Flow:
 //   1. Connect to the payment queue on mount
 //   2. Fetch product details via getProductsAsync
 //   3. Set purchase listener globally
-//   4. User taps "Buy" → purchaseItemAsync("pro")
+//   4. User taps "Buy" → purchaseItemAsync("pro_go")
 //   5. Purchase result arrives via the listener callback
 //   6. POST receipt to Python backend for validation
 //   7. On success → finishTransactionAsync(purchase, false)
@@ -44,9 +47,10 @@ async function iap(): Promise<IapModule> {
 }
 
 /** Product ID — must match App Store Connect.
- *  Same ID ("pro") the Nuxt app has been using since 2023.
- *  This lets existing users restore their purchase from the old app. */
-const IOS_IAP_PRODUCT_ID = 'pro';
+ *  "pro_go" is the GO listing's non-consumable product (shipped with the GO
+ *  app). The new app keeps the GO bundle ID, so existing GO buyers can
+ *  restore their purchase. Classic's "pro" belongs to ca.zerotohero.app. */
+const IOS_IAP_PRODUCT_ID = 'pro_go';
 
 // ── Types ──
 

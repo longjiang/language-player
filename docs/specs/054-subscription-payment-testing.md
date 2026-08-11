@@ -181,15 +181,19 @@ Setup:
 2. On the test device, enable **Developer Mode** (Settings → Privacy & Security → Developer Mode) if running a development-signed build.
 3. Sign in to the App Store / iTunes with the sandbox account (Settings → App Store → Sandbox Account, or the store sign-in prompt that appears on first sandbox purchase).
 4. Build with a development signing certificate, or use a **TestFlight** build. IAP works in the sandbox on simulators too, but Apple recommends a physical device for reliability (and SPEC-025 requires it). Purchases in sandbox are **not charged**.
-5. The product is the non-consumable `pro` (lifetime). It must exist in App Store Connect → In-App Purchases with the same ID on the target app's bundle ID.
+5. The product is the non-consumable `pro_go` (lifetime) on the GO listing
+   (`ca.zerotohero.go`) — the new app replaces the GO app and inherits its
+   product. Classic's `pro` belongs to `ca.zerotohero.app` and is not used
+   here. It must exist in App Store Connect → In-App Purchases with that ID.
 
 Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 
 > ✅ **Resolved 2026-08-10:** `app_in_app_purchase.py` now validates with
-> `bundle_id = 'ca.zerotohero.go'` — the new app replaces the GO listing in
-> the App Store and keeps the GO bundle ID (SPEC-048 / ADR-0013 revised).
-> Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
-> endpoint.
+> `bundle_id = 'ca.zerotohero.go'` and the app uses the GO listing's
+> non-consumable product `pro_go` — the new app replaces the GO listing in
+> the App Store and keeps the GO bundle ID + product (SPEC-048 / ADR-0013
+> revised). Classic's `ca.zerotohero.app` / `pro` IAP is no longer validated
+> by this endpoint.
 
 ### 1.5 Google Play Billing (future)
 
@@ -866,7 +870,8 @@ resolved 2026-08-10.)
 
 1. **Backend IAP bundle ID — resolved 2026-08-10:** `app_in_app_purchase.py`
    now validates with `bundle_id='ca.zerotohero.go'`, matching the new app's
-   bundle (it replaces the GO listing per SPEC-048 / ADR-0013 revised).
+   bundle (it replaces the GO listing per SPEC-048 / ADR-0013 revised). The
+   app also uses the GO listing's IAP product `pro_go` (not Classic's `pro`).
    Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
    endpoint; if Classic IAP must be re-supported later, add a per-request
    bundle override.
