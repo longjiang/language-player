@@ -124,7 +124,7 @@ export default function WordDetailScreen() {
       log('[WordDetail] fetching entry — l2:', l2, 'entryId:', decodedId, 'lookupId:', lookupId, 'dict:', dictId, 'scopedId:', scopedId);
       setApiLoading(true);
       setApiError(null);
-      dict.getEntry(l2, dictId, scopedId)
+      dict.getEntry(l2, dictId, scopedId, l1Lang.code)
         .then((res) => {
           setCachedEntryById(l2, res.entry);
           setApiEntry(res.entry);
