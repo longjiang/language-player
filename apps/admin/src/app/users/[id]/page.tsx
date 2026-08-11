@@ -12,6 +12,7 @@ import { fetchUserDetail } from '@/lib/admin-api';
 import { formatDate, formatHours, formatSeconds, initials } from '@/lib/format';
 import { logerr } from '@/lib/logger';
 import type { UserDetail } from '@/types/admin';
+import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, ArrowLeft, BookOpen, Clock, Loader2 } from 'lucide-react';
@@ -447,6 +448,7 @@ function ActivityTab({ detail }: { detail: UserDetail }) {
 export default function UserDetailPage() {
   const t = useT();
   const router = useRouter();
+  const { data: session, status: authStatus } = useSession();
   const params = useParams<{ id: string }>();
   const userId = Array.isArray(params.id) ? params.id[0] : params.id;
   const [detail, setDetail] = useState<UserDetail | null>(null);
@@ -455,8 +457,15 @@ export default function UserDetailPage() {
   const tRef = useRef(t);
   tRef.current = t;
 
+  // On a hard refresh the NextAuth session (and therefore the token mirror in
+  // SessionTokenMirror) isn't ready on the first render. Wait for it, or the
+  // authenticated fetch fires with no Authorization header and 401s forever.
+  const sessionUser = (session?.user as any) ?? null;
+  const authReady =
+    authStatus === 'authenticated' && typeof sessionUser?.accessToken === 'string';
+
   const load = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || !authReady) return;
     setLoading(true);
     setError('');
     try {
@@ -469,11 +478,40 @@ export default function UserDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, authReady]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  if (authStatus === 'loading') {
+    return (
+      <div className="min-h-screen">
+        <AppHeader />
+        <main className="mx-auto max-w-6xl px-4 py-8">
+          <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            {t('msg.loading')}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (authStatus === 'unauthenticated') {
+    // The proxy normally redirects here; render a safe error just in case.
+    return (
+      <div className="min-h-screen">
+        <AppHeader />
+        <main className="mx-auto max-w-6xl px-4 py-8">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {t('error.general')}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
