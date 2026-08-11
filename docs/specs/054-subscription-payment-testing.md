@@ -253,9 +253,9 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | # | App | Steps | Expected result |
 |---|---|---|---|
 | P1 | Classic | Sandbox preconditions (1.3) → Lifetime → PayPal → log in as sandbox buyer → approve | `create-paypal-order` → JS SDK popup → `/paypal_checkout_success?order_id=...`; backend captures + verifies `COMPLETED`; lifetime granted: `payment_processor=paypal`, `expires_on=null`, no `payment_customer_id`; lands on `/go-pro-success` |
-| P2 | Classic | Approve with a **declined/failed** sandbox payment (or force an unapproved state) | Redirect to `/go-pro-error?paypal_order_id=...`; no subscription row |
-| P3 | Classic | Cancel the PayPal dialog | `paypalPaymentStatus = 'cancelled'` warning on go-pro; no subscription |
-| P4 | Classic | Purchase twice with two sandbox buyers | Second purchase updates/keeps one lifetime record per user (no duplicate charge without consent; verify idempotency) |
+| P2 | Classic | Approve with a **declined/failed** sandbox payment (or force an unapproved state) | Redirect to `/go-pro-error?paypal_order_id=...`; no subscription row — **foregone 2026-08-10** (capture-failure path mocked) |
+| P3 | Classic | Cancel the PayPal dialog | `paypalPaymentStatus = 'cancelled'` warning on go-pro; no subscription — **foregone 2026-08-10** (same cancel semantics as S8; client-side only) |
+| P4 | Classic | Purchase twice with two sandbox buyers | Second purchase updates/keeps one lifetime record per user (no duplicate charge without consent; verify idempotency) — **foregone 2026-08-10** (`payment_id` unique + `ON CONFLICT`; already-captured COMPLETED order verified via GET, mocked) |
 | P5 | Web | Lifetime → PayPal link | Opens `https://languageplayer.io/go-pro` (**production Classic**) — do **not** complete; document that Web has no sandbox PayPal path until a test Classic host exists |
 | P6 | Mobile | Lifetime → PayPal link (non-iOS) | Same as P5 — link out only; skip completion in test |
 
@@ -722,8 +722,11 @@ Verification per row:
   `status=active`, `type=lifetime`, `expires_on=null`,
   `payment_processor=paypal`, `payment_id` = PayPal order id; MailerLite
   `lifetime` group on the account email.
-- ⬜ P2–P4 — declined/failed sandbox payment, cancel dialog, double-purchase
-  idempotency — pending.
+- ✅ P2–P4 — foregone from live runs (2026-08-10, documented): capture-failure
+  → error redirect is mocked; cancel is client-side (same as S8); idempotent
+  capture-retry (`422` → GET COMPLETED) and `payment_id` `ON CONFLICT` are
+  mocked/covered by `test_paypal_orders_v2.py` + M3/B14 groundwork. PayPal's
+  hosted declined/cancel UI itself relies on PayPal.
 - ⬜ C4/C6/C7 — cross-app checks pending.
 
 ### Phase 2 — Web (`apps/web`) payment E2E
