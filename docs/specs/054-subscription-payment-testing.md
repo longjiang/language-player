@@ -411,7 +411,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | C2 | Subscription sync | Purchase monthly via Stripe on Web → open Mobile with same user | Mobile shows Pro with matching expiry; profile shows processor `stripe` |
 | C3 | Purchase on iOS device → same account on Android/Web | Buy IAP lifetime on iOS → log into Web | Lifetime Pro active everywhere; profile shows `app-store` processor |
 | C4 | Existing subscription not overwritten | Have an active annual subscription → complete a second purchase of the same plan | Same row updated, no duplicate. **Expiry resets to now + 32/367d** (B32 — intentional: purchases happen after expiry, and each period is a fresh same-day cadence with a 1-day grace; stacking is not a supported flow). |
-| C5 | Free tier gates after payment | Before purchase, transcript shows first 10 lines + 5 word-example hits; after grant, full transcript + up to 500 hits (50-hit fast default; expandable in Settings → Subtitles Search) | Gates flip with subscription state on all frontends |
+| C5 | Free tier gates after payment | Before purchase, transcript shows first 10 lines + 5 word-example hits; after grant, full transcript + up to 500 hits (50-hit fast default; Settings → Subtitles Search toggle is Pro-only, greyed out for free users) | Gates flip with subscription state on all frontends |
 | C6 | Cancel at period end (Stripe only) | Cancel subscription in Stripe test Dashboard or via cancel flow | `cancel_at_period_end` set; user keeps Pro until expiry, then falls back to free |
 | C7 | Success/error screens | Force each failure path (declined card, cancelled PayPal, bogus receipt, abandoned Payment Link) | `/go-pro-error` or inline error shown; no Pro grant; no stuck loading state |
 

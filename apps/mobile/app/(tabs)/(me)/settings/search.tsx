@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
 import { ToggleRow } from '@/components/settings/ToggleRow';
 
 export function SearchSettings() {
   const { search, updateSearch } = useSettingsContext();
+  const { isPro } = useSubscription();
   const t = useT();
 
   return (
@@ -14,7 +16,8 @@ export function SearchSettings() {
         <ToggleRow
           label={t('setting.expand_subs_search')}
           desc={t('setting.expand_subs_search_desc')}
-          value={search.expandSubsSearch}
+          value={isPro && search.expandSubsSearch}
+          disabled={!isPro}
           onValueChange={(v) => updateSearch({ expandSubsSearch: v })}
         />
       </View>

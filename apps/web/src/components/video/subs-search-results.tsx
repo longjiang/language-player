@@ -253,7 +253,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setError(null);
 
     fetch(
-      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch ? 500 : 50}&context=3`,
+      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch && isPro ? 500 : 50}&context=3`,
     )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -302,7 +302,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return () => {
       cancelled = true;
     };
-  }, [term, l2.code, exactMatch, search.expandSubsSearch]);
+  }, [term, l2.code, exactMatch, search.expandSubsSearch, isPro]);
 
   // ── Seek to match when video changes ─────────
   // startTime is also passed to YouTubePlayer for reliable seeking during onReady.
