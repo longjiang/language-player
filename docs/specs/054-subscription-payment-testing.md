@@ -969,6 +969,14 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 - ✅ A5 — repeat purchase: lifetime owner sees "already lifetime" (no buy
   button, no restore button) — verified on iPad 2026-08-11; backend grant is
   idempotent via `payment_id` + `ON CONFLICT` (B14/B83–B85)
+- ✅ IAP user binding (`appAccountToken`) — implemented + verified 2026-08-11:
+  purchases pass `user.id` as Apple's `appAccountToken`; the backend rejects
+  any JWS whose token is missing or doesn't match the requesting user (the
+  "10 friends share one purchase" hole). Verified with a fresh sandbox
+  tester: old pre-binding transactions are correctly rejected
+  ("This purchase does not belong to the signed-in account"), new purchases
+  grant normally. Note: clearing sandbox purchase history did **not** clear
+  the device's local StoreKit queue — a fresh tester was required.
 - ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
   (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
   Device check still pending in 3.4.
