@@ -224,7 +224,8 @@ Web and mobile currently link out to Classic's go-pro page for PayPal rather tha
 ```
 PurchaseiOS → Apple payment sheet → receipt
   → POST /in_app_purchase_success {user_id, receipt}
-  → backend validates receipt with Apple via inapppy (bundle ca.zerotohero.app)
+  → backend validates receipt with Apple via inapppy
+    (bundle ca.zerotohero.go — new app replaces the GO listing, SPEC-048)
   → update_or_add_subscription({type: "lifetime", processor: "app-store", ...})
   → {type: "success"} → /go-pro-success
 ```

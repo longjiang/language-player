@@ -185,7 +185,11 @@ Setup:
 
 Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 
-> ⚠️ **Critical risk:** the backend `app_in_app_purchase.py` validates receipts with `bundle_id = 'ca.zerotohero.app'`, while `apps/mobile/app.json` uses iOS bundle `ca.zerotohero.go` (Classic's Capacitor app is `ca.zerotohero.app`). Sandbox receipts from the new mobile binary will likely fail validation against the `.app` bundle ID unless the validator is made bundle-aware or the mobile app's sandbox product is verified under `.app`. See [Open Questions](#5-open-questions-and-known-gaps) — **resolve before shipping mobile IAP**.
+> ✅ **Resolved 2026-08-10:** `app_in_app_purchase.py` now validates with
+> `bundle_id = 'ca.zerotohero.go'` — the new app replaces the GO listing in
+> the App Store and keeps the GO bundle ID (SPEC-048 / ADR-0013 revised).
+> Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
+> endpoint.
 
 ### 1.5 Google Play Billing (future)
 
@@ -271,7 +275,9 @@ Preconditions for every row: a fresh or disposable test user account (Mary/Bob p
 | A6 | Mobile | Run on Android | IAP button **hidden** (`IAP_AVAILABLE = Platform.OS === 'ios'`); monthly/annual plans show the iOS gate message; lifetime still offers Stripe/WeChat/Alipay |
 | A7 | Backend | Post a bogus receipt (`user_id` + garbage string) | `type: 'error'` response from Apple validation; no subscription granted |
 
-> ⚠️ A1/A2 both depend on the bundle-ID question in [1.4](#14-apple-in-app-purchase-ios). Until resolved, A2 is expected to **fail** validation for `ca.zerotohero.go` receipts.
+> ✅ A1/A2 bundle-ID question resolved 2026-08-10: the backend validates
+> `ca.zerotohero.go` receipts (the new app replaces the GO listing; see
+> [1.4](#14-apple-in-app-purchase-ios)).
 
 ### 2.5 Google Play Billing
 
@@ -827,12 +833,14 @@ Coverage notes for the rest of Phase 2:
 
 ### Phase 4 — IAP last (Classic + mobile)
 
-**Why last**: the Apple sandbox/bundle-id mismatch (open question 1) can block
-it, and IAP is lifetime-only — it is not required for the core launch gate.
+**Why last**: IAP is lifetime-only and sandbox testing needs Apple tooling —
+it is not required for the core launch gate. (The bundle-ID blocker was
+resolved 2026-08-10.)
 
 - A1–A7 — Classic + mobile purchase, restore, cancel, bogus receipt
 - C3 — cross-platform lifetime sync
-- Resolve the bundle-id question before A2 is expected to pass
+- ✅ Bundle-ID question resolved 2026-08-10 — backend validates
+  `ca.zerotohero.go`; A2 can now run
 
 ### Phase 5 — Cross-app & launch gate
 
@@ -856,7 +864,12 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
 
 ## 5. Open Questions and Known Gaps
 
-1. **Backend IAP bundle ID mismatch (blocking for mobile IAP shipping):** `app_in_app_purchase.py` validates with `bundle_id='ca.zerotohero.app'` (Classic), but `apps/mobile` builds with `ca.zerotohero.go`. Verify whether a sandbox receipt from `ca.zerotohero.go` passes validation (it should not), and make the validator accept both bundle IDs (e.g. retry with the receipt's own `bundle_id` from the validated response, or per-request bundle override) before mobile IAP can ship. See ADR-0013 for the strategy.
+1. **Backend IAP bundle ID — resolved 2026-08-10:** `app_in_app_purchase.py`
+   now validates with `bundle_id='ca.zerotohero.go'`, matching the new app's
+   bundle (it replaces the GO listing per SPEC-048 / ADR-0013 revised).
+   Classic's legacy `ca.zerotohero.app` IAP is no longer validated by this
+   endpoint; if Classic IAP must be re-supported later, add a per-request
+   bundle override.
 2. **PayPal has no sandbox switch:** backend hardcodes `https://api-m.paypal.com` and Classic hardcodes `env="production"`. Sandbox testing requires temporary local edits or an env-driven `PAYPAL_MODE` switch. PayPal's Payments v1 API is deprecated — worth flagging for a future migration to Orders v2, which also has proper sandbox support.
 3. **Stripe test/live toggles are hardcoded:** `stripe_test = False` and webhook secrets in `app_stripe_checkout.py`; `TEST = false` in `zerotohero-nuxt/lib/utils/variables.js`. These must become env/flag-driven (and never committed as `True`) before teams share a backend for test runs.
 4. **Web/Mobile PayPal cannot be sandbox-tested** because they link to the production Classic go-pro page. Options: run a test Classic deployment on a test host and point the links there, or implement PayPal directly in Web/Mobile (SPEC-014).
