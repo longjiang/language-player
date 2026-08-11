@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -26,6 +26,7 @@ import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/l
 import { decomposeWordId } from '@langplayer/shared';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
+import { log } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSavedWords';
 
@@ -63,7 +64,7 @@ const SRS_DOT_CLASSES: Record<Exclude<SrsStatus, null>, string> = {
  */
 export default function SavedWordsPage() {
   const { l1, l2 } = useLanguage();
-  const { getSavedWords, clearSavedWords, loaded } = useSavedWordsContext();
+  const { savedWords, getSavedWords, clearSavedWords, loaded } = useSavedWordsContext();
   const { getCard } = useSrs();
   const router = useRouter();
   const t = useT();
@@ -72,6 +73,22 @@ export default function SavedWordsPage() {
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   const allWords = useMemo(() => getSavedWords(l2.code), [getSavedWords, l2.code]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    log('[savedWords] page render state', {
+      l1: l1.code,
+      l2: l2.code,
+      loaded,
+      allWords: allWords.length,
+      storeL2Keys: Object.keys(savedWords),
+      counts: Object.fromEntries(
+        Object.entries(savedWords).map(([code, words]) => [code, words.length]),
+      ),
+      jaCount: savedWords.ja?.length ?? 0,
+      l2Count: savedWords[l2.code]?.length ?? 0,
+    });
+  }, [loaded, l1.code, l2.code, allWords.length, savedWords]);
 
   // Apply filter (keeps newest-first order from getSavedWords)
   const words = useMemo(() => {
