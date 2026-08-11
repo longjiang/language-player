@@ -882,6 +882,14 @@ it, and IAP is lifetime-only — it is not required for the core launch gate.
     (previously naive server-local time stamped `Z`). The 32/367-day cadence
     is unchanged; this just makes the same-day math stable across timezones
     (B32/C4).
+19. **Stripe webhook secrets moved to env — 2026-08-10:** the hardcoded
+    test/live `whsec_…` fallbacks were removed from `app_stripe_checkout.py`.
+    Handlers now read `STRIPE_CHECKOUT_WEBHOOK_SECRET` and
+    `STRIPE_INVOICE_WEBHOOK_SECRET` (or the shared `STRIPE_WEBHOOK_SECRET`
+    used by local `stripe listen`); a missing secret returns 500 (fail
+    closed). Deployers must set the matching secrets in `.env`/server env —
+    the account has separate checkout and invoice webhook endpoints with
+    different secrets, so both vars are required in production.
 
 ---
 
