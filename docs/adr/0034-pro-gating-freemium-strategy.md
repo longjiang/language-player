@@ -1,7 +1,7 @@
-# ADR-0034: Pro Gating — Quota-Based "Try Then Pay" Strategy
+# ADR-0034: Pro Gating — "Try Then Pay" Options
 
 **Date**: 2026-08-10
-**Status**: accepted
+**Status**: proposed — decisions open
 **See also**:
 - [SPEC-054 — Subscription & Payment Testing](../specs/054-subscription-payment-testing.md) (C5 gates)
 - [ARCH-022 — Payment, Subscription & MailerLite](../arch/022-payment-subscription-mailerlite.md) (gating matrix)
@@ -32,17 +32,17 @@ mismatch is testable and will fail.
 The product goal: let users try the value, then pay — without making the
 free experience feel broken.
 
-## Options Considered
+## Options
 
 ### 1. Transcript gating
 
 - **Option A — per-video line cap.** Every free transcript is truncated to
-  the visible line count. Simple, backend-free (client-side constant), and
-  honest.
+  the visible line count. Simple, backend-free (client-side constant).
+  Sub-variants: keep the current ~8 visible lines, or align to the
+  advertised 10 visible lines.
 - **Option B — daily full-transcript quota.** Free users may open a small
   number of full transcripts per day (e.g., 3), then fall back to Option A.
-  Requires a backend daily counter per user. Gives a real taste of the full
-  product after the 7-day trial expires.
+  Requires a backend daily counter per user.
 
 New users already get a **7-day full free trial** (granted on GoTrue email
 verification; see ARCH-022 "Free Trial" and SPEC-039 M1). Option B would
@@ -58,7 +58,7 @@ expires — it does not replace the trial.
   `NON_PRO_MAX_SUBS_SEARCH_HITS = 2` and update SPEC-054 C5 accordingly;
   shrinks the free benefit.
 
-### 3. Quota-based gating pattern
+### 3. Quota-based gating pattern (candidate features)
 
 One pattern for new gates: **daily, backend-enforced, visible quota**, with
 an upgrade prompt at the limit. Candidate features, in priority order:
@@ -70,8 +70,7 @@ an upgrade prompt at the limit. Candidate features, in priority order:
    readable (never hold data hostage); new saves blocked until upgrade.
 3. **SRS daily reviews** — free daily cap (e.g., 20 reviews/day, matching
    the current default setting). Pro can raise the existing daily-max
-   setting. The alternative — locking the setting control and dropping the
-   default to 10 (Model B) — was considered and rejected.
+   setting.
 4. **Full-text translation** — free daily character budget (e.g., 2,000
    chars/day), Pro unlimited. Also caps LLM/translation cost.
 
@@ -79,45 +78,31 @@ Quotas would be enforced in the Flask backend (shared by web, mobile, and
 Classic), using the same constant pattern as `NON_PRO_MAX_*`. The UI shows
 remaining quota and the upgrade prompt; quotas reset daily per user.
 
-### 4. Other options considered (rejected)
+### 4. SRS setting control
 
-- **Paywalling videos, languages, or the dictionary.** Rejected: the core
-  value stays free — paywalling it would shrink the audience before the
-  paid features can convert anyone.
-- **Locking the SRS setting / reducing its default below the free cap.**
-  Rejected: instead, the free tier is bounded by the effective daily review
-  count, while Pro users can keep adjusting the existing daily-max setting.
+- **Bound the effective daily count by plan** — the setting stays adjustable
+  for everyone; the backend caps how many reviews actually complete per day
+  on the free tier (e.g., 20), Pro can raise it.
+- **Lock the setting** — free users cannot change the daily-max setting (and
+  the default may be lowered), with the control greyed out behind an upgrade
+  prompt.
 
-## Consequences
+### 5. Paywalling core content (rejected)
 
-- Constants, marketing copy, and SPEC-054 C5 agree on exact numbers:
-  **10 visible transcript lines** and **5 word-example hits**.
-- New quota gates are backend-enforced and testable (SPEC-054 gains quota
-  rows alongside C5).
-- Free users get a consistent "sample, hit the limit, upgrade" experience;
-  no feature is paywalled outright except AI explanations (which gets a
-  quota instead of a hard gate).
-- Rollout is staged (AI quota first), so conversion impact can be measured
-  before adding more gates.
+Paywalling videos, languages, or the dictionary was considered and rejected:
+the core value stays free — paywalling it would shrink the audience before
+the paid features can convert anyone.
 
-## Decision
+## Open Decisions
 
-1. **Transcripts: adopt Option A.** Keep the per-video line cap as the only
-   transcript gate at launch; do not ship a daily full-transcript quota yet.
-   Set the visible count to **10 lines** (e.g., `NON_PRO_MAX_LINES = 17`
-   with the 7-line prompt overlay, or 10 with a non-obscuring prompt — the
-   visible count is the contract). Revisit Option B only if post-trial
-   conversion data warrants it.
-2. **Word examples: keep the corpus-wide search and align the copy to 5.**
-   Free users keep 5 hits; Pro keeps up to 500 (default 50, Settings
-   expandable). Marketing copy changes from "2 examples" to "5 examples";
-   SPEC-054 C5 asserts 5.
-3. **Adopt the quota-based pattern** for the candidate gates, rolled out
-   incrementally starting with **AI explanations (5/day)**:
-   - AI explanations — 5/day free, unlimited Pro.
-   - Saved words — 30 free, unlimited Pro (existing words stay readable).
-   - SRS reviews — 20/day free; Pro can raise the existing setting (control
-     is not locked).
-   - Full-text translation — 2,000 chars/day free, unlimited Pro.
-   Enforcement is backend-side with daily reset and visible remaining quota.
-4. **Rejected:** paywalling core content and locking the SRS setting.
+- **D1 — Transcript gate.** OPEN: choose Option A (per-video line cap) or
+  Option B (daily full-transcript quota, or A+B). If A, pick the visible line
+  count (current ~8 vs advertised 10).
+- **D2 — Word-example gate.** OPEN: align the copy to 5 hits, or reduce the
+  constant to 2.
+- **D3 — Quota gates.** OPEN: adopt the quota-based pattern? If yes, which
+  features and limits (AI 5/day, saved words 30, SRS 20/day, translation
+  2,000 chars/day), and the rollout order.
+- **D4 — SRS setting control.** OPEN: bound the effective daily count by
+  plan, or lock the setting.
+- **D5 — Paywalling core content.** CLOSED: rejected.
