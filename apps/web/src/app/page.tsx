@@ -2,10 +2,26 @@
 
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
-import { Play, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
+import {
+  Play,
+  BookOpen,
+  Languages,
+  Tv,
+  Sparkles,
+  Monitor,
+  Apple,
+  Smartphone,
+  Chrome,
+  BookOpenText,
+  RotateCcw,
+  Bot,
+  Library,
+} from 'lucide-react';
+import { LanguageVideoList } from '@/components/landing/language-video-list';
 
 export default function HomePage() {
   const t = useT();
+  const platforms = useLandingPlatforms();
   const features = useLandingFeatures();
   return (
     <main className="flex min-h-screen flex-col">
@@ -19,13 +35,11 @@ export default function HomePage() {
           </div>
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
             {t('msg.landing_hero_title_1')}{' '}
-              <span className="bg-gradient-to-r from-brand-500 to-warm-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-500 to-warm-500 bg-clip-text text-transparent">
               {t('msg.landing_hero_title_2')}
             </span>
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground">
-            {t('msg.landing_hero_desc')}
-          </p>
+          <p className="mt-6 text-lg text-muted-foreground">{t('msg.landing_hero_desc')}</p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/login"
@@ -34,6 +48,45 @@ export default function HomePage() {
               <Play className="h-5 w-5" /> {t('action.start_watching')}
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── Platforms ── */}
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-3 text-center text-3xl font-bold">
+            {t('msg.landing_platforms_heading')}
+          </h2>
+          <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+            {t('msg.landing_platforms_desc')}
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {platforms.map((platform) => (
+              <div
+                key={platform.titleKey}
+                className="rounded-2xl border border-border bg-surface p-6 transition-shadow hover:shadow-lg dark:bg-surface-dark-secondary"
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="inline-flex rounded-lg bg-brand-100 p-3 text-brand-600 dark:bg-brand-900 dark:text-brand-400">
+                    <platform.icon className="h-6 w-6" />
+                  </div>
+                  <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    {t(platform.statusKey)}
+                  </span>
+                </div>
+                <h3 className="mb-2 text-lg font-semibold">{t(platform.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground">{t(platform.descKey)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Languages ── */}
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-12 text-center text-3xl font-bold">{t('msg.all_languages')}</h2>
+          <LanguageVideoList />
         </div>
       </section>
 
@@ -62,19 +115,46 @@ export default function HomePage() {
       <section className="border-t border-border px-4 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold">{t('msg.ready_to_start')}</h2>
-          <p className="mt-4 text-muted-foreground">
-            {t('msg.landing_cta_desc')}
-          </p>
+          <p className="mt-4 text-muted-foreground">{t('msg.landing_cta_desc')}</p>
           <Link
             href="/register"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-warm-500 px-10 py-3.5 font-semibold text-white shadow-lg shadow-warm-500/25 transition-all hover:bg-warm-600"
           >
-              {t('action.sign_up')}
+            {t('action.sign_up')}
           </Link>
         </div>
       </section>
     </main>
   );
+}
+
+function useLandingPlatforms() {
+  return [
+    {
+      titleKey: 'platform.web_title',
+      descKey: 'platform.web_desc',
+      statusKey: 'label.available',
+      icon: Monitor,
+    },
+    {
+      titleKey: 'platform.ios_title',
+      descKey: 'platform.ios_desc',
+      statusKey: 'label.coming_soon',
+      icon: Apple,
+    },
+    {
+      titleKey: 'platform.android_title',
+      descKey: 'platform.android_desc',
+      statusKey: 'label.coming_soon',
+      icon: Smartphone,
+    },
+    {
+      titleKey: 'platform.chrome_title',
+      descKey: 'platform.chrome_desc',
+      statusKey: 'label.available',
+      icon: Chrome,
+    },
+  ];
 }
 
 function useLandingFeatures() {
@@ -99,6 +179,26 @@ function useLandingFeatures() {
       title: t('feature.live_tv'),
       description: t('feature.live_tv_desc'),
       icon: Tv,
+    },
+    {
+      title: t('title.reading'),
+      description: t('feature.reading_desc'),
+      icon: BookOpenText,
+    },
+    {
+      title: t('title.review'),
+      description: t('feature.review_desc'),
+      icon: RotateCcw,
+    },
+    {
+      title: t('pro.feature_ai'),
+      description: t('feature.ai_explain_desc'),
+      icon: Bot,
+    },
+    {
+      title: t('title.corpus'),
+      description: t('feature.corpus_desc'),
+      icon: Library,
     },
   ];
 }

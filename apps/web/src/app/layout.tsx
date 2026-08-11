@@ -29,7 +29,7 @@ const inter = localFont({
 
 const SITE_NAME = 'Language Player';
 const SITE_DESCRIPTION =
-  'Watch videos with interactive dual subtitles, built-in dictionary, and smart difficulty tracking. Learn 60+ languages naturally.';
+  'Watch videos, live TV, and TV shows with interactive dual subtitles. Look up any word, read, and review with spaced repetition. Learn 200+ languages naturally.';
 const SITE_URL =
   process.env.AUTH_URL || 'https://language-player.netlify.app';
 const OG_IMAGE = '/og'; // fallback: logo-only OG image
