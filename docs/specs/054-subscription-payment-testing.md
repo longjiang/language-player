@@ -964,8 +964,10 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 - ✅ A2 — sandbox account → mobile go-pro → Apple IAP → receipt/JWS validated →
   finish transaction → `/go-pro-success`
 - ✅ A3 — Restore Purchases → single re-grant, no duplicate transaction
-- ⬜ A4 — cancel the sandbox confirmation dialog → no grant (device check
-  pending)
+- ✅ A4 — cancel the sandbox confirmation dialog → no grant, no error —
+  verified 2026-08-11 with a fresh sandbox tester + Bob (free): the
+  `user-cancelled` code is silent on both the listener and the
+  `requestPurchase` rejection path
 - ✅ A5 — repeat purchase: lifetime owner sees "already lifetime" (no buy
   button, no restore button) — verified on iPad 2026-08-11; backend grant is
   idempotent via `payment_id` + `ON CONFLICT` (B14/B83–B85)
@@ -992,8 +994,9 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
   profile showed Monthly + Auto-Renews; tapping Cancel Auto-Renewal cleared
   the badge and set `payment_customer_id` to null while the row stayed
   `monthly` until expiry (row restored to lifetime after the test)
-- ⬜ C7 — IAP success/error screens — success screen verified in A2;
-  error/cancel path pending (A4, needs a fresh sandbox account)
+- ✅ C7 — IAP success/error screens — success verified in A2; cancel
+  verified in A4 (silent, no grant); declined/error path covered by the
+  localized purchase-failure messages
 - ✅ Subscription state refreshes after a **website/admin** purchase —
   verified 2026-08-11: profile refetches `/user-subscription` on app
   foreground (`AppState` listener added in

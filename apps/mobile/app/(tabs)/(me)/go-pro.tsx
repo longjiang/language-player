@@ -141,6 +141,7 @@ export default function GoProScreen() {
         },
         (errorCode) => {
           if (mountedRef.current) {
+            log('[IAP] purchase error code:', errorCode);
             setIapErrorCode(errorCode !== undefined ? String(errorCode) : 'unknown');
             if (errorCode !== 'user-cancelled') {
               setError(t('msg.iap_purchase_failed'));
@@ -240,9 +241,7 @@ export default function GoProScreen() {
       // handled by the useEffect that watches iapResult state.
       await initiatePurchase(user.id);
     } catch (err: any) {
-      if (err?.message?.includes('User cancelled')) {
-        // User cancelled — don't show error
-      } else {
+      if (err?.code !== 'user-cancelled') {
         // expo-iap throws the raw English "Failed to request purchase" for
         // any native request failure — show the localized message instead.
         setError(
