@@ -74,15 +74,26 @@ export default function EpubReaderScreen() {
     historyRef.current = [...stack, cur].slice(-50);
   }, []);
 
+  // Stable refs to the epub/pagination objects so callbacks passed down to
+  // every reader token (onOpenLink) keep a stable identity. The hook returns
+  // a fresh object each render; depending on it directly made onOpenLink a new
+  // function every render, defeating TokenizedText's memoization and forcing
+  // the whole reader page to re-render on every scroll/sync update.
+  const epubRef = useRef(epub);
+  epubRef.current = epub;
+  const paginationRef = useRef(pagination);
+  paginationRef.current = pagination;
+
   const jumpToBlock = useCallback((loc: BookLocation | null) => {
     if (!loc) return;
     pendingJumpRef.current = loc;
-    if (pagination.hasMeasured) {
-      const page = pagination.blockPage(loc.blockIndex);
-      pagination.goToPage(page);
+    const p = paginationRef.current;
+    if (p.hasMeasured) {
+      const page = p.blockPage(loc.blockIndex);
+      p.goToPage(page);
     }
     setLocation(loc);
-  }, [pagination]);
+  }, []);
 
   // Apply a jump queued while whole-book measurement was still running.
   useEffect(() => {
@@ -162,14 +173,15 @@ export default function EpubReaderScreen() {
       return;
     }
     if (!href || href === '#') return;
+    const e = epubRef.current;
     const cur = locationRef.current;
-    const block = cur ? epub.blocks?.[cur.blockIndex] : undefined;
+    const block = cur ? e.blocks?.[cur.blockIndex] : undefined;
     const fromHref = block && block.kind === 'text'
-      ? epub.spineHrefs[block.spineIndex ?? 0]
+      ? e.spineHrefs[block.spineIndex ?? 0]
       : undefined;
     pushHistory();
-    void epub.resolveHref(href, fromHref).then(jumpToBlock);
-  }, [epub, pushHistory, jumpToBlock]);
+    void e.resolveHref(href, fromHref).then(jumpToBlock);
+  }, [pushHistory, jumpToBlock]);
 
   const handleRemoveBook = useCallback((id: string) => {
     void epub.removeBook(id);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -18,7 +18,6 @@ import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { log, logwarn } from '@/lib/logger';
-import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import {
@@ -53,6 +52,240 @@ let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
 /** RTL-script languages: the View-based ruby layout must reverse its flex
  *  row, otherwise words and their readings render in mirrored (LTR) order. */
 const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
+
+/** Stable signature for opening the dictionary popup from a memoized token. */
+type PressWordHandler = (
+  index: number,
+  word: string,
+  lemma: string | null,
+  pron: string | null,
+  linkUrl: string | null,
+) => void;
+
+// ── Memoized per-token span (ruby / definition path) ──────────────────
+// Extracted so a token press only re-renders the tapped token + the popup,
+// not the block's other N tokens. Re-rendering every token of a large
+// reader block on popup open cost seconds in dev (e.g. 4.6s for a ~300-token
+// block) and, combined with whole-page re-renders during scroll/sync, froze
+// the JS thread for up to ~47s.
+interface RubyTokenSpanProps {
+  index: number;
+  word: string;
+  displayText: string;
+  pronunciation: string | null;
+  hasRuby: boolean;
+  isBlanked: boolean;
+  isHighlighted: boolean;
+  isLink: boolean;
+  isSearchHighlight: boolean;
+  isSavedWord: boolean;
+  isTokenSelected: boolean;
+  isKaraokeDimmed: boolean;
+  showByeonggi: boolean;
+  byeonggiText: string | null;
+  showQuickGloss: boolean;
+  quickGlossDef: string | null;
+  showDefinition: boolean;
+  showInterlinear: boolean;
+  trimmedDef: string | null;
+  firstLemma: string | null;
+  linkUrl: string | null;
+  l2Code: string;
+  quizMode: boolean;
+  popupEnabled: boolean;
+  rubyGapTrim: number;
+  readingSize: number;
+  baseLeading: number | undefined;
+  textStyle: { fontSize: number; fontFamily?: string; lineHeight?: number };
+  onOpenLink?: (href: string) => void;
+  onPressWord: PressWordHandler;
+  onReveal: (index: number) => void;
+}
+
+const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
+  const {
+    index, word, displayText, pronunciation, hasRuby, isBlanked, isHighlighted, isLink,
+    isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
+    linkUrl, l2Code, quizMode, popupEnabled, rubyGapTrim, readingSize, baseLeading, textStyle,
+    onOpenLink, onPressWord, onReveal,
+  } = props;
+
+  // Ruby segments are rebuilt only when the pieces change (displayText,
+  // pronunciation, script); they are a fresh array each render otherwise,
+  // which would defeat memoization.
+  const rubySegs = useMemo<RubySegment[]>(() => {
+    if (!hasRuby || !pronunciation) return [{ text: displayText }];
+    return buildRuby(displayText, pronunciation, l2Code);
+  }, [hasRuby, pronunciation, displayText, l2Code]);
+
+  const handlePress = () => {
+    if (linkUrl && !popupEnabled) {
+      onOpenLink?.(linkUrl);
+      return;
+    }
+    if (quizMode) {
+      onReveal(index);
+      return;
+    }
+    if (popupEnabled) {
+      log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
+      onPressWord(index, word, firstLemma, pronunciation, linkUrl);
+    }
+  };
+
+  return (
+    <View className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, { paddingTop: rubyGapTrim }]}>
+      {/* One pressable per token: the whole word — kanji + kana +
+          furigana + quick gloss — shares a single tap target, matching
+          web's token-span.tsx wrapper span. */}
+      <Pressable
+        testID={`token-${index}`}
+        onPress={handlePress}
+        className={`rounded ${isTokenSelected ? 'bg-primary/20' : ''} active:bg-muted/80`}
+        style={({ pressed }) => (pressed ? { opacity: 0.45 } : undefined)}
+      >
+        {/* Segment row + quick gloss: items-end so the gloss (no furigana)
+            baseline-aligns with the word text at the bottom of the segment columns. */}
+        <View className="flex-row items-end">
+          {rubySegs.map((seg, j) => (
+            <View key={j} className="items-center">
+              {seg.reading && (
+                <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className="text-muted-foreground">{seg.reading}</Text>
+              )}
+              {/* Spacer: align kana-only segments with kanji segments that have ruby above.
+                  Matches the reading text's lineHeight so base texts share a baseline. */}
+              {hasRuby && !seg.reading && (
+                <View style={{ height: readingSize + 2, marginBottom: -rubyGapTrim }} />
+              )}
+              <Text style={[textStyle, { lineHeight: baseLeading }]}>
+                {isBlanked ? (
+                  <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
+                ) : (
+                  <Text style={[textStyle, { lineHeight: baseLeading }]}
+                    className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                    {seg.text}
+                  </Text>
+                )}
+                {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
+                {showByeonggi && j === 0 ? (
+                  <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+                ) : null}
+              </Text>
+            </View>
+          ))}
+          {/* Quick gloss: peer of the segment columns, not inside any segment.
+              Placed after all segments so furigana centers over just the word,
+              not the word + gloss combined width. items-end keeps the gloss on
+              the same baseline as the word text.
+              Uses readingSize for fontSize (both outer and inner) — when furigana is
+              off, the outer wrapper must not inherit the word's full textStyle,
+              otherwise the word's large lineHeight applies to the gloss text too,
+              creating a tall invisible box that breaks baseline alignment. */}
+          {showQuickGloss && (
+            <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
+              <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
+            </Text>
+          )}
+        </View>
+      </Pressable>
+      {/* Universal definition slot: when showDefinition is on, every token
+          gets a slot of the same height. Tokens without a definition get
+          an empty spacer — this keeps all word texts on the same baseline
+          regardless of which tokens have interlinear glosses. */}
+      {showDefinition && (
+        <View style={{ height: readingSize + 2, justifyContent: 'flex-start', alignItems: 'center' }}>
+          {showInterlinear ? (
+            <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{trimmedDef}</Text>
+          ) : (
+            <View style={{ height: readingSize + 2 }} />
+          )}
+        </View>
+      )}
+    </View>
+  );
+});
+
+// ── Memoized per-token span (plain inline-Text path) ─────────────────
+interface PlainTokenSpanProps {
+  index: number;
+  word: string;
+  displayText: string;
+  isWordToken: boolean;
+  isBlanked: boolean;
+  isHighlighted: boolean;
+  isLink: boolean;
+  isSearchHighlight: boolean;
+  isSavedWord: boolean;
+  isTokenSelected: boolean;
+  isPressed: boolean;
+  isKaraokeDimmed: boolean;
+  showByeonggi: boolean;
+  byeonggiText: string | null;
+  showQuickGloss: boolean;
+  quickGlossDef: string | null;
+  firstLemma: string | null;
+  tokenPron: string | null;
+  linkUrl: string | null;
+  quizMode: boolean;
+  popupEnabled: boolean;
+  textColor: string;
+  textStyle: { fontSize: number; fontFamily?: string; lineHeight?: number };
+  onOpenLink?: (href: string) => void;
+  onPressWord: PressWordHandler;
+  onReveal: (index: number) => void;
+  onPressIn: (index: number) => void;
+  onPressOut: (index: number | null) => void;
+}
+
+const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) {
+  const {
+    index, word, displayText, isWordToken, isBlanked, isHighlighted, isLink, isSearchHighlight,
+    isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
+    showQuickGloss, quickGlossDef, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
+    textColor, textStyle, onOpenLink, onPressWord, onReveal, onPressIn, onPressOut,
+  } = props;
+
+  const handlePress = () => {
+    if (linkUrl && !popupEnabled) {
+      onOpenLink?.(linkUrl);
+      return;
+    }
+    if (quizMode) {
+      onReveal(index);
+      return;
+    }
+    if (popupEnabled && isWordToken) {
+      log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
+      onPressWord(index, word, firstLemma, tokenPron, linkUrl);
+    }
+  };
+
+  return (
+    <Text
+      testID={`token-${index}`}
+      onPressIn={() => onPressIn(index)}
+      onPressOut={() => onPressOut(null)}
+      onPress={handlePress}
+      style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
+      className={
+        isTokenSelected
+          ? 'rounded bg-primary/20 text-primary'
+          : isPressed
+            ? 'rounded bg-muted/80'
+            : undefined
+      }
+    >
+      {isBlanked ? (
+        <Text className={textColor}>▯</Text>
+      ) : (
+        <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+      )}
+      {showByeonggi ? ` ${byeonggiText}` : ''}
+      {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
+    </Text>
+  );
+});
 
 /** Queue a line for batched lemmatization; resolves with its tokens. */
 function enqueueLemmatize(text: string, l2Code: string): Promise<LemmatizedToken[]> {
@@ -239,7 +472,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -247,7 +480,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
   const [selectedTokenPron, setSelectedTokenPron] = useState<string | null>(null);
   const [selectedLinkUrl, setSelectedLinkUrl] = useState<string | null>(null);
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const popupOpenStartRef = useRef<number | null>(null);
+  const popupCloseStartRef = useRef<number | null>(null);
+  const popupRenderStartLoggedRef = useRef(false);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
@@ -369,6 +606,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // Quiz mode: track which tokens have been revealed
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
+  // Plain-text branch: pressed-token index for immediate touch feedback.
+  const [pressedTokenIndex, setPressedTokenIndex] = useState<number | null>(null);
 
   // Batch dictionary lookup layer (matches web's tokenized-text.tsx)
   const [cacheVersion, setCacheVersion] = useState(0);
@@ -567,6 +806,34 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     };
   }, []);
 
+  // ── Popup timing diagnostics ──
+  useEffect(() => {
+    if (selectedWord) {
+      if (popupOpenStartRef.current !== null) {
+        log(`[TokenizedText] ⏱ POPUP-OPEN render=${Date.now() - popupOpenStartRef.current}ms word="${selectedWord}"`);
+        popupOpenStartRef.current = null;
+        popupRenderStartLoggedRef.current = false;
+      }
+    } else if (popupCloseStartRef.current !== null) {
+      log(`[TokenizedText] ⏱ POPUP-CLOSE render=${Date.now() - popupCloseStartRef.current}ms`);
+      popupCloseStartRef.current = null;
+    }
+  }, [selectedWord]);
+
+  // ── Stable token-press handlers (memoized tokens call these) ──
+  const handlePressWord = useCallback<PressWordHandler>((index, word, lemma, pron, linkUrl) => {
+    popupOpenStartRef.current = Date.now();
+    setSelectedWord(word);
+    setSelectedTokenIndex(index);
+    setSelectedLemma(lemma);
+    setSelectedTokenPron(pron);
+    setSelectedLinkUrl(linkUrl);
+  }, []);
+
+  const handleReveal = useCallback((index: number) => {
+    setRevealedTokens(prev => new Set(prev).add(index));
+  }, []);
+
   // ── Batch dictionary lookup after tokens are loaded ──
   // Gathers all unique lemmas and fetches dictionary entries in one request,
   // populating the shared cache for instant popups + byeonggi/gloss data.
@@ -719,6 +986,15 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     return () => { cancelled = true; };
   }, [tokens, cacheVersion, l1Lang.code, quickGlossEnabled, savedFormSet, getTokenEntryData]);
 
+  // ── Popup open render timing (phase 1) ──
+  // Log the moment this block's render actually begins after a token press,
+  // so POPUP-OPEN splits into "JS thread busy before this render started"
+  // (sincePress) vs "render + commit" (POPUP-OPEN minus sincePress).
+  if (selectedWord && popupOpenStartRef.current !== null && !popupRenderStartLoggedRef.current) {
+    popupRenderStartLoggedRef.current = true;
+    log(`[TokenizedText] ⏱ POPUP-RENDER-START word="${selectedWord}" sincePress=${Date.now() - popupOpenStartRef.current}ms`);
+  }
+
   // Offline without a downloaded dictionary: words can't be interactive.
   // Render plain text immediately and explain on tap — never show the
   // pulsing tokenization state in this case.
@@ -803,7 +1079,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const traditionalText = convertedTexts.get(word) ?? word;
-              const isHighlighted = highlightTerms?.some((t) => t === word);
+              const isHighlighted = !!highlightTerms?.some((t) => t === word);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
@@ -842,105 +1118,52 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               // Suppress ruby for the highlighted (target) word unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const isRubyMode = showPhonetics && phonetics.show === 'ruby';
-              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word
-                && (!isHighlighted || phoneticsOnHighlight);
-              const rubySegs: RubySegment[] = hasRuby
-                ? buildRuby(displayText, token.pronunciation!, l2Code)
-                : [{ text: displayText }];
-
-              const handlePress = () => {
-                const rawUrl = tokenFormat?.url ?? null;
-                const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
-                if (linkUrl && !popupEnabled) {
-                  onOpenLink?.(linkUrl);
-                  return;
-                }
-                if (quizMode) {
-                  setRevealedTokens(prev => new Set(prev).add(i));
-                  return;
-                }
-                if (popupEnabled) {
-                  configureLayoutAnimation();
-                  setSelectedWord(word);
-                  setSelectedLemma(firstLemma || null);
-                  setSelectedTokenPron(token.pronunciation ?? null);
-                  setSelectedLinkUrl(linkUrl);
-                }
-              };
+              const hasRuby = !!(isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word
+                && (!isHighlighted || phoneticsOnHighlight));
 
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
+              const isTokenSelected = selectedTokenIndex === i;
+              const rawUrl = tokenFormat?.url ?? null;
+              const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
 
               return (
-                <View key={i} className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, { paddingTop: rubyGapTrim }]}>
-                  {/* One pressable per token: the whole word — kanji + kana +
-                      furigana + quick gloss — shares a single tap target, matching
-                      web's token-span.tsx wrapper span. */}
-                  <Pressable
-                    testID={`token-${i}`}
-                    onPress={handlePress}
-                    style={({ pressed }) => (pressed ? { opacity: 0.45 } : undefined)}
-                  >
-                    {/* Segment row + quick gloss: items-end so the gloss (no furigana)
-                        baseline-aligns with the word text at the bottom of the segment columns. */}
-                    <View className="flex-row items-end">
-                      {rubySegs.map((seg, j) => (
-                        <View key={j} className="items-center">
-                          {seg.reading && (
-                            <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className="text-muted-foreground">{seg.reading}</Text>
-                          )}
-                          {/* Spacer: align kana-only segments with kanji segments that have ruby above.
-                              Matches the reading text's lineHeight so base texts share a baseline. */}
-                          {hasRuby && !seg.reading && (
-                            <View style={{ height: readingSize + 2, marginBottom: -rubyGapTrim }} />
-                          )}
-                          <Text style={[textStyle, { lineHeight: baseLeading }]}>
-                            {isBlanked ? (
-                              <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
-                            ) : (
-                              <Text style={[textStyle, { lineHeight: baseLeading }]}
-                                className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
-                                {seg.text}
-                              </Text>
-                            )}
-                            {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
-                            {showByeonggi && j === 0 ? (
-                              <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
-                            ) : null}
-                          </Text>
-                        </View>
-                      ))}
-                      {/* Quick gloss: peer of the segment columns, not inside any segment.
-                          Placed after all segments so furigana centers over just the word,
-                          not the word + gloss combined width. items-end keeps the gloss on
-                          the same baseline as the word text.
-                          Uses readingSize for fontSize (both outer and inner) — when furigana is
-                          off, the outer wrapper must not inherit the word's full textStyle,
-                          otherwise the word's large lineHeight applies to the gloss text too,
-                          creating a tall invisible box that breaks baseline alignment. */}
-                      {showQuickGloss && (
-                        <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
-                          <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
-                        </Text>
-                      )}
-                    </View>
-                  </Pressable>
-                  {/* Universal definition slot: when showDefinition is on, every token
-                      gets a slot of the same height. Tokens without a definition get
-                      an empty spacer — this keeps all word texts on the same baseline
-                      regardless of which tokens have interlinear glosses. */}
-                  {showDefinition && (
-                    <View style={{ height: readingSize + 2, justifyContent: 'flex-start', alignItems: 'center' }}>
-                      {showInterlinear ? (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{trimmedDef}</Text>
-                      ) : (
-                        <View style={{ height: readingSize + 2 }} />
-                      )}
-                    </View>
-                  )}
-                </View>
+                <RubyTokenSpan
+                  key={i}
+                  index={i}
+                  word={word}
+                  displayText={displayText}
+                  pronunciation={token.pronunciation ?? null}
+                  hasRuby={hasRuby}
+                  isBlanked={isBlanked}
+                  isHighlighted={isHighlighted}
+                  isLink={isLink}
+                  isSearchHighlight={isSearchHighlight}
+                  isSavedWord={isSavedWord}
+                  isTokenSelected={isTokenSelected}
+                  isKaraokeDimmed={isKaraokeDimmed}
+                  showByeonggi={showByeonggi}
+                  byeonggiText={byeonggiText}
+                  showQuickGloss={showQuickGloss}
+                  quickGlossDef={quickGlossDef}
+                  showDefinition={showDefinition}
+                  showInterlinear={showInterlinear}
+                  trimmedDef={trimmedDef}
+                  firstLemma={firstLemma}
+                  linkUrl={linkUrl}
+                  l2Code={l2Code}
+                  quizMode={quizMode}
+                  popupEnabled={popupEnabled}
+                  rubyGapTrim={rubyGapTrim}
+                  readingSize={readingSize}
+                  baseLeading={baseLeading}
+                  textStyle={textStyle}
+                  onOpenLink={onOpenLink}
+                  onPressWord={handlePressWord}
+                  onReveal={handleReveal}
+                />
               );
             });
           })()}
@@ -961,7 +1184,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const tokenDisplayText = convertedTexts.get(word) ?? word;
-              const isHighlighted = highlightTerms?.some((t) => t === word);
+              const isHighlighted = !!highlightTerms?.some((t) => t === word);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
@@ -981,42 +1204,45 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
+              const isTokenSelected = selectedTokenIndex === i;
+              const isPressed = pressedTokenIndex === i;
 
-              const handlePress = () => {
-                const rawUrl = tokenFormat?.url ?? null;
-                const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
-                if (linkUrl && !popupEnabled) {
-                  onOpenLink?.(linkUrl);
-                  return;
-                }
-                if (quizMode) {
-                  setRevealedTokens(prev => new Set(prev).add(i));
-                  return;
-                }
-                if (popupEnabled && isWordToken) {
-                  configureLayoutAnimation();
-                  setSelectedWord(word);
-                  setSelectedLemma(firstLemma || null);
-                  setSelectedTokenPron(token.pronunciation ?? null);
-                  setSelectedLinkUrl(linkUrl);
-                }
-              };
+              const rawUrl = tokenFormat?.url ?? null;
+              const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
+              const tokenPron = token.pronunciation ?? null;
 
               return (
-                <Text
+                <PlainTokenSpan
                   key={i}
-                  testID={`token-${i}`}
-                  onPress={handlePress}
-                  style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
-                >
-                  {isBlanked ? (
-                    <Text className={textColor}>▯</Text>
-                  ) : (
-                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
-                  )}
-                  {showByeonggi ? ` ${byeonggiText}` : ''}
-                  {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
-                </Text>
+                  index={i}
+                  word={word}
+                  displayText={displayText}
+                  isWordToken={isWordToken}
+                  isBlanked={isBlanked}
+                  isHighlighted={isHighlighted}
+                  isLink={isLink}
+                  isSearchHighlight={isSearchHighlight}
+                  isSavedWord={isSavedWord}
+                  isTokenSelected={isTokenSelected}
+                  isPressed={isPressed}
+                  isKaraokeDimmed={isKaraokeDimmed}
+                  showByeonggi={showByeonggi}
+                  byeonggiText={byeonggiText}
+                  showQuickGloss={showQuickGloss}
+                  quickGlossDef={quickGlossDef}
+                  firstLemma={firstLemma}
+                  tokenPron={tokenPron}
+                  linkUrl={linkUrl}
+                  quizMode={quizMode}
+                  popupEnabled={popupEnabled}
+                  textColor={textColor}
+                  textStyle={textStyle}
+                  onOpenLink={onOpenLink}
+                  onPressWord={handlePressWord}
+                  onReveal={handleReveal}
+                  onPressIn={setPressedTokenIndex}
+                  onPressOut={setPressedTokenIndex}
+                />
               );
             });
           })()}
@@ -1035,7 +1261,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
             // equivalent): the popup's AI explanation + translations are
             // biased by the surrounding sentence.
             context={text}
-            onClose={() => { configureLayoutAnimation(); setSelectedWord(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
+            onClose={() => { popupCloseStartRef.current = Date.now(); setSelectedWord(null); setSelectedTokenIndex(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
           />
         )}
       </>
@@ -1060,3 +1286,32 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   return <Text testID={testID} className={`text-base ${textColor}`} style={fallbackStyle}>{text}</Text>;
 }
+
+// Memoized export: the reader re-renders its whole page on every scroll-window
+// change, tokenCache batch, and sync-status update. Without memoization that
+// re-renders every block's full token tree (thousands of NativeWind Views),
+// which blocked the JS thread for up to ~47s (popup opens queued behind it).
+// The comparator ignores the `tokenCache` object identity — it is read through
+// a ref and only gets a new identity when `tokenCacheLoaded` flips (the video
+// cache's useMemo is keyed on `loaded`), which the comparator does include.
+function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextProps): boolean {
+  return (
+    prev.text === next.text &&
+    prev.l2Code === next.l2Code &&
+    prev.tokens === next.tokens &&
+    prev.deferTokenization === next.deferTokenization &&
+    prev.karaokeProgress === next.karaokeProgress &&
+    prev.leading === next.leading &&
+    prev.testID === next.testID &&
+    prev.phoneticsOnHighlight === next.phoneticsOnHighlight &&
+    prev.formats === next.formats &&
+    prev.onOpenLink === next.onOpenLink &&
+    prev.phonetics === next.phonetics &&
+    prev.textScale === next.textScale &&
+    prev.textColor === next.textColor &&
+    prev.highlightTerms === next.highlightTerms &&
+    prev.tokenCacheLoaded === next.tokenCacheLoaded
+  );
+}
+
+export const TokenizedText = memo(TokenizedTextImpl, tokenizedTextPropsEqual);

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform,
   type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
@@ -81,6 +81,23 @@ export function PaginatedReader({
   // Track scroll position + viewport height imperatively (refs, no re-render
   // on every scroll frame) and report only the blocks whose measured rect
   // intersects the viewport ± VISIBILITY_BUFFER.
+  // ── Render-cost diagnostics ──
+  // Log any single render of this reader page that takes >500ms, so whole-page
+  // re-render storms (every block re-rendering on tokenCache/sync updates) are
+  // visible when popup opens are slow. Zero-overhead when under the threshold.
+  const renderClockRef = useRef<{ start: number; count: number } | null>(null);
+  if (!renderClockRef.current) renderClockRef.current = { start: Date.now(), count: 0 };
+  renderClockRef.current.count++;
+  const renderStartMs = renderClockRef.current.start;
+  useEffect(() => {
+    const elapsed = Date.now() - renderStartMs;
+    const n = renderClockRef.current?.count ?? 0;
+    renderClockRef.current = null;
+    if (elapsed > 500) {
+      log(`[Reader] 🐢 RENDER took ${elapsed}ms renders=${n} blocks=${(scrollMode ? blocks : visibleBlocksProp)?.length ?? 0}`);
+    }
+  });
+
   const scrollRef = useRef<ScrollView>(null);
   const scrollYRef = useRef(0);
   const viewportHeightRef = useRef(0);
@@ -335,10 +352,14 @@ function renderBlock(
 
   // ── Body block content (tokenized text + optional translation) ──
   const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item') => {
-    const formats = block.formats ?? [];
+    // IMPORTANT: keep this a stable reference when there is no link/highlight
+    // formatting. `?? []` created a fresh array every render, which defeated
+    // TokenizedText's memoization and re-rendered the whole reader page
+    // (thousands of token Views) on every scroll/sync update.
+    const formats = block.formats ?? undefined;
     const effectiveFormats =
       highlight && block.kind === 'text' && highlight.blockIndex === globalIdx
-        ? [...formats, { start: highlight.start, end: highlight.end, type: 'highlight' as const }]
+        ? [...(formats ?? []), { start: highlight.start, end: highlight.end, type: 'highlight' as const }]
         : formats;
     const tokenEl = (
           <TokenizedText
