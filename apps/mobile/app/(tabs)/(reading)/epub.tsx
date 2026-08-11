@@ -14,6 +14,7 @@ import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { TabbedPanel } from '@/components/TabbedPanel';
 import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose, List, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { translationLogger } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
 /** Hidden-measurement chunk size for large whole-book block streams. */
@@ -336,7 +337,11 @@ export default function EpubReaderScreen() {
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
             showTranslation={display.translation}
-            onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+            onToggleTranslation={() => {
+              const next = !display.translation;
+              translationLogger.log(`toggle translation → ${next ? 'on' : 'off'}`);
+              updateDisplay({ translation: next });
+            }}
             showTextActions
             translationSideBySide={isWide}
             onOpenLink={handleOpenLink}

@@ -17,7 +17,7 @@ import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
-import { tokenizerLogger, popupLogger } from '@/lib/logger';
+import { tokenizedTextLogger } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import {
@@ -30,7 +30,7 @@ import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
-const { log, logwarn } = tokenizerLogger;
+const { log, logwarn } = tokenizedTextLogger;
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -131,7 +131,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
       return;
     }
     if (popupEnabled) {
-      popupLogger.log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
+      log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
       onPressWord(index, word, firstLemma, pronunciation, linkUrl);
     }
   };
@@ -260,7 +260,7 @@ const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) 
       return;
     }
     if (popupEnabled && isWordToken) {
-      popupLogger.log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
+      log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${word}" index=${index}`);
       onPressWord(index, word, firstLemma, tokenPron, linkUrl);
     }
   };
@@ -814,12 +814,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
   useEffect(() => {
     if (selectedWord) {
       if (popupOpenStartRef.current !== null) {
-        popupLogger.log(`[TokenizedText] ⏱ POPUP-OPEN render=${Date.now() - popupOpenStartRef.current}ms word="${selectedWord}"`);
+        log(`[TokenizedText] ⏱ POPUP-OPEN render=${Date.now() - popupOpenStartRef.current}ms word="${selectedWord}"`);
         popupOpenStartRef.current = null;
         popupRenderStartLoggedRef.current = false;
       }
     } else if (popupCloseStartRef.current !== null) {
-      popupLogger.log(`[TokenizedText] ⏱ POPUP-CLOSE render=${Date.now() - popupCloseStartRef.current}ms`);
+      log(`[TokenizedText] ⏱ POPUP-CLOSE render=${Date.now() - popupCloseStartRef.current}ms`);
       popupCloseStartRef.current = null;
     }
   }, [selectedWord]);
@@ -996,7 +996,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
   // (sincePress) vs "render + commit" (POPUP-OPEN minus sincePress).
   if (selectedWord && popupOpenStartRef.current !== null && !popupRenderStartLoggedRef.current) {
     popupRenderStartLoggedRef.current = true;
-    popupLogger.log(`[TokenizedText] ⏱ POPUP-RENDER-START word="${selectedWord}" sincePress=${Date.now() - popupOpenStartRef.current}ms`);
+    log(`[TokenizedText] ⏱ POPUP-RENDER-START word="${selectedWord}" sincePress=${Date.now() - popupOpenStartRef.current}ms`);
   }
 
   // Offline without a downloaded dictionary: words can't be interactive.

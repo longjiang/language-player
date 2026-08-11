@@ -16,7 +16,9 @@
 import * as SQLite from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
-import { log, logwarn } from '@/lib/logger';
+import { dictDbLogger } from '@/lib/logger';
+
+const { log, logwarn } = dictDbLogger;
 
 // ── Constants ────────────────────────────────
 
