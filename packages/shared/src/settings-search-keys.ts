@@ -29,6 +29,9 @@ export const SETTINGS_SEARCH_KEYS: Record<string, string[]> = {
   review: [
     'title.review', 'label.new_cards_per_day',
   ],
+  search: [
+    'setting.subs_search', 'setting.expand_subs_search', 'setting.expand_subs_search_desc',
+  ],
   offline: [
     'title.offline_dictionaries',
   ],

@@ -150,7 +150,7 @@ limits are actually enforced:
 | Advertised | Free | Pro | Implementation | Notes |
 |---|---|---|---|---|
 | Interactive transcript lines | first **10** lines | complete | `SyncedTranscript.vue` slices to `NON_PRO_MAX_LINES = 15`; the "you need Pro" prompt obscures 7, so ~8 lines are visible | ⚠️ advertised 10 ≠ implemented 15/8 |
-| Word video examples | **2** examples (advertised) — actually first **5** corpus-wide subs-search hits | up to **500** hits (default 50 for speed; expandable via the Settings `subsSearchLimit` toggle), incl. TV-show filters | `SearchSubsComp.vue` renders only `hitIndex < NON_PRO_MAX_SUBS_SEARCH_HITS = 5` for free; powers the dictionary "examples" tab, phrasebook, compare | ⚠️ advertised 2 ≠ implemented 5; **corpus-wide search — no "current video" concept** |
+| Word video examples | **2** examples (advertised) — actually first **5** corpus-wide subs-search hits | up to **500** hits (default 50 for speed; expandable via Settings → Subtitles Search → "Expand subtitles search results to 500 hits"), incl. TV-show filters | Classic `SearchSubsComp.vue` renders only `hitIndex < NON_PRO_MAX_SUBS_SEARCH_HITS = 5` for free; web/mobile `SubsSearchResults` apply the same slice and fetch `limit=50` (default) or `limit=500` when `settings_v2.search.expandSubsSearch` is on; powers the dictionary "examples" tab, phrasebook, compare | ⚠️ advertised 2 ≠ implemented 5; **corpus-wide search — no "current video" concept** |
 | AI explanation ("Let DeepSeek Explain") | — | Pro-only | web `AiExplanation` (`apps/web/src/components/ai-explanation.tsx`) + Classic `WordBlockPopup.vue` | ⚠️ **not advertised on go-pro** — a real gate the marketing page omits |
 | Videos/languages + dictionary | ✅ | ✅ | not gated | — |
 
@@ -158,6 +158,15 @@ The word-example limit **is** the subs-search hits mechanism — the two
 advertised Pro gates map to exactly two code constants
 (`NON_PRO_MAX_LINES`, `NON_PRO_MAX_SUBS_SEARCH_HITS`). The AI explanation is
 a third, **non-advertised** gate.
+
+In the new web/mobile apps the same caps are enforced in
+`SubtitleDisplay` (first 10 transcript lines) and `SubsSearchResults`
+(first 5 hits). Pro subs-search requests use the global
+`settings_v2.search.expandSubsSearch` flag: off = fast default of 50 hits,
+on = up to 500 hits. The flag is exposed in both apps under Settings →
+Subtitles Search (matches Classic's `subsSearchLimit` toggle, inverted).
+See SPEC-054 C5 and the Settings V2 schema (`SearchSettings` in
+`packages/shared/src/types.ts`).
 
 Both are mismatched against the marketing copy (10 vs 15/8, 2 vs 5). SPEC-054
 C5 asserts the advertised values, so before launch either align the

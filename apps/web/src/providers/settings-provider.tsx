@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, type ReactNode } from 'react';
 import { useSettings } from '@/hooks/use-settings';
-import type { SettingsV2, TokenizedTextSettings, DisplaySettings, PlaybackSettings, ReviewSettings, L2Settings } from '@langplayer/shared';
+import type { SettingsV2, TokenizedTextSettings, DisplaySettings, PlaybackSettings, ReviewSettings, SearchSettings, L2Settings } from '@langplayer/shared';
 
 interface SettingsContextValue {
   settings: SettingsV2;
@@ -16,6 +16,8 @@ interface SettingsContextValue {
   updatePlayback: (patch: Partial<PlaybackSettings>) => void;
   review: ReviewSettings;
   updateReview: (patch: Partial<ReviewSettings>) => void;
+  search: SearchSettings;
+  updateSearch: (patch: Partial<SearchSettings>) => void;
 
   getL2: (code: string) => L2Settings;
   updateL2: (code: string, patch: Partial<L2Settings>) => void;

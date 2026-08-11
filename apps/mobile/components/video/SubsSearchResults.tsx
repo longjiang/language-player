@@ -76,7 +76,7 @@ function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
 
 export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display } = useSettingsContext();
+  const { display, search } = useSettingsContext();
   const { isPro } = useSubscription();
   const t = useT();
   const router = useRouter();
@@ -194,7 +194,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     setLoading(true);
     setError(null);
 
-    videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: 100, context: 3 })
+    videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch ? 500 : 50, context: 3 })
       .then((data) => {
         if (cancelled) return;
         const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
@@ -229,7 +229,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       });
 
     return () => { cancelled = true; };
-  }, [term, l2Lang.code]);
+  }, [term, l2Lang.code, search.expandSubsSearch]);
 
   // ── Seek to match on video change ──
   useEffect(() => {

@@ -6,6 +6,7 @@ import type {
   DisplaySettings,
   PlaybackSettings,
   ReviewSettings,
+  SearchSettings,
   L2Settings,
 } from '@langplayer/shared';
 
@@ -21,6 +22,8 @@ interface SettingsContextValue {
   updatePlayback: (patch: Partial<PlaybackSettings>) => void;
   review: ReviewSettings;
   updateReview: (patch: Partial<ReviewSettings>) => void;
+  search: SearchSettings;
+  updateSearch: (patch: Partial<SearchSettings>) => void;
 
   /** Local-only network kill switch (never synced to the account). */
   offlineMode: boolean;

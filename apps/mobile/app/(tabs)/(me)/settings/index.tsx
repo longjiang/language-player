@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
+import { Monitor, Play, Volume2, RotateCcw, Search, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -12,6 +12,7 @@ import { DisplaySettings } from './display';
 import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
 import { ReviewSettings } from './review';
+import { SearchSettings } from './search';
 import { NetworkSettings } from './network';
 import SyncStatusScreen from './sync-status';
 import OfflineDictionariesScreen from '../offline-dictionaries';
@@ -44,7 +45,7 @@ function SettingsList({
   onSelect: (key: string) => void;
 }) {
   const t = useT();
-  const { display, playback, review, getL2, loaded, offlineMode } = useSettingsContext();
+  const { display, playback, review, search, getL2, loaded, offlineMode } = useSettingsContext();
   const { l1Lang, l2Lang } = useLanguage();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
@@ -119,6 +120,13 @@ function SettingsList({
             subtitle: t('msg.cards_per_day', { n: review.dailyNewLimit }),
             href: '/(tabs)/(me)/settings/review',
           },
+          {
+            key: 'search',
+            icon: Search,
+            title: t('setting.subs_search'),
+            subtitle: t('setting.subs_search_hits', { n: search.expandSubsSearch ? 500 : 50 }),
+            href: '/(tabs)/(me)/settings/search',
+          },
         ],
       },
       {
@@ -148,7 +156,7 @@ function SettingsList({
         ],
       },
     ];
-  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, l2Lang.code, offlineMode]);
+  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, search.expandSubsSearch, l2Lang.code, offlineMode]);
 
   // Filter sections by search query
   const filteredSections = useMemo(() => {
@@ -261,6 +269,9 @@ function DetailPanel({ selectedKey }: { selectedKey: string | null }) {
       break;
     case 'review':
       content = <ReviewSettings />;
+      break;
+    case 'search':
+      content = <SearchSettings />;
       break;
     case 'network':
       content = <NetworkSettings />;

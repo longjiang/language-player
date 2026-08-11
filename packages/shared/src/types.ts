@@ -788,6 +788,9 @@ export interface SettingsV2 {
   /** SRS / spaced repetition. */
   review: ReviewSettings;
 
+  /** Subtitle/corpus search (global). */
+  search: SearchSettings;
+
   /** Per-L2 settings, keyed by ISO 639-1 code. Missing keys → L2_DEFAULTS. */
   l2: Record<string, L2Settings>;
 }
@@ -846,6 +849,13 @@ export interface ReviewSettings {
    * Japanese's budget — the budgets don't share a pool.
    */
   dailyNewLimit: number;
+}
+
+export interface SearchSettings {
+  /** Expand subtitle search from the fast default (50 hits) to the full
+   *  maximum (500 hits). Matches Classic's "Limit 'this word in TV Shows'
+   *  search result (faster)" setting. */
+  expandSubsSearch: boolean;
 }
 
 // ── Per-L2 ─────────────────────────────────────
@@ -951,6 +961,10 @@ export const REVIEW_DEFAULTS: ReviewSettings = {
   dailyNewLimit: 20,
 };
 
+export const SEARCH_DEFAULTS: SearchSettings = {
+  expandSubsSearch: false,
+};
+
 export const TOKEN_SPAN_DEFAULTS: TokenSpanSettings = {
   phonetics: { show: 'ruby', conditions: 'always' },
   definition: { show: false },
@@ -999,7 +1013,29 @@ export function createSettingsV2(l2Code?: string): SettingsV2 {
     display: { ...DISPLAY_DEFAULTS },
     playback: { ...PLAYBACK_DEFAULTS },
     review: { ...REVIEW_DEFAULTS },
+    search: { ...SEARCH_DEFAULTS },
     l2,
+  };
+}
+
+/** Merge a stored/cloud SettingsV2 onto the defaults so older blobs (e.g.
+ *  before the `search` section existed) still load with all fields present. */
+export function normalizeSettingsV2(
+  raw: Partial<SettingsV2> | null | undefined,
+): SettingsV2 {
+  const base = createSettingsV2();
+  if (!raw) return base;
+  return {
+    ...base,
+    ...raw,
+    v: 2 as const,
+    ts: raw.ts ?? base.ts,
+    tokenizedText: { ...base.tokenizedText, ...(raw.tokenizedText ?? {}) },
+    display: { ...base.display, ...(raw.display ?? {}) },
+    playback: { ...base.playback, ...(raw.playback ?? {}) },
+    review: { ...base.review, ...(raw.review ?? {}) },
+    search: { ...base.search, ...(raw.search ?? {}) },
+    l2: raw.l2 ?? base.l2,
   };
 }
 

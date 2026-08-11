@@ -8,7 +8,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
 import { SearchBar } from './SearchBar';
-import { Palette, Play, Mic, Repeat, ChevronRight } from 'lucide-react';
+import { Palette, Play, Mic, Repeat, Search, ChevronRight } from 'lucide-react';
 
 interface SettingsRow {
   key: string;
@@ -30,7 +30,7 @@ interface SettingsListPanelProps {
 
 export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps) {
   const { l1, l2 } = useLanguage();
-  const { display, playback, review } = useSettingsContext();
+  const { display, playback, review, search } = useSettingsContext();
   const pathname = usePathname();
   const t = useT();
   const [query, setQuery] = useState('');
@@ -89,9 +89,16 @@ export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps)
           subtitle: t('msg.cards_per_day', { n: review.dailyNewLimit }),
           href: `/${l1.code}/${l2.code}/settings/review`,
         },
+        {
+          key: 'search',
+          icon: Search,
+          title: t('setting.subs_search'),
+          subtitle: t('setting.subs_search_hits', { n: search.expandSubsSearch ? 500 : 50 }),
+          href: `/${l1.code}/${l2.code}/settings/search`,
+        },
       ],
     },
-  ], [l1.code, l2.code, display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, t]);
+  ], [l1.code, l2.code, display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, search.expandSubsSearch, t]);
 
   const filteredSections = useMemo(() => {
     if (!query.trim()) return sections;
