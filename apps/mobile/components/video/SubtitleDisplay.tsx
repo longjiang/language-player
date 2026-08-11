@@ -1,7 +1,9 @@
 import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, Pressable, Animated, Easing } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '../TokenizedText';
@@ -11,6 +13,9 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/shared';
+
+/** ADR-0034: free users see the first 10 transcript lines. */
+const FREE_TRANSCRIPT_LINES = 10;
 
 interface SubtitleDisplayProps {
   lines: SubtitleSyncedLine[];
@@ -31,6 +36,8 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback } = useSettingsContext();
+  const { isPro } = useSubscription();
+  const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
   const userScrolledUntil = useRef(0);
   const lastScrolledIdx = useRef(-1);
@@ -236,7 +243,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
     <View className="flex-1 bg-background">
       <FlatList
         ref={flatListRef}
-        data={displayLines}
+        data={!isPro ? displayLines.slice(0, FREE_TRANSCRIPT_LINES) : displayLines}
         keyExtractor={(_, i) => String(i)}
         contentContainerStyle={{ paddingHorizontal: 12 }}
         onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
@@ -294,6 +301,21 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
             </Pressable>
           );
         }}
+        ListFooterComponent={!isPro && displayLines.length > FREE_TRANSCRIPT_LINES ? (
+          <View className="py-4 px-2 items-center">
+            <Text className="text-sm text-center text-muted-foreground">
+              {t('msg.upgrade_to_pro_banner')}
+            </Text>
+            <Pressable
+              onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
+              className="mt-3 rounded-lg bg-primary px-4 py-2"
+            >
+              <Text className="text-sm font-semibold text-primary-foreground">
+                {t('action.upgrade_to_pro')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
       />
     </View>
   );

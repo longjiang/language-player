@@ -12,6 +12,7 @@ import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useTextScale } from '@/hooks/use-text-scale';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
@@ -26,6 +27,8 @@ import {
 /** Karaoke lead: bias the highlight slightly ahead of the caption clock, since
  *  caption start times often trail the audio by a few hundred milliseconds. */
 const KARAOKE_LEAD_SECONDS = 0.15;
+/** ADR-0034: free users see the first 10 transcript lines. */
+const FREE_TRANSCRIPT_LINES = 10;
 
 interface SubtitleDisplayProps {
   youtubeId?: string;
@@ -79,6 +82,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
+  const { isPro } = useSubscriptionContext();
   // Scale the design sizes by the user's text-size setting (zoom index 0 = 1×).
   const textZoomFactor = useTextScale();
   const t = useT();
@@ -332,7 +336,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
         </div>
       )}
       <div className="space-y-2" ref={listRef}>
-        {syncedLines.map((line, i) => {
+        {(!isPro ? syncedLines.slice(0, FREE_TRANSCRIPT_LINES) : syncedLines).map((line, i) => {
           const isActive = i === activeIndex;
 
           // Compute karaoke progress for the active line
@@ -385,6 +389,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           );
         })}
       </div>
+      {!isPro && syncedLines.length > FREE_TRANSCRIPT_LINES && (
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-center">
+          <p className="text-sm font-medium">{t('msg.upgrade_to_pro_banner')}</p>
+          <a
+            href={`/${l1.code}/${l2.code}/go-pro`}
+            className="mt-2 inline-block text-sm font-semibold text-primary underline"
+          >
+            {t('action.upgrade_to_pro')}
+          </a>
+        </div>
+      )}
     </div>
   );
 }

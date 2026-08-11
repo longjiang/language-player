@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
 import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/utils';
@@ -13,6 +15,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckCircle2, BookOpen } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
@@ -27,6 +30,9 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
+
+/** ADR-0034: free users can complete 20 SRS reviews per day. */
+const FREE_SRS_DAILY_CAP = 20;
 
 /** Quality → SM-2 quality mapping (0-5 scale) */
 const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
@@ -80,7 +86,9 @@ export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
   const t = useT();
+  const router = useRouter();
   const { isSm } = useResponsive();
+  const { isPro } = useSubscription();
 
   const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
   const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
@@ -103,6 +111,17 @@ export default function ReviewScreen() {
   const [showTabs, setShowTabs] = useState(false);
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
+  const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
+  const reviewCounterKey = user?.id
+    ? `lpSrsReviewsDone:${user.id}:${new Date().toISOString().slice(0, 10)}`
+    : null;
+
+  useEffect(() => {
+    if (!reviewCounterKey) return;
+    AsyncStorage.getItem(reviewCounterKey)
+      .then((v) => setReviewsDoneToday(Number(v ?? 0)))
+      .catch(() => {});
+  }, [reviewCounterKey]);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
@@ -205,6 +224,7 @@ export default function ReviewScreen() {
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
+    if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
 
     const card = cards[currentIndex];
@@ -221,6 +241,14 @@ export default function ReviewScreen() {
     const sm2Quality = RATING_MAP[quality];
     const updated = sm2(card.srs, sm2Quality);
     updateCard(l2Code, card.word.id, updated);
+
+    if (!isPro) {
+      const next = reviewsDoneToday + 1;
+      setReviewsDoneToday(next);
+      if (reviewCounterKey) {
+        AsyncStorage.setItem(reviewCounterKey, String(next)).catch(() => {});
+      }
+    }
 
     if (wasLastCard) {
       setJustCompleted(true);
@@ -244,7 +272,7 @@ export default function ReviewScreen() {
     setTimeout(() => {
       setRated(false);
     }, 600);
-  }, [cards, currentIndex, rated, updateCard, l2Code, t]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t, isPro, reviewsDoneToday, reviewCounterKey]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -612,18 +640,33 @@ export default function ReviewScreen() {
 
       {/* Rating buttons — pinned to bottom with safe area */}
       {!rated && (
-        <View className="flex-row gap-2 px-4" style={{ paddingBottom: insets.bottom + 8 }}>
-          {RATING_LABELS.map((r) => (
-            <Pressable
-              key={r.key}
-              onPress={() => handleRate(r.key)}
-              className="flex-1 items-center rounded-lg py-3"
-              style={{ backgroundColor: RATING_ICON_COLORS[r.key] }}
-            >
-              <Text className="text-xs font-bold text-white">{r.label}</Text>
-              <Text className="mt-0.5 text-[10px] text-white/70">{r.hint}</Text>
-            </Pressable>
-          ))}
+        <View className="px-4" style={{ paddingBottom: insets.bottom + 8 }}>
+          {!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP && (
+            <View className="mb-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 items-center">
+              <Text className="text-sm text-center font-medium text-foreground">
+                {t('msg.upgrade_to_pro_banner')}
+              </Text>
+              <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} className="mt-1">
+                <Text className="text-sm font-semibold text-primary underline">
+                  {t('action.upgrade_to_pro')}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+          <View className="flex-row gap-2">
+            {RATING_LABELS.map((r) => (
+              <Pressable
+                key={r.key}
+                onPress={() => handleRate(r.key)}
+                disabled={!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP}
+                className="flex-1 items-center rounded-lg py-3"
+                style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: !isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP ? 0.5 : 1 }}
+              >
+                <Text className="text-xs font-bold text-white">{r.label}</Text>
+                <Text className="mt-0.5 text-[10px] text-white/70">{r.hint}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
       )}
     </PageContainer>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
@@ -41,6 +42,9 @@ interface SubsSearchResultsProps {
   /** Number of distinct forms being searched. 0 or undefined hides the indicator. */
   formCount?: number;
 }
+
+/** ADR-0034: free users see the first 5 subs-search hits. */
+const FREE_SUBS_SEARCH_HITS = 5;
 
 type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
 
@@ -114,9 +118,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const { l1, l2 } = useLanguage();
   const t = useT();
   const { display } = useSettingsContext();
+  const { isPro } = useSubscriptionContext();
   const playerRef = useRef<YouTubePlayerHandle>(null);
 
   const [videos, setVideos] = useState<SubsSearchVideo[]>([]);
+  const [totalHits, setTotalHits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -155,6 +161,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     () => term.split(',').map((t) => t.trim()).filter(Boolean),
     [term],
   );
+
+  const applyVideos = useCallback((all: SubsSearchVideo[]) => {
+    setTotalHits(all.length);
+    setVideos(isPro ? all : all.slice(0, FREE_SUBS_SEARCH_HITS));
+  }, [isPro]);
 
   // Truncated display: "a, b, c" or "a, b, c, and X other forms" (localized)
   const termDisplay = useMemo(() => {
@@ -214,7 +225,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         )
         .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, term) }));
       if (exactVideos.length > 0) {
-        setVideos(exactVideos);
+        applyVideos(exactVideos);
         setCurrentIndex(0);
         setAutoplayEnabled(true);
         setLoading(false);
@@ -229,7 +240,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       allFormTermRef.current === term &&
       allFormVideosRef.current.length > 0
     ) {
-      setVideos(allFormVideosRef.current);
+      applyVideos(allFormVideosRef.current);
       setCurrentIndex(0);
       setAutoplayEnabled(true);
       setLoading(false);
@@ -272,7 +283,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         const firstLoad = initialLoadRef.current;
         initialLoadRef.current = false;
         const autoplay = !firstLoad;
-        setVideos(parsed);
+        applyVideos(parsed);
         if (!exactMatch) {
           allFormVideosRef.current = parsed;
           allFormTermRef.current = term;
@@ -706,6 +717,20 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           </button>
         </div>
       </div>
+
+      {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
+        <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
+          <p className="text-xs text-muted-foreground">
+            {t('msg.upgrade_to_pro_banner')}
+          </p>
+          <Link
+            href={`/${l1.code}/${l2.code}/go-pro`}
+            className="shrink-0 text-xs font-semibold text-primary underline"
+          >
+            {t('action.upgrade_to_pro')}
+          </Link>
+        </div>
+      )}
 
       {/* ── Mini player ── */}
       <div className="aspect-video w-full bg-black">
