@@ -194,7 +194,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     setLoading(true);
     setError(null);
 
-    videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch ? 500 : 50, context: 3 })
+    videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch && isPro ? 500 : 50, context: 3 })
       .then((data) => {
         if (cancelled) return;
         const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
@@ -229,7 +229,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       });
 
     return () => { cancelled = true; };
-  }, [term, l2Lang.code, search.expandSubsSearch]);
+  }, [term, l2Lang.code, search.expandSubsSearch, isPro]);
 
   // ── Seek to match on video change ──
   useEffect(() => {

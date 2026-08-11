@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
 import { SearchBar } from './SearchBar';
@@ -31,6 +32,7 @@ interface SettingsListPanelProps {
 export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, review, search } = useSettingsContext();
+  const { isPro } = useSubscriptionContext();
   const pathname = usePathname();
   const t = useT();
   const [query, setQuery] = useState('');
@@ -93,12 +95,12 @@ export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps)
           key: 'search',
           icon: Search,
           title: t('setting.subs_search'),
-          subtitle: t('setting.subs_search_hits', { n: search.expandSubsSearch ? 500 : 50 }),
+          subtitle: t('setting.subs_search_hits', { n: isPro && search.expandSubsSearch ? 500 : 50 }),
           href: `/${l1.code}/${l2.code}/settings/search`,
         },
       ],
     },
-  ], [l1.code, l2.code, display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, search.expandSubsSearch, t]);
+  ], [l1.code, l2.code, display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, isPro, search.expandSubsSearch, t]);
 
   const filteredSections = useMemo(() => {
     if (!query.trim()) return sections;

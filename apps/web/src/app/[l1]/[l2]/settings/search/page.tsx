@@ -3,11 +3,13 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { ToggleRow } from '../_components/ToggleRow';
 
 export default function SearchSettingsPage() {
   const { search, updateSearch, loaded } = useSettingsContext();
+  const { isPro } = useSubscriptionContext();
   const t = useT();
 
   const mountedRef = useRef(false);
@@ -33,7 +35,8 @@ export default function SearchSettingsPage() {
       <ToggleRow
         label={t('setting.expand_subs_search')}
         description={t('setting.expand_subs_search_desc')}
-        checked={search.expandSubsSearch}
+        checked={isPro && search.expandSubsSearch}
+        disabled={!isPro}
         onChange={(v) => updateSearch({ expandSubsSearch: v })}
       />
     </div>

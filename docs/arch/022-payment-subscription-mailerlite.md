@@ -164,7 +164,9 @@ In the new web/mobile apps the same caps are enforced in
 (first 5 hits). Pro subs-search requests use the global
 `settings_v2.search.expandSubsSearch` flag: off = fast default of 50 hits,
 on = up to 500 hits. The flag is exposed in both apps under Settings →
-Subtitles Search (matches Classic's `subsSearchLimit` toggle, inverted).
+Subtitles Search (matches Classic's `subsSearchLimit` toggle, inverted)
+and is **Pro-only**: free users see it greyed out and off, and non-Pro
+requests always use the 50-hit default even if a stored value is true.
 See SPEC-054 C5 and the Settings V2 schema (`SearchSettings` in
 `packages/shared/src/types.ts`).
 

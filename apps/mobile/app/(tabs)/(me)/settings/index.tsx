@@ -5,6 +5,7 @@ import { Monitor, Play, Volume2, RotateCcw, Search, Download, ChevronRight, Wifi
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
 import { SearchBar } from '@/components/settings/SearchBar';
@@ -46,6 +47,7 @@ function SettingsList({
 }) {
   const t = useT();
   const { display, playback, review, search, getL2, loaded, offlineMode } = useSettingsContext();
+  const { isPro } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
@@ -124,7 +126,7 @@ function SettingsList({
             key: 'search',
             icon: Search,
             title: t('setting.subs_search'),
-            subtitle: t('setting.subs_search_hits', { n: search.expandSubsSearch ? 500 : 50 }),
+            subtitle: t('setting.subs_search_hits', { n: isPro && search.expandSubsSearch ? 500 : 50 }),
             href: '/(tabs)/(me)/settings/search',
           },
         ],
@@ -156,7 +158,7 @@ function SettingsList({
         ],
       },
     ];
-  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, search.expandSubsSearch, l2Lang.code, offlineMode]);
+  }, [display.theme, playback.transcriptMode, l2Settings?.speech?.rate, review.dailyNewLimit, isPro, search.expandSubsSearch, l2Lang.code, offlineMode]);
 
   // Filter sections by search query
   const filteredSections = useMemo(() => {
