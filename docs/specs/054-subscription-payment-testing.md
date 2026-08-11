@@ -452,18 +452,21 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | B80 | `POST /create-stripe-checkout-session` missing `price_id` | 400 |
 | B81 | `POST /create-stripe-checkout-session` missing `user_id` | 400 |
 | B82 | `POST /create-stripe-checkout-session` with an invalid price/mode | 400 for invalid `mode` or malformed `price_id` |
-| B83 | `GET /stripe_checkout_success` missing `session_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params` (host defaults when absent) |
-| B84 | `GET /stripe_checkout_success` with an unpaid session | Redirect to error page; no grant |
-| B85 | `GET /stripe-prices` live vs test | IDs/links/amounts match `prices.csv` (10/90/169 USD; 73/653/1227 CNY; sale lifetime 84.50/608; legacy 6/59) |
-| B86 | `GET /paypal_checkout_success` missing `pay_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params`; no crash |
-| B87 | PayPal unapproved state | Redirect to error; no grant |
-| B88 | `POST /in_app_purchase_success` missing `user_id` / `receipt` | 400 `Missing user_id or receipt`; no grant |
-| B89 | `GET /user-subscription` with no rows | `{"subscription": null}` |
-| B90 | `GET /user-subscription` with only an expired row | Returns the expired row; frontends treat it as free |
+| B83 | Purchase gating (ARCH-022): `POST /create-stripe-checkout-session` while an active auto-renew subscription exists | 400 "Cancel your existing subscription before purchasing a new one."; no session created — covered by `test_create_checkout_session_blocked_with_active_subscription` |
+| B84 | Purchase gating (ARCH-022): checkout after auto-renew cancelled | 200 — block lifted once `payment_customer_id` is cleared, even though the plan is still active; covered by `test_create_checkout_session_allowed_after_auto_renew_cancelled` |
+| B85 | Purchase gating (ARCH-022): checkout with a trial subscription | 200 — trials are exempt; covered by `test_create_checkout_session_allowed_with_trial` |
+| B86 | `GET /stripe_checkout_success` missing `session_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params` (host defaults when absent) |
+| B87 | `GET /stripe_checkout_success` with an unpaid session | Redirect to error page; no grant |
+| B88 | `GET /stripe-prices` live vs test | IDs/links/amounts match `prices.csv` (10/90/169 USD; 73/653/1227 CNY; sale lifetime 84.50/608; legacy 6/59) |
+| B89 | `GET /paypal_checkout_success` missing `pay_id` / `user_id` / `host` | 302 redirect to `/go-pro-error?error=missing_params`; no crash |
+| B90 | PayPal unapproved state | Redirect to error; no grant |
+| B91 | `POST /in_app_purchase_success` missing `user_id` / `receipt` | 400 `Missing user_id or receipt`; no grant |
+| B92 | `GET /user-subscription` with no rows | `{"subscription": null}` |
+| B93 | `GET /user-subscription` with only an expired row | Returns the expired row; frontends treat it as free |
 
 ### 2.7 Automation notes
 
-- B1–B6, B10–B17, and B20–B90 can be automated in CI with mocked Stripe / PayPal / Apple / MailerLite and a disposable Supabase schema. The existing `test_app.py` / `test_admin_users.py` cover a few of these shallowly (several are marked “to be implemented” or compare against stale recorded fixtures); most rows are missing.
+- B1–B6, B10–B17, and B20–B93 can be automated in CI with mocked Stripe / PayPal / Apple / MailerLite and a disposable Supabase schema. The existing `test_app.py` / `test_admin_users.py` cover a few of these shallowly (several are marked “to be implemented” or compare against stale recorded fixtures); most rows are missing.
 - Concurrency rows (B12, B13) need a threaded Flask test client or two parallel processes against the same schema.
 - Provider-hosted UI rows (S/W/P/A) remain human-run per ADR-0027.
 
@@ -540,14 +543,16 @@ Scope:
   payment-id / customer-id / legacy Directus id / payment-email search
   (test_admin_users.py)
 - ✅ B80–B81 — checkout session validation (missing `price_id` / `user_id`)
-- ✅ B82–B88 — invalid price/mode (400), missing success-callback params
+- ✅ B82 — invalid price/mode (400); ✅ B83–B85 — purchase gating
+  (ARCH-022: active auto-renew → 400, cancelled → 200, trial → 200);
+  ✅ B86–B91 — missing success-callback params
   (302 error redirect), unpaid Stripe session (no grant), price parity vs
   `prices.csv`, PayPal missing params/unapproved (no grant), IAP missing
   fields (400)
 - ✅ B53 backend — mocked paid `/stripe_checkout_success` grants the
   subscription and redirects to `/go-pro-success`; `/user-subscription`
   returns the active row — no real payment needed
-- ✅ B89–B90 — `/user-subscription` no-rows and expired-row behavior
+- ✅ B92–B93 — `/user-subscription` no-rows and expired-row behavior
 - ✅ B49 — legacy `/verification_email*` routes removed (SPEC-039 M5); the
   migrated `verify_email@zerotohero.ca` support pipe is covered by
   `test_auto_verify_email.py`
@@ -591,15 +596,15 @@ Exit criteria:
 **Programmatic coverage (batch 1, 2026-08-09):**
 
 - ✅ `zerotohero-python-server/test_phase0_subscriptions.py` — 51 mocked unit/API
-  tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B89/B90), checkout
-  validation (B80–B82), acquisition survey (B17), id allocation + MailerLite
+  tests: auth/JWT (B1–B6), `/user-subscription` states (B3/B92/B93), checkout
+  validation (B80–B82), purchase gating (B83–B85, ARCH-022), acquisition survey (B17), id allocation + MailerLite
   group sync (B10/B60–B65), MailerLite new-subscriber payload (`auth_user_id`
   UUID + legacy numeric `user_id`), subscriber-not-found/empty-token fail-safe
   (B66–B67), legacy Directus remap + post-GoTrue auth.users lookup (B15–B16),
   free-trial logic + GoTrue verify-email hook (B40–B43), cancellation
-  (B50–B52), mocked paid/unpaid success callbacks (B53 backend/B84),
+  (B50–B52), mocked paid/unpaid success callbacks (B53 backend/B87),
   admin expiry helpers (B70–B72), and payment validation/price parity
-  (B82–B88).
+  (B82/B86–B91).
 - ✅ `zerotohero-python-server/test_admin_users.py` — 23 tests including
   admin grant/change/remove MailerLite group sync through the shared
   `utils_subscription` path (B68).
@@ -805,7 +810,7 @@ Verification per row:
   cancel → `cancel_at_period_end=true`; cancel endpoint 200 → local
   `payment_customer_id` cleared; row `31146` stays `monthly`/active;
   `/user-subscription` still returns it until expiry. Post-expiry free
-  fallback covered by B90.
+  fallback covered by B93.
 - ✅ C7 — success/error screens verified (2026-08-10): declined/insufficient/
   processing/3DS-fail/abandoned-checkout via S4–S8, WeChat success via W1,
   PayPal success via P1, PayPal-cancel UI shows the cancelled message with no
@@ -851,7 +856,7 @@ Coverage notes for the rest of Phase 2:
   local-redirect link applies).
 - P5 — document-only (links to production Classic; do not complete).
 - S13/S14 — already verified in Phase 1 (backend/account-level, app-agnostic).
-- C1 — price parity covered by B85/S15 + a visual comparison of web go-pro
+- C1 — price parity covered by B88/S15 + a visual comparison of web go-pro
   amounts vs `prices.csv`.
 - C2 — deferred to Phase 5 (full cross-device sync matrix); the same-backend
   row was confirmed during S9.
@@ -1019,7 +1024,7 @@ interim path until it lands.
 
 - C2 (subscription sync) — deferred from Phase 2 — plus the C1–C7 full
   matrix on all three frontends
-- Re-run B1–B90 against a disposable schema after any backend change
+- Re-run B1–B93 against a disposable schema after any backend change
 - SPEC-039 sunset-readiness payment items: paid-event regression, MailerLite
   enrollment for new GoTrue users, delete-account cleanup
 
@@ -1076,7 +1081,7 @@ interim path until it lands.
    non-atomic check-then-insert in `update_or_add_subscription` is an
    idempotency problem, not an id-allocation problem (see #8 / M3).
 10. **MailerLite subscriber creation only happens at email verification:** group assignment for users who are not already MailerLite subscribers fails silently. Decide whether payment/renewal paths should upsert subscribers (B66).
-11. **`/user-subscription` returns the first row even when expired:** confirm every frontend treats expired rows as free; consider returning `{"subscription": null}` when no active row exists (B47/B89/B90).
+11. **`/user-subscription` returns the first row even when expired:** confirm every frontend treats expired rows as free; consider returning `{"subscription": null}` when no active row exists (B47/B92/B93).
 12. **Existing automated payment tests are shallow:** several `test_app.py` rows are marked “to be implemented” or assert against stale recorded JSON fixtures; replace them with the mock-based cases in 2.6.
 13. **`user_acquisition.id` default — resolved 2026-08-09:** converted to
     identity; `add_user_acquisition`'s id-less insert works and the endpoint
@@ -1120,16 +1125,6 @@ interim path until it lands.
     different secrets, so both vars are required in production.
     Verified in production 2026-08-10: bogus signature → 400; signed
     simulated `invoice.paid` → 200 + renewal.
-20. **Active auto-renewing subscription blocks new purchases — Option A,
-    implemented 2026-08-10, matching Classic:** web + mobile go-pro show a
-    "cancel your existing subscription first" notice instead of payment
-    methods, and `POST /create-stripe-checkout-session` returns 400 when the
-    user has a non-trial, unexpired subscription **with a
-    `payment_customer_id`** (i.e., an auto-renewing Stripe subscription).
-    Cancelling auto-renew clears `payment_customer_id`, which lifts the
-    block — exactly Classic's `hasActiveNonTrialSubscription` logic. Trials
-    are exempt.
-
 ---
 
 ## 7. References (official docs)
@@ -1148,4 +1143,4 @@ interim path until it lands.
 2. Platform limitations are respected: Apple IAP only on iOS, Play Billing on Android (Phase 3), PayPal direct only in Classic.
 3. Renewal, cancellation, restore, and error paths verified, not just the happy path.
 4. The blocking gaps in §5 (IAP bundle ID, PayPal sandbox switch, Stripe env toggles) are resolved or explicitly accepted by the team before shipping the affected flow.
-5. Backend/data-layer rows B1–B90 pass against a disposable Supabase schema (or the gaps in §5 items 8–14 are explicitly accepted/fixed).
+5. Backend/data-layer rows B1–B93 pass against a disposable Supabase schema (or the gaps in §5 items 8–14 are explicitly accepted/fixed).
