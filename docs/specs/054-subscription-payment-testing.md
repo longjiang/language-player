@@ -933,7 +933,9 @@ payment path.
 - ⬜ A2 — sandbox account → mobile go-pro → Apple IAP → receipt validated →
   finish transaction → `/go-pro-success`
 - ⬜ A3/A4/A5 — restore, cancel dialog, repeat purchase
-- ⬜ A6 — Apple IAP hidden on Android (code implemented; device check in 3.4)
+- ✅ A6 — code check 2026-08-10: `IAP_AVAILABLE = Platform.OS === 'ios'`
+  (`apps/mobile/lib/iap.ts`); Android renders the buy-on-website notice only.
+  Device check still pending in 3.4.
 - ⬜ C3 — cross-platform lifetime sync (IAP → web/Classic)
 - ⬜ C5 — free/Pro gates flip on mobile (code wired; device check pending)
 - ⬜ C6 — cancel at period end from the mobile profile (code wired; device
@@ -941,9 +943,12 @@ payment path.
 - ⬜ C7 — IAP success/error screens (code wired; sandbox check pending)
 - ⬜ Verify subscription state refreshes after a **website** purchase (code
   refetch implemented; device check pending)
-- ⬜ **Store compliance:** no external payment links (Stripe, WeChat, Alipay,
-  PayPal, or website checkout) in the iOS app; Apple IAP (`pro_go`) is the
-  only purchase path.
+- ✅ **Store compliance** — code check 2026-08-10: iOS renders only the Apple
+  IAP (`pro_go`) panel + Restore Purchases; the languageplayer.io/go-pro link
+  is Android-only (`!IAP_AVAILABLE`). No Stripe/PayPal/WeChat/Alipay links
+  exist in `apps/mobile` outside comments. Device screenshot check optional.
+- ✅ A7 backend half — 2026-08-10: `pytest -k iap` 3/3 green (`.go` validated
+  first, `.app` fallback, bogus receipt → error + no grant).
 - ✅ Bundle-ID question resolved 2026-08-10 — backend validates
   `ca.zerotohero.go` and `ca.zerotohero.app`; A1/A2 can run.
 - ✅ IAP product `pro_go` confirmed in App Store Connect 2026-08-10
