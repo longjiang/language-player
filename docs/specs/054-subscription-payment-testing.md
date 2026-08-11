@@ -801,7 +801,11 @@ Coverage notes for the rest of Phase 2:
   `4242…` → row `31147` = `status=active`, `type=monthly`, expiry ≈ +32d,
   `payment_customer_id` set, web success-callback notes; `/user-subscription`
   returns it; MailerLite `monthly` on Mary.
-- ⬜ S10 — annual success + declined card — pending.
+- ✅ S10a — Web annual success (2026-08-10): upgrading monthly → annual
+  updated the same row (`31147`) to `annual`, expiry ≈ +367d (reset, per
+  C4/B32), new test `payment_id` + `payment_customer_id`; MailerLite
+  `annual` added.
+- ⬜ S10b — declined card — pending.
 - ✅ W5/P5/S13/S14 — covered/foregone per notes above.
 - ⬜ C2/C5/C7 — pending until S9–S10 pass.
 
