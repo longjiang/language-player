@@ -7,6 +7,7 @@ import {
   getDueCards,
   isDue,
   isNewCard,
+  mergeSrsCards,
   migrateSrsStore,
   newCard,
   normalizeFsrsCard,
@@ -260,5 +261,39 @@ describe('fsrs-scheduler: due helpers', () => {
     expect(getCardState({ ...newCard(NOW), state: State.Learning })).toBe('learning');
     expect(getCardState({ ...newCard(NOW), state: State.Review })).toBe('review');
     expect(getCardState({ ...newCard(NOW), state: State.Relearning })).toBe('relearning');
+  });
+});
+
+describe('fsrs-scheduler: LWW merge', () => {
+  it('normalizes both sides and lets the newer lastReview win', () => {
+    const legacy = {
+      ease: 2.5,
+      interval: 0,
+      repetitions: 0,
+      nextReview: NOW,
+      lastReview: NOW - 1000,
+      createdAt: NOW - 86_400_000,
+    };
+    const rated = rate(newCard(NOW), 'good', NOW);
+    const merged = mergeSrsCards(
+      { w1: legacy, w2: rated },
+      { w1: rated, w3: legacy },
+    );
+    // w1: cloud (rated) is newer than the legacy local card → cloud wins, normalized.
+    expect(merged['w1']!.state).toBe(rated.state);
+    expect(merged['w1']!.v).toBe(2);
+    // w2: local-only card stays normalized.
+    expect(merged['w2']!.state).toBe(rated.state);
+    // w3: cloud legacy card is normalized on entry.
+    expect(merged['w3']!.state).toBe(State.New);
+    expect(merged['w3']!.due).toBe(NOW);
+  });
+
+  it('keeps the local card when it is newer', () => {
+    const local = rate(newCard(NOW), 'good', NOW);
+    const olderCloud: FsrsCard = { ...newCard(NOW - 1000), lastReview: NOW - 5000, createdAt: NOW - 1000 };
+    const merged = mergeSrsCards({ w: local }, { w: olderCloud });
+    expect(merged['w']!.lastReview).toBe(NOW);
+    expect(merged['w']!.state).toBe(State.Learning);
   });
 });

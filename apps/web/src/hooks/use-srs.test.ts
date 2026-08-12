@@ -23,7 +23,7 @@ import {
   createSrsStore,
   getLanguageCards,
 } from '@langplayer/utils';
-import type { SrsFields, SrsProgressStore } from '@langplayer/utils';
+import type { LegacySrsFields, LegacySrsProgressStore } from '@langplayer/utils';
 
 // ── Helpers ────────────────────────────────────
 
@@ -39,8 +39,8 @@ function advanceTime(ms: number) {
 
 /** Shortcut: make a card created at a given time. */
 function cardAt(
-  overrides: Partial<SrsFields> & { createdAt?: number } = {},
-): SrsFields {
+  overrides: Partial<LegacySrsFields> & { createdAt?: number } = {},
+): LegacySrsFields {
   const c = newCard();
   if (overrides.createdAt !== undefined) {
     c.createdAt = overrides.createdAt;
@@ -54,7 +54,7 @@ function reviewedCard(
   interval: number,
   ease = 2.5,
   nextReviewOffset = 0, // ms from "now" for nextReview
-): SrsFields {
+): LegacySrsFields {
   const now = Date.now();
   return {
     ease,
@@ -235,7 +235,7 @@ describe('Due Card Detection', () => {
 
   describe('getDueCards()', () => {
     it('returns sorted due card IDs', () => {
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         'card-a': reviewedCard(1, 1, 2.5, -2000),  // due 2s ago
         'card-b': reviewedCard(1, 1, 2.5, -5000),  // due 5s ago (older → first)
         'card-c': reviewedCard(1, 1, 2.5, 86_400_000), // not due (tomorrow)
@@ -248,7 +248,7 @@ describe('Due Card Detection', () => {
     });
 
     it('returns empty array when no cards are due', () => {
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         'card-a': reviewedCard(1, 1, 2.5, 86_400_000),
         'card-b': reviewedCard(1, 1, 2.5, 86_400_000 * 2),
       };
@@ -262,7 +262,7 @@ describe('Due Card Detection', () => {
 
   describe('countDueCards()', () => {
     it('counts only due cards', () => {
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         a: reviewedCard(1, 1, 2.5, -1000),
         b: reviewedCard(1, 1, 2.5, 0),
         c: reviewedCard(1, 1, 2.5, 86_400_000),
@@ -292,7 +292,7 @@ describe('Daily New Card Limit', () => {
       const today11am = new Date('2026-07-14T11:00:00Z').getTime();
       const yesterday = new Date('2026-07-13T12:00:00Z').getTime();
 
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         a: cardAt({ createdAt: today10am }),
         b: cardAt({ createdAt: today11am }),
         c: cardAt({ createdAt: yesterday }),
@@ -303,7 +303,7 @@ describe('Daily New Card Limit', () => {
     });
 
     it('returns 0 when no cards have createdAt', () => {
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         a: { ease: 2.5, interval: 1, repetitions: 1, nextReview: 0, lastReview: 0 },
       };
       expect(countNewCardsToday(cards)).toBe(0);
@@ -316,7 +316,7 @@ describe('Daily New Card Limit', () => {
       // Card was created 2 seconds before midnight (yesterday)
       const justBeforeMidnight = midnight.getTime() - 2000;
 
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         a: cardAt({ createdAt: justBeforeMidnight }),
       };
 
@@ -327,7 +327,7 @@ describe('Daily New Card Limit', () => {
 
   describe('remainingNewCardsToday()', () => {
     it('returns full limit when no new cards today', () => {
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       expect(remainingNewCardsToday(cards)).toBe(DEFAULT_DAILY_NEW_LIMIT); // 20
     });
 
@@ -335,7 +335,7 @@ describe('Daily New Card Limit', () => {
       setNow(new Date('2026-07-14T12:00:00Z').getTime());
       const today = new Date('2026-07-14T10:00:00Z').getTime();
 
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       for (let i = 0; i < 5; i++) {
         cards[`card-${i}`] = cardAt({ createdAt: today });
       }
@@ -347,7 +347,7 @@ describe('Daily New Card Limit', () => {
       setNow(new Date('2026-07-14T12:00:00Z').getTime());
       const today = new Date('2026-07-14T10:00:00Z').getTime();
 
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       for (let i = 0; i < 25; i++) {
         cards[`card-${i}`] = cardAt({ createdAt: today });
       }
@@ -356,7 +356,7 @@ describe('Daily New Card Limit', () => {
     });
 
     it('respects custom limit', () => {
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       expect(remainingNewCardsToday(cards, 10)).toBe(10);
     });
 
@@ -364,7 +364,7 @@ describe('Daily New Card Limit', () => {
       setNow(new Date('2026-07-14T12:00:00Z').getTime());
       const today = new Date('2026-07-14T10:00:00Z').getTime();
 
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       for (let i = 0; i < 100; i++) {
         cards[`card-${i}`] = cardAt({ createdAt: today });
       }
@@ -377,7 +377,7 @@ describe('Daily New Card Limit', () => {
       const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
 
       // 20 cards created yesterday, never rated — still in the "new" (blue) deck
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       for (let i = 0; i < 20; i++) {
         cards[`card-${i}`] = cardAt({ createdAt: yesterday, lastReview: yesterday });
       }
@@ -391,7 +391,7 @@ describe('Daily New Card Limit', () => {
       setNow(new Date('2026-07-14T12:00:00Z').getTime());
       const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
 
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       // 15 still-unreviewed new cards from yesterday (blue)
       for (let i = 0; i < 15; i++) {
         cards[`new-${i}`] = cardAt({ createdAt: yesterday, lastReview: yesterday });
@@ -415,7 +415,7 @@ describe('Daily New Card Limit', () => {
       const yesterday = new Date('2026-07-13T10:00:00Z').getTime();
 
       // 20 cards created yesterday, all failed once → red (relearning), not new
-      const cards: Record<string, SrsFields> = {};
+      const cards: Record<string, LegacySrsFields> = {};
       for (let i = 0; i < 20; i++) {
         cards[`card-${i}`] = cardAt({
           createdAt: yesterday,
@@ -467,7 +467,7 @@ describe('Daily New Card Limit', () => {
 
     it('new saves displace the oldest blue card when the deck is full', () => {
       // Blue deck: a1 (newest), a2, a3 (oldest)
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         a1: cardAt({ createdAt: 300, lastReview: 300 }),
         a2: cardAt({ createdAt: 200, lastReview: 200 }),
         a3: cardAt({ createdAt: 100, lastReview: 100 }),
@@ -484,7 +484,7 @@ describe('Daily New Card Limit', () => {
     });
 
     it('leaves rated cards untouched', () => {
-      const cards: Record<string, SrsFields> = {
+      const cards: Record<string, LegacySrsFields> = {
         green: cardAt({ createdAt: 100, lastReview: 100, repetitions: 1, interval: 1, nextReview: 999 }),
         blue: cardAt({ createdAt: 200, lastReview: 200 }),
       };
@@ -534,7 +534,7 @@ describe('SRS Multi-Day Simulation', () => {
     let currentTime = new Date('2026-07-01T12:00:00Z').getTime();
     setNow(currentTime);
 
-    const store = createSrsStore();
+    const store: LegacySrsProgressStore = createSrsStore();
     const l2 = 'ja';
 
     // Helper: add new words to the store (mimics auto-initialization)
@@ -747,7 +747,7 @@ describe('SRS Multi-Day Simulation', () => {
     setNow(new Date('2026-07-14T12:00:00Z').getTime());
     const now = Date.now();
 
-    const cards: Record<string, SrsFields> = {
+    const cards: Record<string, LegacySrsFields> = {
       recent: { ease: 2.5, interval: 1, repetitions: 1, nextReview: now - 1000, lastReview: now - 86_400_000 },
       oldest: { ease: 2.5, interval: 1, repetitions: 1, nextReview: now - 86_400_000 * 3, lastReview: now - 86_400_000 * 4 },
       middle: { ease: 2.5, interval: 1, repetitions: 1, nextReview: now - 86_400_000, lastReview: now - 86_400_000 * 2 },
@@ -761,7 +761,7 @@ describe('SRS Multi-Day Simulation', () => {
    * Edge case: A card with nextReview = 0 (uninitialized/legacy) should be due.
    */
   it('cards with nextReview=0 are considered due', () => {
-    const card: SrsFields = {
+    const card: LegacySrsFields = {
       ease: 2.5,
       interval: 0,
       repetitions: 0,
@@ -778,18 +778,18 @@ describe('SRS Multi-Day Simulation', () => {
 
 describe('SRS Store Operations', () => {
   it('createSrsStore returns a valid empty store', () => {
-    const store = createSrsStore();
+    const store: LegacySrsProgressStore = createSrsStore();
     expect(store.settings.dailyNewLimit).toBe(DEFAULT_DAILY_NEW_LIMIT);
     expect(store.cards).toEqual({});
   });
 
   it('getLanguageCards returns empty object for missing language', () => {
-    const store = createSrsStore();
+    const store: LegacySrsProgressStore = createSrsStore();
     expect(getLanguageCards(store, 'ja')).toEqual({});
   });
 
   it('getLanguageCards returns cards for existing language', () => {
-    const store = createSrsStore();
+    const store: LegacySrsProgressStore = createSrsStore();
     store.cards['ja'] = { 'edict-1': newCard() };
     const cards = getLanguageCards(store, 'ja');
     expect(Object.keys(cards)).toHaveLength(1);
@@ -835,7 +835,7 @@ describe('Bug Reproduction: Same Deck Repeated', () => {
    */
   it('demonstrates that rating one card changes the due count', () => {
     // Simulate 20 due cards
-    const cards: Record<string, SrsFields> = {};
+    const cards: Record<string, LegacySrsFields> = {};
     for (let i = 0; i < 20; i++) {
       cards[`word-${i}`] = newCard();
       cards[`word-${i}`]!.nextReview = Date.now(); // due now
@@ -884,7 +884,7 @@ describe('Bug Reproduction: Same Deck Repeated', () => {
    * which are due in 1 minute).
    */
   it('after reviewing all 20 cards, deck should be empty', () => {
-    const cards: Record<string, SrsFields> = {};
+    const cards: Record<string, LegacySrsFields> = {};
     for (let i = 0; i < 20; i++) {
       cards[`word-${i}`] = newCard();
       cards[`word-${i}`]!.nextReview = Date.now();
@@ -919,7 +919,7 @@ describe('Stress Test: Large Deck', () => {
   });
 
   it('handles 10,000 cards without performance issues', () => {
-    const cards: Record<string, SrsFields> = {};
+    const cards: Record<string, LegacySrsFields> = {};
     const now = Date.now();
     for (let i = 0; i < 10_000; i++) {
       cards[`word-${i}`] = newCard();
@@ -971,12 +971,12 @@ describe('Settings Persistence', () => {
   const STORAGE_KEY = 'zthSrsProgress';
 
   /** Simulate the persist function from useSrs hook. */
-  function persist(store: SrsProgressStore) {
+  function persist(store: LegacySrsProgressStore) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   }
 
   /** Simulate loading from localStorage (like the useSrs hook does). */
-  function loadFromLocalStorage(): SrsProgressStore {
+  function loadFromLocalStorage(): LegacySrsProgressStore {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return createSrsStore();
@@ -996,10 +996,10 @@ describe('Settings Persistence', () => {
 
   /** Simulate updateSettings from the hook. */
   function updateSettings(
-    store: SrsProgressStore,
-    partial: Partial<SrsProgressStore['settings']>,
-  ): SrsProgressStore {
-    const next: SrsProgressStore = {
+    store: LegacySrsProgressStore,
+    partial: Partial<LegacySrsProgressStore['settings']>,
+  ): LegacySrsProgressStore {
+    const next: LegacySrsProgressStore = {
       settings: { ...store.settings, ...partial },
       cards: store.cards,
     };
@@ -1009,12 +1009,12 @@ describe('Settings Persistence', () => {
 
   /** Simulate updateCard from the hook. */
   function updateCard(
-    store: SrsProgressStore,
+    store: LegacySrsProgressStore,
     l2Code: string,
     wordId: string,
-    fields: SrsFields,
-  ): SrsProgressStore {
-    const next: SrsProgressStore = {
+    fields: LegacySrsFields,
+  ): LegacySrsProgressStore {
+    const next: LegacySrsProgressStore = {
       settings: { ...store.settings },
       cards: {
         ...store.cards,
@@ -1026,7 +1026,7 @@ describe('Settings Persistence', () => {
   }
 
   it('updates dailyNewLimit and persists to localStorage', () => {
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     expect(store.settings.dailyNewLimit).toBe(20);
 
     // Change to 5
@@ -1040,7 +1040,7 @@ describe('Settings Persistence', () => {
 
   it('survives a page reload (localStorage round-trip)', () => {
     // User changes setting to 35
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     store = updateSettings(store, { dailyNewLimit: 35 });
     expect(store.settings.dailyNewLimit).toBe(35);
 
@@ -1051,7 +1051,7 @@ describe('Settings Persistence', () => {
 
   it('settings are preserved when updating cards', () => {
     // User sets daily limit to 10
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     store = updateSettings(store, { dailyNewLimit: 10 });
 
     // User reviews a card
@@ -1068,12 +1068,12 @@ describe('Settings Persistence', () => {
   });
 
   it('settings are preserved when removing cards', () => {
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     store = updateSettings(store, { dailyNewLimit: 7 });
 
     // Add and then simulate removing a card (mimics removeCard from hook)
     store = updateCard(store, 'ja', 'edict-1', newCard());
-    const next: SrsProgressStore = {
+    const next: LegacySrsProgressStore = {
       settings: { ...store.settings },
       cards: {
         ...store.cards,
@@ -1117,7 +1117,7 @@ describe('Settings Persistence', () => {
   });
 
   it('multiple rapid setting changes all persist (last one wins)', () => {
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
 
     store = updateSettings(store, { dailyNewLimit: 5 });
     store = updateSettings(store, { dailyNewLimit: 15 });
@@ -1130,7 +1130,7 @@ describe('Settings Persistence', () => {
   });
 
   it('changing settings then updating many cards preserves settings', () => {
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     store = updateSettings(store, { dailyNewLimit: 12 });
 
     // Review 50 cards
@@ -1156,7 +1156,7 @@ describe('Settings Persistence', () => {
 
   it('settings survive the full create→update→persist→reload cycle with cards', () => {
     // 1. Create fresh store
-    let store = createSrsStore();
+    let store: LegacySrsProgressStore = createSrsStore();
     expect(store.settings.dailyNewLimit).toBe(20);
 
     // 2. Change settings

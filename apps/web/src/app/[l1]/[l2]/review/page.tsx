@@ -9,7 +9,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { sm2, newCard, isNewCard, planNewDeck, baseCode } from '@langplayer/utils';
+import { fsrs, baseCode } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
@@ -40,19 +40,22 @@ type Rating = 'again' | 'hard' | 'good' | 'easy';
 /** ADR-0034: free users can complete 20 SRS reviews per day. */
 const FREE_SRS_DAILY_CAP = 20;
 
-/** Quality → SM-2 quality mapping */
-const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
-  again: 0,
-  hard: 2,
-  good: 4,
-  easy: 5,
-};
-
 /** State saved before a rating, so the user can undo it. */
 interface UndoState {
   wordId: string;
   prevSrs: SrsFields;
   wasLastCard: boolean;
+}
+
+/** Short human label for a card's next due time ("new", "10m", "3d"). */
+function srsDueLabel(srs: SrsFields): string {
+  const diff = srs.due - Date.now();
+  if (diff <= 0) return '0m';
+  const mins = Math.ceil(diff / 60_000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.ceil(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.round(hours / 24)}d`;
 }
 
 function useRatingLabels() {
@@ -75,10 +78,10 @@ export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans, dailyNewLimit: dailyLimit } = useSrs();
+  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
   const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
-  const { display } = useSettingsContext();
+  const { display, review: { dailyNewLimit: dailyLimit } } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   const t = useT();
   const router = useRouter();
@@ -127,7 +130,7 @@ export default function ReviewPage() {
     if (!srsLoaded || !wordsLoaded) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
-    const plan = planNewDeck(l2SavedWords, langCards, dailyLimit);
+    const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyLimit);
 
     // Push back: drop blue cards that fell outside the newest `dailyLimit`.
     for (const id of plan.toRemove) {
@@ -138,9 +141,7 @@ export default function ReviewPage() {
     if (plan.toCreate.length > 0) {
       setInitializing(true);
       for (const id of plan.toCreate) {
-        const card = newCard();
-        card.nextReview = Date.now(); // due now
-        updateCard(l2Code, id, card);
+        updateCard(l2Code, id, fsrs.newCard());
       }
       setTimeout(() => setInitializing(false), 100);
     }
@@ -170,17 +171,17 @@ export default function ReviewPage() {
       .filter((sw) => {
         const srs = langCards[sw.id];
         if (!srs) return false;
-        return srs.nextReview <= now;
+        return srs.due <= now;
       })
       .sort((a, b) => {
         const sa = langCards[a.id];
         const sb = langCards[b.id];
         if (!sa || !sb) return 0;
-        return sa.nextReview - sb.nextReview;
+        return sa.due - sb.due;
       })
       .map((sw) => ({
         word: sw,
-        srs: langCards[sw.id] || newCard(),
+        srs: langCards[sw.id] || fsrs.newCard(),
       }));
   }, [l2SavedWords, store, l2Code]);
 
@@ -288,8 +289,7 @@ export default function ReviewPage() {
       );
     }
 
-    const sm2Quality = RATING_MAP[quality];
-    const updated = sm2(card.srs, sm2Quality);
+    const updated = fsrs.rate(card.srs, quality);
     updateCard(l2Code, card.word.id, updated);
 
     if (!isPro) {
@@ -453,21 +453,25 @@ export default function ReviewPage() {
 
   // ── Anki-style card counts (new / again / review) ──
   // Must be BEFORE any conditional returns (React hooks rule).
+  const langCardsForCounts = store.cards[l2Code] ?? {};
   const cardCounts = useMemo(() => {
     let newCount = 0;
     let againCount = 0;
     let reviewCount = 0;
-    for (const c of cards) {
-      if (c.srs.repetitions >= 1) {
-        reviewCount++;
-      } else if (isNewCard(c.srs)) {
+    for (const sw of l2SavedWords) {
+      const srs = langCardsForCounts[sw.id];
+      if (!srs) continue;
+      const state = fsrs.getCardState(srs);
+      if (state === 'new') {
         newCount++;
-      } else {
+      } else if (state === 'learning' || state === 'relearning') {
         againCount++;
+      } else {
+        reviewCount++;
       }
     }
     return { newCount, againCount, reviewCount };
-  }, [cards]);
+  }, [l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];
 
@@ -633,8 +637,8 @@ export default function ReviewPage() {
   if (justCompleted) {
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const nextDue = Object.values(langCards)
-      .filter((c) => c.nextReview > Date.now())
-      .sort((a, b) => a.nextReview - b.nextReview)[0];
+      .filter((c) => c.due > Date.now())
+      .sort((a, b) => a.due - b.due)[0];
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -659,8 +663,8 @@ export default function ReviewPage() {
   if (cards.length === 0) {
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const nextDue = Object.values(langCards)
-      .filter((c) => c.nextReview > Date.now())
-      .sort((a, b) => a.nextReview - b.nextReview)[0];
+      .filter((c) => c.due > Date.now())
+      .sort((a, b) => a.due - b.due)[0];
 
     const unscheduledCount = l2SavedWords.filter((sw) => !langCards[sw.id]).length;
     const queued = unscheduledCount > 0;
@@ -792,9 +796,9 @@ export default function ReviewPage() {
 
         {/* SRS info (compact) */}
         <p className="text-xs text-muted-foreground mb-4">
-          {srs.interval > 0 ? `${srs.interval}d` : t('review.srs_new')}
-          {srs.repetitions > 0 && (
-            <>{' · '}{srs.ease.toFixed(1)}x{' · '}{t('review.srs_review', { count: srs.repetitions })}</>
+          {srs.state === 0 ? t('review.srs_new') : srsDueLabel(srs)}
+          {srs.reps > 0 && (
+            <>{' · '}{t('review.srs_review', { count: srs.reps })}</>
           )}
         </p>
 

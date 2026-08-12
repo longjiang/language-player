@@ -40,12 +40,12 @@ function getSrsStatus(
 ): SrsStatus {
   if (!card) return null;
   const now = Date.now();
-  // New card: never reviewed, interval is 0
-  if (card.nextReview === 0 && card.repetitions === 0) return 'new';
+  // New card: still in the unrated blue deck
+  if (card.state === 0) return 'new';
   // Overdue: due more than a day ago
-  if (card.nextReview < now - 24 * 60 * 60 * 1000) return 'overdue';
-  // Due: nextReview is in the past (or now)
-  if (card.nextReview <= now) return 'due';
+  if (card.due < now - 24 * 60 * 60 * 1000) return 'overdue';
+  // Due: due is in the past (or now)
+  if (card.due <= now) return 'due';
   return 'ok';
 }
 

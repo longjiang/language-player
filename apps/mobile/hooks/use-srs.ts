@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { createSrsStore } from '@langplayer/utils';
+import { createSrsStore, fsrs, mergeSrsCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
@@ -11,17 +11,6 @@ import { getEntityCache } from '@/lib/sync-db';
 const { log, logwarn } = syncLogger;
 
 const STORAGE_KEY = 'zthSrsProgress';
-
-function mergeSrsCards(local: Record<string, SrsFields>, cloud: Record<string, SrsFields>): Record<string, SrsFields> {
-  const merged = { ...local };
-  for (const [id, cloudCard] of Object.entries(cloud)) {
-    const localCard = merged[id];
-    if (!localCard || cloudCard.lastReview > localCard.lastReview) {
-      merged[id] = cloudCard;
-    }
-  }
-  return merged;
-}
 
 /**
  * SRS hook (SPEC-039 5.2 row API).
@@ -46,10 +35,7 @@ export function useSrs() {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          setStore({
-            settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
-            cards: parsed.cards ?? {},
-          });
+          setStore(fsrs.migrateSrsStore(parsed));
         }
       } catch {}
       setLoaded(true);
@@ -101,17 +87,18 @@ export function useSrs() {
     setStore((prev) => {
       const langCards = { ...(prev.cards[lang] ?? {}) };
       langCards[wordId] = {
-        ...(langCards[wordId] ?? { ease: 2.5, interval: 0, repetitions: 0, lastReview: '', nextReview: '' }),
+        ...(langCards[wordId] ?? fsrs.newCard()),
         ...fields,
       };
       const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
       SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
       log(`[srs] queued upsert card ${lang}::${wordId}`);
+      const state = fsrs.normalizeFsrsCard(langCards[wordId]);
       enqueueSyncOp({
         entity: 'srs_card',
         entityId: `${lang}::${wordId}`,
         op: 'upsert',
-        payload: { l2: lang, wordId, state: langCards[wordId] },
+        payload: { l2: lang, wordId, state },
         updatedAt: Date.now(),
       }).catch((err) => {
         logwarn('[srs] Card enqueue failed:', err);
@@ -169,12 +156,13 @@ export function useSrs() {
           const payload = JSON.parse(row.payload) as {
             l2?: string;
             wordId?: string;
-            state?: SrsFields;
+            state?: unknown;
           };
           if (!payload.l2 || !payload.wordId || !payload.state) continue;
+          const state = fsrs.normalizeFsrsCard(payload.state);
           cards[payload.l2] = {
             ...(cards[payload.l2] ?? {}),
-            [payload.wordId]: payload.state,
+            [payload.wordId]: state,
           };
         }
         const settingsRow = (await getEntityCache('srs_settings'))[0];
