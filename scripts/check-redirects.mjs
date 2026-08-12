@@ -51,6 +51,7 @@ const CASES = [
   { name: 'Dictionary deep link', path: '/en/ja/dictionary/edict/92130', kind: 'alias', expected: '/en/ja/dictionary/entry/edict/92130' },
   { name: 'Reader shared', path: '/en/ja/reader/shared/42', kind: 'alias', expected: '/en/ja/reader?noteId=42' },
   { name: 'Dashboard', path: '/dashboard', kind: 'alias', expected: '/language-select' },
+  { name: 'Languages', path: '/languages', kind: 'alias', expected: '/' },
   { name: 'Verify email', path: '/verify-email?email=a%40b.com', kind: 'alias', expected: '/register?verifyEmail=a%40b.com' },
   { name: 'Delete account', path: '/delete-account', kind: 'alias', expected: '/en/zh/profile' },
 
@@ -74,7 +75,6 @@ const CASES = [
   { name: 'Lesson Videos with level', path: '/en/ja/lesson-videos/1/2', kind: 'v2', expected: '/en/zh/lesson-videos/1/2' },
   { name: 'Separable', path: '/en/ja/separable/foo', kind: 'v2', expected: '/en/zh/separable/foo' },
   { name: 'New Levels Graphic', path: '/en/ja/explore/new-levels-graphic', kind: 'v2', expected: '/en/zh/explore/new-levels-graphic' },
-  { name: 'Languages', path: '/languages', kind: 'v2', expected: '/languages' },
   { name: 'HSK lookup', path: '/en/ja/dictionary/hsk/123', kind: 'v2', expected: '/en/zh/dictionary/hsk/123' },
   { name: 'Admin QA', path: '/admin/quality-assurance', kind: 'v2', expected: '/admin/quality-assurance' },
 

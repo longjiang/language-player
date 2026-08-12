@@ -86,7 +86,7 @@ Classification:
 | `/dashboard` | `/language-select` | Renamed |
 | `/delete-account` | `/{l1}/{l2}/profile` | Renamed (pair-scoped) |
 | `/privacy-policy` | `/{l1}/{l2}/docs/privacy-policy` | Renamed (pair-scoped) |
-| `/languages` | — | Classic-only |
+| `/languages` | `/` | Renamed |
 | `/language-map` | — | Classic-only |
 | `/language-icons` | — | Classic-only |
 | `/compare-languages` (+ `:bookId?` `:en?` `:wiktionary?`) | — | Classic-only |
@@ -540,6 +540,7 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Dictionary deep link](https://language-player.netlify.app/en/ja/dictionary/edict/92130) | `/en/ja/dictionary/entry/edict/92130` |
 | [Reader shared](https://language-player.netlify.app/en/ja/reader/shared/42) | `/en/ja/reader?noteId=42` |
 | [Dashboard](https://language-player.netlify.app/dashboard) | `/language-select` |
+| [Languages](https://language-player.netlify.app/languages) | `/` |
 | [Verify email](https://language-player.netlify.app/verify-email?email=a%40b.com) | `/register?verifyEmail=a%40b.com` |
 | [Delete account](https://language-player.netlify.app/delete-account) | `/{last-pair}/profile` (fallback `/en/zh/profile`) |
 
@@ -566,7 +567,6 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Lesson Videos with level](https://language-player.netlify.app/en/ja/lesson-videos/1/2) | `https://v2.languageplayer.io/en/zh/lesson-videos/1/2` |
 | [Separable](https://language-player.netlify.app/en/ja/separable/foo) | `https://v2.languageplayer.io/en/zh/separable/foo` |
 | [New Levels Graphic](https://language-player.netlify.app/en/ja/explore/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
-| [Languages](https://language-player.netlify.app/languages) | `https://v2.languageplayer.io/languages` |
 | [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/zh/dictionary/hsk/123` |
 | [Admin QA](https://language-player.netlify.app/admin/quality-assurance) | `https://v2.languageplayer.io/admin/quality-assurance` |
 

@@ -88,6 +88,10 @@ const LEGACY_ALIASES: AliasRule[] = [
     to: () => '/language-select',
   },
   {
+    pattern: '/languages',
+    to: () => '/',
+  },
+  {
     pattern: '/delete-account',
     to: (_params, pair) => `/${pair.l1}/${pair.l2}/profile`,
   },
@@ -282,7 +286,6 @@ const CLASSIC_ONLY_PATTERNS = [
   '/articles',
   '/compare-languages/:rest*',
   '/discover-shows/:rest*',
-  '/languages',
   '/language-map',
   '/language-icons',
   '/popular',
