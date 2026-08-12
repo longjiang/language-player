@@ -21,6 +21,7 @@ import {
   setCachedEntryById,
   enqueueLookupWords,
   getL1CachedEntry,
+  setL1CachedEntry,
 } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
 import {
@@ -541,7 +542,13 @@ export default function ReviewPage() {
         // would make the bookmark read "not saved".
         const match =
           results.find((e) => isSameEntryId(card.word.id, e.id, baseCode(l2.code))) ?? null;
-        setL1Entry(match);
+        if (match) {
+          const normalized = match.id === card.word.id ? match : { ...match, id: card.word.id };
+          setL1CachedEntry(l2Code, l1.code, normalized);
+          setL1Entry(normalized);
+        } else {
+          setL1Entry(null);
+        }
       })
       .catch(() => {
         // Silently fail — the English def from cache is still shown
@@ -576,7 +583,12 @@ export default function ReviewPage() {
             if (!cancelled && matches) {
               // Cache under the saved id even when the API returns the scoped
               // form (e.g. "ja-…" for a saved "llm-ja-…" id).
-              setCachedEntryById(l2Code, entry.id === id ? entry : { ...entry, id });
+              const normalized = entry.id === id ? entry : { ...entry, id };
+              setCachedEntryById(l2Code, normalized);
+              // The /dictionary/entry response was requested with the user's
+              // L1, so it is already translated — promote it to the L1 entry.
+              setL1CachedEntry(l2Code, l1.code, normalized);
+              setL1Entry(normalized);
             }
           }
         }

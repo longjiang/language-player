@@ -391,6 +391,9 @@ app.
   offline dictionary. On reveal, the exact entry is fetched by id if missing
   (offline first, then network), so a saved LLM-generated entry never shows a
   different entry as "not saved".
+- The exact-entry fetch requests L1 definitions (`l1` param) and promotes the
+  result to the L1 entry, so the back side shows translated definitions as
+  soon as the saved entry loads instead of falling back to English.
 - The next 3 cards' context sentences are pre-tokenized and their lemmas
   pre-looked-up while the user reviews the current card.
 - The current word's entry is enqueued through the same shared batched lookup.

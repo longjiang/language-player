@@ -32,6 +32,7 @@ import {
   enqueueLookupWords,
   getCachedEntryById,
   getL1CachedEntry,
+  setL1CachedEntry,
   setCachedEntryById,
 } from '@/lib/dictionary-cache';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
@@ -280,7 +281,12 @@ export default function ReviewScreen() {
           if (!cancelled && entry && isSameEntryId(id, entry.id, baseL2ForEntry)) {
             // Cache under the saved id even when the API returns the scoped
             // form (e.g. "ja-…" for a saved "llm-ja-…" id).
-            setCachedEntryById(l2Code, entry.id === id ? entry : { ...entry, id });
+            const normalized = entry.id === id ? entry : { ...entry, id };
+            setCachedEntryById(l2Code, normalized);
+            // The /dictionary/entry response was requested with the user's
+            // L1, so it is already translated — promote it to the L1 entry.
+            setL1CachedEntry(baseCode(l2Code), l1Lang.code, normalized);
+            setL1Entry(normalized);
             found = true;
           }
         }
@@ -553,7 +559,8 @@ export default function ReviewScreen() {
     const form = card.word.forms?.[0] || card.word.head || card.word.id;
     if (l1Entry?.id === card.word.id) return;
 
-    const cached = getL1CachedEntry(l2Code, l1Lang.code, card.word.id);
+    const l2BaseForL1 = baseCode(l2Code);
+    const cached = getL1CachedEntry(l2BaseForL1, l1Lang.code, card.word.id);
     if (cached) {
       setL1Entry(cached);
       return;
@@ -566,8 +573,15 @@ export default function ReviewScreen() {
         // Only accept the exact saved entry — a text-lookup can return a
         // different entry (e.g. EDICT instead of the saved LLM entry) and
         // would make the bookmark read "not saved".
-        const match = results.find((e) => e.id === card.word.id) ?? null;
-        setL1Entry(match);
+        const match =
+          results.find((e) => isSameEntryId(card.word.id, e.id, l2BaseForL1)) ?? null;
+        if (match) {
+          const normalized = match.id === card.word.id ? match : { ...match, id: card.word.id };
+          setL1CachedEntry(l2BaseForL1, l1Lang.code, normalized);
+          setL1Entry(normalized);
+        } else {
+          setL1Entry(null);
+        }
       })
       .catch(() => {
         // Silently fall back to the cached/offline entry.
