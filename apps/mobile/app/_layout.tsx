@@ -4,6 +4,8 @@ import '@/lib/intl-polyfills';
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { router } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
@@ -12,6 +14,7 @@ import { logerr } from '@/lib/logger';
 import { useAppFonts } from '@/lib/fonts';
 import { initOfflineMode } from '@/lib/offline-mode';
 import { TokenizationWorkerHost } from '@/components/TokenizationWorkerHost';
+import { mapWebUrlToAppRoute } from '@/lib/web-url-mapper';
 
 // ── Custom toast config ──
 
@@ -117,6 +120,30 @@ export default function RootLayout() {
   useEffect(() => {
     void initOfflineMode().finally(() => setOfflineModeReady(true));
   }, []);
+
+  // Web → app links (SPEC-069): translate https://languageplayer.io/... URLs
+  // into internal routes. Runs only after fonts/offline-mode are ready so the
+  // provider tree is mounted before we navigate.
+  useEffect(() => {
+    if ((!fontsLoaded && !fontError) || !offlineModeReady) return;
+
+    const handleUrl = (raw: string | null) => {
+      if (!raw) return;
+      const mapped = mapWebUrlToAppRoute(raw);
+      if (mapped) {
+        router.replace({
+          pathname: mapped.pathname as any,
+          params: mapped.params,
+        } as any);
+      }
+    };
+
+    void Linking.getInitialURL().then(handleUrl);
+    const subscription = Linking.addEventListener('url', (event) => {
+      handleUrl(event.url);
+    });
+    return () => subscription.remove();
+  }, [fontsLoaded, fontError, offlineModeReady]);
 
   // Keep the splash visible (and skip the first render) until the vendored
   // Inter fonts are ready. On failure, render with system fonts instead.
