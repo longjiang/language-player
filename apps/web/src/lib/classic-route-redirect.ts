@@ -361,6 +361,32 @@ const CLASSIC_ONLY_PATTERNS = [
 
 const patternCache = new Map<string, RegExp>();
 
+/**
+ * Chinese-specific Classic routes are only meaningful with L2 = zh. When any
+ * of these redirect to v2, the L2 segment is normalized to `zh` first
+ * (e.g. `/en/ja/chinese/pinyin-chart` → `/en/zh/chinese/pinyin-chart`).
+ */
+const CHINESE_RELATED_PATTERNS = [
+  /^\/[^/]+\/[^/]+\/chinese\//,
+  /^\/[^/]+\/[^/]+\/pinyin-list(?:\/|$)/,
+  /^\/[^/]+\/[^/]+\/dictionary\/hsk\//,
+  /^\/[^/]+\/[^/]+\/separable(?:\/|$)/,
+  /^\/[^/]+\/[^/]+\/lesson-videos(?:\/|$)/,
+  /^\/[^/]+\/[^/]+\/explore\/new-levels-graphic(?:\/|$)/,
+];
+
+/** Path used for the v2 redirect; Chinese-related paths get L2 = zh. */
+export function v2RedirectPath(pathname: string): string {
+  if (CHINESE_RELATED_PATTERNS.some((regex) => regex.test(pathname))) {
+    const segments = pathname.split('/');
+    if (segments.length >= 3) {
+      segments[2] = 'zh';
+    }
+    return segments.join('/');
+  }
+  return pathname;
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

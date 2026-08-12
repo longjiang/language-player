@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   classicRouteAction,
+  v2RedirectPath,
   type LanguagePair,
   type RouteAction,
 } from './classic-route-redirect';
@@ -28,6 +29,30 @@ function expectV2(path: string, pair: LanguagePair = FALLBACK_PAIR) {
 }
 
 describe('classicRouteAction', () => {
+  describe('v2RedirectPath normalizes Chinese-related L2 to zh', () => {
+    it.each([
+      ['/en/ja/chinese/pinyin-chart', '/en/zh/chinese/pinyin-chart'],
+      ['/en/ja/chinese/characters', '/en/zh/chinese/characters'],
+      ['/en/ja/chinese/explore-roots/123', '/en/zh/chinese/explore-roots/123'],
+      ['/en/ja/pinyin-list', '/en/zh/pinyin-list'],
+      ['/en/ja/dictionary/hsk/123', '/en/zh/dictionary/hsk/123'],
+      ['/en/ja/separable/foo', '/en/zh/separable/foo'],
+      ['/en/ja/lesson-videos', '/en/zh/lesson-videos'],
+      ['/en/ja/explore/new-levels-graphic', '/en/zh/explore/new-levels-graphic'],
+      ['/en/zh/chinese/pinyin-chart', '/en/zh/chinese/pinyin-chart'],
+    ])('%s → %s', (input, expected) => {
+      expect(v2RedirectPath(input)).toBe(expected);
+    });
+
+    it('leaves non-Chinese paths unchanged', () => {
+      expect(v2RedirectPath('/en/ja/books')).toBe('/en/ja/books');
+      expect(v2RedirectPath('/languages')).toBe('/languages');
+      expect(v2RedirectPath('/en/ja/youtube/subscriptions')).toBe(
+        '/en/ja/youtube/subscriptions',
+      );
+    });
+  });
+
   describe('web routes pass through', () => {
     it.each([
       '/',

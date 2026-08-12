@@ -175,6 +175,11 @@ a path or query video id (except `bring-your-own`) remain Classic-only.
 
 These have no web equivalent and should redirect to v2:
 
+Chinese-specific routes (`chinese/*`, `pinyin-list`, `dictionary/hsk/*`,
+`separable/*`, `lesson-videos/*`, `explore/new-levels-graphic`) normalize the
+L2 segment to `zh` before redirecting — e.g. `/en/ja/chinese/pinyin-chart` →
+`https://v2.languageplayer.io/en/zh/chinese/pinyin-chart`.
+
 | Classic route | Notes |
 |---|---|
 | `/about`, `/analytics` | |
@@ -320,7 +325,8 @@ assets, auth, locale cookies, and guest gating. The adapter is called from it:
      the resolved pair; original query params in `dropSearchParams` are not
      copied onto the target).
    - `v2` → 307 redirect to
-     `https://v2.languageplayer.io{pathname}{search}`.
+     `https://v2.languageplayer.io{pathname}{search}`. Chinese-related paths
+     use `v2RedirectPath()` first, which rewrites the L2 segment to `zh`.
    - No match → continue to the existing web 404 behavior.
 3. `/{l1}/{l2}/...` patterns only match when both segments are in
    `SUPPORTED_L1S` / `SUPPORTED_L2S`; invalid pairs keep the current
@@ -548,12 +554,16 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | Link | Expected destination |
 |---|---|
 | [Books](https://language-player.netlify.app/en/ja/books) | `https://v2.languageplayer.io/en/ja/books` |
-| [Pinyin Chart](https://language-player.netlify.app/en/ja/chinese/pinyin-chart) | `https://v2.languageplayer.io/en/ja/chinese/pinyin-chart` |
+| [Pinyin Chart](https://language-player.netlify.app/en/ja/chinese/pinyin-chart) | `https://v2.languageplayer.io/en/zh/chinese/pinyin-chart` |
+| [Pinyin List](https://language-player.netlify.app/en/ja/pinyin-list) | `https://v2.languageplayer.io/en/zh/pinyin-list` |
+| [Lesson Videos](https://language-player.netlify.app/en/ja/lesson-videos) | `https://v2.languageplayer.io/en/zh/lesson-videos` |
+| [Separable](https://language-player.netlify.app/en/ja/separable/foo) | `https://v2.languageplayer.io/en/zh/separable/foo` |
+| [New Levels Graphic](https://language-player.netlify.app/en/ja/explore/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
 | [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `https://v2.languageplayer.io/en/ja/youtube/subscriptions` |
 | [Channel directory](https://language-player.netlify.app/en/ja/youtube/channels) | `https://v2.languageplayer.io/en/ja/youtube/channels` |
 | [Contact](https://language-player.netlify.app/en/ja/contact-us) | `https://v2.languageplayer.io/en/ja/contact-us` |
 | [Languages](https://language-player.netlify.app/languages) | `https://v2.languageplayer.io/languages` |
-| [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/ja/dictionary/hsk/123` |
+| [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/zh/dictionary/hsk/123` |
 | [Admin QA](https://language-player.netlify.app/admin/quality-assurance) | `https://v2.languageplayer.io/admin/quality-assurance` |
 
 ### 11.4 No redirect (web 404 / unchanged)
