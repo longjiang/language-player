@@ -315,5 +315,6 @@ If path A is chosen:
 - [SPEC-048 § 4 — Mobile Release Plan (concise Android overview)](048-mobile-release-plan.md)
 - [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md)
 - [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md)
+- [SPEC-068 — Google Play Billing Implementation](068-google-play-billing-implementation.md)
 - [ADR-0013 — App Store Strategy](0013-app-store-strategy.md)
 - [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md)
