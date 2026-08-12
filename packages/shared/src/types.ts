@@ -743,6 +743,12 @@ export interface SrsFields {
   interval: number;
   repetitions: number;
   nextReview: number;
+  /** Client-generated id of the last interactive rating (backend cap log). */
+  ratingId?: string;
+  /** Rating key of the last interactive rating. */
+  rating?: 'again' | 'hard' | 'good' | 'easy';
+  /** Rating id being voided by this write (undo restore). */
+  voidRatingId?: string;
 }
 
 /** Legacy store shape used by the textbook SM-2 implementation. */

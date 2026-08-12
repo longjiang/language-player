@@ -13,6 +13,7 @@ import {
   baseCode,
   dailyReviewCounterKey,
   msUntilNextUtcDay,
+  newRatingId,
 } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
@@ -49,6 +50,8 @@ interface UndoState {
   wordId: string;
   prevSrs: SrsFields;
   wasLastCard: boolean;
+  /** Client id of the rating being undone, so the backend voids its cap slot. */
+  ratingId?: string;
 }
 
 /** Short human label for a card's next due time ("new", "10m", "3d"). */
@@ -130,6 +133,14 @@ export default function ReviewPage() {
     if (!reviewCounterKey) return;
     setReviewsDoneToday(Number(localStorage.getItem(reviewCounterKey) ?? 0));
   }, [reviewCounterKey]);
+
+  // If the server rejects a rating (multi-device cap edge), reconcile the
+  // local counter so the upgrade banner shows immediately.
+  useEffect(() => {
+    const onCapReached = () => setReviewsDoneToday(FREE_SRS_DAILY_CAP);
+    window.addEventListener('lp:srs-cap-reached', onCapReached);
+    return () => window.removeEventListener('lp:srs-cap-reached', onCapReached);
+  }, []);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -302,6 +313,9 @@ export default function ReviewPage() {
     }
 
     const updated = fsrs.rate(card.srs, quality);
+    updated.ratingId = newRatingId(session?.user?.id, card.word.id);
+    updated.rating = quality;
+    undoRef.current.ratingId = updated.ratingId;
     updateCard(l2Code, card.word.id, updated);
 
     if (!isPro) {
@@ -326,7 +340,10 @@ export default function ReviewPage() {
     const state = undoRef.current;
     if (!state) return;
 
-    updateCard(l2Code, state.wordId, state.prevSrs);
+    updateCard(l2Code, state.wordId, {
+      ...state.prevSrs,
+      ...(state.ratingId ? { voidRatingId: state.ratingId } : {}),
+    });
 
     // Release the rating back to the free daily budget (SPEC-066 Phase 4).
     if (!isPro && reviewsDoneToday > 0) {
