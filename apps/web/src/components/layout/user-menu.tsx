@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
-import { useLanguage } from '@/providers/language-provider';
 import {
   User,
   LogOut,
@@ -22,9 +21,13 @@ import { clearUserData } from '@/lib/user-data-wipe';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { AboutDialog } from '@/components/about/about-dialog';
 
-export function UserMenu() {
+interface UserMenuProps {
+  l1Code?: string;
+  l2Code?: string;
+}
+
+export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
   const { data: session, status } = useSession();
-  const { l1, l2 } = useLanguage();
   const t = useT();
   const [open, setOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -50,42 +53,42 @@ export function UserMenu() {
               <LogIn className="h-4 w-4" /> {t('action.log_in')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/docs`}
+              href={`/${l1Code}/${l2Code}/docs`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <BookOpen className="h-4 w-4" /> {t('title.docs')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/watch-history`}
+              href={`/${l1Code}/${l2Code}/watch-history`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <History className="h-4 w-4" /> {t('title.watch_history')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/playlists`}
+              href={`/${l1Code}/${l2Code}/playlists`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <ListVideo className="h-4 w-4" /> {t('title.playlists')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/liked-videos`}
+              href={`/${l1Code}/${l2Code}/liked-videos`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <Heart className="h-4 w-4" /> {t('title.liked_videos')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/my-channels`}
+              href={`/${l1Code}/${l2Code}/my-channels`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <Youtube className="h-4 w-4" /> {t('title.my_channels')}
             </Link>
             <Link
-              href={`/${l1.code}/${l2.code}/saved-words`}
+              href={`/${l1Code}/${l2Code}/saved-words`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
@@ -113,7 +116,7 @@ export function UserMenu() {
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" sideOffset={8} className="w-56 p-1">
           <Link
-            href={`/${l1.code}/${l2.code}/profile`}
+            href={`/${l1Code}/${l2Code}/profile`}
             onClick={close}
             className="block border-b border-border px-3 py-2 hover:bg-muted transition-colors"
           >
@@ -121,49 +124,49 @@ export function UserMenu() {
             <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/settings`}
+            href={`/${l1Code}/${l2Code}/settings`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Settings className="h-4 w-4" /> {t('title.settings')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/watch-history`}
+            href={`/${l1Code}/${l2Code}/watch-history`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <History className="h-4 w-4" /> {t('title.watch_history')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/playlists`}
+            href={`/${l1Code}/${l2Code}/playlists`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <ListVideo className="h-4 w-4" /> {t('title.playlists')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/liked-videos`}
+            href={`/${l1Code}/${l2Code}/liked-videos`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Heart className="h-4 w-4" /> {t('title.liked_videos')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/my-channels`}
+            href={`/${l1Code}/${l2Code}/my-channels`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Youtube className="h-4 w-4" /> {t('title.my_channels')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/saved-words`}
+            href={`/${l1Code}/${l2Code}/saved-words`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Bookmark className="h-4 w-4" /> {t('title.saved_words')}
           </Link>
           <Link
-            href={`/${l1.code}/${l2.code}/docs`}
+            href={`/${l1Code}/${l2Code}/docs`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
