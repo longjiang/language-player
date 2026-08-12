@@ -335,6 +335,10 @@ simulator / iPhone / iPad). You do **not** run the full checklist twice:
 
 #### App Store listing graphics — asset requirements
 
+> **See [SPEC-070 — Prepare Graphics for App Stores](070-store-graphics-checklist.md)**
+> for the combined App Store + Play Store production checklist (capture once,
+> reuse across both stores). This section lists the App Store requirements.
+
 Apple requires only **two** graphical assets for the store listing: the app
 icon and screenshots (App Previews are optional videos). There is no feature
 graphic, banner, or splash requirement for the App Store (splash screens are
