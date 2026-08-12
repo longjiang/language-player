@@ -179,6 +179,8 @@ Chinese-specific routes (`chinese/*`, `pinyin-list`, `dictionary/hsk/*`,
 `separable/*`, `lesson-videos/*`, `explore/new-levels-graphic`) normalize the
 L2 segment to `zh` before redirecting — e.g. `/en/ja/chinese/pinyin-chart` →
 `https://v2.languageplayer.io/en/zh/chinese/pinyin-chart`.
+`new-levels-graphic` canonicalizes to `/explore/new-levels-graphic` for both
+its `/chinese/` and `/explore/` variants.
 
 | Classic route | Notes |
 |---|---|
@@ -563,7 +565,7 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Chinese Lesson Videos](https://language-player.netlify.app/en/ja/chinese/lesson-videos) | `https://v2.languageplayer.io/en/zh/chinese/lesson-videos` |
 | [Lookup By Tones](https://language-player.netlify.app/en/ja/chinese/lookup-by-tones) | `https://v2.languageplayer.io/en/zh/chinese/lookup-by-tones` |
 | [New Levels](https://language-player.netlify.app/en/ja/chinese/new-levels) | `https://v2.languageplayer.io/en/zh/chinese/new-levels` |
-| [Chinese New Levels Graphic](https://language-player.netlify.app/en/ja/chinese/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/chinese/new-levels-graphic` |
+| [Chinese New Levels Graphic](https://language-player.netlify.app/en/ja/chinese/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
 | [Pinyin Squared](https://language-player.netlify.app/en/ja/chinese/pinyin-squared) | `https://v2.languageplayer.io/en/zh/chinese/pinyin-squared` |
 | [Radicals](https://language-player.netlify.app/en/ja/chinese/radicals) | `https://v2.languageplayer.io/en/zh/chinese/radicals` |
 | [Chinese Separable](https://language-player.netlify.app/en/ja/chinese/separable) | `https://v2.languageplayer.io/en/zh/chinese/separable` |

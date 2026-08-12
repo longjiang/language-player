@@ -40,7 +40,10 @@ describe('classicRouteAction', () => {
       ['/en/ja/chinese/lesson-videos', '/en/zh/chinese/lesson-videos'],
       ['/en/ja/chinese/lookup-by-tones', '/en/zh/chinese/lookup-by-tones'],
       ['/en/ja/chinese/new-levels', '/en/zh/chinese/new-levels'],
-      ['/en/ja/chinese/new-levels-graphic', '/en/zh/chinese/new-levels-graphic'],
+      [
+        '/en/ja/chinese/new-levels-graphic',
+        '/en/zh/explore/new-levels-graphic',
+      ],
       ['/en/ja/chinese/pinyin-squared', '/en/zh/chinese/pinyin-squared'],
       ['/en/ja/chinese/radicals', '/en/zh/chinese/radicals'],
       ['/en/ja/chinese/separable', '/en/zh/chinese/separable'],

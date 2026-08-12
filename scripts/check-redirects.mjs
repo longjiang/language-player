@@ -62,7 +62,7 @@ const CASES = [
   { name: 'Chinese Lesson Videos', path: '/en/ja/chinese/lesson-videos', kind: 'v2', expected: '/en/zh/chinese/lesson-videos' },
   { name: 'Lookup By Tones', path: '/en/ja/chinese/lookup-by-tones', kind: 'v2', expected: '/en/zh/chinese/lookup-by-tones' },
   { name: 'New Levels', path: '/en/ja/chinese/new-levels', kind: 'v2', expected: '/en/zh/chinese/new-levels' },
-  { name: 'Chinese New Levels Graphic', path: '/en/ja/chinese/new-levels-graphic', kind: 'v2', expected: '/en/zh/chinese/new-levels-graphic' },
+  { name: 'Chinese New Levels Graphic', path: '/en/ja/chinese/new-levels-graphic', kind: 'v2', expected: '/en/zh/explore/new-levels-graphic' },
   { name: 'Pinyin Squared', path: '/en/ja/chinese/pinyin-squared', kind: 'v2', expected: '/en/zh/chinese/pinyin-squared' },
   { name: 'Radicals', path: '/en/ja/chinese/radicals', kind: 'v2', expected: '/en/zh/chinese/radicals' },
   { name: 'Chinese Separable', path: '/en/ja/chinese/separable', kind: 'v2', expected: '/en/zh/chinese/separable' },

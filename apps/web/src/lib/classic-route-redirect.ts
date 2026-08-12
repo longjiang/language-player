@@ -377,6 +377,16 @@ const CHINESE_RELATED_PATTERNS = [
 
 /** Path used for the v2 redirect; Chinese-related paths get L2 = zh. */
 export function v2RedirectPath(pathname: string): string {
+  // Both the legacy shared link (`/explore/new-levels-graphic`) and the
+  // file-based route (`/chinese/new-levels-graphic`) point at the same
+  // component; canonicalize both to `/explore/new-levels-graphic` with L2 = zh.
+  if (
+    /^\/[^/]+\/[^/]+\/(?:chinese|explore)\/new-levels-graphic(?:\/|$)/.test(
+      pathname,
+    )
+  ) {
+    return `/${pathname.split('/')[1] ?? 'en'}/zh/explore/new-levels-graphic`;
+  }
   if (CHINESE_RELATED_PATTERNS.some((regex) => regex.test(pathname))) {
     const segments = pathname.split('/');
     if (segments.length >= 3) {
