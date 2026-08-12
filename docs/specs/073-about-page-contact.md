@@ -59,7 +59,9 @@ Add a "Contact" card/section to both apps with:
 | Email support | `jon.long@zerotohero.ca` (mailto link) |
 | Discord server | `https://discord.gg/D7vKcuKXuA` (same link as Classic's contact page) |
 
-Web rows are clickable links; mobile rows use `Linking.openURL`.
+Both platforms render each row as a label + chevron link — the raw email
+address and Discord URL are intentionally hidden. Web uses `mailto:` /
+`Linking`-style navigation; mobile uses `Linking.openURL`.
 
 ### 3.3 Documentation link
 
@@ -116,8 +118,8 @@ Both dialogs keep the existing header (logo + app name + "About") and footer
 │  └───────────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────────┐  │
 │  │ Contact                                  │  │
-│  │ ✉ Email support   jon.long@…        →    │  │
-│  │ 💬 Discord server https://discord.gg/… → │  │
+│  │ ✉ Email support                    →    │  │
+│  │ 💬 Discord server                  →    │  │
 │  └───────────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────────┐  │
 │  │ Documentation                      →     │  │
@@ -146,8 +148,8 @@ Both dialogs keep the existing header (logo + app name + "About") and footer
 │  └────────────────────────┘  │
 │  ┌────────────────────────┐  │
 │  │ Contact                │  │
-│  │ ✉ Email support        │  │
-│  │ 💬 Discord server      │  │
+│  │ ✉ Email support     ›  │  │
+│  │ 💬 Discord server   ›  │  │
 │  └────────────────────────┘  │
 │  ┌────────────────────────┐  │
 │  │ Documentation          │  │
@@ -160,8 +162,9 @@ Both dialogs keep the existing header (logo + app name + "About") and footer
 
 Notes:
 
-- Email and Discord rows are tappable links; arrows indicate navigation on web,
-  while mobile rows use the whole row as the tap target
+- Email and Discord rows are tappable chevron links; the raw address/URL is
+  never shown. Web arrows indicate navigation; mobile rows use the whole row
+  as the tap target with a chevron
 - Documentation and Tokenizer Test rows close the dialog before navigating
 - Mobile uses a bottom sheet with a close button on phones and a centered
   dialog on larger screens; web always uses a centered dialog
