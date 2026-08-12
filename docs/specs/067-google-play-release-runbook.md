@@ -35,8 +35,9 @@
 ## 2. Pre-flight checklist
 
 - [x] Play Console account verified (2026-08-11) and business info current
-- [ ] Node 22 available (`nvm use 22`)
-- [ ] JDK 17+ and Android SDK available (`java -version`, `adb --version`)
+- [x] Node 22 available (`nvm use 22` — v22.23.1 verified 2026-08-12)
+- [x] JDK 17+ and Android SDK available (Java 22 + Android SDK 36
+      platform-tools/build-tools installed 2026-08-12)
 - [ ] Upload key generated and passwords stored in a password manager
 - [ ] Version bumped in `apps/mobile/app.json`
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
@@ -44,8 +45,9 @@
       "Cropped - icon.png" (512×512, from `apps/mobile/assets/icon.png`) but not
       yet added to the App icon slot; feature graphic (1024×500) and phone/
       tablet screenshots still outstanding
-- [ ] Billing decision made: Play Billing implemented, **or** the Android
-      buy-on-website link removed ([§ 5](#5-billing--monetization-blocker))
+- [x] Billing decision made: Play Billing implemented (SPEC-068 Steps 2–3,
+      product ID `pro_go`); the Android buy-on-website link was removed
+      ([§ 5](#5-billing--monetization-blocker))
 
 ## 3. Build the release AAB
 
@@ -318,17 +320,21 @@ If path A is chosen:
 - [ ] Store listing complete (icon, feature graphic, screenshots, descriptions)
       — 🟡 text/category/contact done; icon in library (add to App icon slot);
       feature graphic + screenshots outstanding
-- [ ] Billing compliance resolved (§ 5)
+- [x] Billing compliance resolved (§ 5) — buy-on-website link removed and
+      mobile + backend Play Billing implemented (SPEC-068 Steps 2–3); Play
+      Console product + G1–G5 still pending
 - [ ] Production rollout staged and monitored
 
 ## 9. Known blockers / open items
 
-- **Play Billing not implemented** — the clickable buy-on-website button must
-  be replaced or removed before production submission (§ 5).
+- ~~**Play Billing not implemented**~~ — ✅ implemented (SPEC-068 Steps 2–3,
+  2026-08-12); the buy-on-website button was removed (§ 5).
 - ~~**"Language Player 3" app not created in Play Console yet**~~ — ✅ created
   under `ca.zerotohero.go` (2026-08-12, § 4.2).
-- **Play Billing product not created yet** — lifetime non-consumable product
-  TBD; create it in Play Console and implement billing per SPEC-054 (§ 5).
+- **Play Billing product not created yet** — implementation is done; create
+  the lifetime non-consumable product in Play Console, configure the Google
+  service-account env vars on the test backend, and run G1–G5 (SPEC-068
+  Steps 1/5/6).
 - **Upload key not generated yet** — `~/.android/lp-upload.jks` does not exist
   until § 3.4 is run.
 - **Store assets not prepared** — icon uploaded to the Play library
