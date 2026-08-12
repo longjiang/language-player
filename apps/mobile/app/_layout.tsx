@@ -4,6 +4,7 @@ import '@/lib/intl-polyfills';
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
@@ -125,6 +126,7 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <LanguageProvider>
       <IntlProviderWrapper>
         <AuthProvider>
@@ -161,6 +163,7 @@ export default function RootLayout() {
         </AuthProvider>
       </IntlProviderWrapper>
     </LanguageProvider>
+    </GestureHandlerRootView>
     </ErrorBoundary>
   );
 }
