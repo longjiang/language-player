@@ -81,7 +81,7 @@ Classification:
 | `/go-pro-error` | `/go-pro-error` | Equivalent |
 | `/go-pro-success` | `/go-pro-success` | Equivalent |
 | `/go-pro` | `/{l1}/{l2}/go-pro` | Renamed (pair-scoped) |
-| `/verify-email` | `/auth/confirm` | Renamed³ |
+| `/verify-email` | `/register?verifyEmail=:email` (fallback `/register`) | Renamed |
 | `/logout` | `/logout` (new page) | Equivalent (new) |
 | `/dashboard` | `/language-select` | Renamed |
 | `/delete-account` | `/{l1}/{l2}/profile` | Renamed (pair-scoped) |
@@ -108,10 +108,6 @@ or invalid.
 ² Classic hard-redirects to `https://www.chinesezerotohero.com/textbooks-workbooks/`.
 If the adapter matches it, the request should go to v2, which performs the
 external redirect (no special web handling needed).
-
-³ Classic's `/verify-email` code-entry flow has no exact web page; `/auth/confirm`
-consumes email verification links. If the old manual code-entry flow must be
-preserved, keep `/verify-email` as a v2 redirect instead.
 
 Classic content slugs (from `zerotohero-nuxt/content/*.md`):
 
@@ -159,14 +155,21 @@ These exact path shapes exist in both apps and must never redirect:
 | `/{l1}/{l2}/youtube/search/:term?` | `/{l1}/{l2}/search?q=:term` | Term → `q`; `:start?` dropped |
 | `/{l1}/{l2}/youtube/import` | `/{l1}/{l2}/search` | |
 | `/{l1}/{l2}/my-text` | `/{l1}/{l2}/reader` | Notes reader |
-| `/{l1}/{l2}/recommended-video` | `/{l1}/{l2}/explore` | |
+| `/{l1}/{l2}/recommended-video` | `/{l1}/{l2}/explore` | Classic redirects to the first recommendation; explore is the safe web landing |
 | `/{l1}/{l2}/saved-phrases` (+ `:initId?`) | `/{l1}/{l2}/saved-words` | `:initId?` dropped |
+| `/{l1}/{l2}/dictionary/:dictionaryId/:entryId` | `/{l1}/{l2}/dictionary/entry/:dictionaryId/:entryId` | Classic entry deep link (e.g. `/dictionary/edict/92130`) |
+| `/{l1}/{l2}/dictionary/:dictionaryId/random` | `/{l1}/{l2}/dictionary` | Random entry → dictionary landing |
+| `/{l1}/{l2}/dictionary/hsk/:hskId` | — | Classic-only → v2 (no web HSK-id lookup) |
+| `/{l1}/{l2}/reader/shared/:id` | `/{l1}/{l2}/reader?noteId=:id` | Same saved-text data via `/user-notes` |
+| `/{l1}/{l2}/reader/:method/:arg` | `/{l1}/{l2}/reader?method=:method&arg=:arg` | Only for `md`, `html`, `txt`, `md-url`, `html-url` |
 | `/{l1}/{l2}/youtube/channel/:channelId?/:title?` | `/{l1}/{l2}/channel/:channelId` | `youtube/` prefix dropped; title dropped |
-| `/{l1}/{l2}/video-view/:type/:videoId?/:dbId?/:lesson?` | `/{l1}/{l2}/watch/:videoId` | Only when `:videoId` present; otherwise Classic-only |
+| `/{l1}/{l2}/video-view/:type/:videoId?/:dbId?/:lesson?` | `/{l1}/{l2}/watch/:videoId` | Path `:videoId` **or** query `?v=`; `p=recommended` → `?queueType=recommended`; drops `v`/`id`/`p`/`sort`/`lesson` |
+| `/{l1}/{l2}/video-view/bring-your-own` | `/{l1}/{l2}/local-media` | Custom-media upload equivalent |
 | `/{l1}/{l2}/show/:type/:id` | `/{l1}/{l2}/tv-shows/:id` | Type dropped, id preserved |
 
 `:start?` is intentionally dropped; the web search page reads `q` via
-`useSearchParams` and manages pagination internally.
+`useSearchParams` and manages pagination internally. `video-view` URLs without
+a path or query video id (except `bring-your-own`) remain Classic-only.
 
 ### 4.4 `/{l1}/{l2}` routes — Classic-only
 
@@ -205,6 +208,8 @@ These have no web equivalent and should redirect to v2:
 | `/learn` (+ `:method?` `:argsProp?` `:index?`) | |
 | `/learning-path`, `/levels` | |
 | `/minimal-pairs` | |
+| `/dictionary/hsk/:hskId` | |
+| `/reader/:method/:arg` | Only for methods web does not support (`share`, etc.) |
 | `/page/:id` (+ `:title?`) | |
 | `/phrase/compare/:term/:compareTerm` | |
 | `/phrase/search/:term` (+ `:dict?`) | |
@@ -282,16 +287,20 @@ The module exports three ordered rule sets and one pure function
 
 2. `LEGACY_ALIASES`
    The §4.3 table compiled into a tiny path-pattern matcher supporting
-   `:param` and `:param?`. A match returns `{ kind: 'alias', path }` with the
-   web-route path (and query additions such as `q=:term`).
+   `:param` and `:param?`. A match returns
+   `{ kind: 'alias', path, dropSearchParams }` with the web-route path, query
+   additions (such as `q=:term` or `queueType=recommended`), and the list of
+   original query params to drop (`v`, `id`, `p`, `sort`, `lesson`, `email`,
+   `code`).
 
 3. `CLASSIC_ONLY_PATTERNS: RegExp[]`
    All §4.1 (excluding equivalents), §4.4, §4.5, and §4.6 patterns. A match
    returns `{ kind: 'v2' }`.
 
-`pair` is `{ l1, l2 }` read from the `l1`/`l2` cookies already managed by
-`proxy.ts`. Callers pass `{ l1: 'en', l2: 'zh' }` when the cookies are absent
-or invalid.
+`classicRouteAction(pathname, pair, search)` receives the original query
+string so query-driven aliases (`?v=`, `?email=`, `?p=`) can map it. `pair` is
+`{ l1, l2 }` read from the `l1`/`l2` cookies already managed by `proxy.ts`.
+Callers pass `{ l1: 'en', l2: 'zh' }` when the cookies are absent or invalid.
 
 No new dependencies: a ~30-line converter turns `:param` / `:param?`
 pattern strings into regular expressions.
@@ -304,10 +313,12 @@ assets, auth, locale cookies, and guest gating. The adapter is called from it:
 1. Skip non-page requests: `/api/*`, `/_next/*`, `/og`, requests with a file
    extension, and non-GET/HEAD methods — as today.
 2. For remaining requests, resolve `pair` from the `l1`/`l2` cookies
-   (fallback `en/zh`) and run `classicRouteAction(pathname, pair)`:
+   (fallback `en/zh`) and run
+   `classicRouteAction(pathname, pair, req.nextUrl.searchParams)`:
    - `pass` → continue the existing proxy flow unchanged.
    - `alias` → 308 redirect to the mapped web path (pair-scoped aliases use
-     the resolved pair).
+     the resolved pair; original query params in `dropSearchParams` are not
+     copied onto the target).
    - `v2` → 307 redirect to
      `https://v2.languageplayer.io{pathname}{search}`.
    - No match → continue to the existing web 404 behavior.
@@ -334,8 +345,14 @@ const V2_ORIGIN = process.env.NEXT_PUBLIC_LEGACY_V2_ORIGIN ?? 'https://v2.langua
 ### 5.5 Query strings
 
 External v2 redirects append the original `search` unchanged. Internal aliases
-start from the existing search and add alias-specific params (`q`). Params
-with no web equivalent (`:start?`, `:initId?`) are dropped where noted.
+start from the existing search and add alias-specific params (`q`,
+`queueType`, `verifyEmail`, `noteId`, `method`, `arg`). Params with no web
+equivalent are dropped per alias: `:start?`/`:initId?` path params, and
+`v`/`id`/`p`/`sort`/`lesson`/`email`/`code` query params where consumed.
+
+`video-view` query URLs map `p=recommended` (and `p=recommended_music`) to
+`?queueType=recommended`; numeric/comma playlist ids are dropped because web's
+`QueueType` has no playlist variant yet.
 
 ### 5.6 Renamed routes: internal redirects (decision)
 
@@ -360,8 +377,8 @@ makes the web app appear incomplete for features it already has.
 2. Extend `apps/web/src/proxy.ts` to call the matcher after the static/API skip
    and before app-pair handling, using the `l1`/`l2` cookies with an `en/zh`
    fallback.
-3. Add `apps/web/src/app/logout/page.tsx` that calls
-   `signOut({ callbackUrl: '/login' })`.
+3. Add `apps/web/src/app/logout/page.tsx` that calls `clearUserData()` (matching
+   Classic's `wipeLocalUserData`) then `signOut({ callbackUrl: '/login' })`.
 4. Add Vitest coverage for:
    - every Equivalent route → pass
    - every Renamed route → correct web path
@@ -388,19 +405,34 @@ makes the web app appear incomplete for features it already has.
 ### 8.1 Channels list + subscription management
 
 Classic routes `/youtube/channels` and `/youtube/subscriptions` revealed a
-real product gap: there is no channel directory or subscribe/unsubscribe
-management in `apps/web` or `apps/mobile`.
+real product gap — but it is narrower than it first looked. Per-channel
+subscribe / not-interested already exists in `apps/web`
+(`useChannelPreference` → `/channel-preferences`) and in Classic. What is
+missing is the **channel directory page** and the **subscribed-content feed**:
 
-Scope for the future feature:
-
-- Browse/search channels (`/youtube/channels`)
-- Subscribe / unsubscribe
-- "Subscribed Channels Content" feed (`/youtube/subscriptions`)
+- Browse/search channels (`/youtube/channels`) — web and mobile
+- "Subscribed Channels Content" feed (`/youtube/subscriptions`) — web and mobile
 - Channel grid/links on both web and mobile
 
-Until this is scheduled and built, both routes remain Classic-only and
-redirect to v2. This gap should be tracked as its own spec/ROADMAP item when
-it is picked up.
+Per-channel subscription state itself is already wired end-to-end and does not
+need to be rebuilt.
+
+Until the directory and feed are built, both routes remain Classic-only and
+redirect to v2. This gap should be tracked as its own spec/ROADMAP item.
+
+### 8.3 Watch queue URL hydration
+
+`p=recommended` maps to `?queueType=recommended`, but apps/web only *writes*
+that param — the watch page never reads it, and `QueueManager` is in-memory
+only. A cold link like
+`/en/ja/watch/-EVFAa8Efh4?queueType=recommended` plays the video without a
+prev/next queue. To fully preserve Classic's `p=` behavior, the watch page
+needs to hydrate the queue from `?queueType=` (fetching `/api/videos/recommend`
+for `recommended`) on load.
+
+Related small gap: search results currently start queues with
+`queueType='recommended'` instead of `'search'`, and playlist playback uses
+`'recommended'` because `QueueType` has no playlist variant.
 
 ### 8.2 Support / contact page
 
@@ -422,14 +454,12 @@ Until built, `/contact-us` redirects to v2.
 
 ## 9. Open Questions
 
-- **`/verify-email`**: map to root `/auth/confirm` (recommended) or preserve
-  Classic's manual code-entry flow by keeping it a v2 redirect?
 - **Contact page**: is the placement recommended in §8.2 acceptable?
 - **`/faq`**: should it get a docs equivalent alongside the contact page, or
   stay a v2 redirect for now?
 
 ## 10. Dependencies
 
-- `apps/web` (Next.js proxy, Vitest, NextAuth `signOut`)
+- `apps/web` (Next.js proxy, Vitest, NextAuth `signOut`, `user-data-wipe`)
 - Live `v2.languageplayer.io` deployment with a valid certificate
 - No changes to `zerotohero-nuxt/`, `netlify.toml`, or shared packages

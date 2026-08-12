@@ -85,11 +85,16 @@ export default function proxy(req: NextRequest) {
       SUPPORTED_L2S.includes(l2Cookie as any)
         ? { l1: l1Cookie, l2: l2Cookie }
         : { l1: 'en', l2: 'zh' };
-    const action = classicRouteAction(normalizedPath, pair);
+    const action = classicRouteAction(
+      normalizedPath,
+      pair,
+      req.nextUrl.searchParams,
+    );
 
     if (action.kind === 'alias') {
       const target = new URL(action.path, req.url);
       for (const [key, value] of req.nextUrl.searchParams) {
+        if (action.dropSearchParams.includes(key)) continue;
         if (!target.searchParams.has(key)) {
           target.searchParams.append(key, value);
         }
