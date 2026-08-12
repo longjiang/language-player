@@ -420,7 +420,7 @@ need to be rebuilt.
 Until the directory and feed are built, both routes remain Classic-only and
 redirect to v2. This gap should be tracked as its own spec/ROADMAP item.
 
-### 8.3 Watch queue URL hydration
+### 8.3 Watch queue URL hydration (deferred)
 
 `p=recommended` maps to `?queueType=recommended`, but apps/web only *writes*
 that param — the watch page never reads it, and `QueueManager` is in-memory
@@ -428,7 +428,8 @@ only. A cold link like
 `/en/ja/watch/-EVFAa8Efh4?queueType=recommended` plays the video without a
 prev/next queue. To fully preserve Classic's `p=` behavior, the watch page
 needs to hydrate the queue from `?queueType=` (fetching `/api/videos/recommend`
-for `recommended`) on load.
+for `recommended`) on load. **Status: deferred** — the redirect already emits
+the correct param; hydration will be handled in a separate change.
 
 Related small gap: search results currently start queues with
 `queueType='recommended'` instead of `'search'`, and playlist playback uses

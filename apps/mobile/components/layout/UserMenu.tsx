@@ -8,7 +8,7 @@ import { confirmLogoutIfOffline } from '@/lib/logout-guard';
 import * as Dialog from '@/components/ui/dialog';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Settings, BookOpen, Info, LogOut, LogIn, History, ListVideo, Heart, Bookmark } from 'lucide-react-native';
+import { Settings, BookOpen, Info, LogOut, LogIn, History, ListVideo, Heart, Bookmark, Tv } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 
@@ -90,6 +90,13 @@ export function UserMenu() {
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(media)/my-channels' as any); }}
+              >
+                <Tv size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.my_channels')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
                 onPress={() => { setOpen(false); router.push('/(tabs)/(vocab)/saved-words' as any); }}
               >
                 <Bookmark size={16} color={ICON_MUTED} />
@@ -154,6 +161,13 @@ export function UserMenu() {
               >
                 <Heart size={16} color={ICON_MUTED} />
                 <Text className="text-sm text-foreground">{t('title.liked_videos')}</Text>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(media)/my-channels' as any); }}
+              >
+                <Tv size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">{t('title.my_channels')}</Text>
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"

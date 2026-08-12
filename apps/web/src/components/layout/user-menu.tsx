@@ -16,6 +16,7 @@ import {
   ListVideo,
   Heart,
   Bookmark,
+  Youtube,
 } from 'lucide-react';
 import { clearUserData } from '@/lib/user-data-wipe';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -75,6 +76,13 @@ export function UserMenu() {
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
               <Heart className="h-4 w-4" /> {t('title.liked_videos')}
+            </Link>
+            <Link
+              href={`/${l1.code}/${l2.code}/my-channels`}
+              onClick={close}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
+              <Youtube className="h-4 w-4" /> {t('title.my_channels')}
             </Link>
             <Link
               href={`/${l1.code}/${l2.code}/saved-words`}
@@ -139,6 +147,13 @@ export function UserMenu() {
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >
             <Heart className="h-4 w-4" /> {t('title.liked_videos')}
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/my-channels`}
+            onClick={close}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <Youtube className="h-4 w-4" /> {t('title.my_channels')}
           </Link>
           <Link
             href={`/${l1.code}/${l2.code}/saved-words`}

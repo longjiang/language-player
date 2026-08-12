@@ -11,7 +11,7 @@ import {
   Menu, X, ChevronDown, Search,
   Compass, Music, Tv, Clapperboard, Upload,
   BookOpen, Globe, BookMarked,
-  RotateCcw, FileText,
+  RotateCcw, FileText, Youtube,
 } from 'lucide-react';
 
 interface NavGroup {
@@ -27,6 +27,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.music_and_entertainment', href: 'music' },
       { key: 'title.live_tv', href: 'live-tv' },
       { key: 'title.tv_shows', href: 'tv-shows' },
+      { key: 'title.channels', href: 'channels' },
       { key: 'title.local_media', href: 'local-media' },
     ],
   },
@@ -52,6 +53,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   music: <Music className="h-4 w-4" />,
   'live-tv': <Tv className="h-4 w-4" />,
   'tv-shows': <Clapperboard className="h-4 w-4" />,
+  channels: <Youtube className="h-4 w-4" />,
   reader: <FileText className="h-4 w-4" />,
   'web-reader': <Globe className="h-4 w-4" />,
   epub: <BookOpen className="h-4 w-4" />,
