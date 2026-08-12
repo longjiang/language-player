@@ -17,9 +17,6 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
-/** Hidden-measurement chunk size for large whole-book block streams. */
-const MEASURE_CHUNK = 150;
-
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
@@ -54,7 +51,6 @@ export default function EpubReaderScreen() {
       setLocation(loc);
       void epub.saveLocation(loc);
     }, [epub]),
-    measureChunkSize: MEASURE_CHUNK,
     estimate: true,
   });
 
@@ -90,8 +86,8 @@ export default function EpubReaderScreen() {
     pendingJumpRef.current = loc;
     const p = paginationRef.current;
     if (p.hasMeasured) {
-      const page = p.blockPage(loc.blockIndex);
-      p.goToPage(page);
+      pendingJumpRef.current = null;
+      p.goToBlock(loc.blockIndex);
     }
     setLocation(loc);
   }, []);
@@ -101,8 +97,7 @@ export default function EpubReaderScreen() {
     if (!pagination.hasMeasured || !pendingJumpRef.current) return;
     const loc = pendingJumpRef.current;
     pendingJumpRef.current = null;
-    const page = pagination.blockPage(loc.blockIndex);
-    pagination.goToPage(page);
+    pagination.goToBlock(loc.blockIndex);
   }, [pagination.hasMeasured, pagination]);
 
   const jumpToMarker = useCallback((marker: TocMarker | null) => {
@@ -334,7 +329,12 @@ export default function EpubReaderScreen() {
             handleMeasureBlock={pagination.handleMeasureBlock}
             onVisibleBlocksChange={pagination.onVisibleBlocksChange}
             contentWidth={pagination.contentWidth}
-            measuredWindow={pagination.measuredWindow}
+            measureStart={pagination.measureStart}
+            measureEnd={pagination.measureEnd}
+            measureNonce={pagination.measureNonce}
+            onViewportLayout={pagination.handleViewportLayout}
+            hasPrev={pagination.hasPrev}
+            hasNext={pagination.hasNext}
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
             showTranslation={display.translation}

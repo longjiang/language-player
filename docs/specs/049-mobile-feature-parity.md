@@ -179,6 +179,15 @@ nearest preceding TOC chapter label. Pages are continuous across the entire
 book, and progress on the bookshelf is character-based
 (`readChars`/`totalChars`), so it never depends on the viewport.
 
+**Pagination (web parity update):** the EPUB reader now uses the same
+web-style lazy measured pagination as `usePaginatedBook` — only a window
+around the current page is rendered in the hidden measuring view (160 blocks
+at a time), heights are cached for revisits, page breaks use the real reader
+viewport height, and the total page count is a chars-per-page estimate
+(`n / total`) instead of a whole-book estimate pass. Search/TOC/link jumps
+land directly on the target block (`goToBlock`), and translation toggles
+re-measure the current layout.
+
 `.epub.zip` / `.zip` wrappers are unwrapped on import (archive itself, single
 inner `.epub`, or extracted EPUB folder).
 
