@@ -201,12 +201,16 @@ export default function ReviewScreen() {
   // any path must not let a stale card resurrect later.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
+    // Never prune while the cloud saved-words hydration is still pending: an
+    // empty local list at that point is a loading state, not a real "no saved
+    // words" state, and pruning would delete the whole deck (SPEC-066).
+    if (user && !cloudHydrated) return;
     if (l2SavedWords.length === 0) {
       pruneOrphans(l2Code, new Set<string>());
       return;
     }
     pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
-  }, [srsLoaded, wordsLoaded, l2SavedWords, l2Code, pruneOrphans]);
+  }, [srsLoaded, wordsLoaded, user, cloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
 
   // ── Compute due cards ──
   const dueCards = useMemo(() => {

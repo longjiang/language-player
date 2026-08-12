@@ -339,8 +339,10 @@ app.
 
 - The page is per L2 language pair.
 - On load it hydrates saved words + SRS cards, auto-creates missing new cards,
-  and prunes cards for words that are no longer saved (web today; mobile lacks
-  the prune — see disparity 4).
+  and prunes cards for words that are no longer saved. Pruning only runs after
+  the cloud saved-words hydration completes — an empty-but-loading list must
+  never be treated as "no saved words" (this previously wiped the whole deck
+  when the page opened before hydration finished).
 - Cards are served oldest-due-first, with a small reveal delay so the previous
   card settles before the next appears.
 
