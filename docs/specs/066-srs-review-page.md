@@ -496,7 +496,9 @@ restores and offline outbox replays are also PUTs and would double-count).
 Each interactive rating carries a client-generated rating id recorded in a
 per-user review log so replays/retries count once; undo writes a matching void
 event so the cap is restored. Trial users are Pro-equivalent while active
-(mirroring the clients' `isPro` logic from `user_subscriptions`).
+(mirroring the clients' `isPro` logic from `user_subscriptions`). Pro
+detection mirrors `/user-subscription`: lifetime is unconditional, and other
+types count while unexpired — there is no `status` filter.
 
 ## Web ↔ Mobile Disparities
 
@@ -531,6 +533,8 @@ event so the cap is restored. Trial users are Pro-equivalent while active
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
+  The mobile outbox acknowledges `srs_cap_reached` as an expected rejection,
+  so over-cap ratings never surface as Sync Status errors.
 - ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
   restores the card and releases the rating back to the UTC-day budget.
 
