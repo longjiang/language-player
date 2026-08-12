@@ -202,7 +202,6 @@ export default function MyChannelsPage() {
           open={mobileOpen}
           onOpenChange={setMobileOpen}
           sidebarOpen={sidebarOpen}
-          title={t('title.my_channels')}
           desktopClassName="w-72 ml-3"
         >
           {sidebarContent}
