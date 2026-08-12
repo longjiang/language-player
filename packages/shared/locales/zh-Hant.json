@@ -89,6 +89,7 @@
         "next_chapter": "下一章",
         "not_interested": "不感興趣",
         "open": "開啟",
+        "open_classic": "開啟 Language Player 2（經典版）",
         "open_file": "開啟檔案",
         "open_in_dictionary": "在辭典中開啟",
         "open_in_reader": "在閱讀器中開啟",
@@ -398,6 +399,10 @@
         "watch_screen": "觀看畫面",
         "weekly_hours": "每週目標",
         "words": "{count, plural, other {# 個詞}}"
+    },
+    "landing": {
+        "classic_desc": "版本 2（經典版）的部分功能在版本 3 中尚不可用。如要使用這些舊版功能，您可以隨時透過下方連結存取。",
+        "classic_intro": "這是 Language Player 3，是您熟悉且喜愛的 Language Player 2026 升級版。"
     },
     "lang": {
         "ab": "阿布哈茲語",

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { LanguageVideoList } from '@/components/landing/language-video-list';
 import { PricingSection } from '@/components/landing/pricing-section';
+import { ClassicNotice } from '@/components/landing/classic-notice';
 import { CONTENT_L2_COUNT } from '@langplayer/shared';
 
 export default function HomePage() {
@@ -50,6 +51,9 @@ export default function HomePage() {
               <Play className="h-5 w-5" /> {t('action.start_watching')}
             </Link>
           </div>
+
+          {/* Classic app notice */}
+          <ClassicNotice />
         </div>
       </section>
 

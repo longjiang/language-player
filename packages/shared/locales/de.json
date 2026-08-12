@@ -92,6 +92,7 @@
         "next_chapter": "Weiter",
         "not_interested": "Nicht interessiert",
         "open": "Öffnen",
+        "open_classic": "Language Player 2 (Classic) öffnen",
         "open_file": "Datei öffnen",
         "open_in_dictionary": "Im Wörterbuch öffnen",
         "open_in_reader": "Im Reader öffnen",
@@ -412,6 +413,10 @@
         "watch_screen": "Ansicht",
         "weekly_hours": "Wochenziel",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Nicht alle Funktionen aus Version 2 (Classic) sind in Version 3 verfügbar. Diese älteren Funktionen kannst du jederzeit über den Link unten aufrufen.",
+        "classic_intro": "Dies ist Language Player 3, das 2026er Upgrade von Language Player, das du kennst und liebst."
     },
     "lang": {
         "ab": "Abchasisch",

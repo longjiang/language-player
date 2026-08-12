@@ -92,6 +92,7 @@
         "next_chapter": "Next",
         "not_interested": "Not Interested",
         "open": "Open",
+        "open_classic": "Open Language Player 2 (Classic)",
         "open_file": "Open file",
         "open_in_dictionary": "Open in Dictionary",
         "open_in_reader": "Open in Reader",
@@ -412,6 +413,10 @@
         "watch_screen": "Watch screen",
         "weekly_hours": "Weekly Goal",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Not all features from version 2 (classic) are available in version 3. To use these legacy features, you can always access them from the link below.",
+        "classic_intro": "This is Language Player 3, the 2026 upgrade of Language Player you've known and loved."
     },
     "lang": {
         "ab": "Abkhaz",

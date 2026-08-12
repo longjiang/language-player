@@ -92,6 +92,7 @@
         "next_chapter": "Tiếp",
         "not_interested": "Không quan tâm",
         "open": "Mở",
+        "open_classic": "Mở Language Player 2 (Cổ điển)",
         "open_file": "Mở tệp",
         "open_in_dictionary": "Mở trong từ điển",
         "open_in_reader": "Mở trong trình đọc",
@@ -412,6 +413,10 @@
         "watch_screen": "Màn hình xem",
         "weekly_hours": "Mục tiêu tuần",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Không phải tất cả tính năng của phiên bản 2 (cổ điển) đều có trong phiên bản 3. Để sử dụng các tính năng cũ này, bạn luôn có thể truy cập qua liên kết bên dưới.",
+        "classic_intro": "Đây là Language Player 3, bản nâng cấp 2026 của Language Player mà bạn biết và yêu thích."
     },
     "lang": {
         "ab": "Tiếng Abkhazia",

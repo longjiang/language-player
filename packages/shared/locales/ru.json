@@ -92,6 +92,7 @@
         "next_chapter": "Далее",
         "not_interested": "Не интересно",
         "open": "Открыть",
+        "open_classic": "Открыть Language Player 2 (классическую версию)",
         "open_file": "Открыть файл",
         "open_in_dictionary": "Открыть в словаре",
         "open_in_reader": "Открыть в читателе",
@@ -412,6 +413,10 @@
         "watch_screen": "Экран просмотра",
         "weekly_hours": "Недельная цель",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Не все функции версии 2 (классической) доступны в версии 3. Чтобы воспользоваться этими старыми функциями, вы всегда можете перейти по ссылке ниже.",
+        "classic_intro": "Это Language Player 3 — обновление 2026 года для Language Player, который вы знаете и любите."
     },
     "lang": {
         "ab": "Абхазский",

@@ -92,6 +92,7 @@
         "next_chapter": "التالي",
         "not_interested": "غير مهتم",
         "open": "فتح",
+        "open_classic": "افتح Language Player 2 (الإصدار الكلاسيكي)",
         "open_file": "فتح الملف",
         "open_in_dictionary": "فتح في القاموس",
         "open_in_reader": "فتح في القارئ",
@@ -412,6 +413,10 @@
         "watch_screen": "شاشة المشاهدة",
         "weekly_hours": "الهدف الأسبوعي",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "ليست جميع ميزات الإصدار 2 (الكلاسيكي) متاحة في الإصدار 3. لاستخدام هذه الميزات القديمة، يمكنك دائمًا الوصول إليها من الرابط أدناه.",
+        "classic_intro": "هذا هو Language Player 3، الإصدار المطوَّر لعام 2026 من Language Player الذي تعرفه وتحبه."
     },
     "lang": {
         "ab": "الابخازيه",
