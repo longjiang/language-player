@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -48,6 +49,7 @@ function categoryKey(slug: string): string {
 export default function DocsScreen() {
   const t = useT();
   const { l1Lang } = useLanguage();
+  const { path: pathParam } = useLocalSearchParams<{ path?: string }>();
   const { isXl } = useResponsive();
   const [query, setQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
@@ -57,6 +59,18 @@ export default function DocsScreen() {
   const [markdownY, setMarkdownY] = useState(0);
 
   const localeDocs = useMemo(() => DOCS_BY_LOCALE[l1Lang.code] ?? DOCS, [l1Lang.code]);
+
+  // Web /docs/[...slug] links (SPEC-069) open the matching doc directly.
+  useEffect(() => {
+    const p = typeof pathParam === 'string' ? pathParam : '';
+    if (!p) return;
+    const doc = (DOCS_BY_LOCALE[l1Lang.code] ?? DOCS).find((d) => d.path === p);
+    if (doc) {
+      setSelectedDoc(doc);
+      setTocOpen(false);
+      headingOffsets.current = {};
+    }
+  }, [pathParam, l1Lang.code]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return localeDocs;

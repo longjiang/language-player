@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, FlatList, ActivityIndicator, Pressable, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
@@ -14,15 +14,19 @@ import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { setCachedEntryById } from '@/lib/dictionary-cache';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import type { DictionaryEntry } from '@langplayer/shared';
+import { SUPPORTED_L2S, type DictionaryEntry } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
 
 export default function DictionaryScreen() {
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l1Lang, l2Lang, setL2Lang } = useLanguage();
   const t = useT();
   const router = useRouter();
+  const { query: queryParam, l2: l2Param } = useLocalSearchParams<{
+    query?: string;
+    l2?: string;
+  }>();
   const {
     query, setQuery, results, loading, error, message,
     doSearch, clearSearch,
@@ -33,6 +37,27 @@ export default function DictionaryScreen() {
   const dict = useDictionary();
   const dictRef = useRef(dict);
   dictRef.current = dict;
+
+  // Deep links can carry ?l2=... (SPEC-069) — persist the override so the
+  // header and dictionary state agree with the linked content.
+  const requestedL2 =
+    typeof l2Param === 'string' &&
+    (SUPPORTED_L2S as readonly string[]).includes(l2Param.trim())
+      ? l2Param.trim()
+      : null;
+  useEffect(() => {
+    if (requestedL2 && requestedL2 !== l2Lang.code) {
+      setL2Lang(requestedL2);
+    }
+  }, [requestedL2, l2Lang.code, setL2Lang]);
+
+  // Web /dictionary/word/[word] links (SPEC-069) seed the search box.
+  useEffect(() => {
+    const q = typeof queryParam === 'string' ? queryParam.trim() : '';
+    if (!q) return;
+    setQuery(q);
+    doSearch(q);
+  }, [queryParam, setQuery, doSearch]);
 
   // ── Autocomplete (English-definition matches, like web PersistentSearchBar) ──
   const [suggestions, setSuggestions] = useState<DictionaryEntry[] | null>(null);

@@ -15,14 +15,36 @@
     },
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "ca.zerotohero.go"
+            "bundleIdentifier": "ca.zerotohero.go",
+            "associatedDomains": [
+              "applinks:languageplayer.io",
+              "applinks:language-player.netlify.app"
+            ]
         },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1b1e3c"
       },
-      "package": "ca.zerotohero.go"
+      "package": "ca.zerotohero.go",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "languageplayer.io", "pathPrefix": "/" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "language-player.netlify.app", "pathPrefix": "/" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
