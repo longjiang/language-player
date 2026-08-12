@@ -988,6 +988,7 @@
         "sort_by": "Urutkan berdasarkan: {sortBy}",
         "start_learning": "Mulai belajar bahasa melalui konten video otentik.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Hanya paket Seumur Hidup yang tersedia melalui penagihan toko.",
         "subscription_cancel_error": "Kesalahan membatalkan langganan",
         "subscription_cancel_success": "Langganan berhasil dibatalkan",
         "subscription_expired": "Langganan Anda telah kedaluwarsa.",

@@ -988,6 +988,7 @@
         "sort_by": "Sortieren nach: {sortBy}",
         "start_learning": "Lernen Sie Sprachen mit authentischen Videoinhalten.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Nur der Lifetime-Plan ist über die App-Store-Abrechnung verfügbar.",
         "subscription_cancel_error": "Fehler beim Kündigen des Abonnements",
         "subscription_cancel_success": "Abonnement erfolgreich gekündigt",
         "subscription_expired": "Ihr Abonnement ist abgelaufen.",

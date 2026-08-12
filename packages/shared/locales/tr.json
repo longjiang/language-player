@@ -988,6 +988,7 @@
         "sort_by": "Şuna göre sırala: {sortBy}",
         "start_learning": "Otantik video içerikleriyle dil öğrenmeye başlayın.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Mağaza faturalandırmasıyla yalnızca Ömür Boyu plan kullanılabilir.",
         "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu",
         "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
         "subscription_expired": "Aboneliğinizin süresi doldu.",

@@ -988,6 +988,7 @@
         "sort_by": "ترتيب حسب: {sortBy}",
         "start_learning": "ابدأ في تعلم اللغات من خلال محتوى فيديو أصلي.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "تتوفر خطة مدى الحياة فقط عبر فواتير المتجر.",
         "subscription_cancel_error": "خطأ في إلغاء الاشتراك",
         "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
         "subscription_expired": "انتهى اشتراكك.",

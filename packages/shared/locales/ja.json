@@ -988,6 +988,7 @@
         "sort_by": "並べ替え: {sortBy}",
         "start_learning": "本格的な動画コンテンツで言語を学び始めましょう。",
         "storage_usage": "ストレージ：{used} 言語をダウンロード済み",
+        "store_lifetime_only": "ストアの請求ではライフタイムプランのみ利用可能です。",
         "subscription_cancel_error": "サブスクリプションのキャンセル中にエラーが発生しました",
         "subscription_cancel_success": "サブスクリプションが正常にキャンセルされました",
         "subscription_expired": "サブスクリプションの期限が切れています。",
