@@ -64,7 +64,7 @@ docs/
 | 005 | [Translation Keys Reference](arch/005-translation-keys-reference.md) | Reference for all i18n translation keys and their usage |
 | 006 | [Classic Dictionary Architecture](arch/006-classic-dictionary-architecture.md) | Dictionary system architecture in the Classic Nuxt app |
 | 007 | [Next.js Dictionary Architecture](arch/007-nextjs-dictionary-architecture.md) | Dictionary system architecture in the Next.js app |
-| 008 | [Docs i18n Pipeline](arch/008-docs-i18n-pipeline.md) | Build pipeline for translating documentation to 31 locales |
+| 008 | [Docs i18n Pipeline](arch/008-docs-i18n-pipeline.md) | Build pipeline for translating documentation to 18 locales |
 | 009 | [Shared i18n Pipeline](arch/009-shared-i18n-pipeline.md) | Single-source-of-truth i18n workflow for web + mobile |
 | 010 | [Video Loading Pipeline](arch/010-video-loading-pipeline.md) | End-to-end data flow: subtitles → lemmatization → translation → dictionary |
 | 011 | [Settings Architecture](arch/011-settings-architecture.md) | Cross-app settings analysis: storage, mutation, sync patterns |
