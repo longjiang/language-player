@@ -178,13 +178,17 @@ export default function ReviewPage() {
   // are no longer in the saved list, keeping the deck in sync with savedWords.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
+    // Never prune while the cloud saved-words hydration is still pending: an
+    // empty local list at that point is a loading state, not a real "no saved
+    // words" state, and pruning would delete the whole deck (SPEC-066).
+    if (status === 'authenticated' && !cloudHydrated) return;
     if (l2SavedWords.length === 0) {
       // No saved words at all → purge the entire language deck.
       pruneOrphans(l2Code, new Set<string>());
       return;
     }
     pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
-  }, [srsLoaded, wordsLoaded, l2SavedWords, l2Code, pruneOrphans]);
+  }, [srsLoaded, wordsLoaded, status, cloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
 
   // ── Compute due cards ──
   const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
