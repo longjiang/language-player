@@ -17,9 +17,9 @@ code to store on both platforms:
    E2E is deferred).
 2. **Apple App Store (iOS)** — build the Release archive, verify it, upload to
    App Store Connect, submit for review.
-3. **Google Play Store (Android)** — re-verify the existing Play Developer
-   account, build the Android AAB, and publish "Language Player 3" through
-   Play Console.
+3. **Google Play Store (Android)** — use the verified existing Play Developer
+   account, create the "Language Player 3" app, build the Android AAB, and
+   publish through Play Console.
 
 The iOS build details and the two hard-won gotchas from the first archive
 remain documented here so future releases are one-command and correct.
@@ -59,12 +59,12 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   validator accepts receipts from **both** bundles (`.go` first, then
   `.app`). Canonical identity table: SPEC-014 "Identifiers & IAP".
 - **Google Play — new launch**: a new **"Language Player 3"** listing on the
-  **existing** Play Developer account, which is unverified pending business
-  info renewal (see § 4). Classic's **"Language Player 2"** is already live
-  on Google Play under `ca.zerotohero.app`, so it exists on both stores. The
-  new listing uses the same identifier `ca.zerotohero.go` as iOS (Android
-  packages and iOS bundle IDs are separate namespaces; keeping them identical
-  avoids confusion).
+  **existing** Play Developer account, which was **verified 2026-08-11**
+  (see § 4). Classic's **"Language Player 2"** is already live on Google Play
+  under `ca.zerotohero.app`, so it exists on both stores. The new listing
+  uses the same identifier `ca.zerotohero.go` as iOS (Android packages and
+  iOS bundle IDs are separate namespaces; keeping them identical avoids
+  confusion).
 
 ## 1. Testing strategy — informal, checklist-based human QA
 
@@ -525,28 +525,34 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 
 ## 4. Google Play Store (Android)
 
-### 4.1 Verify the existing Play Developer account
+> **Updated by [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md).**
+> SPEC-067 is the authoritative step-by-step Android release process (account
+> verification, AAB build, signing, Play Console setup, tracks, rollout). This
+> section remains as the concise overview.
+
+### 4.1 Use the verified existing Play Developer account
 
 The Play Developer account was **not deleted** — it became **unverified**
 after we neglected to renew our business information
-([ADR-0013](0013-app-store-strategy.md)). Classic's **"Language Player 2"**
-remains live on Google Play under `ca.zerotohero.app`. To publish the new
-app, re-verify the **existing** account rather than registering a new one:
+([ADR-0013](0013-app-store-strategy.md)), and it was **re-verified
+2026-08-11**. Classic's **"Language Player 2"** remains live on Google Play
+under `ca.zerotohero.app`. The account is now in good standing; the remaining
+Google Play work is creating the **"Language Player 3"** app and configuring
+Play Billing:
 
 1. Go to [play.google.com/console](https://play.google.com/console) and sign
    in with the existing developer account.
-2. Check the account's current status and complete the pending **business
-   info renewal / reverification** (business details, contact email,
-   developer name).
-3. Re-accept the **Google Play Developer Distribution Agreement** if prompted.
-4. Complete **verification** (email / phone / ID) as required.
-5. **Keep the business / developer info current** thereafter — neglecting
-   the renewal is what left the account unverified.
+2. Confirm the account status is green/verified (no pending verification or
+   business-info tasks).
+3. Create the **"Language Player 3"** app under `ca.zerotohero.go` (§ 4.2)
+   and set up Play Billing (SPEC-054 § 1.5).
+4. **Keep the business / developer info current** thereafter — the lapsed
+   renewal is what originally left the account unverified.
 
 > ⚠️ Play Console's UI and requirements change; verify exact steps at
-> execution time. The existing account should **not** need the one-time
-> US$25 registration fee again; only create a new account if Play Console
-> reports the existing one is fully closed (see SPEC-014).
+> execution time. The account should **not** need the one-time US$25
+> registration fee; only register a new account if Play Console ever reports
+> the existing one is fully closed (see SPEC-014).
 
 ### 4.2 Build the Android release (AAB)
 
@@ -585,9 +591,10 @@ cd android && ./gradlew bundleRelease
 ### 4.4 Caveats for the first Android release
 
 - **Google Play Billing is not implemented** (SPEC-014) — Android IAP is
-  blocked until the existing Play account is re-verified and billing setup
-  exists. Launch with free-tier features + web-based payments; add Play
-  Billing later.
+  blocked until the "Language Player 3" app, its Play Billing product, and
+  the Play Billing implementation exist (the account itself is verified).
+  Launch with free-tier features + web-based payments; add Play Billing
+  later.
 - The GO listing's `pro_go` lifetime product exists as **iOS IAP only**
   today, and the new app uses it (Classic's `pro` belongs to
   `ca.zerotohero.app`). Pro grants are backend-driven — an Android user who
@@ -675,7 +682,8 @@ command-line env var is the source of truth for release builds.
 - [ ] Build command includes `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca`
 - [ ] Stale bundle removed; bundle verified (`pythonvps` ≥ 1, `localhost:5001` = 0)
 - [ ] **iOS:** archive verified → uploaded → App Store Connect build appears → submitted
-- [ ] **Android:** Play account verified → `.aab` built & signed → Internal → … → Production
+- [x] **Android:** Play account verified (2026-08-11)
+- [ ] **Android:** `.aab` built & signed → Internal → … → Production
 - [ ] Store listings complete (screenshots, privacy policy, data safety, content rating)
 
 ## Related docs
@@ -685,4 +693,5 @@ command-line env var is the source of truth for release builds.
 - [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) — deferred; source of the human QA checklist
 - [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) — IAP + Play Billing caveats
 - [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) — detailed payment checklist
+- [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md) — step-by-step Android release process
 - [AGENTS.md](../../AGENTS.md) — dev-server conventions, Node 22 requirement, "never run builds un-prompted"

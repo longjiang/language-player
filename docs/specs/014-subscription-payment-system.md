@@ -45,7 +45,7 @@ same backend grant makes them work in the apps once the user logs in.
 | Alipay (CNY) | all | ✅ | ✅ | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
 | PayPal | lifetime only | ✅ | ✅ (direct, planned) | 🚫 in-app — buy on website | 🚫 in-app — buy on website; Play Billing later |
 | Apple IAP | lifetime | ✅ (`pro`) | — | ✅ (`pro_go`) | — |
-| Google Play Billing | lifetime | — | — | — | ⬜ planned (blocked on Play account verification + billing setup) |
+| Google Play Billing | lifetime | — | — | — | ⬜ planned (blocked on LP3 app + Play Billing product; account verified) |
 
 Legend: ✅ supported · 🟡 partial (link-out / not yet direct) · ⬜ planned ·
 🚫 intentionally not offered in-app (use the website).
@@ -73,7 +73,8 @@ Per-platform notes:
   WeChat / Alipay / PayPal are website payments (SPEC-054 Phase 3 cleanup).
 - **Mobile Android** — no in-app payment methods today; users buy on the
   website (SPEC-054 Phase 3 cleanup). Play Billing is the target in-app
-  method once the Play account is re-verified and billing setup exists.
+  method once the "Language Player 3" app and billing product exist (the
+  Play account is verified).
 
 ### Why the split (store policy)
 
@@ -116,9 +117,9 @@ Key facts:
   product, so existing GO buyers can restore.
 - Classic's `pro` belongs to `ca.zerotohero.app` and is a separate product.
 - Classic "Language Player 2" is live on **both** the App Store and Google
-  Play under `ca.zerotohero.app`. The Play Developer account is
-  **unverified, not deleted** — the business-info renewal lapsed, and
-  reverification is still outstanding.
+  Play under `ca.zerotohero.app`. The Play Developer account is **verified
+  (2026-08-11)** — it was never deleted; the business-info renewal lapsed,
+  and reverification has now been completed.
 - **Both iOS apps stay public**, so the backend accepts receipts from
   **both** bundles: `ca.zerotohero.go` (new mobile) and
   `ca.zerotohero.app` (Classic). Apple's response identifies the receipt's
@@ -271,9 +272,8 @@ Open work:
 - **Web direct PayPal** — currently links to Classic
 - **Mobile IAP sandbox verification** — SPEC-054 Phase 3 (A1/A2)
 - **Play Billing (Android)** — SPEC-054 Phase 3: Play Console developer
-  account verification (blocked on the existing account's reverification),
-  billing setup, product configuration, implementation, and test-track
-  testing; buy-on-website is the interim path
+  billing setup (account verified 2026-08-11), product configuration,
+  implementation, and test-track testing; buy-on-website is the interim path
 
 ---
 
@@ -285,10 +285,9 @@ Open work:
    (SDK 57 compatible).
 3. **PayPal for web** — optional `@paypal/react-paypal-js`; link-to-Classic
    works until direct integration lands.
-4. **Google Play** — the existing developer account is **unverified, not
-   deleted** (business-info renewal lapsed). Classic "Language Player 2" is
-   live on Google Play under `ca.zerotohero.app`. Before Play Billing:
-   re-verify the existing account, create the new app under
+4. **Google Play** — the existing developer account is **verified
+   (2026-08-11)**. Classic "Language Player 2" is live on Google Play under
+   `ca.zerotohero.app`. Before Play Billing: create the new app under
    `ca.zerotohero.go`, configure the billing product, build the AAB, and
    roll through test tracks.
 5. **Env vars** (`zerotohero-python-server/.env`, gitignored):
