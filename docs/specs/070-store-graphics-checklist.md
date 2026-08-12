@@ -79,10 +79,14 @@ For each of #3–#7, capture/export the same five screens (in this order):
 Capture the **maximum 10 screenshots** per form factor so the store listing
 can pick and choose at upload time. Two form factors, two capture devices:
 
+**Rule: capture in the device's original dimensions, uncropped.** Then scale
+each original to the target dimensions below (crop only when the target aspect
+ratio differs). Never re-capture per platform.
+
 | Set | Device | Orientation / size | Screens |
 |---|---|---|---|
-| Phone (10) | Physical Android (Pixel) | Portrait 9:16 @ 1080×1920 | The five core screens + 5 extras |
-| Tablet (10) | Physical iPad (dev build installed) | Landscape 4:3 @ native (e.g. iPad Air 11" M4 2360×1640) | Same 10 screens, tablet layout |
+| Phone (10) | Physical Android (Pixel) | Portrait, original uncropped (1080×2400) | The five core screens + 5 extras |
+| Tablet (10) | Physical iPad (dev build installed) | Landscape 4:3, original uncropped (e.g. iPad Air 11" M4 2360×1640) | Same 10 screens, tablet layout |
 
 **The 10 phone screens to capture on the Pixel (adb + `screencap` + `sips`):**
 
@@ -104,28 +108,32 @@ can pick and choose at upload time. Two form factors, two capture devices:
   navigate manually.
 - Capture with `idevicescreenshot` (requires `brew install libimobiledevice`).
 
-**Derived deliverables (scale/crop only — no re-capture):**
+**Scale to target dimensions (from the uncropped originals — no re-capture):**
 
 | Deliverable | Source capture | Transform |
 |---|---|---|
-| Play phone, 10 @ 1080×1920 | Pixel portrait | as-is |
-| App Store iPhone, 10 @ 1320×2868 | Pixel portrait | upscale 9:16 (same ratio) |
-| App Store iPad, 10 @ 2048×2732 or 2732×2048 | iPad 4:3 | resize |
-| Play 7" + 10" tablet, 10 @ 1920×1080 | iPad landscape | crop to 16:9 → downscale (same image for both) |
-| Feature graphic 1024×500 | one iPad landscape capture | crop |
+| Play phone, 10 @ 1080×1920 | Pixel portrait | scale/crop to 1080×1920 (9:16) |
+| App Store iPhone, 10 @ 1320×2868 | Pixel portrait | scale to 1320×2868 |
+| App Store iPad, 10 @ 2048×2732 or 2732×2048 | iPad 4:3 | scale to 2048×2732 (portrait) or 2732×2048 (landscape) |
+| Play 7" + 10" tablet, 10 @ 1920×1080 | iPad landscape | scale/crop to 1920×1080 (16:9; same image for both) |
+| Feature graphic 1024×500 | one iPad landscape capture | scale/crop to 1024×500 |
 
 **Tooling steps:**
 
-1. Android: `adb exec-out screencap -p > raw.png` → `sips -c 1920 1080`.
+1. Android: `adb exec-out screencap -p > original.png` (uncropped), then
+   `sips -z <height> <width>` to scale, `sips -c <height> <width>` to crop.
 2. iPad: `brew install libimobiledevice` →
-   `idevicescreenshot -u <UDID> <file>.png` → `sips` resize/crop.
+   `idevicescreenshot -u <UDID> <file>.png` (uncropped) → `sips` scale/crop.
 3. Save each set under
-   `apps/mobile/store-assets/screenshots/{phone,tablet}/{zh,ja}/`.
+   `apps/mobile/store-assets/screenshots/{phone,tablet}/{zh,ja}/` with
+   `original/` plus one folder per target dimension (e.g.
+   `phone/zh/original/`, `phone/zh/play-1080x1920/`,
+   `phone/zh/appstore-iphone-1320x2868/`).
 
 **Acceptance checklist:**
 
-- [ ] 10 Pixel phone screenshots @ 1080×1920 (portrait)
-- [ ] 10 iPad screenshots (landscape 4:3)
+- [ ] 10 Pixel phone screenshots @ original uncropped (1080×2400)
+- [ ] 10 iPad screenshots @ original uncropped (landscape 4:3)
 - [ ] iPhone 1320×2868 set derived
 - [ ] Play phone 1080×1920 set derived
 - [ ] iPad 2048×2732 / 2732×2048 set derived
