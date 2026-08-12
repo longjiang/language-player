@@ -457,7 +457,7 @@ user control**:
 - Public read-only views and copy-link share buttons on web and mobile
 - Private items remain inaccessible without authentication
 
-Track as its own spec (e.g. SPEC-073) when scheduled.
+Track as its own spec (e.g. SPEC-074) when scheduled.
 
 ### 8.4 Support / contact page
 
