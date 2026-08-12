@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image, Modal, TextInput, Linking, AppState } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, TextInput, Linking, AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgress } from '@/hooks/use-progress';
+import { useChannelPreferences } from '@/hooks/use-channel-preferences';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -13,17 +13,8 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { baseCode } from '@langplayer/utils';
 import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE, ICON_ON_PRIMARY, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
-import { User, Mail, Clock, BookOpen, Crown, Play, Star, ArrowRight, Check, ChevronDown, Trash2, AlertTriangle } from 'lucide-react-native';
+import { User, Mail, Clock, BookOpen, Crown, Star, ArrowRight, Check, ChevronDown, Trash2, AlertTriangle, ListVideo, Heart, Bookmark, RotateCcw } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-function youtubeThumb(id: string) { return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; }
-function formatDuration(d: number | undefined): string {
-  if (!d) return '';
-  const m = Math.floor(d / 60), s = Math.floor(d % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-interface WatchHistoryItem { id: number; title?: string; youtube_id: string; duration?: number; last_position?: number; }
 
 interface SubscriptionInfo {
   id?: number;
@@ -93,33 +84,18 @@ function LevelPicker({ l2Code, value, onChange, t }: {
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
-  const { l1Lang, l2Lang } = useLanguage();
-  const { savedWords: allSaved } = useSavedWords();
+  const { l2Lang } = useLanguage();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2Lang.code));
+  const { resetNotInterested } = useChannelPreferences();
   const router = useRouter();
   const t = useT();
   const { isSm } = useResponsive();
 
   const l2Code = baseCode(l2Lang.code);
-  const savedWords = (allSaved[l2Lang.code] ?? []).slice(0, 5);
 
   const displayName = user?.firstName || user?.lastName
     ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
     : t('label.unknown_user');
-
-  // ── Watch history ──
-  const [history, setHistory] = useState<WatchHistoryItem[]>([]);
-  const [histLoading, setHistLoading] = useState(true);
-  useEffect(() => {
-    if (!user?.id) { setHistLoading(false); return; }
-    authenticatedFetch(`${PYTHON_API_URL}/watch-history?l2=${encodeURIComponent(l2Code)}`)
-      .then((r) => r.ok ? r.json() : [])
-      .then((d: { history?: WatchHistoryItem[] }) => {
-        const seen = new Set<string>();
-        setHistory((d?.history ?? []).filter((i) => seen.has(i.youtube_id) ? false : (seen.add(i.youtube_id), true)).slice(0, 5));
-      })
-      .catch(() => {}).finally(() => setHistLoading(false));
-  }, [user?.id, l2Code]);
 
   // ── Subscription ──
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
@@ -394,76 +370,49 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* ── Watch History ── */}
+      {/* ── My Activity ── */}
       <View className="mx-4 mb-6">
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-row items-center gap-2">
-            <Clock size={18} color={ICON_PRIMARY} />
-            <Text className="text-base font-semibold text-foreground">{t('title.watch_history')}</Text>
-          </View>
-          {history.length > 0 && (
-            <Pressable onPress={() => router.push('/(tabs)/(media)/watch-history' as any)} className="flex-row items-center gap-1">
-              <Text className="text-xs text-primary">{t('action.see_all')}</Text>
-              <ArrowRight size={12} color={ICON_PRIMARY} />
-            </Pressable>
-          )}
+        <View className="flex-row items-center gap-2 mb-3">
+          <Clock size={18} color={ICON_PRIMARY} />
+          <Text className="text-base font-semibold text-foreground">{t('title.my_activity')}</Text>
         </View>
-        {histLoading ? (
-          <View className="items-center py-8">
-            <ActivityIndicator size="small" color={ICON_MUTED} />
-          </View>
-        ) : history.length === 0 ? (
-          <Text className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_videos_watched')}</Text>
-        ) : (
-          history.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => router.push(`/(tabs)/(media)/watch/${item.youtube_id}` as any)}
-              className="flex-row items-center gap-3 py-2 border-b border-border"
-            >
-              <Image source={{ uri: youtubeThumb(item.youtube_id) }} className="w-20 h-12 rounded-md bg-muted" />
-              <View className="flex-1">
-                <Text className="text-xs font-medium text-foreground" numberOfLines={2}>{item.title ?? t('label.untitled_video')}</Text>
-                {item.duration ? <Text className="text-xs text-muted-foreground mt-0.5">{formatDuration(item.duration)}</Text> : null}
-              </View>
-              <Play size={14} color={ICON_MUTED} />
-            </Pressable>
-          ))
-        )}
-      </View>
-
-      {/* ── Saved Words ── */}
-      <View className="mx-4 mb-6">
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-row items-center gap-2">
-            <BookOpen size={18} color={ICON_PRIMARY} />
-            <Text className="text-base font-semibold text-foreground">{t('title.saved_words')}</Text>
-          </View>
-          {savedWords.length > 0 && (
-            <Pressable onPress={() => router.push('/(tabs)/(vocab)/saved-words' as any)} className="flex-row items-center gap-1">
-              <Text className="text-xs text-primary">{t('action.see_all')}</Text>
-              <ArrowRight size={12} color={ICON_PRIMARY} />
-            </Pressable>
-          )}
+        <View className="rounded-xl border border-border bg-card p-2">
+          <Pressable
+            onPress={() => router.push('/(tabs)/(media)/watch-history' as any)}
+            className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
+          >
+            <Clock size={16} color={ICON_MUTED} />
+            <Text className="text-sm text-foreground">{t('title.watch_history')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/(tabs)/(me)/playlists' as any)}
+            className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
+          >
+            <ListVideo size={16} color={ICON_MUTED} />
+            <Text className="text-sm text-foreground">{t('title.playlists')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/(tabs)/(me)/liked-videos' as any)}
+            className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
+          >
+            <Heart size={16} color={ICON_MUTED} />
+            <Text className="text-sm text-foreground">{t('title.liked_videos')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/(tabs)/(vocab)/saved-words' as any)}
+            className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
+          >
+            <Bookmark size={16} color={ICON_MUTED} />
+            <Text className="text-sm text-foreground">{t('title.saved_words')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => void resetNotInterested()}
+            className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
+          >
+            <RotateCcw size={16} color={ICON_MUTED} />
+            <Text className="text-sm text-foreground">{t('action.reset_not_interested')}</Text>
+          </Pressable>
         </View>
-        {savedWords.length === 0 ? (
-          <Text className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_words_saved')}</Text>
-        ) : (
-          savedWords.map((w) => (
-            <Pressable
-              key={w.id}
-              onPress={() => router.push(`/(tabs)/(vocab)/word/${(w.id).replace(/,/g, '~')}` as any)}
-              className="flex-row items-center py-2.5 border-b border-border"
-            >
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-foreground">{(w as any).head || (w as any).forms?.[0] || w.id}</Text>
-                {(w as any).context?.videoTitle ? (
-                  <Text className="text-xs text-muted-foreground mt-0.5" numberOfLines={1}>📺 {(w as any).context.videoTitle}</Text>
-                ) : null}
-              </View>
-            </Pressable>
-          ))
-        )}
       </View>
 
       {/* ── Delete Account ── */}

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@langplayer/api-client';
 import { useLanguage } from '@/providers/language-provider';
 import { useProgress } from '@/hooks/use-progress';
+import { useChannelPreferences } from '@/hooks/use-channel-preferences';
 import { useT } from '@/hooks/use-t';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
@@ -75,6 +76,7 @@ export default function ProfilePage() {
   const { l1, l2 } = useLanguage();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
   const { deleteAccount } = useAuth();
+  const { notInterested, resetNotInterested } = useChannelPreferences();
   const t = useT();
 
   // Redirect unauthenticated users
@@ -204,6 +206,14 @@ export default function ProfilePage() {
               onChange={setLevel}
             />
           </div>
+          <button
+            type="button"
+            disabled={!userId || notInterested.length === 0}
+            onClick={() => void resetNotInterested()}
+            className="mt-4 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+          >
+            {t('action.reset_not_interested')}
+          </button>
         </div>
       </section>
 
