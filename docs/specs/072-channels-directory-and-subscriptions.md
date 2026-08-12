@@ -47,6 +47,20 @@ page). Bulk reset ("unsubscribe all" / "unmark all") is implemented client-side
 as one `PUT /channel-preferences` per channel with `status: 'neutral'`; there
 is no bulk endpoint.
 
+### 3.1 Channel avatars are fetched live
+
+The `thumbnail` column in the channels table is a snapshot and goes stale —
+most currently stored avatars are broken or outdated. Classic never uses that
+column for the card avatar; it loads
+`/channel-thumbnail?channel_id=...`, which fetches the current avatar from the
+YouTube Data API (high → medium → default resolution), caches the image bytes
+server-side, and serves them directly. Both web and mobile channel cards use
+the same endpoint (SPEC-072), with a fallback on image error.
+
+The server-side cache is keyed by channel id with no explicit TTL, so a
+channel rebrand may still show the previously cached avatar until the cache is
+cleared or the key changes. A TTL/versioned key is a possible follow-up.
+
 ## 4. Web UI
 
 ### 4.1 Channel directory (`/channels`)
