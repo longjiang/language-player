@@ -4,16 +4,18 @@
 
 - **Spec ID**: SPEC-067
 - **Feature**: End-to-end Google Play release of `apps/mobile` ("Language Player 3") — verified Play account, Android AAB build and signing, Play Console setup, testing tracks, and staged production rollout
-- **Status**: draft (ready to execute; blockers listed in [§ 9](#9-known-blockers--open-items))
+- **Status**: in progress — Play Console app setup executed 2026-08-12; AAB build/signing and billing remain ([§ 9](#9-known-blockers--open-items))
 - **Created**: 2026-08-11
+- **Updated**: 2026-08-12
 - **See also**: [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md)
 
 ## 1. Context
 
 - The Play Developer account is **existing and verified (2026-08-11)** — it
   was never deleted; the business-info renewal lapsed, and reverification is
-  now complete (ADR-0013). No account work remains; the remaining Google Play
-  setup is creating the "Language Player 3" app and Play Billing.
+  now complete (ADR-0013). No account work remains. The "Language Player 3"
+  app was created on 2026-08-12; what remains is Play Billing, the AAB build,
+  store visual assets, and rollout.
 - Classic **"Language Player 2"** is already live on Google Play under
   `ca.zerotohero.app`. This spec covers the **new** "Language Player 3"
   listing on the same account.
@@ -37,9 +39,11 @@
 - [ ] JDK 17+ and Android SDK available (`java -version`, `adb --version`)
 - [ ] Upload key generated and passwords stored in a password manager
 - [ ] Version bumped in `apps/mobile/app.json`
-- [ ] Privacy policy URL confirmed live
-- [ ] Store assets ready: icon (512×512), feature graphic (1024×500), phone
-      and tablet screenshots
+- [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
+- [~] Store assets partially ready: icon uploaded to the Play asset library as
+      "Cropped - icon.png" (512×512, from `apps/mobile/assets/icon.png`) but not
+      yet added to the App icon slot; feature graphic (1024×500) and phone/
+      tablet screenshots still outstanding
 - [ ] Billing decision made: Play Billing implemented, **or** the Android
       buy-on-website link removed ([§ 5](#5-billing--monetization-blocker))
 
@@ -197,6 +201,10 @@ button). Confirm in the app or logs that it hits
 
 ### 4.2 Create the app
 
+**Status: ✅ Done (2026-08-12)** — "Language Player 3" created under
+`ca.zerotohero.go` on the verified account (dashboard live, app ID
+4975392680448759197).
+
 1. **All apps → Create app**.
 2. App name: **Language Player 3**.
 3. Default language: English (United States) — or the primary store locale.
@@ -207,10 +215,18 @@ button). Confirm in the app or logs that it hits
 
 ### 4.3 App content
 
-1. **Privacy policy URL** — the web app serves one at
-   `https://languageplayer.io/[l1]/[l2]/docs/privacy-policy`; confirm the
-   exact live URL (e.g. `https://languageplayer.io/en/en/docs/privacy-policy`)
-   before entering it. Content lives in `packages/docs/content/privacy-policy.md`.
+**Status: ✅ Done (2026-08-12)** — all declarations completed in Play Console:
+privacy policy, sign-in details, ads (No), content rating (IARC), target
+audience, data safety, advertising ID (No), government (No), financial (None),
+health (None).
+
+1. **Privacy policy URL** — **set to
+   `https://language-player.netlify.app/en/en/docs/privacy-policy`**. Note:
+   the `languageplayer.io/[l1]/[l2]/docs/...` routes return 404 on the live
+   site; the Netlify preview domain serves them, so it is used for Play
+   Console. Content lives in `packages/docs/content/privacy-policy.md`
+   (updated 2026-08-11 to cover mobile apps and Google Play as a payment
+   processor; all 18 locale translations regenerated).
 2. **Data safety** — answer accurately per the privacy policy: account info,
    learning data, purchase history, device/usage data, Google Analytics, and
    sharing with service providers.
@@ -224,12 +240,22 @@ button). Confirm in the app or logs that it hits
 
 ### 4.4 Store listing
 
-1. Short description (80 characters) and full description.
-2. Category: **Education**.
+**Status: 🟡 Partial (2026-08-12)** — text, category and contact details done;
+visual assets pending (items 4).
+
+1. Short description (80 characters) and full description. **Done** — default
+   listing draft saved: short = "Learn languages by watching videos with
+   interactive subtitles & dictionary." (75 chars), full description = 962
+   chars.
+2. Category: **Education**. **Done** (Store settings).
 3. Contact email (e.g. `jon.long@zerotohero.ca`) and website
-   (`https://languageplayer.io`).
+   (`https://languageplayer.io`). **Done** (Store settings).
 4. Icon (512×512), feature graphic (1024×500), phone screenshots (2–8) and
-   tablet screenshots.
+   tablet screenshots. **Icon uploaded** to the Play asset library as
+   "Cropped - icon.png" (512×512) but **not yet added** to the App icon slot
+   (manual step: Store listings → edit → App icon → Add assets → select
+   "Cropped - icon.png" → Add). Feature graphic and phone/tablet screenshots
+   still outstanding.
 5. Promo text (optional, short-lived).
 
 ## 5. Billing & monetization (blocker)
@@ -288,8 +314,10 @@ If path A is chosen:
 - [ ] AAB signed with the upload key (`key.properties` + `build.gradle`)
 - [ ] No `localhost:5001` in the embedded bundle; `pythonvps` present
 - [ ] Human QA passed on a real Android device (internal track)
-- [ ] Privacy policy, data safety, content rating, target audience complete
+- [x] Privacy policy, data safety, content rating, target audience complete
 - [ ] Store listing complete (icon, feature graphic, screenshots, descriptions)
+      — 🟡 text/category/contact done; icon in library (add to App icon slot);
+      feature graphic + screenshots outstanding
 - [ ] Billing compliance resolved (§ 5)
 - [ ] Production rollout staged and monitored
 
@@ -297,18 +325,19 @@ If path A is chosen:
 
 - **Play Billing not implemented** — the clickable buy-on-website button must
   be replaced or removed before production submission (§ 5).
-- **"Language Player 3" app not created in Play Console yet** — create it
-  under `ca.zerotohero.go` (§ 4.2).
+- ~~**"Language Player 3" app not created in Play Console yet**~~ — ✅ created
+  under `ca.zerotohero.go` (2026-08-12, § 4.2).
 - **Play Billing product not created yet** — lifetime non-consumable product
   TBD; create it in Play Console and implement billing per SPEC-054 (§ 5).
 - **Upload key not generated yet** — `~/.android/lp-upload.jks` does not exist
   until § 3.4 is run.
-- **Store assets not prepared** — screenshots, feature graphic, and final
-  descriptions are outstanding.
+- **Store assets not prepared** — icon uploaded to the Play library
+  ("Cropped - icon.png", 512×512) but not yet added to the App icon slot;
+  feature graphic and phone/tablet screenshots still outstanding.
 - **`android.versionCode` not explicit in `app.json` yet** — add `1` for the
   first release.
-- **Privacy policy URL to confirm** — verify the live `languageplayer.io`
-  route before entering it in Play Console.
+- ~~**Privacy policy URL to confirm**~~ — ✅ set in Play Console to the Netlify
+  domain (2026-08-12, § 4.3). Note `languageplayer.io` v3 routes still 404.
 
 ## 10. Related docs
 
