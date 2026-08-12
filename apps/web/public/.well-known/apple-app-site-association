@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAM_ID_PLACEHOLDER.ca.zerotohero.go"],
+        "components": [
+          { "/": "*" }
+        ]
+      }
+    ]
+  }
+}

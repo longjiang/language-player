@@ -99,6 +99,10 @@ web path to the mobile route:
 
 ### 5.1 Serve verification files from the website
 
+The files are committed under `apps/web/public/.well-known/` with placeholders
+(`TEAM_ID_PLACEHOLDER`, `CHANGE_ME_APP_SIGNING_SHA256`) — replace the values
+before deploying.
+
 Add to `apps/web/public/.well-known/`:
 
 - **`apple-app-site-association`** (iOS):
