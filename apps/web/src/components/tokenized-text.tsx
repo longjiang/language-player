@@ -612,6 +612,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       if (w.context?.form) {
         forms.add(w.context.form.toLowerCase());
       }
+      // Multi-instance records keep their real surface forms per occurrence
+      // (e.g. a selected phrase like "got even with me" saved under the
+      // canonical "to get even with someone").
+      for (const inst of w.instances ?? []) {
+        if (inst.form) forms.add(inst.form.toLowerCase());
+      }
     }
     return forms;
   }, [savedWords, l2Code]);

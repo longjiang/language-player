@@ -497,6 +497,17 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
+  /** Every form the saved word can appear as: canonical, legacy context, and
+   *  per-instance surfaces (multi-token selections like "got even with me"
+   *  saved under the canonical "to get even with someone"). */
+  const highlightForms = useMemo(() => {
+    const sw = currentCard?.word;
+    if (!sw) return [];
+    const set = new Set<string>(sw.forms ?? []);
+    if (sw.context?.form) set.add(sw.context.form);
+    for (const inst of sw.instances ?? []) if (inst.form) set.add(inst.form);
+    return [...set];
+  }, [currentCard?.word]);
 
   // Target highlight for the context sentence: match by ALL of the saved
   // word's forms (head + inflections) and by dictionary-entry id — not just
@@ -869,7 +880,7 @@ export default function ReviewPage() {
                 text={wordCtx.text}
                 l2Code={l2Code}
                 highlightForm={wordCtx.form}
-                highlightForms={currentCard.word.forms}
+                highlightForms={highlightForms}
                 highlightEntryIds={targetHighlightEntryIds}
                 phoneticsOnHighlight={showDefinition}
                 quickGlossOnHighlight={showDefinition}
