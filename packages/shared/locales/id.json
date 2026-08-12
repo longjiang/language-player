@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Lagi",
         "again_hint": "Sepenuhnya lupa",
-        "complete_desc": "Anda telah mengulas {count} kartu. Kerja bagus!",
         "context_label": "Konteks",
         "easy": "Mudah",
         "easy_hint": "Ingatan seketika",
@@ -1175,7 +1174,6 @@
         "hard": "Sulit",
         "hard_hint": "Diingat dengan susah payah",
         "no_definition_available": "Tidak ada definisi yang tersedia. Cari kata ini sambil menonton video.",
-        "progress": "{done} selesai · {remaining} tersisa",
         "shortcut_hint": "Tekan <space></space> untuk membalik, <k1></k1>–<k2></k2> untuk menilai, <enter></enter> untuk lanjut",
         "show_definition": "Tampilkan Definisi",
         "srs_new": "baru",

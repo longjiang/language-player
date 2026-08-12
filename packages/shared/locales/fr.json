@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Encore",
         "again_hint": "Complètement oublié",
-        "complete_desc": "Vous avez révisé {count} cartes. Excellent travail !",
         "context_label": "Contexte",
         "easy": "Facile",
         "easy_hint": "Rappel immédiat",
@@ -1175,7 +1174,6 @@
         "hard": "Difficile",
         "hard_hint": "Rappelé avec difficulté",
         "no_definition_available": "Aucune définition disponible. Cherchez ce mot en regardant des vidéos.",
-        "progress": "{done} fait · {remaining} restant",
         "shortcut_hint": "Appuyez sur <space></space> pour retourner, <k1></k1>–<k2></k2> pour noter, <enter></enter> pour continuer",
         "show_definition": "Afficher la définition",
         "srs_new": "nouveau",

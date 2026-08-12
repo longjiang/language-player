@@ -1166,7 +1166,6 @@
     "review": {
         "again": "مجددًا",
         "again_hint": "نسيت تمامًا",
-        "complete_desc": "لقد راجعت {count} بطاقة. عمل رائع!",
         "context_label": "السياق",
         "easy": "سهل",
         "easy_hint": "تذكرت فورًا",
@@ -1175,7 +1174,6 @@
         "hard": "صعب",
         "hard_hint": "تذكرت بصعوبة",
         "no_definition_available": "لا يوجد تعريف متاح. ابحث عن هذه الكلمة أثناء مشاهدة الفيديوهات.",
-        "progress": "تم {done} · المتبقي {remaining}",
         "shortcut_hint": "اضغط <space></space> للقلب، <k1></k1>–<k2></k2> للتقييم، <enter></enter> للمتابعة",
         "show_definition": "إظهار التعريف",
         "srs_new": "جديد",

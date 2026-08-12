@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Di nuovo",
         "again_hint": "Dimenticato del tutto",
-        "complete_desc": "Hai ripassato {count} carte. Ottimo lavoro!",
         "context_label": "Contesto",
         "easy": "Facile",
         "easy_hint": "Richiamo immediato",
@@ -1175,7 +1174,6 @@
         "hard": "Difficile",
         "hard_hint": "Ricordato con difficoltà",
         "no_definition_available": "Nessuna definizione disponibile. Cerca questa parola mentre guardi i video.",
-        "progress": "{done} fatte · {remaining} rimanenti",
         "shortcut_hint": "Premi <space></space> per girare, <k1></k1>–<k2></k2> per valutare, <enter></enter> per continuare",
         "show_definition": "Mostra definizione",
         "srs_new": "nuovo",

@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Erneut",
         "again_hint": "Völlig vergessen",
-        "complete_desc": "Du hast {count} Karten wiederholt. Großartige Arbeit!",
         "context_label": "Kontext",
         "easy": "Leicht",
         "easy_hint": "Sofort abrufbar",
@@ -1175,7 +1174,6 @@
         "hard": "Schwer",
         "hard_hint": "Mit Mühe erinnert",
         "no_definition_available": "Keine Definition verfügbar. Schlagen Sie dieses Wort nach, während Sie Videos ansehen.",
-        "progress": "{done} erledigt · {remaining} verbleibend",
         "shortcut_hint": "Drücke <space></space> zum Umdrehen, <k1></k1>–<k2></k2> zum Bewerten, <enter></enter> zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "srs_new": "neu",

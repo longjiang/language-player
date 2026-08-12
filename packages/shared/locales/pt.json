@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Novamente",
         "again_hint": "Esqueceu completamente",
-        "complete_desc": "Você revisou {count} cartões. Ótimo trabalho!",
         "context_label": "Contexto",
         "easy": "Fácil",
         "easy_hint": "Recordação instantânea",
@@ -1175,7 +1174,6 @@
         "hard": "Difícil",
         "hard_hint": "Lembrado com dificuldade",
         "no_definition_available": "Nenhuma definição disponível. Pesquise esta palavra enquanto assiste aos vídeos.",
-        "progress": "{done} concluído · {remaining} restantes",
         "shortcut_hint": "Pressione <space></space> para virar, <k1></k1>–<k2></k2> para avaliar, <enter></enter> para continuar",
         "show_definition": "Mostrar Definição",
         "srs_new": "novo",

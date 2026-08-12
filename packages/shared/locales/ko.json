@@ -1166,7 +1166,6 @@
     "review": {
         "again": "다시",
         "again_hint": "완전히 잊어버림",
-        "complete_desc": "{count}개의 카드를 복습했습니다. 잘 하셨어요!",
         "context_label": "문맥",
         "easy": "쉬움",
         "easy_hint": "즉시 기억",
@@ -1175,7 +1174,6 @@
         "hard": "어려움",
         "hard_hint": "어렵게 기억함",
         "no_definition_available": "정의를 사용할 수 없습니다. 동영상을 보면서 이 단어를 찾아보세요.",
-        "progress": "{done} 완료 · {remaining} 남음",
         "shortcut_hint": "<space></space> 눌러 뒤집기, <k1></k1>–<k2></k2> 평가, <enter></enter> 계속",
         "show_definition": "정의 보기",
         "srs_new": "새로 배우기",
