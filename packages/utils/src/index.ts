@@ -38,6 +38,18 @@ export {
 } from './sm2';
 export type { SrsFields, SrsProgressStore } from './sm2';
 export {
+  rate,
+  serializeFsrsCard,
+  normalizeFsrsCard,
+  deserializeSrsCard,
+  migrateSrsStore,
+  getCardState,
+} from './fsrs-scheduler';
+export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating } from './fsrs-scheduler';
+/** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …) — used by the
+ *  SPEC-066 cutover so they don't collide with the legacy SM-2 exports. */
+export * as fsrs from './fsrs-scheduler';
+export {
   splitIntoMoras,
   applyPitchAccent,
   addPitchAccent,
