@@ -92,6 +92,7 @@
         "next_chapter": "Volgende",
         "not_interested": "Niet geïnteresseerd",
         "open": "Openen",
+        "open_classic": "Language Player 2 (Classic) openen",
         "open_file": "Bestand openen",
         "open_in_dictionary": "Openen in woordenboek",
         "open_in_reader": "Openen in lezer",
@@ -412,6 +413,10 @@
         "watch_screen": "Scherm bekijken",
         "weekly_hours": "Weekdoel",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Niet alle functies van versie 2 (classic) zijn beschikbaar in versie 3. Om deze oudere functies te gebruiken, kun je ze altijd openen via de link hieronder.",
+        "classic_intro": "Dit is Language Player 3, de upgrade uit 2026 van Language Player die je kent en waar je van houdt."
     },
     "lang": {
         "ab": "Abchazisch",

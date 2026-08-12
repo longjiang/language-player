@@ -92,6 +92,7 @@
         "next_chapter": "Następny",
         "not_interested": "Nie interesuje mnie",
         "open": "Otwórz",
+        "open_classic": "Otwórz Language Player 2 (klasyczny)",
         "open_file": "Otwórz plik",
         "open_in_dictionary": "Otwórz w słowniku",
         "open_in_reader": "Otwórz w czytniku",
@@ -412,6 +413,10 @@
         "watch_screen": "Ekran oglądania",
         "weekly_hours": "Cel tygodniowy",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Nie wszystkie funkcje wersji 2 (klasycznej) są dostępne w wersji 3. Aby korzystać z tych starszych funkcji, zawsze możesz uzyskać do nich dostęp przez poniższy link.",
+        "classic_intro": "To Language Player 3 — aktualizacja Language Player z 2026 roku, którą znasz i kochasz."
     },
     "lang": {
         "ab": "Abchaski",

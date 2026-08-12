@@ -92,6 +92,7 @@
         "next_chapter": "Próximo",
         "not_interested": "Não Tenho Interesse",
         "open": "Abrir",
+        "open_classic": "Abrir Language Player 2 (clássico)",
         "open_file": "Abrir arquivo",
         "open_in_dictionary": "Abrir no dicionário",
         "open_in_reader": "Abrir no Leitor",
@@ -412,6 +413,10 @@
         "watch_screen": "Tela de exibição",
         "weekly_hours": "Meta semanal",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Nem todos os recursos da versão 2 (clássica) estão disponíveis na versão 3. Para usar esses recursos legados, você sempre pode acessá-los pelo link abaixo.",
+        "classic_intro": "Este é o Language Player 3, a atualização de 2026 do Language Player que você conhece e adora."
     },
     "lang": {
         "ab": "Abecásia",

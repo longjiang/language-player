@@ -92,6 +92,7 @@
         "next_chapter": "Sonraki",
         "not_interested": "İlgilenmiyorum",
         "open": "Aç",
+        "open_classic": "Language Player 2'yi (Klasik) Aç",
         "open_file": "Dosyayı aç",
         "open_in_dictionary": "Sözlükte Aç",
         "open_in_reader": "Okuyucuda Aç",
@@ -412,6 +413,10 @@
         "watch_screen": "İzleme ekranı",
         "weekly_hours": "Haftalık hedef",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Sürüm 2'deki (klasik) tüm özellikler sürüm 3'te mevcut değildir. Bu eski özellikleri kullanmak için aşağıdaki bağlantıdan her zaman erişebilirsiniz.",
+        "classic_intro": "Bu, tanıdığınız ve sevdiğiniz Language Player'ın 2026 güncellemesi olan Language Player 3."
     },
     "lang": {
         "ab": "Abhaz",

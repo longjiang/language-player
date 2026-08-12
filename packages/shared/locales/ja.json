@@ -92,6 +92,7 @@
         "next_chapter": "次へ",
         "not_interested": "興味なし",
         "open": "開く",
+        "open_classic": "Language Player 2（クラシック）を開く",
         "open_file": "ファイルを開く",
         "open_in_dictionary": "辞書で開く",
         "open_in_reader": "リーダーで開く",
@@ -412,6 +413,10 @@
         "watch_screen": "視聴画面",
         "weekly_hours": "週間目標",
         "words": "{count, plural, other {# 語}}"
+    },
+    "landing": {
+        "classic_desc": "バージョン2（クラシック）の全機能がバージョン3で利用できるわけではありません。これらの従来機能を使うには、下のリンクからいつでもアクセスできます。",
+        "classic_intro": "これはLanguage Player 3です。皆さんが知って愛してきたLanguage Playerの2026年アップグレード版です。"
     },
     "lang": {
         "ab": "アブハジア語",

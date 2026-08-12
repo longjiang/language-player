@@ -92,6 +92,7 @@
         "next_chapter": "다음",
         "not_interested": "관심 없음",
         "open": "열기",
+        "open_classic": "Language Player 2(클래식) 열기",
         "open_file": "파일 열기",
         "open_in_dictionary": "사전에서 열기",
         "open_in_reader": "리더로 열기",
@@ -412,6 +413,10 @@
         "watch_screen": "시청 화면",
         "weekly_hours": "주간 목표",
         "words": "{count, plural, other {# 단어}}"
+    },
+    "landing": {
+        "classic_desc": "버전 2(클래식)의 모든 기능이 버전 3에서 제공되지는 않습니다. 이 레거시 기능을 사용하려면 아래 링크에서 언제든지 액세스할 수 있습니다.",
+        "classic_intro": "이것은 Language Player 3, 여러분이 알고 사랑해 온 Language Player의 2026 업그레이드 버전입니다."
     },
     "lang": {
         "ab": "압하지야어",

@@ -92,6 +92,7 @@
         "next_chapter": "Suivant",
         "not_interested": "Pas intéressé(e)",
         "open": "Ouvrir",
+        "open_classic": "Ouvrir Language Player 2 (classique)",
         "open_file": "Ouvrir le fichier",
         "open_in_dictionary": "Ouvrir dans le dictionnaire",
         "open_in_reader": "Ouvrir dans le lecteur",
@@ -412,6 +413,10 @@
         "watch_screen": "Écran de visionnage",
         "weekly_hours": "Objectif hebdomadaire",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Toutes les fonctionnalités de la version 2 (classique) ne sont pas disponibles dans la version 3. Pour utiliser ces anciennes fonctionnalités, vous pouvez toujours y accéder via le lien ci-dessous.",
+        "classic_intro": "Voici Language Player 3, la mise à jour 2026 de Language Player que vous connaissez et aimez."
     },
     "lang": {
         "ab": "Abkhaze",

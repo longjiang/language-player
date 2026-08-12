@@ -92,6 +92,7 @@
         "next_chapter": "Berikutnya",
         "not_interested": "Tidak Tertarik",
         "open": "Buka",
+        "open_classic": "Buka Language Player 2 (Klasik)",
         "open_file": "Buka file",
         "open_in_dictionary": "Buka di Kamus",
         "open_in_reader": "Buka di Pembaca",
@@ -412,6 +413,10 @@
         "watch_screen": "Layar menonton",
         "weekly_hours": "Target mingguan",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "Tidak semua fitur dari versi 2 (klasik) tersedia di versi 3. Untuk menggunakan fitur lama ini, Anda selalu dapat mengaksesnya melalui tautan di bawah.",
+        "classic_intro": "Ini Language Player 3, pembaruan Language Player 2026 yang Anda kenal dan sukai."
     },
     "lang": {
         "ab": "Abkhazia",

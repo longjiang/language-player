@@ -92,6 +92,7 @@
         "next_chapter": "ถัดไป",
         "not_interested": "ไม่สนใจ",
         "open": "เปิด",
+        "open_classic": "เปิด Language Player 2 (คลาสสิก)",
         "open_file": "เปิดไฟล์",
         "open_in_dictionary": "เปิดในพจนานุกรม",
         "open_in_reader": "เปิดในโปรแกรมอ่าน",
@@ -412,6 +413,10 @@
         "watch_screen": "หน้าจอรับชม",
         "weekly_hours": "เป้าหมายรายสัปดาห์",
         "words": "{count, plural, one {# word} other {# words}}"
+    },
+    "landing": {
+        "classic_desc": "ฟีเจอร์บางอย่างจากเวอร์ชัน 2 (คลาสสิก) ยังไม่พร้อมใช้งานในเวอร์ชัน 3 หากต้องการใช้ฟีเจอร์ดั้งเดิมเหล่านี้ คุณสามารถเข้าถึงได้จากลิงก์ด้านล่างเสมอ",
+        "classic_intro": "นี่คือ Language Player 3 เวอร์ชันอัปเกรดปี 2026 ของ Language Player ที่คุณรู้จักและชื่นชอบ"
     },
     "lang": {
         "ab": "อับคาเซียน",
