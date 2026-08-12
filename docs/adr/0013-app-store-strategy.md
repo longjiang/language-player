@@ -18,7 +18,7 @@ which is kept only as history.
   listing's bundle ID **`ca.zerotohero.go`** and IAP product **`pro_go`**
   (a listing's bundle ID cannot change, so the GO ID is preserved).
 - **Google Play — new launch**: a new **"Language Player 3"** listing on the
-  **existing** Play Developer account (currently unverified — see below),
+  **existing** Play Developer account (**verified 2026-08-11** — see below),
   package `ca.zerotohero.go` (SPEC-048 § 4).
 
 **Canonical identity table** (also in SPEC-014 "Identifiers & IAP"):
@@ -49,8 +49,10 @@ We have two iOS apps live on the App Store, both offering essentially the same p
 The **Classic "Language Player 2" app is live on Google Play** as well
 (`ca.zerotohero.app`), so it exists on both iOS and Android. The Play
 Developer account was **not deleted** — it became **unverified** after we
-neglected to renew our business information, and reverification is still
-outstanding.
+neglected to renew our business information — and it was **re-verified
+2026-08-11**; the account is now verified and in good standing. The remaining
+Google Play work is creating the **"Language Player 3"** app and configuring
+Play Billing.
 
 ### Naming Constraint
 
@@ -208,8 +210,8 @@ The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing 
 
 - If we remove the GO app, its IAP product becomes inaccessible for new purchases. Existing purchasers can still restore via App Store (the product remains in their purchase history).
 - The Google Play Store gap was believed to remain (superseded: Classic
-  "Language Player 2" is live on Google Play and the account is unverified,
-  not deleted). Distributing the new app on Android means reverifying the
-  existing account and publishing a new listing under it, not re-registering
-  as a new developer.
+  "Language Player 2" is live on Google Play, and the account — re-verified
+  2026-08-11 — is in good standing). Distributing the new app on Android
+  means creating the "Language Player 3" listing and Play Billing setup under
+  the existing account, not re-registering as a new developer.
 - If the competitor's "Language Player" app causes confusion, a rebrand to "Zero to Hero" (matching the domain) remains an option for a future major version.
