@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-066
 - **Feature**: SRS Review Page
-- **Status**: in-progress
+- **Status**: implemented (2026-08-11)
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -170,14 +170,13 @@ optimization is a future enhancement, not required initially.
 | Relearning | none | `10m` step; interval × 0.5 after a lapse | `10m` step; memory state already reduced | none |
 | Progress counter | consecutive-success streak | lifetime review count + lapse count | lifetime review count + lapse count | consecutive-success streak |
 
-### Current implementation (gap)
+### Current implementation (as of 2026-08-11)
 
-Today `packages/utils/src/sm2.ts` implements textbook SM-2: Again and Hard
-are both failures, a failure re-queues the card in 1 minute without touching
-ease, success graduates `1d` → `6d` → `interval × ease`, and there are no
-learning / relearning states. The intended FSRS scheduler via `ts-fsrs` is
-**not yet implemented** on either platform — see [Documented Intent Not Yet
-Implemented](#documented-intent-not-yet-implemented-both-platforms).
+FSRS-6 via `ts-fsrs` is implemented in `packages/utils/src/fsrs-scheduler.ts`
+and wired into both review pages (Phase 2). The textbook SM-2 implementation
+was retired in Phase 6; deprecated `ease` / `interval` / `repetitions` /
+`nextReview` fields are still written on every card for the legacy-client
+compatibility window.
 
 ### New-deck budget
 
@@ -252,7 +251,7 @@ the app fields above — not just the reduced table below.
 **Phase 0 decision — legacy compatibility window.** Deprecated `ease`,
 `interval`, `repetitions`, and `nextReview` fields are also written on every
 card for one release cycle so old installed clients can still read them. New
-code ignores them; they are removed in a later release (see Phase 6).
+code ignores them; removal is scheduled for the release after this one.
 
 ### Ratings → scheduling effects
 
@@ -507,40 +506,32 @@ event so the cap is restored. Trial users are Pro-equivalent while active
 | 16 | Unused/dead code | `fetchingEntries` never set; `handleSpeak` defined but never wired; `normalizeInstances` import unused | `removeWord` import unused | Dead code to clean up |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
 
-## Documented Intent Not Yet Implemented (Both Platforms)
+## Implementation Status (2026-08-11)
 
-- **FSRS scheduling via `ts-fsrs`**: `packages/utils/src/sm2.ts` implements
-  textbook SM-2 — Again and Hard both fail, failures re-queue in 1 minute
-  without touching ease, success graduates `1d` → `6d` → `interval × ease`,
-  and there are no learning / relearning states. The intended FSRS scheduler
-  (card states, learning steps, memory state) is not implemented on either
-  platform.
-- **"No more new cards today" message**: Phase 0 defines this as the unrated
-  pool being exhausted (every saved word rated at least once); neither page
-  shows the message yet (the blue count just drops to zero).
-- **Backend free cap**: ADR-0034 D4 says the free 20-review cap is
-  backend-enforced; both apps enforce it client-side only, and the Flask SRS
-  routes have no cap logic.
-- **Undo should decrement the free daily counter**: Undo currently restores the
-  card's schedule but does **not** decrement `reviewsDoneToday` on either
-  platform, so a free user can burn their 20-review cap on mis-clicks. Intended
-  behavior: Undo restores the card **and** decrements the counter.
+- ✅ **FSRS scheduling via `ts-fsrs`** — implemented (Phases 1–2):
+  `fsrs-scheduler.ts` owns the state machine; both review pages, both `useSrs`
+  hooks, and the saved-words status dots use the shared wrapper.
+- ✅ **"No more new cards today" message** — implemented (Phase 6): shown in
+  the all-done / no-due states when the unrated pool is exhausted
+  (`msg.no_more_new_cards_today`).
+- ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
+  ratings through an idempotent `user_srs_review_log`; undo writes a void
+  event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
+- ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
+  restores the card and releases the rating back to the UTC-day budget.
 
 ## Stale Related Docs
 
-- **SPEC-053 inventory staleness**: the SPEC-053 syncable-data table says
-  mobile SRS writes are direct row API calls with no queue, but current mobile
-  `useSrs` writes through the durable outbox (commit `603833e8`). SPEC-053's
-  "context sentence missing" review findings were also fixed in later mobile
-  commits.
+- **SPEC-053 inventory staleness** — fixed (2026-08-11): the syncable-data
+  table now says mobile SRS writes go through the durable outbox, and the
+  deprecated `srs_settings` entity is noted.
 
 ## Dependencies
 
 - `ts-fsrs` — the FSRS scheduler (MIT, actively maintained by the Open
   Spaced Repetition community; the same algorithm Anki uses today).
-- `packages/utils/src/sm2.ts` — `SrsFields`, `sm2`, `newCard`, `isNewCard`,
-  `planNewDeck`, store types. Currently textbook SM-2; to be replaced by the
-  `ts-fsrs` integration described in this spec.
+- `packages/utils/src/fsrs-scheduler.ts` — the `ts-fsrs` wrapper
+  (`newCard`, `rate`, `isDue`, `planNewDeck`, migration, LWW merge).
 - `packages/utils/src/dictionary-cache.ts` — shared batched lookup + entry
   cache.
 - `apps/web/src/hooks/use-srs.ts` / `apps/mobile/hooks/use-srs.ts` — store +
@@ -583,7 +574,8 @@ same algorithm Anki uses today. Alternatives reviewed and rejected:
 
 Phases are ordered so the monorepo stays green (typecheck + unit tests) after
 every phase. The only phases that change the persisted card shape are 1 and 2;
-everything after that is incremental.
+everything after that is incremental. **Status: all phases implemented
+(2026-08-11).**
 
 ### Phase 0 — Spec & verification reconciliation (no production code)
 

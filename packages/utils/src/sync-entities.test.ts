@@ -60,7 +60,6 @@ describe('coalesceSyncPayload', () => {
       'saved_word',
       'progress',
       'srs_card',
-      'srs_settings',
       'settings',
       'watch_history',
     ]) {

@@ -41,11 +41,12 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
  * - localStorage first (offline-capable)
  * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
  * - updateCard → PUT /srs/cards; removeCard/pruneOrphans → DELETE /srs/cards;
- *   updateSettings → PUT /srs/settings
+ *   dailyNewLimit now lives in settings_v2 (SettingsContext); the legacy
+ *   /srs/settings row is deprecated (SPEC-066 Phase 6).
  */
 export function useSrs() {
   const { data: session, status } = useSession();
-  const { getSrs, putSrsSettings, putSrsCard } = useUserDataColumns();
+  const { getSrs, putSrsCard } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
   const cloudLoaded = useRef(false);
@@ -181,22 +182,6 @@ export function useSrs() {
     return store.cards[l2Code]?.[wordId];
   }, [store]);
 
-  // ── Settings API ──
-
-  const dailyNewLimit = store.settings.dailyNewLimit;
-
-  const updateSettings = useCallback((partial: Partial<SrsProgressStore['settings']>) => {
-    setStore((prev) => {
-      const nextSettings = { ...prev.settings, ...partial };
-      if (partial.dailyNewLimit != null) {
-        putSrsSettings(partial.dailyNewLimit).catch((err) => {
-          logwarn('[SRS] Settings sync failed:', err);
-        });
-      }
-      return { settings: nextSettings, cards: prev.cards };
-    });
-  }, [putSrsSettings]);
-
   return {
     store,
     loaded,
@@ -205,7 +190,5 @@ export function useSrs() {
     removeCard,
     pruneOrphans,
     getCard,
-    dailyNewLimit,
-    updateSettings,
   };
 }

@@ -18,7 +18,8 @@ const STORAGE_KEY = 'zthSrsProgress';
  * - SecureStore first (offline-capable)
  * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
  * - updateCard → PUT /srs/cards; removeCard → DELETE /srs/cards;
- *   setDailyLimit → PUT /srs/settings
+ *   dailyNewLimit now lives in settings_v2 (SettingsContext); the legacy
+ *   /srs/settings row is deprecated (SPEC-066 Phase 6).
  */
 export function useSrs() {
   const { user } = useAuth();
@@ -152,24 +153,6 @@ export function useSrs() {
     });
   }, []);
 
-  const setDailyLimit = useCallback((limit: number) => {
-    setStore((prev) => {
-      const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
-      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
-      log(`[srs] queued settings dailyNewLimit=${limit}`);
-      enqueueSyncOp({
-        entity: 'srs_settings',
-        entityId: 'default',
-        op: 'upsert',
-        payload: { dailyNewLimit: limit },
-        updatedAt: Date.now(),
-      }).catch((err) => {
-        logwarn('[srs] Settings enqueue failed:', err);
-      });
-      return next;
-    });
-  }, []);
-
   // ── Pull-merge bridge: apply remote SRS changes from another device ──
   useEffect(() => {
     const refreshFromCache = async () => {
@@ -190,14 +173,8 @@ export function useSrs() {
             [payload.wordId]: state,
           };
         }
-        const settingsRow = (await getEntityCache('srs_settings'))[0];
-        let settings = createSrsStore().settings;
-        if (settingsRow && settingsRow.deleted_at == null) {
-          const payload = JSON.parse(settingsRow.payload) as { dailyNewLimit?: number };
-          settings = { ...settings, dailyNewLimit: payload.dailyNewLimit ?? settings.dailyNewLimit };
-        }
         setStore((prev) => {
-          const next = { settings, cards };
+          const next = { settings: prev.settings, cards };
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
@@ -206,14 +183,10 @@ export function useSrs() {
       }
     };
     const unsubCard = subscribeEntity('srs_card', () => void refreshFromCache());
-    const unsubSettings = subscribeEntity('srs_settings', () => void refreshFromCache());
     return () => {
       unsubCard();
-      unsubSettings();
     };
   }, []);
 
-  const dailyNewLimit = store.settings.dailyNewLimit;
-
-  return { store, loaded, updateCard, removeCard, pruneOrphans, setDailyLimit, dailyNewLimit };
+  return { store, loaded, updateCard, removeCard, pruneOrphans };
 }

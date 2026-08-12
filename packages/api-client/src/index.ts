@@ -9,7 +9,6 @@ export {
   getProgress,
   putProgress,
   getSrs,
-  putSrsSettings,
   putSrsCard,
   deleteSrsCard,
   getUserSettings,
