@@ -327,11 +327,70 @@ simulator / iPhone / iPad). You do **not** run the full checklist twice:
    - **Tablet layout** — Android tablets, if targeted (iPad layout parity is
      tracked separately in [SPEC-052](052-mobile-large-screen-ipad-layout-parity-with-web.md);
      the 1.2 checklist no longer has a separate iPad row).
-   - **Offline / network** — airplane-mode behavior and storage paths.
-3. For everything else on Android, do a **light smoke pass** (launch, login,
-   one screen per tab) to confirm no platform-specific crash.
+  + app icon.
+- **App Privacy / Data Safety** answers (accounts, usage, purchases, etc.).
+- **TestFlight** build for beta testers before submitting for review.
+- Submit for review with **review notes**: demo account, sample video IDs,
+  and a note that the app hits a real backend.
 
-Android QA can only be completed once an Android build exists (§ 4) — it runs
+#### App Store listing graphics — asset requirements
+
+Apple requires only **two** graphical assets for the store listing: the app
+icon and screenshots (App Previews are optional videos). There is no feature
+graphic, banner, or splash requirement for the App Store (splash screens are
+app-side assets, not store assets).
+
+**App icon — required:**
+
+| Property | Requirement |
+|---|---|
+| Size | 1024 × 1024 px |
+| Format | PNG, 72 DPI, RGB (no alpha/transparency) |
+| Shape | No rounded corners or transparency — Apple applies the mask |
+| Where | App-level "App Icon" in App Information (also shipped in the build) |
+
+**Screenshots — required (1–10 per display size):**
+
+| Property | Requirement |
+|---|---|
+| Format | `.jpeg`, `.jpg`, `.png` — **no alpha channel / transparency** |
+| Count | 1–10 per display size |
+| Rule | Provide **one size per device family**; Apple reuses it across all display sizes |
+
+iPhone display sizes (portrait 9:16, landscape 16:9):
+
+| Display | Resolution (px) |
+|---|---|
+| 6.9" (iPhone 16 Pro Max) | 1320 × 2868 |
+| 6.5" (iPhone 15 Pro Max) | 1290 × 2796 |
+| 6.3" (iPhone 16 Pro) | 1206 × 2622 |
+| 6.1" (iPhone 16/15) | 1179 × 2556 |
+| 5.5" (iPhone 8 Plus) | 1242 × 2208 |
+| 4.7" (iPhone SE) | 750 × 1334 |
+
+iPad display sizes (portrait 4:3, landscape 3:4):
+
+| Display | Resolution (px) |
+|---|---|
+| 13" (iPad Pro M4) | 2064 × 2752 / 2752 × 2064 |
+| 12.9" (iPad Pro) | 2048 × 2732 / 2732 × 2048 |
+| 11" (iPad Pro/Air) | 1668 × 2420 / 2420 × 1668 |
+| 10.5" (iPad Air) | 1668 × 2224 / 2224 × 1668 |
+| 9.7" (iPad) | 1536 × 2048 / 2048 × 1536 |
+
+**App Previews (optional):** up to 3 videos, 15–30 s, max 500 MB,
+`.mov` / `.m4v` / `.mp4` (H.264 or ProRes 422), same display sizes as
+screenshots.
+
+**Status (2026-08-12, app ID 6520385296):** iPhone 6.9" has 6 screenshots
+(reused for other iPhone sizes); **iPad screenshots are the main gap** — upload
+one iPad size (e.g. 12.9" 2048×2732 or 13" 2064×2752). No App Previews yet
+(optional). App icon present from build.
+
+**To produce for Language Player GO:** an iPhone set at 1320 × 2868 (6.9") and
+an iPad set at 2048 × 2732 (12.9") — Explore, video player with subtitles,
+dictionary popup, saved words / review, reader (same screens as the Play Store
+screenshots in SPEC-067 § 4.4)oid build exists (§ 4) — it runs
 after the first AAB is built.
 
 ### 1.4 Simulator vs real device — concrete steps
