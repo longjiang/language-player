@@ -38,6 +38,7 @@ export type { LegacySrsFields, LegacySrsProgressStore } from './sm2';
 export type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 export {
   rate,
+  newRatingId,
   serializeFsrsCard,
   normalizeFsrsCard,
   deserializeSrsCard,

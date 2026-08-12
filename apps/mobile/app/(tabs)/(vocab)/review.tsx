@@ -13,6 +13,7 @@ import {
   baseCode,
   dailyReviewCounterKey,
   msUntilNextUtcDay,
+  newRatingId,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
@@ -61,6 +62,8 @@ interface UndoState {
   head: string;
   prevSrs: SrsFields;
   wasLastCard: boolean;
+  /** Client id of the rating being undone, so the backend voids its cap slot. */
+  ratingId?: string;
 }
 
 /** Short human label for a card's next due time ("new", "10m", "3d"). */
@@ -313,6 +316,9 @@ export default function ReviewScreen() {
 
     // Apply FSRS schedule
     const updated = fsrs.rate(card.srs, quality);
+    updated.ratingId = newRatingId(user?.id, card.word.id);
+    updated.rating = quality;
+    undoRef.current.ratingId = updated.ratingId;
     log('[srs] mark', {
       quality,
       wordId: card.word.id,
@@ -367,7 +373,10 @@ export default function ReviewScreen() {
     if (!state) return;
 
     log('[srs] undo', { wordId: state.wordId, head: state.head });
-    updateCard(l2Code, state.wordId, state.prevSrs);
+    updateCard(l2Code, state.wordId, {
+      ...state.prevSrs,
+      ...(state.ratingId ? { voidRatingId: state.ratingId } : {}),
+    });
 
     // Release the rating back to the free daily budget (SPEC-066 Phase 4).
     if (!isPro && reviewsDoneToday > 0) {

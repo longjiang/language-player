@@ -136,6 +136,11 @@ export function useSrs() {
     });
     putSrsCard(l2Code, wordId, fsrs.normalizeFsrsCard(fields)).catch((err) => {
       logwarn('[SRS] Card sync failed:', err);
+      if ((err as { response?: { status?: number } })?.response?.status === 403) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('lp:srs-cap-reached'));
+        }
+      }
     });
   }, [putSrsCard]);
 

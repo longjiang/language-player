@@ -120,6 +120,15 @@ export function rate(
   });
 }
 
+/** Client-generated id for one interactive rating (backend cap log). */
+export function newRatingId(
+  userId: string | undefined,
+  wordId: string,
+  now: number = Date.now(),
+): string {
+  return `${userId ?? 'anon'}:${wordId}:${now}:${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /** Map a legacy SM-2 card (or partial FSRS card) to a full `FsrsCard`. */
 export function normalizeFsrsCard(value: unknown): FsrsCard {
   if (!value || typeof value !== 'object') return newCard();
@@ -144,6 +153,11 @@ export function normalizeFsrsCard(value: unknown): FsrsCard {
     typeof raw.createdAt === 'number' ? (raw.createdAt as number) : Math.min(lastReview, now);
   const reps = typeof raw.reps === 'number' ? (raw.reps as number) : 0;
   const intervalDays = Math.max(0, Math.round((due - lastReview) / DAY_MS));
+  const ratingId = typeof raw.ratingId === 'string' ? (raw.ratingId as string) : undefined;
+  const rating = raw.rating === 'again' || raw.rating === 'hard' || raw.rating === 'good' || raw.rating === 'easy'
+    ? (raw.rating as SrsRating)
+    : undefined;
+  const voidRatingId = typeof raw.voidRatingId === 'string' ? (raw.voidRatingId as string) : undefined;
 
   return {
     v: 2,
@@ -169,6 +183,9 @@ export function normalizeFsrsCard(value: unknown): FsrsCard {
     interval: typeof raw.interval === 'number' ? (raw.interval as number) : intervalDays,
     repetitions: typeof raw.repetitions === 'number' ? (raw.repetitions as number) : reps,
     nextReview: typeof raw.nextReview === 'number' ? (raw.nextReview as number) : due,
+    ...(ratingId ? { ratingId } : {}),
+    ...(rating ? { rating } : {}),
+    ...(voidRatingId ? { voidRatingId } : {}),
   };
 }
 
