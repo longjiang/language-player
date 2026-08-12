@@ -648,6 +648,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     loose: 2,
   };
   const leadingRatio: number | undefined = leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 2);
+  const fallbackLineHeight = leadingRatio ? Math.round((textStyle.fontSize ?? 16) * leadingRatio) : undefined;
+  const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 
   // ── Quick lookup set for saved word forms (quickGloss) ──
   const savedFormSet = useMemo(() => {
@@ -1006,7 +1008,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     return (
       <Text
         className={textColor}
-        style={textStyle}
+        style={[textStyle, fallbackStyle]}
         onPress={() => Alert.alert(t('title.offline_dictionaries'), t('msg.offline_dictionary_required'))}
       >
         {text}
@@ -1272,23 +1274,20 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     );
   }
 
-  // ── Loading / no tokens: show plain undivided text (matches Next.js) ──
-  const fallbackStyle = leadingRatio ? { lineHeight: Math.round(16 * leadingRatio) } : undefined;
-
   // ── Loading: pulsing undivided text while lemmatization is in flight ──
   if (loading) {
     return (
       <Animated.Text
         testID={testID}
-        className={`text-base ${textColor}`}
-        style={[fallbackStyle, { opacity: pulseAnim }]}
+        className={textColor}
+        style={[textStyle, fallbackStyle, { opacity: pulseAnim }]}
       >
         {text}
       </Animated.Text>
     );
   }
 
-  return <Text testID={testID} className={`text-base ${textColor}`} style={fallbackStyle}>{text}</Text>;
+  return <Text testID={testID} className={textColor} style={[textStyle, fallbackStyle]}>{text}</Text>;
 }
 
 // Memoized export: the reader re-renders its whole page on every scroll-window

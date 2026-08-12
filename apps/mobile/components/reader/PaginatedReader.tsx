@@ -1,19 +1,29 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated, View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
   type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { isPhoneticsEligible } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
 import { Root as Switch } from '@/components/ui/switch';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLogger, translationLogger } from '@/lib/logger';
+import {
+  calibrationSignature,
+  cacheCalibration,
+  deriveCalibration,
+  getCachedCalibration,
+  type TokenizedTextCalibration,
+} from '@/lib/tokenized-text-calibration';
 
 const { log } = readerLogger;
 const displayLoggedState = new WeakMap<ContentBlock, boolean>();
@@ -110,7 +120,7 @@ export function PaginatedReader({
   // Log any single render of this reader page that takes >500ms, so whole-page
   // re-render storms (every block re-rendering on tokenCache/sync updates) are
   // visible when popup opens are slow. Zero-overhead when under the threshold.
-  const renderClockRef = useRef<{ start: number; count: number } | null>(null);
+    const renderClockRef = useRef<{ start: number; count: number } | null>(null);
   if (!renderClockRef.current) renderClockRef.current = { start: Date.now(), count: 0 };
   renderClockRef.current.count++;
   const renderStartMs = renderClockRef.current.start;
@@ -119,7 +129,7 @@ export function PaginatedReader({
     const n = renderClockRef.current?.count ?? 0;
     renderClockRef.current = null;
     if (elapsed > 500) {
-      log(`[Reader] 🐢 RENDER took ${elapsed}ms renders=${n} blocks=${(scrollMode ? blocks : visibleBlocksProp)?.length ?? 0}`);
+      log(`[Reader] 🐢 RENDER took ${elapsed}ms renders=${n} blocks=${(scrollMode ? blocks : visibleBlocksProp)?.length ?? 0} t=${Date.now()}`);
     }
   });
 
@@ -130,6 +140,8 @@ export function PaginatedReader({
   const lastVisibleKeyRef = useRef('');
   const measureWindowLogKeyRef = useRef('');
   const lastOverflowLogRef = useRef(0);
+  const lastPageShownLogKeyRef = useRef('');
+  const tokenLoadStartRef = useRef(0);
   const onVisibleBlocksChangeRef = useRef(onVisibleBlocksChange);
   onVisibleBlocksChangeRef.current = onVisibleBlocksChange;
   // The visible page is a contiguous slice of `blocks`; resolve its global
@@ -180,7 +192,7 @@ export function PaginatedReader({
     // Real page-display area (width/height) — the pagination hook uses this
     // instead of guessing chrome/padding from window dimensions.
     if (width > 0 && h > 0) {
-      log(`[Reader] 📐 reader viewport ${width}x${h}`);
+      log(`[Reader] 📐 reader viewport ${width}x${h} t=${Date.now()}`);
       onViewportLayout?.(width, h);
     }
   }, [reportVisible, onViewportLayout]);
@@ -235,6 +247,52 @@ export function PaginatedReader({
   const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
+  const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
+  const l2Settings = getL2(l2Code);
+  const phonetics = l2Settings.tokenSpan.phonetics;
+  const showDefinition = l2Settings.tokenSpan.definition.show;
+  const zoomRem = ZOOM_TO_REM[tokenSettings.zoom] ?? 1;
+  const effectiveScale = textScale === undefined ? zoomRem : (textScale === 0 ? 0 : textScale * zoomRem);
+  const measureFontSize = effectiveScale === 0 ? 16 : 16 * effectiveScale;
+  const measureFontFamily = tokenSettings.typeFace === 'serif'
+    ? (Platform.OS === 'ios' ? 'Georgia' : 'serif')
+    : tokenSettings.typeFace === 'sans-serif'
+      ? (Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif')
+      : undefined;
+  // Tokenized ruby rows are taller than plain text; the web reader uses
+  // ~2.25× leading when ruby is on for every word and 2× for hard-words-only.
+  // Interlinear definitions add another per-line slot below the base text.
+  const rubyLineScale = isPhoneticsEligible(l2Code) && phonetics.show === 'ruby'
+    ? (phonetics.conditions === 'always' ? 2.25 : 2)
+    : 2;
+  const definitionExtraScale = showDefinition ? 0.7 : 0;
+  const estimateLineScale = rubyLineScale + definitionExtraScale;
+  const calibrationSignatureValue = useMemo(
+    () => calibrationSignature({
+      l2Code,
+      textScale,
+      zoom: tokenSettings.zoom,
+      typeFace: tokenSettings.typeFace,
+      phoneticsShow: phonetics.show,
+      phoneticsConditions: phonetics.conditions,
+      definitionShow: showDefinition,
+    }),
+    [l2Code, textScale, tokenSettings.zoom, tokenSettings.typeFace, phonetics.show, phonetics.conditions, showDefinition],
+  );
+  const [calibration, setCalibration] = useState<TokenizedTextCalibration | null>(
+    () => getCachedCalibration(calibrationSignatureValue),
+  );
+  const calibrationRatio = Math.max(1, calibration?.ratio ?? (estimateLineScale / 2));
+  const measureLineHeight = Math.round(measureFontSize * 2 * calibrationRatio);
+  const measureTextStyle = useMemo(() => ({
+    fontSize: measureFontSize,
+    lineHeight: measureLineHeight,
+    ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
+  }), [measureFontSize, measureLineHeight, measureFontFamily]);
+
+  useEffect(() => {
+    setCalibration(getCachedCalibration(calibrationSignatureValue));
+  }, [calibrationSignatureValue]);
 
   // ── Swipe left/right page turns (drag follows the finger) ──
   const swipeTranslateX = useRef(new Animated.Value(0)).current;
@@ -310,6 +368,57 @@ export function PaginatedReader({
     }
   }, [page, hasMeasured, swipeTranslateX]);
 
+  useEffect(() => {
+    if (!hasMeasured || !visibleBlocksProp) return;
+    const key = `${page}:${visibleBlocksProp.length}`;
+    if (lastPageShownLogKeyRef.current === key) return;
+    lastPageShownLogKeyRef.current = key;
+    log(`[Reader] ✅ page content shown page=${page} blocks=${visibleBlocksProp.length} t=${Date.now()}`);
+  }, [hasMeasured, page, visibleBlocksProp]);
+
+  const handleCalibrationComplete = useCallback((c: TokenizedTextCalibration) => {
+    cacheCalibration(c);
+    setCalibration(c);
+    log(
+      `[Reader] 🧪 tokenized-text calibration signature=${c.signature} samples=${c.sampleCount}`
+      + ` l2=${l2Code} textScale=${textScale} zoom=${tokenSettings.zoom} typeFace=${tokenSettings.typeFace}`
+      + ` phonetics=${phonetics.show ?? 'off'}/${phonetics.conditions} definition=${showDefinition}`
+      + ` plainLH=${c.plainLineHeight} tokenizedLH=${c.tokenizedLineHeight} ratio=${c.ratio.toFixed(3)}`
+      + ` extraPerLine=${c.extraPerLine}px t=${Date.now()}`,
+    );
+  }, [l2Code, textScale, tokenSettings.zoom, tokenSettings.typeFace, phonetics.show, phonetics.conditions, showDefinition]);
+
+  // One-off dev experiment: measure real TokenizedText vs plain Text with the
+  // user's actual settings, then cache a line-height ratio for the session.
+  const calibrationSamples = useMemo(() => {
+    if (!__DEV__) return null;
+    if (!hasMeasured || !visibleBlocksProp || !blocks) return null;
+    if (getCachedCalibration(calibrationSignatureValue)) return null;
+    const samples: { block: TextBlock; tokens: LemmatizedToken[] }[] = [];
+    for (const block of visibleBlocksProp) {
+      if (block.kind !== 'text'
+        || (block.type !== 'paragraph' && block.type !== 'blockquote' && block.type !== 'list-item')) {
+        continue;
+      }
+      const globalIdx = blocks.indexOf(block);
+      const tokens = tokenCache[globalIdx];
+      if (tokens && tokens.length > 0) samples.push({ block, tokens });
+      if (samples.length >= 8) break;
+    }
+    return samples.length >= 3 ? samples : null;
+  }, [hasMeasured, visibleBlocksProp, blocks, tokenCache, calibrationSignatureValue]);
+
+  useEffect(() => {
+    if (loadingTokens && tokenLoadStartRef.current === 0) {
+      tokenLoadStartRef.current = Date.now();
+      log(`[Reader] ⏳ tokenization started t=${tokenLoadStartRef.current}`);
+    } else if (!loadingTokens && tokenLoadStartRef.current > 0) {
+      const elapsed = Date.now() - tokenLoadStartRef.current;
+      log(`[Reader] ✅ tokenization finished elapsed=${elapsed}ms t=${Date.now()}`);
+      tokenLoadStartRef.current = 0;
+    }
+  }, [loadingTokens]);
+
   // ── Scroll mode: simple block list ──
   if (scrollMode) {
     if (!blocks) return null;
@@ -356,7 +465,7 @@ export function PaginatedReader({
                     const overflow = h - viewportHeightRef.current;
                     if (overflow > 2 && Math.round(overflow) !== lastOverflowLogRef.current) {
                       lastOverflowLogRef.current = Math.round(overflow);
-                      log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px — translation/page break taller than measured`);
+                      log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px t=${Date.now()} — translation/page break taller than measured`);
                     }
                   }}
                 >
@@ -420,15 +529,15 @@ export function PaginatedReader({
         measureEnd > measureStart
         || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
       ) && (
-        <View key={`measure-${measureStart}-${measureNonce}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
+        <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
           {(() => {
             const hasLazyWindow = measureEnd > measureStart;
             const sliceStart = hasLazyWindow ? measureStart : 0;
             const sliceEnd = hasLazyWindow ? measureEnd : (measuredWindow > 0 ? measuredWindow : blocks.length);
-            const measureKey = `${sliceStart}:${sliceEnd}:${measureNonce}`;
+            const measureKey = `${sliceStart}:${sliceEnd}:${measureNonce}:${measureLineHeight}`;
             if (measureWindowLogKeyRef.current !== measureKey) {
               measureWindowLogKeyRef.current = measureKey;
-              log(`[Reader] 📏 hidden measuring window blocks=[${sliceStart},${sliceEnd})`);
+              log(`[Reader] 📏 hidden measuring window blocks=[${sliceStart},${sliceEnd}) t=${Date.now()}`);
             }
             return blocks.slice(sliceStart, sliceEnd).map((block, bi) =>
               renderMeasuringBlock(
@@ -441,12 +550,27 @@ export function PaginatedReader({
                 l1Code,
                 contentWidth,
                 showTextActions,
-                textScale,
+                measureTextStyle,
                 translationSideBySide,
               ),
             );
           })()}
         </View>
+      )}
+
+      {calibrationSamples && (
+        <TokenizedTextCalibrationProbe
+          samples={calibrationSamples}
+          l2Code={l2Code}
+          textScale={textScale}
+          plainTextStyle={{
+            fontSize: measureFontSize,
+            lineHeight: Math.round(measureFontSize * 2),
+            ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
+          }}
+          signature={calibrationSignatureValue}
+          onComplete={handleCalibrationComplete}
+        />
       )}
     </View>
   );
@@ -643,13 +767,79 @@ function MeasuringSkeleton({ text }: { text: string }) {
   );
 }
 
+interface TokenizedTextCalibrationProbeProps {
+  samples: { block: TextBlock; tokens: LemmatizedToken[] }[];
+  l2Code: string;
+  textScale: number;
+  plainTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string };
+  signature: string;
+  onComplete: (calibration: TokenizedTextCalibration) => void;
+}
+
+/** Hidden dev-only probe: measures real TokenizedText vs plain Text with the
+ *  user's current settings so pagination can use a grounded height ratio. */
+function TokenizedTextCalibrationProbe({
+  samples, l2Code, textScale, plainTextStyle, signature, onComplete,
+}: TokenizedTextCalibrationProbeProps) {
+  const heightsRef = useRef<Record<number, { plain?: number; tokenized?: number }>>({});
+  const [version, setVersion] = useState(0);
+
+  const handleMeasure = useCallback((
+    index: number,
+    kind: 'plain' | 'tokenized',
+    height: number,
+  ) => {
+    const prev = heightsRef.current[index]?.[kind];
+    if (prev === height) return;
+    heightsRef.current[index] = { ...heightsRef.current[index], [kind]: height };
+    setVersion(v => v + 1);
+  }, []);
+
+  useEffect(() => {
+    const measured = samples
+      .map((_, i) => heightsRef.current[i])
+      .filter((e): e is { plain: number; tokenized: number } => !!e?.plain && !!e?.tokenized);
+    if (measured.length !== samples.length) return;
+    const derived = deriveCalibration(
+      signature,
+      plainTextStyle.lineHeight,
+      measured.map(e => ({ plainHeight: e.plain, tokenizedHeight: e.tokenized })),
+    );
+    if (derived) onComplete(derived);
+  }, [version, samples, signature, plainTextStyle.lineHeight, onComplete]);
+
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} className="px-4">
+      {samples.map((s, i) => (
+        <View key={`cal-${i}`}>
+          <View className="mb-3">
+            <Text
+              style={plainTextStyle}
+              className="text-foreground"
+              onLayout={(e) => handleMeasure(i, 'plain', e.nativeEvent.layout.height)}
+            >
+              {s.block.text}
+            </Text>
+          </View>
+          <View
+            className="mb-3"
+            onLayout={(e) => handleMeasure(i, 'tokenized', e.nativeEvent.layout.height)}
+          >
+            <TokenizedText text={s.block.text} l2Code={l2Code} tokens={s.tokens} textScale={textScale} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function renderMeasuringBlock(
   block: ContentBlock, bi: number,
   handleMeasureBlock: (i: number, h: number, top: number, origin: number) => void,
   origin: number,
   showTranslation: boolean, l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean,
-  textScale: number,
+  measureTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string },
   translationSideBySide = false,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
@@ -700,12 +890,12 @@ function renderMeasuringBlock(
       {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="flex-row items-start gap-4">
-            <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
+            <View className="min-w-0 flex-[3]"><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
             <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
           </View>
         ) : (
           <View>
-            <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
+            <Text style={measureTextStyle} className="text-foreground">{block.text}</Text>
             {showTranslation && <View className="mt-1"><MeasuringSkeleton text={block.text} /></View>}
           </View>
         )
@@ -714,13 +904,13 @@ function renderMeasuringBlock(
         translationSideBySide && showTranslation ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
             <View className="flex-row items-start gap-4">
-              <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
+              <View className="min-w-0 flex-[3]"><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
               <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
             </View>
           </View>
         ) : (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
-            <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
+            <Text style={measureTextStyle} className="text-foreground">{block.text}</Text>
             {showTranslation && <View className="mt-1"><MeasuringSkeleton text={block.text} /></View>}
           </View>
         )
@@ -728,7 +918,7 @@ function renderMeasuringBlock(
       {block.type === 'list-item' && withActionSpacer(
         <View>
           <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
-            <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
+            <View className="flex-1"><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
           </View>
           {showTranslation && <View className="ml-4 mt-1"><MeasuringSkeleton text={block.text} /></View>}
         </View>
