@@ -29,9 +29,6 @@ export const putProgress = (l2: string, progress: Partial<L2Progress>) =>
 export const getSrs = () =>
   apiClient.get<SrsResponse>('/srs');
 
-export const putSrsSettings = (dailyNewLimit: number) =>
-  apiClient.put<{ success: boolean }>('/srs/settings', { dailyNewLimit });
-
 export const putSrsCard = (l2: string, wordId: string, state: SrsFields) =>
   apiClient.put<{ success: boolean }>('/srs/cards', { l2, wordId, state });
 
@@ -53,7 +50,6 @@ export function useUserDataColumns() {
     getProgress,
     putProgress,
     getSrs,
-    putSrsSettings,
     putSrsCard,
     deleteSrsCard,
     getUserSettings,

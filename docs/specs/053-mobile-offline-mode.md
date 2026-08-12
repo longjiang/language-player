@@ -293,7 +293,7 @@ Current mobile behavior (verified against the codebase):
 |---|---|---|---|
 | Settings (`SettingsV2`) | SecureStore `lp_settings` | Debounced `PUT /user-settings`; whole-object LWW by `ts` | Offline failure is logged and dropped — no durable outbox; a kill during offline can lose the change |
 | Learning progress | SecureStore `zthProgress` | Debounced `PUT /progress`; merge uses max time | Same: failures logged and dropped |
-| SRS cards + daily limit | SecureStore `zthSrsProgress` | Direct `PUT/DELETE /srs/cards`, `PUT /srs/settings`; merge by `lastReview` | No queue at all; failures logged and dropped |
+| SRS cards (+ legacy daily limit) | SecureStore `zthSrsProgress` | Durable outbox `srs_card` upserts/deletes (SPEC-066); pull-merge by `lastReview`; legacy `srs_settings` entity deprecated (SPEC-066 Phase 6) | None — offline ratings queue and replay idempotently |
 | Saved words | SecureStore store + `zthSavedWordsPendingOps` | Pending-op queue with per-word coalescing; replayed before hydration | No pull cursor/ack; server has no idempotency contract |
 | Notes | AsyncStorage cache + `notes_sync_queue` | Durable FIFO outbox; temp IDs; retries with backoff | Separate engine from other domains; retries stop after 3 and errors stay stuck with no manual retry surface |
 | Watch history | None | Direct `POST /watch-history` every 15s; failures silently ignored | Offline watching is effectively lost |
@@ -456,11 +456,13 @@ subject to `updated_at` timestamp ties.
     offline note creates so temp IDs can be remapped).
   - `GET /sync/pull?cursor=<id>&limit=<n>` — per-user changes since the cursor
     including tombstones (`deleted`), with pagination.
-  - Entities: `settings`, `progress`, `srs_settings`, `srs_card`,
-    `saved_word`, `note`, `watch_history`. (`bookshelf` is intentionally out
-    of scope: mobile shelves/reading progress are local-only. The server
-    handler stays registered as a no-op so any ops queued before this scope
-    change drain cleanly instead of erroring.)
+  - Entities: `settings`, `progress`, `srs_card`, `saved_word`, `note`,
+    `watch_history`. `srs_settings` was removed from new-client writes in
+    SPEC-066 Phase 6 (the server handler stays registered so old clients'
+    queued ops drain cleanly). (`bookshelf` is intentionally out of scope:
+    mobile shelves/reading progress are local-only. The server handler stays
+    registered as a no-op so any ops queued before this scope change drain
+    cleanly instead of erroring.)
 - Existing row endpoints (`/progress`, `/srs/...`, `/user-settings`,
   `/bookshelf`, `/watch-history`, `/saved-words`, `/user-notes`) now append to
   the same change log, so mutations made by any device/API are visible to

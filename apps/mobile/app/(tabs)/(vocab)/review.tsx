@@ -687,6 +687,11 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </Text>
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+          <Text className="mb-2 text-center text-sm text-muted-foreground">
+            {t('msg.no_more_new_cards_today')}
+          </Text>
+        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
@@ -724,6 +729,11 @@ export default function ReviewScreen() {
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
         </Text>
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+          <Text className="mb-2 text-center text-sm text-muted-foreground">
+            {t('msg.no_more_new_cards_today')}
+          </Text>
+        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"

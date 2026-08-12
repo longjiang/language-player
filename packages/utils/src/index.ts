@@ -20,21 +20,6 @@ export { cn } from './cn';
 export { cleanPronunciation, formatPronunciation } from './pronunciation';
 export { katakanaToHiragana, matchHiragana, buildRuby } from './furigana';
 export type { FuriganaSegment, RubySegment } from './furigana';
-export {
-  sm2,
-  newCard,
-  isDue,
-  getDueCards,
-  countDueCards,
-  countNewCardsToday,
-  countUnreviewedNewCards,
-  isNewCard,
-  planNewDeck,
-  remainingNewCardsToday,
-  DEFAULT_DAILY_NEW_LIMIT,
-  nextReviewText,
-} from './sm2';
-export type { LegacySrsFields, LegacySrsProgressStore } from './sm2';
 export type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 export {
   rate,
@@ -49,8 +34,7 @@ export {
   mergeSrsCards,
 } from './fsrs-scheduler';
 export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating } from './fsrs-scheduler';
-/** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …) — used by the
- *  SPEC-066 cutover so they don't collide with the legacy SM-2 exports. */
+/** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …). */
 export * as fsrs from './fsrs-scheduler';
 export {
   splitIntoMoras,

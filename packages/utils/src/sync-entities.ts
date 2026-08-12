@@ -48,11 +48,6 @@ const SYNC_ENTITY_DEFS: Record<string, SyncEntityDef> = {
     schema: { l2: 'string', wordId: 'string', state: 'object' },
     coalesce: (_prev, next) => next,
   },
-  srs_settings: {
-    entity: 'srs_settings',
-    schema: { dailyNewLimit: 'number' },
-    coalesce: (_prev, next) => next,
-  },
   settings: {
     entity: 'settings',
     schema: { settings_v2: 'object' },

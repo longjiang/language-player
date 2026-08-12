@@ -690,22 +690,6 @@ export interface UserDataRecord {
   srs_progress?: string;  // JSON.stringify(SrsProgressStore)
 }
 
-/** Legacy SM-2 fields for a single card (SPEC-066 transition window). */
-export interface LegacySrsFields {
-  /** Ease factor. Starts at 2.5, adjusts ±0.15 per review. Min 1.3. */
-  ease: number;
-  /** Days until next review. 0 = new card. */
-  interval: number;
-  /** Number of consecutive correct recalls. */
-  repetitions: number;
-  /** Unix-ms timestamp when card is next due for review. */
-  nextReview: number;
-  /** Unix-ms timestamp of the last review. */
-  lastReview: number;
-  /** Unix-ms timestamp when the card was first created. Used to limit new cards/day. */
-  createdAt?: number;
-}
-
 /**
  * FSRS card fields persisted by web/mobile (SPEC-066).
  *
@@ -749,16 +733,6 @@ export interface SrsFields {
   rating?: 'again' | 'hard' | 'good' | 'easy';
   /** Rating id being voided by this write (undo restore). */
   voidRatingId?: string;
-}
-
-/** Legacy store shape used by the textbook SM-2 implementation. */
-export interface LegacySrsProgressStore {
-  settings: {
-    /** Max new cards introduced per day. Default 20. */
-    dailyNewLimit: number;
-  };
-  /** Cards keyed by ISO 639-1 l2 code, then by dictionary entry ID. */
-  cards: Record<string, Record<string, LegacySrsFields>>;
 }
 
 /**

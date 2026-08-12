@@ -7,7 +7,6 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
-import { useSpeech } from '@/hooks/use-speech';
 import {
   fsrs,
   baseCode,
@@ -19,7 +18,6 @@ import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
-import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -86,7 +84,6 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { speak } = useSpeech();
   const { display, review: { dailyNewLimit: dailyLimit } } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   const t = useT();
@@ -95,7 +92,6 @@ export default function ReviewPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [fetchingEntries, setFetchingEntries] = useState(false);
   const [rated, setRated] = useState(false);
   const [initializing, setInitializing] = useState(false);
   /** True when the user just finished reviewing the last due card. */
@@ -382,14 +378,6 @@ export default function ReviewPage() {
     // so the next card shifts into the current slot.
   }, [cards, currentIndex, l2Code, removeSavedWord, removeCard]);
 
-  /** Speak the word form. */
-  const handleSpeak = useCallback(() => {
-    const card = cards[currentIndex];
-    if (!card) return;
-    const form = card.word.forms[0] || card.entry?.head || card.word.id;
-    speak(form, l2Code);
-  }, [cards, currentIndex, l2Code, speak]);
-
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {
     if (cards.length > 0 && currentIndex >= cards.length) {
@@ -660,15 +648,6 @@ export default function ReviewPage() {
     );
   }
 
-  // Fetching dictionary entries
-  if (fetchingEntries && cards.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   // All done — just finished reviewing all due cards
   if (justCompleted) {
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
@@ -686,6 +665,9 @@ export default function ReviewPage() {
             <> {t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </p>
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+          <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
+        )}
         <div className="flex gap-3">
           <Link href={`/${l1.code}/${l2.code}/explore`}>
             <Button variant="outline">{t('action.explore_videos')}</Button>
@@ -720,6 +702,9 @@ export default function ReviewPage() {
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
         </p>
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+          <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
+        )}
         <Link href={`/${l1.code}/${l2.code}/explore`}>
           <Button variant="outline">{t('action.explore_videos')}</Button>
         </Link>
