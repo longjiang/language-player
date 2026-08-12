@@ -33,15 +33,22 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
 
 ## 3. Step 0 — Decisions (confirm before coding)
 
-- [ ] **Product ID**: use `pro_go` to match the iOS product (recommended) or
-  pick a new Android-only ID. Play product IDs cannot be renamed after
-  creation.
-- [ ] **Test accounts**: use Mary/Bob (`tester.mary@zerotohero.ca` /
-  `tester.bob@zerotohero.ca`) as license testers.
-- [ ] **Backend test target**: internal-track builds embed the production API
-  URL (`https://pythonvps.zerotohero.ca`), so G1/G3 will grant real lifetime
-  rows to Mary/Bob on the production backend. Confirm that is acceptable (it
-  matches how Apple IAP was tested).
+- [x] **Product ID**: **`pro_go`** (confirmed 2026-08-11) — matches the iOS
+  product. Play product IDs cannot be renamed after creation.
+- [x] **Test accounts**: **Mary/Bob** (`tester.mary@zerotohero.ca` /
+  `tester.bob@zerotohero.ca`) as license testers (confirmed 2026-08-11).
+- [ ] **Backend test target**: "push to production" here does **not** mean a
+  public store release — the AAB stays on the private **Internal testing**
+  track. It only means the test build points at the production Flask backend
+  (`https://pythonvps.zerotohero.ca`) because internal-track builds need a
+  reachable API URL, and G1/G3 will grant real lifetime rows to Mary/Bob in
+  the production database (license testers are not charged). This matches how
+  Apple IAP was tested. Alternative: point the internal-track build at a
+  staging backend instead, which avoids production rows but requires a
+  staging Flask server with the Google service account credentials. Or point
+  it at local Flask (`http://<mac-lan-ip>:5001`) — no deploy at all, but the
+  Pixel and Mac must share a network and the Mac must be running the server
+  during the test.
 
 ## 4. Step 1 — Play Console setup (human)
 
