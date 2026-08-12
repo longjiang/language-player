@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   Animated, View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
   type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
@@ -129,6 +129,7 @@ export function PaginatedReader({
   const blockLayoutsRef = useRef<Record<number, { top: number; height: number }>>({});
   const lastVisibleKeyRef = useRef('');
   const measureWindowLogKeyRef = useRef('');
+  const lastOverflowLogRef = useRef(0);
   const onVisibleBlocksChangeRef = useRef(onVisibleBlocksChange);
   onVisibleBlocksChangeRef.current = onVisibleBlocksChange;
   // The visible page is a contiguous slice of `blocks`; resolve its global
@@ -238,6 +239,8 @@ export function PaginatedReader({
   // ── Swipe left/right page turns (drag follows the finger) ──
   const swipeTranslateX = useRef(new Animated.Value(0)).current;
   const swipeAnimatingRef = useRef(false);
+  const swipeExitRef = useRef<{ direction: 'next' | 'prev' } | null>(null);
+  const swipeExitPageRef = useRef(page);
   const swipeActionsRef = useRef({ hasPrev, hasNext, prevPage, nextPage, width: windowWidth });
   swipeActionsRef.current = { hasPrev, hasNext, prevPage, nextPage, width: windowWidth };
 
@@ -261,18 +264,20 @@ export function PaginatedReader({
       const shouldPrev = e.translationX > threshold && canPrev;
       swipeAnimatingRef.current = true;
       if (shouldNext || shouldPrev) {
+        swipeExitPageRef.current = page;
+        swipeExitRef.current = { direction: shouldNext ? 'next' : 'prev' };
         log(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)}`);
         Animated.timing(swipeTranslateX, {
           toValue: shouldNext ? -width : width,
           duration: 180,
           useNativeDriver: true,
         }).start(() => {
-          swipeTranslateX.setValue(0);
           swipeAnimatingRef.current = false;
           if (shouldNext) goNext?.();
           else goPrev?.();
         });
       } else {
+        swipeExitRef.current = null;
         log(`[Reader] 👉 swipe snap back dx=${Math.round(e.translationX)}`);
         Animated.spring(swipeTranslateX, {
           toValue: 0,
@@ -287,6 +292,7 @@ export function PaginatedReader({
     .onFinalize(() => {
       // Gesture was cancelled/interrupted without a clean end — snap back.
       if (swipeAnimatingRef.current) return;
+      swipeExitRef.current = null;
       Animated.spring(swipeTranslateX, {
         toValue: 0,
         useNativeDriver: true,
@@ -295,8 +301,13 @@ export function PaginatedReader({
       }).start();
     });
 
-  useEffect(() => {
-    swipeTranslateX.setValue(0);
+  // Once the new page is measured, reset the transform before paint so the
+  // swiped-out page doesn't snap back on screen first.
+  useLayoutEffect(() => {
+    if (swipeExitRef.current && !swipeAnimatingRef.current && hasMeasured && page !== swipeExitPageRef.current) {
+      swipeExitRef.current = null;
+      swipeTranslateX.setValue(0);
+    }
   }, [page, hasMeasured, swipeTranslateX]);
 
   // ── Scroll mode: simple block list ──
@@ -340,6 +351,14 @@ export function PaginatedReader({
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                   onLayout={handleViewportLayout}
+                  onContentSizeChange={(_w, h) => {
+                    if (viewportHeightRef.current <= 0) return;
+                    const overflow = h - viewportHeightRef.current;
+                    if (overflow > 2 && Math.round(overflow) !== lastOverflowLogRef.current) {
+                      lastOverflowLogRef.current = Math.round(overflow);
+                      log(`[Reader] ⚠️ page overflow contentH=${Math.round(h)} viewportH=${Math.round(viewportHeightRef.current)} overflow=${Math.round(overflow)}px — translation/page break taller than measured`);
+                    }
+                  }}
                 >
                   {/* Loading indicator — inside the scroll content (web parity) so
                       it doesn't resize the measured viewport. */}
@@ -505,7 +524,10 @@ function renderBlock(
     const shown = !!translation;
     if (displayLoggedState.get(block) !== shown) {
       displayLoggedState.set(block, shown);
-      translationLogger.log(`display block=${globalIdx} local=${localIdx} ${shown ? 'shown' : 'pending'}`);
+      translationLogger.log(
+        `display block=${globalIdx} local=${localIdx} ${shown ? 'shown' : 'pending'}`
+        + ` srcChars=${block.text.length}${shown ? ` trChars=${translation?.length ?? 0}` : ''}`,
+      );
     }
   }
 

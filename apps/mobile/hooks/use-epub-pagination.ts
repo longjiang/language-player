@@ -882,16 +882,25 @@ export function useEpubPagination({
           const tr = typeof translated[i] === 'string' ? translated[i] : '';
           if (tr.trim().length === 0) {
             missing.push(p);
+            translationLogger.log(`reject block=${p.globalIdx} local=${p.localIdx} reason=empty_response`);
             return;
           }
           if (isSuspectedTruncated(p.text, tr)) {
             const attempts = (translateAttemptsRef.current.get(p.localIdx) ?? 0) + 1;
             translateAttemptsRef.current.set(p.localIdx, attempts);
+            translationLogger.log(
+              `suspect block=${p.globalIdx} local=${p.localIdx} attempt=${attempts} srcChars=${p.text.length} trChars=${tr.length} reason=short_or_no_terminal_punct`,
+            );
             if (attempts >= MAX_TRUNCATED_ATTEMPTS) {
               // Don't loop forever — accept the best effort after the cap.
               additions[p.localIdx] = tr;
               translateDoneRef.current.add(p.localIdx);
               suspected.push({ ...p, acceptedAfter: attempts });
+              const srcLines = Math.max(1, Math.ceil(p.text.length / 50));
+              const trLines = Math.max(1, Math.ceil(tr.length / 50));
+              translationLogger.log(
+                `accept block=${p.globalIdx} local=${p.localIdx} reason=accepted_after_${attempts}_attempts srcChars=${p.text.length} trChars=${tr.length} srcLines≈${srcLines} trLines≈${trLines}${trLines > srcLines ? ' ⚠️ taller-than-skeleton' : ''}`,
+              );
             } else {
               suspected.push({ ...p, attempts });
             }
@@ -899,6 +908,11 @@ export function useEpubPagination({
           }
           additions[p.localIdx] = tr;
           translateDoneRef.current.add(p.localIdx);
+          const srcLines = Math.max(1, Math.ceil(p.text.length / 50));
+          const trLines = Math.max(1, Math.ceil(tr.length / 50));
+          translationLogger.log(
+            `accept block=${p.globalIdx} local=${p.localIdx} reason=ok srcChars=${p.text.length} trChars=${tr.length} srcLines≈${srcLines} trLines≈${trLines}${trLines > srcLines ? ' ⚠️ taller-than-skeleton' : ''}`,
+          );
         });
         madeProgress = Object.keys(additions).length > 0;
         if (madeProgress) {
