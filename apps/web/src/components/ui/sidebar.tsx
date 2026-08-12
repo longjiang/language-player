@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
 export interface SidebarPanelProps {
-  title: React.ReactNode;
+  /** Optional panel title; the header row is hidden when there is no title/actions/close button. */
+  title?: React.ReactNode;
   /** Optional actions rendered in the header before the close button. */
   headerActions?: React.ReactNode;
   /** When provided, renders the close button (mobile sheet). */
@@ -39,33 +40,38 @@ export function SidebarPanel({
   headerClassName,
 }: SidebarPanelProps) {
   const t = useT();
+  const showHeader = Boolean(title || headerActions || onClose);
   return (
     <div className="w-full rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
-      <div
-        className={cn(
-          'flex flex-wrap items-center gap-2 border-b border-border px-3 py-2',
-          headerClassName,
-        )}
-      >
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {title}
-        </h3>
-        {headerActions && (
-          <div className="ml-auto flex items-center gap-1">{headerActions}</div>
-        )}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className={cn(
-              'flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
-              !headerActions && 'ml-auto',
-            )}
-            aria-label={t('action.close')}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      {showHeader && (
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-2 border-b border-border px-3 py-2',
+            headerClassName,
+          )}
+        >
+          {title && (
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {title}
+            </h3>
+          )}
+          {headerActions && (
+            <div className="ml-auto flex items-center gap-1">{headerActions}</div>
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className={cn(
+                'flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+                !headerActions && 'ml-auto',
+              )}
+              aria-label={t('action.close')}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
       <div className={cn('flex-1 overflow-y-auto px-1 py-1', bodyClassName)}>
         {children ?? emptyState}
       </div>
@@ -116,7 +122,9 @@ export function Sidebar({
             aria-describedby={undefined}
             className="fixed inset-y-0 right-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=open]:slide-in-from-right-full data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right-full"
           >
-            <Dialog.Title className="sr-only">{panel.title}</Dialog.Title>
+            {panel.title ? (
+              <Dialog.Title className="sr-only">{panel.title}</Dialog.Title>
+            ) : null}
             <SidebarPanel {...panel} onClose={() => onOpenChange(false)} />
           </Dialog.Content>
         </Dialog.Portal>
