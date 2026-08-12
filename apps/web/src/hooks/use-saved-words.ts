@@ -36,6 +36,8 @@ export function useSavedWords() {
   const mergeAnon = mergeAnonymousSavedWordsEnabled();
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loaded, setLoaded] = useState(false);
+  /** True once the authenticated row-API hydration completed (or failed). */
+  const [cloudHydrated, setCloudHydrated] = useState(false);
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
@@ -116,6 +118,7 @@ export function useSavedWords() {
     prevUserIdRef.current = next;
     if (changed) {
       hydratedUserId.current = null;
+      setCloudHydrated(false);
       setSavedWords({});
     }
   }, [session?.user?.id]);
@@ -190,6 +193,8 @@ export function useSavedWords() {
         writeLocalStore(next);
       } catch (err) {
         logwarn('[savedWords] Hydration failed:', err);
+      } finally {
+        if (!cancelled) setCloudHydrated(true);
       }
     })();
     return () => { cancelled = true; };
@@ -197,6 +202,7 @@ export function useSavedWords() {
     status, loaded, session?.user?.id, mergeAnon,
     flushPending, fetchSavedWordRows, putSavedWord,
     readLocalStore, writeLocalStore,
+    cloudHydrated,
   ]);
 
   const persist = useCallback((words: SavedLexicalItemStore) => {
@@ -282,6 +288,7 @@ export function useSavedWords() {
   return {
     savedWords,
     loaded,
+    cloudHydrated,
     saveWord,
     removeSavedWord,
     hasSavedWord,

@@ -22,9 +22,15 @@ import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { enqueueLookupWords, getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
+import {
+  enqueueLookupWords,
+  getCachedEntryById,
+  getL1CachedEntry,
+  setCachedEntryById,
+} from '@/lib/dictionary-cache';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
+import { lookupL1Text } from '@/lib/l1-lookup';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -102,8 +108,8 @@ export default function ReviewScreen() {
   const { isSm } = useResponsive();
   const { isPro } = useSubscription();
 
-  const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
-  const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeWord } = useSavedWords();
+  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const insets = useSafeAreaInsets();
@@ -121,6 +127,8 @@ export default function ReviewScreen() {
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
   const [showTabs, setShowTabs] = useState(false);
+  /** L1-translated dictionary entry, fetched on reveal for non-English L1. */
+  const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
@@ -166,6 +174,18 @@ export default function ReviewScreen() {
       setTimeout(() => setInitializing(false), 100);
     }
   }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyNewLimit, updateCard, removeCard]);
+
+  // ── Prune orphaned SRS cards ──
+  // Cards only make sense for words that are still saved; unsaving through
+  // any path must not let a stale card resurrect later.
+  useEffect(() => {
+    if (!srsLoaded || !wordsLoaded) return;
+    if (l2SavedWords.length === 0) {
+      pruneOrphans(l2Code, new Set<string>());
+      return;
+    }
+    pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
+  }, [srsLoaded, wordsLoaded, l2SavedWords, l2Code, pruneOrphans]);
 
   // ── Compute due cards ──
   const dueCards = useMemo(() => {
@@ -245,6 +265,16 @@ export default function ReviewScreen() {
     });
     setShowTabs(true);
   }, [cards, currentIndex]);
+
+  /** Remove this word from saved words and SRS (mirrors web's `u` action). */
+  const handleRemove = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    removeWord(l2Code, card.word.id);
+    removeCard(l2Code, card.word.id);
+    setShowTabs(false);
+    setRated(false);
+  }, [cards, currentIndex, l2Code, removeWord, removeCard]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
@@ -397,6 +427,7 @@ export default function ReviewScreen() {
   useEffect(() => {
     const card = cards[currentIndex];
     setContextTranslation(null);
+    setL1Entry(null);
     setShowTabs(false);
     if (!card) return;
     const rawInstances = (card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
@@ -450,6 +481,35 @@ export default function ReviewScreen() {
     fetchTranslation();
     return () => { cancelled = true; };
   }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
+
+  // ── Per-card L1 dictionary lookup (non-English L1 users) ──
+  // The batched lookup returns English-only definitions for speed; on reveal,
+  // fetch the L1-translated entry so the card back shows the user's language.
+  useEffect(() => {
+    if (!showTabs || l1Lang.code === 'en') return;
+    const card = cards[currentIndex];
+    if (!card) return;
+    const form = card.word.forms?.[0] || card.word.head || card.word.id;
+    if (l1Entry?.id === card.word.id) return;
+
+    const cached = getL1CachedEntry(l2Code, l1Lang.code, card.word.id);
+    if (cached) {
+      setL1Entry(cached);
+      return;
+    }
+
+    let cancelled = false;
+    lookupL1Text(form, l2Code, l1Lang.code)
+      .then((results) => {
+        if (cancelled) return;
+        const match = results.find((e) => e.id === card.word.id) ?? results[0] ?? null;
+        setL1Entry(match);
+      })
+      .catch(() => {
+        // Silently fall back to the cached/offline entry.
+      });
+    return () => { cancelled = true; };
+  }, [showTabs, currentIndex, cards, l1Lang.code, l2Code, l1Entry?.id]);
 
   // ── Pre-tokenize + pre-lookup the next 3 cards' context sentence(s) ──
   const preWarmInstances = useMemo(() => {
@@ -531,7 +591,7 @@ export default function ReviewScreen() {
 
   // ── Render states ──
 
-  const isLoading = !wordsLoaded || !srsLoaded || initializing;
+  const isLoading = !wordsLoaded || !srsLoaded || initializing || (user && !cloudHydrated);
 
   // ── Log the loaded review deck once per language ──
   useEffect(() => {
@@ -565,6 +625,14 @@ export default function ReviewScreen() {
         <Text className="mb-4 text-center text-muted-foreground max-w-md">
           {t('msg.save_words_to_build_deck')}
         </Text>
+        <Pressable
+          onPress={() => router.push('/(tabs)/(media)' as any)}
+          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+        >
+          <Text className="text-sm font-semibold text-primary-foreground">
+            {t('action.explore_videos')}
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -583,9 +651,17 @@ export default function ReviewScreen() {
         <Text className="mb-4 text-center text-muted-foreground">
           {t('msg.all_done_desc')}
           {nextDue && (
-            <>{' '}{t('msg.next_review')}: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
+            <>{' '}{t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </Text>
+        <Pressable
+          onPress={() => router.push('/(tabs)/(media)' as any)}
+          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+        >
+          <Text className="text-sm font-semibold text-primary-foreground">
+            {t('action.explore_videos')}
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -607,7 +683,7 @@ export default function ReviewScreen() {
         <Text className="mb-4 text-center text-muted-foreground">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2Lang.name })}
           {nextDue ? (
-            <> {t('msg.next_review_date', { date: new Date(nextDue.nextReview).toLocaleDateString() })}</>
+            <> {t('msg.next_review_date', { date: new Date(nextDue.due).toLocaleDateString() })}</>
           ) : (
             <> {t('msg.save_more_words')}</>
           )}
@@ -615,6 +691,14 @@ export default function ReviewScreen() {
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
         </Text>
+        <Pressable
+          onPress={() => router.push('/(tabs)/(media)' as any)}
+          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+        >
+          <Text className="text-sm font-semibold text-primary-foreground">
+            {t('action.explore_videos')}
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -622,7 +706,7 @@ export default function ReviewScreen() {
   const currentCard = cards[currentIndex];
   if (!currentCard) return null;
 
-  const entry = currentEntry;
+  const entry = l1Entry ?? currentEntry;
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
   const instances = (savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []))
@@ -713,6 +797,14 @@ export default function ReviewScreen() {
               <>{' · '}{t('review.srs_review', { count: srs.reps })}</>
             )}
           </Text>
+
+          {/* Remove the saved word (also removes its SRS card). */}
+          <Pressable
+            onPress={handleRemove}
+            className="mb-2 self-center rounded-lg border border-border px-3 py-1 active:bg-muted"
+          >
+            <Text className="text-xs text-muted-foreground">{t('action.delete')}</Text>
+          </Pressable>
 
           {/* Toggle button for definition + translation — hidden once shown */}
           {!showTabs && (
