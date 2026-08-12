@@ -262,6 +262,45 @@ visual assets pending (items 4).
    still outstanding.
 5. Promo text (optional, short-lived).
 
+#### Store listing graphics — asset requirements
+
+These are the **only** store-listing graphics Google requires. There is no
+splash-screen or banner requirement for the store (splash screens are app-side
+assets, not store assets).
+
+**Required:**
+
+| Asset | Format | Size | Max file | Count / notes |
+|---|---|---|---|---|
+| App icon | 32-bit PNG (sRGB) | 512×512 | 1 MB | Full square — **no** rounded corners or baked-in shadows (Google adds them dynamically); avoid transparency |
+| Feature graphic | PNG / JPEG | 1024×500 | 15 MB | |
+| Phone screenshots | JPEG / 24-bit PNG (no alpha) | 16:9 or 9:16; each side 320–3840 px (long side ≤ 2× short side) | 8 MB each | 2–8; ≥4 @ ≥1080 px recommended for promotion (min 1920×1080 / 1080×1920) |
+| 7-inch tablet screenshots | JPEG / 24-bit PNG | 16:9 or 9:16; 320–3840 px | 8 MB each | up to 8 |
+| 10-inch tablet screenshots | JPEG / 24-bit PNG | 16:9 or 9:16; 1080–7680 px | 8 MB each | up to 8 |
+
+**Optional / only if that form factor is supported:**
+
+| Asset | When | Spec |
+|---|---|---|
+| Preview video (YouTube URL) | Optional | public/unlisted, ads off, not age-restricted |
+| TV banner (1280×720) + ≥1 TV screenshot | Only if Android TV | |
+| Chromebook screenshots | Only if ChromeOS | 4–8, 16:9 or 9:16, 1080–7680 px |
+| Android XR screenshots | Only if XR | 4–8, 8:5, recommended 3840×2400 (min 1920×1200) |
+| Wear OS screenshots | Only if Wear app | 1:1, ≥384×384 |
+
+**Content rules (all screenshots):** show real in-app UI only — no device
+frames, hands, or people; no store badges or Google Play icons; no ranking/
+award claims ("Best", "#1", "Top") or calls-to-action ("Download now");
+taglines ≤ ~20% of the image; add alt text (≤140 chars) per screenshot.
+
+**To produce for Language Player 3 (phone + tablet only):**
+1. Feature graphic — 1024×500 PNG
+2. Phone screenshots — 5–8 @ 1080×1920: Explore, video player with subtitles,
+   dictionary popup, saved words / review, reader
+3. 7-inch tablet screenshots — 4–8 @ 16:9 (e.g. 1920×1080)
+4. 10-inch tablet screenshots — 4–8 @ 16:9 (e.g. 1920×1080)
+5. Optional: 30s preview video (YouTube)
+
 ## 5. Billing & monetization (blocker)
 
 Google Play requires digital content consumed in-app to use **Play Billing**,
