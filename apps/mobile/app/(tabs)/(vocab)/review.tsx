@@ -8,7 +8,12 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
-import { fsrs, baseCode } from '@langplayer/utils';
+import {
+  fsrs,
+  baseCode,
+  dailyReviewCounterKey,
+  msUntilNextUtcDay,
+} from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
@@ -132,8 +137,18 @@ export default function ReviewScreen() {
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
+  /** Current UTC day (YYYY-MM-DD); rolls over at midnight while the screen is open. */
+  const [utcDay, setUtcDay] = useState(() => new Date().toISOString().slice(0, 10));
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUtcDay(new Date().toISOString().slice(0, 10));
+    }, msUntilNextUtcDay());
+    return () => clearTimeout(timer);
+  }, [utcDay]);
+
   const reviewCounterKey = user?.id
-    ? `lpSrsReviewsDone:${user.id}:${new Date().toISOString().slice(0, 10)}`
+    ? dailyReviewCounterKey(user.id, Date.parse(`${utcDay}T00:00:00Z`))
     : null;
 
   useEffect(() => {
@@ -354,6 +369,15 @@ export default function ReviewScreen() {
     log('[srs] undo', { wordId: state.wordId, head: state.head });
     updateCard(l2Code, state.wordId, state.prevSrs);
 
+    // Release the rating back to the free daily budget (SPEC-066 Phase 4).
+    if (!isPro && reviewsDoneToday > 0) {
+      const next = reviewsDoneToday - 1;
+      setReviewsDoneToday(next);
+      if (reviewCounterKey) {
+        AsyncStorage.setItem(reviewCounterKey, String(next)).catch(() => {});
+      }
+    }
+
     if (state.wasLastCard) {
       setJustCompleted(false);
     }
@@ -362,7 +386,7 @@ export default function ReviewScreen() {
     setCurrentIndex(0);
     setRated(false);
     undoRef.current = null;
-  }, [l2Code, updateCard]);
+  }, [l2Code, updateCard, isPro, reviewsDoneToday, reviewCounterKey]);
 
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {

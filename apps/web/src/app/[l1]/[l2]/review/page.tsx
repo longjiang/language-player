@@ -8,7 +8,12 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { fsrs, baseCode } from '@langplayer/utils';
+import {
+  fsrs,
+  baseCode,
+  dailyReviewCounterKey,
+  msUntilNextUtcDay,
+} from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
@@ -107,10 +112,19 @@ export default function ReviewPage() {
   /** Toast ID of the most recent rating toast, so undo can dismiss it. */
   const ratingToastIdRef = useRef<string | number | null>(null);
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
-  const reviewCounterKey = useMemo(() => {
-    const uid = session?.user?.id;
-    return uid ? `lpSrsReviewsDone:${uid}:${new Date().toISOString().slice(0, 10)}` : null;
-  }, [session?.user?.id]);
+  /** Current UTC day (YYYY-MM-DD); rolls over at midnight while the page is open. */
+  const [utcDay, setUtcDay] = useState(() => new Date().toISOString().slice(0, 10));
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUtcDay(new Date().toISOString().slice(0, 10));
+    }, msUntilNextUtcDay());
+    return () => clearTimeout(timer);
+  }, [utcDay]);
+
+  const reviewCounterKey = session?.user?.id
+    ? dailyReviewCounterKey(session.user.id, Date.parse(`${utcDay}T00:00:00Z`))
+    : null;
 
   useEffect(() => {
     if (!reviewCounterKey) return;
@@ -314,6 +328,15 @@ export default function ReviewPage() {
 
     updateCard(l2Code, state.wordId, state.prevSrs);
 
+    // Release the rating back to the free daily budget (SPEC-066 Phase 4).
+    if (!isPro && reviewsDoneToday > 0) {
+      const next = reviewsDoneToday - 1;
+      setReviewsDoneToday(next);
+      if (reviewCounterKey) {
+        localStorage.setItem(reviewCounterKey, String(next));
+      }
+    }
+
     if (state.wasLastCard) {
       setJustCompleted(false);
     }
@@ -324,7 +347,7 @@ export default function ReviewPage() {
 
     // No toast here — the undo action within the rating toast is
     // feedback enough, and a second toast would be redundant.
-  }, [l2Code, updateCard]);
+  }, [l2Code, updateCard, isPro, reviewsDoneToday, reviewCounterKey]);
 
   const handleReveal = useCallback(() => {
     setShowDefinition(true);
@@ -867,7 +890,7 @@ export default function ReviewPage() {
               <button
                 key={key}
                 onClick={() => handleRate(key as 'again' | 'hard' | 'good' | 'easy')}
-                disabled={rated}
+                disabled={rated || (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
                 className={`${color} text-white rounded-lg py-3 px-2 text-sm font-medium transition-all
                   hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
                   flex flex-col items-center gap-1`}
