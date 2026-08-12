@@ -5,7 +5,7 @@ import { File } from 'expo-file-system';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { TOKENIZER_CONFIG } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
-import { log, logwarn } from '@/lib/logger';
+import { tokenizerWorkerLogger } from '@/lib/logger';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   attachTokenizationWebView,
@@ -15,6 +15,8 @@ import {
   warmTokenizationWorkerDict,
   warmTokenizationWorker,
 } from '@/lib/tokenizer-worker';
+
+const { log, logwarn } = tokenizerWorkerLogger;
 
 /**
  * Persistent invisible WebView that runs kuromoji off the RN JS thread.

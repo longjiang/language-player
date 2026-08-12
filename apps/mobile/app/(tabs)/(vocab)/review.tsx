@@ -28,6 +28,9 @@ import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { srsLogger } from '@/lib/logger';
+
+const { log } = srsLogger;
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -52,6 +55,7 @@ const RATING_ICON_COLORS: Record<Rating, string> = {
 /** State saved before a rating, so the user can undo it. */
 interface UndoState {
   wordId: string;
+  head: string;
   prevSrs: SrsFields;
   wasLastCard: boolean;
 }
@@ -80,6 +84,11 @@ function renderTranslation(translation: string, form: string): string {
     return rest;
   }
   return translation;
+}
+
+/** Human-friendly label for a saved word (surface form > headword > id). */
+function wordLabel(word: { id: string; head?: string; forms?: string[] }): string {
+  return word.forms?.[0] || word.head || word.id;
 }
 
 export default function ReviewScreen() {
@@ -125,8 +134,10 @@ export default function ReviewScreen() {
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
-  /** Track the current card's word ID to detect unsave-triggered card changes. */
-  const lastCardIdRef = useRef<string | null>(null);
+  /** Track the current card's word info to detect unsave/advance changes. */
+  const lastCardInfoRef = useRef<{ id: string; head: string } | null>(null);
+  /** Log the loaded deck once per language + user. */
+  const deckLoggedKeyRef = useRef<string | null>(null);
 
   // ── Auto-initialize SRS cards for saved words that don't have them ──
   // The blue ("new") deck always holds the `dailyNewLimit` most recently saved
@@ -222,6 +233,18 @@ export default function ReviewScreen() {
 
   // ── Handlers ──
 
+  /** Reveal the definition + translation for the current card. */
+  const handleReveal = useCallback(() => {
+    const card = cards[currentIndex];
+    log('[srs] reveal', {
+      wordId: card?.word.id,
+      head: card ? wordLabel(card.word) : undefined,
+      index: currentIndex,
+      totalCards: cards.length,
+    });
+    setShowTabs(true);
+  }, [cards, currentIndex]);
+
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
@@ -235,11 +258,25 @@ export default function ReviewScreen() {
 
     // Save state for undo
     const wasLastCard = currentIndex >= cards.length - 1;
-    undoRef.current = { wordId: card.word.id, prevSrs: { ...card.srs }, wasLastCard };
+    undoRef.current = {
+      wordId: card.word.id,
+      head: wordLabel(card.word),
+      prevSrs: { ...card.srs },
+      wasLastCard,
+    };
 
     // Apply SM-2 algorithm
     const sm2Quality = RATING_MAP[quality];
     const updated = sm2(card.srs, sm2Quality);
+    log('[srs] mark', {
+      quality,
+      wordId: card.word.id,
+      head: wordLabel(card.word),
+      index: currentIndex,
+      totalCards: cards.length,
+      prev: { ...card.srs },
+      next: { ...updated },
+    });
     updateCard(l2Code, card.word.id, updated);
 
     if (!isPro) {
@@ -251,6 +288,11 @@ export default function ReviewScreen() {
     }
 
     if (wasLastCard) {
+      log('[srs] complete', {
+        wordId: card.word.id,
+        head: wordLabel(card.word),
+        quality,
+      });
       setJustCompleted(true);
     }
 
@@ -279,6 +321,7 @@ export default function ReviewScreen() {
     const state = undoRef.current;
     if (!state) return;
 
+    log('[srs] undo', { wordId: state.wordId, head: state.head });
     updateCard(l2Code, state.wordId, state.prevSrs);
 
     if (state.wasLastCard) {
@@ -298,14 +341,49 @@ export default function ReviewScreen() {
     }
   }, [cards.length, currentIndex]);
 
-  // ── When card changes without a rating (e.g. unsave) ──
+  // ── When card changes (rate/unsave), log the advance ──
   useEffect(() => {
     const card = cards[currentIndex];
     const currentId = card?.word.id ?? null;
-    if (currentId && currentId !== lastCardIdRef.current) {
-      lastCardIdRef.current = currentId;
+    const currentHead = card ? wordLabel(card.word) : '';
+    const prev = lastCardInfoRef.current;
+
+    if (prev === null) {
+      lastCardInfoRef.current = currentId ? { id: currentId, head: currentHead } : null;
+      return;
     }
-  }, [cards, currentIndex, rated]);
+
+    const prevStillSaved = l2SavedWords.some((w) => w.id === prev.id);
+    if (!prevStillSaved) {
+      log('[srs] unsave', {
+        wordId: prev.id,
+        head: prev.head,
+        remainingCards: cards.length,
+      });
+      if (currentId) {
+        log('[srs] advance', {
+          wordId: currentId,
+          head: currentHead,
+          index: currentIndex,
+          remainingCards: cards.length,
+        });
+        lastCardInfoRef.current = { id: currentId, head: currentHead };
+      } else {
+        lastCardInfoRef.current = null;
+      }
+      return;
+    }
+
+    if (currentId && currentId !== prev.id) {
+      log('[srs] advance', {
+        wordId: currentId,
+        head: currentHead,
+        index: currentIndex,
+        remainingCards: cards.length,
+      });
+      lastCardInfoRef.current = { id: currentId, head: currentHead };
+    }
+  }, [cards, currentIndex, rated, l2SavedWords]);
 
   // ── Reset justCompleted when new cards become due ──
   useEffect(() => {
@@ -317,8 +395,19 @@ export default function ReviewScreen() {
 
   // ── Reset state when card changes ──
   useEffect(() => {
+    const card = cards[currentIndex];
     setContextTranslation(null);
     setShowTabs(false);
+    if (!card) return;
+    const rawInstances = (card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
+    const instances = (rawInstances ?? (card.word.context ? [{ timestamp: card.word.date ?? 0, form: card.word.forms?.[0] ?? '', context: card.word.context as unknown as SavedWordContext }] : []))
+      .filter((inst) => !!inst.context?.text);
+    log('[srs] context-loaded', {
+      wordId: card.word.id,
+      head: wordLabel(card.word),
+      count: instances.length,
+      hasSavedTranslation: instances.some((inst) => !!inst.context.translation),
+    });
   }, [cards[currentIndex]?.word.id]);
 
   // ── Auto-translate context text (if no saved translation) ──
@@ -345,7 +434,16 @@ export default function ReviewScreen() {
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled) {
-          setContextTranslation(data?.translated_text ?? data?.translation ?? data?.text ?? null);
+          const translated = data?.translated_text ?? data?.translation ?? data?.text ?? null;
+          setContextTranslation(translated);
+          if (translated) {
+            log('[srs] context-translation-loaded', {
+              wordId: card.word.id,
+              head: wordLabel(card.word),
+              source: 'api',
+              length: translated.length,
+            });
+          }
         }
       } catch { /* network error — silently ignore */ }
     };
@@ -406,6 +504,8 @@ export default function ReviewScreen() {
     setJustCompleted(false);
     setCurrentIndex(0);
     undoRef.current = null;
+    lastCardInfoRef.current = null;
+    deckLoggedKeyRef.current = null;
   }, [l2Code]);
 
   // ── Anki-style card counts (new / again / review) ──
@@ -428,6 +528,21 @@ export default function ReviewScreen() {
   // ── Render states ──
 
   const isLoading = !wordsLoaded || !srsLoaded || initializing;
+
+  // ── Log the loaded review deck once per language ──
+  useEffect(() => {
+    const deckKey = `${l2Code}:${user?.id ?? 'anon'}`;
+    if (isLoading || deckLoggedKeyRef.current === deckKey) return;
+    deckLoggedKeyRef.current = deckKey;
+    log('[srs] loaded', {
+      l2: l2Code,
+      savedWords: l2SavedWords.length,
+      dueCards: cards.length,
+      newCards: cardCounts.newCount,
+      againCards: cardCounts.againCount,
+      reviewCards: cardCounts.reviewCount,
+    });
+  }, [isLoading, l2Code, user?.id, l2SavedWords.length, cards.length, cardCounts]);
 
   if (isLoading) {
     return (
@@ -598,7 +713,7 @@ export default function ReviewScreen() {
           {/* Toggle button for definition + translation — hidden once shown */}
           {!showTabs && (
             <Pressable
-              onPress={() => setShowTabs(true)}
+              onPress={handleReveal}
               className="mb-2 rounded-lg border border-border py-1.5 active:bg-muted"
             >
               <Text className="text-center text-xs text-muted-foreground">
