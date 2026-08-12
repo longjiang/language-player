@@ -3,7 +3,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { deleteSrsCard, useUserDataColumns } from '@langplayer/api-client';
-import { createSrsStore, getLanguageCards } from '@langplayer/utils';
+import {
+  createSrsStore,
+  fsrs,
+  getCardState,
+  getLanguageCards,
+  mergeSrsCards,
+} from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 
@@ -27,21 +33,6 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
   deleteSrsCard(l2Code, wordId).catch((err) => {
     logwarn('[SRS] Card delete failed:', err);
   });
-}
-
-/** Merge two SRS card records (per-language: wordId → SrsFields). Newer lastReview wins. */
-function mergeSrsCards(
-  local: Record<string, SrsFields>,
-  cloud: Record<string, SrsFields>,
-): Record<string, SrsFields> {
-  const merged = { ...local };
-  for (const [id, cloudCard] of Object.entries(cloud)) {
-    const localCard = merged[id];
-    if (!localCard || cloudCard.lastReview > localCard.lastReview) {
-      merged[id] = cloudCard;
-    }
-  }
-  return merged;
 }
 
 /**
@@ -70,10 +61,7 @@ export function useSrs() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          const restored: SrsProgressStore = {
-            settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
-            cards: parsed.cards ?? {},
-          };
+          const restored = fsrs.migrateSrsStore(parsed);
           log('[SRS] Loaded %d language(s) from localStorage', Object.keys(restored.cards).length);
           setStore(restored);
         }
@@ -134,9 +122,9 @@ export function useSrs() {
       new Date(fields.nextReview).toISOString().slice(0, 16));
     setStore((prev) => {
       const prevCard = prev.cards[l2Code]?.[wordId];
-      if (prevCard && prevCard.repetitions > 0 && fields.repetitions === 0) {
-        logwarn('[SRS] Card %s/%s reset from reps=%d to 0 — possible data loss!',
-          l2Code, wordId, prevCard.repetitions);
+      if (prevCard && getCardState(prevCard) === 'review' && fields.state === 0) {
+        logwarn('[SRS] Card %s/%s reset from review to new — possible data loss!',
+          l2Code, wordId);
       }
       return {
         settings: { ...prev.settings },
@@ -146,7 +134,7 @@ export function useSrs() {
         },
       };
     });
-    putSrsCard(l2Code, wordId, fields).catch((err) => {
+    putSrsCard(l2Code, wordId, fsrs.normalizeFsrsCard(fields)).catch((err) => {
       logwarn('[SRS] Card sync failed:', err);
     });
   }, [putSrsCard]);

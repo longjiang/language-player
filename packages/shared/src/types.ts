@@ -690,8 +690,8 @@ export interface UserDataRecord {
   srs_progress?: string;  // JSON.stringify(SrsProgressStore)
 }
 
-/** SM-2 spaced repetition fields for a single card. */
-export interface SrsFields {
+/** Legacy SM-2 fields for a single card (SPEC-066 transition window). */
+export interface LegacySrsFields {
   /** Ease factor. Starts at 2.5, adjusts ±0.15 per review. Min 1.3. */
   ease: number;
   /** Days until next review. 0 = new card. */
@@ -707,13 +707,64 @@ export interface SrsFields {
 }
 
 /**
- * Top-level SRS progress store shape.
- * Stored in localStorage under 'zthSrsProgress' and synced to Directus srs_progress column.
+ * FSRS card fields persisted by web/mobile (SPEC-066).
  *
- * Cards are keyed by l2Code → wordId → SrsFields.
- * Settings are embedded so they sync across devices with the cards.
+ * This is the full serialized ts-fsrs `Card` (dates as Unix ms) plus app
+ * bookkeeping. The deprecated SM-2 fields (`ease`, `interval`,
+ * `repetitions`, `nextReview`) are written on every card for the legacy-client
+ * compatibility window (Phase 0 decision) and ignored by new code.
+ */
+export interface SrsFields {
+  /** Store schema version for this card; legacy cards are normalized to 2. */
+  v: 2;
+  /** ts-fsrs `State` enum value (0 New, 1 Learning, 2 Review, 3 Relearning). */
+  state: number;
+  /** Unix-ms timestamp when the card is next due. */
+  due: number;
+  /** FSRS stability (days). */
+  stability: number;
+  /** FSRS difficulty. */
+  difficulty: number;
+  elapsed_days: number;
+  scheduled_days: number;
+  learning_steps: number;
+  /** Lifetime review count. */
+  reps: number;
+  /** Times a review card failed and entered relearning. */
+  lapses: number;
+  /** Unix-ms timestamp of the last ts-fsrs review (null for new cards). */
+  last_review: number | null;
+  /** Unix-ms timestamp of the last rating — app LWW merge key. */
+  lastReview: number;
+  /** Unix-ms timestamp of card creation (new-deck budgeting). */
+  createdAt: number;
+  /** Deprecated SM-2 fields, written for old clients only. */
+  ease: number;
+  interval: number;
+  repetitions: number;
+  nextReview: number;
+}
+
+/** Legacy store shape used by the textbook SM-2 implementation. */
+export interface LegacySrsProgressStore {
+  settings: {
+    /** Max new cards introduced per day. Default 20. */
+    dailyNewLimit: number;
+  };
+  /** Cards keyed by ISO 639-1 l2 code, then by dictionary entry ID. */
+  cards: Record<string, Record<string, LegacySrsFields>>;
+}
+
+/**
+ * Top-level SRS progress store shape.
+ * Stored in localStorage/SecureStore under 'zthSrsProgress' and synced to
+ * Directus srs_progress column.
+ *
+ * Cards are keyed by l2Code → wordId → SrsFields. `v: 2` marks a migrated
+ * FSRS store; legacy stores are migrated on read.
  */
 export interface SrsProgressStore {
+  v?: 2;
   settings: {
     /** Max new cards introduced per day. Default 20. */
     dailyNewLimit: number;

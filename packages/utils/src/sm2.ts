@@ -16,17 +16,17 @@
  *   import { sm2, newCard } from '@langplayer/utils';
  *   const card = sm2(card, quality);
  *
- * NOTE: `SrsFields` is the legacy SM-2 card shape, kept for the transition
+ * NOTE: `LegacySrsFields` is the legacy SM-2 card shape, kept for the transition
  * window (SPEC-066 Phase 0/6). The single type declaration lives in
  * `@langplayer/shared`; new FSRS cards use `FsrsCard` from `./fsrs-scheduler`.
  */
 
-import type { SrsFields } from '@langplayer/shared';
+import type { LegacySrsFields, LegacySrsProgressStore } from '@langplayer/shared';
 
-export type { SrsFields };
+export type { LegacySrsFields, LegacySrsProgressStore };
 
 /** Create a new, unreviewed card. */
-export function newCard(): SrsFields {
+export function newCard(): LegacySrsFields {
   const now = Date.now();
   return {
     ease: 2.5,
@@ -39,7 +39,7 @@ export function newCard(): SrsFields {
 }
 
 /** Apply the SM-2 algorithm to a card after a review. */
-export function sm2(card: SrsFields, quality: 0 | 1 | 2 | 3 | 4 | 5): SrsFields {
+export function sm2(card: LegacySrsFields, quality: 0 | 1 | 2 | 3 | 4 | 5): LegacySrsFields {
   const now = Date.now();
 
   if (quality < 3) {
@@ -80,12 +80,12 @@ export function sm2(card: SrsFields, quality: 0 | 1 | 2 | 3 | 4 | 5): SrsFields 
 }
 
 /** Check if a card is due for review. */
-export function isDue(card: SrsFields): boolean {
+export function isDue(card: LegacySrsFields): boolean {
   return card.nextReview <= Date.now();
 }
 
 /** Get all due cards from a record of cards. */
-export function getDueCards(cards: Record<string, SrsFields>): string[] {
+export function getDueCards(cards: Record<string, LegacySrsFields>): string[] {
   const now = Date.now();
   return Object.entries(cards)
     .filter(([_, c]) => c.nextReview <= now)
@@ -94,7 +94,7 @@ export function getDueCards(cards: Record<string, SrsFields>): string[] {
 }
 
 /** Get the number of cards due today. */
-export function countDueCards(cards: Record<string, SrsFields>): number {
+export function countDueCards(cards: Record<string, LegacySrsFields>): number {
   const now = Date.now();
   let count = 0;
   for (const c of Object.values(cards)) {
@@ -108,13 +108,13 @@ export const DEFAULT_DAILY_NEW_LIMIT = 20;
 
 /** A "new" (blue) card — created but never rated yet. A card leaves the new
  *  deck the moment it's rated, whether it passed (green) or failed (red). */
-export function isNewCard(card: SrsFields): boolean {
+export function isNewCard(card: LegacySrsFields): boolean {
   const createdAt = card.createdAt ?? 0;
   return card.repetitions === 0 && (card.lastReview ?? createdAt) <= createdAt;
 }
 
 /** Count how many cards were created today (by createdAt timestamp). */
-export function countNewCardsToday(cards: Record<string, SrsFields>): number {
+export function countNewCardsToday(cards: Record<string, LegacySrsFields>): number {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const cutoff = todayStart.getTime();
@@ -131,7 +131,7 @@ export function countNewCardsToday(cards: Record<string, SrsFields>): number {
  * "new" deck (still blue — never rated). Cards created today are skipped —
  * they're already counted by `countNewCardsToday()`.
  */
-export function countUnreviewedNewCards(cards: Record<string, SrsFields>): number {
+export function countUnreviewedNewCards(cards: Record<string, LegacySrsFields>): number {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const cutoff = todayStart.getTime();
@@ -154,7 +154,7 @@ export function countUnreviewedNewCards(cards: Record<string, SrsFields>): numbe
  * stays capped at `limit` (e.g. 20) instead of growing by `limit` every day.
  */
 export function remainingNewCardsToday(
-  cards: Record<string, SrsFields>,
+  cards: Record<string, LegacySrsFields>,
   limit: number = DEFAULT_DAILY_NEW_LIMIT,
 ): number {
   return Math.max(0, limit - countNewCardsToday(cards) - countUnreviewedNewCards(cards));
@@ -170,14 +170,14 @@ export function remainingNewCardsToday(
  * displaced.
  *
  * @param savedWords Saved lexical items (only `id` and save `date` are read).
- * @param cards      Current SRS cards for this language (wordId → SrsFields).
+ * @param cards      Current SRS cards for this language (wordId → LegacySrsFields).
  * @param limit      Max blue deck size (the daily new-card limit).
  * @returns `toCreate` — word ids that should get a brand-new card,
  *          `toRemove` — word ids whose blue cards should be dropped.
  */
 export function planNewDeck(
   savedWords: Array<{ id: string; date?: number }>,
-  cards: Record<string, SrsFields>,
+  cards: Record<string, LegacySrsFields>,
   limit: number,
 ): { toCreate: string[]; toRemove: string[] } {
   const cap = Math.max(0, Math.floor(limit));
@@ -198,7 +198,7 @@ export function planNewDeck(
 }
 
 /** Get the next review time as a human-readable countdown. */
-export function nextReviewText(card: SrsFields): string {
+export function nextReviewText(card: LegacySrsFields): string {
   const diff = card.nextReview - Date.now();
   if (diff <= 0) return 'now';
 
@@ -217,16 +217,11 @@ export function nextReviewText(card: SrsFields): string {
 
 // ── Store shape ───────────────────────────────
 
-/** Top-level SRS progress store. Cards keyed by l2Code → wordId. */
-export interface SrsProgressStore {
-  settings: {
-    dailyNewLimit: number;
-  };
-  cards: Record<string, Record<string, SrsFields>>;
-}
+/** Top-level SRS progress store. Cards keyed by l2Code → wordId.
+ *  The type lives in @langplayer/shared; re-exported above for legacy code. */
 
 /** Create a new, empty SRS progress store with defaults. */
-export function createSrsStore(): SrsProgressStore {
+export function createSrsStore(): LegacySrsProgressStore {
   return {
     settings: { dailyNewLimit: DEFAULT_DAILY_NEW_LIMIT },
     cards: {},
@@ -235,8 +230,8 @@ export function createSrsStore(): SrsProgressStore {
 
 /** Safely get the cards record for a given language code. */
 export function getLanguageCards(
-  store: SrsProgressStore,
+  store: LegacySrsProgressStore,
   l2Code: string,
-): Record<string, SrsFields> {
+): Record<string, LegacySrsFields> {
   return store.cards[l2Code] ?? {};
 }

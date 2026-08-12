@@ -33,10 +33,9 @@ export {
   remainingNewCardsToday,
   DEFAULT_DAILY_NEW_LIMIT,
   nextReviewText,
-  createSrsStore,
-  getLanguageCards,
 } from './sm2';
-export type { SrsFields, SrsProgressStore } from './sm2';
+export type { LegacySrsFields, LegacySrsProgressStore } from './sm2';
+export type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 export {
   rate,
   serializeFsrsCard,
@@ -44,6 +43,9 @@ export {
   deserializeSrsCard,
   migrateSrsStore,
   getCardState,
+  createSrsStore,
+  getLanguageCards,
+  mergeSrsCards,
 } from './fsrs-scheduler';
 export type { FsrsCard, FsrsSrsStore, SrsCardState, SrsRating } from './fsrs-scheduler';
 /** Namespaced FSRS helpers (newCard, isDue, planNewDeck, …) — used by the

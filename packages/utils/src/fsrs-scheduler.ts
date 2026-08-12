@@ -18,6 +18,7 @@ import {
   type CardInput,
   type Grade,
 } from 'ts-fsrs';
+import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 
 /** The four rating buttons, shared by web and mobile. */
 export type SrsRating = 'again' | 'hard' | 'good' | 'easy';
@@ -25,40 +26,15 @@ export type SrsRating = 'again' | 'hard' | 'good' | 'easy';
 /** App-facing card states (mirror ts-fsrs `State`). */
 export type SrsCardState = 'new' | 'learning' | 'review' | 'relearning';
 
-/** Fully serialized FSRS card persisted by web/mobile stores. */
-export interface FsrsCard {
-  /** Store schema version for this card. Legacy cards are normalized to 2. */
-  v: 2;
-  /** ts-fsrs `State` enum value (0 New, 1 Learning, 2 Review, 3 Relearning). */
-  state: State;
-  /** Unix-ms timestamp when the card is next due. */
-  due: number;
-  stability: number;
-  difficulty: number;
-  elapsed_days: number;
-  scheduled_days: number;
-  learning_steps: number;
-  reps: number;
-  lapses: number;
-  /** Unix-ms timestamp of the last ts-fsrs review (null for new cards). */
-  last_review: number | null;
-  /** Unix-ms timestamp of the last rating — app LWW merge key. */
-  lastReview: number;
-  /** Unix-ms timestamp of card creation (new-deck budgeting). */
-  createdAt: number;
-  /** Deprecated SM-2 fields, written for old clients only. */
-  ease: number;
-  interval: number;
-  repetitions: number;
-  nextReview: number;
-}
+/**
+ * Fully serialized FSRS card persisted by web/mobile stores. The single type
+ * declaration lives in `@langplayer/shared`; this alias keeps the scheduler
+ * module's vocabulary explicit.
+ */
+export type FsrsCard = SrsFields;
 
 /** Versioned SRS store shape produced by the FSRS migration. */
-export interface FsrsSrsStore {
-  v: 2;
-  settings: { dailyNewLimit: number };
-  cards: Record<string, Record<string, FsrsCard>>;
-}
+export type FsrsSrsStore = SrsProgressStore;
 
 const DAY_MS = 86_400_000;
 
@@ -199,6 +175,29 @@ export function normalizeFsrsCard(value: unknown): FsrsCard {
 /** Alias for callers that think in serialize/deserialize terms. */
 export const deserializeSrsCard = normalizeFsrsCard;
 
+/**
+ * Merge two per-language card records (local vs cloud) with the app LWW rule:
+ * newer `lastReview` wins. Both sides are normalized first, so mixed
+ * old/new-shape cards can never resurrect malformed state.
+ */
+export function mergeSrsCards(
+  local: Record<string, unknown>,
+  cloud: Record<string, unknown>,
+): Record<string, SrsFields> {
+  const merged: Record<string, SrsFields> = {};
+  for (const [id, raw] of Object.entries(local)) {
+    merged[id] = normalizeFsrsCard(raw);
+  }
+  for (const [id, raw] of Object.entries(cloud)) {
+    const cloudCard = normalizeFsrsCard(raw);
+    const localCard = merged[id];
+    if (!localCard || cloudCard.lastReview > localCard.lastReview) {
+      merged[id] = cloudCard;
+    }
+  }
+  return merged;
+}
+
 /** Convert a legacy SM-2 card to a seeded FSRS card without resetting `due`. */
 function normalizeLegacyCard(raw: Record<string, unknown>): FsrsCard {
   const now = Date.now();
@@ -257,6 +256,19 @@ export function migrateSrsStore(value: unknown): FsrsSrsStore {
   const dailyNewLimit =
     typeof rawSettings.dailyNewLimit === 'number' ? rawSettings.dailyNewLimit : 20;
   return { v: 2, settings: { dailyNewLimit }, cards };
+}
+
+/** Create a new, empty v2 SRS store with default settings. */
+export function createSrsStore(): SrsProgressStore {
+  return { v: 2, settings: { dailyNewLimit: 20 }, cards: {} };
+}
+
+/** Safely get the cards record for a given language code. */
+export function getLanguageCards<T>(
+  store: { cards?: Record<string, Record<string, T>> },
+  l2Code: string,
+): Record<string, T> {
+  return store.cards?.[l2Code] ?? {};
 }
 
 /** Check if a card is due at `now`. */
