@@ -57,7 +57,10 @@ export function LanguageVideoList() {
                   <span className="text-xl leading-none" aria-hidden="true">
                     {flagEmoji(code)}
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
+                  <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
+                    <span className="truncate font-medium">{name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{code}</span>
+                  </span>
                   {isExperimentalL2(code) && (
                     <span className="shrink-0 rounded-full border border-warm-500/30 bg-warm-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warm-600 dark:text-warm-400">
                       {t('label.experimental')}
