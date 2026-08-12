@@ -56,6 +56,8 @@ comments go in brackets.
 - ⬜ visit `/` → landing page renders (hero, features, public pricing
   comparison, classic notice); language cards link to `/{l1}/{l2}`;
   “Start watching” → login
+- ⬜ legacy iOS Capacitor wrapper opening `languageplayer.io` redirects to
+  `v2.languageplayer.io`
 - ⬜ login → header renders (logo, Media / Reading / Vocab menus, search,
   language switcher, user menu)
 - ⬜ logout via user menu → returns to login, no session residue

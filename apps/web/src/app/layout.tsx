@@ -9,6 +9,7 @@ import { UserDataProvider } from '@/providers/user-data-provider';
 import { SavedWordsProvider } from '@/providers/saved-words-provider';
 import { SubscriptionProvider } from '@/providers/subscription-provider';
 import SupabaseSessionHandler from '@/components/auth/supabase-session-handler';
+import { CapacitorRedirect } from '@/components/layout/capacitor-redirect';
 import { PublicHeader } from '@/components/layout/public-header';
 import { Toaster } from '@/components/ui/sonner';
 import ogVideos from '@/data/og-videos.json';
@@ -122,6 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <SavedWordsProvider>
                     <SubscriptionProvider>
                       <SupabaseSessionHandler />
+                      <CapacitorRedirect />
                       <PublicHeader />
                       {children}
                     </SubscriptionProvider>
