@@ -3,7 +3,7 @@ import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { buildRuby, baseCode } from '@langplayer/utils';
+import { buildRuby, baseCode, tokenMatchesAnyForm, tokenMatchesAnyTerm } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText, prewarmLocalLemmatizer } from '@/lib/tokenizer';
@@ -1085,7 +1085,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const traditionalText = convertedTexts.get(word) ?? word;
-              const isHighlighted = !!highlightTerms?.some((t) => t === word);
+              const isHighlighted = tokenMatchesAnyTerm(token, highlightTerms);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
@@ -1103,7 +1103,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
-              const isSaved = savedFormSet.has(word.toLowerCase());
+              const isSaved = tokenMatchesAnyForm(token, savedFormSet);
 
               // Trim the interlinear definition to the word's length + 2 chars
               // (one extra character on each side), scaled up because definition
@@ -1190,7 +1190,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const tokenDisplayText = convertedTexts.get(word) ?? word;
-              const isHighlighted = !!highlightTerms?.some((t) => t === word);
+              const isHighlighted = tokenMatchesAnyTerm(token, highlightTerms);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
@@ -1204,7 +1204,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
-              const isSaved = savedFormSet.has(word.toLowerCase());
+              const isSaved = tokenMatchesAnyForm(token, savedFormSet);
               const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
