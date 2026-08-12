@@ -93,7 +93,76 @@ Both dialogs keep the existing header (logo + app name + "About") and footer
 2. Contact card (email support, Discord server)
 3. Links card (Documentation, Tokenizer Test)
 
-## 5. i18n
+## 5. Wireframes
+
+### 5.1 Web dialog (centered modal, ~512px wide)
+
+```
+┌─────────────────────────────────────────────────┐
+│                                          [X]    │
+│                    ┌─────┐                      │
+│                    │Logo │                      │
+│                    └─────┘                      │
+│               Language Player                   │
+│                   About                         │
+│                                                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │ Version            v0.0.0                │  │
+│  │ Build Date         2026-08-12            │  │
+│  │ Environment        production            │  │
+│  └───────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────┐  │
+│  │ Contact                                  │  │
+│  │ ✉ Email support   jon.long@…        →    │  │
+│  │ 💬 Discord server https://discord.gg/… → │  │
+│  └───────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────┐  │
+│  │ Documentation                      →     │  │
+│  │ Tokenizer Test                     →     │  │
+│  │                                          │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│            © 2026 Language Player               │
+└─────────────────────────────────────────────────┘
+```
+
+### 5.2 Mobile dialog (bottom sheet, ~85vw wide)
+
+```
+┌──────────────────────────────┐
+│ [X]            About         │
+│           ┌─────┐            │
+│           │Logo │            │
+│           └─────┘            │
+│        Language Player       │
+│                              │
+│  ┌────────────────────────┐  │
+│  │ Version     v0.0.0     │  │
+│  │ Build Date  2026-08-12 │  │
+│  │ Environment development│  │
+│  └────────────────────────┘  │
+│  ┌────────────────────────┐  │
+│  │ Contact                │  │
+│  │ ✉ Email support        │  │
+│  │ 💬 Discord server      │  │
+│  └────────────────────────┘  │
+│  ┌────────────────────────┐  │
+│  │ Documentation          │  │
+│  │ Tokenizer Test         │  │
+│  └────────────────────────┘  │
+│                              │
+│   © 2026 Language Player     │
+└──────────────────────────────┘
+```
+
+Notes:
+
+- Email and Discord rows are tappable links; arrows indicate navigation on web,
+  while mobile rows use the whole row as the tap target
+- Documentation and Tokenizer Test rows close the dialog before navigating
+- Mobile uses a bottom sheet with a close button; web uses a centered dialog
+
+## 6. i18n
 
 Existing keys:
 
@@ -107,7 +176,7 @@ New key (added through the `translations.csv` workflow):
 
 - `label.discord_server` — "Discord server"
 
-## 6. Acceptance Criteria
+## 7. Acceptance Criteria
 
 - About no longer shows a commit hash or branch anywhere
 - About is a modal dialog in both apps (mobile no longer has an `/about` route)
@@ -117,7 +186,7 @@ New key (added through the `translations.csv` workflow):
 - Tokenizer test link navigates to the tokenizer page/screen in both apps
 - Mobile tokenizer link is no longer dev-only
 
-## 7. Testing
+## 8. Testing
 
 - Web: typecheck, lint, existing Vitest suite, `npm run build:check -w apps/web`
 - Mobile: typecheck (`cd apps/mobile && ./node_modules/.bin/tsc --noEmit`)
