@@ -11,8 +11,10 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { log } from '@/lib/logger';
+import { dictionaryEntryLogger } from '@/lib/logger';
 import { WebViewSheet } from '@/components/WebViewSheet';
+
+const { log } = dictionaryEntryLogger;
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;

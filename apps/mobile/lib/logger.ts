@@ -25,12 +25,15 @@ export const { log, logwarn, logerr } = mobileLogger;
  */
 export const translationLogger = createLogger('[LP Mobile]', 'translation');
 export const tokenizerLogger = createLogger('[LP Mobile]', 'tokenizer');
+export const tokenizerWorkerLogger = createLogger('[LP Mobile]', 'tokenizer-worker');
 export const readerLogger = createLogger('[LP Mobile]', 'reader');
 export const popupLogger = createLogger('[LP Mobile]', 'popup');
 export const lemmatizeLogger = createLogger('[LP Mobile]', 'lemmatize');
 export const tokenizedTextLogger = createLogger('[LP Mobile]', 'tokenized-text');
 export const dictDbLogger = createLogger('[LP Mobile]', 'dictdb');
 export const syncLogger = createLogger('[LP Mobile]', 'sync');
+export const srsLogger = createLogger('[LP Mobile]', 'srs');
+export const dictionaryEntryLogger = createLogger('[LP Mobile]', 'dictionaryEntry');
 
 /**
  * Default a domain to OFF unless its env override is explicitly set, e.g.
@@ -54,5 +57,9 @@ defaultOff('sync');
 defaultOff('lemmatize');
 defaultOff('tokenized-text');
 defaultOff('dictdb');
+defaultOff('tokenizer');
+defaultOff('tokenizer-worker');
+defaultOff('popup');
+defaultOff('dictionaryEntry');
 
 export { getLogLevel, setLogLevel };
