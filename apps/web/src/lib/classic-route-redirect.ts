@@ -4,12 +4,18 @@ export type LanguagePair = { l1: string; l2: string };
 
 export type RouteAction =
   | { kind: 'pass' }
-  | { kind: 'alias'; path: string }
+  | { kind: 'alias'; path: string; dropSearchParams: string[] }
   | { kind: 'v2' };
 
 interface AliasRule {
   pattern: string;
-  to: (params: Record<string, string>, pair: LanguagePair) => string | null;
+  to: (
+    params: Record<string, string>,
+    pair: LanguagePair,
+    search: URLSearchParams,
+  ) => string | null;
+  /** Original query params that must not be copied onto the target URL. */
+  dropSearchParams?: string[];
 }
 
 export const V2_ORIGIN =
@@ -92,7 +98,17 @@ const LEGACY_ALIASES: AliasRule[] = [
   },
   {
     pattern: '/verify-email',
-    to: () => '/auth/confirm',
+    to: (_params, _pair, search) => {
+      const email = search.get('email');
+      if (email) {
+        const query = new URLSearchParams({
+          verifyEmail: decodeParam(email),
+        }).toString();
+        return `/register?${query}`;
+      }
+      return '/register';
+    },
+    dropSearchParams: ['email', 'code'],
   },
   {
     pattern: '/:l1/:l2/explore-media',
@@ -144,6 +160,48 @@ const LEGACY_ALIASES: AliasRule[] = [
     to: (params) => `/${params.l1}/${params.l2}/saved-words`,
   },
   {
+    pattern: '/:l1/:l2/dictionary/:dictionaryId/:entryId',
+    to: (params) => {
+      // Classic's HSK-id lookup has no web equivalent — fall through to v2.
+      if (params.dictionaryId === 'hsk') return null;
+      if (params.entryId === 'random') {
+        return `/${params.l1}/${params.l2}/dictionary`;
+      }
+      return `/${params.l1}/${params.l2}/dictionary/entry/${params.dictionaryId}/${params.entryId}`;
+    },
+  },
+  {
+    pattern: '/:l1/:l2/reader/shared',
+    to: (params) => `/${params.l1}/${params.l2}/reader`,
+  },
+  {
+    pattern: '/:l1/:l2/reader/shared/:id',
+    to: (params) => {
+      const id = params.id;
+      if (id === undefined) return null;
+      const query = new URLSearchParams({
+        noteId: decodeParam(id),
+      }).toString();
+      return `/${params.l1}/${params.l2}/reader?${query}`;
+    },
+  },
+  {
+    pattern: '/:l1/:l2/reader/:method/:arg',
+    to: (params) => {
+      const method = params.method;
+      const arg = params.arg;
+      if (!method || !arg) return null;
+      if (!['md', 'html', 'txt', 'md-url', 'html-url'].includes(method)) {
+        return null;
+      }
+      const query = new URLSearchParams({
+        method,
+        arg: decodeParam(arg),
+      }).toString();
+      return `/${params.l1}/${params.l2}/reader?${query}`;
+    },
+  },
+  {
     pattern: '/:l1/:l2/youtube/channel/:channelId?/:title?',
     to: (params) =>
       params.channelId === undefined
@@ -152,10 +210,24 @@ const LEGACY_ALIASES: AliasRule[] = [
   },
   {
     pattern: '/:l1/:l2/video-view/:type/:videoId?/:dbId?/:lesson?',
-    to: (params) =>
-      params.videoId === undefined
-        ? null
-        : `/${params.l1}/${params.l2}/watch/${params.videoId}`,
+    to: (params, _pair, search) => {
+      const videoId = params.videoId ?? search.get('v');
+      if (videoId) {
+        const query = new URLSearchParams();
+        const p = search.get('p');
+        if (p === 'recommended' || p === 'recommended_music') {
+          query.set('queueType', 'recommended');
+        }
+        const base = `/${params.l1}/${params.l2}/watch/${decodeParam(videoId)}`;
+        const qs = query.toString();
+        return qs ? `${base}?${qs}` : base;
+      }
+      if (params.type === 'bring-your-own') {
+        return `/${params.l1}/${params.l2}/local-media`;
+      }
+      return null;
+    },
+    dropSearchParams: ['v', 'id', 'p', 'sort', 'lesson'],
   },
   {
     pattern: '/:l1/:l2/show/:type/:id',
@@ -255,6 +327,8 @@ const CLASSIC_ONLY_PATTERNS = [
   '/:l1/:l2/learning-path',
   '/:l1/:l2/levels',
   '/:l1/:l2/minimal-pairs',
+  '/:l1/:l2/dictionary/hsk/:hskId',
+  '/:l1/:l2/reader/:method/:arg',
   '/:l1/:l2/page/:id/:title?',
   '/:l1/:l2/phrase/compare/:term/:compareTerm',
   '/:l1/:l2/phrase/search/:term/:dict?',
@@ -356,6 +430,7 @@ function decodeParam(value: string): string {
 export function classicRouteAction(
   pathname: string,
   pair: LanguagePair,
+  search: URLSearchParams = new URLSearchParams(),
 ): RouteAction {
   for (const pattern of WEB_ROUTE_PATTERNS) {
     if (matchPattern(pattern, pathname)) return { kind: 'pass' };
@@ -364,8 +439,14 @@ export function classicRouteAction(
   for (const alias of LEGACY_ALIASES) {
     const params = matchPattern(alias.pattern, pathname);
     if (!params) continue;
-    const target = alias.to(params, pair);
-    if (target !== null) return { kind: 'alias', path: target };
+    const target = alias.to(params, pair, search);
+    if (target !== null) {
+      return {
+        kind: 'alias',
+        path: target,
+        dropSearchParams: alias.dropSearchParams ?? [],
+      };
+    }
   }
 
   for (const pattern of CLASSIC_ONLY_PATTERNS) {

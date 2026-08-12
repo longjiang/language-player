@@ -7,8 +7,12 @@ import {
 
 const FALLBACK_PAIR: LanguagePair = { l1: 'en', l2: 'zh' };
 
-function actionFor(path: string, pair: LanguagePair = FALLBACK_PAIR): RouteAction {
-  return classicRouteAction(path, pair);
+function actionFor(
+  path: string,
+  pair: LanguagePair = FALLBACK_PAIR,
+  search: URLSearchParams = new URLSearchParams(),
+): RouteAction {
+  return classicRouteAction(path, pair, search);
 }
 
 function expectPass(path: string, pair: LanguagePair = FALLBACK_PAIR) {
@@ -16,7 +20,7 @@ function expectPass(path: string, pair: LanguagePair = FALLBACK_PAIR) {
 }
 
 function expectAlias(path: string, expected: string, pair: LanguagePair = FALLBACK_PAIR) {
-  expect(actionFor(path, pair)).toEqual({ kind: 'alias', path: expected });
+  expect(actionFor(path, pair)).toMatchObject({ kind: 'alias', path: expected });
 }
 
 function expectV2(path: string, pair: LanguagePair = FALLBACK_PAIR) {
@@ -59,7 +63,6 @@ describe('classicRouteAction', () => {
       '/en/ja/playlists',
       '/en/ja/playlists/12',
       '/en/ja/profile',
-      '/en/ja/reader',
       '/en/ja/review',
       '/en/ja/saved-words',
       '/en/ja/settings',
@@ -94,16 +97,83 @@ describe('classicRouteAction', () => {
       ['/en/ja/youtube/channel/UC123', '/en/ja/channel/UC123'],
       ['/en/ja/youtube/channel/UC123/Some%20Title', '/en/ja/channel/UC123'],
       ['/en/ja/video-view/youtube/abc123', '/en/ja/watch/abc123'],
+      ['/en/ja/video-view/bring-your-own', '/en/ja/local-media'],
       ['/en/ja/show/movies/5', '/en/ja/tv-shows/5'],
+      ['/en/ja/dictionary/edict/92130', '/en/ja/dictionary/entry/edict/92130'],
+      ['/en/ja/dictionary/edict/random', '/en/ja/dictionary'],
+      ['/en/ja/reader/shared', '/en/ja/reader'],
+      ['/en/ja/reader/shared/42', '/en/ja/reader?noteId=42'],
+      ['/en/ja/reader/md/hello', '/en/ja/reader?method=md&arg=hello'],
+      [
+        '/en/ja/reader/html-url/https%3A%2F%2Fexample.com',
+        '/en/ja/reader?method=html-url&arg=https%3A%2F%2Fexample.com',
+      ],
     ])('%s → %s', (path, expected) => {
       expectAlias(path, expected);
+    });
+
+    it('maps video-view query params to watch with queueType', () => {
+      const action = actionFor(
+        '/en/ja/video-view/youtube',
+        FALLBACK_PAIR,
+        new URLSearchParams('v=Qgzv_LBictg&id=70000029094&p=recommended'),
+      );
+      expect(action).toMatchObject({
+        kind: 'alias',
+        path: '/en/ja/watch/Qgzv_LBictg?queueType=recommended',
+      });
+      if (action.kind === 'alias') {
+        expect(action.dropSearchParams).toEqual([
+          'v',
+          'id',
+          'p',
+          'sort',
+          'lesson',
+        ]);
+      }
+    });
+
+    it('maps p=recommended_music to the same recommended queue type', () => {
+      expect(
+        actionFor(
+          '/en/ja/video-view/youtube',
+          FALLBACK_PAIR,
+          new URLSearchParams('v=abc&p=recommended_music'),
+        ),
+      ).toMatchObject({
+        kind: 'alias',
+        path: '/en/ja/watch/abc?queueType=recommended',
+      });
+    });
+
+    it('does not add queueType for numeric or unknown p values', () => {
+      expect(
+        actionFor(
+          '/en/ja/video-view/youtube',
+          FALLBACK_PAIR,
+          new URLSearchParams('v=abc&p=42'),
+        ),
+      ).toMatchObject({ kind: 'alias', path: '/en/ja/watch/abc' });
     });
 
     it('maps root routes', () => {
       expectAlias('/dashboard', '/language-select');
       expectAlias('/go-pro', '/en/zh/go-pro');
       expectAlias('/privacy-policy', '/en/zh/docs/privacy-policy');
-      expectAlias('/verify-email', '/auth/confirm');
+      expectAlias('/verify-email', '/register');
+    });
+
+    it('maps verify-email with an email query to the register verify step', () => {
+      expect(
+        actionFor(
+          '/verify-email',
+          FALLBACK_PAIR,
+          new URLSearchParams('email=a%40b.com&code=123456'),
+        ),
+      ).toMatchObject({
+        kind: 'alias',
+        path: '/register?verifyEmail=a%40b.com',
+      });
     });
 
     it('uses the last-used pair for pair-scoped root aliases', () => {
@@ -169,6 +239,8 @@ describe('classicRouteAction', () => {
       '/en/ja/learning-path',
       '/en/ja/levels',
       '/en/ja/minimal-pairs',
+      '/en/ja/dictionary/hsk/123',
+      '/en/ja/reader/share/foo',
       '/en/ja/page/42',
       '/en/ja/phrase/compare/foo/bar',
       '/en/ja/phrase/search/foo',

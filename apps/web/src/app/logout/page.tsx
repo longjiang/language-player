@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
+import { clearUserData } from '@/lib/user-data-wipe';
 
 /**
  * Classic `/logout` landing page. A plain redirect would leave the NextAuth
@@ -11,6 +12,10 @@ import { Loader2 } from 'lucide-react';
  */
 export default function LogoutPage() {
   useEffect(() => {
+    // Classic wipes local user data before logging out (SPEC-062); keep the
+    // same behavior so the next user never inherits the previous session's
+    // saved words/settings (SPEC-071).
+    clearUserData();
     signOut({ callbackUrl: '/login' });
   }, []);
 
