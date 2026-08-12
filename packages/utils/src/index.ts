@@ -29,6 +29,8 @@ export {
   deserializeSrsCard,
   migrateSrsStore,
   getCardState,
+  countDeckStates,
+  srsDueLabel,
   createSrsStore,
   getLanguageCards,
   mergeSrsCards,

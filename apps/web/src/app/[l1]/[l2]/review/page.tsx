@@ -52,17 +52,6 @@ interface UndoState {
   ratingId?: string;
 }
 
-/** Short human label for a card's next due time ("new", "10m", "3d"). */
-function srsDueLabel(srs: SrsFields): string {
-  const diff = srs.due - Date.now();
-  if (diff <= 0) return '0m';
-  const mins = Math.ceil(diff / 60_000);
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.ceil(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.round(hours / 24)}d`;
-}
-
 function useRatingLabels() {
   const t = useT();
   return [
@@ -480,24 +469,10 @@ export default function ReviewPage() {
   // ── Anki-style card counts (new / again / review) ──
   // Must be BEFORE any conditional returns (React hooks rule).
   const langCardsForCounts = store.cards[l2Code] ?? {};
-  const cardCounts = useMemo(() => {
-    let newCount = 0;
-    let againCount = 0;
-    let reviewCount = 0;
-    for (const sw of l2SavedWords) {
-      const srs = langCardsForCounts[sw.id];
-      if (!srs) continue;
-      const state = fsrs.getCardState(srs);
-      if (state === 'new') {
-        newCount++;
-      } else if (state === 'learning' || state === 'relearning') {
-        againCount++;
-      } else {
-        reviewCount++;
-      }
-    }
-    return { newCount, againCount, reviewCount };
-  }, [l2SavedWords, langCardsForCounts]);
+  const cardCounts = useMemo(
+    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts),
+    [l2SavedWords, langCardsForCounts],
+  );
 
   const currentCard = cards[currentIndex];
 
@@ -825,7 +800,7 @@ export default function ReviewPage() {
 
         {/* SRS info (compact) */}
         <p className="text-xs text-muted-foreground mb-4">
-          {srs.state === 0 ? t('review.srs_new') : srsDueLabel(srs)}
+          {srs.state === 0 ? t('review.srs_new') : fsrs.srsDueLabel(srs)}
           {srs.reps > 0 && (
             <>{' · '}{t('review.srs_review', { count: srs.reps })}</>
           )}

@@ -331,6 +331,40 @@ export function getCardState(card: FsrsCard): SrsCardState {
   }
 }
 
+/** Blue/red/green deck counts from the whole saved-word deck (not just due). */
+export function countDeckStates(
+  savedWords: Array<{ id: string }>,
+  cards: Record<string, FsrsCard>,
+): { newCount: number; againCount: number; reviewCount: number } {
+  let newCount = 0;
+  let againCount = 0;
+  let reviewCount = 0;
+  for (const sw of savedWords) {
+    const card = cards[sw.id];
+    if (!card) continue;
+    const state = getCardState(card);
+    if (state === 'new') {
+      newCount++;
+    } else if (state === 'learning' || state === 'relearning') {
+      againCount++;
+    } else {
+      reviewCount++;
+    }
+  }
+  return { newCount, againCount, reviewCount };
+}
+
+/** Short human label for a card's next due time ("0m", "10m", "3d"). */
+export function srsDueLabel(card: FsrsCard, now: number = Date.now()): string {
+  const diff = card.due - now;
+  if (diff <= 0) return '0m';
+  const mins = Math.ceil(diff / 60_000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.ceil(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.round(hours / 24)}d`;
+}
+
 /**
  * Compute the blue ("new") deck: the `limit` most recently saved words that
  * have no card yet or an unreviewed `state: new` card, newest-saved first.
