@@ -74,6 +74,64 @@ For each of #3–#7, capture/export the same five screens (in this order):
 4. **Saved words / review** — vocabulary list or SRS review session
 5. **Reader** — EPUB reader (if applicable to the target audience)
 
+## Capture work plan (2026-08-12) — 10 per form factor
+
+Capture the **maximum 10 screenshots** per form factor so the store listing
+can pick and choose at upload time. Two form factors, two capture devices:
+
+| Set | Device | Orientation / size | Screens |
+|---|---|---|---|
+| Phone (10) | Physical Android (Pixel) | Portrait 9:16 @ 1080×1920 | The five core screens + 5 extras |
+| Tablet (10) | Physical iPad (dev build installed) | Landscape 4:3 @ native (e.g. iPad Air 11" M4 2360×1640) | Same 10 screens, tablet layout |
+
+**The 10 phone screens to capture on the Pixel (adb + `screencap` + `sips`):**
+
+1. Explore (Chinese media feed)
+2. Video player with interactive subtitles
+3. Dictionary word detail / popup
+4. Saved words
+5. Review session
+6. Reader (Web Reader with a Chinese article; EPUB if books are available)
+7. Settings — Display
+8. Profile
+9. Go Pro
+10. Search or Music / Live TV / Local Media (pick the best-looking)
+
+**The same 10 screens on the iPad (tablet layout):**
+
+- Navigate by tapping deep links on the tester page
+  (`http://192.168.1.130:5001/mobile-deeplinks`) open in the iPad browser, or
+  navigate manually.
+- Capture with `idevicescreenshot` (requires `brew install libimobiledevice`).
+
+**Derived deliverables (scale/crop only — no re-capture):**
+
+| Deliverable | Source capture | Transform |
+|---|---|---|
+| Play phone, 10 @ 1080×1920 | Pixel portrait | as-is |
+| App Store iPhone, 10 @ 1320×2868 | Pixel portrait | upscale 9:16 (same ratio) |
+| App Store iPad, 10 @ 2048×2732 or 2732×2048 | iPad 4:3 | resize |
+| Play 7" + 10" tablet, 10 @ 1920×1080 | iPad landscape | crop to 16:9 → downscale (same image for both) |
+| Feature graphic 1024×500 | one iPad landscape capture | crop |
+
+**Tooling steps:**
+
+1. Android: `adb exec-out screencap -p > raw.png` → `sips -c 1920 1080`.
+2. iPad: `brew install libimobiledevice` →
+   `idevicescreenshot -u <UDID> <file>.png` → `sips` resize/crop.
+3. Save each set under
+   `apps/mobile/store-assets/screenshots/{phone,tablet}/{zh,ja}/`.
+
+**Acceptance checklist:**
+
+- [ ] 10 Pixel phone screenshots @ 1080×1920 (portrait)
+- [ ] 10 iPad screenshots (landscape 4:3)
+- [ ] iPhone 1320×2868 set derived
+- [ ] Play phone 1080×1920 set derived
+- [ ] iPad 2048×2732 / 2732×2048 set derived
+- [ ] Play tablet 1920×1080 set derived (7" + 10" share one set)
+- [ ] Feature graphic 1024×500 produced
+
 ## Content rules (both stores)
 
 - Show **real in-app UI only** — no device frames, hands, or people.
