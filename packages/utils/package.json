@@ -11,7 +11,8 @@
   "dependencies": {
     "@langplayer/shared": "*",
     "papaparse": "^5.4.1",
-    "spark-md5": "^3.0.2"
+    "spark-md5": "^3.0.2",
+    "ts-fsrs": "^5.4.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

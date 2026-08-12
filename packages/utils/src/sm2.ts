@@ -15,17 +15,15 @@
  * Usage:
  *   import { sm2, newCard } from '@langplayer/utils';
  *   const card = sm2(card, quality);
+ *
+ * NOTE: `SrsFields` is the legacy SM-2 card shape, kept for the transition
+ * window (SPEC-066 Phase 0/6). The single type declaration lives in
+ * `@langplayer/shared`; new FSRS cards use `FsrsCard` from `./fsrs-scheduler`.
  */
 
-export interface SrsFields {
-  ease: number;
-  interval: number;
-  repetitions: number;
-  nextReview: number;
-  lastReview: number;
-  /** Unix-ms timestamp when the card was first created. Used to limit new cards/day. */
-  createdAt?: number;
-}
+import type { SrsFields } from '@langplayer/shared';
+
+export type { SrsFields };
 
 /** Create a new, unreviewed card. */
 export function newCard(): SrsFields {
