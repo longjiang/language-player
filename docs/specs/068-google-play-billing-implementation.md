@@ -1,0 +1,228 @@
+# SPEC-068: Google Play Billing — Implementation & Test Plan
+
+## Metadata
+
+- **Spec ID**: SPEC-068
+- **Feature**: Implement Google Play Billing for `apps/mobile` ("Language Player 3") — Play Console setup, mobile purchase flow, backend verification, device testing on a Pixel, and the path to a signed AAB
+- **Status**: draft
+- **Created**: 2026-08-11
+- **See also**: [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md) · [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md)
+
+## 1. Current state
+
+- ✅ Play Developer account **verified 2026-08-11**; business info current.
+- ✅ Classic "Language Player 2" is live on both the App Store and Google Play
+  (`ca.zerotohero.app`).
+- ❌ The **"Language Player 3" app does not exist in Play Console yet**
+  (package `ca.zerotohero.go`).
+- ❌ **No Play Billing product exists** and **Play Billing is not implemented**
+  in `apps/mobile` or the backend.
+- ⚠️ Android Go Pro currently shows a **clickable "buy on our website" button**
+  (`apps/mobile/app/(tabs)/(me)/go-pro.tsx`), which must be replaced before
+  production submission (Google Play policy).
+
+## 2. Goal
+
+Android users can buy a lifetime Pro subscription through Play Billing; the
+backend verifies the purchase with Google and grants the same lifetime
+subscription as iOS IAP. Exit criterion: SPEC-054 § 3.4 (G1–G5, C3/C5/C6/C7 on
+Android) is complete and the Android app is store-compliant (no external
+payment links). **SPEC-068 is the execution plan for SPEC-054 Phase 3 — the
+tests here are the same tests, not duplicates. When a SPEC-068 test passes,
+mark the corresponding SPEC-054 § 3.4 item complete.**
+
+## 3. Step 0 — Decisions (confirm before coding)
+
+- [ ] **Product ID**: use `pro_go` to match the iOS product (recommended) or
+  pick a new Android-only ID. Play product IDs cannot be renamed after
+  creation.
+- [ ] **Test accounts**: use Mary/Bob (`tester.mary@zerotohero.ca` /
+  `tester.bob@zerotohero.ca`) as license testers.
+- [ ] **Backend test target**: internal-track builds embed the production API
+  URL (`https://pythonvps.zerotohero.ca`), so G1/G3 will grant real lifetime
+  rows to Mary/Bob on the production backend. Confirm that is acceptable (it
+  matches how Apple IAP was tested).
+
+## 4. Step 1 — Play Console setup (human)
+
+- [ ] Re-verify account status is green (done 2026-08-11; no action expected).
+- [ ] Create the app: **Language Player 3**, package `ca.zerotohero.go`,
+  Free with in-app purchases (SPEC-067 § 4.2).
+- [ ] Create the lifetime **non-consumable** billing product (SPEC-067 § 5).
+- [ ] Add license testers (Mary/Bob) under **Setup → License testing**.
+- [ ] Enable API access:
+  - Link/create a Google Cloud project in **Play Console → Setup → API access**.
+  - Enable the **Android Publisher API** in that project.
+  - Create a service account, download the JSON key.
+  - Grant the service account **View financial data, orders, and cancellation
+    survey responses** (add Manage orders/subscriptions if prompted).
+- [ ] Set up the **Internal testing** track (needed before G1/G3).
+
+## 5. Step 2 — Mobile implementation (Codex/human pair)
+
+### 5.1 `apps/mobile/lib/iap.ts` — make it cross-platform
+
+- [ ] `IAP_AVAILABLE` → `Platform.OS === 'ios' || Platform.OS === 'android'`.
+- [ ] Add `ANDROID_IAP_PRODUCT_ID = 'pro_go'` (or the Step 0 decision).
+- [ ] `initiatePurchase(userId)`:
+  - iOS: unchanged (`apple: { sku, appAccountToken: userId }`).
+  - Android: `google: { skus: [ANDROID_IAP_PRODUCT_ID], obfuscatedAccountId: userId }`
+    so the backend can bind the purchase to the signed-in user (same security
+    model as Apple's `appAccountToken`).
+- [ ] Purchase listener: accept purchases for either product ID; on Android,
+  `purchase.purchaseToken` is the token the backend verifies (same field the
+  iOS code already reads as the JWS).
+- [ ] `finishTransaction({ purchase, isConsumable: false })` — on Android this
+  acknowledges the purchase; Google auto-refunds unacknowledged purchases
+  after 3 days.
+- [ ] `restorePurchases()`: `getAvailablePurchases()` already works on Android;
+  filter by product ID and return `purchaseToken`.
+
+### 5.2 `apps/mobile/app/(tabs)/(me)/go-pro.tsx`
+
+- [ ] Replace the Android "buy on our website" block with the same
+  Lifetime purchase + Restore Purchases UI iOS has.
+- [ ] On Android, POST `{ user_id, purchase_token, product_id }` to
+  `POST /play_billing_success` (Step 3).
+- [ ] Keep monthly/annual gated on Android (store billing is lifetime-only,
+  same as iOS).
+- [ ] Map backend error messages to the existing localized error keys
+  (`msg.receipt_validation_failed`, `msg.iap_purchase_failed`,
+  `msg.iap_purchase_not_for_account`, etc.).
+- [ ] Remove the now-unused buy-on-website link and `Linking` import if no
+  longer used elsewhere on the page.
+
+### 5.3 Verify
+
+- [ ] Typecheck: `cd apps/mobile && ./node_modules/.bin/tsc --noEmit`.
+
+## 6. Step 3 — Backend implementation (Codex)
+
+### 6.1 New module `zerotohero-python-server/app_google_play.py`
+
+- [ ] Verify via Play Developer API:
+  `GET https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{packageName}/purchases/products/{productId}/tokens/{token}`
+- [ ] Authenticate with the service account JSON (scope
+  `https://www.googleapis.com/auth/androidpublisher`).
+- [ ] Accept only:
+  - package = `ca.zerotohero.go`
+  - product = configured `GOOGLE_PLAY_PRODUCT_ID` (`pro_go`)
+  - `purchaseState = 0` (purchased)
+  - `obfuscatedExternalAccountId` == requesting `user_id` (reject missing or
+    mismatched, mirroring the Apple `appAccountToken` rule)
+- [ ] Grant via `update_or_add_subscription`:
+  - `type=lifetime`, `expires_on=None`, `status=active`
+  - `payment_processor='play-billing'`
+  - `payment_id=orderId` (the existing unique index makes replay idempotent)
+- [ ] Return the same `{ type: 'success' | 'error', message }` shape as Apple
+  IAP so the mobile error mapping stays uniform.
+
+### 6.2 Route `zerotohero-python-server/routes/payments.py`
+
+- [ ] Add `POST /play_billing_success` accepting `user_id`, `purchase_token`,
+  `product_id`; 400 on missing fields.
+
+### 6.3 Environment (`zerotohero-python-server/.env`, gitignored)
+
+- [ ] `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — the service account key (JSON
+  string or path).
+- [ ] `GOOGLE_PLAY_PACKAGE_NAME=ca.zerotohero.go`
+- [ ] `GOOGLE_PLAY_PRODUCT_ID=pro_go`
+- [ ] Add `google-auth` to `requirements.txt` (already a transitive dep via
+  `google-analytics-data`, but declare it explicitly).
+
+### 6.4 Tests (pytest, mirror `test_phase0_subscriptions.py`)
+
+- [ ] Mocked successful verification → lifetime row with
+  `payment_processor=play-billing`, `payment_id=orderId`.
+- [ ] Bogus purchase token → no grant, defined error (G5).
+- [ ] Wrong/missing `obfuscatedExternalAccountId` → rejected (user binding).
+- [ ] Same token re-POSTed → single grant (idempotency / restore replay).
+
+## 7. Step 4 — Dev build on the Pixel (app QA, no billing)
+
+- [ ] `cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22`
+- [ ] `npx expo prebuild --platform android`
+- [ ] `npx expo run:android` (or build a debug APK) and install on the Pixel.
+- [ ] Smoke-test login, language selection, Explore/video, dictionary, reader,
+  offline mode, deep links, back button (SPEC-048 § 1.3 Android subset).
+- [ ] Confirm the buy/restore UI renders on Android (billing will error until
+  Step 5, which is expected).
+
+## 8. Step 5 — Signed AAB → Internal testing (billing starts here)
+
+- [ ] Configure the upload key + `android/key.properties` + release signing
+  (SPEC-067 § 3.4).
+- [ ] `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca npx expo prebuild --platform android`
+  (re-apply signing edits if the project was regenerated).
+- [ ] `cd android && ./gradlew bundleRelease`
+- [ ] Verify no `localhost:5001` in the embedded bundle (SPEC-067 § 3.6).
+- [ ] Upload `app-release.aab` to **Internal testing** in Play Console.
+- [ ] Install from Play on the Pixel using a license-tester account (Mary/Bob).
+- [ ] Confirm the production backend has the Google service account env vars
+  set and is reachable (`pythonvps.zerotohero.ca`).
+
+## 9. Step 6 — Run the Play Billing test matrix
+
+- [ ] **G1** — license tester → Go Pro → Play Billing button → confirm → backend
+  verifies token → `type=lifetime`, `payment_processor=play-billing` → Pro
+  unlocks.
+- [ ] **G2** — "always declines" test card → purchase fails → no subscription
+  row → localized error, no stuck state.
+- [ ] **G3** — promote to Closed testing → repeat G1 on the test-track build.
+- [ ] **G4** — reinstall or second device → Restore Purchases → token
+  re-validated → single re-grant (no duplicate row).
+- [ ] **G5** — bogus purchase token → backend rejects (covered by pytest in
+  § 6.4; re-verify against the route).
+- [ ] **C3** — Android purchase appears as lifetime on web/profile.
+- [ ] **C5/C6/C7** — free/Pro gates flip, cancel-at-period-end (N/A for
+  lifetime), success/error screens on Android.
+
+## 10. SPEC-054 Phase 3 traceability
+
+Every Play Billing test in this spec maps to a SPEC-054 Phase 3 item. Complete
+the SPEC-068 checkboxes first, then copy the ✅ into SPEC-054 § 3.4 — do not
+re-run the same scenarios under a different spec number.
+
+| SPEC-068 step | SPEC-054 Phase 3 item | What passing means |
+|---|---|---|
+| § 6.4 pytest (mocked success, bogus token, user binding, idempotent replay) | G5 + backend grant path | Bogus/unverified tokens never grant; verified purchases create one `play-billing` lifetime row |
+| § 9 G1 | G1 — license tester purchase | Play test purchase completes; backend grants `type=lifetime`, `payment_processor=play-billing`; Pro unlocks |
+| § 9 G2 | G2 — always-declines instrument | Purchase fails; no subscription row; no stuck state |
+| § 9 G3 | G3 — internal/closed test-track build | Same grant path works from a Play-distributed build |
+| § 9 G4 | G4 — restore/entitlement sync | Reinstall/second device re-validates; single re-grant, no duplicate row |
+| § 9 G5 | G5 — bogus purchase token | Route rejects; defined error response |
+| § 9 C3 | C3 — lifetime sync | Android purchase shows as lifetime on web/profile |
+| § 9 C5/C6/C7 | C5/C6/C7 on Android | Free/Pro gates, cancel-at-period-end (N/A for lifetime), success/error screens |
+| § 11 store compliance | § 3.4 store-compliance checkbox | No external payment links in the Android app |
+| § 12 release checklist | § 3.4 exit criterion | Android in-app purchase ready for submission and approval |
+
+## 11. Step 7 — Store compliance & promotion
+
+- [ ] No external payment links in the Android app (buy-on-website removed).
+- [ ] SPEC-054 § 3.4 checkboxes updated (implementation + G1–G5 + C3/C5/C6/C7).
+- [ ] SPEC-014 / SPEC-048 / SPEC-067 updated with the product ID and final
+  backend behavior.
+- [ ] Promote Internal → Closed → Open (optional) → Production staged rollout
+  (SPEC-067 § 6).
+
+## 12. Release checklist (summary)
+
+- [ ] Play Console app created (`ca.zerotohero.go`)
+- [ ] Billing product created and configured
+- [ ] License testers added
+- [ ] Service account + Android Publisher API enabled
+- [ ] Mobile purchase/restore flow implemented (iOS + Android)
+- [ ] Backend `/play_billing_success` implemented + pytest green
+- [ ] Dev build QA on Pixel passed
+- [ ] Signed AAB uploaded to Internal testing
+- [ ] G1–G5 passed
+- [ ] Store compliance checked (no external payment links)
+
+## 13. Open items / decisions
+
+- Product ID final choice (`pro_go` recommended).
+- Service account key + env vars on production.
+- Upload key not generated yet (SPEC-067 § 3.4).
+- Store listing assets (screenshots, feature graphic) — only needed before
+  production, not for Internal testing.
