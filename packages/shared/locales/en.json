@@ -307,6 +307,7 @@
         "dialog": "Dialog",
         "dictionary_form": "Dictionary form",
         "directus_id": "Legacy ID",
+        "discord_server": "Discord server",
         "download_progress": "{downloaded} / {total} words",
         "downloaded": "Downloaded",
         "earlier": "Earlier",

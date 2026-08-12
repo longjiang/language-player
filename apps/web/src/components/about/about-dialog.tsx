@@ -7,14 +7,11 @@ import { AboutContent, type BuildInfo } from '@/components/about/about-content';
 import pkg from '../../../package.json';
 
 /**
- * Client-safe build metadata. Git info falls back to public env vars (inlined
- * at build time by Next.js); outside Vercel, commit/branch show "unknown".
+ * Client-safe build metadata.
  */
 function getClientBuildInfo(): BuildInfo {
   return {
     version: (pkg as { version?: string }).version ?? '0.0.0',
-    commitHash: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'unknown',
-    branch: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ?? 'unknown',
     buildDate: new Date().toISOString(),
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   };

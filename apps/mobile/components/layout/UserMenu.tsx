@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,12 +11,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings, BookOpen, Info, LogOut, LogIn, History, ListVideo, Heart, Bookmark, Tv } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
+import { AboutDialog } from '@/components/about/AboutDialog';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const { status } = useSyncStatus();
   const t = useT();
   const [open, setOpen] = useAnimatedBoolean();
+  const [aboutOpen, setAboutOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
   const initial = user?.email?.charAt(0)?.toUpperCase() ?? '?';
@@ -32,7 +34,8 @@ export function UserMenu() {
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger
         className="h-8 w-8 items-center justify-center rounded-full bg-primary/10"
         {...e2e('header-user-menu')}
@@ -111,7 +114,7 @@ export function UserMenu() {
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
-                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/about' as any); }}
+                onPress={() => { setOpen(false); setAboutOpen(true); }}
               >
                 <Info size={16} color={ICON_MUTED} />
                 <Text className="text-sm text-foreground">{t('title.about')}</Text>
@@ -178,7 +181,7 @@ export function UserMenu() {
               </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
-                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/about' as any); }}
+                onPress={() => { setOpen(false); setAboutOpen(true); }}
               >
                 <Info size={16} color={ICON_MUTED} />
                 <Text className="text-sm text-foreground">{t('title.about')}</Text>
@@ -188,5 +191,7 @@ export function UserMenu() {
         </View>
       </Dialog.Portal>
     </Dialog.Root>
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
+    </>
   );
 }
