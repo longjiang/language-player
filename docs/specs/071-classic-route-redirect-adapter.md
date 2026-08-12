@@ -85,7 +85,9 @@ Classification:
 | `/logout` | `/logout` (new page) | Equivalent (new) |
 | `/dashboard` | `/language-select` | Renamed |
 | `/delete-account` | `/{l1}/{l2}/profile` | Renamed (pair-scoped) |
-| `/privacy-policy` | `/{l1}/{l2}/docs/privacy-policy` | Renamed (pair-scoped) |
+| `/privacy-policy` | `/docs/privacy-policy?l1=:l1` | Renamed (docs moved to `/docs`) |
+| `/{l1}/{l2}/docs` | `/docs?l1=:l1` | Moved out of the language pair |
+| `/{l1}/{l2}/docs/:slug+` | `/docs/:slug?l1=:l1` | Moved out of the language pair |
 | `/languages` | `/` | Renamed |
 | `/language-map` | — | Classic-only |
 | `/language-icons` | — | Classic-only |

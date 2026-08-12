@@ -80,6 +80,9 @@ describe('classicRouteAction', () => {
       '/logout',
       '/auth/confirm',
       '/auth/verified',
+      '/docs',
+      '/docs/media/explore',
+      '/docs/account/profile/sub',
       '/en/ja',
       '/en/ja/about',
       '/en/ja/explore',
@@ -95,9 +98,6 @@ describe('classicRouteAction', () => {
       '/en/ja/dictionary',
       '/en/ja/dictionary/word/hello',
       '/en/ja/dictionary/entry/edict/92130',
-      '/en/ja/docs',
-      '/en/ja/docs/media/explore',
-      '/en/ja/docs/account/profile/sub',
       '/en/ja/epub',
       '/en/ja/go-pro',
       '/en/ja/liked-videos',
@@ -205,7 +205,9 @@ describe('classicRouteAction', () => {
       expectAlias('/dashboard', '/language-select');
       expectAlias('/languages', '/');
       expectAlias('/go-pro', '/en/zh/go-pro');
-      expectAlias('/privacy-policy', '/en/zh/docs/privacy-policy');
+      expectAlias('/privacy-policy', '/docs/privacy-policy?l1=en');
+      expectAlias('/en/ja/docs', '/docs?l1=en');
+      expectAlias('/en/ja/docs/media/explore', '/docs/media/explore?l1=en');
       expectAlias('/verify-email', '/register');
     });
 
@@ -226,7 +228,8 @@ describe('classicRouteAction', () => {
       const pair: LanguagePair = { l1: 'fr', l2: 'de' };
       expectAlias('/delete-account', '/fr/de/profile', pair);
       expectAlias('/go-pro', '/fr/de/go-pro', pair);
-      expectAlias('/privacy-policy', '/fr/de/docs/privacy-policy', pair);
+      expectAlias('/privacy-policy', '/docs/privacy-policy?l1=fr', pair);
+      expectAlias('/fr/de/docs/account/profile', '/docs/account/profile?l1=fr', pair);
     });
 
     it('falls back to en/zh when no pair is stored', () => {

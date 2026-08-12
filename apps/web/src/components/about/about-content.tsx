@@ -141,7 +141,7 @@ export function AboutContent({
           <LinkRow
             icon={BookOpen}
             label={t('title.docs')}
-            href={`/${l1.code}/${l2.code}/docs`}
+            href={`/docs?l1=${encodeURIComponent(l1.code)}`}
           />
           <LinkRow
             icon={Wrench}

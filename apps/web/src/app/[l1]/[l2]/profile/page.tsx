@@ -178,7 +178,7 @@ export default function ProfilePage() {
               {userEmail}
             </p>
             <Link
-              href={`/${l1.code}/${l2.code}/docs/privacy-policy`}
+              href={`/docs/privacy-policy?l1=${encodeURIComponent(l1.code)}`}
               className="mt-2 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ShieldCheck className="h-3.5 w-3.5" />
