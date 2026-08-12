@@ -285,6 +285,7 @@ export function useEpubPagination({
   const layoutKeyRef = useRef<string | null>(null);
   const requestRef = useRef<{ id: number; dir: 'forward' | 'backward'; base: number; pageNumber: number } | null>(null);
   const requestIdRef = useRef(0);
+  const requestStartedAtRef = useRef(0);
   const measureOriginRef = useRef(0);
   const measureRafRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
   const lazySeekKeyRef = useRef<string | null>(null);
@@ -334,9 +335,10 @@ export function useEpubPagination({
     if (!blocks || blocks.length === 0) return;
     const id = ++requestIdRef.current;
     requestRef.current = { id, dir, base, pageNumber };
+    requestStartedAtRef.current = Date.now();
     const start = dir === 'forward' ? base : Math.max(0, base - WINDOW_LIMIT);
     const end = dir === 'forward' ? Math.min(blocks.length, base + WINDOW_LIMIT) : base;
-    paginationLog(`[Pagination] ▶ start measure request #${id} dir=${dir} base=${base} page=${pageNumber} window=[${start},${end}) blocks=${blocks.length}`);
+    paginationLog(`[Pagination] ▶ start measure request #${id} dir=${dir} base=${base} page=${pageNumber} window=[${start},${end}) blocks=${blocks.length} t=${requestStartedAtRef.current}`);
     setHasMeasured(false);
     setPage(pageNumber - 1);
     if (dir === 'forward') {
@@ -383,6 +385,7 @@ export function useEpubPagination({
     layoutKeyRef.current = null;
     requestRef.current = null;
     requestIdRef.current += 1;
+    requestStartedAtRef.current = 0;
     measureOriginRef.current = 0;
     waitingMissingRef.current = -1;
     lazySeekKeyRef.current = null;
@@ -477,6 +480,7 @@ export function useEpubPagination({
     layoutKeyRef.current = null;
     requestRef.current = null;
     requestIdRef.current += 1;
+    requestStartedAtRef.current = 0;
     measureOriginRef.current = 0;
     waitingMissingRef.current = -1;
     lazySeekKeyRef.current = null;
@@ -552,12 +556,24 @@ export function useEpubPagination({
       }
       if (waitingMissingRef.current !== missing) {
         waitingMissingRef.current = missing;
-        paginationLog(`[Pagination] ⏳ waiting for measurements: missing=${missing}/${measureEnd - measureStart} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current}`);
+        paginationLog(`[Pagination] ⏳ waiting for measurements: missing=${missing}/${measureEnd - measureStart} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
       }
       return;
     }
     waitingMissingRef.current = -1;
-    paginationLog(`[Pagination] ⚙ compute request #${req.id} dir=${req.dir} base=${req.base} targetPage=${req.pageNumber} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} available=${availableHeight} width=${contentWidth}`);
+    if (totalCharsRef.current <= 0) {
+      let total = 0;
+      const prefix: number[] = new Array(blocks.length);
+      for (let i = 0; i < blocks.length; i++) {
+        prefix[i] = total;
+        const b = blocks[i]!;
+        if (b.kind === 'text') total += b.text.length;
+      }
+      totalCharsRef.current = total;
+      prefixCharsRef.current = prefix;
+      paginationLog(`[Pagination] 📊 fallback prefix rebuild totalChars=${total}`);
+    }
+    paginationLog(`[Pagination] ⚙ compute request #${req.id} dir=${req.dir} base=${req.base} targetPage=${req.pageNumber} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} available=${availableHeight} width=${contentWidth} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
 
     if (req.dir === 'forward') {
       const res = computeForwardEnd(
@@ -600,9 +616,9 @@ export function useEpubPagination({
       if (totalCharsRef.current > 0) {
         const nextTotal = Math.max(1, Math.ceil(totalCharsRef.current / Math.max(1, charsPerPageRef.current)));
         setTotalPagesEstimate(nextTotal);
-        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${nextTotal}`);
+        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${nextTotal} totalChars=${totalCharsRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
       } else {
-        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${totalPagesEstimate}`);
+        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${totalPagesEstimate} totalChars=${totalCharsRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
       }
       layoutKeyRef.current = layoutKey;
       setLazyPageStart(req.base);
@@ -631,7 +647,7 @@ export function useEpubPagination({
       }
     }
     paginationLog(`[Pagination] ⚙ backward break → page=[${res.startIndex},${req.base}) pageBlocks=${req.base - res.startIndex}`);
-    paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${res.startIndex} end=${req.base}`);
+    paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${res.startIndex} end=${req.base} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
     setLazyPageStart(res.startIndex);
     setLazyPageEnd(req.base);
     setPage(req.pageNumber - 1);
@@ -857,11 +873,12 @@ export function useEpubPagination({
     const gen = ++translateGenRef.current;
     translateInFlightRef.current = true;
     setIsTranslating(true);
-    const requestStart = Date.now();
+    const queuedAt = Date.now();
     let madeProgress = false;
     translationLogger.log(
-      `request chunk=${chunk.length} pending=${pending.length} local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}] l1=${l1Code} l2=${l2Code}`,
+      `request chunk=${chunk.length} pending=${pending.length} local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}] l1=${l1Code} l2=${l2Code} t=${queuedAt}`,
     );
+    const fetchStart = Date.now();
 
     fetch(`${PYTHON_API_URL}/translate_array`, {
       method: 'POST',
@@ -874,6 +891,7 @@ export function useEpubPagination({
       })
       .then(data => {
         if (translateGenRef.current !== gen) return;
+        const receivedAt = Date.now();
         const translated = Array.isArray(data?.translated_texts) ? data.translated_texts : [];
         const additions: Record<number, string> = {};
         const missing: { localIdx: number; globalIdx: number; text: string }[] = [];
@@ -918,8 +936,9 @@ export function useEpubPagination({
         if (madeProgress) {
           setBlockTranslations(prev => ({ ...prev, ...additions }));
         }
+        const processedAt = Date.now();
         translationLogger.log(
-          `response elapsed=${Date.now() - requestStart}ms got=${translated.length} added=${Object.keys(additions).length} done=${translateDoneRef.current.size}/${textBlocks.length}`
+          `response fetch=${receivedAt - fetchStart}ms process=${processedAt - receivedAt}ms total=${processedAt - queuedAt}ms got=${translated.length} added=${Object.keys(additions).length} done=${translateDoneRef.current.size}/${textBlocks.length}`
           + (missing.length > 0
             ? ` missing=[${missing.map(p => `${p.localIdx}:${p.globalIdx}`).join(',')}] texts=[${missing.map(p => JSON.stringify(p.text.slice(0, 40))).join(', ')}]`
             : '')
@@ -929,7 +948,7 @@ export function useEpubPagination({
         );
       })
       .catch((e: any) => {
-        translationLogger.logwarn(`request failed elapsed=${Date.now() - requestStart}ms local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}]:`, e?.message ?? e);
+        translationLogger.logwarn(`request failed fetch=${Date.now() - fetchStart}ms total=${Date.now() - queuedAt}ms local=[${chunk.map(p => p.localIdx).join(',')}] global=[${chunk.map(p => p.globalIdx).join(',')}]:`, e?.message ?? e);
       })
       .finally(() => {
         if (translateGenRef.current !== gen) return;
@@ -971,7 +990,7 @@ export function useEpubPagination({
   const prevPage = useCallback(() => {
     if (estimate) {
       if (!blocks || lazyPageStart == null || lazyPageStart <= 0) return;
-      paginationLog(`[Pagination] ◀ prevPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd ?? 'END'} → measure backward`);
+      paginationLog(`[Pagination] ◀ prevPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd ?? 'END'} t=${Date.now()} → measure backward`);
       startLazyMeasure('backward', lazyPageStart, page);
       setBlockTranslations({});
       return;
@@ -984,7 +1003,7 @@ export function useEpubPagination({
   const nextPage = useCallback(() => {
     if (estimate) {
       if (!blocks || lazyPageEnd == null || lazyPageEnd >= blocks.length) return;
-      paginationLog(`[Pagination] ▶ nextPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd} → measure forward`);
+      paginationLog(`[Pagination] ▶ nextPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd} t=${Date.now()} → measure forward`);
       startLazyMeasure('forward', lazyPageEnd, page + 2);
       setBlockTranslations({});
       return;
@@ -1011,7 +1030,7 @@ export function useEpubPagination({
         else lo = mid + 1;
       }
       const base = Math.max(0, lo - 1);
-      paginationLog(`[Pagination] 🔢 goToPage target=${clamped} chars=${targetChars} → block ${base}`);
+      paginationLog(`[Pagination] 🔢 goToPage target=${clamped} chars=${targetChars} → block ${base} t=${Date.now()}`);
       startLazyMeasure('forward', base, clamped + 1);
       setBlockTranslations({});
       return;
@@ -1046,7 +1065,7 @@ export function useEpubPagination({
     if (!blocks || blockIndex < 0 || blockIndex >= blocks.length) return;
     setBlockTranslations({});
     if (estimate) {
-      paginationLog(`[Pagination] 🎯 goToBlock block=${blockIndex} estimatedPage=${lazyPageForBlock(blockIndex)}`);
+      paginationLog(`[Pagination] 🎯 goToBlock block=${blockIndex} estimatedPage=${lazyPageForBlock(blockIndex)} t=${Date.now()}`);
       startLazyMeasure('forward', blockIndex, lazyPageForBlock(blockIndex));
       return;
     }
