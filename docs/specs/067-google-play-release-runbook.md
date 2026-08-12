@@ -38,7 +38,9 @@
 - [x] Node 22 available (`nvm use 22` — v22.23.1 verified 2026-08-12)
 - [x] JDK 17+ and Android SDK available (Java 22 + Android SDK 36
       platform-tools/build-tools installed 2026-08-12)
-- [ ] Upload key generated and passwords stored in a password manager
+- [x] Upload key generated (2026-08-12, `~/.android/lp-upload.jks`, alias
+      `lp-upload`) — credentials in `~/.android/lp-upload-credentials.txt` +
+      `android/key.properties`; **copy them into a password manager**
 - [ ] Version bumped in `apps/mobile/app.json`
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
 - [~] Store assets partially ready: icon uploaded to the Play asset library as
@@ -335,8 +337,10 @@ If path A is chosen:
   the lifetime non-consumable product in Play Console, configure the Google
   service-account env vars on the test backend, and run G1–G5 (SPEC-068
   Steps 1/5/6).
-- **Upload key not generated yet** — `~/.android/lp-upload.jks` does not exist
-  until § 3.4 is run.
+- ~~**Upload key not generated yet**~~ — ✅ generated 2026-08-12
+  (`~/.android/lp-upload.jks`, alias `lp-upload`, RSA 2048); credentials are
+  in `~/.android/lp-upload-credentials.txt` and `android/key.properties` —
+  copy into a password manager before relying on the local files.
 - **Store assets not prepared** — icon uploaded to the Play library
   ("Cropped - icon.png", 512×512) but not yet added to the App icon slot;
   feature graphic and phone/tablet screenshots still outstanding.
