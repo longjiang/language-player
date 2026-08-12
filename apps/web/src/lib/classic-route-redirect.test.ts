@@ -203,6 +203,7 @@ describe('classicRouteAction', () => {
 
     it('maps root routes', () => {
       expectAlias('/dashboard', '/language-select');
+      expectAlias('/languages', '/');
       expectAlias('/go-pro', '/en/zh/go-pro');
       expectAlias('/privacy-policy', '/en/zh/docs/privacy-policy');
       expectAlias('/verify-email', '/register');
@@ -235,7 +236,6 @@ describe('classicRouteAction', () => {
 
   describe('classic-only routes redirect to v2', () => {
     it.each([
-      '/languages',
       '/language-map',
       '/language-icons',
       '/popular',
