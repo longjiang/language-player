@@ -483,6 +483,7 @@ These cover the pipeline behind the UI flows: JWT auth, the backfilled `user_sub
 | C5 | Free tier gates after payment | Before purchase, transcript shows first 10 lines + 5 word-example hits; after grant, full transcript + up to 500 hits (50-hit fast default; Settings → Subtitles Search toggle is Pro-only, greyed out for free users) | Gates flip with subscription state on all frontends |
 | C6 | Cancel at period end (Stripe only) | Cancel subscription in Stripe test Dashboard or via cancel flow | `cancel_at_period_end` set; user keeps Pro until expiry, then falls back to free |
 | C7 | Success/error screens | Force each failure path (declined card, cancelled PayPal, bogus receipt, abandoned Payment Link) | `/go-pro-error` or inline error shown; no Pro grant; no stuck loading state |
+| C8 | SRS free daily cap | Free user completes 20 ratings → tap a 21st rating | Rating blocked with upgrade prompt; Pro/trial unlimited; undo releases a rating back to the cap; offline outbox replays do not double-count |
 
 ---
 
