@@ -5,6 +5,9 @@
   "actions": {
     "message": "More"
   },
+  "aiProFeature": {
+    "message": "Pro feature: Get AI explanations of words in context."
+  },
   "aiThinking": {
     "message": "Loading..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Translating…"
   },
+  "upgradeToPro": {
+    "message": "Upgrade to Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Upgrade to Pro for complete transcripts, unlimited word examples, and more."
+  },
   "confirm": {
     "message": "Confirm"
   },
@@ -181,7 +190,7 @@
     "message": "Show Phonetics"
   },
   "explainWord": {
-    "message": "Succinctly explain using $l1Name$, what the $l2Name$ ($code$) word $word$ means.",
+    "message": "Please succinctly explain the $l2Name$ word \"$word$\", then give 2 examples with translations.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Succinctly explain using $l1Name$, what the $l2Name$ ($code$) word $word$ means in the phrase: $context$.",
+    "message": "Please succinctly explain the $l2Name$ word \"$word$\" in \"$context$\", then give 2 examples with translations.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Succinctly explain using $l1Name$, what the $l2Name$ ($code$) word $word$ (inflected form: $contextForm$) means in the phrase: $context$.",
+    "message": "Please succinctly explain the $l2Name$ word \"$word$\" (inflected form: $contextForm$) in \"$context$\", then give 2 examples with translations.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -241,6 +250,6 @@
     }
   },
   "explainMorphology": {
-    "message": "Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma."
+    "message": "Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma."
   }
 }

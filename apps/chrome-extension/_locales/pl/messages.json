@@ -5,6 +5,9 @@
   "actions": {
     "message": "Więcej"
   },
+  "aiProFeature": {
+    "message": "Funkcja Pro: Uzyskaj wyjaśnienia słów w kontekście za pomocą AI."
+  },
   "aiThinking": {
     "message": "Ładowanie..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Tłumaczenie…"
   },
+  "upgradeToPro": {
+    "message": "Przejdź na wersję Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Uaktualnij do Pro, aby uzyskać pełne transkrypcje, nieograniczone przykłady słów i więcej."
+  },
   "confirm": {
     "message": "Potwierdź"
   },
@@ -175,13 +184,13 @@
     "message": "Język"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Szukaj języków…"
   },
   "showPhonetics": {
     "message": "Pokaż fonetykę"
   },
   "explainWord": {
-    "message": "Wyjaśnij zwięźle w języku $l1Name$, co oznacza słowo $l2Name$ ($code$) $word$.",
+    "message": "Krótko wyjaśnij słowo w języku $l2Name$ \"$word$\", a następnie podaj 2 przykłady z tłumaczeniami.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Wyjaśnij zwięźle w języku $l1Name$, co oznacza słowo $l2Name$ ($code$) $word$ w wyrażeniu: $context$.",
+    "message": "Krótko wyjaśnij słowo w języku $l2Name$ \"$word$\" w zdaniu \"$context$\", a następnie podaj 2 przykłady z tłumaczeniami.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Wyjaśnij zwięźle w języku $l1Name$, co oznacza słowo $l2Name$ ($code$) $word$ (forma odmieniona: $contextForm$) w wyrażeniu: $context$.",
+    "message": "Krótko wyjaśnij słowo w języku $l2Name$ \"$word$\" (forma odmieniona: $contextForm$) w zdaniu \"$context$\", a następnie podaj 2 przykłady z tłumaczeniami.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

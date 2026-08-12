@@ -1,29 +1,22 @@
 /**
- * Saved words sync for the Prime Video Subtitle extension.
+ * Saved words for the Language Player extension.
  *
- * Fetches and syncs saved words via the Python API (/user-data),
- * which proxies to Directus. The saved_words column is stored as a
- * JSON-encoded SavedLexicalItemStore:
- *
- *   { "ja": [SavedLexicalItemRecord, ...], "zh": [...], ... }
+ * Uses the Supabase row API through Flask (SPEC-034): GET/PUT /saved-words
+ * and DELETE /saved-words/{l2}/{wordId}. The old full-blob /user-data and
+ * /user-data/sync endpoints were removed in SPEC-039 WS-8 (2026-08-10).
  */
 
 import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
-import { getAuthState } from './auth';
+import { authorizedFetch } from './auth';
 import { log, logwarn } from './i18n';
 
 const API_BASE = 'https://pythonvps.zerotohero.ca';
 
 /** Fetch the full saved words store for the authenticated user. */
-export async function fetchSavedWords(): Promise<SavedLexicalItemStore> {
-  const auth = await getAuthState();
-  if (!auth) return {};
-
-  const res = await fetch(`${API_BASE}/user-data`, {
-    headers: {
-      Authorization: `Bearer ${auth.token}`,
-    },
-  });
+export async function fetchSavedWords(l2?: string): Promise<SavedLexicalItemStore> {
+  const query = l2 ? `?l2=${encodeURIComponent(l2)}` : '';
+  const res = await authorizedFetch(`${API_BASE}/saved-words${query}`);
+  if (!res) return {};
 
   if (!res.ok) {
     logwarn('Failed to fetch saved words:', res.status);
@@ -31,39 +24,45 @@ export async function fetchSavedWords(): Promise<SavedLexicalItemStore> {
   }
 
   const data = await res.json();
-  if (data.saved_words) {
-    try {
-      return JSON.parse(data.saved_words) as SavedLexicalItemStore;
-    } catch {
-      logwarn('Failed to parse saved_words JSON');
-      return {};
-    }
-  }
-
-  return {};
+  return (data?.words ?? {}) as SavedLexicalItemStore;
 }
 
-/** Sync the full saved words store to the server. */
-export async function syncSavedWords(store: SavedLexicalItemStore): Promise<void> {
-  const auth = await getAuthState();
-  if (!auth) return;
-
-  const payload = { saved_words: JSON.stringify(store) };
-  log('[SAVE] Syncing to server — word count by L2:',
-    Object.fromEntries(Object.entries(store).map(([k, v]) => [k, v.length])));
-
-  const res = await fetch(`${API_BASE}/user-data/sync`, {
-    method: 'POST',
+/** Upsert one word (server merges forms + instances; Supabase row API). */
+export async function putSavedWord(
+  l2: string,
+  word: SavedLexicalItemRecord,
+): Promise<SavedLexicalItemRecord | null> {
+  log('[SAVE] Upserting word:', l2, word.id);
+  const res = await authorizedFetch(`${API_BASE}/saved-words`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${auth.token}`,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ l2, word }),
   });
+  if (!res) return null;
 
   if (!res.ok) {
-    logwarn('Failed to sync saved words:', res.status);
+    logwarn('Failed to upsert saved word:', res.status);
+    return null;
   }
+
+  const data = await res.json();
+  return (data?.word ?? word) as SavedLexicalItemRecord;
+}
+
+/** Hard-delete one saved word (instances cascade server-side). */
+export async function deleteSavedWord(l2: string, wordId: string): Promise<boolean> {
+  const res = await authorizedFetch(
+    `${API_BASE}/saved-words/${encodeURIComponent(l2)}/${encodeURIComponent(wordId)}`,
+    { method: 'DELETE' },
+  );
+  if (!res) return false;
+  if (!res.ok) {
+    logwarn('Failed to delete saved word:', res.status);
+    return false;
+  }
+  return true;
 }
 
 /** Fetch inflected forms for a word in a given language. */

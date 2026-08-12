@@ -80,9 +80,10 @@ document.addEventListener('DOMContentLoaded', function() {
   /** CSV-style locale (zh-Hans) → Chrome _locales dir (zh_CN). */
   const CSV_TO_CHROME_LOCALE = { 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW' };
 
-  /** Popular languages shown first in each column (matches the sidebar modal). */
-  const POPULAR_L1 = ['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'pt', 'ru', 'ar'];
-  const POPULAR_L2 = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi'];
+  /** Popular languages shown first in each column — from @langplayer/shared
+   *  (ADR-0030 POPULAR_L1S / POPULAR_L2S), bundled by build.mjs. */
+  const POPULAR_L1 = LANG_OPTIONS.popularL1s || ['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'pt', 'ru', 'ar'];
+  const POPULAR_L2 = LANG_OPTIONS.popularL2s || ['zh', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'vi', 'ru', 'ar', 'tr', 'it', 'hi', 'yue', 'th', 'id', 'nl', 'he', 'pt'];
 
   /** { code: { chromeLocale: name } } from dist/lang-names.json */
   let langNames = null;
@@ -312,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Auth ──────────────────────────────────────────────────────────────
   const STORAGE_KEY = 'lpv_auth';
-  const DIRECTUS_URL = 'https://directusvps.zerotohero.ca/zerotohero';
+  const API_BASE = 'https://pythonvps.zerotohero.ca';
 
   const authSection = document.getElementById('auth-section');
   const loggedOutDiv = document.getElementById('auth-logged-out');
@@ -324,10 +325,56 @@ document.addEventListener('DOMContentLoaded', function() {
   const authError = document.getElementById('auth-error');
   const authUser = document.getElementById('auth-user');
 
+  function decodeJwtPayload(token) {
+    try {
+      const part = token.split('.')[1];
+      if (!part) return {};
+      const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+      return JSON.parse(atob(padded));
+    } catch {
+      return {};
+    }
+  }
+
+  async function readAuthError(res, fallback) {
+    try {
+      const body = await res.json();
+      return body?.errors?.[0]?.message || body?.message || fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  /** Try to refresh the stored session through Flask → GoTrue. */
+  async function refreshStoredAuth(auth) {
+    if (!auth || !auth.refreshToken) return null;
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: auth.refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.token) return null;
+    const payload = decodeJwtPayload(data.token);
+    const next = {
+      token: data.token,
+      refreshToken: data.refreshToken || auth.refreshToken,
+      email: data.user?.email || auth.email,
+      userId: String(data.user?.id ?? payload.sub ?? auth.userId ?? ''),
+      expires: (payload.exp || 0) * 1000,
+    };
+    await chrome.storage.local.set({ [STORAGE_KEY]: next });
+    return next;
+  }
+
   async function checkAuth() {
-    const stored = await chrome.storage.local.get(STORAGE_KEY);
-    const auth = stored[STORAGE_KEY];
-    if (auth && auth.expires > Date.now() + 5 * 60 * 1000) {
+    let auth = (await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY];
+    if (auth && auth.expires && auth.expires < Date.now() + 5 * 60 * 1000) {
+      auth = await refreshStoredAuth(auth);
+    }
+    if (auth && auth.token) {
       loggedOutDiv.classList.add('hidden');
       loggedInDiv.classList.remove('hidden');
       authUser.textContent = auth.email;
@@ -347,25 +394,25 @@ document.addEventListener('DOMContentLoaded', function() {
     authError.classList.add('hidden');
 
     try {
-      const res = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.errors?.[0]?.message || err.message || `Login failed (${res.status})`);
+        throw new Error(await readAuthError(res, `Login failed (${res.status})`));
       }
       const data = await res.json();
-      const token = data.data?.token;
+      const token = data.token;
       if (!token) throw new Error('No token in response');
 
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = decodeJwtPayload(token);
       await chrome.storage.local.set({
         [STORAGE_KEY]: {
           token,
-          email,
-          userId: String(payload.id),
+          refreshToken: data.refreshToken || undefined,
+          email: data.user?.email || email,
+          userId: String(data.user?.id ?? payload.sub ?? ''),
           expires: (payload.exp || 0) * 1000,
         }
       });
@@ -379,6 +426,19 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   authLogoutBtn.addEventListener('click', async () => {
+    try {
+      const auth = (await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY];
+      if (auth?.token || auth?.refreshToken) {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${auth.token || ''}`,
+          },
+          body: JSON.stringify({ refreshToken: auth.refreshToken }),
+        }).catch(() => {});
+      }
+    } catch {}
     await chrome.storage.local.remove(STORAGE_KEY);
     checkAuth();
   });

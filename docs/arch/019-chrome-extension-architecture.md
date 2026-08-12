@@ -19,11 +19,17 @@
   - `apps/chrome-extension/src/content.css` — all panel/transcript styles
   - `apps/chrome-extension/manifest.json` — extension manifest
   - `apps/chrome-extension/build.mjs` — esbuild bundler script
-  - `apps/chrome-extension/_locales/` — i18n locale files (31 locales)
+  - `apps/chrome-extension/_locales/` — i18n locale files (18 supported locales, ADR-0033)
   - `apps/chrome-extension/scripts/generate-locales.js` — locale file generator
   - `apps/chrome-extension/scripts/generate-lang-names.js` — lang name lookup generator
   - `specs/027-chrome-extension-auto-open-toggle.md` — auto-open panel spec
   - `specs/028-chrome-ext-translation-pipeline.md` — MANUAL key audit & CSV migration spec
+  - `specs/034-saved-words-supabase-migration.md` — saved words on the Supabase row API
+  - `specs/039-full-database-migration-supabase.md` — auth via Flask → GoTrue, `/user-data` removed
+  - `adr/0023-proxy-supabase-auth-through-flask.md` — auth proxy decision
+  - `adr/0030-popular-l2-list-usage-data.md` — `POPULAR_L1S` / `POPULAR_L2S`
+  - `adr/0033-ui-translation-locale-support.md` — 18 core L1 locales
+  - `adr/0034-pro-gating-freemium-strategy.md` — 10-line transcript cap, Pro-only AI
   - `packages/shared/src/` — shared types & constants (SUPPORTED_L2S, etc.)
   - `packages/utils/src/` — shared utilities (buildRuby, baseCode, etc.)
 
@@ -48,7 +54,7 @@ apps/chrome-extension/
 │   ├── content.css                    ← Copied verbatim from src/content.css (not bundled)
 │   ├── netflix-main-world.js          ← Copied verbatim from src/netflix-main-world.js (not bundled)
 │   └── lang-names.json                ← Auto-generated from monorepo translations.csv on every build
-├── _locales/                          ← Chrome i18n locale files (31 locales)
+├── _locales/                          ← Chrome i18n locale files (18 supported locales, ADR-0033)
 │   ├── en/messages.json
 │   ├── zh_CN/messages.json
 │   └── ...
@@ -69,10 +75,10 @@ apps/chrome-extension/
     ├── transcript-app.tsx              ← React root component (mountTranscript, TranscriptApp)
     ├── subtitle-parsers.js             ← Subtitle format parsers (platform-agnostic)
     ├── i18n.js                         ← chrome.i18n.getMessage() wrapper
-    ├── auth.ts                         ← Auth helpers (getAuthState, token management)
-    ├── saved-words.ts                  ← Saved words API calls to Directus
+    ├── auth.ts                         ← Auth helpers (Flask → Supabase GoTrue proxy, refresh rotation)
+    ├── saved-words.ts                  ← Saved words row API (GET/PUT/DELETE /saved-words via Flask)
     ├── use-translate-lines.ts          ← React hook: batch subtitle translation
-    ├── use-subscription.ts             ← React hook: check Pro subscription status
+    ├── use-subscription.ts             ← React hook: check Pro subscription status (JWT, /user-subscription)
     └── components/
         ├── DictionaryCard.tsx           ← Dictionary lookup card (lemma, definition, examples)
         ├── Markdown.tsx                 ← Markdown renderer for AI explanations
@@ -104,7 +110,7 @@ The build script (`build.mjs`) does four things in order:
    - `minify: false` — kept readable for debugging
    - Resolves `@langplayer/shared` and `@langplayer/utils` via aliases to `packages/shared/src/` and `packages/utils/src/`
 
-3. **Bundle popup language options with esbuild** — takes `src/popup-options.js` and produces `dist/popup-options.js`, exposing the exact `SUPPORTED_L1S` / `SUPPORTED_L2S` lists from `@langplayer/shared` to the vanilla-JS popup. The popup loads this file before `popup.js` in `popup.html`.
+3. **Bundle popup language options with esbuild** — takes `src/popup-options.js` and produces `dist/popup-options.js`, exposing the exact `SUPPORTED_L1S` / `CONTENT_L2S` / `POPULAR_L1S` / `POPULAR_L2S` lists from `@langplayer/shared` to the vanilla-JS popup. The popup loads this file before `popup.js` in `popup.html`.
 
 4. **Copy static assets** — copies `src/content.css` → `dist/content.css` and `src/netflix-main-world.js` → `dist/netflix-main-world.js`.
 
@@ -116,7 +122,7 @@ Locales (`_locales/{locale}/messages.json`) are generated separately from the ma
 node scripts/generate-locales.js
 ```
 
-This script reads `translations.csv` and merges CSV translations with a built-in map of extension-specific keys. It produces all 31 locale files at once. CSV keys take priority; extension-only keys use the built-in fallback map.
+This script reads `translations.csv` and merges CSV translations with a built-in map of extension-specific keys. It produces the 18 supported locale files at once (ADR-0033). CSV keys take priority; extension-only keys use the built-in fallback map.
 
 ### Lifecycle After Changes
 
@@ -185,7 +191,7 @@ This script reads `translations.csv` and merges CSV translations with a built-in
 │  ┌────────────────────────────────────────────────────┐      │      │
 │  │   Popup                                             │      │      │
 │  │                                                     │      │      │
-│  │  Login form → Directus auth                        │      │      │
+│  │  Login form → Flask /auth/login (GoTrue proxy)     │      │      │
 │  │  Polls content script for transcript status         │      │      │
 │  │  "Show Transcript" → sendMessage('showTranscript')  │      │      │
 │  └────────────────────────────────────────────────────┘      │      │
@@ -195,7 +201,9 @@ This script reads `translations.csv` and merges CSV translations with a built-in
 │  │                                                     │      │      │
 │  │  POST /tokenize  → lemmatize + tokenize text       │      │      │
 │  │  POST /translate_array → batch translate lines      │      │      │
-│  │  GET /user-subscription → Pro check                 │      │      │
+│  │  POST /auth/login, /auth/refresh → GoTrue proxy     │      │      │
+│  │  GET/PUT/DELETE /saved-words → Supabase rows        │      │      │
+│  │  GET /user-subscription → Pro check (JWT sub)       │      │      │
 │  └────────────────────────────────────────────────────┘      │      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -371,7 +379,7 @@ let ytCaptionTracks = [];    // available YouTube caption tracks
 |---|---|---|---|---|
 | `autoOpenPanel` | `chrome.storage.sync` | boolean | `true` | Whether to auto-open panel on subtitle detection |
 | `l2Language` | `chrome.storage.local` | string | — | User's preferred L2 language code (persisted) |
-| `lpv_auth` | `chrome.storage.local` | object | — | Auth token, email, userId, expiry |
+| `lpv_auth` | `chrome.storage.local` | object | — | `{ token, refreshToken, email, userId, expires }` — Supabase JWT from Flask `/auth/login` (ADR-0023); refresh token rotates via `/auth/refresh` |
 
 ---
 
@@ -417,7 +425,7 @@ All keyboard shortcuts are registered in vanilla JS (`content-entry.js`), not in
 
 ### Architecture Overview
 
-The extension uses Chrome's native `chrome.i18n` API for all user-facing strings. There are 40 translation keys covering panel UI, popup, error messages, and instructional text. All 31 supported locales have complete translations with zero English fallbacks.
+The extension uses Chrome's native `chrome.i18n` API for all user-facing strings. There are 60 translation keys covering panel UI, popup, error messages, and instructional text. All 18 supported locales (ADR-0033) have complete translations with zero English fallbacks.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -440,13 +448,13 @@ The extension uses Chrome's native `chrome.i18n` API for all user-facing strings
           │                  │           │                  │
           │ CSV + CSV_LOOKUP │           │ CSV lang.* keys  │
           │ + MANUAL         │           │ → lang-names.json│
-          │ → 31 locale JSONs│           └──────────────────┘
+          │ → 18 locale JSONs│           └──────────────────┘
           └────────┬─────────┘
                    ▼
           ┌──────────────────┐
           │ _locales/{locale}/│
           │ messages.json    │
-          │ (40 flat keys)   │
+          │ (60 flat keys)   │
           └────────┬─────────┘
                    ▼
           ┌──────────────────┐
@@ -513,7 +521,7 @@ In source code, call `t('lookingUpWord', [token.text])` — the first substituti
 |---|---|---|
 | **Runtime cache** | `setLocale(localeCode)` fetches `_locales/{locale}/messages.json` into `runtimeMessages` | Called on L1 language change; `t()` checks runtime cache first |
 | **Chrome fallback** | `chrome.i18n.getMessage(key)` reads the browser's UI locale `_locales/` file | Fallback when runtime cache is empty or key not found |
-| **`en/messages.json`** | Serves as the English template AND defines all 40 keys the generator processes | Template for generator; English fallback at runtime |
+| **`en/messages.json`** | Serves as the English template AND defines all 60 keys the generator processes | Template for generator; English fallback at runtime |
 
 ### Adding a New UI String — Step-by-Step
 
@@ -633,12 +641,12 @@ New UI string needed
 | Aspect | Detail |
 |---|---|
 | **Input** | `translations.csv` (1074 keys × 31 locales) |
-| **Template** | `_locales/en/messages.json` (defines which 40 keys to generate) |
-| **CSV_LOOKUP** | 25 mappings from flat ext keys → dotted CSV keys |
+| **Template** | `_locales/en/messages.json` (defines which 60 keys to generate) |
+| **CSV_LOOKUP** | 28 mappings from flat ext keys → dotted CSV keys |
 | **MANUAL** | 13 extension-only keys with built-in 30-locale translations |
-| **Output** | `_locales/{locale}/messages.json` for all 31 locales |
+| **Output** | `_locales/{locale}/messages.json` for the 18 supported locales |
 | **Placeholder conversion** | `{name}` → `$name$` auto-applied to all CSV values |
-| **Skip behavior** | None — all 31 locales generated uniformly (previously `en`, `zh_CN`, `zh_TW`, `fr`, `ja` were skipped; now all auto-generated) |
+| **Skip behavior** | None — all 18 supported locales generated uniformly (previously `en`, `zh_CN`, `zh_TW`, `fr`, `ja` were skipped; now all auto-generated) |
 
 ### `t()` Function Behavior (`src/i18n.js`)
 
@@ -684,6 +692,22 @@ The runtime path does NOT resolve named placeholders (`$word$`) — it only does
 | **L2 dropdown with popular-first sorting** | Popular languages (`en`, `zh`, `ja`, `ko`, `es`, `fr`, `de`, etc.) appear first, then alphabetically by translated name. Language names come from `translations.csv` via `lang-names.json`, localized to the Chrome UI language. |
 
 ---
+
+## Pro Gating (ADR-0034)
+
+The extension enforces the same Pro gates as web and mobile:
+
+| Feature | Free | Pro | Implementation |
+|---|---|---|---|
+| Interactive transcript | first **10** lines + upgrade banner | complete | `FREE_TRANSCRIPT_LINES = 10` in `transcript-app.tsx`; banner links to the web Go Pro page |
+| AI explanation ("Let DeepSeek Explain") | upgrade prompt (`msg.ai_pro_feature`) | available | `DictionaryCard` renders the button only for Pro; per-cue Explain menu item is hidden for free users |
+| Saved words, dictionary, tokenization | ✅ | ✅ | not gated |
+
+Pro status comes from `GET /user-subscription` with the stored Supabase JWT
+(Flask resolves the user from the verified `sub` claim — SPEC-039). The check
+mirrors web/mobile: Pro = lifetime OR a non-free, unexpired subscription
+(`use-subscription.ts`). The hook refetches when `lpv_auth` changes so logging
+in or out from the popup updates an already-open panel.
 
 ## Files Requiring No Changes for New Platforms
 

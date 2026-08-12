@@ -5,6 +5,9 @@
   "actions": {
     "message": "더보기"
   },
+  "aiProFeature": {
+    "message": "프로 기능: 문맥 속 단어에 대한 AI 설명을 확인하세요."
+  },
   "aiThinking": {
     "message": "로딩 중..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "번역 중…"
   },
+  "upgradeToPro": {
+    "message": "프로로 업그레이드"
+  },
+  "upgradeToProBanner": {
+    "message": "Pro로 업그레이드하여 전체 대본, 무제한 단어 예시 등을 이용하세요."
+  },
   "confirm": {
     "message": "확인"
   },
@@ -181,7 +190,7 @@
     "message": "발음 표시"
   },
   "explainWord": {
-    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$의 의미를 간결하게 설명하세요.",
+    "message": "$l2Name$ 단어 \"$word$\"를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$가 구문에서 무엇을 의미하는지 간결하게 설명하세요: $context$.",
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "$l1Name$로 $l2Name$($code$) 단어 $word$(굴절형: $contextForm$)가 구문에서 무엇을 의미하는지 간결하게 설명하세요: $context$.",
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"(굴절형: $contextForm$)를 간결하게 설명하고, 번역과 함께 예 2개를 제시하세요.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

@@ -21,6 +21,11 @@ import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
 import { t, getLocaleVersion, log } from './i18n';
 
+/** ADR-0034: free users see the first 10 transcript lines. */
+const FREE_TRANSCRIPT_LINES = 10;
+
+const WEB_APP_URL = 'https://language-player.netlify.app';
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface SubtitleCue {
@@ -188,6 +193,7 @@ interface CueLineProps {
   cue: SubtitleCue;
   index: number;
   isActive: boolean;
+  isPro: boolean;
   l2Code: string;
   showPhonetics: boolean;
   onSeekTo: (timeSec: number) => void;
@@ -203,7 +209,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
+  ({ cue, index, isActive, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -276,7 +282,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             <div className="lpv-cue-menu-dropdown">
               <button onClick={handleCopy} className="lpv-cue-menu-item">{t('copy')}</button>
               <button onClick={handleSpeak} className="lpv-cue-menu-item">{t('speak')}</button>
-              {!explainLoading && (
+              {isPro && !explainLoading && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExplainLine(cue); }}
                   className="lpv-cue-menu-item"
@@ -338,7 +344,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const [explainError, setExplainError] = useState<string | null>(null);
   const [explainCue, setExplainCue] = useState<SubtitleCue | null>(null);
 
-  const { isPro } = useSubscription();
+  const { isPro, loading: subLoading } = useSubscription();
   const { preFetch } = useBatchLemmatize();
 
   // Load saved preferences
@@ -395,6 +401,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   }, []);
 
   const handleExplainLine = useCallback(async (cue: SubtitleCue) => {
+    if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
     setSelectedToken(null);
     setExplainCue(cue);
     setExplainLoading(true);
@@ -422,7 +429,7 @@ Text: ${cue.text}`;
     } finally {
       setExplainLoading(false);
     }
-  }, [l1Code, l2Code]);
+  }, [isPro, l1Code, l2Code]);
 
   const closeExplain = useCallback(() => {
     setExplainCue(null);
@@ -474,16 +481,19 @@ Text: ${cue.text}`;
     return <EmptyState loadingL2={loadingL2} />;
   }
 
+  const visibleCues = isPro ? cues : cues.slice(0, FREE_TRANSCRIPT_LINES);
+
   return (
     <>
       {/* Scrollable cue list */}
       <div ref={listRef} className="lpv-cue-list" style={{ '--lpv-font-scale': TEXT_SCALE_SIZES[textScale] / 100 } as React.CSSProperties}>
-        {cues.map((cue, i) => (
+        {visibleCues.map((cue, i) => (
           <CueLine
             key={i}
             cue={cue}
             index={i}
             isActive={i === activeCueIdx}
+            isPro={isPro}
             l2Code={l2Code}
             showPhonetics={showPhonetics}
             onSeekTo={handleSeekTo}
@@ -497,6 +507,21 @@ Text: ${cue.text}`;
         ))}
       </div>
 
+      {/* ADR-0034: free users get 10 lines, then an upgrade prompt */}
+      {!isPro && cues.length > FREE_TRANSCRIPT_LINES && (
+        <div className="lpv-pro-banner">
+          <span>{t('upgradeToProBanner')}</span>
+          <a
+            href={`${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/go-pro`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lpv-pro-banner-link"
+          >
+            {t('upgradeToPro')}
+          </a>
+        </div>
+      )}
+
       {/* Dictionary popup + AI explain — renders above bottom bar */}
       {selectedToken && (
         <div className="lpv-dict-overlay">
@@ -508,6 +533,8 @@ Text: ${cue.text}`;
             cueStartTime={selectedCue?.start}
             videoTitle={videoTitle}
             pageUrl={pageUrl}
+            isPro={isPro}
+            subLoading={subLoading}
             onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
           />
         </div>

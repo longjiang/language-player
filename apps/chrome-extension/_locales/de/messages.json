@@ -5,6 +5,9 @@
   "actions": {
     "message": "Mehr"
   },
+  "aiProFeature": {
+    "message": "Profi-Funktion: KI-Erklärungen für Wörter im Kontext erhalten."
+  },
   "aiThinking": {
     "message": "Wird geladen..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Übersetzung läuft…"
   },
+  "upgradeToPro": {
+    "message": "Auf Pro upgraden"
+  },
+  "upgradeToProBanner": {
+    "message": "Upgrade auf Pro für vollständige Transkripte, unbegrenzte Wortbeispiele und mehr."
+  },
   "confirm": {
     "message": "Bestätigen"
   },
@@ -175,13 +184,13 @@
     "message": "Sprache"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Sprachen suchen…"
   },
   "showPhonetics": {
     "message": "Phonetik anzeigen"
   },
   "explainWord": {
-    "message": "Erkläre kurz auf $l1Name$, was das $l2Name$ ($code$) Wort $word$ bedeutet.",
+    "message": "Erkläre bitte kurz das $l2Name$-Wort \"$word$\" und gib dann 2 Beispiele mit Übersetzungen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Erkläre kurz auf $l1Name$, was das $l2Name$ ($code$) Wort $word$ im Satz bedeutet: $context$.",
+    "message": "Erkläre bitte kurz das $l2Name$-Wort \"$word$\" im Satz \"$context$\" und gib dann 2 Beispiele mit Übersetzungen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Erkläre kurz auf $l1Name$, was das $l2Name$ ($code$) Wort $word$ (flektierte Form: $contextForm$) im Satz bedeutet: $context$.",
+    "message": "Erkläre bitte kurz das $l2Name$-Wort \"$word$\" (flektierte Form: $contextForm$) im Satz \"$context$\" und gib dann 2 Beispiele mit Übersetzungen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

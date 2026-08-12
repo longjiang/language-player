@@ -5,6 +5,9 @@
   "actions": {
     "message": "Daha Fazla"
   },
+  "aiProFeature": {
+    "message": "Profesyonel özellik: Kelimelerin bağlam içindeki yapay zeka açıklamalarını alın."
+  },
   "aiThinking": {
     "message": "Yükleniyor..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Çevriliyor…"
   },
+  "upgradeToPro": {
+    "message": "Pro'ya Yükselt"
+  },
+  "upgradeToProBanner": {
+    "message": "Tam transkriptler, sınırsız sözcük örneği ve daha fazlası için Pro'ya yükseltin."
+  },
   "confirm": {
     "message": "Onayla"
   },
@@ -175,13 +184,13 @@
     "message": "Dil"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Dilleri ara…"
   },
   "showPhonetics": {
     "message": "Fonetiği göster"
   },
   "explainWord": {
-    "message": "$l1Name$ kullanarak, $l2Name$ ($code$) $word$ kelimesinin ne anlama geldiğini kısaca açıkla.",
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesini kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "$l1Name$ kullanarak, $l2Name$ ($code$) $word$ kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: $context$.",
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesini \"$context$\" içinde kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "$l1Name$ kullanarak, $l2Name$ ($code$) $word$ kelimesinin (çekimli hâli: $contextForm$) ifadede ne anlama geldiğini kısaca açıkla: $context$.",
+    "message": "Lütfen $l2Name$ dilindeki \"$word$\" kelimesini (çekimli biçimi: $contextForm$) \"$context$\" içinde kısaca açıkla, ardından çevirileriyle birlikte 2 örnek ver.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
