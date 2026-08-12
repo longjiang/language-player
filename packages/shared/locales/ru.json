@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/пожизненно",
         "monthly": "${price}/мес"
     },
+    "pricing": {
+        "billing": "Оплата",
+        "feature": "Функция",
+        "feature_ai_explanations": "Объяснения слов на основе ИИ",
+        "feature_chinese_decomposition": "Разбор китайских иероглифов",
+        "feature_dictionary": "Словарь с коллокациями, примерами и спряжениями глаголов",
+        "feature_library": "600 000+ видео на 207+ языках",
+        "feature_priority_support": "Приоритетная поддержка",
+        "feature_transcripts": "Интерактивные транскрипты с переводом",
+        "feature_word_examples": "Примеры слов в видео",
+        "free_transcripts": "Первые 10 строк",
+        "free_vs_pro": "Бесплатная версия vs Pro",
+        "free_word_examples": "2 на слово",
+        "plans": "Тарифы",
+        "price": "Цена",
+        "pro_transcripts": "Полный транскрипт",
+        "pro_word_examples": "Сотни на слово",
+        "title": "Цены"
+    },
     "pro": {
         "desc": "Откройте полный опыт обучения с 600 000+ видео на {count}+ языках.",
         "feature_ai": "Объяснения слов на основе ИИ",

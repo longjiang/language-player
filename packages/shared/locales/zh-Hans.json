@@ -1119,6 +1119,25 @@
         "lifetime": "${price}/终身",
         "monthly": "${price}/月"
     },
+    "pricing": {
+        "billing": "计费方式",
+        "feature": "功能",
+        "feature_ai_explanations": "AI驱动的单词解释",
+        "feature_chinese_decomposition": "汉字拆解",
+        "feature_dictionary": "含搭配、例句和动词变位的词典",
+        "feature_library": "207+种语言的60万+视频",
+        "feature_priority_support": "优先支持",
+        "feature_transcripts": "带翻译的交互式字幕",
+        "feature_word_examples": "视频中的单词示例",
+        "free_transcripts": "前10行",
+        "free_vs_pro": "免费版 vs Pro版",
+        "free_word_examples": "每词2条",
+        "plans": "套餐",
+        "price": "价格",
+        "pro_transcripts": "整篇字幕",
+        "pro_word_examples": "每词数百条",
+        "title": "定价"
+    },
     "pro": {
         "desc": "解锁完整体验，畅享 600,000+ 视频，覆盖 {count}+ 种语言。",
         "feature_ai": "AI 单词解释",

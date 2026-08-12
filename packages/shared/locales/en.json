@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/lifetime",
         "monthly": "${price}/mo"
     },
+    "pricing": {
+        "billing": "Billing",
+        "feature": "Feature",
+        "feature_ai_explanations": "AI-powered word explanations",
+        "feature_chinese_decomposition": "Chinese character decomposition",
+        "feature_dictionary": "Dictionary with collocations, examples, and verb inflections",
+        "feature_library": "600,000+ videos in 207+ languages",
+        "feature_priority_support": "Priority support",
+        "feature_transcripts": "Interactive transcripts with translation",
+        "feature_word_examples": "Word examples in videos",
+        "free_transcripts": "First 10 lines",
+        "free_vs_pro": "Free vs Pro",
+        "free_word_examples": "2 per word",
+        "plans": "Plans",
+        "price": "Price",
+        "pro_transcripts": "Full transcript",
+        "pro_word_examples": "Hundreds per word",
+        "title": "Pricing"
+    },
     "pro": {
         "desc": "Unlock the full learning experience with 600,000+ videos across {count}+ languages.",
         "feature_ai": "AI word explanations",

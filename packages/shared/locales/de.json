@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/lebenslang",
         "monthly": "${price}/Monat"
     },
+    "pricing": {
+        "billing": "Abrechnung",
+        "feature": "Funktion",
+        "feature_ai_explanations": "KI-gestützte Worterklärungen",
+        "feature_chinese_decomposition": "Chinesische Zeichenzerlegung",
+        "feature_dictionary": "Wörterbuch mit Kollokationen, Beispielen und Verbkonjugationen",
+        "feature_library": "600.000+ Videos in 207+ Sprachen",
+        "feature_priority_support": "Priorisierter Support",
+        "feature_transcripts": "Interaktive Transkripte mit Übersetzung",
+        "feature_word_examples": "Wortbeispiele in Videos",
+        "free_transcripts": "Erste 10 Zeilen",
+        "free_vs_pro": "Kostenlos vs. Pro",
+        "free_word_examples": "2 pro Wort",
+        "plans": "Pläne",
+        "price": "Preis",
+        "pro_transcripts": "Vollständiges Transkript",
+        "pro_word_examples": "Hunderte pro Wort",
+        "title": "Preise"
+    },
     "pro": {
         "desc": "Schalten Sie das vollständige Lernerlebnis mit über 600.000 Videos in mehr als {count} Sprachen frei.",
         "feature_ai": "KI-Worterklärungen",
