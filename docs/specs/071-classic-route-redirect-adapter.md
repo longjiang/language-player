@@ -555,8 +555,21 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 |---|---|
 | [Books](https://language-player.netlify.app/en/ja/books) | `https://v2.languageplayer.io/en/ja/books` |
 | [Pinyin Chart](https://language-player.netlify.app/en/ja/chinese/pinyin-chart) | `https://v2.languageplayer.io/en/zh/chinese/pinyin-chart` |
+| [Characters](https://language-player.netlify.app/en/ja/chinese/characters) | `https://v2.languageplayer.io/en/zh/chinese/characters` |
+| [Explore Related](https://language-player.netlify.app/en/ja/chinese/explore-related) | `https://v2.languageplayer.io/en/zh/chinese/explore-related` |
+| [Explore Roots](https://language-player.netlify.app/en/ja/chinese/explore-roots/123) | `https://v2.languageplayer.io/en/zh/chinese/explore-roots/123` |
+| [Explore Topics](https://language-player.netlify.app/en/ja/chinese/explore-topics) | `https://v2.languageplayer.io/en/zh/chinese/explore-topics` |
+| [Idioms](https://language-player.netlify.app/en/ja/chinese/idioms) | `https://v2.languageplayer.io/en/zh/chinese/idioms` |
+| [Chinese Lesson Videos](https://language-player.netlify.app/en/ja/chinese/lesson-videos) | `https://v2.languageplayer.io/en/zh/chinese/lesson-videos` |
+| [Lookup By Tones](https://language-player.netlify.app/en/ja/chinese/lookup-by-tones) | `https://v2.languageplayer.io/en/zh/chinese/lookup-by-tones` |
+| [New Levels](https://language-player.netlify.app/en/ja/chinese/new-levels) | `https://v2.languageplayer.io/en/zh/chinese/new-levels` |
+| [Chinese New Levels Graphic](https://language-player.netlify.app/en/ja/chinese/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/chinese/new-levels-graphic` |
+| [Pinyin Squared](https://language-player.netlify.app/en/ja/chinese/pinyin-squared) | `https://v2.languageplayer.io/en/zh/chinese/pinyin-squared` |
+| [Radicals](https://language-player.netlify.app/en/ja/chinese/radicals) | `https://v2.languageplayer.io/en/zh/chinese/radicals` |
+| [Chinese Separable](https://language-player.netlify.app/en/ja/chinese/separable) | `https://v2.languageplayer.io/en/zh/chinese/separable` |
 | [Pinyin List](https://language-player.netlify.app/en/ja/pinyin-list) | `https://v2.languageplayer.io/en/zh/pinyin-list` |
 | [Lesson Videos](https://language-player.netlify.app/en/ja/lesson-videos) | `https://v2.languageplayer.io/en/zh/lesson-videos` |
+| [Lesson Videos with level](https://language-player.netlify.app/en/ja/lesson-videos/1/2) | `https://v2.languageplayer.io/en/zh/lesson-videos/1/2` |
 | [Separable](https://language-player.netlify.app/en/ja/separable/foo) | `https://v2.languageplayer.io/en/zh/separable/foo` |
 | [New Levels Graphic](https://language-player.netlify.app/en/ja/explore/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
 | [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `https://v2.languageplayer.io/en/ja/youtube/subscriptions` |
