@@ -264,6 +264,10 @@ visual assets pending (items 4).
 
 #### Store listing graphics — asset requirements
 
+> **See [SPEC-070 — Prepare Graphics for App Stores](070-store-graphics-checklist.md)**
+> for the combined App Store + Play Store production checklist (capture once,
+> reuse across both stores). This section lists the Play Store requirements.
+
 These are the **only** store-listing graphics Google requires. There is no
 splash-screen or banner requirement for the store (splash screens are app-side
 assets, not store assets).
