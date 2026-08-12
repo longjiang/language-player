@@ -831,7 +831,9 @@ export default function ReviewScreen() {
                 <TokenizedText
                   text={inst.context.text}
                   l2Code={l2Code}
-                  highlightTerms={[inst.form]}
+                  highlightTerms={Array.from(new Set(
+                    [inst.form, ...(savedWord.forms ?? []), savedWord.head ?? ''].filter(Boolean),
+                  ))}
                   phoneticsOnHighlight={showTabs}
                 />
               </TextActionMenu>

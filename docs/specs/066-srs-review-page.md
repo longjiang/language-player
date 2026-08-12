@@ -347,6 +347,9 @@ app.
 ### Card front
 
 - Context sentence(s) from the saved word, tokenized and tappable.
+  The saved target is highlighted by surface form **or lemma**, so inflected
+  forms (e.g. 押し切られ → 押し切る) stay highlighted even when the tokenizer
+  splits the surface form.
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
 - SRS info line: `{interval}d` (or "new") and reviewed count.

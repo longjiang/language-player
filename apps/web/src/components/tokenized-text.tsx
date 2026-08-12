@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import {
+  isSameEntryId,
+  type DictionaryEntry,
+  type LemmatizedToken,
+  type SavedWordContext,
+} from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -12,7 +17,14 @@ import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 import { addExtraForm } from '@/hooks/use-inflected-search-terms';
-import { isPhoneticsEligible, mergePhraseTokens, sentenceContaining, sentenceForToken } from '@langplayer/utils';
+import {
+  isPhoneticsEligible,
+  mergePhraseTokens,
+  sentenceContaining,
+  sentenceForToken,
+  tokenMatchesAnyForm,
+  tokenMatchesAnyTerm,
+} from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 import type { FormatRange } from '@/lib/parse-markdown';
 import { useSelectionPopup } from '@/hooks/use-selection-popup';
@@ -616,12 +628,23 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const tokenHasTargetEntry = (token: LemmatizedToken): boolean => {
     if (highlightEntryIdSet.size === 0) return false;
     const base = baseCode(l2Code);
+    const matches = (entries: DictionaryEntry[] | undefined): boolean =>
+      !!entries?.some((e) =>
+        [...highlightEntryIdSet].some((id) => isSameEntryId(id, e.id, base)),
+      );
     for (const lemma of token.lemmas) {
-      const entries = getCachedEntries(base, lemma.lemma);
-      if (entries?.some((e) => highlightEntryIdSet.has(e.id))) return true;
+      if (matches(getCachedEntries(base, lemma.lemma))) return true;
     }
-    const surface = getCachedEntries(base, token.text);
-    return !!surface?.some((e) => highlightEntryIdSet.has(e.id));
+    return matches(getCachedEntries(base, token.text));
+  };
+
+  // Highlight the target word even when the tokenizer splits an inflected
+  // surface form (e.g. 押し切られ → 押し切ら + れ): any token whose lemma
+  // equals the saved head/form is the target.
+  const tokenMatchesHighlight = (token: LemmatizedToken): boolean => {
+    if (highlightForm && tokenMatchesAnyTerm(token, [highlightForm])) return true;
+    if (highlightForms && highlightForms.length > 0 && tokenMatchesAnyTerm(token, highlightForms)) return true;
+    return tokenHasTargetEntry(token);
   };
 
   // Report surface forms of tokens that matched a dictionary entry back to
@@ -735,12 +758,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               mode={settingsTokenizedText.mode}
               byeonggi={byeonggi ?? l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
-              isSaved={highlightSaved === false ? false : savedFormSet.has(token.text.toLowerCase())}
-              isHighlighted={
-                (!!highlightForm && token.text === highlightForm) ||
-                (!!highlightForms && highlightForms.some((f) => f === token.text)) ||
-                tokenHasTargetEntry(token)
-              }
+              isSaved={highlightSaved === false ? false : tokenMatchesAnyForm(token, savedFormSet)}
+              isHighlighted={tokenMatchesHighlight(token)}
               nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={(rect) => handleTokenClick(token, rect)}
               cacheVersion={cacheVersion}

@@ -75,6 +75,8 @@ export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms'
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
 export { dailyReviewCounterKey, msUntilNextUtcDay } from './daily-counter';
+export { tokenMatchesAnyTerm, tokenMatchesAnyForm } from './highlight-match';
+export type { HighlightToken } from './highlight-match';
 export {
   getSyncEntityDef,
   validateSyncPayload,
