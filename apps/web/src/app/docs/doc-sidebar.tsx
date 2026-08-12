@@ -48,10 +48,9 @@ function DocLink({ href, title, active, onClick }: { href: string; title: string
 }
 
 /** Renders a category node (expandable). Auto-expands if any child is active. */
-function DocCategory({ category, l1, l2, currentSlug, onClick }: {
+function DocCategory({ category, l1, currentSlug, onClick }: {
   category: DocMeta;
   l1: string;
-  l2: string;
   currentSlug: string;
   onClick: () => void;
 }) {
@@ -80,11 +79,11 @@ function DocCategory({ category, l1, l2, currentSlug, onClick }: {
             if (child.children && child.children.length > 0) {
               return (
                 <li key={child.slug}>
-                  <DocCategory category={child} l1={l1} l2={l2} currentSlug={currentSlug} onClick={onClick} />
+                  <DocCategory category={child} l1={l1} currentSlug={currentSlug} onClick={onClick} />
                 </li>
               );
             }
-            const href = `/${l1}/${l2}/docs/${child.slug}`;
+            const href = `/docs/${child.slug}?l1=${encodeURIComponent(l1)}`;
             return (
               <li key={child.slug}>
                 <DocLink href={href} title={child.title} active={child.slug === currentSlug} onClick={onClick} />
@@ -97,11 +96,10 @@ function DocCategory({ category, l1, l2, currentSlug, onClick }: {
   );
 }
 
-export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
+export function DocSidebar({ toc, docs, l1, currentSlug, searchIndex }: {
   toc: TocItem[];
   docs: DocMeta[];
   l1: string;
-  l2: string;
   currentSlug: string;
   searchIndex: DocEntry[];
 }) {
@@ -165,7 +163,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
               {results.map(({ item }) => (
                 <li key={item.slug}>
                   <Link
-                    href={`/${l1}/${l2}/docs/${item.slug}`}
+                    href={`/docs/${item.slug}?l1=${encodeURIComponent(l1)}`}
                     onClick={close}
                     className="block rounded px-2 py-1.5 text-sm transition-colors hover:bg-muted"
                   >
@@ -196,11 +194,11 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
                     if (doc.children && doc.children.length > 0) {
                       return (
                         <li key={doc.slug}>
-                          <DocCategory category={doc} l1={l1} l2={l2} currentSlug={currentSlug} onClick={close} />
+                          <DocCategory category={doc} l1={l1} currentSlug={currentSlug} onClick={close} />
                         </li>
                       );
                     }
-                    const href = `/${l1}/${l2}/docs/${doc.slug}`;
+                    const href = `/docs/${doc.slug}?l1=${encodeURIComponent(l1)}`;
                     return (
                       <li key={doc.slug}>
                         <DocLink href={href} title={doc.title} active={doc.slug === currentSlug} onClick={close} />

@@ -38,6 +38,8 @@ const WEB_ROUTE_PATTERNS = [
   '/logout',
   '/auth/confirm',
   '/auth/verified',
+  '/docs',
+  '/docs/:slug+',
   '/:l1/:l2',
   '/:l1/:l2/channel/:channelId',
   '/:l1/:l2/channels',
@@ -45,8 +47,6 @@ const WEB_ROUTE_PATTERNS = [
   '/:l1/:l2/dictionary',
   '/:l1/:l2/dictionary/entry/:dictionaryId/:entryId',
   '/:l1/:l2/dictionary/word/:word',
-  '/:l1/:l2/docs',
-  '/:l1/:l2/docs/:slug+',
   '/:l1/:l2/epub',
   '/:l1/:l2/explore',
   '/:l1/:l2/go-pro',
@@ -101,7 +101,15 @@ const LEGACY_ALIASES: AliasRule[] = [
   },
   {
     pattern: '/privacy-policy',
-    to: (_params, pair) => `/${pair.l1}/${pair.l2}/docs/privacy-policy`,
+    to: (_params, pair) => `/docs/privacy-policy?l1=${pair.l1}`,
+  },
+  {
+    pattern: '/:l1/:l2/docs',
+    to: (params) => `/docs?l1=${params.l1}`,
+  },
+  {
+    pattern: '/:l1/:l2/docs/:slug+',
+    to: (params) => `/docs/${params.slug}?l1=${params.l1}`,
   },
   {
     pattern: '/verify-email',

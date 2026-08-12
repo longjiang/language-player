@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import ReactMarkdown from 'react-markdown';
@@ -7,15 +8,19 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { resolveDocsL1 } from '@/lib/docs-locale';
 import { DocSidebar } from '../doc-sidebar';
 
 interface Props {
-  params: Promise<{ l1: string; l2: string; slug: string[] }>;
+  params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ l1?: string }>;
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const params = await props.params;
-  const doc = getDoc(params.l1, params.slug);
+  const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
+  const headerList = await headers();
+  const l1 = resolveDocsL1(searchParams.l1, headerList.get('accept-language'));
+  const doc = getDoc(l1, params.slug);
   if (!doc) return { title: 'Not Found' };
   const match = doc.content.match(/^# (.+)$/m);
   const title = match?.[1] ?? 'Documentation';
@@ -228,9 +233,11 @@ function extractToc(markdown: string): TocItem[] {
 }
 
 export default async function DocPage(props0: Props) {
-  const params = await props0.params;
+  const [params, searchParams] = await Promise.all([props0.params, props0.searchParams]);
+  const headerList = await headers();
   const t = await getTranslations();
-  const { l1, l2, slug } = params;
+  const { slug } = params;
+  const l1 = resolveDocsL1(searchParams.l1, headerList.get('accept-language'));
   const doc = getDoc(l1, slug);
   const docs = getAllDocs(l1);
   const searchIndex = getSearchIndex(l1);
@@ -257,10 +264,18 @@ export default async function DocPage(props0: Props) {
           rehypePlugins={[rehypeSlug]}
           components={{
             a: ({ href, children, ...props }) => {
-              // Rewrite /docs/... links to include language prefix
+              // Rewrite /docs/... links to carry the ?l1= query
               let resolved = href;
-              if (resolved?.startsWith('/docs/')) {
-                resolved = `/${l1}/${l2}${resolved}`;
+              if (
+                resolved === '/docs' ||
+                resolved?.startsWith('/docs/') ||
+                resolved?.startsWith('/docs#')
+              ) {
+                const hashIndex = resolved.indexOf('#');
+                const path = hashIndex === -1 ? resolved : resolved.slice(0, hashIndex);
+                const hash = hashIndex === -1 ? '' : resolved.slice(hashIndex);
+                const separator = path.includes('?') ? '&' : '?';
+                resolved = `${path}${separator}l1=${encodeURIComponent(l1)}${hash}`;
               }
               // External & mailto use native <a>, internal use <Link>
               const external = resolved?.startsWith('http') || resolved?.startsWith('mailto:');
@@ -276,7 +291,7 @@ export default async function DocPage(props0: Props) {
 
         <hr className="my-8" />
         <Link
-          href={`/${l1}/${l2}/docs`}
+          href={`/docs?l1=${encodeURIComponent(l1)}`}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           ← {t('action.back_to_documentation')}
@@ -284,7 +299,7 @@ export default async function DocPage(props0: Props) {
       </article>
 
       {/* Sidebar TOC */}
-      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={currentSlug} searchIndex={searchIndex} />
+      <DocSidebar toc={toc} docs={docs} l1={l1} currentSlug={currentSlug} searchIndex={searchIndex} />
     </div>
   );
 }

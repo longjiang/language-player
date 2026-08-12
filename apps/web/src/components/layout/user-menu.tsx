@@ -53,7 +53,7 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
               <LogIn className="h-4 w-4" /> {t('action.log_in')}
             </Link>
             <Link
-              href={`/${l1Code}/${l2Code}/docs`}
+              href={`/docs?l1=${encodeURIComponent(l1Code)}`}
               onClick={close}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
             >
@@ -166,7 +166,7 @@ export function UserMenu({ l1Code = 'en', l2Code = 'zh' }: UserMenuProps = {}) {
             <Bookmark className="h-4 w-4" /> {t('title.saved_words')}
           </Link>
           <Link
-            href={`/${l1Code}/${l2Code}/docs`}
+            href={`/docs?l1=${encodeURIComponent(l1Code)}`}
             onClick={close}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
           >

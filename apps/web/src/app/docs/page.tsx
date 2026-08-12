@@ -1,8 +1,10 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { FileText } from 'lucide-react';
+import { resolveDocsL1 } from '@/lib/docs-locale';
 import { DocSearch } from './doc-search';
 import { CategoryTitle } from './category-title';
 import { DocPageHeading } from './doc-page-heading';
@@ -92,7 +94,7 @@ function loadTitleMap(l1: string): Map<string, string> | undefined {
   return undefined;
 }
 
-function DocList({ docs, l1, l2 }: { docs: DocMeta[]; l1: string; l2: string }) {
+function DocList({ docs, l1 }: { docs: DocMeta[]; l1: string }) {
   return (
     <ul className="space-y-1">
       {docs.map(doc => {
@@ -104,7 +106,7 @@ function DocList({ docs, l1, l2 }: { docs: DocMeta[]; l1: string; l2: string }) 
                 <CategoryTitle slug={doc.slug} />
               </div>
               <div className="ml-7 border-l border-border/50 pl-4">
-                <DocList docs={doc.children} l1={l1} l2={l2} />
+                <DocList docs={doc.children} l1={l1} />
               </div>
             </li>
           );
@@ -112,7 +114,7 @@ function DocList({ docs, l1, l2 }: { docs: DocMeta[]; l1: string; l2: string }) 
         return (
           <li key={doc.slug}>
             <Link
-              href={`/${l1}/${l2}/docs/${doc.slug}`}
+              href={`/docs/${doc.slug}?l1=${encodeURIComponent(l1)}`}
               className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-colors hover:bg-muted"
             >
               <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -186,12 +188,13 @@ function walkDocs(dir: string, basePath: string, out: DocEntry[]) {
 }
 
 interface Props {
-  params: Promise<{ l1: string; l2: string }>;
+  searchParams: Promise<{ l1?: string }>;
 }
 
 export default async function DocsPage(props: Props) {
-  const params = await props.params;
-  const { l1, l2 } = params;
+  const searchParams = await props.searchParams;
+  const headerList = await headers();
+  const l1 = resolveDocsL1(searchParams.l1, headerList.get('accept-language'));
   const docs = getDocs(l1);
   const searchIndex = getSearchIndex(l1);
 
@@ -204,8 +207,8 @@ export default async function DocsPage(props: Props) {
         {docs.length === 0 ? (
           <DocEmptyState />
         ) : (
-          <DocSearch docs={searchIndex} l1={l1} l2={l2}>
-            <DocList docs={docs} l1={l1} l2={l2} />
+          <DocSearch docs={searchIndex} l1={l1}>
+            <DocList docs={docs} l1={l1} />
           </DocSearch>
         )}
       </div>

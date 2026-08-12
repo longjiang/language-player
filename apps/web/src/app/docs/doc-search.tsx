@@ -16,7 +16,6 @@ interface DocEntry {
 interface Props {
   docs: DocEntry[];
   l1: string;
-  l2: string;
   /** The regular doc tree to show when not searching. */
   children: ReactNode;
 }
@@ -32,7 +31,7 @@ function snippet(content: string, query: string): string {
   return (start > 0 ? '…' : '') + snip + (end < content.length ? '…' : '');
 }
 
-export function DocSearch({ docs, l1, l2, children }: Props) {
+export function DocSearch({ docs, l1, children }: Props) {
   const t = useT();
   const [query, setQuery] = useState('');
 
@@ -71,7 +70,7 @@ export function DocSearch({ docs, l1, l2, children }: Props) {
           {results.map(({ item }) => (
             <li key={item.slug}>
               <Link
-                href={`/${l1}/${l2}/docs/${item.slug}`}
+                href={`/docs/${item.slug}?l1=${encodeURIComponent(l1)}`}
                 className="block rounded-lg border border-border p-3 transition-colors hover:bg-muted"
               >
                 <p className="text-sm font-medium">{item.title}</p>

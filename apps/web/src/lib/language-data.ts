@@ -202,7 +202,6 @@ const UNIVERSAL_PAGE_PATTERNS = [
   /^\/[^/]+\/[^/]+\/settings$/,
   /^\/[^/]+\/[^/]+\/profile$/,
   /^\/[^/]+\/[^/]+\/search$/,
-  /^\/[^/]+\/[^/]+\/docs/,
 ];
 
 /**
