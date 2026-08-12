@@ -41,6 +41,7 @@ const WEB_ROUTE_PATTERNS = [
   '/:l1/:l2',
   '/:l1/:l2/channel/:channelId',
   '/:l1/:l2/channels',
+  '/:l1/:l2/about',
   '/:l1/:l2/dictionary',
   '/:l1/:l2/dictionary/entry/:dictionaryId/:entryId',
   '/:l1/:l2/dictionary/word/:word',
@@ -160,6 +161,10 @@ const LEGACY_ALIASES: AliasRule[] = [
   {
     pattern: '/:l1/:l2/my-text',
     to: (params) => `/${params.l1}/${params.l2}/reader`,
+  },
+  {
+    pattern: '/:l1/:l2/contact-us',
+    to: (params) => `/${params.l1}/${params.l2}/about`,
   },
   {
     pattern: '/:l1/:l2/recommended-video',
@@ -323,7 +328,6 @@ const CLASSIC_ONLY_PATTERNS = [
   '/:l1/:l2/community',
   '/:l1/:l2/compare/:method/:args',
   '/:l1/:l2/confirm-deletion',
-  '/:l1/:l2/contact-us',
   '/:l1/:l2/discussions',
   '/:l1/:l2/feed',
   '/:l1/:l2/faq',

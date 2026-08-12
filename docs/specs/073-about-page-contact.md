@@ -29,6 +29,8 @@ the tokenizer test. This spec updates both apps:
 - `AboutContent` is rendered inside the UserMenu's `AboutDialog`
   (`apps/web/src/components/about/about-content.tsx`,
   `apps/web/src/components/about/about-dialog.tsx`)
+- Add a thin `/{l1}/{l2}/about` route that opens the dialog — it is a stable
+  deep-link target for Classic's `/contact-us` redirect (SPEC-071)
 - Shows: version, build date, environment, **commit**, **branch**
 - No contact, docs, or tokenizer links
 
@@ -88,6 +90,13 @@ Label: `title.tokenizer_test`.
   (e.g. `useResponsive().isSm`)
 - Remove the `(tabs)/(me)/about` route from the Me stack layout and from the
   UserMenu's navigation; the UserMenu opens the dialog instead
+
+### 3.6 Deep-link route (web)
+
+- Add `/{l1}/{l2}/about` which renders the `AboutDialog` open on mount; closing
+  it navigates back to Explore
+- The About UI itself remains a modal — the route is only a stable URL target
+- Classic's `/contact-us` internally redirects (308) to this route (SPEC-071)
 
 ## 4. Layout
 
@@ -189,6 +198,8 @@ New key (added through the `translations.csv` workflow):
 - About is a modal dialog in both apps (mobile no longer has an `/about` route)
 - Mobile About renders as a bottom sheet on phones and a centered dialog on
   larger screens
+- Web `/{l1}/{l2}/about` opens the About dialog and Classic `/contact-us`
+  redirects to it
 - Email support row opens `mailto:jon.long@zerotohero.ca`
 - Discord row opens `https://discord.gg/D7vKcuKXuA`
 - Documentation link navigates to docs in both apps
