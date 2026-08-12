@@ -81,6 +81,9 @@ Label: `title.tokenizer_test`.
 ### 3.5 Modal behavior (mobile)
 
 - Add a mobile `AboutDialog` component mirroring web's `AboutDialog`
+- Render as a **bottom sheet on phones** and a **centered dialog on larger
+  screens** (tablets, landscape) using the existing responsive breakpoint
+  (e.g. `useResponsive().isSm`)
 - Remove the `(tabs)/(me)/about` route from the Me stack layout and from the
   UserMenu's navigation; the UserMenu opens the dialog instead
 
@@ -160,7 +163,8 @@ Notes:
 - Email and Discord rows are tappable links; arrows indicate navigation on web,
   while mobile rows use the whole row as the tap target
 - Documentation and Tokenizer Test rows close the dialog before navigating
-- Mobile uses a bottom sheet with a close button; web uses a centered dialog
+- Mobile uses a bottom sheet with a close button on phones and a centered
+  dialog on larger screens; web always uses a centered dialog
 
 ## 6. i18n
 
@@ -180,6 +184,8 @@ New key (added through the `translations.csv` workflow):
 
 - About no longer shows a commit hash or branch anywhere
 - About is a modal dialog in both apps (mobile no longer has an `/about` route)
+- Mobile About renders as a bottom sheet on phones and a centered dialog on
+  larger screens
 - Email support row opens `mailto:jon.long@zerotohero.ca`
 - Discord row opens `https://discord.gg/D7vKcuKXuA`
 - Documentation link navigates to docs in both apps
