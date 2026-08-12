@@ -503,7 +503,7 @@ event so the cap is restored. Trial users are Pro-equivalent while active
 | 13 | Auth gate | Explicit "Sign in to review words" screen | None in-screen | Web-only explicit gate |
 | 14 | Empty-state CTA | Explore-videos button on no-words/no-due states | Text only, no CTA | Mobile missing the CTA |
 | 15 | Language code | `baseCode(l2.code)` for SRS/saved-word keys | Raw `l2Lang.code` | No practical difference today (L2 codes are already base codes) |
-| 16 | Unused/dead code | `fetchingEntries` never set; `handleSpeak` defined but never wired; `normalizeInstances` import unused | `removeWord` import unused | Dead code to clean up |
+| 16 | Unused/dead code | Cleaned up in Phase 6 (`fetchingEntries`, `handleSpeak`, unused imports removed) | `removeWord` intentionally unused: unsaving happens from saved-words/dictionary surfaces, not Review (2026-08-11) | Intended — no delete control on the card; orphan pruning removes the card (disparity 4) |
 | 17 | `/srs/settings` row | `useSrs().updateSettings` exists but no UI calls it | `useSrs().setDailyLimit` exists but no UI calls it | Settings UI writes `settings_v2` on both; the SRS settings row is effectively orphaned (web still *reads* it for the deck limit — see #3) |
 
 ## Implementation Status (2026-08-11)
@@ -738,9 +738,10 @@ Independent, small commits after the cutover.
    Port that flag, not the current condition.
 2. **Mobile orphan pruning (disparity 4).** Add `pruneOrphans()` to mobile
    `useSrs` (mirror web) and call it from the review screen on load; wire the
-   review screen's unsave path to remove the SRS card too (mobile currently
-   has `removeWord` imported but unused, so unsaving leaves the card until a
-   future prune).
+   review screen's unsave path to remove the SRS card too. Note (2026-08-11):
+   the review-screen unsave button added here was removed again as redundant —
+   unsaving happens from saved-words/dictionary surfaces, and `pruneOrphans`
+   deletes the orphaned card automatically on the next Review load.
 3. **L1-translated entry lookup (disparity 6).** Mobile's
    `lib/dictionary-cache.ts` already re-exports the L1 cache helpers; add a
    mobile `lookupL1Text()` (port of web's `apps/web/src/lib/l1-lookup.ts`,
