@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ICON_SAVED, ICON_UNSAVED } from '@/lib/theme-colors';
 import { Bookmark } from 'lucide-react-native';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
@@ -18,6 +20,8 @@ interface SaveButtonProps {
  * Matches Next.js — bookmark icon, toggle on press.
  */
 export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { l2Lang } = useLanguage();
   const { hasWord, saveWord, removeWord } = useSavedWords();
   const wordId = entry.id;
@@ -28,6 +32,11 @@ export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
       removeWord(l2Lang.code, wordId);
       setSaved(false);
     } else {
+      if (authLoading) return;
+      if (!user) {
+        router.push('/login' as any);
+        return;
+      }
       saveWord(l2Lang.code, {
         id: wordId,
         head: entry.head,
@@ -38,7 +47,19 @@ export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
       });
       setSaved(true);
     }
-  }, [saved, l2Lang.code, wordId, entry.head, entry.dictionary.id, entry.id, saveWord, removeWord]);
+  }, [
+    saved,
+    l2Lang.code,
+    wordId,
+    entry.head,
+    entry.dictionary.id,
+    entry.id,
+    saveWord,
+    removeWord,
+    user,
+    authLoading,
+    router,
+  ]);
 
   return (
     <Pressable onPress={handlePress} className="p-1" hitSlop={8}>

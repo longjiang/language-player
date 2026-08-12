@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import type { SavedWordContext } from '@langplayer/shared';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -68,13 +70,9 @@ interface SaveButtonProps {
  * On save, automatically fetches all inflected/conjugated forms from the
  * Python backend so that every form of the word highlights as saved.
  */
-export function SaveButton({
-  wordId,
-  head,
-  context,
-  forms,
-  size = 'icon',
-}: SaveButtonProps) {
+export function SaveButton({ wordId, head, context, forms, size = 'icon' }: SaveButtonProps) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { hasSavedWord, saveWord, removeSavedWord } = useSavedWordsContext();
   const { l2 } = useLanguage();
   const t = useT();
@@ -88,6 +86,16 @@ export function SaveButton({
       removeCardFromStorage(l2Code, wordId);
       return;
     }
+
+    // Saving requires an account — send logged-out users to login and bring
+    // them back to the same page afterwards.
+    if (status === 'loading') return;
+    if (!session?.user) {
+      const callbackUrl = `${window.location.pathname}${window.location.search}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      return;
+    }
+
     setSaving(true);
     const allForms = forms ?? (await fetchInflectedForms(head, l2Code));
     saveWord(l2Code, {
@@ -95,11 +103,13 @@ export function SaveButton({
       forms: allForms,
       date: Date.now(),
       context,
-      instances: [{
-        timestamp: Date.now(),
-        form: head,
-        context,
-      }],
+      instances: [
+        {
+          timestamp: Date.now(),
+          form: head,
+          context,
+        },
+      ],
     });
     setSaving(false);
   };
@@ -108,11 +118,9 @@ export function SaveButton({
     return (
       <button
         onClick={handleToggle}
-        disabled={saving}
+        disabled={saving || status === 'loading'}
         className={`p-1 rounded transition-colors ${
-          saved
-            ? 'text-amber-500 hover:text-amber-600'
-            : 'text-amber-500/70 hover:text-amber-500'
+          saved ? 'text-amber-500 hover:text-amber-600' : 'text-amber-500/70 hover:text-amber-500'
         }`}
         title={saved ? t('action.remove_from_saved') : t('action.save_word')}
       >
@@ -132,7 +140,7 @@ export function SaveButton({
       variant={saved ? 'secondary' : 'outline'}
       size={size}
       onClick={handleToggle}
-      disabled={saving}
+      disabled={saving || status === 'loading'}
       className="gap-1.5"
     >
       {saving ? (

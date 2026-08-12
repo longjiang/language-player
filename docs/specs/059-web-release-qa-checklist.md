@@ -64,6 +64,8 @@ comments go in brackets.
 
 - ⬜ login — happy path (Mary/Bob)
 - ⬜ login — wrong password → inline error, stays on login
+- ⬜ logged out — saving a word from the dictionary popup or interface
+  redirects to login
 - ⬜ login — empty fields → validation error
 - ⬜ login with `?callbackUrl=` → returns to the intended page after login
 - ⬜ Go Pro while logged out → login → returns to Go Pro after login
