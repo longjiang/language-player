@@ -11,6 +11,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { dictionaryEntryLogger } from '@/lib/logger';
 import { WebViewSheet } from '@/components/WebViewSheet';
 
@@ -80,6 +81,7 @@ export function DictionaryEntryCard({
 }: DictionaryEntryCardProps) {
   const router = useRouter();
   const t = useT();
+  const { user, loading: authLoading } = useAuth();
   const { l2Lang } = useLanguage();
   const [showImageSearch, setShowImageSearch] = useState(false);
   const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
@@ -112,6 +114,11 @@ export function DictionaryEntryCard({
       removeWord(l2Lang.code, entry.id);
       setWordSaved(false);
     } else {
+      if (authLoading) return;
+      if (!user) {
+        router.push('/login' as any);
+        return;
+      }
       saveWord(l2Lang.code, {
         id: entry.id,
         head: entry.head,
@@ -124,7 +131,18 @@ export function DictionaryEntryCard({
       });
       setWordSaved(true);
     }
-  }, [wordSaved, l2Lang.code, entry.id, entry.head, entry.dictionary?.id, saveWord, removeWord]);
+  }, [
+    wordSaved,
+    l2Lang.code,
+    entry.id,
+    entry.head,
+    entry.dictionary?.id,
+    saveWord,
+    removeWord,
+    user,
+    authLoading,
+    router,
+  ]);
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
