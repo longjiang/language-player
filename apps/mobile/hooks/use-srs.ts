@@ -127,6 +127,31 @@ export function useSrs() {
     });
   }, []);
 
+  const pruneOrphans = useCallback((lang: string, savedWordIds: Set<string>) => {
+    setStore((prev) => {
+      const langCards = prev.cards[lang] ?? {};
+      const orphans = Object.keys(langCards).filter((id) => !savedWordIds.has(id));
+      if (orphans.length === 0) return prev;
+      const prunedCards = { ...langCards };
+      for (const id of orphans) delete prunedCards[id];
+      const next = { ...prev, cards: { ...prev.cards, [lang]: prunedCards } };
+      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+      for (const id of orphans) {
+        log(`[srs] queued delete orphan card ${lang}::${id}`);
+        enqueueSyncOp({
+          entity: 'srs_card',
+          entityId: `${lang}::${id}`,
+          op: 'delete',
+          payload: { l2: lang, wordId: id },
+          updatedAt: Date.now(),
+        }).catch((err) => {
+          logwarn('[srs] Orphan card delete enqueue failed:', err);
+        });
+      }
+      return next;
+    });
+  }, []);
+
   const setDailyLimit = useCallback((limit: number) => {
     setStore((prev) => {
       const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
@@ -190,5 +215,5 @@ export function useSrs() {
 
   const dailyNewLimit = store.settings.dailyNewLimit;
 
-  return { store, loaded, updateCard, removeCard, setDailyLimit, dailyNewLimit };
+  return { store, loaded, updateCard, removeCard, pruneOrphans, setDailyLimit, dailyNewLimit };
 }

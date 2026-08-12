@@ -7,6 +7,8 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 interface SavedWordsContextValue {
   savedWords: SavedLexicalItemStore;
   loaded: boolean;
+  /** True once the authenticated row-API hydration completed (or failed). */
+  cloudHydrated: boolean;
   saveWord: (l2Code: string, word: SavedLexicalItemRecord) => void;
   removeSavedWord: (l2Code: string, wordId: string) => void;
   hasSavedWord: (l2Code: string, wordId: string) => boolean;

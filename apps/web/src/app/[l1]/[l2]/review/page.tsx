@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { useCloudUserData } from '@/providers/user-data-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { fsrs, baseCode } from '@langplayer/utils';
@@ -77,9 +76,8 @@ interface ReviewCard {
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
-  const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
   const { display, review: { dailyNewLimit: dailyLimit } } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
@@ -580,13 +578,11 @@ export default function ReviewPage() {
 
   // ── Render states ──
 
-  // For authenticated users, savedWords may still be {} after cloudLoaded
-  // becomes true — the cloud hydration effect in useSavedWords hasn't fired
-  // yet.  Treat an empty store for authenticated users as still-loading to
-  // avoid a misleading "no cards to review" flash.
-  const savedWordsEmpty = Object.keys(savedWords).length === 0;
+  // For authenticated users, wait for the row-API hydration to finish
+  // (even when the account is genuinely empty) so we don't flash a false
+  // "no cards to review" state while the cloud store is still loading.
   const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing
-    || (status === 'authenticated' && (!cloudLoaded || savedWordsEmpty));
+    || (status === 'authenticated' && !cloudHydrated);
 
   if (isLoading) {
     return (
@@ -647,7 +643,7 @@ export default function ReviewPage() {
         <p className="text-muted-foreground text-center max-w-md">
           {t('msg.all_done_desc')}
           {nextDue && (
-            <> {t('msg.next_review')}: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
+            <> {t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </p>
         <div className="flex gap-3">
@@ -676,7 +672,7 @@ export default function ReviewPage() {
         <p className="text-muted-foreground text-center max-w-md">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2.name })}
           {nextDue ? (
-            <> {t('msg.next_review_date', { date: new Date(nextDue.nextReview).toLocaleDateString() })}</>
+            <> {t('msg.next_review_date', { date: new Date(nextDue.due).toLocaleDateString() })}</>
           ) : (
             <> {t('msg.save_more_words')}</>
           )}
@@ -791,6 +787,14 @@ export default function ReviewPage() {
                 </div>
               )
             )}
+          </div>
+        )}
+
+        {/* No saved context (e.g. word saved from dictionary search):
+            show the headword itself so the reviewer knows what's being tested. */}
+        {!wordCtx.text && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg w-full text-center">
+            <p className="text-2xl font-bold text-foreground">{wordForm}</p>
           </div>
         )}
 

@@ -80,6 +80,8 @@ function storeToLocal(server: SavedLexicalItemStore): SavedWordsStore {
 interface SavedWordsContextValue {
   savedWords: SavedWordsStore;
   loaded: boolean;
+  /** True once the authenticated row-API hydration completed (or failed). */
+  cloudHydrated: boolean;
   saveWord: (l2Code: string, meta: SavedWordMeta) => void;
   removeWord: (l2Code: string, wordId: string) => void;
   hasWord: (l2Code: string, wordId: string) => boolean;
@@ -94,6 +96,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
   const { getSavedWords: fetchSavedWordRows } = useSavedWordApi();
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
+  const [cloudHydrated, setCloudHydrated] = useState(false);
   const hydratedUserId = useRef<string | null>(null);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -171,6 +174,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     if (prev === undefined) return; // initial boot — keep locally loaded state
     if (prev !== next) {
       hydratedUserId.current = null;
+      setCloudHydrated(false);
       setSavedWords({});
     }
   }, [user?.id]);
@@ -190,6 +194,8 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(local)).catch(() => {});
       } catch (err) {
         syncLogger.logwarn('[SavedWordsContext] Hydration failed:', err);
+      } finally {
+        if (!cancelled) setCloudHydrated(true);
       }
     })();
     return () => { cancelled = true; };
@@ -449,7 +455,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
   }, [savedWords]);
 
   return (
-    <SavedWordsContext.Provider value={{ savedWords, loaded, saveWord, removeWord, hasWord, clearAll, refreshEntry }}>
+    <SavedWordsContext.Provider value={{ savedWords, loaded, cloudHydrated, saveWord, removeWord, hasWord, clearAll, refreshEntry }}>
       {children}
     </SavedWordsContext.Provider>
   );
