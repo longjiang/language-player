@@ -988,6 +988,7 @@
         "sort_by": "Sortuj według: {sortBy}",
         "start_learning": "Zacznij uczyć się języków poprzez autentyczne treści wideo.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Tylko plan dożywotni jest dostępny przez rozliczenia w sklepie.",
         "subscription_cancel_error": "Błąd podczas anulowania subskrypcji",
         "subscription_cancel_success": "Subskrypcja anulowana pomyślnie",
         "subscription_expired": "Twoja subskrypcja wygasła.",

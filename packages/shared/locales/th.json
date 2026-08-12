@@ -988,6 +988,7 @@
         "sort_by": "เรียงตาม: {sortBy}",
         "start_learning": "เริ่มเรียนภาษาผ่านเนื้อหาวิดีโอจริง",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "เฉพาะแผนตลอดชีพเท่านั้นที่สามารถซื้อได้ผ่านการเรียกเก็บเงินในร้านค้า",
         "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก",
         "subscription_cancel_success": "ยกเลิกการสมัครสมาชิกสำเร็จแล้ว",
         "subscription_expired": "การสมัครสมาชิกของคุณหมดอายุแล้ว",

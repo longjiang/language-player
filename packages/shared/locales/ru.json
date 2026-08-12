@@ -988,6 +988,7 @@
         "sort_by": "Сортировать по: {sortBy}",
         "start_learning": "Начните изучать языки с помощью аутентичного видеоконтента.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Через магазин доступен только пожизненный план.",
         "subscription_cancel_error": "Ошибка при отмене подписки",
         "subscription_cancel_success": "Подписка успешно отменена",
         "subscription_expired": "Срок действия вашей подписки истёк.",

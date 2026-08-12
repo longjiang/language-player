@@ -967,6 +967,7 @@
         "sort_by": "排序方式：{sortBy}",
         "start_learning": "透過真實影片內容開始學習語言。",
         "storage_usage": "存儲：已下載 {used} 種語言",
+        "store_lifetime_only": "商店購買僅支援終身方案。",
         "subscription_cancel_error": "取消訂閱時出錯",
         "subscription_cancel_success": "訂閱成功取消",
         "subscription_expired": "您的訂閱已到期。",

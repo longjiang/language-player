@@ -968,6 +968,7 @@
         "sort_by": "排序方式：{sortBy}",
         "start_learning": "通过真实视频内容开始学习语言。",
         "storage_usage": "存储：已下载 {used} 种语言",
+        "store_lifetime_only": "商店购买仅支持终身计划。",
         "subscription_cancel_error": "取消订阅时出错",
         "subscription_cancel_success": "订阅成功取消",
         "subscription_expired": "您的订阅已过期。",

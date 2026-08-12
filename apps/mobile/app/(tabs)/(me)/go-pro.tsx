@@ -7,10 +7,10 @@ import { useResponsive } from '@/hooks/use-responsive';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { IAP_AVAILABLE, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
+import { IAP_AVAILABLE, ANDROID_IAP_PRODUCT_ID, initiatePurchase, finishPurchaseTransaction, restorePurchases, connectIap, setPurchaseHandler } from '@/lib/iap';
 import { isSaleActive, getSaleDiscount, findUsdPrice, CONTENT_L2_COUNT } from '@langplayer/shared';
 import type { StripePrice } from '@langplayer/shared';
-import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
+import { Crown, Check, ArrowRight, AlertCircle, Apple, RefreshCw, CreditCard } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { log, logwarn } from '@/lib/logger';
@@ -79,14 +79,45 @@ function salePrice(prices: StripePrice[], planKey: string): string | null {
   return `$${sale.amount}`;
 }
 
-/** Check if a non-lifetime plan is gated on iOS (only lifetime is available via IAP). */
-function isIOSGatedPlan(planKey: string): boolean {
-  return Platform.OS === 'ios' && planKey !== 'lifetime';
+/** Check if a non-lifetime plan is gated on store-billing platforms
+ *  (only lifetime is available via Apple IAP / Play Billing). */
+function isStoreGatedPlan(planKey: string): boolean {
+  return (Platform.OS === 'ios' || Platform.OS === 'android') && planKey !== 'lifetime';
 }
 
 /** Check if the viewer already has this plan. */
 function isCurrentPlan(planKey: string, planType: string | null): boolean {
   return planKey === planType;
+}
+
+/** POST a store purchase to the correct backend endpoint.
+ *  iOS → /in_app_purchase_success (receipt/JWS); Android → /play_billing_success
+ *  (purchase token). SPEC-068 Step 3. */
+async function sendPurchaseForValidation(
+  userId: string,
+  purchase: { platform?: string; purchaseToken?: string | null },
+  receipt?: string,
+  jws?: string,
+): Promise<any> {
+  const isAndroid = purchase?.platform === 'android' || Platform.OS === 'android';
+  const body = isAndroid
+    ? {
+        user_id: String(userId),
+        purchase_token: jws ?? purchase?.purchaseToken ?? null,
+        product_id: ANDROID_IAP_PRODUCT_ID,
+      }
+    : { user_id: String(userId), receipt, jws };
+  const res = await fetch(
+    isAndroid
+      ? `${PYTHON_API_URL}/play_billing_success`
+      : `${PYTHON_API_URL}/in_app_purchase_success`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+  );
+  return res.json();
 }
 
 // ── Component ──
@@ -176,13 +207,7 @@ export default function GoProScreen() {
 
     (async () => {
       try {
-        const res = await fetch(`${PYTHON_API_URL}/in_app_purchase_success`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: String(user.id), receipt, jws }),
-        });
-
-        const data = await res.json();
+        const data = await sendPurchaseForValidation(String(user.id), purchase, receipt, jws);
         log('[IAP] backend response type:', data?.type);
 
         if (data?.type === 'success') {
@@ -198,7 +223,8 @@ export default function GoProScreen() {
           setError(
             msg?.includes('does not belong to the signed-in account')
               ? t('msg.iap_purchase_not_for_account')
-              : msg?.includes('could not be verified from Apple')
+              : msg?.includes('could not be verified from Apple') ||
+                  msg?.includes('could not be verified from Google')
                 ? t('msg.receipt_validation_failed')
                 : t('msg.receipt_validation_failed'),
           );
@@ -273,13 +299,7 @@ export default function GoProScreen() {
       // Validate each restored receipt (usually just one)
       let successCount = 0;
       for (const { purchase, receipt, jws } of purchases) {
-        const res = await fetch(`${PYTHON_API_URL}/in_app_purchase_success`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: String(user.id), receipt, jws }),
-        });
-
-        const data = await res.json();
+        const data = await sendPurchaseForValidation(String(user.id), purchase, receipt, jws);
 
         if (data?.type === 'success') {
           await finishPurchaseTransaction(purchase);
@@ -376,7 +396,7 @@ export default function GoProScreen() {
           PLANS.map((plan, i) => {
             const isSelected = selectedPlan === plan.planKey;
             const isCurrent = isCurrentPlan(plan.planKey, planType);
-            const restrictedOnIOS = isIOSGatedPlan(plan.planKey);
+            const restrictedOnStore = isStoreGatedPlan(plan.planKey);
             const planDisplayPrice = displayPrice(prices, plan.planKey, plan.defaultPrice);
             const planSalePrice = saleActive ? salePrice(prices, plan.planKey) : null;
 
@@ -384,10 +404,10 @@ export default function GoProScreen() {
               <Pressable
                 key={plan.planKey}
                 style={isSm ? { width: '31%' } : undefined}
-                onPress={() => !restrictedOnIOS && setSelectedPlan(plan.planKey)}
-                disabled={restrictedOnIOS}
+                onPress={() => !restrictedOnStore && setSelectedPlan(plan.planKey)}
+                disabled={restrictedOnStore}
                 className={`rounded-xl border-2 p-4 ${
-                  restrictedOnIOS
+                  restrictedOnStore
                     ? 'border-border/50 bg-muted/30 opacity-60'
                     : isSelected
                       ? 'border-primary bg-primary/5'
@@ -395,7 +415,7 @@ export default function GoProScreen() {
                 }`}
               >
                 {/* Popular badge */}
-                {i === 1 && !restrictedOnIOS && (
+                {i === 1 && !restrictedOnStore && (
                   <View className="mb-2 self-start rounded-full bg-primary px-2 py-0.5">
                     <Text className="text-xs font-bold text-primary-foreground">{t('label.popular')}</Text>
                   </View>
@@ -410,9 +430,9 @@ export default function GoProScreen() {
                   <View className="flex-1">
                     <Text className="text-lg font-bold text-foreground">{t(plan.nameKey)}</Text>
                     <Text className="text-sm text-muted-foreground">{t(plan.intervalKey)}</Text>
-                    {restrictedOnIOS && (
+                    {restrictedOnStore && (
                       <Text className="text-xs text-muted-foreground mt-1 italic">
-                        {t('msg.ios_lifetime_only')}
+                        {t('msg.store_lifetime_only')}
                       </Text>
                     )}
                   </View>
@@ -427,7 +447,7 @@ export default function GoProScreen() {
                     )}
                   </View>
                 </View>
-                {isSelected && !restrictedOnIOS && (
+                {isSelected && !restrictedOnStore && (
                   <View className="mt-3 gap-1">
                     {plan.benefits.map((key) => (
                       <View key={key} className="flex-row items-center gap-1.5">
@@ -443,12 +463,15 @@ export default function GoProScreen() {
         )}
       </View>
 
-      {/* ── Purchase (store billing only, SPEC-014) ── */}
-      {IAP_AVAILABLE ? (
-        selectedPlan === 'lifetime' && selectedPlanData && (
+      {/* ── Purchase (store billing only, SPEC-014 / SPEC-068) ── */}
+      {IAP_AVAILABLE && selectedPlan === 'lifetime' && selectedPlanData && (
           <View className="mt-8 rounded-xl border border-border bg-card p-4">
             <View className="flex-row items-center gap-2 mb-4">
-              <Apple size={20} color={ICON_PRIMARY} />
+              {Platform.OS === 'android' ? (
+                <CreditCard size={20} color={ICON_PRIMARY} />
+              ) : (
+                <Apple size={20} color={ICON_PRIMARY} />
+              )}
               <Text className="text-base font-semibold text-foreground">{t('title.choose_payment_method')}</Text>
             </View>
 
@@ -476,15 +499,25 @@ export default function GoProScreen() {
               </View>
             ) : (
               <View className="gap-3">
-                {/* Apple In-App Purchase (iOS only — lifetime) */}
+                {/* Store billing (lifetime): Apple IAP on iOS, Play Billing on Android */}
                 <Pressable
                   onPress={handleIapPurchase}
                   disabled={iapProcessing}
-                  className="flex-row items-center justify-between rounded-lg bg-black dark:bg-gray-800 px-4 py-3"
+                  className={`flex-row items-center justify-between rounded-lg px-4 py-3 ${
+                    Platform.OS === 'android' ? 'bg-primary' : 'bg-black dark:bg-gray-800'
+                  }`}
                 >
                   <View className="flex-row items-center gap-2">
-                    <Apple size={18} color={ICON_ON_PRIMARY} />
-                    <Text className="text-sm font-semibold text-white">{t('payment.apple_pay')}</Text>
+                    {Platform.OS === 'android' ? (
+                      <CreditCard size={18} color={ICON_ON_PRIMARY} />
+                    ) : (
+                      <Apple size={18} color={ICON_ON_PRIMARY} />
+                    )}
+                    <Text className={`text-sm font-semibold ${
+                      Platform.OS === 'android' ? 'text-primary-foreground' : 'text-white'
+                    }`}>
+                      {Platform.OS === 'android' ? t('option.google_play') : t('payment.apple_pay')}
+                    </Text>
                   </View>
                   {iapProcessing ? (
                     <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
@@ -500,7 +533,7 @@ export default function GoProScreen() {
               </View>
             )}
 
-            {/* Restore Purchases (iOS) — hidden for lifetime owners (A5) */}
+            {/* Restore Purchases (iOS / Android) — hidden for lifetime owners (A5) */}
             {!isLifetimeOwner && (
               <Pressable
                 onPress={handleRestorePurchases}
@@ -534,37 +567,6 @@ export default function GoProScreen() {
               </Pressable>
             </View>
           </View>
-        )
-      ) : (
-        <View className="mt-8 rounded-xl border border-border bg-card p-4">
-          <Text className="text-sm text-muted-foreground mb-4">
-            {t('msg.upgrade_to_pro_banner')}
-          </Text>
-          <Pressable
-            onPress={() => Linking.openURL('https://languageplayer.io/go-pro')}
-            className="flex-row items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-3"
-          >
-            <Text className="text-sm font-semibold text-primary-foreground">{t('msg.buy_on_website')}</Text>
-            <ArrowRight size={14} color={ICON_ON_PRIMARY} />
-          </Pressable>
-
-          {error && (
-            <View className="mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-              <AlertCircle size={16} color={ICON_PRIMARY} />
-              <Text className="text-sm text-destructive flex-1">{error}</Text>
-            </View>
-          )}
-
-          {/* Money-back guarantee */}
-          <View className="mt-4 flex-row items-center justify-center gap-1 flex-wrap">
-            <Text className="text-center text-xs text-muted-foreground">
-              {t('msg.money_back_guarantee')}
-            </Text>
-            <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')}>
-              <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
-            </Pressable>
-          </View>
-        </View>
       )}
 
       {/* Features */}

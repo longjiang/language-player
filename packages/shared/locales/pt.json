@@ -988,6 +988,7 @@
         "sort_by": "Ordenar por: {sortBy}",
         "start_learning": "Comece a aprender idiomas com conteúdo de vídeo autêntico.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Apenas o plano Vitalício está disponível por meio da cobrança da loja.",
         "subscription_cancel_error": "Erro ao cancelar a assinatura",
         "subscription_cancel_success": "Assinatura cancelada com sucesso",
         "subscription_expired": "Sua assinatura expirou.",

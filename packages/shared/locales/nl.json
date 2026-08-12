@@ -988,6 +988,7 @@
         "sort_by": "Sorteren op: {sortBy}",
         "start_learning": "Begin met talen leren via authentieke videocontent.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Alleen het levenslange abonnement is beschikbaar via facturering in de winkel.",
         "subscription_cancel_error": "Fout bij het annuleren van het abonnement",
         "subscription_cancel_success": "Abonnement succesvol geannuleerd",
         "subscription_expired": "Uw abonnement is verlopen.",

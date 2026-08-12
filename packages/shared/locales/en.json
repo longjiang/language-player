@@ -988,6 +988,7 @@
         "sort_by": "Sort by: {sortBy}",
         "start_learning": "Start learning languages through authentic video content.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Only the Lifetime plan is available via store billing.",
         "subscription_cancel_error": "Error cancelling subscription",
         "subscription_cancel_success": "Subscription successfully cancelled",
         "subscription_expired": "Your subscription has expired.",

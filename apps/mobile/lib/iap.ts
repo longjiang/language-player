@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────
-// In-App Purchase (IAP) — iOS only
+// In-App Purchase (IAP) — iOS (StoreKit 2) + Android (Play Billing)
 // ──────────────────────────────────────────────
 //
 // Uses expo-iap (the maintained successor to expo-in-app-purchases /
@@ -7,21 +7,26 @@
 // (EXNativeModulesProxy) that expo-in-app-purchases relied on, so that
 // package can no longer be reached from JS — see SPEC-054 Phase 3.
 //
-// Product ID "pro_go" matches the GO listing's existing App Store product.
+// Product IDs:
+//   - iOS: "pro_go" matches the GO listing's existing App Store product.
 // The new app replaces the GO listing (bundle ca.zerotohero.go), so it
 // inherits the GO app's non-consumable product — NOT Classic's "pro", which
 // belongs to ca.zerotohero.app.
+//   - Android: "pro_go" is the Play Billing product created in Play Console
+// (SPEC-068 Step 1).
 // Backend: the Python IAP endpoint accepts receipts for BOTH public bundles
 // (ca.zerotohero.go and ca.zerotohero.app), so purchases from this app and
 // from Classic both validate. Canonical reference: SPEC-014 "Identifiers & IAP".
+// Android purchases are verified separately via /play_billing_success
+// (SPEC-068 Step 3).
 //
 // Flow:
 //   1. Connect to the store on mount (initConnection)
 //   2. Register purchaseUpdatedListener / purchaseErrorListener
-//   3. User taps "Buy" → requestPurchase({ request: { apple: { sku } } })
-//   4. Purchase arrives via the listener; fetch the base64 App Store receipt
-//      (getReceiptDataIOS) and pass both to the caller
-//   5. POST receipt to Python backend for validation
+//   3. User taps "Buy" → requestPurchase (platform-specific request)
+//   4. Purchase arrives via the listener; pass the store proof to the caller
+//      (iOS: base64 receipt / StoreKit 2 JWS; Android: purchase token)
+//   5. POST to the Python backend for validation
 //   6. On success → finishTransaction({ purchase, isConsumable: false })
 //
 // See docs/specs/014-subscription-payment-system.md Phase 5 for full spec.
@@ -46,6 +51,8 @@ import { logwarn } from '@/lib/logger';
  *  app). The new app keeps the GO bundle ID, so existing GO buyers can
  *  restore their purchase. Classic's "pro" belongs to ca.zerotohero.app. */
 const IOS_IAP_PRODUCT_ID = 'pro_go';
+/** Product ID — must match the Play Console billing product (SPEC-068). */
+export const ANDROID_IAP_PRODUCT_ID = 'pro_go';
 
 // ── Types ──
 
@@ -54,7 +61,7 @@ export interface PurchaseResult {
   purchase: Purchase;
   /** Best-effort legacy App Store receipt (StoreKit 2 often has none). */
   receipt?: string;
-  /** StoreKit 2 signed transaction (JWS) — the backend's preferred proof. */
+  /** Store proof: iOS StoreKit 2 JWS, or Android Play purchase token. */
   jws?: string;
 }
 
@@ -62,8 +69,8 @@ export type IapConnectionState = 'disconnected' | 'connecting' | 'connected' | '
 
 // ── State ──
 
-/** Whether the module can be used on this platform. */
-export const IAP_AVAILABLE = Platform.OS === 'ios';
+/** Whether the module can be used on this platform (iOS + Android). */
+export const IAP_AVAILABLE = Platform.OS === 'ios' || Platform.OS === 'android';
 
 let _connectionState: IapConnectionState = 'disconnected';
 
@@ -149,7 +156,12 @@ export async function setPurchaseHandler(
   _errorSubscription?.remove();
 
   _purchaseSubscription = purchaseUpdatedListener((purchase: Purchase) => {
-    if (purchase.productId !== IOS_IAP_PRODUCT_ID) return;
+    if (
+      purchase.productId !== IOS_IAP_PRODUCT_ID &&
+      purchase.productId !== ANDROID_IAP_PRODUCT_ID
+    ) {
+      return;
+    }
     // Restore validates + finishes these purchases itself — see
     // `_restoreInProgress` above.
     if (_restoreInProgress) return;
@@ -162,9 +174,10 @@ export async function setPurchaseHandler(
 
     void (async () => {
       // JWS (signed transaction) is the reliable proof from StoreKit 2;
-      // the legacy receipt is best-effort for backward compatibility.
+      // on Android, purchaseToken is the Play Billing purchase token. The
+      // legacy App Store receipt is best-effort for iOS backward compat.
       const jws = purchase.purchaseToken ?? undefined;
-      const receipt = await fetchAppStoreReceipt(jws);
+      const receipt = Platform.OS === 'ios' ? await fetchAppStoreReceipt(jws) : undefined;
       _purchaseCallback?.({ purchase, receipt: receipt || undefined, jws });
     })();
   });
@@ -186,15 +199,29 @@ let _restoreInProgress = false;
 
 // ── Initiate Purchase ──
 
-/** Initiate a lifetime "pro" purchase.
+/** Initiate a lifetime "pro" purchase (iOS or Android).
  *  The actual result arrives via the purchase listener set by `setPurchaseHandler`.
- *  `appAccountToken` binds the Apple transaction to the logged-in user so the
- *  backend can reject restore/claim attempts from other accounts. */
+ *  User binding:
+ *    - iOS: `appAccountToken` binds the Apple transaction to the user.
+ *    - Android: `obfuscatedAccountId` binds the Play purchase to the user.
+ *  The backend rejects restore/claim attempts from other accounts. */
 export async function initiatePurchase(userId: string): Promise<void> {
   if (!IAP_AVAILABLE) {
     throw new Error('IAP is not available on this platform');
   }
   await connectIap();
+  if (Platform.OS === 'android') {
+    await requestPurchase({
+      request: {
+        google: {
+          skus: [ANDROID_IAP_PRODUCT_ID],
+          obfuscatedAccountId: userId,
+        },
+      },
+      type: 'in-app',
+    });
+    return;
+  }
   await requestPurchase({
     request: { apple: { sku: IOS_IAP_PRODUCT_ID, appAccountToken: userId } },
     type: 'in-app',
@@ -227,11 +254,15 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
 
   try {
     const purchases = await getAvailablePurchases();
-    const matches = purchases.filter((p) => p.productId === IOS_IAP_PRODUCT_ID);
+    const matches = purchases.filter(
+      (p) =>
+        p.productId === IOS_IAP_PRODUCT_ID ||
+        p.productId === ANDROID_IAP_PRODUCT_ID,
+    );
     if (matches.length === 0) return [];
 
     const jws = matches[0]?.purchaseToken ?? undefined;
-    const receipt = await fetchAppStoreReceipt(jws);
+    const receipt = Platform.OS === 'ios' ? await fetchAppStoreReceipt(jws) : undefined;
     return matches.map((purchase) => {
       const txnId =
         purchase.transactionId ?? purchase.id ?? purchase.purchaseToken;

@@ -988,6 +988,7 @@
         "sort_by": "Sắp xếp theo: {sortBy}",
         "start_learning": "Bắt đầu học ngôn ngữ qua nội dung video thực tế.",
         "storage_usage": "Storage: {used} language(s) downloaded",
+        "store_lifetime_only": "Chỉ có gói Trọn đời khả dụng qua thanh toán trong cửa hàng.",
         "subscription_cancel_error": "Lỗi khi hủy đăng ký",
         "subscription_cancel_success": "Đã hủy đăng ký thành công",
         "subscription_expired": "Gói đăng ký của bạn đã hết hạn.",
