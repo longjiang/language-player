@@ -75,6 +75,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const videoHeight = (playerWidth / 16) * 9;
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollInFlightRef = useRef(false);
 
     // Stable callback refs to avoid re-rendering the player
     const onTimeUpdateRef = useRef(onTimeUpdate);
@@ -82,16 +83,27 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const onStateChangeRef = useRef(onStateChange);
     onStateChangeRef.current = onStateChange;
 
-    // Time polling while playing or paused (to catch seeks)
+    // Time polling while playing or paused (to catch seeks).
+    // Only polls once the iframe is ready: react-native-youtube-iframe adds an
+    // internal 'getCurrentTime' listener per call, and calls before the iframe
+    // responds never resolve — unbounded polling leaks listeners and triggers
+    // the MaxListenersExceededWarning. The in-flight guard caps that to one
+    // outstanding call at a time.
     useEffect(() => {
+      if (!ready) return;
       pollRef.current = setInterval(async () => {
+        if (pollInFlightRef.current) return;
+        pollInFlightRef.current = true;
         try {
           const t = await playerRef.current?.getCurrentTime();
           if (t != null) { timeRef.current = t; onTimeUpdateRef.current?.(t); }
         } catch {}
+        finally {
+          pollInFlightRef.current = false;
+        }
       }, 500);
       return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
-    }, []);
+    }, [ready]);
 
     useImperativeHandle(ref, () => ({
       // No-op on iOS — programmatic play/pause doesn't reach the YouTube
