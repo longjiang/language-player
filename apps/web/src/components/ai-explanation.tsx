@@ -65,6 +65,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const [usedFollowUps, setUsedFollowUps] = useState<Set<FollowUpKind>>(new Set());
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialStreamStartedRef = useRef(false);
+  const prevWordRef = useRef(word);
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
 
   const appendMessage = useCallback((message: Omit<ChatMessage, 'id'>) => {
@@ -112,10 +114,10 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     const prompt = buildPrompt();
     // Reuse an empty assistant placeholder (e.g. retry after an error) instead
     // of stacking a new message.
-    const last = messages[messages.length - 1];
+    const lastEmpty = [...messages].reverse().find((m) => m.role === 'assistant' && !m.text);
     const targetId =
-      last && last.role === 'assistant' && !last.text
-        ? last.id
+      lastEmpty
+        ? lastEmpty.id
         : appendMessage({ role: 'assistant', text: '', prompt });
     updateMessage(targetId, { text: '', prompt });
     setStreamingId(targetId);
@@ -207,6 +209,18 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     reset();
   }, [reset]);
 
+  // When the same component instance is reused for a new dictionary entry,
+  // drop the old transcript so the new word can auto-fetch again.
+  useEffect(() => {
+    if (prevWordRef.current === word) return;
+    prevWordRef.current = word;
+    initialStreamStartedRef.current = false;
+    setMessages([]);
+    setStreamingId(null);
+    setUsedFollowUps(new Set());
+    reset();
+  }, [word, reset]);
+
   // Mirror the streaming hook's text into the assistant message being streamed
   useEffect(() => {
     if (streamingId === null) return;
@@ -229,6 +243,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
     if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
+      if (initialStreamStartedRef.current) return;
+      initialStreamStartedRef.current = true;
       fetchExplanation();
     }
   }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, fetchExplanation]);
@@ -310,7 +326,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                   <div className="rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
                     {loading && message.id === streamingId && !message.text ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                    ) : (
+                    ) : message.text ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
                         <MarkdownExplanation
                           text={message.text}
@@ -318,30 +334,32 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                           streaming={loading && message.id === streamingId}
                         />
                       </div>
-                    )}
+                    ) : null}
                   </div>
-                  <div className="mt-1 flex items-center gap-1 pl-1">
-                    <button
-                      type="button"
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                      aria-label={t('action.regenerate')}
-                      title={t('action.regenerate')}
-                      disabled={loading}
-                      onClick={() => handleRegenerate(message.id)}
-                    >
-                      <RefreshCw className="h-3 w-3" />
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                      aria-label={t('action.copy')}
-                      title={t('action.copy')}
-                      disabled={loading}
-                      onClick={() => handleCopy(message.id)}
-                    >
-                      {copiedId === message.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    </button>
-                  </div>
+                  {message.text || (loading && message.id === streamingId) ? (
+                    <div className="mt-1 flex items-center gap-1 pl-1">
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                        aria-label={t('action.regenerate')}
+                        title={t('action.regenerate')}
+                        disabled={loading}
+                        onClick={() => handleRegenerate(message.id)}
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                        aria-label={t('action.copy')}
+                        title={t('action.copy')}
+                        disabled={loading}
+                        onClick={() => handleCopy(message.id)}
+                      >
+                        {copiedId === message.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ),
