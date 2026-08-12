@@ -464,3 +464,76 @@ Until built, `/contact-us` redirects to v2.
 - `apps/web` (Next.js proxy, Vitest, NextAuth `signOut`, `user-data-wipe`)
 - Live `v2.languageplayer.io` deployment with a valid certificate
 - No changes to `zerotohero-nuxt/`, `netlify.toml`, or shared packages
+
+## 11. Redirect Test Matrix (manual click-through)
+
+The Vitest suite covers the same cases programmatically
+(`apps/web/src/lib/classic-route-redirect.test.ts`). This section is the
+human-facing checklist: after deploying to Netlify, click each link below and
+confirm the expected behavior in the browser address bar.
+
+Base URL: `https://language-player.netlify.app`
+
+Quick automated check for any row:
+
+```bash
+curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
+```
+
+### 11.1 Pass-through (web handles the route — no redirect)
+
+| Link | Expected |
+|---|---|
+| [Explore](https://language-player.netlify.app/en/ja/explore) | Loads apps/web Explore (200) |
+| [Dictionary](https://language-player.netlify.app/en/ja/dictionary) | Loads apps/web Dictionary (200) |
+| [Watch a video](https://language-player.netlify.app/en/ja/watch/Qgzv_LBictg) | Loads apps/web watch page (200) |
+| [Reader](https://language-player.netlify.app/en/ja/reader) | Loads apps/web notes reader (200) |
+| [My Channels](https://language-player.netlify.app/en/ja/my-channels) | Loads apps/web My Channels (200) |
+
+### 11.2 Internal redirects (308 → stays on web)
+
+| Link | Expected destination |
+|---|---|
+| [Explore Media](https://language-player.netlify.app/en/ja/explore-media) | `/en/ja/explore` |
+| [My Playlists](https://language-player.netlify.app/en/ja/my-playlists) | `/en/ja/playlists` |
+| [Playlist detail](https://language-player.netlify.app/en/ja/playlist/42) | `/en/ja/playlists/42` |
+| [Saved Words Games](https://language-player.netlify.app/en/ja/saved-words-games) | `/en/ja/review` |
+| [YouTube Likes](https://language-player.netlify.app/en/ja/youtube/likes) | `/en/ja/liked-videos` |
+| [YouTube History](https://language-player.netlify.app/en/ja/youtube/history) | `/en/ja/watch-history` |
+| [YouTube Import](https://language-player.netlify.app/en/ja/youtube/import) | `/en/ja/search` |
+| [My Text](https://language-player.netlify.app/en/ja/my-text) | `/en/ja/reader` |
+| [Recommended Video](https://language-player.netlify.app/en/ja/recommended-video) | `/en/ja/explore` |
+| [Saved Phrases](https://language-player.netlify.app/en/ja/saved-phrases) | `/en/ja/saved-words` |
+| [Channel](https://language-player.netlify.app/en/ja/youtube/channel/UC123) | `/en/ja/channel/UC123` |
+| [Video view (path id)](https://language-player.netlify.app/en/ja/video-view/youtube/abc123) | `/en/ja/watch/abc123` |
+| [Video view (`?v=`)](https://language-player.netlify.app/en/ja/video-view/youtube?v=Qgzv_LBictg&p=recommended) | `/en/ja/watch/Qgzv_LBictg?queueType=recommended` |
+| [Bring your own](https://language-player.netlify.app/en/ja/video-view/bring-your-own) | `/en/ja/local-media` |
+| [Dictionary deep link](https://language-player.netlify.app/en/ja/dictionary/edict/92130) | `/en/ja/dictionary/entry/edict/92130` |
+| [Reader shared](https://language-player.netlify.app/en/ja/reader/shared/42) | `/en/ja/reader?noteId=42` |
+| [Dashboard](https://language-player.netlify.app/dashboard) | `/language-select` |
+| [Verify email](https://language-player.netlify.app/verify-email?email=a%40b.com) | `/register?verifyEmail=a%40b.com` |
+| [Delete account](https://language-player.netlify.app/delete-account) | `/{last-pair}/profile` (fallback `/en/zh/profile`) |
+
+### 11.3 Classic-only (307 → v2)
+
+| Link | Expected destination |
+|---|---|
+| [Books](https://language-player.netlify.app/en/ja/books) | `https://v2.languageplayer.io/en/ja/books` |
+| [Pinyin Chart](https://language-player.netlify.app/en/ja/chinese/pinyin-chart) | `https://v2.languageplayer.io/en/ja/chinese/pinyin-chart` |
+| [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `https://v2.languageplayer.io/en/ja/youtube/subscriptions` |
+| [Channel directory](https://language-player.netlify.app/en/ja/youtube/channels) | `https://v2.languageplayer.io/en/ja/youtube/channels` |
+| [Contact](https://language-player.netlify.app/en/ja/contact-us) | `https://v2.languageplayer.io/en/ja/contact-us` |
+| [Languages](https://language-player.netlify.app/languages) | `https://v2.languageplayer.io/languages` |
+| [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/ja/dictionary/hsk/123` |
+| [Admin QA](https://language-player.netlify.app/admin/quality-assurance) | `https://v2.languageplayer.io/admin/quality-assurance` |
+
+### 11.4 No redirect (web 404 / unchanged)
+
+| Link | Expected |
+|---|---|
+| [Unknown route](https://language-player.netlify.app/en/ja/definitely-not-a-route) | apps/web 404, no redirect |
+| [Invalid pair](https://language-player.netlify.app/xx/yy/books) | apps/web 404, no redirect (v2 is not sent invalid pairs) |
+
+After the click-through, record any failures as a follow-up issue; a failing
+row usually means the deployed bundle predates the matcher change or the route
+pattern in `apps/web/src/lib/classic-route-redirect.ts` needs updating.
