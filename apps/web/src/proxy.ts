@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
+import {
+  classicRouteAction,
+  V2_ORIGIN,
+  type LanguagePair,
+} from '@/lib/classic-route-redirect';
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/password-reset'];
 const GUEST_NAV_LIMIT = 3;
@@ -64,6 +69,40 @@ export default function proxy(req: NextRequest) {
       }
     }
     return response;
+  }
+
+  // Classic route adapter (SPEC-071): pass web routes, remap renamed routes,
+  // and redirect Classic-only routes to v2. Runs before auth/cookie logic so
+  // legacy paths never render the web 404.
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+    const l1Cookie = req.cookies.get('l1')?.value;
+    const l2Cookie = req.cookies.get('l2')?.value;
+    const pair: LanguagePair =
+      l1Cookie &&
+      l2Cookie &&
+      SUPPORTED_L1S.includes(l1Cookie as any) &&
+      SUPPORTED_L2S.includes(l2Cookie as any)
+        ? { l1: l1Cookie, l2: l2Cookie }
+        : { l1: 'en', l2: 'zh' };
+    const action = classicRouteAction(normalizedPath, pair);
+
+    if (action.kind === 'alias') {
+      const target = new URL(action.path, req.url);
+      for (const [key, value] of req.nextUrl.searchParams) {
+        if (!target.searchParams.has(key)) {
+          target.searchParams.append(key, value);
+        }
+      }
+      return NextResponse.redirect(target, 308);
+    }
+
+    if (action.kind === 'v2') {
+      return NextResponse.redirect(
+        new URL(pathname + req.nextUrl.search, V2_ORIGIN),
+        307,
+      );
+    }
   }
 
   // Check auth via session cookie (NextAuth sets this)
