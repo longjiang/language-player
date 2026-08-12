@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { LanguageSwitcher } from './language-switcher';
@@ -136,12 +137,15 @@ export function Header() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const exploreHref = `/${l1.code}/${l2.code}/explore`;
+  const logoHref = pathname === exploreHref || pathname === `${exploreHref}/` ? '/' : exploreHref;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
         <Logo
-          linkHref={`/${l1.code}/${l2.code}/explore`}
+          linkHref={logoHref}
           showText
           priority
           l1={l1.code}
