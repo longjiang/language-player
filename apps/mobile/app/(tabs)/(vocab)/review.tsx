@@ -84,19 +84,26 @@ function useRatingLabels() {
 }
 
 /**
- * Emphasize the target form inside a review translation (SPEC-049 §6.2).
- * Returns the translation with the first occurrence of the target form
- * removed from the front (the translation usually echoes it) — the form is
- * rendered separately in primary color by the caller.
+ * Render an on-the-fly context translation (web parity, SPEC-066).
+ * The /translate endpoint receives `form` and wraps the target term in
+ * `**bold**`; split on the markers so the term shows in primary color inside
+ * the sentence instead of being prepended manually.
  */
-function renderTranslation(translation: string, form: string): string {
-  if (!translation || !form) return translation;
-  const idx = translation.indexOf(form);
-  if (idx === 0) {
-    const rest = translation.slice(form.length).replace(/^[\s:：·]+/, '');
-    return rest;
-  }
-  return translation;
+function ReviewTranslationMarkdown({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <Text className="text-xs leading-relaxed text-muted-foreground">
+      {parts.map((part, i) =>
+        part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
+          <Text key={i} className="font-semibold text-primary">
+            {part.slice(2, -2)}
+          </Text>
+        ) : (
+          <Text key={i}>{part}</Text>
+        ),
+      )}
+    </Text>
+  );
 }
 
 /** Human-friendly label for a saved word (surface form > headword > id). */
@@ -526,7 +533,18 @@ export default function ReviewScreen() {
         const res = await fetch(`${PYTHON_API_URL}/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: ctxText, l1: baseCode(l1Lang.code), l2: l2Code }),
+          body: JSON.stringify({
+            text: ctxText,
+            // The server wraps this form in **bold** inside the translation
+            // (web parity) — without it, we would have to prepend the word
+            // manually, which puts the original word in front of the sentence.
+            form: card?.word.context?.form
+              ?? card?.word.forms?.[0]
+              ?? card?.word.head
+              ?? card?.word.id,
+            l1: baseCode(l1Lang.code),
+            l2: l2Code,
+          }),
         });
         if (cancelled) return;
         if (!res.ok) return;
@@ -856,12 +874,13 @@ export default function ReviewScreen() {
               </View>
               {showTabs && display.translation && (inst.context.translation || contextTranslation) && (
                 <View className="mt-2 border-t border-border pt-2">
-                  <Text className="text-xs leading-relaxed text-muted-foreground">
-                    <Text className="font-semibold text-primary">
-                      {inst.form}
+                  {inst.context.translation ? (
+                    <Text className="text-xs leading-relaxed text-muted-foreground">
+                      {inst.context.translation}
                     </Text>
-                    {renderTranslation(inst.context.translation ?? contextTranslation ?? '', inst.form)}
-                  </Text>
+                  ) : (
+                    <ReviewTranslationMarkdown text={contextTranslation ?? ''} />
+                  )}
                 </View>
               )}
             </View>

@@ -418,11 +418,11 @@ app.
 - Fetched as soon as `display.translation` is on (even before reveal), the
   same pattern as [SPEC-021 §Pattern 3 —
   Context Translation](021-unifying-translation-display.md#pattern-3-context-translation--srs-review),
-  via `POST /translate` with `text`, `l1` (base), `l2` — but **no `form`**.
+  via `POST /translate` with `text`, `form`, `l1` (base), `l2` — matching web.
 - No skeleton while translating.
-- Renders `inst.form` in primary color followed by
-  `renderTranslation(...)`, which strips an echoed leading form. Applied to
-  both saved and on-the-fly translations.
+- On-the-fly translations render the server's `**bold**` marker in primary
+  color inside the sentence; saved translations render as plain text (web
+  parity). The manual prepend/echo-strip behavior was removed (2026-08-11).
 
 ### Rating
 
