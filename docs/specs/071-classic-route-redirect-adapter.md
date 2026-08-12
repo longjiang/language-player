@@ -157,6 +157,7 @@ These exact path shapes exist in both apps and must never redirect:
 | `/{l1}/{l2}/youtube/search/:term?` | `/{l1}/{l2}/search?q=:term` | Term → `q`; `:start?` dropped |
 | `/{l1}/{l2}/youtube/import` | `/{l1}/{l2}/search` | |
 | `/{l1}/{l2}/my-text` | `/{l1}/{l2}/reader` | Notes reader |
+| `/{l1}/{l2}/contact-us` | `/{l1}/{l2}/about` | Opens the About dialog (SPEC-073) |
 | `/{l1}/{l2}/recommended-video` | `/{l1}/{l2}/explore` | Classic redirects to the first recommendation; explore is the safe web landing |
 | `/{l1}/{l2}/saved-phrases` (+ `:initId?`) | `/{l1}/{l2}/saved-words` | `:initId?` dropped |
 | `/{l1}/{l2}/dictionary/:dictionaryId/:entryId` | `/{l1}/{l2}/dictionary/entry/:dictionaryId/:entryId` | Classic entry deep link (e.g. `/dictionary/edict/92130`) |
@@ -206,7 +207,6 @@ its `/chinese/` and `/explore/` variants.
 | `/community` | |
 | `/compare/:method/:args` | |
 | `/confirm-deletion` | Web delete flow lives in profile |
-| `/contact-us` | Gap — see §8 |
 | `/faq` | |
 | `/discussions`, `/feed` | |
 | `/grammar`, `/grammar/view/:id` | |
@@ -461,25 +461,17 @@ Track as its own spec (e.g. SPEC-074) when scheduled.
 
 ### 8.4 Support / contact page
 
-Classic `/contact-us` is a static page with:
+**Resolved by SPEC-073.** Contact now lives in the About dialog (email support
+and Discord server as chevron links). Web has a thin `/{l1}/{l2}/about`
+deep-link route that opens the dialog, and Classic's `/contact-us` internally
+redirects (308) to it.
 
-- Discord server invite (`https://discord.gg/D7vKcuKXuA`)
-- Email `jon.long@zerotohero.ca`
-- Twitter `@language_player`
-
-Recommended home in the web app:
-
-1. New route `apps/web/src/app/[l1]/[l2]/contact-us/page.tsx` with the same
-   links — no backend needed.
-2. A docs entry `packages/docs/content/general/contact.md` so it appears in
-   the docs sidebar and benefits from the i18n pipeline.
-3. A footer link to the contact page so it is discoverable site-wide.
-
-Until built, `/contact-us` redirects to v2.
+A dedicated docs entry for contact remains optional.
 
 ## 9. Open Questions
 
-- **Contact page**: is the placement recommended in §8.2 acceptable?
+- **Contact page**: is the placement inside the About dialog (§8.4)
+  acceptable, or should there also be a docs entry?
 - **`/faq`**: should it get a docs equivalent alongside the contact page, or
   stay a v2 redirect for now?
 
@@ -538,6 +530,7 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `/en/ja/my-channels` |
 | [YouTube Import](https://language-player.netlify.app/en/ja/youtube/import) | `/en/ja/search` |
 | [My Text](https://language-player.netlify.app/en/ja/my-text) | `/en/ja/reader` |
+| [Contact](https://language-player.netlify.app/en/ja/contact-us) | `/en/ja/about` |
 | [Recommended Video](https://language-player.netlify.app/en/ja/recommended-video) | `/en/ja/explore` |
 | [Saved Phrases](https://language-player.netlify.app/en/ja/saved-phrases) | `/en/ja/saved-words` |
 | [Channel](https://language-player.netlify.app/en/ja/youtube/channel/UC123) | `/en/ja/channel/UC123` |
@@ -573,7 +566,6 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Lesson Videos with level](https://language-player.netlify.app/en/ja/lesson-videos/1/2) | `https://v2.languageplayer.io/en/zh/lesson-videos/1/2` |
 | [Separable](https://language-player.netlify.app/en/ja/separable/foo) | `https://v2.languageplayer.io/en/zh/separable/foo` |
 | [New Levels Graphic](https://language-player.netlify.app/en/ja/explore/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
-| [Contact](https://language-player.netlify.app/en/ja/contact-us) | `https://v2.languageplayer.io/en/ja/contact-us` |
 | [Languages](https://language-player.netlify.app/languages) | `https://v2.languageplayer.io/languages` |
 | [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/zh/dictionary/hsk/123` |
 | [Admin QA](https://language-player.netlify.app/admin/quality-assurance) | `https://v2.languageplayer.io/admin/quality-assurance` |
