@@ -51,7 +51,7 @@ App Store only · `Play` = Google Play only · *(opt)* = optional.
 | 2 | Feature graphic | Play | PNG / JPEG | 1024×500 (≤15 MB) | 1 | ⬜ To produce |
 | 3 | iPhone screenshots | App | `.jpeg` / `.jpg` / `.png`, no alpha | 1320×2868 (6.9") — Apple reuses across all iPhone sizes | 1–10 (target 6) | 🟡 6 already uploaded on 6.9" (reused for other iPhone sizes) |
 | 4 | iPad screenshots | App | `.jpeg` / `.jpg` / `.png`, no alpha | 2048×2732 (12.9") or 2064×2752 (13") — one size per device family | 1–10 (target 6) | ⬜ **Main gap** — none uploaded |
-| 5 | Android phone screenshots | Play | JPEG / 24-bit PNG (no alpha) | 9:16, ≥1080×1920 (downscale of the #3 captures) | 2–8 (target 5–8) | ⬜ To produce (reuse #3) |
+| 5 | Android phone screenshots | Play | JPEG / 24-bit PNG (no alpha) | 9:16, ≥1080×1920 (downscale of the #3 captures) | 2–8 (target 5–8) | ✅ Produced 2026-08-12 — zh + ja sets @1080×1920 in `apps/mobile/store-assets/screenshots/{zh,ja}/` |
 | 6 | 7-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9 or 9:16, 320–3840 px | up to 8 (target 4–8) | ⬜ To produce (reuse #7 captures) |
 | 7 | 10-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9, e.g. 1920×1080 (1080–7680 px) | up to 8 (target 4–8) | ⬜ To produce |
 | 8 | App Preview video | App *(opt)* | `.mov` / `.m4v` / `.mp4` (H.264/ProRes 422) | 15–30 s, ≤500 MB, display-size frames | up to 3 | ⬜ Optional — none yet |
@@ -95,6 +95,8 @@ For each of #3–#7, capture/export the same five screens (in this order):
 
 ## Status
 
+- 2026-08-12: Android phone screenshot sets produced (Chinese + Japanese) at
+  1080×1920, saved under `apps/mobile/store-assets/screenshots/{zh,ja}/`.
 - 2026-08-12: Spec created. iPhone 6.9" screenshots (#3) already uploaded to
   App Store Connect (from an earlier pass); Play icon exported to the asset
   library but not yet added to the App icon slot (#1). All other graphics
