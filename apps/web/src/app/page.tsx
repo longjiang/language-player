@@ -162,7 +162,7 @@ function useLandingPlatforms() {
     {
       titleKey: 'platform.chrome_title',
       descKey: 'platform.chrome_desc',
-      statusKey: 'label.available',
+      statusKey: 'label.coming_soon',
       icon: Chrome,
     },
   ];
