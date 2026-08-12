@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView, ActivityIndicator,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -30,9 +31,12 @@ export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
+  const { url: urlParam } = useLocalSearchParams<{ url?: string }>();
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
 
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(
+    typeof urlParam === 'string' ? urlParam : '',
+  );
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
@@ -87,6 +91,14 @@ export default function WebReaderScreen() {
       setLoading(false);
     }
   }, [url, t]);
+
+  // Deep links can pass ?url=... (SPEC-069) — load it on mount.
+  useEffect(() => {
+    if (typeof urlParam === 'string' && urlParam.trim()) {
+      handleLoad(urlParam.trim());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Back to the reader home (clear the loaded article) — SPEC-049 §10.4. */
   const handleHome = useCallback(() => {
