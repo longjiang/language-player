@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform,
+  Animated, View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
   type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -232,6 +233,71 @@ export function PaginatedReader({
   const hasPrev = scrollMode ? false : (hasPrevProp ?? page > 0);
   const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+
+  // ── Swipe left/right page turns (drag follows the finger) ──
+  const swipeTranslateX = useRef(new Animated.Value(0)).current;
+  const swipeAnimatingRef = useRef(false);
+  const swipeActionsRef = useRef({ hasPrev, hasNext, prevPage, nextPage, width: windowWidth });
+  swipeActionsRef.current = { hasPrev, hasNext, prevPage, nextPage, width: windowWidth };
+
+  const panGesture = Gesture.Pan()
+    .enabled(!scrollMode && (hasPrev || hasNext))
+    .activeOffsetX([-16, 16])
+    .failOffsetY([-16, 16])
+    .runOnJS(true)
+    .onUpdate((e) => {
+      if (swipeAnimatingRef.current) return;
+      const { hasPrev: canPrev, hasNext: canNext } = swipeActionsRef.current;
+      const canDrag = e.translationX < 0 ? canNext : canPrev;
+      if (!canDrag) return;
+      swipeTranslateX.setValue(e.translationX);
+    })
+    .onEnd((e) => {
+      if (swipeAnimatingRef.current) return;
+      const { hasPrev: canPrev, hasNext: canNext, prevPage: goPrev, nextPage: goNext, width } = swipeActionsRef.current;
+      const threshold = Math.min(90, width * 0.25);
+      const shouldNext = e.translationX < -threshold && canNext;
+      const shouldPrev = e.translationX > threshold && canPrev;
+      swipeAnimatingRef.current = true;
+      if (shouldNext || shouldPrev) {
+        log(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)}`);
+        Animated.timing(swipeTranslateX, {
+          toValue: shouldNext ? -width : width,
+          duration: 180,
+          useNativeDriver: true,
+        }).start(() => {
+          swipeTranslateX.setValue(0);
+          swipeAnimatingRef.current = false;
+          if (shouldNext) goNext?.();
+          else goPrev?.();
+        });
+      } else {
+        log(`[Reader] 👉 swipe snap back dx=${Math.round(e.translationX)}`);
+        Animated.spring(swipeTranslateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          speed: 24,
+          bounciness: 0,
+        }).start(() => {
+          swipeAnimatingRef.current = false;
+        });
+      }
+    })
+    .onFinalize(() => {
+      // Gesture was cancelled/interrupted without a clean end — snap back.
+      if (swipeAnimatingRef.current) return;
+      Animated.spring(swipeTranslateX, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 24,
+        bounciness: 0,
+      }).start();
+    });
+
+  useEffect(() => {
+    swipeTranslateX.setValue(0);
+  }, [page, hasMeasured, swipeTranslateX]);
 
   // ── Scroll mode: simple block list ──
   if (scrollMode) {
@@ -264,26 +330,32 @@ export function PaginatedReader({
 
       {blocks && hasMeasured && visibleBlocks && (
         <View className="flex-1 flex-col">
-          <ScrollView
-            key={scrollViewKey}
-            ref={scrollRef}
-            className="flex-1 px-4"
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            onLayout={handleViewportLayout}
-          >
-            {/* Loading indicator — inside the scroll content (web parity) so
-                it doesn't resize the measured viewport. */}
-            {loadingTokens && (
-              <View className="flex-row items-center justify-center gap-2 py-2">
-                <Loader2 size={12} color={ICON_MUTED} />
-                <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-              </View>
-            )}
-            {visibleBlocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
-            )}
-          </ScrollView>
+          <GestureDetector gesture={panGesture}>
+            <View className="flex-1">
+              <Animated.View className="flex-1" style={{ transform: [{ translateX: swipeTranslateX }] }}>
+                <ScrollView
+                  key={scrollViewKey}
+                  ref={scrollRef}
+                  className="flex-1 px-4"
+                  onScroll={handleScroll}
+                  scrollEventThrottle={16}
+                  onLayout={handleViewportLayout}
+                >
+                  {/* Loading indicator — inside the scroll content (web parity) so
+                      it doesn't resize the measured viewport. */}
+                  {loadingTokens && (
+                    <View className="flex-row items-center justify-center gap-2 py-2">
+                      <Loader2 size={12} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+                    </View>
+                  )}
+                  {visibleBlocks.map((block, bi) =>
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
+                  )}
+                </ScrollView>
+              </Animated.View>
+            </View>
+          </GestureDetector>
         </View>
       )}
 

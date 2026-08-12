@@ -186,7 +186,9 @@ at a time), heights are cached for revisits, page breaks use the real reader
 viewport height, and the total page count is a chars-per-page estimate
 (`n / total`) instead of a whole-book estimate pass. Search/TOC/link jumps
 land directly on the target block (`goToBlock`), and translation toggles
-re-measure the current layout.
+re-measure the current layout. Page turns also support swipe left/right: the
+page follows the drag, springs back under the threshold, and animates out to
+the next/previous page past it.
 
 `.epub.zip` / `.zip` wrappers are unwrapped on import (archive itself, single
 inner `.epub`, or extracted EPUB folder).
