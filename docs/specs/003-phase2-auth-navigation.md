@@ -273,6 +273,8 @@ apps/web/src/app/
 
 - **First visit (no L1/L2)**: `/` → show landing page. "Get Started" → `/language-select`
 - **Returning user**: Cookie has L1/L2 → redirect `/` → `/${l1}/${l2}`
+- **Returning user on Explore**: the header logo links to `/?landing=1`, which
+  bypasses the root redirect and shows the landing page
 - **Invalid L1/L2**: `notFound()` → custom 404 with language suggestions
 - **L1 === L2** (learning from same language): Allowed — hide translation features, show monolingual dictionary
 - **RTL languages** (ar, he, fa): `dir="rtl"` on `<html>`, layout mirrors
@@ -281,6 +283,12 @@ apps/web/src/app/
 ---
 
 ### Part C: Header & Navigation Shell
+
+0. **PublicHeader** (`apps/web/src/components/layout/public-header.tsx`)
+   - Rendered by the root layout on routes without a language pair (landing,
+     auth, language selection)
+   - Logo + login button/user menu only — no nav, search, or mobile menu
+   - Returns null on `/[l1]/[l2]` routes, where the full Header takes over
 
 1. **Header** (`apps/web/src/components/layout/header.tsx`)
    - Logo + app name

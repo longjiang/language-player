@@ -10,6 +10,9 @@ import {
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/password-reset'];
 const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
+/** Query param used by the header logo to request the public landing page
+ *  while authenticated (e.g. from the explore page). */
+const LANDING_QUERY = 'landing';
 
 /** Locales removed by SPEC-063/ADR-0033, mapped to their fallback UI locale. */
 const DEPRECATED_L1_FALLBACK: Record<string, string> = {
@@ -139,7 +142,13 @@ export default function proxy(req: NextRequest) {
   // 2. On public/auth pages, set NEXT_LOCALE from existing l1 cookie, or detect from browser
   if (isPublic || pathname === '/') {
     // Redirect authenticated users from root directly into the app
-    if (pathname === '/' && isAuthenticated) {
+    // Exception: the header logo links to `/?landing=1` when the user is
+    // already on Explore, so that navigation shows the landing page instead.
+    if (
+      pathname === '/' &&
+      isAuthenticated &&
+      req.nextUrl.searchParams.get(LANDING_QUERY) !== '1'
+    ) {
       const l1Cookie = req.cookies.get('l1');
       const l2Cookie = req.cookies.get('l2');
       if (l1Cookie?.value && l2Cookie?.value) {

@@ -139,7 +139,10 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const exploreHref = `/${l1.code}/${l2.code}/explore`;
-  const logoHref = pathname === exploreHref || pathname === `${exploreHref}/` ? '/' : exploreHref;
+  const logoHref =
+    pathname === exploreHref || pathname === `${exploreHref}/`
+      ? '/?landing=1'
+      : exploreHref;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -178,7 +181,7 @@ export function Header() {
         <LanguageSwitcher />
 
         {/* User menu */}
-        <UserMenu />
+        <UserMenu l1Code={l1.code} l2Code={l2.code} />
 
         {/* Mobile hamburger */}
         <button
