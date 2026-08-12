@@ -3,7 +3,7 @@ import '@/lib/intl-polyfills';
 
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, LogBox } from 'react-native';
 import { router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -80,6 +80,14 @@ import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
 import '../global.css';
+
+// Known dev-only LogBox noise from Expo Router / React Navigation internals
+// (ExpoRoot.js / ContextNavigator logs this while the navigation container is
+// still mounting). The message is harmless and has no app-code fix — see
+// SPEC-070 screenshots cleanup.
+LogBox.ignoreLogs([
+  "Can't perform a React state update on a component that hasn't mounted yet.",
+]);
 
 // ── Error Boundary to surface full stack traces to Metro ──
 

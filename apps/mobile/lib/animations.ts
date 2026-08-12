@@ -1,13 +1,9 @@
 import { useState, useCallback } from 'react';
-import { LayoutAnimation, Platform, UIManager } from 'react-native';
+import { LayoutAnimation } from 'react-native';
 
-// Enable LayoutAnimation on Android (disabled by default)
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// Note: `UIManager.setLayoutAnimationEnabledExperimental(true)` was removed
+// here — it is a no-op under the New Architecture and only produced the
+// "setLayoutAnimationEnabledExperimental is currently a no-op" LogBox warning.
 
 /** Shared animation preset: 200ms fade with ease-in-out. */
 const fadeAnimation = LayoutAnimation.create(
