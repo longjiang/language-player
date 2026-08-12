@@ -474,6 +474,16 @@ confirm the expected behavior in the browser address bar.
 
 Base URL: `https://language-player.netlify.app`
 
+Automated check (no browser — plain HTTP status/Location assertions):
+
+```bash
+npm run test:redirects                                   # live Netlify app
+REDIRECT_TEST_BASE_URL=http://localhost:3000 npm run test:redirects  # local dev
+```
+
+The script (`scripts/check-redirects.mjs`) contains the same cases as the
+tables below, exits non-zero on any failure, and is safe to run in CI.
+
 Quick automated check for any row:
 
 ```bash
