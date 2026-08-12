@@ -274,10 +274,21 @@ Tester comments are kept in brackets.
 
 #### L. Deep links & cross-flow  **· SPEC-023 ref:** Tier 9 · **Run on:** Device
 
-- ⬜ languageplayer://vocab/word/...
-- ⬜ .../media/watch/...
-- ⬜ password-reset deep link
-- ⬜ L2 switch in deeplinking
+The local test page lists every deep link with known-good IDs:
+`http://127.0.0.1:5001/mobile-deeplinks` (from the Pixel with adb reverse:
+`http://localhost:5001/mobile-deeplinks`).
+
+Route-group segments (`vocab/`, `media/`) are **not** part of deep links — the
+app routes are `/word/[entryId]` and `/watch/[videoId]`, so word/video links
+must also carry `?l2=ja` for Japanese content.
+
+- ⬜ `languageplayer://word/92130?l2=ja` — word detail (日本語)
+- ⬜ `languageplayer://watch/-tKVN2mAKRI?l2=ja` — video (打上花火)
+- ⬜ `languageplayer://password-reset?token=<real token>`
+- ⬜ `languageplayer://verify-email?token=<real token>`
+- ⬜ `languageplayer://select-language`
+- ⬜ `languageplayer://settings/display`
+- ⬜ L2 switch in deeplinking (`?l2=ja` switches the stored L2 before loading)
 - ⬜ forgot & reset password (deep link) [missing deeplinking (website can also reset fine]
 
 #### Pay. Payments  **· SPEC-023 ref:** SPEC-054 · **Run on:** Device

@@ -297,8 +297,8 @@ All iPad layout tests are **human** — every assertion is visual (column counts
 
 | # | Mode | Flow | Steps | Assertions |
 |---|---|---|---|---|
-| L1 | 🤖 auto | Deep link — word entry | Open `languageplayer://vocab/word/cedict-123` | Word detail page opens for that entry |
-| L2 | 🤖 auto | Deep link — video | Open `languageplayer://media/watch/abc123` | Video player opens at that video |
+| L1 | 🤖 auto | Deep link — word entry | Open `languageplayer://word/92130?l2=ja` | Word detail page opens for 日本語 |
+| L2 | 🤖 auto | Deep link — video | Open `languageplayer://watch/-tKVN2mAKRI?l2=ja` | Video player opens at that video |
 | L3 | 🤖 auto | Deep link — password reset | Open password reset link from email | App opens to password-reset screen with token pre-filled |
 | L4 | 🧑 human | Network loss mid-flow | Start video → toggle Airplane Mode | Graceful error; user informed of network loss — requires network state simulation |
 | L5 | 🤖 auto | Rapid language switch | Switch L2 repeatedly in quick succession | No stale data; correct language's data loads |
