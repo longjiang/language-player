@@ -382,6 +382,9 @@ app.
   LLM-generated entries), it is fetched by its id
   (`GET /dictionary/entry?dict=&id=`) and cached; the back side shows a
   spinner until the exact entry arrives instead of a mismatched one.
+- If the exact saved id no longer resolves (stale EDICT row after a
+  dictionary update), the back side falls back to the best text-lookup entry
+  for the same head; the bookmark reflects the current entry id.
 - For non-English L1, the card back additionally fetches an L1-translated
   entry via `lookupL1Text` (deduped and cached per entry id).
 - If no entry is available, show `review.no_definition_available`.
