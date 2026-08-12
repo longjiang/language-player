@@ -1174,7 +1174,7 @@
         "good_hint": "นึกได้ถูกต้อง",
         "hard": "ยาก",
         "hard_hint": "ถูกเรียกคืนด้วยความยากลำบาก",
-        "no_definition_available": "ไม่มีคำจำกัดความ ค้นหาคำนี้ขณะดูวิดีโอ",
+        "no_definition_available": "Kata ini tidak ditemukan di kamus kami.",
         "shortcut_hint": "กด <space></space> เพื่อพลิก, <k1></k1>–<k2></k2> เพื่อให้คะแนน, <enter></enter> เพื่อดำเนินการต่อ",
         "show_definition": "แสดงคำจำกัดความ",
         "srs_new": "ใหม่",
