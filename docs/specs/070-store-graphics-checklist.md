@@ -48,12 +48,12 @@ App Store only · `Play` = Google Play only · *(opt)* = optional.
 | # | Asset | Store | Format | Size(s) | Count | Status |
 |---|---|---|---|---|---|---|
 | 1 | App icon | Both | PNG, sRGB | Play: 512×512 (square, no rounded corners/shadows) · App: 1024×1024 (72 DPI, RGB, no alpha — Apple adds the mask) | 1 | 🟡 Play: exported 512×512 ("Cropped - icon.png") in asset library, **not yet added** to App icon slot (manual: Store listings → edit → App icon → Add assets → select → Add). App: icon present from build |
-| 2 | Feature graphic | Play | PNG / JPEG | 1024×500 (≤15 MB) | 1 | ⬜ To produce |
+| 2 | Feature graphic | Play | PNG / JPEG | 1024×500 (≤15 MB) | 1 | ✅ Produced 2026-08-12 — crop of tablet Explore in `tablet/google-play-feature-graphic-1024x500/` |
 | 3 | iPhone screenshots | App | `.jpeg` / `.jpg` / `.png`, no alpha | 1320×2868 (6.9") — Apple reuses across all iPhone sizes | 1–10 (target 6) | 🟡 6 already uploaded on 6.9" (reused for other iPhone sizes) |
-| 4 | iPad screenshots | App | `.jpeg` / `.jpg` / `.png`, no alpha | 2048×2732 (12.9") or 2064×2752 (13") — one size per device family | 1–10 (target 6) | ⬜ **Main gap** — none uploaded |
-| 5 | Android phone screenshots | Play | JPEG / 24-bit PNG (no alpha) | 9:16, ≥1080×1920 (downscale of the #3 captures) | 2–8 (target 5–8) | ✅ Produced 2026-08-12 — native originals in `phone/zh/original/`; derived Play 1080×1920 in `phone/zh/play-1080x1920/` and App Store iPhone 1320×2868 in `phone/zh/appstore-iphone-1320x2868/` (earlier 6-shot zh/ja sets remain under `zh/`, `ja/`) |
-| 6 | 7-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9 or 9:16, 320–3840 px | up to 8 (target 4–8) | ⬜ To produce (reuse #7 captures) |
-| 7 | 10-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9, e.g. 1920×1080 (1080–7680 px) | up to 8 (target 4–8) | ⬜ To produce |
+| 4 | iPad screenshots | App | `.jpeg` / `.jpg` / `.png`, no alpha | 2048×2732 (12.9") or 2064×2752 (13") — one size per device family | 1–10 (target 6) | ✅ Produced 2026-08-12 — 10 × 2732×2048 (landscape) in `tablet/apple-app-store-ipad-2732x2048/` |
+| 5 | Android phone screenshots | Play | JPEG / 24-bit PNG (no alpha) | 9:16, ≥1080×1920 (downscale of the #3 captures) | 2–8 (target 5–8) | ✅ Produced 2026-08-12 — native originals in `phone/zh/original/`; derived in `phone/zh/google-play-phone-1080x1920/` and `phone/zh/apple-app-store-iphone-1320x2868/` (earlier 6-shot zh/ja sets remain under `zh/`, `ja/`) |
+| 6 | 7-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9 or 9:16, 320–3840 px | up to 8 (target 4–8) | ✅ Produced 2026-08-12 — 10 × 1920×1080 in `tablet/google-play-tablet-1920x1080/` (same set reused for #7) |
+| 7 | 10-inch tablet screenshots | Play | JPEG / 24-bit PNG (no alpha) | 16:9, e.g. 1920×1080 (1080–7680 px) | up to 8 (target 4–8) | ✅ Produced 2026-08-12 — same set as #6 |
 | 8 | App Preview video | App *(opt)* | `.mov` / `.m4v` / `.mp4` (H.264/ProRes 422) | 15–30 s, ≤500 MB, display-size frames | up to 3 | ⬜ Optional — none yet |
 | 9 | Preview video (YouTube) | Play *(opt)* | public/unlisted YouTube URL, ads off, not age-restricted | — | 1 | ⬜ Optional — none yet |
 | 10 | TV banner + TV screenshots | Play *(only if Android TV)* | 1280×720 banner | — | — | ➖ N/A — no Android TV target |
@@ -161,8 +161,9 @@ ratio differs). Never re-capture per platform.
 
 ## Status
 
-- 2026-08-12: Android phone screenshot sets produced (Chinese + Japanese) at
-  1080×1920, saved under `apps/mobile/store-assets/screenshots/{zh,ja}/`.
+- 2026-08-12: Phone (zh) originals + Play/App Store derived sets produced;
+  tablet (zh) originals + App Store iPad (2732×2048), Play tablet
+  (1920×1080), and feature graphic (1024×500) sets produced.
 - 2026-08-12: Spec created. iPhone 6.9" screenshots (#3) already uploaded to
   App Store Connect (from an earlier pass); Play icon exported to the asset
   library but not yet added to the App icon slot (#1). All other graphics
