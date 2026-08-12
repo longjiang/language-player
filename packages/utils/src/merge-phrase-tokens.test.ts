@@ -28,6 +28,28 @@ describe('mergePhraseTokens', () => {
     expect(out[0]!.text).toBe('Made up his mind');
   });
 
+  it('merges a saved surface selection like "got even with me"', () => {
+    const tokens = [
+      tok('he'),
+      tok(' '),
+      tok('got'),
+      tok(' '),
+      tok('even'),
+      tok(' '),
+      tok('with'),
+      tok(' '),
+      tok('me'),
+    ];
+    // The canonical saved form differs from the surface; both are candidates.
+    const out = mergePhraseTokens(
+      'he got even with me',
+      tokens,
+      ['to get even with someone', 'got even with me'],
+    );
+
+    expect(out.map((t) => t.text)).toEqual(['he', ' ', 'got even with me']);
+  });
+
   it('merges every occurrence in the text', () => {
     const tokens = [tok('家賃'), tok('滞納'), tok('、'), tok('家賃'), tok('滞納')];
     const out = mergePhraseTokens('家賃滞納、家賃滞納', tokens, ['家賃滞納']);

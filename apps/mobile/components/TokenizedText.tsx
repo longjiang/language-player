@@ -3,7 +3,14 @@ import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { baseCode, buildRuby, sentenceForToken, tokenMatchesAnyForm, tokenMatchesAnyTerm } from '@langplayer/utils';
+import {
+  baseCode,
+  buildRuby,
+  mergePhraseTokens,
+  sentenceForToken,
+  tokenMatchesAnyForm,
+  tokenMatchesAnyTerm,
+} from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText, prewarmLocalLemmatizer } from '@/lib/tokenizer';
@@ -665,9 +672,48 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
       if (w.head) forms.add(w.head.toLowerCase());
       if (w.forms) for (const f of w.forms) forms.add(f.toLowerCase());
       if (w.context?.form) forms.add((w.context.form as string).toLowerCase());
+      for (const inst of w.instances ?? []) {
+        if (inst.form) forms.add(inst.form.toLowerCase());
+      }
     }
     return forms;
   }, [savedWords, l2Code]);
+
+  // Saved phrase candidates — every saved form (head + inflections + per-
+  // instance surface) that could span multiple tokens. The merge below
+  // collapses exact token-boundary matches into one atomic token so
+  // multi-token phrases (e.g. "got even with me" saved under "to get even
+  // with someone") highlight as saved in the review context.
+  const savedPhraseCandidates = useMemo(() => {
+    const words = savedWords[l2Code] ?? [];
+    const out: string[] = [];
+    const seen = new Set<string>();
+    const add = (form: unknown) => {
+      if (typeof form !== 'string' || !form.trim()) return;
+      const key = form.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push(form);
+    };
+    for (const w of words) {
+      if (w.head) add(w.head);
+      if (w.forms) for (const f of w.forms) add(f);
+      if (w.context?.form) add(w.context.form);
+      for (const inst of w.instances ?? []) if (inst.form) add(inst.form);
+    }
+    return out;
+  }, [savedWords, l2Code]);
+
+  // Merge saved multi-token phrases only in interactive highlight contexts
+  // (the review card). Readers keep the raw token indices so EPUB format
+  // ranges and links stay aligned.
+  const displayTokens = useMemo(
+    () =>
+      highlightTerms && highlightTerms.length > 0 && !formats?.length
+        ? mergePhraseTokens(text, tokens, savedPhraseCandidates)
+        : tokens,
+    [text, tokens, savedPhraseCandidates, highlightTerms, formats],
+  );
 
   // ── Phonetics filter: per-token hardWords check ──
   const shouldShowPhonetics = useCallback((token: LemmatizedToken): boolean => {
@@ -1050,7 +1096,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
           <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
-              return tokens.map((token, i) => {
+              return displayTokens.map((token, i) => {
               if (!isWord(token)) {
                 // Whitespace gap tokens must get explicit dimensions: in this
                 // View-based (ruby/definition) path every token is a flex
@@ -1186,7 +1232,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
           <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor}>
             {(() => {
               let wordIndexSoFar = 0;
-              return tokens.map((token, i) => {
+              return displayTokens.map((token, i) => {
               const isWordToken = isWord(token);
               if (isWordToken) wordIndexSoFar++;
               const isKaraokeSpoken = karaokeProgress !== undefined ? wordIndexSoFar <= spokenWordCount : undefined;

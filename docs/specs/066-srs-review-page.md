@@ -351,7 +351,10 @@ app.
 - Context sentence(s) from the saved word, tokenized and tappable.
   The saved target is highlighted by surface form **or lemma**, so inflected
   forms (e.g. 押し切られ → 押し切る) stay highlighted even when the tokenizer
-  splits the surface form.
+  splits the surface form. Multi-token selections saved from the web text
+  selection feature (e.g. "got even with me" saved under the canonical "to get
+  even with someone") are merged into atomic tokens and highlighted from the
+  per-instance surface forms.
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
 - SRS info line: `{interval}d` (or "new") and reviewed count.
