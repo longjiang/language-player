@@ -105,7 +105,7 @@ export default function ReviewScreen() {
   const { isSm } = useResponsive();
   const { isPro } = useSubscription();
 
-  const { savedWords, loaded: wordsLoaded, cloudHydrated, removeWord } = useSavedWords();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated } = useSavedWords();
   const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
@@ -272,16 +272,6 @@ export default function ReviewScreen() {
     });
     setShowTabs(true);
   }, [cards, currentIndex]);
-
-  /** Remove this word from saved words and SRS (mirrors web's `u` action). */
-  const handleRemove = useCallback(() => {
-    const card = cards[currentIndex];
-    if (!card) return;
-    removeWord(l2Code, card.word.id);
-    removeCard(l2Code, card.word.id);
-    setShowTabs(false);
-    setRated(false);
-  }, [cards, currentIndex, l2Code, removeWord, removeCard]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
@@ -815,14 +805,6 @@ export default function ReviewScreen() {
               <>{' · '}{t('review.srs_review', { count: srs.reps })}</>
             )}
           </Text>
-
-          {/* Remove the saved word (also removes its SRS card). */}
-          <Pressable
-            onPress={handleRemove}
-            className="mb-2 self-center rounded-lg border border-border px-3 py-1 active:bg-muted"
-          >
-            <Text className="text-xs text-muted-foreground">{t('action.delete')}</Text>
-          </Pressable>
 
           {/* Toggle button for definition + translation — hidden once shown */}
           {!showTabs && (
