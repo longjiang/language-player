@@ -81,13 +81,10 @@ import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
 import '../global.css';
 
-// Known dev-only LogBox noise from Expo Router / React Navigation internals
-// (ExpoRoot.js / ContextNavigator logs this while the navigation container is
-// still mounting). The message is harmless and has no app-code fix — see
-// SPEC-070 screenshots cleanup.
-LogBox.ignoreLogs([
-  "Can't perform a React state update on a component that hasn't mounted yet.",
-]);
+// Suppress all on-screen LogBox notifications. This is intentional for store
+// screenshot capture (SPEC-070) — remove this line when you need warnings/
+// errors visible during development.
+LogBox.ignoreAllLogs();
 
 // ── Error Boundary to surface full stack traces to Metro ──
 
