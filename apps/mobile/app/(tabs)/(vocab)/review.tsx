@@ -37,7 +37,13 @@ import {
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { lookupL1Text } from '@/lib/l1-lookup';
-import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import {
+  decomposeWordId,
+  isSameEntryId,
+  type DictionaryEntry,
+  type LemmatizedToken,
+  type SavedWordContext,
+} from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { srsLogger } from '@/lib/logger';
@@ -217,40 +223,83 @@ export default function ReviewScreen() {
   const wordForm = currentDueCard?.forms?.[0] || currentDueCard?.head || currentDueCard?.id || '';
   // The ID cache stores entries by their raw `entry.id` from the dictionary
   // API response — EDICT entries use bare numeric IDs ("73458"), LLM entries
-  // use their full ID ("ja-03254ca173ab"). Both are stored as-is, so the
-  // saved word's raw `id` field is the correct cache key.
-  const currentEntry =
-    useEntryByIdCache(l2Code, currentDueCard?.id ?? '') ??
-    currentDueCard?.canonicalEntry ??
-    null;
+  // use their full ID ("llm-ja-…"). Both are stored as-is, so the saved
+  // word's raw `id` field is the correct cache key. Never render an entry
+  // whose id differs from the saved word id: that would show the bookmark as
+  // "not saved" even though the saved LLM-generated entry is correct.
+  const exactCachedEntry = useEntryByIdCache(l2Code, currentDueCard?.id ?? '');
+  const baseL2ForEntry = l2Code.split('-')[0];
+  const exactCanonicalEntry =
+    currentDueCard?.canonicalEntry &&
+    isSameEntryId(currentDueCard.id, currentDueCard.canonicalEntry.id, baseL2ForEntry)
+      ? currentDueCard.canonicalEntry
+      : null;
+  const currentEntry = exactCachedEntry ?? exactCanonicalEntry ?? null;
 
-  // ── Offline-first entry hydration for the current card ──
+  // ── Resolve the exact saved entry before showing the back side ──
   // Old cards often have no shared-cache entry (they were never enriched
-  // online); without this the "Show definition" panel spins forever offline.
+  // online). On reveal, try offline first, then the exact /dictionary/entry
+  // fetch by the saved id; only then fall back to the "no definition" state.
   useEffect(() => {
     const id = currentDueCard?.id;
-    if (!id) return;
+    if (!id || !showTabs) return;
     if (getCachedEntryById(l2Code, id)) return;
-    if (currentDueCard?.canonicalEntry) {
+    if (
+      currentDueCard?.canonicalEntry &&
+      isSameEntryId(id, currentDueCard.canonicalEntry.id, baseL2ForEntry)
+    ) {
       setCachedEntryById(l2Code, currentDueCard.canonicalEntry);
       return;
     }
     let cancelled = false;
     (async () => {
+      const baseL2 = l2Code.split('-')[0];
+      const decomposed = decomposeWordId(id, baseL2);
+      const scopedId = decomposed?.id ?? id;
+      let found = false;
       try {
-        const entry = await getOfflineEntryById(l2Code.split('-')[0], id);
+        const entry = await getOfflineEntryById(baseL2, scopedId);
         if (!cancelled && entry) {
           setCachedEntryById(l2Code, entry);
+          found = true;
+        }
+      } catch { /* no offline dict / corrupt — try network */ }
+      if (cancelled || found) return;
+      try {
+        if (decomposed) {
+          const { apiClient } = await import('@langplayer/api-client');
+          const res = await apiClient.get('/dictionary/entry', {
+            params: {
+              l2: baseL2,
+              dict: decomposed.dict,
+              id: decomposed.id,
+              l1: l1Lang.code,
+            },
+          });
+          const entry = (res as any)?.entry as DictionaryEntry | undefined;
+          if (!cancelled && entry && isSameEntryId(id, entry.id, baseL2ForEntry)) {
+            // Cache under the saved id even when the API returns the scoped
+            // form (e.g. "ja-…" for a saved "llm-ja-…" id).
+            setCachedEntryById(l2Code, entry.id === id ? entry : { ...entry, id });
+            found = true;
+          }
         }
       } catch {
-        // Offline dict missing/corrupt — leave unresolvable.
+        // Network failure — fall through to the no-definition state.
       }
-      if (!cancelled) {
+      if (!cancelled && !found) {
         setOfflineEntryLookupDone((prev) => ({ ...prev, [id]: true }));
       }
     })();
     return () => { cancelled = true; };
-  }, [currentDueCard?.id, currentDueCard?.canonicalEntry, l2Code]);
+  }, [
+    showTabs,
+    currentDueCard?.id,
+    currentDueCard?.canonicalEntry,
+    baseL2ForEntry,
+    l2Code,
+    l1Lang.code,
+  ]);
 
   // ── Merge due cards with the reactive entry ──
   const cards = useMemo(() => dueCards.map((word) => ({
@@ -514,7 +563,10 @@ export default function ReviewScreen() {
     lookupL1Text(form, l2Code, l1Lang.code)
       .then((results) => {
         if (cancelled) return;
-        const match = results.find((e) => e.id === card.word.id) ?? results[0] ?? null;
+        // Only accept the exact saved entry — a text-lookup can return a
+        // different entry (e.g. EDICT instead of the saved LLM entry) and
+        // would make the bookmark read "not saved".
+        const match = results.find((e) => e.id === card.word.id) ?? null;
         setL1Entry(match);
       })
       .catch(() => {

@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { useSavedWordApi } from '@langplayer/api-client';
 import {
   decomposeWordId,
+  isSameEntryId,
   type DictionaryEntry,
   type LlmGeneratedEntry,
   type SavedLexicalItemRecord,
@@ -305,10 +306,16 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     const words = savedWords[l2Code] ?? [];
     const existing = words.find((w) => w.id === wordId);
     if (!existing) return;
-    if (existing.head && (existing.canonicalEntry || existing.llmEntry)) return;
+    const decomposed = decomposeWordId(wordId, l2Code);
+    // Only skip re-enrichment when the cached entry is the exact saved entry.
+    // A mismatched canonicalEntry (e.g. an EDICT fallback for an LLM-saved
+    // word) makes the review back side show an entry as "not saved".
+    const canonicalMatches =
+      !!existing.canonicalEntry && isSameEntryId(wordId, existing.canonicalEntry.id, l2Code);
+    const hasExactEntry = canonicalMatches || !!existing.llmEntry;
+    if (existing.head && hasExactEntry) return;
     if (existing.unresolvable && isOfflineModeEnabled()) return;
 
-    const decomposed = decomposeWordId(wordId, l2Code);
     const baseL2 = l2Code.split('-')[0];
     const scopedId = decomposed?.id ?? wordId;
     const dictId = decomposed?.dict ?? '';
