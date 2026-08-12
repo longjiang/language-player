@@ -12,8 +12,10 @@
 
 ## 1. Overview
 
-The About surface currently shows technical build metadata but no way to reach
-support, the documentation, or the tokenizer test. This spec updates both apps:
+The About surface is a modal dialog in both apps (web already uses one; mobile
+currently has a dedicated route that becomes a dialog). It currently shows
+technical build metadata but no way to reach support, the documentation, or
+the tokenizer test. This spec updates both apps:
 
 - Remove the commit and branch display fields
 - Add a contact block (email support + Discord server)
@@ -32,7 +34,8 @@ support, the documentation, or the tokenizer test. This spec updates both apps:
 
 ### Mobile (`apps/mobile`)
 
-- Dedicated screen `(tabs)/(me)/about.tsx`
+- Dedicated route `(tabs)/(me)/about.tsx`, opened from the UserMenu — becomes
+  a modal dialog instead (same pattern as web)
 - Shows: version, build date, environment
 - No commit/branch fields (keep it that way)
 - Has a dev-only tokenizer test link
@@ -63,6 +66,8 @@ Web rows are clickable links; mobile rows use `Linking.openURL`.
 - Web: link to `/{l1}/{l2}/docs`
 - Mobile: link to `(tabs)/(me)/docs`
 
+The link lives inside the modal and closes it before navigating.
+
 Label: `title.docs`.
 
 ### 3.4 Tokenizer test link
@@ -73,9 +78,15 @@ Label: `title.docs`.
 
 Label: `title.tokenizer_test`.
 
+### 3.5 Modal behavior (mobile)
+
+- Add a mobile `AboutDialog` component mirroring web's `AboutDialog`
+- Remove the `(tabs)/(me)/about` route from the Me stack layout and from the
+  UserMenu's navigation; the UserMenu opens the dialog instead
+
 ## 4. Layout
 
-Both apps keep the existing header (logo + app name + "About") and footer
+Both dialogs keep the existing header (logo + app name + "About") and footer
 (copyright), then render, in order:
 
 1. Build info card (version, build date, environment — no commit/branch)
@@ -99,6 +110,7 @@ New key (added through the `translations.csv` workflow):
 ## 6. Acceptance Criteria
 
 - About no longer shows a commit hash or branch anywhere
+- About is a modal dialog in both apps (mobile no longer has an `/about` route)
 - Email support row opens `mailto:jon.long@zerotohero.ca`
 - Discord row opens `https://discord.gg/D7vKcuKXuA`
 - Documentation link navigates to docs in both apps
@@ -109,5 +121,4 @@ New key (added through the `translations.csv` workflow):
 
 - Web: typecheck, lint, existing Vitest suite, `npm run build:check -w apps/web`
 - Mobile: typecheck (`cd apps/mobile && ./node_modules/.bin/tsc --noEmit`)
-- Manual: open About from the user menu on web and from the Me tab on mobile;
-  verify each link
+- Manual: open About from the user menu in both apps; verify each link
