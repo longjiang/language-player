@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { ChannelActionsMenu } from './channel-actions-menu';
 
 export interface Channel {
@@ -25,14 +27,22 @@ function formatCount(value: number | null | undefined): string {
 export function ChannelCard({ channel }: { channel: Channel }) {
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const [avatarError, setAvatarError] = useState(false);
   const href = `/${l1.code}/${l2.code}/channel/${encodeURIComponent(channel.channel_id)}`;
+  // Classic polyfills avatars through /channel-thumbnail (fresh from YouTube,
+  // cached server-side) instead of trusting the DB thumbnail, which can go
+  // stale/broken (SPEC-072).
+  const avatarSrc = avatarError
+    ? 'https://www.youtube.com/favicon.ico'
+    : `${PYTHON_API_URL}/channel-thumbnail?channel_id=${encodeURIComponent(channel.channel_id)}`;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
       <Link href={href} className="flex flex-col p-4">
         <div className="mb-3 flex items-center gap-3">
           <img
-            src={channel.thumbnail || 'https://www.youtube.com/favicon.ico'}
+            src={avatarSrc}
+            onError={() => setAvatarError(true)}
             alt=""
             className="h-14 w-14 rounded-full object-cover"
           />
