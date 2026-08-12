@@ -106,6 +106,8 @@ export default function ReviewPage() {
    *  Batch lookup returns English-only definitions for speed; this provides the
    *  translated version when the user actually interacts with a card. */
   const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
+  /** Best text-lookup entry when the exact saved id is stale/unresolvable. */
+  const [fallbackEntry, setFallbackEntry] = useState<DictionaryEntry | null>(null);
   /** True while the exact saved entry is being fetched for the back side. */
   const [exactEntryLoading, setExactEntryLoading] = useState<Record<string, boolean>>({});
   /** Track the current card's word ID to detect unsave-triggered card changes. */
@@ -567,23 +569,26 @@ export default function ReviewPage() {
   // the bookmark read "not saved" for an entry that is actually saved.
   useEffect(() => {
     const sw = currentCard?.word;
-    if (!sw || !showDefinition || currentEntry) return;
+    if (!sw || !showDefinition || currentEntry || fallbackEntry) return;
     const id = sw.id;
     if (getCachedEntryById(l2Code, id)) return;
 
     let cancelled = false;
     setExactEntryLoading((prev) => ({ ...prev, [id]: true }));
     (async () => {
+      const base = baseCode(l2.code);
+      const form = sw.forms[0] || sw.id;
+      let exactFound = false;
       try {
-        const decomposed = decomposeWordId(id, baseCode(l2.code));
+        const decomposed = decomposeWordId(id, base);
         if (decomposed) {
           const res = await fetch(
-            `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2.code)}&dict=${encodeURIComponent(decomposed.dict)}&id=${encodeURIComponent(decomposed.id)}&l1=${baseCode(l1.code)}`,
+            `${PYTHON_API_URL}/dictionary/entry?l2=${base}&dict=${encodeURIComponent(decomposed.dict)}&id=${encodeURIComponent(decomposed.id)}&l1=${baseCode(l1.code)}`,
           );
           if (res.ok) {
             const data = await res.json();
             const entry = data?.entry as DictionaryEntry | undefined;
-            const matches = !!entry && isSameEntryId(id, entry.id, baseCode(l2.code));
+            const matches = !!entry && isSameEntryId(id, entry.id, base);
             if (!cancelled && matches) {
               // Cache under the saved id even when the API returns the scoped
               // form (e.g. "ja-…" for a saved "llm-ja-…" id).
@@ -593,22 +598,60 @@ export default function ReviewPage() {
               // L1, so it is already translated — promote it to the L1 entry.
               setL1CachedEntry(l2Code, l1.code, normalized);
               setL1Entry(normalized);
+              exactFound = true;
             }
           }
         }
       } catch {
-        // Network failure — fall through to the no-definition state.
+        // Network failure — fall through to the text-lookup fallback.
+      }
+
+      // The saved id may be stale (e.g. the dictionary was updated and the old
+      // EDICT row no longer resolves). Fall back to the best text-lookup entry
+      // for the same head so the back side still shows a definition. The
+      // bookmark reflects the current entry id, so it won't falsely show as
+      // saved.
+      if (!cancelled && !exactFound) {
+        const pickBest = (results: DictionaryEntry[]): DictionaryEntry | undefined =>
+          results.find((e) => isSameEntryId(id, e.id, base))
+          ?? results.find((e) => e.head === form)
+          ?? results.find((e) => e.match_type === 'exact')
+          ?? results[0];
+
+        const fromCache = pickBest(getCachedEntries(base, form) ?? []);
+        if (fromCache) {
+          setFallbackEntry(fromCache);
+        } else {
+          try {
+            const results = await lookupL1Text(form, l2Code, l1.code);
+            if (!cancelled) {
+              const found = pickBest(results);
+              if (found) setFallbackEntry(found);
+            }
+          } catch {
+            // Keep the no-definition state.
+          }
+        }
       }
       if (!cancelled) {
         setExactEntryLoading((prev) => ({ ...prev, [id]: false }));
       }
     })();
     return () => { cancelled = true; };
-  }, [showDefinition, currentCard?.word.id, currentEntry, l2Code, l1.code, l2.code]);
+  }, [
+    showDefinition,
+    currentCard?.word.id,
+    currentEntry,
+    fallbackEntry,
+    l2Code,
+    l1.code,
+    l2.code,
+  ]);
 
   // Clear L1 entry when card changes
   useEffect(() => {
     setL1Entry(null);
+    setFallbackEntry(null);
   }, [currentCard?.word.id]);
 
   // ── Auto-translate context text when back is revealed (if no saved translation) ──
@@ -766,7 +809,7 @@ export default function ReviewPage() {
 
   // Prefer the L1-translated entry (fetched on reveal for non-English users)
   // over the cached English-only entry from batch lookup.
-  const entry = l1Entry ?? currentCard.entry;
+  const entry = l1Entry ?? fallbackEntry ?? currentCard.entry;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
 

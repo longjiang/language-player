@@ -140,6 +140,8 @@ export default function ReviewScreen() {
   const [showTabs, setShowTabs] = useState(false);
   /** L1-translated dictionary entry, fetched on reveal for non-English L1. */
   const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
+  /** Best text-lookup entry when the exact saved id is stale/unresolvable. */
+  const [fallbackEntry, setFallbackEntry] = useState<DictionaryEntry | null>(null);
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
@@ -254,7 +256,7 @@ export default function ReviewScreen() {
   // fetch by the saved id; only then fall back to the "no definition" state.
   useEffect(() => {
     const id = currentDueCard?.id;
-    if (!id || !showTabs) return;
+    if (!id || !showTabs || fallbackEntry) return;
     if (getCachedEntryById(l2Code, id)) return;
     if (
       currentDueCard?.canonicalEntry &&
@@ -305,6 +307,33 @@ export default function ReviewScreen() {
         // Network failure — fall through to the no-definition state.
       }
       if (!cancelled && !found) {
+        // The saved id may be stale (e.g. the dictionary was updated and the
+        // old EDICT row no longer resolves). Fall back to the best text-lookup
+        // entry for the same head so the back side still shows a definition.
+        const base = baseL2ForEntry;
+        const form = currentDueCard?.forms?.[0]
+          || currentDueCard?.head
+          || currentDueCard?.id
+          || id;
+        const pickBest = (results: DictionaryEntry[]): DictionaryEntry | undefined =>
+          results.find((e) => isSameEntryId(id, e.id, base))
+          ?? results.find((e) => e.head === form)
+          ?? results.find((e) => e.match_type === 'exact')
+          ?? results[0];
+        try {
+          const results = await lookupL1Text(form, l2Code, l1Lang.code);
+          if (!cancelled) {
+            const fallback = pickBest(results);
+            if (fallback) {
+              setFallbackEntry(fallback);
+              found = true;
+            }
+          }
+        } catch {
+          // Keep the no-definition state.
+        }
+      }
+      if (!cancelled && !found) {
         setOfflineEntryLookupDone((prev) => ({ ...prev, [id]: true }));
       }
     })();
@@ -313,6 +342,7 @@ export default function ReviewScreen() {
     showTabs,
     currentDueCard?.id,
     currentDueCard?.canonicalEntry,
+    fallbackEntry,
     baseL2ForEntry,
     l2Code,
     l1Lang.code,
@@ -506,6 +536,7 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     setContextTranslation(null);
     setL1Entry(null);
+    setFallbackEntry(null);
     setShowTabs(false);
     if (!card) return;
     const rawInstances = (card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
@@ -803,7 +834,7 @@ export default function ReviewScreen() {
   if (!currentCard) return null;
   const currentCardState = fsrs.getCardState(currentCard.srs);
 
-  const entry = l1Entry ?? currentEntry;
+  const entry = l1Entry ?? fallbackEntry ?? currentEntry;
   const savedWord = currentCard.word;
   const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
   const instances = (savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []))
