@@ -1137,6 +1137,7 @@
         "easy": "簡單",
         "good": "良好",
         "hard": "困難",
+        "no_definition_available": "詞典中未找到此單詞。",
         "shortcut_hint": "按<space></space>翻轉，<k1></k1>–<k2></k2>評分，<enter></enter>繼續",
         "srs_review": "{count, plural, other {已複習 # 次}}"
     },
