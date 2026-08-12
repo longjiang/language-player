@@ -137,6 +137,14 @@ const LEGACY_ALIASES: AliasRule[] = [
     to: (params) => `/${params.l1}/${params.l2}/watch-history`,
   },
   {
+    pattern: '/:l1/:l2/youtube/channels',
+    to: (params) => `/${params.l1}/${params.l2}/channels`,
+  },
+  {
+    pattern: '/:l1/:l2/youtube/subscriptions',
+    to: (params) => `/${params.l1}/${params.l2}/my-channels`,
+  },
+  {
     pattern: '/:l1/:l2/youtube/search/:term?',
     to: (params) => {
       const base = `/${params.l1}/${params.l2}/search`;
@@ -346,9 +354,7 @@ const CLASSIC_ONLY_PATTERNS = [
   '/:l1/:l2/tutoring/lesson/:id',
   '/:l1/:l2/updates',
   '/:l1/:l2/youtube/browse/:category/:level/:locale/:start',
-  '/:l1/:l2/youtube/channels',
   '/:l1/:l2/youtube/playlist/:rest*',
-  '/:l1/:l2/youtube/subscriptions',
   '/:l1/:l2/youtube/channel',
   '/:l1/:l2/video-view/:type',
 

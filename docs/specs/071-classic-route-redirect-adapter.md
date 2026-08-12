@@ -152,6 +152,8 @@ These exact path shapes exist in both apps and must never redirect:
 | `/{l1}/{l2}/saved-words-games` | `/{l1}/{l2}/review` | Feature renamed |
 | `/{l1}/{l2}/youtube/likes` | `/{l1}/{l2}/liked-videos` | Feature renamed |
 | `/{l1}/{l2}/youtube/history` | `/{l1}/{l2}/watch-history` | Feature renamed |
+| `/{l1}/{l2}/youtube/channels` | `/{l1}/{l2}/channels` | Channel directory (SPEC-072) |
+| `/{l1}/{l2}/youtube/subscriptions` | `/{l1}/{l2}/my-channels` | Subscribed-content feed (SPEC-072) |
 | `/{l1}/{l2}/youtube/search/:term?` | `/{l1}/{l2}/search?q=:term` | Term → `q`; `:start?` dropped |
 | `/{l1}/{l2}/youtube/import` | `/{l1}/{l2}/search` | |
 | `/{l1}/{l2}/my-text` | `/{l1}/{l2}/reader` | Notes reader |
@@ -231,9 +233,7 @@ its `/chinese/` and `/explore/` variants.
 | `/tutoring` (+ `:level?`), `/tutoring/lesson/:id` | |
 | `/updates` | |
 | `/youtube/browse/:category/:level/:locale/:start` | |
-| `/youtube/channels` | Gap — see §8 |
 | `/youtube/playlist` (+ `:playlistId?` `:title?`) | Distinct from web user playlists |
-| `/youtube/subscriptions` | Gap — see §8 |
 
 ### 4.5 Classic custom/legacy aliases
 
@@ -412,21 +412,18 @@ makes the web app appear incomplete for features it already has.
 
 ### 8.1 Channels list + subscription management
 
-Classic routes `/youtube/channels` and `/youtube/subscriptions` revealed a
-real product gap — but it is narrower than it first looked. Per-channel
-subscribe / not-interested already exists in `apps/web`
-(`useChannelPreference` → `/channel-preferences`) and in Classic. What is
-missing is the **channel directory page** and the **subscribed-content feed**:
+**Resolved by SPEC-072.** The channel directory and subscribed-content feed
+are implemented on web and mobile:
 
-- Browse/search channels (`/youtube/channels`) — web and mobile
-- "Subscribed Channels Content" feed (`/youtube/subscriptions`) — web and mobile
-- Channel grid/links on both web and mobile
+- Channel directory: `/{l1}/{l2}/channels` (web) /
+  `(tabs)/(media)/channels` (mobile)
+- Subscribed-content feed: `/{l1}/{l2}/my-channels` (web) /
+  `(tabs)/(media)/my-channels` (mobile)
+- Per-channel subscribe / not-interested via `useChannelPreference` →
+  `/channel-preferences`
 
-Per-channel subscription state itself is already wired end-to-end and does not
-need to be rebuilt.
-
-Until the directory and feed are built, both routes remain Classic-only and
-redirect to v2. This gap should be tracked as its own spec/ROADMAP item.
+Classic's `/youtube/channels` and `/youtube/subscriptions` now internally
+redirect (308) to the new pages instead of going to v2 (§4.3).
 
 ### 8.2 Watch queue URL hydration (deferred)
 
@@ -537,6 +534,8 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Saved Words Games](https://language-player.netlify.app/en/ja/saved-words-games) | `/en/ja/review` |
 | [YouTube Likes](https://language-player.netlify.app/en/ja/youtube/likes) | `/en/ja/liked-videos` |
 | [YouTube History](https://language-player.netlify.app/en/ja/youtube/history) | `/en/ja/watch-history` |
+| [Channel directory](https://language-player.netlify.app/en/ja/youtube/channels) | `/en/ja/channels` |
+| [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `/en/ja/my-channels` |
 | [YouTube Import](https://language-player.netlify.app/en/ja/youtube/import) | `/en/ja/search` |
 | [My Text](https://language-player.netlify.app/en/ja/my-text) | `/en/ja/reader` |
 | [Recommended Video](https://language-player.netlify.app/en/ja/recommended-video) | `/en/ja/explore` |
@@ -574,8 +573,6 @@ curl -sSI "https://language-player.netlify.app/en/ja/books" | head -8
 | [Lesson Videos with level](https://language-player.netlify.app/en/ja/lesson-videos/1/2) | `https://v2.languageplayer.io/en/zh/lesson-videos/1/2` |
 | [Separable](https://language-player.netlify.app/en/ja/separable/foo) | `https://v2.languageplayer.io/en/zh/separable/foo` |
 | [New Levels Graphic](https://language-player.netlify.app/en/ja/explore/new-levels-graphic) | `https://v2.languageplayer.io/en/zh/explore/new-levels-graphic` |
-| [Subscribed channels](https://language-player.netlify.app/en/ja/youtube/subscriptions) | `https://v2.languageplayer.io/en/ja/youtube/subscriptions` |
-| [Channel directory](https://language-player.netlify.app/en/ja/youtube/channels) | `https://v2.languageplayer.io/en/ja/youtube/channels` |
 | [Contact](https://language-player.netlify.app/en/ja/contact-us) | `https://v2.languageplayer.io/en/ja/contact-us` |
 | [Languages](https://language-player.netlify.app/languages) | `https://v2.languageplayer.io/languages` |
 | [HSK lookup](https://language-player.netlify.app/en/ja/dictionary/hsk/123) | `https://v2.languageplayer.io/en/zh/dictionary/hsk/123` |
