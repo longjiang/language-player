@@ -3,7 +3,7 @@ import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { buildRuby, baseCode, tokenMatchesAnyForm, tokenMatchesAnyTerm } from '@langplayer/utils';
+import { baseCode, buildRuby, sentenceForToken, tokenMatchesAnyForm, tokenMatchesAnyTerm } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText, prewarmLocalLemmatizer } from '@/lib/tokenizer';
@@ -612,6 +612,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
   // Plain-text branch: pressed-token index for immediate touch feedback.
   const [pressedTokenIndex, setPressedTokenIndex] = useState<number | null>(null);
+  // Sentence containing the tapped token — matches web's Intl.Segmenter
+  // context instead of passing the whole block to the dictionary popup.
+  const selectedTokenForContext = selectedTokenIndex != null ? tokens[selectedTokenIndex] : undefined;
+  const popupContext = selectedTokenForContext
+    ? sentenceForToken(text, tokens, selectedTokenForContext, baseCode(l2Code))
+    : text;
 
   // Batch dictionary lookup layer (matches web's tokenized-text.tsx)
   const [cacheVersion, setCacheVersion] = useState(0);
@@ -1263,10 +1269,10 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
             tokenPron={selectedTokenPron ?? undefined}
             linkUrl={selectedLinkUrl}
             onOpenLink={onOpenLink}
-            // Pass the immediate sentence as popup context (SPEC-049 §8.4
-            // equivalent): the popup's AI explanation + translations are
-            // biased by the surrounding sentence.
-            context={text}
+            // Immediate-sentence context (SPEC-049 §8.4 equivalent): the
+            // popup's AI explanation, image search, and saved-word context
+            // are limited to the sentence the token was tapped in.
+            context={popupContext}
             onClose={() => { popupCloseStartRef.current = Date.now(); setSelectedWord(null); setSelectedTokenIndex(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
           />
         )}
