@@ -17,16 +17,18 @@ which is kept only as history.
   `apps/mobile` build, renamed **"Language Player 3"**, using the GO
   listing's bundle ID **`ca.zerotohero.go`** and IAP product **`pro_go`**
   (a listing's bundle ID cannot change, so the GO ID is preserved).
-- **Google Play — new launch**: a brand-new **"Language Player 3"** listing
-  on a new Play Developer account, package `ca.zerotohero.go` (SPEC-048 § 4).
+- **Google Play — new launch**: a new **"Language Player 3"** listing on the
+  **existing** Play Developer account (currently unverified — see below),
+  package `ca.zerotohero.go` (SPEC-048 § 4).
 
 **Canonical identity table** (also in SPEC-014 "Identifiers & IAP"):
 
 | App | Store | Identifier | IAP product |
 |---|---|---|---|
 | Classic — "Language Player 2" | App Store | `ca.zerotohero.app` | `pro` |
+| Classic — "Language Player 2" | Google Play | `ca.zerotohero.app` | — |
 | New mobile — "Language Player 3" | App Store (replaces GO) | `ca.zerotohero.go` | `pro_go` |
-| New mobile — "Language Player 3" | Google Play (new) | `ca.zerotohero.go` | Play Billing TBD |
+| New mobile — "Language Player 3" | Google Play (new listing, existing account) | `ca.zerotohero.go` | Play Billing TBD |
 
 **IAP validation:** both iOS apps are public, so `app_in_app_purchase.py`
 accepts receipts from **both** bundles (`ca.zerotohero.go` first, then
@@ -35,15 +37,20 @@ hardcode a single bundle — see SPEC-014 for the canonical reference.
 
 ## Context
 
-We have two iOS apps live on the App Store, both offering essentially the same product (language learning with video content) but built on different tech stacks and named differently:
+We have two iOS apps live on the App Store, both offering essentially the same product (language learning with video content) but built on different tech stacks and named differently. The Classic Nuxt app is also live on Google Play as "Language Player 2":
 
-| App | Store Name | Bundle ID | Tech | App Store Link |
+| App | Store Name | Bundle ID | Tech | Store Link |
 |---|---|---|---|---|
 | **Classic Nuxt** | Language Player 2 | `ca.zerotohero.app` | Ionic/Capacitor wrapper around Nuxt web app | [App Store](https://apps.apple.com/ca/app/language-player-2/id1623985525) |
+| **Classic Nuxt (Android)** | Language Player 2 | `ca.zerotohero.app` (package) | Ionic/Capacitor wrapper around Nuxt web app | [Google Play](https://play.google.com/store/apps/details?id=ca.zerotohero.app) |
 | **GO Legacy** | Language Player GO | `ca.zerotohero.go` | React Native (Expo SDK ~51) | [App Store](https://apps.apple.com/ca/app/language-player-go/id6520385296) |
 | **New app (dev)** | Language Player | `ca.zerotohero.languageplayer` | React Native (Expo SDK 57) — not yet submitted | — |
 
-We have **no app in the Google Play Store** — our account was deleted after we neglected to renew our business information.
+The **Classic "Language Player 2" app is live on Google Play** as well
+(`ca.zerotohero.app`), so it exists on both iOS and Android. The Play
+Developer account was **not deleted** — it became **unverified** after we
+neglected to renew our business information, and reverification is still
+outstanding.
 
 ### Naming Constraint
 
@@ -200,5 +207,9 @@ The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing 
 ## Superseded — consequences (historical)
 
 - If we remove the GO app, its IAP product becomes inaccessible for new purchases. Existing purchasers can still restore via App Store (the product remains in their purchase history).
-- The Google Play Store gap remains. If we want Android distribution, we'd need to re-register and submit as a new developer account with the new app.
+- The Google Play Store gap was believed to remain (superseded: Classic
+  "Language Player 2" is live on Google Play and the account is unverified,
+  not deleted). Distributing the new app on Android means reverifying the
+  existing account and publishing a new listing under it, not re-registering
+  as a new developer.
 - If the competitor's "Language Player" app causes confusion, a rebrand to "Zero to Hero" (matching the domain) remains an option for a future major version.

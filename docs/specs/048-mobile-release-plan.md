@@ -17,8 +17,9 @@ code to store on both platforms:
    E2E is deferred).
 2. **Apple App Store (iOS)** — build the Release archive, verify it, upload to
    App Store Connect, submit for review.
-3. **Google Play Store (Android)** — register a new Play Developer account,
-   build the Android AAB, and publish through Play Console.
+3. **Google Play Store (Android)** — re-verify the existing Play Developer
+   account, build the Android AAB, and publish "Language Player 3" through
+   Play Console.
 
 The iOS build details and the two hard-won gotchas from the first archive
 remain documented here so future releases are one-command and correct.
@@ -57,10 +58,13 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   and the new app uses `ca.zerotohero.go` (product `pro_go`); the Python
   validator accepts receipts from **both** bundles (`.go` first, then
   `.app`). Canonical identity table: SPEC-014 "Identifiers & IAP".
-- **Google Play — new launch**: a brand-new **"Language Player 3"** listing on
-  a new Play Developer account (see § 4). It uses the same identifier
-  `ca.zerotohero.go` as iOS (Android packages and iOS bundle IDs are separate
-  namespaces; keeping them identical avoids confusion).
+- **Google Play — new launch**: a new **"Language Player 3"** listing on the
+  **existing** Play Developer account, which is unverified pending business
+  info renewal (see § 4). Classic's **"Language Player 2"** is already live
+  on Google Play under `ca.zerotohero.app`, so it exists on both stores. The
+  new listing uses the same identifier `ca.zerotohero.go` as iOS (Android
+  packages and iOS bundle IDs are separate namespaces; keeping them identical
+  avoids confusion).
 
 ## 1. Testing strategy — informal, checklist-based human QA
 
@@ -521,29 +525,28 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 
 ## 4. Google Play Store (Android)
 
-### 4.1 Register a new Play Developer account
+### 4.1 Verify the existing Play Developer account
 
-The previous Play account was **deleted after failing to renew business info**
-([ADR-0013](0013-app-store-strategy.md)), so Android distribution starts from
-scratch:
+The Play Developer account was **not deleted** — it became **unverified**
+after we neglected to renew our business information
+([ADR-0013](0013-app-store-strategy.md)). Classic's **"Language Player 2"**
+remains live on Google Play under `ca.zerotohero.app`. To publish the new
+app, re-verify the **existing** account rather than registering a new one:
 
-1. Go to [play.google.com/console](https://play.google.com/console) →
-   **Create account**.
-2. Choose account type:
-   - **Organization** — requires business details + a **DUNS number**.
-   - **Personal** — requires your name + ID; usually faster for a solo/small
-     operation.
-3. Provide the **developer name** (shown on the Play listing) and a **contact
-   email**.
-4. Accept the **Google Play Developer Distribution Agreement**.
-5. Pay the **one-time US$25 registration fee**.
-6. Complete **verification** (email / phone / ID) — and **keep the business /
-   developer info current** thereafter. This is the step that was neglected
-   before and cost the original account.
+1. Go to [play.google.com/console](https://play.google.com/console) and sign
+   in with the existing developer account.
+2. Check the account's current status and complete the pending **business
+   info renewal / reverification** (business details, contact email,
+   developer name).
+3. Re-accept the **Google Play Developer Distribution Agreement** if prompted.
+4. Complete **verification** (email / phone / ID) as required.
+5. **Keep the business / developer info current** thereafter — neglecting
+   the renewal is what left the account unverified.
 
-> ⚠️ Play Console's UI and requirements change; verify exact steps and pricing
-> at execution time. The one-time $25 fee and the "keep business info current"
-> requirement are stable facts (see SPEC-014).
+> ⚠️ Play Console's UI and requirements change; verify exact steps at
+> execution time. The existing account should **not** need the one-time
+> US$25 registration fee again; only create a new account if Play Console
+> reports the existing one is fully closed (see SPEC-014).
 
 ### 4.2 Build the Android release (AAB)
 
@@ -582,8 +585,9 @@ cd android && ./gradlew bundleRelease
 ### 4.4 Caveats for the first Android release
 
 - **Google Play Billing is not implemented** (SPEC-014) — Android IAP is
-  blocked until the new Play account and billing setup exist. Launch with
-  free-tier features + web-based payments; add Play Billing later.
+  blocked until the existing Play account is re-verified and billing setup
+  exists. Launch with free-tier features + web-based payments; add Play
+  Billing later.
 - The GO listing's `pro_go` lifetime product exists as **iOS IAP only**
   today, and the new app uses it (Classic's `pro` belongs to
   `ca.zerotohero.app`). Pro grants are backend-driven — an Android user who
@@ -677,7 +681,7 @@ command-line env var is the source of truth for release builds.
 ## Related docs
 
 - [ADR-0027 — Defer Automated E2E — Human QA](../adr/0027-defer-automated-e2e-human-qa.md) — why releases use human QA, not Maestro
-- [ADR-0013 — App Store Strategy & Product Naming](../adr/0013-app-store-strategy.md) — *which* app/listing, bundle ID, IAP, Play gap
+- [ADR-0013 — App Store Strategy & Product Naming](../adr/0013-app-store-strategy.md) — *which* app/listing, bundle ID, IAP, Play account status
 - [SPEC-023 — Mobile E2E Testing](023-mobile-e2e-testing.md) — deferred; source of the human QA checklist
 - [SPEC-014 — Subscription/Payment System](014-subscription-payment-system.md) — IAP + Play Billing caveats
 - [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) — detailed payment checklist
