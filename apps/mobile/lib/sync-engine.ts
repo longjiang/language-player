@@ -12,6 +12,7 @@ import { repairSyncPayload } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { isExpectedSyncRejection } from '@/lib/sync-rejection';
 import {
   getConnectivity,
   subscribeConnectivity,
@@ -324,6 +325,13 @@ async function pushOutbox(): Promise<number> {
           const payload = JSON.parse(row.payload) as Record<string, unknown>;
           notifyRemap('note', row.entity_id, result.entity_id, String(payload.l2 ?? ''));
         }
+      } else if (isExpectedSyncRejection(result.error)) {
+        // Expected free-tier rejection (SPEC-066 Phase 5): the rating exceeds
+        // the daily cap and cannot sync today. Ack/drop the op instead of
+        // surfacing a sync-screen error or retrying forever — the review UI
+        // shows the upgrade banner at the local cap.
+        log(`[sync] push expected rejection ${row.entity}:${row.entity_id} — ${result.error}`);
+        acked.push(row.id);
       } else {
         failedCount++;
         const attempts = row.attempts + 1;
