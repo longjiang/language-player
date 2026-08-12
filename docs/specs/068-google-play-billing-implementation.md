@@ -58,7 +58,14 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
 - [x] Create the app: **Language Player 3**, package `ca.zerotohero.go`,
   Free with in-app purchases (SPEC-067 § 4.2) — created 2026-08-12.
 - [~] Create the lifetime **non-consumable** billing product (SPEC-067 § 5) —
-  `pro_go` in progress.
+  `pro_go` in progress. **Merchant account set up 2026-08-12** (existing
+  "Jiang Long" payments profile 1672-5871-2559 associated: business "Zero
+  to Hero", website languageplayer.io, Computer Software,
+  jon.long@zerotohero.ca, statement name "LanguagePlyr" — 14-char field
+  limit). **Product creation gated on a release-signed AAB upload**: Play
+  Console requires the BILLING permission in an uploaded build, and only a
+  debug APK exists (rejected as debug-signed). Build + upload
+  `app-release.aab` first (SPEC-067 § 3.4–3.5), then create `pro_go` here.
 - [ ] Add license testers (Mary/Bob) under **Setup → License testing**.
 - [ ] Enable API access:
   - Link/create a Google Cloud project in **Play Console → Setup → API access**.
