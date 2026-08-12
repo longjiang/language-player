@@ -9,7 +9,7 @@
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
-import { CONTENT_L2S, POPULAR_L2S } from '@langplayer/shared';
+import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L2S } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import {
   parseTimeToSeconds, stripTags, decodeEntities,
@@ -781,12 +781,9 @@ const CSV_TO_CHROME_LOCALE = {
   'vi': 'vi',
 };
 
-/** UI languages for the L1 (interface) dropdown.
- *  These are the 18 Chrome locales supported by the extension. */
-const UI_LANGUAGES = [
-  'en', 'zh-Hans', 'zh-Hant', 'ar', 'de', 'es', 'fr', 'id', 'it',
-  'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'th', 'tr', 'vi',
-];
+/** UI languages for the L1 (interface) dropdown — ADR-0033's 18 core
+ *  locales, sourced from @langplayer/shared (SUPPORTED_L1S). */
+const UI_LANGUAGES = SUPPORTED_L1S;
 
 /** Handle L1 (interface) language change */
 async function onL1Change(newCode) {

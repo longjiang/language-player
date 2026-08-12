@@ -5,6 +5,9 @@
   "actions": {
     "message": "その他"
   },
+  "aiProFeature": {
+    "message": "プロ機能：文脈に応じた単語のAI解説を取得できます。"
+  },
   "aiThinking": {
     "message": "読み込み中..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "翻訳中…"
   },
+  "upgradeToPro": {
+    "message": "Proにアップグレードする"
+  },
+  "upgradeToProBanner": {
+    "message": "Proにアップグレードして、完全なトランスクリプト、無制限の単語例などをご利用ください。"
+  },
   "confirm": {
     "message": "確認"
   },
@@ -181,7 +190,7 @@
     "message": "ふりがなを表示"
   },
   "explainWord": {
-    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$の意味を簡潔に説明してください。",
+    "message": "$l2Name$の単語\"$word$\"を簡潔に説明し、翻訳付きの例を2つ挙げてください。",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$がフレーズ中で何を意味するか簡潔に説明してください：$context$。",
+    "message": "\"$context$\"における$l2Name$の単語\"$word$\"を簡潔に説明し、翻訳付きの例を2つ挙げてください。",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "$l1Name$で、$l2Name$（$code$）の単語$word$（屈折形: $contextForm$）がフレーズ中で何を意味するか簡潔に説明してください：$context$。",
+    "message": "\"$context$\"における$l2Name$の単語\"$word$\"（屈折形：$contextForm$）を簡潔に説明し、翻訳付きの例を2つ挙げてください。",
     "placeholders": {
       "l1Name": {
         "content": "$1"

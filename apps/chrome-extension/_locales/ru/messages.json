@@ -5,6 +5,9 @@
   "actions": {
     "message": "Ещё"
   },
+  "aiProFeature": {
+    "message": "Pro-функция: получайте объяснения слов с помощью ИИ в контексте."
+  },
   "aiThinking": {
     "message": "Загрузка..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Перевод…"
   },
+  "upgradeToPro": {
+    "message": "Обновить до Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Перейдите на Pro для полных стенограмм, неограниченного количества примеров слов и многого другого."
+  },
   "confirm": {
     "message": "Подтвердить"
   },
@@ -175,13 +184,13 @@
     "message": "Язык"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Поиск языков…"
   },
   "showPhonetics": {
     "message": "Показать фонетику"
   },
   "explainWord": {
-    "message": "Кратко объясни на $l1Name$, что означает слово $l2Name$ ($code$) $word$.",
+    "message": "Кратко объясни слово на $l2Name$ \"$word$\", затем приведи 2 примера с переводами.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Кратко объясни на $l1Name$, что означает слово $l2Name$ ($code$) $word$ во фразе: $context$.",
+    "message": "Кратко объясни слово на $l2Name$ \"$word$\" во фразе \"$context$\", затем приведи 2 примера с переводами.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Кратко объясни на $l1Name$, что означает слово $l2Name$ ($code$) $word$ (словоформа: $contextForm$) во фразе: $context$.",
+    "message": "Кратко объясни слово на $l2Name$ \"$word$\" (словоизменительная форма: $contextForm$) во фразе \"$context$\", затем приведи 2 примера с переводами.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

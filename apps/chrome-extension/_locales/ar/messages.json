@@ -5,6 +5,9 @@
   "actions": {
     "message": "المزيد"
   },
+  "aiProFeature": {
+    "message": "ميزة برو: احصل على شرح الكلمات بالذكاء الاصطناعي في السياق."
+  },
   "aiThinking": {
     "message": "جارٍ التحميل..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "جار الترجمة..."
   },
+  "upgradeToPro": {
+    "message": "الترقية إلى النسخة المتقدمة"
+  },
+  "upgradeToProBanner": {
+    "message": "قم بالترقية إلى برو للحصول على نصوص كاملة، وأمثلة غير محدودة للكلمات، والمزيد."
+  },
   "confirm": {
     "message": "تأكيد"
   },
@@ -175,13 +184,13 @@
     "message": "اللغة"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "ابحث عن اللغات…"
   },
   "showPhonetics": {
     "message": "إظهار الصوتيات"
   },
   "explainWord": {
-    "message": "اشرح بإيجاز باستخدام $l1Name$، ما معنى كلمة $l2Name$ ($code$) $word$.",
+    "message": "يرجى شرح كلمة $l2Name$ \"$word$\" بإيجاز، ثم أعط مثالين مع ترجماتهما.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "اشرح بإيجاز باستخدام $l1Name$، ما معنى كلمة $l2Name$ ($code$) $word$ في العبارة: $context$.",
+    "message": "يرجى شرح كلمة $l2Name$ \"$word$\" بإيجاز في سياق \"$context$\"، ثم أعط مثالين مع ترجماتهما.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "اشرح بإيجاز باستخدام $l1Name$، ما معنى كلمة $l2Name$ ($code$) $word$ (الصيغة المصرفة: $contextForm$) في العبارة: $context$.",
+    "message": "يرجى شرح كلمة $l2Name$ \"$word$\" (الصيغة المصرفة: $contextForm$) بإيجاز في سياق \"$context$\"، ثم أعط مثالين مع ترجماتهما.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

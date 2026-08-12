@@ -5,6 +5,9 @@
   "actions": {
     "message": "Lainnya"
   },
+  "aiProFeature": {
+    "message": "Fitur premium: Dapatkan penjelasan kata dengan AI berdasarkan konteks."
+  },
   "aiThinking": {
     "message": "Memuat..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Menerjemahkan…"
   },
+  "upgradeToPro": {
+    "message": "Tingkatkan ke Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Tingkatkan ke Pro untuk transkrip lengkap, contoh kata tanpa batas, dan lainnya."
+  },
   "confirm": {
     "message": "Konfirmasi"
   },
@@ -175,13 +184,13 @@
     "message": "Bahasa"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Cari bahasa…"
   },
   "showPhonetics": {
     "message": "Tampilkan fonetik"
   },
   "explainWord": {
-    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$.",
+    "message": "Jelaskan secara singkat kata $l2Name$ \"$word$\", lalu berikan 2 contoh dengan terjemahan.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$ dalam frasa: $context$.",
+    "message": "Jelaskan secara singkat kata $l2Name$ \"$word$\" dalam \"$context$\", lalu berikan 2 contoh dengan terjemahan.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$ (bentuk infleksi: $contextForm$) dalam frasa: $context$.",
+    "message": "Jelaskan secara singkat kata $l2Name$ \"$word$\" (bentuk infleksi: $contextForm$) dalam \"$context$\", lalu berikan 2 contoh dengan terjemahan.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

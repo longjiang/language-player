@@ -5,6 +5,9 @@
   "actions": {
     "message": "Más"
   },
+  "aiProFeature": {
+    "message": "Función Pro: Obtén explicaciones de IA sobre palabras en contexto."
+  },
   "aiThinking": {
     "message": "Cargando..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Traduciendo…"
   },
+  "upgradeToPro": {
+    "message": "Actualizar a Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Actualice a Pro para obtener transcripciones completas, ejemplos de palabras ilimitados y más."
+  },
   "confirm": {
     "message": "Confirmar"
   },
@@ -175,13 +184,13 @@
     "message": "Idioma"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Buscar idiomas…"
   },
   "showPhonetics": {
     "message": "Mostrar fonética"
   },
   "explainWord": {
-    "message": "Explica brevemente en $l1Name$ qué significa la palabra $l2Name$ ($code$) $word$.",
+    "message": "Explica brevemente la palabra en $l2Name$ \"$word$\" y luego da 2 ejemplos con traducciones.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Explica brevemente en $l1Name$ qué significa la palabra $l2Name$ ($code$) $word$ en la frase: $context$.",
+    "message": "Explica brevemente la palabra en $l2Name$ \"$word$\" en \"$context$\" y luego da 2 ejemplos con traducciones.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Explica brevemente en $l1Name$ qué significa la palabra $l2Name$ ($code$) $word$ (forma flexionada: $contextForm$) en la frase: $context$.",
+    "message": "Explica brevemente la palabra en $l2Name$ \"$word$\" (forma flexionada: $contextForm$) en \"$context$\" y luego da 2 ejemplos con traducciones.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

@@ -5,7 +5,8 @@
  * Fetches entries from POST /dictionary/lookup and shows full details:
  * pronunciation, part of speech, definitions, proficiency levels.
  * Each entry links to the Language Player web app for full details.
- * Includes a Save/Unsave button backed by Directus sync.
+ * Includes a Save/Unsave button backed by the Supabase row API (SPEC-034)
+ * and a Pro-gated AI explanation (ADR-0034 D3).
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -13,7 +14,6 @@ import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langpl
 import { formatLevel } from '@langplayer/shared';
 import { useSavedWords } from './SavedWordsProvider';
 import { fetchInflectedForms } from '../saved-words';
-import { useSubscription } from '../use-subscription';
 import { Markdown } from './Markdown';
 import { Bookmark, BookmarkCheck, X } from './Icons';
 import { log, logerr, t } from '../i18n';
@@ -36,6 +36,9 @@ interface DictionaryCardProps {
   videoTitle?: string;
   /** Page URL, used to extract platform/video ID for save context. */
   pageUrl?: string;
+  /** Subscription state from the parent transcript app (ADR-0034). */
+  isPro: boolean;
+  subLoading: boolean;
   onClose: () => void;
 }
 
@@ -196,6 +199,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   cueStartTime,
   videoTitle,
   pageUrl,
+  isPro,
+  subLoading,
   onClose,
 }) => {
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
@@ -203,7 +208,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
-  const { isPro, loading: subLoading } = useSubscription();
 
   // ── Explain state ──
   const [explainText, setExplainText] = useState<string | null>(null);
@@ -273,6 +277,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   }, [token, l1Code, l2Code]);
 
   const handleExplain = useCallback(async () => {
+    if (!isPro) return; // ADR-0034 D3: AI explanations are hard Pro-only
     if (showExplain) {
       setShowExplain(false);
       return;
@@ -321,7 +326,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     } finally {
       setExplainLoading(false);
     }
-  }, [showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
+  }, [isPro, showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
 
   const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
 
@@ -347,8 +352,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         </div>
       </div>
 
-      {/* Explain button — hidden once clicked (spinner/result replaces it) */}
-      {isPro && !showExplain && (
+      {/* AI explanation — Pro-only (ADR-0034 D3). Free users see the prompt. */}
+      {!subLoading && isPro && !showExplain && (
         <button
           onClick={handleExplain}
           className="lpv-explain-btn"
@@ -356,6 +361,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         >
           {t('explain')}
         </button>
+      )}
+      {!subLoading && !isPro && (
+        <div className="lpv-explain-pro-banner">{t('aiProFeature')}</div>
       )}
 
       {/* Card body */}

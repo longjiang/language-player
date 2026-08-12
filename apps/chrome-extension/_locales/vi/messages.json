@@ -5,6 +5,9 @@
   "actions": {
     "message": "Thêm"
   },
+  "aiProFeature": {
+    "message": "Tính năng Pro: Nhận giải thích từ ngữ trong ngữ cảnh bằng AI."
+  },
   "aiThinking": {
     "message": "Đang tải..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Đang dịch…"
   },
+  "upgradeToPro": {
+    "message": "Nâng cấp lên Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Nâng cấp lên Pro để có bản ghi đầy đủ, ví dụ từ không giới hạn và nhiều hơn nữa."
+  },
   "confirm": {
     "message": "Xác nhận"
   },
@@ -175,13 +184,13 @@
     "message": "Ngôn ngữ"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Tìm kiếm ngôn ngữ…"
   },
   "showPhonetics": {
     "message": "Hiển thị ngữ âm"
   },
   "explainWord": {
-    "message": "Giải thích ngắn gọn bằng $l1Name$ nghĩa của từ $l2Name$ ($code$) $word$.",
+    "message": "Vui lòng giải thích ngắn gọn từ tiếng $l2Name$ \"$word$\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Giải thích ngắn gọn bằng $l1Name$ nghĩa của từ $l2Name$ ($code$) $word$ trong cụm từ: $context$.",
+    "message": "Vui lòng giải thích ngắn gọn từ tiếng $l2Name$ \"$word$\" trong \"$context$\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Giải thích ngắn gọn bằng $l1Name$, từ $l2Name$ ($code$) $word$ (dạng biến cách: $contextForm$) có nghĩa gì trong cụm từ: $context$.",
+    "message": "Vui lòng giải thích ngắn gọn từ tiếng $l2Name$ \"$word$\" (dạng biến cách: $contextForm$) trong \"$context$\", sau đó đưa ra 2 ví dụ kèm bản dịch.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

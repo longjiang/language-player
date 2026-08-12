@@ -5,6 +5,9 @@
   "actions": {
     "message": "Altro"
   },
+  "aiProFeature": {
+    "message": "Funzionalità Pro: Ottieni spiegazioni con intelligenza artificiale sulle parole nel contesto."
+  },
   "aiThinking": {
     "message": "Caricamento..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Traduzione in corso…"
   },
+  "upgradeToPro": {
+    "message": "Passa a Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Passa a Pro per trascrizioni complete, esempi di parole illimitati e altro."
+  },
   "confirm": {
     "message": "Conferma"
   },
@@ -175,13 +184,13 @@
     "message": "Lingua"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Cerca lingue…"
   },
   "showPhonetics": {
     "message": "Mostra fonetica"
   },
   "explainWord": {
-    "message": "Spiega brevemente in $l1Name$ cosa significa la parola $l2Name$ ($code$) $word$.",
+    "message": "Spiega brevemente la parola $l2Name$ \"$word$\", poi fornisci 2 esempi con traduzioni.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Spiega brevemente in $l1Name$ cosa significa la parola $l2Name$ ($code$) $word$ nella frase: $context$.",
+    "message": "Spiega brevemente la parola $l2Name$ \"$word$\" in \"$context$\", poi fornisci 2 esempi con traduzioni.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Spiega brevemente in $l1Name$ cosa significa la parola $l2Name$ ($code$) $word$ (forma flessa: $contextForm$) nella frase: $context$.",
+    "message": "Spiega brevemente la parola $l2Name$ \"$word$\" (forma flessa: $contextForm$) in \"$context$\", poi fornisci 2 esempi con traduzioni.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

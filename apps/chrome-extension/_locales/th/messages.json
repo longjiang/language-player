@@ -5,6 +5,9 @@
   "actions": {
     "message": "เพิ่มเติม"
   },
+  "aiProFeature": {
+    "message": "ฟีเจอร์ Pro: รับคำอธิบายคำศัพท์ในบริบทด้วย AI"
+  },
   "aiThinking": {
     "message": "กำลังโหลด..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "กำลังแปล…"
   },
+  "upgradeToPro": {
+    "message": "อัพเกรดเป็น Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "อัปเกรดเป็น Pro เพื่อรับบทบรรยายเต็ม ตัวอย่างคำศัพท์ไม่จำกัด และอื่นๆ อีกมากมาย"
+  },
   "confirm": {
     "message": "ยืนยัน"
   },
@@ -175,13 +184,13 @@
     "message": "ภาษา"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "ค้นหาภาษา…"
   },
   "showPhonetics": {
     "message": "แสดงสัทอักษร"
   },
   "explainWord": {
-    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำ$l2Name$ ($code$) $word$ หมายถึงอะไร",
+    "message": "กรุณาอธิบายคำภาษา$l2Name$ \"$word$\" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำ$l2Name$ ($code$) $word$ ในวลีหมายถึงอะไร: $context$",
+    "message": "กรุณาอธิบายคำภาษา$l2Name$ \"$word$\" ใน \"$context$\" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "อธิบายสั้นๆ โดยใช้$l1Name$ ว่าคำว่า$word$ในภาษา$l2Name$ ($code$) (รูปผัน: $contextForm$) หมายถึงอะไรในวลี: $context$",
+    "message": "กรุณาอธิบายคำภาษา$l2Name$ \"$word$\" (รูปผัน: $contextForm$) ใน \"$context$\" โดยสรุป แล้วยกตัวอย่างพร้อมคำแปล 2 ตัวอย่าง",
     "placeholders": {
       "l1Name": {
         "content": "$1"

@@ -5,6 +5,9 @@
   "actions": {
     "message": "Meer"
   },
+  "aiProFeature": {
+    "message": "Pro-functie: Krijg AI-uitleg van woorden in context."
+  },
   "aiThinking": {
     "message": "Laden..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "Vertalen…"
   },
+  "upgradeToPro": {
+    "message": "Upgraden naar Pro"
+  },
+  "upgradeToProBanner": {
+    "message": "Upgrade naar Pro voor volledige transcripties, onbeperkte woordvoorbeelden en meer."
+  },
   "confirm": {
     "message": "Bevestigen"
   },
@@ -175,13 +184,13 @@
     "message": "Taal"
   },
   "searchLanguages": {
-    "message": "Search languages…"
+    "message": "Talen zoeken…"
   },
   "showPhonetics": {
     "message": "Toon fonetiek"
   },
   "explainWord": {
-    "message": "Leg beknopt uit in het $l1Name$ wat het $l2Name$ ($code$) woord $word$ betekent.",
+    "message": "Leg kort uit wat het $l2Name$-woord \"$word$\" betekent en geef daarna 2 voorbeelden met vertalingen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "Leg beknopt uit in het $l1Name$ wat het $l2Name$ ($code$) woord $word$ betekent in de zin: $context$.",
+    "message": "Leg kort uit wat het $l2Name$-woord \"$word$\" betekent in \"$context$\" en geef daarna 2 voorbeelden met vertalingen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "Leg beknopt uit in het $l1Name$ wat het $l2Name$ ($code$) woord $word$ (vervoegde vorm: $contextForm$) betekent in de zin: $context$.",
+    "message": "Leg kort uit wat het $l2Name$-woord \"$word$\" (verbuigingsvorm: $contextForm$) betekent in \"$context$\" en geef daarna 2 voorbeelden met vertalingen.",
     "placeholders": {
       "l1Name": {
         "content": "$1"

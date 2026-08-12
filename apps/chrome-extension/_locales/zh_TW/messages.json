@@ -5,6 +5,9 @@
   "actions": {
     "message": "更多"
   },
+  "aiProFeature": {
+    "message": "專業版功能：取得單字的 AI 上下文解釋。"
+  },
   "aiThinking": {
     "message": "載入中..."
   },
@@ -162,6 +165,12 @@
   "translating": {
     "message": "翻譯中…"
   },
+  "upgradeToPro": {
+    "message": "升級成專業版"
+  },
+  "upgradeToProBanner": {
+    "message": "升級至專業版以取得完整逐字稿、不限數量的單字範例等更多功能。"
+  },
   "confirm": {
     "message": "確認"
   },
@@ -181,7 +190,7 @@
     "message": "顯示拼音"
   },
   "explainWord": {
-    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$的含義。",
+    "message": "請簡潔地解釋$l2Name$單詞\"$word$\"，然後給出2個帶翻譯的示例。",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -198,7 +207,7 @@
     }
   },
   "explainWordContext": {
-    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$在短語中的含義：$context$。",
+    "message": "請簡潔地解釋$l2Name$單詞\"$word$\"在\"$context$\"中的含義，然後給出2個帶翻譯的示例。",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -218,7 +227,7 @@
     }
   },
   "explainWordContextForm": {
-    "message": "用$l1Name$簡潔地解釋$l2Name$（$code$）單詞$word$（屈折形式：$contextForm$）在短語中的含義：$context$。",
+    "message": "請簡潔地解釋$l2Name$單詞\"$word$\"（屈折形式：$contextForm$）在\"$context$\"中的含義，然後給出2個帶翻譯的示例。",
     "placeholders": {
       "l1Name": {
         "content": "$1"
@@ -241,6 +250,6 @@
     }
   },
   "explainMorphology": {
-    "message": "給出其發音和形態（或適當的詞源）。如果是屈折形式，給出其詞元（原形）和屈折變化；否則不要提及屈折或詞元。"
+    "message": "給出其發音。如果是屈折或變位形式，給出其原形並說明屈折變化。如果不是屈折形式，則不要提及屈折或詞元。"
   }
 }
