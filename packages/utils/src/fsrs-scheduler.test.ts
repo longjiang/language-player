@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { State } from 'ts-fsrs';
 import {
   countDueCards,
+  countDeckStates,
   deserializeSrsCard,
   getCardState,
   getDueCards,
@@ -10,10 +11,12 @@ import {
   mergeSrsCards,
   migrateSrsStore,
   newCard,
+  newRatingId,
   normalizeFsrsCard,
   planNewDeck,
   rate,
   remainingNewCardsToday,
+  srsDueLabel,
   type FsrsCard,
 } from './fsrs-scheduler';
 
@@ -261,6 +264,73 @@ describe('fsrs-scheduler: due helpers', () => {
     expect(getCardState({ ...newCard(NOW), state: State.Learning })).toBe('learning');
     expect(getCardState({ ...newCard(NOW), state: State.Review })).toBe('review');
     expect(getCardState({ ...newCard(NOW), state: State.Relearning })).toBe('relearning');
+  });
+});
+
+describe('fsrs-scheduler: deck counts & due labels', () => {
+  it('counts blue/red/green across the whole deck, not just due cards', () => {
+    const savedWords = [
+      { id: 'new' },
+      { id: 'learning' },
+      { id: 'review' },
+      { id: 'relearning' },
+      { id: 'missing' },
+    ];
+    const cards: Record<string, FsrsCard> = {
+      new: newCard(NOW),
+      learning: { ...newCard(NOW), state: State.Learning },
+      review: { ...newCard(NOW), state: State.Review },
+      relearning: { ...newCard(NOW), state: State.Relearning },
+    };
+    expect(countDeckStates(savedWords, cards)).toEqual({
+      newCount: 1,
+      againCount: 2,
+      reviewCount: 1,
+    });
+    expect(countDeckStates([], {})).toEqual({ newCount: 0, againCount: 0, reviewCount: 0 });
+  });
+
+  it('formats due labels for minutes, hours, and days', () => {
+    expect(srsDueLabel({ ...newCard(NOW), due: NOW - 1000 }, NOW)).toBe('0m');
+    expect(srsDueLabel({ ...newCard(NOW), due: NOW + 60_000 }, NOW)).toBe('1m');
+    expect(srsDueLabel({ ...newCard(NOW), due: NOW + 10 * 60_000 }, NOW)).toBe('10m');
+    expect(srsDueLabel({ ...newCard(NOW), due: NOW + 6 * 60 * 60_000 }, NOW)).toBe('6h');
+    expect(srsDueLabel({ ...newCard(NOW), due: NOW + 3 * 86_400_000 }, NOW)).toBe('3d');
+  });
+});
+
+describe('fsrs-scheduler: rating metadata', () => {
+  it('generates unique rating ids containing user and word', () => {
+    const a = newRatingId('u1', 'w1', NOW);
+    const b = newRatingId('u1', 'w1', NOW);
+    expect(a).toMatch(new RegExp(`^u1:w1:${NOW}:`));
+    expect(a).not.toBe(b);
+    expect(newRatingId(undefined, 'w2', NOW)).toMatch(new RegExp(`^anon:w2:${NOW}:`));
+  });
+
+  it('preserves rating metadata through normalization', () => {
+    const card = rate(newCard(NOW), 'good', NOW);
+    card.ratingId = 'u1:w1:1:abc';
+    card.rating = 'good';
+    card.voidRatingId = 'u1:w1:0:old';
+    const normalized = normalizeFsrsCard(JSON.parse(JSON.stringify(card)));
+    expect(normalized.ratingId).toBe('u1:w1:1:abc');
+    expect(normalized.rating).toBe('good');
+    expect(normalized.voidRatingId).toBe('u1:w1:0:old');
+  });
+});
+
+describe('fsrs-scheduler: store & deck edge cases', () => {
+  it('defaults settings when migrating a store without them', () => {
+    const migrated = migrateSrsStore({ cards: { ja: {} } });
+    expect(migrated.v).toBe(2);
+    expect(migrated.settings.dailyNewLimit).toBe(20);
+  });
+
+  it('handles zero and negative deck limits', () => {
+    const saved = [{ id: 'a', date: NOW }, { id: 'b', date: NOW - 1000 }];
+    expect(planNewDeck(saved, {}, 0)).toEqual({ toCreate: [], toRemove: [] });
+    expect(planNewDeck(saved, {}, -5)).toEqual({ toCreate: [], toRemove: [] });
   });
 });
 
