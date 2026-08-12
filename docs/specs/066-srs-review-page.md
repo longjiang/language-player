@@ -189,6 +189,16 @@ new deck, the next newest unrated word takes its place — the deck refills
 during the session rather than waiting for the next day. Rated cards (whether
 passed or failed) are never displaced by newer saves.
 
+**"No more new cards today" (Phase 0 definition)** — this state means the
+unrated pool is empty: every saved word has a card and no card is still `new`.
+Because the deck refills during a session, the daily limit caps the deck size,
+not how many new cards can be reviewed today. The message is shown in the
+all-done / no-due states (with the blue count at 0). SPEC-023 R6 is updated to
+this definition.
+
+`remainingNewCardsToday()` is rewritten to count the unrated pool (saved words
+with no card or a `state: new` card); it is used only for this message.
+
 ### Undo and the free cap
 
 Undo restores the card to exactly the scheduling state it had before the last
@@ -234,7 +244,15 @@ bookkeeping:
 | `createdAt` | Unix-ms timestamp of card creation (new-deck budgeting) |
 
 The classic SM-2 fields (`ease`, `interval`, `repetitions`) are replaced by
-the FSRS memory state.
+the FSRS memory state. The persisted card stores the **full ts-fsrs `Card`**
+(`state`, `due`, `stability`, `difficulty`, `elapsed_days`, `scheduled_days`,
+`learning_steps`, `reps`, `lapses`, `last_review`) with dates as Unix ms, plus
+the app fields above — not just the reduced table below.
+
+**Phase 0 decision — legacy compatibility window.** Deprecated `ease`,
+`interval`, `repetitions`, and `nextReview` fields are also written on every
+card for one release cycle so old installed clients can still read them. New
+code ignores them; they are removed in a later release (see Phase 6).
 
 ### Ratings → scheduling effects
 
@@ -263,17 +281,20 @@ recomputes the queue on the next store change (rating, removal) or page reload.
 1. `planNewDeck(savedWords, cards, dailyNewLimit)` computes the blue ("new")
    deck: the `dailyNewLimit` most recently saved words that have no card or an
    unreviewed blue card, newest-saved first.
-2. Words in `toCreate` get a brand-new card with `nextReview = Date.now()`
+2. Words in `toCreate` get a brand-new card with `due = Date.now()`
    (due immediately).
 3. Blue cards pushed out of the newest-`dailyNewLimit` window are removed
    (`toRemove`) so the deck doesn't grow unboundedly.
 4. Rated cards (green/red) are never displaced.
-5. Due cards = saved words whose card has `nextReview <= now`, sorted by
-   `nextReview` ascending (oldest due first).
+5. Due cards = saved words whose card has `due <= now`, sorted by
+   `due` ascending (oldest due first).
 6. The header shows three counts:
    - blue = new — never rated;
    - red = again — learning / relearning;
    - green = review — `state: review`.
+   Counts are computed from the whole language deck (saved words only), not
+   just the current due queue, so cards waiting on a learning step or
+   scheduled for later still appear.
 
 The classification follows the card's state (new / learning / review), not a
 success streak. The current streak-based counts are a by-product of the
@@ -456,6 +477,14 @@ app.
 - The counter is per user + per UTC day, keyed
   `lpSrsReviewsDone:<userId>:<YYYY-MM-DD>`.
 
+**Backend cap contract (Phase 0 decision).** The free 20-review cap is counted
+at a rating boundary, never on generic `PUT /srs/cards` sync writes (undo
+restores and offline outbox replays are also PUTs and would double-count).
+Each interactive rating carries a client-generated rating id recorded in a
+per-user review log so replays/retries count once; undo writes a matching void
+event so the cap is restored. Trial users are Pro-equivalent while active
+(mirroring the clients' `isPro` logic from `user_subscriptions`).
+
 ## Web ↔ Mobile Disparities
 
 | # | Area | Web | Mobile | Impact / intended |
@@ -486,9 +515,9 @@ app.
   and there are no learning / relearning states. The intended FSRS scheduler
   (card states, learning steps, memory state) is not implemented on either
   platform.
-- **"No more new cards today" message**: SPEC-023 R6 expects a message plus a
-  remaining-new count of 0; neither page shows this (the blue count just drops
-  to zero).
+- **"No more new cards today" message**: Phase 0 defines this as the unrated
+  pool being exhausted (every saved word rated at least once); neither page
+  shows the message yet (the blue count just drops to zero).
 - **Backend free cap**: ADR-0034 D4 says the free 20-review cap is
   backend-enforced; both apps enforce it client-side only, and the Flask SRS
   routes have no cap logic.
@@ -562,43 +591,31 @@ Purpose: remove contradictions between the intended behavior, the behavioral
 test matrix, and the backend-cap contract before any code changes. All three
 files must agree before Phase 2 starts.
 
-1. **Reconcile SPEC-023 Tier 4 with this spec.** R4 expects "All done! … with
-   stats (cards reviewed, time)" but this spec defines the all-done state
-   without session stats. R6 expects "No more new cards today" + a remaining
-   new count of 0, but the new-deck model refills from the saved-word pool
-   during a session. Decide and document:
-   - All-done: keep "No more cards to review" + next review time, no stats
-     (current spec). Update SPEC-023 R4 to match.
-   - "No more new cards today": define it as the state where every saved word
-     has been rated at least once (the unrated pool is empty), shown in the
-     all-done/no-due states. Update SPEC-023 R6 to that definition, or drop
-     the message if the product doesn't want it. Do not build a
-     `createdAt`-based counter — it contradicts `planNewDeck`'s rolling-deck
-     semantics.
-2. **Fix `remainingNewCardsToday()` semantics or remove it.** The current
-   helpers count by card `createdAt`, which does not match the deck model
-   (newest-saved-first window that refills during a session). Either rewrite
-   them to count unrated saved words in the current deck, or remove them with
-   the Phase 6 cleanup. Do not render them until this is decided.
-3. **Define the backend free-cap counting contract (needed by Phase 5).**
-   Decide:
-   - Ratings are counted at a rating boundary, not on generic `PUT /srs/cards`
-     sync writes (undo restores and offline outbox replays are also PUTs and
-     would double-count).
-   - Idempotency: each interactive rating carries a client-generated rating id
-     (e.g. `${userId}:${wordId}:${Date.now()}` or a UUID) recorded in a
-     per-user review-log row so replays/retries count once.
-   - Undo records a matching decrement/void event so the cap is restored.
-   - Trial users: the backend must mirror the clients' `isPro` logic
-     (`user_subscriptions`; an active trial is Pro-equivalent). Free = 20
-     reviews per UTC day.
-4. **Decide the legacy-field compatibility window.** Recommended: keep writing
-   deprecated `ease`, `interval`, `repetitions`, `nextReview` fields alongside
-   FSRS fields for one release cycle so old installed clients don't crash on
+1. **Reconcile SPEC-023 Tier 4 with this spec.** Decisions (recorded in this
+   spec, 2026-08-11):
+   - All-done: keep "No more cards to review" + next review time, no stats.
+     SPEC-023 R4 updated to match.
+   - "No more new cards today": the unrated pool is empty (every saved word
+     rated at least once), shown in the all-done/no-due states. SPEC-023 R6
+     updated to that definition. No `createdAt`-based counter — it contradicts
+     `planNewDeck`'s rolling-deck semantics.
+2. **Fix `remainingNewCardsToday()` semantics.** Decision: rewrite it to count
+   the unrated pool (saved words with no card or a `state: new` card), used
+   only for the "no more new cards" message.
+3. **Backend free-cap counting contract (needed by Phase 5).** Decision:
+   ratings are counted at a rating boundary with a client-generated rating id
+   recorded in a per-user review log (replays/retries count once); undo writes
+   a void/decrement event; the backend mirrors the clients' `isPro` logic
+   (`user_subscriptions`; an active trial is Pro-equivalent); free = 20
+   reviews per UTC day.
+4. **Legacy-field compatibility window.** Decision: keep writing deprecated
+   `ease`, `interval`, `repetitions`, `nextReview` fields alongside FSRS
+   fields for one release cycle so old installed clients don't crash on
    new-shape cards and old clients don't clobber FSRS state with malformed
-   cards. Document the removal version in this spec.
+   cards. Removal is scheduled for Phase 6 / the following release.
 5. **Add the missing SPEC-054 test row** for the SRS free cap (ADR-0034 D4
-   says it should exist; SPEC-054 C5 currently doesn't cover SRS).
+   says it should exist; SPEC-054 C5 currently doesn't cover SRS). Added as
+   C8 in this phase.
 6. Note: the translation-key cleanup (`review.complete_desc`,
    `review.progress`) is already done and needs no further action.
 
