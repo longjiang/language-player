@@ -1,6 +1,6 @@
 # {$title.privacy_policy}
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon and all sub-domains and apps (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon, all sub-domains, and our mobile apps for iOS and Android (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Introduction**
 
@@ -47,7 +47,7 @@ At Zero to Hero we consider privacy to be a very important matter and as such we
 * Account information: your name, email address, password, language preferences and learning level.
 * Learning data: saved words, phrases, review progress, notes, playlists, liked videos, watch history, books and reading progress.
 * Content you upload or create: custom media, EPUB files, and text you ask us to translate or explain.
-* Payment information: when you purchase a subscription, payment is processed by Stripe, PayPal or the Apple App Store. We receive confirmation and subscription details, but we generally do not store your full card number.
+* Payment information: when you purchase a subscription, payment is processed by Stripe, PayPal, the Apple App Store or Google Play. We receive confirmation and subscription details, but we generally do not store your full card number.
 
 **Information collected automatically:**
 
@@ -77,7 +77,7 @@ We do not sell your personal information.
 We share personal information only with service providers who help us operate the Website, including:
 
 * hosting and database providers, including Supabase;
-* payment processors, including Stripe, PayPal and the Apple App Store;
+* payment processors, including Stripe, PayPal, the Apple App Store and Google Play;
 * translation and AI providers, including DeepSeek, when you use translation or AI explanation features;
 * analytics providers, including Google Analytics;
 * video platforms, including YouTube and Google, when you watch embedded videos.
