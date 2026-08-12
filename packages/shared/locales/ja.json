@@ -1166,7 +1166,6 @@
     "review": {
         "again": "もう一度",
         "again_hint": "完全に忘れた",
-        "complete_desc": "{count}枚のカードを復習しました。素晴らしいです！",
         "context_label": "文脈",
         "easy": "簡単",
         "easy_hint": "即座に思い出せる",
@@ -1175,7 +1174,6 @@
         "hard": "難しい",
         "hard_hint": "苦労して思い出した",
         "no_definition_available": "定義がありません。動画を見ながらこの単語を調べてください。",
-        "progress": "{done}完了 · {remaining}残り",
         "shortcut_hint": "<space></space>で裏返す、<k1></k1>–<k2></k2>で評価、<enter></enter>で続行",
         "show_definition": "定義を表示",
         "srs_new": "新しい",

@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Tekrar",
         "again_hint": "Tamamen unuttum",
-        "complete_desc": "{count} kartı gözden geçirdiniz. Harika iş çıkardınız!",
         "context_label": "Bağlam",
         "easy": "Kolay",
         "easy_hint": "Anında hatırlama",
@@ -1175,7 +1174,6 @@
         "hard": "Zor",
         "hard_hint": "Zorlukla hatırlandı",
         "no_definition_available": "Tanım mevcut değil. Videoları izlerken bu kelimeye bakın.",
-        "progress": "{done} tamamlandı · {remaining} kaldı",
         "shortcut_hint": "Çevirmek için <space></space>, puanlamak için <k1></k1>–<k2></k2>, devam etmek için <enter></enter> tuşuna bas",
         "show_definition": "Tanımı Göster",
         "srs_new": "yeni",

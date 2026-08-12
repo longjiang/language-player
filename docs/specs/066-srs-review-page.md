@@ -13,11 +13,11 @@
 The Review page is the spaced-repetition (SRS) flashcard surface for saved
 words. It turns the user's saved vocabulary into a per-language deck of due
 cards, shows each word's context and dictionary entry, lets the user rate how
-well they recalled it, and schedules the next review with an Anki-style
-spaced-repetition algorithm (Anki's modified SM-2). The page exists in both
-`apps/web` (route `/[l1]/[l2]/review`) and `apps/mobile` (tab route
-`(tabs)/(vocab)/review`). This spec documents the intended behavior on both
-platforms and records the current web ↔ mobile disparities.
+well they recalled it, and schedules the next review with FSRS — Anki's
+current spaced-repetition algorithm — via the `ts-fsrs` package. The page
+exists in both `apps/web` (route `/[l1]/[l2]/review`) and `apps/mobile` (tab
+route `(tabs)/(vocab)/review`). This spec documents the intended behavior on
+both platforms and records the current web ↔ mobile disparities.
 
 ## User Stories
 
@@ -44,9 +44,9 @@ sentence, with the target word highlighted. The learner then says how well they
 remembered it using four choices — Again, Hard, Good, Easy — and the app
 quietly adjusts when that word should come back: words that were forgotten
 return sooner, while words recalled easily come back later. A rating can be
-undone right away if it was a mistake. The session ends with a friendly
-all-done screen telling the learner when the next review is due. If there are
-no words saved yet, the page explains how to build a deck by saving words while
+undone right away if it was a mistake. The session ends with a simple
+"no more cards to review" message and the next review time. If there are no
+words saved yet, the page explains how to build a deck by saving words while
 watching videos; if nothing is due, it shows how many cards are waiting and
 when the next review will be. Free users can review up to a daily limit before
 being invited to upgrade, and learners control how many new words join the deck
@@ -54,15 +54,17 @@ each day.
 
 ## Intended SRS Algorithm
 
-The scheduling target is Anki's classic built-in scheduler — the modified SM-2
-that ships with Anki, not textbook SM-2 and not FSRS. The four rating buttons
-map one-to-one onto Anki's Again / Hard / Good / Easy, and every card moves
-through Anki's states: **new** → **learning** → **review**, with failed
-review cards dropping back into **relearning**.
+The scheduling target is FSRS (Free Spaced Repetition Scheduler) — Anki's
+current built-in algorithm — implemented with the maintained `ts-fsrs`
+package. The four rating buttons map one-to-one onto FSRS's Again / Hard /
+Good / Easy, and every card moves through the same states as Anki:
+**new** → **learning** → **review**, with failed review cards dropping back
+into **relearning**.
 
 Each saved word owns exactly one review card. The card tracks its state, the
-current learning step, an ease factor, the current interval, a lapse count,
-and timestamps for when it was created, last reviewed, and next due.
+current learning step, an FSRS memory state (difficulty + stability), the
+desired-retention target, a due time, review/lapse counters, and timestamps
+for when it was created and last reviewed. There is no ease factor.
 
 ### SM-2 (background)
 
@@ -74,18 +76,30 @@ it, the sooner it comes back. SM-2 tracks a per-item "ease factor" and a
 repetition streak, and after every review it uses a 0–5 quality rating (0 =
 complete failure, 5 = effortless recall) to decide the next interval.
 
-This feature does not follow textbook SM-2 directly. Anki keeps SM-2's ease
-factor and interval-multiplication idea, but changes the rating scale, treats
-learning-stage failures differently, and adds relearning for lapsed review
-cards. The intended behavior is Anki's variant, described below.
+Anki's classic scheduler was a modified SM-2, and Anki's current scheduler
+(FSRS) is a different, model-based algorithm. This feature follows Anki's
+current algorithm, described below.
 
-### Target: Anki-style scheduler
+### Target: FSRS (Anki's current scheduler)
+
+FSRS is based on the "Three Component Model of Memory". Each card has:
+
+- **Difficulty (D)** — how inherently hard the word is to retain.
+- **Stability (S)** — how long the memory lasts: the time for recall
+  probability to fall from ~100% to 90%.
+- **Retrievability (R)** — the estimated probability of recalling the card
+  today, which decreases as time passes.
+
+A rating updates D and S through FSRS's learned parameters, and the next
+interval is the time until R is expected to fall to the **desired retention**
+target (default 90%). `ts-fsrs` ships with well-tested default parameters
+(trained on hundreds of millions of real reviews) and owns the whole state
+machine; the app persists the card state it returns.
 
 **Card states**
 
 - **New** — never rated; due as soon as it enters the deck.
 - **Learning** — working through the initial steps (default `1m`, `10m`).
-  Failures here do not affect the card's future ease.
 - **Review** — graduated; scheduled in days.
 - **Relearning** — a graduated card that was failed; works through the
   relearning step (default `10m`) before returning to Review.
@@ -96,39 +110,35 @@ cards. The intended behavior is Anki's variant, described below.
 - **Again** — back to the first step (`1m`).
 - **Hard** — repeats the current step (a blend between Again and Good; on the
   first step it behaves like Again).
-- **Good** — advances one step; on the final step the card graduates to Review
-  with the graduating interval (`1d`).
-- **Easy** — graduates immediately with the easy interval (`4d`).
-- Ease is unaffected by learning-stage ratings.
+- **Good** — advances one step; on the final step the card graduates to
+  Review.
+- **Easy** — graduates immediately.
+- Learning-stage ratings do not update the memory state.
 
 **Review cards**
 
 | Rating | Effect |
 |---|---|
-| Again | Fail — enter Relearning (`10m`); ease −20 points (floor 130%); interval becomes current × 0.5 when the card exits relearning (min 1 day) |
-| Hard | Pass — ease −15 points; interval × 1.2 |
-| Good | Pass — interval × ease; ease unchanged |
-| Easy | Pass — interval × ease × 1.3; ease +15 points |
+| Again | Fail — enter Relearning (`10m`); stability drops significantly, difficulty increases |
+| Hard | Pass — stability increases slightly (or stays the same); difficulty increases moderately |
+| Good | Pass — stability increases; difficulty changes very little |
+| Easy | Pass — stability increases significantly; difficulty decreases moderately |
 
-Hard / Good / Easy are additionally multiplied by the interval modifier
-(default 1.0). Ease is stored as a multiplier (2.5 default, 1.3 floor), and
-intervals are rounded to whole days. Anki's other safeguards apply: a maximum
-interval cap, no interval shorter than the previous one except on failure, and
-small random "fuzz" so cards rated identically don't stick together.
+The next interval is derived from the updated stability and the desired
+retention target, not from interval multipliers.
 
 **Relearning**
 
 - A failed review card enters Relearning at the first step (`10m`).
-- Again / Hard behave like the learning-stage buttons; they do not decrease
-  ease further (the ease drop happened when the card failed).
-- Good (or Easy) exits Relearning back to Review with the reduced interval
-  (current × 0.5).
+- Again / Hard behave like the learning-stage buttons; they do not make the
+  memory state worse again (the damage happened when the card failed).
+- Good (or Easy) exits Relearning back to Review.
 
 **Late reviews**
 
-If a card is answered later than scheduled, the delay is factored into the
-next interval as a small bonus, so returning after a break doesn't reset the
-card — Anki's "delay" behavior.
+FSRS handles late reviews natively: retrievability is computed from actual
+elapsed time, so returning after a break naturally reschedules the card
+without resetting it.
 
 **Queue order**
 
@@ -139,24 +149,33 @@ card — Anki's "delay" behavior.
 - New cards enter through the daily budget below and are interleaved with due
   cards during a session.
 
-### How this differs from textbook SM-2 and from the current app
+**Settings**
 
-| | Textbook SM-2 | Anki (intended) | Current app (`sm2.ts`) |
-|---|---|---|---|
-| Answer scale | 0–5 quality | 4 buttons: Again / Hard / Good / Easy | 4 buttons mapped to qualities 0 / 2 / 4 / 5 |
-| Hard on a review card | fail (quality < 3) | pass with slower growth | fail — same as Again |
-| Again on a review card | reset to 1 day | relearn (`10m`), ease −20, interval × 0.5 | re-show in 1 minute, ease unchanged |
-| First intervals | 1 day then 6 days | learning steps (`1m`, `10m`), graduate at `1d` | 1 day then 6 days |
-| Ease on failure | unchanged | decreased (Again −20, Hard −15) | unchanged |
-| Relearning | none | `10m` step; interval × 0.5 after a lapse | none |
-| Progress counter | consecutive-success streak | lifetime review count + lapse count | consecutive-success streak |
+Scheduler parameters stay at `ts-fsrs` defaults: desired retention 90%,
+learning steps `1m`/`10m`, relearning step `10m`. The only user-facing
+scheduling setting is the daily new-card limit
+(`SettingsContext.review.dailyNewLimit`, default 20). Per-user FSRS parameter
+optimization is a future enhancement, not required initially.
+
+### How this differs from the SM-2 variants and the current app
+
+| | Textbook SM-2 | Anki classic SM-2 | Anki FSRS (intended) | Current app (`sm2.ts`) |
+|---|---|---|---|---|
+| Answer scale | 0–5 quality | 4 buttons | 4 buttons | 4 buttons mapped to 0 / 2 / 4 / 5 |
+| Hard on a review card | fail (quality < 3) | pass with slower growth | pass with a small stability gain | fail — same as Again |
+| Again on a review card | reset to 1 day | relearn (`10m`), ease −20, interval × 0.5 | relearn (`10m`); stability drops sharply | re-show in 1 minute, ease unchanged |
+| Core variable | ease factor | ease factor | difficulty + stability | ease factor |
+| First intervals | 1 day then 6 days | learning steps (`1m`, `10m`), graduate at `1d` | learning steps (`1m`, `10m`), graduate per FSRS | 1 day then 6 days |
+| Retention tuning | none | interval modifiers / easy bonus | desired retention target | none |
+| Relearning | none | `10m` step; interval × 0.5 after a lapse | `10m` step; memory state already reduced | none |
+| Progress counter | consecutive-success streak | lifetime review count + lapse count | lifetime review count + lapse count | consecutive-success streak |
 
 ### Current implementation (gap)
 
-Today `packages/utils/src/sm2.ts` implements the textbook version: Again and
-Hard are both failures, a failure re-queues the card in 1 minute without
-touching ease, success graduates `1d` → `6d` → `interval × ease`, and there
-are no learning / relearning states. The intended Anki-style scheduler is
+Today `packages/utils/src/sm2.ts` implements textbook SM-2: Again and Hard
+are both failures, a failure re-queues the card in 1 minute without touching
+ease, success graduates `1d` → `6d` → `interval × ease`, and there are no
+learning / relearning states. The intended FSRS scheduler via `ts-fsrs` is
 **not yet implemented** on either platform — see [Documented Intent Not Yet
 Implemented](#documented-intent-not-yet-implemented-both-platforms).
 
@@ -173,11 +192,11 @@ passed or failed) are never displaced by newer saves.
 ### Undo and the free cap
 
 Undo restores the card to exactly the scheduling state it had before the last
-rating (including its state and current step) and returns it to the front of
-the session. For free users, each rating counts toward a daily cap of 20;
-undoing a rating restores the card's schedule and should also release that
-rating back to the daily budget (currently only the schedule is restored —
-see [Documented Intent Not Yet
+rating (including its memory state and current step) and returns it to the
+front of the session. For free users, each rating counts toward a daily cap
+of 20; undoing a rating restores the card's schedule and should also release
+that rating back to the daily budget (currently only the schedule is
+restored — see [Documented Intent Not Yet
 Implemented](#documented-intent-not-yet-implemented-both-platforms)). Both
 platforms share this algorithm through the same utility implementation, so a
 card rated on web and a card rated on mobile follow identical scheduling.
@@ -196,33 +215,38 @@ Store shapes and sync flows follow [ARCH-011 — Settings
 Architecture](../arch/011-settings-architecture.md) and [ARCH-014 — Saved Words
 Data Flow](../arch/014-saved-words-data-flow.md).
 
-### Card fields (`SrsFields`)
+### Card fields
 
-Defined in `packages/utils/src/sm2.ts`. The current shape predates the
-Anki-style target; the intended card tracks at least:
+The current `SrsFields` (in `packages/utils/src/sm2.ts`) predates the FSRS
+target. Intended: persist the card state returned by `ts-fsrs`, plus deck
+bookkeeping:
 
 | Field | Meaning |
 |---|---|
-| `state` | `new` / `learning` / `review` / `relearning` (intended — not in the current model) |
-| `step` | Index of the current learning / relearning step (intended — not in the current model) |
-| `ease` | Ease factor as a multiplier (default 2.5, floor 1.3) |
-| `interval` | Current interval in days (0 = new / learning) |
-| `repetitions` | Today: consecutive successful reviews (streak), reset by any failure. Intended: replaced by an Anki-style lifetime review count + `lapses` |
-| `lapses` | Times a review card failed and entered relearning (intended — not in the current model) |
-| `nextReview` | Unix-ms timestamp when the card becomes due (minutes for learning steps, days for reviews) |
+| `state` | `new` / `learning` / `review` / `relearning` |
+| `step` | Index of the current learning / relearning step |
+| `difficulty` | FSRS difficulty (D) — how hard the word is to retain |
+| `stability` | FSRS stability (S) — how long the memory lasts (days) |
+| `due` | When the card becomes due (minutes for learning steps, days for reviews) |
 | `lastReview` | Unix-ms timestamp of the last rating |
+| `reps` | Lifetime review count |
+| `lapses` | Times a review card failed and entered relearning |
 | `createdAt` | Unix-ms timestamp of card creation (new-deck budgeting) |
+
+The classic SM-2 fields (`ease`, `interval`, `repetitions`) are replaced by
+the FSRS memory state.
 
 ### Ratings → scheduling effects
 
-Intended Anki-style behavior:
+Intended FSRS behavior (learning steps applied by the app, memory-state
+updates by `ts-fsrs`):
 
 | Rating | New / learning card | Review card |
 |---|---|---|
-| Again | Back to first step (`1m`); ease unaffected | Relearning (`10m`); ease −20; interval × 0.5 when it exits relearning |
-| Hard | Repeats the current step; ease unaffected | Pass: ease −15; interval × 1.2 |
-| Good | Next step; final step graduates at `1d` | Pass: interval × ease; ease unchanged |
-| Easy | Graduates immediately at `4d` | Pass: interval × ease × 1.3; ease +15 |
+| Again | Back to first step (`1m`); memory state untouched | Relearning (`10m`); stability drops significantly, difficulty increases |
+| Hard | Repeats the current step; memory state untouched | Pass: stability increases slightly, difficulty increases moderately |
+| Good | Next step; final step graduates | Pass: stability increases, difficulty changes very little |
+| Easy | Graduates immediately | Pass: stability increases significantly, difficulty decreases moderately |
 
 The current implementation instead maps the buttons to SM-2 qualities
 (Again → 0, Hard → 2, Good → 4, Easy → 5): Again and Hard both fail (60-second
@@ -248,15 +272,12 @@ recomputes the queue on the next store change (rating, removal) or page reload.
    `nextReview` ascending (oldest due first).
 6. The header shows three counts:
    - blue = new — never rated;
-   - red = again — currently a failed card (successful-review streak 0); with
-     the intended Anki states this becomes learning / relearning;
-   - green = review — currently a successful-review streak of 1 or more; with
-     the intended Anki states this becomes `state: review`.
+   - red = again — learning / relearning;
+   - green = review — `state: review`.
 
-The current green count is a streak, not a lifetime total: any failure resets
-it to 0, so even a frequently reviewed word that was just forgotten shows up
-as red. Under the intended Anki model the classification follows the card's
-state instead of the streak.
+The classification follows the card's state (new / learning / review), not a
+success streak. The current streak-based counts are a by-product of the
+textbook implementation and disappear with the FSRS migration.
 
 Note: the "no cards due" copy says queued words are "for tomorrow's batch", but
 the deck actually fills as soon as a blue slot frees up — `planNewDeck` reruns
@@ -307,7 +328,7 @@ app.
 - Context sentence(s) from the saved word, tokenized and tappable.
 - A text-action menu (copy / speak / AI explain / translate) on the context.
 - Source attribution (video/book title + localized date).
-- SRS info line: `{interval}d` (or "new"), ease (`2.5x`), reviewed count.
+- SRS info line: `{interval}d` (or "new") and reviewed count.
 - A "Show Definition" action to flip the card.
 - No tap-to-rate zones on the card — rating is only via the explicit buttons
   ([SPEC-049 §6](049-mobile-feature-parity.md#6-review-flashcards)).
@@ -373,12 +394,13 @@ app.
 
 - Four buttons: Again (red), Hard (orange), Good (green), Easy (blue), each
   with a hint.
-- After a rating: the Anki-style scheduler is applied, the card leaves the due
-  queue, and a colored toast offers Undo for 3 seconds.
-- Undo restores the card's previous `SrsFields`, clears the completed state if
-  it was the last card, and returns the undone card to the top of the queue.
-- When all due cards are rated, show "All Done for Now!" plus the next review
-  date.
+- After a rating: `ts-fsrs` updates the card's memory state, the card leaves
+  the due queue, and a colored toast offers Undo for 3 seconds.
+- Undo restores the card's previous scheduling state (memory state and step),
+  clears the completed state if it was the last card, and returns the undone
+  card to the top of the queue.
+- When all due cards are rated, show "No more cards to review" plus the next
+  review time (current behavior).
 
 ### Interaction & input
 
@@ -402,7 +424,9 @@ app.
   watching videos.
 - **No cards due**: card total + deck name, next review date (or "save more
   words"), and how many words are queued.
-- **All done**: completion message + next review date.
+- **All done**: "No more cards to review" + next review time (current
+  behavior; no session stats or progress line — the blue/red/green header
+  counts are the progress indicator).
 
 ### Loading states
 
@@ -456,16 +480,12 @@ app.
 
 ## Documented Intent Not Yet Implemented (Both Platforms)
 
-- **Anki-style scheduling**: `packages/utils/src/sm2.ts` implements textbook
-  SM-2 — Again and Hard both fail, failures re-queue in 1 minute without
-  touching ease, success graduates `1d` → `6d` → `interval × ease`, and there
-  are no learning / relearning states. The intended Anki-style scheduler
-  (card states, learning steps, per-button ease effects, lapse handling) is
-  not implemented on either platform.
-- **All-done stats**: SPEC-023 R4, SPEC-048, and SPEC-059 describe an
-  "all-done + stats" state, and `review.complete_desc` /
-  `review.progress` translation keys exist — but neither page renders stats or
-  a done/remaining progress line today.
+- **FSRS scheduling via `ts-fsrs`**: `packages/utils/src/sm2.ts` implements
+  textbook SM-2 — Again and Hard both fail, failures re-queue in 1 minute
+  without touching ease, success graduates `1d` → `6d` → `interval × ease`,
+  and there are no learning / relearning states. The intended FSRS scheduler
+  (card states, learning steps, memory state) is not implemented on either
+  platform.
 - **"No more new cards today" message**: SPEC-023 R6 expects a message plus a
   remaining-new count of 0; neither page shows this (the blue count just drops
   to zero).
@@ -487,9 +507,11 @@ app.
 
 ## Dependencies
 
+- `ts-fsrs` — the FSRS scheduler (MIT, actively maintained by the Open
+  Spaced Repetition community; the same algorithm Anki uses today).
 - `packages/utils/src/sm2.ts` — `SrsFields`, `sm2`, `newCard`, `isNewCard`,
-  `planNewDeck`, store types. Currently textbook SM-2; needs to become the
-  Anki-style scheduler described in this spec.
+  `planNewDeck`, store types. Currently textbook SM-2; to be replaced by the
+  `ts-fsrs` integration described in this spec.
 - `packages/utils/src/dictionary-cache.ts` — shared batched lookup + entry
   cache.
 - `apps/web/src/hooks/use-srs.ts` / `apps/mobile/hooks/use-srs.ts` — store +
@@ -513,33 +535,296 @@ Related docs: [SPEC-049 §6](049-mobile-feature-parity.md#6-review-flashcards),
 [ARCH-011](../arch/011-settings-architecture.md),
 [ARCH-014](../arch/014-saved-words-data-flow.md).
 
+## Prebuilt Scheduler Packages (Research)
+
+Researched 2026-08-11. Decision: **adopt `ts-fsrs`** — MIT-licensed,
+actively maintained TypeScript implementation of FSRS (v5.4.1, FSRS-6), the
+same algorithm Anki uses today. Alternatives reviewed and rejected:
+
+- [anki-sm-2](https://github.com/open-spaced-repetition/anki-sm-2) (Python) —
+  Anki's classic SM-2 algorithm; not JS/TS and AGPL-3.0.
+- [dolphinsr](https://www.npmjs.com/package/dolphinsr) (JS) — Anki-flavored
+  SM-2 with learning/relearning; unmaintained since 2017, Flow types, and it
+  deviates from Anki.
+- [@open-spaced-repetition/sm-2](https://github.com/open-spaced-repetition/sm-2-ts)
+  and [supermemo](https://www.npmjs.com/package/supermemo) (TS) — textbook
+  SM-2 only (0–5 ratings, no Anki states).
+
+## Implementation Work Plan
+
+Phases are ordered so the monorepo stays green (typecheck + unit tests) after
+every phase. The only phases that change the persisted card shape are 1 and 2;
+everything after that is incremental.
+
+### Phase 0 — Spec & verification reconciliation (no production code)
+
+Purpose: remove contradictions between the intended behavior, the behavioral
+test matrix, and the backend-cap contract before any code changes. All three
+files must agree before Phase 2 starts.
+
+1. **Reconcile SPEC-023 Tier 4 with this spec.** R4 expects "All done! … with
+   stats (cards reviewed, time)" but this spec defines the all-done state
+   without session stats. R6 expects "No more new cards today" + a remaining
+   new count of 0, but the new-deck model refills from the saved-word pool
+   during a session. Decide and document:
+   - All-done: keep "No more cards to review" + next review time, no stats
+     (current spec). Update SPEC-023 R4 to match.
+   - "No more new cards today": define it as the state where every saved word
+     has been rated at least once (the unrated pool is empty), shown in the
+     all-done/no-due states. Update SPEC-023 R6 to that definition, or drop
+     the message if the product doesn't want it. Do not build a
+     `createdAt`-based counter — it contradicts `planNewDeck`'s rolling-deck
+     semantics.
+2. **Fix `remainingNewCardsToday()` semantics or remove it.** The current
+   helpers count by card `createdAt`, which does not match the deck model
+   (newest-saved-first window that refills during a session). Either rewrite
+   them to count unrated saved words in the current deck, or remove them with
+   the Phase 6 cleanup. Do not render them until this is decided.
+3. **Define the backend free-cap counting contract (needed by Phase 5).**
+   Decide:
+   - Ratings are counted at a rating boundary, not on generic `PUT /srs/cards`
+     sync writes (undo restores and offline outbox replays are also PUTs and
+     would double-count).
+   - Idempotency: each interactive rating carries a client-generated rating id
+     (e.g. `${userId}:${wordId}:${Date.now()}` or a UUID) recorded in a
+     per-user review-log row so replays/retries count once.
+   - Undo records a matching decrement/void event so the cap is restored.
+   - Trial users: the backend must mirror the clients' `isPro` logic
+     (`user_subscriptions`; an active trial is Pro-equivalent). Free = 20
+     reviews per UTC day.
+4. **Decide the legacy-field compatibility window.** Recommended: keep writing
+   deprecated `ease`, `interval`, `repetitions`, `nextReview` fields alongside
+   FSRS fields for one release cycle so old installed clients don't crash on
+   new-shape cards and old clients don't clobber FSRS state with malformed
+   cards. Document the removal version in this spec.
+5. **Add the missing SPEC-054 test row** for the SRS free cap (ADR-0034 D4
+   says it should exist; SPEC-054 C5 currently doesn't cover SRS).
+6. Note: the translation-key cleanup (`review.complete_desc`,
+   `review.progress`) is already done and needs no further action.
+
+Gate: SPEC-023, SPEC-054, and this spec agree; no code changes.
+
+### Phase 1 — Additive FSRS core (`packages/utils`)
+
+Build the scheduler and migration utilities without wiring them into any app.
+Old `sm2.ts` stays untouched, so web and mobile keep compiling and passing
+tests.
+
+1. **Add `ts-fsrs` to `packages/utils`** (v5.4.1, FSRS-6). Verify
+   `package-lock.json` keeps the cross-platform optional binaries after
+   install (npm prune gotcha in AGENTS.md). Local npm cache on this machine
+   currently has a root-owned-cache `EPERM`; install with a fresh cache dir or
+   fix cache ownership before starting.
+2. **Deduplicate the card type.** `SrsFields` is currently declared twice —
+   `packages/shared/src/types.ts` and `packages/utils/src/sm2.ts`. Move the
+   single source of truth into `packages/shared`, re-export it from
+   `packages/utils`, and make `sm2.ts` import it. Consumers already import
+   from both packages, so a single declaration prevents silent drift.
+3. **Create `packages/utils/src/fsrs-scheduler.ts`** exposing:
+   - `newCard()` — wraps `createEmptyCard()`, sets `lastReview`/`createdAt` to
+     now so the existing `lastReview`-based LWW merge keeps working, `due` =
+     now (due immediately).
+   - `rate(card, rating)` — maps Again/Hard/Good/Easy to `ts-fsrs` `Rating`,
+     calls `scheduler.next(card, now, rating)`, returns a serialized card.
+   - `isDue(card)` / `getDueCards(...)` — due-time comparisons.
+   - `isNewCard(card)` — `state === 'new'` (this changes `planNewDeck`
+     semantics from reps-based to state-based; verify the deck-refill tests
+     still pass).
+   - `serializeSrsCard(card)` / `deserializeSrsCard(json)` — persist the
+     **full** ts-fsrs `Card` (`state`, `due`, `stability`, `difficulty`,
+     `elapsed_days`, `scheduled_days`, `learning_steps`, `reps`, `lapses`,
+     `last_review`) with Dates as Unix ms, plus app fields (`createdAt`,
+     `lastReview`). Do not persist only the 8-field table in this spec —
+     ts-fsrs needs the derived fields to compute the next state.
+   - `normalizeSrsCard(card)` — legacy (`ease`/`interval`/`repetitions`/
+     `nextReview`) → FSRS: unreviewed cards become `new` with `due =
+     createdAt/now`; graduated cards keep their existing `nextReview` as `due`
+     and seed `stability` from the SM-2 interval (e.g. `stability = interval`
+     days) with default difficulty. Never reset due times during migration.
+   - `migrateSrsStore(store)` / `versionSrsStore(store)` — store-level
+     migration to `v: 2`.
+4. **Unit tests** (`packages/utils/src/fsrs-scheduler.test.ts` or alongside
+   the sm2 tests):
+   - Full state machine: new → learning → review → relearning, all four
+     ratings on each state.
+   - Late-review rescheduling.
+   - Serialization round-trip (Date → ms → Date).
+   - Legacy → FSRS migration, including the "preserve due" rule.
+   - `planNewDeck` with state-based `isNewCard` (rated cards leave the blue
+     deck; unrated pool refills).
+   - LWW merge with mixed old/new shapes (newer `lastReview` wins but output
+     is always normalized FSRS).
+5. **Verification:** `npx turbo typecheck`; targeted `vitest` run for the new
+   tests.
+
+Gate: tree green, no production behavior changed.
+
+### Phase 2 — Atomic cutover (shared shape + stores + both apps)
+
+This is one coordinated change, not per-platform sequential steps: every
+consumer of `SrsFields` (both `useSrs` hooks, both review pages, saved-words
+page, api-client, tests) changes together. Landing it as a single commit/PR
+is the only ordering where typecheck stays green throughout.
+
+1. **Store versioning & migration on read.** Add `v: 2` to `SrsProgressStore`.
+   Run `normalizeSrsCard`/`migrateSrsStore` at **every** read boundary:
+   - Web `useSrs` localStorage parse and `GET /srs` merge.
+   - Mobile `useSrs` SecureStore parse and `GET /srs` merge.
+   - Mobile pull-merge bridge (`getEntityCache('srs_card')` rows) — normalize
+     each payload state before it enters the store, and merge rather than
+     blindly replacing the whole cards record so mixed old/new shapes can't
+     resurrect.
+   - Outbox enqueue: validate the serialized state shape before
+     `enqueueSyncOp` (the sync-entities schema already requires `state:
+     object`; add shape validation in the hook).
+2. **Update `useSrs` on both platforms:**
+   - `updateCard` writes the full serialized FSRS card.
+   - Remove mobile's malformed fallback default (`{ ease: 2.5, ...,
+     lastReview: '', nextReview: '' }` — string timestamps break LWW); use
+     `newCard()` as the fallback.
+   - Web's `reps === 0` data-loss warning needs FSRS semantics (`review → new`
+     transitions only), or it will false-positive on undo.
+   - Keep `lastReview` updated on every rating so multi-device merge still
+     works.
+3. **Update both review pages:**
+   - Replace `sm2()`/`RATING_MAP` with `rate(card, rating)`.
+   - Header counts (blue/red/green) computed from the **whole language deck**
+     (`store.cards[l2Code]` filtered to saved words), not the due-only `cards`
+     array — otherwise learning/relearning cards waiting on `1m`/`10m` steps
+     and future review cards disappear from the counts.
+   - SRS info line: show "new" or the interval derived from `due`, drop
+     `ease`; keep the reviewed count from `reps`.
+   - Web reads `SettingsContext.review.dailyNewLimit` (disparity 3); mobile
+     already does.
+   - Undo stores and restores the full previous serialized card (memory state
+     + step + due), not just `nextReview`.
+   - All-done/no-due next-review calculations use `due` instead of
+     `nextReview`.
+   - Keep legacy compat fields written on every card (Phase 0 decision).
+4. **Update the saved-words page** `getSrsStatus()` — it reads old fields and
+   its "new" check (`nextReview === 0`) is already dead. Map to FSRS
+   state/due (`new`/`learning`/`review`/`relearning` → existing dot colors).
+5. **Update tests:** rewrite the `sm2()`-dependent blocks in
+   `apps/web/src/hooks/use-srs.test.ts`; add store migration + normalization +
+   mixed-shape merge tests. `npx turbo typecheck` alone is not sufficient —
+   run `vitest`.
+6. **Manual QA (both apps):** migrate a real account with existing saved
+   words/cards; card front → reveal → rate (all four) → undo; empty states;
+   no-context card; free cap; translation toggle; cross-device merge (web +
+   mobile on the same account); offline rating on mobile, then sync.
+
+Gate: typecheck + unit tests green; manual migration/QA pass on web and
+mobile.
+
+### Phase 3 — Mobile parity & guard fixes
+
+Independent, small commits after the cutover.
+
+1. **Real cloud-hydration guard (disparity 8).** `useCloudUserData().loaded`
+   on web is a placeholder that flips true immediately, and the review page's
+   `savedWordsEmpty` condition can trap a genuinely empty account in an
+   infinite spinner. Add a `cloudHydrated` flag to the web saved-words
+   provider and the mobile `SavedWordsContext`, set when the row-API fetch
+   completes (even for an empty response), and gate the review pages on it.
+   Port that flag, not the current condition.
+2. **Mobile orphan pruning (disparity 4).** Add `pruneOrphans()` to mobile
+   `useSrs` (mirror web) and call it from the review screen on load; wire the
+   review screen's unsave path to remove the SRS card too (mobile currently
+   has `removeWord` imported but unused, so unsaving leaves the card until a
+   future prune).
+3. **L1-translated entry lookup (disparity 6).** Mobile's
+   `lib/dictionary-cache.ts` already re-exports the L1 cache helpers; add a
+   mobile `lookupL1Text()` (port of web's `apps/web/src/lib/l1-lookup.ts`,
+   using `POST /dictionary/lookup` with `l1`) and fetch on reveal for
+   non-English L1, deduped/cached per entry id, with the offline fallback
+   retained.
+4. **No-context headword on web (disparity 2).** Mobile already shows the
+   headword as the card front; add the same fallback to web.
+5. **Empty-state CTA on mobile (disparity 14).** Add the Explore-videos action
+   to mobile's no-words/no-due states.
+
+Gate: typecheck + manual pass on both platforms for each item.
+
+### Phase 4 — Free-cap client fixes & undo
+
+1. **Undo decrements the daily counter** on both platforms: restore the card's
+   schedule (already implemented) **and** release the rating back to the free
+   budget (`reviewsDoneToday` and the `lpSrsReviewsDone:<userId>:<date>` key).
+2. **Fix the UTC-midnight rollover.** Web memoizes the counter key on
+   `session?.user?.id` only, so it never recomputes at midnight without a
+   remount; mobile recomputes per render but nothing forces a render at the
+   boundary. Add a day-boundary tick (or derive the key during render and
+   re-read it on a timer) on both platforms.
+3. **Web cap UI (disparity 9).** Disable + dim rating buttons at the cap like
+   mobile (currently they stay enabled and `handleRate` no-ops).
+4. **Unit tests** for counter increment/decrement/rollover (extract the
+   counter logic into a small shared helper if needed for testability).
+
+Gate: typecheck + manual free-user session crossing the cap and undoing across
+the boundary.
+
+### Phase 5 — Backend free cap
+
+Depends on the Phase 0 contract. This is a separate, larger change; do not
+combine it with Phase 4.
+
+1. **Schema:** per-user review-log table (or equivalent) keyed by the client
+   rating id, with the UTC-day count for free users; void/decrement rows for
+   undo.
+2. **Flask:** enforce the cap at the rating boundary (not on generic
+   `PUT /srs/cards`, which also carries sync replays and undo restores).
+   Return an explicit 429/403-style response the clients can render as the
+   upgrade banner. Mirror the clients' Pro/trial determination from
+   `user_subscriptions`.
+3. **Clients:** keep the local counter as a UX hint only; reconcile from the
+   server response so a failed/rejected rating doesn't permanently burn the
+   budget. Update the free-cap UI copy to match the server response.
+4. **Tests:** backend tests in `zerotohero-python-server/test_app.py` (cap
+   counting, idempotent replays, undo decrement, trial exemption) plus the
+   SPEC-054 row added in Phase 0.
+
+Gate: backend tests pass; web + mobile manual free-session QA against the local
+Flask API (server started by the user, per repo rules).
+
+### Phase 6 — Dead code & backward-compat cleanup
+
+1. **Remove dead imports/helpers** flagged in disparity 16 (`fetchingEntries`
+   is referenced by a render branch that never fires — remove the branch too;
+   `handleSpeak` either wire it or delete it; unused `normalizeInstances`
+   import; the mobile `removeWord` import is used by Phase 3, so only what
+   remains).
+2. **Retire the textbook SM-2 implementation** (`sm2()`, old `SrsFields`
+   docs) once no code or test references it; keep the deck-budgeting helpers
+   (`planNewDeck`, `createSrsStore`, `getLanguageCards`) with FSRS semantics.
+3. **Deprecate `/srs/settings` (disparity 17), don't delete it.** Old
+   installed clients still enqueue `srs_settings` ops; keep the Flask route
+   and the `utils_sync.py` handler accepting writes (or turn it into a no-op
+   like the bookshelf handler) until old clients are phased out. Stop
+   reading/writing it from new code, update the admin page's
+   `srs.dailyNewLimit` display, and remove the `srs_settings` entity from new
+   sync writes.
+4. **Remove or rewrite `remainingNewCardsToday()`/`countNewCardsToday()`** per
+   the Phase 0 decision.
+5. **Docs:** mark SPEC-066 complete/current, update SPEC-053's syncable-data
+   table (SRS writes already go through the outbox), and note the
+   legacy-field removal version.
+
+Gate: `rg` shows no app code references the removed helpers; typecheck + full
+test suite green.
+
 ## Verification
 
 - [SPEC-023 Tier 4](023-mobile-e2e-testing.md) (R1–R7) is the behavioral test
-  matrix.
+  matrix, as revised in Phase 0.
 - [SPEC-048 §R](048-mobile-release-plan.md) (mobile) and
   [SPEC-059 §R](059-web-release-qa-checklist.md) (web) are the human QA
   checklists.
-- After any change: `npx turbo typecheck`, and manually exercise card front →
-  reveal → rate → undo, empty states, the free cap, and translation toggle on
-  both apps.
-
-## Open Questions
-
-1. Should the all-done state show session stats (cards reviewed, time) using
-   the existing `review.complete_desc` / `review.progress` keys?
-2. Should web switch the review page to read `SettingsContext.review.dailyNewLimit`
-   (matching mobile and SPEC-015), or should Settings → Review write through to
-   the SRS store on both platforms?
-3. Should mobile port the orphan-prune behavior so cards never resurrect after
-   a word is removed? (Unsave itself already exists via the entry card's
-   bookmark button, so no separate review-page unsave is needed.)
-4. Should mobile port the L1-translated entry lookup for non-English L1 users?
-5. Should the free daily cap move to Flask so web, mobile, and any future
-   clients share one enforcement point (as ADR-0034 intended)?
-6. Should web port mobile's headword fallback for words saved without context?
-7. Should the Anki scheduler constants (learning steps, graduating / easy
-   intervals, easy bonus, hard / new interval multipliers) stay fixed at
-   Anki's defaults, or become user-configurable like Anki's deck options?
-8. Should `repetitions` become Anki-style lifetime review + lapse counts, or
-   stay a consecutive-success streak for the header classification?
+- Each phase has its own gate above: typecheck + unit tests + manual QA before
+  moving to the next phase.
+- Run `npx turbo typecheck` after every phase and `npx vitest run` for the
+  package/web test suites. Never run `npx tsc` from the repo root (heap OOM /
+  silent-failure warning).
+- Phase 2 is the single cutover: run typecheck + the full unit suite
+  immediately before and after it, and manually exercise card front → reveal →
+  rate → undo, empty states, the free cap, translation toggle, and legacy-data
+  migration on both apps.

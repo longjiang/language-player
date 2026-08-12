@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Ponownie",
         "again_hint": "Całkowicie zapomniałem",
-        "complete_desc": "Przejrzałeś {count} karty. Świetna robota!",
         "context_label": "Kontekst",
         "easy": "Łatwe",
         "easy_hint": "Natychmiastowe przypomnienie",
@@ -1175,7 +1174,6 @@
         "hard": "Trudne",
         "hard_hint": "Przypomniane z trudem",
         "no_definition_available": "Brak dostępnej definicji. Wyszukaj to słowo podczas oglądania filmów.",
-        "progress": "{done} zrobione · {remaining} pozostało",
         "shortcut_hint": "Naciśnij <space></space> aby odwrócić, <k1></k1>–<k2></k2> aby ocenić, <enter></enter> aby kontynuować",
         "show_definition": "Pokaż definicję",
         "srs_new": "nowy",

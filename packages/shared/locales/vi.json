@@ -1166,7 +1166,6 @@
     "review": {
         "again": "Lại nữa",
         "again_hint": "Quên hoàn toàn",
-        "complete_desc": "Bạn đã ôn tập {count} thẻ. Làm tốt lắm!",
         "context_label": "Ngữ cảnh",
         "easy": "Dễ",
         "easy_hint": "Nhớ ngay lập tức",
@@ -1175,7 +1174,6 @@
         "hard": "Khó",
         "hard_hint": "Nhớ lại một cách khó khăn",
         "no_definition_available": "Không có định nghĩa. Tra từ này khi xem video.",
-        "progress": "Đã làm {done} · Còn lại {remaining}",
         "shortcut_hint": "Nhấn <space></space> để lật, <k1></k1>–<k2></k2> để đánh giá, <enter></enter> để tiếp tục",
         "show_definition": "Hiển thị định nghĩa",
         "srs_new": "mới",
