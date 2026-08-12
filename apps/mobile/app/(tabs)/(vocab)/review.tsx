@@ -713,6 +713,7 @@ export default function ReviewScreen() {
 
   const currentCard = cards[currentIndex];
   if (!currentCard) return null;
+  const currentCardState = fsrs.getCardState(currentCard.srs);
 
   const entry = l1Entry ?? currentEntry;
   const savedWord = currentCard.word;
@@ -735,19 +736,19 @@ export default function ReviewScreen() {
           {cardCounts.newCount > 0 && (
             <View className="flex-row items-center gap-1">
               <View className="h-2 w-2 rounded-full bg-blue-500" />
-              <Text className="text-xs text-blue-600">{cardCounts.newCount}</Text>
+              <Text className={`text-xs text-blue-600 ${currentCardState === 'new' ? 'underline' : ''}`}>{cardCounts.newCount}</Text>
             </View>
           )}
           {cardCounts.againCount > 0 && (
             <View className="flex-row items-center gap-1">
               <View className="h-2 w-2 rounded-full bg-red-500" />
-              <Text className="text-xs text-red-600">{cardCounts.againCount}</Text>
+              <Text className={`text-xs text-red-600 ${currentCardState === 'learning' || currentCardState === 'relearning' ? 'underline' : ''}`}>{cardCounts.againCount}</Text>
             </View>
           )}
           {cardCounts.reviewCount > 0 && (
             <View className="flex-row items-center gap-1">
               <View className="h-2 w-2 rounded-full bg-green-500" />
-              <Text className="text-xs text-green-600">{cardCounts.reviewCount}</Text>
+              <Text className={`text-xs text-green-600 ${currentCardState === 'review' ? 'underline' : ''}`}>{cardCounts.reviewCount}</Text>
             </View>
           )}
         </View>

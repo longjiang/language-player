@@ -293,7 +293,8 @@ recomputes the queue on the next store change (rating, removal) or page reload.
    - green = review — `state: review`.
    Counts are computed from the whole language deck (saved words only), not
    just the current due queue, so cards waiting on a learning step or
-   scheduled for later still appear.
+   scheduled for later still appear. The count matching the current card's
+   state is underlined (Anki-style).
 
 The classification follows the card's state (new / learning / review), not a
 success streak. The current streak-based counts are a by-product of the

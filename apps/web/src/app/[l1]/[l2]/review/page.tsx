@@ -475,6 +475,7 @@ export default function ReviewPage() {
   );
 
   const currentCard = cards[currentIndex];
+  const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
 
   // Target highlight for the context sentence: match by ALL of the saved
   // word's forms (head + inflections) and by dictionary-entry id — not just
@@ -710,19 +711,19 @@ export default function ReviewPage() {
             {cardCounts.newCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-                <span className="text-blue-600 dark:text-blue-400 tabular-nums">{cardCounts.newCount}</span>
+                <span className={`text-blue-600 dark:text-blue-400 tabular-nums ${currentCardState === 'new' ? 'underline decoration-2 underline-offset-4' : ''}`}>{cardCounts.newCount}</span>
               </span>
             )}
             {cardCounts.againCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-                <span className="text-red-600 dark:text-red-400 tabular-nums">{cardCounts.againCount}</span>
+                <span className={`text-red-600 dark:text-red-400 tabular-nums ${currentCardState === 'learning' || currentCardState === 'relearning' ? 'underline decoration-2 underline-offset-4' : ''}`}>{cardCounts.againCount}</span>
               </span>
             )}
             {cardCounts.reviewCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-                <span className="text-green-600 dark:text-green-400 tabular-nums">{cardCounts.reviewCount}</span>
+                <span className={`text-green-600 dark:text-green-400 tabular-nums ${currentCardState === 'review' ? 'underline decoration-2 underline-offset-4' : ''}`}>{cardCounts.reviewCount}</span>
               </span>
             )}
           </span>
