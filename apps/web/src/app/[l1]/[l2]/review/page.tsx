@@ -15,9 +15,21 @@ import {
   newRatingId,
 } from '@langplayer/utils';
 import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
-import { getCachedEntries, enqueueLookupWords, getL1CachedEntry } from '@langplayer/utils';
+import {
+  getCachedEntries,
+  getCachedEntryById,
+  setCachedEntryById,
+  enqueueLookupWords,
+  getL1CachedEntry,
+} from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
-import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
+import {
+  decomposeWordId,
+  isSameEntryId,
+  type SrsFields,
+  type DictionaryEntry,
+  type SavedLexicalItemRecord,
+} from '@langplayer/shared';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -93,6 +105,8 @@ export default function ReviewPage() {
    *  Batch lookup returns English-only definitions for speed; this provides the
    *  translated version when the user actually interacts with a card. */
   const [l1Entry, setL1Entry] = useState<DictionaryEntry | null>(null);
+  /** True while the exact saved entry is being fetched for the back side. */
+  const [exactEntryLoading, setExactEntryLoading] = useState<Record<string, boolean>>({});
   /** Track the current card's word ID to detect unsave-triggered card changes. */
   const lastCardIdRef = useRef<string | null>(null);
   /** Previous card SRS state saved before a rating, used by the Undo action. */
@@ -522,15 +536,59 @@ export default function ReviewPage() {
     lookupL1Text(form, l2Code, l1.code)
       .then((results) => {
         if (cancelled) return;
-        // Try to match the saved word's entry ID; fall back to first result
-        const match = results.find((e) => e.id === card.word.id) ?? results[0] ?? null;
+        // Only accept the exact saved entry — a text-lookup can return a
+        // different entry (e.g. EDICT instead of the saved LLM entry) and
+        // would make the bookmark read "not saved".
+        const match =
+          results.find((e) => isSameEntryId(card.word.id, e.id, baseCode(l2.code))) ?? null;
         setL1Entry(match);
       })
       .catch(() => {
         // Silently fail — the English def from cache is still shown
       });
     return () => { cancelled = true; };
-  }, [showDefinition, currentIndex, cards, l1.code, l2Code, l1Entry?.id]);
+  }, [showDefinition, currentIndex, cards, l1.code, l2Code, l1Entry?.id, currentEntry?.id]);
+
+  // ── Resolve the exact saved entry before showing the back side ──
+  // The batch lookup caches curated entries by text; a saved LLM-generated
+  // entry may not be in the cache yet, so fetch it by its exact id on reveal.
+  // Never render a different entry under the saved word's id — that makes
+  // the bookmark read "not saved" for an entry that is actually saved.
+  useEffect(() => {
+    const sw = currentCard?.word;
+    if (!sw || !showDefinition || currentEntry) return;
+    const id = sw.id;
+    if (getCachedEntryById(l2Code, id)) return;
+
+    let cancelled = false;
+    setExactEntryLoading((prev) => ({ ...prev, [id]: true }));
+    (async () => {
+      try {
+        const decomposed = decomposeWordId(id, baseCode(l2.code));
+        if (decomposed) {
+          const res = await fetch(
+            `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2.code)}&dict=${encodeURIComponent(decomposed.dict)}&id=${encodeURIComponent(decomposed.id)}&l1=${baseCode(l1.code)}`,
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const entry = data?.entry as DictionaryEntry | undefined;
+            const matches = !!entry && isSameEntryId(id, entry.id, baseCode(l2.code));
+            if (!cancelled && matches) {
+              // Cache under the saved id even when the API returns the scoped
+              // form (e.g. "ja-…" for a saved "llm-ja-…" id).
+              setCachedEntryById(l2Code, entry.id === id ? entry : { ...entry, id });
+            }
+          }
+        }
+      } catch {
+        // Network failure — fall through to the no-definition state.
+      }
+      if (!cancelled) {
+        setExactEntryLoading((prev) => ({ ...prev, [id]: false }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [showDefinition, currentCard?.word.id, currentEntry, l2Code, l1.code, l2.code]);
 
   // Clear L1 entry when card changes
   useEffect(() => {
@@ -840,6 +898,10 @@ export default function ReviewPage() {
                   router.push(buildEntryRoute(l1.code, l2.code, dictId, e.id));
                 }}
               />
+            ) : exactEntryLoading[currentCard.word.id] ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
             ) : (
               <p className="text-muted-foreground italic text-sm text-center">
                 {t('review.no_definition_available')}

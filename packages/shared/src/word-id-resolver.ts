@@ -81,3 +81,21 @@ export function isWordSaved(
 ): boolean {
   return hasSavedWord(l2Code, wordId);
 }
+
+/**
+ * True when an API entry id refers to the same entry as a saved word id.
+ *
+ * Saved LLM word ids carry the `llm-` prefix (e.g. "llm-ja-abc123") while the
+ * `/dictionary/entry` API may return the scoped id ("ja-abc123"). Exact match
+ * wins; otherwise the saved id is decomposed and compared to the scoped form.
+ */
+export function isSameEntryId(
+  savedWordId: string,
+  entryId: string | undefined,
+  l2: string,
+): boolean {
+  if (!entryId) return false;
+  if (entryId === savedWordId) return true;
+  const decomposed = decomposeWordId(savedWordId, l2);
+  return !!decomposed && entryId === decomposed.id;
+}

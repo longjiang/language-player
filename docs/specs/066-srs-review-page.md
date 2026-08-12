@@ -373,6 +373,10 @@ app.
   definitions).
 - The current card is resolved reactively from the shared cache, trying every
   saved form (`forms[]`) and matching by entry id.
+- On reveal, if the exact saved entry is not in the cache yet (common for
+  LLM-generated entries), it is fetched by its id
+  (`GET /dictionary/entry?dict=&id=`) and cached; the back side shows a
+  spinner until the exact entry arrives instead of a mismatched one.
 - For non-English L1, the card back additionally fetches an L1-translated
   entry via `lookupL1Text` (deduped and cached per entry id).
 - If no entry is available, show `review.no_definition_available`.
@@ -380,7 +384,10 @@ app.
 **Mobile**
 
 - Current card resolves from the entry-by-id cache, the saved word's
-  `canonicalEntry`, or the offline dictionary.
+  `canonicalEntry` (only when its id matches the saved word id), or the
+  offline dictionary. On reveal, the exact entry is fetched by id if missing
+  (offline first, then network), so a saved LLM-generated entry never shows a
+  different entry as "not saved".
 - The next 3 cards' context sentences are pre-tokenized and their lemmas
   pre-looked-up while the user reviews the current card.
 - The current word's entry is enqueued through the same shared batched lookup.
