@@ -4,10 +4,11 @@ import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { lemmatizeLogger, translationLogger } from '@/lib/logger';
+import { lemmatizeLogger, readerLogger, translationLogger } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 const { log } = lemmatizeLogger;
+const { log: paginationLog, logwarn: paginationWarn } = readerLogger;
 
 interface UseEpubPaginationOptions {
   text: string;
@@ -28,8 +29,9 @@ interface UseEpubPaginationOptions {
   onBlockChange?: (blockIndex: number) => void;
   /** Measure the hidden view in chunks (large whole-book streams). Default: all at once. */
   measureChunkSize?: number;
-  /** When true, estimate page breaks from text length instead of measuring
-   *  hidden views — much faster and non-blocking for large EPUBs. */
+  /** When true, use web-style lazy measured pagination: only a window around
+   *  the current page is measured, heights are cached, and the total page
+   *  count is an estimate. Used by the whole-book EPUB reader. */
   estimate?: boolean;
 }
 
@@ -37,6 +39,11 @@ interface UseEpubPaginationOptions {
 const TRANSLATE_CHUNK_SIZE = 10;
 /** How many times a suspected-truncated paragraph is retried before accepting it. */
 const MAX_TRUNCATED_ATTEMPTS = 3;
+/** Max blocks rendered into the hidden measuring window at once. 160 keeps a
+ *  page turn cheap on mobile while still covering several pages per pass. */
+const WINDOW_LIMIT = 160;
+/** Fallback vertical gap between blocks when measured tops aren't available. */
+const DEFAULT_BLOCK_GAP = 12;
 
 const TERMINAL_PUNCTUATION = /[。．.！？!?…"”』」"')\]]$/;
 
@@ -63,6 +70,141 @@ function estimateBlockHeight(block: ContentBlock, contentWidth: number): number 
   return lines * 24 + 12;
 }
 
+interface BlockMetrics {
+  height: number;
+  top: number;
+  /** Slice-start this metric was measured against (layout.y is slice-relative). */
+  origin: number;
+}
+
+/** All blocks in [start, end) have been measured by the hidden view. */
+function allMeasured(
+  metrics: (BlockMetrics | undefined)[],
+  start: number,
+  end: number,
+  origin: number,
+): boolean {
+  for (let i = start; i < end; i++) {
+    if (!metrics[i] || metrics[i]!.origin !== origin) return false;
+  }
+  return true;
+}
+
+/** Vertical gap between block i-1 and block i, using real layout tops when possible. */
+function gapBetween(metrics: (BlockMetrics | undefined)[], i: number): number {
+  const prev = metrics[i - 1];
+  const cur = metrics[i];
+  if (prev && cur && prev.origin === cur.origin) {
+    return Math.max(0, cur.top - (prev.top + prev.height));
+  }
+  return DEFAULT_BLOCK_GAP;
+}
+
+/** Height + inter-block gap for one block (measured when available, else estimated). */
+function blockCost(
+  block: ContentBlock,
+  i: number,
+  start: number,
+  metrics: (BlockMetrics | undefined)[],
+  contentWidth: number,
+): number {
+  const m = metrics[i];
+  const height = m ? m.height : estimateBlockHeight(block, contentWidth);
+  const gap = i > start ? gapBetween(metrics, i) : 0;
+  return height + gap;
+}
+
+/**
+ * Walk forward from `start` and return the first block that no longer fits
+ * (exclusive end index). `needsMore` means the whole window fit and the
+ * measuring window must be extended before a break can be trusted.
+ */
+function computeForwardEnd(
+  blocks: ContentBlock[],
+  start: number,
+  end: number,
+  availableHeight: number,
+  metrics: (BlockMetrics | undefined)[],
+  contentWidth: number,
+): { endIndex: number; needsMore: boolean } {
+  let accumulated = 0;
+  for (let i = start; i < end; i++) {
+    const cost = blockCost(blocks[i]!, i, start, metrics, contentWidth);
+    if (accumulated + cost > availableHeight && accumulated > 0) {
+      return { endIndex: i, needsMore: false };
+    }
+    accumulated += cost;
+  }
+  return { endIndex: end, needsMore: end < blocks.length };
+}
+
+/**
+ * Walk backward from `end` (exclusive) and return the first block that starts
+ * the page ending at `end`. Extends backward when the whole window fits.
+ */
+function computeBackwardStart(
+  blocks: ContentBlock[],
+  start: number,
+  end: number,
+  availableHeight: number,
+  metrics: (BlockMetrics | undefined)[],
+  contentWidth: number,
+): { startIndex: number; needsMore: boolean } {
+  let accumulated = 0;
+  let prevStart = 0;
+  for (let i = end - 1; i >= start; i--) {
+    const m = metrics[i];
+    const height = m ? m.height : estimateBlockHeight(blocks[i]!, contentWidth);
+    const gap = i < end - 1 ? gapBetween(metrics, i + 1) : 0;
+    const cost = height + gap;
+    if (accumulated + cost > availableHeight && accumulated > 0) {
+      prevStart = i + 1;
+      break;
+    }
+    accumulated += cost;
+  }
+  return { startIndex: prevStart, needsMore: prevStart === 0 && start > 0 };
+}
+
+/** Average chars per page sampled from up to 3 measured page breaks. */
+function sampleCharsPerPage(
+  blocks: ContentBlock[],
+  start: number,
+  end: number,
+  availableHeight: number,
+  metrics: (BlockMetrics | undefined)[],
+  contentWidth: number,
+): number | null {
+  const breaks: number[] = [];
+  let accumulated = 0;
+  for (let i = start; i < end && breaks.length < 4; i++) {
+    const cost = blockCost(blocks[i]!, i, start, metrics, contentWidth);
+    if (accumulated + cost > availableHeight && accumulated > 0) {
+      breaks.push(i);
+      accumulated = cost;
+    } else {
+      accumulated += cost;
+    }
+  }
+  if (breaks.length === 0) return null;
+  const pageStarts = [start, ...breaks.slice(0, 3)];
+  const pageEnds = [...breaks.slice(0, 3), end];
+  let chars = 0;
+  let count = 0;
+  for (let k = 0; k < Math.min(3, pageStarts.length); k++) {
+    let pageChars = 0;
+    for (let j = pageStarts[k]!; j < pageEnds[k]! && j < blocks.length; j++) {
+      const b = blocks[j]!;
+      if (b.kind === 'text') pageChars += b.text.length;
+    }
+    if (pageChars > 0) {
+      chars += pageChars;
+      count++;
+    }
+  }
+  return count > 0 ? Math.max(100, Math.round(chars / count)) : null;
+}
+
 interface UseEpubPaginationReturn {
   blocks: ContentBlock[] | null;
   visibleBlocks: ContentBlock[] | null;
@@ -76,14 +218,27 @@ interface UseEpubPaginationReturn {
   prevPage: () => void;
   nextPage: () => void;
   goToPage: (page: number) => void;
+  /** Jump straight to a global block index (search / links / restore). */
+  goToBlock: (blockIndex: number) => void;
   /** Map a global block index to the page containing it (in-book search). */
   blockPage: (blockIndex: number) => number;
-  handleMeasureBlock: (index: number, height: number) => void;
+  handleMeasureBlock: (index: number, height: number, top?: number, origin?: number) => void;
   /** Called by PaginatedReader as blocks scroll near the viewport (SPEC-019 O2). */
   onVisibleBlocksChange: (globalIndices: number[]) => void;
+  /** Report the real page-display viewport size from the reader ScrollView. */
+  handleViewportLayout: (width: number, height: number) => void;
   contentWidth: number;
   /** Number of blocks currently rendered in the hidden measuring view. */
   measuredWindow: number;
+  /** First global block index rendered in the hidden measuring view (lazy mode). */
+  measureStart: number;
+  /** Exclusive end index rendered in the hidden measuring view (lazy mode). */
+  measureEnd: number;
+  /** Bumped when the measuring window must remount (layout/translation changes). */
+  measureNonce: number;
+  /** Whether the current page has a previous / next page (lazy mode). */
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
 export function useEpubPagination({
@@ -92,7 +247,6 @@ export function useEpubPagination({
   onAnchorChange, onBlockChange, measureChunkSize, estimate = false,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
-  const contentWidth = windowWidth - 32;
 
   const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
   const [measuredWindow, setMeasuredWindow] = useState(0);
@@ -107,8 +261,35 @@ export function useEpubPagination({
   /** Global block indices currently near the reader viewport (lazy loading). */
   const [visibleIndices, setVisibleIndices] = useState<number[]>([]);
   const visibleIndicesKeyRef = useRef('');
+  /** Real reader viewport (lazy mode; window dimensions are the fallback). */
+  const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
+  const contentWidth = viewportSize ? viewportSize.width - 32 : windowWidth - 32;
+  const availableHeight = estimate
+    ? Math.max(120, viewportSize ? viewportSize.height : windowHeight - 260)
+    : windowHeight - 260;
+  /** Lazy mode: current page boundaries in the global block stream. */
+  const [lazyPageStart, setLazyPageStart] = useState<number | null>(null);
+  const [lazyPageEnd, setLazyPageEnd] = useState<number | null>(null);
+  const [totalPagesEstimate, setTotalPagesEstimate] = useState(0);
+  const [measureStart, setMeasureStart] = useState(0);
+  const [measureEnd, setMeasureEnd] = useState(0);
+  const [measureNonce, setMeasureNonce] = useState(0);
+  const [metricsVersion, setMetricsVersion] = useState(0);
 
   const blockHeightsRef = useRef<(number | null)[]>([]);
+  const blockMetricsRef = useRef<(BlockMetrics | undefined)[]>([]);
+  const totalCharsRef = useRef(0);
+  const prefixCharsRef = useRef<number[]>([]);
+  const charsPerPageRef = useRef(400);
+  const charsPerPageLayoutRef = useRef<string | null>(null);
+  const layoutKeyRef = useRef<string | null>(null);
+  const requestRef = useRef<{ id: number; dir: 'forward' | 'backward'; base: number; pageNumber: number } | null>(null);
+  const requestIdRef = useRef(0);
+  const measureOriginRef = useRef(0);
+  const measureRafRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
+  const lazySeekKeyRef = useRef<string | null>(null);
+  const waitingMissingRef = useRef(-1);
+  const prevShowTranslationRef = useRef(showTranslation);
   const tokenLoadGenRef = useRef(0);
   const translateGenRef = useRef(0);
   const translateDoneRef = useRef<Set<number>>(new Set());
@@ -131,17 +312,80 @@ export function useEpubPagination({
 
   const visibleSet = useMemo(() => new Set(visibleIndices), [visibleIndices]);
 
+  /** Real viewport from PaginatedReader's ScrollView (width/height of the
+   *  actual page-display area — no guessing chrome/padding). */
+  const handleViewportLayout = useCallback((width: number, height: number) => {
+    paginationLog(`[Pagination] 📐 viewport reported ${width}x${height}`);
+    setViewportSize(prev => {
+      if (!prev || Math.abs(prev.width - width) > 1 || Math.abs(prev.height - height) > 1) {
+        paginationLog(`[Pagination] 📐 viewport changed ${prev?.width ?? '?'}x${prev?.height ?? '?'} → ${width}x${height}`);
+        return { width, height };
+      }
+      return prev;
+    });
+  }, []);
+
+  /** Start a lazy measurement pass from a global block boundary. */
+  const startLazyMeasure = useCallback((
+    dir: 'forward' | 'backward',
+    base: number,
+    pageNumber: number,
+  ) => {
+    if (!blocks || blocks.length === 0) return;
+    const id = ++requestIdRef.current;
+    requestRef.current = { id, dir, base, pageNumber };
+    const start = dir === 'forward' ? base : Math.max(0, base - WINDOW_LIMIT);
+    const end = dir === 'forward' ? Math.min(blocks.length, base + WINDOW_LIMIT) : base;
+    paginationLog(`[Pagination] ▶ start measure request #${id} dir=${dir} base=${base} page=${pageNumber} window=[${start},${end}) blocks=${blocks.length}`);
+    setHasMeasured(false);
+    setPage(pageNumber - 1);
+    if (dir === 'forward') {
+      setMeasureStart(start);
+      setMeasureEnd(end);
+      measureOriginRef.current = base;
+    } else {
+      setMeasureStart(start);
+      setMeasureEnd(end);
+      measureOriginRef.current = start;
+    }
+  }, [blocks]);
+
+  /** Estimated 1-based page number for a global block (lazy mode). */
+  const lazyPageForBlock = useCallback((index: number) => {
+    const before = prefixCharsRef.current[index] ?? 0;
+    return Math.max(1, Math.floor(before / Math.max(1, charsPerPageRef.current)) + 1);
+  }, []);
+
   // ── Reset all state when resetKey changes ──
   useEffect(() => {
+    paginationLog(`[Pagination] 🔁 reset resetKey=${resetKey ?? 'null'}`);
     setBlocks(null);
     setPageBreaks([]);
     setHasMeasured(false);
     setMeasuredBlockCount(0);
+    setLazyPageStart(null);
+    setLazyPageEnd(null);
+    setTotalPagesEstimate(0);
+    setMeasureStart(0);
+    setMeasureEnd(0);
+    setMeasureNonce(0);
+    setMetricsVersion(0);
     setTokenCache({});
     setBlockTranslations({});
     setVisibleIndices([]);
     visibleIndicesKeyRef.current = '';
     blockHeightsRef.current = [];
+    blockMetricsRef.current = [];
+    totalCharsRef.current = 0;
+    prefixCharsRef.current = [];
+    charsPerPageRef.current = 400;
+    charsPerPageLayoutRef.current = null;
+    layoutKeyRef.current = null;
+    requestRef.current = null;
+    requestIdRef.current += 1;
+    measureOriginRef.current = 0;
+    waitingMissingRef.current = -1;
+    lazySeekKeyRef.current = null;
     setPage(0);
     anchorSeenRef.current = false;
     prevPageRef.current = 0;
@@ -150,43 +394,92 @@ export function useEpubPagination({
 
   // ── Use pre-parsed whole-book blocks, or parse markdown when text changes ──
   useEffect(() => {
-    if (preParsedBlocks) { setBlocks(preParsedBlocks); return; }
+    if (preParsedBlocks) {
+      paginationLog(`[Pagination] 📚 pre-parsed blocks=${preParsedBlocks.length}`);
+      setBlocks(preParsedBlocks);
+      return;
+    }
     if (!text.trim()) { setBlocks(null); return; }
-    try { setBlocks(parseMarkdownBlocks(text)); } catch { setBlocks(null); }
+    try {
+      const parsed = parseMarkdownBlocks(text);
+      paginationLog(`[Pagination] 📚 parsed markdown blocks=${parsed.length}`);
+      setBlocks(parsed);
+    } catch {
+      paginationWarn(`[Pagination] ⚠️ markdown parse failed — blocks=null`);
+      setBlocks(null);
+    }
   }, [text, preParsedBlocks]);
 
-  // ── Estimated pagination (EPUB whole-book mode) ──
-  // Avoids rendering every block in a hidden measuring view, which can freeze
-  // the app on large books. Page breaks are approximate but instant.
+  // ── Lazy pagination (EPUB whole-book mode, web-style) ──
+  // Build prefix chars once for estimated page numbers / go-to-page jumps.
+  useEffect(() => {
+    if (!estimate || !blocks) return;
+    let total = 0;
+    const prefix: number[] = new Array(blocks.length);
+    for (let i = 0; i < blocks.length; i++) {
+      prefix[i] = total;
+      const b = blocks[i]!;
+      if (b.kind === 'text') total += b.text.length;
+    }
+    totalCharsRef.current = total;
+    prefixCharsRef.current = prefix;
+    charsPerPageRef.current = 400;
+    charsPerPageLayoutRef.current = null;
+    setTotalPagesEstimate(Math.max(1, Math.ceil(total / 400)));
+    paginationLog(`[Pagination] 📊 built prefix chars blocks=${blocks.length} totalChars=${total} initialTotalPages=${Math.max(1, Math.ceil(total / 400))}`);
+  }, [estimate, blocks]);
+
+  // Start the first lazy measurement at the requested location (or page 1).
   useEffect(() => {
     if (!estimate || !blocks || blocks.length === 0) return;
-    const availableHeight = windowHeight - 260;
-    const breaks: number[] = [];
-    let accumulated = 0;
-    for (let i = 0; i < blocks.length; i++) {
-      const h = estimateBlockHeight(blocks[i]!, contentWidth);
-      if (accumulated + h > availableHeight && accumulated > 0) {
-        breaks.push(i);
-        accumulated = h;
-      } else {
-        accumulated += h;
-      }
+    const seekKey = `${blocks.length}:${initialBlockIndex ?? ''}:${initialAnchor ?? ''}`;
+    if (lazySeekKeyRef.current === seekKey) return;
+    lazySeekKeyRef.current = seekKey;
+
+    let base = 0;
+    if (initialBlockIndex != null && initialBlockIndex >= 0 && initialBlockIndex < blocks.length) {
+      base = initialBlockIndex;
+    } else if (initialAnchor) {
+      const found = blocks.findIndex(
+        (b): b is TextBlock =>
+          b.kind === 'text'
+          && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item')
+          && b.text.includes(initialAnchor),
+      );
+      if (found >= 0) base = found;
     }
-    setPageBreaks(breaks);
-    setPage(0);
-    setHasMeasured(true);
-    setMeasuredWindow(blocks.length);
-  }, [estimate, blocks, windowHeight, contentWidth]);
+    paginationLog(`[Pagination] 🎯 initial seek initialBlockIndex=${initialBlockIndex ?? 'null'} initialAnchor=${initialAnchor ? JSON.stringify(initialAnchor.slice(0, 40)) : 'null'} → base=${base}`);
+    startLazyMeasure('forward', base, lazyPageForBlock(base));
+  }, [estimate, blocks, initialAnchor, initialBlockIndex, lazyPageForBlock, startLazyMeasure]);
 
   // ── Reset measurement state when text (chapter) changes ──
   useEffect(() => {
+    paginationLog(`[Pagination] 🔁 text reset textLength=${text.length}`);
     setPageBreaks([]);
     setHasMeasured(false);
     setMeasuredBlockCount(0);
+    setLazyPageStart(null);
+    setLazyPageEnd(null);
+    setTotalPagesEstimate(0);
+    setMeasureStart(0);
+    setMeasureEnd(0);
+    setMeasureNonce(0);
+    setMetricsVersion(0);
     setTokenCache({});
     setVisibleIndices([]);
     visibleIndicesKeyRef.current = '';
     blockHeightsRef.current = [];
+    blockMetricsRef.current = [];
+    totalCharsRef.current = 0;
+    prefixCharsRef.current = [];
+    charsPerPageRef.current = 400;
+    charsPerPageLayoutRef.current = null;
+    layoutKeyRef.current = null;
+    requestRef.current = null;
+    requestIdRef.current += 1;
+    measureOriginRef.current = 0;
+    waitingMissingRef.current = -1;
+    lazySeekKeyRef.current = null;
     setPage(0);
     setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
   }, [text, measureChunkSize]);
@@ -202,33 +495,166 @@ export function useEpubPagination({
   // ── Compute visible blocks for the current page ──
   const visibleBlocks = useMemo(() => {
     if (!blocks) return null;
+    if (estimate) {
+      if (lazyPageStart == null) return null;
+      const end = lazyPageEnd ?? blocks.length;
+      return blocks.slice(lazyPageStart, end);
+    }
     if (pageBreaks.length === 0) return blocks;
     const start = page === 0 ? 0 : pageBreaks[page - 1]!;
     const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
     return blocks.slice(start, end);
-  }, [blocks, pageBreaks, page]);
+  }, [blocks, pageBreaks, page, estimate, lazyPageStart, lazyPageEnd]);
 
-  const totalPages = Math.max(1, pageBreaks.length + 1);
+  const totalPages = estimate ? Math.max(1, totalPagesEstimate) : Math.max(1, pageBreaks.length + 1);
 
   // ── Block height measurement ──
-  const handleMeasureBlock = useCallback((index: number, height: number) => {
+  const handleMeasureBlock = useCallback((index: number, height: number, top = 0, origin?: number) => {
+    const prevMetric = blockMetricsRef.current[index];
+    blockMetricsRef.current[index] = {
+      height,
+      top,
+      origin: origin ?? (estimate ? measureOriginRef.current : 0),
+    };
+    if (estimate) {
+      const changed = !prevMetric
+        || Math.abs(prevMetric.height - height) > 1
+        || Math.abs(prevMetric.top - top) > 1
+        || prevMetric.origin !== (origin ?? measureOriginRef.current);
+      if (changed && measureRafRef.current == null) {
+        paginationLog(`[Pagination] 📏 scheduling metrics flush (rAF)`);
+        measureRafRef.current = requestAnimationFrame(() => {
+          measureRafRef.current = null;
+          setMetricsVersion(v => {
+            paginationLog(`[Pagination] 📏 metrics flush → version=${v + 1}`);
+            return v + 1;
+          });
+        });
+      }
+      return;
+    }
     const wasUnmeasured = blockHeightsRef.current[index] == null;
     blockHeightsRef.current[index] = height;
     if (wasUnmeasured) setMeasuredBlockCount(c => c + 1);
-  }, []);
+  }, [estimate]);
+
+  // ── Lazy page computation: runs once the measuring window has real heights ──
+  useEffect(() => {
+    if (!estimate || !blocks || blocks.length === 0) return;
+    const req = requestRef.current;
+    if (!req || req.id !== requestIdRef.current) return;
+    if (measureEnd <= measureStart) return;
+    if (!allMeasured(blockMetricsRef.current, measureStart, measureEnd, measureOriginRef.current)) {
+      let missing = 0;
+      for (let i = measureStart; i < measureEnd; i++) {
+        const m = blockMetricsRef.current[i];
+        if (!m || m.origin !== measureOriginRef.current) missing++;
+      }
+      if (waitingMissingRef.current !== missing) {
+        waitingMissingRef.current = missing;
+        paginationLog(`[Pagination] ⏳ waiting for measurements: missing=${missing}/${measureEnd - measureStart} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current}`);
+      }
+      return;
+    }
+    waitingMissingRef.current = -1;
+    paginationLog(`[Pagination] ⚙ compute request #${req.id} dir=${req.dir} base=${req.base} targetPage=${req.pageNumber} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} available=${availableHeight} width=${contentWidth}`);
+
+    if (req.dir === 'forward') {
+      const res = computeForwardEnd(
+        blocks,
+        req.base,
+        measureEnd,
+        availableHeight,
+        blockMetricsRef.current,
+        contentWidth,
+      );
+      if (res.needsMore) {
+        paginationLog(`[Pagination] ⚙ forward needsMore endIndex=${res.endIndex} — extending window`);
+        const nextEnd = Math.min(blocks.length, measureEnd + WINDOW_LIMIT);
+        if (nextEnd > measureEnd) {
+          setMeasureEnd(nextEnd);
+          return;
+        }
+      }
+      const endIndex = res.endIndex;
+      const end = endIndex < blocks.length ? endIndex : null;
+      paginationLog(`[Pagination] ⚙ forward break → page=[${req.base},${end ?? 'END'}) pageBlocks=${end == null ? blocks.length - req.base : end - req.base}`);
+      const layoutKey = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}`;
+      if (charsPerPageLayoutRef.current !== layoutKey) {
+        charsPerPageLayoutRef.current = layoutKey;
+        const sampled = sampleCharsPerPage(
+          blocks,
+          req.base,
+          measureEnd,
+          availableHeight,
+          blockMetricsRef.current,
+          contentWidth,
+        );
+        if (sampled) {
+          charsPerPageRef.current = sampled;
+          paginationLog(`[Pagination] 📄 charsPerPage sample=${sampled} totalPages=${Math.max(1, Math.ceil(totalCharsRef.current / sampled))}`);
+        } else {
+          paginationLog(`[Pagination] 📄 charsPerPage sample skipped (no break in window)`);
+        }
+      }
+      if (totalCharsRef.current > 0) {
+        const nextTotal = Math.max(1, Math.ceil(totalCharsRef.current / Math.max(1, charsPerPageRef.current)));
+        setTotalPagesEstimate(nextTotal);
+        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${nextTotal}`);
+      } else {
+        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${totalPagesEstimate}`);
+      }
+      layoutKeyRef.current = layoutKey;
+      setLazyPageStart(req.base);
+      setLazyPageEnd(end);
+      setPage(req.pageNumber - 1);
+      setHasMeasured(true);
+      requestRef.current = null;
+      return;
+    }
+
+    const res = computeBackwardStart(
+      blocks,
+      measureStart,
+      req.base,
+      availableHeight,
+      blockMetricsRef.current,
+      contentWidth,
+    );
+    if (res.needsMore) {
+      paginationLog(`[Pagination] ⚙ backward needsMore prevStart=${res.startIndex} — extending window`);
+      const nextStart = Math.max(0, measureStart - WINDOW_LIMIT);
+      if (nextStart < measureStart) {
+        measureOriginRef.current = nextStart;
+        setMeasureStart(nextStart);
+        return;
+      }
+    }
+    paginationLog(`[Pagination] ⚙ backward break → page=[${res.startIndex},${req.base}) pageBlocks=${req.base - res.startIndex}`);
+    paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${res.startIndex} end=${req.base}`);
+    setLazyPageStart(res.startIndex);
+    setLazyPageEnd(req.base);
+    setPage(req.pageNumber - 1);
+    setHasMeasured(true);
+    requestRef.current = null;
+  }, [
+    estimate, blocks, measureStart, measureEnd, metricsVersion,
+    availableHeight, contentWidth, showTranslation,
+  ]);
 
   // ── Compute page breaks when all blocks have been measured ──
   useEffect(() => {
-    if (!blocks || blocks.length === 0) return;
+    if (estimate || !blocks || blocks.length === 0) return;
     const heights = blockHeightsRef.current;
     if (heights.length < blocks.length || heights.some(h => h == null)) return;
 
-    const availableHeight = windowHeight - 260;
     const breaks: number[] = [];
     let accumulated = 0;
 
     for (let i = 0; i < blocks.length; i++) {
-      const h = heights[i]!;
+      const m = blockMetricsRef.current[i]!;
+      const gap = i > 0 ? gapBetween(blockMetricsRef.current, i) : 0;
+      const h = m.height + gap;
       if (accumulated + h > availableHeight && accumulated > 0) {
         breaks.push(i);
         accumulated = h;
@@ -240,10 +666,47 @@ export function useEpubPagination({
     setPageBreaks(breaks);
     setPage(0);
     setHasMeasured(true);
-  }, [blocks, windowHeight, measuredBlockCount]);
+  }, [blocks, availableHeight, measuredBlockCount, estimate]);
+
+  // ── Lazy mode: re-measure when the real viewport / translation layout changes ──
+  useEffect(() => {
+    if (!estimate || !blocks || !hasMeasured || lazyPageStart == null) return;
+    const key = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}`;
+    if (layoutKeyRef.current === key) return;
+    paginationLog(`[Pagination] 🔄 layout changed ${layoutKeyRef.current ?? 'none'} → ${key} — remeasuring from block ${lazyPageStart}`);
+    layoutKeyRef.current = key;
+    blockMetricsRef.current = [];
+    setMeasureNonce(n => n + 1);
+    setMetricsVersion(v => v + 1);
+    startLazyMeasure('forward', lazyPageStart, page + 1);
+  }, [
+    estimate, blocks, hasMeasured, lazyPageStart, page,
+    contentWidth, availableHeight, showTranslation, startLazyMeasure,
+  ]);
+
+  // ── Non-lazy readers: invalidate measurements when translation is toggled ──
+  useEffect(() => {
+    if (estimate || !blocks) return;
+    if (prevShowTranslationRef.current !== showTranslation) {
+      prevShowTranslationRef.current = showTranslation;
+      setHasMeasured(false);
+      setMeasuredBlockCount(0);
+      setPageBreaks([]);
+      blockHeightsRef.current = [];
+      blockMetricsRef.current = [];
+    }
+  }, [estimate, blocks, showTranslation]);
+
+  // Cancel a pending measurement rAF on unmount.
+  useEffect(() => {
+    return () => {
+      if (measureRafRef.current != null) cancelAnimationFrame(measureRafRef.current);
+    };
+  }, []);
 
   // ── Seek to initialAnchor / initialBlockIndex after measurement completes ──
   useEffect(() => {
+    if (estimate) return;
     if ((!initialAnchor && initialBlockIndex == null) || !blocks || !hasMeasured) return;
     if (anchorSeenRef.current) return;
     anchorSeenRef.current = true;
@@ -492,26 +955,69 @@ export function useEpubPagination({
 
   // ── Page navigation ──
   const prevPage = useCallback(() => {
+    if (estimate) {
+      if (!blocks || lazyPageStart == null || lazyPageStart <= 0) return;
+      paginationLog(`[Pagination] ◀ prevPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd ?? 'END'} → measure backward`);
+      startLazyMeasure('backward', lazyPageStart, page);
+      setBlockTranslations({});
+      return;
+    }
     if (page <= 0) return;
     setPage(p => p - 1);
     setBlockTranslations({});
-  }, [page]);
+  }, [estimate, blocks, lazyPageStart, page, startLazyMeasure]);
 
   const nextPage = useCallback(() => {
+    if (estimate) {
+      if (!blocks || lazyPageEnd == null || lazyPageEnd >= blocks.length) return;
+      paginationLog(`[Pagination] ▶ nextPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd} → measure forward`);
+      startLazyMeasure('forward', lazyPageEnd, page + 2);
+      setBlockTranslations({});
+      return;
+    }
     if (page >= totalPages - 1) return;
     setPage(p => p + 1);
     setBlockTranslations({});
-  }, [page, totalPages]);
+  }, [estimate, blocks, lazyPageEnd, page, totalPages, startLazyMeasure]);
 
   const goToPage = useCallback((target: number) => {
+    if (estimate) {
+      if (!blocks) return;
+      const clamped = Math.max(0, Math.min(target, Math.max(0, totalPages - 1)));
+      if (clamped === page) return;
+      const targetChars = Math.min(
+        totalCharsRef.current,
+        clamped * Math.max(1, charsPerPageRef.current),
+      );
+      let lo = 0;
+      let hi = blocks.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if ((prefixCharsRef.current[mid] ?? 0) > targetChars) hi = mid;
+        else lo = mid + 1;
+      }
+      const base = Math.max(0, lo - 1);
+      paginationLog(`[Pagination] 🔢 goToPage target=${clamped} chars=${targetChars} → block ${base}`);
+      startLazyMeasure('forward', base, clamped + 1);
+      setBlockTranslations({});
+      return;
+    }
     const clamped = Math.max(0, Math.min(target, totalPages - 1));
     if (clamped === page) return;
     setPage(clamped);
     setBlockTranslations({});
-  }, [page, totalPages]);
+  }, [estimate, blocks, page, totalPages, startLazyMeasure]);
 
   // ── Map a global block index to the page that contains it (in-book search) ──
   const blockPage = useCallback((blockIndex: number): number => {
+    if (estimate) {
+      if (!blocks) return 0;
+      if (lazyPageStart != null && blockIndex >= lazyPageStart
+        && (lazyPageEnd == null || blockIndex < lazyPageEnd)) {
+        return page;
+      }
+      return lazyPageForBlock(blockIndex) - 1;
+    }
     if (pageBreaks.length === 0 || !blocks) return 0;
     for (let p = 0; p <= pageBreaks.length; p++) {
       const start = p === 0 ? 0 : pageBreaks[p - 1]!;
@@ -519,7 +1025,20 @@ export function useEpubPagination({
       if (blockIndex >= start && blockIndex < end) return p;
     }
     return 0;
-  }, [pageBreaks, blocks]);
+  }, [estimate, blocks, lazyPageStart, lazyPageEnd, lazyPageForBlock, page, pageBreaks]);
+
+  /** Jump directly to a global block — used by search/TOC/link navigation. */
+  const goToBlock = useCallback((blockIndex: number) => {
+    if (!blocks || blockIndex < 0 || blockIndex >= blocks.length) return;
+    setBlockTranslations({});
+    if (estimate) {
+      paginationLog(`[Pagination] 🎯 goToBlock block=${blockIndex} estimatedPage=${lazyPageForBlock(blockIndex)}`);
+      startLazyMeasure('forward', blockIndex, lazyPageForBlock(blockIndex));
+      return;
+    }
+    const targetPage = blockPage(blockIndex);
+    if (targetPage !== page) setPage(targetPage);
+  }, [blocks, estimate, lazyPageForBlock, startLazyMeasure, blockPage, page]);
 
   // ── Report anchor / block index on page change (matches web ReaderPanel) ──
   useEffect(() => {
@@ -537,8 +1056,14 @@ export function useEpubPagination({
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
     loadingTokens, tokenCache, blockTranslations, isTranslating,
-    prevPage, nextPage, goToPage, blockPage, handleMeasureBlock,
-    onVisibleBlocksChange, contentWidth,
-    measuredWindow,
+    prevPage, nextPage, goToPage, goToBlock, blockPage, handleMeasureBlock,
+    onVisibleBlocksChange, handleViewportLayout, contentWidth,
+    measuredWindow, measureStart, measureEnd, measureNonce,
+    hasPrev: estimate
+      ? (lazyPageStart != null && lazyPageStart > 0)
+      : page > 0,
+    hasNext: estimate
+      ? (lazyPageEnd != null && blocks != null && lazyPageEnd < blocks.length)
+      : page < totalPages - 1,
   };
 }

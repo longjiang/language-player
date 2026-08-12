@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform,
-  type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
+  type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -53,10 +53,22 @@ interface PaginatedReaderProps {
   prevPage?: () => void;
   nextPage?: () => void;
   goToPage?: (page: number) => void;
-  handleMeasureBlock?: (index: number, height: number) => void;
+  handleMeasureBlock?: (index: number, height: number, top?: number, origin?: number) => void;
   contentWidth?: number;
+  /** Explicit pagination bounds (lazy readers with estimated totals). */
+  hasPrev?: boolean;
+  hasNext?: boolean;
   /** Number of blocks currently mounted in the hidden measuring view (whole-book chunking). */
   measuredWindow?: number;
+  /** First global block index rendered in the hidden measuring view
+   *  (lazy web-style pagination). */
+  measureStart?: number;
+  /** Exclusive end index rendered in the hidden measuring view. */
+  measureEnd?: number;
+  /** Bumped when the measuring window must remount (layout/translation changes). */
+  measureNonce?: number;
+  /** Reports the real page-display viewport size (width/height). */
+  onViewportLayout?: (width: number, height: number) => void;
   /** Follow an in-book link (SPEC-049 §9.7) — passed to linked tokens. */
   onOpenLink?: (href: string) => void;
   /** Active search-match highlight (block + char range), if any. */
@@ -75,7 +87,13 @@ export function PaginatedReader({
   tokenCache = {}, blockTranslations = {}, isTranslating = false,
   prevPage, nextPage, goToPage, handleMeasureBlock,
   contentWidth: contentWidthProp = 300,
-  measuredWindow,
+  hasPrev: hasPrevProp,
+  hasNext: hasNextProp,
+  measuredWindow = 0,
+  measureStart = -1,
+  measureEnd = -1,
+  measureNonce = 0,
+  onViewportLayout,
   onOpenLink,
   highlight,
   textScale = 0,
@@ -109,6 +127,7 @@ export function PaginatedReader({
   const viewportHeightRef = useRef(0);
   const blockLayoutsRef = useRef<Record<number, { top: number; height: number }>>({});
   const lastVisibleKeyRef = useRef('');
+  const measureWindowLogKeyRef = useRef('');
   const onVisibleBlocksChangeRef = useRef(onVisibleBlocksChange);
   onVisibleBlocksChangeRef.current = onVisibleBlocksChange;
   // The visible page is a contiguous slice of `blocks`; resolve its global
@@ -151,12 +170,18 @@ export function PaginatedReader({
   }, [reportVisible]);
 
   const handleViewportLayout = useCallback((e: LayoutChangeEvent) => {
-    const h = e.nativeEvent.layout.height;
+    const { width, height: h } = e.nativeEvent.layout;
     if (h > 0 && h !== viewportHeightRef.current) {
       viewportHeightRef.current = h;
       reportVisible();
     }
-  }, [reportVisible]);
+    // Real page-display area (width/height) — the pagination hook uses this
+    // instead of guessing chrome/padding from window dimensions.
+    if (width > 0 && h > 0) {
+      log(`[Reader] 📐 reader viewport ${width}x${h}`);
+      onViewportLayout?.(width, h);
+    }
+  }, [reportVisible, onViewportLayout]);
 
   const handleBlockLayout = useCallback((globalIdx: number, top: number, height: number) => {
     const prev = blockLayoutsRef.current[globalIdx];
@@ -204,6 +229,8 @@ export function PaginatedReader({
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
   const loadingTokens = scrollMode ? false : (loadingTokensProp ?? false);
+  const hasPrev = scrollMode ? false : (hasPrevProp ?? page > 0);
+  const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
   const insets = useSafeAreaInsets();
 
   // ── Scroll mode: simple block list ──
@@ -230,21 +257,13 @@ export function PaginatedReader({
   return (
     <View className="flex-1 flex-col">
       {blocks && !hasMeasured && (
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center" onLayout={handleViewportLayout}>
           <ActivityIndicator size="small" color={ICON_MUTED} />
         </View>
       )}
 
       {blocks && hasMeasured && visibleBlocks && (
         <View className="flex-1 flex-col">
-          {/* Loading indicator */}
-          {loadingTokens && (
-            <View className="flex-row items-center justify-center gap-2 py-2">
-              <Loader2 size={12} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-            </View>
-          )}
-
           <ScrollView
             key={scrollViewKey}
             ref={scrollRef}
@@ -253,38 +272,89 @@ export function PaginatedReader({
             scrollEventThrottle={16}
             onLayout={handleViewportLayout}
           >
+            {/* Loading indicator — inside the scroll content (web parity) so
+                it doesn't resize the measured viewport. */}
+            {loadingTokens && (
+              <View className="flex-row items-center justify-center gap-2 py-2">
+                <Loader2 size={12} color={ICON_MUTED} />
+                <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+              </View>
+            )}
             {visibleBlocks.map((block, bi) =>
               renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
             )}
           </ScrollView>
-
-          {/* Page navigation + translation switch, with safe area padding */}
-          <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
-            <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
-              <ChevronLeft size={18} color={ICON_MUTED} />
-            </Pressable>
-            <Pressable onPress={handlePageNumberTap} disabled={!goToPage} className={`rounded px-2 py-0.5 ${!goToPage ? 'opacity-50' : 'active:bg-muted'}`}>
-              <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
-            </Pressable>
-            <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
-              <ChevronRight size={18} color={ICON_MUTED} />
-            </Pressable>
-            {onToggleTranslation && (
-              <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
-                <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
-                <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
-              </View>
-            )}
-          </View>
         </View>
       )}
 
-      {/* Hidden measuring view — only needed during measurement phase */}
-      {blocks && !hasMeasured && handleMeasureBlock && (
-        <View style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
-          {blocks.slice(0, measuredWindow ?? blocks.length).map((block, bi) =>
-            renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, l1Code, contentWidth, showTextActions, textScale, translationSideBySide),
+      {/* Page navigation + translation switch — always present while a book is
+          open so the measured viewport excludes it (web parity). */}
+      {blocks && !hasMeasured && (
+        <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3 opacity-40" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
+          <ChevronLeft size={18} color={ICON_MUTED} />
+          <Text className="text-xs text-muted-foreground">{page + 1} / {Math.max(1, totalPages)}</Text>
+          <ChevronRight size={18} color={ICON_MUTED} />
+          {onToggleTranslation && (
+            <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
+              <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
+              <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+            </View>
           )}
+        </View>
+      )}
+      {blocks && hasMeasured && (
+        <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
+          <Pressable onPress={prevPage} disabled={!hasPrev || !prevPage} className={`rounded p-1 ${!hasPrev || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
+            <ChevronLeft size={18} color={ICON_MUTED} />
+          </Pressable>
+          <Pressable onPress={handlePageNumberTap} disabled={!goToPage} className={`rounded px-2 py-0.5 ${!goToPage ? 'opacity-50' : 'active:bg-muted'}`}>
+            <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+          </Pressable>
+          <Pressable onPress={nextPage} disabled={!hasNext || !nextPage} className={`rounded p-1 ${!hasNext || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
+            <ChevronRight size={18} color={ICON_MUTED} />
+          </Pressable>
+          {onToggleTranslation && (
+            <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
+              <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
+              <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Hidden measuring view. Non-lazy readers render it while measuring;
+          lazy readers keep a window mounted so forward/backward page breaks
+          can be measured ahead and cached. */}
+      {blocks && handleMeasureBlock && (
+        measureEnd > measureStart
+        || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
+      ) && (
+        <View key={`measure-${measureStart}-${measureNonce}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
+          {(() => {
+            const hasLazyWindow = measureEnd > measureStart;
+            const sliceStart = hasLazyWindow ? measureStart : 0;
+            const sliceEnd = hasLazyWindow ? measureEnd : (measuredWindow > 0 ? measuredWindow : blocks.length);
+            const measureKey = `${sliceStart}:${sliceEnd}:${measureNonce}`;
+            if (measureWindowLogKeyRef.current !== measureKey) {
+              measureWindowLogKeyRef.current = measureKey;
+              log(`[Reader] 📏 hidden measuring window blocks=[${sliceStart},${sliceEnd})`);
+            }
+            return blocks.slice(sliceStart, sliceEnd).map((block, bi) =>
+              renderMeasuringBlock(
+                block,
+                sliceStart + bi,
+                handleMeasureBlock,
+                sliceStart,
+                showTranslation,
+                l2Code,
+                l1Code,
+                contentWidth,
+                showTextActions,
+                textScale,
+                translationSideBySide,
+              ),
+            );
+          })()}
         </View>
       )}
     </View>
@@ -465,78 +535,108 @@ function renderBlock(
   );
 }
 
+/** Static skeleton used inside the hidden measuring view — same footprint as
+ *  TranslationSkeleton, but no pulse animation (240 hidden bars animating
+ *  would be pure overhead). */
+function MeasuringSkeleton({ text }: { text: string }) {
+  const widths: DimensionValue[] = ['90%', '75%', '60%', '80%', '50%'];
+  return (
+    <View className="gap-y-1.5">
+      {Array.from({ length: Math.max(1, Math.ceil(text.length / 50)) }).map((_, li) => (
+        <View key={li} className="h-3.5 rounded bg-muted" style={{ width: widths[li % widths.length] }} />
+      ))}
+    </View>
+  );
+}
+
 function renderMeasuringBlock(
   block: ContentBlock, bi: number,
-  handleMeasureBlock: (i: number, h: number) => void,
+  handleMeasureBlock: (i: number, h: number, top: number, origin: number) => void,
+  origin: number,
   showTranslation: boolean, l2Code: string, l1Code: string, contentWidth: number,
   showTextActions: boolean,
   textScale: number,
   translationSideBySide = false,
 ) {
+  /** Mirrors TextActionMenu's persistent ⋮ button column so short body
+   *  blocks don't measure shorter than they render. */
+  const withActionSpacer = (content: React.ReactNode) => (
+    showTextActions ? (
+      <View className="flex-row items-start gap-1">
+        <View className="flex-1 min-w-0">{content}</View>
+        <View className="mt-1 h-7 w-7 shrink-0" />
+      </View>
+    ) : content
+  );
+
   if (block.kind === 'image') {
     return (
-      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-3">
         <Image source={{ uri: block.uri }} style={{ width: contentWidth, height: contentWidth * 0.6 }} resizeMode="contain" />
       </View>
     );
   }
 
   if (block.kind === 'table') {
-    // Approximate height: header + rows * rowHeight
-    const rowCount = block.rows.length + 1;
-    const estimatedHeight = rowCount * 32 + 16;
     return (
-      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
-        <View className="rounded-lg border border-border">
-          <View className="flex-row bg-muted/50">
-            {block.header.map((cell, ci) => (
-              <View key={ci} style={{ flex: 1 }}>
-                <Text className="px-2 py-1.5 text-xs">{cell}</Text>
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="mb-3 overflow-hidden rounded-lg border border-border">
+        <View className="flex-row bg-muted/50">
+          {block.header.map((cell, ci) => (
+            <View key={ci} className={`px-2 py-1.5 ${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+              <Text className="text-xs font-semibold text-foreground">{cell}</Text>
+            </View>
+          ))}
+        </View>
+        {block.rows.map((row, ri) => (
+          <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
+            {row.map((cell, ci) => (
+              <View key={ci} className={`px-2 py-1.5 ${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+                <Text className="text-xs text-foreground">{cell}</Text>
               </View>
             ))}
           </View>
-        </View>
+        ))}
       </View>
     );
   }
 
   return (
-    <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
+    <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="mb-3">
       {block.type === 'heading' && <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>}
-      {block.type === 'paragraph' && (
+      {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="flex-row items-start gap-4">
             <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
-            <View className="min-w-0 flex-[2]"><Text className="text-sm leading-relaxed text-muted-foreground">{' '}</Text></View>
+            <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
           </View>
         ) : (
           <View>
             <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
-            {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
+            {showTranslation && <View className="mt-1"><MeasuringSkeleton text={block.text} /></View>}
           </View>
         )
       )}
-      {block.type === 'blockquote' && (
+      {block.type === 'blockquote' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
             <View className="flex-row items-start gap-4">
               <View className="min-w-0 flex-[3]"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
-              <View className="min-w-0 flex-[2]"><Text className="text-sm leading-relaxed text-muted-foreground">{' '}</Text></View>
+              <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
             </View>
           </View>
         ) : (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
             <TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} />
-            {showTranslation && <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
+            {showTranslation && <View className="mt-1"><MeasuringSkeleton text={block.text} /></View>}
           </View>
         )
       )}
-      {block.type === 'list-item' && (
+      {block.type === 'list-item' && withActionSpacer(
         <View>
           <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
             <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Code} tokens={[]} textScale={textScale} /></View>
           </View>
-          {showTranslation && <Text className="ml-4 mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>}
+          {showTranslation && <View className="ml-4 mt-1"><MeasuringSkeleton text={block.text} /></View>}
         </View>
       )}
     </View>
