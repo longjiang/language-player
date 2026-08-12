@@ -3,6 +3,7 @@ import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import {
   classicRouteAction,
   V2_ORIGIN,
+  v2RedirectPath,
   type LanguagePair,
 } from '@/lib/classic-route-redirect';
 
@@ -104,7 +105,7 @@ export default function proxy(req: NextRequest) {
 
     if (action.kind === 'v2') {
       return NextResponse.redirect(
-        new URL(pathname + req.nextUrl.search, V2_ORIGIN),
+        new URL(v2RedirectPath(pathname) + req.nextUrl.search, V2_ORIGIN),
         307,
       );
     }

@@ -53,12 +53,16 @@ const CASES = [
 
   // ── Classic-only: 307 → v2 ──
   { name: 'Books', path: '/en/ja/books', kind: 'v2', expected: '/en/ja/books' },
-  { name: 'Pinyin Chart', path: '/en/ja/chinese/pinyin-chart', kind: 'v2', expected: '/en/ja/chinese/pinyin-chart' },
+  { name: 'Pinyin Chart', path: '/en/ja/chinese/pinyin-chart', kind: 'v2', expected: '/en/zh/chinese/pinyin-chart' },
+  { name: 'Pinyin List', path: '/en/ja/pinyin-list', kind: 'v2', expected: '/en/zh/pinyin-list' },
+  { name: 'Lesson Videos', path: '/en/ja/lesson-videos', kind: 'v2', expected: '/en/zh/lesson-videos' },
+  { name: 'Separable', path: '/en/ja/separable/foo', kind: 'v2', expected: '/en/zh/separable/foo' },
+  { name: 'New Levels Graphic', path: '/en/ja/explore/new-levels-graphic', kind: 'v2', expected: '/en/zh/explore/new-levels-graphic' },
   { name: 'Subscribed channels', path: '/en/ja/youtube/subscriptions', kind: 'v2', expected: '/en/ja/youtube/subscriptions' },
   { name: 'Channel directory', path: '/en/ja/youtube/channels', kind: 'v2', expected: '/en/ja/youtube/channels' },
   { name: 'Contact', path: '/en/ja/contact-us', kind: 'v2', expected: '/en/ja/contact-us' },
   { name: 'Languages', path: '/languages', kind: 'v2', expected: '/languages' },
-  { name: 'HSK lookup', path: '/en/ja/dictionary/hsk/123', kind: 'v2', expected: '/en/ja/dictionary/hsk/123' },
+  { name: 'HSK lookup', path: '/en/ja/dictionary/hsk/123', kind: 'v2', expected: '/en/zh/dictionary/hsk/123' },
   { name: 'Admin QA', path: '/admin/quality-assurance', kind: 'v2', expected: '/admin/quality-assurance' },
 
   // ── No redirect: web 404 / unchanged ──
