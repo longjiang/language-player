@@ -27,7 +27,8 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 - **Google Play Billing** is **not implemented** in any frontend. Android
   users buy on the website today (the non-IAP in-app payment UI was removed
   in Phase 3, 2026-08-10). Play Billing implementation, the Play Console
-  developer sign-up, and sandbox testing are Phase 3 work — see [1.5](#15-google-play-billing-phase-3--android).
+  developer-account verification, and sandbox testing are Phase 3 work — see
+  [1.5](#15-google-play-billing-phase-3--android).
 - **Mobile iOS** — Apple IAP (`pro_go`) is the store-compliant in-app method.
   Card/WeChat/Alipay/PayPal are website payments (the in-app browser checkout
   was removed in Phase 3, 2026-08-10).
@@ -48,7 +49,11 @@ Since the Directus → Supabase migration (SPEC-039), the backend pipeline has n
 | Alipay (CNY) | ✅ Payment Link | ✅ Payment Link | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | PayPal (lifetime) | ✅ direct button | ⬜ links to Classic | 🚫 in-app — buy on website | 🚫 in-app — buy on website |
 | Apple IAP (lifetime) | ✅ `pro` | N/A (browser) | ✅ `pro_go` (`expo-iap`) | — |
-| Google Play Billing | N/A | N/A | — | ⬜ Phase 3 — developer sign-up + implementation |
+| Google Play Billing | N/A | N/A | — | ⬜ Phase 3 — account verification + implementation |
+
+> Classic "Language Player 2" is live on both the App Store and Google Play;
+> its Android build uses web checkout (no Play Billing), which is why the
+> Classic column is N/A.
 
 **Target (SPEC-014):** in-app mobile payments are store billing only — Apple
 IAP on iOS (`pro_go`), Play Billing on Android (Phase 3 work). Stripe card /
@@ -233,12 +238,14 @@ Run the tests per [2.4 Apple IAP](#24-apple-iap-ios-only).
 Reference: <https://developer.android.com/google/play/billing/test>.
 
 Google Play Billing is **not implemented** in any frontend yet (SPEC-014 /
-SPEC-048). Phase 3 includes the Google developer sign-up process, billing
-setup, implementation, and testing:
+SPEC-048). Phase 3 includes the Google developer-account verification
+(existing unverified account), billing setup, implementation, and testing:
 
-1. **Google Play developer sign-up** — create the Play Console developer
-   account (one-time registration fee), accept the agreements, and complete
-   account details before Play Billing can be configured.
+1. **Google Play developer-account verification** — the existing Play Console
+   developer account is **unverified, not deleted** (business-info renewal
+   lapsed). Complete the pending verification and keep business info current
+   before Play Billing can be configured; only register a new account if Play
+   Console reports the existing one is fully closed.
 2. **Play Console billing setup** — create the app / internal test track,
    define the Play Billing product (lifetime, non-consumable; product ID TBD
    until SPEC-014 implementation), and add **license testers** (Play Console
@@ -901,7 +908,7 @@ phase covers both store setups plus the remaining mobile checks. C2
 
 **Exit criterion:** at the end of Phase 3, both iOS and Android have in-app
 purchase ready for submission and approval — including the Google Play
-developer sign-up process (Play Console account, billing setup, product
+developer-account verification (existing account, billing setup, product
 configuration, license testers, and test-track testing).
 
 #### 3.1 Code cleanup
@@ -1028,8 +1035,8 @@ The new mobile app uses `expo-iap` and the GO listing's non-consumable
 Play Billing is not implemented yet; the "buy on our website" notice is the
 interim path until it lands.
 
-- ⬜ Complete the Play Console developer sign-up process (new developer account
-  + one-time registration fee)
+- ⬜ Complete the Play Console developer-account verification (existing
+  unverified account; register new only if Play Console reports it closed)
 - ⬜ Create the Play Billing product (lifetime, non-consumable) and add license
   testers
 - ⬜ Implement Play Billing in `apps/mobile` (SPEC-014 target; product ID TBD)
@@ -1090,8 +1097,9 @@ interim path until it lands.
    deployment on a test host and point the link there, or implement PayPal
    directly in Web (SPEC-014).
 5. **Google Play Billing is not implemented yet** — Phase 3 includes the
-   Play Console developer sign-up, billing setup, implementation, and the
-   G1–G5 sandbox/test-track rows (setup in [1.5](#15-google-play-billing-phase-3--android)).
+   Play Console developer-account verification, billing setup,
+   implementation, and the G1–G5 sandbox/test-track rows (setup in
+   [1.5](#15-google-play-billing-phase-3--android)).
 6. **Payment Link purchases have no return redirect** — verification relies on webhooks. The test must confirm the `checkout.session.completed` event arrives with `client_reference_id` intact; if webhooks are down, grants silently fail.
 7. **Automation** (SPEC-025's mock backend: `/mock-stripe-checkout`, `/mock-wechat-pay`, etc.) is still future work; provider-hosted UI rows remain human-run, but the backend/data-layer rows in 2.6 are automatable with mocks.
 8. **Idempotency key — resolved 2026-08-09:** `user_subscriptions(payment_id)`
