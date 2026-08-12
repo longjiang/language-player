@@ -54,7 +54,8 @@ comments go in brackets.
 #### S. Smoke  **· SPEC-023 ref:** Tier 0 · **Run on:** Chrome
 
 - ⬜ visit `/` → landing page renders (hero, features, public pricing
-  comparison, classic notice); “Start watching” → login
+  comparison, classic notice); language cards link to `/{l1}/{l2}`;
+  “Start watching” → login
 - ⬜ login → header renders (logo, Media / Reading / Vocab menus, search,
   language switcher, user menu)
 - ⬜ logout via user menu → returns to login, no session residue
