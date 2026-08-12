@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, Image } from 'react-native';
 import { useT } from '@/hooks/use-t';
-import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -113,7 +112,7 @@ interface ImageSearchResultsProps {
 /**
  * Openverse image search for a dictionary entry — the mobile equivalent of the
  * web ImageSearchResults (SPEC-049 §3). Grid variant shows query pills (original
- * term + LLM-rewritten queries from Flask) over a paginated 3-column grid with
+ * term + LLM-rewritten queries from Flask) over a paginated 4×3 grid with
  * skeleton loading; compact variant is a horizontal strip for the popup.
  */
 export function ImageSearchResults({
@@ -128,18 +127,9 @@ export function ImageSearchResults({
 }: ImageSearchResultsProps) {
   const t = useT();
   const isCompact = variant === 'compact';
-  const { width } = useResponsive();
-  const [containerWidth, setContainerWidth] = useState(width);
-  // Column count follows the measured grid width (3 below 640, 4 at ≥640) —
-  // not just the window, so wide containers always render 4 filling columns.
-  const effectiveWidth = containerWidth > 0 ? containerWidth : width;
-  const cols = effectiveWidth >= 640 ? 4 : 3;
-  // Tile width from the measured container (not the window) so the intended
-  // 3/4 columns actually fit — window width overflows padded cards on iPad.
-  const tileWidth =
-    containerWidth > 0
-      ? Math.floor((containerWidth - 16 - 8 * (cols - 1)) / cols)
-      : (width - 32) / cols;
+  // Full grid variant is a fixed 4×3 grid (12 tiles per page), matching the
+  // web layout. Cells are percentage-width so padding can never overflow.
+  const cols = 4;
 
   const [images, setImages] = useState<SearchImage[] | null>(null);
   const [queries, setQueries] = useState<string[]>([]);
@@ -324,12 +314,11 @@ export function ImageSearchResults({
     return (
       <>
         <SkeletonPills />
-        <View
-          className="flex-row flex-wrap gap-2 px-2"
-          onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-        >
+        <View className="flex-row flex-wrap">
           {Array.from({ length: pageSize }, (_, i) => (
-            <View key={i} style={{ width: tileWidth }} className="aspect-square rounded-lg bg-muted" />
+            <View key={i} className="w-1/4 p-1">
+              <View className="aspect-square rounded-lg bg-muted" />
+            </View>
           ))}
         </View>
       </>
@@ -362,14 +351,11 @@ export function ImageSearchResults({
       <QueryPills queries={queries} activeQuery={activeQuery} onSelect={(q) => { setActiveQuery(q); setPage(0); }} t={t} />
 
       {/* Grid — full rows with muted placeholders filling the gaps */}
-      <View
-        className="flex-row flex-wrap gap-2 px-2"
-        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-      >
+      <View className="flex-row flex-wrap">
         {gridCells.map((img, i) => (
-          <View key={img?.id ?? `ph-${i}`} style={{ width: tileWidth }}>
+          <View key={img?.id ?? `ph-${i}`} className="w-1/4 p-1">
             {img ? (
-              <ImageTile image={img} term={term} size={tileWidth} onBroken={() => markBroken(img.id)} />
+              <ImageTile image={img} term={term} fill onBroken={() => markBroken(img.id)} />
             ) : (
               <View className="aspect-square rounded-lg bg-muted" />
             )}
@@ -459,25 +445,31 @@ function ImageTile({
   image,
   term,
   size,
+  fill = false,
   onBroken,
 }: {
   image: SearchImage;
   term: string;
-  size: number;
+  size?: number;
+  /** Fill the parent cell with an aspect-square tile (grid variant). */
+  fill?: boolean;
   onBroken: () => void;
 }) {
   const [failed, setFailed] = useState(false);
   const thumb = image.thumbnail;
+  const tileStyle = fill
+    ? { width: '100%' as const, aspectRatio: 1 }
+    : { width: size ?? 80, height: size ?? 80 };
   return (
     <Pressable
       onPress={() => {}}
-      style={{ width: size, height: size }}
+      style={tileStyle}
       className="overflow-hidden rounded-lg bg-muted"
     >
       {thumb && !failed ? (
         <Image
           source={{ uri: thumb }}
-          style={{ width: size, height: size }}
+          style={fill ? { width: '100%', height: '100%' } : { width: size ?? 80, height: size ?? 80 }}
           resizeMode="cover"
           onError={() => { setFailed(true); onBroken(); }}
         />
