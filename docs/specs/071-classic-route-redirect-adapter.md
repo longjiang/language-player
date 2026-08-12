@@ -420,7 +420,7 @@ need to be rebuilt.
 Until the directory and feed are built, both routes remain Classic-only and
 redirect to v2. This gap should be tracked as its own spec/ROADMAP item.
 
-### 8.3 Watch queue URL hydration (deferred)
+### 8.2 Watch queue URL hydration (deferred)
 
 `p=recommended` maps to `?queueType=recommended`, but apps/web only *writes*
 that param — the watch page never reads it, and `QueueManager` is in-memory
@@ -435,7 +435,26 @@ Related small gap: search results currently start queues with
 `queueType='recommended'` instead of `'search'`, and playlist playback uses
 `'recommended'` because `QueueType` has no playlist variant.
 
-### 8.2 Support / contact page
+### 8.3 Playlist & note sharing (future)
+
+User playlists (`user_playlists`) and notes (`user_notes`) are currently
+private and user-scoped: every `/playlists` and `/user-notes` endpoint requires
+auth and filters by `user_id`, and neither table has a public flag or share
+token. Classic still has vestigial share UI for notes (a "Share Annotated
+Text" button that calls a missing `upload` method), but the backend has no
+public read path, and web's reader only loads notes for the signed-in owner.
+
+Future work will implement **better playlist and note sharing with explicit
+user control**:
+
+- Per-item `is_public` / private toggle owned by the creator
+- A share token + unauthenticated read-only endpoints for shared items
+- Public read-only views and copy-link share buttons on web and mobile
+- Private items remain inaccessible without authentication
+
+Track as its own spec (e.g. SPEC-073) when scheduled.
+
+### 8.4 Support / contact page
 
 Classic `/contact-us` is a static page with:
 
