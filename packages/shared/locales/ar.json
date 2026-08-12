@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/مدى الحياة",
         "monthly": "${price}/شهر"
     },
+    "pricing": {
+        "billing": "الفوترة",
+        "feature": "الميزة",
+        "feature_ai_explanations": "شرح الكلمات بالذكاء الاصطناعي",
+        "feature_chinese_decomposition": "تحليل الحروف الصينية",
+        "feature_dictionary": "قاموس مع المتلازمات اللفظية والأمثلة وتصريفات الأفعال",
+        "feature_library": "أكثر من 600,000 فيديو بأكثر من 207 لغة",
+        "feature_priority_support": "دعم ذو أولوية",
+        "feature_transcripts": "نصوص تفاعلية مع الترجمة",
+        "feature_word_examples": "أمثلة الكلمات في الفيديوهات",
+        "free_transcripts": "أول 10 أسطر",
+        "free_vs_pro": "مجاني مقابل Pro",
+        "free_word_examples": "مثالان لكل كلمة",
+        "plans": "الخطط",
+        "price": "السعر",
+        "pro_transcripts": "النص الكامل",
+        "pro_word_examples": "مئات الأمثلة لكل كلمة",
+        "title": "التسعير"
+    },
     "pro": {
         "desc": "افتح تجربة التعلم الكاملة مع أكثر من 600,000 فيديو بأكثر من {count} لغة.",
         "feature_ai": "شروحات الكلمات بالذكاء الاصطناعي",

@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/ömür boyu",
         "monthly": "${price}/ay"
     },
+    "pricing": {
+        "billing": "Faturalama",
+        "feature": "Özellik",
+        "feature_ai_explanations": "Yapay zeka destekli kelime açıklamaları",
+        "feature_chinese_decomposition": "Çince karakter ayrıştırma",
+        "feature_dictionary": "Eşdizimler, örnekler ve fiil çekimleriyle sözlük",
+        "feature_library": "207+ dilde 600.000+ video",
+        "feature_priority_support": "Öncelikli destek",
+        "feature_transcripts": "Çeviriyle etkileşimli transkriptler",
+        "feature_word_examples": "Videolarda kelime örnekleri",
+        "free_transcripts": "İlk 10 satır",
+        "free_vs_pro": "Ücretsiz vs Pro",
+        "free_word_examples": "Kelime başına 2",
+        "plans": "Planlar",
+        "price": "Fiyat",
+        "pro_transcripts": "Tam transkript",
+        "pro_word_examples": "Kelime başına yüzlerce",
+        "title": "Fiyatlandırma"
+    },
     "pro": {
         "desc": "600.000'den fazla video ve {count}'den fazla dil ile tam öğrenme deneyiminin kilidini açın.",
         "feature_ai": "Yapay zeka kelime açıklamaları",

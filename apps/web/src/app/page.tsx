@@ -18,6 +18,7 @@ import {
   Library,
 } from 'lucide-react';
 import { LanguageVideoList } from '@/components/landing/language-video-list';
+import { PricingSection } from '@/components/landing/pricing-section';
 import { CONTENT_L2_COUNT } from '@langplayer/shared';
 
 export default function HomePage() {
@@ -127,6 +128,9 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Pricing */}
+      <PricingSection />
     </main>
   );
 }

@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/生涯",
         "monthly": "${price}/月"
     },
+    "pricing": {
+        "billing": "請求方法",
+        "feature": "機能",
+        "feature_ai_explanations": "AI搭載の単語解説",
+        "feature_chinese_decomposition": "漢字の分解表示",
+        "feature_dictionary": "コロケーション、例文、動詞活用を含む辞書",
+        "feature_library": "207以上の言語で60万以上の動画",
+        "feature_priority_support": "優先サポート",
+        "feature_transcripts": "翻訳付きインタラクティブトランスクリプト",
+        "feature_word_examples": "動画内の単語例",
+        "free_transcripts": "最初の10行",
+        "free_vs_pro": "Free vs Pro",
+        "free_word_examples": "単語につき2つ",
+        "plans": "プラン",
+        "price": "料金",
+        "pro_transcripts": "全トランスクリプト",
+        "pro_word_examples": "単語につき数百",
+        "title": "料金"
+    },
     "pro": {
         "desc": "60万以上の動画、{count}+の言語で完全な学習体験を解放しましょう。",
         "feature_ai": "AIによる単語解説",

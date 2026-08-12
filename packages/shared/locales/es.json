@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/de por vida",
         "monthly": "${price}/mes"
     },
+    "pricing": {
+        "billing": "Facturación",
+        "feature": "Característica",
+        "feature_ai_explanations": "Explicaciones de palabras con IA",
+        "feature_chinese_decomposition": "Descomposición de caracteres chinos",
+        "feature_dictionary": "Diccionario con colocaciones, ejemplos y flexiones verbales",
+        "feature_library": "Más de 600 000 videos en más de 207 idiomas",
+        "feature_priority_support": "Soporte prioritario",
+        "feature_transcripts": "Transcripciones interactivas con traducción",
+        "feature_word_examples": "Ejemplos de palabras en videos",
+        "free_transcripts": "Primeras 10 líneas",
+        "free_vs_pro": "Gratuito vs Pro",
+        "free_word_examples": "2 por palabra",
+        "plans": "Planes",
+        "price": "Precio",
+        "pro_transcripts": "Transcripción completa",
+        "pro_word_examples": "Cientos por palabra",
+        "title": "Precios"
+    },
     "pro": {
         "desc": "Desbloquea la experiencia de aprendizaje completa con más de 600 000 videos en más de {count} idiomas.",
         "feature_ai": "Explicaciones de palabras con IA",

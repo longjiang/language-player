@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/levenslang",
         "monthly": "${price}/mnd"
     },
+    "pricing": {
+        "billing": "Facturering",
+        "feature": "Functie",
+        "feature_ai_explanations": "AI-gestuurde uitleg van woorden",
+        "feature_chinese_decomposition": "Chinese karakterontleding",
+        "feature_dictionary": "Woordenboek met collocaties, voorbeelden en werkwoordvervoegingen",
+        "feature_library": "600.000+ video's in 207+ talen",
+        "feature_priority_support": "Prioriteitsondersteuning",
+        "feature_transcripts": "Interactieve transcripten met vertaling",
+        "feature_word_examples": "Woordvoorbeelden in video's",
+        "free_transcripts": "Eerste 10 regels",
+        "free_vs_pro": "Gratis vs Pro",
+        "free_word_examples": "2 per woord",
+        "plans": "Abonnementen",
+        "price": "Prijs",
+        "pro_transcripts": "Volledig transcript",
+        "pro_word_examples": "Honderden per woord",
+        "title": "Prijzen"
+    },
     "pro": {
         "desc": "Ontgrendel de volledige leerervaring met 600.000+ video's in {count}+ talen.",
         "feature_ai": "AI-woorduitleg",

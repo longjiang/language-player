@@ -1142,6 +1142,25 @@
         "lifetime": "${price}/ตลอดชีพ",
         "monthly": "${price}/เดือน"
     },
+    "pricing": {
+        "billing": "การชำระเงิน",
+        "feature": "ฟีเจอร์",
+        "feature_ai_explanations": "คำอธิบายคำศัพท์ด้วย AI",
+        "feature_chinese_decomposition": "การแยกส่วนประกอบอักษรจีน",
+        "feature_dictionary": "พจนานุกรมพร้อมคำร่วม คำตัวอย่าง และการผันคำกริยา",
+        "feature_library": "วิดีโอมากกว่า 600,000 รายการในกว่า 207 ภาษา",
+        "feature_priority_support": "การสนับสนุนลำดับความสำคัญ",
+        "feature_transcripts": "บทถอดความแบบโต้ตอบพร้อมคำแปล",
+        "feature_word_examples": "ตัวอย่างคำในวิดีโอ",
+        "free_transcripts": "10 บรรทัดแรก",
+        "free_vs_pro": "เปรียบเทียบฟรี vs Pro",
+        "free_word_examples": "2 ตัวอย่างต่อคำ",
+        "plans": "แผนการสมัคร",
+        "price": "ราคา",
+        "pro_transcripts": "บทถอดความเต็ม",
+        "pro_word_examples": "หลายร้อยตัวอย่างต่อคำ",
+        "title": "ราคา"
+    },
     "pro": {
         "desc": "ปลดล็อกประสบการณ์การเรียนรู้เต็มรูปแบบด้วยวิดีโอมากกว่า 600,000 รายการในกว่า {count} ภาษา",
         "feature_ai": "คำอธิบายความหมายคำศัพท์ด้วย AI",

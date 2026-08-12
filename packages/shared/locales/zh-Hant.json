@@ -1110,6 +1110,25 @@
         "lifetime": "${price}/終身",
         "monthly": "${price}/月"
     },
+    "pricing": {
+        "billing": "付款方式",
+        "feature": "功能",
+        "feature_ai_explanations": "AI 驅動的單字解釋",
+        "feature_chinese_decomposition": "漢字拆解",
+        "feature_dictionary": "附搭配詞、例句與動詞變化的字典",
+        "feature_library": "超過 60 萬部影片，涵蓋 207 種以上語言",
+        "feature_priority_support": "優先支援",
+        "feature_transcripts": "含翻譯的互動式逐字稿",
+        "feature_word_examples": "影片中的單字例句",
+        "free_transcripts": "前 10 行",
+        "free_vs_pro": "免費版與 Pro 版比較",
+        "free_word_examples": "每個單字 2 句",
+        "plans": "方案",
+        "price": "價格",
+        "pro_transcripts": "完整逐字稿",
+        "pro_word_examples": "每個單字數百句",
+        "title": "定價"
+    },
     "pro": {
         "desc": "解鎖完整體驗，暢享 600,000+ 影片，涵蓋 {count}+ 種語言。",
         "feature_ai": "AI 單字解釋",
