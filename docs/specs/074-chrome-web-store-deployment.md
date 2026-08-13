@@ -130,16 +130,31 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
 7. Set distribution (public by default).
 8. Submit for review.
 
-### ⚠️ Current blocker (2026-08-12): sign-in requires passkey
+### ✅ Completed 2026-08-13 (user signed in via passkey)
 
-Opening `https://chrome.google.com/webstore/devconsole` with `longjiang2005@gmail.com` lands on a **passkey challenge** ("Complete sign-in using your passkey") that cannot be completed headlessly — it requires the user's device/security key. This is a **manual step for the user**: complete sign-in in the browser (passkey or "Try another way" → password), then continue from step 3.
+- Sign-in to `https://chrome.google.com/webstore/devconsole` done (longjiang2005@gmail.com).
+- Publisher account already existed: **longjiang2005**, Publisher ID `650ad6b1-a9d4-43b6-9ff5-a8ae11ada6ad`, member `龙江 (longjiang2005@gmail.com)` Admin since 2015.
+- **Contact email added + verified**: `jon.long@zerotohero.ca` (publicly displayed).
+- **Trader declaration**: selected "This is a trader account" + agreed to marketplace rules (the checkbox is required — Next stays disabled until both are set).
+
+### ⚠️ Current blocker (2026-08-13): publisher settings gate
+
+The account is behind a **mandatory settings gate** — the dashboard redirects every page to `/settings` and re-shows the "Action required" trader dialog until these are done:
+
+1. **Trader declaration** — must be completed together with the verification flow; cancelling verification resets it (the dialog re-appears).
+2. **Address** — "Enter address" is empty. Requires a valid postal address (shown on the listing). Not in the repo — **user must supply**.
+3. **Publisher account verification** — Google now requires identity verification before ANY item can be created. Dialog "Prepare for Chrome Web Store publisher account verification" lists:
+   - **Individual**: legal name, legal address, contact phone, government-issued ID, address document
+   - **Organization**: org name, legal address, phone, business registration proof or D-U-N-S (up to 30+ days)
+   - Also requires creating/selecting a **payment profile** (the $5 developer registration).
+
+**Cannot proceed headlessly** — these need personal/legal documents + a financial decision. Do NOT fabricate. The user must complete the settings gate manually, then the flow resumes at step 3 (upload ZIP).
 
 ### Post-upload checklist
-- [ ] **Sign in to dev console (passkey — MANUAL, blocked headless)**
+- [ ] **Complete publisher settings gate (MANUAL): trader declaration + address + identity verification + payment profile**
 - [ ] Screenshots created (1280×800) — capture: transcript panel on a Netflix show, dictionary popup on a word click, YouTube subtitles, saved-words flow, popup UI
 - [ ] Small promo tile (440×280) created
-- [ ] Developer account registered ($5) — if not already
-- [ ] ZIP uploaded and store listing filled
+- [ ] ZIP uploaded (`/tmp/language-player-extension-v1.0.77.zip`) and store listing filled
 - [ ] Privacy tab certified
 - [ ] Submitted for review
 
