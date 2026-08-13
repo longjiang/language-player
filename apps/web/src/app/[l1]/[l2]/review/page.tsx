@@ -11,6 +11,7 @@ import {
   fsrs,
   baseCode,
   dailyReviewCounterKey,
+  formatDueDebug,
   formatNextDueLabel,
   msUntilNextUtcDay,
   newRatingId,
@@ -831,7 +832,7 @@ export default function ReviewPage() {
         </p>
         {nextDue && (
           <p className="text-xs text-muted-foreground/60">
-            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1.code)}
+            debug: {formatDueDebug(nextDue.due)} label={formatNextDueLabel(nextDue.due, l1.code)}
           </p>
         )}
         <div className="flex gap-3">
@@ -864,7 +865,7 @@ export default function ReviewPage() {
         </p>
         {nextDue && (
           <p className="text-xs text-muted-foreground/60">
-            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1.code)}
+            debug: {formatDueDebug(nextDue.due)} label={formatNextDueLabel(nextDue.due, l1.code)}
           </p>
         )}
         <Link href={`/${l1.code}/${l2.code}/explore`}>

@@ -12,6 +12,7 @@ import {
   fsrs,
   baseCode,
   dailyReviewCounterKey,
+  formatDueDebug,
   formatNextDueLabel,
   msUntilNextUtcDay,
   newRatingId,
@@ -826,7 +827,7 @@ export default function ReviewScreen() {
         </Text>
         {nextDue && (
           <Text className="mb-4 text-center text-xs text-muted-foreground/60">
-            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
+            debug: {formatDueDebug(nextDue.due)} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
           </Text>
         )}
         <Pressable
@@ -862,7 +863,7 @@ export default function ReviewScreen() {
         </Text>
         {nextDue && (
           <Text className="mb-4 text-center text-xs text-muted-foreground/60">
-            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
+            debug: {formatDueDebug(nextDue.due)} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
           </Text>
         )}
         <Pressable

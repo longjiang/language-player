@@ -57,3 +57,10 @@ export function formatNextDueLabel(
   }
   return due.toLocaleDateString(locale);
 }
+
+/** Temporary debug helper: UTC, local, and the runtime timezone. */
+export function formatDueDebug(dueMs: number): string {
+  const due = new Date(dueMs);
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return `utc=${due.toISOString()} local=${due.toLocaleString()} tz=${tz}`;
+}

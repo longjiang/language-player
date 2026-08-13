@@ -18,6 +18,7 @@ export {
   formatNumber,
   formatRelativeDate,
   formatNextDueLabel,
+  formatDueDebug,
 } from './format';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
