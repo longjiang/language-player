@@ -81,6 +81,16 @@ interface ReviewCard {
   entry: DictionaryEntry | null;
 }
 
+/** First real dictionary-lookup form for a saved word (skips legacy "?"). */
+function firstLookupForm(word: SavedLexicalItemRecord): string {
+  const candidates = [
+    ...(word.forms ?? []),
+    word.context?.form,
+    ...(word.instances ?? []).map((i) => i.form),
+  ];
+  return candidates.find((f) => typeof f === 'string' && f && f !== '?') ?? word.id;
+}
+
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
@@ -234,7 +244,7 @@ export default function ReviewPage() {
 
   // ── Derive entry for the current card from the reactive cache ──
   const currentDueCard = dueCards[currentIndex];
-  const wordForm = currentDueCard?.word.forms[0] || currentDueCard?.word.id || '';
+  const wordForm = currentDueCard?.word ? firstLookupForm(currentDueCard.word) : '';
   const allCachedEntries = useEntryCache(l2Code, wordForm);
 
   // Try all forms for cache lookup, not just forms[0]
@@ -538,7 +548,7 @@ export default function ReviewPage() {
     if (!showDefinition || l1.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
-    const form = card.word.forms[0] || card.word.id;
+    const form = firstLookupForm(card.word);
     // Skip if we already have an L1 entry for this word
     if (l1Entry?.id === card.word.id) return;
 
@@ -591,7 +601,7 @@ export default function ReviewPage() {
     setExactEntryLoading((prev) => ({ ...prev, [id]: true }));
     (async () => {
       const base = baseCode(l2.code);
-      const form = sw.forms[0] || sw.id;
+      const form = firstLookupForm(sw);
       let exactFound = false;
       try {
         const decomposed = decomposeWordId(id, base);
@@ -632,15 +642,34 @@ export default function ReviewPage() {
           ?? results.find((e) => e.match_type === 'exact')
           ?? results[0];
 
-        const fromCache = pickBest(getCachedEntries(base, form) ?? []);
-        if (fromCache) {
-          setFallbackEntry(fromCache);
+        const candidates = [
+          ...new Set([
+            form,
+            ...(sw.forms ?? []),
+            sw.context?.form,
+            ...(sw.instances ?? []).map((i) => i.form),
+          ].filter((f): f is string => typeof f === 'string' && !!f && f !== '?')),
+        ];
+        let cacheFound: DictionaryEntry | undefined;
+        for (const candidate of candidates) {
+          const fromCache = pickBest(getCachedEntries(base, candidate) ?? []);
+          if (fromCache) {
+            cacheFound = fromCache;
+            break;
+          }
+        }
+        if (cacheFound) {
+          setFallbackEntry(cacheFound);
         } else {
           try {
-            const results = await lookupL1Text(form, l2Code, l1.code);
-            if (!cancelled) {
+            for (const candidate of candidates) {
+              const results = await lookupL1Text(candidate, l2Code, l1.code);
+              if (cancelled) break;
               const found = pickBest(results);
-              if (found) setFallbackEntry(found);
+              if (found) {
+                setFallbackEntry(found);
+                break;
+              }
             }
           } catch {
             // Keep the no-definition state.

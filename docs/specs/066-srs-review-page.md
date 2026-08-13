@@ -707,6 +707,17 @@ the daily-quota definition.~~ Implemented (2026-08-13): `planNewDeck()`,
 `remainingNewCardsToday()`, and both review pages now enforce the UTC-day
 quota.
 
+### Review back side: fallback lookup only tried `forms[0]`
+
+Some legacy saved words have a placeholder or non-lookupable first form
+(`"?"` or an inflected surface the dictionary lookup can't match), so the
+back side showed "This word is not found in our dictionary" even though
+another saved form, the head, the context form, or an instance form resolved.
+
+✅ **Fixed (2026-08-13):** both review pages now collect every saved form,
+head, context form, and instance form, and try each one through the cache and
+text lookup before showing the no-definition state.
+
 ## Stale Related Docs
 
 - **SPEC-053 inventory staleness** — fixed (2026-08-11): the syncable-data
