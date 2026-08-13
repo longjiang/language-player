@@ -11,6 +11,7 @@ import {
   fsrs,
   baseCode,
   dailyReviewCounterKey,
+  formatNextDueLabel,
   msUntilNextUtcDay,
   newRatingId,
 } from '@langplayer/utils';
@@ -825,7 +826,7 @@ export default function ReviewPage() {
         <p className="text-muted-foreground text-center max-w-md">
           {t('msg.all_done_desc')}
           {nextDue && (
-            <> {t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
+            <> {t('msg.next_review')}: {formatNextDueLabel(nextDue.due, l1.code)}.</>
           )}
         </p>
         <div className="flex gap-3">
@@ -851,7 +852,7 @@ export default function ReviewPage() {
         <p className="text-muted-foreground text-center max-w-md">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2.name })}
           {nextDue ? (
-            <> {t('msg.next_review_date', { date: new Date(nextDue.due).toLocaleDateString() })}</>
+            <> {t('msg.next_review_date', { date: formatNextDueLabel(nextDue.due, l1.code) })}</>
           ) : (
             <> {t('msg.save_more_words')}</>
           )}
