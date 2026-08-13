@@ -93,16 +93,30 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
     `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=./data/zh-zerotohero-06d7b3c0d121.json`,
     `GOOGLE_PLAY_PACKAGE_NAME=ca.zerotohero.go`,
     `GOOGLE_PLAY_PRODUCT_ID=pro_go`. Flask restarted on port 5001.
-  - ⚠️ **Troubleshooting (2026-08-13):** first test purchase (order
-    `GPA.3377-5570-7018-81586`, Processed) failed backend verification with
-    **401 `permissionDenied`** — a bogus token returns the same 401 (both
-    `ca.zerotohero.go` and `ca.zerotohero.app`), so auth is fine but the
-    grant was not yet effective in the API (Play's authorization cache).
-    Both financial permissions confirmed checked+saved; re-invite done. The
-    grant is expected to propagate within minutes–24–48h; acceptance test =
-    bogus token returns **404**. Do NOT repurchase — the Processed order is
-    still valid and unacknowledged (~3-day auto-refund clock); Restore
-    Purchases will validate once the API returns 404.
+  - ⚠️ **Troubleshooting (2026-08-13):** test purchases failed backend
+    verification with **401 `permissionDenied`** — a bogus token returns the
+    same 401 (both `ca.zerotohero.go` and `ca.zerotohero.app`), so auth is
+    fine but the grant was not yet effective in the API (Play's authorization
+    cache). Full config audit confirmed correct: key file belongs to
+    `language-player@zh-zerotohero.iam.gserviceaccount.com`, service account
+    **Active**/never expires, both financial permissions **checked + saved**
+    at Account level, Android Publisher API **Enabled** on GCP. Re-invite
+    done (2026-08-13). Watcher `/tmp/watch_gp_permission.sh` ran **120 min
+    and timed out with all-401** — still within the documented minutes–24–48h
+    propagation window. Acceptance test = bogus token returns **404**.
+  - ℹ️ **All test orders were REFUNDED (2026-08-13):** `GPA.3377-5570-7018-81586`
+    (refunded 03:24 UTC, ~5 min after processing) plus `GPA.3324-2952-3923-56166`,
+    `GPA.3363-0458-2728-79942`, `GPA.3381-5857-0619-68235` — all show
+    **Refunded / CAD 0.00** in Order management. Because the backend never
+    acknowledged the purchases, nothing is restorable on-device ("Can't find
+    restorable purchase" is correct behavior). Once the API returns 404, make
+    **one fresh test purchase** → Restore Purchases → validate + grant.
+  - 🌐 **Production is the target:** the Pixel release build (Closed testing)
+    calls `https://pythonvps.zerotohero.ca/play_billing_success` (via
+    `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca` in
+    `apps/mobile/.env.production.local`, inlined by Metro in Release builds —
+    NOT the local Flask). Backend code + `.env` + service-account key were
+    deployed to production 2026-08-12.
 - [x] Set up the **Internal testing** track — release published 2026-08-13
   with `app-release.aab` (v1 / 3.0.0); the "Language Player Internal Testing
   Email List" (`longjiang2005@gmail.com`) is the track tester list.
