@@ -38,6 +38,12 @@ export type FsrsSrsStore = SrsProgressStore;
 
 const DAY_MS = 86_400_000;
 
+/** Milliseconds since epoch for the UTC day containing `now`. */
+function utcDayStart(now: number): number {
+  const d = new Date(now);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
 /** Single shared scheduler instance; parameters stay at ts-fsrs defaults. */
 const scheduler = fsrs({
   request_retention: 0.9,
@@ -365,17 +371,57 @@ export function srsDueLabel(card: FsrsCard, now: number = Date.now()): string {
   return `${Math.round(hours / 24)}d`;
 }
 
+/** Number of cards introduced (created) for saved words on the current UTC day. */
+export function newCardsIntroducedToday(
+  savedWords: Array<{ id: string }>,
+  cards: Record<string, FsrsCard>,
+  now: number = Date.now(),
+): number {
+  const start = utcDayStart(now);
+  let count = 0;
+  for (const sw of savedWords) {
+    const card = cards[sw.id];
+    if (card && card.createdAt >= start) count++;
+  }
+  return count;
+}
+
 /**
- * Compute the blue ("new") deck: the `limit` most recently saved words that
- * have no card yet or an unreviewed `state: new` card, newest-saved first.
- * Rated cards (learning/review/relearning) are never displaced.
+ * How many new-card introductions remain for today (Anki/FSRS daily quota).
+ *
+ * Cards introduced today plus older unrated cards still sitting in the blue
+ * deck both count toward `limit`. The deck does not refill during a session.
+ */
+export function remainingNewCardsToday(
+  savedWords: Array<{ id: string }>,
+  cards: Record<string, FsrsCard>,
+  limit: number = 20,
+  now: number = Date.now(),
+): number {
+  const cap = Math.max(0, Math.floor(limit));
+  const start = utcDayStart(now);
+  const introducedToday = newCardsIntroducedToday(savedWords, cards, now);
+  const olderUnrated = savedWords.filter((sw) => {
+    const card = cards[sw.id];
+    return !!card && isNewCard(card) && card.createdAt < start;
+  }).length;
+  return Math.max(0, cap - introducedToday - olderUnrated);
+}
+
+/**
+ * Compute the blue ("new") deck for today: up to `limit` most recently saved
+ * words that have no card yet or an unreviewed `state: new` card, newest-saved
+ * first, but never more than today's remaining new-card budget. Rated cards
+ * (learning/review/relearning) are never displaced.
  */
 export function planNewDeck(
   savedWords: Array<{ id: string; date?: number }>,
   cards: Record<string, FsrsCard>,
   limit: number,
+  now: number = Date.now(),
 ): { toCreate: string[]; toRemove: string[] } {
   const cap = Math.max(0, Math.floor(limit));
+  const remaining = remainingNewCardsToday(savedWords, cards, cap, now);
 
   const pool = savedWords
     .filter((sw) => {
@@ -387,22 +433,10 @@ export function planNewDeck(
   const desired = pool.slice(0, cap);
 
   return {
-    toCreate: desired.filter((sw) => !cards[sw.id]).map((sw) => sw.id),
+    toCreate: desired
+      .filter((sw) => !cards[sw.id])
+      .slice(0, Math.max(0, remaining))
+      .map((sw) => sw.id),
     toRemove: pool.slice(cap).filter((sw) => cards[sw.id]).map((sw) => sw.id),
   };
-}
-
-/**
- * How many unrated saved words remain to be introduced (Phase 0 definition).
- * The daily limit caps deck size, not the number reviewable in a session, so
- * this counts the whole unrated pool rather than a createdAt-based budget.
- */
-export function remainingNewCardsToday(
-  savedWords: Array<{ id: string }>,
-  cards: Record<string, FsrsCard>,
-): number {
-  return savedWords.filter((sw) => {
-    const card = cards[sw.id];
-    return !card || isNewCard(card);
-  }).length;
 }

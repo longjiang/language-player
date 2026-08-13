@@ -564,9 +564,13 @@ types count while unexpired — there is no `status` filter.
   `fsrs-scheduler.ts` owns the state machine; both review pages, both `useSrs`
   hooks, and the saved-words status dots use the shared wrapper.
 - ✅ **"No more new cards today" message** — implemented (Phase 6): shown in
-  the all-done / no-due states ~~when the unrated pool is exhausted~~
-  (`msg.no_more_new_cards_today`). Trigger update pending (2026-08-13): it
-  should fire when today's new-card budget is exhausted.
+  the all-done / no-due states when today's new-card budget is exhausted
+  (`msg.no_more_new_cards_today`); trigger updated with the UTC-day quota
+  (2026-08-13).
+- ✅ **UTC-day new-card quota** — implemented (2026-08-13):
+  `planNewDeck()` / `remainingNewCardsToday()` and both review pages now stop
+  introducing new cards once today's budget is exhausted; the blue count
+  counts down instead of refilling during a session.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -648,8 +652,10 @@ use client timestamps for LWW.
 ### Daily new-card budget
 
 The old rolling-deck semantics were wrong and have been corrected in
-[New-deck budget](#new-deck-budget). The code still needs to be updated to the
-daily-quota definition.
+[New-deck budget](#new-deck-budget). ~~The code still needs to be updated to
+the daily-quota definition.~~ Implemented (2026-08-13): `planNewDeck()`,
+`remainingNewCardsToday()`, and both review pages now enforce the UTC-day
+quota.
 
 ## Stale Related Docs
 

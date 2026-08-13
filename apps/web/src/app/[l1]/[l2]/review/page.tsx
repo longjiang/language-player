@@ -147,10 +147,9 @@ export default function ReviewPage() {
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
-  // ── Auto-initialize SRS cards for saved words that don't have them ──
-  // The blue ("new") deck always holds the `dailyLimit` most recently saved
-  // words that haven't been rated yet. Newly saved words displace the oldest
-  // blue cards when the deck is full (their cards are removed and re-queued).
+  // ── Auto-initialize SRS cards up to today's new-card budget ──
+  // The blue ("new") deck holds at most `dailyLimit` new cards per UTC day.
+  // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
 
@@ -769,7 +768,7 @@ export default function ReviewPage() {
             <> {t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </p>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyLimit) === 0 && (
           <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
         )}
         <div className="flex gap-3">
@@ -806,7 +805,7 @@ export default function ReviewPage() {
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
         </p>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyLimit) === 0 && (
           <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
         )}
         <Link href={`/${l1.code}/${l2.code}/explore`}>

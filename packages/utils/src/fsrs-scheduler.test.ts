@@ -213,8 +213,8 @@ describe('fsrs-scheduler: deck budgeting', () => {
     { id: 'new', date: NOW - 86_400_000 },
   ];
 
-  it('creates the newest cards first and never displaces rated cards', () => {
-    const plan = planNewDeck(savedWords, {}, 2);
+  it('creates the newest cards first up to today\'s budget', () => {
+    const plan = planNewDeck(savedWords, {}, 2, NOW);
     expect(plan.toCreate).toEqual(['new', 'mid']);
     expect(plan.toRemove).toEqual([]);
 
@@ -222,7 +222,19 @@ describe('fsrs-scheduler: deck budgeting', () => {
       new: newCard(NOW),
       mid: rate(newCard(NOW), 'good', NOW),
     };
-    const next = planNewDeck(savedWords, cards, 2);
+    // The two cards above already consumed today's budget of 2 — no refill.
+    const next = planNewDeck(savedWords, cards, 2, NOW);
+    expect(next.toCreate).toEqual([]);
+    expect(next.toRemove).toEqual([]);
+  });
+
+  it('resets the daily budget on the next UTC day', () => {
+    const cards: Record<string, FsrsCard> = {
+      new: newCard(NOW),
+      mid: rate(newCard(NOW), 'good', NOW),
+    };
+    const tomorrow = NOW + 86_400_000;
+    const next = planNewDeck(savedWords, cards, 2, tomorrow);
     expect(next.toCreate).toEqual(['old']);
     expect(next.toRemove).toEqual([]);
   });
@@ -233,18 +245,22 @@ describe('fsrs-scheduler: deck budgeting', () => {
       mid: newCard(NOW),
       old: newCard(NOW),
     };
-    const plan = planNewDeck(savedWords, cards, 2);
+    const plan = planNewDeck(savedWords, cards, 2, NOW);
     expect(plan.toCreate).toEqual([]);
     expect(plan.toRemove).toEqual(['old']);
   });
 
-  it('counts remaining new cards as the unrated pool', () => {
+  it('counts the remaining daily new-card budget', () => {
     const cards: Record<string, FsrsCard> = {
       new: newCard(NOW),
       mid: rate(newCard(NOW), 'good', NOW),
     };
-    expect(remainingNewCardsToday(savedWords, cards)).toBe(2);
-    expect(remainingNewCardsToday(savedWords, {})).toBe(3);
+    expect(remainingNewCardsToday(savedWords, cards, 2, NOW)).toBe(0);
+    expect(remainingNewCardsToday(savedWords, {}, 2, NOW)).toBe(2);
+
+    // Older unrated cards still in the blue deck count against today's budget.
+    const older = { ...newCard(NOW - 86_400_000), createdAt: NOW - 86_400_000 };
+    expect(remainingNewCardsToday(savedWords, { old: older }, 2, NOW)).toBe(1);
   });
 });
 
@@ -329,8 +345,8 @@ describe('fsrs-scheduler: store & deck edge cases', () => {
 
   it('handles zero and negative deck limits', () => {
     const saved = [{ id: 'a', date: NOW }, { id: 'b', date: NOW - 1000 }];
-    expect(planNewDeck(saved, {}, 0)).toEqual({ toCreate: [], toRemove: [] });
-    expect(planNewDeck(saved, {}, -5)).toEqual({ toCreate: [], toRemove: [] });
+    expect(planNewDeck(saved, {}, 0, NOW)).toEqual({ toCreate: [], toRemove: [] });
+    expect(planNewDeck(saved, {}, -5, NOW)).toEqual({ toCreate: [], toRemove: [] });
   });
 });
 

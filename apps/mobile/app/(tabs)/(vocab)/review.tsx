@@ -173,10 +173,9 @@ export default function ReviewScreen() {
   /** Log the loaded deck once per language + user. */
   const deckLoggedKeyRef = useRef<string | null>(null);
 
-  // ── Auto-initialize SRS cards for saved words that don't have them ──
-  // The blue ("new") deck always holds the `dailyNewLimit` most recently saved
-  // words that haven't been rated yet. Newly saved words displace the oldest
-  // blue cards when the deck is full (their cards are removed and re-queued).
+  // ── Auto-initialize SRS cards up to today's new-card budget ──
+  // The blue ("new") deck holds at most `dailyNewLimit` new cards per UTC day.
+  // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
 
@@ -771,7 +770,7 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </Text>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyNewLimit) === 0 && (
           <Text className="mb-2 text-center text-sm text-muted-foreground">
             {t('msg.no_more_new_cards_today')}
           </Text>
@@ -813,7 +812,7 @@ export default function ReviewScreen() {
             <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
         </Text>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards) === 0 && (
+        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyNewLimit) === 0 && (
           <Text className="mb-2 text-center text-sm text-muted-foreground">
             {t('msg.no_more_new_cards_today')}
           </Text>
