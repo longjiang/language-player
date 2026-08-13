@@ -60,19 +60,30 @@ interface TokenizedLineProps {
   text: string;
   l2Code: string;
   isActive: boolean;
+  /** True when this line is inside the active tokenization lookahead window. */
+  tokenizeAhead: boolean;
   showPhonetics: boolean;
   onClickLine: () => void;
   onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, showPhonetics, onClickLine, onTokenClick }) => {
+  ({ text, l2Code, isActive, tokenizeAhead, showPhonetics, onClickLine, onTokenClick }) => {
     const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
-    const { getTokens, isQueued } = useBatchLemmatize();
+    const { getTokens, isQueued, enqueue } = useBatchLemmatize();
 
-    const tokens = visible ? getTokens(text, l2Code) : null;
-    const queued = visible && !tokens && isQueued(text, l2Code);
+    const shouldTokenize = visible || tokenizeAhead;
+    const tokens = shouldTokenize ? getTokens(text, l2Code) : null;
+    const queued = shouldTokenize && !tokens && isQueued(text, l2Code);
+
+    // Lines inside the lookahead window request tokenization even before they
+    // scroll into view; the shared queue coalesces them into one batch.
+    useEffect(() => {
+      if (!shouldTokenize) return;
+      if (getTokens(text, l2Code) || isQueued(text, l2Code)) return;
+      enqueue(text, l2Code);
+    }, [shouldTokenize, text, l2Code, getTokens, isQueued, enqueue]);
 
     // ── Lazy visibility: show raw text until scrolled near viewport ──
     useEffect(() => {
@@ -194,6 +205,7 @@ interface CueLineProps {
   cue: SubtitleCue;
   index: number;
   isActive: boolean;
+  tokenizeAhead: boolean;
   isPro: boolean;
   l2Code: string;
   showPhonetics: boolean;
@@ -210,7 +222,7 @@ interface CueLineProps {
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
+  ({ cue, index, isActive, tokenizeAhead, isPro, l2Code, showPhonetics, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -263,6 +275,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             text={cue.text}
             l2Code={l2Code}
             isActive={isActive}
+            tokenizeAhead={tokenizeAhead}
             showPhonetics={showPhonetics}
             onClickLine={handleClick}
             onTokenClick={handleTokenClickWithCue}
@@ -314,8 +327,8 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
 
 // ── Transcript App ────────────────────────────────────────────────────────
 
-/** Number of cues ahead of the active cue to pre-fetch tokens for. */
-const PRE_FETCH_LOOKAHEAD = 15;
+/** Number of cues ahead of the active cue to tokenize/render proactively. */
+const TOKENIZE_LOOKAHEAD = 5;
 
 /** Font size percentages for text scale levels 0–4. */
 const TEXT_SCALE_SIZES = [87, 100, 112, 125, 150] as const;
@@ -440,18 +453,27 @@ Text: ${cue.text}`;
 
   // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
   // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
-  const prefectWindowRef = useRef(-1);
+  const prefetchWindowRef = useRef(-1);
 
   // Reset the pre-fetch window when cues change (e.g., video navigation)
   // so the first visible cue of the new video triggers a fresh batch.
   useEffect(() => {
-    prefectWindowRef.current = -1;
+    prefetchWindowRef.current = -1;
   }, [cues]);
 
   useEffect(() => {
-    if (activeCueIdx === prevActiveRef.current) return;
+    const activeChanged = activeCueIdx !== prevActiveRef.current;
     prevActiveRef.current = activeCueIdx;
-    if (activeCueIdx < 0) return;
+
+    // Before playback starts, tokenize the first few cues so the panel isn't
+    // showing raw text when the video begins.
+    if (activeCueIdx < 0) {
+      const texts = cues.slice(0, TOKENIZE_LOOKAHEAD).map(c => c.text);
+      if (texts.length > 0) preFetch(texts, l2Code);
+      return;
+    }
+
+    if (!activeChanged) return;
     const el = listRef.current?.querySelector(
       `[data-index="${activeCueIdx}"]`,
     ) as HTMLElement | null;
@@ -460,15 +482,15 @@ Text: ${cue.text}`;
     }
 
     // Only pre-fetch when the active cue crosses into a new window boundary.
-    // Window size = PRE_FETCH_LOOKAHEAD / 2 so we re-fetch roughly when
-    // the "next 15" window has advanced by ~7-8 cues.
-    const windowSize = Math.max(1, Math.floor(PRE_FETCH_LOOKAHEAD / 2));
+    // Window size = TOKENIZE_LOOKAHEAD / 2 so we re-fetch roughly when
+    // the "next 5" window has advanced by ~2-3 cues.
+    const windowSize = Math.max(1, Math.floor(TOKENIZE_LOOKAHEAD / 2));
     const windowIdx = Math.floor(activeCueIdx / windowSize);
-    if (windowIdx === prefectWindowRef.current) return;
-    prefectWindowRef.current = windowIdx;
+    if (windowIdx === prefetchWindowRef.current) return;
+    prefetchWindowRef.current = windowIdx;
 
     const start = Math.max(0, activeCueIdx);
-    const end = Math.min(cues.length, activeCueIdx + PRE_FETCH_LOOKAHEAD);
+    const end = Math.min(cues.length, activeCueIdx + TOKENIZE_LOOKAHEAD);
     const texts: string[] = [];
     for (let i = start; i < end; i++) {
       texts.push(cues[i].text);
@@ -494,6 +516,7 @@ Text: ${cue.text}`;
             cue={cue}
             index={i}
             isActive={i === activeCueIdx}
+            tokenizeAhead={activeCueIdx < 0 ? i < TOKENIZE_LOOKAHEAD : i >= activeCueIdx && i <= activeCueIdx + TOKENIZE_LOOKAHEAD}
             isPro={isPro}
             l2Code={l2Code}
             showPhonetics={showPhonetics}
