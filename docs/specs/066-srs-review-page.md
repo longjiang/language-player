@@ -582,6 +582,9 @@ types count while unexpired — there is no `status` filter.
   no longer completes on failure, retries every 5 seconds, filters server rows
   that have an unacked local delete, and retries pending saved-word ops every
   10 seconds.
+- ✅ **Mobile SRS hydration retry** — implemented (2026-08-13): failed
+  `GET /srs` fetches retry every 5 seconds when online; Offline Mode and
+  detected-offline use the local store.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -653,6 +656,10 @@ retries a failed fetch. The mobile review screen now waits for `cloudHydrated`
 before auto-initializing (2026-08-13), but a failed fetch still needs a retry;
 auto-init can otherwise run after a failed fetch and push new cards over rated
 server cards. Mobile SRS writes do go through the durable outbox.
+
+✅ **Fixed (2026-08-13):** mobile `GET /srs` now retries every 5 seconds when
+online; Offline Mode / detected-offline falls back to the local store instead
+of blocking the review screen.
 
 ### Mobile: cap rejections are silently dropped
 
