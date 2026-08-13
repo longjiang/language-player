@@ -1037,12 +1037,13 @@ interim path until it lands.
 
 - ✅ Play Console developer-account verification (existing account verified
   2026-08-11)
-- ⬜ Create the Play Billing product (lifetime, non-consumable) and add license
-  testers
-- ⬜ Implement Play Billing in `apps/mobile` (SPEC-014 target; product ID TBD)
+- ✅ Create the Play Billing product (lifetime, non-consumable) and add license
+  testers (`pro_go` created; `longjiang2005@gmail.com` added)
+- ✅ Implement Play Billing in `apps/mobile` (SPEC-068; product `pro_go`)
 - ⬜ Run G1–G5 from [2.5](#25-google-play-billing-phase-3--android):
   license-tester purchase, always-declines instrument, internal/closed
-  test-track purchase, restore/entitlement sync, bogus token
+  test-track purchase, restore/entitlement sync, bogus token (G1 ✅
+  2026-08-13; G5 ✅ via SPEC-068 § 6.4 pytest; G2–G4 pending)
 - ⬜ Verify the backend grant + MailerLite sync through the shared subscription
   path
 - ⬜ Exit: Android in-app purchase ready for submission and approval

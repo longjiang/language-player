@@ -259,15 +259,20 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
   `pythonvps.zerotohero.ca` present, no localhost.
 - [x] Upload `app-release.aab` to **Internal testing** in Play Console —
   published 2026-08-13.
-- [ ] Install from Play on the Pixel using a license-tester account (Mary/Bob).
-- [ ] Confirm the production backend has the Google service account env vars
-  set and is reachable (`pythonvps.zerotohero.ca`).
+- [x] Install from Play on the Pixel using a license-tester account (G1 used
+  `longjiang2005@gmail.com`; Mary/Bob were not used).
+- [x] Confirm the production backend has the Google service account env vars
+  set and is reachable (`pythonvps.zerotohero.ca`) — new key
+  `data/zh-zerotohero-lp-play-billing-2.json` deployed, `.env` updated, and
+  gunicorn restarted 2026-08-13.
 
 ## 9. Step 6 — Run the Play Billing test matrix
 
-- [ ] **G1** — license tester → Go Pro → Play Billing button → confirm → backend
+- [x] **G1** — license tester → Go Pro → Play Billing button → confirm → backend
   verifies token → `type=lifetime`, `payment_processor=play-billing` → Pro
-  unlocks.
+  unlocks (passed 2026-08-13 with `longjiang2005@gmail.com` on the
+  Closed-testing build, verified through the `lp-play-billing-2` service
+  account).
 - [ ] **G2** — "always declines" test card → purchase fails → no subscription
   row → localized error, no stuck state.
 - [ ] **G3** — promote to Closed testing → repeat G1 on the test-track build.
@@ -312,27 +317,29 @@ re-run the same scenarios under a different spec number.
 - [x] Play Console app created (`ca.zerotohero.go`)
 - [x] Billing product created and configured (`pro_go`, US$169, activated
   2026-08-13)
-- [ ] License testers added
-- [ ] Service account + Android Publisher API enabled
+- [x] License testers added (`longjiang2005@gmail.com`)
+- [x] Service account + Android Publisher API enabled
+  (`lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com` with app Admin;
+  401 → 400 flip verified 2026-08-13)
 - [x] Mobile purchase/restore flow implemented (iOS + Android)
 - [x] Backend `/play_billing_success` implemented + pytest green
 - [x] Dev build QA on Pixel passed
 - [x] Signed AAB uploaded to Internal testing (v1 / 3.0.0, published
   2026-08-13)
-- [ ] G1–G5 passed
+- [ ] G1–G5 passed (G1 ✅ 2026-08-13; G5 ✅ via pytest; G2–G4 pending)
 - [ ] Store compliance checked (no external payment links)
 
 ## 13. Open items / decisions
 
 - ~~Product ID~~ — ✅ `pro_go` confirmed.
 - **Backend test target** (Step 0) — ✅ **production** (AAB embeds
-  `https://pythonvps.zerotohero.ca`); service account env vars still pending
-  on the production backend before G1–G5.
+  `https://pythonvps.zerotohero.ca`); service account env vars deployed
+  2026-08-13 (`lp-play-billing-2` key + `.env` + gunicorn restart).
 - **Universal links** — the uploaded AAB predates
   `intentFilters`/`associatedDomains`; run `expo prebuild` + rebuild before
   production (SPEC-069).
-- Service account key + `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` on the chosen
-  backend; Flask restart required.
+- ✅ Service account key + `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` on the chosen
+  backend; Flask restart required — done 2026-08-13 (`lp-play-billing-2`).
 - ~~Upload key~~ — ✅ generated 2026-08-12 (`~/.android/lp-upload.jks`).
 - Store listing assets — ✅ produced (SPEC-070); upload/assign in each store
   console remains manual.
