@@ -15,7 +15,8 @@
   (`ca.zerotohero.app`).
 - ✅ The **"Language Player 3" app exists in Play Console** (package
   `ca.zerotohero.go`, created 2026-08-12).
-- 🟡 The **`pro_go` billing product is being created** in Play Console.
+- ✅ The **`pro_go` billing product is created + activated** (2026-08-13),
+  and the release-signed AAB (v1 / 3.0.0) is uploaded to **Internal testing**.
 - ✅ **Play Billing is implemented** in `apps/mobile` (Step 2) and the
   backend (Step 3); the Android buy-on-website button was removed.
 - ✅ **Dev build installed and QA'd on the Pixel** (Step 4); LogBox warnings
@@ -78,7 +79,9 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
   - Create a service account, download the JSON key.
   - Grant the service account **View financial data, orders, and cancellation
     survey responses** (add Manage orders/subscriptions if prompted).
-- [ ] Set up the **Internal testing** track (needed before G1/G3).
+- [x] Set up the **Internal testing** track — release published 2026-08-13
+  with `app-release.aab` (v1 / 3.0.0); installs from Play pending real
+  Google-account testers.
 
 ## 5. Step 2 — Mobile implementation (Codex/human pair)
 
@@ -176,10 +179,15 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
 - [x] Configure the upload key + `android/key.properties` + release signing
   (SPEC-067 § 3.4).
 - [ ] `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca npx expo prebuild --platform android`
-  (re-apply signing edits if the project was regenerated).
-- [ ] `cd android && ./gradlew bundleRelease`
-- [ ] Verify no `localhost:5001` in the embedded bundle (SPEC-067 § 3.6).
-- [ ] Upload `app-release.aab` to **Internal testing** in Play Console.
+  (re-apply signing edits if the project was regenerated) — **deferred**: the
+  uploaded AAB predates the `intentFilters`/`associatedDomains` config
+  (SPEC-069); regenerate + rebuild before production.
+- [x] `cd android && ./gradlew bundleRelease` — built 2026-08-12/13, signed,
+  70 MB AAB.
+- [x] Verify no `localhost:5001` in the embedded bundle (SPEC-067 § 3.6) —
+  `pythonvps.zerotohero.ca` present, no localhost.
+- [x] Upload `app-release.aab` to **Internal testing** in Play Console —
+  published 2026-08-13.
 - [ ] Install from Play on the Pixel using a license-tester account (Mary/Bob).
 - [ ] Confirm the production backend has the Google service account env vars
   set and is reachable (`pythonvps.zerotohero.ca`).
@@ -231,21 +239,27 @@ re-run the same scenarios under a different spec number.
 ## 12. Release checklist (summary)
 
 - [x] Play Console app created (`ca.zerotohero.go`)
-- [~] Billing product created and configured (`pro_go` in progress)
+- [x] Billing product created and configured (`pro_go`, US$169, activated
+  2026-08-13)
 - [ ] License testers added
 - [ ] Service account + Android Publisher API enabled
 - [x] Mobile purchase/restore flow implemented (iOS + Android)
 - [x] Backend `/play_billing_success` implemented + pytest green
 - [x] Dev build QA on Pixel passed
-- [ ] Signed AAB uploaded to Internal testing
+- [x] Signed AAB uploaded to Internal testing (v1 / 3.0.0, published
+  2026-08-13)
 - [ ] G1–G5 passed
 - [ ] Store compliance checked (no external payment links)
 
 ## 13. Open items / decisions
 
 - ~~Product ID~~ — ✅ `pro_go` confirmed.
-- **Backend test target** (Step 0) — still open: production vs staging vs
-  local Flask. Decide before building the AAB (it sets `EXPO_PUBLIC_API_URL`).
+- **Backend test target** (Step 0) — ✅ **production** (AAB embeds
+  `https://pythonvps.zerotohero.ca`); service account env vars still pending
+  on the production backend before G1–G5.
+- **Universal links** — the uploaded AAB predates
+  `intentFilters`/`associatedDomains`; run `expo prebuild` + rebuild before
+  production (SPEC-069).
 - Service account key + `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` on the chosen
   backend; Flask restart required.
 - ~~Upload key~~ — ✅ generated 2026-08-12 (`~/.android/lp-upload.jks`).
