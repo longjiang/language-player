@@ -194,9 +194,8 @@ compatibility window.
 > show 33 red/green cards while nothing is due. Anki/FSRS show **due-today**
 > counts: blue = today's remaining new-card budget, red = learning/relearning
 > cards due on a step right now, green = review cards due now (including
-> overdue). This spec was corrected today; the code (`countDeckStates()` and
-> both review pages) still implements the old behavior and must be updated to
-> match.
+> overdue). This spec was corrected and implemented today:
+> `countDeckStates()` and both review pages now match this definition.
 
 ### New-deck budget
 
@@ -315,8 +314,10 @@ recomputes the queue on the next store change (rating, removal) or page reload.
 5. Due cards = saved words whose card has `due <= now`, sorted by
    `due` ascending (oldest due first).
 6. The header shows three counts:
-   - blue = new cards introduced/available today — the remaining daily
-     new-card budget (`remainingNewCardsToday()`);
+   - blue = unrated (`state: new`) cards in the blue deck — the deck is
+     prefilled with today's new-card budget, so this is the remaining budget:
+     it counts down as each new card is rated and does not refill until the
+     next UTC day (`countDeckStates()` caps it at `dailyNewLimit`);
    - red = again — learning / relearning cards currently due on a step
      (`due <= now`);
    - green = review — `state: review` cards currently due
@@ -585,6 +586,12 @@ types count while unexpired — there is no `status` filter.
   `planNewDeck()` / `remainingNewCardsToday()` and both review pages now stop
   introducing new cards once today's budget is exhausted; the blue count
   counts down instead of refilling during a session.
+- ✅ **Anki due-today header counts** — implemented (2026-08-13):
+  `countDeckStates()` now counts red = learning/relearning cards due on a
+  step right now and green = review cards due now (including overdue); blue =
+  unrated new cards capped by `dailyNewLimit`. Future-dated learning/review
+  cards no longer inflate the header, so an all-done deck shows 0 even when
+  the language has future cards waiting.
 - ✅ **SRS hydration race guard** — implemented (2026-08-13): both review
   pages wait for `useSrs().cloudHydrated` before auto-initializing new cards;
   web retries failed `GET /srs` fetches.
