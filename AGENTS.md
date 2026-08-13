@@ -412,6 +412,10 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
   evidence. Ambient metadata (e.g. an open browser tab) does not tell you
   which environment the user means. When in doubt, the user's description
   wins.
+- **If you can't see an attached image, OCR it.** Never guess what a
+  screenshot or clipboard image says from partial context. Extract the text
+  with OCR (e.g. macOS Vision via a short Swift snippet) and treat the
+  extracted text as evidence before answering.
 - **Log the actual value, don't guess it.** If you need to know what error
   code, response body, or state arrives, add a log line and observe it.
   One log line beats any number of hypotheses.
