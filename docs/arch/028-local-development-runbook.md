@@ -292,6 +292,17 @@ is found:
 
 Only run the build commands below if no usable build exists.
 
+#### Start Metro
+
+```bash
+cd apps/mobile
+source ~/.nvm/nvm.sh && nvm use 22
+ulimit -n 65536 && npx expo start   # ulimit avoids EMFILE watcher crashes
+```
+
+Start Metro before building/installing so the app can connect as soon as it
+opens.
+
 #### iOS (iPhone/iPad)
 
 Requires: device connected and unlocked, Developer Mode enabled, and the
@@ -303,14 +314,6 @@ cd apps/mobile
 source ~/.nvm/nvm.sh && nvm use 22
 ipconfig getifaddr en0   # Mac LAN IP, e.g. 192.168.1.130
 EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:ios --device
-```
-
-Then start Metro:
-
-```bash
-cd apps/mobile
-source ~/.nvm/nvm.sh && nvm use 22
-ulimit -n 65536 && npx expo start   # ulimit avoids EMFILE watcher crashes
 ```
 
 Then open the app on the device — it connects to Metro over the LAN and loads
@@ -325,8 +328,8 @@ ipconfig getifaddr en0   # Mac LAN IP, e.g. 192.168.1.130
 EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:android
 ```
 
-Then start Metro with the same command as above, then open the app on the
-device.
+Then open the app on the device — it connects to Metro over the LAN and loads
+the bundle.
 
 > ⚠️ `npx expo run:ios` / `npx expo run:android` are native builds (15–20+
 > minutes, run CocoaPods/Gradle). Never run them without the user's go-ahead.
