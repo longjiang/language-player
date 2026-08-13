@@ -361,7 +361,10 @@ export function DictionaryPopup({
   const maxScrollHeight = Math.max(0, popupHeight - headerHeight - FIXED_VERTICAL_SPACE);
 
   return (
-    <DialogPrimitive.Root open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
+    // asChild: the only child is the portal, so the Root renders no placeholder
+    // View. This lets TokenizedText be nested inside a parent Text (e.g. AI
+    // explanation paragraphs) without embedding a View in the text layout tree.
+    <DialogPrimitive.Root asChild open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
       <DialogPrimitive.Portal>
         {/* Overlay */}
         <Animated.View

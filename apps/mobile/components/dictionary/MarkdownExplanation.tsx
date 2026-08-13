@@ -78,34 +78,38 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
     return out;
   }, [line]);
 
+  // One parent Text per markdown line. Plain parts and backticked spans are
+  // nested Text children, so the native text engine lays them out inline like
+  // web's <span> and wraps naturally at the container edge. The previous
+  // implementation put the token span in a nested flex-row View, which on
+  // device (RN 0.86) measures a wrapping Text as a single-line block and
+  // forces every following plain part onto a new line.
   return (
-    <View className="flex-row flex-wrap items-baseline">
+    <Text className="text-foreground" style={{ fontSize: 16, lineHeight: 32 }}>
       {parts.map((part, i) => {
         if (part.code) {
           // Interactive tokenized L2 span — bold, no chip background.
           return (
-            <View key={i} className="flex-row items-baseline">
-              <Suspense fallback={<Text className="text-foreground">{part.value}</Text>}>
-                <LazyTokenizedText
-                  text={part.value}
-                  l2Code={l2Code}
-                  leading="loose"
-                  phonetics={false}
-                  highlightSaved={false}
-                  quickGloss={false}
-                  showDefinition={false}
-                  byeonggi={false}
-                  mode="normal"
-                  bold
-                  textScale={0}
-                />
-              </Suspense>
-            </View>
+            <Suspense key={i} fallback={<Text className="text-foreground">{part.value}</Text>}>
+              <LazyTokenizedText
+                text={part.value}
+                l2Code={l2Code}
+                leading="none"
+                phonetics={false}
+                highlightSaved={false}
+                quickGloss={false}
+                showDefinition={false}
+                byeonggi={false}
+                mode="normal"
+                bold
+                textScale={0}
+              />
+            </Suspense>
           );
         }
         return <InlineMarkdown key={i} text={part.value} />;
       })}
-    </View>
+    </Text>
   );
 }
 
@@ -135,8 +139,7 @@ function InlineMarkdown({ text }: { text: string }) {
       {parts.map((part, i) => (
         <Text
           key={i}
-          className={`text-foreground ${part.bold ? 'font-bold' : ''} ${part.italic ? 'italic' : ''}`}
-          style={{ fontSize: 16, lineHeight: 32 }}
+          className={`${part.bold ? 'font-bold' : ''} ${part.italic ? 'italic' : ''}`}
         >
           {part.value}
         </Text>
