@@ -824,6 +824,11 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {formatNextDueLabel(nextDue.due, l1Lang.code)}.</>
           )}
         </Text>
+        {nextDue && (
+          <Text className="mb-4 text-center text-xs text-muted-foreground/60">
+            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
+          </Text>
+        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
@@ -855,6 +860,11 @@ export default function ReviewScreen() {
             <> {t('msg.save_more_words')}</>
           )}
         </Text>
+        {nextDue && (
+          <Text className="mb-4 text-center text-xs text-muted-foreground/60">
+            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1Lang.code)}
+          </Text>
+        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
