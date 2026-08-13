@@ -828,12 +828,9 @@ export default function ReviewPage() {
             <> {t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </p>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyLimit) === 0 && (
-          <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
-        )}
         <div className="flex gap-3">
           <Link href={`/${l1.code}/${l2.code}/explore`}>
-            <Button variant="outline">{t('action.explore_videos')}</Button>
+            <Button>{t('action.explore_videos')}</Button>
           </Link>
         </div>
       </div>
@@ -847,12 +844,9 @@ export default function ReviewPage() {
       .filter((c) => c.due > Date.now())
       .sort((a, b) => a.due - b.due)[0];
 
-    const unscheduledCount = l2SavedWords.filter((sw) => !langCards[sw.id]).length;
-    const queued = unscheduledCount > 0;
-
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <BookOpen className="w-12 h-12 text-muted-foreground" />
+        <CheckCircle2 className="w-12 h-12 text-green-500" />
         <h2 className="text-xl font-semibold">{t('msg.no_cards_due')}</h2>
         <p className="text-muted-foreground text-center max-w-md">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2.name })}
@@ -861,15 +855,9 @@ export default function ReviewPage() {
           ) : (
             <> {t('msg.save_more_words')}</>
           )}
-          {queued && (
-            <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
-          )}
         </p>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyLimit) === 0 && (
-          <p className="text-sm text-muted-foreground">{t('msg.no_more_new_cards_today')}</p>
-        )}
         <Link href={`/${l1.code}/${l2.code}/explore`}>
-          <Button variant="outline">{t('action.explore_videos')}</Button>
+          <Button>{t('action.explore_videos')}</Button>
         </Link>
       </div>
     );
