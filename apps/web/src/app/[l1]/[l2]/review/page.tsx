@@ -14,7 +14,7 @@ import {
   msUntilNextUtcDay,
   newRatingId,
 } from '@langplayer/utils';
-import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
+import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import {
   getCachedEntries,
   getCachedEntryById,
@@ -42,6 +42,7 @@ import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -246,11 +247,13 @@ export default function ReviewPage() {
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.word ? firstLookupForm(currentDueCard.word) : '';
   const allCachedEntries = useEntryCache(l2Code, wordForm);
+  const exactCachedEntry = useEntryByIdCache(l2Code, currentDueCard?.word.id ?? '');
 
   // Try all forms for cache lookup, not just forms[0]
   const cachedEntry = useMemo(() => {
     const sw = currentDueCard?.word;
     if (!sw) return null;
+    if (exactCachedEntry) return exactCachedEntry;
     // Try each form (including kana/kanji variants) to find a cache match
     for (const form of sw.forms) {
       const entries = getCachedEntries(l2Code, form);
@@ -261,7 +264,7 @@ export default function ReviewPage() {
     }
     // Fall back to the reactive hook value for forms[0]
     return allCachedEntries?.find((e) => e.id === sw.id) ?? null;
-  }, [currentDueCard?.word?.id, currentDueCard?.word?.forms, l2Code, wordForm, allCachedEntries]);
+  }, [currentDueCard?.word?.id, currentDueCard?.word?.forms, exactCachedEntry, l2Code, wordForm, allCachedEntries]);
 
   const currentEntry = useMemo((): DictionaryEntry | null => {
     return cachedEntry;
@@ -602,6 +605,13 @@ export default function ReviewPage() {
     (async () => {
       const base = baseCode(l2.code);
       const form = firstLookupForm(sw);
+      log('[review] exact-entry resolve', {
+        id,
+        form,
+        forms: sw.forms,
+        contextForm: sw.context?.form,
+        instanceForms: (sw.instances ?? []).map((i) => i.form),
+      });
       let exactFound = false;
       try {
         const decomposed = decomposeWordId(id, base);
@@ -613,6 +623,13 @@ export default function ReviewPage() {
             const data = await res.json();
             const entry = data?.entry as DictionaryEntry | undefined;
             const matches = !!entry && isSameEntryId(id, entry.id, base);
+            log('[review] exact-entry fetch', {
+              id,
+              dict: decomposed.dict,
+              entryId: entry?.id,
+              status: res.status,
+              matches,
+            });
             if (!cancelled && matches) {
               // Cache under the saved id even when the API returns the scoped
               // form (e.g. "ja-…" for a saved "llm-ja-…" id).
@@ -659,12 +676,19 @@ export default function ReviewPage() {
           }
         }
         if (cacheFound) {
+          log('[review] fallback cache hit', { id, candidate: cacheFound.id, head: cacheFound.head });
           setFallbackEntry(cacheFound);
         } else {
           try {
             for (const candidate of candidates) {
-              const results = await lookupL1Text(candidate, l2Code, l1.code);
               if (cancelled) break;
+              const results = await lookupL1Text(candidate, l2Code, l1.code);
+              log('[review] fallback lookup', {
+                id,
+                candidate,
+                count: results.length,
+                results: results.map((r) => ({ id: r.id, head: r.head, match_type: r.match_type })),
+              });
               const found = pickBest(results);
               if (found) {
                 setFallbackEntry(found);
@@ -674,6 +698,9 @@ export default function ReviewPage() {
           } catch {
             // Keep the no-definition state.
           }
+        }
+        if (!cancelled && !exactFound && !cacheFound) {
+          log('[review] no definition after fallback', { id });
         }
       }
       if (!cancelled) {

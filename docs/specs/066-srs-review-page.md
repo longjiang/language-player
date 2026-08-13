@@ -718,6 +718,16 @@ another saved form, the head, the context form, or an instance form resolved.
 head, context form, and instance form, and try each one through the cache and
 text lookup before showing the no-definition state.
 
+### Review back side: ID-cache-only entries were skipped
+
+An entry could exist in the shared ID cache while the text cache for the
+card's forms was still empty. `currentEntry` stayed null, the exact-entry
+effect bailed out early, and the back side showed the no-definition state.
+
+✅ **Fixed (2026-08-13):** the web review card now reads the reactive
+`useEntryByIdCache` before falling back to text-cache lookups, so a cached
+entry by saved ID always renders.
+
 ## Stale Related Docs
 
 - **SPEC-053 inventory staleness** — fixed (2026-08-11): the syncable-data
