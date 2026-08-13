@@ -162,12 +162,20 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
   - **Support URL**: https://language-player.netlify.app/en/en/docs ✅
   - **Store icon** 128×128 uploaded (apps/chrome-extension/icons/icon128.png) ✅
 
+### ✅ Privacy tab COMPLETED 2026-08-13 (agent, saved)
+
+Filled and saved on the item's Privacy page:
+- **Single purpose description**: interactive time-synced transcript + clickable word definitions for language learning on the 6 streaming sites.
+- **Permission justifications** (all required): webRequest (subtitle interception), downloads (user-initiated transcript/subtitle saves), storage (language prefs + session token), scripting (content-script + MAIN-world Netflix injection), host permission (only the 6 streaming domains; no browsing history).
+- **Remote code**: **No** (all code bundled via esbuild — no eval/external JS).
+- **Data usage**: Personally identifiable information (email login), Authentication information (credentials/token), Website content (subtitle text). All 3 certifications checked (no selling, single-purpose only, no creditworthiness).
+- **Privacy policy URL**: https://language-player.netlify.app/en/en/docs/privacy-policy
+
 ### Remaining (2026-08-13)
 - [ ] **WAIT for identity verification approval** (Google review, "a few days"). Check Settings → Profile or payment profile for status.
-- [ ] **Screenshots** (≥1, max 5; 1280×800 or 640×400, JPEG or 24-bit PNG no-alpha) — none exist; capture the extension UI in action (transcript panel on a streaming show, dictionary popup on word click, popup UI).
+- [ ] **Screenshots** (≥1, max 5; 1280×800 or 640×400, JPEG or 24-bit PNG no-alpha) — **THE ONLY remaining blocker**; "Why can't I submit?" says "At least one screenshot or video is required." None exist; capture the extension UI in action (transcript panel on a streaming show, dictionary popup on word click, popup UI).
 - [ ] **Small promo tile 440×280** (JPEG/PNG no-alpha) — recommended.
-- [ ] **Privacy tab** (Privacy practices) — certify data usage + privacy policy URL (https://language-player.netlify.app/en/en/docs/privacy-policy).
-- [ ] **Submit for review** (button enabled once verification approved + required fields done).
+- [ ] **Submit for review** (button enabled once screenshots added; verification approval also gates publishing).
 
 ## Update Process (future versions)
 
