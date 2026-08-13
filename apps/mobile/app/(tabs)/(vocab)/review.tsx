@@ -111,6 +111,23 @@ function wordLabel(word: { id: string; head?: string; forms?: string[] }): strin
   return word.forms?.[0] || word.head || word.id;
 }
 
+/** First real dictionary-lookup form for a saved word (skips legacy "?"). */
+function firstLookupForm(word: {
+  id: string;
+  head?: string;
+  forms?: string[];
+  context?: { form?: string };
+  instances?: Array<{ form?: string }>;
+}): string {
+  const candidates = [
+    ...(word.forms ?? []),
+    word.head,
+    word.context?.form,
+    ...(word.instances ?? []).map((i) => i.form),
+  ];
+  return candidates.find((f) => typeof f === 'string' && !!f && f !== '?') ?? word.id;
+}
+
 export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
@@ -261,7 +278,7 @@ export default function ReviewScreen() {
 
   // ── Derive entry for the current card from the reactive ID cache ──
   const currentDueCard = dueCards[currentIndex];
-  const wordForm = currentDueCard?.forms?.[0] || currentDueCard?.head || currentDueCard?.id || '';
+  const wordForm = currentDueCard ? firstLookupForm(currentDueCard) : '';
   // The ID cache stores entries by their raw `entry.id` from the dictionary
   // API response — EDICT entries use bare numeric IDs ("73458"), LLM entries
   // use their full ID ("llm-ja-…"). Both are stored as-is, so the saved
@@ -338,22 +355,30 @@ export default function ReviewScreen() {
         // old EDICT row no longer resolves). Fall back to the best text-lookup
         // entry for the same head so the back side still shows a definition.
         const base = baseL2ForEntry;
-        const form = currentDueCard?.forms?.[0]
-          || currentDueCard?.head
-          || currentDueCard?.id
-          || id;
+        const form = currentDueCard ? firstLookupForm(currentDueCard) : id;
         const pickBest = (results: DictionaryEntry[]): DictionaryEntry | undefined =>
           results.find((e) => isSameEntryId(id, e.id, base))
           ?? results.find((e) => e.head === form)
           ?? results.find((e) => e.match_type === 'exact')
           ?? results[0];
         try {
-          const results = await lookupL1Text(form, l2Code, l1Lang.code);
-          if (!cancelled) {
+          const candidates = [
+            ...new Set([
+              form,
+              ...(currentDueCard?.forms ?? []),
+              currentDueCard?.head,
+              currentDueCard?.context?.form,
+              ...(currentDueCard?.instances ?? []).map((i) => i.form),
+            ].filter((f): f is string => typeof f === 'string' && !!f && f !== '?')),
+          ];
+          for (const candidate of candidates) {
+            if (cancelled) break;
+            const results = await lookupL1Text(candidate, l2Code, l1Lang.code);
             const fallback = pickBest(results);
             if (fallback) {
               setFallbackEntry(fallback);
               found = true;
+              break;
             }
           }
         } catch {
@@ -636,7 +661,7 @@ export default function ReviewScreen() {
     if (!showTabs || l1Lang.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
-    const form = card.word.forms?.[0] || card.word.head || card.word.id;
+    const form = firstLookupForm(card.word);
     if (l1Entry?.id === card.word.id) return;
 
     const l2BaseForL1 = baseCode(l2Code);
