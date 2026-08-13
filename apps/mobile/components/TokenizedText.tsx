@@ -461,6 +461,20 @@ export interface TokenizedTextProps {
   onOpenLink?: (href: string) => void;
   /** When false, forces phonetics/furigana off (AI explanation plain spans). */
   phonetics?: boolean;
+  /** When false, saved words are not highlighted (no yellow background).
+   *  Defaults to true — saved words highlight as usual. Used by AI explanations. */
+  highlightSaved?: boolean;
+  /** Overrides the user's quick-gloss setting when provided. */
+  quickGloss?: boolean;
+  /** Overrides the user's interlinear-definition setting when provided. */
+  showDefinition?: boolean;
+  /** Overrides the user's byeonggi (hanja/hán tự) setting when provided. */
+  byeonggi?: boolean;
+  /** Overrides the tokenized-text mode. AI explanations pass 'normal' so
+   *  quiz blanking never appears. */
+  mode?: 'normal' | 'quiz';
+  /** When true, renders the L2 token text bold (AI explanation spans). */
+  bold?: boolean;
   /** Text scale multiplier (matches web): omitted → user zoom; 0 → inherit
    *  (fixed 16px on mobile); otherwise textScale × user zoom. */
   textScale?: number;
@@ -483,7 +497,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -545,11 +559,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
   const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
   const replaceWithPhonetics = phoneticsOverride === false ? false : phonetics.show === 'word';
   const popupEnabled = tokenSettings.enabled;
-  const quizMode = tokenSettings.mode === 'quiz';
+  const quizMode = modeOverride === undefined ? tokenSettings.mode === 'quiz' : modeOverride === 'quiz';
 
   // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──
-  const quickGlossEnabled = tokenSettings.quickGloss;
-  const showDefinition = l2Settings.tokenSpan.definition.show;
+  const quickGlossEnabled = quickGlossOverride ?? tokenSettings.quickGloss;
+  const showDefinition = showDefinitionOverride ?? l2Settings.tokenSpan.definition.show;
   const phoneticsConditions = phonetics.conditions;
   const userLevel = useProgressLevel(l2Code);
   const { savedWords } = useSavedWords();
@@ -589,7 +603,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     return () => { cancelled = true; };
   }, [tokens, useTraditional, isChinese, l2Code]);
 
-  const byeonggiEnabled = l2Settings.display.byeonggi !== false;
+  const byeonggiEnabled = byeonggiOverride ?? (l2Settings.display.byeonggi !== false);
 
   // ── Map EPUB format ranges (links + search highlights) onto token indices ──
   // Surface tokens concatenate back to `text`; when that invariant breaks
@@ -641,16 +655,19 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
       ? zoomRem
       : (textScale === 0 ? 0 : textScale * zoomRem);
     const size = effectiveScale === 0 ? 16 : 16 * effectiveScale;
-    const style: { fontSize: number; fontFamily?: string; lineHeight?: number } = { fontSize: size };
+    const style: { fontSize: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' } = { fontSize: size };
 
     if (tokenSettings.typeFace === 'serif') {
       style.fontFamily = Platform.OS === 'ios' ? 'Georgia' : 'serif';
     } else if (tokenSettings.typeFace === 'sans-serif') {
       style.fontFamily = Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif';
     }
+    if (bold) {
+      style.fontWeight = 'bold';
+    }
 
     return style;
-  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale]);
+  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, bold]);
 
   // ── Leading ratio from prop (default: loose = 2) ──
   const LEADING_RATIOS: Record<string, number> = {
@@ -1155,7 +1172,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
-              const isSaved = tokenMatchesAnyForm(token, savedFormSet);
+              const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
 
               // Trim the interlinear definition to the word's length + 2 chars
               // (one extra character on each side), scaled up because definition
@@ -1256,7 +1273,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
-              const isSaved = tokenMatchesAnyForm(token, savedFormSet);
+              const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
               const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;

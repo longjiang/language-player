@@ -119,7 +119,7 @@ zh-only as on web.
 | # | Feature | Web commits | Status |
 |---|---|---|---|
 | 5.1 | Embed pro-gated DeepSeek explanation in the full entry card | `aa938b30`, `f3dce79f`, `eea1eed1`, `d1df2dec` | **Ported** — mobile entry DeepSeek tab + popup embed Pro-gate via `useSubscription` |
-| 5.2 | Interactive tokenized L2 strings in AI explain responses | `dab49f8c` | **Ported** — new mobile `MarkdownExplanation` renders backticked L2 spans as interactive `TokenizedText` once streaming finishes; prompt appends `prompt.explain_ticks` |
+| 5.2 | Interactive tokenized L2 strings in AI explain responses | `dab49f8c` | **Ported** — new mobile `MarkdownExplanation` renders backticked L2 spans as interactive `TokenizedText` once streaming finishes; prompt appends `prompt.explain_ticks`; spans render plain and bold like web (saved-word highlight, quick gloss, interlinear definitions, byeonggi, phonetics, and quiz blanking all off) |
 | 5.3 | Ask DeepSeek for two same-sense usage examples | `9659e1b8` | **Ported** — `prompt.explain_word` already asks for "2 examples with translations" |
 | 5.4 | Show "Let AI Explain" instantly + share subscription status app-wide | `e7cc6246` | **Ported** — button + Pro gate present; autoLoad streams instantly for Pro users |
 
@@ -136,7 +136,7 @@ zh-only as on web.
 
 | # | Feature | Web commits | Status |
 |---|---|---|---|
-| 7.1 | Text action menu + translations on subs-search subtitles | `48a4ab92`, `ffcd83ac` | **Ported** — mobile subs-search subtitle is wrapped in `TextActionMenu` (copy/speak/AI explain/translate); translations already stacked via `SimpleSubsForDebug` |
+| 7.1 | Text action menu + translations on subs-search subtitles | `48a4ab92`, `ffcd83ac` | **Ported** — mobile subs-search subtitle is wrapped in `TextActionMenu` (copy/speak/AI explain/translate); translations already stacked via `SimpleSubsForDebug`; AI explain breakdown uses `MarkdownExplanation` (plain, bold, interactive L2 spans) matching web |
 | 7.2 | Always stack the subs-search translation below the subtitle | `be6326bc`, `a2439ca1` | **Ported** — `SimpleSubsForDebug` renders the L1 translation below the active subtitle |
 | 7.3 | Send target form to the translate API instead of pre-marking text | `faabb254`, `10f0ae7a`, `09d52d97` | **Ported** — `useSubtitleTranslation` gained `highlightForms` and sends per-line `forms` to `/translate_array`; `SimpleSubsForDebug` passes the matched highlight term per line |
 | 7.4 | Specific translated YouTube player errors | `3345cb39` | N/A on native — YouTube player errors come from the native webview/player |
