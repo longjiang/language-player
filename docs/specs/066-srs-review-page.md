@@ -578,6 +578,10 @@ types count while unexpired — there is no `status` filter.
   `PUT/DELETE /srs/cards` writes are queued in localStorage, replayed before
   hydration, and retried every 10 seconds; 403 cap rejections still surface
   the upgrade banner.
+- ✅ **Web saved-words hydration retry** — implemented (2026-08-13): hydration
+  no longer completes on failure, retries every 5 seconds, filters server rows
+  that have an unacked local delete, and retries pending saved-word ops every
+  10 seconds.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -637,6 +641,10 @@ the failed delete is not retried until the next mutation or hydration.
 
 Fix direction: don't mark hydration complete on failure; keep retrying pending
 deletes; do not re-add server rows for words with an unacked local delete.
+
+✅ **Fixed (2026-08-13):** web hydration now stays incomplete and retries every
+5 seconds on failure; server rows with an unacked local delete are filtered
+out of hydration, and failed saved-word ops retry every 10 seconds.
 
 ### Mobile: same auto-init race and no retry on failed SRS fetch
 

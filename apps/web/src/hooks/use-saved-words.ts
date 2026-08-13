@@ -38,8 +38,13 @@ export function useSavedWords() {
   const [loaded, setLoaded] = useState(false);
   /** True once the authenticated row-API hydration completed (or failed). */
   const [cloudHydrated, setCloudHydrated] = useState(false);
+  const [cloudRetry, setCloudRetry] = useState(0);
   const hydratedUserId = useRef<string | null>(null);
   const pendingOpsRef = useRef<PendingSavedWordOp[]>([]);
+  const hydrationInFlight = useRef(false);
+  const hydrationRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flushPendingRef = useRef<() => Promise<void>>(async () => {});
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -129,9 +134,16 @@ export function useSavedWords() {
     const remaining = await flushPendingOps(pendingOpsRef.current, { putSavedWord, deleteSavedWord });
     if (remaining.length > 0) {
       logwarn('[savedWords] Pending ops remain after flush:', remaining.length);
+      if (!pendingRetryTimer.current) {
+        pendingRetryTimer.current = setTimeout(() => {
+          pendingRetryTimer.current = null;
+          void flushPendingRef.current();
+        }, 10_000);
+      }
     }
     savePendingOps(remaining);
   }, [putSavedWord, deleteSavedWord, savePendingOps]);
+  flushPendingRef.current = flushPending;
 
   useEffect(() => {
     if (status === 'loading' || !loaded) return;
@@ -139,6 +151,8 @@ export function useSavedWords() {
     const userId = session?.user?.id ?? null;
     if (!userId) return;
     if (hydratedUserId.current === userId) return;
+    if (hydrationInFlight.current) return;
+    hydrationInFlight.current = true;
 
     log('[savedWords] hydration start', {
       status,
@@ -183,6 +197,16 @@ export function useSavedWords() {
         }
 
         sanitizeStore(next);
+        // A word with an unacked local delete must not be re-added by the
+        // server fetch while the delete is still queued (SPEC-066).
+        const pendingDeletes = new Set(
+          pendingOpsRef.current
+            .filter((op) => op.type === 'delete')
+            .map((op) => `${op.l2}\u0000${op.wordId}`),
+        );
+        for (const [l2, words] of Object.entries(next)) {
+          next[l2] = words.filter((w) => !pendingDeletes.has(`${l2}\u0000${w.id}`));
+        }
         hydratedUserId.current = userId;
         log('[savedWords] hydration complete', {
           l2Keys: Object.keys(next),
@@ -191,10 +215,17 @@ export function useSavedWords() {
         });
         setSavedWords(next);
         writeLocalStore(next);
+        if (!cancelled) setCloudHydrated(true);
       } catch (err) {
         logwarn('[savedWords] Hydration failed:', err);
+        if (!cancelled && !hydrationRetryTimer.current) {
+          hydrationRetryTimer.current = setTimeout(() => {
+            hydrationRetryTimer.current = null;
+            setCloudRetry((n) => n + 1);
+          }, 5000);
+        }
       } finally {
-        if (!cancelled) setCloudHydrated(true);
+        hydrationInFlight.current = false;
       }
     })();
     return () => { cancelled = true; };
@@ -202,7 +233,7 @@ export function useSavedWords() {
     status, loaded, session?.user?.id, mergeAnon,
     flushPending, fetchSavedWordRows, putSavedWord,
     readLocalStore, writeLocalStore,
-    cloudHydrated,
+    cloudHydrated, cloudRetry,
   ]);
 
   const persist = useCallback((words: SavedLexicalItemStore) => {
