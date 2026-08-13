@@ -75,6 +75,7 @@ export interface OutboxSnapshot {
 
 const statusListeners = new Set<(s: SyncStatusSnapshot) => void>();
 const entityListeners = new Map<string, Set<(entityId: string) => void>>();
+const srsCapListeners = new Set<(entityId: string) => void>();
 const remapListeners = new Set<
   (entity: string, tempId: string, serverId: string, l2Code?: string) => void
 >();
@@ -330,6 +331,9 @@ async function pushOutbox(): Promise<number> {
         // the daily cap and cannot sync today. Ack/drop the op instead of
         // surfacing a sync-screen error or retrying forever — the review UI
         // shows the upgrade banner at the local cap.
+        if (row.entity === 'srs_card' && row.op === 'upsert') {
+          srsCapListeners.forEach((cb) => cb(row.entity_id));
+        }
         log(`[sync] push expected rejection ${row.entity}:${row.entity_id} — ${result.error}`);
         acked.push(row.id);
       } else {
@@ -426,6 +430,14 @@ export function subscribeEntity(
     set!.delete(cb);
     if (set!.size === 0) entityListeners.delete(entity);
   };
+}
+
+/** Subscribe to backend free-cap rejections for SRS card upserts. */
+export function subscribeSrsCapRejection(
+  cb: (entityId: string) => void,
+): () => void {
+  srsCapListeners.add(cb);
+  return () => srsCapListeners.delete(cb);
 }
 
 export function subscribeRemap(

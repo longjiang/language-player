@@ -585,6 +585,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Mobile SRS hydration retry** — implemented (2026-08-13): failed
   `GET /srs` fetches retry every 5 seconds when online; Offline Mode and
   detected-offline use the local store.
+- ✅ **Mobile cap-rejection reconciliation** — implemented (2026-08-13):
+  `srs_cap_reached` rejections revert the unsynced card and surface the
+  upgrade banner instead of silently dropping the rating.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -667,6 +670,11 @@ When the backend rejects a rating with `srs_cap_reached`, the sync engine
 treats it as an expected rejection, acks/drops the outbox op, and the review
 UI never learns the rating failed. The card stays "rated" locally but is
 missing on the server, so it can reappear as new on web or other devices.
+
+✅ **Fixed (2026-08-13):** the sync engine emits a cap-rejection event; mobile
+`useSrs` reverts the unsynced card (local store + entity cache), and the review
+screen reconciles `reviewsDoneToday` to the cap so the upgrade banner appears.
+The flag resets on the next UTC day.
 
 ### Shared backend: no server-side tombstone for saved words or SRS cards
 

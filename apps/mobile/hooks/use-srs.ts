@@ -5,8 +5,8 @@ import { useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore, fsrs, mergeSrsCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
-import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
-import { getEntityCache } from '@/lib/sync-db';
+import { enqueueSyncOp, subscribeEntity, subscribeSrsCapRejection } from '@/lib/sync-engine';
+import { getEntityCache, upsertEntityCache } from '@/lib/sync-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { getConnectivity } from '@/lib/connectivity';
 
@@ -30,8 +30,12 @@ export function useSrs() {
   const [loaded, setLoaded] = useState(false);
   const [cloudHydrated, setCloudHydrated] = useState(false);
   const [cloudRetry, setCloudRetry] = useState(0);
+  const [capReached, setCapReached] = useState(false);
   const cloudLoadedUserId = useRef<string | null>(null);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
+  const storeRef = useRef(store);
+  storeRef.current = store;
+  const pendingSrsPreviousRef = useRef(new Map<string, SrsFields>());
 
   useEffect(() => {
     if (loaded) return;
@@ -101,7 +105,44 @@ export function useSrs() {
     }
   }, [user?.id]);
 
+  // ── Backend cap rejection: revert the unsynced card and tell the UI ──
+  useEffect(() => {
+    return subscribeSrsCapRejection((entityId) => {
+      const sep = entityId.indexOf('::');
+      if (sep < 0) return;
+      const lang = entityId.slice(0, sep);
+      const wordId = entityId.slice(sep + 2);
+      const prev = pendingSrsPreviousRef.current.get(wordId);
+      pendingSrsPreviousRef.current.delete(wordId);
+      setStore((cur) => {
+        const cards: Record<string, Record<string, SrsFields>> = {
+          ...cur.cards,
+          [lang]: { ...(cur.cards[lang] ?? {}) },
+        };
+        if (prev) {
+          cards[lang][wordId] = prev;
+          const payload = { l2: lang, wordId, state: prev };
+          upsertEntityCache(
+            'srs_card',
+            entityId,
+            JSON.stringify(payload),
+            prev.lastReview ?? Date.now(),
+            null,
+          ).catch(() => {});
+        } else {
+          delete cards[lang][wordId];
+        }
+        const next = { settings: cur.settings, cards };
+        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
+        return next;
+      });
+      setCapReached(true);
+    });
+  }, []);
+
   const updateCard = useCallback((lang: string, wordId: string, fields: Partial<SrsFields>) => {
+    const prev = storeRef.current.cards[lang]?.[wordId];
+    if (prev) pendingSrsPreviousRef.current.set(wordId, prev);
     setStore((prev) => {
       const langCards = { ...(prev.cards[lang] ?? {}) };
       langCards[wordId] = {
@@ -170,6 +211,8 @@ export function useSrs() {
     });
   }, []);
 
+  const resetCapReached = useCallback(() => setCapReached(false), []);
+
   // ── Pull-merge bridge: apply remote SRS changes from another device ──
   useEffect(() => {
     const refreshFromCache = async () => {
@@ -205,5 +248,14 @@ export function useSrs() {
     };
   }, []);
 
-  return { store, loaded, cloudHydrated, updateCard, removeCard, pruneOrphans };
+  return {
+    store,
+    loaded,
+    cloudHydrated,
+    capReached,
+    resetCapReached,
+    updateCard,
+    removeCard,
+    pruneOrphans,
+  };
 }
