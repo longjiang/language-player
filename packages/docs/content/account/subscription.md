@@ -8,7 +8,7 @@ Language Player is free to use, with an optional Pro upgrade that unlocks the fu
 
 | Feature | Free | Pro |
 |---|---|---|
-| 600,000+ videos in 207+ languages | ✅ | ✅ |
+| 600,000+ videos in 110+ languages | ✅ | ✅ |
 | Dictionary with collocations, examples, and verb inflections | ✅ | ✅ |
 | Chinese character decomposition | ✅ | ✅ |
 | Interactive transcripts with translation | First 10 lines | Full transcript |

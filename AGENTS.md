@@ -2,7 +2,7 @@
 
 ## Project Identity
 
-**Language Player** — A language learning platform using authentic video content with interactive dual subtitles. 60+ languages. Web + Mobile + Python backend.
+**Language Player** — A language learning platform using authentic video content with interactive dual subtitles. 18 interface languages (L1) and 110 learning languages (L2). Web + Mobile + Python backend.
 
 ## Essential Context
 
@@ -146,14 +146,14 @@ Use these to log in during local development:
 ### Pricing Tiers
 
 **Free Account:**
-- Access 600,000+ videos across 207+ languages
+- Access 600,000+ videos across 110+ languages
 - See collocations, example sentences, verb inflections, and Chinese character decomposition in the dictionary
 - See only first 10 lines of interactive transcripts with English translation
 - See only 2 examples of words in videos
 - 14-day money-back guarantee
 
 **Pro Account:**
-- Access 600,000+ videos across 207+ languages
+- Access 600,000+ videos across 110+ languages
 - See collocations, example sentences, verb inflections, and Chinese character decomposition in the dictionary
 - See complete interactive transcripts with English translation
 - See hundreds of examples of words in videos, or in particular TV shows

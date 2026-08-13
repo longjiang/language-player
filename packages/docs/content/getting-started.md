@@ -13,7 +13,7 @@ You can browse {$title.app_name} without an account, but signing up lets you sav
 3. Check your inbox for a verification code — enter it to confirm your email
 4. You're in! Your account is free and stays free
 
-A {$label.free_account} gives you access to 600,000+ videos across 207+ languages, the full dictionary, and spaced repetition review. See [{$title.subscription}](/docs/account/subscription) for what's included and how to upgrade if you want more.
+A {$label.free_account} gives you access to 600,000+ videos across 110+ languages, the full dictionary, and spaced repetition review. See [{$title.subscription}](/docs/account/subscription) for what's included and how to upgrade if you want more.
 
 ## Choose Your Languages
 
