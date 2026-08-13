@@ -16,6 +16,8 @@ import {
   RotateCcw,
   Bot,
   Library,
+  Download,
+  ArrowRight,
 } from 'lucide-react';
 import { LanguageVideoList } from '@/components/landing/language-video-list';
 import { PricingSection } from '@/components/landing/pricing-section';
@@ -67,23 +69,49 @@ export default function HomePage() {
             {t('msg.landing_platforms_desc')}
           </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {platforms.map((platform) => (
-              <div
-                key={platform.titleKey}
-                className="rounded-2xl border border-border bg-surface p-6 transition-shadow hover:shadow-lg dark:bg-surface-dark-secondary"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="inline-flex rounded-lg bg-brand-100 p-3 text-brand-600 dark:bg-brand-900 dark:text-brand-400">
-                    <platform.icon className="h-6 w-6" />
+            {platforms.map((platform) => {
+              const card = (
+                <>
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="inline-flex rounded-lg bg-brand-100 p-3 text-brand-600 dark:bg-brand-900 dark:text-brand-400">
+                      <platform.icon className="h-6 w-6" />
+                    </div>
+                    <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                      {t(platform.statusKey)}
+                    </span>
                   </div>
-                  <span className="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                    {t(platform.statusKey)}
-                  </span>
+                  <h3 className="mb-2 text-lg font-semibold">{t(platform.titleKey)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(platform.descKey)}</p>
+                  {platform.href && (
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400">
+                      <platform.actionIcon className="h-4 w-4" />
+                      {t(platform.actionKey)}
+                    </span>
+                  )}
+                </>
+              );
+              const cardClassName =
+                'rounded-2xl border border-border bg-surface p-6 transition-shadow hover:shadow-lg dark:bg-surface-dark-secondary';
+              return platform.href && platform.external ? (
+                <a
+                  key={platform.titleKey}
+                  href={platform.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cardClassName}
+                >
+                  {card}
+                </a>
+              ) : platform.href ? (
+                <Link key={platform.titleKey} href={platform.href} className={cardClassName}>
+                  {card}
+                </Link>
+              ) : (
+                <div key={platform.titleKey} className={cardClassName}>
+                  {card}
                 </div>
-                <h3 className="mb-2 text-lg font-semibold">{t(platform.titleKey)}</h3>
-                <p className="text-sm text-muted-foreground">{t(platform.descKey)}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -145,18 +173,29 @@ function useLandingPlatforms() {
       titleKey: 'platform.web_title',
       descKey: 'platform.web_desc',
       statusKey: 'label.available',
+      href: '/login',
+      actionKey: 'action.open',
+      actionIcon: ArrowRight,
       icon: Monitor,
     },
     {
       titleKey: 'platform.ios_title',
       descKey: 'platform.ios_desc',
-      statusKey: 'label.coming_soon',
+      statusKey: 'label.available',
+      href: 'https://apps.apple.com/us/app/language-player-3/id6520385296',
+      external: true,
+      actionKey: 'action.download',
+      actionIcon: Download,
       icon: Apple,
     },
     {
       titleKey: 'platform.android_title',
       descKey: 'platform.android_desc',
-      statusKey: 'label.coming_soon',
+      statusKey: 'label.available',
+      href: 'https://play.google.com/store/apps/details?id=ca.zerotohero.go',
+      external: true,
+      actionKey: 'action.download',
+      actionIcon: Download,
       icon: Smartphone,
     },
     {
