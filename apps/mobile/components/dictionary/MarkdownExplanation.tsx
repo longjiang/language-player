@@ -24,7 +24,9 @@ interface MarkdownExplanationProps {
  *      show as regular inline code);
  *   2. finished — the text is re-rendered and backticked L2 spans are swapped
  *      for interactive TokenizedText (tappable → dictionary popup), bold,
- *      without a chip background.
+ *      without a chip background. They render plain: no saved-word
+ *      highlighting, quick gloss, byeonggi, interlinear definitions,
+ *      phonetics, or quiz blanking (matches web).
  *
  * The AI prompt (prompt.explain_ticks) instructs the model to wrap every L2
  * word/phrase/sentence in single backticks so these spans can be tokenized.
@@ -89,6 +91,12 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
                   l2Code={l2Code}
                   leading="loose"
                   phonetics={false}
+                  highlightSaved={false}
+                  quickGloss={false}
+                  showDefinition={false}
+                  byeonggi={false}
+                  mode="normal"
+                  bold
                   textScale={0}
                 />
               </Suspense>

@@ -8,9 +8,9 @@ import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { MarkdownText } from '@/components/MarkdownText';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
+import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
 import { ContextMenu } from '@/components/ui/context-menu';
 import type { ContextMenuItem } from '@/components/ui/context-menu';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -235,9 +235,11 @@ export function TextActionMenu(props: TextActionMenuProps) {
               {explainError && !explainText ? (
                 <Text className="text-sm text-destructive">{explainError}</Text>
               ) : (
-                <View>
-                  <MarkdownText>{explainText || ''}</MarkdownText>
-                </View>
+                <MarkdownExplanation
+                  text={explainText || ''}
+                  l2Code={l2Code}
+                  streaming={explainLoading}
+                />
               )}
               {explainError && explainText ? (
                 <Text className="mt-2 text-xs text-destructive">{explainError}</Text>

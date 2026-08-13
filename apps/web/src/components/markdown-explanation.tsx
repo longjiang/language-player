@@ -23,7 +23,8 @@ interface MarkdownExplanationProps {
  *   2. finished — the markdown is re-rendered and backticked L2 spans are
  *      swapped for interactive TokenizedText. Tokens stay clickable for
  *      dictionary lookup but render plain: no saved-word highlighting, quick
- *      gloss, byeonggi, or interlinear definitions; bold, no chip background.
+ *      gloss, byeonggi, interlinear definitions, phonetics, or quiz blanking;
+ *      bold, no chip background.
  */
 export function MarkdownExplanation({ text, l2Code, streaming = false }: MarkdownExplanationProps) {
   // Memoize the renderer so its identity is stable across re-renders. An inline
@@ -49,6 +50,8 @@ export function MarkdownExplanation({ text, l2Code, streaming = false }: Markdow
               l2Code={l2Code}
               textScale={0}
               leading="none"
+              phonetics={false}
+              mode="normal"
               highlightSaved={false}
               quickGloss={false}
               showDefinition={false}

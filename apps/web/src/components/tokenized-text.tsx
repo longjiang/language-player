@@ -240,6 +240,13 @@ export interface TokenizedTextProps {
    *  revealed. Defaults to true — highlighting alone does not hide a saved word's
    *  gloss. */
   quickGlossOnHighlight?: boolean;
+  /** When false, phonetics/furigana are suppressed entirely. Used by AI
+   *  explanations so L2 spans render plain. Defaults to true — the user's
+   *  setting applies. */
+  phonetics?: boolean;
+  /** Overrides the tokenized-text mode. AI explanations pass 'normal' so
+   *  saved-word quiz blanking never appears. */
+  mode?: 'normal' | 'quiz';
   /** When false, saved words are not highlighted (no yellow background).
    *  Defaults to true — saved words highlight as usual. Used by AI explanations. */
   highlightSaved?: boolean;
@@ -288,6 +295,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   karaokeProgress,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
+  phonetics,
+  mode: modeOverride,
   highlightSaved,
   quickGloss,
   showDefinition,
@@ -732,9 +741,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           const l2Settings = getL2(l2Code);
           const nextToken = displayTokens[i + 1];
           const nextTokenIsSeparator = nextToken ? isSeparatorToken(nextToken.text) : true;
-          const phoneticsShow = isPhoneticsEligible(l2Code)
-            ? l2Settings.tokenSpan.phonetics.show
-            : false;
+          const phoneticsShow = phonetics === false
+            ? false
+            : (isPhoneticsEligible(l2Code)
+              ? l2Settings.tokenSpan.phonetics.show
+              : false);
           // In karaoke mode, light each word once its weighted time slot begins.
           let isKaraokeSpoken: boolean | undefined;
           if (karaokeProgress !== undefined) {
@@ -761,7 +772,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               userLevel={typeof userLevel === 'number' ? userLevel : undefined}
               quickGloss={quickGloss ?? settingsTokenizedText.quickGloss}
               showDefinition={showDefinition ?? l2Settings.tokenSpan.definition.show}
-              mode={settingsTokenizedText.mode}
+              mode={modeOverride ?? settingsTokenizedText.mode}
               byeonggi={byeonggi ?? l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
               isSaved={highlightSaved === false ? false : tokenMatchesAnyForm(token, savedFormSet)}
