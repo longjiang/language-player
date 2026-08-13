@@ -343,7 +343,7 @@ Use `{$key}` in docs to reference UI strings. At render time these resolve to th
 | `msg.initializing` | Initializing... |
 | `msg.keep_or_reset_time` | Do you want to keep your current time or reset it to zero? |
 | `msg.landing_cta_desc` | Join thousands of learners using authentic videos to master new languages. |
-| `msg.landing_hero_badge` | 60+ languages supported |
+| `msg.landing_hero_badge` | 110+ languages supported |
 | `msg.landing_hero_desc` | Watch YouTube videos, movies, and TV shows with interactive dual subtitles. Tap any word for an instant dictionary lookup. Smart difficulty tracking adapts to your level. |
 | `msg.landing_hero_title_1` | Learn languages through |
 | `msg.landing_hero_title_2` | video |
