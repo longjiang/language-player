@@ -35,3 +35,24 @@ export function formatRelativeDate(date: Date | string, now: Date = new Date()):
   if (diffDay < 365) return `${Math.floor(diffDay / 30)}mo ago`;
   return `${Math.floor(diffDay / 365)}y ago`;
 }
+
+/** Locale-aware "next review" label: today/tomorrow include the time, later
+ *  dates fall back to a plain date. */
+export function formatNextDueLabel(
+  dueMs: number,
+  locale = 'en',
+  now: Date = new Date(),
+): string {
+  const due = new Date(dueMs);
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDue = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const dayDiff = Math.round((startDue.getTime() - startToday.getTime()) / 86_400_000);
+  if (dayDiff >= -1 && dayDiff <= 1) {
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(due);
+  }
+  return due.toLocaleDateString(locale);
+}
