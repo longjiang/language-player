@@ -1,6 +1,6 @@
 # {$title.privacy_policy}
 
-This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon, all sub-domains, and our mobile apps for iOS and Android (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
+This web page represents a legal document that serves as our Terms of Use and Privacy Policy and it governs the use of our website: [https://languageplayer.io](https://languageplayer.io), including pages found thereon, all sub-domains, our mobile apps for iOS and Android, and our browser extensions for Chrome and other Chromium-based browsers (collectively, "Website"), as owned and operated by us, Zero to Hero Education, Canada. ("Zero to Hero").
 
 **Introduction**
 
@@ -53,6 +53,14 @@ At Zero to Hero we consider privacy to be a very important matter and as such we
 
 * Usage data: pages and features you visit, including {$title.explore_media}, {$title.music_and_entertainment}, {$title.live_tv}, {$title.tv_shows}, {$title.search}, {$title.dictionary}, {$title.saved_words}, {$title.review}, {$title.reader}, {$title.web_reader}, {$title.epub_reader}, {$title.local_media}, {$title.watch_history}, {$title.playlists} and {$title.liked_videos}; videos you watch; interactions; and timestamps.
 * Device and network information: IP address, browser type, operating system, device type and approximate location derived from your IP address.
+
+**Browser extension data:**
+
+The Language Player browser extension for Chrome works on video streaming sites (such as Netflix, YouTube, Prime Video, Disney+, Hulu, and Max) to show interactive subtitles for language learning. In addition to the information above, the extension:
+
+* reads and processes the subtitles or captions of the video you are currently watching, on your device, so it can display them with an interactive transcript and dictionary; the subtitle text is sent to our backend (and to translation or AI providers when you use those features) to tokenize and translate it;
+* stores your language preferences, settings, and your signed-in session locally in the browser's extension storage (`chrome.storage`), and syncs saved words and learning data to your account when you are signed in;
+* reads the video page's subtitle data only for the purpose of providing the interactive transcript — it does not collect your browsing history or the content of other pages you visit.
 * Analytics: we use Google Analytics to understand how visitors use the Website. Google Analytics may use cookies and collect usage data on our behalf. Google's use of that data is governed by [Google's Privacy Policy](https://policies.google.com/privacy).
 * Local storage: we use cookies, `localStorage`, `sessionStorage` and IndexedDB to keep you signed in, remember your language, store your settings, progress and saved words, and cache content locally.
 
