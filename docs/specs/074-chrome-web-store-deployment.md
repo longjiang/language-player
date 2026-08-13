@@ -137,26 +137,30 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
 - **Contact email added + verified**: `jon.long@zerotohero.ca` (publicly displayed).
 - **Trader declaration**: selected "This is a trader account" + agreed to marketplace rules (the checkbox is required — Next stays disabled until both are set).
 
-### ⚠️ Current blocker (2026-08-13): publisher settings gate
+### ✅ Publisher settings gate COMPLETED 2026-08-13 (with user)
 
-The account is behind a **mandatory settings gate** — the dashboard redirects every page to `/settings` and re-shows the "Action required" trader dialog until these are done:
+- Trader declaration = **trader account** + marketplace-rules checkbox (both required).
+- Address on file: **Zero to Hero Education, 2955 Atlantic Ave, Unit 602, Coquitlam, BC V3B 0H9, CA** (pre-existing).
+- Payments profile selected: **Jiang Long** (Individual, 2955 Atlantic Ave #602, Coquitlam, BC V3B 0H9 — same profile used by Google Play Apps / Chrome Web Store).
+- Identity verification flow entered; user uploading ID (Driver's License front/back) + proof-of-address. Earlier upload attempt showed "Couldn't verify identity — make sure your ID document shows your full name as Jiang Long" → likely name-mismatch; re-upload or update payments-profile verified name as needed.
 
-1. **Trader declaration** — must be completed together with the verification flow; cancelling verification resets it (the dialog re-appears).
-2. **Address** — "Enter address" is empty. Requires a valid postal address (shown on the listing). Not in the repo — **user must supply**.
-3. **Publisher account verification** — Google now requires identity verification before ANY item can be created. Dialog "Prepare for Chrome Web Store publisher account verification" lists:
-   - **Individual**: legal name, legal address, contact phone, government-issued ID, address document
-   - **Organization**: org name, legal address, phone, business registration proof or D-U-N-S (up to 30+ days)
-   - Also requires creating/selecting a **payment profile** (the $5 developer registration).
+### ✅ Extension ZIP uploaded + draft created 2026-08-13
 
-**Cannot proceed headlessly** — these need personal/legal documents + a financial decision. Do NOT fabricate. The user must complete the settings gate manually, then the flow resumes at step 3 (upload ZIP).
+- Item ID: **`cbkhenammkocfidciagbbibkleoenbej`**, status **Draft**, name "Language Player".
+- Store listing partially filled + saved:
+  - Title: Language Player (from manifest) · Summary (from manifest): "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and Max."
+  - **Description** (723/16,000): full copy from this spec ✅
+  - **Category: Education** ✅
+  - **Homepage URL**: https://languageplayer.io ✅
+  - **Support URL**: https://language-player.netlify.app/en/en/docs ✅
+  - **Store icon** 128×128 uploaded (apps/chrome-extension/icons/icon128.png) ✅
 
-### Post-upload checklist
-- [ ] **Complete publisher settings gate (MANUAL): trader declaration + address + identity verification + payment profile**
-- [ ] Screenshots created (1280×800) — capture: transcript panel on a Netflix show, dictionary popup on a word click, YouTube subtitles, saved-words flow, popup UI
-- [ ] Small promo tile (440×280) created
-- [ ] ZIP uploaded (`/tmp/language-player-extension-v1.0.77.zip`) and store listing filled
-- [ ] Privacy tab certified
-- [ ] Submitted for review
+### Remaining (2026-08-13)
+- [ ] **Identity verification completion (MANUAL, user)** — re-upload ID (name must read "Jiang Long") + proof of address; may need to "change the verified name" in the payments profile if the ID name differs.
+- [ ] **Screenshots** (≥1, max 5; 1280×800 or 640×400, JPEG or 24-bit PNG no-alpha) — none exist; capture the extension UI in action (transcript panel on a streaming show, dictionary popup on word click, popup UI).
+- [ ] **Small promo tile 440×280** (JPEG/PNG no-alpha) — recommended.
+- [ ] **Privacy tab** (Privacy practices) — certify data usage + privacy policy URL.
+- [ ] **Submit for review** (button enabled once required fields are done).
 
 ## Update Process (future versions)
 
