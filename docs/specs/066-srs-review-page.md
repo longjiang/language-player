@@ -571,6 +571,9 @@ types count while unexpired — there is no `status` filter.
   `planNewDeck()` / `remainingNewCardsToday()` and both review pages now stop
   introducing new cards once today's budget is exhausted; the blue count
   counts down instead of refilling during a session.
+- ✅ **SRS hydration race guard** — implemented (2026-08-13): both review
+  pages wait for `useSrs().cloudHydrated` before auto-initializing new cards;
+  web retries failed `GET /srs` fetches.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -582,8 +585,8 @@ types count while unexpired — there is no `status` filter.
 ## Known Issues & Open Work (2026-08-13)
 
 The following issues were found during cross-device review testing on
-iPad/iPhone Safari (web) and the mobile app. None are fixed yet; they are
-documented here so the implementation plan reflects the current gaps.
+iPad/iPhone Safari (web) and the mobile app. Status is tracked per issue so
+the implementation plan reflects the current gaps.
 
 ### Shared: rated cards can be reset to "new" before cloud hydration finishes
 
@@ -599,6 +602,10 @@ blue "new" card.
 
 Fix direction: expose a real SRS cloud-hydrated flag, gate auto-init on both
 cloud sources, and retry failed SRS fetches.
+
+✅ **Fixed (2026-08-13):** both `useSrs` hooks now expose `cloudHydrated`, both
+review pages wait for SRS cloud hydration before auto-initializing cards, and
+web retries a failed `GET /srs` instead of proceeding with stale local state.
 
 ### Web: SRS writes are fire-and-forget
 
@@ -624,10 +631,10 @@ deletes; do not re-add server rows for words with an unacked local delete.
 ### Mobile: same auto-init race and no retry on failed SRS fetch
 
 `useSrs` marks the user as cloud-loaded before `GET /srs` completes and never
-retries a failed fetch, and the mobile review screen has the same ungated
-auto-init effect. Mobile SRS writes do go through the durable outbox, but a
-failed initial fetch can still let auto-init create new cards and push them
-over rated server cards.
+retries a failed fetch. The mobile review screen now waits for `cloudHydrated`
+before auto-initializing (2026-08-13), but a failed fetch still needs a retry;
+auto-init can otherwise run after a failed fetch and push new cards over rated
+server cards. Mobile SRS writes do go through the durable outbox.
 
 ### Mobile: cap rejections are silently dropped
 

@@ -85,7 +85,7 @@ export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
+  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
   const { display, review: { dailyNewLimit: dailyLimit } } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   const t = useT();
@@ -152,6 +152,10 @@ export default function ReviewPage() {
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
+    // Never auto-create cards from stale local state before the server's SRS
+    // cards have been fetched (SPEC-066): a "new" card minted here can
+    // overwrite a rated card from another device.
+    if (status === 'authenticated' && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyLimit);
@@ -169,7 +173,7 @@ export default function ReviewPage() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard, removeCard]);
+  }, [srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -713,7 +717,7 @@ export default function ReviewPage() {
   // (even when the account is genuinely empty) so we don't flash a false
   // "no cards to review" state while the cloud store is still loading.
   const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing
-    || (status === 'authenticated' && !cloudHydrated);
+    || (status === 'authenticated' && (!cloudHydrated || !srsCloudHydrated));
 
   if (isLoading) {
     return (
