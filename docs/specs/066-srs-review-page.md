@@ -574,6 +574,10 @@ types count while unexpired — there is no `status` filter.
 - ✅ **SRS hydration race guard** — implemented (2026-08-13): both review
   pages wait for `useSrs().cloudHydrated` before auto-initializing new cards;
   web retries failed `GET /srs` fetches.
+- ✅ **Web SRS pending-op queue** — implemented (2026-08-13): failed
+  `PUT/DELETE /srs/cards` writes are queued in localStorage, replayed before
+  hydration, and retried every 10 seconds; 403 cap rejections still surface
+  the upgrade banner.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -617,6 +621,12 @@ words have a pending-op queue; SRS does not.
 
 Fix direction: add a durable retry/outbox for SRS card writes, or reuse the
 mobile outbox pattern.
+
+✅ **Fixed (2026-08-13):** web SRS upserts/deletes now go through a durable
+`zthSrsProgressPendingOps` queue in localStorage and are replayed before SRS
+hydration and on a 10-second retry timer after failures. A backend 403 still
+dispatches the `lp:srs-cap-reached` event so the review page shows the cap
+banner.
 
 ### Web: hydration can fall back to stale local data and strand pending deletes
 
