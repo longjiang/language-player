@@ -93,7 +93,11 @@ npx turbo typecheck           # Type-check all (safe with dev running)
 npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/, safe with dev running)
 ```
 
-**⚠️ Never run build commands.** This includes `npx expo run:ios`, `npx expo run:android`, `npx expo prebuild`, `npx turbo build`, `npm run build`, `npx next build`, and any other command that triggers a native or production build. Builds take 15–20+ minutes and block the user's machine. When a build is needed, tell the user the command to run and wait for them to confirm it succeeded.
+**⚠️ Builds require explicit, clarified consent — and never rebuild if a usable build already exists.**
+
+- **Never build or rebuild unless the user explicitly asks.** Builds take 15–20+ minutes and block the user's machine. This includes `npx expo run:ios`, `npx expo run:android`, `npx expo prebuild`, `npx turbo build`, `npm run build`, `npx next build`, and any other command that triggers a native or production build. When a build is needed, tell the user the command to run and wait for them to confirm it succeeded.
+- **Before building, confirm the target explicitly.** Ask whether the user wants a simulator build (`Debug-iphonesimulator`) or a device build (`Debug-iphoneos`), and which device if physical. One binary cannot serve both: a simulator build cannot be installed on a device, and a device build cannot run in the simulator. Never build until the user clarifies.
+- **Always check for pre-existing builds before building.** Search the repo/Desktop first (`.app`, `.ipa`, `.xcarchive` under `apps/mobile/ios/build`, `~/Desktop`, and Xcode DerivedData/Archives), then CoreDevice's app-install cache: `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app` — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was found there after the repo/Desktop check came back empty. Before treating a cached build as usable, verify its embedded provisioning profile includes the target device's UDID and that it does not predate native config changes.
 
 **⚠️ Always use `python3.10` for Python commands.** The Flask backend and all Python scripts require Python 3.10. Never use bare `python`, `python3`, or a different version. Example: `python3.10 app.py`, `python3.10 -c "..."`, `python3.10 script.py`.
 
