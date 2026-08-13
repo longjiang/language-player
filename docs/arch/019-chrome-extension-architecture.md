@@ -400,7 +400,7 @@ mountTranscript(container, cues, activeCueIdx, l2Code, l1Code, onSeekTo)
 └── <React.StrictMode>
     └── <SavedWordsProvider>
         ├── <TranscriptApp>  ← main transcript list
-        │   └── <TokenizedLine>  ← per-cue (virtualized via IntersectionObserver)
+        │   └── <TokenizedLine>  ← per-cue (IntersectionObserver + 5-line lookahead)
         │       ├── ruby annotations (furigana, pinyin)
         │       ├── clickable token spans
         │       └── ... (more lines)
@@ -412,7 +412,9 @@ mountTranscript(container, cues, activeCueIdx, l2Code, l1Code, onSeekTo)
 ```
 
 Key behaviors:
-- **Lazy tokenization**: `TokenizedLine` uses `IntersectionObserver` — tokens are only fetched from the Python API when the line scrolls into view
+- **Lazy tokenization**: `TokenizedLine` tokenizes the active line plus the next
+  5 lines proactively (`TOKENIZE_LOOKAHEAD`), while `IntersectionObserver`
+  covers manual scroll beyond that window
 - **Token cache**: `tokenCache = new Map<string, LemmatizedToken[]>()` — prevents re-fetching tokens for the same text
 - **Translated lines**: `useTranslateLines` hook batch-translates visible lines in chunks of 5 via `/translate_array`
 
