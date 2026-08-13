@@ -144,6 +144,13 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
 - Payments profile selected: **Jiang Long** (Individual, 2955 Atlantic Ave #602, Coquitlam, BC V3B 0H9 — same profile used by Google Play Apps / Chrome Web Store).
 - Identity verification flow entered; user uploading ID (Driver's License front/back) + proof-of-address. Earlier upload attempt showed "Couldn't verify identity — make sure your ID document shows your full name as Jiang Long" → likely name-mismatch; re-upload or update payments-profile verified name as needed.
 
+### ✅ Identity verification SUBMITTED 2026-08-13 (user + agent)
+
+- Verification flow completed: selected **Jiang Long** payments profile (Individual, 2955 Atlantic Ave #602, Coquitlam, BC V3B 0H9), user uploaded ID (Driver's License front/back) + proof-of-address + phone, agreed to privacy notice.
+- Status: **"Verification in progress — thanks for submitting your information. We'll review it and get back to you in a few days."**
+- Trader declaration now SAVED as **trader account** (confirmed checked on Settings page).
+- Google gates publishing on verified publisher → wait for approval before "Submit for review".
+
 ### ✅ Extension ZIP uploaded + draft created 2026-08-13
 
 - Item ID: **`cbkhenammkocfidciagbbibkleoenbej`**, status **Draft**, name "Language Player".
@@ -156,11 +163,11 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
   - **Store icon** 128×128 uploaded (apps/chrome-extension/icons/icon128.png) ✅
 
 ### Remaining (2026-08-13)
-- [ ] **Identity verification completion (MANUAL, user)** — re-upload ID (name must read "Jiang Long") + proof of address; may need to "change the verified name" in the payments profile if the ID name differs.
+- [ ] **WAIT for identity verification approval** (Google review, "a few days"). Check Settings → Profile or payment profile for status.
 - [ ] **Screenshots** (≥1, max 5; 1280×800 or 640×400, JPEG or 24-bit PNG no-alpha) — none exist; capture the extension UI in action (transcript panel on a streaming show, dictionary popup on word click, popup UI).
 - [ ] **Small promo tile 440×280** (JPEG/PNG no-alpha) — recommended.
-- [ ] **Privacy tab** (Privacy practices) — certify data usage + privacy policy URL.
-- [ ] **Submit for review** (button enabled once required fields are done).
+- [ ] **Privacy tab** (Privacy practices) — certify data usage + privacy policy URL (https://language-player.netlify.app/en/en/docs/privacy-policy).
+- [ ] **Submit for review** (button enabled once verification approved + required fields done).
 
 ## Update Process (future versions)
 
