@@ -8,12 +8,12 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
+import { API_BASE } from './api-config';
 import { log, logwarn } from './i18n';
 
 const CHUNK_SIZE = 5;
 /** Number of lines ahead of the active cue to pre-translate. */
 const LOOKAHEAD = 15;
-const API_BASE = 'https://pythonvps.zerotohero.ca';
 
 export interface SubCue {
   start: number;

@@ -44,7 +44,15 @@ export const useSavedWords = () => useContext(SavedWordsContext);
 
 // ── Provider ───────────────────────────────────────────────────────────────
 
-export const SavedWordsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface SavedWordsProviderProps {
+  children: React.ReactNode;
+  /** Current L2 code. When set, only that language's words are loaded
+   *  (SPEC-062 Phase 3 — don't download the user's whole vocabulary store
+   *  on every transcript mount). */
+  l2Code?: string;
+}
+
+export const SavedWordsProvider: React.FC<SavedWordsProviderProps> = ({ children, l2Code }) => {
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -53,55 +61,110 @@ export const SavedWordsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [loaded, setLoaded] = useState(false);
 
   const mountedRef = useRef(true);
+  /** Invalidates in-flight fetches when auth or L2 changes. */
+  const loadGenRef = useRef(0);
+  /** Last user whose words are in state; token-only storage changes are
+   *  ignored so an automatic refresh doesn't trigger a redundant refetch. */
+  const lastUserIdRef = useRef<string | null>(null);
+  const initialLoadRef = useRef(true);
 
-  const loadStore = useCallback(async () => {
+  const loadStore = useCallback(async (userId?: string) => {
+    const gen = ++loadGenRef.current;
+    const expectedUserId = userId ?? lastUserIdRef.current;
     try {
-      const store = await fetchSavedWords();
-      if (mountedRef.current) setSavedWords(store);
+      const store = await fetchSavedWords(l2Code);
+      if (
+        mountedRef.current
+        && gen === loadGenRef.current
+        && (!expectedUserId || lastUserIdRef.current === expectedUserId)
+      ) {
+        setSavedWords(store);
+      }
     } catch {
       // fetchSavedWords already logs the error; keep empty state
     }
-    if (mountedRef.current) {
+    if (mountedRef.current && gen === loadGenRef.current) {
       setLoaded(true);
       setLoading(false);
     }
+  }, [l2Code]);
+
+  const resetStore = useCallback(() => {
+    loadGenRef.current += 1;
+    setSavedWords({});
+    setLoaded(true);
+    setLoading(false);
   }, []);
 
   // Load saved words on mount (if logged in)
   useEffect(() => {
     mountedRef.current = true;
+    initialLoadRef.current = true;
+    let cancelled = false;
     (async () => {
-      const auth = await getAuthState();
-      if (!mountedRef.current) return;
-      setIsLoggedIn(!!auth);
-      if (auth) {
-        await loadStore();
-      } else {
-        setLoaded(true);
-        setLoading(false);
+      try {
+        const auth = await getAuthState();
+        if (!mountedRef.current || cancelled) return;
+        const userId = auth?.userId ?? null;
+        lastUserIdRef.current = userId;
+        setIsLoggedIn(!!auth);
+        if (auth) {
+          await loadStore(userId);
+        } else {
+          resetStore();
+        }
+      } catch {
+        if (mountedRef.current && !cancelled) resetStore();
+      } finally {
+        if (mountedRef.current && !cancelled) initialLoadRef.current = false;
       }
     })();
-    return () => { mountedRef.current = false; };
-  }, [loadStore]);
+    return () => { cancelled = true; mountedRef.current = false; };
+  }, [loadStore, resetStore]);
 
   // React to login/logout from the popup while the panel is open
   useEffect(() => {
     const onChange = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
       if (area !== 'local' || !changes.lpv_auth) return;
+      if (initialLoadRef.current) return;
+
       const auth = changes.lpv_auth.newValue;
+      const userId = auth?.userId ?? null;
+
+      // A refresh only rotates the token pair; the same user's words are
+      // already loaded, so don't clear state or refetch.
+      if (userId && userId === lastUserIdRef.current) {
+        setIsLoggedIn(true);
+        return;
+      }
+
+      // Auth user (or login/logout state) changed: invalidate any in-flight
+      // fetch from the previous user before starting the new one.
+      loadGenRef.current += 1;
+      lastUserIdRef.current = userId;
       setIsLoggedIn(!!auth);
       if (auth) {
-        setLoading(true);
-        loadStore();
-      } else {
         setSavedWords({});
-        setLoaded(true);
-        setLoading(false);
+        setLoaded(false);
+        setLoading(true);
+        loadStore(userId);
+      } else {
+        resetStore();
       }
     };
     chrome.storage.onChanged.addListener(onChange);
     return () => chrome.storage.onChanged.removeListener(onChange);
-  }, [loadStore]);
+  }, [loadStore, resetStore]);
+
+  // Refetch when the transcript language changes (same user, new L2).
+  useEffect(() => {
+    if (initialLoadRef.current) return;
+    if (!lastUserIdRef.current) return;
+    setSavedWords({});
+    setLoaded(false);
+    setLoading(true);
+    loadStore(lastUserIdRef.current ?? undefined);
+  }, [l2Code, loadStore]);
 
   // Build the form set for quick lookup
   const savedFormSet = useMemo(() => {
@@ -153,10 +216,10 @@ export const SavedWordsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     });
     const ok = await deleteSavedWord(l2Code, id);
     if (!ok) {
-      const store = await fetchSavedWords();
+      const store = await fetchSavedWords(l2Code);
       if (mountedRef.current) setSavedWords(store);
     }
-  }, []);
+  }, [l2Code]);
 
   return (
     <SavedWordsContext.Provider value={{ savedWords, savedFormSet, loading, saveWord, removeSavedWord, isLoggedIn }}>

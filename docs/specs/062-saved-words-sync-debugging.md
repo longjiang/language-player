@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-062
 - **Feature**: Diagnose and fix saved-words cross-device divergence (web Safari iPad/iPhone), `tester.mary` account pollution with `jon.long`'s words, and ensure all four clients use the SPEC-034 row API with correct logout wiping
-- **Status**: investigation complete; quick wins implemented 2026-08-10 (see below); larger fixes pending
+- **Status**: investigation complete; quick wins implemented 2026-08-10 (see below); Chrome extension Phase 2 fixes complete 2026-08-13; web/mobile/Classic hydration work still pending
 - **Created**: 2026-08-10
 - **ROADMAP Phase**: Phase 9: Backend Consolidation (cross-cutting)
 - **See also**: [SPEC-034 (Saved Words, complete)](034-saved-words-supabase-migration.md), [SPEC-039 (Full Database Migration)](039-full-database-migration-supabase.md), [ARCH-014 (Saved Words Data Flow)](../arch/014-saved-words-data-flow.md)
@@ -75,18 +75,18 @@
 
 #### apps/chrome-extension
 
-- ❌ **Still on the legacy full-blob API**: `src/saved-words.ts` does `GET /user-data` (parses `saved_words` blob) and `POST /user-data/sync` (uploads the **entire store**). Both endpoints were removed in WS-8 — the extension's saved-words feature is currently broken against production (404s).
-- ❌ **Still authenticates against Directus** (`src/auth.ts`, `popup.js` → `directusvps.zerotohero.ca/auth/authenticate`), which the Flask API no longer accepts post-5.7.
-- ❌ **Full-blob last-writer-wins**: `syncSavedWords(next)` writes the whole store; a stale extension can wipe words saved on other devices, and if the provider state isn't reset between accounts it can upload one user's words into another's account — the exact class of mechanism suspected for Mary's pollution.
-- ⚠️ `syncSavedWords()` is called inside the `setSavedWords` updater (side effect inside state updater; can double-fire in StrictMode).
-- ⚠️ `SavedWordsProvider` loads once on mount and never resets on auth change/logout.
+- ✅ Row API (`GET/PUT /saved-words`, `DELETE /saved-words/{l2}/{id}`) via Flask → Supabase (SPEC-034) — migrated in `3ed4ec80`.
+- ✅ Auth via Flask `/auth/login` + `/auth/refresh` (Supabase/GoTrue JWT in `chrome.storage.local`) — migrated in `3ed4ec80`.
+- ✅ No full-blob sync: writes are per-word optimistic PUT/DELETE, not whole-store uploads.
+- ✅ `SavedWordsProvider` resets on auth change/logout, ignores stale in-flight responses, and loads only the current L2 (2026-08-13).
+- ✅ Refresh calls are single-flighted and a dead/rotated refresh token clean-logouts instead of looping (2026-08-13).
 
 ## Root Causes
 
 1. **Mary pollution (data-level)**: old full-blob sync copied Jon's store into Mary's Directus blob; SPEC-034 backfilled the polluted blob; the mirror/reconciler then treated it as canonical and wrote it into Supabase rows. Mary's account now contains 2,060 of Jon's words with identical timestamps/forms.
 2. **Cross-device count divergence (client-level)**: all three UI apps render the device-local snapshot before server hydration completes and fall back to it silently on hydration failure. With Mary's large store, the hydration window is long enough to observe different counts on two devices; any transient hydration failure leaves a device permanently stale. (The extension's full-blob overwrite can cause real cross-device data loss, independent of hydration.)
 3. **Production timing confound**: until 12:38 PDT, production ran pre-teardown code with a Directus round-trip on every GET (lazy reconcile) and a live sweep — extra failure modes and mutation during the observed window.
-4. **Logout hygiene gaps**: Classic wipes nothing; web wipes only on explicit menu logout; extension has no saved-words state reset on logout.
+4. **Logout hygiene gaps**: Classic wipes nothing; web wipes only on explicit menu logout; the extension originally had no saved-words state reset on logout (fixed 2026-08-13).
 
 ## Proposed Fixes
 
@@ -127,11 +127,11 @@
 
 #### apps/chrome-extension
 
-- Port auth to Flask `POST /auth/login` (Supabase/GoTrue token via Flask) and store the token in `chrome.storage.local`.
-- Port saved words to the row API: `GET /saved-words`, `PUT /saved-words`, `DELETE /saved-words/{l2}/{id}`; remove `src/saved-words.ts` blob code.
-- Reset `SavedWordsProvider` state on auth change/logout.
-- Move `syncSavedWords` out of the `setState` updater; use the same optimistic + retry pattern as web/mobile.
-- Rebuild the extension after edits (`node apps/chrome-extension/build.mjs`).
+- ✅ Port auth to Flask `POST /auth/login` (Supabase/GoTrue token via Flask) and store the token in `chrome.storage.local`.
+- ✅ Port saved words to the row API: `GET /saved-words`, `PUT /saved-words`, `DELETE /saved-words/{l2}/{id}`; removed `src/saved-words.ts` blob code.
+- ✅ Reset `SavedWordsProvider` state on auth change/logout and ignore stale responses.
+- ✅ Move `syncSavedWords` out of the `setState` updater; use the same optimistic + retry pattern as web/mobile.
+- ✅ Rebuild the extension after edits (`node apps/chrome-extension/build.mjs`).
 
 ### Phase 3 — Performance optimization (single-l2 loading)
 

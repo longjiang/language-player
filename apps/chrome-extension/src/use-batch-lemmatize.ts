@@ -13,6 +13,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 
+import { API_BASE } from './api-config';
 import { log, logwarn } from './i18n';
 
 // ── Module-level cache (shared across all hook instances) ──────────────────
@@ -21,9 +22,6 @@ const tokenCache = new Map<string, LemmatizedToken[]>();
 
 /** In-flight request deduplication — keyed by cache key, maps to a promise. */
 const inflightMap = new Map<string, Promise<LemmatizedToken[]>>();
-
-/** Production Python API URL. */
-const API_BASE = 'https://pythonvps.zerotohero.ca';
 
 /** Max texts per batch request. Prevents overly large POST bodies. */
 const BATCH_MAX_SIZE = 50;

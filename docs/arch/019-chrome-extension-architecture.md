@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-07-30 (added i18n & translation pipeline documentation — dot quirk, CSV_LOOKUP mechanism, $name$ placeholders, new-key workflow)
+- **Last Updated**: 2026-08-13 (Supabase migration follow-ups — popup auth consolidation, single-flight refresh, per-L2 saved words)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -68,7 +68,7 @@ apps/chrome-extension/
     ├── content.css                     ← All panel, transcript, and overlay styles
     ├── background.js                   ← Service worker: webRequest interception, MAIN world ops
     ├── popup.html                      ← Popup HTML (auth form, language picker, transcript button)
-    ├── popup.js                        ← Popup logic (auth, language picker, transcript status polling)
+    ├── popup.js                        ← Popup logic (bundled into dist/popup.js; shares auth.ts)
     ├── popup-options.js                ← Bundled by esbuild: SUPPORTED_L1S/L2S exposed for the popup
     ├── popup.css                       ← Popup styles
     ├── netflix-main-world.js           ← Netflix JSON.parse hook (injected in MAIN world)
@@ -76,6 +76,7 @@ apps/chrome-extension/
     ├── subtitle-parsers.js             ← Subtitle format parsers (platform-agnostic)
     ├── i18n.js                         ← chrome.i18n.getMessage() wrapper
     ├── auth.ts                         ← Auth helpers (Flask → Supabase GoTrue proxy, refresh rotation)
+    ├── api-config.ts                   ← Shared Flask API base (single gateway, SPEC-024)
     ├── saved-words.ts                  ← Saved words row API (GET/PUT/DELETE /saved-words via Flask)
     ├── use-translate-lines.ts          ← React hook: batch subtitle translation
     ├── use-subscription.ts             ← React hook: check Pro subscription status (JWT, /user-subscription)
@@ -97,7 +98,7 @@ The extension uses **esbuild** to bundle the content script because Chrome's con
 node apps/chrome-extension/build.mjs
 ```
 
-The build script (`build.mjs`) does four things in order:
+The build script (`build.mjs`) does five things in order:
 
 1. **Generate language name lookup** — runs `scripts/generate-lang-names.js` which parses the monorepo's `translations.csv`, extracts all `lang.*` keys across 31 locales, and produces `dist/lang-names.json`. This JSON maps language codes (e.g., `"ja"`) to translated names (e.g., `{"en": "Japanese", "zh_CN": "日语", ...}`) for use in the L2 language dropdown.
 
@@ -110,9 +111,11 @@ The build script (`build.mjs`) does four things in order:
    - `minify: false` — kept readable for debugging
    - Resolves `@langplayer/shared` and `@langplayer/utils` via aliases to `packages/shared/src/` and `packages/utils/src/`
 
-3. **Bundle popup language options with esbuild** — takes `src/popup-options.js` and produces `dist/popup-options.js`, exposing the exact `SUPPORTED_L1S` / `CONTENT_L2S` / `POPULAR_L1S` / `POPULAR_L2S` lists from `@langplayer/shared` to the vanilla-JS popup. The popup loads this file before `popup.js` in `popup.html`.
+3. **Bundle popup language options with esbuild** — takes `src/popup-options.js` and produces `dist/popup-options.js`, exposing the exact `SUPPORTED_L1S` / `CONTENT_L2S` / `POPULAR_L1S` / `POPULAR_L2S` lists from `@langplayer/shared` to the vanilla-JS popup. The popup loads this file before `dist/popup.js` in `popup.html`.
 
-4. **Copy static assets** — copies `src/content.css` → `dist/content.css` and `src/netflix-main-world.js` → `dist/netflix-main-world.js`.
+4. **Bundle the popup script with esbuild** — takes `src/popup.js` and produces `dist/popup.js`. Bundling lets the popup import the same `auth.ts` module as the content script, so login/refresh/logout, single-flight refresh, and dead-refresh-token cleanup are not duplicated.
+
+5. **Copy static assets** — copies `src/content.css` → `dist/content.css` and `src/netflix-main-world.js` → `dist/netflix-main-world.js`.
 
 ### Generating Locale Files
 
@@ -132,9 +135,9 @@ This script reads `translations.csv` and merges CSV translations with a built-in
 4. Reload the video page
 
 **What needs a rebuild vs what doesn't:**
-- `src/content-entry.js`, `src/transcript-app.tsx`, `src/popup-options.js`, shared packages (`@langplayer/*`) — **must rebuild** (esbuild bundles these into `dist/content.js` / `dist/popup-options.js`)
+- `src/content-entry.js`, `src/transcript-app.tsx`, `src/popup.js`, `src/popup-options.js`, shared packages (`@langplayer/*`) — **must rebuild** (esbuild bundles these into `dist/content.js` / `dist/popup.js` / `dist/popup-options.js`)
 - `src/content.css` — automatically copied to `dist/content.css` by build, so rebuild anyway
-- `src/popup.html`, `src/popup.js`, `src/popup.css` — loaded directly by extension runtime, so no rebuild for these files themselves, but a rebuild is required after any `src/popup-options.js` or `@langplayer/shared` change (popup.html loads the bundled `dist/popup-options.js`). Then refresh at `chrome://extensions`
+- `src/popup.html`, `src/popup.css` — loaded directly by extension runtime, so no rebuild for these files themselves, but a rebuild is required after any `src/popup.js`, `src/popup-options.js`, or `@langplayer/shared` change (popup.html loads the bundled `dist/popup.js` and `dist/popup-options.js`). Then refresh at `chrome://extensions`
 - `_locales/` — generated separately via `node scripts/generate-locales.js`, no rebuild needed
 - `src/netflix-main-world.js` — automatically copied to `dist/` by build, so rebuild anyway
 
@@ -380,6 +383,13 @@ let ytCaptionTracks = [];    // available YouTube caption tracks
 | `autoOpenPanel` | `chrome.storage.sync` | boolean | `true` | Whether to auto-open panel on subtitle detection |
 | `l2Language` | `chrome.storage.local` | string | — | User's preferred L2 language code (persisted) |
 | `lpv_auth` | `chrome.storage.local` | object | — | `{ token, refreshToken, email, userId, expires }` — Supabase JWT from Flask `/auth/login` (ADR-0023); refresh token rotates via `/auth/refresh` |
+
+`auth.ts` single-flights refresh calls per extension context and re-reads
+storage before refreshing so a token rotated by the popup or another tab is
+not replayed (SPEC-039 operational note). A 400/401 from GoTrue (dead/rotated
+refresh token) is treated as a clean logout. `SavedWordsProvider` loads only
+the current L2's words and ignores stale fetch responses after an auth or
+language change (SPEC-062).
 
 ---
 

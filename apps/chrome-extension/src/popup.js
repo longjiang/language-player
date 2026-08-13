@@ -1,3 +1,5 @@
+import { login, getAuthState, logout } from './auth';
+
 document.addEventListener('DOMContentLoaded', function() {
   // ── i18n ─────────────────────────────────────────────────────────────
   /** Runtime messages cache — loaded from _locales/{locale}/messages.json
@@ -312,9 +314,6 @@ document.addEventListener('DOMContentLoaded', function() {
   initLanguage();
 
   // ── Auth ──────────────────────────────────────────────────────────────
-  const STORAGE_KEY = 'lpv_auth';
-  const API_BASE = 'https://pythonvps.zerotohero.ca';
-
   const authSection = document.getElementById('auth-section');
   const loggedOutDiv = document.getElementById('auth-logged-out');
   const loggedInDiv = document.getElementById('auth-logged-in');
@@ -325,54 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const authError = document.getElementById('auth-error');
   const authUser = document.getElementById('auth-user');
 
-  function decodeJwtPayload(token) {
-    try {
-      const part = token.split('.')[1];
-      if (!part) return {};
-      const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
-      return JSON.parse(atob(padded));
-    } catch {
-      return {};
-    }
-  }
-
-  async function readAuthError(res, fallback) {
-    try {
-      const body = await res.json();
-      return body?.errors?.[0]?.message || body?.message || fallback;
-    } catch {
-      return fallback;
-    }
-  }
-
-  /** Try to refresh the stored session through Flask → GoTrue. */
-  async function refreshStoredAuth(auth) {
-    if (!auth || !auth.refreshToken) return null;
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: auth.refreshToken }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.token) return null;
-    const payload = decodeJwtPayload(data.token);
-    const next = {
-      token: data.token,
-      refreshToken: data.refreshToken || auth.refreshToken,
-      email: data.user?.email || auth.email,
-      userId: String(data.user?.id ?? payload.sub ?? auth.userId ?? ''),
-      expires: (payload.exp || 0) * 1000,
-    };
-    await chrome.storage.local.set({ [STORAGE_KEY]: next });
-    return next;
-  }
-
   async function checkAuth() {
-    let auth = (await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY];
-    if (auth && auth.expires && auth.expires < Date.now() + 5 * 60 * 1000) {
-      auth = await refreshStoredAuth(auth);
+    let auth = null;
+    try {
+      auth = await getAuthState();
+    } catch {
+      auth = null;
     }
     if (auth && auth.token) {
       loggedOutDiv.classList.add('hidden');
@@ -381,7 +338,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       loggedOutDiv.classList.remove('hidden');
       loggedInDiv.classList.add('hidden');
-      if (auth) await chrome.storage.local.remove(STORAGE_KEY);
     }
   }
 
@@ -394,28 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
     authError.classList.add('hidden');
 
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        throw new Error(await readAuthError(res, `Login failed (${res.status})`));
-      }
-      const data = await res.json();
-      const token = data.token;
-      if (!token) throw new Error('No token in response');
-
-      const payload = decodeJwtPayload(token);
-      await chrome.storage.local.set({
-        [STORAGE_KEY]: {
-          token,
-          refreshToken: data.refreshToken || undefined,
-          email: data.user?.email || email,
-          userId: String(data.user?.id ?? payload.sub ?? ''),
-          expires: (payload.exp || 0) * 1000,
-        }
-      });
+      await login(email, password);
       checkAuth();
     } catch (err) {
       authError.textContent = err.message;
@@ -426,20 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   authLogoutBtn.addEventListener('click', async () => {
-    try {
-      const auth = (await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY];
-      if (auth?.token || auth?.refreshToken) {
-        await fetch(`${API_BASE}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth.token || ''}`,
-          },
-          body: JSON.stringify({ refreshToken: auth.refreshToken }),
-        }).catch(() => {});
-      }
-    } catch {}
-    await chrome.storage.local.remove(STORAGE_KEY);
+    await logout();
     checkAuth();
   });
 

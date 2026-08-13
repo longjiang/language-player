@@ -13,6 +13,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { useSavedWords } from './SavedWordsProvider';
+import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { Markdown } from './Markdown';
 import { Bookmark, BookmarkCheck, X } from './Icons';
@@ -44,7 +45,6 @@ interface DictionaryCardProps {
 
 // ── API ────────────────────────────────────────────────────────────────────
 
-const API_BASE = 'https://pythonvps.zerotohero.ca';
 const WEB_APP = 'https://language-player.netlify.app';
 
 async function fetchEntries(

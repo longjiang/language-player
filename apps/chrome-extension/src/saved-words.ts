@@ -8,9 +8,8 @@
 
 import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
 import { authorizedFetch } from './auth';
+import { API_BASE } from './api-config';
 import { log, logwarn } from './i18n';
-
-const API_BASE = 'https://pythonvps.zerotohero.ca';
 
 /** Fetch the full saved words store for the authenticated user. */
 export async function fetchSavedWords(l2?: string): Promise<SavedLexicalItemStore> {
