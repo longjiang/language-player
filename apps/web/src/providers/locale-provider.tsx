@@ -51,10 +51,12 @@ async function loadMessages(code: string): Promise<Messages> {
 export function LocaleProvider({
   locale: initialLocale,
   messages: initialMessages,
+  timeZone,
   children,
 }: {
   locale: string;
   messages: Messages;
+  timeZone: string;
   children: ReactNode;
 }) {
   const [locale, setLocale] = useState(initialLocale);
@@ -84,7 +86,7 @@ export function LocaleProvider({
 
   return (
     <LocaleContext.Provider value={value}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
         {children}
       </NextIntlClientProvider>
     </LocaleContext.Provider>

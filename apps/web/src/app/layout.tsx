@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, getTimeZone } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { LocaleProvider } from '@/providers/locale-provider';
 import { SessionProvider } from '@/providers/session-provider';
@@ -105,6 +105,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const timeZone = await getTimeZone();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -115,7 +116,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://www.youtube.com" />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        <LocaleProvider locale={locale} messages={messages}>
+        <LocaleProvider locale={locale} messages={messages} timeZone={timeZone}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SessionProvider>
               <ApiClientProvider>
