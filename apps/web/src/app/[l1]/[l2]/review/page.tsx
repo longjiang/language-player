@@ -508,8 +508,8 @@ export default function ReviewPage() {
   // Must be BEFORE any conditional returns (React hooks rule).
   const langCardsForCounts = store.cards[l2Code] ?? {};
   const cardCounts = useMemo(
-    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts),
-    [l2SavedWords, langCardsForCounts],
+    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit: dailyLimit }),
+    [l2SavedWords, langCardsForCounts, dailyLimit],
   );
 
   const currentCard = cards[currentIndex];
