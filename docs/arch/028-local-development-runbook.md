@@ -223,7 +223,8 @@ single "dev server" — Metro runs on **port 8081** and serves the JS bundle to
 the app. There are two local workflows:
 
 1. **Metro + Expo Go in the iOS Simulator** — fastest, no native build
-2. **Metro + development build** — native binary on iOS and Android
+2. **Metro + development build on a physical device** — native binary on iOS
+   and Android
 
 ### Prerequisites for both
 
@@ -266,34 +267,45 @@ physical device.
 Verify: the Metro terminal shows `iOS Bundled … node_modules/expo-router/entry.js
 (N modules)` and `lsof -ti:8081` returns a PID.
 
-### Workflow 2 — Metro + development build (iOS and Android)
+### Workflow 2 — Metro + development build (physical device, iOS and Android)
 
 The development build is a native binary with all SDK 57 modules. It still
-needs Metro running to load its JS bundle.
+needs Metro running to load its JS bundle. This workflow is for **physical
+devices only** — for the iOS Simulator use Workflow 1 (Expo Go).
 
-**iOS (simulator or physical device):**
+#### Check for an existing build first
+
+A dev build may already exist on this machine — don't rebuild if a usable one
+is found:
+
+- Search the repo/Desktop first: `.app`/`.ipa`/`.xcarchive` under
+  `apps/mobile/ios/build`, `~/Desktop`, and Xcode DerivedData/Archives.
+- Then check CoreDevice's app-install cache:
+  `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app`
+  — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was
+  found there after the repo/Desktop check came back empty.
+- Before treating a cached build as usable, verify its embedded provisioning
+  profile includes the target device's UDID and that it does not predate
+  native config changes.
+- Install an existing build without rebuilding:
+  `xcrun devicectl device install app --device <udid> /path/to/App.app`
+
+Only run the build commands below if no usable build exists.
+
+#### iOS (iPhone/iPad)
+
+Requires: device connected and unlocked, Developer Mode enabled, and the
+device UDID registered in the `ca.zerotohero.go` development provisioning
+profile (see [SPEC-064 — iOS Development Build Runbook](../specs/064-ios-development-build-runbook.md)).
 
 ```bash
 cd apps/mobile
 source ~/.nvm/nvm.sh && nvm use 22
-
-# Simulator:
-npx expo run:ios
-
-# Physical device (requires provisioning for ca.zerotohero.go):
 ipconfig getifaddr en0   # Mac LAN IP, e.g. 192.168.1.130
 EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:ios --device
 ```
 
-**Android (emulator or physical device):**
-
-```bash
-cd apps/mobile
-source ~/.nvm/nvm.sh && nvm use 22
-EXPO_PUBLIC_API_URL=http://10.0.2.2:5001 npx expo run:android
-```
-
-**Then start Metro** for the installed app:
+Then start Metro:
 
 ```bash
 cd apps/mobile
@@ -301,8 +313,20 @@ source ~/.nvm/nvm.sh && nvm use 22
 ulimit -n 65536 && npx expo start   # ulimit avoids EMFILE watcher crashes
 ```
 
-Then open the app on the simulator/device — it connects to Metro over the LAN
-and loads the bundle.
+Then open the app on the device — it connects to Metro over the LAN and loads
+the bundle.
+
+#### Android (physical device)
+
+```bash
+cd apps/mobile
+source ~/.nvm/nvm.sh && nvm use 22
+ipconfig getifaddr en0   # Mac LAN IP, e.g. 192.168.1.130
+EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:android
+```
+
+Then start Metro with the same command as above, then open the app on the
+device.
 
 > ⚠️ `npx expo run:ios` / `npx expo run:android` are native builds (15–20+
 > minutes, run CocoaPods/Gradle). Never run them without the user's go-ahead.
