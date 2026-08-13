@@ -112,6 +112,38 @@ if (popupOptionsResult.warnings.length > 0) {
   console.warn('[build] Popup options warnings:', popupOptionsResult.warnings);
 }
 
+// Step 2c: Bundle the popup script so it can share the auth module
+// (single-flight refresh, dead-token cleanup) instead of duplicating it.
+console.log('[build] Bundling popup script...');
+
+const popupResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/popup.js')],
+  bundle: true,
+  outfile: resolve(outDir, 'popup.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (popupResult.errors.length > 0) {
+  console.error('[build] Popup errors:', popupResult.errors);
+  process.exit(1);
+}
+if (popupResult.warnings.length > 0) {
+  console.warn('[build] Popup warnings:', popupResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),

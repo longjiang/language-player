@@ -9,8 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { authorizedFetch } from './auth';
-
-const API_BASE = 'https://pythonvps.zerotohero.ca';
+import { API_BASE } from './api-config';
 
 interface SubscriptionInfo {
   id?: number;
@@ -36,10 +35,18 @@ export function useSubscription(): UseSubscriptionResult {
   const [sub, setSub] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const resetState = useCallback(() => {
+    setSub(null);
+    setIsLifetime(false);
+    setIsExpired(false);
+    setIsPro(false);
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     const res = await authorizedFetch(`${API_BASE}/user-subscription`);
     if (!res) {
+      resetState();
       setLoading(false);
       return;
     }
@@ -55,11 +62,15 @@ export function useSubscription(): UseSubscriptionResult {
         setSub(data);
         setIsLifetime(lifetime);
         setIsExpired(expired);
-        setIsPro(lifetime || (planType !== 'free' && !expired));
+        // Matches shared SubscriptionState: Pro = lifetime, or a non-expired
+        // plan that actually has an expiry date (free trials always do).
+        setIsPro(lifetime || (expiresOn !== null && !expired));
+      } else {
+        resetState();
       }
     }
     setLoading(false);
-  }, []);
+  }, [resetState]);
 
   useEffect(() => {
     let cancelled = false;

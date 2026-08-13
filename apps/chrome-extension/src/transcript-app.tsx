@@ -15,6 +15,7 @@ import { DictionaryCard } from './components/DictionaryCard';
 import { Markdown } from './components/Markdown';
 import { X, Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
+import { API_BASE } from './api-config';
 import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
@@ -416,7 +417,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
 
 Text: ${cue.text}`;
 
-      const res = await fetch('https://pythonvps.zerotohero.ca/chatgpt', {
+      const res = await fetch(`${API_BASE}/chatgpt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -636,7 +637,7 @@ export function mountTranscript(
     root = createRoot(container);
   }
   root.render(
-    <SavedWordsProvider>
+    <SavedWordsProvider l2Code={l2Code}>
       <TranscriptAppInner
         cues={cues}
         activeCueIdx={activeCueIdx}
