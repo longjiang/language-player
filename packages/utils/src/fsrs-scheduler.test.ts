@@ -284,26 +284,58 @@ describe('fsrs-scheduler: due helpers', () => {
 });
 
 describe('fsrs-scheduler: deck counts & due labels', () => {
-  it('counts blue/red/green across the whole deck, not just due cards', () => {
+  it('counts blue/red/green with Anki due-today semantics', () => {
     const savedWords = [
       { id: 'new' },
-      { id: 'learning' },
-      { id: 'review' },
-      { id: 'relearning' },
+      { id: 'learning' }, // due now
+      { id: 'learningFuture' }, // step not due yet
+      { id: 'review' }, // due now
+      { id: 'reviewFuture' }, // scheduled for later
+      { id: 'relearning' }, // due now
       { id: 'missing' },
     ];
     const cards: Record<string, FsrsCard> = {
       new: newCard(NOW),
       learning: { ...newCard(NOW), state: State.Learning },
+      learningFuture: {
+        ...newCard(NOW),
+        state: State.Learning,
+        due: NOW + 10 * 60_000,
+      },
       review: { ...newCard(NOW), state: State.Review },
+      reviewFuture: {
+        ...newCard(NOW),
+        state: State.Review,
+        due: NOW + 86_400_000,
+      },
       relearning: { ...newCard(NOW), state: State.Relearning },
     };
-    expect(countDeckStates(savedWords, cards)).toEqual({
+    expect(countDeckStates(savedWords, cards, { now: NOW })).toEqual({
       newCount: 1,
       againCount: 2,
       reviewCount: 1,
     });
-    expect(countDeckStates([], {})).toEqual({ newCount: 0, againCount: 0, reviewCount: 0 });
+    expect(countDeckStates([], {}, { now: NOW })).toEqual({
+      newCount: 0,
+      againCount: 0,
+      reviewCount: 0,
+    });
+  });
+
+  it('caps the blue count at the daily new-card limit', () => {
+    const savedWords = [
+      { id: 'a' },
+      { id: 'b' },
+      { id: 'c' },
+    ];
+    const cards: Record<string, FsrsCard> = {
+      a: newCard(NOW),
+      b: newCard(NOW),
+      c: newCard(NOW),
+    };
+    expect(
+      countDeckStates(savedWords, cards, { dailyNewLimit: 2, now: NOW }),
+    ).toEqual({ newCount: 2, againCount: 0, reviewCount: 0 });
   });
 
   it('formats due labels for minutes, hours, and days', () => {

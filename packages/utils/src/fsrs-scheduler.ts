@@ -344,11 +344,31 @@ export function getCardState(card: FsrsCard): SrsCardState {
   }
 }
 
-/** Blue/red/green deck counts from the whole saved-word deck (not just due). */
+/** Options for Anki-style due-today deck counts. */
+export interface DeckCountOptions {
+  /** Daily new-card limit; caps the blue count (defaults to no cap). */
+  dailyNewLimit?: number;
+  /** "Now" used for due checks (defaults to `Date.now()`). */
+  now?: number;
+}
+
+/**
+ * Blue/red/green deck counts with Anki due-today semantics (SPEC-066):
+ *
+ * - blue = unrated (`state: new`) cards in the deck. The deck is prefilled
+ *   with today's new-card budget, so this is the remaining budget: it counts
+ *   down as cards are rated and does not refill until the next UTC day.
+ * - red = learning/relearning cards actually due on a step right now.
+ * - green = review cards due now (including overdue).
+ *
+ * Future-dated learning/review cards do not appear until they become due.
+ */
 export function countDeckStates(
   savedWords: Array<{ id: string }>,
   cards: Record<string, FsrsCard>,
+  options: DeckCountOptions = {},
 ): { newCount: number; againCount: number; reviewCount: number } {
+  const { dailyNewLimit, now = Date.now() } = options;
   let newCount = 0;
   let againCount = 0;
   let reviewCount = 0;
@@ -359,10 +379,13 @@ export function countDeckStates(
     if (state === 'new') {
       newCount++;
     } else if (state === 'learning' || state === 'relearning') {
-      againCount++;
-    } else {
+      if (isDue(card, now)) againCount++;
+    } else if (isDue(card, now)) {
       reviewCount++;
     }
+  }
+  if (typeof dailyNewLimit === 'number' && dailyNewLimit >= 0) {
+    newCount = Math.min(newCount, Math.floor(dailyNewLimit));
   }
   return { newCount, againCount, reviewCount };
 }
