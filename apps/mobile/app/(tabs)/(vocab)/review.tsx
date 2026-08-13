@@ -893,6 +893,9 @@ export default function ReviewScreen() {
     // Old records store an empty default context instance — skip it so the
     // review card doesn't render a dead "…" trigger that copies nothing.
     .filter((inst) => !!inst.context?.text);
+  // Multi-instance is a future feature (ADR-0006 / SPEC-066): render only the
+  // latest context until the UI explicitly supports adding more instances.
+  const displayInstance = instances[instances.length - 1] ?? null;
   const srs = currentCard.srs;
 
   return (
@@ -939,31 +942,26 @@ export default function ReviewScreen() {
                 {wordForm}
               </Text>
             </View>
-          ) : instances.map((inst, idx) => (
-            <View key={inst.timestamp?.toString() ?? idx} className="mb-3 rounded-lg bg-muted/50 p-3">
-              {instances.length > 1 && (
-                <Text className="mb-1 text-[10px] font-medium text-muted-foreground/70">
-                  {t('review.context_label')} {idx + 1}
-                </Text>
-              )}
-              <TextActionMenu text={inst.context.text} l2Code={l2Code} l1Code={baseCode(l1Lang.code)}>
+          ) : displayInstance && (
+            <View className="mb-3 rounded-lg bg-muted/50 p-3">
+              <TextActionMenu text={displayInstance.context.text} l2Code={l2Code} l1Code={baseCode(l1Lang.code)}>
                 <TokenizedText
-                  text={inst.context.text}
+                  text={displayInstance.context.text}
                   l2Code={l2Code}
                   highlightTerms={Array.from(new Set(
-                    [inst.form, ...(savedWord.forms ?? []), savedWord.head ?? ''].filter(Boolean),
+                    [displayInstance.form, ...(savedWord.forms ?? []), savedWord.head ?? ''].filter(Boolean),
                   ))}
                   phoneticsOnHighlight={showTabs}
                 />
               </TextActionMenu>
               <View className="mt-1">
-                <SavedWordSource context={inst.context} date={inst.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
+                <SavedWordSource context={displayInstance.context} date={displayInstance.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
-              {showTabs && display.translation && (inst.context.translation || contextTranslation) && (
+              {showTabs && display.translation && (displayInstance.context.translation || contextTranslation) && (
                 <View className="mt-2 border-t border-border pt-2">
-                  {inst.context.translation ? (
+                  {displayInstance.context.translation ? (
                     <Text className="text-xs leading-relaxed text-muted-foreground">
-                      {inst.context.translation}
+                      {displayInstance.context.translation}
                     </Text>
                   ) : (
                     <ReviewTranslationMarkdown text={contextTranslation ?? ''} />
@@ -971,7 +969,7 @@ export default function ReviewScreen() {
                 </View>
               )}
             </View>
-          ))}
+          )}
 
           {/* SRS info (compact) */}
           <Text className="mb-4 text-center text-xs text-muted-foreground">
@@ -1002,7 +1000,7 @@ export default function ReviewScreen() {
                   showDefinitionTab
                   embedded
                   l2Code={l2Lang.code}
-                  contextText={instances[0]?.context?.text}
+                  contextText={displayInstance?.context?.text}
                   contextForm={wordForm}
                 />
               ) : offlineEntryLookupDone[currentCard.word.id] ? (

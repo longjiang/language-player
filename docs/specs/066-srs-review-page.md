@@ -540,7 +540,7 @@ types count while unexpired — there is no `status` filter.
 
 | # | Area | Web | Mobile | Impact / intended |
 |---|---|---|---|---|
-| 1 | Context instances | Renders only `word.context` (single context); imports `normalizeInstances` but doesn't use it | Renders **all** `instances[]` ("Context 1", "Context 2", …), filtering empty contexts | **Web is correct** — multi-instance is a future feature ([ADR-0006](../adr/0006-consolidated-lexical-data-types.md)); single-context rendering is the intended behavior for now |
+| 1 | Context instances | Renders only `word.context` (single context) | Rendered **all** `instances[]`; fixed (2026-08-13) to render only the latest context | Both now render a single context; multi-instance remains a future feature ([ADR-0006](../adr/0006-consolidated-lexical-data-types.md)) |
 | 2 | No-context fallback | No visible word front (only SRS info + Show Definition) | Shows the headword centered as the card front | **Mobile is correct** — web should show the headword when a word has no context |
 | 3 | Daily new limit source | Review reads `useSrs().dailyNewLimit` (SRS store: legacy `zthSrsProgress` / `GET /srs`) | Review reads `SettingsContext.review.dailyNewLimit` (`settings_v2` / `GET /user-settings`) | **Mobile is correct** — web should read `SettingsContext` ([SPEC-015](015-mobile-settings-completion.md)) so Settings → Review affects the page |
 | 4 | Orphan pruning | `pruneOrphans()` removes cards for unsaved words on page load | No `pruneOrphans` in mobile `useSrs` | **Web is correct** — mobile should prune orphan cards so unsaved words don't resurrect |
@@ -598,6 +598,9 @@ types count while unexpired — there is no `status` filter.
   server card (`reps > 0`) can no longer be overwritten by a local unrated
   `new` card during hydration, and mobile merges cache rows instead of
   replacing the deck.
+- ✅ **Duplicate-instance guard** — implemented (2026-08-13): saved-word
+  instances dedupe by `form + context.text` regardless of save date, existing
+  duplicates are cleaned up, and mobile renders a single context.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -762,6 +765,18 @@ server card during hydration.
 pull-merge bridge also merges cache rows into the existing store instead of
 replacing the whole deck, so a stale cached "new" card can't suddenly displace
 the current review card.
+
+### Duplicate saved-word instances
+
+The backend dedupe key included the save timestamp, so saving the same
+sentence again (even on a different date) created a second instance, and
+mobile rendered every instance on the card front. There is no UI to
+deliberately add another instance yet.
+
+✅ **Fixed (2026-08-13):** instance identity is now `form + context.text`
+(timestamp excluded), `upsert_word` removes any pre-existing identical
+instance before inserting, a one-time cleanup deletes existing duplicates,
+and mobile renders only the latest context sentence.
 
 ## Stale Related Docs
 
