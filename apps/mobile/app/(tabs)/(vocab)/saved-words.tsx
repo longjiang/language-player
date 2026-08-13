@@ -257,7 +257,7 @@ export default function SavedWordsScreen() {
         renderItem={({ item }) => {
           if (item.kind === 'header') {
             return (
-              <View className="mb-3 flex-row items-center gap-2 px-4 py-1.5">
+              <View className="mb-3 flex-row items-center gap-2 px-4 pt-1.5 pb-2">
                 <Text className="text-lg font-semibold text-muted-foreground">{item.title}</Text>
                 <View className="rounded-full bg-muted px-2 py-0.5">
                   <Text className="text-xs text-muted-foreground">{item.count}</Text>
