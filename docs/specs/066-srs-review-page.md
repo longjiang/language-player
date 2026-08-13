@@ -599,11 +599,12 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
   restores the card and releases the rating back to the UTC-day budget.
 
-## Known Issues & Open Work (2026-08-13)
+## Known Issues & Resolutions (2026-08-13)
 
 The following issues were found during cross-device review testing on
-iPad/iPhone Safari (web) and the mobile app. Status is tracked per issue so
-the implementation plan reflects the current gaps.
+iPad/iPhone Safari (web) and the mobile app. All are implemented/resolved as
+of 2026-08-13; the struck text records the original behavior and each section
+notes the fix that landed.
 
 ### Shared: rated cards can be reset to "new" before cloud hydration finishes
 
