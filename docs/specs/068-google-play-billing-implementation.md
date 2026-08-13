@@ -67,12 +67,13 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
   regions (tax-adjusted per region), tax category Digital app sales. Created
   after the release-signed AAB (v1 / 3.0.0) was uploaded to **Internal
   testing** on 2026-08-13 (BILLING permission gate satisfied).
-- [~] Add license testers under **Setup → License testing** — note: Play
-  testers must be **real Google accounts**; the app's `tester.mary@`/
-  `tester.bob@zerotohero.ca` logins were rejected by Play Console ("email
-  doesn't exist"). The Internal testing track email list has
-  `longjiang2005@gmail.com` only. Add real Google accounts here + to the
-  internal track before G1–G5.
+- [~] Add license testers under **Setup → License testing** — plan:
+  `longjiang2005+googleplaytester@gmail.com` (Gmail plus alias delivers to
+  the same inbox). Caveat: Play may match testers against the canonical
+  account email — if the opt-in doesn't activate tester status, add
+  `longjiang2005@gmail.com` instead (already on the Internal testing track).
+  Note: `tester.mary@`/`tester.bob@zerotohero.ca` were rejected because they
+  are not real Google accounts.
 - [ ] Enable API access:
   - Link/create a Google Cloud project in **Play Console → Setup → API access**.
   - Enable the **Android Publisher API** in that project.
@@ -150,11 +151,15 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
 ### 6.3 Environment (`zerotohero-python-server/.env`, gitignored)
 
 - [ ] `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — the service account key (JSON
-  string or path).
+  string or absolute file path; see `zerotohero-python-server/.env.example`).
 - [x] `GOOGLE_PLAY_PACKAGE_NAME=ca.zerotohero.go`
 - [x] `GOOGLE_PLAY_PRODUCT_ID=pro_go`
 - [x] Add `google-auth` to `requirements.txt` (already a transitive dep via
   `google-analytics-data`, but declare it explicitly).
+
+> `zerotohero-python-server/.env.example` documents the Google Play vars;
+> copy them into the real `.env` and restart Flask after setting the service
+> account key.
 
 ### 6.4 Tests (pytest, mirror `test_phase0_subscriptions.py`)
 
