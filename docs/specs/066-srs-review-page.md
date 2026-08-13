@@ -4,7 +4,9 @@
 
 - **Spec ID**: SPEC-066
 - **Feature**: SRS Review Page
-- **Status**: implemented (2026-08-11)
+- **Status**: implemented (2026-08-11); `dailyNewLimit` semantics corrected
+  to match Anki/FSRS (2026-08-13) — previous wording was wrong; code update
+  pending
 - **Created**: 2026-08-11
 - **ROADMAP Phase**: Phase 6: User Features
 
@@ -178,25 +180,41 @@ was retired in Phase 6; deprecated `ease` / `interval` / `repetitions` /
 `nextReview` fields are still written on every card for the legacy-client
 compatibility window.
 
+> **Correction (2026-08-13):** The original wording of this section was
+> wrong. It described `dailyNewLimit` as a rolling deck-size cap that refills
+> during a session. The correct Anki/FSRS behavior is a daily quota: up to
+> `dailyNewLimit` new cards per UTC day, with no refill until the next day.
+> The code (`planNewDeck`, both review pages, and the
+> `remainingNewCardsToday()` helpers) still implements the old incorrect
+> behavior and must be updated to match this spec.
+
 ### New-deck budget
 
-New words enter the deck through a daily budget. The "new" deck always holds
-the `dailyNewLimit` most recently saved words that haven't been rated yet;
-newer saves displace older unrated words when the budget is full. A card
-entering the deck is due immediately, and as soon as a rated word leaves the
-new deck, the next newest unrated word takes its place — the deck refills
-during the session rather than waiting for the next day. Rated cards (whether
-passed or failed) are never displaced by newer saves.
+New words enter the deck through a daily budget. Each UTC day, up to
+`dailyNewLimit` unrated saved words are made available as new cards (default
+20). ~~The "new" deck always holds the `dailyNewLimit` most recently saved
+words that haven't been rated yet; newer saves displace older unrated words
+when the budget is full. A card entering the deck is due immediately, and as
+soon as a rated word leaves the new deck, the next newest unrated word takes
+its place — the deck refills during the session rather than waiting for the
+next day.~~ Rated cards (whether passed or failed) are never displaced by
+newer saves.
 
-**"No more new cards today" (Phase 0 definition)** — this state means the
-unrated pool is empty: every saved word has a card and no card is still `new`.
-Because the deck refills during a session, the daily limit caps the deck size,
-not how many new cards can be reviewed today. The message is shown in the
-all-done / no-due states (with the blue count at 0). SPEC-023 R6 is updated to
-this definition.
+A card entering the deck is due immediately. Once today's new-card budget is
+used up, no more new cards are introduced until the next UTC day — the deck
+does **not** refill during the session.
 
-`remainingNewCardsToday()` is rewritten to count the unrated pool (saved words
-with no card or a `state: new` card); it is used only for this message.
+**"No more new cards today"** — this state means today's new-card budget is
+exhausted (or every saved word has been rated at least once). ~~Because the
+deck refills during a session, the daily limit caps the deck size, not how
+many new cards can be reviewed today.~~ The message is shown in the all-done /
+no-due states (with the blue count at 0). SPEC-023 R6 is updated to this
+definition.
+
+`remainingNewCardsToday()` counts the remaining daily budget: `max(0,
+dailyNewLimit − cards introduced today − older unrated cards still in the blue
+deck)`. It drives both the blue count and the "no more new cards today"
+message.
 
 ### Undo and the free cap
 
@@ -204,9 +222,7 @@ Undo restores the card to exactly the scheduling state it had before the last
 rating (including its memory state and current step) and returns it to the
 front of the session. For free users, each rating counts toward a daily cap
 of 20; undoing a rating restores the card's schedule and should also release
-that rating back to the daily budget (currently only the schedule is
-restored — see [Documented Intent Not Yet
-Implemented](#documented-intent-not-yet-implemented-both-platforms)). Both
+that rating back to the daily budget. Both
 platforms share this algorithm through the same utility implementation, so a
 card rated on web and a card rated on mobile follow identical scheduling.
 
@@ -278,10 +294,11 @@ recomputes the queue on the next store change (rating, removal) or page reload.
 ### Deck construction
 
 1. `planNewDeck(savedWords, cards, dailyNewLimit)` computes the blue ("new")
-   deck: the `dailyNewLimit` most recently saved words that have no card or an
-   unreviewed blue card, newest-saved first.
+   deck for today: the most recently saved words that have no card or an
+   unreviewed blue card, newest-saved first, but never more than today's
+   remaining new-card budget.
 2. Words in `toCreate` get a brand-new card with `due = Date.now()`
-   (due immediately).
+   (due immediately) and count against today's budget.
 3. Blue cards pushed out of the newest-`dailyNewLimit` window are removed
    (`toRemove`) so the deck doesn't grow unboundedly.
 4. Rated cards (green/red) are never displaced.
@@ -300,13 +317,19 @@ The classification follows the card's state (new / learning / review), not a
 success streak. The current streak-based counts are a by-product of the
 textbook implementation and disappear with the FSRS migration.
 
-Note: the "no cards due" copy says queued words are "for tomorrow's batch", but
-the deck actually fills as soon as a blue slot frees up — `planNewDeck` reruns
-after each rating and introduces the next-newest unrated word as a due-now card.
+~~Note: the "no cards due" copy says queued words are "for tomorrow's batch",
+but the deck actually fills as soon as a blue slot frees up — `planNewDeck`
+reruns after each rating and introduces the next-newest unrated word as a
+due-now card.~~
 
-The `remainingNewCardsToday()` / `countNewCardsToday()` helpers exist in
+Note: once today's budget is exhausted, `planNewDeck` must not create another
+card until the next UTC day, even after a rated card leaves the blue deck.
+
+~~The `remainingNewCardsToday()` / `countNewCardsToday()` helpers exist in
 `packages/utils/src/sm2.ts` but are not currently rendered anywhere in either
-app.
+app.~~ The UTC-day budget helpers (`remainingNewCardsToday()`,
+`countNewCardsToday()`) are being rewritten to drive the blue count and the
+"no more new cards today" message.
 
 ### Storage & sync
 
@@ -338,11 +361,12 @@ app.
 ### Session / deck entry
 
 - The page is per L2 language pair.
-- On load it hydrates saved words + SRS cards, auto-creates missing new cards,
-  and prunes cards for words that are no longer saved. Pruning only runs after
-  the cloud saved-words hydration completes — an empty-but-loading list must
-  never be treated as "no saved words" (this previously wiped the whole deck
-  when the page opened before hydration finished).
+- On load it hydrates saved words + SRS cards, auto-creates missing new cards
+  up to today's remaining new-card budget, and prunes cards for words that are
+  no longer saved. Pruning only runs after the cloud saved-words hydration
+  completes — an empty-but-loading list must never be treated as "no saved
+  words" (this previously wiped the whole deck when the page opened before
+  hydration finished).
 - Cards are served oldest-due-first, with a small reveal delay so the previous
   card settles before the next appears.
 
@@ -490,8 +514,12 @@ app.
 
 ### Daily new limit & free tier
 
-- The blue deck is capped at `dailyNewLimit` (default 20, range 1–200 from
-  Settings → Review).
+- ~~The blue deck is capped at `dailyNewLimit` (default 20, range 1–200 from
+  Settings → Review).~~
+- Up to `dailyNewLimit` new cards are introduced per UTC day (default 20,
+  range 1–200 from Settings → Review). The blue count shows how many of
+  today's new cards remain; it drops as you work through them and does not
+  refill until the next UTC day.
 - Free users can complete 20 ratings per day (`FREE_SRS_DAILY_CAP = 20`,
   [ADR-0034 — Pro gating/freemium strategy](../adr/0034-pro-gating-freemium-strategy.md)).
   At the cap, ratings are blocked and an upgrade banner links to the Pro page.
@@ -536,8 +564,9 @@ types count while unexpired — there is no `status` filter.
   `fsrs-scheduler.ts` owns the state machine; both review pages, both `useSrs`
   hooks, and the saved-words status dots use the shared wrapper.
 - ✅ **"No more new cards today" message** — implemented (Phase 6): shown in
-  the all-done / no-due states when the unrated pool is exhausted
-  (`msg.no_more_new_cards_today`).
+  the all-done / no-due states ~~when the unrated pool is exhausted~~
+  (`msg.no_more_new_cards_today`). Trigger update pending (2026-08-13): it
+  should fire when today's new-card budget is exhausted.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -545,6 +574,82 @@ types count while unexpired — there is no `status` filter.
   so over-cap ratings never surface as Sync Status errors.
 - ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
   restores the card and releases the rating back to the UTC-day budget.
+
+## Known Issues & Open Work (2026-08-13)
+
+The following issues were found during cross-device review testing on
+iPad/iPhone Safari (web) and the mobile app. None are fixed yet; they are
+documented here so the implementation plan reflects the current gaps.
+
+### Shared: rated cards can be reset to "new" before cloud hydration finishes
+
+Both review pages auto-create missing new cards as soon as the local stores
+load ([web review page](<../../apps/web/src/app/[l1]/[l2]/review/page.tsx>),
+[mobile review page](<../../apps/mobile/app/(tabs)/(vocab)/review.tsx>)) and do not
+wait for `GET /srs` (or SRS cloud hydration) to finish. If saved-words
+hydration lands first — or `GET /srs` fails — `planNewDeck` sees a missing
+local card, creates `fsrs.newCard()` with `lastReview = now`, and writes it to
+the server. The later cloud merge keeps the new card because `mergeSrsCards()`
+uses newer-`lastReview`-wins, so a previously rated card can be replaced by a
+blue "new" card.
+
+Fix direction: expose a real SRS cloud-hydrated flag, gate auto-init on both
+cloud sources, and retry failed SRS fetches.
+
+### Web: SRS writes are fire-and-forget
+
+`useSrs.updateCard()` optimistically updates localStorage and calls
+`PUT /srs/cards` without a durable queue. A transient failure (network,
+token-refresh race, 403 cap) leaves the rating only on the local device, so
+another device or reload sees a missing card and creates a new one. Saved
+words have a pending-op queue; SRS does not.
+
+Fix direction: add a durable retry/outbox for SRS card writes, or reuse the
+mobile outbox pattern.
+
+### Web: hydration can fall back to stale local data and strand pending deletes
+
+`useSavedWords` sets `cloudHydrated = true` even when hydration fails, so the
+review page can render stale local saved words. If a pending delete fails
+during hydration, the server row is fetched and re-added to local state, and
+the failed delete is not retried until the next mutation or hydration.
+
+Fix direction: don't mark hydration complete on failure; keep retrying pending
+deletes; do not re-add server rows for words with an unacked local delete.
+
+### Mobile: same auto-init race and no retry on failed SRS fetch
+
+`useSrs` marks the user as cloud-loaded before `GET /srs` completes and never
+retries a failed fetch, and the mobile review screen has the same ungated
+auto-init effect. Mobile SRS writes do go through the durable outbox, but a
+failed initial fetch can still let auto-init create new cards and push them
+over rated server cards.
+
+### Mobile: cap rejections are silently dropped
+
+When the backend rejects a rating with `srs_cap_reached`, the sync engine
+treats it as an expected rejection, acks/drops the outbox op, and the review
+UI never learns the rating failed. The card stays "rated" locally but is
+missing on the server, so it can reappear as new on web or other devices.
+
+### Shared backend: no server-side tombstone for saved words or SRS cards
+
+`DELETE /saved-words/...` and `DELETE /srs/cards/...` hard-delete rows. The
+sync log records the delete, but a stale upsert (web pending op or mobile
+outbox) can recreate the row because the push handlers don't check for a newer
+delete. This is the "unsaved word comes back" path. The mobile outbox can also
+push a stale upsert after pulling a remote delete because the pull only sets a
+local tombstone and does not cancel the queued op.
+
+Fix direction: tombstone saved words and SRS cards (or reject upserts older
+than the latest delete in `user_sync_log`), and have the direct row endpoints
+use client timestamps for LWW.
+
+### Daily new-card budget
+
+The old rolling-deck semantics were wrong and have been corrected in
+[New-deck budget](#new-deck-budget). The code still needs to be updated to the
+daily-quota definition.
 
 ## Stale Related Docs
 
@@ -609,17 +714,27 @@ Purpose: remove contradictions between the intended behavior, the behavioral
 test matrix, and the backend-cap contract before any code changes. All three
 files must agree before Phase 2 starts.
 
+> **Correction (2026-08-13):** The Phase 0 new-deck decisions below were
+> wrong and are superseded by the daily-quota definition in
+> [New-deck budget](#new-deck-budget).
+
 1. **Reconcile SPEC-023 Tier 4 with this spec.** Decisions (recorded in this
    spec, 2026-08-11):
    - All-done: keep "No more cards to review" + next review time, no stats.
      SPEC-023 R4 updated to match.
-   - "No more new cards today": the unrated pool is empty (every saved word
+   - ~~"No more new cards today": the unrated pool is empty (every saved word
      rated at least once), shown in the all-done/no-due states. SPEC-023 R6
      updated to that definition. No `createdAt`-based counter — it contradicts
-     `planNewDeck`'s rolling-deck semantics.
-2. **Fix `remainingNewCardsToday()` semantics.** Decision: rewrite it to count
-   the unrated pool (saved words with no card or a `state: new` card), used
-   only for the "no more new cards" message.
+     `planNewDeck`'s rolling-deck semantics.~~
+   - "No more new cards today": today's new-card budget is exhausted (or the
+     unrated pool is empty), shown in the all-done/no-due states. SPEC-023 R6
+     updated to this definition.
+2. **Restore a UTC-day new-card budget.** ~~Decision: rewrite
+   `remainingNewCardsToday()` to count the unrated pool (saved words with no
+   card or a `state: new` card), used only for the "no more new cards"
+   message.~~ Decision: `remainingNewCardsToday()` = `max(0, dailyNewLimit −
+   cards introduced today − older unrated cards still in the blue deck)`, and
+   `planNewDeck` must not create cards beyond today's budget.
 3. **Backend free-cap counting contract (needed by Phase 5).** Decision:
    ratings are counted at a rating boundary with a client-generated rating id
    recorded in a per-user review log (replays/retries count once); undo writes
@@ -663,7 +778,7 @@ tests.
      calls `scheduler.next(card, now, rating)`, returns a serialized card.
    - `isDue(card)` / `getDueCards(...)` — due-time comparisons.
    - `isNewCard(card)` — `state === 'new'` (this changes `planNewDeck`
-     semantics from reps-based to state-based; verify the deck-refill tests
+     semantics from reps-based to state-based; verify the daily-quota tests
      still pass).
    - `serializeSrsCard(card)` / `deserializeSrsCard(json)` — persist the
      **full** ts-fsrs `Card` (`state`, `due`, `stability`, `difficulty`,
@@ -686,7 +801,7 @@ tests.
    - Serialization round-trip (Date → ms → Date).
    - Legacy → FSRS migration, including the "preserve due" rule.
    - `planNewDeck` with state-based `isNewCard` (rated cards leave the blue
-     deck; unrated pool refills).
+     deck; no new cards are created once today's budget is exhausted).
    - LWW merge with mixed old/new shapes (newer `lastReview` wins but output
      is always normalized FSRS).
 5. **Verification:** `npx turbo typecheck`; targeted `vitest` run for the new
@@ -839,8 +954,9 @@ Flask API (server started by the user, per repo rules).
    reading/writing it from new code, update the admin page's
    `srs.dailyNewLimit` display, and remove the `srs_settings` entity from new
    sync writes.
-4. **Remove or rewrite `remainingNewCardsToday()`/`countNewCardsToday()`** per
-   the Phase 0 decision.
+4. **Rewrite `remainingNewCardsToday()`/`countNewCardsToday()` as the UTC-day
+   new-card budget**, and update `planNewDeck` + both review pages to stop
+   refilling after the daily quota is exhausted.
 5. **Docs:** mark SPEC-066 complete/current, update SPEC-053's syncable-data
    table (SRS writes already go through the outbox), and note the
    legacy-field removal version.
