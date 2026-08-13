@@ -593,10 +593,11 @@ types count while unexpired — there is no `status` filter.
   and direct web writes carry client timestamps for LWW.
 - ✅ **Reset-card repair from review log** — implemented (2026-08-13):
   `GET /srs` rebuilds cards that are `new` but have unvoided review history
-  as previously reviewed.
+  as previously reviewed and logs the repair to `user_sync_log`.
 - ✅ **Reviewed-card merge guard** — implemented (2026-08-13): a reviewed
   server card (`reps > 0`) can no longer be overwritten by a local unrated
-  `new` card during hydration.
+  `new` card during hydration, and mobile merges cache rows instead of
+  replacing the deck.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -744,8 +745,11 @@ reset cards can be detected.
 ✅ **Fixed (2026-08-13):** `GET /srs` now runs a one-time repair pass. Any
 card still in the `new` state with unvoided review-log entries is rebuilt as
 previously reviewed — `Review` if the last rating passed, `Relearning` if it
-was Again — with `reps`/`lapses` restored from the log. This is best-effort:
-ratings recorded before `user_srs_review_log` existed cannot be recovered.
+was Again — with `reps`/`lapses` restored from the log and `lastReview` bumped
+to the repair time so the repaired state wins LWW merges. The repair also
+appends to `user_sync_log` so mobile devices receive the repaired card via
+pull. This is best-effort: ratings recorded before `user_srs_review_log`
+existed cannot be recovered.
 
 ### Reviewed cloud card vs newer local "new" card
 
@@ -753,9 +757,11 @@ ratings recorded before `user_srs_review_log` existed cannot be recovered.
 card (with a newer `lastReview`) could beat a repaired, already-reviewed
 server card during hydration.
 
-✅ **Fixed (2026-08-13):** a cloud card with `reps > 0` now always beats a
-local `new` card, regardless of timestamps. Local learning/review cards still
-merge by `lastReview` as before.
+✅ **Fixed (2026-08-13):** a reviewed card (`reps > 0`) now always beats a
+`new` card on either side of the merge, regardless of timestamps. Mobile's
+pull-merge bridge also merges cache rows into the existing store instead of
+replacing the whole deck, so a stale cached "new" card can't suddenly displace
+the current review card.
 
 ## Stale Related Docs
 

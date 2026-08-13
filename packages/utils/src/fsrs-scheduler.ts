@@ -218,7 +218,10 @@ export function mergeSrsCards(
     // A reviewed cloud card must never lose to a locally auto-created "new"
     // card, even when the local card's `lastReview` is newer (SPEC-066).
     const cloudReviewedBeatsLocalNew = !!localCard && isNewCard(localCard) && cloudCard.reps > 0;
-    if (cloudNewer || cloudReviewedBeatsLocalNew) {
+    // Symmetric guard: a reviewed local card must not be downgraded to a
+    // stale cloud "new" card either.
+    const localReviewedBeatsCloudNew = !!localCard && localCard.reps > 0 && isNewCard(cloudCard);
+    if ((cloudNewer && !localReviewedBeatsCloudNew) || cloudReviewedBeatsLocalNew) {
       merged[id] = cloudCard;
     }
   }

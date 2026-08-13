@@ -219,8 +219,12 @@ export function useSrs() {
       try {
         const cardRows = await getEntityCache('srs_card');
         const cards: Record<string, Record<string, SrsFields>> = {};
+        const deletedIds = new Set<string>();
         for (const row of cardRows) {
-          if (row.deleted_at != null) continue;
+          if (row.deleted_at != null) {
+            deletedIds.add(row.entity_id);
+            continue;
+          }
           const payload = JSON.parse(row.payload) as {
             l2?: string;
             wordId?: string;
@@ -234,7 +238,20 @@ export function useSrs() {
           };
         }
         setStore((prev) => {
-          const next = { settings: prev.settings, cards };
+          // Merge, don't replace: a reviewed local card must not be
+          // clobbered by a stale "new" card from the cache, and vice versa.
+          const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
+          for (const [lang, cacheCards] of Object.entries(cards)) {
+            mergedCards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cacheCards);
+          }
+          for (const entityId of deletedIds) {
+            const sep = entityId.indexOf('::');
+            if (sep < 0) continue;
+            const lang = entityId.slice(0, sep);
+            const wordId = entityId.slice(sep + 2);
+            delete mergedCards[lang]?.[wordId];
+          }
+          const next = { settings: prev.settings, cards: mergedCards };
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
