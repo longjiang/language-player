@@ -382,4 +382,12 @@ describe('fsrs-scheduler: LWW merge', () => {
     expect(merged['w']!.lastReview).toBe(NOW);
     expect(merged['w']!.state).toBe(State.Learning);
   });
+
+  it('lets a reviewed cloud card beat a newer local new card', () => {
+    const localNew = { ...newCard(NOW), lastReview: NOW + 1000 };
+    const cloudReviewed = rate(newCard(NOW - 5000), 'good', NOW - 5000);
+    const merged = mergeSrsCards({ w: localNew }, { w: cloudReviewed });
+    expect(merged['w']!.state).toBe(cloudReviewed.state);
+    expect(merged['w']!.reps).toBe(1);
+  });
 });
