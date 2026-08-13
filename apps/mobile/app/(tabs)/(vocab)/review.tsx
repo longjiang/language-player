@@ -823,14 +823,9 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {new Date(nextDue.due).toLocaleDateString()}.</>
           )}
         </Text>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyNewLimit) === 0 && (
-          <Text className="mb-2 text-center text-sm text-muted-foreground">
-            {t('msg.no_more_new_cards_today')}
-          </Text>
-        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
-          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+          className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
         >
           <Text className="text-sm font-semibold text-primary-foreground">
             {t('action.explore_videos')}
@@ -847,12 +842,9 @@ export default function ReviewScreen() {
       .filter((c) => c.due > Date.now())
       .sort((a, b) => a.due - b.due)[0];
 
-    const unscheduledCount = l2SavedWords.filter((sw) => !langCards[sw.id]).length;
-    const queued = unscheduledCount > 0;
-
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
+        <CheckCircle2 size={56} color={ICON_PRIMARY} style={{ marginBottom: 16 }} />
         <Text className="mb-2 text-xl font-semibold text-foreground">{t('msg.no_cards_due')}</Text>
         <Text className="mb-4 text-center text-muted-foreground">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2Lang.name })}
@@ -861,18 +853,10 @@ export default function ReviewScreen() {
           ) : (
             <> {t('msg.save_more_words')}</>
           )}
-          {queued && (
-            <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
-          )}
         </Text>
-        {fsrs.remainingNewCardsToday(l2SavedWords, langCards, dailyNewLimit) === 0 && (
-          <Text className="mb-2 text-center text-sm text-muted-foreground">
-            {t('msg.no_more_new_cards_today')}
-          </Text>
-        )}
         <Pressable
           onPress={() => router.push('/(tabs)/(media)' as any)}
-          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+          className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
         >
           <Text className="text-sm font-semibold text-primary-foreground">
             {t('action.explore_videos')}
