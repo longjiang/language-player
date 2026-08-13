@@ -57,16 +57,21 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
 - [x] Re-verify account status is green (done 2026-08-11; no action expected).
 - [x] Create the app: **Language Player 3**, package `ca.zerotohero.go`,
   Free with in-app purchases (SPEC-067 § 4.2) — created 2026-08-12.
-- [~] Create the lifetime **non-consumable** billing product (SPEC-067 § 5) —
-  `pro_go` in progress. **Merchant account set up 2026-08-12** (existing
-  "Jiang Long" payments profile 1672-5871-2559 associated: business "Zero
-  to Hero", website languageplayer.io, Computer Software,
-  jon.long@zerotohero.ca, statement name "LanguagePlyr" — 14-char field
-  limit). **Product creation gated on a release-signed AAB upload**: Play
-  Console requires the BILLING permission in an uploaded build, and only a
-  debug APK exists (rejected as debug-signed). Build + upload
-  `app-release.aab` first (SPEC-067 § 3.4–3.5), then create `pro_go` here.
-- [ ] Add license testers (Mary/Bob) under **Setup → License testing**.
+- [x] Create the lifetime **non-consumable** billing product (SPEC-067 § 5) —
+  **`pro_go` created + activated 2026-08-13** (merchant account set up
+  2026-08-12: existing "Jiang Long" payments profile 1672-5871-2559, business
+  "Zero to Hero", Computer Software, jon.long@zerotohero.ca, statement name
+  "LanguagePlyr"). Product details: Name "Lifetime Pro", one-time Buy,
+  purchase option `lifetime-pro`, base price **US$169** in 173 countries/
+  regions (tax-adjusted per region), tax category Digital app sales. Created
+  after the release-signed AAB (v1 / 3.0.0) was uploaded to **Internal
+  testing** on 2026-08-13 (BILLING permission gate satisfied).
+- [~] Add license testers under **Setup → License testing** — note: Play
+  testers must be **real Google accounts**; the app's `tester.mary@`/
+  `tester.bob@zerotohero.ca` logins were rejected by Play Console ("email
+  doesn't exist"). The Internal testing track email list has
+  `longjiang2005@gmail.com` only. Add real Google accounts here + to the
+  internal track before G1–G5.
 - [ ] Enable API access:
   - Link/create a Google Cloud project in **Play Console → Setup → API access**.
   - Enable the **Android Publisher API** in that project.

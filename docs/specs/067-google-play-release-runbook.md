@@ -376,13 +376,15 @@ If path A is chosen:
   2026-08-12); the buy-on-website button was removed (§ 5).
 - ~~**"Language Player 3" app not created in Play Console yet**~~ — ✅ created
   under `ca.zerotohero.go` (2026-08-12, § 4.2).
-- **Play Billing product not created yet** — implementation is done (SPEC-068
-  Steps 2–3, 2026-08-12) and the **merchant account / payments profile was
-  set up 2026-08-12** (existing "Jiang Long" profile 1672-5871-2559; business
-  "Zero to Hero", Computer Software, jon.long@zerotohero.ca, statement name
-  "LanguagePlyr"). Creating the `pro_go` one-time product is **gated on
-  uploading a release-signed AAB** (Play Console requires the BILLING
-  permission in an uploaded build; only a debug APK exists so far).
+- **Internal testing release published 2026-08-13** — `app-release.aab`
+  (v1 / 3.0.0) uploaded and published to the **Internal testing** track
+  (release name "1 (3.0.0)", notes "Initial internal testing build...").
+  Track shows "Inactive" until testers join; the email list currently has
+  `longjiang2005@gmail.com` only (Play requires real Google accounts — the
+  app's `tester.mary/bob@zerotohero.ca` logins are not Google accounts).
+- **Play Billing product created 2026-08-13** — `pro_go` (Lifetime Pro,
+  US$169, 173 regions) active under Monetize → Products → One-time products;
+  merchant account (payments profile 1672-5871-2559) set up 2026-08-12.
 - ~~**Upload key not generated yet**~~ — ✅ generated 2026-08-12
   (`~/.android/lp-upload.jks`, alias `lp-upload`, RSA 2048); credentials are
   in `~/.android/lp-upload-credentials.txt` and `android/key.properties` —
