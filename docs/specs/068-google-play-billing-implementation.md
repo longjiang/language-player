@@ -93,9 +93,21 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
     `GOOGLE_PLAY_PRODUCT_ID=pro_go`. Flask restarted on port 5001.
 - [x] Set up the **Internal testing** track — release published 2026-08-13
   with `app-release.aab` (v1 / 3.0.0); the "Language Player Internal Testing
-  Email List" (`longjiang2005@gmail.com`) is the track tester list. Opt-in
-  link: `https://play.google.com/apps/internaltest/4700600170993649849`.
-  Install from Play on a device using that Google account to begin testing.
+  Email List" (`longjiang2005@gmail.com`) is the track tester list.
+- [x] **Promoted to Closed testing (Alpha) 2026-08-13** — the internal-track
+  spend limits blocked the US$169 test purchase ("purchase limit for today" —
+  unpublished apps are subject to daily transaction/per-order/daily-spend
+  limits; Google docs recommend publishing to closed/open/production to lift
+  them). Promoted release 1 (3.0.0) to **Closed testing - Alpha**, added
+  **177 countries/regions**, attached the same tester email list, and sent
+  **14 changes for review** (status: "Changes in review"). Closed-track opt-in
+  links:
+  - Android: `https://play.google.com/store/apps/details?id=ca.zerotohero.go`
+  - Web: `https://play.google.com/apps/testing/ca.zerotohero.go`
+  **Note:** after promotion the Internal opt-in link no longer applies — use
+  the Closed testing links above (or Play still treats it as the old track).
+  Testers must sign in with `longjiang2005@gmail.com` on the Pixel, opt in,
+  install, log in, and retry G1.
 
 ## 5. Step 2 — Mobile implementation (Codex/human pair)
 
