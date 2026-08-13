@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { deleteSrsCard, useUserDataColumns } from '@langplayer/api-client';
+import { deleteSrsCard, putSrsCard, useUserDataColumns } from '@langplayer/api-client';
 import {
   createSrsStore,
   fsrs,
@@ -14,6 +14,110 @@ import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
+const SRS_PENDING_OPS_KEY = 'zthSrsProgressPendingOps';
+
+interface PendingSrsOp {
+  type: 'upsert' | 'delete';
+  l2: string;
+  wordId: string;
+  state?: SrsFields;
+  updatedAt: number;
+}
+
+interface SrsRowApi {
+  putSrsCard: (l2: string, wordId: string, state: SrsFields) => Promise<unknown>;
+  deleteSrsCard: (l2: string, wordId: string) => Promise<unknown>;
+}
+
+let srsFlushInFlight: Promise<void> | null = null;
+let srsRetryTimer: ReturnType<typeof setTimeout> | null = null;
+
+function pendingSrsOpKey(op: PendingSrsOp): string {
+  return `${op.l2}\u0000${op.wordId}`;
+}
+
+function loadPendingSrsOps(): PendingSrsOp[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(SRS_PENDING_OPS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (op): op is PendingSrsOp =>
+        !!op && (op.type === 'upsert' || op.type === 'delete')
+        && typeof op.l2 === 'string' && typeof op.wordId === 'string',
+    );
+  } catch { /* corrupted queue — start fresh */ }
+  return [];
+}
+
+function savePendingSrsOps(ops: PendingSrsOp[]): void {
+  try {
+    localStorage.setItem(SRS_PENDING_OPS_KEY, JSON.stringify(ops));
+  } catch { /* quota exceeded — queue stays in memory only */ }
+}
+
+function enqueuePendingSrsOp(queue: PendingSrsOp[], op: PendingSrsOp): PendingSrsOp[] {
+  const key = pendingSrsOpKey(op);
+  return [...queue.filter((q) => pendingSrsOpKey(q) !== key), op];
+}
+
+function reducePendingSrsOps(queue: PendingSrsOp[]): PendingSrsOp[] {
+  const latest = new Map<string, PendingSrsOp>();
+  for (const op of queue) latest.set(pendingSrsOpKey(op), op);
+  return [...latest.values()].sort((a, b) => a.updatedAt - b.updatedAt);
+}
+
+async function flushPendingSrsOps(
+  queue: PendingSrsOp[],
+  api: SrsRowApi,
+): Promise<PendingSrsOp[]> {
+  const ops = reducePendingSrsOps(queue);
+  const remaining: PendingSrsOp[] = [];
+  for (let i = 0; i < ops.length; i++) {
+    const op = ops[i]!;
+    try {
+      if (op.type === 'upsert' && op.state) {
+        await api.putSrsCard(op.l2, op.wordId, op.state);
+      } else {
+        await api.deleteSrsCard(op.l2, op.wordId);
+      }
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403 && typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('lp:srs-cap-reached'));
+      }
+      remaining.push(...ops.slice(i));
+      break;
+    }
+  }
+  return remaining;
+}
+
+/** Serialize flushes so concurrent callers share one attempt and never
+ *  clobber each other's remaining-op lists. */
+async function flushAllPendingSrsOps(api: SrsRowApi): Promise<void> {
+  const ops = loadPendingSrsOps();
+  if (ops.length === 0) return;
+  if (srsFlushInFlight) return srsFlushInFlight;
+  const run = (async () => {
+    const remaining = await flushPendingSrsOps(ops, api);
+    savePendingSrsOps(remaining);
+    if (remaining.length > 0 && !srsRetryTimer) {
+      srsRetryTimer = setTimeout(() => {
+        srsRetryTimer = null;
+        void flushAllPendingSrsOps(api);
+      }, 10_000);
+    }
+  })();
+  srsFlushInFlight = run;
+  try {
+    await run;
+  } finally {
+    srsFlushInFlight = null;
+  }
+}
 
 /**
  * Remove a single SRS card from localStorage AND the server (row API).
@@ -30,9 +134,13 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
       }
     }
   } catch { /* ignore */ }
-  deleteSrsCard(l2Code, wordId).catch((err) => {
-    logwarn('[SRS] Card delete failed:', err);
-  });
+  savePendingSrsOps(enqueuePendingSrsOp(loadPendingSrsOps(), {
+    type: 'delete',
+    l2: l2Code,
+    wordId,
+    updatedAt: Date.now(),
+  }));
+  void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
 }
 
 /**
@@ -81,6 +189,7 @@ export function useSrs() {
     let cancelled = false;
     (async () => {
       try {
+        await flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
         const res = await getSrs();
         if (cancelled) return;
         const cloud = {
@@ -133,6 +242,7 @@ export function useSrs() {
     log('[SRS] updateCard: l2=%s wordId=%s reps=%d nextReview=%s',
       l2Code, wordId, fields.repetitions,
       new Date(fields.nextReview).toISOString().slice(0, 16));
+    const normalized = fsrs.normalizeFsrsCard(fields);
     setStore((prev) => {
       const prevCard = prev.cards[l2Code]?.[wordId];
       if (prevCard && getCardState(prevCard) === 'review' && fields.state === 0) {
@@ -143,19 +253,19 @@ export function useSrs() {
         settings: { ...prev.settings },
         cards: {
           ...prev.cards,
-          [l2Code]: { ...(prev.cards[l2Code] ?? {}), [wordId]: fields },
+          [l2Code]: { ...(prev.cards[l2Code] ?? {}), [wordId]: normalized },
         },
       };
     });
-    putSrsCard(l2Code, wordId, fsrs.normalizeFsrsCard(fields)).catch((err) => {
-      logwarn('[SRS] Card sync failed:', err);
-      if ((err as { response?: { status?: number } })?.response?.status === 403) {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new Event('lp:srs-cap-reached'));
-        }
-      }
-    });
-  }, [putSrsCard]);
+    savePendingSrsOps(enqueuePendingSrsOp(loadPendingSrsOps(), {
+      type: 'upsert',
+      l2: l2Code,
+      wordId,
+      state: normalized,
+      updatedAt: Date.now(),
+    }));
+    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
+  }, []);
 
   const removeCard = useCallback((l2Code: string, wordId: string) => {
     log('[SRS] removeCard: l2=%s wordId=%s', l2Code, wordId);
@@ -178,16 +288,22 @@ export function useSrs() {
       const prunedCards = { ...langCards };
       for (const id of orphans) delete prunedCards[id];
       log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, orphans.length);
+      let queue = loadPendingSrsOps();
       for (const id of orphans) {
-        deleteSrsCard(l2Code, id).catch((err) => {
-          logwarn('[SRS] Orphan card delete failed:', err);
+        queue = enqueuePendingSrsOp(queue, {
+          type: 'delete',
+          l2: l2Code,
+          wordId: id,
+          updatedAt: Date.now(),
         });
       }
+      savePendingSrsOps(queue);
       return {
         settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: prunedCards },
       };
     });
+    void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
   }, []);
 
   const getCard = useCallback((l2Code: string, wordId: string): SrsFields | undefined => {

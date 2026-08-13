@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     () => ({ data: null, status: 'unauthenticated' }),
   ),
   deleteSrsCard: vi.fn(async () => ({ success: true })),
+  putSrsCard: vi.fn(async () => ({ success: true })),
   useUserDataColumns: vi.fn(() => ({
     getSrs: vi.fn(async () => ({ settings: { dailyNewLimit: 20 }, cards: {} })),
     putSrsCard: vi.fn(async () => ({ success: true })),
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next-auth/react', () => ({ useSession: mocks.useSession }));
 vi.mock('@langplayer/api-client', () => ({
   deleteSrsCard: mocks.deleteSrsCard,
+  putSrsCard: mocks.putSrsCard,
   useUserDataColumns: mocks.useUserDataColumns,
 }));
 vi.mock('@/lib/logger', () => ({ log: vi.fn(), logwarn: vi.fn() }));
@@ -30,6 +32,7 @@ describe('useSrs (SPEC-066)', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mocks.useSession.mockReturnValue({ data: null, status: 'unauthenticated' });
+    mocks.putSrsCard.mockResolvedValue({ success: true });
     mocks.useUserDataColumns.mockReturnValue({
       getSrs: vi.fn(async () => ({ settings: { dailyNewLimit: 20 }, cards: {} })),
       putSrsCard: vi.fn(async () => ({ success: true })),
