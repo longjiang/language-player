@@ -829,6 +829,11 @@ export default function ReviewPage() {
             <> {t('msg.next_review')}: {formatNextDueLabel(nextDue.due, l1.code)}.</>
           )}
         </p>
+        {nextDue && (
+          <p className="text-xs text-muted-foreground/60">
+            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1.code)}
+          </p>
+        )}
         <div className="flex gap-3">
           <Link href={`/${l1.code}/${l2.code}/explore`}>
             <Button>{t('action.explore_videos')}</Button>
@@ -857,6 +862,11 @@ export default function ReviewPage() {
             <> {t('msg.save_more_words')}</>
           )}
         </p>
+        {nextDue && (
+          <p className="text-xs text-muted-foreground/60">
+            debug: due={new Date(nextDue.due).toISOString()} label={formatNextDueLabel(nextDue.due, l1.code)}
+          </p>
+        )}
         <Link href={`/${l1.code}/${l2.code}/explore`}>
           <Button>{t('action.explore_videos')}</Button>
         </Link>

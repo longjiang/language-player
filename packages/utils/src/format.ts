@@ -48,11 +48,12 @@ export function formatNextDueLabel(
   const startDue = new Date(due.getFullYear(), due.getMonth(), due.getDate());
   const dayDiff = Math.round((startDue.getTime() - startToday.getTime()) / 86_400_000);
   if (dayDiff >= -1 && dayDiff <= 1) {
-    return new Intl.DateTimeFormat(locale, {
-      weekday: 'short',
+    const relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(dayDiff, 'day');
+    const time = new Intl.DateTimeFormat(locale, {
       hour: 'numeric',
       minute: '2-digit',
     }).format(due);
+    return `${relative} ${time}`;
   }
   return due.toLocaleDateString(locale);
 }
