@@ -85,12 +85,24 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
     ~/Downloads, copied to `zerotohero-python-server/data/` — gitignored).
   - Invited the service account in Play Console → **Users & permissions**
     and granted **View financial data, orders, and cancellation survey
-    responses** (includes Purchases API access). "Manage orders/subscriptions"
-    left unchecked.
+    responses** + **Manage orders and subscriptions** (both required for the
+    Play Billing verification API; confirmed checked + saved at Account
+    level, user **Active** / never expires). 2026-08-13: removed + re-invited
+    the service account with both permissions to force propagation.
   - Backend env (`.env`, gitignored):
     `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=./data/zh-zerotohero-06d7b3c0d121.json`,
     `GOOGLE_PLAY_PACKAGE_NAME=ca.zerotohero.go`,
     `GOOGLE_PLAY_PRODUCT_ID=pro_go`. Flask restarted on port 5001.
+  - ⚠️ **Troubleshooting (2026-08-13):** first test purchase (order
+    `GPA.3377-5570-7018-81586`, Processed) failed backend verification with
+    **401 `permissionDenied`** — a bogus token returns the same 401 (both
+    `ca.zerotohero.go` and `ca.zerotohero.app`), so auth is fine but the
+    grant was not yet effective in the API (Play's authorization cache).
+    Both financial permissions confirmed checked+saved; re-invite done. The
+    grant is expected to propagate within minutes–24–48h; acceptance test =
+    bogus token returns **404**. Do NOT repurchase — the Processed order is
+    still valid and unacknowledged (~3-day auto-refund clock); Restore
+    Purchases will validate once the API returns 404.
 - [x] Set up the **Internal testing** track — release published 2026-08-13
   with `app-release.aab` (v1 / 3.0.0); the "Language Player Internal Testing
   Email List" (`longjiang2005@gmail.com`) is the track tester list.
