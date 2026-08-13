@@ -7,6 +7,8 @@ import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 import { syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
+import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { getConnectivity } from '@/lib/connectivity';
 
 const { log, logwarn } = syncLogger;
 
@@ -27,6 +29,7 @@ export function useSrs() {
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
   const [cloudHydrated, setCloudHydrated] = useState(false);
+  const [cloudRetry, setCloudRetry] = useState(0);
   const cloudLoadedUserId = useRef<string | null>(null);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -66,14 +69,24 @@ export function useSrs() {
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
+        if (!cancelled) setCloudHydrated(true);
       } catch (err) {
         logwarn('[srs] Could not load from server:', err);
-      } finally {
-        if (!cancelled) setCloudHydrated(true);
+        if (!cancelled && !isOfflineModeEnabled() && getConnectivity() !== 'offline') {
+          setTimeout(() => {
+            if (cancelled) return;
+            cloudLoadedUserId.current = null;
+            setCloudRetry((n) => n + 1);
+          }, 5000);
+        } else if (!cancelled) {
+          // Offline / local-first: proceed with the local store rather than
+          // blocking the review screen on a server fetch.
+          setCloudHydrated(true);
+        }
       }
     })();
     return () => { cancelled = true; };
-  }, [user, loaded, getSrs]);
+  }, [user, loaded, getSrs, cloudRetry]);
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
