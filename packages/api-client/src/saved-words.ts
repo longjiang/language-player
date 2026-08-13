@@ -17,7 +17,11 @@ const _getSavedWords = (l2?: string) =>
   });
 
 const _putSavedWord = (l2: string, word: SavedLexicalItemRecord) =>
-  apiClient.put<SavedWordUpsertResponse>('/saved-words', { l2, word });
+  apiClient.put<SavedWordUpsertResponse>('/saved-words', {
+    l2,
+    word,
+    updatedAt: Date.now(),
+  });
 
 const _deleteSavedWord = (l2: string, wordId: string) =>
   apiClient.delete<{ success: boolean }>(

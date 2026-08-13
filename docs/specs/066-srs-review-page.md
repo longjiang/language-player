@@ -588,6 +588,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Mobile cap-rejection reconciliation** — implemented (2026-08-13):
   `srs_cap_reached` rejections revert the unsynced card and surface the
   upgrade banner instead of silently dropping the rating.
+- ✅ **Server-side tombstone guard** — implemented (2026-08-13): stale
+  saved-word / SRS-card upserts are rejected against `user_sync_log` deletes,
+  and direct web writes carry client timestamps for LWW.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -688,6 +691,12 @@ local tombstone and does not cancel the queued op.
 Fix direction: tombstone saved words and SRS cards (or reject upserts older
 than the latest delete in `user_sync_log`), and have the direct row endpoints
 use client timestamps for LWW.
+
+✅ **Fixed (2026-08-13):** the server now rejects saved-word / SRS-card
+upserts whose client timestamp is not newer than the latest delete in
+`user_sync_log` (direct row endpoints and `/sync/push`). Web row-API calls now
+send `updatedAt` / `lastReview` so stale offline ops cannot resurrect deleted
+items.
 
 ### Daily new-card budget
 

@@ -30,7 +30,12 @@ export const getSrs = () =>
   apiClient.get<SrsResponse>('/srs');
 
 export const putSrsCard = (l2: string, wordId: string, state: SrsFields) =>
-  apiClient.put<{ success: boolean }>('/srs/cards', { l2, wordId, state });
+  apiClient.put<{ success: boolean }>('/srs/cards', {
+    l2,
+    wordId,
+    state,
+    updatedAt: state.lastReview ?? Date.now(),
+  });
 
 export const deleteSrsCard = (l2: string, wordId: string) =>
   apiClient.delete<{ success: boolean }>(
