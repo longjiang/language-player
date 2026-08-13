@@ -67,22 +67,35 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
   regions (tax-adjusted per region), tax category Digital app sales. Created
   after the release-signed AAB (v1 / 3.0.0) was uploaded to **Internal
   testing** on 2026-08-13 (BILLING permission gate satisfied).
-- [~] Add license testers under **Setup → License testing** — plan:
-  `longjiang2005+googleplaytester@gmail.com` (Gmail plus alias delivers to
-  the same inbox). Caveat: Play may match testers against the canonical
-  account email — if the opt-in doesn't activate tester status, add
-  `longjiang2005@gmail.com` instead (already on the Internal testing track).
-  Note: `tester.mary@`/`tester.bob@zerotohero.ca` were rejected because they
-  are not real Google accounts.
-- [ ] Enable API access:
-  - Link/create a Google Cloud project in **Play Console → Setup → API access**.
-  - Enable the **Android Publisher API** in that project.
-  - Create a service account, download the JSON key.
-  - Grant the service account **View financial data, orders, and cancellation
-    survey responses** (add Manage orders/subscriptions if prompted).
+- [x] License testers configured under **Settings → License testing** —
+  2026-08-13: selected the "Language Player Internal Testing Email List"
+  (license response RESPOND_NORMALLY). The planned
+  `longjiang2005+googleplaytester@gmail.com` **was rejected by Play Console**
+  ("This email address doesn't exist" — plus aliases are not accepted in
+  tester lists), so the canonical **`longjiang2005@gmail.com`** (already on
+  the list) is the tester. `tester.mary@`/`tester.bob@zerotohero.ca` were
+  also rejected because they are not real Google accounts.
+- [x] Enable API access — **done 2026-08-13**:
+  - Google Cloud project **`zh-zerotohero`** (existing) hosts the API.
+  - **Google Play Android Developer API enabled** in that project
+    (androidpublisher.googleapis.com).
+  - Reused the existing **`language-player@zh-zerotohero.iam.gserviceaccount.com`**
+    service account (already used by `app_google_analytics.py`); created a
+    fresh JSON key (`zh-zerotohero-06d7b3c0d121.json`, downloaded to
+    ~/Downloads, copied to `zerotohero-python-server/data/` — gitignored).
+  - Invited the service account in Play Console → **Users & permissions**
+    and granted **View financial data, orders, and cancellation survey
+    responses** (includes Purchases API access). "Manage orders/subscriptions"
+    left unchecked.
+  - Backend env (`.env`, gitignored):
+    `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=./data/zh-zerotohero-06d7b3c0d121.json`,
+    `GOOGLE_PLAY_PACKAGE_NAME=ca.zerotohero.go`,
+    `GOOGLE_PLAY_PRODUCT_ID=pro_go`. Flask restarted on port 5001.
 - [x] Set up the **Internal testing** track — release published 2026-08-13
-  with `app-release.aab` (v1 / 3.0.0); installs from Play pending real
-  Google-account testers.
+  with `app-release.aab` (v1 / 3.0.0); the "Language Player Internal Testing
+  Email List" (`longjiang2005@gmail.com`) is the track tester list. Opt-in
+  link: `https://play.google.com/apps/internaltest/4700600170993649849`.
+  Install from Play on a device using that Google account to begin testing.
 
 ## 5. Step 2 — Mobile implementation (Codex/human pair)
 
