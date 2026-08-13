@@ -27,7 +27,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink } from 'lucide-react-native';
+import { ExternalLink, X } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 const { log } = popupLogger;
@@ -414,10 +414,13 @@ export function DictionaryPopup({
                 </View>
                 <Pressable
                   onPress={onClose}
-                  className="rounded-full bg-muted p-1.5 active:opacity-70"
+                  className="rounded-full p-1.5 active:bg-muted"
                   hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('action.close')}
+                  testID="dictionary-popup-close"
                 >
-                  <Text className="text-base text-muted-foreground">✕</Text>
+                  <X size={16} color={ICON_MUTED} />
                 </Pressable>
               </View>
 
