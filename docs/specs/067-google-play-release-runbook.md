@@ -4,9 +4,9 @@
 
 - **Spec ID**: SPEC-067
 - **Feature**: End-to-end Google Play release of `apps/mobile` ("Language Player 3") — verified Play account, Android AAB build and signing, Play Console setup, testing tracks, and staged production rollout
-- **Status**: in progress — Play Console app setup executed 2026-08-12; AAB build/signing and billing remain ([§ 9](#9-known-blockers--open-items))
+- **Status**: in progress — Play Console app setup executed 2026-08-12; AAB built & submitted to production for review 2026-08-13; store visual assets remain ([§ 9](#9-known-blockers--open-items))
 - **Created**: 2026-08-11
-- **Updated**: 2026-08-12
+- **Updated**: 2026-08-13
 - **See also**: [ADR-0013 — App Store Strategy](../adr/0013-app-store-strategy.md) · [SPEC-014 — Subscription/Payment](014-subscription-payment-system.md) · [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) · [SPEC-054 — Subscription & Payment Testing](054-subscription-payment-testing.md) · [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md)
 
 ## 1. Context
@@ -41,7 +41,7 @@
 - [x] Upload key generated (2026-08-12, `~/.android/lp-upload.jks`, alias
       `lp-upload`) — credentials in `~/.android/lp-upload-credentials.txt` +
       `android/key.properties`; **copy them into a password manager**
-- [ ] Version bumped in `apps/mobile/app.json`
+- [x] Version bumped in `apps/mobile/app.json` (3.0.0, `android.versionCode: 2`)
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
 - [~] Store assets partially ready: icon uploaded to the Play asset library as
       "Cropped - icon.png" (512×512, from `apps/mobile/assets/icon.png`) but not
@@ -345,6 +345,17 @@ If path A is chosen:
    10% → 25% → 50% → 100%. Monitor **Android Vitals** (crashes, ANRs, battery,
    render) after each step.
 
+   **Production submission (2026-08-13):** release "Production 1 - 3.0.0"
+   (versionCode 2) uploaded to the Production track with **full rollout**
+   (100% — chosen instead of staged so the app goes live as soon as review
+   passes) and **177 countries/regions** configured. Submitted via Publishing
+   overview → "Submit 3 changes for review" (3 changes: production release +
+   176 countries + rest-of-world countries). Status: **changes in review** —
+   quick checks run first (≤14 min), then Google reviews (typically ≤7 days).
+   Note: versionCode 2 was required because versionCode 1 was already used by
+   the Internal/Closed testing tracks — version codes must be unique across
+   ALL tracks.
+
 ## 7. Post-release
 
 - Keep the Internal/Closed tracks fresh with the next build.
@@ -356,11 +367,11 @@ If path A is chosen:
 ## 8. Release checklist
 
 - [x] Play account verified / business info current (2026-08-11)
-- [ ] `app.json` version + `android.versionCode` bumped
-- [ ] AAB built with `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca`
-- [ ] AAB signed with the upload key (`key.properties` + `build.gradle`)
-- [ ] No `localhost:5001` in the embedded bundle; `pythonvps` present
-- [ ] Human QA passed on a real Android device (internal track)
+- [x] `app.json` version + `android.versionCode` bumped (3.0.0 / versionCode 2, 2026-08-13)
+- [x] AAB built with `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca` (release AAB, versionCode 2, 2026-08-13)
+- [x] AAB signed with the upload key (`key.properties` + `build.gradle`)
+- [x] No `localhost:5001` in the embedded bundle; `pythonvps` present
+- [x] Human QA passed on a real Android device (internal track; Pixel — Play Billing purchase flow tested)
 - [x] Privacy policy, data safety, content rating, target audience complete
 - [ ] Store listing complete (icon, feature graphic, screenshots, descriptions)
       — 🟡 text/category/contact done; icon in library (add to App icon slot);
@@ -368,7 +379,9 @@ If path A is chosen:
 - [x] Billing compliance resolved (§ 5) — buy-on-website link removed and
       mobile + backend Play Billing implemented (SPEC-068 Steps 2–3); Play
       Console product + G1–G5 still pending
-- [ ] Production rollout staged and monitored
+- [x] Production release created + submitted for review (2026-08-13): "Production 1 - 3.0.0", full rollout, 177 countries/regions
+- [ ] Production review passed / app live
+- [ ] Production rollout monitored (Android Vitals)
 
 ## 9. Known blockers / open items
 
@@ -394,6 +407,18 @@ If path A is chosen:
   feature graphic and phone/tablet screenshots still outstanding.
 - **`android.versionCode` not explicit in `app.json` yet** — add `1` for the
   first release.
+- ~~**`android.versionCode`**~~ — ✅ set to `2` in `app.json` + `android/app/build.gradle` (2026-08-13).
+  versionCode `1` was already used by the Internal/Closed testing tracks, so
+  the production upload was rejected until bumped to `2` (version codes must
+  be unique across all tracks).
+- **Production release submitted for review 2026-08-13** — "Production 1 -
+  3.0.0" (versionCode 2, full rollout, 177 countries/regions) sent via
+  Publishing overview (3 changes in review). Awaiting quick checks + Google
+  review (≤7 days). If the release passes and goes live, run Android Vitals
+  monitoring and re-test Play Billing on the live build.
+- **Store visual assets still outstanding** — App icon slot (icon in library,
+  not attached), feature graphic (1024×500), phone + tablet screenshots
+  (SPEC-070). Play may flag missing store graphics during review.
 - ~~**Privacy policy URL to confirm**~~ — ✅ set in Play Console to the Netlify
   domain (2026-08-12, § 4.3). Note `languageplayer.io` v3 routes still 404.
 
