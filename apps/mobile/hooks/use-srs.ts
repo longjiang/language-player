@@ -26,6 +26,7 @@ export function useSrs() {
   const { getSrs } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
+  const [cloudHydrated, setCloudHydrated] = useState(false);
   const cloudLoadedUserId = useRef<string | null>(null);
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
@@ -67,6 +68,8 @@ export function useSrs() {
         });
       } catch (err) {
         logwarn('[srs] Could not load from server:', err);
+      } finally {
+        if (!cancelled) setCloudHydrated(true);
       }
     })();
     return () => { cancelled = true; };
@@ -80,6 +83,7 @@ export function useSrs() {
     if (prev === undefined) return; // initial boot — keep locally loaded state
     if (prev !== next) {
       cloudLoadedUserId.current = null;
+      setCloudHydrated(false);
       setStore(createSrsStore());
     }
   }, [user?.id]);
@@ -188,5 +192,5 @@ export function useSrs() {
     };
   }, []);
 
-  return { store, loaded, updateCard, removeCard, pruneOrphans };
+  return { store, loaded, cloudHydrated, updateCard, removeCard, pruneOrphans };
 }

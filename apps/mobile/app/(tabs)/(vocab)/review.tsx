@@ -119,8 +119,8 @@ export default function ReviewScreen() {
   const { isSm } = useResponsive();
   const { isPro } = useSubscription();
 
-  const { savedWords, loaded: wordsLoaded, cloudHydrated } = useSavedWords();
-  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans } = useSrs();
+  const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated } = useSavedWords();
+  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const insets = useSafeAreaInsets();
@@ -178,6 +178,10 @@ export default function ReviewScreen() {
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
+    // Never auto-create cards from stale local state before the server's SRS
+    // cards have been fetched (SPEC-066): a "new" card minted here can
+    // overwrite a rated card from another device.
+    if (user && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyNewLimit);
@@ -195,7 +199,7 @@ export default function ReviewScreen() {
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyNewLimit, updateCard, removeCard]);
+  }, [srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
@@ -205,13 +209,13 @@ export default function ReviewScreen() {
     // Never prune while the cloud saved-words hydration is still pending: an
     // empty local list at that point is a loading state, not a real "no saved
     // words" state, and pruning would delete the whole deck (SPEC-066).
-    if (user && !cloudHydrated) return;
+    if (user && !savedWordsCloudHydrated) return;
     if (l2SavedWords.length === 0) {
       pruneOrphans(l2Code, new Set<string>());
       return;
     }
     pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
-  }, [srsLoaded, wordsLoaded, user, cloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
+  }, [srsLoaded, wordsLoaded, user, savedWordsCloudHydrated, l2SavedWords, l2Code, pruneOrphans]);
 
   // ── Compute due cards ──
   const dueCards = useMemo(() => {
@@ -707,7 +711,7 @@ export default function ReviewScreen() {
 
   // ── Render states ──
 
-  const isLoading = !wordsLoaded || !srsLoaded || initializing || (user && !cloudHydrated);
+  const isLoading = !wordsLoaded || !srsLoaded || initializing || (user && (!savedWordsCloudHydrated || !srsCloudHydrated));
 
   // ── Log the loaded review deck once per language ──
   useEffect(() => {

@@ -49,7 +49,9 @@ export function useSrs() {
   const { getSrs, putSrsCard } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
-  const cloudLoaded = useRef(false);
+  const [cloudHydrated, setCloudHydrated] = useState(false);
+  const [cloudRetry, setCloudRetry] = useState(0);
+  const cloudAttemptInFlight = useRef(false);
   const storeRef = useRef<SrsProgressStore>(store);
   storeRef.current = store;
 
@@ -73,8 +75,9 @@ export function useSrs() {
 
   // ── Authenticated: hydrate from the row API ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded || cloudLoaded.current) return;
-    cloudLoaded.current = true;
+    if (status !== 'authenticated' || !loaded || cloudHydrated) return;
+    if (cloudAttemptInFlight.current) return;
+    cloudAttemptInFlight.current = true;
     let cancelled = false;
     (async () => {
       try {
@@ -96,12 +99,21 @@ export function useSrs() {
             cards: mergedCards,
           };
         });
+        if (!cancelled) setCloudHydrated(true);
       } catch (err) {
         logwarn('[SRS] Could not load from server:', err);
+        if (!cancelled) {
+          // Retry instead of letting auto-init mint "new" cards from stale
+          // local state and overwrite rated server cards (SPEC-066).
+          setTimeout(() => {
+            cloudAttemptInFlight.current = false;
+            setCloudRetry((n) => n + 1);
+          }, 5000);
+        }
       }
     })();
     return () => { cancelled = true; };
-  }, [status, loaded, getSrs]);
+  }, [status, loaded, getSrs, cloudHydrated, cloudRetry]);
 
   // ── Persist to localStorage whenever the store changes (no full-blob sync) ──
   useEffect(() => {
@@ -185,6 +197,7 @@ export function useSrs() {
   return {
     store,
     loaded,
+    cloudHydrated,
     getCards,
     updateCard,
     removeCard,
