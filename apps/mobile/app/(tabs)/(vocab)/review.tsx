@@ -755,8 +755,8 @@ export default function ReviewScreen() {
   // ── Anki-style card counts (new / again / review) ──
   const langCardsForCounts = store.cards[l2Code] ?? {};
   const cardCounts = useMemo(
-    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts),
-    [l2SavedWords, langCardsForCounts],
+    () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit }),
+    [l2SavedWords, langCardsForCounts, dailyNewLimit],
   );
 
   // ── Render states ──
