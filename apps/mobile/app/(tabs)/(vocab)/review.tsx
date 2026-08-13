@@ -120,7 +120,16 @@ export default function ReviewScreen() {
   const { isPro } = useSubscription();
 
   const { savedWords, loaded: wordsLoaded, cloudHydrated: savedWordsCloudHydrated } = useSavedWords();
-  const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
+  const {
+    store,
+    loaded: srsLoaded,
+    cloudHydrated: srsCloudHydrated,
+    capReached: srsCapReached,
+    resetCapReached,
+    updateCard,
+    removeCard,
+    pruneOrphans,
+  } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const insets = useSafeAreaInsets();
@@ -165,6 +174,21 @@ export default function ReviewScreen() {
       .then((v) => setReviewsDoneToday(Number(v ?? 0)))
       .catch(() => {});
   }, [reviewCounterKey]);
+
+  // Backend cap rejection (e.g. another device already used today's free
+  // quota) reconciles the local counter and shows the upgrade banner.
+  useEffect(() => {
+    if (!srsCapReached) return;
+    setReviewsDoneToday(FREE_SRS_DAILY_CAP);
+    if (reviewCounterKey) {
+      AsyncStorage.setItem(reviewCounterKey, String(FREE_SRS_DAILY_CAP)).catch(() => {});
+    }
+  }, [srsCapReached, reviewCounterKey]);
+
+  // A new UTC day resets the cap-rejection flag so reviews can resume.
+  useEffect(() => {
+    resetCapReached();
+  }, [utcDay, resetCapReached]);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
