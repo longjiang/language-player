@@ -234,7 +234,7 @@ Run before every commit to `apps/mobile/`. It verifies the app launches and core
 | R3 | 🤖 auto | Review — rating | Tap "Good" rating | Next card appears; FSRS schedule recalculated (next review time changes) |
 | R4 | 🤖 auto | Review — all done | Rate all due cards | "No more cards to review" state shown with the next review time (no session stats) |
 | R5 | 🤖 auto | Review — undo | Rate a card → tap Undo | Card returns to queue, rating reverted |
-| R6 | 🤖 auto | Review — new deck refill | Review new cards until the unrated saved-word pool is exhausted | Blue (new) count drops to 0; "No more cards to review" state shown; the deck refills up to the daily limit during the session |
+| R6 | 🤖 auto | Review — daily new-card quota | Review today's new cards until the daily quota is exhausted | Blue (new) count drops to 0; "No more new cards today" state shown; no new cards are introduced until the next day |
 | R7 | 🤖 auto | Review — entry preloading | Scroll through review session | Each card's dictionary data preloads before card appears |
 
 ### Tier 5 — Reading Tab (~8min)
