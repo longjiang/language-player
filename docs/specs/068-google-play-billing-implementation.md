@@ -104,19 +104,34 @@ mark the corresponding SPEC-054 § 3.4 item complete.**
     done (2026-08-13). Watcher `/tmp/watch_gp_permission.sh` ran **120 min
     and timed out with all-401** — still within the documented minutes–24–48h
     propagation window. Acceptance test = bogus token returns **404**.
+  - ✅ **RESOLVED — new service account + App-level Admin (2026-08-13):** a
+    **fresh service account `lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com`**
+    was created and granted **Admin (app-level) on Language Player 3**
+    (13 permissions, confirmed under Users & permissions → App permissions →
+    Language Player 3 / ca.zerotohero.go; Save = committed). New key
+    `data/zh-zerotohero-lp-play-billing-2.json` (gitignored) is now what
+    `.env` → `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` points to (Flask + test
+    scripts read it). **The 24h watcher captured the 401 → 400 flip at
+    minute 143** — the API now authenticates the service account and passes
+    permission checks (400 "Invalid Value" is a *token-format* rejection of
+    the synthetic test token, NOT a permission error; the old 401 permission
+    denial is gone). Permission propagation is complete.
   - ℹ️ **All test orders were REFUNDED (2026-08-13):** `GPA.3377-5570-7018-81586`
     (refunded 03:24 UTC, ~5 min after processing) plus `GPA.3324-2952-3923-56166`,
     `GPA.3363-0458-2728-79942`, `GPA.3381-5857-0619-68235` — all show
     **Refunded / CAD 0.00** in Order management. Because the backend never
     acknowledged the purchases, nothing is restorable on-device ("Can't find
-    restorable purchase" is correct behavior). Once the API returns 404, make
-    **one fresh test purchase** → Restore Purchases → validate + grant.
+    restorable purchase" is correct behavior). With permission now effective,
+    make **one fresh test purchase** → Restore Purchases → backend validates
+    with a real token → grant lifetime (`payment_processor=play-billing`).
   - 🌐 **Production is the target:** the Pixel release build (Closed testing)
     calls `https://pythonvps.zerotohero.ca/play_billing_success` (via
     `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca` in
     `apps/mobile/.env.production.local`, inlined by Metro in Release builds —
     NOT the local Flask). Backend code + `.env` + service-account key were
-    deployed to production 2026-08-12.
+    deployed to production 2026-08-12 — **⚠️ production `.env` must be
+    re-deployed to point `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` at the new
+    `lp-play-billing-2` key** (the old key was for the previous account).
 - [x] Set up the **Internal testing** track — release published 2026-08-13
   with `app-release.aab` (v1 / 3.0.0); the "Language Player Internal Testing
   Email List" (`longjiang2005@gmail.com`) is the track tester list.
