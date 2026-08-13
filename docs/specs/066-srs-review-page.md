@@ -188,6 +188,16 @@ compatibility window.
 > `remainingNewCardsToday()` helpers) still implements the old incorrect
 > behavior and must be updated to match this spec.
 
+> **Correction (2026-08-13):** The original wording of the header-counts step
+> below was also wrong. It described the blue/red/green numbers as an
+> inventory of the whole deck (`countDeckStates()`), which is why a deck can
+> show 33 red/green cards while nothing is due. Anki/FSRS show **due-today**
+> counts: blue = today's remaining new-card budget, red = learning/relearning
+> cards due on a step right now, green = review cards due now (including
+> overdue). This spec was corrected today; the code (`countDeckStates()` and
+> both review pages) still implements the old behavior and must be updated to
+> match.
+
 ### New-deck budget
 
 New words enter the deck through a daily budget. Each UTC day, up to
@@ -305,17 +315,21 @@ recomputes the queue on the next store change (rating, removal) or page reload.
 5. Due cards = saved words whose card has `due <= now`, sorted by
    `due` ascending (oldest due first).
 6. The header shows three counts:
-   - blue = new — never rated;
-   - red = again — learning / relearning;
-   - green = review — `state: review`.
-   Counts are computed from the whole language deck (saved words only), not
-   just the current due queue, so cards waiting on a learning step or
-   scheduled for later still appear. The count matching the current card's
-   state is underlined (Anki-style).
+   - blue = new cards introduced/available today — the remaining daily
+     new-card budget (`remainingNewCardsToday()`);
+   - red = again — learning / relearning cards currently due on a step
+     (`due <= now`);
+   - green = review — `state: review` cards currently due
+     (`due <= now`, including overdue).
+   Counts are due-today counts (Anki parity), not whole-deck state
+   inventory: cards waiting on a future learning step or scheduled for a
+   later review do **not** appear until they become due. The count matching
+   the current card's state is underlined (Anki-style).
 
 The classification follows the card's state (new / learning / review), not a
-success streak. The current streak-based counts are a by-product of the
-textbook implementation and disappear with the FSRS migration.
+success streak, and red/green are only counted while their card is actually
+due. The current streak-based counts are a by-product of the textbook
+implementation and disappear with the FSRS migration.
 
 ~~Note: the "no cards due" copy says queued words are "for tomorrow's batch",
 but the deck actually fills as soon as a blue slot frees up — `planNewDeck`
@@ -965,10 +979,14 @@ is the only ordering where typecheck stays green throughout.
      works.
 3. **Update both review pages:**
    - Replace `sm2()`/`RATING_MAP` with `rate(card, rating)`.
-   - Header counts (blue/red/green) computed from the **whole language deck**
-     (`store.cards[l2Code]` filtered to saved words), not the due-only `cards`
-     array — otherwise learning/relearning cards waiting on `1m`/`10m` steps
-     and future review cards disappear from the counts.
+   - ~~Header counts (blue/red/green) computed from the **whole language
+     deck** (`store.cards[l2Code]` filtered to saved words), not the due-only
+     `cards` array — otherwise learning/relearning cards waiting on
+     `1m`/`10m` steps and future review cards disappear from the counts.~~
+   - Header counts (blue/red/green) are Anki-style due-today counts
+     (corrected 2026-08-13): blue = remaining new-card budget, red =
+     learning/relearning cards due now, green = review cards due now
+     (including overdue). Future-dated cards are not counted.
    - SRS info line: show "new" or the interval derived from `due`, drop
      `ease`; keep the reviewed count from `reps`.
    - Web reads `SettingsContext.review.dailyNewLimit` (disparity 3); mobile
