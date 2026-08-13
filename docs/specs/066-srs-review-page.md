@@ -591,6 +591,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Server-side tombstone guard** — implemented (2026-08-13): stale
   saved-word / SRS-card upserts are rejected against `user_sync_log` deletes,
   and direct web writes carry client timestamps for LWW.
+- ✅ **Reset-card repair from review log** — implemented (2026-08-13):
+  `GET /srs` rebuilds cards that are `new` but have unvoided review history
+  as previously reviewed.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -727,6 +730,19 @@ effect bailed out early, and the back side showed the no-definition state.
 ✅ **Fixed (2026-08-13):** the web review card now reads the reactive
 `useEntryByIdCache` before falling back to text-cache lookups, so a cached
 entry by saved ID always renders.
+
+### Previously-reviewed cards reset to "new"
+
+The hydration race could overwrite a reviewed card with a brand-new state,
+and the prevention fix does not retroactively repair cards that were already
+reset. The server's `user_srs_review_log` retains the rating history, so the
+reset cards can be detected.
+
+✅ **Fixed (2026-08-13):** `GET /srs` now runs a one-time repair pass. Any
+card still in the `new` state with unvoided review-log entries is rebuilt as
+previously reviewed — `Review` if the last rating passed, `Relearning` if it
+was Again — with `reps`/`lapses` restored from the log. This is best-effort:
+ratings recorded before `user_srs_review_log` existed cannot be recovered.
 
 ## Stale Related Docs
 
