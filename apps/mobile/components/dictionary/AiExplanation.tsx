@@ -233,7 +233,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // Loading before the first assistant placeholder exists
   if (loading && !explanation && messages.length === 0) {
     return (
-      <View className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+      <View className="mt-4">
         <View className="flex-row items-center gap-2">
           <ActivityIndicator size="small" color={ICON_MUTED} />
           <Text className="text-sm text-muted-foreground">{t('msg.getting_ai_response')}</Text>
@@ -245,7 +245,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   // Streaming or complete — show the chat transcript
   if (messages.length > 0 || loading || error) {
     return (
-      <View className="mt-4 mb-2 rounded-lg border border-border bg-muted/30 p-4">
+      <View className="mt-4 mb-2">
         <View className="mb-2 flex-row items-center gap-2">
           <Sparkles size={12} color={ICON_MUTED} />
           <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>
