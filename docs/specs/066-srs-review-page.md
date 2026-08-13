@@ -594,6 +594,9 @@ types count while unexpired — there is no `status` filter.
 - ✅ **Reset-card repair from review log** — implemented (2026-08-13):
   `GET /srs` rebuilds cards that are `new` but have unvoided review history
   as previously reviewed.
+- ✅ **Reviewed-card merge guard** — implemented (2026-08-13): a reviewed
+  server card (`reps > 0`) can no longer be overwritten by a local unrated
+  `new` card during hydration.
 - ✅ **Backend free cap** — implemented (Phase 5): Flask counts interactive
   ratings through an idempotent `user_srs_review_log`; undo writes a void
   event; replays never double-count; Pro/trial are unlimited (SPEC-054 C8).
@@ -743,6 +746,16 @@ card still in the `new` state with unvoided review-log entries is rebuilt as
 previously reviewed — `Review` if the last rating passed, `Relearning` if it
 was Again — with `reps`/`lapses` restored from the log. This is best-effort:
 ratings recorded before `user_srs_review_log` existed cannot be recovered.
+
+### Reviewed cloud card vs newer local "new" card
+
+`mergeSrsCards()` used `lastReview`-wins, so a stale local auto-created `new`
+card (with a newer `lastReview`) could beat a repaired, already-reviewed
+server card during hydration.
+
+✅ **Fixed (2026-08-13):** a cloud card with `reps > 0` now always beats a
+local `new` card, regardless of timestamps. Local learning/review cards still
+merge by `lastReview` as before.
 
 ## Stale Related Docs
 

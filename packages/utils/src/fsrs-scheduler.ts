@@ -214,7 +214,11 @@ export function mergeSrsCards(
   for (const [id, raw] of Object.entries(cloud)) {
     const cloudCard = normalizeFsrsCard(raw);
     const localCard = merged[id];
-    if (!localCard || cloudCard.lastReview > localCard.lastReview) {
+    const cloudNewer = !localCard || cloudCard.lastReview > localCard.lastReview;
+    // A reviewed cloud card must never lose to a locally auto-created "new"
+    // card, even when the local card's `lastReview` is newer (SPEC-066).
+    const cloudReviewedBeatsLocalNew = !!localCard && isNewCard(localCard) && cloudCard.reps > 0;
+    if (cloudNewer || cloudReviewedBeatsLocalNew) {
       merged[id] = cloudCard;
     }
   }
