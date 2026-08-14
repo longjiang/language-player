@@ -547,23 +547,19 @@ Text: ${cue.text}`;
         </div>
       )}
 
-      {/* Dictionary popup + AI explain — renders above bottom bar */}
-      {selectedToken && (
-        <div className="lpv-dict-overlay">
-          <DictionaryCard
-            token={selectedToken}
-            l1Code={l1Code}
-            l2Code={l2Code}
-            contextText={selectedCue?.text}
-            cueStartTime={selectedCue?.start}
-            videoTitle={videoTitle}
-            pageUrl={pageUrl}
-            isPro={isPro}
-            subLoading={subLoading}
-            onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
-          />
-        </div>
-      )}
+      {/* Shared dictionary dock — renders above bottom bar */}
+      <DictionaryDock
+        token={selectedToken}
+        l1Code={l1Code}
+        l2Code={l2Code}
+        contextText={selectedCue?.text}
+        cueStartTime={selectedCue?.start}
+        videoTitle={videoTitle}
+        pageUrl={pageUrl}
+        isPro={isPro}
+        subLoading={subLoading}
+        onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
+      />
 
       {explainCue && (
         <div className="lpv-dict-overlay">
@@ -638,6 +634,53 @@ Text: ${cue.text}`;
         )}
       </div>
     </>
+  );
+};
+
+// ── Shared Dictionary Dock ────────────────────────────────────────────────
+
+interface DictionaryDockProps {
+  token: LemmatizedToken | null;
+  l1Code: string;
+  l2Code: string;
+  contextText?: string;
+  cueStartTime?: number;
+  videoTitle?: string;
+  pageUrl?: string;
+  isPro: boolean;
+  subLoading: boolean;
+  onClose: () => void;
+}
+
+/** Dictionary card pinned to the bottom of both video and page sidebars. */
+const DictionaryDock: React.FC<DictionaryDockProps> = ({
+  token,
+  l1Code,
+  l2Code,
+  contextText,
+  cueStartTime,
+  videoTitle,
+  pageUrl,
+  isPro,
+  subLoading,
+  onClose,
+}) => {
+  if (!token) return null;
+  return (
+    <div className="lpv-dict-overlay">
+      <DictionaryCard
+        token={token}
+        l1Code={l1Code}
+        l2Code={l2Code}
+        contextText={contextText}
+        cueStartTime={cueStartTime}
+        videoTitle={videoTitle}
+        pageUrl={pageUrl}
+        isPro={isPro}
+        subLoading={subLoading}
+        onClose={onClose}
+      />
+    </div>
   );
 };
 
@@ -757,19 +800,18 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
             {t('followLink')} →
           </button>
         )}
-        {selectedToken && (
-          <DictionaryCard
-            token={selectedToken}
-            l1Code={l1Code}
-            l2Code={l2Code}
-            contextText={blockText}
-            pageUrl={pageUrl}
-            isPro={isPro}
-            subLoading={subLoading}
-            onClose={() => setSelectedToken(null)}
-          />
-        )}
       </div>
+
+      <DictionaryDock
+        token={selectedToken}
+        l1Code={l1Code}
+        l2Code={l2Code}
+        contextText={blockText}
+        pageUrl={pageUrl}
+        isPro={isPro}
+        subLoading={subLoading}
+        onClose={() => setSelectedToken(null)}
+      />
 
       {/* Bottom bar — same controls as video mode */}
       <div className="lpv-bottom-bar">

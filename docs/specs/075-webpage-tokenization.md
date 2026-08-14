@@ -52,8 +52,10 @@ The **Make Text on Page Interactive** button is only shown when the **Read in La
 │                                              │ │ Translated text block │ │
 │  [link text]                                 │ │ （translation…）      │ │
 │  → shows Follow link in panel                │ ├──────────────────────┤ │
+│                                              │ │ [Follow Link ->]      │ │
+│  ＜more tokenized paragraphs…＞               │ ├──────────────────────┤ │
+│                                              │ │ Dictionary dock       │ │
 │                                              │ │ Text [pronunciation] x│ │
-│  ＜more tokenized paragraphs…＞               │ │ [Follow Link ->]      │ │
 │                                              │ │ [Let DeepSeek Explain]│ │
 │                                              │ │ 単語 [pronunciation] n│ │
 │                                              │ │ definition…           │ │
