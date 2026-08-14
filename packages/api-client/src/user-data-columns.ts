@@ -63,6 +63,8 @@ export const getUserSettings = () =>
 export const putUserSettings = (body: {
   settings_v2?: SettingsV2;
   settings_classic?: Record<string, unknown>;
+  /** Client timestamp (ms) used for server-side last-write-wins. */
+  updatedAt?: number;
 }) => apiClient.put<{ success: boolean }>('/user-settings', body);
 
 export function useUserDataColumns() {
