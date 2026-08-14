@@ -17,15 +17,48 @@ export interface StreamActions {
   abort: () => void;
 }
 
+/** Per-stream diagnostics reported when a stream call finishes. */
+export interface StreamDiagnostics {
+  /** When the stream call started (epoch ms). */
+  startedAt: number;
+  /** When the stream call finished (epoch ms). */
+  finishedAt: number;
+  durationMs: number;
+  /** Total characters received in parsed `t` chunks. */
+  chars: number;
+  /** Number of SSE `data:` lines received. */
+  sseLines: number;
+  /** Number of `data:` payloads that yielded a text chunk. */
+  parsedChunks: number;
+  /** Number of `data:` payloads that parsed but had no `t`/`e` field. */
+  skippedPayloads: number;
+  /** Number of `data:` payloads that failed to parse as JSON. */
+  malformedLines: number;
+  /** Whether the stream ended with `data: [DONE]`. */
+  sawDone: boolean;
+  /** HTTP status when known. */
+  httpStatus?: number;
+  /** Stream/HTTP error message, if any. */
+  error?: string;
+}
+
 /**
  * Shared hook for streaming DeepSeek AI explanations via SSE.
  * Uses the apiClient's base URL so it works in both web and mobile.
+ *
+ * An optional diagnostics callback receives a summary of every completed
+ * stream — useful for debugging empty responses without adding app-specific
+ * logging to this shared package.
  */
-export function useStreamingExplanation(): StreamState & StreamActions {
+export function useStreamingExplanation(
+  onDiagnostics?: (diagnostics: StreamDiagnostics) => void,
+): StreamState & StreamActions {
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
+  const onDiagnosticsRef = useRef(onDiagnostics);
+  onDiagnosticsRef.current = onDiagnostics;
 
   const reset = useCallback(() => {
     controllerRef.current?.abort();
@@ -50,6 +83,35 @@ export function useStreamingExplanation(): StreamState & StreamActions {
     const controller = new AbortController();
     controllerRef.current = controller;
 
+    const startedAt = Date.now();
+    let sseLines = 0;
+    let parsedChunks = 0;
+    let skippedPayloads = 0;
+    let malformedLines = 0;
+    let sawDone = false;
+    let chars = 0;
+    let httpStatus: number | undefined;
+    let streamError: string | undefined;
+
+    const reportDiagnostics = () => {
+      // A superseded/aborted stream must not report as the current one.
+      if (controllerRef.current !== controller) return;
+      const finishedAt = Date.now();
+      onDiagnosticsRef.current?.({
+        startedAt,
+        finishedAt,
+        durationMs: finishedAt - startedAt,
+        chars,
+        sseLines,
+        parsedChunks,
+        skippedPayloads,
+        malformedLines,
+        sawDone,
+        httpStatus,
+        error: streamError,
+      });
+    };
+
     try {
       const baseURL = apiClient.instance.defaults.baseURL ?? '';
       const body: Record<string, unknown> = { prompt };
@@ -62,7 +124,11 @@ export function useStreamingExplanation(): StreamState & StreamActions {
         body: JSON.stringify(body),
         signal: controller.signal,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      httpStatus = res.status;
+      if (!res.ok) {
+        streamError = `HTTP ${res.status}`;
+        throw new Error(streamError);
+      }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -78,28 +144,41 @@ export function useStreamingExplanation(): StreamState & StreamActions {
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
+            sseLines += 1;
             const payload = line.slice(6);
-            if (payload === '[DONE]') continue;
+            if (payload === '[DONE]') {
+              sawDone = true;
+              continue;
+            }
             try {
               const parsed = JSON.parse(payload);
               if (parsed.t) {
+                parsedChunks += 1;
+                chars += parsed.t.length;
                 setText((prev) => prev + parsed.t);
               } else if (parsed.e) {
+                streamError = parsed.e;
                 setError(parsed.e);
+              } else {
+                skippedPayloads += 1;
               }
-            } catch { /* malformed SSE line, skip */ }
+            } catch {
+              malformedLines += 1; /* malformed SSE line, skip */
+            }
           }
         }
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        setError(err?.message ?? 'Failed to get AI explanation.');
+        streamError = err?.message ?? 'Failed to get AI explanation.';
+        setError(streamError ?? null);
       }
     } finally {
       // Only the latest stream may clear loading. A superseded/aborted stream
       // must not flip loading off while a newer stream is still in flight —
       // doing so re-triggers fetch effects and causes restart cascades.
       if (controllerRef.current === controller) {
+        reportDiagnostics();
         setLoading(false);
       }
     }
