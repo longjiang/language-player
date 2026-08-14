@@ -272,6 +272,7 @@ function seekTo(timeSec) {
 
 function renderTranscript(loadingL2) {
   if (!panelContent) return;
+  updateOpenInWebBtn();
   const cueCount = STATE.cues.length;
   trace('REACT', `mountTranscript(${cueCount} cues, activeIdx=${STATE.activeCueIdx})`);
   // Extract video title — strip platform suffixes like " | Prime Video", " - YouTube"
@@ -973,23 +974,31 @@ function createPanelUI() {
 
 /** Web app URL for the current page.
  *  - YouTube video with subtitles loaded → watch page: {l1}/{l2}/watch/{videoId}
- *  - anything else → reader page: {l1}/{l2}/web-reader?url={current page} */
+ *  - everything else → null (no web-app button; the panel is the in-page reader) */
 function buildWebUrl() {
   const base = `https://language-player.netlify.app/${encodeURIComponent(L1_CODE)}/${encodeURIComponent(savedL2Code)}`;
   const videoId = getYTVideoId();
   if (isYouTube && videoId && STATE.cues.length > 0) {
     return { url: `${base}/watch/${encodeURIComponent(videoId)}`, labelKey: 'watchInLanguagePlayer' };
   }
-  return { url: `${base}/web-reader?url=${encodeURIComponent(location.href)}`, labelKey: 'readInLanguagePlayer' };
+  return null;
 }
 
 /** Show the web-app button and refresh its URL/label.
+ *  Hidden on every supported subtitle site unless a YouTube watch link applies —
+ *  the transcript panel already provides the in-place reading experience there.
  *  Warns (tooltip + warning style) when the detected page L2 differs from the
  *  user's saved L2. Called on panel creation, L1/L2 changes, and YouTube SPA
  *  navigation. */
 function updateOpenInWebBtn() {
   if (!openInWebBtn) return;
   const target = buildWebUrl();
+  if (!target) {
+    openInWebBtn.removeAttribute('href');
+    openInWebBtn.title = '';
+    openInWebBtn.classList.remove('lpv-visible', 'lpv-warning');
+    return;
+  }
   openInWebBtn.href = target.url;
   openInWebBtn.textContent = t(target.labelKey);
   openInWebBtn.classList.add('lpv-visible');
