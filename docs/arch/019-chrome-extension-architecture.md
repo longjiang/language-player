@@ -262,6 +262,10 @@ The extension supports six platforms. Each has a different mechanism for detecti
 8. loadNetflixTrackForLanguage() fetches the subtitle URL and parses cues
 9. observeNetflixSubtitleChanges() polls video.textTracks every 3s only as a
    fallback when no fetch/XHR subtitle signal has been seen
+10. If video.currentTime stops matching cue times (e.g. after seeking past a
+    Netflix ad break), the content script reads Netflix's rendered
+    `.player-timedtext` and re-anchors the active cue from that text,
+    deriving a timeline offset that is also applied to click-to-seek
 ```
 
 #### YouTube (InnerTube API + Page Data)
