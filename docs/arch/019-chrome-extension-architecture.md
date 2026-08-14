@@ -6,7 +6,7 @@
 - **Type**: as-built
 - **Status**: accepted
 - **Created**: 2026-07-30
-- **Last Updated**: 2026-08-13 (Supabase migration follow-ups — popup auth consolidation, single-flight refresh, per-L2 saved words)
+- **Last Updated**: 2026-08-14 (Netflix active-track detection via manifest URL → language fetch/XHR interception)
 - **Scope**: Chrome Extension (`apps/chrome-extension/`)
 - **See also**:
   - `apps/chrome-extension/src/content-entry.js` — entry point, all platform logic
@@ -256,10 +256,12 @@ The extension supports six platforms. Each has a different mechanism for detecti
    extracts timedtexttracks metadata, and posts it via window.postMessage
 6. content-entry.js listens for 'lpv-netflix' messages → handleNetflixSubs()
 7. handleNetflixSubs() caches all available subtitle tracks (cachedNetflixTracks)
-   and detects the currently active track via video.textTracks probing
+   and detects the currently active track from the MAIN-world fetch/XHR
+   interceptor: netflix-main-world.js maps every manifest subtitle URL to its
+   language and posts 'netflixActiveLang' when Netflix requests that URL
 8. loadNetflixTrackForLanguage() fetches the subtitle URL and parses cues
-9. observeNetflixSubtitleChanges() polls every 3s for track changes
-   (Netflix recreates text tracks when user switches subtitle language)
+9. observeNetflixSubtitleChanges() polls video.textTracks every 3s only as a
+   fallback when no fetch/XHR subtitle signal has been seen
 ```
 
 #### YouTube (InnerTube API + Page Data)
