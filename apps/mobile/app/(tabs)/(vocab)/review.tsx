@@ -1034,6 +1034,7 @@ export default function ReviewScreen() {
                   highlightTerms={Array.from(new Set(
                     [displayInstance.form, ...(savedWord.forms ?? []), savedWord.head ?? ''].filter(Boolean),
                   ))}
+                  highlightEntryIds={[savedWord.id]}
                   phoneticsOnHighlight={showTabs}
                 />
               </TextActionMenu>

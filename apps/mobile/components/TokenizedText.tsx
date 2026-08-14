@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from '
 import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { firstGloss } from '@langplayer/shared';
+import { firstGloss, isSameEntryId } from '@langplayer/shared';
 import {
   baseCode,
   buildRuby,
@@ -434,6 +434,11 @@ export interface TokenizedTextProps {
   text: string;
   l2Code: string;
   highlightTerms?: string[];
+  /** Entry ids (e.g. the saved word's id) to highlight by dictionary
+   *  resolution, matching web's tokenized-text.tsx. Catches inflected
+   *  surfaces whose lemma resolves to the target entry even when the exact
+   *  surface form isn't in `highlightTerms`. */
+  highlightEntryIds?: string[];
   /** Pre-computed lemmatized tokens — when set, skips all API calls. */
   tokens?: LemmatizedToken[];
   /** Video-level token cache from /lemmatize-video-normalized (optional optimization). */
@@ -450,7 +455,8 @@ export interface TokenizedTextProps {
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'loose' (2×).
+   * Line-height (leading) for tokenized text. Defaults to 'relaxed'
+   * (1.625×).
    * Pass 'none' to inherit from the parent container.
    */
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
@@ -506,7 +512,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'relaxed', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -677,7 +683,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     return style;
   }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, bold]);
 
-  // ── Leading ratio from prop (default: loose = 2) ──
+  // ── Leading ratio from prop (default: relaxed = 1.625) ──
   const LEADING_RATIOS: Record<string, number> = {
     relaxed: 1.625,
     normal: 1.5,
@@ -739,6 +745,26 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
         : tokens,
     [text, tokens, savedPhraseCandidates, highlightTerms, formats],
   );
+
+  // Entry-id matching (web parity): highlight any token whose lemma (or
+  // surface) resolves to one of the requested dictionary entries, so
+  // inflected surfaces like 忠実な still highlight for the saved 忠実 entry.
+  const highlightEntryIdSet = useMemo(
+    () => new Set(highlightEntryIds ?? []),
+    [highlightEntryIds],
+  );
+  const tokenHasTargetEntry = useCallback((token: LemmatizedToken): boolean => {
+    if (highlightEntryIdSet.size === 0) return false;
+    const base = baseCode(l2Code);
+    const matches = (entries: DictionaryEntry[] | undefined): boolean =>
+      !!entries?.some((e) =>
+        [...highlightEntryIdSet].some((id) => isSameEntryId(id, e.id, base)),
+      );
+    for (const lemma of token.lemmas) {
+      if (matches(getCachedEntries(base, lemma.lemma))) return true;
+    }
+    return matches(getCachedEntries(base, token.text));
+  }, [highlightEntryIdSet, l2Code, cacheVersion]);
 
   // ── Phonetics filter: per-token hardWords check ──
   const shouldShowPhonetics = useCallback((token: LemmatizedToken): boolean => {
@@ -1162,7 +1188,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const traditionalText = convertedTexts.get(word) ?? word;
-              const isHighlighted = tokenMatchesAnyTerm(token, highlightTerms);
+              const isHighlighted =
+                tokenMatchesAnyTerm(token, highlightTerms) || tokenHasTargetEntry(token);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
@@ -1267,7 +1294,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
               // Script conversion map is populated for both directions
               // (simplified or traditional preference); empty map = identity.
               const tokenDisplayText = convertedTexts.get(word) ?? word;
-              const isHighlighted = tokenMatchesAnyTerm(token, highlightTerms);
+              const isHighlighted =
+                tokenMatchesAnyTerm(token, highlightTerms) || tokenHasTargetEntry(token);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
