@@ -24,6 +24,66 @@
 
   var originalParse = JSON.parse;
   var lastMovieId = null;
+  var urlToLang = {};
+
+  /** Map every downloadable subtitle URL in the manifest to its language,
+   *  so the fetch/XHR interceptor can report which track Netflix actually
+   *  loads (i.e. the one the user has selected in the player). */
+  function buildUrlToLangMap(tracks) {
+    for (var oldUrl in urlToLang) delete urlToLang[oldUrl];
+
+    function walk(obj, lang) {
+      if (typeof obj === 'string') {
+        if (obj.indexOf('https://') === 0) urlToLang[obj] = lang;
+      } else if (obj && typeof obj === 'object') {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            walk(obj[key], lang);
+          }
+        }
+      }
+    }
+
+    for (var i = 0; i < tracks.length; i++) {
+      var track = tracks[i];
+      var lang = track.language || track.languageCode;
+      if (!lang) continue;
+      var dl = track.ttDownloadables || track.downloadables || {};
+      walk(dl, lang);
+    }
+  }
+
+  /** When Netflix loads the subtitle file for the active track, tell the
+   *  content script which language was actually requested. */
+  function reportActiveSubtitleUrl(url) {
+    if (!url || !urlToLang[url]) return;
+    window.postMessage(
+      {
+        source: 'lpv-netflix',
+        type: 'netflixActiveLang',
+        language: urlToLang[url],
+        url: url,
+      },
+      '*'
+    );
+  }
+
+  var originalFetch = window.fetch;
+  window.fetch = function (resource) {
+    try {
+      var url = typeof resource === 'string' ? resource : (resource && resource.url);
+      reportActiveSubtitleUrl(url);
+    } catch (_) {}
+    return originalFetch.apply(this, arguments);
+  };
+
+  var originalXhrOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    try {
+      reportActiveSubtitleUrl(url);
+    } catch (_) {}
+    return originalXhrOpen.apply(this, arguments);
+  };
 
   JSON.parse = function (text) {
     var data = originalParse(text);
@@ -41,6 +101,7 @@
 
         if (tracks && tracks.length > 0) {
           lastMovieId = movieId;
+          buildUrlToLangMap(tracks);
 
           // Extract track metadata: language, URL, format
           var trackList = [];

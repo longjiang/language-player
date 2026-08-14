@@ -1096,6 +1096,11 @@ function attachTimeTracking() {
 
 /** Netflix subtitle tracks cache (all available tracks from manifest) */
 let cachedNetflixTracks = {};
+let pendingNetflixActiveLang = null;
+let loadedNetflixUrl = null;
+let netflixFetchDetectionActive = false;
+let handlingNetflixTracks = false;
+let netflixObserverStarted = false;
 
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 
@@ -1123,7 +1128,20 @@ function setupNetflixInterceptor() {
 
     if (event.data.type === 'netflixTracks') {
       log('Received Netflix tracks from MAIN world:', event.data.tracks.length);
-      handleNetflixSubs(event.data.tracks);
+      handlingNetflixTracks = true;
+      handleNetflixSubs(event.data.tracks).finally(() => {
+        handlingNetflixTracks = false;
+        processPendingNetflixActiveLang();
+      });
+    }
+
+    if (event.data.type === 'netflixActiveLang') {
+      const lang = event.data.language;
+      if (!lang) return;
+      log('Netflix active subtitle fetch detected:', lang);
+      netflixFetchDetectionActive = true;
+      pendingNetflixActiveLang = lang;
+      if (!handlingNetflixTracks) processPendingNetflixActiveLang();
     }
   });
 
@@ -1133,6 +1151,17 @@ function setupNetflixInterceptor() {
   script.src = chrome.runtime.getURL('dist/netflix-main-world.js');
   (document.head || document.documentElement).appendChild(script);
   log('Netflix interceptor injected via <script src>');
+}
+
+/** Load the most recent fetch-detected active subtitle language, once tracks
+ *  are cached and no track-manifest handling is in progress. */
+function processPendingNetflixActiveLang() {
+  if (!pendingNetflixActiveLang) return;
+  if (Object.keys(cachedNetflixTracks).length === 0) return;
+
+  const lang = pendingNetflixActiveLang;
+  pendingNetflixActiveLang = null;
+  loadNetflixTrackForLanguage(lang);
 }
 
 /**
@@ -1156,9 +1185,15 @@ async function detectNetflixActiveSubtitle() {
  * when the user changes subtitles, so we poll video.textTracks.
  */
 function observeNetflixSubtitleChanges() {
+  if (netflixObserverStarted) return;
+  netflixObserverStarted = true;
   let lastActiveLang = null;
 
   setInterval(async () => {
+    // Fetch/XHR interception is the authoritative signal for the active
+    // track. Only use textTracks polling when we never saw a subtitle fetch.
+    if (netflixFetchDetectionActive) return;
+
     const activeLang = await detectNetflixActiveSubtitle();
     if (activeLang && activeLang !== lastActiveLang && cachedNetflixTracks[activeLang]) {
       lastActiveLang = activeLang;
@@ -1187,6 +1222,10 @@ async function loadNetflixTrackForLanguage(langCode) {
   }
 
   const track = cachedNetflixTracks[bestKey];
+  if (track.url === loadedNetflixUrl && STATE.cues.length > 0) {
+    log('Netflix track already loaded:', track.url);
+    return;
+  }
   const gen = ++fetchGen;
   log('Loading Netflix track:', bestKey, track.format);
 
@@ -1216,6 +1255,7 @@ async function loadNetflixTrackForLanguage(langCode) {
     detectedSubLang = track.languageCode || detectedSubLang;
     tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
     checkL2Mismatch();
+    loadedNetflixUrl = track.url;
 
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
@@ -1257,8 +1297,10 @@ async function handleNetflixSubs(tracks) {
   log('Netflix subtitle tracks:',
     Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
 
-  // Detect which subtitle Netflix is currently showing via video.textTracks
-  const activeLang = await detectNetflixActiveSubtitle();
+  // Prefer the language Netflix actually fetched from the manifest; fall back
+  // to probing video.textTracks when no subtitle fetch has been seen yet.
+  const activeLang = pendingNetflixActiveLang || (await detectNetflixActiveSubtitle());
+  pendingNetflixActiveLang = null;
   log('Detected Netflix active subtitle:', activeLang || '(none found)');
 
   if (activeLang) {
