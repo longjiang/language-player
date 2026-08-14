@@ -19,7 +19,7 @@
 
 ## Overview
 
-Today the Language Player Chrome extension only tokenizes subtitles on supported video sites. This spec adds a second mode: the user enables **Popup Dictionary** from the extension menu, and the current webpage's visible text is tokenized strictly in the user's saved L2 (no language detection). The familiar side panel from video mode flies open, dictionary lookups render in it, and — when translation is enabled — a lookup also translates the entire text block containing the clicked word. The mode stays active across page navigation until the user closes the side panel.
+Today the Language Player Chrome extension only tokenizes subtitles on supported video sites. This spec adds a second mode: the user presses **Make Text on Page Interactive** in the extension popup, and the current webpage's visible text is tokenized strictly in the user's saved L2 (no language detection). The familiar side panel from video mode flies open, dictionary lookups render in it, and — when translation is enabled — a lookup also translates the entire text block containing the clicked word. The mode stays active across page navigation until the user closes the side panel.
 
 ## UI Sketches
 
@@ -31,50 +31,37 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 │                                  │
 │ L1: English       L2: 日本語     │
 │                                  │
-│ [x] Enable Popup Dictionary      │
-│                                  │
-│ Ruby / Furigana     [on]         │
-│ Translation          [on]        │
+│ [on] Make Text on Page           │
+│       Interactive                │
 │                                  │
 │ Signed in: user@example.com      │
 └──────────────────────────────────┘
 ```
 
+The **Make Text on Page Interactive** button is only shown when the **Read in Language Player** button is also visible — i.e. the same popup logic that decides a page is eligible for the reader link (non-video domains).
+
 ### Page tokenization + side panel
 
 ```text
-┌───────────────────────────────────────────┬───────────────────────┐
-│ News article page                         │ Side panel            │
-│                                           │ ┌───────────────────┐ │
-│  パーシバルがいるからに決まってんだろ      │ │ LP │ 日本語 │ ✕  │ │
-│  ＜clickable tokens＞                      │ ├───────────────────┤ │
-│                                           │ │ Dictionary         │ │
-│  [link text]                              │ │ 単語               │ │
-│  → shows Follow link in panel             │ │ definition…        │ │
-│                                           │ │ [Save]  [Explain]  │ │
-│  ＜more tokenized paragraphs…＞            │ ├───────────────────┤ │
-│                                           │ │ Translated block   │ │
-│                                           │ │ （translation…）   │ │
-│                                           │ ├───────────────────┤ │
-│                                           │ │ [Follow link →]    │ │
-│                                           │ ├───────────────────┤ │
-│                                           │ │ Ruby  Trans  Aa-   │ │
-│                                           │ └───────────────────┘ │
-└───────────────────────────────────────────┴───────────────────────┘
+┌──────────────────────────────────────────────┬──────────────────────────┐
+│ News article page                            │ Side panel               │
+│                                              │ ┌──────────────────────┐ │
+│  パーシバルがいるからに決まってんだろ         │ │ LP │              │ ✕ │ │
+│  ＜clickable tokens＞                         │ ├──────────────────────┤ │
+│                                              │ │ Translated text block │ │
+│  [link text]                                 │ │ （translation…）      │ │
+│  → shows Follow link in panel                │ ├──────────────────────┤ │
+│                                              │ │ Text [pronunciation] x│ │
+│  ＜more tokenized paragraphs…＞               │ │ [Follow Link ->]      │ │
+│                                              │ │ [Let DeepSeek Explain]│ │
+│                                              │ │ 単語 [pronunciation] n│ │
+│                                              │ │ definition…           │ │
+│                                              │ │ [Save]                │ │
+│                                              │ └──────────────────────┘ │
+└──────────────────────────────────────────────┴──────────────────────────┘
 ```
 
-### Panel closed / feature off
-
-```text
-┌──────────────────────────────────┐
-│ Language Player                  │
-│                                  │
-│ [ ] Enable Popup Dictionary      │
-│                                  │
-│ Page is left untouched.          │
-│ Panel stays closed on next page. │
-└──────────────────────────────────┘
-```
+The side panel header shows the logo and close button only — no L2 name in text mode.
 
 ## User Stories
 
@@ -97,7 +84,8 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 ### Opt-in, persistent page mode
 
 - The feature is **off by default**.
-- The popup gets an **Enable Popup Dictionary** toggle.
+- The popup gets a **Make Text on Page Interactive** button.
+- The button is only shown when the **Read in Language Player** button is also visible, using the same popup visibility logic (non-video domains).
 - Enabling writes `pageTokenizationEnabled: true` to `chrome.storage.sync`.
 - Closing the side panel sets `pageTokenizationEnabled: false`, cleans up token spans, and disconnects observers. It stays off on subsequent navigations until re-enabled.
 
@@ -122,12 +110,15 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 
 ### Side panel
 
-- Reuse the same panel shell as video mode: header with logo, language button, close button; scrollable content; bottom bar with translation toggle, ruby/furigana toggle, and text-scale controls.
-- Generalize the React panel so it can render either video cues (time-synced) or page blocks (no timestamps).
+- Reuse the **same panel component as video mode** — only the content differs: video mode scrolls time-synced subtitles; text mode shows the translated block and dictionary card.
+- Shared shell: header with logo and close button (no L2 name in text mode); scrollable content; bottom bar with translation toggle, ruby/furigana toggle, and text-scale controls.
+- The ruby/furigana and translation toggles live only in the side panel's bottom bar, exactly like video mode. They are **not** duplicated in the popup.
 - In page mode the panel shows:
-  1. The dictionary card for the clicked token.
-  2. The translated block when translation is enabled.
-  3. A **Follow link** action when the clicked token lives inside an `<a href>`.
+  1. The translated text block containing the clicked token (when translation is enabled).
+  2. The token with pronunciation and a dismiss (✕) control.
+  3. **Follow Link ->** when the clicked token lives inside an `<a href>`.
+  4. **Let DeepSeek Explain** (Pro).
+  5. The dictionary entry for the token with pronunciation, part of speech, definition, and **Save**.
 
 ### Click interaction
 
@@ -146,10 +137,11 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 
 ### Popup
 
-- Add **Enable Popup Dictionary** toggle to `popup.html` / `popup.js`.
-- Add ruby/furigana and translation toggles to the popup if not already present, synced with `chrome.storage.local.showPhonetics` and `showTranslation`.
+- Add **Make Text on Page Interactive** button to `popup.html` / `popup.js`.
+- Show it only when the **Read in Language Player** button is visible (reuse the existing `isVideoDomain` / open-in-web visibility logic).
+- Do **not** add ruby/furigana or translation toggles to the popup; they remain in the shared side panel bottom bar.
 - When enabled, set `pageTokenizationEnabled = true`; when disabled, set `false` and send a `pageTokenizationOff` message to the active tab so it cleans up immediately.
-- Add new i18n keys through the standard `translations.csv` workflow (e.g. `enablePopupDictionary`, `followLink`, `pageTokenizationActive`).
+- Add new i18n keys through the standard `translations.csv` workflow (e.g. `makeTextInteractive`, `followLink`, `pageTokenizationActive`).
 
 ### New page content script (`src/page-content.js`)
 
@@ -164,8 +156,11 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 
 ### Shared panel refactor
 
-- Extract the video panel shell (header, content area, bottom bar) into a reusable component or keep it in `content-entry.js` and duplicate the shell for page mode with shared CSS.
-- Prefer a small React `PagePanel` component that reuses `DictionaryCard`, `SavedWordsProvider`, `useSubscription`, `useTranslateLines`-style block translation, and the existing `lpv-*` CSS.
+- Use the **same panel component for video and text mode**, with a content slot that differs:
+  - Video mode: scrollable, time-synced subtitle list.
+  - Text mode: translated block + dictionary card (no scrolling subtitle list).
+- The shared shell owns the header (logo + close; no L2 name in text mode), scroll area, and bottom bar (ruby, translation, text scale).
+- Page mode reuses `DictionaryCard`, `SavedWordsProvider`, `useSubscription`, block translation, and the existing `lpv-*` CSS.
 
 ### Dictionary card changes
 
