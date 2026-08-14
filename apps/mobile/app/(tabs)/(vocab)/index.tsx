@@ -192,9 +192,9 @@ export default function DictionaryScreen() {
   };
 
   // Mirror web: a search returning exactly one entry goes straight to the
-  // entry detail page. `replace` keeps back from landing on the transient
-  // results screen, and redirectingRef prevents repeat navigations for the
-  // same result set.
+  // entry detail page. `push` keeps the search page beneath the detail page
+  // (swipe-from-left returns to it), and redirectingRef prevents repeat
+  // navigations for the same result set.
   useEffect(() => {
     if (!loading && !error && results && results.length === 1 && !redirectingRef.current) {
       redirectingRef.current = true;
@@ -204,7 +204,7 @@ export default function DictionaryScreen() {
       setCameFromSearch(true);
       const safeId = entry.id.replace(/,/g, '~');
       log('[Dict] single result — auto-redirecting to entry:', entry.id);
-      router.replace(`word/${safeId}` as any);
+      router.push(`word/${safeId}` as any);
     }
     if (!results || results.length !== 1) {
       redirectingRef.current = false;

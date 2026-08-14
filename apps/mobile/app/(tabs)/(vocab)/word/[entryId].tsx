@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -38,15 +38,19 @@ export default function WordDetailScreen() {
     error: ctxError,
     sidebarSource,
     cameFromSearch,
+    detailHead,
     setDetailHead,
     setSidebarSource,
     setQuery,
     doSearch,
+    clearSearch,
   } = useDictionaryContext();
   const dict = useDictionary();
 
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
   const [searchInput, setSearchInput] = useState('');
+  const searchUserEditedRef = useRef(false);
+  const prevEntryIdRef = useRef(entryId);
 
   // State for API-fetched entry (deep-link fallback)
   const [apiEntry, setApiEntry] = useState<DictionaryEntry | null>(null);
@@ -76,6 +80,26 @@ export default function WordDetailScreen() {
     }
     return null;
   }, [entryId, results, sidebarSource]);
+
+  // The word currently being viewed — used to prefill the search field.
+  const entryHead = contextEntry?.head ?? apiEntry?.head ?? detailHead ?? '';
+
+  // Reset the "user edited" flag when navigating to a different entry so the
+  // new entry's head word can prefill again.
+  useEffect(() => {
+    if (prevEntryIdRef.current !== entryId) {
+      prevEntryIdRef.current = entryId;
+      searchUserEditedRef.current = false;
+    }
+  }, [entryId]);
+
+  // Prefill the search field with the displayed entry's head word (e.g.
+  // 自欺欺人), unless the user has typed their own query.
+  useEffect(() => {
+    if (entryHead && !searchUserEditedRef.current) {
+      setSearchInput(entryHead);
+    }
+  }, [entryHead]);
 
   // Deep-link fallback: check ID cache first, then fetch from API.
   useEffect(() => {
@@ -158,7 +182,9 @@ export default function WordDetailScreen() {
   const handleSidebarNavigate = (items: SidebarListItem[], currentId: string, source?: 'search' | 'saved' | 'corpus') => {
     setSidebarSource({ kind: 'wordlist', items, currentId, source });
     const safeId = currentId.replace(/,/g, '~');
-    router.push(`word/${safeId}` as any);
+    // Replace the current detail page so the stack stays Search → Detail —
+    // swiping back always returns to the search page, not a chain of entries.
+    router.replace(`word/${safeId}` as any);
   };
 
   // ── Loading ──
@@ -205,7 +231,10 @@ export default function WordDetailScreen() {
           <View className="flex-1">
             <SearchBar
               value={searchInput}
-              onChangeText={setSearchInput}
+              onChangeText={(text) => {
+                searchUserEditedRef.current = true;
+                setSearchInput(text);
+              }}
               onSubmit={() => {
                 const term = searchInput.trim();
                 if (!term) return;
@@ -213,7 +242,12 @@ export default function WordDetailScreen() {
                 doSearch(term);
                 router.push('/(tabs)/(vocab)' as any);
               }}
-              onClear={() => setSearchInput('')}
+              onClear={() => {
+                setSearchInput('');
+                clearSearch();
+                // Pop back to the search page with the native swipe animation.
+                router.dismissTo('/(tabs)/(vocab)' as any);
+              }}
             />
           </View>
           {sidebarAvailable && (
