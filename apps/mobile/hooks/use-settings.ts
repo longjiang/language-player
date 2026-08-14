@@ -84,8 +84,8 @@ export function useSettings() {
         setSettings((prev) => {
           if (cloud.ts <= prev.ts) return prev;
           const merged = normalizeSettingsV2({
-            ...cloud,
             ...prev,
+            ...cloud,
             v: 2 as const,
             ts: new Date().toISOString(),
           });
@@ -153,8 +153,8 @@ export function useSettings() {
           setSettings((prev) => {
             if (cloud.ts <= prev.ts) return prev;
             const merged = normalizeSettingsV2({
-              ...cloud,
               ...prev,
+              ...cloud,
               v: 2 as const,
               ts: new Date().toISOString(),
             });

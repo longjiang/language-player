@@ -50,7 +50,10 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        await putUserSettings({ settings_v2: s });
+        await putUserSettings({
+          settings_v2: s,
+          updatedAt: Date.parse(s.ts) || Date.now(),
+        });
       } catch (err) {
         logwarn('[settings] Cloud sync failed:', err);
       } finally {
