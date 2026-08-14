@@ -46,8 +46,9 @@ The **Make Text on Page Interactive** button is only shown when the **Read in La
 ┌──────────────────────────────────────────────┬──────────────────────────┐
 │ News article page                            │ Side panel               │
 │                                              │ ┌──────────────────────┐ │
-│  パーシバルがいるからに決まってんだろ         │ │ LP │              │ ✕ │ │
+│  パーシバルがいるからに決まってんだろ         │ │ LP │ [Read in     │ ✕ │ │
 │  ＜clickable tokens＞                         │ ├──────────────────────┤ │
+│                                              │ │     Language Player]  │ │
 │                                              │ │ Translated text block │ │
 │  [link text]                                 │ │ （translation…）      │ │
 │  → shows Follow link in panel                │ ├──────────────────────┤ │
@@ -61,7 +62,7 @@ The **Make Text on Page Interactive** button is only shown when the **Read in La
 └──────────────────────────────────────────────┴──────────────────────────┘
 ```
 
-The side panel header shows the logo and close button only — no L2 name in text mode.
+The side panel header shows the logo, the existing **Read in Language Player** button, and the close button — no L2 name in text mode.
 
 ## User Stories
 
@@ -111,7 +112,7 @@ The side panel header shows the logo and close button only — no L2 name in tex
 ### Side panel
 
 - Reuse the **same panel component as video mode** — only the content differs: video mode scrolls time-synced subtitles; text mode shows the translated block and dictionary card.
-- Shared shell: header with logo and close button (no L2 name in text mode); scrollable content; bottom bar with translation toggle, ruby/furigana toggle, and text-scale controls.
+- Shared shell: header with logo, the existing **Read in Language Player** button, and close button (no L2 name in text mode); scrollable content; bottom bar with translation toggle, ruby/furigana toggle, and text-scale controls.
 - The ruby/furigana and translation toggles live only in the side panel's bottom bar, exactly like video mode. They are **not** duplicated in the popup.
 - In page mode the panel shows:
   1. The translated text block containing the clicked token (when translation is enabled).
@@ -159,7 +160,7 @@ The side panel header shows the logo and close button only — no L2 name in tex
 - Use the **same panel component for video and text mode**, with a content slot that differs:
   - Video mode: scrollable, time-synced subtitle list.
   - Text mode: translated block + dictionary card (no scrolling subtitle list).
-- The shared shell owns the header (logo + close; no L2 name in text mode), scroll area, and bottom bar (ruby, translation, text scale).
+- The shared shell owns the header (logo + **Read in Language Player** + close; no L2 name in text mode), scroll area, and bottom bar (ruby, translation, text scale).
 - Page mode reuses `DictionaryCard`, `SavedWordsProvider`, `useSubscription`, block translation, and the existing `lpv-*` CSS.
 
 ### Dictionary card changes
