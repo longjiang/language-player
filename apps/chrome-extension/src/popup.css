@@ -246,8 +246,7 @@ h1 img {
 
 /* ── Open in Language Player Button ─────────────────────────────────── */
 
-#open-in-web-btn,
-#make-text-interactive-btn {
+#open-in-web-btn {
   width: 100%;
   margin-top: 8px;
   padding: 10px;
@@ -262,14 +261,69 @@ h1 img {
   transition: background 0.15s;
 }
 
-#open-in-web-btn:hover,
-#make-text-interactive-btn:hover {
+#open-in-web-btn:hover {
   background: var(--accent-bright);
 }
 
-#make-text-interactive-btn.lpv-btn-active {
-  background: var(--accent-bright);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+/* ── Make Text on Page Interactive toggle ──────────────────────────── */
+
+#make-text-interactive-row {
+  margin-top: 8px;
+}
+
+.lpv-popup-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lpv-popup-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.lpv-popup-switch .lpv-switch-slider {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.lpv-popup-switch .lpv-switch-slider::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+
+.lpv-popup-switch input:checked + .lpv-switch-slider {
+  background: var(--accent);
+}
+
+.lpv-popup-switch input:checked + .lpv-switch-slider::before {
+  transform: translateX(14px);
 }
 
 #open-web-warn {
