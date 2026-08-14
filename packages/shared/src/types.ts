@@ -745,10 +745,6 @@ export interface SrsFields {
  */
 export interface SrsProgressStore {
   v?: 2;
-  settings: {
-    /** Max new cards introduced per day. Default 20. */
-    dailyNewLimit: number;
-  };
   /** Cards keyed by ISO 639-1 l2 code, then by dictionary entry ID. */
   cards: Record<string, Record<string, SrsFields>>;
 }

@@ -21,8 +21,8 @@ const STORAGE_KEY = 'zthSrsProgress';
  * - SecureStore first (offline-capable)
  * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
  * - updateCard → PUT /srs/cards; removeCard → DELETE /srs/cards;
- *   dailyNewLimit now lives in settings_v2 (SettingsContext); the legacy
- *   /srs/settings row is deprecated (SPEC-066 Phase 6).
+ *   dailyNewLimit lives in settings_v2 (SettingsContext); GET /srs returns
+ *   cards only.
  */
 export function useSrs() {
   const { user } = useAuth();
@@ -61,16 +61,13 @@ export function useSrs() {
       try {
         const res = await getSrs();
         if (cancelled) return;
-        const cloud = {
-          settings: res.settings ?? { dailyNewLimit: 20 },
-          cards: res.cards ?? {},
-        };
+        const cloud = { cards: res.cards ?? {} };
         setStore((prev) => {
           const cards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
           for (const [lang, cloudCards] of Object.entries(cloud.cards)) {
             cards[lang] = mergeSrsCards(prev.cards[lang] ?? {}, cloudCards);
           }
-          const merged = { settings: { ...prev.settings, ...cloud.settings }, cards };
+          const merged = { cards };
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
@@ -133,7 +130,7 @@ export function useSrs() {
         } else {
           delete cards[lang][wordId];
         }
-        const next = { settings: cur.settings, cards };
+        const next = { cards };
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
         return next;
       });
@@ -261,7 +258,7 @@ export function useSrs() {
             const wordId = entityId.slice(sep + 2);
             delete mergedCards[lang]?.[wordId];
           }
-          const next = { settings: prev.settings, cards: mergedCards };
+          const next = { cards: mergedCards };
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
           return next;
         });
