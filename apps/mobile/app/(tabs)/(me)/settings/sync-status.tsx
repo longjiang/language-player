@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { RefreshCw, CloudOff, CloudUpload, CheckCircle2, AlertTriangle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -12,7 +12,7 @@ import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
 import { SyncNowButton } from '@/components/sync/SyncNowButton';
 import { useSettingsContext } from '@/contexts/SettingsContext';
-import { ICON_PRIMARY } from '@/lib/theme-colors';
+import { Root as Switch } from '@/components/ui/switch';
 
 /** Central Sync Status / Outbox screen (SPEC-053 Phase 2). */
 export default function SyncStatusScreen() {
@@ -54,9 +54,8 @@ export default function SyncStatusScreen() {
           <Text className="mt-0.5 text-xs text-muted-foreground">{t('msg.offline_mode_not_synced')}</Text>
         </View>
         <Switch
-          value={offlineMode}
-          onValueChange={(value) => void setOfflineMode(value)}
-          trackColor={{ true: ICON_PRIMARY, false: ICON_MUTED }}
+          checked={offlineMode}
+          onCheckedChange={(value) => void setOfflineMode(value)}
         />
       </View>
 
