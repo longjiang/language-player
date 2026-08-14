@@ -105,6 +105,15 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
 
+  // Autoplay policy (matches web): the initial load never autoplays; every
+  // navigation after mount (prev/next, list selection, new search) does.
+  const [autoplayEnabled, setAutoplayEnabled] = useState(false);
+  const autoplayRef = useRef(autoplayEnabled);
+  useEffect(() => {
+    autoplayRef.current = autoplayEnabled;
+  }, [autoplayEnabled]);
+  const initialLoadRef = useRef(true);
+
   // Split comma-separated terms for highlighting
   const highlightTerms = useMemo(
     () => term.split(',').map((t) => t.trim()).filter(Boolean),
@@ -215,6 +224,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch && isPro ? 500 : 50, context: 3 })
       .then((data) => {
         if (cancelled) return;
+        const firstLoad = initialLoadRef.current;
+        initialLoadRef.current = false;
+        const autoplay = !firstLoad;
         const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = data
           .map((v: any) => {
@@ -237,6 +249,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           );
         applyVideos(parsed);
         setCurrentIndex(0);
+        setAutoplayEnabled(autoplay);
         setLoading(false);
       })
       .catch((err) => {
@@ -253,8 +266,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   useEffect(() => {
     if (currentVideo && matchLine) {
       const timer = setTimeout(() => {
-        playerRef.current?.seekTo(matchLine.starttime);
-        playerRef.current?.play();
+        // Seeking from the CUED state starts playback, so only seek when
+        // autoplay is on. With autoplay off the player is already cued at the
+        // match line via `start` (matches web).
+        if (autoplayRef.current) {
+          playerRef.current?.seekTo(matchLine.starttime);
+          playerRef.current?.play();
+        }
       }, 600);
       return () => clearTimeout(timer);
     }
@@ -310,6 +328,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   const selectFromList = (idx: number) => {
     setCurrentIndex(idx);
+    setAutoplayEnabled(true);
     setListOpen(false);
   };
 
@@ -528,6 +547,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onDuration={handleDuration}
           onStateChange={handleStateChange}
           onError={handleVideoError}
+          autoplay={autoplayEnabled}
           containerWidth={containerWidth}
         />
       </View>
@@ -543,8 +563,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onPauseToggle={() => {}}
           onPreviousLine={goToPreviousLine}
           onNextLine={goToNextLine}
-          onPreviousVideo={() => { if (currentIndex > 0) setCurrentIndex((i) => i - 1); }}
-          onNextVideo={() => { if (currentIndex < videos.length - 1) setCurrentIndex((i) => i + 1); }}
+          onPreviousVideo={() => { if (currentIndex > 0) { setAutoplayEnabled(true); setCurrentIndex((i) => i - 1); } }}
+          onNextVideo={() => { if (currentIndex < videos.length - 1) { setAutoplayEnabled(true); setCurrentIndex((i) => i + 1); } }}
           hasPreviousLine={hasPreviousLine}
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
