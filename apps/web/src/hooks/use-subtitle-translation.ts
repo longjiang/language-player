@@ -41,6 +41,11 @@ export function useSubtitleTranslation(
   highlightForms?: (string | null | undefined)[],
 ): { translatedLines: SubtitleLine[]; loading: boolean; progress: number; error: string | null; retry: () => void } {
   const [translatedLines, setTranslatedLines] = useState<SubtitleLine[]>([]);
+  // The l2Lines identity the current translatedLines belong to. While the
+  // lines have changed (new video) but the reset effect hasn't run yet, the
+  // stale translations must not be exposed — returning them for the new line
+  // set is what showed the previous video's translation/highlight.
+  const [translatedLinesFor, setTranslatedLinesFor] = useState<SubtitleLine[]>(l2Lines);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +65,7 @@ export function useSubtitleTranslation(
   useEffect(() => {
     resultRef.current = new Array(l2Lines.length);
     translatedChunksRef.current = new Set();
+    setTranslatedLinesFor(l2Lines);
     setTranslatedLines([]);
     setProgress(0);
     setLoading(enabled && l2Lines.length > 0);
@@ -115,6 +121,7 @@ export function useSubtitleTranslation(
 
       translatedChunksRef.current.add(chunkIdx);
       const doneCount = translatedChunksRef.current.size * CHUNK_SIZE;
+      setTranslatedLinesFor(l2Lines);
       setTranslatedLines([...resultRef.current]);
       setProgress(Math.min(doneCount, l2Lines.length));
       return 'success';
@@ -185,7 +192,13 @@ export function useSubtitleTranslation(
     setRetryCounter((c) => c + 1);
   }, []);
 
-  return { translatedLines, loading, progress, error, retry };
+  return {
+    translatedLines: translatedLinesFor === l2Lines ? translatedLines : [],
+    loading,
+    progress,
+    error,
+    retry,
+  };
 }
 
 /**

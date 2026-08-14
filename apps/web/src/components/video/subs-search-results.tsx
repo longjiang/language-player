@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log, logwarn } from '@/lib/logger';
+import { log } from '@/lib/logger';
 import { youtubeThumbnail } from '@/lib/video-service';
 import {
   YouTubePlayer,
@@ -291,7 +291,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     const firstLoad = initialLoadRef.current;
     setLoading(true);
     setError(null);
-    log('[subsSearch] fetch start', { firstLoad, term, l2: l2.code, isPro });
 
     fetch(
       `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch && isPro ? 500 : 50}&context=3`,
@@ -326,12 +325,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         // treat the initial load as a "later search" and autoplay.
         initialLoadRef.current = false;
         const autoplay = !firstLoad && userInitiated;
-        logwarn('[subsSearch] autoplay decision', {
-          firstLoad,
-          autoplay,
-          results: parsed.length,
-          term,
-        });
         applyVideos(parsed);
         if (!exactMatch) {
           allFormVideosRef.current = parsed;
@@ -361,11 +354,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       const matchTime = matchLine?.starttime ?? 0;
       const timer = setTimeout(() => {
         if (autoplayRef.current) {
-          logwarn('[subsSearch] seek+play', {
-            youtubeId: currentVideo?.youtube_id,
-            currentIndex,
-            matchTime,
-          });
           playerRef.current?.seekTo(matchTime);
           playerRef.current?.play();
         }

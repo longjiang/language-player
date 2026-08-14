@@ -671,7 +671,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // equals the saved head/form is the target.
   const tokenMatchesHighlight = (token: LemmatizedToken): boolean => {
     if (highlightForm && tokenMatchesAnyTerm(token, [highlightForm])) return true;
-    if (highlightForms && highlightForms.length > 0 && tokenMatchesAnyTerm(token, highlightForms)) return true;
+    if (highlightForms && highlightForms.length > 0) {
+      if (tokenMatchesAnyTerm(token, highlightForms)) return true;
+      // Search terms can appear inside compound tokens (e.g. 武侠 in 武侠片) —
+      // highlight the whole token so the L2 matches the translation bold.
+      const surface = token.text.toLowerCase();
+      return highlightForms.some((f) => {
+        const form = f.toLowerCase();
+        return form.length > 0 && surface.includes(form);
+      });
+    }
     return tokenHasTargetEntry(token);
   };
 
