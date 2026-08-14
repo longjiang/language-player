@@ -11,10 +11,21 @@ import { VideoGrid } from '@/components/video/video-grid';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import {
   Loader2,
   MoreVertical,
   PanelRightClose,
   PanelRight,
+  RotateCcw,
   AlertCircle,
 } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -35,6 +46,7 @@ export default function MyChannelsPage() {
   const [tab, setTab] = useState<PrefTab>('subscribed');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const l2Code = baseCode(l2.code);
@@ -95,8 +107,13 @@ export default function MyChannelsPage() {
   const handleReset = async () => {
     setBusy(true);
     try {
-      if (tab === 'subscribed') await resetSubscribed();
-      else await resetNotInterested();
+      if (tab === 'subscribed') {
+        await resetSubscribed();
+        toast.success(t('msg.unsubscribe_all_success'));
+      } else {
+        await resetNotInterested();
+        toast.success(t('msg.reset_not_interested_success'));
+      }
     } finally {
       setBusy(false);
     }
@@ -130,7 +147,7 @@ export default function MyChannelsPage() {
             </PopoverTrigger>
             <PopoverContent side="bottom" align="end" className="w-64 p-1">
               <button
-                onClick={() => void handleReset()}
+                onClick={() => setResetOpen(true)}
                 disabled={busy}
                 className="flex w-full items-center rounded-md px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
@@ -169,8 +186,9 @@ export default function MyChannelsPage() {
         </button>
         <button
           onClick={() => setSidebarOpen((o) => !o)}
-          className="hidden rounded p-1 text-muted-foreground hover:bg-muted lg:block"
+          className="ml-auto hidden rounded p-1 text-muted-foreground hover:bg-muted lg:block"
           title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+          aria-label={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
         >
           {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
         </button>
@@ -207,6 +225,40 @@ export default function MyChannelsPage() {
           {sidebarContent}
         </Sidebar>
       </div>
+
+      <Dialog open={resetOpen} onOpenChange={(open) => { if (!open) setResetOpen(false); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              {tab === 'subscribed'
+                ? t('action.unsubscribe_all')
+                : t('action.unmark_all_not_interested')}
+            </DialogTitle>
+            <DialogDescription>
+              {tab === 'subscribed'
+                ? t('msg.confirm_unsubscribe_all')
+                : t('msg.confirm_reset_not_interested')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>
+              {t('action.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setResetOpen(false);
+                void handleReset();
+              }}
+            >
+              {tab === 'subscribed'
+                ? t('action.unsubscribe_all')
+                : t('action.unmark_all_not_interested')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
