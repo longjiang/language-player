@@ -21,6 +21,61 @@
 
 Today the Language Player Chrome extension only tokenizes subtitles on supported video sites. This spec adds a second mode: the user enables **Popup Dictionary** from the extension menu, and the current webpage's visible text is tokenized strictly in the user's saved L2 (no language detection). The familiar side panel from video mode flies open, dictionary lookups render in it, and — when translation is enabled — a lookup also translates the entire text block containing the clicked word. The mode stays active across page navigation until the user closes the side panel.
 
+## UI Sketches
+
+### Extension popup
+
+```mermaid
+flowchart TB
+    subgraph Popup["Language Player popup"]
+        Title["Language Player"]
+        Lang["L1: English ｜  L2: 日本語"]
+        Enable["Enable Popup Dictionary: ON"]
+        Toggles["Ruby / Furigana: ON ｜  Translation: ON"]
+        Auth["Signed in as user@example.com"]
+    end
+```
+
+### Page tokenization + side panel
+
+```mermaid
+flowchart LR
+    subgraph Page["News article page"]
+        P1["Tokenized paragraph with clickable words"]
+        P2["Another tokenized paragraph"]
+        P3["Token inside a link → Follow link appears in panel"]
+    end
+
+    subgraph Panel["Side panel"]
+        Header["Header: logo ｜ language ｜ close ✕"]
+        Dict["Dictionary card: word, definition, save, explain"]
+        Trans["Translated block (shown when translation is on)"]
+        Follow["Follow link →"]
+        Bottom["Bottom bar: ruby ｜ translation ｜ text scale"]
+    end
+```
+
+### Interaction flow
+
+```mermaid
+flowchart TD
+    A["User enables Popup Dictionary"] --> B["page-content.js reads flag"]
+    B --> C["Scan visible text blocks"]
+    C --> D["Batch tokenize in saved L2"]
+    D --> E["Render token spans + open side panel"]
+    E --> F["User clicks a token"]
+    F --> G["Inside a link?"]
+    G -- "Yes" --> H["Dictionary card + Follow link"]
+    G -- "No" --> I["Dictionary card only"]
+    F --> J["Translation enabled?"]
+    J -- "Yes" --> K["Translate containing block in panel"]
+    H --> L["Follow link navigates current tab"]
+    E --> M["Navigation happens"]
+    M --> B
+    E --> N["User closes panel"]
+    N --> O["Flag off + cleanup; stays closed on next navigation"]
+```
+
 ## User Stories
 
 - As a language learner reading a Japanese news article, I want to click any word on the page and see its dictionary entry in the side panel.
