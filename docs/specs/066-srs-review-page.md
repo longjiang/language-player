@@ -616,6 +616,11 @@ types count while unexpired — there is no `status` filter.
   surface forms (e.g. 顰めらせられる) previously resolved to a different LLM
   entry id, so the card back fell back to English definitions; it now shows
   the saved entry's translated definitions on both web and mobile.
+- ✅ **Review front highlight by entry id (mobile)** — fixed (2026-08-13):
+  mobile `TokenizedText` now supports `highlightEntryIds` and highlights any
+  token whose lemma resolves to the saved dictionary entry, matching web.
+  Inflected surfaces (e.g. 忠実な for a saved 忠実) now highlight on mobile
+  review cards instead of only exact surface-form matches.
 - ✅ **SRS hydration race guard** — implemented (2026-08-13): both review
   pages wait for `useSrs().cloudHydrated` before auto-initializing new cards;
   web retries failed `GET /srs` fetches.
