@@ -130,6 +130,7 @@ export function stripTags(text) {
   if (!text) return '';
   return text
     .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(div|p|section)[^>]*>/gi, '\n')
     .replace(/<[^>]*>/g, '')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
