@@ -183,10 +183,18 @@ compatibility window.
 > **Correction (2026-08-13):** The original wording of this section was
 > wrong. It described `dailyNewLimit` as a rolling deck-size cap that refills
 > during a session. The correct Anki/FSRS behavior is a daily quota: up to
-> `dailyNewLimit` new cards per UTC day, with no refill until the next day.
+> `dailyNewLimit` new cards per local day, with no refill until the next day.
 > The code (`planNewDeck`, both review pages, and the
 > `remainingNewCardsToday()` helpers) still implements the old incorrect
 > behavior and must be updated to match this spec.
+
+> **Correction (2026-08-13):** The day boundary was originally UTC midnight.
+> Anki uses a **local** day that starts at a configurable hour (default
+> 4 AM, "next day starts at"). This spec now matches Anki: the new-card
+> budget, the free-review counter, and the backend cap all roll over at
+> `review.dayStartHour` (default 4) in the device's local timezone. This was
+> implemented the same day (`localDayStartMs()` / `msUntilNextDay()` in
+> `packages/utils/src/day-boundary.ts`, and the backend's `_day_start_ms()`).
 
 > **Correction (2026-08-13):** The original wording of the header-counts step
 > below was also wrong. It described the blue/red/green numbers as an
@@ -199,9 +207,10 @@ compatibility window.
 
 ### New-deck budget
 
-New words enter the deck through a daily budget. Each UTC day, up to
-`dailyNewLimit` unrated saved words are made available as new cards (default
-20). ~~The "new" deck always holds the `dailyNewLimit` most recently saved
+New words enter the deck through a daily budget. Each local day (Anki "next
+day starts at", default 4 AM), up to `dailyNewLimit` unrated saved words are
+made available as new cards (default 20). ~~The "new" deck always holds the
+`dailyNewLimit` most recently saved
 words that haven't been rated yet; newer saves displace older unrated words
 when the budget is full. A card entering the deck is due immediately, and as
 soon as a rated word leaves the new deck, the next newest unrated word takes
@@ -210,7 +219,7 @@ next day.~~ Rated cards (whether passed or failed) are never displaced by
 newer saves.
 
 A card entering the deck is due immediately. Once today's new-card budget is
-used up, no more new cards are introduced until the next UTC day — the deck
+used up, no more new cards are introduced until the next local day — the deck
 does **not** refill during the session.
 
 **"No more new cards today"** — this state means today's new-card budget is
@@ -317,7 +326,7 @@ recomputes the queue on the next store change (rating, removal) or page reload.
    - blue = unrated (`state: new`) cards in the blue deck — the deck is
      prefilled with today's new-card budget, so this is the remaining budget:
      it counts down as each new card is rated and does not refill until the
-     next UTC day (`countDeckStates()` caps it at `dailyNewLimit`);
+     next local day (`countDeckStates()` caps it at `dailyNewLimit`);
    - red = again — learning / relearning cards currently due on a step
      (`due <= now`);
    - green = review — `state: review` cards currently due
@@ -338,13 +347,13 @@ reruns after each rating and introduces the next-newest unrated word as a
 due-now card.~~
 
 Note: once today's budget is exhausted, `planNewDeck` must not create another
-card until the next UTC day, even after a rated card leaves the blue deck.
+card until the next local day, even after a rated card leaves the blue deck.
 
 ~~The `remainingNewCardsToday()` / `countNewCardsToday()` helpers exist in
 `packages/utils/src/sm2.ts` but are not currently rendered anywhere in either
-app.~~ The UTC-day budget helpers (`remainingNewCardsToday()`,
-`countNewCardsToday()`) are being rewritten to drive the blue count and the
-"no more new cards today" message.
+app.~~ The local-day budget helpers (`remainingNewCardsToday()`,
+`countNewCardsToday()`) drive the blue count and the "no more new cards
+today" message.
 
 ### Storage & sync
 
@@ -531,14 +540,16 @@ app.~~ The UTC-day budget helpers (`remainingNewCardsToday()`,
 
 - ~~The blue deck is capped at `dailyNewLimit` (default 20, range 1–200 from
   Settings → Review).~~
-- Up to `dailyNewLimit` new cards are introduced per UTC day (default 20,
+- Up to `dailyNewLimit` new cards are introduced per local day (default 20,
   range 1–200 from Settings → Review). The blue count shows how many of
   today's new cards remain; it drops as you work through them and does not
-  refill until the next UTC day.
+  refill until the next local day.
+- The review day starts at `review.dayStartHour` (0–23, default 4, Anki's
+  "next day starts at") in the device's local timezone — not UTC midnight.
 - Free users can complete 20 ratings per day (`FREE_SRS_DAILY_CAP = 20`,
   [ADR-0034 — Pro gating/freemium strategy](../adr/0034-pro-gating-freemium-strategy.md)).
   At the cap, ratings are blocked and an upgrade banner links to the Pro page.
-- The counter is per user + per UTC day, keyed
+- The counter is per user + per local day, keyed
   `lpSrsReviewsDone:<userId>:<YYYY-MM-DD>`.
 
 **Backend cap contract (Phase 0 decision).** The free 20-review cap is counted
@@ -580,12 +591,19 @@ types count while unexpired — there is no `status` filter.
   hooks, and the saved-words status dots use the shared wrapper.
 - ✅ **"No more new cards today" message** — implemented (Phase 6): shown in
   the all-done / no-due states when today's new-card budget is exhausted
-  (`msg.no_more_new_cards_today`); trigger updated with the UTC-day quota
+  (`msg.no_more_new_cards_today`); trigger updated with the local-day quota
   (2026-08-13).
-- ✅ **UTC-day new-card quota** — implemented (2026-08-13):
+- ✅ **Local-day new-card quota** — implemented (2026-08-13):
   `planNewDeck()` / `remainingNewCardsToday()` and both review pages now stop
   introducing new cards once today's budget is exhausted; the blue count
   counts down instead of refilling during a session.
+- ✅ **Anki-style local day boundary** — implemented (2026-08-13): the
+  new-card budget, the free-review counter, and the backend cap roll over at
+  `review.dayStartHour` (default 4 AM) in the device's local timezone instead
+  of UTC midnight (`localDayStartMs()` / `dayKey()` / `msUntilNextDay()` in
+  `packages/utils/src/day-boundary.ts`; `_day_start_ms()` in the Flask
+  backend). Web/mobile send `timezone` + `dayStartHour` with SRS card writes,
+  and Settings → Review exposes the "next day starts at" slider.
 - ✅ **Anki due-today header counts** — implemented (2026-08-13):
   `countDeckStates()` now counts red = learning/relearning cards due on a
   step right now and green = review cards due now (including overdue); blue =
@@ -628,7 +646,7 @@ types count while unexpired — there is no `status` filter.
   The mobile outbox acknowledges `srs_cap_reached` as an expected rejection,
   so over-cap ratings never surface as Sync Status errors.
 - ✅ **Undo decrements the free daily counter** — implemented (Phase 4): undo
-  restores the card and releases the rating back to the UTC-day budget.
+  restores the card and releases the rating back to the local-day budget.
 
 ## Known Issues & Resolutions (2026-08-13)
 
@@ -709,7 +727,7 @@ missing on the server, so it can reappear as new on web or other devices.
 ✅ **Fixed (2026-08-13):** the sync engine emits a cap-rejection event; mobile
 `useSrs` reverts the unsynced card (local store + entity cache), and the review
 screen reconciles `reviewsDoneToday` to the cap so the upgrade banner appears.
-The flag resets on the next UTC day.
+The flag resets on the next local day.
 
 ### Shared backend: no server-side tombstone for saved words or SRS cards
 
@@ -735,7 +753,7 @@ items.
 The old rolling-deck semantics were wrong and have been corrected in
 [New-deck budget](#new-deck-budget). ~~The code still needs to be updated to
 the daily-quota definition.~~ Implemented (2026-08-13): `planNewDeck()`,
-`remainingNewCardsToday()`, and both review pages now enforce the UTC-day
+`remainingNewCardsToday()`, and both review pages now enforce the local-day
 quota.
 
 ### Review back side: fallback lookup only tried `forms[0]`
@@ -877,7 +895,7 @@ files must agree before Phase 2 starts.
    - "No more new cards today": today's new-card budget is exhausted (or the
      unrated pool is empty), shown in the all-done/no-due states. SPEC-023 R6
      updated to this definition.
-2. **Restore a UTC-day new-card budget.** ~~Decision: rewrite
+2. **Restore a local-day new-card budget.** ~~Decision: rewrite
    `remainingNewCardsToday()` to count the unrated pool (saved words with no
    card or a `state: new` card), used only for the "no more new cards"
    message.~~ Decision: `remainingNewCardsToday()` = `max(0, dailyNewLimit −
@@ -888,7 +906,7 @@ files must agree before Phase 2 starts.
    recorded in a per-user review log (replays/retries count once); undo writes
    a void/decrement event; the backend mirrors the clients' `isPro` logic
    (`user_subscriptions`; an active trial is Pro-equivalent); free = 20
-   reviews per UTC day.
+   reviews per local day.
 4. **Legacy-field compatibility window.** Decision: keep writing deprecated
    `ease`, `interval`, `repetitions`, `nextReview` fields alongside FSRS
    fields for one release cycle so old installed clients don't crash on
@@ -1072,7 +1090,7 @@ Depends on the Phase 0 contract. This is a separate, larger change; do not
 combine it with Phase 4.
 
 1. **Schema:** per-user review-log table (or equivalent) keyed by the client
-   rating id, with the UTC-day count for free users; void/decrement rows for
+   rating id, with the local-day count for free users; void/decrement rows for
    undo.
 2. **Flask:** enforce the cap at the rating boundary (not on generic
    `PUT /srs/cards`, which also carries sync replays and undo restores).
@@ -1106,7 +1124,7 @@ Flask API (server started by the user, per repo rules).
    reading/writing it from new code, update the admin page's
    `srs.dailyNewLimit` display, and remove the `srs_settings` entity from new
    sync writes.
-4. **Rewrite `remainingNewCardsToday()`/`countNewCardsToday()` as the UTC-day
+4. **Rewrite `remainingNewCardsToday()`/`countNewCardsToday()` as the local-day
    new-card budget**, and update `planNewDeck` + both review pages to stop
    refilling after the daily quota is exhausted.
 5. **Docs:** mark SPEC-066 complete/current, update SPEC-053's syncable-data
