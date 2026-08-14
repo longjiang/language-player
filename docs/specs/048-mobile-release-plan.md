@@ -30,13 +30,14 @@ remain documented here so future releases are one-command and correct.
 |---|---|---|
 | App name | Language Player 3 | Language Player 3 |
 | Identifier | `ca.zerotohero.go` (bundle ID — replaces the GO listing) | `ca.zerotohero.go` (package, new Play launch) |
-| Version | `3.0.0` (build `1`) | `3.0.0` (versionCode `1`) |
-| Min OS | iOS 16.4 | set in `app.json` |
+| Version | `3.0.0` (build `3` prepared; shipped `1`) | `3.0.0` (versionCode `3` prepared; shipped `2`) |
+| Min OS | iOS 16.4 | set in `app.config.js` |
 | Production API URL | `https://pythonvps.zerotohero.ca` | same |
 
-> Version numbers live in `apps/mobile/app.json` (`expo.version`, plus
-> `ios.buildNumber` and `android.versionCode`). Bump **both** stores' versions
-> on every release; the store-specific build numbers are independent.
+> Version numbers live in `packages/shared/src/version.json`
+> (`PRODUCT_VERSION` + shared `PRODUCT_BUILD_NUMBER`), read by
+> `apps/mobile/app.config.js` into `expo.version`, `ios.buildNumber`, and
+> `android.versionCode`. Bump **both** stores' versions on every release.
 
 ### Store strategy (2026-08-06)
 
@@ -46,7 +47,7 @@ Per [ADR-0013 (revised)](../adr/0013-app-store-strategy.md):
   Player 2"**. It is **not** replaced by this app.
 - **iOS — GO replaced**: this app **replaces the GO Legacy listing** and is
   named **"Language Player 3"**. The iOS build uses the GO bundle ID
-  **`ca.zerotohero.go`** (set in `apps/mobile/app.json`
+  **`ca.zerotohero.go`** (set in `apps/mobile/app.config.js`
   `ios.bundleIdentifier` and the native project).
   **Why this ID:** a store listing's bundle ID cannot be changed, so updating
   the GO listing requires keeping `ca.zerotohero.go`. Doing so also preserves
@@ -516,8 +517,10 @@ env var is the source of truth.
 
 ### Version bump
 
-- `apps/mobile/app.json` → `expo.version` (user-facing version) plus
-  `ios.buildNumber` and `android.versionCode` (monotonic per store).
+- Product version + shared store build number live in
+  `packages/shared/src/version.json` (`PRODUCT_VERSION`,
+  `PRODUCT_BUILD_NUMBER`); `apps/mobile/app.config.js` reads them for
+  `expo.version`, `ios.buildNumber`, and `android.versionCode`.
 
 > **SPEC-076 (2026-08-14):** versioning is now scripted. Use
 > `scripts/bump-product-version.mjs <major|minor|patch>` to bump the shared
@@ -531,7 +534,7 @@ env var is the source of truth.
 > **Strategy:** this app **replaces the GO Legacy listing** and is renamed
 > "Language Player 3"; the Classic app stays live as "Language Player 2". The
 > build uses the GO bundle ID **`ca.zerotohero.go`** (set in
-> `apps/mobile/app.json` `ios.bundleIdentifier` and the native project) because
+> `apps/mobile/app.config.js` `ios.bundleIdentifier` and the native project) because
 > a listing's bundle ID cannot change — see
 > [Store strategy](#store-strategy-2026-08-06) for the full reasoning.
 
@@ -758,7 +761,8 @@ command-line env var is the source of truth for release builds.
 
 ## Release checklist (dual-store)
 
-- [ ] `app.json` version bumped (`expo.version` + `ios.buildNumber` + `android.versionCode`)
+- [ ] `packages/shared/src/version.json` bumped (`PRODUCT_VERSION` +
+      `PRODUCT_BUILD_NUMBER`) — picked up by `apps/mobile/app.config.js`
 - [ ] Human QA checklist (§ 1.2) passed on the release build
 - [ ] Build command includes `EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca`
 - [ ] Stale bundle removed; bundle verified (`pythonvps` ≥ 1, `localhost:5001` = 0)

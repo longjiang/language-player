@@ -37,10 +37,10 @@ versioning, not from simple monotonic counters.
 
 | Product | Where it lives | Version today | Build number today |
 |---|---|---|---|
-| Web (Next.js) | `apps/web/package.json` | `0.0.1` | none |
-| Mobile — iOS | `apps/mobile/app.json` (`expo.version` / `ios.buildNumber`) | `3.0.0` | **1** (implicit; key absent, native default) |
-| Mobile — Android | `apps/mobile/app.json` (`expo.version` / `android.versionCode`) | `3.0.0` | **2** |
-| Chrome extension | `apps/chrome-extension/manifest.json` | `1.0.110` | patch doubles as build |
+| Web (Next.js) | `apps/web/package.json` | `3.0.0` | none |
+| Mobile — iOS | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped build was 1) |
+| Mobile — Android | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped versionCode was 2) |
+| Chrome extension | `apps/chrome-extension/manifest.json` | `1.0.110.1` | 4th component auto-bumps per build |
 | Shared packages | `packages/*/package.json` | `0.0.1` (npm-private, not product) | n/a |
 
 ### 2.1 What is actually live in the stores
@@ -139,12 +139,14 @@ versioning, not from simple monotonic counters.
   `MAJOR.MINOR.PATCH`; the **build number** is what distinguishes them.
 - Release tags: `v3.1.0`, `v3.0.1`, etc.
 
-**Single source of truth:** add
-`packages/shared/src/version.ts` exporting `PRODUCT_VERSION`. A release
-script (below) writes that value into:
+**Single source of truth:** `packages/shared/src/version.json` holds
+`PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER`.
+`packages/shared/src/version.ts` re-exports them for web/mobile runtime code,
+and `apps/mobile/app.config.js` requires the JSON directly so Expo reads the
+same values. A release script (below) writes:
 
-- `apps/mobile/app.json` → `expo.version`
 - `apps/web/package.json` → `version`
+- mobile picks up `PRODUCT_VERSION` + `PRODUCT_BUILD_NUMBER` automatically
 - web About page reads `PRODUCT_VERSION` (so it stops showing `v0.0.1`)
 - mobile About page already reads `expoConfig.version` — keep it
 
@@ -176,8 +178,12 @@ and it is shared.
 | 1 | Android Internal/Closed testing (LP3) | 3.0.0 | 2026-08-13 | consumed (never reuse) |
 | 2 | Android Production (LP3) | 3.0.0 | 2026-08-13 | live |
 
-**Next release uses N = 3 for both iOS and Android** (max(1, 2) + 1). iOS
-skips 2 — that is fine and intentional; skipping is safe, reusing is not.
+**Adopted 2026-08-14:** the shared counter is active with **N = 3 already
+set** in `PRODUCT_BUILD_NUMBER` (max(1, 2) + 1). iOS skips 2, Android moves
+to 3 — skipping is fine and intentional; reusing is not. Until build 3 is
+uploaded, `scripts/verify-version.mjs` reports a pending release and the
+strict pre-upload checks apply (native projects must be regenerated with
+`expo prebuild` before upload).
 
 **Dev builds must not consume store build numbers.** Local builds, simulators,
 and side-loaded dev builds should identify themselves with git SHA / build
@@ -205,8 +211,8 @@ releases.
 `0..65535`, no leading zeros):
 
 - `MAJOR.MINOR.PATCH` — extension feature semantics on its own lineage
-  (current: `1.0.110`; keeping the lineage is recommended — see Open
-  Questions).
+  (current: `1.0.x`; the lineage is kept because extension development is
+  independent from web/mobile — see Decisions).
 - `BUILD` — **auto-increments by 1 on every successful build** of
   `build.mjs`, starting at `1`. Every commit that touches `src/` therefore
   produces a manifest whose version is different from the previous one, which
@@ -219,12 +225,10 @@ store-worthy patch bump. `1.0.110.1` compares greater than `1.0.110` because
 missing components compare as zero, so the Web Store accepts the first
 4-part upload without a special migration.
 
-**Required implementation:** add the auto-bump to
-`apps/chrome-extension/build.mjs` (SPEC-074 currently claims it exists).
-Bump `manifest.json` *before* bundling so the generated banner already carries
-the new version; fail the build if the version did not change. Also surface
-`chrome.runtime.getManifest().version` in the popup so the user can verify the
-loaded build without opening `chrome://extensions`.
+**Implemented (2026-08-14):** `apps/chrome-extension/build.mjs` bumps
+`manifest.json` *before* bundling so the generated banner carries the new
+version; the popup displays `chrome.runtime.getManifest().version` so the
+loaded build is verifiable without opening `chrome://extensions`.
 
 ### 4.5 v2 vs v3 branding rules
 
@@ -244,8 +248,8 @@ loaded build without opening `chrome://extensions`.
 
 | Script | Purpose |
 |---|---|
-| `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.ts`, `apps/web/package.json`, and `apps/mobile/app.json` (`expo.version`) together; fails if they drift |
-| `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `app.json` (`ios.buildNumber` + `android.versionCode`) |
+| `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.json` and `apps/web/package.json` together; `apps/mobile/app.config.js` picks it up automatically; fails if they drift |
+| `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `packages/shared/src/version.json` (`PRODUCT_BUILD_NUMBER`), which feeds both `ios.buildNumber` and `android.versionCode` via `app.config.js` |
 | `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
 
@@ -258,9 +262,10 @@ uploading:
 2. `ios.buildNumber` == `android.versionCode` == `N`, and `N` > every
    recorded number for that platform in the ledger.
 3. After prebuild: `ios/LanguagePlayer3/Info.plist`
-   (`CFBundleShortVersionString`, `CFBundleVersion`) matches `app.json`.
+   (`CFBundleShortVersionString`, `CFBundleVersion`) matches the shared
+   config.
 4. After prebuild: `android/app/build.gradle` (`versionName`, `versionCode`)
-   matches `app.json`.
+   matches the shared config.
 5. After iOS archive: the `.ipa`/`.app` `Info.plist` matches (extend the
    existing SPEC-048 § 3.2 archive verification).
 6. `version` (SemVer) > the last release tag.
@@ -287,10 +292,12 @@ versionCode regression.
 
 ### 5.4 Files to change on adoption
 
-- Add `packages/shared/src/version.ts` (source of truth for product version).
+- Add `packages/shared/src/version.json` + `version.ts` (source of truth for
+  product version and shared store build number).
 - Add the four scripts in § 5.1 and `docs/versioning/build-ledger.md`.
-- `apps/mobile/app.json` — add `ios.buildNumber` explicitly (currently
-  absent) and keep `android.versionCode` explicit.
+- `apps/mobile/app.json` — replaced by `apps/mobile/app.config.js`, which
+  reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from
+  `packages/shared/src/version.json`; the static `app.json` is removed.
 - `apps/web/package.json` — set `version` to `3.0.0` now (matches mobile),
   then to `3.1.0` on the next release.
 - `apps/web/src/components/about/about-dialog.tsx` — read version from
@@ -301,19 +308,14 @@ versionCode regression.
 - Update SPEC-048 § 2/§ 3/§ 4 and SPEC-067 § 3.2/§ 6 to reference the ledger
   and the gate script instead of prose-only instructions.
 
-## 6. Open Questions
+## 6. Decisions (2026-08-14)
 
-1. **Adopt the shared counter immediately with N = 3?** Recommended yes —
-   iOS skips 2, Android moves to 3, both stay aligned from the next release.
-2. **Should the extension rebase `1.0.x` to the product `3.x` lineage?**
-   Keeping `1.0.x.BUILD` preserves its independent history and is
-   recommended; a rebase to `3.1.0.BUILD` is cosmetic and can be decided
-   later without store migration risk (3 > 1 is a valid increase).
-3. **Do local dev builds need build numbers?** Recommended no — use git SHA /
-   build date; store build numbers are consumed only by store uploads.
-4. **Should `app.json` become `app.config.js`** so Expo reads versions
-   directly from `packages/shared`? Nice long-term cleanup, but not required
-   for this policy; the bump script keeps static files in sync today.
+| # | Question | Decision |
+|---|---|---|
+| 1 | Adopt the shared counter immediately with N = 3? | **Yes.** `PRODUCT_BUILD_NUMBER = 3` is set; iOS skips 2, Android moves to 3 on the next release, and both stay aligned from there. |
+| 2 | Rebase the extension `1.0.x` to the product `3.x` lineage? | **No — keep `1.0.x`.** Extension development/features are independent from web/mobile, so its version history stays independent. |
+| 3 | Do local dev builds need store build numbers? | **No.** Dev builds use git SHA / build date; store build numbers are consumed only by store uploads (recorded in the ledger). |
+| 4 | Convert `app.json` → `app.config.js` reading from `packages/shared`? | **Yes.** `apps/mobile/app.config.js` now reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from `packages/shared/src/version.json`; `app.json` is removed. |
 
 ## 7. References
 

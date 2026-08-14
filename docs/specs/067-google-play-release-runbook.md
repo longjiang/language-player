@@ -23,7 +23,7 @@
   iOS bundle ID), version `3.0.0`.
 - There is **no committed `android/` native project** — the directory is
   generated locally by `expo prebuild` and ignored by git. Every release
-  starts from `apps/mobile/app.json`.
+  starts from `apps/mobile/app.config.js`.
 - **Google Play Billing is not implemented yet.** The Android Go Pro screen
   currently shows a clickable "buy on our website" link, which is a Google
   Play policy problem for a production release — see [§ 5](#5-billing--monetization-blocker).
@@ -63,13 +63,14 @@ node -v   # must print v22.x
 
 ### 3.2 Version bump
 
-Edit `apps/mobile/app.json`:
+Edit `packages/shared/src/version.json` (picked up by
+`apps/mobile/app.config.js`):
 
-- `expo.version` — user-facing version, e.g. `3.0.0`
-- `android.versionCode` — monotonic per Android release; first release is
-  `1`. If it is absent, add `"versionCode": 1` under the `android` object so
-  future bumps are explicit.
-- `ios.buildNumber` — keep in sync for dual-store releases (SPEC-048 § 2).
+- `PRODUCT_VERSION` — user-facing version, e.g. `3.0.0`; use
+  `scripts/bump-product-version.mjs <major|minor|patch>`.
+- `PRODUCT_BUILD_NUMBER` — one shared monotonic build number for both stores;
+  use `scripts/next-build.mjs`. The versionCode must stay greater than every
+  previous upload on any track; never reuse one.
 
 > **SPEC-076 (2026-08-14):** use `scripts/next-build.mjs` to assign the same
 > build number to both stores and `scripts/verify-version.mjs` after prebuild
@@ -87,7 +88,7 @@ This creates `android/` locally. It is gitignored (global `android` ignore),
 so the generated project is per-machine.
 
 - Verify the generated package is `ca.zerotohero.go` and the version/version
-  code match `app.json` (check `android/app/build.gradle`).
+  code match the shared config (check `android/app/build.gradle`).
 - If `android/` already exists, prebuild syncs it in place. If the package ID
   or version changes and prebuild reports native code out of sync, you may
   need `--clean` — but that regenerates the project and forces you to re-apply

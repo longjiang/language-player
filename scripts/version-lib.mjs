@@ -1,8 +1,11 @@
 /**
  * Shared helpers for the SPEC-076 versioning tooling.
  *
- * - One product version (SemVer MAJOR.MINOR.PATCH) for web + mobile.
- * - One shared, monotonic build number for iOS + Android, recorded in
+ * - One product version (SemVer MAJOR.MINOR.PATCH) for web + mobile, stored
+ *   in packages/shared/src/version.json (re-exported by version.ts and read
+ *   directly by apps/mobile/app.config.js).
+ * - One shared, monotonic store build number for iOS + Android, also in
+ *   version.json; consumed numbers are recorded in
  *   docs/versioning/build-ledger.md.
  */
 
@@ -14,9 +17,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export const paths = {
   root: resolve(here, '..'),
-  sharedVersion: resolve(here, '../packages/shared/src/version.ts'),
+  sharedVersionJson: resolve(here, '../packages/shared/src/version.json'),
   webPackage: resolve(here, '../apps/web/package.json'),
-  mobileAppJson: resolve(here, '../apps/mobile/app.json'),
+  mobileAppConfig: resolve(here, '../apps/mobile/app.config.js'),
   ledger: resolve(here, '../docs/versioning/build-ledger.md'),
   iosInfoPlist: resolve(here, '../apps/mobile/ios/LanguagePlayer3/Info.plist'),
   androidBuildGradle: resolve(here, '../apps/mobile/android/app/build.gradle'),
@@ -31,12 +34,18 @@ export function writeJson(file, data) {
 }
 
 export function readSharedVersion() {
-  const src = readFileSync(paths.sharedVersion, 'utf8');
-  const match = src.match(/PRODUCT_VERSION\s*=\s*'([^']+)'/);
-  if (!match) {
-    throw new Error(`PRODUCT_VERSION not found in ${paths.sharedVersion}`);
-  }
-  return match[1];
+  return readJson(paths.sharedVersionJson).PRODUCT_VERSION;
+}
+
+export function readSharedBuildNumber() {
+  return readJson(paths.sharedVersionJson).PRODUCT_BUILD_NUMBER;
+}
+
+export function writeSharedVersionJson(version, buildNumber) {
+  writeJson(paths.sharedVersionJson, {
+    PRODUCT_VERSION: version,
+    PRODUCT_BUILD_NUMBER: buildNumber,
+  });
 }
 
 export function readWebVersion() {
@@ -44,11 +53,10 @@ export function readWebVersion() {
 }
 
 export function readMobileConfig() {
-  const app = readJson(paths.mobileAppJson);
   return {
-    version: app.expo?.version,
-    iosBuildNumber: app.expo?.ios?.buildNumber,
-    androidVersionCode: app.expo?.android?.versionCode,
+    version: readSharedVersion(),
+    iosBuildNumber: String(readSharedBuildNumber()),
+    androidVersionCode: readSharedBuildNumber(),
   };
 }
 

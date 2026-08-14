@@ -7,12 +7,13 @@
  *
  * Run after `expo prebuild` and after the archive/AAB build, before
  * uploading to either store. Exits non-zero if the version/build numbers
- * are inconsistent, below the ledger, or out of sync with the native
- * projects.
+ * are inconsistent, below the ledger, or out of sync with the dynamic Expo
+ * config or native projects.
  */
 
 import { existsSync, readFileSync } from 'fs';
 import { execSync } from 'child_process';
+import { createRequire } from 'module';
 import {
   paths,
   readSharedVersion,
@@ -38,7 +39,7 @@ if (web !== shared) {
   errors.push(`apps/web/package.json (${web}) != shared PRODUCT_VERSION (${shared})`);
 }
 if (mobile.version !== shared) {
-  errors.push(`app.json expo.version (${mobile.version}) != shared PRODUCT_VERSION (${shared})`);
+  errors.push(`mobile config version (${mobile.version}) != shared PRODUCT_VERSION (${shared})`);
 }
 
 // 2. Build number sanity.
@@ -46,10 +47,10 @@ const iosN = mobile.iosBuildNumber == null ? null : Number(mobile.iosBuildNumber
 const androidN =
   mobile.androidVersionCode == null ? null : Number(mobile.androidVersionCode);
 if (iosN == null || !Number.isInteger(iosN) || iosN <= 0) {
-  errors.push('app.json ios.buildNumber is missing or invalid (SPEC-076 requires it to be explicit).');
+  errors.push('shared ios build number is missing or invalid (PRODUCT_BUILD_NUMBER must be a positive integer).');
 }
 if (androidN == null || !Number.isInteger(androidN) || androidN <= 0) {
-  errors.push('app.json android.versionCode is missing or invalid.');
+  errors.push('shared android versionCode is missing or invalid (PRODUCT_BUILD_NUMBER must be a positive integer).');
 }
 if (androidN != null && androidN > 2100000000) {
   errors.push(`android.versionCode (${androidN}) exceeds Google Play's 2,100,000,000 cap.`);
@@ -60,6 +61,34 @@ if (iosN != null && iosN < iosMax) {
 }
 if (androidN != null && androidN < androidMax) {
   errors.push(`Android versionCode ${androidN} is below the ledger max (${androidMax}) — reuse/regression.`);
+}
+
+// 2b. The dynamic Expo config must agree with the shared source.
+const requireFromMobile = createRequire(paths.mobileAppConfig);
+let expoConfig = null;
+if (existsSync(paths.mobileAppConfig)) {
+  try {
+    const loaded = requireFromMobile(paths.mobileAppConfig);
+    expoConfig = loaded?.default?.expo ?? loaded?.expo ?? null;
+  } catch (error) {
+    errors.push(`Could not evaluate apps/mobile/app.config.js: ${error.message}`);
+  }
+} else {
+  errors.push('apps/mobile/app.config.js is missing (SPEC-076 requires the dynamic config).');
+}
+if (expoConfig) {
+  if (expoConfig.version !== shared) {
+    errors.push(`app.config.js expo.version (${expoConfig.version}) != shared PRODUCT_VERSION (${shared})`);
+  }
+  if (String(expoConfig.ios?.buildNumber) !== String(iosN)) {
+    errors.push(`app.config.js ios.buildNumber (${expoConfig.ios?.buildNumber}) != shared build (${iosN})`);
+  }
+  if (expoConfig.android?.versionCode !== androidN) {
+    errors.push(`app.config.js android.versionCode (${expoConfig.android?.versionCode}) != shared build (${androidN})`);
+  }
+}
+if (existsSync(paths.mobileAppConfig.replace('app.config.js', 'app.json'))) {
+  warnings.push('apps/mobile/app.json still exists — remove it so the dynamic app.config.js is the only source.');
 }
 
 // 3. Released vs pending release state.
@@ -99,7 +128,7 @@ if (pending) {
   if (iosNative) {
     if (iosNative.version !== mobile.version || iosNative.build !== String(iosN)) {
       errors.push(
-        `iOS native project is out of sync: Info.plist has ${iosNative.version} (${iosNative.build}), app.json expects ${mobile.version} (${iosN}). Run expo prebuild and re-verify.`,
+        `iOS native project is out of sync: Info.plist has ${iosNative.version} (${iosNative.build}), config expects ${mobile.version} (${iosN}). Run expo prebuild and re-verify.`,
       );
     }
   } else {
@@ -113,7 +142,7 @@ if (pending) {
       androidNative.code !== androidN
     ) {
       errors.push(
-        `Android native project is out of sync: build.gradle has ${androidNative.version} (${androidNative.code}), app.json expects ${mobile.version} (${androidN}). Run expo prebuild and re-verify.`,
+        `Android native project is out of sync: build.gradle has ${androidNative.version} (${androidNative.code}), config expects ${mobile.version} (${androidN}). Run expo prebuild and re-verify.`,
       );
     }
   } else {
@@ -156,7 +185,7 @@ if (pending) {
 }
 
 console.log('── SPEC-076 version gate ──────────────────────────────');
-console.log(`Product version : ${shared} (web ${web} / app.json ${mobile.version})`);
+console.log(`Product version : ${shared} (web ${web} / mobile config ${mobile.version})`);
 console.log(`iOS build       : ${iosN} (ledger max ${iosMax})`);
 console.log(`Android version : ${androidN} (ledger max ${androidMax})`);
 console.log(`State           : ${pending ? 'PENDING RELEASE — strict checks' : 'released'}`);
