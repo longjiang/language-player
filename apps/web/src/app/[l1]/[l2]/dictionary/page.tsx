@@ -20,6 +20,7 @@ export default function DictionaryPage() {
   const {
     results, loading, error, message, searchedText,
     recentSearches, clearRecent, handleRecentClick,
+    autocompleteOpen,
     setCameFromSearch, setDetailHead,
   } = useDictionaryContext();
 
@@ -62,6 +63,13 @@ export default function DictionaryPage() {
       redirectingRef.current = false;
     }
   }, [hasResults, results]);
+
+  // While the autocomplete dropdown is open, hide the page content below it
+  // (search results and the recent-searches card) so they don't compete with
+  // the suggestions.
+  if (autocompleteOpen) {
+    return null;
+  }
 
   // ── Loading ──
   if (loading) {

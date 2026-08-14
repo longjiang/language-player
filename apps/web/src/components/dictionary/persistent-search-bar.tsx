@@ -29,6 +29,7 @@ export function PersistentSearchBar() {
 
   const {
     query, setQuery,
+    autocompleteOpen, setAutocompleteOpen,
     loading, detailHead,
     cameFromSearch,
     sidebarSource,
@@ -52,7 +53,6 @@ export function PersistentSearchBar() {
   dictRef.current = dict;
   const [suggestions, setSuggestions] = useState<DictionaryEntry[] | null>(null);
   const [acLoading, setAcLoading] = useState(false);
-  const [acOpen, setAcOpen] = useState(false);
   const acSeqRef = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -72,7 +72,7 @@ export function PersistentSearchBar() {
     const trimmed = query.trim();
     if (!userEdited || !trimmed) {
       setSuggestions(null);
-      setAcOpen(false);
+      setAutocompleteOpen(false);
       setAcLoading(false);
       return;
     }
@@ -82,7 +82,7 @@ export function PersistentSearchBar() {
       const l2Code = baseCode(l2.code);
       log('Dictionary autocomplete request:', { text: trimmed, l2: l2Code });
       setAcLoading(true);
-      setAcOpen(true);
+      setAutocompleteOpen(true);
       try {
         // byDefinition=true: an English query also matches Chinese entries by
         // their English definitions, so 'meal' suggests 饭/餐/meal entries.
@@ -90,7 +90,7 @@ export function PersistentSearchBar() {
         if (seq !== acSeqRef.current) return; // stale — a newer keystroke won
         const results = res.results ?? [];
         setSuggestions(results);
-        setAcOpen(results.length > 0);
+        setAutocompleteOpen(results.length > 0);
         log('Dictionary autocomplete:', {
           text: trimmed,
           l2: l2Code,
@@ -100,7 +100,7 @@ export function PersistentSearchBar() {
       } catch (err) {
         if (seq === acSeqRef.current) {
           setSuggestions(null);
-          setAcOpen(false);
+          setAutocompleteOpen(false);
           logwarn('Dictionary autocomplete failed:', {
             text: trimmed,
             l2: l2Code,
@@ -112,7 +112,7 @@ export function PersistentSearchBar() {
       }
     }, 250);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [query, userEdited, l2.code]);
+  }, [query, userEdited, l2.code, setAutocompleteOpen]);
 
   // What to show in the input
   const inputValue = (isDetailPage && detailHead && !userEdited) ? detailHead : query;
@@ -125,14 +125,14 @@ export function PersistentSearchBar() {
   };
 
   const closeSuggestions = useCallback(() => {
-    setAcOpen(false);
-  }, []);
+    setAutocompleteOpen(false);
+  }, [setAutocompleteOpen]);
 
   const handleClear = () => {
     clearSearch();
     setUserEdited(false);
     setSuggestions(null);
-    setAcOpen(false);
+    setAutocompleteOpen(false);
     inputRef.current?.focus();
   };
 
@@ -146,19 +146,19 @@ export function PersistentSearchBar() {
       setCameFromSearch(true);
       setDetailHead(entry.head);
       setSuggestions(null);
-      setAcOpen(false);
+      setAutocompleteOpen(false);
       router.push(buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id));
     },
-    [suggestions, router, l1.code, l2.code, setCameFromSearch, setDetailHead],
+    [suggestions, router, l1.code, l2.code, setCameFromSearch, setDetailHead, setAutocompleteOpen],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      setAcOpen(false);
+      setAutocompleteOpen(false);
       doSearch(inputValue.trim());
     } else if (e.key === 'Escape') {
-      setAcOpen(false);
+      setAutocompleteOpen(false);
     }
   };
 
@@ -209,7 +209,7 @@ export function PersistentSearchBar() {
         )}
 
         {/* Autocomplete dropdown — reuses WordList + DictionaryEntryCard (compact) */}
-        {acOpen && (
+        {autocompleteOpen && (
           <div
             className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-lg"
             onMouseDown={(e) => e.preventDefault()}
