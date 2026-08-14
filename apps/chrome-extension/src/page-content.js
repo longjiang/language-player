@@ -52,6 +52,13 @@ function isInsideSkipped(el) {
   }
 }
 
+function describeBlock(el) {
+  const cls = typeof el.className === 'string' && el.className.trim()
+    ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.')
+    : '';
+  return `${el.tagName.toLowerCase()}${cls}${el.id ? '#' + el.id : ''}`;
+}
+
 function getVisibleBlocks() {
   return [...document.querySelectorAll(BLOCK_SELECTOR)].filter((el) => {
     if (isHidden(el) || isInsideSkipped(el)) return false;
@@ -150,17 +157,50 @@ function onTokenClick(e, token, textNodeParent) {
 
 async function tokenizePage() {
   if (!enabled) return;
-  const blocks = getVisibleBlocks().filter((block) => !tokenizedBlocks.has(block));
+  const allCandidates = [...document.querySelectorAll(BLOCK_SELECTOR)];
+  let hiddenCount = 0;
+  let insideSkippedCount = 0;
+  let nestedCount = 0;
+  const skippedSamples = [];
+  for (const el of allCandidates) {
+    if (isHidden(el)) {
+      hiddenCount++;
+      if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:hidden`);
+    } else if (isInsideSkipped(el)) {
+      insideSkippedCount++;
+      if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:insideSkipped`);
+    } else if (el.querySelector(BLOCK_SELECTOR)) {
+      nestedCount++;
+      if (skippedSamples.length < 5) skippedSamples.push(`${describeBlock(el)}:nested`);
+    }
+  }
+
+  const blocks = allCandidates.filter((el) => {
+    if (isHidden(el) || isInsideSkipped(el)) return false;
+    if (el.querySelector(BLOCK_SELECTOR)) return false;
+    return !tokenizedBlocks.has(el);
+  });
   if (blocks.length === 0) return;
 
-  const textNodes = [];
+  log(`[PAGE] candidates=${allCandidates.length}, visibleLeaf=${blocks.length}, hidden=${hiddenCount}, insideSkipped=${insideSkippedCount}, nested=${nestedCount}${skippedSamples.length ? `, skippedSamples=[${skippedSamples.join(', ')}]` : ''}`);
+
+  const blocksWithNodes = [];
+  let emptyBlocks = 0;
   for (const block of blocks) {
     block.__lpvOriginalHtml = block.innerHTML;
     if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
-    textNodes.push(...getTextNodes(block));
+    const nodes = getTextNodes(block);
+    if (nodes.length > 0) {
+      blocksWithNodes.push({ block, nodes });
+      block.classList.add('lpv-page-tokenizing');
+    } else {
+      emptyBlocks++;
+    }
   }
-  if (textNodes.length === 0) return;
+  if (blocksWithNodes.length === 0) return;
+  const textNodes = blocksWithNodes.flatMap(({ nodes }) => nodes);
   log(`[PAGE] scanning: ${blocks.length} blocks, ${textNodes.length} text nodes`);
+  log(`[PAGE] blocks with no tokenizable text: ${emptyBlocks}; sample=${blocksWithNodes.slice(0, 5).map(({ block }) => describeBlock(block)).join(' | ')}`);
 
   const uniqueTexts = [...new Set(textNodes.map((node) => node.nodeValue))];
   let resultsByText = new Map();
@@ -172,14 +212,18 @@ async function tokenizePage() {
     });
   } catch (err) {
     logwarn('Page tokenization failed:', err);
+    for (const { block } of blocksWithNodes) {
+      block.classList.remove('lpv-page-tokenizing');
+    }
     return;
   }
 
   let renderedNodes = 0;
-  for (const block of blocks) {
-    for (const node of getTextNodes(block)) {
+  for (const { block, nodes } of blocksWithNodes) {
+    for (const node of nodes) {
       if (renderTextNode(node, resultsByText.get(node.nodeValue))) renderedNodes++;
     }
+    block.classList.remove('lpv-page-tokenizing');
     tokenizedBlocks.add(block);
   }
   log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocks.length} blocks`);
