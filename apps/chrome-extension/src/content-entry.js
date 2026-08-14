@@ -1217,10 +1217,6 @@ async function loadNetflixTrackForLanguage(langCode) {
     tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
     checkL2Mismatch();
 
-    if (l2SelectEl && savedL2Code) {
-      l2SelectEl.value = savedL2Code;
-    }
-
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
@@ -1268,8 +1264,8 @@ async function handleNetflixSubs(tracks) {
   if (activeLang) {
     await loadNetflixTrackForLanguage(activeLang);
   } else {
-    // Fallback: save preference then first available
-    const userL2 = l2SelectEl?.value || savedL2Code;
+    // Fallback: prefer the saved L2, then first available
+    const userL2 = savedL2Code;
     const langKeys = Object.keys(subs);
     const bestKey = langKeys.find(k => subs[k].languageCode === userL2)
       || langKeys.find(k => subs[k].languageCode?.startsWith?.(userL2?.split('-')[0]))
