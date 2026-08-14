@@ -93,6 +93,8 @@ async function fetchTokensForTexts(texts, l2) {
 
 function renderTextNode(node, tokens) {
   if (!tokens || tokens.length === 0) return false;
+  const parent = node.parentElement;
+  if (!parent) return false;
   const frag = document.createDocumentFragment();
   for (const token of tokens) {
     if (!token || typeof token.text !== 'string') continue;
@@ -109,10 +111,10 @@ function renderTextNode(node, tokens) {
     span.className = 'lpv-page-token';
     span.textContent = token.text;
     span.dataset.tokenText = token.text;
-    span.addEventListener('click', (e) => onTokenClick(e, token, node.parentElement));
+    span.addEventListener('click', (e) => onTokenClick(e, token, parent));
     frag.appendChild(span);
   }
-  node.parentNode.replaceChild(frag, node);
+  parent.replaceChild(frag, node);
   return true;
 }
 
