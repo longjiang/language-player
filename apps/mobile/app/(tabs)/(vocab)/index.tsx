@@ -65,6 +65,7 @@ export default function DictionaryScreen() {
   const [acOpen, setAcOpen] = useState(false);
   const acSeqRef = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const redirectingRef = useRef(false);
 
   // Debounced autocomplete: an English query also matches L2 entries by their
   // English definitions (byDefinition=true). Only touches local state — the
@@ -189,6 +190,26 @@ export default function DictionaryScreen() {
     router.push(`word/${safeId}` as any);
     log('[Dict] handleEntryPress — router.push called, safeId:', safeId);
   };
+
+  // Mirror web: a search returning exactly one entry goes straight to the
+  // entry detail page. `replace` keeps back from landing on the transient
+  // results screen, and redirectingRef prevents repeat navigations for the
+  // same result set.
+  useEffect(() => {
+    if (!loading && !error && results && results.length === 1 && !redirectingRef.current) {
+      redirectingRef.current = true;
+      const entry = results[0]!;
+      setDetailHead(entry.head);
+      setSidebarSource({ kind: 'results', items: results });
+      setCameFromSearch(true);
+      const safeId = entry.id.replace(/,/g, '~');
+      log('[Dict] single result — auto-redirecting to entry:', entry.id);
+      router.replace(`word/${safeId}` as any);
+    }
+    if (!results || results.length !== 1) {
+      redirectingRef.current = false;
+    }
+  }, [results, loading, error, setDetailHead, setSidebarSource, setCameFromSearch, router]);
 
   return (
     <PageContainer maxWidth="7xl">
