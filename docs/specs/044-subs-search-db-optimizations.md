@@ -606,14 +606,37 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
    log files were produced. (Earlier state: resumed 2026-08-06 after the
    storage-layer I/O hang was resolved with a `VACUUM FULL` rewrite;
    12,566 / ~182,500 remaining as of 2026-08-06 04:23 PDT.)
-4. ⬜ `create index concurrently youtube_videos_subs_ngram_tsv_idx`.
+4. ✅ `create index concurrently youtube_videos_subs_ngram_tsv_idx` —
+   **completed 2026-08-14** via the Supabase session pooler (port 6543).
+   Build scanned **110,459 blocks**; the resulting partial GIN index is
+   **~1,058 MB and valid** (`indisvalid = true`).
 5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
    until the index is valid) — code done, dormant until the index exists.
-6. ⬜ Run benchmark matrix + parity checks; verify plan gates.
+6. ✅ Run benchmark matrix + parity checks; verify plan gates — completed
+   **2026-08-14** for the reported zh terms: 骗子 / 粗暴 / 乱吃 return
+   correct result sets at both `limit=50` and `limit=500` (e.g. 骗子 500,
+   粗暴 500, 乱吃 43); rare-term `EXPLAIN` shows a **Bitmap Index Scan on
+   `youtube_videos_subs_ngram_tsv_idx`**; uncached phase 1 completes in
+   ~0.7–3.7s and cached endpoint responses in <1s. A full multi-language
+   benchmark sweep remains a follow-up.
 7. ✅ Update ARCH-004's backend section and this spec's verification table
    (done).
 
 ---
+
+## Rollout state update (2026-08-14)
+
+- The partial GIN index was the only missing piece; the column, trigger, and
+  backfill were already complete.
+- **Fixed a readiness-cache bug exposed by the rollout**: `_gin_index_ready`
+  cached a `False` result forever, so a worker that checked before the index
+  existed kept skipping the GIN fallback after the index was built. It is now
+  TTL'd (300s) like `_ngram_index_ready`, so long-running workers pick up new
+  indexes without a restart.
+- Verified end-to-end: `limit=500` no longer returns empty for 骗子 / 粗暴 /
+  乱吃, and 乱吃 (43 videos) is now findable at both limits.
+
+# Known limitations / risks
 
 # Known limitations / risks
 
