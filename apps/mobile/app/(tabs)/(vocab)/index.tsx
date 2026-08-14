@@ -30,7 +30,7 @@ export default function DictionaryScreen() {
   const {
     query, setQuery, results, loading, error, message,
     doSearch, clearSearch,
-    recentSearches, clearRecent,
+    recentSearches, clearRecent, saveRecentTerm,
     setCameFromSearch, setSidebarSource, setDetailHead,
   } = useDictionaryContext();
 
@@ -150,6 +150,8 @@ export default function DictionaryScreen() {
     setCameFromSearch(true);
     setSuggestions(null);
     setAcOpen(false);
+    // Remember the looked-up term even though no search was submitted.
+    void saveRecentTerm(entry.head);
     const safeId = entry.id.replace(/,/g, '~');
     setCachedEntryById(l2Lang.code, entry);
     setCachedEntryById(l2Lang.code.split('-')[0], entry);
