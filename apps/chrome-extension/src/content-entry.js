@@ -230,13 +230,13 @@ function logNetflixSyncPair(timeSec, displayed, panelIdx) {
   const video = getVideoElement();
   const videoTime = video?.currentTime;
   log(
-    `[SYNC] player: "${(displayed || '(none)').slice(0, 60)}" @ ${timeSec.toFixed(3)}s ` +
+    `[SYNC] player: ${JSON.stringify((displayed || '(none)').slice(0, 60))} @ ${timeSec.toFixed(3)}s ` +
     `(video=${videoTime !== undefined ? videoTime.toFixed(3) : 'n/a'}s, api=${netflixPlayerApiTime !== null ? netflixPlayerApiTime.toFixed(3) : 'n/a'}s)`
   );
   log(
     '[SYNC] panel: ' +
     (panelCue
-      ? `idx ${panelIdx} "${panelCue.text.slice(0, 60)}" @ ${panelCue.start.toFixed(3)}s (${panelCue.start.toFixed(3)}-${panelCue.end.toFixed(3)})`
+      ? `idx ${panelIdx} ${JSON.stringify(panelCue.text.slice(0, 60))} @ ${panelCue.start.toFixed(3)}s (${panelCue.start.toFixed(3)}-${panelCue.end.toFixed(3)})`
       : 'no matching cue')
   );
 }
@@ -256,15 +256,16 @@ function getNetflixDisplayedSubtitle() {
       return;
     }
     nodes.forEach((el) => {
-      const text = normalizeForMatch(el.textContent);
-      if (!text || seen.has(text)) return;
+      const rawText = (el.textContent || '').trim();
+      const text = normalizeForMatch(rawText);
+      if (!rawText || seen.has(text)) return;
       try {
         if (el.getClientRects().length === 0) return;
       } catch {
         return;
       }
       seen.add(text);
-      candidates.push({ el, text });
+      candidates.push({ el, text, rawText });
     });
 
     try {
@@ -275,7 +276,7 @@ function getNetflixDisplayedSubtitle() {
   }
 
   collect(document);
-  return candidates[candidates.length - 1]?.text || '';
+  return candidates[candidates.length - 1]?.rawText || '';
 }
 
 /** Find the cue whose text matches what Netflix is displaying, closest to
@@ -292,14 +293,15 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
   if (!displayed) return 'no';
 
   const contentTime = timeSec - netflixTimelineOffset;
+  const displayedNormalized = normalizeForMatch(displayed);
   const displayedLines = displayed.split('\n').map(normalizeForMatch).filter(Boolean);
   const stripSpeakerLabel = (line) =>
     line.replace(/^[（(][^）)]*[）)]\s*/, '').trim();
 
   const cueMatchStrength = (cueText) => {
-    if (cueText === displayed || displayedLines.includes(cueText)) return 2;
+    if (cueText === displayedNormalized || displayedLines.includes(cueText)) return 2;
     if (cueText.length >= 6 &&
-        (displayed.includes(cueText) || cueText.includes(displayed))) return 1;
+        (displayedNormalized.includes(cueText) || cueText.includes(displayedNormalized))) return 1;
     if (cueText.length >= 4) {
       for (const line of displayedLines) {
         if (stripSpeakerLabel(line).endsWith(cueText)) return 0;

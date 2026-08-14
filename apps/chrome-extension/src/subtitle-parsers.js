@@ -128,7 +128,12 @@ function getTTMLContainerOffset(el, params) {
 
 export function stripTags(text) {
   if (!text) return '';
-  return text.replace(/<[^>]*>/g, '').trim();
+  return text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 export function decodeEntities(text) {
@@ -170,7 +175,7 @@ export function parseWebVTTLike(text) {
         textLines.push(lines[i].trim());
         i++;
       }
-      const text = textLines.join(' ');
+      const text = textLines.join('\n');
       if (text) {
         cues.push({ start, end, text: decodeEntities(stripTags(text)) });
       }
