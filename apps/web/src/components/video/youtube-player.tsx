@@ -323,15 +323,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         <div ref={containerRef} id={playerIdRef.current} className="h-full w-full" />
         {playerError && (
           <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-black px-4 text-center text-muted-foreground">
-            <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
             <p className="text-sm">{t(playerError.messageKey)}</p>
-            {playerError.code !== undefined && (
-              <p className="text-xs text-muted-foreground/60">{t('msg.youtube_error_code', { code: playerError.code })}</p>
-            )}
             {playerError.embedBlocked && (
               <a
                 href={`https://www.youtube.com/watch?v=${youtubeId}`}
@@ -342,7 +334,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
                 {t('action.view_on_youtube')} ↗
               </a>
             )}
-            <p className="text-xs text-muted-foreground/60">{t('msg.transcript_still_available')}</p>
           </div>
         )}
       </div>
