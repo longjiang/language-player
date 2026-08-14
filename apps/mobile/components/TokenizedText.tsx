@@ -62,6 +62,11 @@ let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
  *  row, otherwise words and their readings render in mirrored (LTR) order. */
 const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
 
+/** Target gap (px) between furigana glyphs and the base text. Web's native
+ *  <ruby> annotation sits ~0–2px above the base, so mobile matches that
+ *  instead of leaving the base line's full half-leading as a gap. */
+const RUBY_READING_GAP = 2;
+
 /** Stable signature for opening the dictionary popup from a memoized token. */
 type PressWordHandler = (
   index: number,
@@ -102,7 +107,7 @@ interface RubyTokenSpanProps {
   l2Code: string;
   quizMode: boolean;
   popupEnabled: boolean;
-  rubyGapTrim: number;
+  rubyPull: number;
   readingSize: number;
   baseLeading: number | undefined;
   textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number };
@@ -116,7 +121,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
     index, word, displayText, pronunciation, hasRuby, isBlanked, isHighlighted, isLink,
     isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
-    linkUrl, l2Code, quizMode, popupEnabled, rubyGapTrim, readingSize, baseLeading, textStyle,
+    linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle,
     onOpenLink, onPressWord, onReveal,
   } = props;
 
@@ -144,7 +149,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
   };
 
   return (
-    <View className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, { paddingTop: rubyGapTrim }]}>
+    <View className="items-center" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined]}>
       {/* One pressable per token: the whole word — kanji + kana +
           furigana + quick gloss — shares a single tap target, matching
           web's token-span.tsx wrapper span. */}
@@ -160,12 +165,12 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
           {rubySegs.map((seg, j) => (
             <View key={j} className="items-center">
               {seg.reading && (
-                <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2, marginBottom: -rubyGapTrim }} className={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}>{seg.reading}</Text>
+                <Text style={{ fontSize: readingSize, lineHeight: readingSize, marginBottom: -rubyPull }} className={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}>{seg.reading}</Text>
               )}
               {/* Spacer: align kana-only segments with kanji segments that have ruby above.
-                  Matches the reading text's lineHeight so base texts share a baseline. */}
+                  Matches the reading text's line box so base texts share a baseline. */}
               {hasRuby && !seg.reading && (
-                <View style={{ height: readingSize + 2, marginBottom: -rubyGapTrim }} />
+                <View style={{ height: readingSize, marginBottom: -rubyPull }} />
               )}
               <Text style={[textStyle, { lineHeight: baseLeading }]}>
                 {isBlanked ? (
@@ -1094,12 +1099,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     const tokenFontSize = textStyle.fontSize ?? 16;
     const readingSize = Math.max(8, Math.round(tokenFontSize * 0.55));
     const baseLeading = leadingRatio ? Math.round(tokenFontSize * leadingRatio) : undefined;
-    // The base text's line box is `baseLeading` tall, so its top half-leading
-    // creates a visible gap between furigana and the word. Pull the reading
-    // down by that half-leading (minus a small breathing room) and compensate
-    // with top padding on the token column — row height and baseline
-    // alignment with punctuation stay identical.
-    const rubyGapTrim = Math.max(2, Math.round(((baseLeading ?? tokenFontSize) - tokenFontSize) / 2) - 2);
+    // Match web's native ruby: the reading's line box (readingSize, no extra
+    // leading) overlaps the base text's top half-leading, so the column stays
+    // ≈ baseLeading tall. Pulling the base text up by `rubyPull` leaves only
+    // RUBY_READING_GAP px between the reading glyphs and the base glyphs.
+    const halfLeading = Math.round(((baseLeading ?? tokenFontSize) - tokenFontSize) / 2);
+    const rubyPull = Math.max(0, halfLeading - RUBY_READING_GAP);
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -1234,7 +1239,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
                   l2Code={l2Code}
                   quizMode={quizMode}
                   popupEnabled={popupEnabled}
-                  rubyGapTrim={rubyGapTrim}
+                  rubyPull={rubyPull}
                   readingSize={readingSize}
                   baseLeading={baseLeading}
                   textStyle={textStyle}
