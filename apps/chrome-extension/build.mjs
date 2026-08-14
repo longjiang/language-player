@@ -29,7 +29,39 @@ execSync('node scripts/generate-lang-names.js', {
 
 // Read current version from manifest (for the generated-file banner)
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-const currentVersion = manifest.version;
+const previousVersion = manifest.version;
+
+/**
+ * Bump MAJOR.MINOR.PATCH.BUILD per SPEC-076: the 4th component increments on
+ * every build so a reloaded unpacked extension always shows a new version.
+ * Chrome allows 1-4 dot-separated integers, each 0-65535.
+ */
+function nextExtensionVersion(version) {
+  let parts = version.split('.').map((part) => Number(part));
+  if (
+    parts.length === 0 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 65535)
+  ) {
+    throw new Error(`Invalid manifest version: ${version}`);
+  }
+  while (parts.length < 4) parts.push(0);
+  parts[3] += 1;
+  for (let i = 3; i > 0; i--) {
+    if (parts[i] > 65535) {
+      parts[i] = 0;
+      parts[i - 1] += 1;
+    }
+  }
+  if (parts[0] > 65535) {
+    throw new Error(`Version too large for Chrome manifest: ${parts.join('.')}`);
+  }
+  return parts.join('.');
+}
+
+const currentVersion = nextExtensionVersion(previousVersion);
+manifest.version = currentVersion;
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+console.log(`[build] Version ${previousVersion} -> ${currentVersion}`);
 
 // Step 2: Bundle content script
 console.log('[build] Bundling content script...');

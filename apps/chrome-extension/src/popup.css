@@ -598,3 +598,10 @@ h1 img {
 .hidden {
   display: none;
 }
+
+.popup-version {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}

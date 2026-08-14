@@ -71,6 +71,11 @@ Edit `apps/mobile/app.json`:
   future bumps are explicit.
 - `ios.buildNumber` — keep in sync for dual-store releases (SPEC-048 § 2).
 
+> **SPEC-076 (2026-08-14):** use `scripts/next-build.mjs` to assign the same
+> build number to both stores and `scripts/verify-version.mjs` after prebuild
+> as a gate. Consumed numbers are recorded in
+> `docs/versioning/build-ledger.md` (versionCode 1 and 2 are already there).
+
 ### 3.3 Generate the native project
 
 ```bash

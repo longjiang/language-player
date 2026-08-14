@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', function() {
     fillHtml('#popup-click-word', 'popupClickWord');
     fillHtml('#popup-save-words', 'popupSaveWords');
     fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
+    const versionEl = document.querySelector('#popup-version');
+    if (versionEl) {
+      versionEl.textContent = `${t('versionLabel')} ${chrome.runtime.getManifest().version}`;
+    }
     setTranscriptChecking();
     fillHtml('#transcript-hint', 'popupCaptionsHint');
     fillText('#make-text-interactive-label', 'makeTextInteractive');
