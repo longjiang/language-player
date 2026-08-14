@@ -36,7 +36,7 @@ const SYNC_DEBOUNCE_MS = 3000;
  * - Changes: SecureStore immediately + debounced PUT /user-settings
  */
 export function useSettings() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { getUserSettings } = useUserDataColumns();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
@@ -63,7 +63,16 @@ export function useSettings() {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as Partial<SettingsV2>;
-          if (parsed.v === 2) setSettings(normalizeSettingsV2(parsed));
+          if (parsed.v === 2) {
+            const restored = normalizeSettingsV2(parsed);
+            log('[settings] loaded local blob — ts:', restored.ts,
+              'review:', JSON.stringify(restored.review));
+            setSettings(restored);
+          } else {
+            log('[settings] local blob has v !== 2 — starting from defaults');
+          }
+        } else {
+          log('[settings] no local blob — starting from defaults');
         }
       } catch { /* corrupted or not found */ }
       setLoaded(true);
@@ -72,7 +81,11 @@ export function useSettings() {
 
   // ── Authenticated: hydrate from the row API (ts-based LWW) ──
   useEffect(() => {
-    if (!user || !loaded || cloudLoadedUserId.current === user.id || offlineMode) return;
+    if (!user || !loaded || cloudLoadedUserId.current === user.id) return;
+    if (offlineMode) {
+      log('[settings] hydrate skipped — offlineMode is on');
+      return;
+    }
     cloudLoadedUserId.current = user.id;
     let cancelled = false;
     (async () => {
@@ -80,20 +93,30 @@ export function useSettings() {
         const res = await getUserSettings();
         if (cancelled) return;
         const cloud = res.settings_v2;
+        log('[settings] GET /user-settings ok — user:', user.id,
+          'cloud v:', cloud?.v, 'cloud ts:', cloud?.ts,
+          'cloud review:', JSON.stringify(cloud?.review ?? null));
         if (!cloud || cloud.v !== 2) return;
         setSettings((prev) => {
-          if (cloud.ts <= prev.ts) return prev;
+          if (cloud.ts <= prev.ts) {
+            log('[settings] hydrate SKIP cloud — cloud.ts <= local.ts',
+              { cloudTs: cloud.ts, localTs: prev.ts, localReview: prev.review });
+            return prev;
+          }
           const merged = normalizeSettingsV2({
             ...prev,
             ...cloud,
             v: 2 as const,
             ts: new Date().toISOString(),
           });
+          log('[settings] hydrate APPLY cloud — dailyNewLimit:',
+            merged.review.dailyNewLimit, 'dayStartHour:', merged.review.dayStartHour,
+            'new ts:', merged.ts);
           SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
           return merged;
         });
       } catch (err) {
-        logwarn('[settings] Could not load from server:', err);
+        logwarn('[settings] GET /user-settings failed — user:', user.id, err);
         cloudLoadedUserId.current = null;
       }
     })();
@@ -102,12 +125,15 @@ export function useSettings() {
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
+    if (loading) return; // auth still restoring — don't treat boot as a user change
     const prev = prevUserIdRef.current;
     const next = user?.id ?? null;
     prevUserIdRef.current = next;
     if (prev === undefined) return; // initial boot — keep locally loaded state
     if (prev !== next) {
       cloudLoadedUserId.current = null;
+      log('[settings] user changed — resetting local settings',
+        { from: prev, to: next });
       setSettings(createSettingsV2());
       if (syncTimer.current) clearTimeout(syncTimer.current);
       if (next === null) {
@@ -115,7 +141,7 @@ export function useSettings() {
         setOfflineModeState(false);
       }
     }
-  }, [user?.id]);
+  }, [user?.id, loading]);
 
   // ── Persist + debounced row sync ──
   const persist = useCallback((s: SettingsV2) => {
@@ -146,23 +172,36 @@ export function useSettings() {
       void (async () => {
         try {
           const row = await getEntityCacheRow('settings', 'v2');
-          if (!row || row.deleted_at != null) return;
+          if (!row || row.deleted_at != null) {
+            log('[settings] pull bridge — no settings cache row');
+            return;
+          }
           const payload = JSON.parse(row.payload) as { settings_v2?: SettingsV2 };
           const cloud = payload.settings_v2;
+          log('[settings] pull bridge — cache row ts:', row.updated_at,
+            'cloud ts:', cloud?.ts,
+            'cloud review:', JSON.stringify(cloud?.review ?? null));
           if (!cloud || cloud.v !== 2) return;
           setSettings((prev) => {
-            if (cloud.ts <= prev.ts) return prev;
+            if (cloud.ts <= prev.ts) {
+              log('[settings] pull bridge SKIP cloud — cloud.ts <= local.ts',
+                { cloudTs: cloud.ts, localTs: prev.ts, localReview: prev.review });
+              return prev;
+            }
             const merged = normalizeSettingsV2({
               ...prev,
               ...cloud,
               v: 2 as const,
               ts: new Date().toISOString(),
             });
+            log('[settings] pull bridge APPLY cloud — dailyNewLimit:',
+              merged.review.dailyNewLimit, 'dayStartHour:', merged.review.dayStartHour,
+              'new ts:', merged.ts);
             SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged)).catch(() => {});
             return merged;
           });
-        } catch {
-          // Corrupt payload — ignore.
+        } catch (err) {
+          logwarn('[settings] pull bridge failed:', err);
         }
       })();
     });

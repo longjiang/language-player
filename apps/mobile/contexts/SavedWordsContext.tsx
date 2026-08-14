@@ -93,7 +93,7 @@ interface SavedWordsContextValue {
 const SavedWordsContext = createContext<SavedWordsContextValue | null>(null);
 
 export function SavedWordsProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { getSavedWords: fetchSavedWordRows } = useSavedWordApi();
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
@@ -169,6 +169,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
+    if (loading) return; // auth still restoring — don't treat boot as a user change
     const prev = prevUserIdRef.current;
     const next = user?.id ?? null;
     prevUserIdRef.current = next;
@@ -178,7 +179,7 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
       setCloudHydrated(false);
       setSavedWords({});
     }
-  }, [user?.id]);
+  }, [user?.id, loading]);
 
   // Hydrate from the server (after replaying pending ops)
   useEffect(() => {

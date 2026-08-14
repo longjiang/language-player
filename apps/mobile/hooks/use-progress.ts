@@ -38,7 +38,7 @@ function parseLevel(raw: unknown): number | undefined {
  * - Changes: SecureStore immediately + debounced PUT /progress for this L2
  */
 export function useProgress(l2Code: string) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { getProgress } = useUserDataColumns();
   const [progress, setProgress] = useState<L2Progress>({});
   const [loaded, setLoaded] = useState(false);
@@ -165,6 +165,7 @@ export function useProgress(l2Code: string) {
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
+    if (loading) return; // auth still restoring — don't treat boot as a user change
     const prev = prevUserIdRef.current;
     const next = user?.id ?? null;
     prevUserIdRef.current = next;
@@ -174,7 +175,7 @@ export function useProgress(l2Code: string) {
       setProgress({});
       if (syncTimer.current) clearTimeout(syncTimer.current);
     }
-  }, [user?.id]);
+  }, [user?.id, loading]);
 
   // ── Persist to SecureStore + debounced row sync ──
   const persist = useCallback((updates: Partial<L2Progress>) => {
