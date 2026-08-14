@@ -416,11 +416,50 @@ export function newCardsIntroducedToday(
   return count;
 }
 
+/** Breakdown of the UTC-day new-card budget (SPEC-066). */
+export interface NewCardBudget {
+  /** Effective daily new-card limit after clamping. */
+  cap: number;
+  /** Start of the current UTC day (ms). */
+  dayStart: number;
+  /** Cards created on the current UTC day (any state). */
+  introducedToday: number;
+  /** Unrated cards created before the current UTC day. */
+  olderUnrated: number;
+  /** How many more cards may be introduced today. */
+  remaining: number;
+}
+
 /**
- * How many new-card introductions remain for today (Anki/FSRS daily quota).
+ * Full UTC-day new-card budget breakdown (SPEC-066).
  *
  * Cards introduced today plus older unrated cards still sitting in the blue
  * deck both count toward `limit`. The deck does not refill during a session.
+ */
+export function getNewCardBudget(
+  savedWords: Array<{ id: string }>,
+  cards: Record<string, FsrsCard>,
+  limit: number = 20,
+  now: number = Date.now(),
+): NewCardBudget {
+  const cap = Math.max(0, Math.floor(limit));
+  const dayStart = utcDayStart(now);
+  const introducedToday = newCardsIntroducedToday(savedWords, cards, now);
+  const olderUnrated = savedWords.filter((sw) => {
+    const card = cards[sw.id];
+    return !!card && isNewCard(card) && card.createdAt < dayStart;
+  }).length;
+  return {
+    cap,
+    dayStart,
+    introducedToday,
+    olderUnrated,
+    remaining: Math.max(0, cap - introducedToday - olderUnrated),
+  };
+}
+
+/**
+ * How many new-card introductions remain for today (Anki/FSRS daily quota).
  */
 export function remainingNewCardsToday(
   savedWords: Array<{ id: string }>,
@@ -428,14 +467,20 @@ export function remainingNewCardsToday(
   limit: number = 20,
   now: number = Date.now(),
 ): number {
-  const cap = Math.max(0, Math.floor(limit));
-  const start = utcDayStart(now);
-  const introducedToday = newCardsIntroducedToday(savedWords, cards, now);
-  const olderUnrated = savedWords.filter((sw) => {
-    const card = cards[sw.id];
-    return !!card && isNewCard(card) && card.createdAt < start;
-  }).length;
-  return Math.max(0, cap - introducedToday - olderUnrated);
+  return getNewCardBudget(savedWords, cards, limit, now).remaining;
+}
+
+/** Saved words that are candidates for the blue deck (no card or unrated). */
+export function countNewCardCandidates(
+  savedWords: Array<{ id: string }>,
+  cards: Record<string, FsrsCard>,
+): number {
+  let count = 0;
+  for (const sw of savedWords) {
+    const srs = cards[sw.id];
+    if (!srs || isNewCard(srs)) count++;
+  }
+  return count;
 }
 
 /**
