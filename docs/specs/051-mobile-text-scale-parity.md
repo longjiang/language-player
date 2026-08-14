@@ -42,8 +42,8 @@ zoom 7.
    (1.5 for single-line subtitle translations, 1 everywhere else), applied to
    the translation's own base font size. Web's current behavior is the
    reference.
-5. **Default line height for block-level `TokenizedText` is 2×** (loose).
-   Inline tokenized text inherits the parent's line height.
+5. **Default line height for block-level `TokenizedText` is `relaxed`
+   (1.625×)**. Inline tokenized text inherits the parent's line height.
 6. **Mobile keeps OS font scaling (dynamic type) enabled.** It is additive on
    top of the in-app zoom; web has no OS equivalent.
 
@@ -70,8 +70,8 @@ equivalent) remains only for the single-line subtitle case.
    mobile (web already does).
 4. Corpus mistakes: mobile renders with `TokenizedText` at `1`× zoom, matching
    web.
-5. Change web `TokenizedText`'s default leading from `relaxed` (1.625×) to
-   `loose` (2×); mobile already defaults to `loose`.
+5. `TokenizedText` defaults to `relaxed` (1.625×) leading on both web and
+   mobile.
 6. Typecheck and verify: settings preview, single-line subtitles, transcript
    rows, readers (headings + translations), corpus, AI explanation, and review.
 
@@ -89,5 +89,20 @@ equivalent) remains only for the single-line subtitle case.
 - Translations scale by the same multiplier as their adjacent tokenized text.
 - Mobile corpus mistakes render through `TokenizedText` at 1× zoom, matching
   web.
-- Block-level default line height is 2×; inline text inherits the parent's.
+- Block-level default line height is `relaxed` (1.625×); inline text inherits
+  the parent's.
 - Mobile OS font scaling remains enabled.
+
+---
+
+## Known issues (deferred)
+
+Web furigana (`<rt>`) rendering differs between Chrome and Safari: Safari's
+annotation box is ~14px tall with ~2px of extra space above the reading,
+while Chrome's is ~13px and sits tighter against the base text (observed at
+an 11px reading size). Neither pinning `line-height` on `rt` nor pinning an
+explicit CJK font stack changed the rendering in either browser, so the
+cause appears to be engine-level ruby annotation layout — Inter has no
+kana/kanji glyphs, so each browser falls back to a different CJK font.
+Deferred; revisit with a custom ruby layout on web (like mobile) or
+browser-targeted margins.
