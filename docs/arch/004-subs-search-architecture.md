@@ -321,6 +321,19 @@ SubsSearchResults
 
 The mini-player is embedded with `startTime={matchLine.starttime}`, which is applied in the YouTube IFrame API's `onReady` callback (guaranteed to work — unlike `seekTo()` calls before the API initializes). A backup `seekTo` via `setTimeout(600ms)` is also in place for navigation between videos.
 
+### Failed-Embed Auto-Skip
+
+When the current video's embed fails with a fatal YouTube error (codes 2, 5,
+100, 101, 150 — invalid ID, HTML5 failure, removed/private, or
+embed-disabled), `SubsSearchResults` removes that video from the result list
+and advances to the next one. Each `youtube_id` is skipped at most once per
+search, so a run of broken videos advances through the pool once and then
+shows the empty state instead of looping. Free users get their first 5 hits
+applied to the *playable* list: a skipped video is replaced by the next pool
+entry, so broken embeds never consume a free quota slot. Non-fatal/generic
+errors keep the manual error UI so transient failures don't silently remove
+a video.
+
 ### SubtitleDisplay (Singleline Mode)
 
 In singleline mode, `SubtitleDisplay` shows only the current subtitle line based on `currentTime` from the YouTube player:
@@ -341,6 +354,7 @@ for (let i = 0; i < syncedLines.length; i++) {
 |---|---|
 | `zerotohero-python-server/app_subs_search.py` | Backend: SQL query + context reduction + caching |
 | `apps/web/src/components/video/subs-search-results.tsx` | Frontend: fetch, parse, filter, sort, player + subtitle display |
+| `apps/mobile/components/video/SubsSearchResults.tsx` | Mobile port: same fetch/parse/skip logic with `react-native-youtube-iframe` |
 | `apps/web/src/components/video/subtitle-display.tsx` | Singleline subtitle rendering with active-index tracking |
 | `apps/web/src/components/video/youtube-player.tsx` | YouTube IFrame API wrapper with `startTime` support |
 | `packages/utils/src/subs-csv.ts` | `parseSubtitleCSV()` — PapaParse-based CSV parser |

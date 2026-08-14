@@ -3,6 +3,7 @@ import { View, ActivityIndicator, Text, Pressable, Linking, useWindowDimensions 
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 
 // react-native-youtube-iframe reports errors as PLAYER_ERROR names, and web's
 // player maps numeric IFrame codes. Keep both mappings so every known error
@@ -49,7 +50,7 @@ interface YouTubePlayerProps {
   onTimeUpdate?: (time: number) => void;
   onDuration?: (duration: number) => void;
   onStateChange?: (state: string) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, info?: { messageKey: string; skippable: boolean }) => void;
   /** Width of the parent container. When provided, overrides useWindowDimensions to prevent overflow. */
   containerWidth?: number;
 }
@@ -76,6 +77,26 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pollInFlightRef = useRef(false);
+    const previousYoutubeIdRef = useRef(youtubeId);
+
+    // On every video switch: log the change, and clear a previous video's
+    // error. Without this the error UI stays mounted forever and every
+    // subsequent video shows the old failure (the player is never rebuilt).
+    useEffect(() => {
+      if (previousYoutubeIdRef.current === youtubeId) return;
+      const prev = previousYoutubeIdRef.current;
+      previousYoutubeIdRef.current = youtubeId;
+      log('[youtube-player] video id changed', {
+        prev,
+        next: youtubeId,
+        errorKey: errorKey ?? null,
+      });
+      if (errorKey) {
+        log('[youtube-player] clearing stale error', { prev, next: youtubeId, errorKey });
+        setErrorKey(null);
+        setReady(false);
+      }
+    }, [youtubeId, errorKey]);
 
     // Stable callback refs to avoid re-rendering the player
     const onTimeUpdateRef = useRef(onTimeUpdate);
@@ -152,8 +173,17 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           ? e
           : (e?.error ?? e?.message ?? e?.nativeEvent?.description ?? '');
       const key = YOUTUBE_ERROR_KEYS[String(raw)] ?? 'msg.youtube_error_generic';
+      // Every known mapping is a fatal load/embed failure that is safe to
+      // auto-skip in a result list; only the generic fallback stays manual.
+      const skippable = key !== 'msg.youtube_error_generic';
+      log('[youtube-player] player error', {
+        youtubeId,
+        raw: String(raw),
+        key,
+        skippable,
+      });
       setErrorKey(key);
-      onError?.(new Error(t(key)));
+      onError?.(new Error(t(key)), { messageKey: key, skippable });
     };
 
     return (

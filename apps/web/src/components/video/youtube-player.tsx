@@ -12,7 +12,7 @@ interface YouTubePlayerProps {
   onDuration?: (duration: number) => void;
   onStateChange?: (state: number) => void;
   /** Called when the YouTube player fails to load (invalid ID, not embeddable, etc.) */
-  onError?: (error: Error) => void;
+  onError?: (error: Error, info?: YouTubePlayerErrorInfo) => void;
 }
 
 export interface YouTubePlayerHandle {
@@ -63,6 +63,16 @@ interface PlayerErrorInfo {
   code?: number;
   /** The uploader disabled embedding — offer a link out to YouTube. */
   embedBlocked?: boolean;
+  /** Fatal load/embed failure — safe to auto-skip this video in a result list. */
+  skippable: boolean;
+}
+
+/** Error metadata passed to onError callers (e.g. subs-search auto-skip). */
+export interface YouTubePlayerErrorInfo {
+  /** YouTube IFrame API error code, when known. */
+  code?: number;
+  messageKey: string;
+  skippable: boolean;
 }
 
 // YouTube IFrame API onError codes:
@@ -71,18 +81,21 @@ interface PlayerErrorInfo {
 //   100  video removed or made private
 //   101/150  embedding disabled by the uploader
 const YOUTUBE_ERRORS: Record<number, PlayerErrorInfo> = {
-  2: { messageKey: 'msg.youtube_error_invalid_id' },
-  5: { messageKey: 'msg.youtube_error_html5' },
-  100: { messageKey: 'msg.video_unavailable' },
-  101: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true },
-  150: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true },
+  2: { messageKey: 'msg.youtube_error_invalid_id', skippable: true },
+  5: { messageKey: 'msg.youtube_error_html5', skippable: true },
+  100: { messageKey: 'msg.video_unavailable', skippable: true },
+  101: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true, skippable: true },
+  150: { messageKey: 'msg.youtube_error_embed_disabled', embedBlocked: true, skippable: true },
 };
 
 function toPlayerError(code: number | undefined): PlayerErrorInfo {
   if (code === undefined || Number.isNaN(code)) {
-    return { messageKey: 'msg.youtube_error_generic' };
+    return { messageKey: 'msg.youtube_error_generic', skippable: false };
   }
-  return { ...(YOUTUBE_ERRORS[code] ?? { messageKey: 'msg.youtube_error_generic' }), code };
+  return {
+    ...(YOUTUBE_ERRORS[code] ?? { messageKey: 'msg.youtube_error_generic', skippable: false }),
+    code,
+  };
 }
 
 declare global {
@@ -237,15 +250,22 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             const info = toPlayerError(Number.isFinite(code) ? code : undefined);
             setPlayerError(info);
             const msg = `YouTube player error (code: ${Number.isFinite(code) ? code : 'unknown'})`;
-            onError?.(new Error(msg));
+            onError?.(new Error(msg), {
+              code: Number.isFinite(code) ? code : undefined,
+              messageKey: info.messageKey,
+              skippable: info.skippable,
+            });
           },
         },
       });
 
       playerRef.current = player;
     } catch (err: any) {
-      setPlayerError({ messageKey: 'msg.youtube_error_generic' });
-      onError?.(err instanceof Error ? err : new Error('Failed to load YouTube player'));
+      setPlayerError({ messageKey: 'msg.youtube_error_generic', skippable: false });
+      onError?.(err instanceof Error ? err : new Error('Failed to load YouTube player'), {
+        messageKey: 'msg.youtube_error_generic',
+        skippable: false,
+      });
     }
 
     return () => {

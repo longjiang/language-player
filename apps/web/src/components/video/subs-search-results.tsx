@@ -10,8 +10,14 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { log } from '@/lib/logger';
 import { youtubeThumbnail } from '@/lib/video-service';
-import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from './youtube-player';
+import {
+  YouTubePlayer,
+  type YouTubePlayerHandle,
+  type YouTubePlayerErrorInfo,
+  PLAYER_STATES,
+} from './youtube-player';
 import { SubtitleDisplay } from './subtitle-display';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -121,7 +127,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const { isPro } = useSubscriptionContext();
   const playerRef = useRef<YouTubePlayerHandle>(null);
 
-  const [videos, setVideos] = useState<SubsSearchVideo[]>([]);
+  // Full fetched result pool + the youtube_ids skipped for failed embeds.
+  // `videos` below is derived from these so a skipped video can be replaced
+  // by the next pool entry without losing its free quota slot.
+  const [pool, setPool] = useState<SubsSearchVideo[]>([]);
+  const [skippedIds, setSkippedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const skippedIdsRef = useRef<ReadonlySet<string>>(skippedIds);
   const [totalHits, setTotalHits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +164,14 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SortKey>('views');
 
+  // Visible results: drop videos whose embeds failed, then apply the free
+  // quota (first 5) to the *playable* list so skipped videos don't consume a
+  // free member's slot.
+  const videos = useMemo(() => {
+    const playable = pool.filter((v) => !skippedIds.has(v.youtube_id));
+    return isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
+  }, [pool, skippedIds, isPro]);
+
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
 
@@ -164,8 +183,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   const applyVideos = useCallback((all: SubsSearchVideo[]) => {
     setTotalHits(all.length);
-    setVideos(isPro ? all : all.slice(0, FREE_SUBS_SEARCH_HITS));
-  }, [isPro]);
+    // A new search starts with a clean skip list.
+    const freshSkips = new Set<string>();
+    skippedIdsRef.current = freshSkips;
+    setSkippedIds(freshSkips);
+    setPool(all);
+  }, []);
 
   // Truncated display: "a, b, c" or "a, b, c, and X other forms" (localized)
   const termDisplay = useMemo(() => {
@@ -332,6 +355,42 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
   }, []);
+
+  // Auto-skip videos whose embeds fail (private, embed-disabled, removed…).
+  // Each youtube_id is skipped at most once per search (skippedIdsRef guard),
+  // so a run of broken results simply advances through the pool once and then
+  // shows the empty state — no skipping loop.
+  const handleVideoError = useCallback(
+    (_error: Error, info?: YouTubePlayerErrorInfo) => {
+      if (!info?.skippable || !currentVideo) return;
+      const erroredId = currentVideo.youtube_id;
+      if (skippedIdsRef.current.has(erroredId)) return;
+
+      const nextSkipped = new Set(skippedIdsRef.current);
+      nextSkipped.add(erroredId);
+      skippedIdsRef.current = nextSkipped;
+
+      const erroredIndex = videos.findIndex((v) => v.youtube_id === erroredId);
+      const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
+      const nextVideos = isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
+
+      setSkippedIds(nextSkipped);
+      // The video after the errored one slides into its slot, so keep the
+      // same index; only clamp when the errored video was the last one.
+      setCurrentIndex((i) => {
+        let nextIndex = i;
+        if (erroredIndex !== -1 && i > erroredIndex) nextIndex = i - 1;
+        if (nextIndex >= nextVideos.length) nextIndex = Math.max(0, nextVideos.length - 1);
+        return nextIndex;
+      });
+
+      log('[subsSearch] skipped unavailable video', {
+        youtubeId: erroredId,
+        remaining: nextVideos.length,
+      });
+    },
+    [currentVideo, videos, pool, isPro],
+  );
 
   const goToPrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -743,6 +802,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             onTimeUpdate={handleTimeUpdate}
             onDuration={handleDuration}
             onStateChange={handleStateChange}
+            onError={handleVideoError}
           />
         )}
       </div>
