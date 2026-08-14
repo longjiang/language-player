@@ -211,9 +211,10 @@ function logCueTimeRange(source) {
   log(`[TIME] ${source}: ${STATE.cues.length} cues, first=${first.start.toFixed(3)}-${first.end.toFixed(3)}, last=${last.start.toFixed(3)}-${last.end.toFixed(3)}`);
 }
 
-/** Normalize subtitle text for comparison (whitespace-insensitive). */
+/** Normalize subtitle text for comparison (ignores all whitespace, including
+ *  line breaks, so a rendered \n matches the same text without one). */
 function normalizeForMatch(text) {
-  return (text || '').replace(/\s+/g, ' ').trim();
+  return (text || '').replace(/\s+/g, '');
 }
 
 /** Copy Netflix's rendered line breaks onto a matching cue so the panel
