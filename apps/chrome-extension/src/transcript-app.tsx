@@ -21,7 +21,7 @@ import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
-import { t, getLocaleVersion, log } from './i18n';
+import { t, getLocaleVersion, log, logwarn } from './i18n';
 
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
@@ -366,6 +366,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   useEffect(() => {
     try {
       chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
+        log('[PAGE] loaded prefs:', JSON.stringify(result));
         if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
         if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
         if (result.textScale !== undefined) setTextScale(result.textScale);
@@ -726,6 +727,7 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<PageLookupDetail>).detail;
       if (!detail?.token) return;
+      log(`[PAGE] lookup: "${detail.token.text}", blockText chars=${(detail.blockText || '').length}, href=${detail.href || 'none'}`);
       setSelectedToken(detail.token);
       setBlockText(detail.blockText || '');
       setHref(detail.href || null);
@@ -737,9 +739,11 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
 
   useEffect(() => {
     if (!selectedToken || !showTranslation || !blockText) {
+      log(`[PAGE] translate skipped: token=${!!selectedToken}, showTranslation=${showTranslation}, blockText=${blockText.length} chars`);
       setTranslation('');
       return;
     }
+    log(`[PAGE] translate block: ${blockText.length} chars, l1=${l1Code}, l2=${l2Code}`);
     const controller = new AbortController();
     setTranslationLoading(true);
     apiFetch(`${API_BASE}/translate_array`, {
@@ -751,10 +755,15 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setTranslation(data.translated_texts?.[0] || '');
+        const translated = data.translated_texts?.[0] || '';
+        log(`[PAGE] translate response: status=${res.status}, translated chars=${translated.length}`);
+        setTranslation(translated);
       })
       .catch((err: Error) => {
-        if (err.name !== 'AbortError') setTranslation('');
+        if (err.name !== 'AbortError') {
+          logwarn('[PAGE] translate failed:', err);
+          setTranslation('');
+        }
       })
       .finally(() => setTranslationLoading(false));
     return () => controller.abort();
@@ -766,6 +775,7 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
   };
 
   const handleTranslationToggle = (checked: boolean) => {
+    log('[PAGE] translation toggle:', checked);
     setShowTranslation(checked);
     try { chrome.storage.local.set({ showTranslation: checked }); } catch {}
   };
