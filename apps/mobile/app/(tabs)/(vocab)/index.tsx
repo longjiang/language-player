@@ -295,9 +295,11 @@ export default function DictionaryScreen() {
 
       {/* Empty initial state (no recents) */}
       {!query && !loading && !results?.length && recentSearches.length === 0 && (
-        <View className="mt-12 items-center px-8">
-          <Search size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
-          <Text className="text-center text-muted-foreground">{t('title.dictionary')}</Text>
+        <View className="mx-4 mt-4 items-center rounded-xl border border-border bg-card p-8">
+          <Search size={48} color={ICON_MUTED} />
+          <Text className="mt-4 text-center text-sm text-muted-foreground">
+            {t('msg.dictionary_empty_state', { l2: l2Lang.name })}
+          </Text>
         </View>
       )}
 
