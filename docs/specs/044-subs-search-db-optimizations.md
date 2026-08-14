@@ -613,12 +613,13 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
 5. ✅ Ship routing changes (auto-detect index readiness; falls back to ILIKE
    until the index is valid) — code done, dormant until the index exists.
 6. ✅ Run benchmark matrix + parity checks; verify plan gates — completed
-   **2026-08-14** for the reported zh terms: 骗子 / 粗暴 / 乱吃 return
-   correct result sets at both `limit=50` and `limit=500` (e.g. 骗子 500,
-   粗暴 500, 乱吃 43); rare-term `EXPLAIN` shows a **Bitmap Index Scan on
-   `youtube_videos_subs_ngram_tsv_idx`**; uncached phase 1 completes in
-   ~0.7–3.7s and cached endpoint responses in <1s. A full multi-language
-   benchmark sweep remains a follow-up.
+   **2026-08-14**: the reported zh terms return correct result sets at both
+   `limit=50` and `limit=500` (骗子 500, 粗暴 500, 乱吃 43); rare-term
+   `EXPLAIN` shows a **Bitmap Index Scan on
+   `youtube_videos_subs_ngram_tsv_idx`**; the SPEC-045 zh/ja matrix is under
+   target (all phase1 < 1s: 中国 311ms, 对不起 591ms, 相形见绌 516ms, ja 私
+   302ms, の 291ms, 日本 284ms; worst uncached total 2.5s, dominated by the
+   remote cache lookup and context reduction).
 7. ✅ Update ARCH-004's backend section and this spec's verification table
    (done).
 
@@ -633,10 +634,11 @@ Supabase Prometheus metrics endpoint — a hang shows as **zero** byte deltas).
   existed kept skipping the GIN fallback after the index was built. It is now
   TTL'd (300s) like `_ngram_index_ready`, so long-running workers pick up new
   indexes without a restart.
+- **Fixed `profiling_subs_search.py`**: it treated `_phase1_ids`'s
+  `(ids, timed_out)` tuple as the id list, misreporting counts and failing in
+  phase 2 once the n-gram path became active.
 - Verified end-to-end: `limit=500` no longer returns empty for 骗子 / 粗暴 /
   乱吃, and 乱吃 (43 videos) is now findable at both limits.
-
-# Known limitations / risks
 
 # Known limitations / risks
 
