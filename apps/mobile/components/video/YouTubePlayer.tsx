@@ -46,6 +46,8 @@ const YOUTUBE_ERROR_KEYS: Record<string, string> = {
 
 interface YouTubePlayerProps {
   youtubeId: string;
+  /** Start playback automatically once the player is ready (default: false). */
+  autoplay?: boolean;
   startTime?: number;
   onTimeUpdate?: (time: number) => void;
   onDuration?: (duration: number) => void;
@@ -64,7 +66,7 @@ export interface YouTubePlayerHandle {
 }
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
-  function YouTubePlayer({ youtubeId, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth }, ref) {
+  function YouTubePlayer({ youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth }, ref) {
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -195,6 +197,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         )}
         <YoutubePlayer
           ref={playerRef}
+          play={autoplay}
           height={videoHeight}
           width={playerWidth}
           videoId={youtubeId}
