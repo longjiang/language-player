@@ -35,6 +35,27 @@ const PLAYER_STATES = {
   CUED: 5,
 };
 
+/**
+ * YouTube's IFrame API starts its "listening" handshake immediately after
+ * creating the embed, before the iframe has finished navigating. Until then
+ * the iframe's contentWindow is the initial about:blank document (which
+ * inherits the host page's origin), so the handshake throws a benign
+ * DOMException:
+ *   "Failed to execute 'postMessage' on 'DOMWindow': The target origin
+ *    provided ('https://www.youtube.com') does not match the recipient
+ *    window's origin ('http://localhost:3000')."
+ * Playback is unaffected — once the iframe loads, the handshake succeeds.
+ * We suppress only that specific race so the console stays clean; real
+ * player failures still surface through onError.
+ */
+function isYouTubePostMessageRace(message: string): boolean {
+  return (
+    message.includes("Failed to execute 'postMessage' on 'DOMWindow'") &&
+    message.includes('https://www.youtube.com') &&
+    message.includes("does not match the recipient window's origin")
+  );
+}
+
 interface PlayerErrorInfo {
   /** Translation key for the user-facing message. */
   messageKey: string;
@@ -110,6 +131,19 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   const [apiReady, setApiReady] = useState(false);
   const [playerError, setPlayerError] = useState<PlayerErrorInfo | null>(null);
   const t = useT();
+
+  // Silence the transient postMessage race described above (see
+  // isYouTubePostMessageRace). preventDefault() stops Chrome from printing
+  // the uncaught DOMException without affecting any other error reporting.
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (isYouTubePostMessageRace(event.message)) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
 
   // Load YouTube IFrame API
   useEffect(() => {
