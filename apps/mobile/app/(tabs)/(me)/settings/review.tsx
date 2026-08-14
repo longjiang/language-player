@@ -22,6 +22,18 @@ export function ReviewSettings() {
           centerLabel={t('msg.default_value', { n: 20 })}
           rightLabel="200"
         />
+        <SliderRow
+          label={t('label.next_day_starts_at')}
+          desc={t('msg.next_day_starts_at_desc')}
+          value={review.dayStartHour}
+          min={0}
+          max={23}
+          onValueChange={(v) => updateReview({ dayStartHour: v })}
+          valueDisplay={`${review.dayStartHour}:00`}
+          leftLabel="0:00"
+          centerLabel="4:00"
+          rightLabel="23:00"
+        />
       </View>
     </ScrollView>
   );

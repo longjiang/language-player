@@ -1,20 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { dailyReviewCounterKey, msUntilNextUtcDay } from './daily-counter';
+import { dailyReviewCounterKey, msUntilNextDay } from './daily-counter';
+import { dayKey, localDayStartMs } from './day-boundary';
 
 describe('daily-counter', () => {
-  it('keys the counter by user id and UTC date', () => {
-    const now = Date.parse('2026-08-11T23:59:59Z');
-    expect(dailyReviewCounterKey('u1', now)).toBe('lpSrsReviewsDone:u1:2026-08-11');
-    expect(dailyReviewCounterKey('u2', Date.parse('2026-08-12T00:00:00Z')))
-      .toBe('lpSrsReviewsDone:u2:2026-08-12');
+  it('keys the counter by user id and local day', () => {
+    const now = Date.parse('2026-06-15T12:00:00Z');
+    const key = dailyReviewCounterKey('u1', now, 4);
+    expect(key).toBe(`lpSrsReviewsDone:u1:${dayKey(now, 4)}`);
+    const start = localDayStartMs(now, 4);
+    expect(dailyReviewCounterKey('u1', start + 1, 4)).toBe(key);
+    expect(dailyReviewCounterKey('u1', start - 1, 4)).not.toBe(key);
   });
 
-  it('computes time to the next UTC boundary', () => {
-    const now = Date.parse('2026-08-11T23:59:59Z');
-    expect(msUntilNextUtcDay(now)).toBe(1000);
-    const noon = Date.parse('2026-08-11T12:00:00Z');
-    expect(msUntilNextUtcDay(noon)).toBe(12 * 60 * 60 * 1000);
-    const boundary = Date.parse('2026-08-12T00:00:00Z');
-    expect(msUntilNextUtcDay(boundary)).toBe(86_400_000);
+  it('computes time to the next local boundary', () => {
+    const start = localDayStartMs(Date.now(), 4);
+    const until = msUntilNextDay(start, 4);
+    expect(until).toBeGreaterThanOrEqual(23 * 60 * 60 * 1000 - 1000);
+    expect(until).toBeLessThanOrEqual(25 * 60 * 60 * 1000);
+    expect(msUntilNextDay(start - 1, 4)).toBe(1);
   });
 });

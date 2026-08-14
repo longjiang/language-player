@@ -880,6 +880,12 @@ export interface ReviewSettings {
    * Japanese's budget — the budgets don't share a pool.
    */
   dailyNewLimit: number;
+  /**
+   * Local hour (0–23) at which a new review day starts (Anki "next day
+   * starts at"; default 4 AM). The new-card budget and the free-review
+   * counter roll over at this hour in the device's local timezone.
+   */
+  dayStartHour: number;
 }
 
 export interface SearchSettings {
@@ -990,6 +996,7 @@ export const PLAYBACK_DEFAULTS: PlaybackSettings = {
 
 export const REVIEW_DEFAULTS: ReviewSettings = {
   dailyNewLimit: 20,
+  dayStartHour: 4,
 };
 
 export const SEARCH_DEFAULTS: SearchSettings = {

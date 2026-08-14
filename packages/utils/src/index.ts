@@ -79,7 +79,16 @@ export {
 export type { WrittenFormEntry, ReduceSearchTermsOptions } from './search-terms';
 export type { SentenceSegment } from './sentence';
 export { mergePhraseTokens } from './merge-phrase-tokens';
-export { dailyReviewCounterKey, msUntilNextUtcDay } from './daily-counter';
+export {
+  dailyReviewCounterKey,
+  msUntilNextDay,
+} from './daily-counter';
+export {
+  clampDayStartHour,
+  localDayStartMs,
+  dayKey,
+  deviceTimezone,
+} from './day-boundary';
 export { tokenMatchesAnyTerm, tokenMatchesAnyForm } from './highlight-match';
 export type { HighlightToken } from './highlight-match';
 export {

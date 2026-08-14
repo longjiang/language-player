@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
+import type { SrsCardMeta } from '@langplayer/api-client';
 import { useUserDataColumns } from '@langplayer/api-client';
 import { createSrsStore, fsrs, mergeSrsCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
@@ -140,7 +141,8 @@ export function useSrs() {
     });
   }, []);
 
-  const updateCard = useCallback((lang: string, wordId: string, fields: Partial<SrsFields>) => {
+  const updateCard = useCallback(
+    (lang: string, wordId: string, fields: Partial<SrsFields>, meta: SrsCardMeta = {}) => {
     const prev = storeRef.current.cards[lang]?.[wordId];
     if (prev) pendingSrsPreviousRef.current.set(wordId, prev);
     setStore((prev) => {
@@ -157,14 +159,22 @@ export function useSrs() {
         entity: 'srs_card',
         entityId: `${lang}::${wordId}`,
         op: 'upsert',
-        payload: { l2: lang, wordId, state },
+        payload: {
+          l2: lang,
+          wordId,
+          state,
+          ...(meta.timezone ? { timezone: meta.timezone } : {}),
+          ...(typeof meta.dayStartHour === 'number' ? { dayStartHour: meta.dayStartHour } : {}),
+        },
         updatedAt: Date.now(),
       }).catch((err) => {
         logwarn('[srs] Card enqueue failed:', err);
       });
       return next;
     });
-  }, []);
+    },
+    [],
+  );
 
   const removeCard = useCallback((lang: string, wordId: string) => {
     setStore((prev) => {
