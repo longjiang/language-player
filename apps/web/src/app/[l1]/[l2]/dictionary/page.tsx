@@ -162,7 +162,7 @@ export default function DictionaryPage() {
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">
-            {t('msg.dictionary_empty_state', { l2: languageName(l2.code) })}
+            {t('msg.dictionary_empty_state', { l2: languageName(l2.code, l1.code) })}
           </p>
         </div>
       )}
