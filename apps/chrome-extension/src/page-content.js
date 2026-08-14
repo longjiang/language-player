@@ -188,7 +188,7 @@ async function tokenizePage() {
   log(`[PAGE] candidates=${allCandidates.length}, visibleLeaf=${blocks.length}, hidden=${hiddenCount}, insideSkipped=${insideSkippedCount}, nested=${nestedCount}${skippedSamples.length ? `, skippedSamples=[${skippedSamples.join(', ')}]` : ''}`);
 
   const blocksWithNodes = [];
-  let emptyBlocks = 0;
+  const emptyBlocks = [];
   for (const block of blocks) {
     block.__lpvOriginalHtml = block.innerHTML;
     if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
@@ -197,13 +197,15 @@ async function tokenizePage() {
       blocksWithNodes.push({ block, nodes });
       block.classList.add('lpv-page-tokenizing');
     } else {
-      emptyBlocks++;
+      emptyBlocks.push(block);
     }
+  }
+  if (emptyBlocks.length > 0) {
+    log(`[PAGE] blocks with no tokenizable text: ${emptyBlocks.length}; sample=${emptyBlocks.slice(0, 5).map((block) => describeBlock(block)).join(' | ')}`);
   }
   if (blocksWithNodes.length === 0) return;
   const textNodes = blocksWithNodes.flatMap(({ nodes }) => nodes);
-  log(`[PAGE] scanning: ${blocks.length} blocks, ${textNodes.length} text nodes`);
-  log(`[PAGE] blocks with no tokenizable text: ${emptyBlocks}; sample=${blocksWithNodes.slice(0, 5).map(({ block }) => describeBlock(block)).join(' | ')}`);
+  log(`[PAGE] scanning: ${blocksWithNodes.length} blocks, ${textNodes.length} text nodes`);
 
   const uniqueTexts = [...new Set(textNodes.map((node) => node.nodeValue))];
   let resultsByText = new Map();
@@ -230,7 +232,7 @@ async function tokenizePage() {
     block.classList.remove('lpv-page-tokenizing');
     tokenizedBlocks.add(block);
   }
-  log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocks.length} blocks`);
+  log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocksWithNodes.length} blocks`);
   log(`[FURIGANA] page mode: rendered ${pageTokenStats.words} word tokens (${pageTokenStats.withPron} with pronunciation) as plain clickable spans — no inline ruby on page text`);
 }
 
