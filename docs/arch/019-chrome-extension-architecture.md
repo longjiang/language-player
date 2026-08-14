@@ -265,7 +265,9 @@ The extension supports six platforms. Each has a different mechanism for detecti
 10. If video.currentTime stops matching cue times (e.g. after seeking past a
     Netflix ad break), the content script reads Netflix's rendered
     `.player-timedtext` and re-anchors the active cue from that text,
-    deriving a timeline offset that is also applied to click-to-seek
+    deriving a timeline offset that is also applied to click-to-seek. It
+    prefers `player.getCurrentTime()` (content timeline, ms → s) as the
+    primary clock, since `<video>.currentTime` can shift during ad breaks.
 ```
 
 #### YouTube (InnerTube API + Page Data)
