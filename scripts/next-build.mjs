@@ -6,14 +6,15 @@
  *   node scripts/next-build.mjs [--dry-run]
  *
  * N = max(last iOS build number, last Android versionCode in the ledger) + 1.
- * Writes N into both apps/mobile/app.json ios.buildNumber and
- * android.versionCode so iOS and Android always upload with the same number.
+ * Writes N into packages/shared/src/version.json (PRODUCT_BUILD_NUMBER),
+ * which apps/mobile/app.config.js reads for ios.buildNumber and
+ * android.versionCode, so iOS and Android always upload with the same number.
  */
 
 import {
-  paths,
-  readJson,
-  writeJson,
+  readSharedBuildNumber,
+  writeSharedVersionJson,
+  readSharedVersion,
   parseLedger,
   ledgerMax,
   isDryRun,
@@ -25,16 +26,12 @@ const iosMax = ledgerMax(rows, 'ios');
 const androidMax = ledgerMax(rows, 'android');
 const nextN = Math.max(iosMax, androidMax) + 1;
 
-const app = readJson(paths.mobileAppJson);
-const currentIos = app.expo?.ios?.buildNumber;
-const currentAndroid = app.expo?.android?.versionCode;
+const currentBuild = readSharedBuildNumber();
 
-if (
-  currentIos != null &&
-  String(currentIos) === String(nextN) &&
-  currentAndroid === nextN
-) {
-  console.log(`app.json already prepared for build ${nextN}; nothing to do.`);
+if (currentBuild === nextN) {
+  console.log(
+    `PRODUCT_BUILD_NUMBER already set to ${nextN} (ledger max — iOS: ${iosMax}, Android: ${androidMax}); nothing to do.`,
+  );
   process.exit(0);
 }
 
@@ -45,13 +42,10 @@ if (dryRun) {
   process.exit(0);
 }
 
-if (!app.expo.ios) app.expo.ios = {};
-app.expo.ios.buildNumber = String(nextN);
-app.expo.android.versionCode = nextN;
-writeJson(paths.mobileAppJson, app);
+writeSharedVersionJson(readSharedVersion(), nextN);
 
 console.log(
-  `app.json set to ios.buildNumber=${nextN}, android.versionCode=${nextN}`,
+  `PRODUCT_BUILD_NUMBER set to ${nextN} (app.config.js will use it for ios.buildNumber and android.versionCode)`,
 );
 console.log(
   'Then: run scripts/verify-version.mjs after expo prebuild, and scripts/record-build.mjs after the upload.',
