@@ -117,6 +117,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           context: {
             form: tokenForm,
             text: contextText || tokenForm,
+            textTitle: document.title,
             starttime: cueStartTime,
             youtube_id: youtubeId,
             videoTitle,
@@ -127,6 +128,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             context: {
               form: tokenForm,
               text: contextText || tokenForm,
+              textTitle: document.title,
               starttime: cueStartTime,
               youtube_id: youtubeId,
               videoTitle,
