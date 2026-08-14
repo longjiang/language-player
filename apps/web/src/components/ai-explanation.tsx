@@ -5,9 +5,9 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
-import { useStreamingExplanation } from '@langplayer/api-client';
+import { useStreamingExplanation, type StreamDiagnostics } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, Check, Copy } from 'lucide-react';
@@ -67,16 +67,65 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialStreamStartedRef = useRef(false);
   const prevWordRef = useRef(word);
-  const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
+  const loggedEmptyBubbleRef = useRef<Set<number>>(new Set());
+  /** Id of the latest empty assistant placeholder, if any (for retries). */
+  const emptyAssistantIdRef = useRef<number | null>(null);
+
+  // SSE-level diagnostics for the shared streaming hook — reveals whether an
+  // empty bubble came from an empty server response, malformed SSE, an HTTP
+  // error, or something else, without adding app-specific logging to
+  // packages/api-client.
+  const { text: explanation, error, loading, stream, reset } = useStreamingExplanation(
+    useCallback(
+      (d: StreamDiagnostics) => {
+        const base = {
+          word,
+          chars: d.chars,
+          sseLines: d.sseLines,
+          parsedChunks: d.parsedChunks,
+          skippedPayloads: d.skippedPayloads,
+          malformedLines: d.malformedLines,
+          sawDone: d.sawDone,
+          httpStatus: d.httpStatus,
+          durationMs: d.durationMs,
+          error: d.error,
+        };
+        if (d.error) {
+          logwarn('AI explain stream diagnostics (error)', base);
+        } else if (d.chars === 0) {
+          logwarn('AI explain stream diagnostics (EMPTY, no error)', base);
+        } else {
+          log('AI explain stream diagnostics', base);
+        }
+      },
+      [word],
+    ),
+  );
 
   const appendMessage = useCallback((message: Omit<ChatMessage, 'id'>) => {
     const id = messageIdRef.current++;
     setMessages((prev) => [...prev, { ...message, id }]);
+    if (message.role === 'assistant' && !message.text) {
+      emptyAssistantIdRef.current = id;
+    }
     return id;
   }, []);
 
   const updateMessage = useCallback((id: number, patch: Partial<ChatMessage>) => {
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== id) return m;
+        const next = { ...m, ...patch };
+        if (next.role === 'assistant') {
+          if (next.text) {
+            if (emptyAssistantIdRef.current === id) emptyAssistantIdRef.current = null;
+          } else {
+            emptyAssistantIdRef.current = id;
+          }
+        }
+        return next;
+      }),
+    );
   }, []);
 
   // Build the prompt: succinct explanation of the word in context, then 2
@@ -112,18 +161,26 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
-    // Reuse an empty assistant placeholder (e.g. retry after an error) instead
-    // of stacking a new message.
-    const lastEmpty = [...messages].reverse().find((m) => m.role === 'assistant' && !m.text);
-    const targetId =
-      lastEmpty
-        ? lastEmpty.id
-        : appendMessage({ role: 'assistant', text: '', prompt });
-    updateMessage(targetId, { text: '', prompt });
+    // Reuse the latest empty assistant placeholder (e.g. retry after an error
+    // or StrictMode's double-mount abort) instead of stacking a new message.
+    // Tracked in a ref because the StrictMode second effect pass re-runs this
+    // callback with a stale `messages` closure.
+    const existingEmptyId = emptyAssistantIdRef.current;
+    let targetId: number;
+    if (existingEmptyId !== null) {
+      targetId = existingEmptyId;
+      updateMessage(targetId, { text: '', prompt });
+    } else {
+      targetId = appendMessage({ role: 'assistant', text: '', prompt });
+    }
     setStreamingId(targetId);
-    log('AI explain stream start', { word });
+    log('AI explain stream start', {
+      word,
+      targetId,
+      reusing: existingEmptyId !== null,
+    });
     stream(prompt);
-  }, [stream, buildPrompt, word, messages, appendMessage, updateMessage]);
+  }, [stream, buildPrompt, word, appendMessage, updateMessage]);
 
   const handleRegenerate = useCallback((messageId: number) => {
     const target = messages.find((m) => m.id === messageId);
@@ -207,6 +264,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   useEffect(() => () => {
     if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     reset();
+    // StrictMode runs this cleanup between the double-mounted effect passes.
+    // Reset the one-shot guard so the second pass re-fetches instead of
+    // stranding the aborted empty placeholder (an empty bubble with no
+    // regenerate/copy buttons). The re-fetch reuses that placeholder.
+    initialStreamStartedRef.current = false;
   }, [reset]);
 
   // When the same component instance is reused for a new dictionary entry,
@@ -215,6 +277,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     if (prevWordRef.current === word) return;
     prevWordRef.current = word;
     initialStreamStartedRef.current = false;
+    loggedEmptyBubbleRef.current = new Set();
+    emptyAssistantIdRef.current = null;
     setMessages([]);
     setStreamingId(null);
     setUsedFollowUps(new Set());
@@ -234,11 +298,22 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       return;
     }
     if (wasLoadingRef.current) {
-      log('AI explain stream finished', { chars: explanation.length, error: error ?? undefined });
+      if (!explanation && !error) {
+        logwarn('AI explain stream finished EMPTY without error', {
+          word,
+          chars: explanation.length,
+        });
+      } else {
+        log('AI explain stream finished', {
+          word,
+          chars: explanation.length,
+          error: error ?? undefined,
+        });
+      }
       wasLoadingRef.current = false;
       setStreamingId(null);
     }
-  }, [loading, explanation, error]);
+  }, [loading, explanation, error, word]);
 
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
@@ -321,9 +396,27 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                 </div>
               </div>
             ) : (
-              <div key={message.id} className="flex justify-start">
-                <div className="max-w-[95%]">
-                  <div className="rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
+              (() => {
+                const streamingThis = loading && message.id === streamingId;
+                if (
+                  !message.text &&
+                  !streamingThis &&
+                  !loggedEmptyBubbleRef.current.has(message.id)
+                ) {
+                  loggedEmptyBubbleRef.current.add(message.id);
+                  logwarn('AI explain rendered empty assistant bubble', {
+                    id: message.id,
+                    word,
+                    loading,
+                    streamingId,
+                    error: error ?? undefined,
+                    messages: messages.length,
+                  });
+                }
+                return (
+                  <div key={message.id} className="flex justify-start">
+                    <div className="max-w-[95%]">
+                      <div className="rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
                     {loading && message.id === streamingId && !message.text ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                     ) : message.text ? (
@@ -359,9 +452,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                         {copiedId === message.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                       </button>
                     </div>
-                  ) : null}
-                </div>
-              </div>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })()
             ),
           )}
         </div>
