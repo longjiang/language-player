@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import * as SwitchPrimitive from '@rn-primitives/switch';
 import { useColorScheme } from 'nativewind';
+import { darkSemantic, hslToHex, lightSemantic } from '@langplayer/shared';
 
 // ── Root ──
 
@@ -14,8 +15,8 @@ export function Root({ className, ...props }: RootProps) {
   const isDark = colorScheme === 'dark';
 
   const bgColor = props.checked
-    ? isDark ? 'hsl(228, 74%, 65%)' : 'hsl(228, 74%, 59%)'
-    : isDark ? 'hsl(230, 20%, 18%)' : 'hsl(210, 17%, 94%)';
+    ? hslToHex(isDark ? darkSemantic.primary : lightSemantic.primary)
+    : hslToHex(isDark ? darkSemantic.muted : lightSemantic.muted);
 
   return (
     <SwitchPrimitive.Root
@@ -24,7 +25,7 @@ export function Root({ className, ...props }: RootProps) {
       {...props}
     >
       <SwitchPrimitive.Thumb
-        className="h-5 w-5 rounded-full bg-background shadow-sm"
+        className="h-5 w-5 rounded-full bg-primary-foreground shadow-sm"
         style={{ marginLeft: props.checked ? 22 : 2 }}
       />
     </SwitchPrimitive.Root>
