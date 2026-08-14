@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Tonton di Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Jadikan teks halaman interaktif"
+  },
+  "followLink": {
+    "message": "Buka tautan"
+  },
+  "clickPageWord": {
+    "message": "Klik kata apa pun di halaman untuk mencarinya di kamus."
+  },
   "popularLanguages": {
     "message": "Populer"
   },

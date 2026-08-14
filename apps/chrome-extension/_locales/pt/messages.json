@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Assistir no Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Tornar o texto da página interativo"
+  },
+  "followLink": {
+    "message": "Abrir link"
+  },
+  "clickPageWord": {
+    "message": "Clique em qualquer palavra da página para consultá-la."
+  },
   "popularLanguages": {
     "message": "Popular"
   },

@@ -640,6 +640,180 @@ Text: ${cue.text}`;
   );
 };
 
+// ── Page Panel (text mode) ────────────────────────────────────────────────
+
+interface PagePanelProps {
+  l1Code: string;
+  l2Code: string;
+  pageUrl: string;
+  onFollowLink?: (href: string) => void;
+}
+
+interface PageLookupDetail {
+  token: LemmatizedToken;
+  blockText: string;
+  href?: string | null;
+}
+
+/** Side panel content for page mode: translated block + dictionary card.
+ *  Shares the video mode's bottom bar, SavedWordsProvider, and DictionaryCard. */
+const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollowLink }) => {
+  const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const [blockText, setBlockText] = useState('');
+  const [href, setHref] = useState<string | null>(null);
+  const [translation, setTranslation] = useState('');
+  const [translationLoading, setTranslationLoading] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [showPhonetics, setShowPhonetics] = useState(true);
+  const [textScale, setTextScale] = useState(2);
+  const { isPro, loading: subLoading } = useSubscription();
+
+  useEffect(() => {
+    try {
+      chrome.storage.local.get(['showPhonetics', 'showTranslation', 'textScale'], (result) => {
+        if (result.showPhonetics !== undefined) setShowPhonetics(result.showPhonetics);
+        if (result.showTranslation !== undefined) setShowTranslation(result.showTranslation);
+        if (result.textScale !== undefined) setTextScale(result.textScale);
+      });
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<PageLookupDetail>).detail;
+      if (!detail?.token) return;
+      setSelectedToken(detail.token);
+      setBlockText(detail.blockText || '');
+      setHref(detail.href || null);
+      setTranslation('');
+    };
+    window.addEventListener('lpv-page-lookup', handler);
+    return () => window.removeEventListener('lpv-page-lookup', handler);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedToken || !showTranslation || !blockText) {
+      setTranslation('');
+      return;
+    }
+    const controller = new AbortController();
+    setTranslationLoading(true);
+    fetch(`${API_BASE}/translate_array`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: [blockText], l1: l1Code, l2: l2Code }),
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setTranslation(data.translated_texts?.[0] || '');
+      })
+      .catch((err: Error) => {
+        if (err.name !== 'AbortError') setTranslation('');
+      })
+      .finally(() => setTranslationLoading(false));
+    return () => controller.abort();
+  }, [selectedToken, showTranslation, blockText, l1Code, l2Code]);
+
+  const handlePhoneticsToggle = (checked: boolean) => {
+    setShowPhonetics(checked);
+    try { chrome.storage.local.set({ showPhonetics: checked }); } catch {}
+  };
+
+  const handleTranslationToggle = (checked: boolean) => {
+    setShowTranslation(checked);
+    try { chrome.storage.local.set({ showTranslation: checked }); } catch {}
+  };
+
+  const adjustTextScale = (delta: number) => {
+    setTextScale(prev => {
+      const next = Math.max(0, Math.min(4, prev + delta));
+      try { chrome.storage.local.set({ textScale: next }); } catch {}
+      return next;
+    });
+  };
+
+  return (
+    <>
+      <div className="lpv-page-panel-scroll" style={{ '--lpv-font-scale': TEXT_SCALE_SIZES[textScale] / 100 } as React.CSSProperties}>
+        {!selectedToken && (
+          <div className="lpv-page-empty">{t('clickPageWord')}</div>
+        )}
+        {translationLoading && (
+          <div className="lpv-page-translation lpv-page-translation-loading">
+            <span className="lpv-spinner" /> {t('translating')}
+          </div>
+        )}
+        {translation && !translationLoading && (
+          <div className="lpv-page-translation">{translation}</div>
+        )}
+        {href && selectedToken && (
+          <button
+            className="lpv-page-follow-link"
+            onClick={() => onFollowLink?.(href)}
+          >
+            {t('followLink')} →
+          </button>
+        )}
+        {selectedToken && (
+          <DictionaryCard
+            token={selectedToken}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            contextText={blockText}
+            pageUrl={pageUrl}
+            isPro={isPro}
+            subLoading={subLoading}
+            onClose={() => setSelectedToken(null)}
+          />
+        )}
+      </div>
+
+      {/* Bottom bar — same controls as video mode */}
+      <div className="lpv-bottom-bar">
+        <label className="lpv-translate-switch" title={t('showPhonetics') || 'Show Phonetics'}>
+          <input
+            type="checkbox"
+            checked={showPhonetics}
+            onChange={(e) => handlePhoneticsToggle(e.target.checked)}
+          />
+          <span className="lpv-switch-slider" />
+          <span className="lpv-switch-label">あ</span>
+        </label>
+        <label className="lpv-translate-switch" title={t('showTranslation')}>
+          <input
+            type="checkbox"
+            checked={showTranslation}
+            onChange={(e) => handleTranslationToggle(e.target.checked)}
+          />
+          <span className="lpv-switch-slider" />
+          <span className="lpv-switch-label">{t('translate')}</span>
+        </label>
+        <div className="lpv-stepper">
+          <button
+            className="lpv-stepper-btn"
+            onClick={() => adjustTextScale(-1)}
+            disabled={textScale <= 0}
+            title={t('action.zoom_out') || 'Smaller'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/></svg>
+          </button>
+          <span className="lpv-stepper-value">A</span>
+          <button
+            className="lpv-stepper-btn"
+            onClick={() => adjustTextScale(1)}
+            disabled={textScale >= 4}
+            title={t('action.zoom_in') || 'Larger'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // ── Mount function — called by content-entry.js ────────────────────────────
 
 let root: ReturnType<typeof createRoot> | null = null;
@@ -680,5 +854,23 @@ export function unmountTranscript(): void {
   if (root) {
     root.unmount();
     root = null;
+  }
+}
+
+let pageRoot: ReturnType<typeof createRoot> | null = null;
+
+export function mountPagePanel(container: HTMLElement, props: PagePanelProps): void {
+  if (!pageRoot) pageRoot = createRoot(container);
+  pageRoot.render(
+    <SavedWordsProvider l2Code={props.l2Code}>
+      <PagePanel {...props} />
+    </SavedWordsProvider>,
+  );
+}
+
+export function unmountPagePanel(): void {
+  if (pageRoot) {
+    pageRoot.unmount();
+    pageRoot = null;
   }
 }

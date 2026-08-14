@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Bekijken in Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Paginatekst interactief maken"
+  },
+  "followLink": {
+    "message": "Link openen"
+  },
+  "clickPageWord": {
+    "message": "Klik op een willekeurig woord op de pagina om het op te zoeken."
+  },
   "popularLanguages": {
     "message": "Populair"
   },

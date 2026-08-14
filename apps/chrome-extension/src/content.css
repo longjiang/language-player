@@ -1069,3 +1069,68 @@ body.lpv-panel-open disney-web-player-ui {
   border-color: rgba(255, 193, 7, 0.3);
   background: rgba(255, 193, 7, 0.1);
 }
+
+/* ── Page Mode (webpage tokenization) ─────────────────────────────────── */
+
+.lpv-page-panel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.lpv-page-empty {
+  color: #777;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px 8px;
+}
+
+.lpv-page-translation {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #00A8E1;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: calc(13px * var(--lpv-font-scale, 1));
+  line-height: 1.7;
+  color: #ccc;
+}
+
+.lpv-page-translation-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+}
+
+.lpv-page-follow-link {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 168, 225, 0.18);
+  border: 1px solid rgba(0, 168, 225, 0.45);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lpv-page-follow-link:hover {
+  background: rgba(0, 168, 225, 0.3);
+}
+
+.lpv-page-token {
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.lpv-page-token:hover {
+  background: rgba(0, 168, 225, 0.22);
+  box-shadow: 0 0 0 1px rgba(0, 168, 225, 0.35);
+}

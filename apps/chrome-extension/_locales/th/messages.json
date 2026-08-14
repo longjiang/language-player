@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "รับชมใน Language Player"
   },
+  "makeTextInteractive": {
+    "message": "ทำให้ข้อความบนหน้าเว็บโต้ตอบได้"
+  },
+  "followLink": {
+    "message": "เปิดลิงก์"
+  },
+  "clickPageWord": {
+    "message": "คลิกคำใดก็ได้บนหน้าเว็บเพื่อค้นหาในพจนานุกรม"
+  },
   "popularLanguages": {
     "message": "เป็นที่นิยม"
   },

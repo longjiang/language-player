@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "在 Language Player 中觀看"
   },
+  "makeTextInteractive": {
+    "message": "讓頁面文字可互動"
+  },
+  "followLink": {
+    "message": "開啟連結"
+  },
+  "clickPageWord": {
+    "message": "點擊頁面上的任意單字即可查詞典。"
+  },
   "popularLanguages": {
     "message": "熱門"
   },
