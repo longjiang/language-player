@@ -298,6 +298,12 @@ Tagging starts with build 3.
 The repo also contains legacy `0.1.x` tags from 2024 (old GO-app history);
 they predate the scheme and are left untouched.
 
+**Retroactive milestone tags (2026-08-14):** notable post-3.0.0 commits are
+tagged `v3.0.0-<slug>` (e.g. `v3.0.0-subs-search-match`) as lightweight
+markers for feature/spec milestones. These are not store-upload tags, so they
+are not recorded in the ledger; the plain `v3.0.0` tag anchors the release
+commit documented in SPEC-067.
+
 **Web deploys** are not tagged per deploy (continuous Netlify/CI deploys are
 identified by deploy ID + git SHA); only product releases get tags.
 
