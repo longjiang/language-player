@@ -20,7 +20,6 @@ import {
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import {
   getCachedEntries,
-  getCachedEntryById,
   setCachedEntryById,
   enqueueLookupWords,
   getL1CachedEntry,
@@ -617,41 +616,54 @@ export default function ReviewPage() {
     if (!showDefinition || l1.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
-    const form = firstLookupForm(card.word);
+    const sw = card.word;
+    const form = firstLookupForm(sw);
     // Skip if we already have an L1 entry for this word
-    if (l1Entry?.id === card.word.id) return;
+    if (l1Entry?.id === sw.id) return;
 
     // Reuse an L1-translated entry already fetched elsewhere (e.g. by the
     // dictionary popup) — keyed by entry id, so the same entry's definitions
     // are translated only once instead of on every reveal.
-    const cached = getL1CachedEntry(l2Code, l1.code, card.word.id);
+    const cached = getL1CachedEntry(l2Code, l1.code, sw.id);
     if (cached) {
       setL1Entry(cached);
       return;
     }
 
+    // The first lookup form is often the inflected surface form (e.g.
+    // 顰めらせられる), which the dictionary resolves to a different LLM entry
+    // id than the saved word. Try every saved form/head until one matches the
+    // exact saved id before giving up.
+    const candidates = [
+      ...new Set([
+        form,
+        ...(sw.forms ?? []),
+        (sw as { head?: string }).head,
+        sw.context?.form,
+        ...(sw.instances ?? []).map((i) => i.form),
+      ].filter((f): f is string => typeof f === 'string' && !!f && f !== '?')),
+    ];
+
     // lookupL1Text dedupes concurrent fetches and caches each result by entry
     // id, so the popup and this back side always share the exact translation.
     let cancelled = false;
-    lookupL1Text(form, l2Code, l1.code)
-      .then((results) => {
+    (async () => {
+      for (const candidate of candidates) {
         if (cancelled) return;
+        const results = await lookupL1Text(candidate, l2Code, l1.code).catch(() => []);
         // Only accept the exact saved entry — a text-lookup can return a
         // different entry (e.g. EDICT instead of the saved LLM entry) and
         // would make the bookmark read "not saved".
-        const match =
-          results.find((e) => isSameEntryId(card.word.id, e.id, baseCode(l2.code))) ?? null;
+        const match = results.find((e) => isSameEntryId(sw.id, e.id, baseCode(l2.code))) ?? null;
         if (match) {
-          const normalized = match.id === card.word.id ? match : { ...match, id: card.word.id };
+          const normalized = match.id === sw.id ? match : { ...match, id: sw.id };
           setL1CachedEntry(l2Code, l1.code, normalized);
           setL1Entry(normalized);
-        } else {
-          setL1Entry(null);
+          return;
         }
-      })
-      .catch(() => {
-        // Silently fail — the English def from cache is still shown
-      });
+      }
+      if (!cancelled) setL1Entry(null);
+    })();
     return () => { cancelled = true; };
   }, [showDefinition, currentIndex, cards, l1.code, l2Code, l1Entry?.id, currentEntry?.id]);
 
@@ -662,9 +674,11 @@ export default function ReviewPage() {
   // the bookmark read "not saved" for an entry that is actually saved.
   useEffect(() => {
     const sw = currentCard?.word;
-    if (!sw || !showDefinition || currentEntry || fallbackEntry) return;
+    if (!sw || !showDefinition || fallbackEntry || l1Entry?.id === sw.id) return;
     const id = sw.id;
-    if (getCachedEntryById(l2Code, id)) return;
+    // An English cache hit must not block the L1 fetch — the whole point of
+    // this effect is to replace the English definitions with translated ones.
+    if (getL1CachedEntry(l2Code, l1.code, id)) return;
 
     let cancelled = false;
     setExactEntryLoading((prev) => ({ ...prev, [id]: true }));
