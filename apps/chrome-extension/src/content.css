@@ -1134,3 +1134,9 @@ body.lpv-panel-open disney-web-player-ui {
   background: rgba(0, 168, 225, 0.22);
   box-shadow: 0 0 0 1px rgba(0, 168, 225, 0.35);
 }
+
+.lpv-page-tokenizing {
+  animation: lpv-pulse 1.5s ease-in-out infinite;
+  opacity: 0.55;
+  border-radius: 3px;
+}
