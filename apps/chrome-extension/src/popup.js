@@ -386,9 +386,20 @@ document.addEventListener('DOMContentLoaded', function() {
    *  (mirrors manifest.json content_scripts matches). */
   const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 
+  /** Language Player's own web assets — never offer page tokenization there. */
+  const OWN_HOST_RE = /(^|\.)(languageplayer\.io|language-player\.netlify\.app)$/i;
+
   function isVideoDomain(tabUrl) {
     try {
       return VIDEO_HOST_RE.test(new URL(tabUrl).hostname);
+    } catch {
+      return false;
+    }
+  }
+
+  function isOwnDomain(tabUrl) {
+    try {
+      return OWN_HOST_RE.test(new URL(tabUrl).hostname);
     } catch {
       return false;
     }
@@ -417,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
    *  - anything else → hidden (subtitle sites already have the in-page panel)
    *  Warns when the page's detected L2 differs from the user's saved L2. */
   function updateOpenInWebBtn(tabUrl, status) {
-    if (!tabUrl || !/^https?:/i.test(tabUrl)) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl) || isOwnDomain(tabUrl)) {
       openInWebBtn.classList.add('hidden');
       openWebWarn.classList.add('hidden');
       return;
@@ -459,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /** Show/hide "Make Text on Page Interactive" — only on pages where the
    *  "Read in Language Player" reader button is visible (non-video domains). */
   function updateMakeTextInteractiveBtn(tabUrl) {
-    if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl)) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl) || isOwnDomain(tabUrl)) {
       makeTextRow.classList.add('hidden');
       return;
     }

@@ -13,6 +13,8 @@ import { mountPagePanel, unmountPagePanel } from './transcript-app';
 import { buildRuby } from '@langplayer/utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
+/** Language Player's own web assets — never tokenize these (mirrors popup.js). */
+const OWN_HOST_RE = /(^|\.)(languageplayer\.io|language-player\.netlify\.app)$/i;
 const BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote, td, figcaption, dt, dd';
 const SKIP_SELECTOR = 'script, style, noscript, template, svg, canvas, iframe, input, textarea, select, [contenteditable], #lpv-transcript-panel';
 
@@ -32,6 +34,14 @@ let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
 function isVideoHost() {
   try {
     return VIDEO_HOST_RE.test(location.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isOwnHost() {
+  try {
+    return OWN_HOST_RE.test(location.hostname);
   } catch {
     return false;
   }
@@ -371,7 +381,10 @@ function startObserver() {
 async function init() {
   if (initialized) return;
   initialized = true;
-  if (isVideoHost()) return;
+  if (isVideoHost() || isOwnHost()) {
+    log(`[PAGE] init skipped: host=${location.hostname} (${isVideoHost() ? 'video' : 'own asset'})`);
+    return;
+  }
 
   const sync = await chrome.storage.sync.get('pageTokenizationEnabled');
   if (!sync.pageTokenizationEnabled) return;
