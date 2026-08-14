@@ -77,6 +77,7 @@ async function fetchTokensForTexts(texts, l2) {
   const results = [];
   for (let i = 0; i < texts.length; i += 50) {
     const chunk = texts.slice(i, i + 50);
+    log(`[PAGE] batch tokenize POST (${chunk.length} texts, l2=${l2.split('-')[0]})`);
     const res = await fetch(`${API_BASE}/lemmatize-normalized/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +91,7 @@ async function fetchTokensForTexts(texts, l2) {
 }
 
 function renderTextNode(node, tokens) {
-  if (!tokens || tokens.length === 0) return;
+  if (!tokens || tokens.length === 0) return false;
   const frag = document.createDocumentFragment();
   for (const token of tokens) {
     if (!token || typeof token.text !== 'string') continue;
@@ -111,6 +112,7 @@ function renderTextNode(node, tokens) {
     frag.appendChild(span);
   }
   node.parentNode.replaceChild(frag, node);
+  return true;
 }
 
 function normalizeBlockText(text) {
@@ -151,6 +153,7 @@ async function tokenizePage() {
     textNodes.push(...getTextNodes(block));
   }
   if (textNodes.length === 0) return;
+  log(`[PAGE] scanning: ${blocks.length} blocks, ${textNodes.length} text nodes`);
 
   const uniqueTexts = [...new Set(textNodes.map((node) => node.nodeValue))];
   let resultsByText = new Map();
@@ -165,12 +168,14 @@ async function tokenizePage() {
     return;
   }
 
+  let renderedNodes = 0;
   for (const block of blocks) {
     for (const node of getTextNodes(block)) {
-      renderTextNode(node, resultsByText.get(node.nodeValue));
+      if (renderTextNode(node, resultsByText.get(node.nodeValue))) renderedNodes++;
     }
     tokenizedBlocks.add(block);
   }
+  log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocks.length} blocks`);
 }
 
 function createPanel() {
@@ -227,6 +232,7 @@ function createPanel() {
     pageUrl: location.href,
     onFollowLink: (href) => { location.href = href; },
   });
+  log('[PAGE] side panel opened');
 }
 
 async function closePanel() {
@@ -238,6 +244,7 @@ async function closePanel() {
 
 function cleanup() {
   enabled = false;
+  log(`[PAGE] cleanup: restoring ${tokenizedBlocks.size} tokenized blocks`);
   if (observer) {
     observer.disconnect();
     observer = null;
@@ -285,6 +292,7 @@ async function init() {
   await setLocale(l1Code);
 
   enabled = true;
+  log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}`);
   await tokenizePage();
   createPanel();
   startObserver();
@@ -292,11 +300,13 @@ async function init() {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'pageTokenizationOn') {
+    log('[PAGE] toggle enabled from popup');
     initialized = false;
     init().then(() => sendResponse({ ok: true }));
     return true;
   }
   if (message.action === 'pageTokenizationOff') {
+    log('[PAGE] toggle disabled from popup');
     cleanup();
     sendResponse({ ok: true });
   }
@@ -305,9 +315,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync' && changes.pageTokenizationEnabled) {
     if (changes.pageTokenizationEnabled.newValue) {
+      log('[PAGE] storage: pageTokenizationEnabled → true');
       initialized = false;
       init();
     } else {
+      log('[PAGE] storage: pageTokenizationEnabled → false');
       cleanup();
     }
   }

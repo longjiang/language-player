@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
     setTranscriptChecking();
     fillHtml('#transcript-hint', 'popupCaptionsHint');
-    fillText('#make-text-interactive-btn', 'makeTextInteractive');
+    fillText('#make-text-interactive-label', 'makeTextInteractive');
   }
 
   /** Grey-out state shown while checking for subtitles (and after locale
@@ -378,7 +378,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const transcriptHint = document.getElementById('transcript-hint');
   const openInWebBtn = document.getElementById('open-in-web-btn');
   const openWebWarn = document.getElementById('open-web-warn');
-  const makeTextBtn = document.getElementById('make-text-interactive-btn');
+  const makeTextRow = document.getElementById('make-text-interactive-row');
+  const makeTextToggle = document.getElementById('make-text-interactive-toggle');
   const WEB_APP_URL = 'https://language-player.netlify.app';
 
   /** Supported video domains where the content script runs
@@ -459,18 +460,17 @@ document.addEventListener('DOMContentLoaded', function() {
    *  "Read in Language Player" reader button is visible (non-video domains). */
   function updateMakeTextInteractiveBtn(tabUrl) {
     if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl)) {
-      makeTextBtn.classList.add('hidden');
+      makeTextRow.classList.add('hidden');
       return;
     }
     chrome.storage.sync.get('pageTokenizationEnabled', (prefs) => {
-      makeTextBtn.classList.toggle('lpv-btn-active', !!prefs.pageTokenizationEnabled);
-      makeTextBtn.classList.remove('hidden');
+      makeTextToggle.checked = !!prefs.pageTokenizationEnabled;
+      makeTextRow.classList.remove('hidden');
     });
   }
 
-  makeTextBtn.addEventListener('click', async () => {
-    const prefs = await chrome.storage.sync.get('pageTokenizationEnabled');
-    const next = !prefs.pageTokenizationEnabled;
+  makeTextToggle.addEventListener('change', async () => {
+    const next = makeTextToggle.checked;
     await chrome.storage.sync.set({ pageTokenizationEnabled: next });
 
     let tab = null;
