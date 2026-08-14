@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
-import { View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
+import { View, ActivityIndicator, Text, Pressable, Linking, useWindowDimensions } from 'react-native';
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -131,9 +131,17 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     }, []);
 
     if (errorKey) {
+      const embedBlocked = errorKey === 'msg.youtube_error_embed_disabled';
       return (
-        <View style={{ width: playerWidth, height: videoHeight }} className="items-center justify-center bg-muted p-4">
-          <Text className="text-center text-sm text-destructive">{t(errorKey)}</Text>
+        <View style={{ width: playerWidth, height: videoHeight }} className="items-center justify-center gap-2 bg-muted p-4">
+          <Text className="text-center text-sm text-muted-foreground">{t(errorKey)}</Text>
+          {embedBlocked && (
+            <Pressable
+              onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${youtubeId}`)}
+            >
+              <Text className="text-sm font-medium text-primary">{t('action.view_on_youtube')} ↗</Text>
+            </Pressable>
+          )}
         </View>
       );
     }
