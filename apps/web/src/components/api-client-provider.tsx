@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useMemo, useCallback } from 'react';
+import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { createApiClient } from '@langplayer/api-client';
 import { useSession, signOut } from 'next-auth/react';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { logerr } from '@/lib/logger';
+import { log, logwarn, logerr } from '@/lib/logger';
 import { setAuthTokens } from '@/lib/auth-tokens';
 import { clearUserData } from '@/lib/user-data-wipe';
 
@@ -37,6 +37,13 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
   const updateRef = useRef(update);
   updateRef.current = update;
   const refreshInFlight = useRef<Promise<string | null> | null>(null);
+  // Only log a session-state change once per distinct state (status + user id
+  // + token presence), so a state that stays broken doesn't spam the console.
+  const lastSessionStateRef = useRef<string | null>(null);
+  // Set when the session was authenticated but had no tokens; the 10s grace
+  // period lets a session refetch land before we treat it as dead (the
+  // saved-words hydration retry race — SPEC-062 / d923c49f).
+  const tokenlessGraceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * Single-flight refresh: concurrent callers (axios 401 interceptor and
@@ -48,7 +55,22 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
     refreshInFlight.current ??= (async (): Promise<string | null> => {
       const user = (sessionRef.current?.user as any) ?? null;
       const refreshToken = user?.refreshToken as string | undefined;
-      if (!refreshToken) return null;
+      if (!user) {
+        logwarn('[API] refresh skipped — no session user', {
+          hasSession: Boolean(sessionRef.current),
+          userId: null,
+        });
+        return null;
+      }
+      if (!refreshToken) {
+        logwarn('[API] refresh skipped — session has no refresh token', {
+          hasAccessToken: Boolean(user?.accessToken),
+          hasRefreshToken: false,
+          userId: user?.id ?? null,
+          userKeys: Object.keys(user ?? {}),
+        });
+        return null;
+      }
 
       try {
         const res = await fetch(`${PYTHON_API_URL}/auth/refresh`, {
@@ -113,10 +135,66 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
   // runs before children) guarantees every child that effects on this commit
   // reads the current token.
   const sessionUser = (session?.user as any) ?? null;
+  const sessionStateSig = `${status}:${sessionUser?.id ?? 'anon'}:${Boolean(sessionUser?.accessToken)}:${Boolean(sessionUser?.refreshToken)}`;
+  if (lastSessionStateRef.current !== sessionStateSig) {
+    lastSessionStateRef.current = sessionStateSig;
+    const state = {
+      status,
+      hasAccessToken: Boolean(sessionUser?.accessToken),
+      hasRefreshToken: Boolean(sessionUser?.refreshToken),
+      userId: sessionUser?.id ?? null,
+      userKeys: Object.keys(sessionUser ?? {}),
+    };
+    if (status === 'authenticated' && !sessionUser?.accessToken && !sessionUser?.refreshToken) {
+      logwarn('[API] authenticated session without tokens', state);
+    } else {
+      log('[API] session state', state);
+    }
+  }
   setAuthTokens(
     (sessionUser?.accessToken as string | undefined) ?? null,
     refreshAccessToken,
   );
+
+  // A JWT issued before the Supabase token claims were persisted (fe07cf02)
+  // authenticates the user id but carries no access/refresh token: every
+  // authenticated API call 401s with "Missing or invalid Authorization
+  // header" and the refresh path can never recover. Sign out once after a
+  // grace period so the app doesn't retry forever; the next login mints a
+  // fresh JWT with the token claims.
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    const user = (sessionRef.current?.user as any) ?? null;
+    if (!user) return;
+    if (user?.accessToken || user?.refreshToken) return;
+    if (tokenlessGraceTimer.current) return;
+    logwarn('[API] authenticated session without tokens — scheduling sign-out', {
+      status,
+      userId: user?.id ?? null,
+      userKeys: Object.keys(user ?? {}),
+    });
+    tokenlessGraceTimer.current = setTimeout(() => {
+      tokenlessGraceTimer.current = null;
+      const current = (sessionRef.current?.user as any) ?? null;
+      if (current?.accessToken || current?.refreshToken) {
+        log('[API] tokenless session recovered before sign-out', {
+          userId: current?.id ?? null,
+        });
+        return;
+      }
+      logwarn('[API] signing out — authenticated session still has no tokens', {
+        userId: current?.id ?? null,
+      });
+      clearUserData();
+      signOut({ redirect: false }).catch(() => {});
+    }, 10_000);
+    return () => {
+      if (tokenlessGraceTimer.current) {
+        clearTimeout(tokenlessGraceTimer.current);
+        tokenlessGraceTimer.current = null;
+      }
+    };
+  }, [status, sessionStateSig]);
 
   // Initialize synchronously (not in useEffect) — runs before child effects
   useMemo(() => {
