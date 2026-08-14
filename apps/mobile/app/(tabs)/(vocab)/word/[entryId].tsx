@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,6 +20,12 @@ import { getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
 import { SUPPORTED_L2S, type DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
+
+// Remember the last entry-detail tab the user opened (AsyncStorage) so the
+// same tab opens automatically next time. 'word' is excluded — the detail
+// page doesn't render the embedded Dictionary tab.
+const ENTRY_TAB_KEY = 'lp-entry-tab';
+const ENTRY_TAB_OPTIONS = ['examples', 'images', 'inflections', 'deepseek', 'corpus'];
 
 export default function WordDetailScreen() {
   const { entryId, l2 } = useLocalSearchParams<{ entryId: string; l2?: string }>();
@@ -51,6 +58,26 @@ export default function WordDetailScreen() {
   const [searchInput, setSearchInput] = useState('');
   const searchUserEditedRef = useRef(false);
   const prevEntryIdRef = useRef(entryId);
+  const [activeTab, setActiveTab] = useState<string>('examples');
+  const tabLoadedRef = useRef(false);
+
+  // Restore the remembered tab once, then persist every change.
+  useEffect(() => {
+    let cancelled = false;
+    AsyncStorage.getItem(ENTRY_TAB_KEY)
+      .then((stored) => {
+        if (!cancelled && stored && ENTRY_TAB_OPTIONS.includes(stored)) {
+          setActiveTab(stored);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { tabLoadedRef.current = true; });
+    return () => { cancelled = true; };
+  }, []);
+  useEffect(() => {
+    if (!tabLoadedRef.current) return;
+    AsyncStorage.setItem(ENTRY_TAB_KEY, activeTab).catch(() => {});
+  }, [activeTab]);
 
   // State for API-fetched entry (deep-link fallback)
   const [apiEntry, setApiEntry] = useState<DictionaryEntry | null>(null);
@@ -293,6 +320,8 @@ export default function WordDetailScreen() {
                   entry={entry}
                   l2Code={l2Code}
                   showDefinitionTab={false}
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
                 />
               </View>
             </View>

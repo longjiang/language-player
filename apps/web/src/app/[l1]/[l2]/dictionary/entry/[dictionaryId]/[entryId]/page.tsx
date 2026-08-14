@@ -14,6 +14,12 @@ import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 
+// Remember the last entry-detail tab the user opened (localStorage) so the
+// same tab opens automatically next time. 'word' is excluded — the entry
+// page doesn't render the embedded Dictionary tab.
+const ENTRY_TAB_KEY = 'lp-entry-tab';
+const ENTRY_TAB_OPTIONS = ['examples', 'images', 'inflections', 'deepseek', 'corpus'];
+
 /**
  * Single dictionary or LLM entry page.
  *
@@ -42,7 +48,26 @@ export default function DictionaryEntryPage() {
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('examples');
+
+  const [activeTab, setActiveTabState] = useState<string>('examples');
+
+  // Restore the remembered tab after mount — reading localStorage during the
+  // useState initializer would mismatch the server-rendered HTML.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(ENTRY_TAB_KEY);
+      if (stored && ENTRY_TAB_OPTIONS.includes(stored)) {
+        setActiveTabState(stored);
+      }
+    } catch { /* storage unavailable */ }
+  }, []);
+
+  const setActiveTab = useCallback((key: string) => {
+    setActiveTabState(key);
+    try {
+      localStorage.setItem(ENTRY_TAB_KEY, key);
+    } catch { /* private mode / storage unavailable */ }
+  }, []);
 
   const fetchEntry = useCallback(async () => {
     setLoading(true);
