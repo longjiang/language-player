@@ -47,6 +47,15 @@ function isOwnHost() {
   }
 }
 
+function isLocalhost() {
+  try {
+    const host = location.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.localhost');
+  } catch {
+    return false;
+  }
+}
+
 function isHidden(el) {
   try {
     if (!el || el.getClientRects().length === 0) return true;
@@ -381,8 +390,8 @@ function startObserver() {
 async function init() {
   if (initialized) return;
   initialized = true;
-  if (isVideoHost() || isOwnHost()) {
-    log(`[PAGE] init skipped: host=${location.hostname} (${isVideoHost() ? 'video' : 'own asset'})`);
+  if (isVideoHost() || isOwnHost() || isLocalhost()) {
+    log(`[PAGE] init skipped: host=${location.hostname} (${isVideoHost() ? 'video' : isOwnHost() ? 'own asset' : 'localhost'})`);
     return;
   }
 
