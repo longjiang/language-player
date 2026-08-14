@@ -9,12 +9,17 @@
  * Examples:
  *   node scripts/record-build.mjs 3 ios "App Store" 3.1.0
  *   node scripts/record-build.mjs 3 android "Internal testing" 3.1.0 --status consumed
+ *   node scripts/record-build.mjs 3 ios "App Store" 3.1.0 --tag v3.1.0-b3
  *
  * Refuses duplicates for the same platform and numbers that do not exceed the
  * platform's last recorded number (numbers can never be reused or decreased).
+ * When --tag is provided, the tag must already exist (create it first with
+ * scripts/tag-release.mjs).
  */
 
+import { execSync } from 'child_process';
 import {
+  paths,
   parseLedger,
   writeLedger,
   ledgerMax,
@@ -25,6 +30,8 @@ const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
 const dryRun = isDryRun(process.argv);
 const statusIndex = process.argv.indexOf('--status');
 const status = statusIndex >= 0 ? process.argv[statusIndex + 1] : 'consumed';
+const tagIndex = process.argv.indexOf('--tag');
+const tagName = tagIndex >= 0 ? process.argv[tagIndex + 1] : null;
 
 const [nRaw, platformRaw, track, version, date] = args;
 if (!nRaw || !platformRaw || !track || !version) {
@@ -47,6 +54,33 @@ if (!['ios', 'android'].includes(platform)) {
 if (!/^\d+\.\d+\.\d+$/.test(version)) {
   console.error(`Version must be MAJOR.MINOR.PATCH, got: ${version}`);
   process.exit(1);
+}
+
+if (tagName) {
+  let tagHead = null;
+  try {
+    tagHead = execSync(`git rev-parse --verify --quiet ${tagName}`, {
+      cwd: paths.root,
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    tagHead = null;
+  }
+  if (!tagHead) {
+    console.error(
+      `Tag "${tagName}" does not exist — create it with scripts/tag-release.mjs before uploading.`,
+    );
+    process.exit(1);
+  }
+  const head = execSync('git rev-parse HEAD', {
+    cwd: paths.root,
+    encoding: 'utf8',
+  }).trim();
+  if (tagHead !== head) {
+    console.warn(
+      `⚠  Tag ${tagName} points to ${tagHead.slice(0, 8)}, not HEAD (${head.slice(0, 8)}).`,
+    );
+  }
 }
 
 const recordDate = date ?? new Date().toISOString().slice(0, 10);
@@ -85,3 +119,8 @@ writeLedger(rows);
 console.log(
   `Recorded build ${row.n} (${row.label}, ${row.version}, ${row.date}, ${row.status}).`,
 );
+if (!tagName) {
+  console.log(
+    `Tip: tag this upload with scripts/tag-release.mjs (expected: v${version}-b${n}).`,
+  );
+}

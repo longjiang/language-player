@@ -272,6 +272,33 @@ contract with all three clients (web, mobile, Chrome extension).
   records the backend SHA it was tested against in its release notes; the
   backend's own version stays independent.
 
+### 4.7 Release tags (git)
+
+**Tag every store upload — not just major releases.** Tags give you a
+reproducible git marker for exactly what was uploaded, so "which commit is
+this build?" is answerable from the tag alone. Create the tag **before**
+uploading, on the exact commit whose `version.json`/manifest state produced
+the binary. Tags are immutable: never move, delete, or reuse one.
+
+| What | Tag format | Example | When |
+|---|---|---|---|
+| Product release (web + mobile) | `v<MAJOR.MINOR.PATCH>` | `v3.1.0` | Once per product release, at the release commit |
+| Any store upload — iOS or Android, any track | `v<MAJOR.MINOR.PATCH>-b<N>` | `v3.0.0-b3` | Every upload to any track, before uploading |
+| Chrome Web Store upload | `ext-v<manifest version>` | `ext-v1.0.110.1` | Every Web Store upload |
+| Flask backend (own repo) | `v<MAJOR.MINOR.PATCH>` | `v1.2.3` | Per backend release/deploy |
+
+The plain `v3.1.0` tag is created by `tag-release.mjs --release`, which also
+creates `v3.1.0-b<N>`. The build-suffixed tag is the one that maps 1:1 to the
+ledger: `record-build.mjs --tag v3.1.0-b3` verifies the tag exists before
+recording the consumed number.
+
+**Historical note:** builds 1–2 (3.0.0, both stores) predate this policy and
+were uploaded from a working tree, so no reliable retroactive tags exist.
+Tagging starts with build 3.
+
+**Web deploys** are not tagged per deploy (continuous Netlify/CI deploys are
+identified by deploy ID + git SHA); only product releases get tags.
+
 ## 5. Tooling & Verification Gates
 
 ### 5.1 New scripts (in `scripts/`)
@@ -281,6 +308,7 @@ contract with all three clients (web, mobile, Chrome extension).
 | `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.json` and `apps/web/package.json` together; `apps/mobile/app.config.js` picks it up automatically; fails if they drift |
 | `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `packages/shared/src/version.json` (`PRODUCT_BUILD_NUMBER`), which feeds both `ios.buildNumber` and `android.versionCode` via `app.config.js` |
 | `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
+| `tag-release.mjs [--release] [--extension]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>` |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
 
 ### 5.2 Pre-upload gate (`verify-version.mjs`)
@@ -313,11 +341,11 @@ versionCode regression.
 4. Human QA (SPEC-048 / SPEC-059 checklists)
 5. EXPO_PUBLIC_API_URL=... npx expo prebuild --platform android|ios
 6. node scripts/verify-version.mjs                        # gate
-7. Build archive / AAB (SPEC-048 § 3.1, SPEC-067 § 3.3)
-8. node scripts/verify-version.mjs                        # gate again post-build
-9. Upload to store track
-10. node scripts/record-build.mjs ...                     # ledger, even if rejected
-11. Tag v3.1.0
+7. node scripts/tag-release.mjs --release                 # v3.1.0-bN (+ v3.1.0)
+8. Build archive / AAB (SPEC-048 § 3.1, SPEC-067 § 3.3)
+9. node scripts/verify-version.mjs                        # gate again post-build
+10. Upload to store track
+11. node scripts/record-build.mjs ... --tag v3.1.0-bN     # ledger, even if rejected
 ```
 
 ### 5.4 Files to change on adoption
@@ -347,6 +375,7 @@ versionCode regression.
 | 3 | Do local dev builds need store build numbers? | **No.** Dev builds use git SHA / build date; store build numbers are consumed only by store uploads (recorded in the ledger). |
 | 4 | Convert `app.json` → `app.config.js` reading from `packages/shared`? | **Yes.** `apps/mobile/app.config.js` now reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from `packages/shared/src/version.json`; `app.json` is removed. |
 | 5 | How should the Flask backend be versioned? | **Proposed (2026-08-14):** own SemVer + git tags in `zerotohero-python-server/`, a `__version__` + `/api/version` endpoint, and git-SHA build identifiers. Independent from the product version; not yet implemented. |
+| 6 | Tag a version with every store upload? | **Yes.** Every upload to any track gets `v<version>-b<N>` before uploading; product releases also get plain `v<version>`; Chrome uploads get `ext-v<manifest version>`; backend tags live in its own repo. Implemented via `scripts/tag-release.mjs`. |
 
 ## 7. References
 
