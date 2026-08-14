@@ -37,9 +37,9 @@ versioning, not from simple monotonic counters.
 
 | Product | Where it lives | Version today | Build number today |
 |---|---|---|---|
-| Web (Next.js) | `apps/web/package.json` | `3.0.0` | none |
-| Mobile — iOS | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped build was 1) |
-| Mobile — Android | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped versionCode was 2) |
+| Web (Next.js) | `apps/web/package.json` | `3.1.0` (cut 2026-08-14) | none |
+| Mobile — iOS | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.1.0` (cut 2026-08-14) | **3** (prepared; shipped build was 1) |
+| Mobile — Android | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.1.0` (cut 2026-08-14) | **3** (prepared; shipped versionCode was 2) |
 | Chrome extension | `apps/chrome-extension/manifest.json` | `1.0.110.1` | 4th component auto-bumps per build |
 | Flask API | `zerotohero-python-server/` (separate git repo) | **none** — `/python_version` returns the Python runtime, not the app version | git SHA only; no release tags |
 | Shared packages | `packages/*/package.json` | `0.0.1` (npm-private, not product) | n/a |
@@ -298,11 +298,15 @@ Tagging starts with build 3.
 The repo also contains legacy `0.1.x` tags from 2024 (old GO-app history);
 they predate the scheme and are left untouched.
 
-**Retroactive milestone tags (2026-08-14):** notable post-3.0.0 commits are
-tagged `v3.0.0-<slug>` (e.g. `v3.0.0-subs-search-match`) as lightweight
-markers for feature/spec milestones. These are not store-upload tags, so they
-are not recorded in the ledger; the plain `v3.0.0` tag anchors the release
-commit documented in SPEC-067.
+**Milestone tags (2026-08-14):** post-release milestones belong to the **next
+minor release**, not the released version. The first 11 post-3.0.0 milestones
+are tagged `v3.1.0-m1` … `v3.1.0-m11` in chronological order (e.g.
+`v3.1.0-m10` = subs-search match line) on their milestone commits, and the
+product version was cut to `3.1.0` at the same time. These are not
+store-upload tags, so they are not recorded in the ledger; the plain `v3.0.0`
+tag anchors the release commit documented in SPEC-067. Going forward, cut a
+minor version when a milestone batch is complete and tag its commits
+`v<next-minor>-m<N>`.
 
 **Web deploys** are not tagged per deploy (continuous Netlify/CI deploys are
 identified by deploy ID + git SHA); only product releases get tags.
@@ -384,6 +388,7 @@ versionCode regression.
 | 4 | Convert `app.json` → `app.config.js` reading from `packages/shared`? | **Yes.** `apps/mobile/app.config.js` now reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from `packages/shared/src/version.json`; `app.json` is removed. |
 | 5 | How should the Flask backend be versioned? | **Proposed (2026-08-14):** own SemVer + git tags in `zerotohero-python-server/`, a `__version__` + `/api/version` endpoint, and git-SHA build identifiers. Independent from the product version; not yet implemented. |
 | 6 | Tag a version with every store upload? | **Yes.** Every upload to any track gets `v<version>-b<N>` before uploading; product releases also get plain `v<version>`; Chrome uploads get `ext-v<manifest version>`; backend tags live in its own repo. Implemented via `scripts/tag-release.mjs`. |
+| 7 | Do post-release milestones deserve their own minor versions? | **Yes.** They belong to the next minor release: milestones are tagged `v<next-minor>-m<N>` and the product version is cut to that minor (e.g. `3.1.0`) once the batch is complete. The next store upload ships that version with the shared build number. |
 
 ## 7. References
 

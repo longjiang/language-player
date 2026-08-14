@@ -14,6 +14,7 @@
  */
 
 import {
+  paths,
   readJson,
   writeJson,
   readSharedVersion,
