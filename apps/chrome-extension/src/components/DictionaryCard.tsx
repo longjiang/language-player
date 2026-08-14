@@ -216,6 +216,14 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [explainError, setExplainError] = useState<string | null>(null);
   const [showExplain, setShowExplain] = useState(false);
 
+  // DeepSeek responses are per-word — never carry them over to a new lookup.
+  useEffect(() => {
+    setExplainText(null);
+    setExplainError(null);
+    setExplainLoading(false);
+    setShowExplain(false);
+  }, [token]);
+
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
