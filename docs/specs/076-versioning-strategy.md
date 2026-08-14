@@ -1,0 +1,327 @@
+# SPEC-076: Versioning & Build Number Strategy
+
+## Metadata
+
+- **Spec ID**: SPEC-076
+- **Feature**: Product-wide version numbering and store build-number policy
+- **Status**: draft
+- **Created**: 2026-08-14
+- **See also**: [SPEC-048 — Mobile Release Plan](048-mobile-release-plan.md) ·
+  [SPEC-059 — Web Release QA Checklist](059-web-release-qa-checklist.md) ·
+  [SPEC-064 — iOS Development Build Runbook](064-ios-development-build-runbook.md) ·
+  [SPEC-067 — Google Play Release Runbook](067-google-play-release-runbook.md) ·
+  [SPEC-074 — Chrome Web Store Deployment](074-chrome-web-store-deployment.md) ·
+  [ADR-0013 — App Store Strategy & Product Naming](../adr/0013-app-store-strategy.md)
+
+## 1. Overview
+
+This spec defines how Language Player numbers its releases and store builds so
+that:
+
+1. Web and mobile always present the same product version (they have feature
+   parity and are maintained together).
+2. iOS and Android build numbers can never collide, regress, or get reused,
+   which is the most common cause of store-upload rejections.
+3. The Chrome extension has its own independent version that increments on
+   every build, so a reloaded unpacked extension is always verifiable.
+4. The "3" brand generation and the version numbers stay in sync across
+   stores, domains, and About pages.
+
+The strategy is intentionally boring: **one shared SemVer product version for
+web + mobile, one shared monotonic integer for both store build numbers, and a
+separate 4-part version for the Chrome extension.** Boring is the point —
+store rejection and reload-verification problems come from clever or manual
+versioning, not from simple monotonic counters.
+
+## 2. Current State (verified 2026-08-14)
+
+| Product | Where it lives | Version today | Build number today |
+|---|---|---|---|
+| Web (Next.js) | `apps/web/package.json` | `0.0.1` | none |
+| Mobile — iOS | `apps/mobile/app.json` (`expo.version` / `ios.buildNumber`) | `3.0.0` | **1** (implicit; key absent, native default) |
+| Mobile — Android | `apps/mobile/app.json` (`expo.version` / `android.versionCode`) | `3.0.0` | **2** |
+| Chrome extension | `apps/chrome-extension/manifest.json` | `1.0.110` | patch doubles as build |
+| Shared packages | `packages/*/package.json` | `0.0.1` (npm-private, not product) | n/a |
+
+### 2.1 What is actually live in the stores
+
+**App Store — Language Player 3** (`ca.zerotohero.go`):
+
+- Version **3.0.0**, live since 2026-08-13.
+- Build number is not exposed publicly. The submitted IPA on disk
+  (`~/Desktop/LanguagePlayer3.ipa`, 2026-08-13) contains
+  `CFBundleVersion = 1`, `CFBundleShortVersionString = 3.0.0`,
+  `CFBundleIdentifier = ca.zerotohero.go`. **So iOS build 1 shipped.**
+- Confirmed by reading `apps/mobile/ios/LanguagePlayer3/Info.plist`
+  (`CFBundleVersion = 1`) and the runbook in SPEC-048 § 3.
+
+**Google Play — Language Player 3** (`ca.zerotohero.go`):
+
+- Version **3.0.0**, **versionCode 2**, listing updated 2026-08-13.
+- Confirmed by `android/app/build.gradle` (`versionCode 2`,
+  `versionName "3.0.0"`) and SPEC-067 § 6/§ 8.
+- **Why versionCode 2?** versionCode 1 was already consumed by the
+  Internal/Closed testing tracks. Google rejects an upload whose versionCode
+  is not greater than every previously uploaded versionCode **across all
+  tracks**. This is exactly the failure class this spec prevents.
+
+**Legacy listings (frozen, reference only):**
+
+- App Store — Language Player 2 (`ca.zerotohero.app`): **2.12.2** (2023-03-31).
+- Google Play — Language Player 2 (`ca.zerotohero.app`): **2.14.1**
+  (2023-04-05).
+
+### 2.2 Problems found in the audit
+
+1. **Web and mobile show different versions.** About pages today:
+   web shows `v0.0.1` (from `apps/web/package.json`), mobile shows `v3.0.0`
+   (from `expoConfig.version`). They are the same product and are maintained
+   in lockstep.
+2. **`ios.buildNumber` is missing from `app.json`.** Expo then defaults the
+   native `CFBundleVersion` (currently `1`). It is only implicit, so nothing
+   forces it to be bumped deliberately.
+3. **iOS (1) and Android (2) are already out of sync.** Today they happen to
+   be different because Android consumed 1 in testing. There is no policy or
+   tooling that keeps them aligned going forward.
+4. **SPEC-074 claims `build.mjs` "auto-bumps" the extension patch version,
+   but it does not.** `apps/chrome-extension/build.mjs` reads the version for
+   the banner and never writes `manifest.json`. Bumps are manual per commit
+   (visible in git history: `v1.0.109` → `v1.0.110`). The doc is wrong and the
+   process is one forgotten bump away from an unverifiable reload.
+5. **No ledger of consumed build numbers.** The versionCode-1 incident was
+   learned the hard way; the knowledge currently lives only in prose in
+   SPEC-067.
+
+## 3. Industry Standards Compared
+
+| Scheme | Format | Used by | Pros | Cons | Relevance here |
+|---|---|---|---|---|---|
+| **SemVer** | `MAJOR.MINOR.PATCH` (+ optional `-prerelease` / `+build`) | npm, GitHub releases, most software | Clear meaning per segment; tooling exists | Prerelease labels are invalid in store/Chrome version fields | **Adopt for the product version** (without prerelease labels in store-facing fields) |
+| **CalVer** | date-based, e.g. `24.04`, `2026.8` | Ubuntu, Chrome (indirectly), many SaaS | Monotonic by clock; obvious release age | No semantic meaning; awkward as a brand "3" version | Not chosen — conflicts with the "3" generation brand |
+| **Apple** | `CFBundleShortVersionString` (user-facing) + `CFBundleVersion` (build) | iOS/macOS | Two clean namespaces | iOS build must be unique per version; reuse across versions is legal but error-prone; macOS requires monotonic | Follow, but use a **globally monotonic** build number on iOS anyway |
+| **Google** | `versionName` (user-facing) + `versionCode` (integer) | Android | Explicit monotonic integer; `versionName` is free-form | versionCode must be strictly greater than **every** previous upload on **any** track; max `2100000000`; can never reuse | Follow exactly; this is the strictest rule in the stack |
+| **Chrome Web Store** | 1–4 dot-separated integers, each 0–65535 | Chrome extensions | Simple left-to-right comparison | No letters; each component capped at 65535; must strictly increase | **Adopt 4-part** `MAJOR.MINOR.PATCH.BUILD` |
+| **Flutter** | `version: 1.2.3+45` → versionName/`CFBundleShortVersionString` = `1.2.3`, versionCode/`CFBundleVersion` = `45` | Flutter apps | **One build number maps to both stores** — the exact cross-platform model we want | Requires discipline to keep the single number monotonic | **Adopt the same model**: one shared integer for iOS + Android |
+| **Git/CI-based** | `git describe --tags`, `1.2.3-14-gabc1234`, CI run number, commit SHA | OSS, Sentry releases, Vercel/Netlify | Uniqueness guaranteed per commit/run | Not human-meaningful; branch-dependent | Use for **dev builds and web build metadata**, not store-facing numbers |
+| **Release trains** (single version for many products) | Chromium `138.0.7208.0`, Firefox `139.0`, VS Code `1.98.x` | Big product suites | One version = one coordinated release | Requires synchronized shipping | Matches our web+mobile parity model |
+
+### 3.1 Official constraints we must never violate
+
+- **Apple:** `CFBundleVersion` is required, numeric-dot only (one to three
+  integers; extra components ignored). App Store Connect keys on the
+  (version, build) pair, so a build number can't be reused for the same
+  version. Safest policy: never reuse any build number, ever.
+  (Source: Apple's `CFBundleVersion` documentation.)
+- **Google Play:** `versionCode` is a positive integer, max 2,100,000,000;
+  every uploaded build on **any track** (internal, closed, open, production)
+  must have a higher versionCode than all previous uploads; a used versionCode
+  can never be uploaded again. (Source: Android developer docs on app
+  versioning.)
+- **Chrome Web Store:** version is one to four dot-separated integers in
+  `0..65535`, no leading zeros, not all zero; auto-update compares left to
+  right; each published version must be strictly greater than the previous
+  one. SemVer labels like `1.2.0-beta.4` are **not** allowed.
+
+## 4. Recommended Strategy
+
+### 4.1 One product version for web + mobile: SemVer `MAJOR.MINOR.PATCH`
+
+- **`MAJOR` = product generation / brand.** `3` = Language Player 3. Do not
+  bump to 4 while the stores and domains still say "3"; a major bump requires
+  a coordinated brand change (app names, `v2.languageplayer.io` / main domain
+  story, marketing).
+- **`MINOR` = user-facing feature release.** Bump when web or mobile ships a
+  new feature. Because web + mobile are maintained together with feature
+  parity, they always share the same minor.
+- **`PATCH` = bug fixes, performance, non-user-facing changes.**
+- Store-facing fields must be plain `MAJOR.MINOR.PATCH` (no `-beta`, `-rc`).
+  Pre-release builds for TestFlight/Play testing may keep the same
+  `MAJOR.MINOR.PATCH`; the **build number** is what distinguishes them.
+- Release tags: `v3.1.0`, `v3.0.1`, etc.
+
+**Single source of truth:** add
+`packages/shared/src/version.ts` exporting `PRODUCT_VERSION`. A release
+script (below) writes that value into:
+
+- `apps/mobile/app.json` → `expo.version`
+- `apps/web/package.json` → `version`
+- web About page reads `PRODUCT_VERSION` (so it stops showing `v0.0.1`)
+- mobile About page already reads `expoConfig.version` — keep it
+
+### 4.2 One shared build number for iOS + Android
+
+**Format:** a plain positive integer, e.g. `3`, `4`, `5`.
+
+**Rule:** for each product release, both platforms use the **same** integer
+`N`:
+
+```text
+N = max(last iOS build number, last Android versionCode) + 1
+```
+
+Record every store-uploaded build in a ledger
+(`docs/versioning/build-ledger.md`), including testing-track uploads. A
+number is consumed the moment it is uploaded to **any** track of **either**
+store — even if the build is later rejected, archived, or rolled back.
+
+This mirrors Flutter's `1.2.3+45` model and eliminates the "did I bump iOS
+but not Android?" class of rejection. There is only one number to get right,
+and it is shared.
+
+**Current ledger (start of policy):**
+
+| N | Platform / track | Version | Date | Status |
+|---|---|---|---|---|
+| 1 | iOS App Store (LP3) | 3.0.0 | 2026-08-13 | live |
+| 1 | Android Internal/Closed testing (LP3) | 3.0.0 | 2026-08-13 | consumed (never reuse) |
+| 2 | Android Production (LP3) | 3.0.0 | 2026-08-13 | live |
+
+**Next release uses N = 3 for both iOS and Android** (max(1, 2) + 1). iOS
+skips 2 — that is fine and intentional; skipping is safe, reusing is not.
+
+**Dev builds must not consume store build numbers.** Local builds, simulators,
+and side-loaded dev builds should identify themselves with git SHA / build
+date instead. Store build numbers are a scarce, monotonically increasing
+resource.
+
+### 4.3 Web versioning
+
+- Web uses the same `MAJOR.MINOR.PATCH` as mobile; About shows `v3.x.y`.
+- Keep the build-date row (SPEC-073). Optionally add a short build hash
+  (`abc1234`) in a support-only field for debugging; do not add the full
+  commit/branch UI back.
+- Web has no store constraints, so no store build number is needed. CI/deploy
+  IDs (Netlify deploy, git SHA) serve as web build identifiers.
+
+### 4.4 Chrome extension: independent 4-part version
+
+**Yes, it should have its own version lineage.** It has its own store, its own
+release cadence, its own manifest format, and it is maintained on top of web
+parity rather than in lockstep with store releases. Forcing it to equal the
+mobile version would either waste extension build numbers or stall extension
+releases.
+
+**Format: `MAJOR.MINOR.PATCH.BUILD`** (four dot-separated integers, all
+`0..65535`, no leading zeros):
+
+- `MAJOR.MINOR.PATCH` — extension feature semantics on its own lineage
+  (current: `1.0.110`; keeping the lineage is recommended — see Open
+  Questions).
+- `BUILD` — **auto-increments by 1 on every successful build** of
+  `build.mjs`, starting at `1`. Every commit that touches `src/` therefore
+  produces a manifest whose version is different from the previous one, which
+  is exactly what makes reload verification possible:
+  `chrome://extensions` shows the new version, and the content-script banner
+  embeds it.
+
+Example: `1.0.110` → `1.0.110.1` → `1.0.110.2` … → `1.0.111.1` on the next
+store-worthy patch bump. `1.0.110.1` compares greater than `1.0.110` because
+missing components compare as zero, so the Web Store accepts the first
+4-part upload without a special migration.
+
+**Required implementation:** add the auto-bump to
+`apps/chrome-extension/build.mjs` (SPEC-074 currently claims it exists).
+Bump `manifest.json` *before* bundling so the generated banner already carries
+the new version; fail the build if the version did not change. Also surface
+`chrome.runtime.getManifest().version` in the popup so the user can verify the
+loaded build without opening `chrome://extensions`.
+
+### 4.5 v2 vs v3 branding rules
+
+- **Language Player 3** (`ca.zerotohero.go`, both stores) is the active
+  product and owns versions `3.x.y`.
+- **Language Player 2** (Classic, `ca.zerotohero.app`, both stores) is frozen
+  at `2.x` — never bump it; it is reference-only and its releases are done.
+- **Web:** `languageplayer.io` is the v3 product; `v2.languageplayer.io`
+  serves Classic. About on the v3 web shows `v3.x.y`.
+- A future `4.x` requires coordinated rename of the store listings and a
+  migration story (ADR-0013 already documents why "3" is a branding
+  dead-end; until that decision is revisited, staying on 3.x is correct).
+
+## 5. Tooling & Verification Gates
+
+### 5.1 New scripts (in `scripts/`)
+
+| Script | Purpose |
+|---|---|
+| `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.ts`, `apps/web/package.json`, and `apps/mobile/app.json` (`expo.version`) together; fails if they drift |
+| `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `app.json` (`ios.buildNumber` + `android.versionCode`) |
+| `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
+| `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
+
+### 5.2 Pre-upload gate (`verify-version.mjs`)
+
+Run **after** `expo prebuild` and **after** the archive/AAB build, before
+uploading:
+
+1. `expo.version` == `PRODUCT_VERSION` == web `package.json` version.
+2. `ios.buildNumber` == `android.versionCode` == `N`, and `N` > every
+   recorded number for that platform in the ledger.
+3. After prebuild: `ios/LanguagePlayer3/Info.plist`
+   (`CFBundleShortVersionString`, `CFBundleVersion`) matches `app.json`.
+4. After prebuild: `android/app/build.gradle` (`versionName`, `versionCode`)
+   matches `app.json`.
+5. After iOS archive: the `.ipa`/`.app` `Info.plist` matches (extend the
+   existing SPEC-048 § 3.2 archive verification).
+6. `version` (SemVer) > the last release tag.
+
+If any check fails, **do not upload**. The script exists precisely to catch
+the two rejections that waste rebuild time: iOS build reuse and Android
+versionCode regression.
+
+### 5.3 Release flow
+
+```text
+1. Decide release type (minor / patch)
+2. node scripts/bump-product-version.mjs --minor        # 3.0.0 -> 3.1.0
+3. node scripts/next-build.mjs                            # assigns N (e.g. 3)
+4. Human QA (SPEC-048 / SPEC-059 checklists)
+5. EXPO_PUBLIC_API_URL=... npx expo prebuild --platform android|ios
+6. node scripts/verify-version.mjs                        # gate
+7. Build archive / AAB (SPEC-048 § 3.1, SPEC-067 § 3.3)
+8. node scripts/verify-version.mjs                        # gate again post-build
+9. Upload to store track
+10. node scripts/record-build.mjs ...                     # ledger, even if rejected
+11. Tag v3.1.0
+```
+
+### 5.4 Files to change on adoption
+
+- Add `packages/shared/src/version.ts` (source of truth for product version).
+- Add the four scripts in § 5.1 and `docs/versioning/build-ledger.md`.
+- `apps/mobile/app.json` — add `ios.buildNumber` explicitly (currently
+  absent) and keep `android.versionCode` explicit.
+- `apps/web/package.json` — set `version` to `3.0.0` now (matches mobile),
+  then to `3.1.0` on the next release.
+- `apps/web/src/components/about/about-dialog.tsx` — read version from
+  shared `PRODUCT_VERSION` instead of `package.json` (or keep `package.json`
+  but let the bump script keep it in sync).
+- `apps/chrome-extension/build.mjs` — implement auto-bump of the 4th
+  component; update SPEC-074 wording to match reality.
+- Update SPEC-048 § 2/§ 3/§ 4 and SPEC-067 § 3.2/§ 6 to reference the ledger
+  and the gate script instead of prose-only instructions.
+
+## 6. Open Questions
+
+1. **Adopt the shared counter immediately with N = 3?** Recommended yes —
+   iOS skips 2, Android moves to 3, both stay aligned from the next release.
+2. **Should the extension rebase `1.0.x` to the product `3.x` lineage?**
+   Keeping `1.0.x.BUILD` preserves its independent history and is
+   recommended; a rebase to `3.1.0.BUILD` is cosmetic and can be decided
+   later without store migration risk (3 > 1 is a valid increase).
+3. **Do local dev builds need build numbers?** Recommended no — use git SHA /
+   build date; store build numbers are consumed only by store uploads.
+4. **Should `app.json` become `app.config.js`** so Expo reads versions
+   directly from `packages/shared`? Nice long-term cleanup, but not required
+   for this policy; the bump script keeps static files in sync today.
+
+## 7. References
+
+- Apple — `CFBundleVersion` documentation (bundle resources).
+- Android — "App versioning" developer documentation (versionCode /
+  versionName rules and 2,100,000,000 cap).
+- Chrome for Developers — "Manifest — Version" (one to four dot-separated
+  integers, 0–65535).
+- Flutter — `pubspec.yaml` version/build-number convention (`1.2.3+45`).
+- SemVer — semver.org.
+- [ADR-0013 — App Store Strategy & Product Naming](../adr/0013-app-store-strategy.md).
