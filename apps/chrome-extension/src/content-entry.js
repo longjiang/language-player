@@ -1299,7 +1299,11 @@ async function handleNetflixSubs(tracks) {
 
   // Prefer the language Netflix actually fetched from the manifest; fall back
   // to probing video.textTracks when no subtitle fetch has been seen yet.
-  const activeLang = pendingNetflixActiveLang || (await detectNetflixActiveSubtitle());
+  // Re-check the pending fetch signal after the probe too — it can arrive
+  // while the probe is in flight and must not be lost to the fallback.
+  let activeLang = pendingNetflixActiveLang;
+  if (!activeLang) activeLang = await detectNetflixActiveSubtitle();
+  if (!activeLang) activeLang = pendingNetflixActiveLang;
   pendingNetflixActiveLang = null;
   log('Detected Netflix active subtitle:', activeLang || '(none found)');
 
