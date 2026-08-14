@@ -29,7 +29,7 @@ function tokenExpiry(token: string): number {
  * re-create the client on every auth change.
  */
 export function ApiClientProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const sessionRef = useRef(session);
   sessionRef.current = session; // always current
   // `update` is recreated whenever the session changes in next-auth v5 beta,
