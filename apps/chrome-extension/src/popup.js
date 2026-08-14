@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
     setTranscriptChecking();
     fillHtml('#transcript-hint', 'popupCaptionsHint');
+    fillText('#make-text-interactive-btn', 'makeTextInteractive');
   }
 
   /** Grey-out state shown while checking for subtitles (and after locale
@@ -377,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const transcriptHint = document.getElementById('transcript-hint');
   const openInWebBtn = document.getElementById('open-in-web-btn');
   const openWebWarn = document.getElementById('open-web-warn');
+  const makeTextBtn = document.getElementById('make-text-interactive-btn');
   const WEB_APP_URL = 'https://language-player.netlify.app';
 
   /** Supported video domains where the content script runs
@@ -453,6 +455,37 @@ document.addEventListener('DOMContentLoaded', function() {
     window.close();
   });
 
+  /** Show/hide "Make Text on Page Interactive" — only on pages where the
+   *  "Read in Language Player" reader button is visible (non-video domains). */
+  function updateMakeTextInteractiveBtn(tabUrl) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl)) {
+      makeTextBtn.classList.add('hidden');
+      return;
+    }
+    chrome.storage.sync.get('pageTokenizationEnabled', (prefs) => {
+      makeTextBtn.classList.toggle('lpv-btn-active', !!prefs.pageTokenizationEnabled);
+      makeTextBtn.classList.remove('hidden');
+    });
+  }
+
+  makeTextBtn.addEventListener('click', async () => {
+    const prefs = await chrome.storage.sync.get('pageTokenizationEnabled');
+    const next = !prefs.pageTokenizationEnabled;
+    await chrome.storage.sync.set({ pageTokenizationEnabled: next });
+
+    let tab = null;
+    try {
+      [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          action: next ? 'pageTokenizationOn' : 'pageTokenizationOff',
+        }).catch(() => {});
+      }
+    } catch {}
+
+    updateMakeTextInteractiveBtn(tab?.url || null);
+  });
+
   async function checkTranscriptStatus() {
     let tab = null;
     try {
@@ -462,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!tab?.id) {
       showNoTranscript();
       updateOpenInWebBtn(null);
+      updateMakeTextInteractiveBtn(null);
       return;
     }
 
@@ -471,6 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
       transcriptBtn.classList.add('hidden');
       transcriptHint.classList.add('hidden');
       updateOpenInWebBtn(tab.url || null, null);
+      updateMakeTextInteractiveBtn(tab.url || null);
       return;
     }
 
@@ -488,6 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Content script not loaded on this page
     }
     updateOpenInWebBtn(tab.url || null, res || null);
+    updateMakeTextInteractiveBtn(null);
 
     if (res?.cuesCount > 0) {
       transcriptHint.classList.add('hidden');

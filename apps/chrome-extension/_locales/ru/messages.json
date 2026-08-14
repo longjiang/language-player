@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Смотреть в Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Сделать текст страницы интерактивным"
+  },
+  "followLink": {
+    "message": "Открыть ссылку"
+  },
+  "clickPageWord": {
+    "message": "Нажмите на любое слово на странице, чтобы посмотреть его в словаре."
+  },
   "popularLanguages": {
     "message": "Популярное"
   },

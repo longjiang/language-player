@@ -246,7 +246,8 @@ h1 img {
 
 /* ── Open in Language Player Button ─────────────────────────────────── */
 
-#open-in-web-btn {
+#open-in-web-btn,
+#make-text-interactive-btn {
   width: 100%;
   margin-top: 8px;
   padding: 10px;
@@ -261,8 +262,14 @@ h1 img {
   transition: background 0.15s;
 }
 
-#open-in-web-btn:hover {
+#open-in-web-btn:hover,
+#make-text-interactive-btn:hover {
   background: var(--accent-bright);
+}
+
+#make-text-interactive-btn.lpv-btn-active {
+  background: var(--accent-bright);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 
 #open-web-warn {

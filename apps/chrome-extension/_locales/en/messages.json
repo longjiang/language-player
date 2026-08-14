@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Watch in Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Make Text on Page Interactive"
+  },
+  "followLink": {
+    "message": "Follow Link"
+  },
+  "clickPageWord": {
+    "message": "Click any word on the page to look it up."
+  },
   "popularLanguages": {
     "message": "Popular"
   },

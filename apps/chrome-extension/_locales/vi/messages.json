@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Xem trong Language Player"
   },
+  "makeTextInteractive": {
+    "message": "Biến văn bản trang thành tương tác"
+  },
+  "followLink": {
+    "message": "Mở liên kết"
+  },
+  "clickPageWord": {
+    "message": "Nhấp vào bất kỳ từ nào trên trang để tra từ điển."
+  },
   "popularLanguages": {
     "message": "Phổ biến"
   },

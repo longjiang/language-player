@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "在 Language Player 中观看"
   },
+  "makeTextInteractive": {
+    "message": "让页面文本可交互"
+  },
+  "followLink": {
+    "message": "打开链接"
+  },
+  "clickPageWord": {
+    "message": "点击页面上的任意单词即可查词典。"
+  },
   "popularLanguages": {
     "message": "热门"
   },

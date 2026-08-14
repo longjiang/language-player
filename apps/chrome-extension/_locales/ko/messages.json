@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Language Player에서 시청"
   },
+  "makeTextInteractive": {
+    "message": "페이지 텍스트를 인터랙티브하게"
+  },
+  "followLink": {
+    "message": "링크 열기"
+  },
+  "clickPageWord": {
+    "message": "페이지의 아무 단어나 클릭하여 사전에서 찾아보세요."
+  },
   "popularLanguages": {
     "message": "인기"
   },

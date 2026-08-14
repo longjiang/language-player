@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-075
 - **Feature**: Tokenize any webpage into interactive L2 text with a persistent popup-dictionary side panel
-- **Status**: draft
+- **Status**: in-progress
 - **Created**: 2026-08-14
 - **ROADMAP Phase**: Chrome Extension
 - **See also**:

@@ -93,6 +93,15 @@
   "watchInLanguagePlayer": {
     "message": "Language Player'de izle"
   },
+  "makeTextInteractive": {
+    "message": "Sayfa metnini etkileşimli yap"
+  },
+  "followLink": {
+    "message": "Bağlantıyı aç"
+  },
+  "clickPageWord": {
+    "message": "Sayfadaki herhangi bir kelimeye tıklayarak sözlükte arayın."
+  },
   "popularLanguages": {
     "message": "Popüler"
   },

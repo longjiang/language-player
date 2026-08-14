@@ -144,6 +144,38 @@ if (popupResult.warnings.length > 0) {
   console.warn('[build] Popup warnings:', popupResult.warnings);
 }
 
+// Step 2d: Bundle the page tokenizer content script
+console.log('[build] Bundling page tokenizer...');
+
+const pageResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/page-content.js')],
+  bundle: true,
+  outfile: resolve(outDir, 'page-content.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  jsx: 'automatic',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (pageResult.errors.length > 0) {
+  console.error('[build] Page tokenizer errors:', pageResult.errors);
+  process.exit(1);
+}
+if (pageResult.warnings.length > 0) {
+  console.warn('[build] Page tokenizer warnings:', pageResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),
