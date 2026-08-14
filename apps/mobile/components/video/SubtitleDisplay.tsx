@@ -27,13 +27,15 @@ interface SubtitleDisplayProps {
   onSeekToLine?: (time: number) => void;
   /** Terms to highlight in the subtitle text. */
   highlightTerms?: string[];
+  /** In single-line mode, shown until playback reaches the first line (e.g. the subs-search match line). */
+  defaultLine?: SubtitleSyncedLine;
   /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
   singleLine?: boolean;
   /** When true (single-line mode), renders transparent/white for an on-video band. */
   overlay?: boolean;
 }
 
-export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, overlay = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, defaultLine, singleLine = false, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
@@ -188,6 +190,9 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   // ── Single-line subtitle mode ──
   if (singleLine) {
     const activeLine = activeLineIndex >= 0 ? displayLines[activeLineIndex] : undefined;
+    // Before playback there is no active line — show the caller's default
+    // line (e.g. the subs-search match line) instead of a placeholder.
+    const shownLine = activeLine ?? defaultLine;
 
     // Karaoke progress for the active line
     let karaokeProgress: number | undefined;
@@ -206,17 +211,17 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
           className="flex-1 flex-col items-center justify-start px-4 pt-4 pb-2 min-h-0"
           onPress={() => { if (activeLine) onSeekToLine?.(activeLine.starttime); }}
         >
-          {activeLine ? (
+          {shownLine ? (
             <TextActionMenu
               className="w-full"
               centered
-              text={activeLine.l2Line}
+              text={shownLine.l2Line}
               l2Code={l2Lang.code}
               l1Code={baseCode(l1Lang.code)}
             >
               <View className="w-full items-center">
                 <TokenizedText
-                  text={activeLine.l2Line}
+                  text={shownLine.l2Line}
                   l2Code={l2Lang.code}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
@@ -225,12 +230,12 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   textScale={1.5}
                   textColor={overlay ? 'text-white' : undefined}
                 />
-                {showTranslation && activeLine.l1Line ? (
+                {showTranslation && shownLine.l1Line ? (
                   <Text
                     className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
                     style={{ fontSize: 14 * 1.5 * zoomRem }}
                   >
-                    {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
+                    {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>
                 ) : null}
               </View>

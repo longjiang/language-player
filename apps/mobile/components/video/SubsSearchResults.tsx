@@ -132,6 +132,10 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
+  // Show the search-match line immediately, even before the video plays.
+  const defaultSubtitleLine = matchLine
+    ? { starttime: matchLine.starttime, l2Line: matchLine.line, l1Line: '' }
+    : undefined;
 
   const applyVideos = useCallback((all: SubsSearchVideo[]) => {
     setTotalHits(all.length);
@@ -593,6 +597,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           activeLineIndex={activeLineIndex}
           currentTime={currentTime}
           highlightTerms={highlightTerms}
+          defaultLine={defaultSubtitleLine}
           onSeekToLine={(t) => playerRef.current?.seekTo(t)}
         />
       </View>
