@@ -402,11 +402,18 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 **Core practices:**
 
+- **Add logging first — confirm from logs, then fix.** Before debugging a
+  reported problem, add or enable logging on the code path involved: the
+  actual values loaded and received, and every branch taken (including skips,
+  no-ops, and fallbacks). Reproduce, confirm the problem from the logs, then
+  make the fix and re-check the same logs. Never change code based on a
+  hypothesis the logs have not confirmed.
 - **Verify what is actually running before debugging behavior.** Is the
   running bundle/build the same as the code on disk? Check bundle/build
   timestamps, reload markers, and cache state. A large share of reported
   bugs are stale bundles, old sessions, or cached state — but prove it, do
-  not assume it.
+  not assume it. Logs only count as evidence if they come from the build the
+  user is actually running.
 - **Reason from the user's context, not ambient signals.** Screenshots, the
   user's last actions, and the actual screen/app being tested are the
   evidence. Ambient metadata (e.g. an open browser tab) does not tell you
@@ -425,7 +432,8 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
   later.
 - **Small steps, verify each.** Change one thing, observe it, move on.
   Fixing several suspected causes at once makes it impossible to know which
-  change actually mattered.
+  change actually mattered. After a fix, re-check the same logs that
+  confirmed the bug before calling it done.
 
 **Logging conventions:** all `console.log` / `console.warn` / `console.error`
 calls must start with the app's bracketed prefix (`[LP Extension]`,
