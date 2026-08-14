@@ -48,6 +48,14 @@ function detectLocale(request: NextRequest): string | null {
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Legacy iOS Capacitor wrapper: Netlify proxies every request carrying
+  // lp_legacy to v2.languageplayer.io (see netlify.toml). Edge functions run
+  // before redirect rules, so pass through instead of letting this
+  // middleware's Classic-route redirects short-circuit the CDN proxy.
+  if (req.cookies.get('lp_legacy')?.value) {
+    return NextResponse.next();
+  }
+
   // Allow static assets, auth API, public API routes, and OG image
   if (
     pathname.startsWith('/_next') ||
