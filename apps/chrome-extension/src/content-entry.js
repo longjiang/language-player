@@ -197,9 +197,6 @@ function findActiveCueIndex(timeSec) {
       return i;
     }
   }
-  if (cues.length > 0) {
-    log(`[TIME] no cue at ${timeSec.toFixed(3)}s; cue range ${cues[0].start.toFixed(3)}-${cues[cues.length - 1].end.toFixed(3)}`);
-  }
   return -1;
 }
 
@@ -217,6 +214,26 @@ function logCueTimeRange(source) {
 /** Normalize subtitle text for comparison (whitespace-insensitive). */
 function normalizeForMatch(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
+}
+
+/** Log the current Netflix player subtitle and the panel's matched line only
+ *  when either side changes, so the console stays quiet during playback. */
+function logNetflixSyncPair(timeSec, displayed, panelIdx) {
+  const playerChanged = displayed !== lastLoggedPlayerText;
+  const panelChanged = panelIdx !== lastLoggedPanelIdx;
+  if (!playerChanged && !panelChanged) return;
+
+  lastLoggedPlayerText = displayed;
+  lastLoggedPanelIdx = panelIdx;
+
+  const panelCue = panelIdx >= 0 ? STATE.cues[panelIdx] : null;
+  log(`[SYNC] player: "${displayed.slice(0, 60)}" @ ${timeSec.toFixed(3)}s`);
+  log(
+    '[SYNC] panel: ' +
+    (panelCue
+      ? `idx ${panelIdx} "${panelCue.text.slice(0, 60)}" @ ${panelCue.start.toFixed(3)}s (${panelCue.start.toFixed(3)}-${panelCue.end.toFixed(3)})`
+      : 'no matching cue')
+  );
 }
 
 /** Read the subtitle Netflix is currently rendering on screen.
@@ -285,7 +302,7 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
   }
 
   if (bestIdx < 0) {
-    log(`[TIME] Netflix displayed text not found in cues: "${displayed.slice(0, 60)}"`);
+    logNetflixSyncPair(timeSec, displayed, -1);
     return 'no';
   }
   const cue = STATE.cues[bestIdx];
@@ -297,7 +314,7 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
 
   if (bestIdx === STATE.activeCueIdx) return 'matched';
   STATE.activeCueIdx = bestIdx;
-  log(`[TIME] matched Netflix displayed cue "${displayed.slice(0, 40)}" → idx ${bestIdx} (${cue.start.toFixed(3)}-${cue.end.toFixed(3)})`);
+  logNetflixSyncPair(timeSec, displayed, bestIdx);
   renderTranscript();
   return 'matched';
 }
@@ -335,14 +352,7 @@ function getDuration() {
 function seekTo(timeSec) {
   // Immediately highlight the target cue — don't wait for video to catch up
   const targetIdx = findActiveCueIndex(timeSec);
-  const targetCue = targetIdx >= 0 ? STATE.cues[targetIdx] : null;
   const seekTarget = isNetflix ? timeSec + netflixTimelineOffset : timeSec;
-  const videoBefore = getVideoElement();
-  log(
-    `[SEEK] requested ${timeSec.toFixed(3)}s, seekTarget=${seekTarget.toFixed(3)}s, offset=${netflixTimelineOffset.toFixed(3)}s, idx=${targetIdx}` +
-    (targetCue ? `, cue=${targetCue.start.toFixed(3)}-${targetCue.end.toFixed(3)}` : ', no matching cue') +
-    `, video.currentTime=${videoBefore?.currentTime ?? 'no video'}`
-  );
   if (targetIdx >= 0) {
     STATE.activeCueIdx = targetIdx;
   }
@@ -354,10 +364,7 @@ function seekTo(timeSec) {
   if (isNetflix) {
     // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec: seekTarget })
-      .then((res) => {
-        const videoAfter = getVideoElement();
-        log(`[SEEK] Netflix result=${res?.method || res?.error}, video.currentTime=${videoAfter?.currentTime ?? 'n/a'}`);
-      })
+      .then(() => {})
       .catch((err) => logerr('[SEEK] Netflix seek message failed:', err));
   } else if (isDisneyPlus) {
     // Disney+: use internal mediaPlayer API (more reliable than video element)
@@ -374,7 +381,6 @@ function seekTo(timeSec) {
     const video = getVideoElement();
     if (video) {
       video.currentTime = seekTarget;
-      log(`[SEEK] set video.currentTime=${video.currentTime}`);
     }
   }
   renderTranscript();
@@ -385,8 +391,6 @@ function seekTo(timeSec) {
 function renderTranscript(loadingL2) {
   if (!panelContent) return;
   updateOpenInWebBtn();
-  const cueCount = STATE.cues.length;
-  trace('REACT', `mountTranscript(${cueCount} cues, activeIdx=${STATE.activeCueIdx})`);
   // Extract video title — strip platform suffixes like " | Prime Video", " - YouTube"
   const rawTitle = document.title || '';
   const videoTitle = rawTitle.replace(/\s*[|\\-]\s*(Prime Video|YouTube|Netflix|Disney\+|Hulu|Max|HBO Max).*$/i, '').trim() || rawTitle;
@@ -1177,10 +1181,6 @@ function updateActiveCue(timeSec) {
   if (newIdx >= 0) {
     if (newIdx === STATE.activeCueIdx) return;
     STATE.activeCueIdx = newIdx;
-    const cue = STATE.cues[newIdx];
-    log(
-      `[TIME] active cue at ${timeSec.toFixed(3)}s → idx ${newIdx} (${cue.start.toFixed(3)}-${cue.end.toFixed(3)}) "${cue.text.slice(0, 40)}"`
-    );
     renderTranscript();
     return;
   }
@@ -1191,7 +1191,6 @@ function updateActiveCue(timeSec) {
 
   if (STATE.activeCueIdx === -1) return;
   STATE.activeCueIdx = newIdx;
-  log(`[TIME] active cue at ${timeSec.toFixed(3)}s → idx -1 (no cue)`);
   renderTranscript();
 }
 
@@ -1222,7 +1221,6 @@ function attachTimeTracking() {
     video.addEventListener('seeked', () => {
       if (STATE.cues.length > 0) {
         const t = getCurrentTime();
-        log(`[TIME] seeked → ${t.toFixed(3)}s, activeIdx=${STATE.activeCueIdx}`);
         updateActiveCue(t);
       }
     });
@@ -1241,6 +1239,8 @@ let netflixObserverStarted = false;
  *  past an ad); we re-derive it from the subtitle text Netflix is rendering. */
 let netflixTimelineOffset = 0;
 let lastNetflixDisplayedCheckAt = 0;
+let lastLoggedPlayerText = '';
+let lastLoggedPanelIdx = -2;
 
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 

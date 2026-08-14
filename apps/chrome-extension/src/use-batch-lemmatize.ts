@@ -14,7 +14,7 @@ import type { LemmatizedToken } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 
 import { API_BASE } from './api-config';
-import { log, logwarn } from './i18n';
+import { logwarn } from './i18n';
 
 // ── Module-level cache (shared across all hook instances) ──────────────────
 
@@ -194,7 +194,6 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
   const textsToSend = toFetch.map(t => t.text);
 
   // Create a single shared promise for all texts in this batch
-  log(`[TOKENIZE] POST /lemmatize-normalized/batch (${textsToSend.length} texts, l2=${lang})`);
   const batchPromise = (async () => {
     try {
       const res = await fetch(`${API_BASE}/lemmatize-normalized/batch`, {
@@ -205,8 +204,6 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const results: LemmatizedToken[][] = data.results ?? [];
-
-      log(`[TOKENIZE] Response: ${results.length} tokenized texts for l2=${lang}`);
 
       // Populate cache: results[i] corresponds to textsToSend[i]
       for (let i = 0; i < results.length; i++) {
