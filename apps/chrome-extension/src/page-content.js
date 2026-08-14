@@ -10,6 +10,7 @@ import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
 import { t, setLocale, log, logwarn } from './i18n';
 import { mountPagePanel, unmountPagePanel } from './transcript-app';
+import { buildRuby } from '@langplayer/utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 const BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote, td, figcaption, dt, dd';
@@ -19,13 +20,14 @@ let initialized = false;
 let enabled = false;
 let l1Code = 'en';
 let l2Code = 'en';
+let showPhonetics = true;
 let panelRoot = null;
 let observer = null;
 let mutationTimer = null;
 const tokenCache = new Map();
 const tokenizedBlocks = new Set();
 let nextBlockId = 1;
-let pageTokenStats = { words: 0, withPron: 0 };
+let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
 
 function isVideoHost() {
   try {
@@ -120,8 +122,31 @@ function renderTextNode(node, tokens) {
     if (token.pronunciation) pageTokenStats.withPron++;
     const span = document.createElement('span');
     span.className = 'lpv-page-token';
-    span.textContent = token.text;
     span.dataset.tokenText = token.text;
+
+    // Inline ruby/furigana, gated by the same showPhonetics pref as video mode.
+    let rubyRendered = false;
+    if (showPhonetics && token.pronunciation && token.pronunciation !== token.text) {
+      const segments = buildRuby(token.text, token.pronunciation, l2Code);
+      if (segments.some((seg) => seg.reading)) {
+        rubyRendered = true;
+        for (const seg of segments) {
+          if (seg.reading) {
+            const ruby = document.createElement('ruby');
+            ruby.appendChild(document.createTextNode(seg.text));
+            const rt = document.createElement('rt');
+            rt.textContent = seg.reading;
+            ruby.appendChild(rt);
+            span.appendChild(ruby);
+          } else {
+            span.appendChild(document.createTextNode(seg.text));
+          }
+        }
+      }
+    }
+    if (!rubyRendered) span.textContent = token.text;
+    if (rubyRendered) pageTokenStats.rubyCount++;
+
     span.addEventListener('click', (e) => onTokenClick(e, token, parent));
     frag.appendChild(span);
   }
@@ -227,7 +252,7 @@ async function tokenizePage() {
   }
 
   let renderedNodes = 0;
-  pageTokenStats = { words: 0, withPron: 0 };
+  pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
   for (const { block, nodes } of blocksWithNodes) {
     for (const node of nodes) {
       if (renderTextNode(node, resultsByText.get(node.nodeValue))) renderedNodes++;
@@ -236,7 +261,7 @@ async function tokenizePage() {
     tokenizedBlocks.add(block);
   }
   log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocksWithNodes.length} blocks`);
-  log(`[FURIGANA] page mode: rendered ${pageTokenStats.words} word tokens (${pageTokenStats.withPron} with pronunciation) as plain clickable spans — no inline ruby on page text`);
+  log(`[FURIGANA] page mode: rendered ${pageTokenStats.words} word tokens (${pageTokenStats.withPron} with pronunciation, ${pageTokenStats.rubyCount} with inline ruby) as clickable spans`);
 }
 
 function createPanel() {
@@ -314,12 +339,7 @@ function cleanup() {
     clearTimeout(mutationTimer);
     mutationTimer = null;
   }
-  for (const block of tokenizedBlocks) {
-    if (block.__lpvOriginalHtml !== undefined) {
-      block.innerHTML = block.__lpvOriginalHtml;
-    }
-  }
-  tokenizedBlocks.clear();
+  restoreTokens();
   tokenCache.clear();
   if (panelRoot) {
     unmountPagePanel();
@@ -327,6 +347,15 @@ function cleanup() {
     panelRoot = null;
   }
   document.body.classList.remove('lpv-panel-open');
+}
+
+function restoreTokens() {
+  for (const block of tokenizedBlocks) {
+    if (block.__lpvOriginalHtml !== undefined) {
+      block.innerHTML = block.__lpvOriginalHtml;
+    }
+  }
+  tokenizedBlocks.clear();
 }
 
 function startObserver() {
@@ -350,10 +379,11 @@ async function init() {
   const local = await chrome.storage.local.get(['l1Language', 'l2Language', 'showPhonetics', 'showTranslation']);
   l1Code = local.l1Language || 'en';
   l2Code = local.l2Language || 'en';
+  showPhonetics = local.showPhonetics !== false;
   await setLocale(l1Code);
 
   enabled = true;
-  log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}`);
+  log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}`);
   await tokenizePage();
   createPanel();
   startObserver();
@@ -389,6 +419,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
     cleanup();
     initialized = false;
     init();
+  }
+  if (area === 'local' && changes.showPhonetics && enabled) {
+    showPhonetics = changes.showPhonetics.newValue !== false;
+    log(`[FURIGANA] page mode showPhonetics → ${showPhonetics}; re-rendering page tokens`);
+    restoreTokens();
+    tokenizePage();
   }
 });
 
