@@ -62,6 +62,8 @@ interface SubtitleDisplayProps {
   contextLines?: number;
   /** Word forms to highlight in the displayed text (e.g. search terms from subs-search). */
   highlightTerms?: string[];
+  /** In singleline mode, shown until playback reaches the first line (e.g. the subs-search match line). */
+  defaultLine?: SubtitleLine | null;
   /** Called when autoPause triggers — the current subtitle line has finished. */
   onPauseLine?: () => void;
   /** Called with translation progress. `null` = not translating. */
@@ -79,7 +81,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
@@ -254,6 +256,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   if (isSingleline) {
     const activeLine = activeIndex >= 0 ? effectiveL2Lines[activeIndex] : null;
     const activeTranslation = activeIndex >= 0 ? translatedLines[activeIndex] : null;
+    // Before playback there is no active line — show the caller's default
+    // line (e.g. the subs-search match line) instead of a placeholder.
+    const shownLine = activeLine ?? defaultLine ?? null;
 
     return (
       <div className="min-h-[5rem] py-4">
@@ -268,9 +273,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             </button>
           </div>
         )}
-        {activeLine ? (
+        {shownLine ? (
           <TextActionMenu
-            text={activeLine.line}
+            text={shownLine.line}
             l2Code={l2Code}
             l1Code={l1Code}
             translation={
@@ -300,7 +305,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           >
             <div className="text-center text-xl font-medium leading-relaxed">
               <TokenizedText
-                text={activeLine.line}
+                text={shownLine.line}
                 l2Code={l2Code}
                 textScale={1.5}
                 tokenCache={tokenCache}
@@ -308,7 +313,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 highlightForms={highlightTerms}
                 selectionDictionary
                 context={{
-                  starttime: activeLine.starttime,
+                  starttime: shownLine.starttime,
                   youtube_id: youtubeId,
                   videoTitle,
                 }}

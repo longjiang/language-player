@@ -176,6 +176,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
+  // Show the search-match line immediately, even before the video plays.
+  const defaultSubtitleLine = matchLine
+    ? { starttime: matchLine.starttime, line: matchLine.line }
+    : undefined;
 
   // Split comma-separated search terms for highlighting
   const highlightTerms = useMemo(
@@ -866,6 +870,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         videoTitle={currentVideo?.title}
         initialLines={subtitleInitialLines}
         highlightTerms={highlightTerms}
+        defaultLine={defaultSubtitleLine}
       />
 
       {/* ── Modal: result list ── */}
