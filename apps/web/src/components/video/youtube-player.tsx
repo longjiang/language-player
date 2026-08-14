@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef, useId } from 'react';
 import { useT } from '@/hooks/use-t';
-import { log, logwarn } from '@/lib/logger';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -145,12 +144,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   const [apiReady, setApiReady] = useState(false);
   const [playerError, setPlayerError] = useState<PlayerErrorInfo | null>(null);
   const t = useT();
-  // Refs so event callbacks log the current values even if the creation
-  // effect closure is stale (its deps intentionally exclude autoplay/startTime).
-  const autoplayRef = useRef(autoplay);
-  autoplayRef.current = autoplay;
-  const startTimeRef = useRef(startTime);
-  startTimeRef.current = startTime;
 
   // Silence the transient postMessage race described above (see
   // isYouTubePostMessageRace). preventDefault() stops Chrome from printing
@@ -204,7 +197,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     setPlayerError(null);
 
     try {
-      log('[youtube-player] creating player', { youtubeId, autoplay, startTime });
       const player = new window.YT!.Player(playerIdRef.current, {
         videoId: youtubeId,
         playerVars: {
@@ -216,12 +208,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         },
         events: {
           onReady: () => {
-            log('[youtube-player] onReady', {
-              youtubeId,
-              autoplay,
-              startTime,
-              startApplied: startAppliedRef.current,
-            });
             // Resume from saved position (only once per mount)
             if (startTime && startTime > 1 && !startAppliedRef.current) {
               startAppliedRef.current = true;
@@ -255,11 +241,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           onStateChange: (event: any) => {
             onStateChange?.(event.data);
             if (event.data === PLAYER_STATES.PLAYING) {
-              logwarn('[youtube-player] state PLAYING', {
-                youtubeId,
-                autoplay: autoplayRef.current,
-                startTime: startTimeRef.current,
-              });
               const duration = player.getDuration();
               if (duration > 0) onDuration?.(duration);
             }

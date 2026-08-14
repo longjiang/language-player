@@ -766,6 +766,17 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     return matches(getCachedEntries(base, token.text));
   }, [highlightEntryIdSet, l2Code, cacheVersion]);
 
+  // Search terms can appear inside compound tokens (e.g. 武侠 in 武侠片) —
+  // highlight the whole token so the L2 matches the translation bold.
+  const tokenMatchesOrContainsTerm = useCallback((token: LemmatizedToken): boolean => {
+    if (tokenMatchesAnyTerm(token, highlightTerms)) return true;
+    const surface = token.text.toLowerCase();
+    return (highlightTerms ?? []).some((t) => {
+      const form = t.toLowerCase();
+      return form.length > 0 && surface.includes(form);
+    });
+  }, [highlightTerms]);
+
   // ── Phonetics filter: per-token hardWords check ──
   const shouldShowPhonetics = useCallback((token: LemmatizedToken): boolean => {
     if (token.lemmas.length === 0) return false;
@@ -1189,7 +1200,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // (simplified or traditional preference); empty map = identity.
               const traditionalText = convertedTexts.get(word) ?? word;
               const isHighlighted =
-                tokenMatchesAnyTerm(token, highlightTerms) || tokenHasTargetEntry(token);
+                tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
               // In word-replace phonetics mode, use pronunciation as the display text.
               // When interlinear definition is on, always show the original word
               // (with optional ruby) — matching web's token-span.tsx behavior.
@@ -1295,7 +1306,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // (simplified or traditional preference); empty map = identity.
               const tokenDisplayText = convertedTexts.get(word) ?? word;
               const isHighlighted =
-                tokenMatchesAnyTerm(token, highlightTerms) || tokenHasTargetEntry(token);
+                tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
               // Highlighted (target) words keep their written form unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
               const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
