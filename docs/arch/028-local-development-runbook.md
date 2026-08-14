@@ -38,7 +38,7 @@ Flask backend that most of the others depend on.
 | **Admin** | `apps/admin` | `3100` | `npm run dev -w apps/admin` |
 | **Mobile (Metro)** | `apps/mobile` | `8081` | `cd apps/mobile && npx expo start --ios` (see [Mobile](#mobile-appsmobile)) |
 | **Chrome Extension** | `apps/chrome-extension` | — (no server) | `node apps/chrome-extension/build.mjs`, then load unpacked (see [Chrome Extension](#chrome-extension-appschrome-extension)) |
-| **Classic (Nuxt)** | `zerotohero-nuxt` | `3001` | `cd zerotohero-nuxt && npm run dev` |
+| **Classic (Nuxt)** | `zerotohero-nuxt` | `3001` | `cd zerotohero-nuxt && npm run dev -- --port 3001` |
 | **Flask backend** | `zerotohero-python-server` | `5001` | `cd zerotohero-python-server && FLASK_ENV=development python3.10 app.py` |
 
 ---
@@ -448,11 +448,8 @@ localhost value breaks production.
 
 ### Start
 
-```bash
-cd zerotohero-nuxt && npm run dev
-```
-
-If the dev server does not bind to 3001 automatically, force the port:
+Classic always runs on **port 3001** — the `--port 3001` flag is required.
+Without it, Nuxt may bind to 3000 (the web app's port) and collide with it:
 
 ```bash
 cd zerotohero-nuxt && npm run dev -- --port 3001
@@ -547,7 +544,7 @@ npm run dev -w apps/web
 npm run dev -w apps/admin
 
 # 4. Classic (reference, only when needed)
-cd zerotohero-nuxt && npm run dev
+cd zerotohero-nuxt && npm run dev -- --port 3001
 
 # 5. Mobile — Metro + Expo Go (iOS Simulator)
 cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
@@ -590,9 +587,6 @@ node apps/chrome-extension/build.mjs   # then Load unpacked at chrome://extensio
 
 ## Open Questions
 
-- Classic Nuxt does not set its port in `nuxt.config.js`; if `npm run dev`
-  binds to 3000 on a machine without the convention, use `--port 3001` to
-  match the rest of the team.
 - The extension has no package.json script wrapper; consider adding `build`
   scripts so `npm run build -w apps/chrome-extension` works like the other
   apps.
