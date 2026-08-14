@@ -15,6 +15,7 @@ import { formatLevel } from '@langplayer/shared';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
+import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
 import { Bookmark, BookmarkCheck, X } from './Icons';
 import { log, logerr, t } from '../i18n';
@@ -53,7 +54,7 @@ async function fetchEntries(
   l1Code: string,
   signal: AbortSignal,
 ): Promise<DictionaryEntry[]> {
-  const res = await fetch(`${API_BASE}/dictionary/lookup`, {
+  const res = await apiFetch(`${API_BASE}/dictionary/lookup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, l2: l2Code.split('-')[0], l1: l1Code }),
@@ -312,7 +313,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         prompt += t('explainMorphology');
       }
 
-      const res = await fetch(`${API_BASE}/chatgpt`, {
+      const res = await apiFetch(`${API_BASE}/chatgpt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),

@@ -9,6 +9,7 @@
 import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
 import { authorizedFetch } from './auth';
 import { API_BASE } from './api-config';
+import { apiFetch } from './api-fetch';
 import { log, logwarn } from './i18n';
 
 /** Fetch the full saved words store for the authenticated user. */
@@ -87,7 +88,7 @@ export async function fetchInflectedForms(
   if (!endpoint) return [head];
 
   try {
-    const res = await fetch(
+    const res = await apiFetch(
       `${API_BASE}${endpoint}?text=${encodeURIComponent(head)}&lang=${base}`,
     );
     if (!res.ok) return [head];

@@ -16,6 +16,7 @@ import { Markdown } from './components/Markdown';
 import { X, Ellipsis } from './components/Icons';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { API_BASE } from './api-config';
+import { apiFetch } from './api-fetch';
 import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
@@ -430,7 +431,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
 
 Text: ${cue.text}`;
 
-      const res = await fetch(`${API_BASE}/chatgpt`, {
+      const res = await apiFetch(`${API_BASE}/chatgpt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -698,7 +699,7 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
     }
     const controller = new AbortController();
     setTranslationLoading(true);
-    fetch(`${API_BASE}/translate_array`, {
+    apiFetch(`${API_BASE}/translate_array`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: [blockText], l1: l1Code, l2: l2Code }),

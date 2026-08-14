@@ -7,6 +7,7 @@
  */
 
 import { API_BASE } from './api-config';
+import { apiFetch } from './api-fetch';
 import { t, setLocale, log, logwarn } from './i18n';
 import { mountPagePanel, unmountPagePanel } from './transcript-app';
 
@@ -78,7 +79,7 @@ async function fetchTokensForTexts(texts, l2) {
   for (let i = 0; i < texts.length; i += 50) {
     const chunk = texts.slice(i, i + 50);
     log(`[PAGE] batch tokenize POST (${chunk.length} texts, l2=${l2.split('-')[0]})`);
-    const res = await fetch(`${API_BASE}/lemmatize-normalized/batch`, {
+    const res = await apiFetch(`${API_BASE}/lemmatize-normalized/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: chunk, l2: l2.split('-')[0] }),
