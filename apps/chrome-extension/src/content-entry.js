@@ -256,7 +256,7 @@ function getNetflixDisplayedSubtitle() {
       return;
     }
     nodes.forEach((el) => {
-      const rawText = (el.textContent || '').trim();
+      const rawText = ((el.innerText || el.textContent) || '').replace(/\r\n/g, '\n').trim();
       const text = normalizeForMatch(rawText);
       if (!rawText || seen.has(text)) return;
       try {
