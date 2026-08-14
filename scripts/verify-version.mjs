@@ -188,6 +188,7 @@ console.log('── SPEC-076 version gate ────────────�
 console.log(`Product version : ${shared} (web ${web} / mobile config ${mobile.version})`);
 console.log(`iOS build       : ${iosN} (ledger max ${iosMax})`);
 console.log(`Android version : ${androidN} (ledger max ${androidMax})`);
+console.log(`Expected tag    : v${shared}-b${iosN} (scripts/tag-release.mjs)`);
 console.log(`State           : ${pending ? 'PENDING RELEASE — strict checks' : 'released'}`);
 console.log('');
 for (const warning of warnings) console.log(`⚠  ${warning}`);
