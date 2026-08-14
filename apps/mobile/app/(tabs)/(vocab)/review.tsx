@@ -13,7 +13,9 @@ import {
   baseCode,
   dailyReviewCounterKey,
   formatNextDueLabel,
-  msUntilNextUtcDay,
+  dayKey,
+  msUntilNextDay,
+  deviceTimezone,
   newRatingId,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
@@ -150,6 +152,11 @@ export default function ReviewScreen() {
   } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
+  const dayStartHour = review.dayStartHour;
+  const srsCardMeta = useMemo(
+    () => ({ timezone: deviceTimezone(), dayStartHour }),
+    [dayStartHour],
+  );
   const insets = useSafeAreaInsets();
 
   const RATING_LABELS = useRatingLabels();
@@ -172,18 +179,18 @@ export default function ReviewScreen() {
   /** Cards whose offline entry lookup already finished (even with a miss). */
   const [offlineEntryLookupDone, setOfflineEntryLookupDone] = useState<Record<string, boolean>>({});
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
-  /** Current UTC day (YYYY-MM-DD); rolls over at midnight while the screen is open. */
-  const [utcDay, setUtcDay] = useState(() => new Date().toISOString().slice(0, 10));
+  /** Current local day (YYYY-MM-DD); rolls over at the configured hour. */
+  const [day, setDay] = useState(() => dayKey(Date.now(), dayStartHour));
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setUtcDay(new Date().toISOString().slice(0, 10));
-    }, msUntilNextUtcDay());
+      setDay(dayKey(Date.now(), dayStartHour));
+    }, msUntilNextDay(Date.now(), dayStartHour));
     return () => clearTimeout(timer);
-  }, [utcDay]);
+  }, [day, dayStartHour]);
 
   const reviewCounterKey = user?.id
-    ? dailyReviewCounterKey(user.id, Date.parse(`${utcDay}T00:00:00Z`))
+    ? dailyReviewCounterKey(user.id, Date.now(), dayStartHour)
     : null;
 
   useEffect(() => {
@@ -203,10 +210,10 @@ export default function ReviewScreen() {
     }
   }, [srsCapReached, reviewCounterKey]);
 
-  // A new UTC day resets the cap-rejection flag so reviews can resume.
+  // A new local day resets the cap-rejection flag so reviews can resume.
   useEffect(() => {
     resetCapReached();
-  }, [utcDay, resetCapReached]);
+  }, [day, resetCapReached]);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
@@ -216,7 +223,7 @@ export default function ReviewScreen() {
   const deckLoggedKeyRef = useRef<string | null>(null);
 
   // ── Auto-initialize SRS cards up to today's new-card budget ──
-  // The blue ("new") deck holds at most `dailyNewLimit` new cards per UTC day.
+  // The blue ("new") deck holds at most `dailyNewLimit` new cards per local day.
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
@@ -226,13 +233,26 @@ export default function ReviewScreen() {
     if (user && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
-    const budget = fsrs.getNewCardBudget(l2SavedWords, langCards, dailyNewLimit);
+    const budget = fsrs.getNewCardBudget(
+      l2SavedWords,
+      langCards,
+      dailyNewLimit,
+      Date.now(),
+      dayStartHour,
+    );
     const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
-    const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyNewLimit);
+    const plan = fsrs.planNewDeck(
+      l2SavedWords,
+      langCards,
+      dailyNewLimit,
+      Date.now(),
+      dayStartHour,
+    );
     log('[srs] planNewDeck', {
       l2: l2Code,
       dailyNewLimit,
-      utcDay: new Date(budget.dayStart).toISOString().slice(0, 10),
+      dayStartHour,
+      day,
       now: new Date().toISOString(),
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCards).length,
@@ -265,11 +285,11 @@ export default function ReviewScreen() {
     if (plan.toCreate.length > 0) {
       setInitializing(true);
       for (const id of plan.toCreate) {
-        updateCard(l2Code, id, fsrs.newCard());
+        updateCard(l2Code, id, fsrs.newCard(), srsCardMeta);
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, updateCard, removeCard]);
+  }, [srsLoaded, wordsLoaded, user, srsCloudHydrated, l2SavedWords, store, l2Code, dailyNewLimit, dayStartHour, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // Cards only make sense for words that are still saved; unsaving through
@@ -484,7 +504,7 @@ export default function ReviewScreen() {
       prev: { ...card.srs },
       next: { ...updated },
     });
-    updateCard(l2Code, card.word.id, updated);
+    updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
     if (!isPro) {
       const next = reviewsDoneToday + 1;
@@ -532,7 +552,7 @@ export default function ReviewScreen() {
     updateCard(l2Code, state.wordId, {
       ...state.prevSrs,
       ...(state.ratingId ? { voidRatingId: state.ratingId } : {}),
-    });
+    }, srsCardMeta);
 
     // Release the rating back to the free daily budget (SPEC-066 Phase 4).
     if (!isPro && reviewsDoneToday > 0) {
@@ -787,16 +807,23 @@ export default function ReviewScreen() {
     [l2SavedWords, langCardsForCounts, dailyNewLimit],
   );
   useEffect(() => {
-    const budget = fsrs.getNewCardBudget(l2SavedWords, langCardsForCounts, dailyNewLimit);
+    const budget = fsrs.getNewCardBudget(
+      l2SavedWords,
+      langCardsForCounts,
+      dailyNewLimit,
+      Date.now(),
+      dayStartHour,
+    );
     log('[srs] cardCounts', {
       l2: l2Code,
       ...cardCounts,
       dailyNewLimit,
+      dayStartHour,
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
     });
-  }, [cardCounts, dailyNewLimit, l2Code, l2SavedWords, langCardsForCounts]);
+  }, [cardCounts, dailyNewLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
   // ── Render states ──
 

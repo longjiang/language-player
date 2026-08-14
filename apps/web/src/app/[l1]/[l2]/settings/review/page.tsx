@@ -40,6 +40,19 @@ export default function ReviewSettingsPage() {
         centerLabel={t('msg.default_value', { n: 20 })}
         rightLabel="200"
       />
+
+      <div className="mt-8">
+        <SliderRow
+          label={t('label.next_day_starts_at')}
+          description={t('msg.next_day_starts_at_desc')}
+          min={0} max={23} step={1} value={review.dayStartHour}
+          onChange={v => updateReview({ dayStartHour: v })}
+          leftLabel="0:00"
+          centerLabel="4:00"
+          rightLabel="23:00"
+          valueDisplay={`${review.dayStartHour}:00`}
+        />
+      </div>
     </div>
   );
 }

@@ -19,6 +19,7 @@ import {
   type Grade,
 } from 'ts-fsrs';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
+import { clampDayStartHour, localDayStartMs } from './day-boundary';
 
 /** The four rating buttons, shared by web and mobile. */
 export type SrsRating = 'again' | 'hard' | 'good' | 'easy';
@@ -37,12 +38,6 @@ export type FsrsCard = SrsFields;
 export type FsrsSrsStore = SrsProgressStore;
 
 const DAY_MS = 86_400_000;
-
-/** Milliseconds since epoch for the UTC day containing `now`. */
-function utcDayStart(now: number): number {
-  const d = new Date(now);
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-}
 
 /** Single shared scheduler instance; parameters stay at ts-fsrs defaults. */
 const scheduler = fsrs({
@@ -357,7 +352,7 @@ export interface DeckCountOptions {
  *
  * - blue = unrated (`state: new`) cards in the deck. The deck is prefilled
  *   with today's new-card budget, so this is the remaining budget: it counts
- *   down as cards are rated and does not refill until the next UTC day.
+ *   down as cards are rated and does not refill until the next local day.
  * - red = learning/relearning cards actually due on a step right now.
  * - green = review cards due now (including overdue).
  *
@@ -401,13 +396,14 @@ export function srsDueLabel(card: FsrsCard, now: number = Date.now()): string {
   return `${Math.round(hours / 24)}d`;
 }
 
-/** Number of cards introduced (created) for saved words on the current UTC day. */
+/** Number of cards introduced (created) for saved words on the current local day. */
 export function newCardsIntroducedToday(
   savedWords: Array<{ id: string }>,
   cards: Record<string, FsrsCard>,
   now: number = Date.now(),
+  dayStartHour: number = 4,
 ): number {
-  const start = utcDayStart(now);
+  const start = localDayStartMs(now, dayStartHour);
   let count = 0;
   for (const sw of savedWords) {
     const card = cards[sw.id];
@@ -416,22 +412,24 @@ export function newCardsIntroducedToday(
   return count;
 }
 
-/** Breakdown of the UTC-day new-card budget (SPEC-066). */
+/** Breakdown of the local-day new-card budget (SPEC-066). */
 export interface NewCardBudget {
   /** Effective daily new-card limit after clamping. */
   cap: number;
-  /** Start of the current UTC day (ms). */
+  /** Local day-start hour (Anki "next day starts at"; default 4). */
+  dayStartHour: number;
+  /** Start of the current local day (ms). */
   dayStart: number;
-  /** Cards created on the current UTC day (any state). */
+  /** Cards created on the current local day (any state). */
   introducedToday: number;
-  /** Unrated cards created before the current UTC day. */
+  /** Unrated cards created before the current local day. */
   olderUnrated: number;
   /** How many more cards may be introduced today. */
   remaining: number;
 }
 
 /**
- * Full UTC-day new-card budget breakdown (SPEC-066).
+ * Full local-day new-card budget breakdown (SPEC-066).
  *
  * Cards introduced today plus older unrated cards still sitting in the blue
  * deck both count toward `limit`. The deck does not refill during a session.
@@ -441,16 +439,18 @@ export function getNewCardBudget(
   cards: Record<string, FsrsCard>,
   limit: number = 20,
   now: number = Date.now(),
+  dayStartHour: number = 4,
 ): NewCardBudget {
   const cap = Math.max(0, Math.floor(limit));
-  const dayStart = utcDayStart(now);
-  const introducedToday = newCardsIntroducedToday(savedWords, cards, now);
+  const dayStart = localDayStartMs(now, dayStartHour);
+  const introducedToday = newCardsIntroducedToday(savedWords, cards, now, dayStartHour);
   const olderUnrated = savedWords.filter((sw) => {
     const card = cards[sw.id];
     return !!card && isNewCard(card) && card.createdAt < dayStart;
   }).length;
   return {
     cap,
+    dayStartHour: clampDayStartHour(dayStartHour),
     dayStart,
     introducedToday,
     olderUnrated,
@@ -466,8 +466,9 @@ export function remainingNewCardsToday(
   cards: Record<string, FsrsCard>,
   limit: number = 20,
   now: number = Date.now(),
+  dayStartHour: number = 4,
 ): number {
-  return getNewCardBudget(savedWords, cards, limit, now).remaining;
+  return getNewCardBudget(savedWords, cards, limit, now, dayStartHour).remaining;
 }
 
 /** Saved words that are candidates for the blue deck (no card or unrated). */
@@ -494,9 +495,10 @@ export function planNewDeck(
   cards: Record<string, FsrsCard>,
   limit: number,
   now: number = Date.now(),
+  dayStartHour: number = 4,
 ): { toCreate: string[]; toRemove: string[] } {
   const cap = Math.max(0, Math.floor(limit));
-  const remaining = remainingNewCardsToday(savedWords, cards, cap, now);
+  const remaining = remainingNewCardsToday(savedWords, cards, cap, now, dayStartHour);
 
   const pool = savedWords
     .filter((sw) => {

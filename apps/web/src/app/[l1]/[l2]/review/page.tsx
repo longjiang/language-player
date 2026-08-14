@@ -12,7 +12,9 @@ import {
   baseCode,
   dailyReviewCounterKey,
   formatNextDueLabel,
-  msUntilNextUtcDay,
+  dayKey,
+  msUntilNextDay,
+  deviceTimezone,
   newRatingId,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
@@ -98,7 +100,11 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { display, review: { dailyNewLimit: dailyLimit } } = useSettingsContext();
+  const { display, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
+  const srsCardMeta = useMemo(
+    () => ({ timezone: deviceTimezone(), dayStartHour }),
+    [dayStartHour],
+  );
   const { isPro } = useSubscriptionContext();
   const t = useT();
   const router = useRouter();
@@ -129,18 +135,18 @@ export default function ReviewPage() {
   /** Toast ID of the most recent rating toast, so undo can dismiss it. */
   const ratingToastIdRef = useRef<string | number | null>(null);
   const [reviewsDoneToday, setReviewsDoneToday] = useState(0);
-  /** Current UTC day (YYYY-MM-DD); rolls over at midnight while the page is open. */
-  const [utcDay, setUtcDay] = useState(() => new Date().toISOString().slice(0, 10));
+  /** Current local day (YYYY-MM-DD); rolls over at the configured hour. */
+  const [day, setDay] = useState(() => dayKey(Date.now(), dayStartHour));
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setUtcDay(new Date().toISOString().slice(0, 10));
-    }, msUntilNextUtcDay());
+      setDay(dayKey(Date.now(), dayStartHour));
+    }, msUntilNextDay(Date.now(), dayStartHour));
     return () => clearTimeout(timer);
-  }, [utcDay]);
+  }, [day, dayStartHour]);
 
   const reviewCounterKey = session?.user?.id
-    ? dailyReviewCounterKey(session.user.id, Date.parse(`${utcDay}T00:00:00Z`))
+    ? dailyReviewCounterKey(session.user.id, Date.now(), dayStartHour)
     : null;
 
   useEffect(() => {
@@ -160,7 +166,7 @@ export default function ReviewPage() {
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   // ── Auto-initialize SRS cards up to today's new-card budget ──
-  // The blue ("new") deck holds at most `dailyLimit` new cards per UTC day.
+  // The blue ("new") deck holds at most `dailyLimit` new cards per local day.
   // Once today's budget is used, rated cards are not replaced until tomorrow.
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
@@ -170,13 +176,26 @@ export default function ReviewPage() {
     if (status === 'authenticated' && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
-    const budget = fsrs.getNewCardBudget(l2SavedWords, langCards, dailyLimit);
+    const budget = fsrs.getNewCardBudget(
+      l2SavedWords,
+      langCards,
+      dailyLimit,
+      Date.now(),
+      dayStartHour,
+    );
     const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
-    const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyLimit);
+    const plan = fsrs.planNewDeck(
+      l2SavedWords,
+      langCards,
+      dailyLimit,
+      Date.now(),
+      dayStartHour,
+    );
     log('[SRS] planNewDeck', {
       l2: l2Code,
       dailyLimit,
-      utcDay: new Date(budget.dayStart).toISOString().slice(0, 10),
+      dayStartHour,
+      day,
       now: new Date().toISOString(),
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCards).length,
@@ -209,11 +228,11 @@ export default function ReviewPage() {
     if (plan.toCreate.length > 0) {
       setInitializing(true);
       for (const id of plan.toCreate) {
-        updateCard(l2Code, id, fsrs.newCard());
+        updateCard(l2Code, id, fsrs.newCard(), srsCardMeta);
       }
       setTimeout(() => setInitializing(false), 100);
     }
-  }, [srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, updateCard, removeCard]);
+  }, [srsLoaded, wordsLoaded, status, srsCloudHydrated, l2SavedWords, store, l2Code, dailyLimit, dayStartHour, updateCard, removeCard]);
 
   // ── Prune orphaned SRS cards ──
   // An SRS card is only meaningful for a word that's still saved. When a word
@@ -367,7 +386,7 @@ export default function ReviewPage() {
     updated.ratingId = newRatingId(session?.user?.id, card.word.id);
     updated.rating = quality;
     undoRef.current.ratingId = updated.ratingId;
-    updateCard(l2Code, card.word.id, updated);
+    updateCard(l2Code, card.word.id, updated, srsCardMeta);
 
     if (!isPro) {
       const next = reviewsDoneToday + 1;
@@ -394,7 +413,7 @@ export default function ReviewPage() {
     updateCard(l2Code, state.wordId, {
       ...state.prevSrs,
       ...(state.ratingId ? { voidRatingId: state.ratingId } : {}),
-    });
+    }, srsCardMeta);
 
     // Release the rating back to the free daily budget (SPEC-066 Phase 4).
     if (!isPro && reviewsDoneToday > 0) {
@@ -540,16 +559,23 @@ export default function ReviewPage() {
     [l2SavedWords, langCardsForCounts, dailyLimit],
   );
   useEffect(() => {
-    const budget = fsrs.getNewCardBudget(l2SavedWords, langCardsForCounts, dailyLimit);
+    const budget = fsrs.getNewCardBudget(
+      l2SavedWords,
+      langCardsForCounts,
+      dailyLimit,
+      Date.now(),
+      dayStartHour,
+    );
     log('[SRS] cardCounts', {
       l2: l2Code,
       ...cardCounts,
       dailyLimit,
+      dayStartHour,
       remaining: budget.remaining,
       savedWords: l2SavedWords.length,
       cards: Object.keys(langCardsForCounts).length,
     });
-  }, [cardCounts, dailyLimit, l2Code, l2SavedWords, langCardsForCounts]);
+  }, [cardCounts, dailyLimit, dayStartHour, l2Code, l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;

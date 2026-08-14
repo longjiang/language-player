@@ -18,6 +18,7 @@ export {
 export type {
   ProgressResponse,
   SrsResponse,
+  SrsCardMeta,
   UserSettingsResponse,
 } from './user-data-columns';
 export { useNotes } from './notes';

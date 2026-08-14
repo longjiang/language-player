@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { deleteSrsCard, putSrsCard, useUserDataColumns } from '@langplayer/api-client';
+import type { SrsCardMeta } from '@langplayer/api-client';
 import {
   createSrsStore,
   fsrs,
@@ -22,10 +23,17 @@ interface PendingSrsOp {
   wordId: string;
   state?: SrsFields;
   updatedAt: number;
+  timezone?: string;
+  dayStartHour?: number;
 }
 
 interface SrsRowApi {
-  putSrsCard: (l2: string, wordId: string, state: SrsFields) => Promise<unknown>;
+  putSrsCard: (
+    l2: string,
+    wordId: string,
+    state: SrsFields,
+    meta?: SrsCardMeta,
+  ) => Promise<unknown>;
   deleteSrsCard: (l2: string, wordId: string) => Promise<unknown>;
 }
 
@@ -79,7 +87,15 @@ async function flushPendingSrsOps(
     const op = ops[i]!;
     try {
       if (op.type === 'upsert' && op.state) {
-        await api.putSrsCard(op.l2, op.wordId, op.state);
+        const hasMeta = !!op.timezone || typeof op.dayStartHour === 'number';
+        if (hasMeta) {
+          await api.putSrsCard(op.l2, op.wordId, op.state, {
+            timezone: op.timezone,
+            dayStartHour: op.dayStartHour,
+          });
+        } else {
+          await api.putSrsCard(op.l2, op.wordId, op.state);
+        }
       } else {
         await api.deleteSrsCard(op.l2, op.wordId);
       }
@@ -267,7 +283,8 @@ export function useSrs() {
     return getLanguageCards(store, l2Code);
   }, [store]);
 
-  const updateCard = useCallback((l2Code: string, wordId: string, fields: SrsFields) => {
+  const updateCard = useCallback(
+    (l2Code: string, wordId: string, fields: SrsFields, meta: SrsCardMeta = {}) => {
     log('[SRS] updateCard: l2=%s wordId=%s reps=%d nextReview=%s',
       l2Code, wordId, fields.repetitions,
       new Date(fields.nextReview).toISOString().slice(0, 16));
@@ -292,9 +309,13 @@ export function useSrs() {
       wordId,
       state: normalized,
       updatedAt: Date.now(),
+      ...(meta.timezone ? { timezone: meta.timezone } : {}),
+      ...(typeof meta.dayStartHour === 'number' ? { dayStartHour: meta.dayStartHour } : {}),
     }));
     void flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
-  }, []);
+    },
+    [],
+  );
 
   const removeCard = useCallback((l2Code: string, wordId: string) => {
     log('[SRS] removeCard: l2=%s wordId=%s', l2Code, wordId);
