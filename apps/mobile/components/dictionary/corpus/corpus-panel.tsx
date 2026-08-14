@@ -72,7 +72,7 @@ export function CorpusPanel({ word, l2Code, l1Code = 'en', highlightForms = [] }
         <RelatedWords word={word} l2Code={l2Code} l1Code={l1Code} />
       )}
       {showMistakes && active === 'mistakes' && (
-        <Mistakes word={word} />
+        <Mistakes word={word} highlightTerms={highlightForms} />
       )}
 
       {/* Shared footer: attribution + corpus name */}

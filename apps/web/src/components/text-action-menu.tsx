@@ -140,7 +140,7 @@ export function TextActionMenu({
             {explainLoading ? (
               <span className="text-muted-foreground/80">{text}</span>
             ) : (
-              <TokenizedText text={text} l2Code={l2Code} textScale={0} />
+              <TokenizedText text={text} l2Code={l2Code} />
             )}
           </div>
         </ExplainPanel>

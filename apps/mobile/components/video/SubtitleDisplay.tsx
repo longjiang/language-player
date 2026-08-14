@@ -10,6 +10,7 @@ import { TokenizedText } from '../TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { baseCode } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/shared';
@@ -35,7 +36,8 @@ interface SubtitleDisplayProps {
 export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const { display, playback } = useSettingsContext();
+  const { display, playback, tokenizedText } = useSettingsContext();
+  const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
   const { isPro } = useSubscription();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
@@ -224,7 +226,10 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   textColor={overlay ? 'text-white' : undefined}
                 />
                 {showTranslation && activeLine.l1Line ? (
-                  <Text className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}>
+                  <Text
+                    className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
+                    style={{ fontSize: 14 * 1.5 * zoomRem }}
+                  >
                     {renderInlineMarkdown(activeLine.l1Line, { markBold: true })}
                   </Text>
                 ) : null}
@@ -293,7 +298,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   textScale={1}
                 />
                 {item.l1Line ? (
-                  <Text className="mt-1 text-sm text-muted-foreground">
+                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: 14 * zoomRem }}>
                     {renderInlineMarkdown(item.l1Line, { markBold: true })}
                   </Text>
                 ) : null}

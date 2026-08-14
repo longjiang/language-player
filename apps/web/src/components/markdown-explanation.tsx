@@ -48,8 +48,7 @@ export function MarkdownExplanation({ text, l2Code, streaming = false }: Markdow
             <TokenizedText
               text={content}
               l2Code={l2Code}
-              textScale={0}
-              leading="none"
+              inline
               phonetics={false}
               mode="normal"
               highlightSaved={false}

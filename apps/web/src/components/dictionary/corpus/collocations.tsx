@@ -152,7 +152,6 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                         l2Code={l2Code}
                         // 1rem base, scaled by the user's zoom setting
                         textScale={1}
-                        leading="none"
                         highlightSaved={false}
                         highlightForms={highlightForms}
                         highlightEntryIds={highlightEntryIds}

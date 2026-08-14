@@ -94,7 +94,7 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
               <LazyTokenizedText
                 text={part.value}
                 l2Code={l2Code}
-                leading="none"
+                inline
                 phonetics={false}
                 highlightSaved={false}
                 quickGloss={false}
@@ -102,7 +102,6 @@ function Line({ line, l2Code }: { line: string; l2Code: string }) {
                 byeonggi={false}
                 mode="normal"
                 bold
-                textScale={0}
               />
             </Suspense>
           );
