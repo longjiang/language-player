@@ -42,7 +42,9 @@ The audit is read-only. Nothing in `zerotohero-nuxt/` is edited.
 
 - Porting Classic features into `apps/web` (covered by other specs).
 - Changing Classic itself, including its redirects.
-- Serving v2 content through the web domain (the redirect is a hop, not a proxy).
+- Serving v2 content through the web domain for normal browsers (the redirect
+  is a hop, not a proxy; the Capacitor wrapper is the one exception — see
+  § 12).
 - Redirecting arbitrary unknown paths (typos stay on the web 404 page).
 
 ## 3. Audit Method
@@ -481,7 +483,52 @@ A dedicated docs entry for contact remains optional.
 
 - `apps/web` (Next.js proxy, Vitest, NextAuth `signOut`, `user-data-wipe`)
 - Live `v2.languageplayer.io` deployment with a valid certificate
-- No changes to `zerotohero-nuxt/`, `netlify.toml`, or shared packages
+- No changes to `zerotohero-nuxt/` or shared packages
+- `netlify.toml` cookie-gated proxy for the Capacitor wrapper (§ 12)
+
+## 12. Capacitor wrapper redirect (cookie-gated proxy)
+
+The legacy iOS "Language Player 2" app is a Capacitor 4 wrapper whose
+`server.url` points at `https://languageplayer.io`. Capacitor 4 cancels
+top-level navigations to origins outside `server.url` and hands them to
+Safari, so `apps/web` cannot simply `location.replace` to
+`v2.languageplayer.io` from inside the app.
+
+`apps/web/src/components/layout/capacitor-redirect.tsx` detects the Capacitor
+iOS runtime and sets a `lp_legacy` cookie on `languageplayer.io`, then reloads
+the page. Netlify has a `[[redirects]]` rule (after the `/api/*` rules):
+
+```toml
+[[redirects]]
+  from = "/*"
+  to = "https://v2.languageplayer.io/:splat"
+  status = 200
+  force = true
+  conditions = { Cookie = ["lp_legacy"] }
+```
+
+The rule is a 200 rewrite, so the webview stays on `languageplayer.io` and
+never triggers Capacitor's Safari hand-off. All subsequent in-app navigations
+and origin-relative assets (`/nuxt/...`) are proxied to v2 the same way.
+Normal browsers never receive the cookie, so they keep loading `apps/web`.
+
+Netlify edge functions run before redirect rules, so
+`apps/web/src/proxy.ts` must not let the Classic-route adapter answer first:
+when the `lp_legacy` cookie is present it returns `NextResponse.next()`,
+allowing the CDN proxy rule above to handle the request. The `/api/python/*`
+and `/api/directus/*` rules are still evaluated first, so API traffic is
+unaffected.
+
+### Caveats
+
+- The address bar inside the wrapper stays `languageplayer.io`; only a future
+  `server.allowNavigation` + store submission changes the visible host.
+- Cookies are scoped to `languageplayer.io` and are shared with any future
+  web session on that origin, so Classic auth state can collide with
+  `apps/web` sessions.
+- Hardcoded absolute `https://v2.languageplayer.io/...` links inside Classic
+  still jump to Safari. The wrapper should be updated with
+  `allowNavigation: ["v2.languageplayer.io"]` in a future store submission.
 
 ## 11. Redirect Test Matrix (manual click-through)
 

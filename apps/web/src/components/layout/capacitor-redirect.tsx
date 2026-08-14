@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { V2_ORIGIN } from '@/lib/classic-route-redirect';
+import { log } from '@/lib/logger';
 
 interface CapacitorGlobal {
   getPlatform?: () => string;
@@ -30,12 +30,20 @@ function isIosCapacitor(): boolean {
 /**
  * The legacy "Language Player 2" iOS app is a Capacitor wrapper pointed at
  * languageplayer.io. When apps/web takes over that domain, keep the native
- * wrapper on the Classic app by sending it to v2.languageplayer.io.
+ * wrapper on the Classic app by proxying the origin to v2.languageplayer.io.
+ *
+ * Netlify proxies every request carrying the lp_legacy cookie to
+ * v2.languageplayer.io (status 200), so the redirect stays inside the
+ * webview. A cross-origin location.replace(v2...) would instead be cancelled
+ * by Capacitor's navigation policy and handed to Safari.
  */
 export function CapacitorRedirect() {
   useEffect(() => {
     if (!isIosCapacitor()) return;
-    window.location.replace(`${V2_ORIGIN}${window.location.pathname}${window.location.search}`);
+    log('Capacitor iOS detected; setting lp_legacy cookie and reloading through the Netlify proxy');
+    document.cookie =
+      'lp_legacy=1; path=/; max-age=31536000; samesite=lax; secure';
+    window.location.reload();
   }, []);
 
   return null;

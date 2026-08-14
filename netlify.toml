@@ -18,5 +18,17 @@
   status = 200
   force = true
 
+# Legacy iOS Capacitor wrapper (server.url = languageplayer.io): when the
+# webview sets lp_legacy, proxy the whole origin to the Classic Nuxt app on
+# v2.languageplayer.io. A 200 rewrite keeps the navigation inside the webview;
+# a cross-origin redirect would be handed to Safari by Capacitor's policy.
+# Must stay after the /api/* rules so API traffic is unaffected.
+[[redirects]]
+  from = "/*"
+  to = "https://v2.languageplayer.io/:splat"
+  status = 200
+  force = true
+  conditions = { Cookie = ["lp_legacy"] }
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
