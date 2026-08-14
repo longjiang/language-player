@@ -104,7 +104,8 @@ Privacy practices form answers:
 ## Packaging
 
 ```bash
-# Build (must be run after any src/ change — auto-bumps patch version)
+# Build (must be run after any src/ change — auto-bumps the 4th version
+# component: MAJOR.MINOR.PATCH.BUILD, per SPEC-076)
 node apps/chrome-extension/build.mjs
 
 # Create upload ZIP (manifest.json must be at ZIP root)
@@ -179,7 +180,7 @@ Filled and saved on the item's Privacy page:
 
 ## Update Process (future versions)
 
-1. Edit `apps/chrome-extension/src/` → run `node apps/chrome-extension/build.mjs` (auto-bumps patch version in `manifest.json`).
+1. Edit `apps/chrome-extension/src/` → run `node apps/chrome-extension/build.mjs` (auto-bumps the 4th build component in `manifest.json`, per SPEC-076).
 2. Rebuild the ZIP (see [Packaging](#packaging)).
 3. Developer Dashboard → the item → **Package** → upload new ZIP → submit.
 4. Note: `content.css`, `popup.html`, `popup.css`, `_locales/`, `icons/` are NOT bundled — they're loaded directly, so changes to those only need a new ZIP + resubmit (no build step).

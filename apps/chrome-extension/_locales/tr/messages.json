@@ -183,6 +183,9 @@
   "confirm": {
     "message": "Onayla"
   },
+  "versionLabel": {
+    "message": "Sürüm"
+  },
   "iSpeak": {
     "message": "Konuşuyorum"
   },

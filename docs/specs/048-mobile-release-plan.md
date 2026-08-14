@@ -519,6 +519,13 @@ env var is the source of truth.
 - `apps/mobile/app.json` → `expo.version` (user-facing version) plus
   `ios.buildNumber` and `android.versionCode` (monotonic per store).
 
+> **SPEC-076 (2026-08-14):** versioning is now scripted. Use
+> `scripts/bump-product-version.mjs <major|minor|patch>` to bump the shared
+> product version, `scripts/next-build.mjs` to assign the shared iOS+Android
+> build number, and `scripts/verify-version.mjs` as a pre-upload gate after
+> `expo prebuild` and after the archive build. Consumed build numbers live in
+> `docs/versioning/build-ledger.md` — never reuse one.
+
 ## 3. Apple App Store (iOS)
 
 > **Strategy:** this app **replaces the GO Legacy listing** and is renamed

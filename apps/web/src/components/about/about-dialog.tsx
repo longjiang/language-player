@@ -4,14 +4,14 @@ import { useMemo } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useT } from '@/hooks/use-t';
 import { AboutContent, type BuildInfo } from '@/components/about/about-content';
-import pkg from '../../../package.json';
+import { PRODUCT_VERSION } from '@langplayer/shared';
 
 /**
  * Client-safe build metadata.
  */
 function getClientBuildInfo(): BuildInfo {
   return {
-    version: (pkg as { version?: string }).version ?? '0.0.0',
+    version: PRODUCT_VERSION,
     buildDate: new Date().toISOString(),
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   };

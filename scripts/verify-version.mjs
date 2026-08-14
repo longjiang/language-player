@@ -1,0 +1,172 @@
+#!/usr/bin/env node
+/**
+ * Pre-upload version gate per SPEC-076.
+ *
+ * Usage:
+ *   node scripts/verify-version.mjs
+ *
+ * Run after `expo prebuild` and after the archive/AAB build, before
+ * uploading to either store. Exits non-zero if the version/build numbers
+ * are inconsistent, below the ledger, or out of sync with the native
+ * projects.
+ */
+
+import { existsSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
+import {
+  paths,
+  readSharedVersion,
+  readWebVersion,
+  readMobileConfig,
+  parseLedger,
+  ledgerMax,
+  compareVersions,
+} from './version-lib.mjs';
+
+const errors = [];
+const warnings = [];
+
+const rows = parseLedger();
+const iosMax = ledgerMax(rows, 'ios');
+const androidMax = ledgerMax(rows, 'android');
+const shared = readSharedVersion();
+const web = readWebVersion();
+const mobile = readMobileConfig();
+
+// 1. Product version consistency (web + mobile must be identical).
+if (web !== shared) {
+  errors.push(`apps/web/package.json (${web}) != shared PRODUCT_VERSION (${shared})`);
+}
+if (mobile.version !== shared) {
+  errors.push(`app.json expo.version (${mobile.version}) != shared PRODUCT_VERSION (${shared})`);
+}
+
+// 2. Build number sanity.
+const iosN = mobile.iosBuildNumber == null ? null : Number(mobile.iosBuildNumber);
+const androidN =
+  mobile.androidVersionCode == null ? null : Number(mobile.androidVersionCode);
+if (iosN == null || !Number.isInteger(iosN) || iosN <= 0) {
+  errors.push('app.json ios.buildNumber is missing or invalid (SPEC-076 requires it to be explicit).');
+}
+if (androidN == null || !Number.isInteger(androidN) || androidN <= 0) {
+  errors.push('app.json android.versionCode is missing or invalid.');
+}
+if (androidN != null && androidN > 2100000000) {
+  errors.push(`android.versionCode (${androidN}) exceeds Google Play's 2,100,000,000 cap.`);
+}
+
+if (iosN != null && iosN < iosMax) {
+  errors.push(`iOS build ${iosN} is below the ledger max (${iosMax}) — reuse/regression.`);
+}
+if (androidN != null && androidN < androidMax) {
+  errors.push(`Android versionCode ${androidN} is below the ledger max (${androidMax}) — reuse/regression.`);
+}
+
+// 3. Released vs pending release state.
+const pending =
+  (iosN != null && iosN > iosMax) || (androidN != null && androidN > androidMax);
+
+function readIosNative() {
+  if (!existsSync(paths.iosInfoPlist)) return null;
+  const text = readFileSync(paths.iosInfoPlist, 'utf8');
+  const version = text.match(/CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/);
+  const build = text.match(/CFBundleVersion<\/key>\s*<string>([^<]+)<\/string>/);
+  return version && build ? { version: version[1], build: build[1] } : null;
+}
+
+function readAndroidNative() {
+  if (!existsSync(paths.androidBuildGradle)) return null;
+  const text = readFileSync(paths.androidBuildGradle, 'utf8');
+  const version = text.match(/versionName\s+"([^"]+)"/);
+  const code = text.match(/versionCode\s+(\d+)/);
+  return version && code ? { version: version[1], code: Number(code[1]) } : null;
+}
+
+if (pending) {
+  if (iosN !== androidN) {
+    errors.push(
+      `Release in progress but build numbers differ: ios.buildNumber=${iosN}, android.versionCode=${androidN}. They must be identical (SPEC-076).`,
+    );
+  }
+  if (iosN != null && iosN <= iosMax) {
+    errors.push(`iOS build ${iosN} does not exceed the ledger max (${iosMax}).`);
+  }
+  if (androidN != null && androidN <= androidMax) {
+    errors.push(`Android versionCode ${androidN} does not exceed the ledger max (${androidMax}).`);
+  }
+
+  const iosNative = readIosNative();
+  if (iosNative) {
+    if (iosNative.version !== mobile.version || iosNative.build !== String(iosN)) {
+      errors.push(
+        `iOS native project is out of sync: Info.plist has ${iosNative.version} (${iosNative.build}), app.json expects ${mobile.version} (${iosN}). Run expo prebuild and re-verify.`,
+      );
+    }
+  } else {
+    warnings.push('iOS native project not found — run expo prebuild --platform ios and re-verify.');
+  }
+
+  const androidNative = readAndroidNative();
+  if (androidNative) {
+    if (
+      androidNative.version !== mobile.version ||
+      androidNative.code !== androidN
+    ) {
+      errors.push(
+        `Android native project is out of sync: build.gradle has ${androidNative.version} (${androidNative.code}), app.json expects ${mobile.version} (${androidN}). Run expo prebuild and re-verify.`,
+      );
+    }
+  } else {
+    warnings.push('Android native project not found — run expo prebuild --platform android and re-verify.');
+  }
+
+  let lastTag = null;
+  try {
+    lastTag =
+      execSync('git tag -l "v[0-9]*" --sort=-v:refname', {
+        cwd: paths.root,
+        encoding: 'utf8',
+      })
+        .split('\n')
+        .find(Boolean) ?? null;
+  } catch {
+    lastTag = null;
+  }
+  if (lastTag) {
+    const tagVersion = lastTag.replace(/^v/, '');
+    try {
+      if (compareVersions(shared, tagVersion) <= 0) {
+        errors.push(`Product version ${shared} is not greater than the last release tag ${lastTag}.`);
+      }
+    } catch {
+      warnings.push(`Could not parse release tag ${lastTag}; skipping tag comparison.`);
+    }
+  } else {
+    warnings.push('No v* release tags found; skipping release-tag comparison.');
+  }
+} else {
+  warnings.push(
+    `Released state: iOS build ${iosN}, Android versionCode ${androidN} match the ledger — no release in progress.`,
+  );
+  if (iosN !== androidN) {
+    warnings.push(
+      'Historical build-number mismatch (iOS vs Android). Run scripts/next-build.mjs when preparing the next release to realign them.',
+    );
+  }
+}
+
+console.log('── SPEC-076 version gate ──────────────────────────────');
+console.log(`Product version : ${shared} (web ${web} / app.json ${mobile.version})`);
+console.log(`iOS build       : ${iosN} (ledger max ${iosMax})`);
+console.log(`Android version : ${androidN} (ledger max ${androidMax})`);
+console.log(`State           : ${pending ? 'PENDING RELEASE — strict checks' : 'released'}`);
+console.log('');
+for (const warning of warnings) console.log(`⚠  ${warning}`);
+for (const error of errors) console.log(`✖  ${error}`);
+if (errors.length > 0) {
+  console.log('');
+  console.log(`FAILED with ${errors.length} error(s). Do not upload.`);
+  process.exit(1);
+}
+console.log('');
+console.log('OK — version gate passed.');

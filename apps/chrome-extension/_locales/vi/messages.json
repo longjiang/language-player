@@ -183,6 +183,9 @@
   "confirm": {
     "message": "Xác nhận"
   },
+  "versionLabel": {
+    "message": "Phiên bản"
+  },
   "iSpeak": {
     "message": "Tôi nói"
   },

@@ -183,6 +183,9 @@
   "confirm": {
     "message": "Подтвердить"
   },
+  "versionLabel": {
+    "message": "Версия"
+  },
   "iSpeak": {
     "message": "Я говорю"
   },

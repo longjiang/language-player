@@ -61,6 +61,7 @@ const CSV_LOOKUP = {
   'iLearning': 'title.i_learning',
   'searchLanguages': 'placeholder.search_languages',
   'confirm': 'action.confirm',
+  'versionLabel': 'label.version',
   // AI explain prompts
   'explainWord': 'prompt.explain_word',
   'explainWordContext': 'prompt.explain_word_context',
