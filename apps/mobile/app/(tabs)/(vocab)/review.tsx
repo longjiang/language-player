@@ -226,7 +226,35 @@ export default function ReviewScreen() {
     if (user && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
+    const budget = fsrs.getNewCardBudget(l2SavedWords, langCards, dailyNewLimit);
+    const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
     const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyNewLimit);
+    log('[srs] planNewDeck', {
+      l2: l2Code,
+      dailyNewLimit,
+      utcDay: new Date(budget.dayStart).toISOString().slice(0, 10),
+      now: new Date().toISOString(),
+      savedWords: l2SavedWords.length,
+      cards: Object.keys(langCards).length,
+      introducedToday: budget.introducedToday,
+      olderUnrated: budget.olderUnrated,
+      remaining: budget.remaining,
+      candidates,
+      toCreate: plan.toCreate.length,
+      toRemove: plan.toRemove.length,
+    });
+    const introduced = Object.entries(langCards)
+      .filter(([, c]) => c.createdAt >= budget.dayStart)
+      .map(([id, c]) => ({
+        id,
+        state: fsrs.getCardState(c),
+        createdAt: new Date(c.createdAt).toISOString(),
+        lastReview: c.lastReview ? new Date(c.lastReview).toISOString() : null,
+      }))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    if (introduced.length > 0) {
+      log('[srs] introducedToday cards', introduced);
+    }
 
     // Push back: drop blue cards that fell outside the newest `dailyNewLimit`.
     for (const id of plan.toRemove) {
@@ -758,6 +786,17 @@ export default function ReviewScreen() {
     () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit }),
     [l2SavedWords, langCardsForCounts, dailyNewLimit],
   );
+  useEffect(() => {
+    const budget = fsrs.getNewCardBudget(l2SavedWords, langCardsForCounts, dailyNewLimit);
+    log('[srs] cardCounts', {
+      l2: l2Code,
+      ...cardCounts,
+      dailyNewLimit,
+      remaining: budget.remaining,
+      savedWords: l2SavedWords.length,
+      cards: Object.keys(langCardsForCounts).length,
+    });
+  }, [cardCounts, dailyNewLimit, l2Code, l2SavedWords, langCardsForCounts]);
 
   // ── Render states ──
 

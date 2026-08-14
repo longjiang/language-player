@@ -170,7 +170,35 @@ export default function ReviewPage() {
     if (status === 'authenticated' && !srsCloudHydrated) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
+    const budget = fsrs.getNewCardBudget(l2SavedWords, langCards, dailyLimit);
+    const candidates = fsrs.countNewCardCandidates(l2SavedWords, langCards);
     const plan = fsrs.planNewDeck(l2SavedWords, langCards, dailyLimit);
+    log('[SRS] planNewDeck', {
+      l2: l2Code,
+      dailyLimit,
+      utcDay: new Date(budget.dayStart).toISOString().slice(0, 10),
+      now: new Date().toISOString(),
+      savedWords: l2SavedWords.length,
+      cards: Object.keys(langCards).length,
+      introducedToday: budget.introducedToday,
+      olderUnrated: budget.olderUnrated,
+      remaining: budget.remaining,
+      candidates,
+      toCreate: plan.toCreate.length,
+      toRemove: plan.toRemove.length,
+    });
+    const introduced = Object.entries(langCards)
+      .filter(([, c]) => c.createdAt >= budget.dayStart)
+      .map(([id, c]) => ({
+        id,
+        state: fsrs.getCardState(c),
+        createdAt: new Date(c.createdAt).toISOString(),
+        lastReview: c.lastReview ? new Date(c.lastReview).toISOString() : null,
+      }))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    if (introduced.length > 0) {
+      log('[SRS] introducedToday cards', introduced);
+    }
 
     // Push back: drop blue cards that fell outside the newest `dailyLimit`.
     for (const id of plan.toRemove) {
@@ -511,6 +539,17 @@ export default function ReviewPage() {
     () => fsrs.countDeckStates(l2SavedWords, langCardsForCounts, { dailyNewLimit: dailyLimit }),
     [l2SavedWords, langCardsForCounts, dailyLimit],
   );
+  useEffect(() => {
+    const budget = fsrs.getNewCardBudget(l2SavedWords, langCardsForCounts, dailyLimit);
+    log('[SRS] cardCounts', {
+      l2: l2Code,
+      ...cardCounts,
+      dailyLimit,
+      remaining: budget.remaining,
+      savedWords: l2SavedWords.length,
+      cards: Object.keys(langCardsForCounts).length,
+    });
+  }, [cardCounts, dailyLimit, l2Code, l2SavedWords, langCardsForCounts]);
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;

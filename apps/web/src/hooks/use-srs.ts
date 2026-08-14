@@ -196,6 +196,35 @@ export function useSrs() {
           settings: res.settings ?? { dailyNewLimit: 20 },
           cards: res.cards ?? {},
         };
+        const cloudDayStart = (() => {
+          const d = new Date();
+          return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        })();
+        let cloudCardsTotal = 0;
+        let cloudMissingCreatedAt = 0;
+        let cloudReviewedTodayNoCreatedAt = 0;
+        for (const langCards of Object.values(cloud.cards)) {
+          for (const state of Object.values(langCards)) {
+            cloudCardsTotal++;
+            if (typeof state?.createdAt !== 'number') {
+              cloudMissingCreatedAt++;
+              const lastReview =
+                typeof state?.lastReview === 'number'
+                  ? (state.lastReview as number)
+                  : typeof state?.last_review === 'number'
+                    ? (state.last_review as number)
+                    : undefined;
+              if (lastReview != null && lastReview >= cloudDayStart) {
+                cloudReviewedTodayNoCreatedAt++;
+              }
+            }
+          }
+        }
+        log('[SRS] cloud card stats', {
+          totalCards: cloudCardsTotal,
+          missingCreatedAt: cloudMissingCreatedAt,
+          reviewedTodayNoCreatedAt: cloudReviewedTodayNoCreatedAt,
+        });
         log('[SRS] Server data arrived — merging with local (server has %d languages)',
           Object.keys(cloud.cards).length);
         setStore((prev) => {
