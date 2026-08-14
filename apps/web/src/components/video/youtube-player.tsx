@@ -315,9 +315,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   // Expose controls via ref or events — for now, YouTube's built-in controls handle this
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-black">
-      <div className="aspect-video">
-        {playerError ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">
+      {/* The player container must stay mounted even while an error overlay is
+          shown: the creation effect bails out when containerRef.current is
+          null, which would leave a stale error (and no player) after the user
+          navigates to the next/previous video. */}
+      <div className="relative aspect-video">
+        <div ref={containerRef} id={playerIdRef.current} className="h-full w-full" />
+        {playerError && (
+          <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-black px-4 text-center text-muted-foreground">
             <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
@@ -339,8 +344,6 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             )}
             <p className="text-xs text-muted-foreground/60">{t('msg.transcript_still_available')}</p>
           </div>
-        ) : (
-          <div ref={containerRef} id={playerIdRef.current} className="h-full w-full" />
         )}
       </div>
     </div>
