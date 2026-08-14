@@ -89,16 +89,16 @@ export function DictionaryEntryTabs({
         { key: 'word', label: t('title.dictionary'), icon: () => <BookOpen size={14} color={ICON_MUTED} /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
-        imagesTab,
-        ...(hasInflections ? [inflectionsTab] : []),
         corpusTab,
+        ...(hasInflections ? [inflectionsTab] : []),
+        imagesTab,
       ]
     : [
         { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
-        imagesTab,
-        ...(hasInflections ? [inflectionsTab] : []),
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
         corpusTab,
+        ...(hasInflections ? [inflectionsTab] : []),
+        imagesTab,
       ];
 
   // If the language has no inflections but the (possibly controlled) tab is
@@ -163,8 +163,8 @@ export function DictionaryEntryTabs({
   );
 
   const children = showDefinitionTab
-    ? [wordPanel, examplesPanel, deepseekPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), corpusPanel]
-    : [examplesPanel, imagesPanel, ...(hasInflections ? [inflectionsPanel] : []), deepseekPanel, corpusPanel];
+    ? [wordPanel, examplesPanel, deepseekPanel, corpusPanel, ...(hasInflections ? [inflectionsPanel] : []), imagesPanel]
+    : [examplesPanel, deepseekPanel, corpusPanel, ...(hasInflections ? [inflectionsPanel] : []), imagesPanel];
 
   return (
     <TabbedPanel

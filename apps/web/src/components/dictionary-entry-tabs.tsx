@@ -91,18 +91,18 @@ export function DictionaryEntryTabs({
   const tabs = showDefinitionTab
     ? [
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
-        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
-        ...(hasInflections ? [inflectionsTab] : []),
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
+        ...(hasInflections ? [inflectionsTab] : []),
+        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
       ]
     : [
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
-        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
-        ...(hasInflections ? [inflectionsTab] : []),
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'corpus', label: t('title.corpus'), icon: <Library className="h-4 w-4" /> },
+        ...(hasInflections ? [inflectionsTab] : []),
+        { key: 'images', label: t('title.images'), icon: <ImageIcon className="h-4 w-4" /> },
       ];
 
   // If the language has no inflections but the (possibly controlled) tab is

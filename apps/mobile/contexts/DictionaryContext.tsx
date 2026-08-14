@@ -160,6 +160,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const [cameFromSearch, setCameFromSearch] = useState(false);
   const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'saved' });
   const [detailHead, setDetailHead] = useState<string | null>(null);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   // ── Offline / download state ──
   const dbRef = useRef<SQLiteDatabase | null>(null);
@@ -212,6 +213,24 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
   // ── User change (logout/login): clear user-scoped search state ──
   useEffect(() => {
+    const prevId = prevUserIdRef.current;
+    const nextId = user?.id ?? null;
+    prevUserIdRef.current = nextId;
+    // Skip transitions from a missing previous user (undefined or null): on
+    // launch `user` hydrates from null to the logged-in account, and that is
+    // not a user change. Wiping here is why recent searches never survived an
+    // app restart. Only a real previous user id (logout, or switching
+    // accounts) triggers the wipe.
+    if (!prevId) {
+      log('[Dict] user change — skip (no previous user)', { nextId });
+      return;
+    }
+    if (prevId === nextId) {
+      log('[Dict] user change — no-op', { nextId });
+      return;
+    }
+
+    log('[Dict] user change — WIPING recents', { prevId, nextId });
     sessionCache.clear();
     setRecentSearches([]);
     setQuery('');
@@ -324,8 +343,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const saveRecentTerm = useCallback(async (term: string) => {
     const trimmed = term.trim();
     if (!trimmed) return;
+    log('[Dict] saveRecentTerm', { l2: l2Code, term: trimmed });
     await saveRecent(l2Code, trimmed);
-    setRecentSearches(await loadRecent(l2Code));
+    const updated = await loadRecent(l2Code);
+    log('[Dict] saveRecentTerm done', { l2: l2Code, count: updated.length, terms: updated });
+    setRecentSearches(updated);
   }, [l2Code]);
 
   // ── Download management ────────────────────

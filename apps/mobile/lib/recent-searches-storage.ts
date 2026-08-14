@@ -8,26 +8,69 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { log, logwarn } from '@/lib/logger';
 
 export const RECENT_STORAGE_PREFIX = 'zthRecentSearches:';
 
 export async function recentStorageGet(key: string): Promise<string | null> {
-  return AsyncStorage.getItem(key);
+  try {
+    const value = await AsyncStorage.getItem(key);
+    log('[recent-storage] get', {
+      key,
+      found: value !== null,
+      chars: value?.length ?? 0,
+    });
+    return value;
+  } catch (e) {
+    logwarn('[recent-storage] get failed', {
+      key,
+      error: (e as Error)?.message ?? String(e),
+    });
+    return null;
+  }
 }
 
 export async function recentStorageSet(key: string, value: string): Promise<void> {
-  await AsyncStorage.setItem(key, value);
+  try {
+    await AsyncStorage.setItem(key, value);
+    log('[recent-storage] set ok', { key, chars: value.length });
+  } catch (e) {
+    logwarn('[recent-storage] set failed', {
+      key,
+      error: (e as Error)?.message ?? String(e),
+    });
+    throw e;
+  }
 }
 
 export async function recentStorageRemove(key: string): Promise<void> {
-  await AsyncStorage.removeItem(key);
+  try {
+    await AsyncStorage.removeItem(key);
+    log('[recent-storage] remove ok', { key });
+  } catch (e) {
+    logwarn('[recent-storage] remove failed', {
+      key,
+      error: (e as Error)?.message ?? String(e),
+    });
+    throw e;
+  }
 }
 
 /** Remove every recent-searches key across all L2s (logout wipe). */
 export async function clearRecentSearchesStorage(): Promise<void> {
-  const keys = await AsyncStorage.getAllKeys();
-  const recentKeys = keys.filter((k) => k.startsWith(RECENT_STORAGE_PREFIX));
-  if (recentKeys.length > 0) {
-    await AsyncStorage.multiRemove(recentKeys);
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const recentKeys = keys.filter((k) => k.startsWith(RECENT_STORAGE_PREFIX));
+    if (recentKeys.length > 0) {
+      await AsyncStorage.multiRemove(recentKeys);
+    }
+    log('[recent-storage] clear', {
+      removed: recentKeys.length,
+      totalKeys: keys.length,
+    });
+  } catch (e) {
+    logwarn('[recent-storage] clear failed', {
+      error: (e as Error)?.message ?? String(e),
+    });
   }
 }
