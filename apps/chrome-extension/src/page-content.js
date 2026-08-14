@@ -198,6 +198,9 @@ async function tokenizePage() {
       block.classList.add('lpv-page-tokenizing');
     } else {
       emptyBlocks.push(block);
+      // Inspected once — don't re-discover persistent empty wrappers on every
+      // page mutation (they show up as repeat "no tokenizable text" scans).
+      tokenizedBlocks.add(block);
     }
   }
   if (emptyBlocks.length > 0) {
