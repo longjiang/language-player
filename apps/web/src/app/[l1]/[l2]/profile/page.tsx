@@ -10,6 +10,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useChannelPreferences } from '@/hooks/use-channel-preferences';
 import { useT } from '@/hooks/use-t';
+import { toast } from 'sonner';
 import { LanguageLevelSelect } from '@/components/language-level-select';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -26,11 +27,16 @@ import {
   User,
   Mail,
   BookOpen,
+  Clock,
   Loader2,
   ArrowRight,
   Crown,
   Check,
   Star,
+  ListVideo,
+  Heart,
+  Bookmark,
+  RotateCcw,
   AlertTriangle,
   Trash2,
   ShieldCheck,
@@ -76,7 +82,7 @@ export default function ProfilePage() {
   const { l1, l2 } = useLanguage();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
   const { deleteAccount } = useAuth();
-  const { notInterested, resetNotInterested } = useChannelPreferences();
+  const { resetNotInterested } = useChannelPreferences();
   const t = useT();
 
   // Redirect unauthenticated users
@@ -94,6 +100,7 @@ export default function ProfilePage() {
   const [subLoading, setSubLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
@@ -162,6 +169,12 @@ export default function ProfilePage() {
     setDeleteError(false);
   };
 
+  const handleResetNotInterested = async () => {
+    setResetOpen(false);
+    await resetNotInterested();
+    toast.success(t('msg.reset_not_interested_success'));
+  };
+
   // ── Render ──
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -206,14 +219,6 @@ export default function ProfilePage() {
               onChange={setLevel}
             />
           </div>
-          <button
-            type="button"
-            disabled={!userId || notInterested.length === 0}
-            onClick={() => void resetNotInterested()}
-            className="mt-4 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            {t('action.reset_not_interested')}
-          </button>
         </div>
       </section>
 
@@ -336,6 +341,75 @@ export default function ProfilePage() {
           </div>
         )}
       </section>
+
+      {/* My Activity */}
+      <section className="mb-10">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <Clock className="h-5 w-5 text-primary" />
+          {t('title.my_activity')}
+        </h2>
+
+        <div className="rounded-xl border border-border bg-card p-2">
+          <Link
+            href={`/${l1.code}/${l2.code}/watch-history`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted"
+          >
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{t('title.watch_history')}</span>
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/playlists`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted"
+          >
+            <ListVideo className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{t('title.playlists')}</span>
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/liked-videos`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted"
+          >
+            <Heart className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{t('title.liked_videos')}</span>
+          </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/saved-words`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted"
+          >
+            <Bookmark className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{t('title.saved_words')}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setResetOpen(true)}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted"
+          >
+            <RotateCcw className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">{t('action.reset_not_interested')}</span>
+          </button>
+        </div>
+      </section>
+
+      <Dialog open={resetOpen} onOpenChange={(open) => { if (!open) setResetOpen(false); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              {t('action.reset_not_interested')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('msg.confirm_reset_not_interested')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetOpen(false)}>
+              {t('action.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={() => void handleResetNotInterested()}>
+              {t('action.reset_not_interested')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Account */}
       <section className="rounded-xl border border-destructive/40 bg-destructive/5 p-6">

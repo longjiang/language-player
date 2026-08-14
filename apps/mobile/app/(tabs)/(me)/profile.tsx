@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, TextInput, Linking, AppState } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, TextInput, Linking, AppState, Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -166,6 +167,26 @@ export default function ProfileScreen() {
     setDeleteOpen(false);
     setDeleteConfirm('');
     setDeleteError(false);
+  };
+
+  const handleResetNotInterested = async () => {
+    await resetNotInterested();
+    Toast.show({ type: 'success', text1: t('msg.reset_not_interested_success') });
+  };
+
+  const confirmResetNotInterested = () => {
+    Alert.alert(
+      t('action.reset_not_interested'),
+      t('msg.confirm_reset_not_interested'),
+      [
+        { text: t('action.cancel'), style: 'cancel' },
+        {
+          text: t('action.reset_not_interested'),
+          style: 'destructive',
+          onPress: () => void handleResetNotInterested(),
+        },
+      ],
+    );
   };
 
   const handleDeleteAccount = async () => {
@@ -406,7 +427,7 @@ export default function ProfileScreen() {
             <Text className="text-sm text-foreground">{t('title.saved_words')}</Text>
           </Pressable>
           <Pressable
-            onPress={() => void resetNotInterested()}
+            onPress={confirmResetNotInterested}
             className="flex-row items-center gap-3 rounded-lg px-3 py-2.5 active:bg-muted"
           >
             <RotateCcw size={16} color={ICON_MUTED} />

@@ -9,6 +9,7 @@ type ChannelStatus = 'subscribed' | 'not_interested' | 'neutral';
 
 interface ChannelPreference {
   channelId: string;
+  l2: string;
   status: ChannelStatus;
 }
 
@@ -40,11 +41,12 @@ export function useChannelPreferences() {
       );
       const data = res.ok ? await res.json() : { preferences: [] };
       const prefs: ChannelPreference[] = data?.preferences ?? [];
+      const l2Prefs = prefs.filter((p) => p.l2 === l2Code);
       setSubscribed(
-        prefs.filter((p) => p.status === 'subscribed').map((p) => p.channelId),
+        l2Prefs.filter((p) => p.status === 'subscribed').map((p) => p.channelId),
       );
       setNotInterested(
-        prefs
+        l2Prefs
           .filter((p) => p.status === 'not_interested')
           .map((p) => p.channelId),
       );

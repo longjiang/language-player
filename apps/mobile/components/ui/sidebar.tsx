@@ -22,7 +22,8 @@ export function sidebarSheetWidth(screenWidth: number): number {
 }
 
 export interface SidebarPanelProps {
-  title: React.ReactNode;
+  /** Optional panel title; the header row is hidden when there is no title/actions/close button. */
+  title?: React.ReactNode;
   /** Optional actions rendered in the header before the close button. */
   headerActions?: React.ReactNode;
   /** When provided, renders the close button (sheet mode). */
@@ -52,28 +53,33 @@ export function SidebarPanel({
 }: SidebarPanelProps) {
   const t = useT();
   const insets = useSafeAreaInsets();
+  const showHeader = Boolean(title || headerActions || onClose);
   return (
     <View className="h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <View
-        className={`flex-row flex-wrap items-center gap-2 border-b border-border px-3 py-2 ${headerClassName ?? ''}`}
-        style={onClose ? { paddingTop: insets.top + 8 } : undefined}
-      >
-        <Text className="flex-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground" numberOfLines={1}>
-          {title}
-        </Text>
-        {headerActions && (
-          <View className="flex-row items-center gap-1">{headerActions}</View>
-        )}
-        {onClose && (
-          <Pressable
-            onPress={onClose}
-            className="rounded p-1 active:bg-muted"
-            accessibilityLabel={t('action.close')}
-          >
-            <PanelRightClose size={16} color={ICON_MUTED} />
-          </Pressable>
-        )}
-      </View>
+      {showHeader && (
+        <View
+          className={`flex-row flex-wrap items-center gap-2 border-b border-border px-3 py-2 ${headerClassName ?? ''}`}
+          style={onClose ? { paddingTop: insets.top + 8 } : undefined}
+        >
+          {title && (
+            <Text className="flex-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground" numberOfLines={1}>
+              {title}
+            </Text>
+          )}
+          {headerActions && (
+            <View className="flex-row items-center gap-1">{headerActions}</View>
+          )}
+          {onClose && (
+            <Pressable
+              onPress={onClose}
+              className={`rounded p-1 active:bg-muted ${!headerActions ? 'ml-auto' : ''}`}
+              accessibilityLabel={t('action.close')}
+            >
+              <PanelRightClose size={16} color={ICON_MUTED} />
+            </Pressable>
+          )}
+        </View>
+      )}
       <ScrollView className={`flex-1 ${bodyClassName ?? 'px-1 py-1'}`}>
         {children ?? emptyState}
       </ScrollView>
