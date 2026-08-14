@@ -46,7 +46,7 @@ interface DictionaryCardProps {
 
 // ── API ────────────────────────────────────────────────────────────────────
 
-const WEB_APP = 'https://language-player.netlify.app';
+const WEB_APP = 'https://languageplayer.io';
 
 async function fetchEntries(
   text: string,
@@ -93,7 +93,8 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const [saving, setSaving] = useState(false);
 
   const dictId = entry.dictionary?.id ?? 'llm';
-  const webAppUrl = `${WEB_APP}/dictionary/${dictId}/${entry.id}`;
+  const listCurrent = `${dictId}-${entry.id}`;
+  const webAppUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary/entry/${encodeURIComponent(dictId)}/${encodeURIComponent(entry.id)}?listCurrent=${encodeURIComponent(listCurrent)}`;
 
   const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
 
@@ -337,7 +338,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     }
   }, [isPro, showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
 
-  const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
+  const searchUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary?q=${encodeURIComponent(token.text)}`;
 
   return (
     <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
@@ -409,7 +410,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
               <span> Tried lemmas: {token.lemmas.map((l) => l.lemma).join(', ')}.</span>
             )}
             <div className="lpv-dict-empty-link">
-              <a href={webAppUrl} target="_blank" rel="noopener noreferrer">
+              <a href={searchUrl} target="_blank" rel="noopener noreferrer">
                 Search on Language Player →
               </a>
             </div>
