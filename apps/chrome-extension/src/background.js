@@ -314,6 +314,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ language: null });
         });
         return true; // async
+    } else if (request.action === "netflixGetPlayerTime") {
+        // Netflix's player API reports the media/content timeline, which can
+        // differ from <video>.currentTime when ad breaks shift the element.
+        const tabId = sender.tab?.id;
+        if (!tabId) { sendResponse({ playerTime: null }); return; }
+        chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+                try {
+                    const api = window.netflix?.appContext?.state?.playerApp?.getAPI?.();
+                    const vp = api?.videoPlayer;
+                    const sessions = vp?.getAllPlayerSessionIds?.();
+                    if (!sessions) return null;
+                    const watch = sessions.filter(s => s.startsWith('watch'));
+                    const player = vp?.getVideoPlayerBySessionId?.(watch[0]);
+                    const ms = player?.getCurrentTime?.();
+                    return typeof ms === 'number' && isFinite(ms) ? ms / 1000 : null;
+                } catch (_) {
+                    return null;
+                }
+            },
+            world: 'MAIN',
+        }).then(results => {
+            sendResponse({ playerTime: results?.[0]?.result ?? null });
+        }).catch(() => {
+            sendResponse({ playerTime: null });
+        });
+        return true; // async
     }
     return true; // Keep message channel open for async response
 });

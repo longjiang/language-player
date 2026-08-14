@@ -227,7 +227,12 @@ function logNetflixSyncPair(timeSec, displayed, panelIdx) {
   lastLoggedPanelIdx = panelIdx;
 
   const panelCue = panelIdx >= 0 ? STATE.cues[panelIdx] : null;
-  log(`[SYNC] player: "${displayed.slice(0, 60)}" @ ${timeSec.toFixed(3)}s`);
+  const video = getVideoElement();
+  const videoTime = video?.currentTime;
+  log(
+    `[SYNC] player: "${(displayed || '(none)').slice(0, 60)}" @ ${timeSec.toFixed(3)}s ` +
+    `(video=${videoTime !== undefined ? videoTime.toFixed(3) : 'n/a'}s, api=${netflixPlayerApiTime !== null ? netflixPlayerApiTime.toFixed(3) : 'n/a'}s)`
+  );
   log(
     '[SYNC] panel: ' +
     (panelCue
@@ -287,17 +292,35 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
   if (!displayed) return 'no';
 
   const contentTime = timeSec - netflixTimelineOffset;
+  const displayedLines = displayed.split('\n').map(normalizeForMatch).filter(Boolean);
+  const stripSpeakerLabel = (line) =>
+    line.replace(/^[（(][^）)]*[）)]\s*/, '').trim();
+
+  const cueMatchStrength = (cueText) => {
+    if (cueText === displayed || displayedLines.includes(cueText)) return 2;
+    if (cueText.length >= 6 &&
+        (displayed.includes(cueText) || cueText.includes(displayed))) return 1;
+    if (cueText.length >= 4) {
+      for (const line of displayedLines) {
+        if (stripSpeakerLabel(line).endsWith(cueText)) return 0;
+      }
+    }
+    return -1;
+  };
+
   let bestIdx = -1;
   let bestDiff = Infinity;
+  let bestStrength = -1;
   for (let i = 0; i < STATE.cues.length; i++) {
     const cueText = normalizeForMatch(STATE.cues[i].text);
-    const isMatch = cueText === displayed ||
-      (displayed.length > 4 && (cueText.includes(displayed) || displayed.includes(cueText)));
-    if (!isMatch) continue;
+    if (!cueText) continue;
+    const strength = cueMatchStrength(cueText);
+    if (strength < 0) continue;
     const diff = Math.abs(STATE.cues[i].start - contentTime);
-    if (diff < bestDiff) {
+    if (strength > bestStrength || (strength === bestStrength && diff < bestDiff)) {
       bestDiff = diff;
       bestIdx = i;
+      bestStrength = strength;
     }
   }
 
@@ -307,7 +330,7 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
   }
   const cue = STATE.cues[bestIdx];
   const newOffset = timeSec - cue.start;
-  if (Math.abs(newOffset - netflixTimelineOffset) > 0.5) {
+  if (bestStrength >= 1 && Math.abs(newOffset - netflixTimelineOffset) > 0.5) {
     log(`[TIME] Netflix timeline offset ${netflixTimelineOffset.toFixed(3)}s → ${newOffset.toFixed(3)}s (ad seek?)`);
     netflixTimelineOffset = newOffset;
   }
@@ -324,6 +347,9 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
  *  Falls back to Disney+ internal API if video element unavailable. */
 function getCurrentTime() {
   const video = getVideoElement();
+  // Netflix's player API reports the content timeline, which stays correct
+  // across ad breaks even when <video>.currentTime shifts.
+  if (isNetflix && netflixPlayerApiTime !== null && netflixPlayerApiTime > 0) return netflixPlayerApiTime;
   if (video && video.currentTime > 0) return video.currentTime;
   // Disney+ fallback: internal player API (may have offset from cues)
   if (isDisneyPlus) {
@@ -364,7 +390,7 @@ function seekTo(timeSec) {
   if (isNetflix) {
     // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec: seekTarget })
-      .then(() => {})
+      .then(() => setTimeout(refreshNetflixPlayerApiTime, 200))
       .catch((err) => logerr('[SEEK] Netflix seek message failed:', err));
   } else if (isDisneyPlus) {
     // Disney+: use internal mediaPlayer API (more reliable than video element)
@@ -1174,16 +1200,21 @@ let seekLockUntil = 0;
 function updateActiveCue(timeSec) {
   // Skip time-based updates during the seek lock window
   if (Date.now() < seekLockUntil) return;
-  const displaySync = syncNetflixActiveCueFromDisplayed(timeSec);
-  if (displaySync === 'matched') return;
 
   const newIdx = findActiveCueIndex(timeSec);
   if (newIdx >= 0) {
     if (newIdx === STATE.activeCueIdx) return;
     STATE.activeCueIdx = newIdx;
+    if (isNetflix) {
+      logNetflixSyncPair(timeSec, getNetflixDisplayedSubtitle(), newIdx);
+    }
     renderTranscript();
     return;
   }
+
+  // No time match — try to re-anchor from the subtitle Netflix is rendering.
+  const displaySync = syncNetflixActiveCueFromDisplayed(timeSec);
+  if (displaySync === 'matched') return;
 
   // If the displayed-text re-check is throttled, keep the current highlight
   // until the next check rather than flickering it off.
@@ -1241,6 +1272,7 @@ let netflixTimelineOffset = 0;
 let lastNetflixDisplayedCheckAt = 0;
 let lastLoggedPlayerText = '';
 let lastLoggedPanelIdx = -2;
+let netflixPlayerApiTime = null;
 
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 
@@ -1320,6 +1352,17 @@ async function detectNetflixActiveSubtitle() {
   });
 }
 
+/** Refresh the Netflix player API's content timeline (excludes ad shifts). */
+async function refreshNetflixPlayerApiTime() {
+  if (!isNetflix) return;
+  try {
+    const res = await chrome.runtime.sendMessage({ action: 'netflixGetPlayerTime' });
+    if (res && typeof res.playerTime === 'number' && isFinite(res.playerTime)) {
+      netflixPlayerApiTime = res.playerTime;
+    }
+  } catch {}
+}
+
 /**
  * Start watching for Netflix subtitle changes. Netflix recreates text tracks
  * when the user changes subtitles, so we poll video.textTracks.
@@ -1330,6 +1373,8 @@ function observeNetflixSubtitleChanges() {
   let lastActiveLang = null;
 
   setInterval(async () => {
+    await refreshNetflixPlayerApiTime();
+
     // Fetch/XHR interception is the authoritative signal for the active
     // track. Only use textTracks polling when we never saw a subtitle fetch.
     if (netflixFetchDetectionActive) return;
@@ -1340,7 +1385,7 @@ function observeNetflixSubtitleChanges() {
       log('Netflix subtitle changed to:', activeLang);
       await loadNetflixTrackForLanguage(activeLang);
     }
-  }, 3000);
+  }, 1000);
 }
 
 /** Load the Netflix subtitle track matching a language code from cache */
@@ -1421,6 +1466,7 @@ async function handleNetflixSubs(tracks) {
   // New title/manifest — reset any ad/timeline offset learned previously.
   netflixTimelineOffset = 0;
   lastNetflixDisplayedCheckAt = 0;
+  netflixPlayerApiTime = null;
 
   const subs = {};
 
