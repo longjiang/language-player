@@ -25,7 +25,7 @@ const STORAGE_KEY = 'zthSrsProgress';
  *   cards only.
  */
 export function useSrs() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { getSrs } = useUserDataColumns();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
@@ -92,6 +92,7 @@ export function useSrs() {
 
   // ── User change (logout/login): drop the previous user's in-memory state ──
   useEffect(() => {
+    if (loading) return; // auth still restoring — don't treat boot as a user change
     const prev = prevUserIdRef.current;
     const next = user?.id ?? null;
     prevUserIdRef.current = next;
@@ -101,7 +102,7 @@ export function useSrs() {
       setCloudHydrated(false);
       setStore(createSrsStore());
     }
-  }, [user?.id]);
+  }, [user?.id, loading]);
 
   // ── Backend cap rejection: revert the unsynced card and tell the UI ──
   useEffect(() => {
