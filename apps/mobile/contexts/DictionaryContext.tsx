@@ -79,6 +79,8 @@ interface DictionaryContextValue {
 
   recentSearches: string[];
   clearRecent: () => void;
+  /** Record a term as a recent search without performing a new lookup. */
+  saveRecentTerm: (term: string) => Promise<void>;
 
   cameFromSearch: boolean;
   setCameFromSearch: (v: boolean) => void;
@@ -193,7 +195,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
   // Load recent on mount and when L2 changes; clear session cache
   useEffect(() => {
-    loadRecent(l2Code).then(setRecentSearches);
+    loadRecent(l2Code).then((terms) => {
+      log('[Dict] recents loaded', { l2: l2Code, count: terms.length });
+      setRecentSearches(terms);
+    });
     // Reset state on language change
     setQuery('');
     setResults(null);
@@ -314,6 +319,13 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       await recentStorageRemove(`${RECENT_STORAGE_PREFIX}${l2Code}`);
       setRecentSearches([]);
     } catch { /* ignore */ }
+  }, [l2Code]);
+
+  const saveRecentTerm = useCallback(async (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    await saveRecent(l2Code, trimmed);
+    setRecentSearches(await loadRecent(l2Code));
   }, [l2Code]);
 
   // ── Download management ────────────────────
@@ -605,7 +617,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       value={{
         query, setQuery, results, loading, error, message, searchedText,
         doSearch, clearSearch,
-        recentSearches, clearRecent,
+        recentSearches, clearRecent, saveRecentTerm,
         cameFromSearch, setCameFromSearch,
         sidebarSource, setSidebarSource, detailHead, setDetailHead,
         startDownload, cancelDownload, deleteDictionary,

@@ -113,6 +113,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     autoplayRef.current = autoplayEnabled;
   }, [autoplayEnabled]);
   const initialLoadRef = useRef(true);
+  const prevTermRef = useRef(term);
+  const prevExactRef = useRef(exactMatch);
 
   // Split comma-separated terms for highlighting
   const highlightTerms = useMemo(
@@ -217,16 +219,26 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // ── Fetch ──
   useEffect(() => {
     if (!term) return;
+    // Only user-initiated changes (a different word, or toggling exact match)
+    // may autoplay; dependency re-runs must keep the current policy.
+    const termChanged = prevTermRef.current !== term;
+    const exactToggled = prevExactRef.current !== exactMatch;
+    prevTermRef.current = term;
+    prevExactRef.current = exactMatch;
+    const userInitiated = termChanged || exactToggled;
     let cancelled = false;
+    const firstLoad = initialLoadRef.current;
     setLoading(true);
     setError(null);
 
     videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch && isPro ? 500 : 50, context: 3 })
       .then((data) => {
         if (cancelled) return;
-        const firstLoad = initialLoadRef.current;
+        // Only the fetch that actually applies results may flip the flag —
+        // flipping it at effect start makes StrictMode's second effect pass
+        // treat the initial load as a "later search" and autoplay.
         initialLoadRef.current = false;
-        const autoplay = !firstLoad;
+        const autoplay = !firstLoad && userInitiated;
         const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = data
           .map((v: any) => {

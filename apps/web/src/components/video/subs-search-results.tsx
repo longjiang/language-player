@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { youtubeThumbnail } from '@/lib/video-service';
 import {
   YouTubePlayer,
@@ -158,6 +158,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Whether the first search after mount has completed. The initial load never
   // autoplays; only activity after mount (new search or result navigation) may.
   const initialLoadRef = useRef(true);
+  const prevTermRef = useRef(term);
+  const prevExactRef = useRef(exactMatch);
 
   // Modal state
   const [listOpen, setListOpen] = useState(false);
@@ -226,6 +228,16 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   useEffect(() => {
     if (!term) return;
 
+    // Only user-initiated changes (a different word, or toggling exact match)
+    // may autoplay. Dependency re-runs — e.g. `isPro` finishing loading right
+    // after the first fetch — must keep the current autoplay policy, not
+    // suddenly start the video on a page refresh.
+    const termChanged = prevTermRef.current !== term;
+    const exactToggled = prevExactRef.current !== exactMatch;
+    prevTermRef.current = term;
+    prevExactRef.current = exactMatch;
+    const userInitiated = termChanged || exactToggled;
+
     const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
     // Exact-match switch: the all-forms results were already fetched and
@@ -250,7 +262,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       if (exactVideos.length > 0) {
         applyVideos(exactVideos);
         setCurrentIndex(0);
-        setAutoplayEnabled(true);
+        setAutoplayEnabled(userInitiated);
         setLoading(false);
         setError(null);
         return;
@@ -265,15 +277,17 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     ) {
       applyVideos(allFormVideosRef.current);
       setCurrentIndex(0);
-      setAutoplayEnabled(true);
+      setAutoplayEnabled(userInitiated);
       setLoading(false);
       setError(null);
       return;
     }
 
     let cancelled = false;
+    const firstLoad = initialLoadRef.current;
     setLoading(true);
     setError(null);
+    log('[subsSearch] fetch start', { firstLoad, term, l2: l2.code, isPro });
 
     fetch(
       `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch && isPro ? 500 : 50}&context=3`,
@@ -303,9 +317,17 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
           );
-        const firstLoad = initialLoadRef.current;
+        // Only the fetch that actually applies results may flip the flag —
+        // flipping it at effect start makes StrictMode's second effect pass
+        // treat the initial load as a "later search" and autoplay.
         initialLoadRef.current = false;
-        const autoplay = !firstLoad;
+        const autoplay = !firstLoad && userInitiated;
+        logwarn('[subsSearch] autoplay decision', {
+          firstLoad,
+          autoplay,
+          results: parsed.length,
+          term,
+        });
         applyVideos(parsed);
         if (!exactMatch) {
           allFormVideosRef.current = parsed;
@@ -335,6 +357,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       const matchTime = matchLine?.starttime ?? 0;
       const timer = setTimeout(() => {
         if (autoplayRef.current) {
+          logwarn('[subsSearch] seek+play', {
+            youtubeId: currentVideo?.youtube_id,
+            currentIndex,
+            matchTime,
+          });
           playerRef.current?.seekTo(matchTime);
           playerRef.current?.play();
         }
