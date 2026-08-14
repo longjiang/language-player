@@ -239,8 +239,9 @@ const CueLine: React.FC<CueLineProps> = React.memo(
     }, [menuOpen]);
 
     const handleClick = useCallback(() => {
+      log(`[SEEK] line clicked idx=${index}, cue=${cue.start.toFixed(3)}-${cue.end.toFixed(3)}`);
       onSeekTo(cue.start);
-    }, [cue.start, onSeekTo]);
+    }, [cue.start, cue.end, index, onSeekTo]);
 
     const handleCopy = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();

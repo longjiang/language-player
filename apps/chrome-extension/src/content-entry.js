@@ -197,7 +197,21 @@ function findActiveCueIndex(timeSec) {
       return i;
     }
   }
+  if (cues.length > 0) {
+    log(`[TIME] no cue at ${timeSec.toFixed(3)}s; cue range ${cues[0].start.toFixed(3)}-${cues[cues.length - 1].end.toFixed(3)}`);
+  }
   return -1;
+}
+
+/** Log the parsed cue time range so timestamp-offset issues are visible. */
+function logCueTimeRange(source) {
+  const first = STATE.cues[0];
+  const last = STATE.cues[STATE.cues.length - 1];
+  if (!first || !last) {
+    log(`[TIME] ${source}: 0 cues`);
+    return;
+  }
+  log(`[TIME] ${source}: ${STATE.cues.length} cues, first=${first.start.toFixed(3)}-${first.end.toFixed(3)}, last=${last.start.toFixed(3)}-${last.end.toFixed(3)}`);
 }
 
 /** Get the current playback time in seconds.
@@ -233,6 +247,13 @@ function getDuration() {
 function seekTo(timeSec) {
   // Immediately highlight the target cue — don't wait for video to catch up
   const targetIdx = findActiveCueIndex(timeSec);
+  const targetCue = targetIdx >= 0 ? STATE.cues[targetIdx] : null;
+  const videoBefore = getVideoElement();
+  log(
+    `[SEEK] requested ${timeSec.toFixed(3)}s, idx=${targetIdx}` +
+    (targetCue ? `, cue=${targetCue.start.toFixed(3)}-${targetCue.end.toFixed(3)}` : ', no matching cue') +
+    `, video.currentTime=${videoBefore?.currentTime ?? 'no video'}`
+  );
   if (targetIdx >= 0) {
     STATE.activeCueIdx = targetIdx;
   }
@@ -245,9 +266,10 @@ function seekTo(timeSec) {
     // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec })
       .then((res) => {
-        log('Netflix seek result:', res?.method || res?.error);
+        const videoAfter = getVideoElement();
+        log(`[SEEK] Netflix result=${res?.method || res?.error}, video.currentTime=${videoAfter?.currentTime ?? 'n/a'}`);
       })
-      .catch(() => {});
+      .catch((err) => logerr('[SEEK] Netflix seek message failed:', err));
   } else if (isDisneyPlus) {
     // Disney+: use internal mediaPlayer API (more reliable than video element)
     try {
@@ -263,6 +285,7 @@ function seekTo(timeSec) {
     const video = getVideoElement();
     if (video) {
       video.currentTime = timeSec;
+      log(`[SEEK] set video.currentTime=${video.currentTime}`);
     }
   }
   renderTranscript();
@@ -387,6 +410,7 @@ async function fetchAndParseSubtitles(url) {
     }
 
     STATE.cues = cues;
+    logCueTimeRange('subtitle fetch');
 
     trace('PARSE', `${cues.length} cues parsed from subtitle text`);
 
@@ -693,6 +717,7 @@ async function fetchYTTrack(track) {
 
     STATE.cues = cues;
     STATE.subtitleUrl = track.baseUrl;
+    logCueTimeRange('YouTube');
 
     trace('PARSE', `${cues.length} YouTube cues parsed`);
 
@@ -1059,6 +1084,11 @@ function updateActiveCue(timeSec) {
   const newIdx = findActiveCueIndex(timeSec);
   if (newIdx === STATE.activeCueIdx) return;
   STATE.activeCueIdx = newIdx;
+  const cue = newIdx >= 0 ? STATE.cues[newIdx] : null;
+  log(
+    `[TIME] active cue at ${timeSec.toFixed(3)}s → idx ${newIdx}` +
+    (cue ? ` (${cue.start.toFixed(3)}-${cue.end.toFixed(3)})` : ' (no cue)')
+  );
   renderTranscript();
 }
 
@@ -1088,7 +1118,9 @@ function attachTimeTracking() {
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('seeked', () => {
       if (STATE.cues.length > 0) {
-        updateActiveCue(getCurrentTime());
+        const t = getCurrentTime();
+        log(`[TIME] seeked → ${t.toFixed(3)}s, activeIdx=${STATE.activeCueIdx}`);
+        updateActiveCue(t);
       }
     });
   }
@@ -1252,6 +1284,7 @@ async function loadNetflixTrackForLanguage(langCode) {
     log('Netflix parsed', cues.length, 'cues');
 
     STATE.cues = cues;
+    logCueTimeRange('Netflix');
     detectedSubLang = track.languageCode || detectedSubLang;
     tryDetectL2FromCues(cues, (v) => { detectedSubLang = v; });
     checkL2Mismatch();
