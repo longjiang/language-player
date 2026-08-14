@@ -51,6 +51,9 @@ interface DictionaryContextValue {
   // Search state
   query: string;
   setQuery: (v: string) => void;
+  /** Whether the persistent search bar's autocomplete dropdown is open. */
+  autocompleteOpen: boolean;
+  setAutocompleteOpen: (v: boolean) => void;
   results: DictionaryEntry[] | null;
   loading: boolean;
   error: string | null;
@@ -99,6 +102,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const [query, setQuery] = useState('');
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -123,6 +127,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setRecentSearches(loadRecent(l2.code));
     // Reset state on language change
     setQuery('');
+    setAutocompleteOpen(false);
     setResults(null);
     setMessage(null);
     setError(null);
@@ -236,6 +241,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     <DictionaryContext.Provider
       value={{
         query, setQuery,
+        autocompleteOpen, setAutocompleteOpen,
         results, loading, error, message, searchedText,
         doSearch, handleSearch, clearSearch,
         recentSearches, clearRecent, handleRecentClick,

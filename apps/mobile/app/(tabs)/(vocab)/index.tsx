@@ -241,8 +241,8 @@ export default function DictionaryScreen() {
         <ActivityIndicator size="large" color={ICON_MUTED} style={{ marginTop: 40 }} />
       )}
 
-      {/* Empty state: recent searches (matches Next.js) */}
-      {!query && !loading && !results?.length && recentSearches.length > 0 && (
+      {/* Empty state: recent searches (hidden while autocomplete is open) */}
+      {!acOpen && !query && !loading && !results?.length && recentSearches.length > 0 && (
         <View className="px-4 pt-4">
           <View className="rounded-xl border border-border bg-card p-5">
             <View className="mb-3 flex-row items-center justify-between">
@@ -286,28 +286,7 @@ export default function DictionaryScreen() {
         </View>
       )}
 
-      {/* Recent searches strip — shown above results when available */}
-      {recentSearches.length > 0 && (
-        <View className={`px-4 ${results?.length ? 'pt-1' : 'pt-4'}`}>
-          <View className="flex-row items-center gap-2">
-            <Clock size={12} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{t('title.recent_searches')}</Text>
-          </View>
-          <View className="mt-1.5 flex-row flex-wrap gap-2">
-            {recentSearches.map((term) => (
-              <Pressable
-                key={term}
-                onPress={() => { setSuggestions(null); setAcOpen(false); setQuery(term); doSearch(term); }}
-                className="rounded-full bg-muted/50 px-3 py-1"
-              >
-                <Text className="text-xs text-muted-foreground" numberOfLines={1}>{term}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {results && results.length > 0 && (
+      {!acOpen && results && results.length > 0 && (
         <FlatList
           data={results}
           keyExtractor={(item) => item.id}
