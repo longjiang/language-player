@@ -409,8 +409,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /** Update the "Open in Language Player" button:
+   *  - non-video domains → "Read in Language Player" (reader page with ?url=current)
    *  - YouTube video with subtitles → "Watch in Language Player" (watch page)
-   *  - anything else → "Read in Language Player" (reader page with ?url=current)
+   *  - anything else → hidden (subtitle sites already have the in-page panel)
    *  Warns when the page's detected L2 differs from the user's saved L2. */
   function updateOpenInWebBtn(tabUrl, status) {
     if (!tabUrl || !/^https?:/i.test(tabUrl)) {
@@ -423,17 +424,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const subsAvailable = !!(status && status.cuesCount > 0);
     const base = `${WEB_APP_URL}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}`;
 
-    if (videoId && subsAvailable) {
-      openInWebBtn.dataset.url = `${base}/watch/${encodeURIComponent(videoId)}`;
-      openInWebBtn.textContent = t('watchInLanguagePlayer');
-    } else {
+    if (!isVideoDomain(tabUrl)) {
       openInWebBtn.dataset.url = `${base}/web-reader?url=${encodeURIComponent(tabUrl)}`;
       openInWebBtn.textContent = t('readInLanguagePlayer');
+      openInWebBtn.classList.remove('hidden');
+    } else if (videoId && subsAvailable) {
+      openInWebBtn.dataset.url = `${base}/watch/${encodeURIComponent(videoId)}`;
+      openInWebBtn.textContent = t('watchInLanguagePlayer');
+      openInWebBtn.classList.remove('hidden');
+    } else {
+      openInWebBtn.classList.add('hidden');
     }
-    openInWebBtn.classList.remove('hidden');
 
     const detectedL2 = status && status.detectedSubLang;
-    const mismatch = detectedL2 && baseCode(detectedL2) !== baseCode(l2Code);
+    const mismatch = !openInWebBtn.classList.contains('hidden') && detectedL2 && baseCode(detectedL2) !== baseCode(l2Code);
     if (mismatch) {
       openWebWarn.textContent = t('l2Mismatch', [languageName(detectedL2), languageName(l2Code)]);
       openWebWarn.classList.remove('hidden');
