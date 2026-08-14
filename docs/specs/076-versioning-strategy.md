@@ -295,6 +295,8 @@ recording the consumed number.
 **Historical note:** builds 1–2 (3.0.0, both stores) predate this policy and
 were uploaded from a working tree, so no reliable retroactive tags exist.
 Tagging starts with build 3.
+The repo also contains legacy `0.1.x` tags from 2024 (old GO-app history);
+they predate the scheme and are left untouched.
 
 **Web deploys** are not tagged per deploy (continuous Netlify/CI deploys are
 identified by deploy ID + git SHA); only product releases get tags.

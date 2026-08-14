@@ -151,13 +151,16 @@ if (pending) {
 
   let lastTag = null;
   try {
-    lastTag =
-      execSync('git tag -l "v[0-9]*" --sort=-v:refname', {
-        cwd: paths.root,
-        encoding: 'utf8',
-      })
-        .split('\n')
-        .find(Boolean) ?? null;
+    const tags = execSync('git tag -l --sort=-v:refname', {
+      cwd: paths.root,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    // Compare against plain semver tags only (vX.Y.Z or X.Y.Z); build tags
+    // like v3.0.0-b3 are not release versions.
+    lastTag = tags.find((tag) => /^v?\d+\.\d+\.\d+$/.test(tag)) ?? null;
   } catch {
     lastTag = null;
   }
@@ -171,7 +174,7 @@ if (pending) {
       warnings.push(`Could not parse release tag ${lastTag}; skipping tag comparison.`);
     }
   } else {
-    warnings.push('No v* release tags found; skipping release-tag comparison.');
+    warnings.push('No plain semver release tags (vX.Y.Z) found; skipping release-tag comparison.');
   }
 } else {
   warnings.push(
