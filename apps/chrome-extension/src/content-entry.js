@@ -216,6 +216,16 @@ function normalizeForMatch(text) {
   return (text || '').replace(/\s+/g, ' ').trim();
 }
 
+/** Copy Netflix's rendered line breaks onto a matching cue so the panel
+ *  displays exactly what the player shows. */
+function applyNetflixDisplayedLineBreaks(cueIdx, displayed) {
+  const cue = STATE.cues[cueIdx];
+  if (!cue || !displayed || !displayed.includes('\n')) return;
+  if (normalizeForMatch(cue.text) === normalizeForMatch(displayed)) {
+    cue.text = displayed;
+  }
+}
+
 /** Log the current Netflix player subtitle and the panel's matched line only
  *  when either side changes, so the console stays quiet during playback. */
 function logNetflixSyncPair(timeSec, displayed, panelIdx) {
@@ -331,6 +341,7 @@ function syncNetflixActiveCueFromDisplayed(timeSec) {
     return 'no';
   }
   const cue = STATE.cues[bestIdx];
+  applyNetflixDisplayedLineBreaks(bestIdx, displayed);
   const newOffset = timeSec - cue.start;
   if (bestStrength >= 1 && Math.abs(newOffset - netflixTimelineOffset) > 0.5) {
     log(`[TIME] Netflix timeline offset ${netflixTimelineOffset.toFixed(3)}s → ${newOffset.toFixed(3)}s (ad seek?)`);
@@ -1208,7 +1219,9 @@ function updateActiveCue(timeSec) {
     if (newIdx === STATE.activeCueIdx) return;
     STATE.activeCueIdx = newIdx;
     if (isNetflix) {
-      logNetflixSyncPair(timeSec, getNetflixDisplayedSubtitle(), newIdx);
+      const displayed = getNetflixDisplayedSubtitle();
+      applyNetflixDisplayedLineBreaks(newIdx, displayed);
+      logNetflixSyncPair(timeSec, displayed, newIdx);
     }
     renderTranscript();
     return;
