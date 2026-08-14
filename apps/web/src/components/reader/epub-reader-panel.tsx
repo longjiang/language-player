@@ -244,8 +244,12 @@ export function EpubReaderPanel({
         translationClass={translationClass(tb)}
         translationZoom={textZoom}
         loading={showTranslation && !blockTranslations[key]}>
-        <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
-          <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
+        <Tag
+          className={blockClass(tb)}
+          style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
+        >
+          <TokenizedText text={tb.text} l2Code={l2.code}
+            inheritSize={tb.type === 'heading'} context={ctx}
             tokens={tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary />
         </Tag>
       </TextActionMenu>

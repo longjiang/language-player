@@ -177,16 +177,30 @@ export interface TokenizedTextProps {
   text: string;
   l2Code: string;
   /**
-   * Base text size in rem, multiplied by the user's zoom setting from
-   * SettingsContext (tokenizedText.zoom). When omitted, uses the zoom alone.
-   * Pass 0 to inherit from parent (no inline font-size set).
+   * Extra multiplier on top of the user's zoom setting from SettingsContext
+   * (tokenizedText.zoom). Defaults to 1 (user zoom alone). Only single-line
+   * subtitles pass 1.5. SPEC-051: this is the only allowed non-default value.
    */
   textScale?: number;
+  /**
+   * Inline tokenized text (e.g. AI explanation spans inside a markdown
+   * paragraph): no user-zoom scaling and no leading — inherit from parent.
+   * SPEC-051 §Target behavior.
+   */
+  inline?: boolean;
+  /**
+   * Block-level text whose size must come from the parent (reader headings).
+   * Keeps the parent's font-size (so heading classes still apply) without
+   * dropping leading. SPEC-051: headings scale via the parent container's
+   * zoom instead of an inline rem size.
+   */
+  inheritSize?: boolean;
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
   typeFace?: 'default' | 'serif' | 'sans-serif';
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'relaxed' (1.625×).
-   * Pass 'none' to inherit from the parent container.
+   * Line-height (leading) for tokenized text. Defaults to 'loose' (2×) for
+   * block-level text (SPEC-051). Pass 'none' to inherit from the parent.
+   * Ignored when `inline` is set.
    */
   leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
   /** Extra contextual info for word saving (video title, timestamp, book title, etc.).
@@ -279,8 +293,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
   textScale,
+  inline = false,
+  inheritSize = false,
   typeFace = 'default',
-  leading = 'relaxed',
+  leading = 'loose',
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
@@ -307,23 +323,20 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const fontClass =
     typeFace === 'serif' ? 'font-serif' :
     typeFace === 'sans-serif' ? 'font-sans' : '';
-  const leadingClass = LEADING_CLASS[leading] ?? '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
 
   // Resolve effective font size (rem). The user's zoom setting from
-  // SettingsContext always applies to TokenizedText's own size:
-  //   - textScale provided (non-zero) → textScale × user zoom
-  //   - textScale omitted             → user zoom alone
-  //   - textScale === 0               → inherit (no inline font-size; the
-  //        parent controls size). Used by AI explanations and corpus snippets
-  //        so they match their surrounding text instead of the user's zoom.
+  // SettingsContext always applies to block-level TokenizedText:
+  //   - textScale provided → textScale × user zoom (1.5 only for subtitles)
+  //   - textScale omitted  → user zoom alone
+  //   - inline / inheritSize → no inline font-size; parent controls size
+  // Inline text also skips leading; inheritSize keeps leading.
   const zoomRem = ZOOM_TO_REM[settingsTokenizedText.zoom] ?? 1;
-  const effectiveScale = textScale === undefined
-    ? zoomRem
-    : (textScale === 0 ? 0 : textScale * zoomRem);
+  const effectiveScale = inline || inheritSize ? 0 : (textScale ?? 1) * zoomRem;
+  const leadingClass = inline ? '' : LEADING_CLASS[leading] ?? '';
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);

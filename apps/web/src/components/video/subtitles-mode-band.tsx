@@ -209,9 +209,10 @@ export function SubtitlesModeBand({
               />
             </div>
             {showTranslation && activeLine.l1Line && (
+              // Same 1.5× multiplier as the L2 subtitle line (SPEC-051).
               <p
                 className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
-                style={{ fontSize: `${0.875 * textZoomFactor}rem` }}
+                style={{ fontSize: `${0.875 * 1.5 * textZoomFactor}rem` }}
               >
                 {activeLine.l1Line}
               </p>

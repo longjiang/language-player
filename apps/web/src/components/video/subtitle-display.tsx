@@ -275,7 +275,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l1Code={l1Code}
             translation={
               showTranslation && activeTranslation ? (
-                <div style={{ fontSize: `${0.875 * textZoomFactor}rem` }}>
+                // Single-line subtitle translations use the same 1.5×
+                // multiplier as the L2 text (SPEC-051), applied to their
+                // own text-sm base.
+                <div style={{ fontSize: `${0.875 * 1.5 * textZoomFactor}rem` }}>
                   <ReactMarkdown
                     components={{
                       p: ({ children }) => <span>{children}</span>,

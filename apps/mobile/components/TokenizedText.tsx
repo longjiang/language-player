@@ -105,7 +105,7 @@ interface RubyTokenSpanProps {
   rubyGapTrim: number;
   readingSize: number;
   baseLeading: number | undefined;
-  textStyle: { fontSize: number; fontFamily?: string; lineHeight?: number };
+  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number };
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
@@ -241,7 +241,7 @@ interface PlainTokenSpanProps {
   quizMode: boolean;
   popupEnabled: boolean;
   textColor: string;
-  textStyle: { fontSize: number; fontFamily?: string; lineHeight?: number };
+  textStyle: { fontSize?: number; fontFamily?: string; lineHeight?: number };
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
@@ -475,9 +475,13 @@ export interface TokenizedTextProps {
   mode?: 'normal' | 'quiz';
   /** When true, renders the L2 token text bold (AI explanation spans). */
   bold?: boolean;
-  /** Text scale multiplier (matches web): omitted → user zoom; 0 → inherit
-   *  (fixed 16px on mobile); otherwise textScale × user zoom. */
+  /** Extra multiplier on top of the user's zoom setting. Defaults to 1 (user
+   *  zoom alone); only single-line subtitles pass 1.5. SPEC-051: this is the
+   *  only allowed non-default value. */
   textScale?: number;
+  /** Inline tokenized text (e.g. AI explanation spans): no user-zoom scaling
+   *  and no leading — inherit from the parent text. SPEC-051 §Target behavior. */
+  inline?: boolean;
   /** Tailwind text color class for the L2 text. Defaults to `text-foreground`
    *  (used by the on-video subtitle band to render white text). */
   textColor?: string;
@@ -497,7 +501,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'loose', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -649,13 +653,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
   const textStyle = useMemo(() => {
     const zoom = tokenSettings.zoom;
     const zoomRem = ZOOM_TO_REM[zoom] ?? 1;
-    // Matches web: omitted → user zoom; 0 → inherit (fixed 16px); otherwise
-    // textScale × user zoom.
-    const effectiveScale = textScale === undefined
-      ? zoomRem
-      : (textScale === 0 ? 0 : textScale * zoomRem);
-    const size = effectiveScale === 0 ? 16 : 16 * effectiveScale;
-    const style: { fontSize: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' } = { fontSize: size };
+    // Matches web: block-level text is user zoom × textScale (1 default,
+    // 1.5 for single-line subtitles). Inline text has no size of its own —
+    // it inherits from the parent Text.
+    const effectiveScale = (textScale ?? 1) * zoomRem;
+    const style: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' } = {};
+    if (!inline) style.fontSize = 16 * effectiveScale;
 
     if (tokenSettings.typeFace === 'serif') {
       style.fontFamily = Platform.OS === 'ios' ? 'Georgia' : 'serif';
@@ -667,7 +670,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     }
 
     return style;
-  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, bold]);
+  }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, bold]);
 
   // ── Leading ratio from prop (default: loose = 2) ──
   const LEADING_RATIOS: Record<string, number> = {
@@ -677,7 +680,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, tokens: preloadedToke
     snug: 1.375,
     loose: 2,
   };
-  const leadingRatio: number | undefined = leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 2);
+  const leadingRatio: number | undefined = inline || leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 2);
   const fallbackLineHeight = leadingRatio ? Math.round((textStyle.fontSize ?? 16) * leadingRatio) : undefined;
   const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 
@@ -1380,6 +1383,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.onOpenLink === next.onOpenLink &&
     prev.phonetics === next.phonetics &&
     prev.textScale === next.textScale &&
+    prev.inline === next.inline &&
     prev.textColor === next.textColor &&
     prev.highlightTerms === next.highlightTerms &&
     prev.tokenCacheLoaded === next.tokenCacheLoaded

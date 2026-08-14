@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { md5 } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -136,6 +137,9 @@ export function ReaderPanel({
   const router = useRouter();
   const { display, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
+  // Reader headings keep their natural size and scale via the container zoom;
+  // body blocks scale through TokenizedText's own zoom (SPEC-051).
+  const textZoom = useTextScale();
 
   // Markdown-block links (images, tables, raw-markdown fallbacks) open inside
   // the web reader instead of sending the user to the original site in a new
@@ -514,9 +518,14 @@ export function ReaderPanel({
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
                             translation={showTranslation ? blockTranslations[blockKey] : undefined}
                             translationClass={translationClass(tb)}
+                            translationZoom={textZoom}
                             loading={isAutoTranslating && !blockTranslations[blockKey]}>
-                            <Tag className={blockClass(tb)}>
-                              <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
+                            <Tag
+                              className={blockClass(tb)}
+                              style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
+                            >
+                              <TokenizedText text={tb.text} l2Code={l2.code}
+                                inheritSize={tb.type === 'heading'} context={ctx}
                                 tokens={cachedTokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
                                 deferTokenization={!!onLemmatize} selectionDictionary />
                             </Tag>
@@ -583,7 +592,7 @@ export function ReaderPanel({
               const lines = Math.max(1, Math.ceil(tb.text.length / 50));
               return (
                 <div key={i} className="mb-4">
-                  <Tag className={blockClass(tb)}>
+                  <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
                     {tb.text}
                   </Tag>
                   {showTranslation && (

@@ -6,16 +6,19 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { useCorpusFetch } from './use-corpus-fetch';
+import { TokenizedText } from '@/components/TokenizedText';
 
 interface MistakesProps {
   word: string;
+  /** Word forms to highlight in the mistake text (matches web). */
+  highlightTerms?: string[];
 }
 
 /**
  * Chinese learner mistakes (guangwai corpus).
  * GET /sketch-engine/mistakes?word=  (ARCH-020 §7.4) — zh only.
  */
-export function Mistakes({ word }: MistakesProps) {
+export function Mistakes({ word, highlightTerms = [] }: MistakesProps) {
   const t = useT();
   const url = `${PYTHON_API_URL}/sketch-engine/mistakes?word=${encodeURIComponent(word)}`;
   const { data, loading, error } = useCorpusFetch<SketchMistakesResponse>(url);
@@ -46,17 +49,18 @@ export function Mistakes({ word }: MistakesProps) {
       <View className="gap-2">
         {data.mistakes.map((mistake, index) => (
           <View key={index} className="rounded-lg border border-border bg-muted/30 p-3">
-            <Text className="text-sm leading-relaxed text-foreground" lang="zh">
-              {mistake.leftContext && (
-                <Text className="text-muted-foreground">{mistake.leftContext}</Text>
-              )}
-              {mistake.left && <Text>{mistake.left}</Text>}
-              <Text className="font-bold text-destructive">{word}</Text>
-              {mistake.right && <Text>{mistake.right}</Text>}
-              {mistake.rightContext && (
-                <Text className="text-muted-foreground">{mistake.rightContext}</Text>
-              )}
-            </Text>
+            {mistake.leftContext && (
+              <Text className="mb-1 text-xs text-muted-foreground/70">{mistake.leftContext}</Text>
+            )}
+            <TokenizedText
+              text={`${mistake.left ?? ''}${word}${mistake.right ?? ''}`}
+              l2Code="zh"
+              textScale={1}
+              highlightTerms={[word, ...highlightTerms]}
+            />
+            {mistake.rightContext && (
+              <Text className="mt-1 text-xs text-muted-foreground/70">{mistake.rightContext}</Text>
+            )}
             {mistake.errorType || mistake.proficiency || mistake.country ? (
               <View className="mt-1.5 flex-row flex-wrap items-center gap-2">
                 {mistake.errorType ? (

@@ -84,7 +84,7 @@ interface PaginatedReaderProps {
   onOpenLink?: (href: string) => void;
   /** Active search-match highlight (block + char range), if any. */
   highlight?: { blockIndex: number; start: number; end: number } | null;
-  /** Text scale for reader blocks (0 = fixed 16px; 1 = user zoom). */
+  /** Text scale for reader blocks (1 = user zoom, SPEC-051). */
   textScale?: number;
   /** Reports global block indices currently near the viewport (lazy tokenization). */
   onVisibleBlocksChange?: (globalIndices: number[]) => void;
@@ -107,7 +107,7 @@ export function PaginatedReader({
   onViewportLayout,
   onOpenLink,
   highlight,
-  textScale = 0,
+  textScale = 1,
   onVisibleBlocksChange,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
@@ -252,8 +252,8 @@ export function PaginatedReader({
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showDefinition = l2Settings.tokenSpan.definition.show;
   const zoomRem = ZOOM_TO_REM[tokenSettings.zoom] ?? 1;
-  const effectiveScale = textScale === undefined ? zoomRem : (textScale === 0 ? 0 : textScale * zoomRem);
-  const measureFontSize = effectiveScale === 0 ? 16 : 16 * effectiveScale;
+  const effectiveScale = (textScale ?? 1) * zoomRem;
+  const measureFontSize = 16 * effectiveScale;
   const measureFontFamily = tokenSettings.typeFace === 'serif'
     ? (Platform.OS === 'ios' ? 'Georgia' : 'serif')
     : tokenSettings.typeFace === 'sans-serif'
@@ -426,7 +426,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, undefined, false),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false),
           )}
         </View>
         {onToggleTranslation && (
@@ -478,7 +478,7 @@ export function PaginatedReader({
                     </View>
                   )}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, translationSideBySide, handleBlockLayout, true),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -586,11 +586,13 @@ function renderBlock(
   showTextActions: boolean, onOpenLink?: (href: string) => void,
   highlight?: { blockIndex: number; start: number; end: number } | null,
   textScale?: number,
+  zoomRem = 1,
   translationSideBySide = false,
   onBlockLayout?: (globalIdx: number, top: number, height: number) => void,
   deferTokenization = false,
 ) {
-  const scale = textScale ?? 0;
+  const scale = textScale ?? 1;
+  const blockScale = scale * zoomRem;
   const globalIdx = allBlocks.indexOf(block);
 
   if (block.kind === 'image') {
@@ -678,7 +680,7 @@ function renderBlock(
           />
     );
     const transEl = showTranslation && translation ? (
-      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{translation}</Text>
+      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: 14 * blockScale }}>{translation}</Text>
     ) : showTranslation && isTranslating ? (
       <View className="mt-1">
         <TranslationSkeleton text={block.text} />
@@ -726,7 +728,14 @@ function renderBlock(
       onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
     >
       {block.type === 'heading' && (
-        <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>
+        <Text
+          className="mb-2 font-bold text-foreground"
+          style={{
+            fontSize: (block.depth === 1 ? 24 : block.depth === 2 ? 20 : block.depth === 3 ? 18 : 16) * blockScale,
+          }}
+        >
+          {block.text}
+        </Text>
       )}
       {block.type === 'paragraph' && (
         showTextActions ? (
