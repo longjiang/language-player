@@ -24,6 +24,7 @@ let observer = null;
 let mutationTimer = null;
 const tokenCache = new Map();
 const tokenizedBlocks = new Set();
+let nextBlockId = 1;
 
 function isVideoHost() {
   try {
@@ -130,6 +131,7 @@ function onTokenClick(e, token, textNodeParent) {
   const href = anchor ? anchor.href : null;
   const block = textNodeParent?.closest?.(BLOCK_SELECTOR) || textNodeParent;
   const blockText = normalizeBlockText(block?.innerText || block?.textContent || '');
+  const blockId = block?.__lpvBlockId || null;
 
   createPanel();
   window.dispatchEvent(new CustomEvent('lpv-page-lookup', {
@@ -140,6 +142,7 @@ function onTokenClick(e, token, textNodeParent) {
         pronunciation: token.pronunciation || null,
       },
       blockText,
+      blockId,
       href,
     },
   }));
@@ -153,6 +156,7 @@ async function tokenizePage() {
   const textNodes = [];
   for (const block of blocks) {
     block.__lpvOriginalHtml = block.innerHTML;
+    if (!block.__lpvBlockId) block.__lpvBlockId = `block-${nextBlockId++}`;
     textNodes.push(...getTextNodes(block));
   }
   if (textNodes.length === 0) return;

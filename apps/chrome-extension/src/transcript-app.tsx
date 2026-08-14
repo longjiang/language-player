@@ -697,6 +697,7 @@ interface PagePanelProps {
 interface PageLookupDetail {
   token: LemmatizedToken;
   blockText: string;
+  blockId?: string | null;
   href?: string | null;
 }
 
@@ -705,9 +706,11 @@ interface PageLookupDetail {
 const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollowLink }) => {
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
   const [blockText, setBlockText] = useState('');
+  const [blockId, setBlockId] = useState<string | null>(null);
   const [href, setHref] = useState<string | null>(null);
   const [translation, setTranslation] = useState('');
   const [translationLoading, setTranslationLoading] = useState(false);
+  const translatedBlockIdRef = useRef<string | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhonetics, setShowPhonetics] = useState(true);
   const [textScale, setTextScale] = useState(2);
@@ -728,10 +731,14 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
       const detail = (e as CustomEvent<PageLookupDetail>).detail;
       if (!detail?.token) return;
       log(`[PAGE] lookup: "${detail.token.text}", blockText chars=${(detail.blockText || '').length}, href=${detail.href || 'none'}`);
+      const newBlockId = detail.blockId || null;
       setSelectedToken(detail.token);
       setBlockText(detail.blockText || '');
+      setBlockId(newBlockId);
       setHref(detail.href || null);
-      setTranslation('');
+      if (translatedBlockIdRef.current !== newBlockId) {
+        setTranslation('');
+      }
     };
     window.addEventListener('lpv-page-lookup', handler);
     return () => window.removeEventListener('lpv-page-lookup', handler);
@@ -740,10 +747,17 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
   useEffect(() => {
     if (!selectedToken || !showTranslation || !blockText) {
       log(`[PAGE] translate skipped: token=${!!selectedToken}, showTranslation=${showTranslation}, blockText=${blockText.length} chars`);
+      translatedBlockIdRef.current = null;
       setTranslation('');
       return;
     }
+    const blockKey = blockId || blockText;
+    if (blockKey === translatedBlockIdRef.current) {
+      log('[PAGE] translate skipped: same paragraph already translated');
+      return;
+    }
     log(`[PAGE] translate block: ${blockText.length} chars, l1=${l1Code}, l2=${l2Code}`);
+    translatedBlockIdRef.current = blockKey;
     const controller = new AbortController();
     setTranslationLoading(true);
     apiFetch(`${API_BASE}/translate_array`, {
@@ -762,12 +776,13 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
       .catch((err: Error) => {
         if (err.name !== 'AbortError') {
           logwarn('[PAGE] translate failed:', err);
+          translatedBlockIdRef.current = null;
           setTranslation('');
         }
       })
       .finally(() => setTranslationLoading(false));
     return () => controller.abort();
-  }, [selectedToken, showTranslation, blockText, l1Code, l2Code]);
+  }, [selectedToken, showTranslation, blockText, blockId, l1Code, l2Code]);
 
   const handlePhoneticsToggle = (checked: boolean) => {
     setShowPhonetics(checked);
