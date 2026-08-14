@@ -25,6 +25,7 @@ let mutationTimer = null;
 const tokenCache = new Map();
 const tokenizedBlocks = new Set();
 let nextBlockId = 1;
+let pageTokenStats = { words: 0, withPron: 0 };
 
 function isVideoHost() {
   try {
@@ -115,6 +116,8 @@ function renderTextNode(node, tokens) {
       frag.appendChild(document.createTextNode(token.text));
       continue;
     }
+    pageTokenStats.words++;
+    if (token.pronunciation) pageTokenStats.withPron++;
     const span = document.createElement('span');
     span.className = 'lpv-page-token';
     span.textContent = token.text;
@@ -219,6 +222,7 @@ async function tokenizePage() {
   }
 
   let renderedNodes = 0;
+  pageTokenStats = { words: 0, withPron: 0 };
   for (const { block, nodes } of blocksWithNodes) {
     for (const node of nodes) {
       if (renderTextNode(node, resultsByText.get(node.nodeValue))) renderedNodes++;
@@ -227,6 +231,7 @@ async function tokenizePage() {
     tokenizedBlocks.add(block);
   }
   log(`[PAGE] rendered tokens into ${renderedNodes} DOM text nodes across ${blocks.length} blocks`);
+  log(`[FURIGANA] page mode: rendered ${pageTokenStats.words} word tokens (${pageTokenStats.withPron} with pronunciation) as plain clickable spans — no inline ruby on page text`);
 }
 
 function createPanel() {
