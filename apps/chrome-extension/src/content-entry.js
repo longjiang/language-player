@@ -1273,6 +1273,9 @@ let lastNetflixDisplayedCheckAt = 0;
 let lastLoggedPlayerText = '';
 let lastLoggedPanelIdx = -2;
 let netflixPlayerApiTime = null;
+let currentNetflixMovieId = null;
+let pendingNetflixTracks = null;
+let lastRouteMovieId = null;
 
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 
@@ -1300,8 +1303,22 @@ function setupNetflixInterceptor() {
 
     if (event.data.type === 'netflixTracks') {
       log('Received Netflix tracks from MAIN world:', event.data.tracks.length);
+      const movieId = event.data.movieId != null ? String(event.data.movieId) : null;
+      const routeMovieId = getNetflixRouteMovieId();
+
+      // Netflix prefetches the next episode's manifest while the current
+      // episode is still playing. Keep the current panel until the route
+      // actually changes to that movieId.
+      if (routeMovieId && movieId && movieId !== routeMovieId && STATE.cues.length > 0) {
+        log('Queueing Netflix tracks for upcoming movieId:', movieId, '(route', routeMovieId + ')');
+        pendingNetflixTracks = { movieId, tracks: event.data.tracks };
+        return;
+      }
+
+      pendingNetflixTracks = null;
+      if (movieId) currentNetflixMovieId = movieId;
       handlingNetflixTracks = true;
-      handleNetflixSubs(event.data.tracks).finally(() => {
+      handleNetflixSubs(event.data.tracks, movieId).finally(() => {
         handlingNetflixTracks = false;
         processPendingNetflixActiveLang();
       });
@@ -1310,6 +1327,11 @@ function setupNetflixInterceptor() {
     if (event.data.type === 'netflixActiveLang') {
       const lang = event.data.language;
       if (!lang) return;
+      const movieId = event.data.movieId != null ? String(event.data.movieId) : null;
+      const routeMovieId = getNetflixRouteMovieId();
+      if (routeMovieId && movieId && movieId !== routeMovieId && STATE.cues.length > 0) {
+        return;
+      }
       log('Netflix active subtitle fetch detected:', lang);
       netflixFetchDetectionActive = true;
       pendingNetflixActiveLang = lang;
@@ -1334,6 +1356,16 @@ function processPendingNetflixActiveLang() {
   const lang = pendingNetflixActiveLang;
   pendingNetflixActiveLang = null;
   loadNetflixTrackForLanguage(lang);
+}
+
+/** Extract the currently open Netflix title id from /watch/<id>. */
+function getNetflixRouteMovieId() {
+  try {
+    const m = location.pathname.match(/\/watch\/(\d+)/);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -1373,6 +1405,23 @@ function observeNetflixSubtitleChanges() {
   let lastActiveLang = null;
 
   setInterval(async () => {
+    const routeMovieId = getNetflixRouteMovieId();
+    if (routeMovieId && routeMovieId !== lastRouteMovieId) {
+      lastRouteMovieId = routeMovieId;
+      if (pendingNetflixTracks && pendingNetflixTracks.movieId === routeMovieId) {
+        const pending = pendingNetflixTracks;
+        pendingNetflixTracks = null;
+        log('Applying queued Netflix tracks for route:', routeMovieId);
+        handlingNetflixTracks = true;
+        handleNetflixSubs(pending.tracks, pending.movieId).finally(() => {
+          handlingNetflixTracks = false;
+          processPendingNetflixActiveLang();
+        });
+      }
+    } else if (!lastRouteMovieId) {
+      lastRouteMovieId = routeMovieId;
+    }
+
     await refreshNetflixPlayerApiTime();
 
     // Fetch/XHR interception is the authoritative signal for the active
@@ -1462,7 +1511,9 @@ async function loadNetflixTrackForLanguage(langCode) {
 }
 
 /** Process Netflix subtitle tracks and fetch the actual subtitle file */
-async function handleNetflixSubs(tracks) {
+async function handleNetflixSubs(tracks, movieId) {
+  if (movieId) currentNetflixMovieId = movieId;
+
   // New title/manifest — reset any ad/timeline offset learned previously.
   netflixTimelineOffset = 0;
   lastNetflixDisplayedCheckAt = 0;

@@ -63,6 +63,7 @@
         type: 'netflixActiveLang',
         language: urlToLang[url],
         url: url,
+        movieId: lastMovieId,
       },
       '*'
     );
