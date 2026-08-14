@@ -25,55 +25,55 @@ Today the Language Player Chrome extension only tokenizes subtitles on supported
 
 ### Extension popup
 
-```mermaid
-flowchart TB
-    subgraph Popup["Language Player popup"]
-        Title["Language Player"]
-        Lang["L1: English ｜  L2: 日本語"]
-        Enable["Enable Popup Dictionary: ON"]
-        Toggles["Ruby / Furigana: ON ｜  Translation: ON"]
-        Auth["Signed in as user@example.com"]
-    end
+```text
+┌──────────────────────────────────┐
+│ Language Player                  │
+│                                  │
+│ L1: English       L2: 日本語     │
+│                                  │
+│ [x] Enable Popup Dictionary      │
+│                                  │
+│ Ruby / Furigana     [on]         │
+│ Translation          [on]        │
+│                                  │
+│ Signed in: user@example.com      │
+└──────────────────────────────────┘
 ```
 
 ### Page tokenization + side panel
 
-```mermaid
-flowchart LR
-    subgraph Page["News article page"]
-        P1["Tokenized paragraph with clickable words"]
-        P2["Another tokenized paragraph"]
-        P3["Token inside a link → Follow link appears in panel"]
-    end
-
-    subgraph Panel["Side panel"]
-        Header["Header: logo ｜ language ｜ close ✕"]
-        Dict["Dictionary card: word, definition, save, explain"]
-        Trans["Translated block (shown when translation is on)"]
-        Follow["Follow link →"]
-        Bottom["Bottom bar: ruby ｜ translation ｜ text scale"]
-    end
+```text
+┌───────────────────────────────────────────┬───────────────────────┐
+│ News article page                         │ Side panel            │
+│                                           │ ┌───────────────────┐ │
+│  パーシバルがいるからに決まってんだろ      │ │ LP │ 日本語 │ ✕  │ │
+│  ＜clickable tokens＞                      │ ├───────────────────┤ │
+│                                           │ │ Dictionary         │ │
+│  [link text]                              │ │ 単語               │ │
+│  → shows Follow link in panel             │ │ definition…        │ │
+│                                           │ │ [Save]  [Explain]  │ │
+│  ＜more tokenized paragraphs…＞            │ ├───────────────────┤ │
+│                                           │ │ Translated block   │ │
+│                                           │ │ （translation…）   │ │
+│                                           │ ├───────────────────┤ │
+│                                           │ │ [Follow link →]    │ │
+│                                           │ ├───────────────────┤ │
+│                                           │ │ Ruby  Trans  Aa-   │ │
+│                                           │ └───────────────────┘ │
+└───────────────────────────────────────────┴───────────────────────┘
 ```
 
-### Interaction flow
+### Panel closed / feature off
 
-```mermaid
-flowchart TD
-    A["User enables Popup Dictionary"] --> B["page-content.js reads flag"]
-    B --> C["Scan visible text blocks"]
-    C --> D["Batch tokenize in saved L2"]
-    D --> E["Render token spans + open side panel"]
-    E --> F["User clicks a token"]
-    F --> G["Inside a link?"]
-    G -- "Yes" --> H["Dictionary card + Follow link"]
-    G -- "No" --> I["Dictionary card only"]
-    F --> J["Translation enabled?"]
-    J -- "Yes" --> K["Translate containing block in panel"]
-    H --> L["Follow link navigates current tab"]
-    E --> M["Navigation happens"]
-    M --> B
-    E --> N["User closes panel"]
-    N --> O["Flag off + cleanup; stays closed on next navigation"]
+```text
+┌──────────────────────────────────┐
+│ Language Player                  │
+│                                  │
+│ [ ] Enable Popup Dictionary      │
+│                                  │
+│ Page is left untouched.          │
+│ Panel stays closed on next page. │
+└──────────────────────────────────┘
 ```
 
 ## User Stories
