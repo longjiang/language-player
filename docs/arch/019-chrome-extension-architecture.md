@@ -222,7 +222,7 @@ The extension supports six platforms. Each has a different mechanism for detecti
 | Aspect | Prime Video | Netflix | YouTube | Disney+ | Hulu | Max |
 |---|---|---|---|---|---|---|
 | **Detection method** | HTTP webRequest | JSON.parse hook (MAIN world) | InnerTube API + page data | HTTP webRequest | HTTP webRequest | HTTP webRequest |
-| **Subtitle format** | TTML/XML | DFXP (TTML) or WebVTT | Timedtext XML or JSON3 | WebVTT (segmented) | WebVTT or SRT | WebVTT or TTML |
+| **Subtitle format** | TTML/XML | DFXP (TTML) / imsc1.1 (TTML, tick-rate timestamps) or WebVTT | Timedtext XML or JSON3 | WebVTT (segmented) | WebVTT or SRT | WebVTT or TTML |
 | **Content script timing** | `document_idle` | `document_start` | `document_idle` | `document_idle` | `document_idle` | `document_idle` |
 | **Subtitle source** | background worker intercepts HTTP | JSON.parse monkeypatch intercepts playback manifest JSON | Page's `ytInitialPlayerResponse` + InnerTube API call to `/youtubei/v1/player` | background worker intercepts HTTP segments | background worker intercepts HTTP | background worker intercepts HTTP |
 | **Seek method** | `video.currentTime` | `chrome.scripting.executeScript` in MAIN world (Netflix API) | `video.currentTime` | `mediaPlayer.seek()` API + `video.currentTime` fallback | `video.currentTime` | `video.currentTime` |

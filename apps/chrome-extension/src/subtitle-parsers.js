@@ -40,6 +40,92 @@ export function parseTimeToSeconds(timeStr) {
   return isNaN(num) ? 0 : num;
 }
 
+/** TTML parameter namespace used for ttp:tickRate / frameRate attributes. */
+const TTML_NS = 'http://www.w3.org/ns/ttml';
+const TTML_PARAM_NS = 'http://www.w3.org/ns/ttml#parameter';
+
+/** Read TTML timing parameters (tickRate, frameRate, presentationTimeOffset). */
+function getTTMLTimeParams(doc) {
+  const tt =
+    doc.getElementsByTagNameNS(TTML_NS, 'tt')[0] ||
+    doc.querySelector('tt') ||
+    doc.documentElement;
+
+  const getAttr = (name) =>
+    tt?.getAttributeNS(TTML_PARAM_NS, name) ||
+    tt?.getAttribute(`ttp:${name}`) ||
+    tt?.getAttribute(name) ||
+    '';
+
+  const tickRate = parseInt(getAttr('tickRate') || '10000000', 10) || 10000000;
+  const frameRate = parseFloat(getAttr('frameRate') || '30') || 30;
+  const frameRateMultiplierRaw = getAttr('frameRateMultiplier');
+  let frameRateMultiplier = 1;
+  if (frameRateMultiplierRaw) {
+    const parts = frameRateMultiplierRaw.trim().split(/\s+/).map(Number);
+    if (parts.length === 2 && parts[0] && parts[1]) {
+      frameRateMultiplier = parts[0] / parts[1];
+    }
+  }
+  const resolvedFrameRate = frameRate * frameRateMultiplier;
+  const baseParams = { tickRate, frameRate: resolvedFrameRate };
+
+  return {
+    tt,
+    tickRate,
+    frameRate: resolvedFrameRate,
+    presentationTimeOffset: parseTTMLTime(getAttr('presentationTimeOffset') || '0', baseParams),
+  };
+}
+
+/** Parse a TTML time expression to seconds.
+ *  Handles clock time, frames, units (s/ms/f/t), and bare tick counts —
+ *  e.g. Netflix imsc1.1 uses bare ticks at 10MHz: 120120000 → 12.012s. */
+function parseTTMLTime(timeStr, params) {
+  if (!timeStr) return 0;
+  const tickRate = params?.tickRate || 10000000;
+  const frameRate = params?.frameRate || 30;
+  const normalized = timeStr.replace(',', '.');
+
+  const hms = normalized.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/);
+  if (hms) return +hms[1] * 3600 + +hms[2] * 60 + +hms[3];
+
+  const ms = normalized.match(/^(\d+):(\d{2}(?:\.\d+)?)$/);
+  if (ms) return +ms[1] * 60 + +ms[2];
+
+  const frames = normalized.match(/^(\d+):(\d{2}):(\d{2}):(\d+)$/);
+  if (frames) {
+    return +frames[1] * 3600 + +frames[2] * 60 + +frames[3] + +frames[4] / frameRate;
+  }
+
+  const unit = normalized.match(/^(\d+(?:\.\d+)?)(h|m|s|ms|f|t)$/i);
+  if (unit) {
+    const value = parseFloat(unit[1]);
+    const u = unit[2].toLowerCase();
+    if (u === 'h') return value * 3600;
+    if (u === 'm') return value * 60;
+    if (u === 's') return value;
+    if (u === 'ms') return value / 1000;
+    if (u === 'f') return value / frameRate;
+    if (u === 't') return value / tickRate;
+  }
+
+  const num = parseFloat(normalized);
+  return isNaN(num) ? 0 : num / tickRate;
+}
+
+/** Sum begin offsets from ancestor div/body elements (TTML region timing). */
+function getTTMLContainerOffset(el, params) {
+  let offset = 0;
+  let curr = el.parentElement;
+  while (curr && curr !== params.tt) {
+    const begin = curr.getAttribute('begin');
+    if (begin) offset += parseTTMLTime(begin, params);
+    curr = curr.parentElement;
+  }
+  return offset;
+}
+
 export function stripTags(text) {
   if (!text) return '';
   return text.replace(/<[^>]*>/g, '').trim();
@@ -158,16 +244,18 @@ export function tryDetectL2FromCues(cues, setDetectedL2) {
 
 function extractCuesFromDoc(doc) {
   const cues = [];
+  const params = getTTMLTimeParams(doc);
   const paragraphs = doc.querySelectorAll('p');
   for (const p of paragraphs) {
     const begin = p.getAttribute('begin') || p.getAttribute('start') || '';
     const end = p.getAttribute('end') || p.getAttribute('dur') || '';
     const text = stripTags(p.innerHTML || p.textContent || '');
     if (text && begin) {
-      const startTime = parseTimeToSeconds(begin);
-      let endTime = end ? parseTimeToSeconds(end) : null;
+      const containerOffset = getTTMLContainerOffset(p, params);
+      const startTime = parseTTMLTime(begin, params) + containerOffset - params.presentationTimeOffset;
+      let endTime = end ? parseTTMLTime(end, params) + containerOffset - params.presentationTimeOffset : null;
       if (p.getAttribute('dur') && !p.getAttribute('end')) {
-        endTime = startTime + parseTimeToSeconds(p.getAttribute('dur'));
+        endTime = startTime + parseTTMLTime(p.getAttribute('dur'), params);
       }
       cues.push({
         start: startTime,
