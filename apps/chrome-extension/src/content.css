@@ -1135,6 +1135,16 @@ body.lpv-panel-open disney-web-player-ui {
   box-shadow: 0 0 0 1px rgba(0, 168, 225, 0.35);
 }
 
+.lpv-page-token ruby {
+  ruby-align: center;
+}
+
+.lpv-page-token rt {
+  font-size: 0.55em;
+  color: #888;
+  user-select: none;
+}
+
 .lpv-page-tokenizing {
   animation: lpv-pulse 1.5s ease-in-out infinite;
   opacity: 0.55;
