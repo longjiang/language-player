@@ -268,6 +268,10 @@ The extension supports six platforms. Each has a different mechanism for detecti
     deriving a timeline offset that is also applied to click-to-seek. It
     prefers `player.getCurrentTime()` (content timeline, ms → s) as the
     primary clock, since `<video>.currentTime` can shift during ad breaks.
+11. Netflix prefetches the next episode's manifest while the current episode
+    is still playing. Tracks whose movieId doesn't match the current
+    `/watch/<id>` route are queued and applied only when the route changes
+    to that movieId.
 ```
 
 #### YouTube (InnerTube API + Page Data)
