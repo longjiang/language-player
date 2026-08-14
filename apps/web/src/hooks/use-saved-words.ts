@@ -119,6 +119,7 @@ export function useSavedWords() {
       prev: prevUserIdRef.current,
       changed,
       hasAccessToken: Boolean((sessionRef.current?.user as any)?.accessToken),
+      hasRefreshToken: Boolean((sessionRef.current?.user as any)?.refreshToken),
     });
     prevUserIdRef.current = next;
     if (changed) {
@@ -159,6 +160,8 @@ export function useSavedWords() {
       loaded,
       userId,
       hasAccessToken: Boolean((sessionRef.current?.user as any)?.accessToken),
+      hasRefreshToken: Boolean((sessionRef.current?.user as any)?.refreshToken),
+      userKeys: Object.keys((sessionRef.current?.user as any) ?? {}),
       mergeAnon,
     });
 
@@ -217,7 +220,13 @@ export function useSavedWords() {
         writeLocalStore(next);
         if (!cancelled) setCloudHydrated(true);
       } catch (err) {
-        logwarn('[savedWords] Hydration failed:', err);
+        logwarn('[savedWords] Hydration failed:', err, {
+          status,
+          userId,
+          hasAccessToken: Boolean((sessionRef.current?.user as any)?.accessToken),
+          hasRefreshToken: Boolean((sessionRef.current?.user as any)?.refreshToken),
+          userKeys: Object.keys((sessionRef.current?.user as any) ?? {}),
+        });
         if (!cancelled && !hydrationRetryTimer.current) {
           hydrationRetryTimer.current = setTimeout(() => {
             hydrationRetryTimer.current = null;
