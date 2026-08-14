@@ -15,6 +15,7 @@
  */
 
 import { API_BASE } from './api-config';
+import { apiFetch } from './api-fetch';
 
 const STORAGE_KEY = 'lpv_auth';
 
@@ -100,7 +101,7 @@ async function clearStoredAuth(): Promise<void> {
 
 /** Login through Flask → Supabase Auth (GoTrue). Returns the auth state. */
 export async function login(email: string, password: string): Promise<AuthState> {
-  const res = await fetch(`${API_BASE}/auth/login`, {
+  const res = await apiFetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -129,7 +130,7 @@ async function doRefresh(auth: AuthState): Promise<AuthState> {
   const stored = await readStoredAuth();
   const current = stored?.refreshToken && stored.userId === auth.userId ? stored : auth;
 
-  const res = await fetch(`${API_BASE}/auth/refresh`, {
+  const res = await apiFetch(`${API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken: current.refreshToken }),
@@ -226,15 +227,17 @@ export async function authorizedFetch(
   let auth = await getAuthState();
   if (!auth) return null;
 
-  const headers = new Headers(init.headers || {});
-  headers.set('Authorization', `Bearer ${auth.token}`);
-  let res = await fetch(url, { ...init, headers });
+  const headers: Record<string, string> = {
+    ...(init.headers ? (init.headers as Record<string, string>) : {}),
+    Authorization: `Bearer ${auth.token}`,
+  };
+  let res = await apiFetch(url, { ...init, headers });
 
   if (res.status === 401 && auth.refreshToken) {
     try {
       auth = await refreshAuth(auth);
-      headers.set('Authorization', `Bearer ${auth.token}`);
-      res = await fetch(url, { ...init, headers });
+      headers.Authorization = `Bearer ${auth.token}`;
+      res = await apiFetch(url, { ...init, headers });
     } catch (err) {
       if (!(err instanceof SessionChangedError)) {
         await logout();
@@ -251,7 +254,7 @@ export async function logout(): Promise<void> {
   try {
     const auth = await readStoredAuth();
     if (auth?.token || auth?.refreshToken) {
-      await fetch(`${API_BASE}/auth/logout`, {
+      await apiFetch(`${API_BASE}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -123,10 +123,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateBadgeForTab(sender.tab?.id, request.found);
         sendResponse({success: true});
     } else if (request.action === "bgFetch") {
-        fetch(request.url)
-            .then(r => r.text())
-            .then(text => sendResponse({ text }))
-            .catch(err => sendResponse({ text: '', error: err.message }));
+        const { url, method = 'GET', headers = {}, body } = request;
+        fetch(url, { method, headers, body })
+            .then(async (r) => {
+                const text = await r.text();
+                sendResponse({ ok: r.ok, status: r.status, text });
+            })
+            .catch(err => sendResponse({ ok: false, status: 0, text: '', error: err.message }));
         return true; // async
     } else if (request.action === "mainWorldFetch") {
         const tabId = sender.tab?.id;

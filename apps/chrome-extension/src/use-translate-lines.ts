@@ -9,6 +9,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 import { API_BASE } from './api-config';
+import { apiFetch } from './api-fetch';
 import { log, logwarn } from './i18n';
 
 const CHUNK_SIZE = 5;
@@ -59,7 +60,7 @@ export function useTranslateLines(
     setLoading(true);
     try {
       const controller = new AbortController();
-      const res = await fetch(`${API_BASE}/translate_array`, {
+      const res = await apiFetch(`${API_BASE}/translate_array`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texts: chunk, l1: l1Code, l2: l2Code }),
