@@ -41,6 +41,7 @@ versioning, not from simple monotonic counters.
 | Mobile — iOS | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped build was 1) |
 | Mobile — Android | `apps/mobile/app.config.js` ← `packages/shared/src/version.json` | `3.0.0` | **3** (prepared; shipped versionCode was 2) |
 | Chrome extension | `apps/chrome-extension/manifest.json` | `1.0.110.1` | 4th component auto-bumps per build |
+| Flask API | `zerotohero-python-server/` (separate git repo) | **none** — `/python_version` returns the Python runtime, not the app version | git SHA only; no release tags |
 | Shared packages | `packages/*/package.json` | `0.0.1` (npm-private, not product) | n/a |
 
 ### 2.1 What is actually live in the stores
@@ -242,6 +243,35 @@ loaded build is verifiable without opening `chrome://extensions`.
   migration story (ADR-0013 already documents why "3" is a branding
   dead-end; until that decision is revisited, staying on 3.x is correct).
 
+### 4.6 Flask backend (API server)
+
+**The backend gets its own SemVer, independent of the web/mobile product
+version.** It deploys on its own cadence (server-side hotfixes and data
+changes do not require store releases), and it has its own compatibility
+contract with all three clients (web, mobile, Chrome extension).
+
+- **Format:** `MAJOR.MINOR.PATCH` in its own git repo
+  (`zerotohero-python-server/`). MAJOR = breaking API change; MINOR = new
+  endpoint/feature; PATCH = fix. Tag releases there (e.g. `v1.2.3`); the
+  repo currently has no release tags.
+- **Build identifier:** git SHA + deploy timestamp — **not** a store-style
+  build counter. The backend is not store-bound, so it follows decision 3:
+  SHA/date identify a deployment.
+- **Expose it:** add `__version__` to the app and a `/api/version` endpoint
+  returning `{ "name": "language-player-api", "version": "1.2.3",
+  "commit": "abc1234", "python": "3.10.x", "deployed_at": "..." }`. Keep
+  `/python_version` only as a diagnostic (it reports the runtime, which is
+  misleading as an app version).
+- **API contract versioning:** while web/mobile/extension are maintained in
+  lockstep with the backend, keep the current unversioned endpoints and
+  simply document the API version. Add `/v1` URL prefixes or an
+  `X-API-Version` header only when a breaking change must support old
+  clients (URL path versioning is the common industry default; headers are
+  better when old clients must keep working during a transition).
+- **Relationship to product releases:** a product release (e.g. `3.1.0`)
+  records the backend SHA it was tested against in its release notes; the
+  backend's own version stays independent.
+
 ## 5. Tooling & Verification Gates
 
 ### 5.1 New scripts (in `scripts/`)
@@ -316,6 +346,7 @@ versionCode regression.
 | 2 | Rebase the extension `1.0.x` to the product `3.x` lineage? | **No — keep `1.0.x`.** Extension development/features are independent from web/mobile, so its version history stays independent. |
 | 3 | Do local dev builds need store build numbers? | **No.** Dev builds use git SHA / build date; store build numbers are consumed only by store uploads (recorded in the ledger). |
 | 4 | Convert `app.json` → `app.config.js` reading from `packages/shared`? | **Yes.** `apps/mobile/app.config.js` now reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from `packages/shared/src/version.json`; `app.json` is removed. |
+| 5 | How should the Flask backend be versioned? | **Proposed (2026-08-14):** own SemVer + git tags in `zerotohero-python-server/`, a `__version__` + `/api/version` endpoint, and git-SHA build identifiers. Independent from the product version; not yet implemented. |
 
 ## 7. References
 
