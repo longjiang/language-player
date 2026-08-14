@@ -610,6 +610,12 @@ types count while unexpired — there is no `status` filter.
   unrated new cards capped by `dailyNewLimit`. Future-dated learning/review
   cards no longer inflate the header, so an all-done deck shows 0 even when
   the language has future cards waiting.
+- ✅ **L1 definition translation on reveal** — fixed (2026-08-13): an English
+  cache hit no longer blocks the exact `/dictionary/entry` L1 fetch, and the
+  L1 text lookup tries every saved form/head before giving up. Inflected
+  surface forms (e.g. 顰めらせられる) previously resolved to a different LLM
+  entry id, so the card back fell back to English definitions; it now shows
+  the saved entry's translated definitions on both web and mobile.
 - ✅ **SRS hydration race guard** — implemented (2026-08-13): both review
   pages wait for `useSrs().cloudHydrated` before auto-initializing new cards;
   web retries failed `GET /srs` fetches.

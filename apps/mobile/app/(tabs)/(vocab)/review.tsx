@@ -33,7 +33,6 @@ import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
 import {
   enqueueLookupWords,
-  getCachedEntryById,
   getL1CachedEntry,
   setL1CachedEntry,
   setCachedEntryById,
@@ -150,7 +149,7 @@ export default function ReviewScreen() {
     removeCard,
     pruneOrphans,
   } = useSrs();
-  const { review, display } = useSettingsContext();
+  const { review, display, offlineMode } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const dayStartHour = review.dayStartHour;
   const srsCardMeta = useMemo(
@@ -346,32 +345,41 @@ export default function ReviewScreen() {
   // ── Resolve the exact saved entry before showing the back side ──
   // Old cards often have no shared-cache entry (they were never enriched
   // online). On reveal, try offline first, then the exact /dictionary/entry
-  // fetch by the saved id; only then fall back to the "no definition" state.
+  // fetch by the saved id (with the user's L1, so definitions are
+  // translated); only then fall back to a translated text-lookup entry.
   useEffect(() => {
     const id = currentDueCard?.id;
-    if (!id || !showTabs || fallbackEntry) return;
-    if (getCachedEntryById(l2Code, id)) return;
+    if (!id || !showTabs || fallbackEntry || l1Entry?.id === id) return;
+    const l1CacheL2 = baseCode(l2Code);
+    if (getL1CachedEntry(l1CacheL2, l1Lang.code, id)) return;
+    // Seed the English id cache from the canonical entry when present, but
+    // keep going — the exact L1 fetch below is what translates the defs.
     if (
       currentDueCard?.canonicalEntry &&
       isSameEntryId(id, currentDueCard.canonicalEntry.id, baseL2ForEntry)
     ) {
       setCachedEntryById(l2Code, currentDueCard.canonicalEntry);
-      return;
     }
     let cancelled = false;
     (async () => {
       const baseL2 = l2Code.split('-')[0];
       const decomposed = decomposeWordId(id, baseL2);
       const scopedId = decomposed?.id ?? id;
-      let found = false;
+      let anyEntry = false;
+      let l1Resolved = false;
+      log('[srs] exact-entry resolve', {
+        id,
+        form: currentDueCard ? firstLookupForm(currentDueCard) : id,
+        l1: l1Lang.code,
+      });
       try {
         const entry = await getOfflineEntryById(baseL2, scopedId);
         if (!cancelled && entry) {
           setCachedEntryById(l2Code, entry);
-          found = true;
+          anyEntry = true;
         }
       } catch { /* no offline dict / corrupt — try network */ }
-      if (cancelled || found) return;
+      if (cancelled || (anyEntry && offlineMode)) return;
       try {
         if (decomposed) {
           const { apiClient } = await import('@langplayer/api-client');
@@ -384,25 +392,34 @@ export default function ReviewScreen() {
             },
           });
           const entry = (res as any)?.entry as DictionaryEntry | undefined;
-          if (!cancelled && entry && isSameEntryId(id, entry.id, baseL2ForEntry)) {
+          const matches = !!entry && isSameEntryId(id, entry.id, baseL2ForEntry);
+          log('[srs] exact-entry fetch', {
+            id,
+            dict: decomposed.dict,
+            entryId: entry?.id,
+            matches,
+          });
+          if (!cancelled && matches) {
             // Cache under the saved id even when the API returns the scoped
             // form (e.g. "ja-…" for a saved "llm-ja-…" id).
             const normalized = entry.id === id ? entry : { ...entry, id };
             setCachedEntryById(l2Code, normalized);
             // The /dictionary/entry response was requested with the user's
             // L1, so it is already translated — promote it to the L1 entry.
-            setL1CachedEntry(baseCode(l2Code), l1Lang.code, normalized);
+            setL1CachedEntry(l1CacheL2, l1Lang.code, normalized);
             setL1Entry(normalized);
-            found = true;
+            l1Resolved = true;
+            anyEntry = true;
           }
         }
       } catch {
         // Network failure — fall through to the no-definition state.
       }
-      if (!cancelled && !found) {
+      if (!cancelled && !l1Resolved) {
         // The saved id may be stale (e.g. the dictionary was updated and the
         // old EDICT row no longer resolves). Fall back to the best text-lookup
-        // entry for the same head so the back side still shows a definition.
+        // entry for the same head so the back side still shows a translated
+        // definition.
         const base = baseL2ForEntry;
         const form = currentDueCard ? firstLookupForm(currentDueCard) : id;
         const pickBest = (results: DictionaryEntry[]): DictionaryEntry | undefined =>
@@ -426,7 +443,7 @@ export default function ReviewScreen() {
             const fallback = pickBest(results);
             if (fallback) {
               setFallbackEntry(fallback);
-              found = true;
+              anyEntry = true;
               break;
             }
           }
@@ -434,7 +451,7 @@ export default function ReviewScreen() {
           // Keep the no-definition state.
         }
       }
-      if (!cancelled && !found) {
+      if (!cancelled && !anyEntry) {
         setOfflineEntryLookupDone((prev) => ({ ...prev, [id]: true }));
       }
     })();
@@ -444,9 +461,11 @@ export default function ReviewScreen() {
     currentDueCard?.id,
     currentDueCard?.canonicalEntry,
     fallbackEntry,
+    l1Entry?.id,
     baseL2ForEntry,
     l2Code,
     l1Lang.code,
+    offlineMode,
   ]);
 
   // ── Merge due cards with the reactive entry ──
@@ -710,36 +729,49 @@ export default function ReviewScreen() {
     if (!showTabs || l1Lang.code === 'en') return;
     const card = cards[currentIndex];
     if (!card) return;
-    const form = firstLookupForm(card.word);
+    const sw = card.word;
+    const form = firstLookupForm(sw);
     if (l1Entry?.id === card.word.id) return;
 
     const l2BaseForL1 = baseCode(l2Code);
-    const cached = getL1CachedEntry(l2BaseForL1, l1Lang.code, card.word.id);
+    const cached = getL1CachedEntry(l2BaseForL1, l1Lang.code, sw.id);
     if (cached) {
       setL1Entry(cached);
       return;
     }
 
+    // The first lookup form is often the inflected surface form (e.g.
+    // 顰めらせられる), which the dictionary resolves to a different LLM entry
+    // id than the saved word. Try every saved form/head until one matches the
+    // exact saved id before giving up.
+    const candidates = [
+      ...new Set([
+        form,
+        ...(sw.forms ?? []),
+        sw.head,
+        sw.context?.form,
+        ...(sw.instances ?? []).map((i) => i.form),
+      ].filter((f): f is string => typeof f === 'string' && !!f && f !== '?')),
+    ];
+
     let cancelled = false;
-    lookupL1Text(form, l2Code, l1Lang.code)
-      .then((results) => {
+    (async () => {
+      for (const candidate of candidates) {
         if (cancelled) return;
+        const results = await lookupL1Text(candidate, l2Code, l1Lang.code).catch(() => []);
         // Only accept the exact saved entry — a text-lookup can return a
         // different entry (e.g. EDICT instead of the saved LLM entry) and
         // would make the bookmark read "not saved".
-        const match =
-          results.find((e) => isSameEntryId(card.word.id, e.id, l2BaseForL1)) ?? null;
+        const match = results.find((e) => isSameEntryId(sw.id, e.id, l2BaseForL1)) ?? null;
         if (match) {
-          const normalized = match.id === card.word.id ? match : { ...match, id: card.word.id };
+          const normalized = match.id === sw.id ? match : { ...match, id: sw.id };
           setL1CachedEntry(l2BaseForL1, l1Lang.code, normalized);
           setL1Entry(normalized);
-        } else {
-          setL1Entry(null);
+          return;
         }
-      })
-      .catch(() => {
-        // Silently fall back to the cached/offline entry.
-      });
+      }
+      if (!cancelled) setL1Entry(null);
+    })();
     return () => { cancelled = true; };
   }, [showTabs, currentIndex, cards, l1Lang.code, l2Code, l1Entry?.id]);
 
