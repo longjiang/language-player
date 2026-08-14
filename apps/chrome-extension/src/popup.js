@@ -405,6 +405,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  function isLocalhost(tabUrl) {
+    try {
+      const host = new URL(tabUrl).hostname.replace(/^\[|\]$/g, '').toLowerCase();
+      return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.localhost');
+    } catch {
+      return false;
+    }
+  }
+
   /** Strip BCP 47 subtags down to the primary language code ("zh-Hans" → "zh"). */
   function baseCode(code) {
     return (code || '').split('-')[0];
@@ -428,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
    *  - anything else → hidden (subtitle sites already have the in-page panel)
    *  Warns when the page's detected L2 differs from the user's saved L2. */
   function updateOpenInWebBtn(tabUrl, status) {
-    if (!tabUrl || !/^https?:/i.test(tabUrl) || isOwnDomain(tabUrl)) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl) || isOwnDomain(tabUrl) || isLocalhost(tabUrl)) {
       openInWebBtn.classList.add('hidden');
       openWebWarn.classList.add('hidden');
       return;
@@ -470,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /** Show/hide "Make Text on Page Interactive" — only on pages where the
    *  "Read in Language Player" reader button is visible (non-video domains). */
   function updateMakeTextInteractiveBtn(tabUrl) {
-    if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl) || isOwnDomain(tabUrl)) {
+    if (!tabUrl || !/^https?:/i.test(tabUrl) || isVideoDomain(tabUrl) || isOwnDomain(tabUrl) || isLocalhost(tabUrl)) {
       makeTextRow.classList.add('hidden');
       return;
     }
