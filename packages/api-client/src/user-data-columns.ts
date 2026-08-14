@@ -11,7 +11,6 @@ export interface ProgressResponse {
 }
 
 export interface SrsResponse {
-  settings: { dailyNewLimit: number };
   cards: Record<string, Record<string, SrsFields>>;
 }
 

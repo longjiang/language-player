@@ -264,10 +264,6 @@ export function migrateSrsStore(value: unknown): FsrsSrsStore {
     raw.cards && typeof raw.cards === 'object'
       ? (raw.cards as Record<string, Record<string, unknown>>)
       : {};
-  const rawSettings =
-    raw.settings && typeof raw.settings === 'object'
-      ? (raw.settings as { dailyNewLimit?: unknown })
-      : {};
 
   const cards: Record<string, Record<string, FsrsCard>> = {};
   for (const [l2, langCards] of Object.entries(rawCards)) {
@@ -278,14 +274,12 @@ export function migrateSrsStore(value: unknown): FsrsSrsStore {
     }
   }
 
-  const dailyNewLimit =
-    typeof rawSettings.dailyNewLimit === 'number' ? rawSettings.dailyNewLimit : 20;
-  return { v: 2, settings: { dailyNewLimit }, cards };
+  return { v: 2, cards };
 }
 
-/** Create a new, empty v2 SRS store with default settings. */
+/** Create a new, empty v2 SRS store. */
 export function createSrsStore(): SrsProgressStore {
-  return { v: 2, settings: { dailyNewLimit: 20 }, cards: {} };
+  return { v: 2, cards: {} };
 }
 
 /** Safely get the cards record for a given language code. */

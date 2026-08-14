@@ -165,8 +165,8 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
  * - localStorage first (offline-capable)
  * - Authenticated: hydrate from GET /srs (newer lastReview wins per card)
  * - updateCard → PUT /srs/cards; removeCard/pruneOrphans → DELETE /srs/cards;
- *   dailyNewLimit now lives in settings_v2 (SettingsContext); the legacy
- *   /srs/settings row is deprecated (SPEC-066 Phase 6).
+ *   dailyNewLimit lives in settings_v2 (SettingsContext); GET /srs returns
+ *   cards only.
  */
 export function useSrs() {
   const { data: session, status } = useSession();
@@ -208,10 +208,7 @@ export function useSrs() {
         await flushAllPendingSrsOps({ putSrsCard, deleteSrsCard });
         const res = await getSrs();
         if (cancelled) return;
-        const cloud = {
-          settings: res.settings ?? { dailyNewLimit: 20 },
-          cards: res.cards ?? {},
-        };
+        const cloud = { cards: res.cards ?? {} };
         const cloudDayStart = (() => {
           const d = new Date();
           return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
@@ -248,10 +245,7 @@ export function useSrs() {
           for (const [l2, cloudLangCards] of Object.entries(cloud.cards)) {
             mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
           }
-          return {
-            settings: { ...prev.settings, ...cloud.settings },
-            cards: mergedCards,
-          };
+          return { cards: mergedCards };
         });
         if (!cancelled) setCloudHydrated(true);
       } catch (err) {
@@ -296,7 +290,6 @@ export function useSrs() {
           l2Code, wordId);
       }
       return {
-        settings: { ...prev.settings },
         cards: {
           ...prev.cards,
           [l2Code]: { ...(prev.cards[l2Code] ?? {}), [wordId]: normalized },
@@ -324,7 +317,6 @@ export function useSrs() {
       const langCards = { ...(prev.cards[l2Code] ?? {}) };
       delete langCards[wordId];
       return {
-        settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: langCards },
       };
     });
@@ -349,7 +341,6 @@ export function useSrs() {
       }
       savePendingSrsOps(queue);
       return {
-        settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: prunedCards },
       };
     });

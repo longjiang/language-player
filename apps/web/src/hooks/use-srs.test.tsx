@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   deleteSrsCard: vi.fn(async () => ({ success: true })),
   putSrsCard: vi.fn(async () => ({ success: true })),
   useUserDataColumns: vi.fn(() => ({
-    getSrs: vi.fn(async () => ({ settings: { dailyNewLimit: 20 }, cards: {} })),
+    getSrs: vi.fn(async () => ({ cards: {} })),
     putSrsCard: vi.fn(async () => ({ success: true })),
   })),
 }));
@@ -34,7 +34,7 @@ describe('useSrs (SPEC-066)', () => {
     mocks.useSession.mockReturnValue({ data: null, status: 'unauthenticated' });
     mocks.putSrsCard.mockResolvedValue({ success: true });
     mocks.useUserDataColumns.mockReturnValue({
-      getSrs: vi.fn(async () => ({ settings: { dailyNewLimit: 20 }, cards: {} })),
+      getSrs: vi.fn(async () => ({ cards: {} })),
       putSrsCard: vi.fn(async () => ({ success: true })),
     });
   });
@@ -60,7 +60,6 @@ describe('useSrs (SPEC-066)', () => {
     await waitFor(() => expect(result.current.loaded).toBe(true));
 
     expect(result.current.store.v).toBe(2);
-    expect(result.current.store.settings.dailyNewLimit).toBe(7);
     const w1 = result.current.store.cards.ja!['w1']!;
     expect(w1.state).toBe(0); // new
     expect(w1.due).toBe(NOW);
@@ -77,7 +76,6 @@ describe('useSrs (SPEC-066)', () => {
     mocks.useSession.mockReturnValue({ data: { user: { id: 'u1' } }, status: 'authenticated' });
     mocks.useUserDataColumns.mockReturnValue({
       getSrs: vi.fn(async () => ({
-        settings: { dailyNewLimit: 20 },
         cards: {
           ja: {
             // Older legacy card for the same word — must NOT overwrite local.
@@ -120,7 +118,7 @@ describe('useSrs (SPEC-066)', () => {
   it('pushes a normalized FSRS card through putSrsCard', async () => {
     const putSrsCard = vi.fn(async () => ({ success: true }));
     mocks.useUserDataColumns.mockReturnValue({
-      getSrs: vi.fn(async () => ({ settings: { dailyNewLimit: 20 }, cards: {} })),
+      getSrs: vi.fn(async () => ({ cards: {} })),
       putSrsCard,
     });
 

@@ -184,7 +184,7 @@ describe('fsrs-scheduler: legacy migration', () => {
     expect(card.ease).toBe(2.7);
   });
 
-  it('migrates a full store and keeps the daily new limit', () => {
+  it('migrates a full legacy store and drops the legacy settings', () => {
     const store = {
       settings: { dailyNewLimit: 7 },
       cards: {
@@ -197,7 +197,7 @@ describe('fsrs-scheduler: legacy migration', () => {
     };
     const migrated = migrateSrsStore(store);
     expect(migrated.v).toBe(2);
-    expect(migrated.settings.dailyNewLimit).toBe(7);
+    expect(migrated).not.toHaveProperty('settings');
     const ja = migrated.cards.ja!;
     expect(ja['word-1']!.state).toBe(State.New);
     expect(ja['word-2']!.state).toBe(State.Review);
@@ -370,10 +370,10 @@ describe('fsrs-scheduler: rating metadata', () => {
 });
 
 describe('fsrs-scheduler: store & deck edge cases', () => {
-  it('defaults settings when migrating a store without them', () => {
+  it('migrates a store without legacy settings', () => {
     const migrated = migrateSrsStore({ cards: { ja: {} } });
     expect(migrated.v).toBe(2);
-    expect(migrated.settings.dailyNewLimit).toBe(20);
+    expect(migrated).not.toHaveProperty('settings');
   });
 
   it('handles zero and negative deck limits', () => {
