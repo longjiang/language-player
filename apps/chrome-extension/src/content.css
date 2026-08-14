@@ -274,6 +274,7 @@ body.lpv-panel-open disney-web-player-ui {
   font-size: calc(14px * var(--lpv-font-scale, 1));
   color: #bbb;
   flex: 1;
+  white-space: pre-line;
 }
 
 /* ── Empty state ───────────────────────────────────────────────────────── */
@@ -336,6 +337,7 @@ body.lpv-panel-open disney-web-player-ui {
   font-size: calc(14px * var(--lpv-font-scale, 1));
   color: #bbb;
   line-height: 1.8; /* extra space for ruby text */
+  white-space: pre-line;
 }
 
 .lpv-cue-loading {
