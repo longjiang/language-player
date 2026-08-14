@@ -3,69 +3,91 @@
 ## Metadata
 
 - **Spec ID**: SPEC-051
-- **Feature**: Bring `apps/mobile` tokenized-text scaling in line with `apps/web`
-- **Status**: complete
+- **Feature**: One text-scale rule shared by `apps/mobile` and `apps/web`
+- **Status**: in progress
 - **Created**: 2026-08-07
+- **Updated**: 2026-08-13
 - **ROADMAP Phase**: Phase 6 (Interaction Primitives) / Phase 8 (iPad & Responsive Layout)
-- **Scope**: `apps/mobile` only
+- **Scope**: `apps/mobile` + `apps/web`
 - **Related specs**: [SPEC-050 — Mobile Sidebar & Video Layout Parity](050-mobile-sidebar-video-parity.md)
 
 ---
 
 ## Overview
 
-Apps/web resolves the user's text-size setting (zoom index 0–7) through a
-`textScale` prop on `TokenizedText`:
+Both apps share one text-scale rule. There is no per-surface table of
+multipliers anymore; the only special case is single-line subtitles.
 
-- `textScale` omitted → user zoom alone
-- `textScale` provided → `textScale × user zoom`
-- `textScale={0}` → inherit; no inline font size (parent controls size)
-
-The zoom indexes map to `[1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25]`.
-
-Apps/mobile currently applies one hardcoded formula (`16 + zoom * 2`) to every
-`TokenizedText` instance, with no per-surface override and a different size
-curve. This spec brings mobile in line with web.
+The user's text-size setting is a zoom index 0–7 mapping to
+`[1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25]` (rem multipliers).
+`ZOOM_TO_REM[index] × 16` gives the px size: 16px at zoom 0 up to 36px at
+zoom 7.
 
 ---
 
-## Target behavior
+## Target behavior — one rule
 
-| Surface | Web `textScale` | Mobile after |
-|---|---|---|
-| Settings preview | omitted (zoom) | omitted (zoom) |
-| Tokenizer debug | `1` | `1` |
-| Corpus examples / collocations / mistakes | `1` | `1` |
-| Subtitle transcript rows | `1` | `1` |
-| Single-line subtitles | `1.5` | `1.5` |
-| Notes / web reader blocks | `0` (inherit) | `0` (fixed 16px) |
-| EPUB reader blocks | `0` + container zoom | `1` (equivalent to container zoom) |
-| AI explanation | `0` | `0` |
-| Text-action menu preview | `0` | `0` |
-| Review | omitted (zoom) | omitted (zoom) |
+1. **Block-level `TokenizedText` always renders at the user's zoom.** Default
+   multiplier is `1` (× user zoom). Single-line subtitles are the only
+   exception at `1.5` (× user zoom). No other surface gets a different
+   multiplier.
+2. **Scaling and leading apply only to block-level tokenized text.** Inline
+   tokenized text (e.g. AI explanation code spans embedded in a markdown
+   paragraph) inherits the surrounding font size and line height; zoom and
+   leading do not apply.
+3. **Reader headings scale by multiplying their natural size by the zoom
+   factor**, preserving the hierarchy (h1 24px, h2 20px, h3 18px, h4+ 16px at
+   zoom 0). They are not forced down to the 16px body size.
+4. **Translations use the same multiplier as the adjacent tokenized text**
+   (1.5 for single-line subtitle translations, 1 everywhere else), applied to
+   the translation's own base font size. Web's current behavior is the
+   reference.
+5. **Default line height for block-level `TokenizedText` is 2×** (loose).
+   Inline tokenized text inherits the parent's line height.
+6. **Mobile keeps OS font scaling (dynamic type) enabled.** It is additive on
+   top of the in-app zoom; web has no OS equivalent.
 
-The mobile zoom→px mapping must match web: `ZOOM_TO_REM[index] × 16`.
+Block-level surfaces include: settings preview, tokenizer debug, corpus
+examples / collocations / mistakes, subtitle transcript rows, single-line
+subtitles, notes / web / EPUB reader blocks, text-action menu previews, and
+review.
+
+Inline surfaces include: AI explanation code spans inside markdown.
+
+The `textScale={0}` / inherit mode is removed. A `textScale` multiplier (or
+equivalent) remains only for the single-line subtitle case.
 
 ---
 
 ## Implementation plan
 
-1. Add `apps/mobile/lib/text-scale.ts` with the shared `ZOOM_TO_REM` array.
-2. Add a `textScale?: number` prop to mobile `TokenizedText` and resolve the
-   effective font size using the same rules as web.
-3. Apply per-surface `textScale` values at every `TokenizedText` call site.
-4. Add a `textScale` prop to `PaginatedReader` and pass it through to table
-   cells, body blocks, and measuring blocks.
-5. Pass `textScale={1}` from the EPUB screen; notes/web readers default to `0`.
-6. Typecheck and verify the settings preview still updates the rendered size.
+1. Keep the shared `ZOOM_TO_REM` arrays and `useTextScale()` in both apps.
+2. Block-level `TokenizedText` always applies the user zoom; single-line
+   subtitles pass `1.5`. Inline tokenized text (AI explanation) renders without
+   zoom or leading.
+3. Readers: multiply heading natural sizes by zoom on both web and mobile.
+   Translations scale with the same multiplier as adjacent tokenized text on
+   mobile (web already does).
+4. Corpus mistakes: mobile renders with `TokenizedText` at `1`× zoom, matching
+   web.
+5. Change web `TokenizedText`'s default leading from `relaxed` (1.625×) to
+   `loose` (2×); mobile already defaults to `loose`.
+6. Typecheck and verify: settings preview, single-line subtitles, transcript
+   rows, readers (headings + translations), corpus, AI explanation, and review.
 
 ---
 
 ## Acceptance criteria
 
-- `TokenizedText` supports `textScale` with web-compatible semantics.
-- Zoom index 0–7 renders the same sizes as web (`16px`–`36px`).
-- AI explanation and action-menu previews do not scale with the user zoom.
-- Corpus and tokenizer text scale with the user zoom.
-- Single-line subtitles render at 1.5× the user zoom.
-- Readers match web: notes/web reader blocks are fixed-size; EPUB blocks scale.
+- Only two multipliers exist: `1` (default) and `1.5` (single-line subtitles).
+- Block-level `TokenizedText` renders 16px–36px following
+  `ZOOM_TO_REM[index] × 16`.
+- Inline tokenized text (AI explanation) does not scale with zoom and does not
+  apply leading.
+- Single-line subtitles render at 1.5× the user zoom; transcript rows at 1×.
+- Reader headings keep their natural hierarchy and scale with zoom.
+- Translations scale by the same multiplier as their adjacent tokenized text.
+- Mobile corpus mistakes render through `TokenizedText` at 1× zoom, matching
+  web.
+- Block-level default line height is 2×; inline text inherits the parent's.
+- Mobile OS font scaling remains enabled.
