@@ -259,6 +259,9 @@ node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
 
 Credentials may also be kept in the gitignored `scripts/.env.upload` (copy
 `scripts/.env.upload.example`) — the script loads it automatically.
+If the Apple ID belongs to multiple App Store Connect teams, set
+`LP_APPLE_ITC_PROVIDER` (Language Player 3 uses `9CS9PCBX32`); without it
+Transporter fails with "Client configuration failed".
 
 The script wraps `xcrun iTMSTransporter -assetFile` (ships with Xcode) and
 aborts on version/build mismatch. Manual alternative: Xcode Organizer →

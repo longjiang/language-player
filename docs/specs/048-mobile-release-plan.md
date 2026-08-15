@@ -611,7 +611,9 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
   > with OSStatus error `-10661`, install the free **Transporter** app from
   > the Mac App Store; the script prefers
   > `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter`
-  > automatically.
+  > automatically. If the Apple ID belongs to multiple App Store Connect
+  > teams, set `LP_APPLE_ITC_PROVIDER=9CS9PCBX32` (the app's team short
+  > name) — otherwise upload fails with "Client configuration failed".
 
 - **Manual alternative:** `open -a Xcode` → **Window → Organizer** → select the
   `LanguagePlayer` archive → **Distribute App** → **App Store Connect**

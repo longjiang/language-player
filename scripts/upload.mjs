@@ -3,12 +3,14 @@
  * Browserless store uploads without EAS (SPEC-076).
  *
  * iOS:
- *   node scripts/upload.mjs ios <path-to.ipa> [--dry-run]
+ *   node scripts/upload.mjs ios <path-to.ipa> [--dry-run] [--verbose]
  *   Uses Apple's official Transporter CLI (xcrun iTMSTransporter) with the
  *   2026+ -assetFile flag. Requires:
  *     LP_APPLE_ID                  Apple ID email
  *     LP_APPLE_APP_SPECIFIC_PASS   app-specific password (not the account
  *                                  password; generate at appleid.apple.com)
+ *   Optional: LP_APPLE_ITC_PROVIDER (or --itc-provider <short>) when the
+ *   Apple ID belongs to more than one App Store Connect provider.
  *
  * Android:
  *   node scripts/upload.mjs android <path-to.aab>
@@ -239,18 +241,31 @@ function uploadIos(ipaPath) {
     fail('Set LP_APPLE_ID and LP_APPLE_APP_SPECIFIC_PASS (app-specific password) before uploading.');
   }
   console.log('[upload] Uploading to App Store Connect via Transporter…');
-  const args = [
+  const transporterArgs = [
     '-m', 'upload',
     '-assetFile', ipaPath,
     '-u', appleId,
     '-p', password,
   ];
+  const itcProvider = flagValue('--itc-provider') ?? process.env.LP_APPLE_ITC_PROVIDER;
+  if (itcProvider) {
+    transporterArgs.push('-itc_provider', itcProvider);
+  }
+  if (args.includes('--verbose')) {
+    transporterArgs.push('-v', 'eXtreme');
+  }
   // Xcode 26 only ships a shim; prefer the full Transporter app when installed.
   const appBin = '/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter';
-  if (existsSync(appBin)) {
-    execFileSync(appBin, args, { stdio: 'inherit' });
-  } else {
-    execFileSync('xcrun', ['iTMSTransporter', ...args], { stdio: 'inherit' });
+  try {
+    if (existsSync(appBin)) {
+      execFileSync(appBin, transporterArgs, { stdio: 'inherit' });
+    } else {
+      execFileSync('xcrun', ['iTMSTransporter', ...transporterArgs], { stdio: 'inherit' });
+    }
+  } catch (error) {
+    // Never surface the app-specific password in error output.
+    const message = String(error?.message ?? error).replace(password, '********');
+    fail(`Transporter upload failed: ${message}`);
   }
   console.log('[upload] Upload complete. Check App Store Connect/TestFlight for processing.');
 }
