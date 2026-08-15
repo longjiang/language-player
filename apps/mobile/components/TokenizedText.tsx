@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
+import { useColorScheme } from 'nativewind';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import {
@@ -51,15 +52,25 @@ import type { EpubFormatRange } from '@/lib/epub-parser';
 
 const { log, logwarn } = tokenizedTextLogger;
 
-// Resolved dark-theme token colors for the native ruby renderer. These mirror
-// the hardcoded NativeWind classes used by the View fallback (text-foreground,
-// text-primary, text-muted-foreground) so both paths stay visually in sync.
-const MOBILE_RUBY_COLORS = semanticColorsForMobile('dark');
 // `bg-yellow-200/20` from the View fallback (saved-word highlight), resolved
 // to a hex base color; the native paragraph applies /20 alpha itself.
 const MOBILE_RUBY_SAVED_BG = hslToHex(colors.yellow[200]);
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
 const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
+
+/**
+ * Resolved theme colors for the native ruby renderer. These mirror the
+ * NativeWind classes used by the View fallback (text-foreground,
+ * text-primary, text-muted-foreground) so both paths stay in sync — and they
+ * follow the app's live light/dark/system theme instead of a fixed palette.
+ */
+function useMobileRubyColors() {
+  const { colorScheme } = useColorScheme();
+  return useMemo(
+    () => semanticColorsForMobile(colorScheme === 'dark' ? 'dark' : 'light'),
+    [colorScheme],
+  );
+}
 
 // Dev-only: one-time per-text component-tree sketch of the ruby/definition
 // path, so the tokenized output structure can be inspected in the Metro log
@@ -159,6 +170,7 @@ interface RubyTokenSpanProps {
 }
 
 const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
+  const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
     isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
@@ -222,8 +234,8 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
               rubyPull={rubyPull}
               baseLeading={baseLeading}
               textStyle={textStyle}
-              colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
-              readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
+              colorHex={isTokenSelected || isHighlighted ? rubyColors.primary : rubyColors.foreground}
+              readingColorHex={isTokenSelected ? rubyColors.primary : rubyColors.mutedForeground}
               bold={!isBlanked && (isHighlighted || isBoldFormat)}
               underline={!isBlanked && isLink}
               italic={!isBlanked && isItalicFormat}
@@ -282,6 +294,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
  * are off (definition slots need a token column to sit under the word).
  */
 const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
+  const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
     isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
@@ -319,8 +332,8 @@ const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
           rubyPull={rubyPull}
           baseLeading={baseLeading}
           textStyle={textStyle}
-          colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
-          readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
+          colorHex={isTokenSelected || isHighlighted ? rubyColors.primary : rubyColors.foreground}
+          readingColorHex={isTokenSelected ? rubyColors.primary : rubyColors.mutedForeground}
           bold={!isBlanked && (isHighlighted || isBoldFormat)}
           underline={!isBlanked && isLink}
           italic={!isBlanked && isItalicFormat}
@@ -798,6 +811,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
   // ── Settings (matches Next.js) ──
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
+  const rubyColors = useMobileRubyColors();
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showPhonetics = phoneticsOverride === false ? false : phonetics.show !== false;
@@ -1431,8 +1445,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     tokenId: i,
                     text: isTab ? '  ' : token.text,
                     tappable: false,
-                    color: MOBILE_RUBY_COLORS.foreground,
-                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    color: rubyColors.foreground,
+                    readingColor: rubyColors.mutedForeground,
                     bold: false,
                     underline: false,
                     opacity: 1,
@@ -1572,16 +1586,16 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     ...(seg.reading ? { reading: seg.reading } : {}),
                     tappable: true,
                     color: isTokenSelected || isHighlighted
-                      ? MOBILE_RUBY_COLORS.primary
-                      : MOBILE_RUBY_COLORS.foreground,
+                      ? rubyColors.primary
+                      : rubyColors.foreground,
                     readingColor: isTokenSelected
-                      ? MOBILE_RUBY_COLORS.primary
-                      : MOBILE_RUBY_COLORS.mutedForeground,
+                      ? rubyColors.primary
+                      : rubyColors.mutedForeground,
                     bold: (!isBlanked && (isHighlighted || isBoldFormat)) || textStyle.fontWeight === 'bold',
                     underline: !isBlanked && isLink,
                     italic: !isBlanked && isItalicFormat,
                     ...(isSearchHighlight
-                      ? { background: MOBILE_RUBY_COLORS.primary, backgroundAlpha: 0.2 }
+                      ? { background: rubyColors.primary, backgroundAlpha: 0.2 }
                       : isSavedWord
                         ? { background: MOBILE_RUBY_SAVED_BG, backgroundAlpha: 0.2 }
                         : {}),
@@ -1594,8 +1608,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     text: ` ${byeonggiText}`,
                     fontSize: readingSize,
                     tappable: false,
-                    color: MOBILE_RUBY_COLORS.mutedForeground,
-                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    color: rubyColors.mutedForeground,
+                    readingColor: rubyColors.mutedForeground,
                     bold: false,
                     underline: false,
                     opacity: (isKaraokeDimmed ? 0.4 : 1) * 0.7,
@@ -1607,8 +1621,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     tokenId: i,
                     text: ` (‘${quickGlossDef}’) `,
                     tappable: false,
-                    color: MOBILE_RUBY_COLORS.mutedForeground,
-                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    color: rubyColors.mutedForeground,
+                    readingColor: rubyColors.mutedForeground,
                     bold: false,
                     underline: false,
                     opacity: isKaraokeDimmed ? 0.4 : 1,
