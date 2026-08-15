@@ -69,9 +69,12 @@ function base64Url(input) {
   return Buffer.from(input).toString('base64url');
 }
 
-async function playApi(pathname, token, options = {}, body = null) {
+async function playApi(pathname, token, options = {}, body = null, upload = false) {
+  const base = upload
+    ? 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/'
+    : 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications/';
   const response = await fetch(
-    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pathname}`,
+    `${base}${pathname}`,
     {
       method: options.method ?? 'GET',
       headers: {
@@ -166,6 +169,7 @@ async function uploadAndroid(aabPath) {
     token,
     { method: 'POST', contentType: 'application/octet-stream' },
     bundle,
+    true,
   );
   console.log(`[upload] Uploaded bundle versionCode ${uploaded.versionCode}.`);
 
@@ -235,13 +239,19 @@ function uploadIos(ipaPath) {
     fail('Set LP_APPLE_ID and LP_APPLE_APP_SPECIFIC_PASS (app-specific password) before uploading.');
   }
   console.log('[upload] Uploading to App Store Connect via Transporter…');
-  execFileSync('xcrun', [
-    'iTMSTransporter',
+  const args = [
     '-m', 'upload',
     '-assetFile', ipaPath,
     '-u', appleId,
     '-p', password,
-  ], { stdio: 'inherit' });
+  ];
+  // Xcode 26 only ships a shim; prefer the full Transporter app when installed.
+  const appBin = '/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter';
+  if (existsSync(appBin)) {
+    execFileSync(appBin, args, { stdio: 'inherit' });
+  } else {
+    execFileSync('xcrun', ['iTMSTransporter', ...args], { stdio: 'inherit' });
+  }
   console.log('[upload] Upload complete. Check App Store Connect/TestFlight for processing.');
 }
 

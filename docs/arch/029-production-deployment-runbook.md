@@ -264,6 +264,12 @@ The script wraps `xcrun iTMSTransporter -assetFile` (ships with Xcode) and
 aborts on version/build mismatch. Manual alternative: Xcode Organizer →
 Distribute App → App Store Connect, or drag the IPA into the Transporter app.
 
+> **Xcode 26 note:** Xcode no longer bundles the full Transporter CLI — only a
+> shim. If upload fails with OSStatus error `-10661`, install the free
+> **Transporter** app from the Mac App Store; the script then uses
+> `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter`
+> automatically.
+
 ### 4.4 After upload
 
 1. App Store Connect → TestFlight: confirm the build appears and finishes
