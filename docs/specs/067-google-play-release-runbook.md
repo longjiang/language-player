@@ -400,6 +400,11 @@ node scripts/upload.mjs android \
 - `--dry-run` validates flags/version without calling the API.
 - After a real upload, record the consumed build number in the ledger:
   `node scripts/record-build.mjs <N> android "<track>" <version> --tag v<version>-b<N>`.
+- **Gotcha:** bundle uploads use the media-upload URI
+  (`/upload/androidpublisher/...`); the script handles it — a plain API URL
+  returns `400 Invalid JSON payload received. Unexpected token. PK…`.
+- **Verified 2026-08-14:** 3.1.0 (versionCode 3) uploaded to the Internal
+  testing track via this script.
 
 ### 6.2 Track progression
 

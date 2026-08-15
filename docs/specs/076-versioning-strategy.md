@@ -447,6 +447,11 @@ draft you finish in the console, and `--no-commit` to leave the edit open.
 Record the consumed build number in the ledger immediately after every real
 upload, even if the build is later rejected or rolled back (§ 5.3).
 
+iOS gotchas from the first scripted upload (2026-08-14): Xcode 26 requires
+the Transporter app (`-10661` otherwise), and multi-provider Apple IDs need
+`LP_APPLE_ITC_PROVIDER=9CS9PCBX32` ("Client configuration failed" otherwise).
+Full list in [ARCH-029 § 10](../arch/029-production-deployment-runbook.md).
+
 ### 5.4 Files to change on adoption
 
 - Add `packages/shared/src/version.json` + `version.ts` (source of truth for
