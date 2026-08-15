@@ -245,29 +245,31 @@ export default function ReaderScreen() {
 
           {/* Read tab: paginated reader */}
           {activeTab === 'read' && text.trim() && (
-            <PaginatedReader
-              blocks={pagination.blocks}
-              visibleBlocks={pagination.visibleBlocks}
-              page={pagination.page}
-              totalPages={pagination.totalPages}
-              hasMeasured={pagination.hasMeasured}
-              loadingTokens={pagination.loadingTokens}
-              tokenCache={pagination.tokenCache}
-              blockTranslations={pagination.blockTranslations}
-              prevPage={pagination.prevPage}
-              nextPage={pagination.nextPage}
-              goToPage={pagination.goToPage}
-              handleMeasureBlock={pagination.handleMeasureBlock}
-              onVisibleBlocksChange={pagination.onVisibleBlocksChange}
-              contentWidth={pagination.contentWidth}
-              l2Code={l2Lang.code}
-              l1Code={l1Lang.code}
-              showTranslation={display.translation}
-              onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
-              showTextActions
-              translationSideBySide={isWide}
-              t={t}
-            />
+            <View className="flex-1 pt-4">
+              <PaginatedReader
+                blocks={pagination.blocks}
+                visibleBlocks={pagination.visibleBlocks}
+                page={pagination.page}
+                totalPages={pagination.totalPages}
+                hasMeasured={pagination.hasMeasured}
+                loadingTokens={pagination.loadingTokens}
+                tokenCache={pagination.tokenCache}
+                blockTranslations={pagination.blockTranslations}
+                prevPage={pagination.prevPage}
+                nextPage={pagination.nextPage}
+                goToPage={pagination.goToPage}
+                handleMeasureBlock={pagination.handleMeasureBlock}
+                onVisibleBlocksChange={pagination.onVisibleBlocksChange}
+                contentWidth={pagination.contentWidth}
+                l2Code={l2Lang.code}
+                l1Code={l1Lang.code}
+                showTranslation={display.translation}
+                onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+                showTextActions
+                translationSideBySide={isWide}
+                t={t}
+              />
+            </View>
           )}
 
           {/* Read tab: empty state */}
