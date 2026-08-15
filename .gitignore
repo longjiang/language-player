@@ -51,6 +51,7 @@ Thumbs.db
 .env.local
 .env.e2e
 .env.*.local
+scripts/.env.upload
 
 # Build
 dist/
