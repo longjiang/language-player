@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Platform, Text, View, type LayoutChangeEvent } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, Text, View, findNodeHandle, type LayoutChangeEvent } from 'react-native';
 import type { RubySegment } from '@langplayer/utils';
 import { requireNativeViewManager, requireOptionalNativeModule } from 'expo-modules-core';
 import type {
@@ -17,7 +17,10 @@ import { log, logwarn } from '@/lib/logger';
 const NATIVE_RUBY_ENABLED = true;
 
 let NativeRubyTextView: React.ComponentType<NativeRubyTextProps> | null = null;
-let NativeRubyTextParagraphView: React.ComponentType<NativeRubyTextParagraphProps> | null = null;
+type NativeParagraphComponent = React.ComponentType<
+  NativeRubyTextParagraphProps & { ref?: React.Ref<unknown> }
+>;
+let NativeRubyTextParagraphView: NativeParagraphComponent | null = null;
 if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android')) {
   try {
     // The module only exists in development/release builds compiled from this
@@ -257,6 +260,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   } = props;
 
   const [measured, setMeasured] = useState<{ width: number; height: number } | null>(null);
+  const nativeRef = useRef<unknown>(null);
 
   // Only the glyph metrics matter for the box: text content, font, sizes.
   // Style-only changes (colors, bold, opacity) keep the same measured box.
@@ -285,10 +289,17 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   const probeDiagnostics = useCallback((tag: string) => {
     try {
       const module = requireOptionalNativeModule('RubyText') as
-        | { getParagraphDiagnostics?: () => unknown }
+        | { getParagraphDiagnosticsForTag?: (viewTag: number) => unknown }
         | null;
-      const diagnostics = module?.getParagraphDiagnostics?.();
-      log(`[LP Mobile] [RubyText] paragraph native diagnostics [${tag}]`, JSON.stringify(diagnostics ?? null));
+      const viewTag = findNodeHandle(nativeRef.current as never);
+      const diagnostics =
+        typeof viewTag === 'number'
+          ? module?.getParagraphDiagnosticsForTag?.(viewTag)
+          : { noTag: true };
+      log(
+        `[LP Mobile] [RubyText] paragraph native diagnostics [${tag}] tag=${viewTag}`,
+        JSON.stringify(diagnostics ?? null),
+      );
     } catch (err) {
       logwarn('[LP Mobile] [RubyText] paragraph diagnostics failed', err);
     }
@@ -345,6 +356,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           log(`[LP Mobile] [RubyText] paragraph mounting native view runs=${runs.length} box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`);
           return (
             <NativeRubyTextParagraphView
+              ref={nativeRef}
               runs={runs}
               fontSize={fontSize}
               lineHeight={lineHeight}
