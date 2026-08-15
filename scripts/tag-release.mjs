@@ -4,9 +4,13 @@
  *
  * Usage:
  *   node scripts/tag-release.mjs [--dry-run] [--release] [--extension]
+ *     [--milestone <N>]
  *
  * Default (every store upload — create BEFORE uploading):
  *   v<PRODUCT_VERSION>-b<PRODUCT_BUILD_NUMBER>   e.g. v3.0.0-b3
+ *
+ * --milestone <N> creates the next milestone marker at HEAD:
+ *   v<PRODUCT_VERSION>-m<N>                       e.g. v3.1.0-m12
  *
  * --release additionally creates the clean product tag:
  *   v<PRODUCT_VERSION>                            e.g. v3.1.0
@@ -29,6 +33,9 @@ import {
 const dryRun = isDryRun(process.argv);
 const includeRelease = process.argv.includes('--release');
 const includeExtension = process.argv.includes('--extension');
+const milestoneIndex = process.argv.indexOf('--milestone');
+const milestoneN =
+  milestoneIndex >= 0 ? process.argv[milestoneIndex + 1] : null;
 
 const version = readSharedVersion();
 const build = readSharedBuildNumber();
@@ -42,7 +49,7 @@ const manifest = JSON.parse(
 );
 const extensionTag = `ext-v${manifest.version}`;
 
-const PRODUCT_TAG_RE = /^v\d+\.\d+\.\d+(-b\d+)?$/;
+const PRODUCT_TAG_RE = /^v\d+\.\d+\.\d+(-(b|m)\d+)?$/;
 const EXTENSION_TAG_RE = /^ext-v\d+(\.\d+){1,3}$/;
 
 function git(args) {
@@ -72,6 +79,12 @@ if (dirty) {
 }
 
 createTag(buildTag, 'build tag');
+if (milestoneN != null) {
+  if (!/^\d+$/.test(milestoneN) || Number(milestoneN) <= 0) {
+    throw new Error(`--milestone must be a positive integer, got: ${milestoneN}`);
+  }
+  createTag(`v${version}-m${milestoneN}`, 'milestone tag');
+}
 if (includeRelease) createTag(releaseTag, 'release tag');
 if (includeExtension) createTag(extensionTag, 'extension tag');
 
