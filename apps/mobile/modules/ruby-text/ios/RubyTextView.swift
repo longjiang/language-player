@@ -136,7 +136,7 @@ internal final class RubyTextView: ExpoView {
     // CreateWithAttributes (rather than the legacy Create) is required for
     // UILabel/TextKit to draw ruby on modern iOS, and lets the reading carry
     // its own font size and muted color.
-    let readingFont = UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
+    let readingFont = makeReadingFont()
     let attributes: [String: Any] = [
       kCTFontAttributeName as String: readingFont,
       kCTForegroundColorAttributeName as String: readingColor,
@@ -150,5 +150,16 @@ internal final class RubyTextView: ExpoView {
       reading as CFString,
       attributes as CFDictionary
     )
+  }
+
+  /** Readings follow the base font family (serif/sans-serif setting), falling
+   *  back to the system font when no family is set. Missing glyphs (e.g. kana
+   *  in Georgia) cascade through Core Text's font fallback, matching the base
+   *  text behavior. */
+  private func makeReadingFont() -> UIFont {
+    if let family = fontFamily, !family.isEmpty, let font = UIFont(name: family, size: CGFloat(readingSize)) {
+      return font
+    }
+    return UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
   }
 }

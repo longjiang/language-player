@@ -153,7 +153,7 @@ internal final class RubyTextParagraphView: ExpoView {
       result.append(NSAttributedString(string: run.text, attributes: attributes))
 
       if let reading = run.reading, !reading.isEmpty {
-        let readingFont = UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
+        let readingFont = makeReadingFont()
         let readingAttributes: [String: Any] = [
           kCTFontAttributeName as String: readingFont,
           kCTForegroundColorAttributeName as String: run.readingColor.withAlphaComponent(CGFloat(run.opacity)),
@@ -185,5 +185,15 @@ internal final class RubyTextParagraphView: ExpoView {
       }
     }
     return UIFont.systemFont(ofSize: size, weight: weight)
+  }
+
+  /** Readings follow the base font family (serif/sans-serif setting), falling
+   *  back to the system font when no family is set. Missing glyphs (e.g. kana
+   *  in Georgia) cascade through Core Text's font fallback. */
+  private func makeReadingFont() -> UIFont {
+    if let family = fontFamily, !family.isEmpty, let font = UIFont(name: family, size: CGFloat(readingSize)) {
+      return font
+    }
+    return UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
   }
 }
