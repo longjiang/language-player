@@ -136,7 +136,7 @@ internal final class RubyTextParagraphView: ExpoView {
         attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
       }
       if run.italic {
-        attributes[NSAttributedString.Key(kCTObliquenessAttributeName as String)] = 0.25
+        attributes[.obliqueness] = 0.25
       }
       if let background = run.background {
         attributes[.backgroundColor] = background.withAlphaComponent(CGFloat(run.backgroundAlpha))
