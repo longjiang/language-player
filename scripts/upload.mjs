@@ -25,6 +25,8 @@
  *   node scripts/upload.mjs appstore status
  *   node scripts/upload.mjs appstore prepare <version> [--whats-new <text>]
  *   node scripts/upload.mjs appstore submit <version> [--whats-new <text>]
+ *   node scripts/upload.mjs appstore metadata <version>
+ *     [--description <text>] [--promo-text <text>] [--keywords <text>] [--whats-new <text>]
  *   Requires (scripts/.env.upload, gitignored):
  *     LP_ASC_KEY_PATH  .p8 private key  LP_ASC_KEY_ID  LP_ASC_ISSUER_ID
  *     Optional: LP_ASC_APP_ID (default 6520385296), LP_ASC_DEMO_EMAIL/PASS,
@@ -193,6 +195,36 @@ async function ascBuildVersion(token, buildId) {
   return pre?.attributes?.version;
 }
 
+async function updateLocalization(token, versionId, attributes) {
+  const localizations = await ascApi(
+    token,
+    'GET',
+    `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations?fields[appStoreVersionLocalizations]=locale,description,keywords,promotionalText,whatsNew`,
+  );
+  if (localizations?.length) {
+    const locale = localizations[0].attributes.locale;
+    console.log(`[appstore] Updating ${locale} localization…`);
+    await ascApi(token, 'PATCH', `/v1/appStoreVersionLocalizations/${localizations[0].id}`, {
+      data: {
+        type: 'appStoreVersionLocalizations',
+        id: localizations[0].id,
+        attributes,
+      },
+    });
+  } else {
+    console.log("[appstore] Creating en-CA localization…");
+    await ascApi(token, 'POST', '/v1/appStoreVersionLocalizations', {
+      data: {
+        type: 'appStoreVersionLocalizations',
+        attributes: { locale: 'en-CA', ...attributes },
+        relationships: {
+          appStoreVersion: { data: { type: 'appStoreVersions', id: versionId } },
+        },
+      },
+    });
+  }
+}
+
 async function appstore() {
   const [subcommand, versionArg] = positionals().slice(1);
   const appId = process.env.LP_ASC_APP_ID ?? '6520385296';
@@ -222,8 +254,36 @@ async function appstore() {
     return;
   }
 
-  if (!['prepare', 'submit'].includes(subcommand) || !versionArg) {
-    fail('Usage: node scripts/upload.mjs appstore <status|prepare|submit> [version]');
+  if (!['prepare', 'submit', 'metadata'].includes(subcommand) || !versionArg) {
+    fail('Usage: node scripts/upload.mjs appstore <status|prepare|submit|metadata> [version]');
+  }
+
+  if (subcommand === 'metadata') {
+    const version = await ascApi(
+      token,
+      'GET',
+      `/v1/apps/${appId}/appStoreVersions?filter[platform]=IOS&filter[versionString]=${versionArg}&fields[appStoreVersions]=versionString`,
+    );
+    const versionId = version[0]?.id;
+    if (!versionId) {
+      fail(`No App Store version ${versionArg} found.`);
+    }
+    const attributes = {};
+    for (const [flag, key] of [
+      ['--description', 'description'],
+      ['--promo-text', 'promotionalText'],
+      ['--keywords', 'keywords'],
+      ['--whats-new', 'whatsNew'],
+    ]) {
+      const value = flagValue(flag);
+      if (value) attributes[key] = value;
+    }
+    if (!Object.keys(attributes).length) {
+      fail('Provide at least one of --description, --promo-text, --keywords, --whats-new.');
+    }
+    await updateLocalization(token, versionId, attributes);
+    console.log('[appstore] Metadata updated.');
+    return;
   }
 
   // 1. Ensure the appStoreVersion exists.
@@ -326,32 +386,7 @@ async function appstore() {
     flagValue('--whats-new') ??
     'Subtitle search improvements with match-line preview, smarter dictionary navigation, ' +
       'more reliable video embeds, and performance fixes.';
-  const localizations = await ascApi(
-    token,
-    'GET',
-    `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations?fields[appStoreVersionLocalizations]=locale,whatsNew`,
-  );
-  if (localizations?.length) {
-    console.log(`[appstore] Updating What's New for ${localizations[0].attributes.locale}…`);
-    await ascApi(token, 'PATCH', `/v1/appStoreVersionLocalizations/${localizations[0].id}`, {
-      data: {
-        type: 'appStoreVersionLocalizations',
-        id: localizations[0].id,
-        attributes: { whatsNew },
-      },
-    });
-  } else {
-    console.log("[appstore] Creating en-CA localization with What's New…");
-    await ascApi(token, 'POST', '/v1/appStoreVersionLocalizations', {
-      data: {
-        type: 'appStoreVersionLocalizations',
-        attributes: { locale: 'en-CA', whatsNew },
-        relationships: {
-          appStoreVersion: { data: { type: 'appStoreVersions', id: versionId } },
-        },
-      },
-    });
-  }
+  await updateLocalization(token, versionId, { whatsNew });
 
   if (subcommand === 'submit') {
     console.log('[appstore] Creating review submission…');
