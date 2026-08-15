@@ -284,11 +284,41 @@ is found:
   `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app`
   — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was
   found there after the repo/Desktop check came back empty.
-- Before treating a cached build as usable, verify its embedded provisioning
-  profile includes the target device's UDID and that it does not predate
-  native config changes.
-- Install an existing build without rebuilding:
-  `xcrun devicectl device install app --device <udid> /path/to/App.app`
+
+**Sideload a cached build (step by step, verified 2026-08-14):**
+
+1. List connected devices — `devicectl` talks to CoreDeviceService, so run
+   these outside a restricted sandbox:
+   `xcrun devicectl list devices`
+2. Get each device's **hardware UDID**: the `Identifier` printed by
+   `devicectl` is a CoreDevice UUID (e.g. `2DFF9AA2-…`), which is **not** the
+   UDID stored in provisioning profiles. Use:
+   `xcrun devicectl list devices --json-output /tmp/devices.json`
+   and read `hardwareProperties.udid` (e.g. `00008132-000261A41EFA401C`).
+3. Find cached builds:
+   `find ~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id> -name '*.app' -type d`
+4. Check the build's version/date (`Info.plist`) and its provisioning
+   profile:
+   `security cms -D -i App.app/embedded.mobileprovision > /tmp/profile.plist`
+   then inspect `ProvisionedDevices` (hardware UDIDs) and `ExpirationDate`.
+   `security` also fails inside a restricted sandbox.
+5. Install **only if the target device's hardware UDID is in the profile**:
+   `xcrun devicectl device install app --device <devicectl-identifier> /path/to/App.app`
+
+**Worked example (2026-08-14):** the cached 3.0.0 build was provisioned for 6
+devices, including the iPad Air 11-inch M4 (`00008132-000261A41EFA401C`) and
+the iPhone 15 Pro Max (`00008130-0016691A3A78001C`). It was installed to the
+iPad with:
+`xcrun devicectl device install app --device 2DFF9AA2-B075-5A68-8299-65C16DF38803 .../Stashed/LanguagePlayer.app`
+
+**Caveats when reusing a cached build:**
+- It can be stale — the 2026-08-11 cache is **3.0.0**, not the current 3.1.0.
+- Debug builds have **no embedded JS bundle**; they load it from Metro. Metro
+  must be running and `EXPO_PUBLIC_API_URL` must point at the Mac's LAN IP
+  (never `127.0.0.1`) or the app cannot reach the Flask backend from the
+  device.
+- Installing a dev build replaces any installed app with the same bundle ID
+  (TestFlight/App Store included) — they cannot coexist on one device.
 
 Only run the build commands below if no usable build exists.
 
