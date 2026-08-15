@@ -11,6 +11,7 @@ internal struct RubyTextParagraphRun {
   let readingColor: UIColor
   let bold: Bool
   let underline: Bool
+  let italic: Bool
   let background: UIColor?
   let backgroundAlpha: Double
   let opacity: Double

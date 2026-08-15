@@ -72,6 +72,10 @@ public final class RubyTextModule: Module {
         view.underline = underline
       }
 
+      Prop("italic") { (view: RubyTextView, italic: Bool) in
+        view.italic = italic
+      }
+
       Prop("fontFamily") { (view: RubyTextView, family: String?) in
         view.fontFamily = family
       }
@@ -96,6 +100,7 @@ public final class RubyTextModule: Module {
             readingColor: UIColor(lpHex: dict["readingColor"] as? String) ?? .secondaryLabel,
             bold: dict["bold"] as? Bool ?? false,
             underline: dict["underline"] as? Bool ?? false,
+            italic: dict["italic"] as? Bool ?? false,
             background: UIColor(lpHex: dict["background"] as? String),
             backgroundAlpha: (dict["backgroundAlpha"] as? NSNumber)?.doubleValue ?? 1,
             opacity: (dict["opacity"] as? NSNumber)?.doubleValue ?? 1

@@ -63,6 +63,7 @@ internal final class RubyTextParagraphView: ExpoView {
       "tvFrame": String(describing: textView.frame),
       "tvTextLen": textView.attributedText?.length ?? -1,
       "tvText": String(textView.text.prefix(40)),
+      "runTexts": runs.prefix(8).map(\.text),
     ]
   }
 
@@ -133,6 +134,9 @@ internal final class RubyTextParagraphView: ExpoView {
       ]
       if run.underline {
         attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+      }
+      if run.italic {
+        attributes[NSAttributedString.Key(kCTObliquenessAttributeName as String)] = 0.25
       }
       if let background = run.background {
         attributes[.backgroundColor] = background.withAlphaComponent(CGFloat(run.backgroundAlpha))

@@ -214,9 +214,27 @@ function flattenWithFormats(tokens: any[]): { text: string; formats: EpubFormatR
           start: f.start + start,
           end: f.end + start,
         })));
+      } else if (t.type === 'strong' || t.type === 'em') {
+        const start = text.length;
+        const inner = flattenWithFormats(t.tokens ?? []);
+        text += inner.text;
+        formats.push({
+          start,
+          end: text.length,
+          type: t.type === 'strong' ? 'bold' : 'italic',
+        });
+        formats.push(...inner.formats.map((f) => ({
+          ...f,
+          start: f.start + start,
+          end: f.end + start,
+        })));
       } else if (t.tokens) {
         walk(t.tokens);
-      } else if (t.type === 'text' || t.type === 'codespan') {
+      } else if (t.type === 'codespan') {
+        const start = text.length;
+        text += t.text ?? '';
+        formats.push({ start, end: text.length, type: 'code' });
+      } else if (t.type === 'text') {
         text += t.text ?? '';
       }
     }

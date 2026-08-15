@@ -30,6 +30,7 @@ internal final class RubyTextView: ExpoView {
   var readingColor: UIColor = .secondaryLabel { didSet { rebuild() } }
   var fontWeight = "normal" { didSet { rebuild() } }
   var underline = false { didSet { rebuild() } }
+  var italic = false { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
 
   private var attributedString: NSAttributedString?
@@ -96,6 +97,9 @@ internal final class RubyTextView: ExpoView {
     ]
     if underline {
       baseAttributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+    }
+    if italic {
+      baseAttributes[NSAttributedString.Key(kCTObliquenessAttributeName as String)] = 0.25
     }
 
     let result = NSMutableAttributedString()

@@ -129,6 +129,9 @@ interface RubyTokenSpanProps {
   reserveRubySlot: boolean;
   isBlanked: boolean;
   isHighlighted: boolean;
+  isBoldFormat: boolean;
+  isItalicFormat: boolean;
+  isCodeFormat: boolean;
   isLink: boolean;
   isSearchHighlight: boolean;
   isSavedWord: boolean;
@@ -158,7 +161,7 @@ interface RubyTokenSpanProps {
 const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
     linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle,
     onOpenLink, onPressWord, onReveal,
@@ -221,14 +224,15 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
               textStyle={textStyle}
               colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
               readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
-              bold={!isBlanked && isHighlighted}
+              bold={!isBlanked && (isHighlighted || isBoldFormat)}
               underline={!isBlanked && isLink}
+              italic={!isBlanked && isItalicFormat}
               fallbackBaseClassName={
                 isBlanked
                   ? 'text-foreground'
                   : isTokenSelected
                     ? 'text-primary'
-                    : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
               }
               fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
             />
@@ -280,7 +284,7 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
 const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, linkUrl, l2Code, quizMode, popupEnabled,
     rubyPull, readingSize, baseLeading, textStyle, onOpenLink, onPressWord, onReveal,
   } = props;
@@ -317,8 +321,9 @@ const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
           textStyle={textStyle}
           colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
           readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
-          bold={!isBlanked && isHighlighted}
+          bold={!isBlanked && (isHighlighted || isBoldFormat)}
           underline={!isBlanked && isLink}
+          italic={!isBlanked && isItalicFormat}
           tokenIndex={index}
           onTokenPress={handlePress}
           dimmed={isKaraokeDimmed}
@@ -327,7 +332,7 @@ const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
               ? 'text-foreground'
               : isTokenSelected
                 ? 'text-primary'
-                : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
           }
           fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
         />
@@ -358,6 +363,7 @@ interface ParagraphRun {
   readingColor: string;
   bold: boolean;
   underline: boolean;
+  italic?: boolean;
   background?: string;
   backgroundAlpha?: number;
   opacity: number;
@@ -446,6 +452,9 @@ interface PlainTokenSpanProps {
   isWordToken: boolean;
   isBlanked: boolean;
   isHighlighted: boolean;
+  isBoldFormat: boolean;
+  isItalicFormat: boolean;
+  isCodeFormat: boolean;
   isLink: boolean;
   isSearchHighlight: boolean;
   isSavedWord: boolean;
@@ -473,7 +482,7 @@ interface PlainTokenSpanProps {
 const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) {
   const {
     index, word, displayText, isWordToken, isBlanked, isHighlighted, isLink, isSearchHighlight,
-    isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
     textColor, textStyle, onOpenLink, onPressWord, onReveal, onPressIn, onPressOut,
   } = props;
@@ -511,7 +520,7 @@ const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) 
       {isBlanked ? (
         <Text className={textColor}>▯</Text>
       ) : (
-        <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}
@@ -840,22 +849,34 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
   const byeonggiEnabled = byeonggiOverride ?? (l2Settings.display.byeonggi !== false);
 
-  // ── Map EPUB format ranges (links + search highlights) onto token indices ──
-  // Surface tokens concatenate back to `text`; when that invariant breaks
-  // (e.g. a tokenizer quirk), formats are simply not applied.
-  const tokenFormatMap = useMemo<Array<{ url?: string; highlight?: boolean } | null>>(() => {
+  // ── Map format ranges (links, highlights, markdown bold/italic/code) onto
+  //    token indices. Surface tokens concatenate back to `text`; when that
+  //    invariant breaks (e.g. a tokenizer quirk), formats are not applied. ──
+  const tokenFormatMap = useMemo<Array<{
+    url?: string;
+    highlight?: boolean;
+    bold?: boolean;
+    italic?: boolean;
+    code?: boolean;
+  } | null>>(() => {
     if (!formats?.length || tokens.length === 0) return [];
     const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return [];
     let pos = 0;
     return tokens.map((token) => {
-      let format: { url?: string; highlight?: boolean } | null = null;
+      let format: { url?: string; highlight?: boolean; bold?: boolean; italic?: boolean; code?: boolean } | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
           if (f.type === 'highlight') {
             format = { ...(format ?? {}), highlight: true };
-          } else if (f.url) {
+          } else if (f.type === 'link') {
             format = { ...(format ?? {}), url: f.url };
+          } else if (f.type === 'bold') {
+            format = { ...(format ?? {}), bold: true };
+          } else if (f.type === 'italic') {
+            format = { ...(format ?? {}), italic: true };
+          } else if (f.type === 'code') {
+            format = { ...(format ?? {}), code: true };
           }
         }
       }
@@ -1492,6 +1513,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
+              const isBoldFormat = !!tokenFormat?.bold;
+              const isItalicFormat = !!tokenFormat?.italic;
+              const isCodeFormat = !!tokenFormat?.code;
               const isTokenSelected = selectedTokenIndex === i;
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
@@ -1553,8 +1577,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     readingColor: isTokenSelected
                       ? MOBILE_RUBY_COLORS.primary
                       : MOBILE_RUBY_COLORS.mutedForeground,
-                    bold: (!isBlanked && isHighlighted) || textStyle.fontWeight === 'bold',
+                    bold: (!isBlanked && (isHighlighted || isBoldFormat)) || textStyle.fontWeight === 'bold',
                     underline: !isBlanked && isLink,
+                    italic: !isBlanked && isItalicFormat,
                     ...(isSearchHighlight
                       ? { background: MOBILE_RUBY_COLORS.primary, backgroundAlpha: 0.2 }
                       : isSavedWord
@@ -1607,6 +1632,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 reserveRubySlot: isRubyMode,
                 isBlanked,
                 isHighlighted,
+                isBoldFormat,
+                isItalicFormat,
+                isCodeFormat,
                 isLink,
                 isSearchHighlight,
                 isSavedWord,
@@ -1704,6 +1732,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
               const isSearchHighlight = !!tokenFormat?.highlight;
+              const isBoldFormat = !!tokenFormat?.bold;
+              const isItalicFormat = !!tokenFormat?.italic;
+              const isCodeFormat = !!tokenFormat?.code;
               const isTokenSelected = selectedTokenIndex === i;
               const isPressed = pressedTokenIndex === i;
 
@@ -1720,6 +1751,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   isWordToken={isWordToken}
                   isBlanked={isBlanked}
                   isHighlighted={isHighlighted}
+                  isBoldFormat={isBoldFormat}
+                  isItalicFormat={isItalicFormat}
+                  isCodeFormat={isCodeFormat}
                   isLink={isLink}
                   isSearchHighlight={isSearchHighlight}
                   isSavedWord={isSavedWord}

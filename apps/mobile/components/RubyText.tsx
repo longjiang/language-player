@@ -86,6 +86,7 @@ export interface RubyTextProps {
   readingColorHex: string;
   bold?: boolean;
   underline?: boolean;
+  italic?: boolean;
   /** Token this segment belongs to — reported back by the native tap event. */
   tokenIndex?: number;
   onTokenPress?: (index: number) => void;
@@ -132,6 +133,7 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     readingColorHex,
     bold = false,
     underline = false,
+    italic = false,
     tokenIndex,
     onTokenPress,
     dimmed = false,
@@ -154,6 +156,7 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     reserveReadingSlot,
     bold,
     underline,
+    italic,
     `${segment.text}|${segment.reading ?? ''}`,
   ].join(':');
 
@@ -189,6 +192,7 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
         readingColor={readingColorHex}
         fontWeight={bold || textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
         underline={underline}
+        italic={italic}
         fontFamily={textStyle.fontFamily ?? null}
         onTap={() => {
           if (tokenIndex != null) onTokenPress?.(tokenIndex);
@@ -211,9 +215,9 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
       ) : reserveReadingSlot ? (
         <View style={{ height: readingSize, marginBottom: -rubyPull }} />
       ) : null}
-      <Text style={[textStyle, baseLeading ? { lineHeight: baseLeading } : undefined]} className={fallbackBaseClassName}>
-        {segment.text}
-      </Text>
+          <Text style={[textStyle, baseLeading ? { lineHeight: baseLeading } : undefined]} className={fallbackBaseClassName}>
+            {segment.text}
+          </Text>
     </View>
   );
 });

@@ -1,5 +1,44 @@
 import React from 'react';
 import { Text } from 'react-native';
+import type { EpubFormatRange } from '@/lib/epub-parser';
+
+/**
+ * Strip simple inline markdown (**bold**, *italic*, `code`) while recording
+ * each span's character range in the stripped text. Used to feed one
+ * TokenizedText with formats so formatting survives tokenization and can
+ * coexist with ruby/phonetics.
+ */
+export function parseInlineMarkdownRanges(text: string): {
+  text: string;
+  formats: EpubFormatRange[];
+} {
+  const out: { text: string; formats: EpubFormatRange[] } = { text: '', formats: [] };
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) out.text += text.slice(last, m.index);
+    const token = m[0];
+    const start = out.text.length;
+    let inner: string;
+    let type: EpubFormatRange['type'];
+    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
+      inner = token.slice(2, -2);
+      type = 'bold';
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      inner = token.slice(1, -1);
+      type = 'code';
+    } else {
+      inner = token.slice(1, -1);
+      type = 'italic';
+    }
+    out.text += inner;
+    out.formats.push({ start, end: out.text.length, type });
+    last = m.index + token.length;
+  }
+  if (last < text.length) out.text += text.slice(last);
+  return out;
+}
 
 /**
  * Render a translation string with the inline markdown the translate backend
