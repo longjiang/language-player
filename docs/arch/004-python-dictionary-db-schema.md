@@ -291,6 +291,14 @@ Frequency scores are stored directly in each dictionary table's `frequency` colu
 
 **Source**: `data/frequency-lists/zipf_frequency_list_{lang}.csv` — 40 languages supported. Frequency CSVs are loaded by `import_dict_to_sqlite.py --freq` and matched to dictionary rows by headword.
 
+The CSVs themselves are generated with the Python package
+[`wordfreq`](https://github.com/rspeer/wordfreq) via `top_n_list`, with
+columns `lemma, folded_frequency` (the Zipf score). The original generator
+note lives in
+`zerotohero-nuxt/static/data/frequency-lists/README.md` (reference-only
+repo). Norwegian variants share the Bokmål list (`no`/`nb`/`nn` → `nb`),
+matching Classic.
+
 **Languages with frequency data**: ar, bg, ca, zh, hr, cs, da, nl, en, fi, fr, de, el, he, hi, hu, is, id, it, ja, ko, lv, lt, mk, ms, nb, fa, pl, pt, ro, ru, sk, sl, es, sv, ta, tr, uk, ur, vi
 
 **Dictionary → frequency language mapping**:
@@ -303,6 +311,30 @@ Frequency scores are stored directly in each dictionary table's `frequency` colu
 | `wiktionary` | ISO 639-3 → ISO 639-1 via `_ISO3_TO_ISO1` | `(lang_code, head)` |
 
 Klingon has no frequency data. Wiktionary languages are mapped from ISO 639-3 to ISO 639-1 using `_ISO3_TO_ISO1` (see code).
+
+### Word Level Assignment
+
+Word levels mirror Classic's `FrequencyAssigner`:
+
+1. **Canonical DB levels win.** If the dictionary row has canonical levels
+   (e.g. HSK for Chinese), they are returned as-is and `frequencyLevel` is
+   `null` — frequency never overrides them.
+2. **Otherwise, per-language rank-based thresholds.** The level is derived
+   from the language's own Zipf list using Classic's doubling-bucket scheme:
+   the list is split into 127 shares (`2^0 + … + 2^6`), level 1 gets 1 share,
+   level 2 gets 2, … level 7 gets 64, and each level's threshold is the Zipf
+   score at that cumulative rank. `getLevelByFrequency` returns the first
+   level whose minimum threshold the word meets (1 = most common … 7 =
+   rarest), then `level_mapping.frequency_level_to_cefr` maps it to CEFR.
+   Implemented in `utils_dictionary.py`
+   (`_derive_level_thresholds` / `_frequency_to_level`), computing the
+   thresholds once per language from the same CSVs and caching them.
+3. **No frequency → no level.** Words without a Zipf score get
+   `frequencyLevel: null` and `levels: null` (never "level 7"); they are
+   "unclassified" and treated as hard by the `hardWords` phonetics filter.
+
+The fixed global Zipf table is retained only as a runtime fallback when the
+per-language CSV is missing; it is not the assignment Classic uses.
 
 ---
 
@@ -427,7 +459,7 @@ Each loader in `utils_dictionary.py` queries its table with a priority chain:
 
 The `/dictionary/lookup` endpoint then:
 - Reads `frequency` directly from the matched row — no separate query or runtime CSV loading needed
-- If a language has canonical levels (HSK, JLPT, etc.), those are used as-is; otherwise a Zipf score → CEFR level mapping is applied inline
+- If a language has canonical levels (HSK, JLPT, etc.), those are used as-is; otherwise Classic's per-language rank-based Zipf thresholds are applied (see Word Level Assignment above) and mapped to CEFR
 - If L1 ≠ English → LLM translate definitions to L1
 - If no match → LLM generate entry (`match_type: "llm"`)
 
