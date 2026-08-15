@@ -24,22 +24,36 @@ if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android'))
     // repo — Expo Go does not contain it, so availability must be checked at
     // runtime rather than assumed.
     if (requireOptionalNativeModule('RubyText') != null) {
+      const rubyModule = requireOptionalNativeModule('RubyText');
       NativeRubyTextView = requireNativeViewManager<NativeRubyTextProps>('RubyText');
+      log('[LP Mobile] [RubyText] native ruby renderer available');
+
+      // The paragraph renderer is iOS-only, and older iOS builds ship the
+      // module without the view. requireNativeViewManager does not throw for
+      // a missing view manager — it returns a placeholder that fails at
+      // render time ("Unable to get the view config ..."), so availability is
+      // probed via an explicit native function added in the same build as the
+      // paragraph view.
       try {
-        // The paragraph renderer is iOS-only for now (Android has no native
-        // ruby-in-a-single-TextView support). Older iOS builds don't have the
-        // view registered either, so both fall back to the per-token path.
-        NativeRubyTextParagraphView =
-          requireNativeViewManager<NativeRubyTextParagraphProps>('RubyTextParagraph');
-        log('[LP Mobile] [RubyText] paragraph ruby renderer available');
+        const probe = (rubyModule as { isParagraphRendererAvailable?: () => boolean })
+          .isParagraphRendererAvailable;
+        if (typeof probe === 'function' && probe()) {
+          NativeRubyTextParagraphView =
+            requireNativeViewManager<NativeRubyTextParagraphProps>('RubyTextParagraph');
+          log('[LP Mobile] [RubyText] paragraph ruby renderer available');
+        } else {
+          NativeRubyTextParagraphView = null;
+          logwarn(
+            '[LP Mobile] [RubyText] paragraph ruby renderer not in this build — using per-token path',
+          );
+        }
       } catch (paragraphErr) {
         NativeRubyTextParagraphView = null;
         logwarn(
-          '[LP Mobile] [RubyText] paragraph ruby renderer unavailable (older build) — using per-token path',
+          '[LP Mobile] [RubyText] paragraph ruby renderer unavailable — using per-token path',
           paragraphErr,
         );
       }
-      log('[LP Mobile] [RubyText] native ruby renderer available');
     } else {
       logwarn('[LP Mobile] [RubyText] native module not found — using View fallback');
     }

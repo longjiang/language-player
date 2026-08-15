@@ -4,6 +4,15 @@ public final class RubyTextModule: Module {
   public func definition() -> ModuleDefinition {
     Name("RubyText")
 
+    // Capability probe: the paragraph renderer is added in the same native
+    // build as this function. JS only asks for the RubyTextParagraph view
+    // manager when the probe returns true — requireNativeViewManager does
+    // not throw for a missing view, it returns a placeholder that fails at
+    // render time and blanks every token.
+    Function("isParagraphRendererAvailable") {
+      true
+    }
+
     View(RubyTextView.self) {
       Events("onTap")
 
