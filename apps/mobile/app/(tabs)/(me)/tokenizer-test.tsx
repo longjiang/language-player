@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { getSampleText } from '@langplayer/shared';
+import { getSampleText, loadSampleContent } from '@langplayer/shared';
 import type { LemmatizedToken } from '@langplayer/shared';
 
 export default function TokenizerScreen() {
@@ -26,15 +26,38 @@ export default function TokenizerScreen() {
   const t = useT();
   const [customText, setCustomText] = useState('');
 
-  // ── Sample: useEpubPagination for batch lemmatization + pagination ──
-  const sample = getSampleText(l2Lang.code);
-  const sampleMarkdown = sample?.text ?? '# Seoul\n\nSeoul is the capital of South Korea.';
+  // ── Sample: long per-language reader text (lazy-loaded), short text as the
+  //    instant fallback while it's loading or when a language lacks one. ──
+  const shortSample = getSampleText(l2Lang.code);
+  const [longSample, setLongSample] = useState<{ text: string; title: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLongSample(null);
+    loadSampleContent(l2Lang.code)
+      .then((content) => {
+        if (cancelled) return;
+        setLongSample({ text: content.long ?? content.short, title: content.title });
+      })
+      .catch(() => {
+        // Keep the short fallback; a missing sample shouldn't break the page.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [l2Lang.code]);
+
+  const sampleMarkdown =
+    longSample?.text ??
+    shortSample?.text ??
+    '# Seoul\n\nSeoul is the capital of South Korea.';
+  const sampleTitle = longSample?.title ?? shortSample?.title ?? l2Lang.name;
   const samplePagination = useEpubPagination({
     text: sampleMarkdown,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
-    resetKey: l2Lang.code,
+    resetKey: `${l2Lang.code}:${longSample ? 'long' : 'short'}`,
   });
 
   // ── Custom text tokenization (on demand) ──
@@ -73,7 +96,7 @@ export default function TokenizerScreen() {
         {/* ── Sample text (paginated, like reader) ── */}
         <View className="mt-6 rounded-lg border border-border bg-card p-4">
           <Text className="mb-3 text-xs font-medium text-muted-foreground">
-            {sample?.title ?? l2Lang.name} · {t('label.sample')}
+            {sampleTitle} · {t('label.sample')}
           </Text>
           <PaginatedReader
             blocks={samplePagination.blocks}
@@ -88,6 +111,7 @@ export default function TokenizerScreen() {
             nextPage={samplePagination.nextPage}
             goToPage={samplePagination.goToPage}
             handleMeasureBlock={samplePagination.handleMeasureBlock}
+            onVisibleBlocksChange={samplePagination.onVisibleBlocksChange}
             contentWidth={samplePagination.contentWidth}
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
