@@ -1577,6 +1577,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   });
                 }
                 if (showQuickGloss) {
+                  log(`[TokenizedText] 📎 quick gloss run token=${i} text="${quickGlossDef}"`);
                   runs.push({
                     tokenId: i,
                     text: ` (‘${quickGlossDef}’) `,
