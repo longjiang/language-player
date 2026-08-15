@@ -5,7 +5,6 @@ export * from './tokens';
 export * from './version';
 export * from './word-id-resolver';
 export * from './docs';
-export * from './sample-texts';
 export * from './sample-sentences';
 export * from './sample-content';
 export * from './settings-search-keys';

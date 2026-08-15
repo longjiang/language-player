@@ -47,6 +47,11 @@ export interface RubyTextProps {
   readingColorHex: string;
   bold?: boolean;
   underline?: boolean;
+  /** Token this segment belongs to — reported back by the native tap event. */
+  tokenIndex?: number;
+  onTokenPress?: (index: number) => void;
+  /** Karaoke dimming — applied as opacity on the native view (no wrapper). */
+  dimmed?: boolean;
   /** Exact classes the View fallback used before the native path existed. */
   fallbackBaseClassName?: string;
   fallbackReadingClassName?: string;
@@ -83,6 +88,9 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     readingColorHex,
     bold = false,
     underline = false,
+    tokenIndex,
+    onTokenPress,
+    dimmed = false,
     fallbackBaseClassName,
     fallbackReadingClassName,
   } = props;
@@ -138,7 +146,10 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
         fontWeight={bold || textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
         underline={underline}
         fontFamily={textStyle.fontFamily ?? null}
-        style={{ width: measured.width, height: measured.height }}
+        onTap={() => {
+          if (tokenIndex != null) onTokenPress?.(tokenIndex);
+        }}
+        style={{ width: measured.width, height: measured.height, opacity: dimmed ? 0.4 : 1 }}
       />
     );
   }

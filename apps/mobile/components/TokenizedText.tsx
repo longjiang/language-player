@@ -25,7 +25,7 @@ import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { RubyText, isNativeRubyActive } from '@/components/RubyText';
-import { tokenizedTextLogger } from '@/lib/logger';
+import { tokenizedTextLogger, log as appLog } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import {
@@ -45,6 +45,19 @@ const { log, logwarn } = tokenizedTextLogger;
 // text-primary, text-muted-foreground) so both paths stay visually in sync.
 const MOBILE_RUBY_COLORS = semanticColorsForMobile('dark');
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
+
+// Dev-only: one-time per-text component-tree sketch of the ruby/definition
+// path, so the tokenized output structure can be inspected in the Metro log
+// (tokens → RubyTokenSpan → per-segment RubyTexts, gloss/byeonggi/defs).
+const loggedTreeTexts = new Set<string>();
+function scheduleTreeLog(text: string, lines: string[]) {
+  if (!__DEV__ || loggedTreeTexts.has(text)) return;
+  loggedTreeTexts.add(text);
+  setTimeout(() => {
+    appLog(`[TokenizedText] 🌳 tokenized component tree text="${text.slice(0, 80)}"`);
+    for (const line of lines) appLog(`[TokenizedText] 🌳 ${line}`);
+  }, 0);
+}
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -238,6 +251,81 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
         </View>
       )}
     </View>
+  );
+});
+
+/**
+ * Flat ruby token: renders the word's segments as direct fragment children —
+ * NO wrapper View and NO Pressable. Interactivity comes from the native
+ * RubyText view's onTap event (dictionary popup / quiz reveal / links).
+ *
+ * Used only when the native renderer is active AND interlinear definitions
+ * are off (definition slots need a token column to sit under the word).
+ */
+const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
+  const {
+    index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
+    isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    showQuickGloss, quickGlossDef, firstLemma, linkUrl, l2Code, quizMode, popupEnabled,
+    rubyPull, readingSize, baseLeading, textStyle, onOpenLink, onPressWord, onReveal,
+  } = props;
+
+  const rubySegs = useMemo<RubySegment[]>(() => {
+    if (!hasRuby || !pronunciation) return [{ text: displayText }];
+    return buildRuby(displayText, pronunciation, l2Code);
+  }, [hasRuby, pronunciation, displayText, l2Code]);
+
+  const handlePress = () => {
+    if (linkUrl && !popupEnabled) {
+      onOpenLink?.(linkUrl);
+      return;
+    }
+    if (quizMode) {
+      onReveal(index);
+      return;
+    }
+    if (popupEnabled) {
+      onPressWord(index, word, firstLemma, pronunciation, linkUrl);
+    }
+  };
+
+  return (
+    <>
+      {(isBlanked ? [{ text: '▯' }] : rubySegs).map((seg, j) => (
+        <RubyText
+          key={j}
+          segment={seg}
+          reserveReadingSlot={!isBlanked && (hasRuby || reserveRubySlot)}
+          readingSize={readingSize}
+          rubyPull={rubyPull}
+          baseLeading={baseLeading}
+          textStyle={textStyle}
+          colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
+          readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
+          bold={!isBlanked && isHighlighted}
+          underline={!isBlanked && isLink}
+          tokenIndex={index}
+          onTokenPress={handlePress}
+          dimmed={isKaraokeDimmed}
+          fallbackBaseClassName={
+            isBlanked
+              ? 'text-foreground'
+              : isTokenSelected
+                ? 'text-primary'
+                : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+          }
+          fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
+        />
+      ))}
+      {showByeonggi ? (
+        <Text style={{ fontSize: readingSize, opacity: isKaraokeDimmed ? 0.4 : 1 }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+      ) : null}
+      {showQuickGloss ? (
+        <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading, opacity: isKaraokeDimmed ? 0.4 : 1 }}>
+          <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
+        </Text>
+      ) : null}
+    </>
   );
 });
 
@@ -1180,7 +1268,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
           <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
-              return displayTokens.map((token, i) => {
+              const treeLines: string[] = [
+                'TokenizedText',
+                '└─ View flex-row flex-wrap items-end (line container)',
+              ];
+              const rendered = displayTokens.map((token, i) => {
               if (!isWord(token)) {
                 // Whitespace gap tokens must get explicit dimensions: in this
                 // View-based (ruby/definition) path every token is a flex
@@ -1197,6 +1289,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     : isNewline
                       ? { flexBasis: '100%' as const, height: 0 }
                       : undefined;
+                treeLines.push(`├─ [${i}] plain-Text "${token.text}" (non-word, bypasses RubyText)`);
                 return (
                   <View key={i} className="items-center" style={whitespaceStyle}>
                     {isRubyMode && !isNewline && (
@@ -1274,45 +1367,93 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
 
+              // ── Dev tree logging ──
+              {
+                const debugSegs = isBlanked
+                  ? [{ text: '▯' }]
+                  : hasRuby && token.pronunciation
+                    ? buildRuby(displayText, token.pronunciation, l2Code)
+                    : [{ text: displayText }];
+                const flatPath = NATIVE_RUBY_ACTIVE && !showDefinition;
+                if (flatPath) {
+                  const segLinesFlat = debugSegs.map((s, j) => {
+                    const leaf = j === debugSegs.length - 1;
+                    return `${leaf ? '└─' : '├─'} RubyText seg="${s.text}"${
+                      s.reading ? ` reading="${s.reading}"` : ' (no reading)'
+                    } [native]`;
+                  });
+                  treeLines.push(
+                    `├─ [${i}] word="${word}" display="${displayText}" hasRuby=${hasRuby} [flat fragment]${isBlanked ? ' blanked' : ''}`,
+                    ...segLinesFlat,
+                    ...(showByeonggi ? [`└─ Text byeonggi="${byeonggiText}"`] : []),
+                    ...(showQuickGloss ? [`└─ Text quickGloss="‘${quickGlossDef}’"`] : []),
+                  );
+                } else {
+                  const segLines = debugSegs.map((s, j) => {
+                    const leaf = j === debugSegs.length - 1;
+                    return `│       ${leaf ? '└─' : '├─'} RubyText seg="${s.text}"${
+                      s.reading ? ` reading="${s.reading}"` : ' (no reading)'
+                    } [fallback]`;
+                  });
+                  treeLines.push(
+                    `├─ [${i}] RubyTokenSpan word="${word}" display="${displayText}" hasRuby=${hasRuby}${isBlanked ? ' blanked' : ''}`,
+                    '│   └─ Pressable → View flex-row items-end',
+                    ...segLines,
+                    ...(showByeonggi ? [`│       └─ Text byeonggi="${byeonggiText}"`] : []),
+                    ...(showQuickGloss ? [`│       └─ Text quickGloss="‘${quickGlossDef}’"`] : []),
+                    ...(showDefinition ? [`└─ View definitionSlot ${showInterlinear ? `"${trimmedDef}"` : '(empty spacer)'}`] : []),
+                  );
+                }
+              }
+
+              const tokenSpanProps = {
+                index: i,
+                word,
+                displayText,
+                pronunciation: token.pronunciation ?? null,
+                hasRuby,
+                reserveRubySlot: isRubyMode,
+                isBlanked,
+                isHighlighted,
+                isLink,
+                isSearchHighlight,
+                isSavedWord,
+                isTokenSelected,
+                isKaraokeDimmed,
+                showByeonggi,
+                byeonggiText,
+                showQuickGloss,
+                quickGlossDef,
+                showDefinition,
+                showInterlinear,
+                trimmedDef,
+                firstLemma,
+                linkUrl,
+                l2Code,
+                quizMode,
+                popupEnabled,
+                rubyPull,
+                readingSize,
+                baseLeading,
+                textStyle,
+                onOpenLink,
+                onPressWord: handlePressWord,
+                onReveal: handleReveal,
+              };
+
+              // Flat native path: fragment children, no wrapper View/Pressable.
+              // Legacy path when the native module is missing (Expo Go) or
+              // interlinear definition slots need a token column.
+              if (NATIVE_RUBY_ACTIVE && !showDefinition) {
+                return <RubyTokenFlat key={i} {...tokenSpanProps} />;
+              }
               return (
-                <RubyTokenSpan
-                  key={i}
-                  index={i}
-                  word={word}
-                  displayText={displayText}
-                  pronunciation={token.pronunciation ?? null}
-                  hasRuby={hasRuby}
-                  reserveRubySlot={isRubyMode}
-                  isBlanked={isBlanked}
-                  isHighlighted={isHighlighted}
-                  isLink={isLink}
-                  isSearchHighlight={isSearchHighlight}
-                  isSavedWord={isSavedWord}
-                  isTokenSelected={isTokenSelected}
-                  isKaraokeDimmed={isKaraokeDimmed}
-                  showByeonggi={showByeonggi}
-                  byeonggiText={byeonggiText}
-                  showQuickGloss={showQuickGloss}
-                  quickGlossDef={quickGlossDef}
-                  showDefinition={showDefinition}
-                  showInterlinear={showInterlinear}
-                  trimmedDef={trimmedDef}
-                  firstLemma={firstLemma}
-                  linkUrl={linkUrl}
-                  l2Code={l2Code}
-                  quizMode={quizMode}
-                  popupEnabled={popupEnabled}
-                  rubyPull={rubyPull}
-                  readingSize={readingSize}
-                  baseLeading={baseLeading}
-                  textStyle={textStyle}
-                  onOpenLink={onOpenLink}
-                  onPressWord={handlePressWord}
-                  onReveal={handleReveal}
-                />
+                <RubyTokenSpan key={i} {...tokenSpanProps} />
               );
             });
-          })()}
+              if (__DEV__) scheduleTreeLog(text, treeLines);
+              return rendered;
+            })()}
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
