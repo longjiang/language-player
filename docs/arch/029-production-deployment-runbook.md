@@ -290,11 +290,12 @@ node scripts/upload.mjs appstore metadata 3.1.0 \
   --keywords "<100 chars, comma-separated>"             # update listing copy
 ```
 
-This is exactly how 3.1.0 was submitted (2026-08-14). Caveat: the API accepts
-the submission even if store assets are missing (e.g. iPad screenshots) —
-Apple may still flag them during review, so add required screenshots before
-submitting. Listing copy (description/promo/keywords) can be updated via
-`appstore metadata` even while the version is waiting for review.
+This is exactly how 3.1.0 was submitted (2026-08-14). Listing copy
+(description/promo/keywords) can be updated via `appstore metadata` even
+while the version is waiting for review. Screenshots are per-version in App
+Store Connect but are carried forward from the previous version (verified on
+3.1.0: same sets as 3.0.0 — iPhone 6.7" ×10, iPad Pro 12.9" ×3, iPad Pro
+12.9" 3rd gen ×9).
 
 ### 4.4 After upload
 

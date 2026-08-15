@@ -275,6 +275,11 @@ visual assets pending (items 4).
    still outstanding.
 5. Promo text (optional, short-lived).
 
+> Listing assets (icon, feature graphic, screenshots, descriptions) are
+> **app-level** in Play Console, not per-release — they persist across all
+> releases automatically. Adding them once fixes every release, including
+> 3.1.0.
+
 #### Store listing graphics — asset requirements
 
 > **See [SPEC-070 — Prepare Graphics for App Stores](070-store-graphics-checklist.md)**
