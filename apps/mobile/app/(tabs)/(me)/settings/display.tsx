@@ -6,35 +6,12 @@ import { useT } from '@/hooks/use-t';
 import { getSampleSentence, loadSampleShort } from '@langplayer/shared';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
-import { ZOOM_TO_REM } from '@/lib/text-scale';
-import { renderInlineMarkdown } from '@/lib/inline-markdown';
+import { parseInlineMarkdownRanges, renderInlineMarkdown } from '@/lib/inline-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { SectionHeader } from '@/components/settings/SectionHeader';
 import { ToggleRow } from '@/components/settings/ToggleRow';
 import { SliderRow } from '@/components/settings/SliderRow';
 import { SegmentedRow } from '@/components/settings/SegmentedRow';
-
-/** Split simple inline markdown (**bold**, *italic*, `code`) into segments. */
-function parsePreviewSegments(text: string): { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] {
-  const out: { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] = [];
-  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = pattern.exec(text)) !== null) {
-    if (m.index > last) out.push({ text: text.slice(last, m.index) });
-    const token = m[0];
-    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
-      out.push({ text: token.slice(2, -2), bold: true });
-    } else if (token.startsWith('`') && token.endsWith('`')) {
-      out.push({ text: token.slice(1, -1), code: true });
-    } else {
-      out.push({ text: token.slice(1, -1), italic: true });
-    }
-    last = m.index + token.length;
-  }
-  if (last < text.length) out.push({ text: text.slice(last) });
-  return out;
-}
 
 export function DisplaySettings() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -69,6 +46,12 @@ export function DisplaySettings() {
   const isChinese = l2Lang.code === 'zh';
   const isKorean = l2Lang.code === 'ko';
   const isVietnamese = l2Lang.code === 'vi';
+  // Strip inline markdown to plain text + format ranges so the preview can be
+  // ONE TokenizedText: furigana (when enabled) and bold/italic/code coexist.
+  const parsedPreview = React.useMemo(
+    () => parseInlineMarkdownRanges(previewText),
+    [previewText],
+  );
 
   // G2: Fetch L1 translation of the sample sentence when translation is enabled
   const [previewTranslation, setPreviewTranslation] = useState('');
@@ -134,28 +117,12 @@ export function DisplaySettings() {
             <SectionHeader title={t('label.tokenized_text_preview')} />
             <View className="rounded-lg border border-border bg-muted p-3">
               <TextActionMenu text={previewText} l2Code={l2Lang.code} l1Code={l1Lang.code}>
-                <Text
-                  style={{
-                    fontSize: 16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1),
-                    lineHeight: Math.round(16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1) * (tokenizedText.leading ?? 1.625)),
-                  }}
-                >
-                  {parsePreviewSegments(previewText).map((seg, i) => (
-                    <Text
-                      key={i}
-                      style={seg.bold ? { fontWeight: '700' } : seg.italic ? { fontStyle: 'italic' } : undefined}
-                    >
-                      <TokenizedText
-                        text={seg.text}
-                        l2Code={l2Lang.code}
-                        inline
-                        inlineFontSize={16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1)}
-                        phonetics={false}
-                        showDefinition={false}
-                      />
-                    </Text>
-                  ))}
-                </Text>
+                <TokenizedText
+                  text={parsedPreview.text}
+                  l2Code={l2Lang.code}
+                  formats={parsedPreview.formats}
+                  showDefinition={false}
+                />
               </TextActionMenu>
               {previewTranslation ? (
                 <Text className="pt-1 text-sm text-muted-foreground leading-relaxed">

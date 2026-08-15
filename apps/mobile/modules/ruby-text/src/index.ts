@@ -33,6 +33,7 @@ export interface NativeRubyTextProps {
   readingColor: string;
   fontWeight: 'normal' | 'bold';
   underline: boolean;
+  italic?: boolean;
   fontFamily?: string | null;
   /** Dispatched when the native view is tapped (dictionary popup / quiz reveal). */
   onTap?: (event: { nativeEvent: unknown }) => void;
@@ -53,6 +54,7 @@ export interface NativeRubyTextParagraphRun {
   readingColor: string;
   bold: boolean;
   underline: boolean;
+  italic?: boolean;
   /** Base hex color for a per-run background highlight (e.g. search hit). */
   background?: string | null;
   /** Alpha for the background highlight (0–1). */
