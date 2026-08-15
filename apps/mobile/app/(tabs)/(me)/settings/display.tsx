@@ -145,7 +145,14 @@ export function DisplaySettings() {
                       key={i}
                       style={seg.bold ? { fontWeight: '700' } : seg.italic ? { fontStyle: 'italic' } : undefined}
                     >
-                      <TokenizedText text={seg.text} l2Code={l2Lang.code} inline />
+                      <TokenizedText
+                        text={seg.text}
+                        l2Code={l2Lang.code}
+                        inline
+                        inlineFontSize={16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1)}
+                        phonetics={false}
+                        showDefinition={false}
+                      />
                     </Text>
                   ))}
                 </Text>
