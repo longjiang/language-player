@@ -169,21 +169,24 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
   // state (runs parsed, attributed-string length, frames) so a blank render
   // can be diagnosed from the Metro log.
   const mountedKey = measured ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}` : null;
+  const probeDiagnostics = useCallback((tag: string) => {
+    try {
+      const module = requireOptionalNativeModule('RubyText') as
+        | { getParagraphDiagnostics?: () => unknown }
+        | null;
+      const diagnostics = module?.getParagraphDiagnostics?.();
+      log(`[LP Mobile] [RubyText] paragraph native diagnostics [${tag}]`, JSON.stringify(diagnostics ?? null));
+    } catch (err) {
+      logwarn('[LP Mobile] [RubyText] paragraph diagnostics failed', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (!mountedKey) return;
-    const timer = setTimeout(() => {
-      try {
-        const module = requireOptionalNativeModule('RubyText') as
-          | { getParagraphDiagnostics?: () => unknown }
-          | null;
-        const diagnostics = module?.getParagraphDiagnostics?.();
-        log('[LP Mobile] [RubyText] paragraph native diagnostics', JSON.stringify(diagnostics ?? null));
-      } catch (err) {
-        logwarn('[LP Mobile] [RubyText] paragraph diagnostics failed', err);
-      }
-    }, 500);
+    probeDiagnostics('mount');
+    const timer = setTimeout(() => probeDiagnostics('settled'), 250);
     return () => clearTimeout(timer);
-  }, [mountedKey]);
+  }, [mountedKey, probeDiagnostics]);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
