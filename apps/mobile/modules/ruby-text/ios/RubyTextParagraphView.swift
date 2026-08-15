@@ -33,6 +33,11 @@ internal final class RubyTextParagraphView: ExpoView {
   var fontFamily: String? { didSet { rebuild() } }
 
   private var attributedString: NSAttributedString?
+  /// Whether the current attributed string has been applied to a real
+  /// (non-zero) text container. UITextView lays out lazily: setting
+  /// attributedText while the container is still zero-sized can leave the
+  /// text blank even after the frame is set, so we re-apply once bounds exist.
+  private var hasLaidOutText = false
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -69,13 +74,11 @@ internal final class RubyTextParagraphView: ExpoView {
 
   override func layoutSubviews() {
     super.layoutSubviews()
+    let frameChanged = textView.frame.size != bounds.size
     textView.frame = bounds
-    // UITextView lays out lazily against its text container; if props arrive
-    // before the first frame (frame = .zero), the initial attributed string
-    // can be skipped. Re-apply it once we have real bounds so the container
-    // re-lays out against the actual size.
-    if let attributedString, textView.attributedText !== attributedString {
+    if let attributedString, (!hasLaidOutText || frameChanged), bounds.width > 0, bounds.height > 0 {
       textView.attributedText = attributedString
+      hasLaidOutText = true
     }
     print("[LP Mobile] [RubyTextParagraph] layout bounds=\(bounds) tvFrame=\(textView.frame) textLen=\(textView.attributedText?.length ?? -1)")
   }
@@ -105,7 +108,11 @@ internal final class RubyTextParagraphView: ExpoView {
 
   private func rebuild() {
     attributedString = makeAttributedString()
-    textView.attributedText = attributedString
+    hasLaidOutText = false
+    if bounds.width > 0, bounds.height > 0 {
+      textView.attributedText = attributedString
+      hasLaidOutText = true
+    }
     print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight)")
   }
 
