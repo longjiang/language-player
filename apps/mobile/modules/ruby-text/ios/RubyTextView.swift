@@ -26,6 +26,7 @@ internal final class RubyTextView: ExpoView {
   var readingSize: Double = 9 { didSet { rebuild() } }
   var rubyPull: Double = 0 { didSet { rebuild() } }
   var color: UIColor = .label { didSet { rebuild() } }
+  var readingColor: UIColor = .secondaryLabel { didSet { rebuild() } }
   var fontWeight = "normal" { didSet { rebuild() } }
   var underline = false { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
@@ -115,11 +116,22 @@ internal final class RubyTextView: ExpoView {
   }
 
   private func makeRubyAnnotation(reading: String, baseFontSize: CGFloat) -> CTRubyAnnotation {
-    var text: [Unmanaged<CFString>?] = [nil, nil, nil, nil]
-    text[Int(CTRubyPosition.before.rawValue)] = Unmanaged.passUnretained(reading as CFString)
-    let sizeFactor = baseFontSize > 0 ? CGFloat(readingSize) / baseFontSize : 0.5
-    // Swift imports the C function as CTRubyAnnotationCreate(_:_:_:_:) —
+    // CreateWithAttributes (rather than the legacy Create) is required for
+    // UILabel/TextKit to draw ruby on modern iOS, and lets the reading carry
+    // its own font size and muted color.
+    let readingFont = UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
+    let attributes: [String: Any] = [
+      kCTFontAttributeName as String: readingFont,
+      kCTForegroundColorAttributeName as String: readingColor,
+    ]
+    // Swift imports the C function as CTRubyAnnotationCreateWithAttributes(_:_:_:_:_:) —
     // no argument labels.
-    return CTRubyAnnotationCreate(.auto, .auto, sizeFactor, &text)
+    return CTRubyAnnotationCreateWithAttributes(
+      .auto,
+      .auto,
+      .before,
+      reading as CFString,
+      attributes as CFDictionary
+    )
   }
 }
