@@ -387,10 +387,11 @@ iPad display sizes (portrait 4:3, landscape 3:4):
 `.mov` / `.m4v` / `.mp4` (H.264 or ProRes 422), same display sizes as
 screenshots.
 
-**Status (2026-08-12, app ID 6520385296):** iPhone 6.9" has 6 screenshots
-(reused for other iPhone sizes); **iPad screenshots are the main gap** — upload
-one iPad size (e.g. 12.9" 2048×2732 or 13" 2064×2752). No App Previews yet
-(optional). App icon present from build.
+**Status (updated 2026-08-14 via App Store Connect API):** screenshots are
+present on both 3.0.0 and 3.1.0 en-CA localizations — iPhone 6.7" ×10,
+iPad Pro 12.9" ×3, iPad Pro 12.9" (3rd gen) ×9. The earlier 2026-08-12 note
+("iPad screenshots are the main gap") is resolved. No App Previews yet
+(optional). App icon present from build (app-level in App Information).
 
 **To produce for Language Player GO:** an iPhone set at 1320 × 2868 (6.9") and
 an iPad set at 2048 × 2732 (12.9") — Explore, video player with subtitles,
