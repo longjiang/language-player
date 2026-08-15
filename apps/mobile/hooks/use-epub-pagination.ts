@@ -446,7 +446,7 @@ export function useEpubPagination({
       const found = blocks.findIndex(
         (b): b is TextBlock =>
           b.kind === 'text'
-          && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item')
+          && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading')
           && b.text.includes(initialAnchor),
       );
       if (found >= 0) base = found;
@@ -735,7 +735,7 @@ export function useEpubPagination({
         setPage(p); break;
       }
       const hasAnchor = pageBlocks.some((b): b is TextBlock =>
-        initialAnchor != null && b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item') && b.text.includes(initialAnchor),
+        initialAnchor != null && b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading') && b.text.includes(initialAnchor),
       );
       if (hasAnchor) { setPage(p); break; }
     }
@@ -745,7 +745,7 @@ export function useEpubPagination({
   useEffect(() => {
     if (!hasMeasured || !blocks || !visibleBlocks) return;
     const textBlocks = visibleBlocks.filter(
-      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
+      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
     );
     if (textBlocks.length === 0) return;
 
@@ -840,7 +840,7 @@ export function useEpubPagination({
     if (!showTranslation || !hasMeasured || !blocks || !visibleBlocks) return;
     if (loadingTokens) return;
     const textBlocks = visibleBlocks.filter(
-      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
+      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
     );
     if (textBlocks.length === 0) return;
 
@@ -1078,7 +1078,7 @@ export function useEpubPagination({
     if (prevPageRef.current === page || (!onAnchorChange && !onBlockChange)) return;
     prevPageRef.current = page;
     const first = visibleBlocks?.find(
-      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
+      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
     );
     if (!first) return;
     onAnchorChange?.(first.text.slice(0, 40));
