@@ -43,10 +43,10 @@
       `android/key.properties`; **copy them into a password manager**
 - [x] Version bumped in `apps/mobile/app.json` (3.0.0, `android.versionCode: 2`)
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
-- [~] Store assets partially ready: icon uploaded to the Play asset library as
-      "Cropped - icon.png" (512×512, from `apps/mobile/assets/icon.png`) but not
-      yet added to the App icon slot; feature graphic (1024×500) and phone/
-      tablet screenshots still outstanding
+- [x] Store assets verified live on the Play listing (2026-08-14,
+      `play.google.com/store/apps/details?id=ca.zerotohero.go`): icon
+      attached, 7 phone screenshots and full description live; **feature
+      graphic (1024×500) still outstanding**
 - [x] Billing decision made: Play Billing implemented (SPEC-068 Steps 2–3,
       product ID `pro_go`); the Android buy-on-website link was removed
       ([§ 5](#5-billing--monetization-blocker))
@@ -257,8 +257,9 @@ health (None).
 
 ### 4.4 Store listing
 
-**Status: 🟡 Partial (2026-08-12)** — text, category and contact details done;
-visual assets pending (items 4).
+**Status: ✅ mostly complete (verified live 2026-08-14)** — description,
+icon, and 7 phone screenshots are live on the store listing; the feature
+graphic (1024×500) is the only outstanding visual asset (item 4).
 
 1. Short description (80 characters) and full description. **Done** — default
    listing draft saved: short = "Learn languages by watching videos with
@@ -268,11 +269,10 @@ visual assets pending (items 4).
 3. Contact email (e.g. `jon.long@zerotohero.ca`) and website
    (`https://languageplayer.io`). **Done** (Store settings).
 4. Icon (512×512), feature graphic (1024×500), phone screenshots (2–8) and
-   tablet screenshots. **Icon uploaded** to the Play asset library as
-   "Cropped - icon.png" (512×512) but **not yet added** to the App icon slot
-   (manual step: Store listings → edit → App icon → Add assets → select
-   "Cropped - icon.png" → Add). Feature graphic and phone/tablet screenshots
-   still outstanding.
+   tablet screenshots. **Icon: ✅ attached.** **Phone screenshots: ✅ 7 live**
+   (verified on the store listing 2026-08-14). **Feature graphic: ❌ still
+   outstanding** — the only remaining visual asset. Tablet screenshots: not
+   separately verified on the live page.
 5. Promo text (optional, short-lived).
 
 > Listing assets (icon, feature graphic, screenshots, descriptions) are
@@ -455,9 +455,9 @@ node scripts/upload.mjs android \
 - [x] No `localhost:5001` in the embedded bundle; `pythonvps` present
 - [x] Human QA passed on a real Android device (internal track; Pixel — Play Billing purchase flow tested)
 - [x] Privacy policy, data safety, content rating, target audience complete
-- [ ] Store listing complete (icon, feature graphic, screenshots, descriptions)
-      — 🟡 text/category/contact done; icon in library (add to App icon slot);
-      feature graphic + screenshots outstanding
+- [x] Store listing mostly complete — description, icon, and 7 phone
+      screenshots live (verified 2026-08-14); feature graphic (1024×500)
+      still outstanding
 - [x] Billing compliance resolved (§ 5) — buy-on-website link removed and
       mobile + backend Play Billing implemented (SPEC-068 Steps 2–3); Play
       Console product + G1–G5 still pending
@@ -484,20 +484,19 @@ node scripts/upload.mjs android \
   (`~/.android/lp-upload.jks`, alias `lp-upload`, RSA 2048); credentials are
   in `~/.android/lp-upload-credentials.txt` and `android/key.properties` —
   copy into a password manager before relying on the local files.
-- **Store assets not prepared** — icon uploaded to the Play library
-  ("Cropped - icon.png", 512×512) but not yet added to the App icon slot;
-  feature graphic and phone/tablet screenshots still outstanding.
+- **Feature graphic (1024×500) still outstanding** — icon and 7 phone
+  screenshots are live on the store listing (verified 2026-08-14); the
+  feature graphic is the only remaining visual asset.
 - **`android.versionCode` not explicit in `app.json` yet** — add `1` for the
   first release.
 - ~~**`android.versionCode`**~~ — ✅ set to `2` in `app.json` + `android/app/build.gradle` (2026-08-13).
   versionCode `1` was already used by the Internal/Closed testing tracks, so
   the production upload was rejected until bumped to `2` (version codes must
   be unique across all tracks).
-- **Production release submitted for review 2026-08-13** — "Production 1 -
-  3.0.0" (versionCode 2, full rollout, 177 countries/regions) sent via
-  Publishing overview (3 changes in review). Awaiting quick checks + Google
-  review (≤7 days). If the release passes and goes live, run Android Vitals
-  monitoring and re-test Play Billing on the live build.
+- ✅ **Production release LIVE (2026-08-13/14)** — "Production 1 - 3.0.0"
+  (versionCode 2, full rollout, 177 countries/regions) passed review; the
+  Play listing shows version **3.0.0** (verified 2026-08-14). 3.1.0
+  (versionCode 3) is on the Internal testing track awaiting QA/promotion.
 - **Store visual assets still outstanding** — App icon slot (icon in library,
   not attached), feature graphic (1024×500), phone + tablet screenshots
   (SPEC-070). Play may flag missing store graphics during review.
