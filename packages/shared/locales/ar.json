@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "إضافة",
+        "add_sample_text": "إضافة نص تجريبي",
         "add_to_playlist": "إضافة إلى قائمة التشغيل",
         "all_results": "جميع النتائج",
         "back": "رجوع",

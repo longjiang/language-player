@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, type JSX } from 'rea
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import { loadSampleContent, type LemmatizedToken, type SavedWordContext } from '@langplayer/shared';
 import { md5 } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useTextScale } from '@/hooks/use-text-scale';
@@ -14,7 +14,6 @@ import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { getSampleText } from '@/lib/sample-texts';
 import {
   BookOpen, Loader2, FileText, Sparkles, Plus, PanelRight,
   ChevronLeft, ChevronRight,
@@ -178,6 +177,7 @@ export function ReaderPanel({
   const translateGenerationRef = useRef(0);
   const [isAutoTranslating, setIsAutoTranslating] = useState(false);
   const [hasMeasured, setHasMeasured] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
   const [tokenCache, setTokenCache] = useState<Record<number, LemmatizedToken[]>>({});
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenLoadGenRef = useRef(0);
@@ -417,6 +417,20 @@ export function ReaderPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [activeTab, prevPage, nextPage]);
 
+  // Load the per-language sample (long for popular L2s, short otherwise) into
+  // the editor. Lazily imports only the language's chunk on web.
+  const handleAddSampleText = useCallback(async () => {
+    setLoadingSample(true);
+    try {
+      const content = await loadSampleContent(l2.code);
+      onFillSample(content.long ?? content.short, content.title);
+    } catch {
+      // Sample load failed — leave the editor untouched.
+    } finally {
+      setLoadingSample(false);
+    }
+  }, [l2.code, onFillSample]);
+
   const innerContent = (
     <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Edit mode */}
@@ -427,15 +441,20 @@ export function ReaderPanel({
                 className="min-h-0 flex-1 w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                 dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
               <div className="flex-shrink-0 flex gap-2">
-                {getSampleText(l2.code) && (
-                  <Button variant="outline" size="sm" className="flex-1"
-                    onClick={() => {
-                      const sample = getSampleText(l2.code);
-                      if (sample) onFillSample(sample.text, sample.title);
-                    }}>
-                    <Sparkles className="mr-1 h-3.5 w-3.5" />{t('action.fill_with_sample')}
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={handleAddSampleText}
+                  disabled={loadingSample}
+                >
+                  {loadingSample ? (
+                    <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-1 h-3.5 w-3.5" />
+                  )}
+                  {t('action.add_sample_text')}
+                </Button>
                 <Button size="sm" className="flex-1" onClick={onTokenize}>
                   <Sparkles className="mr-1 h-3.5 w-3.5" />{t('action.tokenize')}
                 </Button>

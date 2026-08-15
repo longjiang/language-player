@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Tambahkan",
+        "add_sample_text": "Tambah teks contoh",
         "add_to_playlist": "Tambahkan ke daftar putar",
         "all_results": "Semua hasil",
         "back": "Kembali",

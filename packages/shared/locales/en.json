@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Add",
+        "add_sample_text": "Add Sample Text",
         "add_to_playlist": "Add to Playlist",
         "all_results": "All Results",
         "back": "Back",

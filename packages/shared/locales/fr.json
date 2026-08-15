@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Ajouter",
+        "add_sample_text": "Ajouter un texte d'exemple",
         "add_to_playlist": "Ajouter à la liste de lecture",
         "all_results": "Tous les résultats",
         "back": "Retour",

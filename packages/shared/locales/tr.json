@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Ekle",
+        "add_sample_text": "Örnek metin ekle",
         "add_to_playlist": "Çalma listesine ekle",
         "all_results": "Tüm sonuçlar",
         "back": "Geri",
