@@ -320,7 +320,7 @@ identified by deploy ID + git SHA); only product releases get tags.
 | `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.json` and `apps/web/package.json` together; `apps/mobile/app.config.js` picks it up automatically; fails if they drift |
 | `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `packages/shared/src/version.json` (`PRODUCT_BUILD_NUMBER`), which feeds both `ios.buildNumber` and `android.versionCode` via `app.config.js` |
 | `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
-| `tag-release.mjs [--release] [--extension]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>` |
+| `tag-release.mjs [--release] [--extension] [--milestone <N>]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>`, `--milestone <N>` creates `v<version>-m<N>` |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
 
 ### 5.2 Pre-upload gate (`verify-version.mjs`)
@@ -359,6 +359,34 @@ versionCode regression.
 10. Upload to store track
 11. node scripts/record-build.mjs ... --tag v3.1.0-bN     # ledger, even if rejected
 ```
+
+### 5.3.1 How to cut a version (summary)
+
+**Milestone cut** — after a notable commit lands (no file changes; the tag
+marks the commit as milestone N of the current minor):
+
+```bash
+node scripts/tag-release.mjs --milestone 12   # v3.1.0-m12 at HEAD
+```
+
+**Release / version cut** — when shipping the accumulated milestones:
+
+```bash
+node scripts/bump-product-version.mjs minor   # 3.1.0 -> 3.2.0 (or patch)
+node scripts/next-build.mjs                   # assigns next shared build N
+git add packages/shared/src/version.json apps/web/package.json
+git commit -m "release(versioning): cut 3.2.0"
+node scripts/verify-version.mjs               # gate (also after prebuild)
+node scripts/tag-release.mjs --release        # v3.2.0 + v3.2.0-bN
+# build, upload
+node scripts/record-build.mjs N ios|android <track> 3.2.0 --tag v3.2.0-bN
+```
+
+**Retroactive cuts — policy:** do not rewrite history to insert version bumps
+into old commits (it changes every downstream SHA, breaks tags, and requires
+a force-push to the shared remote). Cuts are made at commit time going
+forward; `v3.1.0-m1…m11` remain documented markers pointing at the commits
+they represent.
 
 ### 5.4 Files to change on adoption
 
