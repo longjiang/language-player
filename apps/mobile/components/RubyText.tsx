@@ -167,7 +167,11 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
   useEffect(() => {
     if (activeSizeKey !== sizeKey) {
       setActiveSizeKey(sizeKey);
-      setMeasured(null);
+      // Do NOT reset measured here. onLayout for the new size can fire during
+      // the layout pass — before this passive effect — and nulling it would
+      // leave the paragraph blank with no further onLayout to re-measure
+      // (the measuring Text has already laid out). The activeSizeKey guard
+      // below already keeps the native view from mounting with a stale box.
     }
   }, [sizeKey, activeSizeKey]);
 
