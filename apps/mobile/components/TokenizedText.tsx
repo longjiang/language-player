@@ -24,7 +24,7 @@ import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
-import { RubyText } from '@/components/RubyText';
+import { RubyText, isNativeRubyActive } from '@/components/RubyText';
 import { tokenizedTextLogger } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
@@ -44,6 +44,7 @@ const { log, logwarn } = tokenizedTextLogger;
 // the hardcoded NativeWind classes used by the View fallback (text-foreground,
 // text-primary, text-muted-foreground) so both paths stay visually in sync.
 const MOBILE_RUBY_COLORS = semanticColorsForMobile('dark');
+const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -171,38 +172,39 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
       >
         {/* Segment row + quick gloss: items-end so the gloss (no furigana)
             baseline-aligns with the word text at the bottom of the segment columns. */}
-        <View className="flex-row items-end">
-          {/* Native ruby renderer when available (RubyText measures the
-              fallback columns once and hands the exact box to the platform
-              text engine); otherwise the same View columns as before.
-              Byeonggi moves from inline-inside-the-word to a flex sibling —
-              visually equivalent, and required because the native view owns
-              the base text. */}
-          <RubyText
-            segments={isBlanked ? [{ text: '▯' }] : rubySegs}
-            hasRuby={isBlanked ? false : hasRuby}
-            reserveReadingSlot={isBlanked ? false : reserveRubySlot}
-            readingSize={readingSize}
-            rubyPull={rubyPull}
-            baseLeading={baseLeading}
-            textStyle={textStyle}
-            colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
-            bold={!isBlanked && isHighlighted}
-            underline={!isBlanked && isLink}
-            nativeHighlightClassName={
-              isBlanked
-                ? undefined
-                : `${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim() || undefined
-            }
-            fallbackBaseClassName={
-              isBlanked
-                ? 'text-foreground'
-                : isTokenSelected
-                  ? 'text-primary'
-                  : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
-            }
-            fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
-          />
+        <View
+          className={`flex-row items-end${
+            NATIVE_RUBY_ACTIVE && !isBlanked && (isSearchHighlight || isSavedWord)
+              ? ` ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim()
+              : ''
+          }`}
+        >
+          {/* One RubyText per ruby segment, as fragment siblings — no wrapping
+              view, mirroring web's inline <ruby> elements. Each measures its
+              own fallback column once and hands the box to the native view. */}
+          {(isBlanked ? [{ text: '▯' }] : rubySegs).map((seg, j) => (
+            <RubyText
+              key={j}
+              segment={seg}
+              reserveReadingSlot={!isBlanked && (hasRuby || reserveRubySlot)}
+              readingSize={readingSize}
+              rubyPull={rubyPull}
+              baseLeading={baseLeading}
+              textStyle={textStyle}
+              colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
+              readingColorHex={isTokenSelected ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.mutedForeground}
+              bold={!isBlanked && isHighlighted}
+              underline={!isBlanked && isLink}
+              fallbackBaseClassName={
+                isBlanked
+                  ? 'text-foreground'
+                  : isTokenSelected
+                    ? 'text-primary'
+                    : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+              }
+              fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
+            />
+          ))}
           {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
           {showByeonggi ? (
             <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>

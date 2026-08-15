@@ -1,6 +1,6 @@
 require 'json'
 
-package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
+package = JSON.parse(File.read(File.join(__dir__, '..', 'package.json')))
 
 Pod::Spec.new do |s|
   s.name           = 'RubyText'
@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'ExpoModulesCore'
 
-  s.source_files = "ios/**/*.{h,m,swift}"
+  s.source_files = "**/*.{h,m,swift}"
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES'
   }

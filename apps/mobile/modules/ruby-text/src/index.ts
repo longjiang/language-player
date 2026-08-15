@@ -5,8 +5,8 @@
  *   - ios/RubyTextView.swift (CTRubyAnnotation + Core Text)
  *   - android/.../RubyTextView.kt (framework RubySpan / pre-31 fallback span)
  *
- * Note: both platform ruby engines render the reading in the base text's
- * color, so there is intentionally no `readingColor` prop.
+ * `readingColor` is honored on iOS via CTRubyAnnotationCreateWithAttributes;
+ * Android's framework RubySpan currently inherits the base color.
  *
  * `style` is the React Native layout style: apps/mobile/components/RubyText.tsx
  * measures the View-based fallback and passes the exact box back, because
@@ -29,6 +29,8 @@ export interface NativeRubyTextProps {
   rubyPull: number;
   /** Base text color, hex (#rrggbb). */
   color: string;
+  /** Reading (ruby) color, hex (#rrggbb). */
+  readingColor: string;
   fontWeight: 'normal' | 'bold';
   underline: boolean;
   fontFamily?: string | null;
