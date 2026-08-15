@@ -68,3 +68,4 @@ coverage/
 *.tsbuildinfo
 scripts/payloads/*.json
 tmp/
+scripts/lp-play-service-account.json
