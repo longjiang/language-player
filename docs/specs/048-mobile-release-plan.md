@@ -607,6 +607,12 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
   the `.xcarchive` — export one from the archive (Xcode Organizer → Distribute
   App → App Store Connect → export the IPA, or `xcodebuild -exportArchive`).
 
+  > **Xcode 26 note:** Xcode ships only a Transporter shim. If upload fails
+  > with OSStatus error `-10661`, install the free **Transporter** app from
+  > the Mac App Store; the script prefers
+  > `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter`
+  > automatically.
+
 - **Manual alternative:** `open -a Xcode` → **Window → Organizer** → select the
   `LanguagePlayer` archive → **Distribute App** → **App Store Connect**
   (re-signs with the Distribution certificate during export), or drag the IPA

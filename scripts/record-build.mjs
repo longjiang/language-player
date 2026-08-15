@@ -26,12 +26,22 @@ import {
   isDryRun,
 } from './version-lib.mjs';
 
-const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+const rawArgv = process.argv.slice(2);
+const args = [];
+for (let i = 0; i < rawArgv.length; i++) {
+  const arg = rawArgv[i];
+  if (arg === '--status' || arg === '--tag') {
+    i++; // skip the flag's value
+    continue;
+  }
+  if (arg.startsWith('--')) continue;
+  args.push(arg);
+}
 const dryRun = isDryRun(process.argv);
-const statusIndex = process.argv.indexOf('--status');
-const status = statusIndex >= 0 ? process.argv[statusIndex + 1] : 'consumed';
-const tagIndex = process.argv.indexOf('--tag');
-const tagName = tagIndex >= 0 ? process.argv[tagIndex + 1] : null;
+const statusIndex = rawArgv.indexOf('--status');
+const status = statusIndex >= 0 ? rawArgv[statusIndex + 1] : 'consumed';
+const tagIndex = rawArgv.indexOf('--tag');
+const tagName = tagIndex >= 0 ? rawArgv[tagIndex + 1] : null;
 
 const [nRaw, platformRaw, track, version, date] = args;
 if (!nRaw || !platformRaw || !track || !version) {
