@@ -263,7 +263,11 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     testID,
   } = props;
 
-  const [measured, setMeasured] = useState<{ width: number; height: number } | null>(null);
+  const [measured, setMeasured] = useState<{
+    width: number;
+    height: number;
+    sizeKey: string;
+  } | null>(null);
   const nativeRef = useRef<unknown>(null);
 
   // Only the glyph metrics matter for the box: text content, font, sizes.
@@ -278,18 +282,13 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     fontWeight ?? '',
   ].join(':');
 
-  const [activeSizeKey, setActiveSizeKey] = useState(sizeKey);
-  useEffect(() => {
-    if (activeSizeKey !== sizeKey) {
-      setActiveSizeKey(sizeKey);
-      setMeasured(null);
-    }
-  }, [sizeKey, activeSizeKey]);
-
   // Dev-only: after the native paragraph mounts, pull its internal state
   // (runs parsed, attributed-string length, frames) so a blank render can be
   // diagnosed from the Metro log.
-  const mountedKey = measured ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}` : null;
+  const mountedKey =
+    measured && measured.sizeKey === sizeKey
+      ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`
+      : null;
   const probeDiagnostics = useCallback((tag: string) => {
     try {
       const module = requireOptionalNativeModule('RubyText') as
@@ -320,11 +319,14 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     const { width, height } = event.nativeEvent.layout;
     log(`[LP Mobile] [RubyText] paragraph measured w=${width.toFixed(1)} h=${height.toFixed(1)} runs=${runs.length}`);
     setMeasured((prev) =>
-      prev && Math.abs(prev.width - width) < 0.5 && Math.abs(prev.height - height) < 0.5
+      prev &&
+      prev.sizeKey === sizeKey &&
+      Math.abs(prev.width - width) < 0.5 &&
+      Math.abs(prev.height - height) < 0.5
         ? prev
-        : { width, height }
+        : { width, height, sizeKey }
     );
-  }, [runs.length]);
+  }, [runs.length, sizeKey]);
 
   if (!NativeRubyTextParagraphView) return null;
 
@@ -339,6 +341,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           the native view needs. Kept mounted so width changes (rotation,
           zoom) re-measure automatically. */}
       <Text
+        key={sizeKey}
         pointerEvents="none"
         style={{
           position: 'absolute',
@@ -355,7 +358,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
       >
         {plainText}
       </Text>
-      {measured && activeSizeKey === sizeKey ? (
+      {measured && measured.sizeKey === sizeKey ? (
         (() => {
           log(`[LP Mobile] [RubyText] paragraph mounting native view runs=${runs.length} box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`);
           return (
