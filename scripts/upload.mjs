@@ -19,7 +19,9 @@
  *     LP_PLAY_SERVICE_ACCOUNT_JSON  path to the Play service-account JSON
  *     LP_PLAY_PACKAGE               default ca.zerotohero.go
  *
- * Credentials come from the environment only; nothing is stored in the repo.
+ * Credentials come from the environment. A gitignored scripts/.env.upload is
+ * also loaded automatically (copy scripts/.env.upload.example); real
+ * environment variables always take precedence.
  */
 
 import { execFileSync } from 'child_process';
@@ -35,6 +37,23 @@ import {
 const [command, artifact] = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+
+// Optional gitignored credential file (see scripts/.env.upload.example).
+// Real environment variables always win over values in this file.
+const uploadEnvFile = resolve(paths.root, 'scripts/.env.upload');
+if (existsSync(uploadEnvFile)) {
+  for (const line of readFileSync(uploadEnvFile, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue;
+    if (process.env[key] === undefined) {
+      process.env[key] = trimmed.slice(eq + 1).trim();
+    }
+  }
+}
 
 function fail(message) {
   console.error(`✖  ${message}`);

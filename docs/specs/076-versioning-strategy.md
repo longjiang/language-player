@@ -409,6 +409,11 @@ node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run
 node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
 ```
 
+Instead of exporting in your shell, you can keep the credentials in a
+gitignored `scripts/.env.upload` file (copy
+`scripts/.env.upload.example`); the script loads it automatically, and real
+environment variables always take precedence.
+
 The script reads the IPA's `Info.plist` and refuses to upload if its version
 or build doesn't match `packages/shared/src/version.json`. Since 2026
 Transporter requires `-assetFile` (the old `-f` flag is rejected);
