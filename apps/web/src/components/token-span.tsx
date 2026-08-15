@@ -209,7 +209,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     // ADR-0019: convert whenever the user's script preference differs from
     // the token's script. cn→twp when traditional is preferred; twp→cn
     // when simplified is preferred (idempotent on already-matching text).
-    if (!isHanToken) { setDisplayText(token.text); return; }
+    // Only applies to Chinese L2s — Japanese kanji / Korean hanja must never
+    // be converted (mobile parity).
+    if (!isChinese || !isHanToken) { setDisplayText(token.text); return; }
     let cancelled = false;
     (async () => {
       const { toTraditional, toSimplified } = await import('@/lib/chinese-script');
@@ -218,7 +220,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       if (!cancelled) setDisplayText(result);
     })();
     return () => { cancelled = true; };
-  }, [token.text, useTraditional, isHanToken, l2Code]);
+  }, [token.text, useTraditional, isChinese, isHanToken, l2Code]);
 
   // ── First gloss segment — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
