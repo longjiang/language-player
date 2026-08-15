@@ -590,11 +590,27 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 
 ### 3.3 Upload to App Store Connect
 
-- **Xcode Organizer (recommended):** `open -a Xcode` → **Window → Organizer** →
-  select the `LanguagePlayer` archive → **Distribute App** → **App Store
-  Connect** (re-signs with the Distribution certificate during export).
-- **CLI:** `xcrun notarytool submit <archive> --wait` (or legacy
-  `xcrun altool --upload-app`), or drag into **Transporter**.
+- **Browserless (recommended, no EAS):** `scripts/upload.mjs` wraps Apple's
+  Transporter CLI (`xcrun iTMSTransporter`, ships with Xcode):
+
+  ```bash
+  export LP_APPLE_ID="you@example.com"
+  # App-specific password: appleid.apple.com → Sign-In & Security → App-Specific Passwords
+  export LP_APPLE_APP_SPECIFIC_PASS="xxxx-xxxx-xxxx-xxxx"
+
+  node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run  # validates version/build first
+  node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
+  ```
+
+  The script reads the IPA's `Info.plist` and aborts on a version/build
+  mismatch with `packages/shared/src/version.json`. It expects an `.ipa`, not
+  the `.xcarchive` — export one from the archive (Xcode Organizer → Distribute
+  App → App Store Connect → export the IPA, or `xcodebuild -exportArchive`).
+
+- **Manual alternative:** `open -a Xcode` → **Window → Organizer** → select the
+  `LanguagePlayer` archive → **Distribute App** → **App Store Connect**
+  (re-signs with the Distribution certificate during export), or drag the IPA
+  into the **Transporter** app.
 
 > **Signing note:** the raw archive is signed with the **Apple Development**
 > identity + automatic provisioning (project uses `-allowProvisioningUpdates`).
