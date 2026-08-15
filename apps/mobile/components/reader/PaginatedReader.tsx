@@ -637,7 +637,7 @@ function renderBlock(
   }
 
   const visibleTextBlocks = visibleBlocks.filter(
-    (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
+    (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
   );
   const localIdx = visibleTextBlocks.indexOf(block as TextBlock);
   const translation = localIdx >= 0 ? blockTranslations[localIdx] : undefined;
@@ -658,7 +658,7 @@ function renderBlock(
   }
 
   // ── Body block content (tokenized text + optional translation) ──
-  const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item') => {
+  const bodyContent = (type: 'paragraph' | 'blockquote' | 'list-item' | 'heading') => {
     // IMPORTANT: keep this a stable reference when there is no link/highlight
     // formatting. `?? []` created a fresh array every render, which defeated
     // TokenizedText's memoization and re-rendered the whole reader page
@@ -676,7 +676,8 @@ function renderBlock(
             deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
-            textScale={scale}
+            textScale={scale * (block.type === 'heading' ? (block.depth === 1 ? 1.5 : block.depth === 2 ? 1.25 : block.depth === 3 ? 1.125 : 1) : 1)}
+            bold={block.type === 'heading'}
           />
     );
     const transEl = showTranslation && translation ? (
@@ -718,6 +719,15 @@ function renderBlock(
             {transEl}
           </View>
         );
+      case 'heading':
+        return sideBySide ? (
+          <View className="flex-row items-start gap-4">
+            <View className="min-w-0 flex-[3]">{tokenEl}</View>
+            <View className="min-w-0 flex-[2]">{transEl}</View>
+          </View>
+        ) : (
+          <View>{tokenEl}{transEl}</View>
+        );
     }
   };
 
@@ -728,14 +738,11 @@ function renderBlock(
       onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
     >
       {block.type === 'heading' && (
-        <Text
-          className="mb-2 font-bold text-foreground"
-          style={{
-            fontSize: (block.depth === 1 ? 24 : block.depth === 2 ? 20 : block.depth === 3 ? 18 : 16) * blockScale,
-          }}
-        >
-          {block.text}
-        </Text>
+        showTextActions ? (
+          <TextActionMenu text={block.text} l2Code={l2Code} l1Code={l1Code}>
+            {bodyContent('heading')}
+          </TextActionMenu>
+        ) : bodyContent('heading')
       )}
       {block.type === 'paragraph' && (
         showTextActions ? (
