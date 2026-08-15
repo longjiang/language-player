@@ -14,6 +14,7 @@ import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { languageName } from '@/lib/language-data';
 import {
   BookOpen, Loader2, FileText, Sparkles, Plus, PanelRight,
   ChevronLeft, ChevronRight,
@@ -437,7 +438,7 @@ export function ReaderPanel({
           {activeTab === 'edit' && (
             <div className="flex min-h-0 flex-1 flex-col gap-3">
               <textarea value={text} onChange={(e) => onTextChange(e.target.value)}
-                placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
+                placeholder={t('placeholder.paste_l2_text', { l2: languageName(l2.code, l1.code) })}
                 className="min-h-0 flex-1 w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                 dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
               <div className="flex-shrink-0 flex gap-2">
