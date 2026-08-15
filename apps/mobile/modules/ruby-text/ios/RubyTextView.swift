@@ -99,7 +99,7 @@ internal final class RubyTextView: ExpoView {
       baseAttributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
     }
     if italic {
-      baseAttributes[NSAttributedString.Key(kCTObliquenessAttributeName as String)] = 0.25
+      baseAttributes[.obliqueness] = 0.25
     }
 
     let result = NSMutableAttributedString()
