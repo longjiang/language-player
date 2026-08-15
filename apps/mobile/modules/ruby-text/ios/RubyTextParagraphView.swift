@@ -18,6 +18,10 @@ import UIKit
  * geometry (closestPosition → UTF-16 offset → run lookup).
  */
 internal final class RubyTextParagraphView: ExpoView {
+  /// Last mounted paragraph view, so the JS side can pull diagnostics through
+  /// the module when a paragraph renders blank (dev builds only).
+  internal static weak var lastDiagnosticsView: RubyTextParagraphView?
+
   private let textView = UITextView()
   let onTokenTap = EventDispatcher()
 
@@ -32,6 +36,7 @@ internal final class RubyTextParagraphView: ExpoView {
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
+    RubyTextParagraphView.lastDiagnosticsView = self
 
     isOpaque = false
     clipsToBounds = false
@@ -50,9 +55,28 @@ internal final class RubyTextParagraphView: ExpoView {
     addGestureRecognizer(tap)
   }
 
+  internal var diagnostics: [String: Any] {
+    [
+      "runs": runs.count,
+      "chars": attributedString?.length ?? -1,
+      "bounds": NSStringFromCGRect(bounds),
+      "tvFrame": NSStringFromCGRect(textView.frame),
+      "tvTextLen": textView.attributedText?.length ?? -1,
+      "tvText": String(textView.text.prefix(40)),
+    ]
+  }
+
   override func layoutSubviews() {
     super.layoutSubviews()
     textView.frame = bounds
+    // UITextView lays out lazily against its text container; if props arrive
+    // before the first frame (frame = .zero), the initial attributed string
+    // can be skipped. Re-apply it once we have real bounds so the container
+    // re-lays out against the actual size.
+    if let attributedString, textView.attributedText !== attributedString {
+      textView.attributedText = attributedString
+    }
+    print("[LP Mobile] [RubyTextParagraph] layout bounds=\(bounds) tvFrame=\(textView.frame) textLen=\(textView.attributedText?.length ?? -1)")
   }
 
   @objc
@@ -81,6 +105,7 @@ internal final class RubyTextParagraphView: ExpoView {
   private func rebuild() {
     attributedString = makeAttributedString()
     textView.attributedText = attributedString
+    print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight)")
   }
 
   private func makeAttributedString() -> NSAttributedString? {
