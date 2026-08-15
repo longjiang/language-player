@@ -87,6 +87,13 @@ EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
 This creates `android/` locally. It is gitignored (global `android` ignore),
 so the generated project is per-machine.
 
+> **Note (2026-08-14):** prebuild **clears** `android/`, which also deletes
+> `android/local.properties` and `android/key.properties`. After every
+> prebuild, recreate both (SDK path from the machine's Android SDK install;
+> key.properties from `~/.android/lp-upload-credentials.txt`), then re-apply
+> the release signing config in `android/app/build.gradle` (§ 3.4) — the
+> regenerated project signs release builds with the debug key otherwise.
+
 - Verify the generated package is `ca.zerotohero.go` and the version/version
   code match the shared config (check `android/app/build.gradle`).
 - If `android/` already exists, prebuild syncs it in place. If the package ID

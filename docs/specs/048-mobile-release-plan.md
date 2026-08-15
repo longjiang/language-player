@@ -564,6 +564,13 @@ EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
   When in doubt, `-jobs 1` is guaranteed correct (just slower).
 - The archive lands at `~/Desktop/LanguagePlayer.xcarchive`.
 
+> **Note (2026-08-14):** `expo prebuild` regenerates `ios/` without a
+> development team, so the archive fails with "Signing for LanguagePlayer3
+> requires a development team". After every prebuild, add
+> `DEVELOPMENT_TEAM=9CS9PCBX32 CODE_SIGN_STYLE=Automatic
+> CODE_SIGN_IDENTITY="Apple Development"` to the archive command (or set them
+> in the Xcode project).
+
 ### 3.2 Verify the archive + embedded bundle
 
 ```bash
