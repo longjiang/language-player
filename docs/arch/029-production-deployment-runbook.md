@@ -301,10 +301,19 @@ Store Connect but are carried forward from the previous version (verified on
 
 1. App Store Connect → TestFlight: confirm the build appears and finishes
    processing.
-2. Add testers / run the beta QA pass.
-3. Submit for review from App Store Connect (review notes: demo account,
+2. **Export compliance ("Missing Compliance"):** `app.config.js` sets
+   `ios.infoPlist.ITSAppUsesNonExemptEncryption: false`, which prebuild bakes
+   into Info.plist. App Store Connect then treats the build as "None of the
+   algorithms mentioned above" and skips the compliance prompt, so TestFlight
+   availability is immediate. This declaration is accurate for LP3 — it only
+   uses standard exempt encryption (TLS/HTTPS via Apple frameworks). Caveat:
+   the key is read from the binary, so a build uploaded **before** the key was
+   added still prompts once; answer "None of the algorithms mentioned above"
+   manually for that build (or bump the build number and re-upload).
+3. Add testers / run the beta QA pass.
+4. Submit for review from App Store Connect (review notes: demo account,
    sample video IDs, real backend note — SPEC-048 § 3.4).
-4. Record the consumed build number immediately, even if rejected/rolled
+5. Record the consumed build number immediately, even if rejected/rolled
    back:
 
    ```bash
@@ -528,6 +537,11 @@ node scripts/tag-release.mjs --extension
   app-specific passwords. Keep them in the gitignored `scripts/.env.upload`
   (chmod 600) and never paste them into chat or terminal history; the script
   masks the password in its own error output.
+- **TestFlight "Missing Compliance" prompt** is avoided by
+  `ITSAppUsesNonExemptEncryption: false` in `app.config.js` (baked into
+  Info.plist by prebuild). Builds uploaded without that key still prompt
+  once — answer "None of the algorithms mentioned above" or re-upload a new
+  build number.
 - **Transporter needs an `.ipa`**, not the `.xcarchive`.
 
 ### Android / Play API
