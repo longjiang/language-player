@@ -6,13 +6,37 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
-import { getSampleSentence } from '@langplayer/shared';
+import { getSampleSentence, loadSampleShort } from '@langplayer/shared';
 import { translateText } from '@/lib/translate';
 import { TokenizedText } from '@/components/tokenized-text';
+import { TextActionMenu } from '@/components/text-action-menu';
+import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { SectionHeader } from '../_components/SectionHeader';
 import { SegmentedRow } from '../_components/SegmentedRow';
 import { ToggleRow } from '../_components/ToggleRow';
 import { SliderRow } from '../_components/SliderRow';
+
+/** Split simple inline markdown (**bold**, *italic*, `code`) into segments. */
+function parsePreviewSegments(text: string): { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] {
+  const out: { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] = [];
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index) });
+    const token = m[0];
+    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
+      out.push({ text: token.slice(2, -2), bold: true });
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      out.push({ text: token.slice(1, -1), code: true });
+    } else {
+      out.push({ text: token.slice(1, -1), italic: true });
+    }
+    last = m.index + token.length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last) });
+  return out;
+}
 
 export default function DisplaySettingsPage() {
   const { l1, l2 } = useLanguage();
@@ -34,11 +58,21 @@ export default function DisplaySettingsPage() {
   const l2Settings = getL2(l2.code);
   const popupEnabled = tokenizedText.enabled;
 
-  const previewText = getSampleSentence(l2.code);
+  const [previewText, setPreviewText] = useState('');
   const [previewTranslation, setPreviewTranslation] = useState('');
 
   const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
+
+  // Lazy-load the per-language sample paragraph (famous place), with the old
+  // sentence as a fallback if the chunk fails to load.
+  useEffect(() => {
+    let cancelled = false;
+    loadSampleShort(l2.code)
+      .then((text) => { if (!cancelled) setPreviewText(text); })
+      .catch(() => { if (!cancelled) setPreviewText(getSampleSentence(l2.code)); });
+    return () => { cancelled = true; };
+  }, [l2.code]);
 
   useEffect(() => {
     if (!previewText || !display.translation) {
@@ -94,9 +128,32 @@ export default function DisplaySettingsPage() {
         {/* Tokenized Text Preview */}
         <SectionHeader title={t('label.tokenized_text_preview')}>
           <div className="rounded-lg border border-border bg-muted/50 p-4">
-            <TokenizedText text={previewText} l2Code={l2.code} typeFace={tokenizedText.typeFace} />
+            <TextActionMenu text={previewText} l2Code={l2.code} l1Code={l1.code} alwaysShow>
+              <span
+                style={{
+                  fontSize: `${zoomRem}rem`,
+                  lineHeight: String(tokenizedText.leading ?? 1.625),
+                }}
+              >
+                {parsePreviewSegments(previewText).map((seg, i) =>
+                  seg.bold ? (
+                    <strong key={i}>
+                      <TokenizedText text={seg.text} l2Code={l2.code} inline typeFace={tokenizedText.typeFace} />
+                    </strong>
+                  ) : seg.italic ? (
+                    <em key={i}>
+                      <TokenizedText text={seg.text} l2Code={l2.code} inline typeFace={tokenizedText.typeFace} />
+                    </em>
+                  ) : (
+                    <TokenizedText key={i} text={seg.text} l2Code={l2.code} inline typeFace={tokenizedText.typeFace} />
+                  ),
+                )}
+              </span>
+            </TextActionMenu>
             {previewTranslation && (
-              <p className="pt-1 text-sm text-muted-foreground leading-relaxed">{previewTranslation}</p>
+              <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
+                {renderInlineMarkdown(previewTranslation, { markBold: true })}
+              </p>
             )}
           </div>
         </SectionHeader>

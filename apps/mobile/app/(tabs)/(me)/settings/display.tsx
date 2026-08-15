@@ -3,13 +3,38 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { getSampleSentence } from '@langplayer/shared';
+import { getSampleSentence, loadSampleShort } from '@langplayer/shared';
 import { TokenizedText } from '@/components/TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
+import { ZOOM_TO_REM } from '@/lib/text-scale';
+import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { SectionHeader } from '@/components/settings/SectionHeader';
 import { ToggleRow } from '@/components/settings/ToggleRow';
 import { SliderRow } from '@/components/settings/SliderRow';
 import { SegmentedRow } from '@/components/settings/SegmentedRow';
+
+/** Split simple inline markdown (**bold**, *italic*, `code`) into segments. */
+function parsePreviewSegments(text: string): { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] {
+  const out: { text: string; bold?: boolean; italic?: boolean; code?: boolean }[] = [];
+  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(text)) !== null) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index) });
+    const token = m[0];
+    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
+      out.push({ text: token.slice(2, -2), bold: true });
+    } else if (token.startsWith('`') && token.endsWith('`')) {
+      out.push({ text: token.slice(1, -1), code: true });
+    } else {
+      out.push({ text: token.slice(1, -1), italic: true });
+    }
+    last = m.index + token.length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last) });
+  return out;
+}
 
 export function DisplaySettings() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -31,7 +56,16 @@ export function DisplaySettings() {
 
   const l2Settings = getL2(l2Lang.code);
   const popupEnabled = tokenizedText.enabled;
-  const previewText = getSampleSentence(l2Lang.code);
+  const [previewText, setPreviewText] = useState('');
+  // Lazy-load the per-language sample paragraph (famous place), with the old
+  // sentence as a fallback if loading fails.
+  useEffect(() => {
+    let cancelled = false;
+    loadSampleShort(l2Lang.code)
+      .then((text) => { if (!cancelled) setPreviewText(text); })
+      .catch(() => { if (!cancelled) setPreviewText(getSampleSentence(l2Lang.code)); });
+    return () => { cancelled = true; };
+  }, [l2Lang.code]);
   const isChinese = l2Lang.code === 'zh';
   const isKorean = l2Lang.code === 'ko';
   const isVietnamese = l2Lang.code === 'vi';
@@ -99,10 +133,26 @@ export function DisplaySettings() {
           <View className="mb-5">
             <SectionHeader title={t('label.tokenized_text_preview')} />
             <View className="rounded-lg border border-border bg-muted p-3">
-              <TokenizedText text={previewText} l2Code={l2Lang.code} />
+              <TextActionMenu text={previewText} l2Code={l2Lang.code} l1Code={l1Lang.code}>
+                <Text
+                  style={{
+                    fontSize: 16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1),
+                    lineHeight: Math.round(16 * (ZOOM_TO_REM[tokenizedText.zoom] ?? 1) * (tokenizedText.leading ?? 1.625)),
+                  }}
+                >
+                  {parsePreviewSegments(previewText).map((seg, i) => (
+                    <Text
+                      key={i}
+                      style={seg.bold ? { fontWeight: '700' } : seg.italic ? { fontStyle: 'italic' } : undefined}
+                    >
+                      <TokenizedText text={seg.text} l2Code={l2Lang.code} inline />
+                    </Text>
+                  ))}
+                </Text>
+              </TextActionMenu>
               {previewTranslation ? (
                 <Text className="pt-1 text-sm text-muted-foreground leading-relaxed">
-                  {previewTranslation}
+                  {renderInlineMarkdown(previewTranslation, { markBold: true })}
                 </Text>
               ) : null}
             </View>
