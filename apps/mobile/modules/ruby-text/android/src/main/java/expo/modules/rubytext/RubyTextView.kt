@@ -14,6 +14,7 @@ import android.text.style.UnderlineSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.TextView
+import android.util.Log
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
@@ -98,6 +99,12 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
 
   private val onTap by EventDispatcher<Unit>()
 
+  var readingColor: Int = Color.WHITE
+    set(value) {
+      field = value
+      rebuild()
+    }
+
   private val textView = TextView(context).apply {
     includeFontPadding = false
     gravity = Gravity.TOP or Gravity.START
@@ -106,6 +113,12 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
   init {
     addView(textView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     setOnClickListener { onTap(Unit) }
+    Log.i("LP Mobile", "[RubyText] Android RubyTextView created")
+  }
+
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+    Log.i("LP Mobile", "[RubyText] size ${w}x$h color=0x${Integer.toHexString(color)}")
   }
 
   private fun readingSlotHeight(): Int {
@@ -123,6 +136,10 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     textView.setTextColor(color)
     textView.setTypeface(makeTypeface())
     textView.setPadding(0, readingSlotHeight(), 0, 0)
+    Log.i(
+      "LP Mobile",
+      "[RubyText] rebuild segments=${segments.size} textLen=${textView.text?.length} color=0x${Integer.toHexString(color)} readingColor=0x${Integer.toHexString(readingColor)}"
+    )
   }
 
   private fun buildSpannable(): SpannableStringBuilder {
@@ -137,7 +154,7 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
         // stubs), so the custom ReplacementSpan below is used on every
         // Android version.
         builder.setSpan(
-          FallbackRubySpan(reading, readingSize, rubyPull, color),
+          FallbackRubySpan(reading, readingSize, rubyPull, readingColor),
           start,
           end,
           Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
