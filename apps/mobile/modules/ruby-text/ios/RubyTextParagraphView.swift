@@ -59,8 +59,8 @@ internal final class RubyTextParagraphView: ExpoView {
     [
       "runs": runs.count,
       "chars": attributedString?.length ?? -1,
-      "bounds": NSStringFromCGRect(bounds),
-      "tvFrame": NSStringFromCGRect(textView.frame),
+      "bounds": String(describing: bounds),
+      "tvFrame": String(describing: textView.frame),
       "tvTextLen": textView.attributedText?.length ?? -1,
       "tvText": String(textView.text.prefix(40)),
     ]
