@@ -88,6 +88,10 @@ interface RubyTokenSpanProps {
   displayText: string;
   pronunciation: string | null;
   hasRuby: boolean;
+  /** When true (furigana enabled), tokens without ruby still reserve the
+   *  reading slot above the word so every wrapped line keeps the same height
+   *  whether or not it contains furigana. */
+  reserveRubySlot: boolean;
   isBlanked: boolean;
   isHighlighted: boolean;
   isLink: boolean;
@@ -118,7 +122,7 @@ interface RubyTokenSpanProps {
 
 const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
   const {
-    index, word, displayText, pronunciation, hasRuby, isBlanked, isHighlighted, isLink,
+    index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
     isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
     linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle,
@@ -167,9 +171,12 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
               {seg.reading && (
                 <Text style={{ fontSize: readingSize, lineHeight: readingSize, marginBottom: -rubyPull }} className={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}>{seg.reading}</Text>
               )}
-              {/* Spacer: align kana-only segments with kanji segments that have ruby above.
-                  Matches the reading text's line box so base texts share a baseline. */}
-              {hasRuby && !seg.reading && (
+              {/* Spacer: reserve the reading line box above segments that don't
+                  have a reading. Covers kana-only segments inside a ruby word
+                  and — when reserveRubySlot is on (furigana enabled) — whole
+                  tokens without ruby (kana words, punctuation), so every
+                  wrapped line keeps the same height with or without furigana. */}
+              {(hasRuby || reserveRubySlot) && !seg.reading && (
                 <View style={{ height: readingSize, marginBottom: -rubyPull }} />
               )}
               <Text style={[textStyle, { lineHeight: baseLeading }]}>
@@ -1142,6 +1149,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     // RUBY_READING_GAP px between the reading glyphs and the base glyphs.
     const halfLeading = Math.round(((baseLeading ?? tokenFontSize) - tokenFontSize) / 2);
     const rubyPull = Math.max(0, halfLeading - RUBY_READING_GAP);
+    const isRubyMode = showPhonetics && phonetics.show === 'ruby';
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -1177,6 +1185,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                       : undefined;
                 return (
                   <View key={i} className="items-center" style={whitespaceStyle}>
+                    {isRubyMode && !isNewline && (
+                      <View style={{ height: readingSize, marginBottom: -rubyPull }} />
+                    )}
                     {!isNewline && (
                       <Text style={[textStyle, { lineHeight: baseLeading }]} className={textColor}>{token.text}</Text>
                     )}
@@ -1238,7 +1249,6 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
               // Suppress ruby for the highlighted (target) word unless
               // phoneticsOnHighlight is set (review card flip, SPEC-049 §6.1).
-              const isRubyMode = showPhonetics && phonetics.show === 'ruby';
               const hasRuby = !!(isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word
                 && (!isHighlighted || phoneticsOnHighlight));
 
@@ -1258,6 +1268,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   displayText={displayText}
                   pronunciation={token.pronunciation ?? null}
                   hasRuby={hasRuby}
+                  reserveRubySlot={isRubyMode}
                   isBlanked={isBlanked}
                   isHighlighted={isHighlighted}
                   isLink={isLink}
