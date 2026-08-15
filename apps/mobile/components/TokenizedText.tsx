@@ -462,11 +462,10 @@ export interface TokenizedTextProps {
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'relaxed'
-   * (1.625×).
-   * Pass 'none' to inherit from the parent container.
+   * Line-height (leading) multiplier for tokenized text (1–2). Defaults to
+   * the display-settings value (1.625×).
    */
-  leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
+  leading?: number;
   /** testID for the outermost container — enables E2E selectors like "subtitle-line-0". */
   testID?: string;
   /** When true, highlighted (target) words show their phonetics too. Used by
@@ -519,7 +518,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading = 'relaxed', testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, textColor = 'text-foreground' }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -691,14 +690,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   }, [tokenSettings.zoom, tokenSettings.typeFace, textScale, inline, bold]);
 
   // ── Leading ratio from prop (default: relaxed = 1.625) ──
-  const LEADING_RATIOS: Record<string, number> = {
-    relaxed: 1.625,
-    normal: 1.5,
-    tight: 1.25,
-    snug: 1.375,
-    loose: 2,
-  };
-  const leadingRatio: number | undefined = inline || leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 2);
+  const effectiveLeading = leading ?? tokenSettings.leading ?? 1.625;
+  const leadingRatio: number | undefined = inline ? undefined : effectiveLeading;
   const fallbackLineHeight = leadingRatio ? Math.round((textStyle.fontSize ?? 16) * leadingRatio) : undefined;
   const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 

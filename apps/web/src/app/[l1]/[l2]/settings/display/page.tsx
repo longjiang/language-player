@@ -141,6 +141,14 @@ export default function DisplaySettingsPage() {
                 rightLabel={t('setting.bigger')}
                 centerLabel={`${Math.round(ZOOM_TO_REM[0] * 16)}–${Math.round(ZOOM_TO_REM[7] * 16)}px`}
               />
+              <SliderRow
+                label={t('setting.leading')}
+                min={1} max={2} step={0.125} value={tokenizedText.leading ?? 1.625}
+                onChange={v => updateTokenizedText({ leading: v })}
+                valueDisplay={`×${(tokenizedText.leading ?? 1.625).toFixed(2)}`}
+                leftLabel="1×"
+                rightLabel="2×"
+              />
             </SectionHeader>
 
             {/* Phonetics */}

@@ -1173,6 +1173,7 @@ setting.font_serif,Serif,衬线体,襯線體,Serif,Serif,Serif,Serif,Serif,Serif
 setting.hard_words_only,Hard Words Only,仅难词,僅難詞,الكلمات الصعبة فقط,Nur schwierige Wörter,Solo palabras difíciles,Mots difficiles uniquement,Hanya kata sulit,Solo parole difficili,難しい単語のみ,어려운 단어만,Alleen moeilijke woorden,Tylko trudne słowa,Apenas palavras difíceis,Только сложные слова,เฉพาะคำยาก,Yalnızca Zor Kelimeler,Chỉ từ khó
 setting.interaction,Interaction,交互,互動,التفاعل,Interaktion,Interacción,Interaction,Interaksi,Interazione,操作,상호작용,Interactie,Interakcja,Interação,Взаимодействие,การโต้ตอบ,Etkileşim,Tương tác
 setting.kana_only,Kana Only,仅假名,僅假名,كانا فقط,Nur Kana,Solo Kana,Kana uniquement,Hanya Kana,Solo Kana,かなのみ,가나만,Alleen Kana,Tylko Kana,Apenas Kana,Только кана,คะนะเท่านั้น,Yalnızca Kana,Chỉ Kana
+setting.leading,Line Spacing,行距,行距,تباعد الأسطر,Zeilenabstand,Interlineado,Interligne,Spasi baris,Interlinea,行間,줄 간격,Regelafstand,Odstęp między wierszami,Espaçamento entre linhas,Межстрочный интервал,ระยะห่างบรรทัด,Satır aralığı,Giãn dòng
 setting.learning,Learning,学习,學習,التعلم,Lernen,Aprendizaje,Apprentissage,Pembelajaran,Apprendimento,学習,학습,Leren,Nauka,Aprendizagem,Обучение,การเรียนรู้,Öğrenme,Học tập
 setting.light,Light,浅色,淺色,فاتح,Hell,Claro,Clair,Terang,Chiaro,ライト,라이트,Licht,Jasny,Claro,Светлая,สว่าง,Açık,Sáng
 setting.network,Network,网络,網路,الشبكة,Netzwerk,Red,Réseau,Jaringan,Rete,ネットワーク,네트워크,Netwerk,Sieć,Rede,Сеть,เครือข่าย,Ağ,Mạng

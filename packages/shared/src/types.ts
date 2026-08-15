@@ -834,6 +834,9 @@ export interface TokenizedTextSettings {
   /** Font for L2 text. */
   typeFace: 'default' | 'serif' | 'sans-serif';
 
+  /** Line-height multiplier for L2 text (1–2). Default 1.625 (relaxed). */
+  leading: number;
+
   /** `normal` = show all words; `quiz` = blank out saved words for self-testing. */
   mode: 'normal' | 'quiz';
 
@@ -972,6 +975,7 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
   enabled: true,
   zoom: 0,
   typeFace: 'default',
+  leading: 1.625,
   mode: 'normal',
   quickGloss: true,
 };
