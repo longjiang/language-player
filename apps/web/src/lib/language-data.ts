@@ -102,10 +102,10 @@ const LANGUAGE_NAMES: Record<string, string> = {
  */
 export function languageName(code: string, uiLocale?: string): string {
   if (uiLocale) {
-    // Normalize zh-Hans/zh-Hant → zh for both code and locale in i18n lookup
-    const lookupLocale = uiLocale.startsWith('zh-') ? 'zh' : uiLocale;
     const lookupCode = code.startsWith('zh-') ? 'zh' : code;
-    const localeNames = LOCALIZED_LANGUAGE_NAMES[lookupLocale];
+    // zh-Hans/zh-Hant have their own blocks; fall back to the shared
+    // simplified `zh` block when a name is missing.
+    const localeNames = LOCALIZED_LANGUAGE_NAMES[uiLocale] ?? LOCALIZED_LANGUAGE_NAMES['zh'];
     if (localeNames?.[lookupCode]) return localeNames[lookupCode];
     // Fall back to English
     const enNames = LOCALIZED_LANGUAGE_NAMES['en'];
