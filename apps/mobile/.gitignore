@@ -32,6 +32,13 @@ android/.gradle/
 android/app/build/
 android/build/
 
+# The user-level .gitignore has bare `ios`/`android` patterns (they match any
+# directory with that name, including this monorepo's generated native dirs).
+# The local ruby-text Expo module keeps its native sources in ios/ and
+# android/ and must stay under version control — re-include them here.
+!modules/ruby-text/ios/
+!modules/ruby-text/android/
+
 # TypeScript
 *.tsbuildinfo
 
