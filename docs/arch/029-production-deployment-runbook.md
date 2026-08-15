@@ -274,6 +274,24 @@ Distribute App → App Store Connect, or drag the IPA into the Transporter app.
 > `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter`
 > automatically.
 
+**Fully automated submission (no browser):** with an App Store Connect API
+key (`LP_ASC_KEY_PATH` / `LP_ASC_KEY_ID` / `LP_ASC_ISSUER_ID` in the
+gitignored `scripts/.env.upload`; generate at App Store Connect → Users and
+Access → Integrations → App Store Connect API, role **App Manager**), the
+same script creates the version record, attaches the build, sets review info
+(demo account + notes) and What's New, and submits for review:
+
+```bash
+node scripts/upload.mjs appstore status                # current versions + builds
+node scripts/upload.mjs appstore prepare 3.1.0         # create version, attach build, set metadata
+node scripts/upload.mjs appstore submit 3.1.0          # send to App Review
+```
+
+This is exactly how 3.1.0 was submitted (2026-08-14). Caveat: the API accepts
+the submission even if store assets are missing (e.g. iPad screenshots) —
+Apple may still flag them during review, so add required screenshots before
+submitting.
+
 ### 4.4 After upload
 
 1. App Store Connect → TestFlight: confirm the build appears and finishes
