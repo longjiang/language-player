@@ -25,6 +25,14 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'ca.zerotohero.go',
       buildNumber: String(PRODUCT_BUILD_NUMBER),
+      infoPlist: {
+        // The app only uses standard, exempt encryption (TLS/HTTPS through
+        // Apple frameworks). ITSAppUsesNonExemptEncryption=false tells App
+        // Store Connect this, so TestFlight skips the export-compliance
+        // prompt ("Missing Compliance") and builds become available
+        // immediately instead of waiting for a manual answer.
+        ITSAppUsesNonExemptEncryption: false,
+      },
       associatedDomains: [
         'applinks:languageplayer.io',
         'applinks:language-player.netlify.app',
