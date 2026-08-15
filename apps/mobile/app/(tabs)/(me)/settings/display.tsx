@@ -132,6 +132,17 @@ export function DisplaySettings() {
                 rightLabel={t('setting.bigger')}
                 centerLabel={`${Math.round(1 * 16)}–${Math.round(2.25 * 16)}px`}
               />
+              <SliderRow
+                label={t('setting.leading')}
+                value={tokenizedText.leading ?? 1.625}
+                min={1}
+                max={2}
+                step={0.125}
+                onValueChange={(v) => updateTokenizedText({ leading: v })}
+                valueDisplay={`×${(tokenizedText.leading ?? 1.625).toFixed(2)}`}
+                leftLabel="1×"
+                rightLabel="2×"
+              />
             </View>
 
             {/* Phonetics */}

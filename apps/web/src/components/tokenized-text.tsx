@@ -198,11 +198,10 @@ export interface TokenizedTextProps {
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
   typeFace?: 'default' | 'serif' | 'sans-serif';
   /**
-   * Line-height (leading) for tokenized text. Defaults to 'relaxed'
-   * (1.625×). Pass 'none' to inherit from the parent. Ignored when `inline`
-   * is set.
+   * Line-height (leading) multiplier for tokenized text (1–2). Defaults to
+   * the display-settings value (1.625×). Ignored when `inline` is set.
    */
-  leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
+  leading?: number;
   /** Extra contextual info for word saving (video title, timestamp, book title, etc.).
    *  `text` and `form` cannot be overridden — `form` is the clicked surface
    *  form, and `text` is the sentence (Intl.Segmenter) the clicked token
@@ -280,22 +279,13 @@ export interface TokenizedTextProps {
  * Tokens are clickable — clicking shows lemma info and enables dictionary lookup.
  * Passes context through for word saving (video title, subtitle line, etc.).
  */
-/** Leading prop → Tailwind class. 'none' = inherit from parent (no class applied). */
-const LEADING_CLASS: Record<string, string> = {
-  relaxed: 'leading-relaxed',
-  normal: 'leading-normal',
-  tight: 'leading-tight',
-  snug: 'leading-snug',
-  loose: 'leading-loose',
-};
-
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
   textScale,
   inline = false,
   inheritSize = false,
-  leading = 'relaxed',
+  leading,
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
@@ -339,7 +329,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // Inline text also skips leading; inheritSize keeps leading.
   const zoomRem = ZOOM_TO_REM[settingsTokenizedText.zoom] ?? 1;
   const effectiveScale = inline || inheritSize ? 0 : (textScale ?? 1) * zoomRem;
-  const leadingClass = inline ? '' : LEADING_CLASS[leading] ?? '';
+  const effectiveLeading = leading ?? settingsTokenizedText.leading ?? 1.625;
+  // Unitless line-height so it scales with whatever font size applies
+  // (inline rem size, or the parent's size for inheritSize).
+  const textStyle = inline
+    ? undefined
+    : {
+        ...(effectiveScale ? { fontSize: `${effectiveScale}rem` } : {}),
+        lineHeight: String(effectiveLeading),
+      };
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -720,7 +718,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -728,7 +726,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -736,7 +734,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -745,7 +743,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   return (
     <>
       <span ref={containerRef} className={`${fontClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
-      <span className={leadingClass} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span style={textStyle}>
         {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {
           let totalWeight = 0;
