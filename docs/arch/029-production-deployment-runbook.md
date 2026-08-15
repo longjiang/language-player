@@ -123,7 +123,9 @@ Key production behaviors:
   (200 rewrite)
 - `/*` with `lp_legacy` cookie → `https://v2.languageplayer.io/:splat`
   (200 rewrite for the legacy iOS Capacitor wrapper; must stay **after** the
-  API rules — the committed file already has this order)
+  API rules — the committed file already has this order). The full cookie
+  mechanism, edge-function interaction, and caveats are documented in
+  [SPEC-071 § 12 — Capacitor wrapper redirect](../specs/071-classic-route-redirect-adapter.md#12-capacitor-wrapper-redirect-cookie-gated-proxy).
 
 ### 2.3 Environment variables
 
