@@ -257,6 +257,9 @@ node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run
 node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
 ```
 
+Credentials may also be kept in the gitignored `scripts/.env.upload` (copy
+`scripts/.env.upload.example`) — the script loads it automatically.
+
 The script wraps `xcrun iTMSTransporter -assetFile` (ships with Xcode) and
 aborts on version/build mismatch. Manual alternative: Xcode Organizer →
 Distribute App → App Store Connect, or drag the IPA into the Transporter app.
@@ -305,11 +308,14 @@ Verify the embedded bundle has `pythonvps.zerotohero.ca` and no localhost
 
 ### 5.3 Upload (no EAS needed)
 
-One-time setup (SPEC-067 § 4.5): Play Console → Setup → API access → create a
-service account with Release access → download JSON key. Then:
+One-time setup (SPEC-067 § 4.5) is **done and verified (2026-08-14)** — the
+service account `lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com`
+has release access to `ca.zerotohero.go`, and credentials are wired through
+the gitignored `scripts/.env.upload`. Then:
 
 ```bash
-export LP_PLAY_SERVICE_ACCOUNT_JSON="$HOME/.config/lp-play-service-account.json"
+# Optional overrides (defaults come from scripts/.env.upload):
+export LP_PLAY_SERVICE_ACCOUNT_JSON=/Users/longjiang/Projects/language-player/scripts/lp-play-service-account.json
 
 node scripts/upload.mjs android \
   apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
