@@ -295,7 +295,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   textScale,
   inline = false,
   inheritSize = false,
-  typeFace = 'default',
   leading = 'relaxed',
   context: externalContext,
   tokenCache,
@@ -318,15 +317,19 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   showDefinition,
   byeonggi,
   selectionDictionary = false,
+  typeFace,
 }) => {
-  // Map typeFace to Tailwind font-family class
-  const fontClass =
-    typeFace === 'serif' ? 'font-serif' :
-    typeFace === 'sans-serif' ? 'font-sans' : '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
+
+  // Serif/sans-serif preference from display settings applies everywhere a
+  // call site doesn't pass an explicit typeFace override (mobile parity).
+  const effectiveTypeFace = typeFace ?? settingsTokenizedText.typeFace ?? 'default';
+  const fontClass =
+    effectiveTypeFace === 'serif' ? 'font-serif' :
+    effectiveTypeFace === 'sans-serif' ? 'font-sans' : '';
 
   // Resolve effective font size (rem). The user's zoom setting from
   // SettingsContext always applies to block-level TokenizedText:
