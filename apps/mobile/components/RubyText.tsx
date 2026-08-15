@@ -340,7 +340,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
       >
         {plainText}
       </Text>
-      {measured ? (
+      {measured && activeSizeKey === sizeKey ? (
         (() => {
           log(`[LP Mobile] [RubyText] paragraph mounting native view runs=${runs.length} box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`);
           return (
