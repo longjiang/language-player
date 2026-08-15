@@ -21,6 +21,15 @@
  *     LP_PLAY_SERVICE_ACCOUNT_JSON  path to the Play service-account JSON
  *     LP_PLAY_PACKAGE               default ca.zerotohero.go
  *
+ * App Store Connect metadata + submission (no EAS needed):
+ *   node scripts/upload.mjs appstore status
+ *   node scripts/upload.mjs appstore prepare <version> [--whats-new <text>]
+ *   node scripts/upload.mjs appstore submit <version> [--whats-new <text>]
+ *   Requires (scripts/.env.upload, gitignored):
+ *     LP_ASC_KEY_PATH  .p8 private key  LP_ASC_KEY_ID  LP_ASC_ISSUER_ID
+ *     Optional: LP_ASC_APP_ID (default 6520385296), LP_ASC_DEMO_EMAIL/PASS,
+ *     LP_ASC_CONTACT_EMAIL
+ *
  * Credentials come from the environment. A gitignored scripts/.env.upload is
  * also loaded automatically (copy scripts/.env.upload.example); real
  * environment variables always take precedence.
@@ -29,7 +38,8 @@
 import { execFileSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { createSign } from 'crypto';
+import { createPrivateKey, createSign } from 'crypto';
+import { SignJWT } from 'jose';
 import {
   paths,
   readSharedVersion,
@@ -98,6 +108,282 @@ async function playApi(pathname, token, options = {}, body = null, upload = fals
     fail(`Play API ${response.status}: ${message}`);
   }
   return json;
+}
+
+const ASC_BASE = 'https://api.appstoreconnect.apple.com';
+
+function positionals() {
+  const out = [];
+  const valueFlags = new Set([
+    '--track', '--status', '--itc-provider', '--whats-new', '--build', '--version',
+  ]);
+  const raw = process.argv.slice(2);
+  for (let i = 0; i < raw.length; i++) {
+    const arg = raw[i];
+    if (valueFlags.has(arg)) {
+      i++; // skip the flag's value
+      continue;
+    }
+    if (arg.startsWith('--')) continue;
+    out.push(arg);
+  }
+  return out;
+}
+
+async function ascToken() {
+  const keyPath = process.env.LP_ASC_KEY_PATH;
+  const keyId = process.env.LP_ASC_KEY_ID;
+  const issuer = process.env.LP_ASC_ISSUER_ID;
+  if (!keyPath || !existsSync(keyPath) || !keyId || !issuer) {
+    fail('Set LP_ASC_KEY_PATH, LP_ASC_KEY_ID and LP_ASC_ISSUER_ID in scripts/.env.upload (gitignored).');
+  }
+  const key = createPrivateKey(readFileSync(keyPath));
+  return new SignJWT({})
+    .setProtectedHeader({ alg: 'ES256', kid: keyId })
+    .setIssuer(issuer)
+    .setAudience('appstoreconnect-v1')
+    .setIssuedAt()
+    .setExpirationTime('20m')
+    .sign(key);
+}
+
+async function ascApi(token, method, path, body = null) {
+  const response = await fetch(`${ASC_BASE}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await response.text();
+  let json = null;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = null;
+  }
+  if (!response.ok) {
+    const detail =
+      json?.errors?.map((e) => `${e.code}: ${e.detail ?? e.title}`).join('; ') ??
+      text.slice(0, 300);
+    fail(`App Store Connect API ${response.status}: ${detail}`);
+  }
+  const result = json?.data ?? json;
+  if (json?.included) result.included = json.included;
+  return result;
+}
+
+async function fetchAscBuilds(token, appId) {
+  const builds = await ascApi(
+    token,
+    'GET',
+    `/v1/apps/${appId}/builds?fields[builds]=version,processingState,expired&limit=50`,
+  );
+  return builds;
+}
+
+async function ascBuildVersion(token, buildId) {
+  const pre = await ascApi(
+    token,
+    'GET',
+    `/v1/builds/${buildId}/preReleaseVersion?fields[preReleaseVersions]=version`,
+  );
+  return pre?.attributes?.version;
+}
+
+async function appstore() {
+  const [subcommand, versionArg] = positionals().slice(1);
+  const appId = process.env.LP_ASC_APP_ID ?? '6520385296';
+
+  if (dryRun) {
+    console.log(`[dry-run] appstore ${subcommand ?? ''} ${versionArg ?? ''} for app ${appId} (no API calls made).`);
+    return;
+  }
+
+  const token = await ascToken();
+
+  if (subcommand === 'status') {
+    const versions = await ascApi(
+      token,
+      'GET',
+      `/v1/apps/${appId}/appStoreVersions?filter[platform]=IOS&fields[appStoreVersions]=versionString,appStoreState&limit=50`,
+    );
+    const builds = await fetchAscBuilds(token, appId);
+    console.log('App Store versions:');
+    for (const v of versions) {
+      console.log(`  ${v.attributes.versionString} — ${v.attributes.appStoreState} (${v.id})`);
+    }
+    console.log('Builds:');
+    for (const b of builds) {
+      console.log(`  build ${b.attributes.version} — ${b.attributes.processingState} (${b.id})`);
+    }
+    return;
+  }
+
+  if (!['prepare', 'submit'].includes(subcommand) || !versionArg) {
+    fail('Usage: node scripts/upload.mjs appstore <status|prepare|submit> [version]');
+  }
+
+  // 1. Ensure the appStoreVersion exists.
+  let version = await ascApi(
+    token,
+    'GET',
+    `/v1/apps/${appId}/appStoreVersions?filter[platform]=IOS&filter[versionString]=${versionArg}&fields[appStoreVersions]=versionString,appStoreState`,
+  );
+  let versionId = version[0]?.id;
+  if (!versionId) {
+    console.log(`[appstore] Creating version ${versionArg}…`);
+    version = await ascApi(token, 'POST', '/v1/appStoreVersions', {
+      data: {
+        type: 'appStoreVersions',
+        attributes: { platform: 'IOS', versionString: versionArg },
+        relationships: { app: { data: { type: 'apps', id: appId } } },
+      },
+    });
+    versionId = version.id;
+  } else {
+    console.log(`[appstore] Version ${versionArg} already exists (${version[0].attributes.appStoreState}).`);
+    versionId = version[0].id;
+  }
+
+  // 2. Attach the build that matches the shared build number.
+  const expectedBuild = String(readSharedBuildNumber());
+  const builds = await fetchAscBuilds(token, appId);
+  const explicitBuildId = flagValue('--build');
+  let build = null;
+  if (explicitBuildId) {
+    build = builds.find((b) => b.id === explicitBuildId) ?? { id: explicitBuildId };
+  } else {
+    const candidates = builds.filter(
+      (b) => b.attributes.version === expectedBuild && b.attributes.processingState === 'VALID',
+    );
+    for (const candidate of candidates) {
+      const marketingVersion = await ascBuildVersion(token, candidate.id);
+      if (marketingVersion === versionArg) {
+        build = candidate;
+        break;
+      }
+    }
+    if (!build && candidates.length === 1) {
+      build = candidates[0];
+    }
+  }
+  if (!build) {
+    fail(
+      `No build found for ${versionArg} (expected build ${expectedBuild}). ` +
+        'Use --build <id> to attach a specific build id.',
+    );
+  }
+  console.log(`[appstore] Attaching build ${build.attributes?.version ?? '?'} (${build.id})…`);
+  await ascApi(token, 'PATCH', `/v1/appStoreVersions/${versionId}/relationships/build`, {
+    data: { type: 'builds', id: build.id },
+  });
+
+  // 3. Review details (demo account, contact, notes).
+  const reviewDetails = {
+    contactFirstName: process.env.LP_ASC_CONTACT_FIRST ?? 'Jon',
+    contactLastName: process.env.LP_ASC_CONTACT_LAST ?? 'Long',
+    contactEmail: process.env.LP_ASC_CONTACT_EMAIL ?? 'jon.long@zerotohero.ca',
+    demoAccountName: process.env.LP_ASC_DEMO_EMAIL ?? 'tester.mary@zerotohero.ca',
+    demoAccountPassword: process.env.LP_ASC_DEMO_PASS ?? 'pc8qm8LBZeGuBno',
+    demoAccountRequired: true,
+    notes:
+      process.env.LP_ASC_REVIEW_NOTES ??
+      'Language Player 3 is a language-learning app backed by a real production API (pythonvps.zerotohero.ca). ' +
+        'Sign in with the demo account (tester.mary@zerotohero.ca / pc8qm8LBZeGuBno). ' +
+        'Key features: Explore videos, interactive subtitles with search, dictionary, saved words, EPUB reader. ' +
+        'Sample video: https://languageplayer.io/en/zh/watch/Qgzv_LBictg',
+  };
+  console.log('[appstore] Setting App Review information (demo account + notes)…');
+  let existingDetails = await ascApi(
+    token,
+    'GET',
+    `/v1/appStoreVersions/${versionId}/appStoreReviewDetail`,
+  );
+  const existingDetailsId = Array.isArray(existingDetails)
+    ? existingDetails[0]?.id
+    : existingDetails?.id;
+  if (existingDetailsId) {
+    await ascApi(token, 'PATCH', `/v1/appStoreReviewDetails/${existingDetailsId}`, {
+      data: { type: 'appStoreReviewDetails', id: existingDetailsId, attributes: reviewDetails },
+    });
+  } else {
+    await ascApi(token, 'POST', '/v1/appStoreReviewDetails', {
+      data: {
+        type: 'appStoreReviewDetails',
+        attributes: reviewDetails,
+        relationships: {
+          appStoreVersion: { data: { type: 'appStoreVersions', id: versionId } },
+        },
+      },
+    });
+  }
+
+  // 4. What's New (version localization).
+  const whatsNew =
+    flagValue('--whats-new') ??
+    'Subtitle search improvements with match-line preview, smarter dictionary navigation, ' +
+      'more reliable video embeds, and performance fixes.';
+  const localizations = await ascApi(
+    token,
+    'GET',
+    `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations?fields[appStoreVersionLocalizations]=locale,whatsNew`,
+  );
+  if (localizations?.length) {
+    console.log(`[appstore] Updating What's New for ${localizations[0].attributes.locale}…`);
+    await ascApi(token, 'PATCH', `/v1/appStoreVersionLocalizations/${localizations[0].id}`, {
+      data: {
+        type: 'appStoreVersionLocalizations',
+        id: localizations[0].id,
+        attributes: { whatsNew },
+      },
+    });
+  } else {
+    console.log("[appstore] Creating en-CA localization with What's New…");
+    await ascApi(token, 'POST', '/v1/appStoreVersionLocalizations', {
+      data: {
+        type: 'appStoreVersionLocalizations',
+        attributes: { locale: 'en-CA', whatsNew },
+        relationships: {
+          appStoreVersion: { data: { type: 'appStoreVersions', id: versionId } },
+        },
+      },
+    });
+  }
+
+  if (subcommand === 'submit') {
+    console.log('[appstore] Creating review submission…');
+    const submission = await ascApi(token, 'POST', '/v1/reviewSubmissions', {
+      data: {
+        type: 'reviewSubmissions',
+        attributes: { platform: 'IOS' },
+        relationships: { app: { data: { type: 'apps', id: appId } } },
+      },
+    });
+    console.log(`[appstore] Attaching version to review submission (${submission.id})…`);
+    await ascApi(token, 'POST', '/v1/reviewSubmissionItems', {
+      data: {
+        type: 'reviewSubmissionItems',
+        relationships: {
+          reviewSubmission: { data: { type: 'reviewSubmissions', id: submission.id } },
+          appStoreVersion: { data: { type: 'appStoreVersions', id: versionId } },
+        },
+      },
+    });
+    console.log('[appstore] Submitting for review…');
+    await ascApi(token, 'PATCH', `/v1/reviewSubmissions/${submission.id}`, {
+      data: {
+        type: 'reviewSubmissions',
+        id: submission.id,
+        attributes: { submitted: true },
+      },
+    });
+    console.log('[appstore] Submitted for review. Status: Waiting for Review → In Review.');
+  } else {
+    console.log(`[appstore] Version ${versionArg} is prepared. Run "appstore submit ${versionArg}" to send it to App Review.`);
+  }
 }
 
 async function uploadAndroid(aabPath) {
@@ -274,7 +560,8 @@ if (!command || !artifact) {
   console.error(
     'Usage:\n' +
       '  node scripts/upload.mjs ios <path-to.ipa> [--dry-run]\n' +
-      '  node scripts/upload.mjs android <path-to.aab> [--track <track>] [--status <status>] [--no-commit] [--dry-run]',
+      '  node scripts/upload.mjs android <path-to.aab> [--track <track>] [--status <status>] [--no-commit] [--dry-run]\n' +
+      '  node scripts/upload.mjs appstore <status|prepare|submit> [version] [--whats-new <text>]',
   );
   process.exit(1);
 }
@@ -284,6 +571,8 @@ if (command === 'ios') {
   uploadIos(resolvedArtifact);
 } else if (command === 'android') {
   await uploadAndroid(resolvedArtifact);
+} else if (command === 'appstore') {
+  await appstore();
 } else {
   fail(`Unknown command: ${command}`);
 }

@@ -619,6 +619,8 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
 > through this path. Gotchas (first run downloads Transporter's runtime,
 > multi-provider `-itc_provider`, password hygiene) are collected in
 > [ARCH-029 § 10](../arch/029-production-deployment-runbook.md).
+> Version creation + review submission are also automated:
+> `node scripts/upload.mjs appstore submit 3.1.0` (ARCH-029 § 4.3).
 
 - **Manual alternative:** `open -a Xcode` → **Window → Organizer** → select the
   `LanguagePlayer` archive → **Distribute App** → **App Store Connect**
