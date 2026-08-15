@@ -43,10 +43,9 @@
       `android/key.properties`; **copy them into a password manager**
 - [x] Version bumped in `apps/mobile/app.json` (3.0.0, `android.versionCode: 2`)
 - [x] Privacy policy URL confirmed live (Netlify preview domain — see § 4.3)
-- [x] Store assets verified live on the Play listing (2026-08-14,
-      `play.google.com/store/apps/details?id=ca.zerotohero.go`): icon
-      attached, 7 phone screenshots and full description live; **feature
-      graphic (1024×500) still outstanding**
+- [x] Store assets complete (verified via Play API 2026-08-14): icon ×1,
+      feature graphic ×1, phone screenshots ×2, 7-inch tablet ×6, 10-inch
+      tablet ×6, descriptions live
 - [x] Billing decision made: Play Billing implemented (SPEC-068 Steps 2–3,
       product ID `pro_go`); the Android buy-on-website link was removed
       ([§ 5](#5-billing--monetization-blocker))
@@ -257,9 +256,9 @@ health (None).
 
 ### 4.4 Store listing
 
-**Status: ✅ mostly complete (verified live 2026-08-14)** — description,
-icon, and 7 phone screenshots are live on the store listing; the feature
-graphic (1024×500) is the only outstanding visual asset (item 4).
+**Status: ✅ complete (verified via Play API 2026-08-14)** — description and
+all visual assets live: icon ×1, feature graphic ×1, phone screenshots ×2,
+7-inch tablet ×6, 10-inch tablet ×6.
 
 1. Short description (80 characters) and full description. **Done** — default
    listing draft saved: short = "Learn languages by watching videos with
@@ -269,10 +268,9 @@ graphic (1024×500) is the only outstanding visual asset (item 4).
 3. Contact email (e.g. `jon.long@zerotohero.ca`) and website
    (`https://languageplayer.io`). **Done** (Store settings).
 4. Icon (512×512), feature graphic (1024×500), phone screenshots (2–8) and
-   tablet screenshots. **Icon: ✅ attached.** **Phone screenshots: ✅ 7 live**
-   (verified on the store listing 2026-08-14). **Feature graphic: ❌ still
-   outstanding** — the only remaining visual asset. Tablet screenshots: not
-   separately verified on the live page.
+   tablet screenshots. **All ✅ (verified via Play API 2026-08-14):** icon ×1,
+   feature graphic ×1 (uploaded via `scripts/upload.mjs android listing-image`),
+   phone screenshots ×2, 7-inch tablet ×6, 10-inch tablet ×6.
 5. Promo text (optional, short-lived).
 
 > Listing assets (icon, feature graphic, screenshots, descriptions) are
@@ -455,9 +453,9 @@ node scripts/upload.mjs android \
 - [x] No `localhost:5001` in the embedded bundle; `pythonvps` present
 - [x] Human QA passed on a real Android device (internal track; Pixel — Play Billing purchase flow tested)
 - [x] Privacy policy, data safety, content rating, target audience complete
-- [x] Store listing mostly complete — description, icon, and 7 phone
-      screenshots live (verified 2026-08-14); feature graphic (1024×500)
-      still outstanding
+- [x] Store listing complete — description and all visual assets verified via
+      Play API (2026-08-14): icon ×1, feature graphic ×1, phone ×2, 7-inch
+      tablet ×6, 10-inch tablet ×6
 - [x] Billing compliance resolved (§ 5) — buy-on-website link removed and
       mobile + backend Play Billing implemented (SPEC-068 Steps 2–3); Play
       Console product + G1–G5 still pending
@@ -484,9 +482,9 @@ node scripts/upload.mjs android \
   (`~/.android/lp-upload.jks`, alias `lp-upload`, RSA 2048); credentials are
   in `~/.android/lp-upload-credentials.txt` and `android/key.properties` —
   copy into a password manager before relying on the local files.
-- **Feature graphic (1024×500) still outstanding** — icon and 7 phone
-  screenshots are live on the store listing (verified 2026-08-14); the
-  feature graphic is the only remaining visual asset.
+- ~~**Store visual assets outstanding**~~ — ✅ complete 2026-08-14: icon ×1,
+  feature graphic ×1 (uploaded via Play API), phone screenshots ×2, 7-inch
+  tablet ×6, 10-inch tablet ×6 (verified via `listing-status`).
 - **`android.versionCode` not explicit in `app.json` yet** — add `1` for the
   first release.
 - ~~**`android.versionCode`**~~ — ✅ set to `2` in `app.json` + `android/app/build.gradle` (2026-08-13).

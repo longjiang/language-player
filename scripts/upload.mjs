@@ -19,6 +19,10 @@
  *   node scripts/upload.mjs android promote <versionCode>
  *     [--track production] [--status inProgress|completed|halted|draft]
  *     [--user-fraction 0.1] [--no-commit] [--dry-run]
+ *   node scripts/upload.mjs android listing-image <path-to-image>
+ *     [--type featureGraphic|icon|phoneScreenshots|tenInchScreenshots|...]
+ *     [--language en-US] [--no-commit] [--dry-run]
+ *   node scripts/upload.mjs android listing-status [--type <type>] [--language en-US]
  *   Uses the official Google Play Developer API v3 with a service account.
  *   Requires:
  *     LP_PLAY_SERVICE_ACCOUNT_JSON  path to the Play service-account JSON
@@ -588,6 +592,92 @@ async function promoteAndroid() {
   }
 }
 
+async function listingImageAndroid() {
+  const imagePath = positionals()[2];
+  if (!imagePath || !existsSync(imagePath)) {
+    fail('Usage: node scripts/upload.mjs android listing-image <path-to-image> [--type featureGraphic] [--language en-US]');
+  }
+  const pkg = process.env.LP_PLAY_PACKAGE ?? 'ca.zerotohero.go';
+  const imageType = flagValue('--type', 'featureGraphic');
+  const language = flagValue('--language', 'en-US');
+  const commit = !args.includes('--no-commit');
+  const validTypes = [
+    'featureGraphic', 'icon', 'phoneScreenshots', 'promoGraphic',
+    'sevenInchScreenshots', 'tenInchScreenshots', 'tvBanner',
+    'tvScreenshots', 'wearScreenshots',
+  ];
+  if (!validTypes.includes(imageType)) {
+    fail(`Invalid image type: ${imageType} (expected one of: ${validTypes.join(', ')}).`);
+  }
+
+  if (imageType === 'featureGraphic') {
+    let width = null;
+    let height = null;
+    try {
+      const out = execFileSync('sips', ['-g', 'pixelWidth', '-g', 'pixelHeight', imagePath], {
+        encoding: 'utf8',
+      });
+      width = Number(out.match(/pixelWidth:\s*(\d+)/)?.[1]);
+      height = Number(out.match(/pixelHeight:\s*(\d+)/)?.[1]);
+    } catch {
+      // sips unavailable; Google validates dimensions on upload.
+    }
+    if (width && height && (width !== 1024 || height !== 500)) {
+      fail(`Feature graphic must be 1024x500, got ${width}x${height}.`);
+    }
+  }
+
+  if (dryRun) {
+    console.log(`[dry-run] Would upload ${imagePath} to ${pkg} listing ${language}/${imageType}.`);
+    return;
+  }
+
+  const { token, account } = await playToken();
+  console.log('[upload] Creating edit session…');
+  const edit = await playApi(`${pkg}/edits`, token, { method: 'POST' });
+  const editId = edit.id;
+
+  console.log(`[upload] Uploading ${imageType} (${language})…`);
+  const uploaded = await playApi(
+    `${pkg}/edits/${editId}/listings/${language}/${imageType}?uploadType=media`,
+    token,
+    { method: 'POST', contentType: 'image/png' },
+    readFileSync(imagePath),
+    true,
+  );
+  console.log(`[upload] Uploaded listing image ${uploaded.id ?? ''} (${uploaded.imageUrl ?? 'no URL returned'}).`);
+
+  if (commit) {
+    console.log('[upload] Committing edit…');
+    await playApi(`${pkg}/edits/${editId}:commit`, token, { method: 'POST' });
+    console.log('[upload] Committed. The image is now live on the Play listing.');
+  } else {
+    console.log(`[upload] Edit ${editId} left open (--no-commit). Commit from Play Console or rerun without --no-commit.`);
+  }
+}
+
+async function listingStatusAndroid() {
+  const pkg = process.env.LP_PLAY_PACKAGE ?? 'ca.zerotohero.go';
+  const imageType = flagValue('--type', 'featureGraphic');
+  const language = flagValue('--language', 'en-US');
+
+  if (dryRun) {
+    console.log(`[dry-run] Would read ${pkg} listing ${language}/${imageType}.`);
+    return;
+  }
+
+  const { token, account } = await playToken();
+  const edit = await playApi(`${pkg}/edits`, token, { method: 'POST' });
+  const images = await playApi(
+    `${pkg}/edits/${edit.id}/listings/${language}/${imageType}`,
+    token,
+  );
+  console.log(`${imageType} (${language}): ${(images.images ?? []).length} image(s)`);
+  for (const img of images.images ?? []) {
+    console.log(`  ${img.imageUrl ?? img.url ?? img.id ?? JSON.stringify(img).slice(0, 120)}`);
+  }
+}
+
 function uploadIos(ipaPath) {
   if (!existsSync(ipaPath)) {
     fail(`IPA not found: ${ipaPath}`);
@@ -667,6 +757,7 @@ if (!command || !artifact) {
       '  node scripts/upload.mjs ios <path-to.ipa> [--dry-run]\n' +
       '  node scripts/upload.mjs android <path-to.aab> [--track <track>] [--status <status>] [--no-commit] [--dry-run]\n' +
       '  node scripts/upload.mjs android promote <versionCode> [--track production] [--status <status>] [--user-fraction 0.1]\n' +
+      '  node scripts/upload.mjs android listing-image <path-to-image> [--type <type>] [--language <locale>]\n' +
       '  node scripts/upload.mjs appstore <status|prepare|submit|metadata> [version] [--whats-new <text>]',
   );
   process.exit(1);
@@ -678,6 +769,10 @@ if (command === 'ios') {
 } else if (command === 'android') {
   if (artifact === 'promote') {
     await promoteAndroid();
+  } else if (artifact === 'listing-image') {
+    await listingImageAndroid();
+  } else if (artifact === 'listing-status') {
+    await listingStatusAndroid();
   } else {
     await uploadAndroid(resolvedArtifact);
   }

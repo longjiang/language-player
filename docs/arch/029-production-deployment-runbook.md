@@ -368,6 +368,13 @@ node scripts/upload.mjs android promote 3 \
 node scripts/upload.mjs android promote 3 --status inProgress --user-fraction 0.1
 ```
 
+Upload or inspect store-listing images:
+
+```bash
+node scripts/upload.mjs android listing-image <path> --type featureGraphic   # icon|phoneScreenshots|...
+node scripts/upload.mjs android listing-status --type featureGraphic          # verify what is live
+```
+
 Default track is `internal` with status `draft`; use `--status completed` to
 publish, `--track production` for a production release (staged rollout is
 recommended), and `--no-commit` to finish manually in the console. Manual
