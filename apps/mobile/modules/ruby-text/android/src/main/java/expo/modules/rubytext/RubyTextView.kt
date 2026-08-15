@@ -10,7 +10,6 @@ import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ReplacementSpan
-import android.text.style.RubySpan
 import android.text.style.UnderlineSpan
 import android.util.TypedValue
 import android.view.Gravity
@@ -106,7 +105,7 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
 
   init {
     addView(textView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-    setOnClickListener { onTap() }
+    setOnClickListener { onTap(Unit) }
   }
 
   private fun readingSlotHeight(): Int {
@@ -134,21 +133,15 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
       val end = builder.length
       val reading = segment.reading
       if (!reading.isNullOrEmpty()) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-          builder.setSpan(
-            RubySpan(reading, RubySpan.RUBY_POSITION_OVER),
-            start,
-            end,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-          )
-        } else {
-          builder.setSpan(
-            FallbackRubySpan(reading, readingSize, rubyPull, color),
-            start,
-            end,
-            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-          )
-        }
+        // Framework RubySpan is a hidden API (absent from the public SDK
+        // stubs), so the custom ReplacementSpan below is used on every
+        // Android version.
+        builder.setSpan(
+          FallbackRubySpan(reading, readingSize, rubyPull, color),
+          start,
+          end,
+          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
       }
       if (underline) {
         builder.setSpan(UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -176,7 +169,7 @@ fun parseColorSafely(hex: String): Int {
   }
 }
 
-/** Pre-Android-12 fallback: draws the reading above the base text, centered. */
+/** Draws the reading above the base text, centered, on every Android version. */
 private class FallbackRubySpan(
   private val ruby: String,
   private val readingSize: Float,
@@ -210,6 +203,7 @@ private class FallbackRubySpan(
     val rubyWidth = rubyPaint.measureText(ruby)
     val rubyX = x + (baseWidth - rubyWidth) / 2f
     canvas.drawText(ruby, 0, ruby.length, rubyX, y - (readingSize - rubyPull), rubyPaint)
-    canvas.drawText(text, start, end, x, y, paint)
+    val baseText = text ?: return
+    canvas.drawText(baseText, start, end, x, y.toFloat(), paint)
   }
 }
