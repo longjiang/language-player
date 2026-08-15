@@ -13,3 +13,4 @@ per product release; never reuse or decrease a number.
 | 1 | iOS — App Store (LP3) | 3.0.0 | 2026-08-13 | live |
 | 2 | Android — Production (LP3) | 3.0.0 | 2026-08-13 | live |
 | 3 | Android — Internal testing | 3.1.0 | 2026-08-14 | consumed |
+| 3 | iOS — App Store | 3.1.0 | 2026-08-14 | consumed |

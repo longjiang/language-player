@@ -93,7 +93,10 @@ if (tagName) {
   }
 }
 
-const recordDate = date ?? new Date().toISOString().slice(0, 10);
+const now = new Date();
+const recordDate =
+  date ??
+  `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 const rows = parseLedger();
 const platformMax = ledgerMax(rows, platform);
 
