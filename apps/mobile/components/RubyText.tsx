@@ -307,7 +307,11 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   if (!NativeRubyTextParagraphView) return null;
 
   return (
-    <View testID={testID}>
+    // The wrapper must claim the parent's full width explicitly: readers put
+    // blocks inside `items-center` containers, where a view with only
+    // absolutely-positioned children (the measuring Text) collapses to width
+    // 0. The old flex-row token container got its width from its children.
+    <View testID={testID} style={{ width: '100%' }}>
       {/* Invisible measuring text: RN Text wraps with the same font and line
           box as the native paragraph, so its laid-out size is the exact box
           the native view needs. Kept mounted so width changes (rotation,
