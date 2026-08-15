@@ -4,23 +4,13 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Paint.FontMetricsInt
 import android.graphics.Typeface
-import android.os.Build
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ReplacementSpan
-import android.text.style.UnderlineSpan
-import android.util.TypedValue
-import android.view.Gravity
-import android.widget.TextView
 import android.util.Log
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
-import kotlin.math.ceil
 import kotlin.math.max
 
 class RubySegmentRecord(
@@ -29,11 +19,13 @@ class RubySegmentRecord(
 ) : Record
 
 /**
- * Native ruby text renderer (furigana/pinyin/jyutping) backed by the platform
- * text engine: framework RubySpan on Android 12+, a custom ReplacementSpan on
- * older devices. JS measures the View fallback and passes the exact box, so
- * this view never needs to measure itself (Fabric/Yoga does not measure
- * custom host views).
+ * Native ruby text renderer (furigana/pinyin/jyutping) for Android.
+ *
+ * The view draws directly in its own `draw(canvas)` instead of a child
+ * TextView: under Fabric/Yoga a child added in init is never laid out or
+ * drawn (stays 0x0, spans never render), so the text is painted by the
+ * ExpoView itself. JS measures the View fallback and passes the exact box,
+ * so this view never needs to measure itself.
  */
 class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
 
@@ -79,6 +71,12 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
       rebuild()
     }
 
+  var readingColor: Int = Color.WHITE
+    set(value) {
+      field = value
+      rebuild()
+    }
+
   var fontWeight: String = "normal"
     set(value) {
       field = value
@@ -99,21 +97,15 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
 
   private val onTap by EventDispatcher<Unit>()
 
-  var readingColor: Int = Color.WHITE
-    set(value) {
-      field = value
-      rebuild()
-    }
-
-  private val textView = TextView(context).apply {
-    includeFontPadding = false
-    gravity = Gravity.TOP or Gravity.START
-  }
+  private val basePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  private val readingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
   init {
-    addView(textView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+    // Same Fabric safeguard as the paragraph view: without this a ViewGroup
+    // with no background may never draw.
+    setWillNotDraw(false)
     setOnClickListener { onTap(Unit) }
-    Log.i("LP Mobile", "[RubyText] Android RubyTextView created")
+    Log.i("LP Mobile", "[RubyText] Android RubyTextView created (canvas renderer)")
   }
 
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -121,50 +113,60 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     Log.i("LP Mobile", "[RubyText] size ${w}x$h color=0x${Integer.toHexString(color)}")
   }
 
-  private fun readingSlotHeight(): Int {
+  private fun readingSlotHeight(): Float {
     val hasReading = segments.any { !it.reading.isNullOrEmpty() }
     return if (hasReading || reserveReadingSlot) {
-      (readingSize - rubyPull).toInt().coerceAtLeast(0)
+      max(0f, readingSize - rubyPull)
     } else {
-      0
+      0f
     }
   }
 
   private fun rebuild() {
-    textView.setText(buildSpannable())
-    textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
-    textView.setTextColor(color)
-    textView.setTypeface(makeTypeface())
-    textView.setPadding(0, readingSlotHeight(), 0, 0)
+    basePaint.textSize = fontSize
+    basePaint.color = color
+    basePaint.typeface = makeTypeface()
+    basePaint.isUnderlineText = underline
+    readingPaint.textSize = readingSize
+    readingPaint.color = readingColor
+    invalidate()
     Log.i(
       "LP Mobile",
-      "[RubyText] rebuild segments=${segments.size} textLen=${textView.text?.length} color=0x${Integer.toHexString(color)} readingColor=0x${Integer.toHexString(readingColor)}"
+      "[RubyText] rebuild segments=${segments.size} color=0x${Integer.toHexString(color)} readingColor=0x${Integer.toHexString(readingColor)}"
     )
   }
 
-  private fun buildSpannable(): SpannableStringBuilder {
-    val builder = SpannableStringBuilder()
+  override fun draw(canvas: Canvas) {
+    super.draw(canvas)
+    if (segments.isEmpty() || width <= 0 || height <= 0) return
+
+    val slot = readingSlotHeight()
+    // Base text sits at the bottom of the measured box (mirrors the View
+    // fallback: reading slot on top, base line at the bottom).
+    val baseBaseline = height - basePaint.fontMetrics.descent
+    // Reading line box occupies [0, readingSize] at the top of the view.
+    val readingBaseline = readingSize - readingPaint.fontMetrics.descent
+
+    var x = 0f
     for (segment in segments) {
-      val start = builder.length
-      builder.append(segment.text)
-      val end = builder.length
+      val baseWidth = basePaint.measureText(segment.text)
       val reading = segment.reading
+      val readingWidth = if (!reading.isNullOrEmpty()) {
+        readingPaint.measureText(reading)
+      } else {
+        0f
+      }
       if (!reading.isNullOrEmpty()) {
-        // Framework RubySpan is a hidden API (absent from the public SDK
-        // stubs), so the custom ReplacementSpan below is used on every
-        // Android version.
-        builder.setSpan(
-          FallbackRubySpan(reading, readingSize, rubyPull, readingColor),
-          start,
-          end,
-          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        canvas.drawText(
+          reading,
+          x + (baseWidth - readingWidth) / 2f,
+          readingBaseline,
+          readingPaint
         )
       }
-      if (underline) {
-        builder.setSpan(UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-      }
+      canvas.drawText(segment.text, x, baseBaseline, basePaint)
+      x += max(baseWidth, readingWidth)
     }
-    return builder
   }
 
   private fun makeTypeface(): Typeface {
@@ -183,44 +185,5 @@ fun parseColorSafely(hex: String): Int {
     Color.parseColor(hex)
   } catch (_: IllegalArgumentException) {
     Color.WHITE
-  }
-}
-
-/** Draws the reading above the base text, centered, on every Android version. */
-private class FallbackRubySpan(
-  private val ruby: String,
-  private val readingSize: Float,
-  private val rubyPull: Float,
-  private val readingColor: Int
-) : ReplacementSpan() {
-
-  override fun getSize(paint: Paint, text: CharSequence?, start: Int, end: Int, fm: FontMetricsInt?): Int {
-    val baseWidth = paint.measureText(text, start, end)
-    val rubyPaint = Paint(paint).apply { textSize = readingSize }
-    val rubyWidth = rubyPaint.measureText(ruby)
-    return ceil(max(baseWidth, rubyWidth)).toInt()
-  }
-
-  override fun draw(
-    canvas: Canvas,
-    text: CharSequence?,
-    start: Int,
-    end: Int,
-    x: Float,
-    top: Int,
-    y: Int,
-    bottom: Int,
-    paint: Paint
-  ) {
-    val rubyPaint = Paint(paint).apply {
-      textSize = readingSize
-      color = readingColor
-    }
-    val baseWidth = paint.measureText(text, start, end)
-    val rubyWidth = rubyPaint.measureText(ruby)
-    val rubyX = x + (baseWidth - rubyWidth) / 2f
-    canvas.drawText(ruby, 0, ruby.length, rubyX, y - (readingSize - rubyPull), rubyPaint)
-    val baseText = text ?: return
-    canvas.drawText(baseText, start, end, x, y.toFloat(), paint)
   }
 }

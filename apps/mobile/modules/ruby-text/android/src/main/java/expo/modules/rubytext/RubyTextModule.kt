@@ -8,6 +8,12 @@ class RubyTextModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("RubyText")
 
+    // Capability probe: matches iOS so JS only mounts RubyTextParagraph when
+    // this build has the paragraph view.
+    Function("isParagraphRendererAvailable") {
+      true
+    }
+
     View(RubyTextView::class) {
       Events("onTap")
 
@@ -60,6 +66,52 @@ class RubyTextModule : Module() {
       }
 
       Prop("fontFamily") { view: RubyTextView, family: String? ->
+        view.fontFamily = family
+      }
+    }
+
+    View(RubyTextParagraphView::class) {
+      Events("onTokenTap")
+
+      Prop("runs") { view: RubyTextParagraphView, runs: List<Map<String, Any?>> ->
+        view.runs = runs.mapNotNull { dict ->
+          val text = dict["text"] as? String ?: return@mapNotNull null
+          RubyParagraphRun(
+            tokenId = (dict["tokenId"] as? Number)?.toInt() ?: 0,
+            text = text,
+            reading = dict["reading"] as? String,
+            fontSize = (dict["fontSize"] as? Number)?.toFloat(),
+            tappable = dict["tappable"] as? Boolean ?: false,
+            color = parseColorSafely(dict["color"] as? String ?: ""),
+            readingColor = parseColorSafely(dict["readingColor"] as? String ?: ""),
+            bold = dict["bold"] as? Boolean ?: false,
+            underline = dict["underline"] as? Boolean ?: false,
+            italic = dict["italic"] as? Boolean ?: false,
+            background = dict["background"]?.let { parseColorSafely(it as? String ?: "") },
+            backgroundAlpha = (dict["backgroundAlpha"] as? Number)?.toFloat() ?: 1f,
+            opacity = (dict["opacity"] as? Number)?.toFloat() ?: 1f
+          )
+        }
+        Log.i("LP Mobile", "[RubyText] paragraph runs prop -> ${view.runs.size} runs (first=${view.runs.firstOrNull()?.text})")
+      }
+
+      Prop("fontSize") { view: RubyTextParagraphView, size: Float ->
+        view.fontSize = size
+      }
+
+      Prop("lineHeight") { view: RubyTextParagraphView, height: Float ->
+        view.lineHeight = height
+      }
+
+      Prop("readingSize") { view: RubyTextParagraphView, size: Float ->
+        view.readingSize = size
+      }
+
+      Prop("isRtl") { view: RubyTextParagraphView, rtl: Boolean ->
+        view.isRtl = rtl
+      }
+
+      Prop("fontFamily") { view: RubyTextParagraphView, family: String? ->
         view.fontFamily = family
       }
     }
