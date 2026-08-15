@@ -116,7 +116,7 @@ internal final class RubyTextView: ExpoView {
 
   private func makeRubyAnnotation(reading: String, baseFontSize: CGFloat) -> CTRubyAnnotation {
     var text: [Unmanaged<CFString>?] = [nil, nil, nil, nil]
-    text[CTRubyPosition.before.rawValue] = Unmanaged.passUnretained(reading as CFString)
+    text[Int(CTRubyPosition.before.rawValue)] = Unmanaged.passUnretained(reading as CFString)
     let sizeFactor = baseFontSize > 0 ? CGFloat(readingSize) / baseFontSize : 0.5
     // Swift imports the C function as CTRubyAnnotationCreate(_:_:_:_:) —
     // no argument labels.
