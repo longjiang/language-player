@@ -39,7 +39,13 @@ if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android'))
           .isParagraphRendererAvailable;
         if (typeof probe === 'function' && probe()) {
           NativeRubyTextParagraphView =
-            requireNativeViewManager<NativeRubyTextParagraphProps>('RubyTextParagraph');
+            // Named (non-default) views are addressed as module + view name:
+            // the first View in the module is "RubyText", every later view is
+            // "<module>", "<Swift class name>".
+            requireNativeViewManager<NativeRubyTextParagraphProps>(
+              'RubyText',
+              'RubyTextParagraphView'
+            );
           log('[LP Mobile] [RubyText] paragraph ruby renderer available');
         } else {
           NativeRubyTextParagraphView = null;
