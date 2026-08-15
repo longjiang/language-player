@@ -185,6 +185,7 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
   }, []);
 
   if (NativeRubyTextView && measured) {
+    log(`[LP Mobile] [RubyText] native render seg="${segment.text}" reading="${segment.reading ?? ''}" box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)} platform=${Platform.OS}`);
     return (
       <NativeRubyTextView
         // Omit the `reading` key when absent — NSNull in the array poisoned the
