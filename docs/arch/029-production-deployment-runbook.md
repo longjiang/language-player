@@ -285,12 +285,16 @@ same script creates the version record, attaches the build, sets review info
 node scripts/upload.mjs appstore status                # current versions + builds
 node scripts/upload.mjs appstore prepare 3.1.0         # create version, attach build, set metadata
 node scripts/upload.mjs appstore submit 3.1.0          # send to App Review
+node scripts/upload.mjs appstore metadata 3.1.0 \
+  --description "<store description>" --promo-text "<170 chars>" \
+  --keywords "<100 chars, comma-separated>"             # update listing copy
 ```
 
 This is exactly how 3.1.0 was submitted (2026-08-14). Caveat: the API accepts
 the submission even if store assets are missing (e.g. iPad screenshots) —
 Apple may still flag them during review, so add required screenshots before
-submitting.
+submitting. Listing copy (description/promo/keywords) can be updated via
+`appstore metadata` even while the version is waiting for review.
 
 ### 4.4 After upload
 
