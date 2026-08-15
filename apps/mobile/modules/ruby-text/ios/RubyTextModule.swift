@@ -13,6 +13,15 @@ public final class RubyTextModule: Module {
       true
     }
 
+    // Dev diagnostics: returns the state of the last mounted paragraph view
+    // so a blank render can be diagnosed from the Metro log.
+    Function("getParagraphDiagnostics") { () -> [String: Any] in
+      guard let view = RubyTextParagraphView.lastDiagnosticsView else {
+        return ["mounted": false]
+      }
+      return view.diagnostics
+    }
+
     View(RubyTextView.self) {
       Events("onTap")
 

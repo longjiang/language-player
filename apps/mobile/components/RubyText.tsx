@@ -165,6 +165,26 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     }
   }, [sizeKey, activeSizeKey]);
 
+  // Dev-only: 500ms after the native paragraph mounts, pull its internal
+  // state (runs parsed, attributed-string length, frames) so a blank render
+  // can be diagnosed from the Metro log.
+  const mountedKey = measured ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}` : null;
+  useEffect(() => {
+    if (!mountedKey) return;
+    const timer = setTimeout(() => {
+      try {
+        const module = requireOptionalNativeModule('RubyText') as
+          | { getParagraphDiagnostics?: () => unknown }
+          | null;
+        const diagnostics = module?.getParagraphDiagnostics?.();
+        log('[LP Mobile] [RubyText] paragraph native diagnostics', JSON.stringify(diagnostics ?? null));
+      } catch (err) {
+        logwarn('[LP Mobile] [RubyText] paragraph diagnostics failed', err);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [mountedKey]);
+
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     setMeasured((prev) =>
@@ -276,12 +296,13 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
+    log(`[LP Mobile] [RubyText] paragraph measured w=${width.toFixed(1)} h=${height.toFixed(1)} runs=${runs.length}`);
     setMeasured((prev) =>
       prev && Math.abs(prev.width - width) < 0.5 && Math.abs(prev.height - height) < 0.5
         ? prev
         : { width, height }
     );
-  }, []);
+  }, [runs.length]);
 
   if (!NativeRubyTextParagraphView) return null;
 
@@ -309,16 +330,21 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
         {plainText}
       </Text>
       {measured ? (
-        <NativeRubyTextParagraphView
-          runs={runs}
-          fontSize={fontSize}
-          lineHeight={lineHeight}
-          readingSize={readingSize}
-          isRtl={isRtl}
-          fontFamily={fontFamily ?? null}
-          onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
-          style={{ width: measured.width, height: measured.height }}
-        />
+        (() => {
+          log(`[LP Mobile] [RubyText] paragraph mounting native view runs=${runs.length} box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`);
+          return (
+            <NativeRubyTextParagraphView
+              runs={runs}
+              fontSize={fontSize}
+              lineHeight={lineHeight}
+              readingSize={readingSize}
+              isRtl={isRtl}
+              fontFamily={fontFamily ?? null}
+              onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
+              style={{ width: measured.width, height: measured.height }}
+            />
+          );
+        })()
       ) : null}
     </View>
   );
