@@ -322,6 +322,7 @@ identified by deploy ID + git SHA); only product releases get tags.
 | `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
 | `tag-release.mjs [--release] [--extension] [--milestone <N>]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>`, `--milestone <N>` creates `v<version>-m<N>` |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
+| `upload.mjs ios <ipa> \| android <aab>` | Browserless store upload without EAS/Fastlane: Transporter CLI for App Store Connect, Play Developer API v3 (service-account JWT) for Google Play (§ 5.3.2) |
 
 ### 5.2 Pre-upload gate (`verify-version.mjs`)
 
@@ -358,7 +359,7 @@ versionCode regression.
 7. node scripts/tag-release.mjs --release                 # v3.1.0-bN (+ v3.1.0)
 8. Build archive / AAB (SPEC-048 § 3.1, SPEC-067 § 3.3)
 9. node scripts/verify-version.mjs                        # gate again post-build
-10. Upload to store track
+10. node scripts/upload.mjs ios|android <artifact>          # upload (see § 5.3.2)
 11. node scripts/record-build.mjs ... --tag v3.1.0-bN     # ledger, even if rejected
 ```
 
@@ -390,11 +391,59 @@ a force-push to the shared remote). Cuts are made at commit time going
 forward; `v3.1.0-m1…m11` remain documented markers pointing at the commits
 they represent.
 
+### 5.3.2 Browserless store uploads (no EAS)
+
+`scripts/upload.mjs` uploads finished artifacts without EAS, Fastlane, or a
+browser. Credentials come from the environment only — never commit them, and
+never paste them into chat or terminal history.
+
+**iOS (App Store Connect)** — uses Apple's Transporter CLI
+(`xcrun iTMSTransporter`), which ships with Xcode:
+
+```bash
+export LP_APPLE_ID="you@example.com"
+# App-specific password: appleid.apple.com → Sign-In & Security → App-Specific Passwords
+export LP_APPLE_APP_SPECIFIC_PASS="xxxx-xxxx-xxxx-xxxx"
+
+node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa --dry-run
+node scripts/upload.mjs ios ~/Desktop/LanguagePlayer3-3.1.0.ipa
+```
+
+The script reads the IPA's `Info.plist` and refuses to upload if its version
+or build doesn't match `packages/shared/src/version.json`. Since 2026
+Transporter requires `-assetFile` (the old `-f` flag is rejected);
+`notarytool` is for macOS notarization, not store uploads, and `altool` is
+deprecated. The script expects an `.ipa` — export one from the archive
+(Xcode Organizer → Distribute App, or `xcodebuild -exportArchive`).
+
+**Android (Google Play)** — uses the Play Developer API v3 directly with a
+service-account JWT:
+
+```bash
+export LP_PLAY_SERVICE_ACCOUNT_JSON="$HOME/.config/lp-play-service-account.json"
+# optional: export LP_PLAY_PACKAGE="ca.zerotohero.go"  (default)
+
+node scripts/upload.mjs android apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
+  --track internal --status completed --dry-run
+node scripts/upload.mjs android apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
+  --track internal --status completed
+```
+
+One-time setup (Play Console → Setup → API access): create a service account,
+grant it Release access to the app, download its JSON key, and point
+`LP_PLAY_SERVICE_ACCOUNT_JSON` at that file. The script creates an edit,
+uploads the AAB, sets the release (`--track internal --status draft` by
+default), and commits. Use `--status completed` to publish, `--status
+inProgress` for a draft you finish in the console, and `--no-commit` to leave
+the edit open. Record the consumed build number in the ledger immediately
+after every real upload, even if the build is later rejected or rolled back
+(§ 5.3).
+
 ### 5.4 Files to change on adoption
 
 - Add `packages/shared/src/version.json` + `version.ts` (source of truth for
   product version and shared store build number).
-- Add the four scripts in § 5.1 and `docs/versioning/build-ledger.md`.
+- Add the five scripts in § 5.1 and `docs/versioning/build-ledger.md`.
 - `apps/mobile/app.json` — replaced by `apps/mobile/app.config.js`, which
   reads `PRODUCT_VERSION` and `PRODUCT_BUILD_NUMBER` from
   `packages/shared/src/version.json`; the static `app.json` is removed.

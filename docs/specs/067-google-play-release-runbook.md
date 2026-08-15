@@ -318,6 +318,20 @@ taglines ≤ ~20% of the image; add alt text (≤140 chars) per screenshot.
 4. 10-inch tablet screenshots — 4–8 @ 16:9 (e.g. 1920×1080)
 5. Optional: 30s preview video (YouTube)
 
+### 4.5 API access for browserless uploads (service account)
+
+**Status: not yet set up** — only needed for `scripts/upload.mjs`; the manual
+Play Console upload path works without it.
+
+1. Play Console → your app → **Setup → API access** (or Users and permissions
+   → API access at account level).
+2. **Create a service account** — follow Google's link, then grant it
+   **Release** access to this app (or Admin/Release manager on the account).
+3. **Create a JSON key** for the service account and download it.
+4. Store the key outside the repo (e.g. `~/.config/lp-play-service-account.json`)
+   — never commit it. Set `LP_PLAY_SERVICE_ACCOUNT_JSON` to its path when
+   uploading.
+
 ## 5. Billing & monetization (blocker)
 
 Google Play requires digital content consumed in-app to use **Play Billing**,
@@ -347,6 +361,33 @@ If path A is chosen:
    and Pro unlocks on Android.
 
 ## 6. Release tracks & rollout
+
+### 6.1 Upload without a browser (Play API v3, no EAS)
+
+`scripts/upload.mjs` authenticates with the service account from § 4.5,
+creates an edit, uploads the AAB, sets the track/status, and commits:
+
+```bash
+export LP_PLAY_SERVICE_ACCOUNT_JSON="$HOME/.config/lp-play-service-account.json"
+# optional: export LP_PLAY_PACKAGE="ca.zerotohero.go"  (default)
+
+node scripts/upload.mjs android \
+  apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
+  --track internal --status completed --dry-run
+node scripts/upload.mjs android \
+  apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
+  --track internal --status completed
+```
+
+- `--track internal|closed|open|production` (default `internal`).
+- `--status draft|inProgress|completed` (default `draft`; use `completed` to
+  publish the release).
+- `--no-commit` leaves the edit open to finish manually in Play Console.
+- `--dry-run` validates flags/version without calling the API.
+- After a real upload, record the consumed build number in the ledger:
+  `node scripts/record-build.mjs <N> android "<track>" <version> --tag v<version>-b<N>`.
+
+### 6.2 Track progression
 
 1. **Internal testing** — upload `app-release.aab`, add internal testers,
    install on a real device, run QA (§ 3.7).
