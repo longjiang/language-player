@@ -338,7 +338,9 @@ uploading:
    matches the shared config.
 5. After iOS archive: the `.ipa`/`.app` `Info.plist` matches (extend the
    existing SPEC-048 § 3.2 archive verification).
-6. `version` (SemVer) > the last release tag.
+6. `version` (SemVer) >= the last release tag; if equal, that tag must point
+   at the current HEAD (the release tag may already exist once
+   `tag-release.mjs --release` has run).
 
 If any check fails, **do not upload**. The script exists precisely to catch
 the two rejections that waste rebuild time: iOS build reuse and Android
