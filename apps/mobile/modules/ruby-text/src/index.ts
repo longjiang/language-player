@@ -34,5 +34,7 @@ export interface NativeRubyTextProps {
   fontWeight: 'normal' | 'bold';
   underline: boolean;
   fontFamily?: string | null;
+  /** Dispatched when the native view is tapped (dictionary popup / quiz reveal). */
+  onTap?: (event: { nativeEvent: unknown }) => void;
   style?: ViewStyle | ViewStyle[];
 }

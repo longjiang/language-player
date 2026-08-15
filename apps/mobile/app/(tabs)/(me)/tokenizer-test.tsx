@@ -16,8 +16,9 @@ import { Sparkles } from 'lucide-react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { log as appLog, logwarn } from '@/lib/logger';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { getSampleText, loadSampleContent } from '@langplayer/shared';
+import { loadSampleContent } from '@langplayer/shared';
 import type { LemmatizedToken } from '@langplayer/shared';
 
 export default function TokenizerScreen() {
@@ -28,36 +29,35 @@ export default function TokenizerScreen() {
 
   // ── Sample: long per-language reader text (lazy-loaded), short text as the
   //    instant fallback while it's loading or when a language lacks one. ──
-  const shortSample = getSampleText(l2Lang.code);
   const [longSample, setLongSample] = useState<{ text: string; title: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLongSample(null);
+    appLog(`[tokenizer-test] loading long sample l2=${l2Lang.code}`);
     loadSampleContent(l2Lang.code)
       .then((content) => {
         if (cancelled) return;
+        appLog(`[tokenizer-test] sample loaded l2=${l2Lang.code} title="${content.title}" long=${content.long ? 'yes' : 'no'}`);
         setLongSample({ text: content.long ?? content.short, title: content.title });
       })
-      .catch(() => {
-        // Keep the short fallback; a missing sample shouldn't break the page.
+      .catch((err) => {
+        if (cancelled) return;
+        logwarn(`[tokenizer-test] sample load failed l2=${l2Lang.code} — using legacy short fallback`, err);
       });
     return () => {
       cancelled = true;
     };
   }, [l2Lang.code]);
 
-  const sampleMarkdown =
-    longSample?.text ??
-    shortSample?.text ??
-    '# Seoul\n\nSeoul is the capital of South Korea.';
-  const sampleTitle = longSample?.title ?? shortSample?.title ?? l2Lang.name;
+  const sampleMarkdown = longSample?.text ?? '';
+  const sampleTitle = longSample?.title ?? l2Lang.name;
   const samplePagination = useEpubPagination({
     text: sampleMarkdown,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
-    resetKey: `${l2Lang.code}:${longSample ? 'long' : 'short'}`,
+    resetKey: `${l2Lang.code}:${longSample ? 'long' : 'loading'}`,
   });
 
   // ── Custom text tokenization (on demand) ──
@@ -98,26 +98,33 @@ export default function TokenizerScreen() {
           <Text className="mb-3 text-xs font-medium text-muted-foreground">
             {sampleTitle} · {t('label.sample')}
           </Text>
-          <PaginatedReader
-            blocks={samplePagination.blocks}
-            visibleBlocks={samplePagination.visibleBlocks}
-            page={samplePagination.page}
-            totalPages={samplePagination.totalPages}
-            hasMeasured={samplePagination.hasMeasured}
-            loadingTokens={samplePagination.loadingTokens}
-            tokenCache={samplePagination.tokenCache}
-            blockTranslations={samplePagination.blockTranslations}
-            prevPage={samplePagination.prevPage}
-            nextPage={samplePagination.nextPage}
-            goToPage={samplePagination.goToPage}
-            handleMeasureBlock={samplePagination.handleMeasureBlock}
-            onVisibleBlocksChange={samplePagination.onVisibleBlocksChange}
-            contentWidth={samplePagination.contentWidth}
-            l2Code={l2Lang.code}
-            l1Code={l1Lang.code}
-            showTextActions
-            t={t}
-          />
+          {longSample ? (
+            <PaginatedReader
+              blocks={samplePagination.blocks}
+              visibleBlocks={samplePagination.visibleBlocks}
+              page={samplePagination.page}
+              totalPages={samplePagination.totalPages}
+              hasMeasured={samplePagination.hasMeasured}
+              loadingTokens={samplePagination.loadingTokens}
+              tokenCache={samplePagination.tokenCache}
+              blockTranslations={samplePagination.blockTranslations}
+              prevPage={samplePagination.prevPage}
+              nextPage={samplePagination.nextPage}
+              goToPage={samplePagination.goToPage}
+              handleMeasureBlock={samplePagination.handleMeasureBlock}
+              onVisibleBlocksChange={samplePagination.onVisibleBlocksChange}
+              contentWidth={samplePagination.contentWidth}
+              l2Code={l2Lang.code}
+              l1Code={l1Lang.code}
+              showTextActions
+              t={t}
+            />
+          ) : (
+            <View className="items-center justify-center py-10">
+              <ActivityIndicator size="small" color={ICON_MUTED} />
+              <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
+            </View>
+          )}
         </View>
 
         {/* ── Custom text input ── */}

@@ -18,6 +18,7 @@ import android.widget.TextView
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
+import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 import kotlin.math.ceil
 import kotlin.math.max
@@ -96,6 +97,8 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
       rebuild()
     }
 
+  private val onTap by EventDispatcher<Unit>()
+
   private val textView = TextView(context).apply {
     includeFontPadding = false
     gravity = Gravity.TOP or Gravity.START
@@ -103,6 +106,7 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
 
   init {
     addView(textView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+    setOnClickListener { onTap() }
   }
 
   private fun readingSlotHeight(): Int {

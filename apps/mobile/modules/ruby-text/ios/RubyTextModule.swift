@@ -5,6 +5,8 @@ public final class RubyTextModule: Module {
     Name("RubyText")
 
     View(RubyTextView.self) {
+      Events("onTap")
+
       // Parse as raw dictionaries: the [RubySegmentRecord] record converter
       // choked on NSNull for a missing reading, silently blanking every token
       // that contained a kana-only segment. `reading` is explicitly optional

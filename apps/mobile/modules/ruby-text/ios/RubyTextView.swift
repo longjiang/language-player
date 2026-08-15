@@ -18,6 +18,7 @@ import UIKit
  */
 internal final class RubyTextView: ExpoView {
   private let label = UILabel()
+  let onTap = EventDispatcher()
 
   var segments: [RubySegmentRecord] = [] { didSet { rebuild() } }
   var reserveReadingSlot = false { didSet { rebuild() } }
@@ -44,6 +45,14 @@ internal final class RubyTextView: ExpoView {
     label.lineBreakMode = .byClipping
     label.isOpaque = false
     addSubview(label)
+
+    let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+    addGestureRecognizer(tap)
+  }
+
+  @objc
+  private func handleTap() {
+    onTap()
   }
 
   override func layoutSubviews() {
@@ -74,7 +83,11 @@ internal final class RubyTextView: ExpoView {
     let paragraph = NSMutableParagraphStyle()
     paragraph.minimumLineHeight = CGFloat(lineHeight)
     paragraph.maximumLineHeight = CGFloat(lineHeight)
-    paragraph.alignment = .natural
+    // Center the base text in the box. The box is sized to the widest of the
+    // reading or the base (measured from the View fallback), so centering
+    // reproduces the fallback's column look: a wide reading stays centered
+    // over its base instead of being left-aligned with the first glyph.
+    paragraph.alignment = .center
 
     var baseAttributes: [NSAttributedString.Key: Any] = [
       .font: baseFont,
@@ -127,7 +140,7 @@ internal final class RubyTextView: ExpoView {
     // Swift imports the C function as CTRubyAnnotationCreateWithAttributes(_:_:_:_:_:) —
     // no argument labels.
     return CTRubyAnnotationCreateWithAttributes(
-      .auto,
+      .center,
       .auto,
       .before,
       reading as CFString,

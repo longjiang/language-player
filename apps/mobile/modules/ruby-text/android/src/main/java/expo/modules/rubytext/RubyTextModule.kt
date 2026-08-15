@@ -8,6 +8,8 @@ class RubyTextModule : Module() {
     Name("RubyText")
 
     View(RubyTextView::class) {
+      Events("onTap")
+
       Prop("segments") { view: RubyTextView, segments: List<RubySegmentRecord> ->
         view.segments = segments
       }
