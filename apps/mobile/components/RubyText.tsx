@@ -214,7 +214,12 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
     <View className="items-center" onLayout={NativeRubyTextView ? onLayout : undefined}>
       {segment.reading ? (
         <Text
-          style={{ fontSize: readingSize, lineHeight: readingSize, marginBottom: -rubyPull }}
+          style={{
+            fontSize: readingSize,
+            lineHeight: readingSize,
+            marginBottom: -rubyPull,
+            ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
+          }}
           className={fallbackReadingClassName}
         >
           {segment.reading}

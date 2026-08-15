@@ -251,7 +251,15 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
           ))}
           {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
           {showByeonggi ? (
-            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+            <Text
+              style={{
+                fontSize: readingSize,
+                ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
+              }}
+              className="text-muted-foreground/70"
+            >
+              {' '}{byeonggiText}
+            </Text>
           ) : null}
           {/* Quick gloss: peer of the segment columns, not inside any segment.
               Placed after all segments so furigana centers over just the word,
@@ -263,7 +271,15 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
               creating a tall invisible box that breaks baseline alignment. */}
           {showQuickGloss && (
             <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading }}>
-              <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
+              <Text
+                style={{
+                  fontSize: textStyle.fontSize ?? 16,
+                  ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
+                }}
+                className="text-muted-foreground"
+              >
+                {` (‘${quickGlossDef}’) `}
+              </Text>
             </Text>
           )}
         </View>
@@ -351,11 +367,28 @@ const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
         />
       ))}
       {showByeonggi ? (
-        <Text style={{ fontSize: readingSize, opacity: isKaraokeDimmed ? 0.4 : 1 }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+        <Text
+          style={{
+            fontSize: readingSize,
+            opacity: isKaraokeDimmed ? 0.4 : 1,
+            ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
+          }}
+          className="text-muted-foreground/70"
+        >
+          {' '}{byeonggiText}
+        </Text>
       ) : null}
       {showQuickGloss ? (
         <Text style={{ fontSize: textStyle.fontSize ?? 16, lineHeight: baseLeading, opacity: isKaraokeDimmed ? 0.4 : 1 }}>
-          <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text>
+          <Text
+            style={{
+              fontSize: textStyle.fontSize ?? 16,
+              ...(textStyle.fontFamily ? { fontFamily: textStyle.fontFamily } : {}),
+            }}
+            className="text-muted-foreground"
+          >
+            {` (‘${quickGlossDef}’) `}
+          </Text>
         </Text>
       ) : null}
     </>
