@@ -16,6 +16,9 @@
  *   node scripts/upload.mjs android <path-to.aab>
  *     [--track internal|closed|open|production] [--status draft|inProgress|completed]
  *     [--no-commit] [--dry-run]
+ *   node scripts/upload.mjs android promote <versionCode>
+ *     [--track production] [--status inProgress|completed|halted|draft]
+ *     [--user-fraction 0.1] [--no-commit] [--dry-run]
  *   Uses the official Google Play Developer API v3 with a service account.
  *   Requires:
  *     LP_PLAY_SERVICE_ACCOUNT_JSON  path to the Play service-account JSON
@@ -110,6 +113,45 @@ async function playApi(pathname, token, options = {}, body = null, upload = fals
     fail(`Play API ${response.status}: ${message}`);
   }
   return json;
+}
+
+async function playToken() {
+  const serviceAccountPath = process.env.LP_PLAY_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountPath || !existsSync(serviceAccountPath)) {
+    fail('LP_PLAY_SERVICE_ACCOUNT_JSON must point to the Play service-account JSON.');
+  }
+  const account = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+  const tokenUri = account.token_uri ?? 'https://oauth2.googleapis.com/token';
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claims = base64Url(
+    JSON.stringify({
+      iss: account.client_email,
+      scope: 'https://www.googleapis.com/auth/androidpublisher',
+      aud: tokenUri,
+      iat: now,
+      exp: now + 3600,
+    }),
+  );
+  const signature = createSign('RSA-SHA256')
+    .update(`${header}.${claims}`)
+    .sign(account.private_key, 'base64url');
+  const assertion = `${header}.${claims}.${signature}`;
+
+  console.log(`[upload] Authenticating service account ${account.client_email}…`);
+  const tokenResponse = await fetch(tokenUri, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  });
+  const tokenJson = await tokenResponse.json();
+  if (!tokenResponse.ok || !tokenJson.access_token) {
+    fail(`OAuth failed: ${tokenJson.error_description ?? tokenJson.error ?? tokenResponse.status}`);
+  }
+  return { token: tokenJson.access_token, account };
 }
 
 const ASC_BASE = 'https://api.appstoreconnect.apple.com';
@@ -444,42 +486,7 @@ async function uploadAndroid(aabPath) {
     return;
   }
 
-  const serviceAccountPath = process.env.LP_PLAY_SERVICE_ACCOUNT_JSON;
-  if (!serviceAccountPath || !existsSync(serviceAccountPath)) {
-    fail('LP_PLAY_SERVICE_ACCOUNT_JSON must point to the Play service-account JSON.');
-  }
-  const account = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
-  const tokenUri = account.token_uri ?? 'https://oauth2.googleapis.com/token';
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const claims = base64Url(
-    JSON.stringify({
-      iss: account.client_email,
-      scope: 'https://www.googleapis.com/auth/androidpublisher',
-      aud: tokenUri,
-      iat: now,
-      exp: now + 3600,
-    }),
-  );
-  const signature = createSign('RSA-SHA256')
-    .update(`${header}.${claims}`)
-    .sign(account.private_key, 'base64url');
-  const assertion = `${header}.${claims}.${signature}`;
-
-  console.log(`[upload] Authenticating service account ${account.client_email}…`);
-  const tokenResponse = await fetch(tokenUri, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion,
-    }),
-  });
-  const tokenJson = await tokenResponse.json();
-  if (!tokenResponse.ok || !tokenJson.access_token) {
-    fail(`OAuth failed: ${tokenJson.error_description ?? tokenJson.error ?? tokenResponse.status}`);
-  }
-  const token = tokenJson.access_token;
+  const { token, account } = await playToken();
 
   console.log('[upload] Creating edit session…');
   const edit = await playApi(`${pkg}/edits`, token, { method: 'POST' });
@@ -513,6 +520,69 @@ async function uploadAndroid(aabPath) {
     console.log('[upload] Committing edit…');
     await playApi(`${pkg}/edits/${editId}:commit`, token, { method: 'POST' });
     console.log('[upload] Committed. Build is now visible in the Play Console.');
+  } else {
+    console.log(`[upload] Edit ${editId} left open (--no-commit). Commit from Play Console or rerun without --no-commit.`);
+  }
+}
+
+async function promoteAndroid() {
+  const pkg = process.env.LP_PLAY_PACKAGE ?? 'ca.zerotohero.go';
+  const track = flagValue('--track', 'production');
+  const versionCodeRaw = positionals()[2];
+  const commit = !args.includes('--no-commit');
+  if (!versionCodeRaw || !/^\d+$/.test(versionCodeRaw)) {
+    fail('Usage: node scripts/upload.mjs android promote <versionCode> [--track production] [--status inProgress|completed|halted|draft] [--user-fraction 0.1]');
+  }
+  const versionCode = Number(versionCodeRaw);
+  const userFractionRaw = flagValue('--user-fraction');
+  let userFraction = null;
+  if (userFractionRaw) {
+    userFraction = Number(userFractionRaw);
+    if (!(userFraction > 0 && userFraction < 1)) {
+      fail('--user-fraction must be greater than 0 and less than 1.');
+    }
+  }
+  const status = flagValue('--status', userFraction ? 'inProgress' : 'completed');
+  if (!['draft', 'inProgress', 'completed', 'halted'].includes(status)) {
+    fail(`Invalid status: ${status}`);
+  }
+  if (userFraction && !['inProgress', 'halted'].includes(status)) {
+    fail('--user-fraction requires --status inProgress or halted.');
+  }
+
+  const version = readSharedVersion();
+  const build = readSharedBuildNumber();
+
+  if (dryRun) {
+    console.log(
+      `[dry-run] Would promote versionCode ${versionCode} on ${pkg} to track=${track} status=${status}` +
+        (userFraction ? ` userFraction=${userFraction}` : '') +
+        ` (${version} build ${build}).`,
+    );
+    return;
+  }
+
+  const { token, account } = await playToken();
+  console.log('[upload] Creating edit session…');
+  const edit = await playApi(`${pkg}/edits`, token, { method: 'POST' });
+  const editId = edit.id;
+
+  const release = {
+    name: `${version} (${build})`,
+    versionCodes: [versionCode],
+    status,
+  };
+  if (userFraction) release.userFraction = userFraction;
+
+  console.log(`[upload] Setting track ${track} (${status}${userFraction ? `, ${Math.round(userFraction * 100)}%` : ''})…`);
+  await playApi(`${pkg}/edits/${editId}/tracks/${track}`, token, {
+    method: 'PUT',
+  }, JSON.stringify({ releases: [release] }));
+
+  if (commit) {
+    console.log('[upload] Committing edit…');
+    await playApi(`${pkg}/edits/${editId}:commit`, token, { method: 'POST' });
+    console.log(`[upload] Committed. versionCode ${versionCode} is now on the ${track} track.`);
   } else {
     console.log(`[upload] Edit ${editId} left open (--no-commit). Commit from Play Console or rerun without --no-commit.`);
   }
@@ -596,7 +666,8 @@ if (!command || !artifact) {
     'Usage:\n' +
       '  node scripts/upload.mjs ios <path-to.ipa> [--dry-run]\n' +
       '  node scripts/upload.mjs android <path-to.aab> [--track <track>] [--status <status>] [--no-commit] [--dry-run]\n' +
-      '  node scripts/upload.mjs appstore <status|prepare|submit> [version] [--whats-new <text>]',
+      '  node scripts/upload.mjs android promote <versionCode> [--track production] [--status <status>] [--user-fraction 0.1]\n' +
+      '  node scripts/upload.mjs appstore <status|prepare|submit|metadata> [version] [--whats-new <text>]',
   );
   process.exit(1);
 }
@@ -605,7 +676,11 @@ const resolvedArtifact = resolve(paths.root, artifact);
 if (command === 'ios') {
   uploadIos(resolvedArtifact);
 } else if (command === 'android') {
-  await uploadAndroid(resolvedArtifact);
+  if (artifact === 'promote') {
+    await promoteAndroid();
+  } else {
+    await uploadAndroid(resolvedArtifact);
+  }
 } else if (command === 'appstore') {
   await appstore();
 } else {

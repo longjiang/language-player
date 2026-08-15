@@ -398,6 +398,10 @@ node scripts/upload.mjs android \
   publish the release).
 - `--no-commit` leaves the edit open to finish manually in Play Console.
 - `--dry-run` validates flags/version without calling the API.
+- **Promote an existing build without re-uploading:**
+  `node scripts/upload.mjs android promote <versionCode> --track production
+  [--status inProgress --user-fraction 0.1]` — `inProgress` + `userFraction`
+  (0–1) is a staged rollout; `completed` is a full rollout.
 - After a real upload, record the consumed build number in the ledger:
   `node scripts/record-build.mjs <N> android "<track>" <version> --tag v<version>-b<N>`.
 - **Gotcha:** bundle uploads use the media-upload URI
