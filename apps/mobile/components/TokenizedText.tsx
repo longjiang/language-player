@@ -2,7 +2,13 @@ import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from '
 import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { firstGloss, isSameEntryId, semanticColorsForMobile } from '@langplayer/shared';
+import {
+  colors,
+  firstGloss,
+  hslToHex,
+  isSameEntryId,
+  semanticColorsForMobile,
+} from '@langplayer/shared';
 import {
   baseCode,
   buildRuby,
@@ -24,7 +30,12 @@ import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
-import { RubyText, isNativeRubyActive } from '@/components/RubyText';
+import {
+  RubyText,
+  RubyTextParagraph,
+  isNativeRubyActive,
+  isNativeRubyParagraphActive,
+} from '@/components/RubyText';
 import { tokenizedTextLogger, log as appLog } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
@@ -44,7 +55,11 @@ const { log, logwarn } = tokenizedTextLogger;
 // the hardcoded NativeWind classes used by the View fallback (text-foreground,
 // text-primary, text-muted-foreground) so both paths stay visually in sync.
 const MOBILE_RUBY_COLORS = semanticColorsForMobile('dark');
+// `bg-yellow-200/20` from the View fallback (saved-word highlight), resolved
+// to a hex base color; the native paragraph applies /20 alpha itself.
+const MOBILE_RUBY_SAVED_BG = hslToHex(colors.yellow[200]);
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
+const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
 
 // Dev-only: one-time per-text component-tree sketch of the ruby/definition
 // path, so the tokenized output structure can be inspected in the Metro log
@@ -326,6 +341,100 @@ const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanProps) {
         </Text>
       ) : null}
     </>
+  );
+});
+
+// ── Paragraph-level ruby path ─────────────────────────────────────────
+// One native attributed string per block (iOS): the whole block is sent as
+// flat runs, so Core Text can apply ruby alignment/overhang against real
+// neighbors instead of one token-sized text layout at a time.
+interface ParagraphRun {
+  tokenId: number;
+  text: string;
+  reading?: string;
+  fontSize?: number;
+  tappable: boolean;
+  color: string;
+  readingColor: string;
+  bold: boolean;
+  underline: boolean;
+  background?: string;
+  backgroundAlpha?: number;
+  opacity: number;
+}
+
+/** Per-token tap payload used when the native paragraph reports a tokenId. */
+interface ParagraphTapAction {
+  word: string;
+  lemma: string | null;
+  pronunciation: string | null;
+  linkUrl: string | null;
+}
+
+interface RubyTextParagraphBlockProps {
+  testID?: string;
+  runs: ParagraphRun[];
+  taps: Array<ParagraphTapAction | null>;
+  fontSize: number;
+  lineHeight: number;
+  readingSize: number;
+  fontFamily: string | null;
+  isRtl: boolean;
+  fontWeight?: 'normal' | 'bold';
+  quizMode: boolean;
+  popupEnabled: boolean;
+  onOpenLink?: (href: string) => void;
+  onPressWord: PressWordHandler;
+  onReveal: (index: number) => void;
+}
+
+const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props: RubyTextParagraphBlockProps) {
+  const {
+    testID,
+    runs,
+    taps,
+    fontSize,
+    lineHeight,
+    readingSize,
+    fontFamily,
+    isRtl,
+    fontWeight,
+    quizMode,
+    popupEnabled,
+    onOpenLink,
+    onPressWord,
+    onReveal,
+  } = props;
+
+  const handleTokenTap = useCallback((tokenId: number) => {
+    const tap = taps[tokenId];
+    if (!tap) return;
+    if (tap.linkUrl && !popupEnabled) {
+      onOpenLink?.(tap.linkUrl);
+      return;
+    }
+    if (quizMode) {
+      onReveal(tokenId);
+      return;
+    }
+    if (popupEnabled) {
+      log(`[TokenizedText] ⏱ TOKEN-PRESS t=${Date.now()} word="${tap.word}" index=${tokenId}`);
+      onPressWord(tokenId, tap.word, tap.lemma, tap.pronunciation, tap.linkUrl);
+    }
+  }, [taps, quizMode, popupEnabled, onOpenLink, onPressWord, onReveal]);
+
+  return (
+    <RubyTextParagraph
+      testID={testID}
+      runs={runs}
+      fontSize={fontSize}
+      lineHeight={lineHeight}
+      readingSize={readingSize}
+      fontFamily={fontFamily}
+      isRtl={isRtl}
+      fontWeight={fontWeight}
+      onTokenTap={handleTokenTap}
+    />
   );
 });
 
@@ -1268,9 +1377,14 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
           <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
+              const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition;
+              const runs: ParagraphRun[] = [];
+              const taps: Array<ParagraphTapAction | null> = [];
               const treeLines: string[] = [
                 'TokenizedText',
-                '└─ View flex-row flex-wrap items-end (line container)',
+                useParagraph
+                  ? '└─ RubyTextParagraph (single native attributed string)'
+                  : '└─ View flex-row flex-wrap items-end (line container)',
               ];
               const rendered = displayTokens.map((token, i) => {
               if (!isWord(token)) {
@@ -1290,6 +1404,21 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                       ? { flexBasis: '100%' as const, height: 0 }
                       : undefined;
                 treeLines.push(`├─ [${i}] plain-Text "${token.text}" (non-word, bypasses RubyText)`);
+                if (useParagraph) {
+                  treeLines[treeLines.length - 1] = `├─ [${i}] plain-Text "${token.text}" (non-word, paragraph run)`;
+                  runs.push({
+                    tokenId: i,
+                    text: isTab ? '  ' : token.text,
+                    tappable: false,
+                    color: MOBILE_RUBY_COLORS.foreground,
+                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    bold: false,
+                    underline: false,
+                    opacity: 1,
+                  });
+                  taps.push(null);
+                  return null;
+                }
                 return (
                   <View key={i} className="items-center" style={whitespaceStyle}>
                     {isRubyMode && !isNewline && (
@@ -1367,15 +1496,20 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
 
+              const debugSegs = isBlanked
+                ? [{ text: '▯' }]
+                : hasRuby && token.pronunciation
+                  ? buildRuby(displayText, token.pronunciation, l2Code)
+                  : [{ text: displayText }];
+
               // ── Dev tree logging ──
               {
-                const debugSegs = isBlanked
-                  ? [{ text: '▯' }]
-                  : hasRuby && token.pronunciation
-                    ? buildRuby(displayText, token.pronunciation, l2Code)
-                    : [{ text: displayText }];
                 const flatPath = NATIVE_RUBY_ACTIVE && !showDefinition;
-                if (flatPath) {
+                if (useParagraph) {
+                  treeLines.push(
+                    `├─ [${i}] word="${word}" display="${displayText}" hasRuby=${hasRuby} [paragraph runs ×${debugSegs.length}]${isBlanked ? ' blanked' : ''}${isKaraokeDimmed ? ' dimmed' : ''}`,
+                  );
+                } else if (flatPath) {
                   const segLinesFlat = debugSegs.map((s, j) => {
                     const leaf = j === debugSegs.length - 1;
                     return `${leaf ? '└─' : '├─'} RubyText seg="${s.text}"${
@@ -1404,6 +1538,63 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     ...(showDefinition ? [`└─ View definitionSlot ${showInterlinear ? `"${trimmedDef}"` : '(empty spacer)'}`] : []),
                   );
                 }
+              }
+
+              if (useParagraph) {
+                for (const seg of debugSegs) {
+                  runs.push({
+                    tokenId: i,
+                    text: seg.text,
+                    ...(seg.reading ? { reading: seg.reading } : {}),
+                    tappable: true,
+                    color: isTokenSelected || isHighlighted
+                      ? MOBILE_RUBY_COLORS.primary
+                      : MOBILE_RUBY_COLORS.foreground,
+                    readingColor: isTokenSelected
+                      ? MOBILE_RUBY_COLORS.primary
+                      : MOBILE_RUBY_COLORS.mutedForeground,
+                    bold: (!isBlanked && isHighlighted) || textStyle.fontWeight === 'bold',
+                    underline: !isBlanked && isLink,
+                    ...(isSearchHighlight
+                      ? { background: MOBILE_RUBY_COLORS.primary, backgroundAlpha: 0.2 }
+                      : isSavedWord
+                        ? { background: MOBILE_RUBY_SAVED_BG, backgroundAlpha: 0.2 }
+                        : {}),
+                    opacity: isKaraokeDimmed ? 0.4 : 1,
+                  });
+                }
+                if (showByeonggi) {
+                  runs.push({
+                    tokenId: i,
+                    text: ` ${byeonggiText}`,
+                    fontSize: readingSize,
+                    tappable: false,
+                    color: MOBILE_RUBY_COLORS.mutedForeground,
+                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    bold: false,
+                    underline: false,
+                    opacity: (isKaraokeDimmed ? 0.4 : 1) * 0.7,
+                  });
+                }
+                if (showQuickGloss) {
+                  runs.push({
+                    tokenId: i,
+                    text: ` (‘${quickGlossDef}’) `,
+                    tappable: false,
+                    color: MOBILE_RUBY_COLORS.mutedForeground,
+                    readingColor: MOBILE_RUBY_COLORS.mutedForeground,
+                    bold: false,
+                    underline: false,
+                    opacity: isKaraokeDimmed ? 0.4 : 1,
+                  });
+                }
+                taps.push({
+                  word,
+                  lemma: firstLemma,
+                  pronunciation: token.pronunciation ?? null,
+                  linkUrl,
+                });
+                return null;
               }
 
               const tokenSpanProps = {
@@ -1452,6 +1643,26 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               );
             });
               if (__DEV__) scheduleTreeLog(text, treeLines);
+              if (useParagraph) {
+                return (
+                  <RubyTextParagraphBlock
+                    testID={testID}
+                    runs={runs}
+                    taps={taps}
+                    fontSize={tokenFontSize}
+                    lineHeight={(baseLeading ?? tokenFontSize) + (readingSize - rubyPull)}
+                    readingSize={readingSize}
+                    fontFamily={textStyle.fontFamily ?? null}
+                    isRtl={isRtl}
+                    fontWeight={textStyle.fontWeight === 'bold' ? 'bold' : 'normal'}
+                    quizMode={quizMode}
+                    popupEnabled={popupEnabled}
+                    onOpenLink={onOpenLink}
+                    onPressWord={handlePressWord}
+                    onReveal={handleReveal}
+                  />
+                );
+              }
               return rendered;
             })()}
           </View>
