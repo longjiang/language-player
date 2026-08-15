@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Thêm",
+        "add_sample_text": "Thêm văn bản mẫu",
         "add_to_playlist": "Thêm vào danh sách phát",
         "all_results": "Tất cả kết quả",
         "back": "Quay lại",

@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "追加",
+        "add_sample_text": "サンプルテキストを追加",
         "add_to_playlist": "プレイリストに追加",
         "all_results": "すべての結果",
         "back": "戻る",

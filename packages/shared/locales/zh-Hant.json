@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "新增",
+        "add_sample_text": "添加範例文本",
         "add_to_playlist": "新增至播放清單",
         "all_results": "所有結果",
         "back": "返回",

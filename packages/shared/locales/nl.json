@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Toevoegen",
+        "add_sample_text": "Voorbeeldtekst toevoegen",
         "add_to_playlist": "Aan afspeellijst toevoegen",
         "all_results": "Alle resultaten",
         "back": "Terug",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -9,9 +9,10 @@ import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { NotesSidebar } from '@/components/reader/NotesSidebar';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
-import { BookOpen, PenLine, PanelRightOpen, PanelRightClose } from 'lucide-react-native';
+import { BookOpen, PenLine, PanelRightOpen, PanelRightClose, Sparkles } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { loadSampleContent } from '@langplayer/shared';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -24,6 +25,7 @@ export default function ReaderScreen() {
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,6 +133,20 @@ export default function ReaderScreen() {
     void notes.createNote(t('msg.untitled_note'));
   };
 
+  // Load the per-language sample (long for popular L2s, short otherwise) into
+  // the editor, matching the web Notes reader's "Add Sample Text" button.
+  const handleAddSampleText = async () => {
+    setLoadingSample(true);
+    try {
+      const content = await loadSampleContent(l2Lang.code);
+      handleTextChange(content.long ?? content.short);
+    } catch {
+      // Sample load failed — leave the editor untouched.
+    } finally {
+      setLoadingSample(false);
+    }
+  };
+
   return (
     <PageContainer maxWidth="7xl">
       <View className="px-4 py-5">
@@ -139,61 +155,92 @@ export default function ReaderScreen() {
         </Text>
       </View>
 
-      {/* Tab bar + actions */}
-      <View className="flex-row items-center border-b border-border px-4">
-        <Pressable
-          onPress={() => setActiveTab('edit')}
-          className={`mr-4 flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'edit' ? 'border-primary' : 'border-transparent'}`}
-        >
-          <PenLine size={14} color={ICON_MUTED} />
-          <Text className={`text-sm font-medium ${activeTab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>
-            {t('action.edit') ?? 'Edit'}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setActiveTab('read')}
-          className={`flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'read' ? 'border-primary' : 'border-transparent'}`}
-        >
-          <BookOpen size={14} color={ICON_MUTED} />
-          <Text className={`text-sm font-medium ${activeTab === 'read' ? 'text-foreground' : 'text-muted-foreground'}`}>
-            {t('action.read') ?? 'Read'}
-          </Text>
-        </Pressable>
-        <View className="flex-1" />
-        {saving
-          ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>
-          : savedFlash
-            ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saved_locally')}</Text>
-            : null}
-        <Pressable
-          onPress={toggle}
-          className="rounded p-1.5 active:bg-muted"
-          accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
-        >
-          {isWide && sidebarOpen ? (
-            <PanelRightClose size={18} color={ICON_MUTED} />
-          ) : (
-            <PanelRightOpen size={18} color={ICON_MUTED} />
-          )}
-        </Pressable>
-      </View>
-
       {/* Main content — persistent panel on wide screens, sheet on narrow */}
       <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
-        {/* Editor / Reader */}
+        {/* Left panel: tab bar + editor/reader (tabs must not span the sidebar) */}
         <View className="flex-1">
+          {/* Tab bar + actions */}
+          <View className="flex-row items-center border-b border-border px-4">
+            <Pressable
+              onPress={() => setActiveTab('edit')}
+              className={`mr-4 flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'edit' ? 'border-primary' : 'border-transparent'}`}
+            >
+              <PenLine size={14} color={ICON_MUTED} />
+              <Text className={`text-sm font-medium ${activeTab === 'edit' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {t('action.edit') ?? 'Edit'}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setActiveTab('read')}
+              className={`flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'read' ? 'border-primary' : 'border-transparent'}`}
+            >
+              <BookOpen size={14} color={ICON_MUTED} />
+              <Text className={`text-sm font-medium ${activeTab === 'read' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {t('action.read') ?? 'Read'}
+              </Text>
+            </Pressable>
+            <View className="flex-1" />
+            {saving
+              ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saving')}</Text>
+              : savedFlash
+                ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saved_locally')}</Text>
+                : null}
+            <Pressable
+              onPress={toggle}
+              className="rounded p-1.5 active:bg-muted"
+              accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
+            >
+              {isWide && sidebarOpen ? (
+                <PanelRightClose size={18} color={ICON_MUTED} />
+              ) : (
+                <PanelRightOpen size={18} color={ICON_MUTED} />
+              )}
+            </Pressable>
+          </View>
+
+          {/* Editor / Reader */}
           {activeTab === 'edit' && (
-            <TextInput
-              className="flex-1 px-5 pt-4 pb-20 text-sm text-foreground"
-              placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
-              placeholderTextColor={ICON_MUTED}
-              value={text}
-              onChangeText={handleTextChange}
-              multiline
-              textAlignVertical="top"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <View className="flex-1">
+              <TextInput
+                className="flex-1 px-5 pt-4 pb-4 text-sm text-foreground"
+                placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
+                placeholderTextColor={ICON_MUTED}
+                value={text}
+                onChangeText={handleTextChange}
+                multiline
+                textAlignVertical="top"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <View className="flex-row gap-2 border-t border-border px-4 py-3">
+                <Pressable
+                  onPress={handleAddSampleText}
+                  disabled={loadingSample}
+                  className="flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted"
+                >
+                  {loadingSample ? (
+                    <ActivityIndicator size="small" color={ICON_MUTED} />
+                  ) : (
+                    <Sparkles size={14} color={ICON_MUTED} />
+                  )}
+                  <Text className="text-sm font-medium text-foreground">
+                    {t('action.add_sample_text')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setActiveTab('read')}
+                  disabled={!text.trim()}
+                  className={`flex-row items-center gap-1.5 rounded-lg px-4 py-2 ${
+                    !text.trim() ? 'bg-muted' : 'bg-primary active:bg-primary/80'
+                  }`}
+                >
+                  <Sparkles size={14} color="#fff" />
+                  <Text className="text-sm font-medium text-primary-foreground">
+                    {t('action.tokenize')}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           )}
 
           {/* Read tab: paginated reader */}

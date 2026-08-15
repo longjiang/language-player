@@ -21,6 +21,7 @@
     },
     "action": {
         "add": "Dodaj",
+        "add_sample_text": "Dodaj przykładowy tekst",
         "add_to_playlist": "Dodaj do listy odtwarzania",
         "all_results": "Wszystkie wyniki",
         "back": "Wstecz",
