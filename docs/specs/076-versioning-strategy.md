@@ -425,7 +425,9 @@ deprecated. The script expects an `.ipa` — export one from the archive
 service-account JWT:
 
 ```bash
-export LP_PLAY_SERVICE_ACCOUNT_JSON="$HOME/.config/lp-play-service-account.json"
+# Credentials load from the gitignored scripts/.env.upload (SPEC-067 § 4.5).
+# Optional overrides:
+export LP_PLAY_SERVICE_ACCOUNT_JSON=/Users/longjiang/Projects/language-player/scripts/lp-play-service-account.json
 # optional: export LP_PLAY_PACKAGE="ca.zerotohero.go"  (default)
 
 node scripts/upload.mjs android apps/mobile/android/app/build/outputs/bundle/release/app-release.aab \
@@ -435,14 +437,15 @@ node scripts/upload.mjs android apps/mobile/android/app/build/outputs/bundle/rel
 ```
 
 One-time setup (Play Console → Setup → API access): create a service account,
-grant it Release access to the app, download its JSON key, and point
-`LP_PLAY_SERVICE_ACCOUNT_JSON` at that file. The script creates an edit,
-uploads the AAB, sets the release (`--track internal --status draft` by
-default), and commits. Use `--status completed` to publish, `--status
-inProgress` for a draft you finish in the console, and `--no-commit` to leave
-the edit open. Record the consumed build number in the ledger immediately
-after every real upload, even if the build is later rejected or rolled back
-(§ 5.3).
+grant it Release access to the app, and download its JSON key. **Done and
+verified 2026-08-14** for `lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com`
+(SPEC-067 § 4.5); the key lives at `scripts/lp-play-service-account.json` and
+is wired through `scripts/.env.upload`. The script creates an edit, uploads
+the AAB, sets the release (`--track internal --status draft` by default), and
+commits. Use `--status completed` to publish, `--status inProgress` for a
+draft you finish in the console, and `--no-commit` to leave the edit open.
+Record the consumed build number in the ledger immediately after every real
+upload, even if the build is later rejected or rolled back (§ 5.3).
 
 ### 5.4 Files to change on adoption
 

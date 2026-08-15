@@ -320,17 +320,29 @@ taglines ≤ ~20% of the image; add alt text (≤140 chars) per screenshot.
 
 ### 4.5 API access for browserless uploads (service account)
 
-**Status: not yet set up** — only needed for `scripts/upload.mjs`; the manual
-Play Console upload path works without it.
+**Status: ✅ set up and verified (2026-08-14)** — service account
+`lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com` (project
+`zh-zerotohero`) has app-level Admin/release access to `ca.zerotohero.go`.
+Verified live against the Play Developer API: token minting, edit-session
+creation, and track reads all returned 200. This is the first API-upload
+credential (the Aug 12 upload was done manually in Play Console).
+
+The one-time setup that led here:
 
 1. Play Console → your app → **Setup → API access** (or Users and permissions
    → API access at account level).
 2. **Create a service account** — follow Google's link, then grant it
-   **Release** access to this app (or Admin/Release manager on the account).
+   **Release** access to this app (the current account has app-level Admin).
 3. **Create a JSON key** for the service account and download it.
-4. Store the key outside the repo (e.g. `~/.config/lp-play-service-account.json`)
-   — never commit it. Set `LP_PLAY_SERVICE_ACCOUNT_JSON` to its path when
-   uploading.
+4. Store the key at `scripts/lp-play-service-account.json` — gitignored,
+   never committed — and wire it through the gitignored
+   `scripts/.env.upload`:
+   `LP_PLAY_SERVICE_ACCOUNT_JSON=/Users/longjiang/Projects/language-player/scripts/lp-play-service-account.json`
+   (or export it in the shell; real environment variables take precedence).
+
+> The key is byte-identical to
+> `zerotohero-python-server/data/zh-zerotohero-lp-play-billing-2.json`
+> (gitignored there too) — the same account already used for Play Billing.
 
 ## 5. Billing & monetization (blocker)
 
@@ -368,7 +380,9 @@ If path A is chosen:
 creates an edit, uploads the AAB, sets the track/status, and commits:
 
 ```bash
-export LP_PLAY_SERVICE_ACCOUNT_JSON="$HOME/.config/lp-play-service-account.json"
+# Credentials are loaded from scripts/.env.upload (gitignored, see § 4.5).
+# Optional overrides:
+export LP_PLAY_SERVICE_ACCOUNT_JSON=/Users/longjiang/Projects/language-player/scripts/lp-play-service-account.json
 # optional: export LP_PLAY_PACKAGE="ca.zerotohero.go"  (default)
 
 node scripts/upload.mjs android \
