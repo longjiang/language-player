@@ -226,7 +226,8 @@ Restart with the previous dependency set if a new requirement broke the app
 ## 4. Apple App Store (iOS)
 
 **Store record:** App Store Connect app ID `6520385296` · bundle ID
-`ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md).
+`ca.zerotohero.go` · full build/QA/upload details in [SPEC-048 § 3](../specs/048-mobile-release-plan.md) ·
+**last upload:** 3.1.0 build 3 → App Store Connect / TestFlight (2026-08-14).
 
 ### 4.1 Version gate
 
@@ -263,8 +264,8 @@ If the Apple ID belongs to multiple App Store Connect teams, set
 `LP_APPLE_ITC_PROVIDER` (Language Player 3 uses `9CS9PCBX32`); without it
 Transporter fails with "Client configuration failed".
 
-The script wraps `xcrun iTMSTransporter -assetFile` (ships with Xcode) and
-aborts on version/build mismatch. Manual alternative: Xcode Organizer →
+The script wraps Transporter (`-assetFile`, required since 2026) and aborts
+on version/build mismatch. Manual alternative: Xcode Organizer →
 Distribute App → App Store Connect, or drag the IPA into the Transporter app.
 
 > **Xcode 26 note:** Xcode no longer bundles the full Transporter CLI — only a
@@ -292,7 +293,8 @@ Distribute App → App Store Connect, or drag the IPA into the Transporter app.
 ## 5. Google Play (Android)
 
 **Store record:** Google Play app ID `4975392680448759197` · package
-`ca.zerotohero.go` · full runbook in [SPEC-067](../specs/067-google-play-release-runbook.md).
+`ca.zerotohero.go` · full runbook in [SPEC-067](../specs/067-google-play-release-runbook.md) ·
+**last upload:** 3.1.0 versionCode 3 → Internal testing (2026-08-14).
 
 ### 5.1 Version gate
 
@@ -459,3 +461,58 @@ node scripts/upload.mjs android \
 node apps/chrome-extension/build.mjs
 node scripts/tag-release.mjs --extension
 ```
+
+---
+
+## 10. Deployment gotchas (learned the hard way)
+
+### iOS / Transporter
+
+- **Xcode 26 ships only a shim.** `xcrun iTMSTransporter` fails with OSStatus
+  error `-10661` until the free **Transporter** app is installed (Mac App
+  Store). The script prefers
+  `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter` when
+  present.
+- **First run downloads its runtime.** Transporter pulls its Java/OSGi
+  components into `~/Library/Caches/com.apple.amp.itmstransporter` on first
+  use (allow a few minutes) and needs write access to the user's home
+  directory — run it from a normal terminal or an unsandboxed agent, not a
+  restricted sandbox.
+- **Multi-provider Apple IDs fail with "Client configuration failed".** If
+  the Apple ID belongs to more than one App Store Connect team, pass
+  `-itc_provider <short-name>` (script: `--itc-provider` or
+  `LP_APPLE_ITC_PROVIDER`). Find the short name with:
+  `/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter -m provider -u <id> -p <pass>`
+  Language Player 3 uses `9CS9PCBX32`.
+- **Only an app-specific password works** — the regular Apple Account
+  password is rejected. Changing/resetting the primary password revokes all
+  app-specific passwords. Keep them in the gitignored `scripts/.env.upload`
+  (chmod 600) and never paste them into chat or terminal history; the script
+  masks the password in its own error output.
+- **Transporter needs an `.ipa`**, not the `.xcarchive`.
+
+### Android / Play API
+
+- **Media uploads use a different base URL.** Bundle uploads go to
+  `https://androidpublisher.googleapis.com/upload/androidpublisher/v3/...`
+  (note the `/upload/`). Using the normal API base makes Google try to parse
+  the AAB as JSON: `400 Invalid JSON payload received. Unexpected token. PK…`.
+  `scripts/upload.mjs` uses the correct URI.
+- **The service account must have Release/Admin access.** A billing-only
+  account fails on the first API call; verify before your first real upload
+  (token mint + edit creation + track read all returned 200 in 2026-08-14).
+  The key JSON is gitignored in both repos and should stay chmod 600.
+- **versionCode must increase across ALL tracks** and is shared with iOS
+  (`PRODUCT_BUILD_NUMBER`, SPEC-076). Never reuse a number, even after a
+  rejection or rollback — record it in the ledger immediately.
+
+### Both stores / general
+
+- **Run the version gate before uploading** (`verify-version.mjs`), tag
+  `v<version>-b<N>` **before** the upload, and record the ledger entry right
+  after — even if the build is later rejected.
+- **Store processing is not instant.** iOS builds appear in TestFlight a few
+  minutes after upload; Play internal builds may take a few minutes to become
+  installable.
+- **The AAB/IPA must embed the production API URL** and never
+  `localhost`/`127.0.0.1` — check before upload (SPEC-048 § 3.2, SPEC-067 § 3.6).

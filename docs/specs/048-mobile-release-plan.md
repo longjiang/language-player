@@ -615,6 +615,11 @@ table, so `grep` works. If `localhost:5001` appears, the bundle is stale/wrong
   > teams, set `LP_APPLE_ITC_PROVIDER=9CS9PCBX32` (the app's team short
   > name) — otherwise upload fails with "Client configuration failed".
 
+> **Verified 2026-08-14:** 3.1.0 (build 3) was uploaded to App Store Connect
+> through this path. Gotchas (first run downloads Transporter's runtime,
+> multi-provider `-itc_provider`, password hygiene) are collected in
+> [ARCH-029 § 10](../arch/029-production-deployment-runbook.md).
+
 - **Manual alternative:** `open -a Xcode` → **Window → Organizer** → select the
   `LanguagePlayer` archive → **Distribute App** → **App Store Connect**
   (re-signs with the Distribution certificate during export), or drag the IPA
