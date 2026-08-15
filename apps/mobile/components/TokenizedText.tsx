@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from '
 import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { firstGloss, isSameEntryId } from '@langplayer/shared';
+import { firstGloss, isSameEntryId, semanticColorsForMobile } from '@langplayer/shared';
 import {
   baseCode,
   buildRuby,
@@ -24,6 +24,7 @@ import { useOfflineDictionaryAvailable } from '@/hooks/use-offline-dictionary';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { useT } from '@/hooks/use-t';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
+import { RubyText } from '@/components/RubyText';
 import { tokenizedTextLogger } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
@@ -38,6 +39,11 @@ import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
 const { log, logwarn } = tokenizedTextLogger;
+
+// Resolved dark-theme token colors for the native ruby renderer. These mirror
+// the hardcoded NativeWind classes used by the View fallback (text-foreground,
+// text-primary, text-muted-foreground) so both paths stay visually in sync.
+const MOBILE_RUBY_COLORS = semanticColorsForMobile('dark');
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -166,37 +172,41 @@ const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanProps) {
         {/* Segment row + quick gloss: items-end so the gloss (no furigana)
             baseline-aligns with the word text at the bottom of the segment columns. */}
         <View className="flex-row items-end">
-          {rubySegs.map((seg, j) => (
-            <View key={j} className="items-center">
-              {seg.reading && (
-                <Text style={{ fontSize: readingSize, lineHeight: readingSize, marginBottom: -rubyPull }} className={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}>{seg.reading}</Text>
-              )}
-              {/* Spacer: reserve the reading line box above segments that don't
-                  have a reading. Covers kana-only segments inside a ruby word
-                  and — when reserveRubySlot is on (furigana enabled) — whole
-                  tokens without ruby (kana words, punctuation), so every
-                  wrapped line keeps the same height with or without furigana. */}
-              {(hasRuby || reserveRubySlot) && !seg.reading && (
-                <View style={{ height: readingSize, marginBottom: -rubyPull }} />
-              )}
-              <Text style={[textStyle, { lineHeight: baseLeading }]}>
-                {isBlanked ? (
-                  <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
-                ) : (
-                  <Text style={[textStyle, { lineHeight: baseLeading }]}
-                    className={isTokenSelected
-                      ? 'text-primary'
-                      : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
-                    {seg.text}
-                  </Text>
-                )}
-                {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
-                {showByeonggi && j === 0 ? (
-                  <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
-                ) : null}
-              </Text>
-            </View>
-          ))}
+          {/* Native ruby renderer when available (RubyText measures the
+              fallback columns once and hands the exact box to the platform
+              text engine); otherwise the same View columns as before.
+              Byeonggi moves from inline-inside-the-word to a flex sibling —
+              visually equivalent, and required because the native view owns
+              the base text. */}
+          <RubyText
+            segments={isBlanked ? [{ text: '▯' }] : rubySegs}
+            hasRuby={isBlanked ? false : hasRuby}
+            reserveReadingSlot={isBlanked ? false : reserveRubySlot}
+            readingSize={readingSize}
+            rubyPull={rubyPull}
+            baseLeading={baseLeading}
+            textStyle={textStyle}
+            colorHex={isTokenSelected || isHighlighted ? MOBILE_RUBY_COLORS.primary : MOBILE_RUBY_COLORS.foreground}
+            bold={!isBlanked && isHighlighted}
+            underline={!isBlanked && isLink}
+            nativeHighlightClassName={
+              isBlanked
+                ? undefined
+                : `${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`.trim() || undefined
+            }
+            fallbackBaseClassName={
+              isBlanked
+                ? 'text-foreground'
+                : isTokenSelected
+                  ? 'text-primary'
+                  : `${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+            }
+            fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
+          />
+          {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
+          {showByeonggi ? (
+            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+          ) : null}
           {/* Quick gloss: peer of the segment columns, not inside any segment.
               Placed after all segments so furigana centers over just the word,
               not the word + gloss combined width. items-end keeps the gloss on
