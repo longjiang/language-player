@@ -358,6 +358,15 @@ node scripts/upload.mjs android \
   --track internal --status completed
 ```
 
+Promote an already-uploaded build to another track without re-uploading:
+
+```bash
+node scripts/upload.mjs android promote 3 --dry-run                    # full production rollout
+node scripts/upload.mjs android promote 3 \
+  --status inProgress --user-fraction 0.1 --dry-run                    # staged 10% rollout
+node scripts/upload.mjs android promote 3 --status inProgress --user-fraction 0.1
+```
+
 Default track is `internal` with status `draft`; use `--status completed` to
 publish, `--track production` for a production release (staged rollout is
 recommended), and `--no-commit` to finish manually in the console. Manual
