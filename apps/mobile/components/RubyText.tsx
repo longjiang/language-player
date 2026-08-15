@@ -1,8 +1,12 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform, Text, View, type LayoutChangeEvent } from 'react-native';
 import type { RubySegment } from '@langplayer/utils';
 import { requireNativeViewManager, requireOptionalNativeModule } from 'expo-modules-core';
-import type { NativeRubyTextProps } from '../modules/ruby-text/src';
+import type {
+  NativeRubyTextParagraphProps,
+  NativeRubyTextParagraphRun,
+  NativeRubyTextProps,
+} from '../modules/ruby-text/src';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -13,6 +17,7 @@ import { log, logwarn } from '@/lib/logger';
 const NATIVE_RUBY_ENABLED = true;
 
 let NativeRubyTextView: React.ComponentType<NativeRubyTextProps> | null = null;
+let NativeRubyTextParagraphView: React.ComponentType<NativeRubyTextParagraphProps> | null = null;
 if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android')) {
   try {
     // The module only exists in development/release builds compiled from this
@@ -20,6 +25,20 @@ if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android'))
     // runtime rather than assumed.
     if (requireOptionalNativeModule('RubyText') != null) {
       NativeRubyTextView = requireNativeViewManager<NativeRubyTextProps>('RubyText');
+      try {
+        // The paragraph renderer is iOS-only for now (Android has no native
+        // ruby-in-a-single-TextView support). Older iOS builds don't have the
+        // view registered either, so both fall back to the per-token path.
+        NativeRubyTextParagraphView =
+          requireNativeViewManager<NativeRubyTextParagraphProps>('RubyTextParagraph');
+        log('[LP Mobile] [RubyText] paragraph ruby renderer available');
+      } catch (paragraphErr) {
+        NativeRubyTextParagraphView = null;
+        logwarn(
+          '[LP Mobile] [RubyText] paragraph ruby renderer unavailable (older build) — using per-token path',
+          paragraphErr,
+        );
+      }
       log('[LP Mobile] [RubyText] native ruby renderer available');
     } else {
       logwarn('[LP Mobile] [RubyText] native module not found — using View fallback');
@@ -60,6 +79,11 @@ export interface RubyTextProps {
 /** Whether the native RubyText view manager is available in this build. */
 export function isNativeRubyActive(): boolean {
   return NativeRubyTextView != null;
+}
+
+/** Whether the paragraph-level ruby renderer is linked in this build. */
+export function isNativeRubyParagraphActive(): boolean {
+  return NativeRubyTextParagraphView != null;
 }
 
 /**
@@ -170,6 +194,112 @@ export const RubyText = memo(function RubyText(props: RubyTextProps) {
       <Text style={[textStyle, baseLeading ? { lineHeight: baseLeading } : undefined]} className={fallbackBaseClassName}>
         {segment.text}
       </Text>
+    </View>
+  );
+});
+
+export interface RubyTextParagraphProps {
+  /** Flat list of text runs spanning the whole block (one attributed string). */
+  runs: NativeRubyTextParagraphRun[];
+  fontSize: number;
+  lineHeight: number;
+  readingSize: number;
+  isRtl: boolean;
+  fontFamily?: string | null;
+  /** Bold the measuring text too — bold glyphs are wider and wrap differently. */
+  fontWeight?: 'normal' | 'bold';
+  /** Reported with the tapped token's index. */
+  onTokenTap?: (tokenId: number) => void;
+  testID?: string;
+}
+
+/**
+ * Renders an entire block of ruby segments as ONE native text layout
+ * (iOS builds only). JS keeps an invisible RN Text with the same font and
+ * line box to measure the exact width/height Fabric/Yoga won't measure for
+ * a custom host view; the native view then gets that box via style.
+ */
+export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyTextParagraphProps) {
+  const {
+    runs,
+    fontSize,
+    lineHeight,
+    readingSize,
+    isRtl,
+    fontFamily,
+    fontWeight,
+    onTokenTap,
+    testID,
+  } = props;
+
+  const [measured, setMeasured] = useState<{ width: number; height: number } | null>(null);
+
+  // Only the glyph metrics matter for the box: text content, font, sizes.
+  // Style-only changes (colors, bold, opacity) keep the same measured box.
+  const plainText = useMemo(() => runs.map((run) => run.text).join(''), [runs]);
+  const sizeKey = [
+    plainText,
+    fontSize,
+    lineHeight,
+    readingSize,
+    fontFamily ?? '',
+    fontWeight ?? '',
+  ].join(':');
+
+  const [activeSizeKey, setActiveSizeKey] = useState(sizeKey);
+  useEffect(() => {
+    if (activeSizeKey !== sizeKey) {
+      setActiveSizeKey(sizeKey);
+      setMeasured(null);
+    }
+  }, [sizeKey, activeSizeKey]);
+
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setMeasured((prev) =>
+      prev && Math.abs(prev.width - width) < 0.5 && Math.abs(prev.height - height) < 0.5
+        ? prev
+        : { width, height }
+    );
+  }, []);
+
+  if (!NativeRubyTextParagraphView) return null;
+
+  return (
+    <View testID={testID}>
+      {/* Invisible measuring text: RN Text wraps with the same font and line
+          box as the native paragraph, so its laid-out size is the exact box
+          the native view needs. Kept mounted so width changes (rotation,
+          zoom) re-measure automatically. */}
+      <Text
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          opacity: 0,
+          fontSize,
+          lineHeight,
+          fontWeight: fontWeight ?? 'normal',
+          ...(fontFamily ? { fontFamily } : {}),
+        }}
+        onLayout={onLayout}
+      >
+        {plainText}
+      </Text>
+      {measured ? (
+        <NativeRubyTextParagraphView
+          runs={runs}
+          fontSize={fontSize}
+          lineHeight={lineHeight}
+          readingSize={readingSize}
+          isRtl={isRtl}
+          fontFamily={fontFamily ?? null}
+          onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
+          style={{ width: measured.width, height: measured.height }}
+        />
+      ) : null}
     </View>
   );
 });

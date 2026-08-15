@@ -58,5 +58,52 @@ public final class RubyTextModule: Module {
         view.fontFamily = family
       }
     }
+
+    View(RubyTextParagraphView.self) {
+      Events("onTokenTap")
+
+      // Same raw-dictionary parsing as `segments` above: Expo's record
+      // converter chokes on NSNull for an absent optional field, so missing
+      // `reading`/`background` keys must map to nil here instead.
+      Prop("runs") { (view: RubyTextParagraphView, runs: [[String: Any]]) in
+        view.runs = runs.compactMap { dict in
+          guard let text = dict["text"] as? String else { return nil }
+          return RubyTextParagraphRun(
+            text: text,
+            reading: dict["reading"] as? String,
+            tokenId: (dict["tokenId"] as? NSNumber)?.intValue ?? 0,
+            fontSize: (dict["fontSize"] as? NSNumber)?.doubleValue,
+            tappable: dict["tappable"] as? Bool ?? false,
+            color: UIColor(lpHex: dict["color"] as? String) ?? .label,
+            readingColor: UIColor(lpHex: dict["readingColor"] as? String) ?? .secondaryLabel,
+            bold: dict["bold"] as? Bool ?? false,
+            underline: dict["underline"] as? Bool ?? false,
+            background: UIColor(lpHex: dict["background"] as? String),
+            backgroundAlpha: (dict["backgroundAlpha"] as? NSNumber)?.doubleValue ?? 1,
+            opacity: (dict["opacity"] as? NSNumber)?.doubleValue ?? 1
+          )
+        }
+      }
+
+      Prop("fontSize") { (view: RubyTextParagraphView, size: Double) in
+        view.fontSize = size
+      }
+
+      Prop("lineHeight") { (view: RubyTextParagraphView, height: Double) in
+        view.lineHeight = height
+      }
+
+      Prop("readingSize") { (view: RubyTextParagraphView, size: Double) in
+        view.readingSize = size
+      }
+
+      Prop("isRtl") { (view: RubyTextParagraphView, rtl: Bool) in
+        view.isRtl = rtl
+      }
+
+      Prop("fontFamily") { (view: RubyTextParagraphView, family: String?) in
+        view.fontFamily = family
+      }
+    }
   }
 }
