@@ -167,8 +167,28 @@ if (pending) {
   if (lastTag) {
     const tagVersion = lastTag.replace(/^v/, '');
     try {
-      if (compareVersions(shared, tagVersion) <= 0) {
-        errors.push(`Product version ${shared} is not greater than the last release tag ${lastTag}.`);
+      const cmp = compareVersions(shared, tagVersion);
+      if (cmp < 0) {
+        errors.push(`Product version ${shared} is lower than the existing release tag ${lastTag}.`);
+      } else if (cmp === 0) {
+        let tagHead = null;
+        try {
+          tagHead = execSync(`git rev-parse --verify --quiet ${lastTag}`, {
+            cwd: paths.root,
+            encoding: 'utf8',
+          }).trim();
+        } catch {
+          tagHead = null;
+        }
+        const head = execSync('git rev-parse HEAD', {
+          cwd: paths.root,
+          encoding: 'utf8',
+        }).trim();
+        if (tagHead !== head) {
+          errors.push(
+            `Release tag ${lastTag} already exists at another commit — bump the product version before uploading.`,
+          );
+        }
       }
     } catch {
       warnings.push(`Could not parse release tag ${lastTag}; skipping tag comparison.`);
