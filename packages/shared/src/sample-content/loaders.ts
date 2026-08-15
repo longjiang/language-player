@@ -149,7 +149,8 @@ export async function loadSampleShort(code: string): Promise<string> {
   return (await loadSampleContent(code)).short;
 }
 
-/** Long reader text, or null when not authored yet. */
-export async function loadSampleLong(code: string): Promise<string | null> {
-  return (await loadSampleContent(code)).long;
+/** Long reader text; falls back to the short paragraph when not authored. */
+export async function loadSampleLong(code: string): Promise<string> {
+  const content = await loadSampleContent(code);
+  return content.long ?? content.short;
 }
