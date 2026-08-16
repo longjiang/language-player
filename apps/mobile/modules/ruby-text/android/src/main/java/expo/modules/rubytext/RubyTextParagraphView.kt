@@ -80,6 +80,11 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
 
   private val basePaint = Paint(Paint.ANTI_ALIAS_FLAG)
   private val readingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  // RN passes sizes in dp; Canvas measures in px. Scale so a 16dp font is a
+  // 16dp font on high-density screens.
+  private val density: Float = resources.displayMetrics.density
+
+  private fun dp(value: Float): Float = value * density
 
   private class LineRun(val run: RubyParagraphRun, var x: Float, val width: Float)
 
@@ -111,8 +116,8 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
     val lines = buildLines()
     var lineTop = 0f
     for (line in lines) {
-      val baseBaseline = lineTop + lineHeight - basePaint.fontMetrics.descent
-      val readingBaseline = lineTop + readingSize - readingPaint.fontMetrics.descent
+      val baseBaseline = lineTop + dp(lineHeight) - basePaint.fontMetrics.descent
+      val readingBaseline = lineTop + dp(readingSize) - readingPaint.fontMetrics.descent
       for (lineRun in line) {
         val run = lineRun.run
         val paint = paintFor(run)
@@ -121,7 +126,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
           val bgPaint = Paint().apply {
             color = applyAlpha(run.background, run.backgroundAlpha)
           }
-          canvas.drawRect(lineRun.x, lineTop, lineRun.x + lineRun.width, lineTop + lineHeight, bgPaint)
+          canvas.drawRect(lineRun.x, lineTop, lineRun.x + lineRun.width, lineTop + dp(lineHeight), bgPaint)
         }
         val baseWidth = paint.measureText(run.text)
         if (!run.reading.isNullOrEmpty()) {
@@ -135,7 +140,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
         }
         canvas.drawText(run.text, lineRun.x, baseBaseline, paint)
       }
-      lineTop += lineHeight
+      lineTop += dp(lineHeight)
     }
   }
 
@@ -179,7 +184,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
 
   private fun paintFor(run: RubyParagraphRun): Paint {
     val paint = Paint(basePaint)
-    paint.textSize = run.fontSize ?: fontSize
+    paint.textSize = dp(run.fontSize ?: fontSize)
     paint.color = applyAlpha(run.color, run.opacity)
     paint.typeface = makeTypeface(run)
     paint.isUnderlineText = run.underline
@@ -188,7 +193,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
 
   private fun readingPaintFor(run: RubyParagraphRun): Paint {
     val paint = Paint(readingPaint)
-    paint.textSize = readingSize
+    paint.textSize = dp(readingSize)
     paint.color = applyAlpha(run.readingColor, run.opacity)
     return paint
   }
@@ -216,7 +221,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
     if (event.action == MotionEvent.ACTION_UP) {
       val x = event.x
       val y = event.y
-      val lineIndex = (y / lineHeight).toInt()
+      val lineIndex = (y / dp(lineHeight)).toInt()
       val lines = buildLines()
       if (lineIndex in lines.indices) {
         for (lineRun in lines[lineIndex]) {

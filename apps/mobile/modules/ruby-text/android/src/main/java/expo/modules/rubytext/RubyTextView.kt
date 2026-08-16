@@ -99,6 +99,10 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
 
   private val basePaint = Paint(Paint.ANTI_ALIAS_FLAG)
   private val readingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  // RN passes sizes in dp; Canvas measures in px.
+  private val density: Float = resources.displayMetrics.density
+
+  private fun dp(value: Float): Float = value * density
 
   init {
     // Same Fabric safeguard as the paragraph view: without this a ViewGroup
@@ -116,18 +120,18 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
   private fun readingSlotHeight(): Float {
     val hasReading = segments.any { !it.reading.isNullOrEmpty() }
     return if (hasReading || reserveReadingSlot) {
-      max(0f, readingSize - rubyPull)
+      max(0f, dp(readingSize - rubyPull))
     } else {
       0f
     }
   }
 
   private fun rebuild() {
-    basePaint.textSize = fontSize
+    basePaint.textSize = dp(fontSize)
     basePaint.color = color
     basePaint.typeface = makeTypeface()
     basePaint.isUnderlineText = underline
-    readingPaint.textSize = readingSize
+    readingPaint.textSize = dp(readingSize)
     readingPaint.color = readingColor
     invalidate()
     Log.i(
@@ -145,7 +149,7 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     // fallback: reading slot on top, base line at the bottom).
     val baseBaseline = height - basePaint.fontMetrics.descent
     // Reading line box occupies [0, readingSize] at the top of the view.
-    val readingBaseline = readingSize - readingPaint.fontMetrics.descent
+    val readingBaseline = dp(readingSize) - readingPaint.fontMetrics.descent
 
     var x = 0f
     for (segment in segments) {
