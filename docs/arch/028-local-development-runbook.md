@@ -366,12 +366,60 @@ the bundle.
 > See [SPEC-064 — iOS Development Build Runbook](../specs/064-ios-development-build-runbook.md)
 > for the full physical-device procedure.
 
+#### Android over Wi-Fi (no cable) — wireless debugging
+
+adb works over TCP/IP, so a physical Android device does **not** need to stay
+tethered. Verified 2026-08-15 on a Pixel 5a (barbet).
+
+**One-time pairing (Android 11+):**
+
+1. Phone: **Settings → Developer options → Wireless debugging** → on.
+2. Tap **Pair device with pairing code** and read the `IP:port` + 6-digit code.
+3. Mac: `adb pair <phone-ip>:<port> <code>` → then `adb connect <phone-ip>:<port>`
+   (on modern adb the device also auto-connects via mDNS).
+4. Confirm: `adb devices -l` shows the device (e.g.
+   `adb-19271JEG502854-8QMiDF._adb-tls-connect._tcp device`).
+
+**The dev-server host setting (the usual "Unable to load script" culprit):**
+
+- The debug app loads its JS bundle from a host saved in shared preferences
+  (`ca.zerotohero.go_preferences.xml`, key `debug_http_host`). It is **not**
+  set by installing the APK.
+- Format matters: the React Native dev menu wants **host:port only**
+  (`192.168.1.130:8081`) under **Settings → Debug server host & port for
+  device**. The `exp://192.168.1.130:8081` format is only for an Expo
+  "Enter URL manually" menu (expo-dev-client builds).
+- **A plain reload does NOT re-read the setting.** After changing it (or after
+  a fresh install), the app must be cold-restarted:
+  `adb shell am force-stop ca.zerotohero.go && adb shell am start -n ca.zerotohero.go/.MainActivity`
+- Quick sanity check from the phone browser:
+  `http://<mac-lan-ip>:8081/status` must show `packager-status:running`.
+- Do **not** test Metro with `/index.bundle` — that is the RN-CLI path and 404s
+  on this Expo Router project. The app requests the manifest's launchAsset URL
+  (`http://<mac-lan-ip>:8081/apps/mobile/node_modules/expo-router/entry.bundle?...`).
+
+**Metro must always be started from `apps/mobile`** (never the repo root) —
+starting from the root serves a broken bundle and causes the same
+"Unable to load script" failure:
+
+```bash
+cd apps/mobile
+source ~/.nvm/nvm.sh && nvm use 22
+ulimit -n 65536 && npx expo start
+```
+
+When in doubt, the fix sequence is: (1) confirm `/status` from the phone
+browser, (2) cold-restart the app via adb, (3) read `adb logcat` for the real
+bundle error instead of guessing.
+
 ### Verify
 
 - Metro: `lsof -ti:8081`, bundle line in the terminal
 - Flask reachable from the target: iOS Simulator `curl http://localhost:5001`,
   Android emulator `http://10.0.2.2:5001`, physical device
   `curl http://<mac-lan-ip>:5001`
+- Android device → Metro over Wi-Fi: phone browser
+  `http://<mac-lan-ip>:8081/status` returns `packager-status:running`
 
 ### Logs
 
