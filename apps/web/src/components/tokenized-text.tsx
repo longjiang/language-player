@@ -784,6 +784,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isKaraokeSpoken = true;
             }
           }
+          const fmt = tokenFormatStyles?.[i] ?? null;
+          // ADR-0039: flat ruby run when interlinear definitions are off — the
+          // word's ruby segments render as bare inline siblings with no
+          // per-token wrapper box, so readings can overhang/distribute against
+          // neighboring glyphs. The boxed TokenSpan stays when interlinear
+          // definitions are on: the definition slot needs a token column under
+          // every word, which the flat run cannot express.
+          const effectiveShowDefinition = showDefinition ?? l2Settings.tokenSpan.definition.show;
+          const flat = !effectiveShowDefinition;
           const tokenSpan = (
             <TokenSpan
               key={i}
@@ -794,7 +803,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               phoneticsConditions={l2Settings.tokenSpan.phonetics.conditions}
               userLevel={typeof userLevel === 'number' ? userLevel : undefined}
               quickGloss={quickGloss ?? settingsTokenizedText.quickGloss}
-              showDefinition={showDefinition ?? l2Settings.tokenSpan.definition.show}
+              showDefinition={effectiveShowDefinition}
               mode={modeOverride ?? settingsTokenizedText.mode}
               byeonggi={byeonggi ?? l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
@@ -806,9 +815,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isKaraokeSpoken={isKaraokeSpoken}
               phoneticsOnHighlight={phoneticsOnHighlight}
               quickGlossOnHighlight={quickGlossOnHighlight}
+              flat={flat}
+              format={flat ? fmt : null}
             />
           );
-          const fmt = tokenFormatStyles?.[i] ?? null;
+          // Flat run: format styling is folded into the segment element
+          // classes inside TokenSpan — no wrapper element, which would
+          // re-create the per-token box (ADR-0039).
+          if (flat) return tokenSpan;
           if (fmt === 'bold') return <strong key={i} className="font-semibold">{tokenSpan}</strong>;
           if (fmt === 'italic') return <em key={i}>{tokenSpan}</em>;
           if (fmt === 'highlight') {

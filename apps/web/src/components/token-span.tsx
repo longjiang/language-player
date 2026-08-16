@@ -90,6 +90,16 @@ export interface TokenSpanProps {
   /** True when the following token is whitespace or punctuation — suppress the
    *  trailing space after the quick gloss so it stays attached to the next word. */
   nextTokenIsSeparator?: boolean;
+  /** Flat ruby run (ADR-0039): emit ruby segments as bare inline siblings
+   *  with no per-token wrapper box, so readings can overhang/distribute
+   *  against neighboring glyphs. Interaction and styling ride on the segment
+   *  elements themselves. Only used when interlinear definitions are off. */
+  flat?: boolean;
+  /** Markdown format for this token (from TokenizedText's format ranges).
+   *  In flat mode the format styling is folded into the segment element
+   *  classes instead of a <strong>/<em>/<mark>/<code> wrapper — the wrapper
+   *  would re-create a per-token box. Ignored when flat is false. */
+  format?: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | null;
   /** When false, phonetics (ruby) are suppressed on highlighted tokens. Used by
    *  the SRS review page so the target word's reading stays hidden until the
    *  card is revealed. Defaults to true — highlighting alone does not hide a
@@ -124,6 +134,8 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   cacheVersion,
   isKaraokeSpoken,
   nextTokenIsSeparator,
+  flat = false,
+  format,
   phoneticsOnHighlight = true,
   quickGlossOnHighlight = true,
 }) => {
@@ -339,40 +351,6 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   const title = isQuizBlanking ? 'Click to reveal' : token.lemmas.map(l => l.lemma).join(', ');
 
-  // ── Word content (reused by both layout variants) ──
-  let wordContent: React.ReactNode;
-
-  // ── Quiz blank: show placeholder instead of word ──
-  if (isQuizBlanking) {
-    wordContent = (
-      <span className="px-1 text-muted-foreground/40 select-none">
-        {'＿'.repeat(Math.max(1, token.text.length))}
-      </span>
-    );
-  } else if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
-      && (!isJapanese || hasKanji)) {
-    const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
-    wordContent = <span className={wordBgClass}>{displayText}</span>;
-  } else {
-    // ── Ruby text ──
-    const hasPhonetics = !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
-    const rubySegments: RubySegment[] | null = hasPhonetics
-      ? buildRuby(displayText, token.pronunciation!, l2Code)
-      : null;
-
-    wordContent = (
-      <span className={wordBgClass}>
-        {rubySegments
-          ? rubySegments.map((seg, j) =>
-              seg.reading
-                ? <ruby key={j}>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
-                : <React.Fragment key={j}>{seg.text}</React.Fragment>
-            )
-          : displayText}
-      </span>
-    );
-  }
-
   // ── Handle click: in quiz mode, reveal blank first; otherwise open popup ──
   const handleClick = (rect?: DOMRect) => {
     if (isQuizBlanking) {
@@ -381,6 +359,99 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     }
     onClick(rect);
   };
+
+  // ── Flat run (ADR-0039): format styling folded into element classes ──
+  // The boxed path wraps tokens in <strong>/<em>/<mark>/<code>; the flat run
+  // must not — a wrapper element would re-create the per-token box that the
+  // flat run exists to remove. Padding is dropped (box-model property);
+  // background/ring/color/decoration are layout-neutral.
+  const formatClasses = flat
+    ? format === 'bold' ? 'font-semibold'
+      : format === 'italic' ? 'italic'
+      : format === 'code' ? 'rounded bg-muted font-mono text-[0.9em]'
+      : format === 'link' ? 'text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary'
+      : format === 'highlight' ? 'rounded-sm bg-primary/40 text-primary dark:bg-primary/60'
+      : ''
+    : '';
+
+  // One merged class set per segment element — interaction, karaoke dimming,
+  // selected/highlighted/quiz state, saved-word background, and format all
+  // ride on the segment element itself, so no wrapper box sits between
+  // adjacent <ruby> elements.
+  const segmentClasses = `${wrapperClass} ${wordBgClass} ${formatClasses}`.trim();
+  const segmentClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    handleClick(e.currentTarget.getBoundingClientRect());
+  };
+
+  // ── Word content (reused by both layout variants) ──
+  let wordContent: React.ReactNode;
+
+  // ── Quiz blank: show placeholder instead of word ──
+  if (isQuizBlanking) {
+    wordContent = flat ? (
+      <span
+        className={`${segmentClasses} px-1 text-muted-foreground/40 select-none`}
+        title={title}
+        onClick={segmentClick}
+      >
+        {'＿'.repeat(Math.max(1, token.text.length))}
+      </span>
+    ) : (
+      <span className="px-1 text-muted-foreground/40 select-none">
+        {'＿'.repeat(Math.max(1, token.text.length))}
+      </span>
+    );
+  } else if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+      && (!isJapanese || hasKanji)) {
+    const phoneticText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
+    wordContent = flat
+      ? <span className={segmentClasses} title={title} onClick={segmentClick}>{phoneticText}</span>
+      : <span className={wordBgClass}>{phoneticText}</span>;
+  } else {
+    // ── Ruby text ──
+    const hasPhonetics = !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text && (phoneticsOnHighlight || !isHighlighted);
+    const rubySegments: RubySegment[] | null = hasPhonetics
+      ? buildRuby(displayText, token.pronunciation!, l2Code)
+      : null;
+
+    if (flat) {
+      // Flat ruby run: each segment is a direct inline sibling — bare <ruby>
+      // elements (or minimal spans where plain text needs a click target) with
+      // no per-token wrapper box between them, so the engine lays readings
+      // out against neighboring glyphs (overhang, distribution).
+      wordContent = rubySegments ? (
+        <>
+          {rubySegments.map((seg, j) =>
+            seg.reading ? (
+              <ruby key={j} className={segmentClasses} title={title} onClick={segmentClick}>
+                {seg.text}
+                <rt className="select-none" dir="ltr">{seg.reading}</rt>
+              </ruby>
+            ) : (
+              <span key={j} className={segmentClasses} title={title} onClick={segmentClick}>
+                {seg.text}
+              </span>
+            )
+          )}
+        </>
+      ) : (
+        <span className={segmentClasses} title={title} onClick={segmentClick}>{displayText}</span>
+      );
+    } else {
+      wordContent = (
+        <span className={wordBgClass}>
+          {rubySegments
+            ? rubySegments.map((seg, j) =>
+                seg.reading
+                  ? <ruby key={j}>{seg.text}<rt className="select-none" dir="ltr">{seg.reading}</rt></ruby>
+                  : <React.Fragment key={j}>{seg.text}</React.Fragment>
+              )
+            : displayText}
+        </span>
+      );
+    }
+  }
 
   // ── Wrapper that combines wordContent + byeonggi + optional quick gloss for both layout variants ──
   const annotatedWord = (
@@ -413,6 +484,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         </span>
       </span>
     );
+  }
+
+  // ── Flat run: the segments are already bare inline siblings carrying all
+  //    interaction + styling — no wrapper box around the token. ──
+  if (flat) {
+    return <>{wordWithGloss}</>;
   }
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──

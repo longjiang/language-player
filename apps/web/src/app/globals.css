@@ -61,6 +61,11 @@
 /* ── Ruby text (phonetic guides: pinyin, furigana) ── */
 ruby {
   ruby-align: center;
+  /* ADR-0039: flat ruby run — let readings overhang adjacent whitespace /
+     punctuation blanks and line edges where the engine supports it
+     (Safari 18.2+, Chrome 151+). No-op engines render per-segment
+     centering, identical to before. */
+  ruby-overhang: auto;
 }
 rt {
   font-size: 0.55em;
