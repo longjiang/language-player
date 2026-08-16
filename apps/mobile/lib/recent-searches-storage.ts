@@ -8,7 +8,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { log, logwarn } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
+
+const { log, logwarn } = bootLogger;
 
 export const RECENT_STORAGE_PREFIX = 'zthRecentSearches:';
 

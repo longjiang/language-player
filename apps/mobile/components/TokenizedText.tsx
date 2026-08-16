@@ -76,14 +76,28 @@ function useMobileRubyColors() {
 // path, so the tokenized output structure can be inspected in the Metro log
 // (tokens → RubyTokenSpan → per-segment RubyTexts, gloss/byeonggi/defs).
 const loggedTreeTexts = new Set<string>();
+/** Only log trees/tokens whose reading has at least this many syllables —
+ *  word-level pinyin long enough to trigger the Core Text distribution issue. */
+const LONG_READING_MIN_SYLLABLES = 6;
 function scheduleTreeLog(text: string, lines: string[]) {
   if (!__DEV__ || loggedTreeTexts.has(text)) return;
+  const header = lines.slice(0, 2);
+  const longReadingLines = lines.filter((line) => {
+    const match = line.match(/syllables=(\d+)/);
+    return match != null && Number(match[1]) >= LONG_READING_MIN_SYLLABLES;
+  });
+  if (longReadingLines.length === 0) return;
   loggedTreeTexts.add(text);
   setTimeout(() => {
     appLog(`[TokenizedText] 🌳 tokenized component tree text="${text.slice(0, 80)}"`);
-    for (const line of lines) appLog(`[TokenizedText] 🌳 ${line}`);
+    for (const line of [...header, ...longReadingLines]) appLog(`[TokenizedText] 🌳 ${line}`);
   }, 0);
 }
+
+// Dev-only: log each rendered line's token structure once per text, in the
+// compact { word, lemma, pronunciation } shape, so the exact tokens handed to
+// the render path can be inspected in the Metro log.
+const loggedRenderedTokenTexts = new Set<string>();
 
 // ── Queued batch lemmatization ────────────────────────────────────────
 // Visible TokenizedText instances enqueue their line; a short timer flushes
@@ -1032,6 +1046,26 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     [text, tokens, savedPhraseCandidates, highlightTerms, formats],
   );
 
+  // ── Rendered token structure (dev-only, once per text) ──
+  useEffect(() => {
+    if (!__DEV__ || displayTokens.length === 0) return;
+    const key = `${l2Code}:${text}`;
+    const longTokens = displayTokens.filter((token) => {
+      const syllables = (token.pronunciation ?? '').split(' ').filter(Boolean).length;
+      return syllables >= LONG_READING_MIN_SYLLABLES;
+    });
+    if (longTokens.length === 0 || loggedRenderedTokenTexts.has(key)) return;
+    loggedRenderedTokenTexts.add(key);
+    const structure = longTokens.map((token) => ({
+      word: token.text,
+      lemma: token.lemmas[0]?.lemma ?? null,
+      pronunciation: token.pronunciation ?? null,
+    }));
+    appLog(
+      `[TokenizedText] 🧩 RENDERED-TOKENS (long) l2=${l2Code} text="${text.slice(0, 80)}" ${JSON.stringify(structure)}`,
+    );
+  }, [displayTokens, l2Code, text]);
+
   // Entry-id matching (web parity): highlight any token whose lemma (or
   // surface) resolves to one of the requested dictionary entries, so
   // inflected surfaces like 忠実な still highlight for the saved 忠実 entry.
@@ -1567,20 +1601,22 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
 
-              const debugSegs = isBlanked
-                ? [{ text: '▯' }]
-                : hasRuby && token.pronunciation
-                  ? buildRuby(displayText, token.pronunciation, l2Code)
-                  : [{ text: displayText }];
+                const debugSegs = isBlanked
+                  ? [{ text: '▯' }]
+                  : hasRuby && token.pronunciation
+                    ? buildRuby(displayText, token.pronunciation, l2Code)
+                    : [{ text: displayText }];
 
-              // ── Dev tree logging ──
-              {
-                const flatPath = NATIVE_RUBY_ACTIVE && !showDefinition;
-                if (useParagraph) {
-                  treeLines.push(
-                    `├─ [${i}] word="${word}" display="${displayText}" hasRuby=${hasRuby} [paragraph runs ×${debugSegs.length}]${isBlanked ? ' blanked' : ''}${isKaraokeDimmed ? ' dimmed' : ''}`,
-                  );
-                } else if (flatPath) {
+                // ── Dev tree logging ──
+                {
+                  const flatPath = NATIVE_RUBY_ACTIVE && !showDefinition;
+                  if (useParagraph) {
+                    const readingForLog = token.pronunciation ?? '';
+                    const syllableCount = readingForLog.split(' ').filter(Boolean).length;
+                    treeLines.push(
+                      `├─ [${i}] word="${word}" display="${displayText}" hasRuby=${hasRuby} [paragraph runs ×${debugSegs.length}]${hasRuby ? ` readingLen=${readingForLog.length} syllables=${syllableCount}` : ''}${isBlanked ? ' blanked' : ''}${isKaraokeDimmed ? ' dimmed' : ''}`,
+                    );
+                  } else if (flatPath) {
                   const segLinesFlat = debugSegs.map((s, j) => {
                     const leaf = j === debugSegs.length - 1;
                     return `${leaf ? '└─' : '├─'} RubyText seg="${s.text}"${

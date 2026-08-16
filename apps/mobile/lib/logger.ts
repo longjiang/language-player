@@ -30,6 +30,7 @@ export const readerLogger = createLogger('[LP Mobile]', 'reader');
 export const popupLogger = createLogger('[LP Mobile]', 'popup');
 export const lemmatizeLogger = createLogger('[LP Mobile]', 'lemmatize');
 export const tokenizedTextLogger = createLogger('[LP Mobile]', 'tokenized-text');
+export const bootLogger = createLogger('[LP Mobile]', 'boot');
 export const dictDbLogger = createLogger('[LP Mobile]', 'dictdb');
 export const syncLogger = createLogger('[LP Mobile]', 'sync');
 export const srsLogger = createLogger('[LP Mobile]', 'srs');
@@ -61,5 +62,8 @@ defaultOff('tokenizer');
 defaultOff('tokenizer-worker');
 defaultOff('popup');
 defaultOff('dictionaryEntry');
+defaultOff('reader');
+defaultOff('translation');
+defaultOff('boot');
 
 export { getLogLevel, setLogLevel };

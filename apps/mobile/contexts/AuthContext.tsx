@@ -3,7 +3,9 @@ import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { isOfflineModeEnabled, setOfflineModeEnabled } from '@/lib/offline-mode';
-import { log } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
+
+const { log } = bootLogger;
 
 // ── API Client Singleton ────────────────────
 

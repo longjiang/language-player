@@ -9,7 +9,9 @@
 import NetInfo from '@react-native-community/netinfo';
 import { AppState } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
+
+const { log } = bootLogger;
 
 export type Connectivity = 'online' | 'offline' | 'unknown';
 
