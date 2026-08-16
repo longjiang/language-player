@@ -40,7 +40,7 @@ Publish `apps/chrome-extension/` (Language Player — interactive dual subtitles
 | Field | Limit | Copy |
 |---|---|---|
 | Name | 75 chars | Language Player |
-| Summary | 132 chars | Interactive dual subtitles for language learning on Netflix, YouTube, Prime Video, Disney+, Hulu, and Max. (132 chars) |
+| Summary | 132 chars | Interactive dual subtitles and instant dictionary lookups for language learning on your favorite streaming sites. (113 chars) |
 | Detailed description | 16,000 chars | See [Description](#description) below |
 | Category | — | Education |
 | Language | — | English (en) |
@@ -56,13 +56,8 @@ interactive language lesson.
 Click any word in the transcript to see its meaning, save it to your
 vocabulary list, and get an AI explanation of how it's used in context.
 
-Works on:
-• Netflix
-• YouTube
-• Prime Video
-• Disney+
-• Hulu
-• Max
+Works on popular streaming sites — just open a video with subtitles and the
+transcript panel appears.
 
 Features:
 • Interactive, time-synced transcript panel for the video you're watching
@@ -75,6 +70,23 @@ Features:
 
 Learn a language with the shows you already love.
 ```
+
+### Rejection fix (2026-08-16)
+
+Google rejected the 2026-08-13 submission for **keyword spam**: the Summary and
+Detailed description named six third-party streaming brands (Netflix, YouTube,
+Prime Video, Disney+, Hulu, Max), which Google treats as excessive/irrelevant
+keywords in metadata. Removed all brand names from:
+
+- Manifest `extensionDescription` in all 18 locales (`_locales/*/messages.json`).
+- The Store listing Summary and Detailed description above (use the generic
+  "streaming sites" wording going forward).
+
+Do **not** restore the brand list to any store metadata (Summary, Description,
+screenshots, promo images). The extension still supports the same sites — the
+support is evidenced by the manifest host permissions, not by listing copy.
+The in-app `popupInstructions` string (which names Prime Video, YouTube, and
+Netflix) is user-facing UI, not store metadata, and was left unchanged.
 
 ### Permissions & justification (from manifest)
 

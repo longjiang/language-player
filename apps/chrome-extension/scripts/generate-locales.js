@@ -123,36 +123,23 @@ const MANUAL = {
     'tr': 'Transkripti Göster', 'vi': 'Hiện bản ghi',
   },
   'extensionDescription': {
-    'ja': 'Prime Video、YouTube、Netflix、Disney+、Hulu、Maxで語学学習のためのインタラクティブな二か国語字幕。',
-    'zh-Hans': '互动双语字幕，支持 Prime Video、YouTube、Netflix、Disney+、Hulu 与 Max。',
-    'zh-Hant': '互動雙語字幕，支援 Prime Video、YouTube、Netflix、Disney+、Hulu 與 Max。',
-    'fr': 'Sous-titres bilingues interactifs pour Prime Video, YouTube, Netflix, Disney+, Hulu et Max.',
-    
-    'ar': 'ترجمات ثنائية تفاعلية لتعلم اللغات على Prime Video وYouTube وNetflix وDisney+ وHulu وMax.',
-    
-    'de': 'Interaktive zweisprachige Untertitel zum Sprachenlernen auf Prime Video, YouTube, Netflix, Disney+, Hulu und Max.',
-    
-    'es': 'Subtítulos bilingües interactivos para aprender idiomas en Prime Video, YouTube, Netflix, Disney+, Hulu y Max.',
-    
-    
-    
-    
-    
-    'id': 'Subtitle bilingual interaktif untuk belajar bahasa di Prime Video, YouTube, Netflix, Disney+, Hulu, dan Max.',
-    'it': 'Sottotitoli bilingue interattivi per l\'apprendimento delle lingue su Prime Video, YouTube, Netflix, Disney+, Hulu e Max.',
-    'ko': 'Prime Video, YouTube, Netflix, Disney+, Hulu, Max에서 언어 학습을 위한 대화형 이중 자막.',
-    'nl': 'Interactieve tweetalige ondertitels voor taalonderwijs op Prime Video, YouTube, Netflix, Disney+, Hulu en Max.',
-    
-    'pl': 'Interaktywne dwujęzyczne napisy do nauki języków na Prime Video, YouTube, Netflix, Disney+, Hulu i Max.',
-    'pt': 'Legendas bilíngues interativas para aprendizado de idiomas no Prime Video, YouTube, Netflix, Disney+, Hulu e Max.',
-    
-    'ru': 'Интерактивные двуязычные субтитры для изучения языков на Prime Video, YouTube, Netflix, Disney+, Hulu и Max.',
-    
-    
-    
-    'th': 'คำบรรยายสองภาษาแบบโต้ตอบสำหรับการเรียนรู้ภาษาบน Prime Video, YouTube, Netflix, Disney+, Hulu และ Max',
-    'tr': 'Prime Video, YouTube, Netflix, Disney+, Hulu ve Max\'te dil öğrenimi için etkileşimli çift altyazı.',
-    'vi': 'Phụ đề song ngữ tương tác để học ngôn ngữ trên Prime Video, YouTube, Netflix, Disney+, Hulu và Max.',
+    'ja': 'お気に入りのストリーミングサイトで、対話式の二か国語字幕と即時辞書検索で言語を学べます。',
+    'zh-Hans': '在你喜欢的流媒体网站上，用互动双语字幕和即时词典查询学习语言。',
+    'zh-Hant': '在你喜愛的串流媒體網站上，用互動雙語字幕和即時字典查詢學習語言。',
+    'fr': 'Sous-titres bilingues interactifs et dictionnaire instantané pour apprendre une langue sur vos sites de streaming préférés.',
+    'ar': 'ترجمات ثنائية تفاعلية وبحث فوري في القاموس لتعلّم اللغات على مواقع البث المفضلة لديك.',
+    'de': 'Interaktive zweisprachige Untertitel und sofortige Wörterbuch-Suchen zum Sprachenlernen auf deinen bevorzugten Streaming-Seiten.',
+    'es': 'Subtítulos bilingües interactivos y diccionario instantáneo para aprender idiomas en tus sitios de streaming favoritos.',
+    'id': 'Subtitle ganda interaktif dan pencarian kamus instan untuk belajar bahasa di situs streaming favorit Anda.',
+    'it': 'Sottotitoli bilingue interattivi e ricerche istantanee nel dizionario per imparare le lingue sui tuoi siti di streaming preferiti.',
+    'ko': '즐겨찾는 스트리밍 사이트에서 대화형 이중 자막과 즉시 사전 검색으로 언어를 배우세요.',
+    'nl': 'Interactieve tweetalige ondertitels en directe woordenboekopzoekingen om talen te leren op je favoriete streamingwebsites.',
+    'pl': 'Interaktywne dwujęzyczne napisy i natychmiastowy słownik do nauki języków na Twoich ulubionych stronach streamingowych.',
+    'pt': 'Legendas bilíngues interativas e consultas instantâneas ao dicionário para aprender idiomas nos seus sites de streaming favoritos.',
+    'ru': 'Интерактивные двуязычные субтитры и мгновенный поиск по словарю для изучения языков на ваших любимых стриминговых сайтах.',
+    'th': 'คำบรรยายคู่แบบโต้ตอบและการค้นหาพจนานุกรมทันทีสำหรับการเรียนรู้ภาษาบนเว็บไซต์สตรีมมิ่งที่คุณชื่นชอบ',
+    'tr': 'En sevdiğiniz yayın sitelerinde etkileşimli çift altyazı ve anında sözlük aramasıyla dil öğrenin.',
+    'vi': 'Phụ đề song ngữ tương tác và tra từ điển tức thì để học ngôn ngữ trên các trang phát trực tuyến yêu thích của bạn.',
   },
   'popupLoginPrompt': {
     'ja': 'ログインして単語を保存し、Language Playerと同期しましょう。',

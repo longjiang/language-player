@@ -38,7 +38,7 @@ Keys with no existing CSV equivalent — need new entries in `translations.csv`.
 | 1 | `startPlaying` | Start playing a video. | Instruction text when no subtitles detected yet | transcript-app.tsx |
 | 2 | `failedToLoadSubtitles` | Failed to load subtitles | Error status when subtitle fetching/parsing fails | content-entry.js |
 | 3 | `showTranscript` | Show Transcript | Button label in popup (also fallback for popupShowTranscript) | --- (fallback) |
-| 4 | `extensionDescription` | Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu and Max. | manifest.json extension description | manifest.json |
+| 4 | `extensionDescription` | Interactive dual subtitles and instant dictionary lookups for language learning on your favorite streaming sites. | manifest.json extension description | manifest.json |
 | 5 | `popupLoginPrompt` | Log in to save words and sync with Language Player. | Prompt text above login form in popup | popup.js |
 | 6 | `popupShowTranscript` | Show Transcript | Button label on transcript toggle when subtitles available | popup.js |
 | 7 | `popupInstructions` | Start playing any video on **Prime Video**, **YouTube** or **Netflix**. The transcript panel opens automatically when subtitles are found. | Instructional HTML paragraph in popup | popup.js |
