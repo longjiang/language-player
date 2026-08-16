@@ -40,3 +40,4 @@ NNNN-title-with-dashes.md
 | 0032 | Admin console as a separate Next.js app | accepted | 2026-08-09 |
 | 0033 | UI translation locale support list | accepted | 2026-08-10 |
 | 0037 | Remove legacy user_srs_settings table and /srs/settings API | accepted | 2026-08-13 |
+| 0039 | Flat ruby run on web — bare `<ruby>` siblings, no per-token wrappers | accepted | 2026-08-16 |
