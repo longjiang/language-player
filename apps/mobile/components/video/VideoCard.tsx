@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Image } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { getLevelFromDifficulty, formatNumericLevel, primaryScale, LEVEL_HEX_COLORS } from '@langplayer/shared';

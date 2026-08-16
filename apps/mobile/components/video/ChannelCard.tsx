@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { Cloud, CloudOff, CloudUpload, CloudAlert } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';

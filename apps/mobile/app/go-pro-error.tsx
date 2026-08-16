@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Linking } from 'react-native';
+import { View, Text, Linking } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';

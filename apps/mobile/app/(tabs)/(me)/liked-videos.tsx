@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { View, Text, Pressable, Image, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';

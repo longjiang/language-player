@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import type { PlaylistVideo, YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';

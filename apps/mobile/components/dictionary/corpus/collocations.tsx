@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { isContinua, type SketchCollocationsResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';

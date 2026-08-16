@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PanelRightClose } from 'lucide-react-native';
 import * as Dialog from '@/components/ui/dialog';

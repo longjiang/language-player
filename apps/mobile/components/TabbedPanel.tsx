@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import * as Tabs from '@/components/ui/tabs';
 
 export interface TabDef {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';

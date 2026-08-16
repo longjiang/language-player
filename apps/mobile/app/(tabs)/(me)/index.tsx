@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';

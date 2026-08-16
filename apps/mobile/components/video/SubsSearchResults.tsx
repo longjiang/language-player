@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, Pressable, FlatList, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, Text, Image, FlatList, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';

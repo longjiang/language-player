@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Alert, TextInput } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';

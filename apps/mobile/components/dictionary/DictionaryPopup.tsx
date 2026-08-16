@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';

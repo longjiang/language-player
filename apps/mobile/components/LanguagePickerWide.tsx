@@ -11,9 +11,9 @@ import {
   View,
   Text,
   TextInput,
-  Pressable,
   FlatList,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { Search, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
+import { View, Text, TextInput, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY, ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';

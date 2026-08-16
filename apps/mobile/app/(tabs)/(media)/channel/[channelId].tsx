@@ -3,11 +3,11 @@ import {
   View,
   Text,
   Image,
-  Pressable,
   ActivityIndicator,
   Linking,
   ScrollView,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';

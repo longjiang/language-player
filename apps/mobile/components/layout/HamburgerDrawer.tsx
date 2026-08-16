@@ -1,8 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import {
-  View, Text, Pressable, ScrollView, useWindowDimensions,
+  View, Text, ScrollView, useWindowDimensions,
   Modal, Animated,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {

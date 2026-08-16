@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Pressable } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';

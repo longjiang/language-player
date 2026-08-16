@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Pressable, ScrollView, Image } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ErrorNotice } from '@/components/ui/error-notice';

@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
-import { View, ActivityIndicator, Text, Pressable, Linking, useWindowDimensions } from 'react-native';
+import { View, ActivityIndicator, Text, Linking, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';

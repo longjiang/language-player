@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import {
   Play, Pause, SkipBack, SkipForward, RotateCcw,
   ChevronUp, ChevronDown, ChevronLeft, ChevronRight,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, Image, ActivityIndicator, FlatList } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';

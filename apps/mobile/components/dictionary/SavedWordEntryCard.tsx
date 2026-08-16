@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { RefreshCw, CloudOff, CloudUpload, CheckCircle2, AlertTriangle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';

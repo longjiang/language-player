@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, Image, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Image, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';

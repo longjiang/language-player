@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { CheckCircle, Loader2, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';

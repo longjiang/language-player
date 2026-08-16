@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, Image, ActivityIndicator, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { View, Text, FlatList, Image, ActivityIndicator, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
