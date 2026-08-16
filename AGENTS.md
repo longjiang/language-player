@@ -402,6 +402,12 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 **Core practices:**
 
+- **Never make the user your diagnostic instrument** unless you cannot
+  observe or operate it yourself — no access, it needs their credentials, or
+  it requires their approval — and even then, ask only for that single step,
+  never a procedure, and never ask them to verify something you can verify
+  yourself. Anything reachable (device state, saved config, logs, endpoints,
+  screenshots) is yours to inspect and fix; the user only confirms the result.
 - **Add logging first — confirm from logs, then fix.** Before debugging a
   reported problem, add or enable logging on the code path involved: the
   actual values loaded and received, and every branch taken (including skips,
