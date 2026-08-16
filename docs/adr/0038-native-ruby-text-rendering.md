@@ -2,6 +2,7 @@
 
 - **Status**: Accepted
 - **Created**: 2026-08-15
+- **Last updated**: 2026-08-16 (corrected to match the implemented code)
 - **Scope**: Mobile (`apps/mobile`)
 
 ## Context
@@ -17,58 +18,124 @@ are not a text engine.
 Both platforms ship native ruby support:
 
 - iOS/macOS: `kCTRubyAnnotationAttributeName` + `CTRubyAnnotation` on an
-  attributed string, drawn by TextKit/`UILabel`.
-- Android: `android.text.style.RubySpan` (Android 12+); older devices need a
-  custom `ReplacementSpan`.
+  attributed string, drawn by TextKit.
+- Android: `android.text.style.RubySpan` (Android 12+) exists, but the local
+  module does **not** use it — see the Android notes below.
 
 ## Decision
 
-Add a local Expo module, `apps/mobile/modules/ruby-text`, that exposes a
-`RubyText` native view backed by those platform text engines:
+Add a local Expo module, `apps/mobile/modules/ruby-text`, exposing two native
+views backed by the platform text engines: a **per-token** `RubyText` view and
+a **paragraph-level** `RubyTextParagraph` view.
+
+### Per-token view (`RubyText`)
+
+One native view per ruby segment (kanji↔reading pair from `buildRuby()`):
 
 - **iOS** (`RubyTextView.swift`): a `UILabel` with an attributed string that
-  applies `CTRubyAnnotation` per kanji↔reading pair. Alignment/overhang/size
-  factor follow the platform engine (`CTRubyAlignment.auto`, 0.5 overhang,
-  `readingSize / fontSize`).
-- **Android** (`RubyTextView.kt`): a `TextView` whose `SpannableString` uses
-  the framework `RubySpan` on API 31+ and a `ReplacementSpan` fallback below
-  that.
-- **JS bridge** (`apps/mobile/components/RubyText.tsx`): the component used by
-  `TokenizedText`'s token spans. It reuses the existing `RubySegment[]` output
-  of `buildRuby()` from `@langplayer/utils`.
+  applies `CTRubyAnnotation` per kanji↔reading pair via
+  `CTRubyAnnotationCreateWithAttributes` (alignment `.center`, overhang
+  `.auto`, position `.before`). The reading is drawn in the reserved reading
+  slot above the base text; the base `UILabel` is offset below that slot.
+  The reading can carry its own muted color (see Known limitations).
+- **Android** (`RubyTextView.kt`): a custom `ExpoView` that draws base text +
+  reading directly in its own `draw(canvas)` with `Paint`. The framework
+  `RubySpan`/`ReplacementSpan` is deliberately **not** used: under
+  Fabric/Yoga a child `TextView` added in `init` is never laid out or drawn
+  (stays 0x0, spans never render), so the view paints itself. Works on all
+  API levels.
+
+### Paragraph-level view (`RubyTextParagraph`)
+
+One native view per block of tokens (the whole reader paragraph / subtitle
+line as a single layout):
+
+- **iOS** (`RubyTextParagraphView.swift`): a `UITextView` with ONE attributed
+  string for the whole block, so Core Text lays out every neighbor glyph
+  together and `CTRubyAlignment`/`CTRubyOverhang` compute against adjacent
+  tokens (JIS-style overhang into punctuation blanks and at line edges,
+  group distribution across a jukugo) instead of one token-sized box at a
+  time.
+- **Android** (`RubyTextParagraphView.kt`): a custom `ExpoView` that draws the
+  entire line itself with `Canvas` — base text plus readings — in the view's
+  own `draw()`. Each run advances by the wider of base/reading, so a long
+  reading never spills into the neighboring token's box (no accidental
+  overhang/collisions).
+
+### JS bridge (`apps/mobile/components/RubyText.tsx`)
+
+- `RubyText` (per-token): reuses the `RubySegment[]` output of `buildRuby()`
+  from `@langplayer/utils`; falls back to the View-column renderer when the
+  native module is absent.
+- `RubyTextParagraph` (paragraph-level): converts per-token `RubySegment[]`
+  runs into a flat `runs[]` list (text + reading + per-run
+  color/readingColor/bold/underline/background/opacity) and maps native taps
+  back to token ids.
+- Availability probes: `isNativeRubyActive()` and
+  `isNativeRubyParagraphActive()`; a `NATIVE_RUBY_ENABLED` kill switch
+  disables the native path without further code changes.
+
+### Render-path selection (`TokenizedText`)
+
+`TokenizedText` picks a renderer per block, in this order:
+
+1. **Paragraph renderer** — when `NATIVE_PARAGRAPH_ACTIVE` and inline
+   definitions are off (`useParagraph = NATIVE_PARAGRAPH_ACTIVE &&
+   !showDefinition`).
+2. **Per-token native** (`RubyTokenFlat`) — when `NATIVE_RUBY_ACTIVE` and
+   inline definitions are off.
+3. **View-column fallback** (`RubyTokenSpan`, one `Pressable` column per
+   token) — when the native module is missing (Expo Go), or when inline
+   definitions are on (the definition slot needs a token column under every
+   word).
 
 ### Sizing contract
 
-Fabric/Yoga does not measure custom host views, so the native view cannot be a
-flex child with intrinsic width. Instead, `RubyText` renders the existing
-View-column fallback once, reads its box via `onLayout`, and hands that exact
-width/height to the native view. The swap is layout-neutral: line wrapping,
-baseline alignment, and the reserved reading slot (for tokens without ruby)
-are all unchanged. The measurement resets whenever glyph metrics or content
-change (font, zoom, leading, segments).
+Fabric/Yoga does not measure custom host views, so the native views cannot be
+flex children with intrinsic width. Instead:
+
+- **Per-token `RubyText`**: renders the existing View-column fallback once,
+  reads its box via `onLayout`, and hands that exact width/height to the
+  native view. The swap is layout-neutral: line wrapping, baseline alignment,
+  and the reserved reading slot (for tokens without ruby) are all unchanged.
+- **Paragraph `RubyTextParagraph`**: renders an invisible RN `Text` with the
+  same font/line-height as the native layout, measures it via `onLayout`, and
+  hands the box to the native view. The measuring text stays mounted, so
+  width changes (rotation, zoom) re-measure automatically.
+
+Measurement resets whenever glyph metrics or content change (font, zoom,
+leading, segments/runs).
 
 ### Availability and fallback
 
 The module only exists in builds compiled from this repo (development builds,
 TestFlight, App Store, Play). Expo Go does not contain it, so `RubyText`
 checks `requireOptionalNativeModule('RubyText')` at runtime and falls back to
-the previous View-column renderer there. A `NATIVE_RUBY_ENABLED` kill switch
-in `RubyText.tsx` can disable the native path without further code changes.
+the View-column renderer there; `RubyTextParagraph` renders nothing and
+`TokenizedText` uses the per-token/View-column path instead.
 
 ### Known limitations
 
-- Both platform engines render the reading in the base text's color; a
-  separate muted reading color is not currently possible (web can do it with
-  CSS). The `readingColor` prop is intentionally absent.
-- Saved-word and search highlights are applied to the whole native token box
-  rather than just the base glyph run.
-- Android < 12 uses the simpler custom span: centered reading, no
-  distribution/overhang.
+- **iOS reading color**: the reading can carry a separate muted color via
+  `kCTForegroundColorAttributeName` in the `CTRubyAnnotation` attributes.
+  Android draws the reading with its own `readingPaint` color. Both platforms
+  support a muted reading color (web's per-ruby CSS equivalent).
+- **Android paragraph renderer** is a deliberately simplified layout:
+  readings are centered over each run and never overhang (each run advances
+  by the wider of base/reading). iOS gets real overhang/distribution via Core
+  Text. The Canvas renderer works on all API levels (no framework `RubySpan`
+  dependency).
+- **Per-token highlights**: saved-word and search highlights are applied to
+  the whole native token box rather than just the base glyph run. The
+  paragraph renderer applies highlights per run instead.
+- **Inline markdown**: ruby inside bold/italic markdown segments flows only
+  through the paragraph renderer, which handles a full block; per-token
+  rendering of inline-formatted segments is not supported.
 
 ## Consequences
 
-- Ruby in the reader now uses real platform text layout when available, with
-  the old renderer preserved as a byte-for-byte fallback.
+- Ruby in the reader uses real platform text layout when available, with the
+  View-column renderer preserved as a fallback.
 - The native module is autolinked by `expo prebuild`; `ios/` and `android/`
   stay generated/gitignored, while `modules/ruby-text/` is committed. The
   user-level gitignore's bare `ios`/`android` patterns are negated for this
@@ -76,6 +143,6 @@ in `RubyText.tsx` can disable the native path without further code changes.
 - Dev workflow changes from Expo Go to a development build
   (`npx expo run:ios` / `run:android`) for native rendering; Metro Fast
   Refresh still works for JS-only edits. Native edits require a rebuild.
-- Future inline markdown + ruby (AI explanations, settings preview) can build
-  on the same native view at paragraph level, where the JS supplies the
-  paragraph width instead of a measured token box.
+- The paragraph-level view is the path for future inline markdown + ruby (AI
+  explanations, settings preview), where the JS supplies the paragraph width
+  instead of a measured token box.
