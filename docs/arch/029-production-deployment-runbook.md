@@ -426,7 +426,41 @@ cd /tmp/lp-ext-pkg && rm -rf src/content.js   # legacy dead file
 zip -r -X /tmp/language-player-extension-v$VERSION.zip . -x "*.DS_Store"
 ```
 
-### 6.3 Upload & publish
+### 6.3 Upload & publish (browserless API, since 2026-08-16)
+
+The Chrome Web Store API v2 (`node scripts/upload.mjs chrome …`) uploads the
+ZIP and submits for review without the dashboard. One-time prerequisites:
+
+1. **Enable the Chrome Web Store API** in the Google Cloud project
+   (`chromewebstore.googleapis.com`; project `611434067` for the
+   zh-zerotohero service account). **✅ verified 2026-08-16** — the status
+   call below authenticated and returned the item without a 403.
+2. **Link the service account** in the Web Store Developer Dashboard →
+   **Settings** → **Service account** (only one service account per
+   publisher). **✅ done 2026-08-16** — linked
+   `lp-play-billing-2@zh-zerotohero.iam.gserviceaccount.com` (same key as
+   Play, `LP_PLAY_SERVICE_ACCOUNT_JSON`). The dashboard UI path is the
+   top-right **Settings** gear → **Service account** (verified 2026-08-16);
+   the earlier "Account → Service account" label was from the old dashboard
+   and no longer exists in the sidebar.
+3. Credentials/IDs live in `scripts/.env.upload` (gitignored):
+   `LP_CWS_SERVICE_ACCOUNT_JSON` (defaults to the Play key),
+   `LP_CWS_PUBLISHER_ID` (default `650ad6b1-a9d4-43b6-9ff5-a8ae11ada6ad`),
+   `LP_CWS_ITEM_ID` (default `cbkhenammkocfidciagbbibkleoenbej`).
+
+```bash
+# Read-only status check (auth + item access)
+node scripts/upload.mjs chrome status
+
+# Upload the new ZIP and submit for review
+node scripts/upload.mjs chrome /tmp/language-player-extension-v$VERSION.zip --publish
+```
+
+**Limitation:** the API cannot edit listing text (Summary / Detailed
+description), screenshots, or promo assets — those remain dashboard-only.
+Update them in the dashboard before submitting when the listing copy changes.
+
+**Dashboard fallback** (if the API is not set up):
 
 1. Go to <https://chrome.google.com/webstore/devconsole>.
 2. Select the item (`cbkhenammkocfidciagbbibkleoenbej`).

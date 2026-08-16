@@ -39,6 +39,16 @@
  *     Optional: LP_ASC_APP_ID (default 6520385296), LP_ASC_DEMO_EMAIL/PASS,
  *     LP_ASC_CONTACT_EMAIL
  *
+ * Chrome Web Store (no browser needed):
+ *   node scripts/upload.mjs chrome status
+ *   node scripts/upload.mjs chrome <path-to.zip> [--publish] [--dry-run]
+ *   Uses the official Chrome Web Store API v2 with a service account whose
+ *   email is linked under Developer Dashboard → Settings → Service account.
+ *   Requires (scripts/.env.upload, gitignored):
+ *     LP_CWS_SERVICE_ACCOUNT_JSON  (defaults to LP_PLAY_SERVICE_ACCOUNT_JSON)
+ *     Optional: LP_CWS_PUBLISHER_ID (default 650ad6b1-a9d4-43b6-9ff5-a8ae11ada6ad),
+ *     LP_CWS_ITEM_ID (default cbkhenammkocfidciagbbibkleoenbej)
+ *
  * Credentials come from the environment. A gitignored scripts/.env.upload is
  * also loaded automatically (copy scripts/.env.upload.example); real
  * environment variables always take precedence.
@@ -124,6 +134,17 @@ async function playToken() {
   if (!serviceAccountPath || !existsSync(serviceAccountPath)) {
     fail('LP_PLAY_SERVICE_ACCOUNT_JSON must point to the Play service-account JSON.');
   }
+  const token = await serviceAccountToken(
+    serviceAccountPath,
+    'https://www.googleapis.com/auth/androidpublisher',
+  );
+  return { token, account: JSON.parse(readFileSync(serviceAccountPath, 'utf8')) };
+}
+
+async function serviceAccountToken(serviceAccountPath, scope) {
+  if (!serviceAccountPath || !existsSync(serviceAccountPath)) {
+    fail(`Service account JSON not found: ${serviceAccountPath}`);
+  }
   const account = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
   const tokenUri = account.token_uri ?? 'https://oauth2.googleapis.com/token';
   const now = Math.floor(Date.now() / 1000);
@@ -131,7 +152,7 @@ async function playToken() {
   const claims = base64Url(
     JSON.stringify({
       iss: account.client_email,
-      scope: 'https://www.googleapis.com/auth/androidpublisher',
+      scope,
       aud: tokenUri,
       iat: now,
       exp: now + 3600,
@@ -142,7 +163,7 @@ async function playToken() {
     .sign(account.private_key, 'base64url');
   const assertion = `${header}.${claims}.${signature}`;
 
-  console.log(`[upload] Authenticating service account ${account.client_email}…`);
+  console.log(`[upload] Authenticating service account ${account.client_email} (${scope})…`);
   const tokenResponse = await fetch(tokenUri, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -155,10 +176,136 @@ async function playToken() {
   if (!tokenResponse.ok || !tokenJson.access_token) {
     fail(`OAuth failed: ${tokenJson.error_description ?? tokenJson.error ?? tokenResponse.status}`);
   }
-  return { token: tokenJson.access_token, account };
+  return tokenJson.access_token;
 }
 
 const ASC_BASE = 'https://api.appstoreconnect.apple.com';
+
+// ── Chrome Web Store (API v2, service account) ────────────────────────────
+
+const CWS_SCOPE = 'https://www.googleapis.com/auth/chromewebstore';
+const CWS_BASE = 'https://chromewebstore.googleapis.com';
+
+function cwsName() {
+  const publisherId = process.env.LP_CWS_PUBLISHER_ID ?? '650ad6b1-a9d4-43b6-9ff5-a8ae11ada6ad';
+  const itemId = process.env.LP_CWS_ITEM_ID ?? 'cbkhenammkocfidciagbbibkleoenbej';
+  return { name: `publishers/${publisherId}/items/${itemId}`, itemId };
+}
+
+async function cwsApi(name, pathname, token, options = {}, body = null, upload = false) {
+  const base = upload ? `${CWS_BASE}/upload` : CWS_BASE;
+  const response = await fetch(`${base}/v2/${pathname}`, {
+    method: options.method ?? 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body ? { 'Content-Type': options.contentType ?? 'application/json' } : {}),
+    },
+    body,
+  });
+  const text = await response.text();
+  let json = null;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = null;
+  }
+  if (!response.ok) {
+    const message = json?.error?.message ?? text.slice(0, 300);
+    fail(`Chrome Web Store API ${response.status}: ${message}`);
+  }
+  return json;
+}
+
+async function cwsToken() {
+  const serviceAccountPath =
+    process.env.LP_CWS_SERVICE_ACCOUNT_JSON ?? process.env.LP_PLAY_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountPath || !existsSync(serviceAccountPath)) {
+    fail(
+      'Set LP_CWS_SERVICE_ACCOUNT_JSON (or LP_PLAY_SERVICE_ACCOUNT_JSON) to a service account ' +
+        'linked in the Chrome Web Store Developer Dashboard (Settings → Service account).',
+    );
+  }
+  return serviceAccountToken(serviceAccountPath, CWS_SCOPE);
+}
+
+async function chromeStatus() {
+  const { name } = cwsName();
+  if (dryRun) {
+    console.log(`[dry-run] Would fetch status for ${name} (no API calls made).`);
+    return;
+  }
+  const token = await cwsToken();
+  const status = await cwsApi(name, `${name}:fetchStatus`, token, { method: 'GET' });
+  console.log(`[chrome] ${status.name ?? name}`);
+  if (status.itemId) console.log(`  itemId: ${status.itemId}`);
+  if (status.publishedItemRevisionStatus) {
+    console.log(`  published: ${status.publishedItemRevisionStatus.state}`);
+  }
+  if (status.submittedItemRevisionStatus) {
+    console.log(`  submitted: ${status.submittedItemRevisionStatus.state}`);
+  }
+  if (status.lastAsyncUploadState) console.log(`  lastAsyncUploadState: ${status.lastAsyncUploadState}`);
+  if (status.warned) console.log('  ⚠ warned: true (policy warning — check dashboard)');
+  if (status.takenDown) console.log('  ⛔ takenDown: true');
+}
+
+async function chromeUpload(zipPath) {
+  if (!existsSync(zipPath)) fail(`ZIP not found: ${zipPath}`);
+  const { name, itemId } = cwsName();
+  const publish = args.includes('--publish');
+
+  if (dryRun) {
+    console.log(
+      `[dry-run] Would upload ${zipPath} to ${name}${publish ? ' and publish' : ''} (no API calls made).`,
+    );
+    return;
+  }
+
+  const token = await cwsToken();
+  console.log(`[chrome] Uploading ${zipPath} to ${name}…`);
+  const uploaded = await cwsApi(
+    name,
+    `${name}:upload`,
+    token,
+    { method: 'POST', contentType: 'application/zip' },
+    readFileSync(zipPath),
+    true,
+  );
+  console.log(
+    `[chrome] Upload ${uploaded.uploadState ?? 'complete'} — crxVersion ${uploaded.crxVersion ?? 'unknown'} (item ${uploaded.itemId ?? itemId}).`,
+  );
+
+  if (uploaded.uploadState === 'UPLOAD_IN_PROGRESS') {
+    for (let i = 0; i < 8; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      const status = await cwsApi(name, `${name}:fetchStatus`, token, { method: 'GET' });
+      console.log(`[chrome] Poll ${i + 1}: lastAsyncUploadState=${status.lastAsyncUploadState ?? 'n/a'}`);
+      if (status.lastAsyncUploadState && status.lastAsyncUploadState !== 'UPLOAD_IN_PROGRESS') break;
+    }
+  }
+
+  if (publish) {
+    console.log('[chrome] Publishing / submitting for review…');
+    const result = await cwsApi(
+      name,
+      `${name}:publish`,
+      token,
+      { method: 'POST' },
+      JSON.stringify({ publishType: 'DEFAULT_PUBLISH' }),
+    );
+    console.log(`[chrome] Publish result: state=${result.state} item=${result.itemId ?? result.name ?? ''}`);
+    const warnings = result.warningInfo?.warnings ?? [];
+    if (warnings.length) {
+      for (const warning of warnings) {
+        console.log(`  ⚠ ${warning.reason}: ${warning.description}`);
+      }
+    } else {
+      console.log('[chrome] No warnings.');
+    }
+  } else {
+    console.log('[chrome] Uploaded (not published). Re-run with --publish to submit for review.');
+  }
+}
 
 function positionals() {
   const out = [];
@@ -758,7 +905,8 @@ if (!command || !artifact) {
       '  node scripts/upload.mjs android <path-to.aab> [--track <track>] [--status <status>] [--no-commit] [--dry-run]\n' +
       '  node scripts/upload.mjs android promote <versionCode> [--track production] [--status <status>] [--user-fraction 0.1]\n' +
       '  node scripts/upload.mjs android listing-image <path-to-image> [--type <type>] [--language <locale>]\n' +
-      '  node scripts/upload.mjs appstore <status|prepare|submit|metadata> [version] [--whats-new <text>]',
+      '  node scripts/upload.mjs appstore <status|prepare|submit|metadata> [version] [--whats-new <text>]\n' +
+      '  node scripts/upload.mjs chrome <path-to.zip|status> [--publish] [--dry-run]',
   );
   process.exit(1);
 }
@@ -778,6 +926,12 @@ if (command === 'ios') {
   }
 } else if (command === 'appstore') {
   await appstore();
+} else if (command === 'chrome') {
+  if (artifact === 'status') {
+    await chromeStatus();
+  } else {
+    await chromeUpload(resolvedArtifact);
+  }
 } else {
   fail(`Unknown command: ${command}`);
 }
