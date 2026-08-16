@@ -194,8 +194,11 @@ Filled and saved on the item's Privacy page:
 
 1. Edit `apps/chrome-extension/src/` → run `node apps/chrome-extension/build.mjs` (auto-bumps the 4th build component in `manifest.json`, per SPEC-076).
 2. Rebuild the ZIP (see [Packaging](#packaging)).
-3. Developer Dashboard → the item → **Package** → upload new ZIP → submit.
+3. Upload + submit via the browserless API (see ARCH-029 § 6.3):
+   `node scripts/upload.mjs chrome status` → `node scripts/upload.mjs chrome <zip> --publish`.
+   Fallback: Developer Dashboard → the item → **Package** → upload new ZIP → submit.
 4. Note: `content.css`, `popup.html`, `popup.css`, `_locales/`, `icons/` are NOT bundled — they're loaded directly, so changes to those only need a new ZIP + resubmit (no build step).
+5. The API cannot edit listing text (Summary / Detailed description), screenshots, or promo assets — update those in the dashboard when they change.
 
 ## Open Questions
 - [ ] Do we want a promo video (YouTube) for the listing?
