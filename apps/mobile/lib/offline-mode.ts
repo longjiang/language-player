@@ -1,6 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import { File, type Directory, type DownloadOptions } from 'expo-file-system';
-import { log } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
+
+const { log } = bootLogger;
 
 /**
  * Local-only network kill switch.

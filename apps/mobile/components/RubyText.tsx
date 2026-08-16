@@ -15,6 +15,9 @@ import { log, logwarn } from '@/lib/logger';
  * behavior), with no other code changes.
  */
 const NATIVE_RUBY_ENABLED = true;
+/** Only run native paragraph diagnostics for readings long enough to hit the
+ *  Core Text multi-syllable distribution issue (e.g. 不到长城非好汉). */
+const LONG_READING_MIN_SYLLABLES = 6;
 
 let NativeRubyTextView: React.ComponentType<NativeRubyTextProps> | null = null;
 type NativeParagraphComponent = React.ComponentType<
@@ -295,6 +298,13 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     measured && measured.sizeKey === sizeKey
       ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`
       : null;
+  const hasLongReading = useMemo(
+    () =>
+      runs.some(
+        (run) => (run.reading ?? '').split(' ').filter(Boolean).length >= LONG_READING_MIN_SYLLABLES,
+      ),
+    [runs],
+  );
   const probeDiagnostics = useCallback((tag: string) => {
     try {
       const module = requireOptionalNativeModule('RubyText') as
@@ -315,15 +325,13 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   }, []);
 
   useEffect(() => {
-    if (!mountedKey) return;
-    probeDiagnostics('mount');
+    if (!mountedKey || !hasLongReading) return;
     const timer = setTimeout(() => probeDiagnostics('settled'), 250);
     return () => clearTimeout(timer);
-  }, [mountedKey, probeDiagnostics]);
+  }, [mountedKey, hasLongReading, probeDiagnostics]);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    log(`[LP Mobile] [RubyText] paragraph measured w=${width.toFixed(1)} h=${height.toFixed(1)} runs=${runs.length}`);
     setMeasured((prev) =>
       prev &&
       prev.sizeKey === sizeKey &&
@@ -366,7 +374,6 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
       </Text>
       {measured && measured.sizeKey === sizeKey ? (
         (() => {
-          log(`[LP Mobile] [RubyText] paragraph mounting native view runs=${runs.length} box=${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`);
           return (
             <NativeRubyTextParagraphView
               ref={nativeRef}

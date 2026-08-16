@@ -16,10 +16,12 @@ import { Sparkles } from 'lucide-react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { log as appLog, logwarn } from '@/lib/logger';
+import { bootLogger, logwarn } from '@/lib/logger';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { loadSampleContent } from '@langplayer/shared';
 import type { LemmatizedToken } from '@langplayer/shared';
+
+const { log: appLog } = bootLogger;
 
 export default function TokenizerScreen() {
   const { l1Lang, l2Lang } = useLanguage();

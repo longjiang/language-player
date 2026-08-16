@@ -13,7 +13,7 @@ import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
-import { log, logwarn } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
 import { isOfflineModeError } from '@/lib/offline-mode';
 import {
   openDictionaryDB,
@@ -28,6 +28,8 @@ import {
   downloadPrecompiledDictionary,
 } from '@/lib/dictionary-download';
 import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
+
+const { log, logwarn } = bootLogger;
 import { LEMMA_TABLE_CAP_LIMIT, LEMMA_TABLE_CAPPED_LANGS, TOKENIZER_CONFIG } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { SQLiteDatabase } from 'expo-sqlite';

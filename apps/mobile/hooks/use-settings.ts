@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { log, logwarn } from '@/lib/logger';
+import { bootLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCacheRow } from '@/lib/sync-db';
 import {
@@ -24,6 +24,8 @@ import type {
   SearchSettings,
   L2Settings,
 } from '@langplayer/shared';
+
+const { log, logwarn } = bootLogger;
 
 const STORAGE_KEY = 'lp_settings';
 const SYNC_DEBOUNCE_MS = 3000;
