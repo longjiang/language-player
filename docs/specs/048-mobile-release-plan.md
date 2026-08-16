@@ -427,7 +427,7 @@ cd apps/mobile && npx expo start --ios
 cd apps/mobile && EXPO_PUBLIC_API_URL=http://localhost:5001 npx expo run:ios --configuration Release
 
 # …or install the built archive directly:
-# xcrun simctl install booted ~/Desktop/LanguagePlayer.xcarchive/Products/Applications/LanguagePlayer.app
+# xcrun simctl install booted ~/Desktop/LanguagePlayer.xcarchive/Products/Applications/LanguagePlayer3.app
 ```
 
 #### Real device (iOS or Android)
@@ -550,8 +550,8 @@ rm -rf ~/Desktop/LanguagePlayer.xcarchive
 
 EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
   xcodebuild \
-    -workspace ios/LanguagePlayer.xcworkspace \
-    -scheme LanguagePlayer \
+    -workspace ios/LanguagePlayer3.xcworkspace \
+    -scheme LanguagePlayer3 \
     -configuration Release \
     -destination 'generic/platform=iOS' \
     -allowProvisioningUpdates \
@@ -565,21 +565,36 @@ EXPO_PUBLIC_API_URL=https://pythonvps.zerotohero.ca \
   When in doubt, `-jobs 1` is guaranteed correct (just slower).
 - The archive lands at `~/Desktop/LanguagePlayer.xcarchive`.
 
-> **Note (2026-08-14):** `expo prebuild` regenerates `ios/` without a
-> development team, so the archive fails with "Signing for LanguagePlayer3
-> requires a development team". After every prebuild, add
-> `DEVELOPMENT_TEAM=9CS9PCBX32 CODE_SIGN_STYLE=Automatic
-> CODE_SIGN_IDENTITY="Apple Development"` to the archive command (or set them
-> in the Xcode project).
+> **Note (2026-08-14, corrected 2026-08-16):** `expo prebuild` regenerates
+> `ios/` without a development team, so the archive fails with "Signing for
+> LanguagePlayer3 requires a development team". The project was renamed from
+> `LanguagePlayer` to `LanguagePlayer3`, so the workspace is
+> `ios/LanguagePlayer3.xcworkspace` and the scheme is `LanguagePlayer3`.
+> Env vars alone (`DEVELOPMENT_TEAM=9CS9PCBX32 CODE_SIGN_STYLE=Automatic
+> CODE_SIGN_IDENTITY="Apple Development"` on the command line) were **not**
+> sufficient on Xcode 26 — the archive still failed the team check. After
+> every prebuild, also write these two settings into
+> `ios/LanguagePlayer3.xcodeproj/project.pbxproj` (both the Debug and Release
+> build configurations, next to `CODE_SIGN_IDENTITY[sdk=iphoneos*]`):
+
+```text
+CODE_SIGN_STYLE = Automatic;
+DEVELOPMENT_TEAM = 9CS9PCBX32;
+```
+
+> Keep the env vars on the archive command too — they are harmless and cover
+> the identity; the pbxproj entries are what satisfy the team check. The
+> embedded app is `Products/Applications/LanguagePlayer3.app` (not
+> `LanguagePlayer.app`).
 
 ### 3.2 Verify the archive + embedded bundle
 
 ```bash
 ARCHIVE=~/Desktop/LanguagePlayer.xcarchive
 plutil -p "$ARCHIVE/Info.plist"   # CreationDate, CFBundleShortVersionString, CFBundleVersion, SigningIdentity
-ls -la "$ARCHIVE/Products/Applications/LanguagePlayer.app"
+ls -la "$ARCHIVE/Products/Applications/LanguagePlayer3.app"
 
-BUNDLE="$ARCHIVE/Products/Applications/LanguagePlayer.app/main.jsbundle"
+BUNDLE="$ARCHIVE/Products/Applications/LanguagePlayer3.app/main.jsbundle"
 grep -c 'pythonvps.zerotohero.ca' "$BUNDLE"   # expect ≥ 1
 grep -c 'localhost:5001'          "$BUNDLE"   # expect 0
 grep -c '127.0.0.1:5001'          "$BUNDLE"   # expect 0
