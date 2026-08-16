@@ -17,6 +17,7 @@ import {
   BookOpen,
   Wrench,
   X,
+  GitCommit,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -87,6 +88,12 @@ export function AboutDialog({
   const version = Constants.expoConfig?.version ?? '0.0.0';
   const environment = __DEV__ ? 'development' : 'production';
   const buildDate = new Date().toISOString();
+  // Dev builds embed the exact git commit via EXPO_PUBLIC_GIT_SHA (set by
+  // scripts/dev-build.mjs). Referencing it here makes Metro inline the value
+  // into the bundle, so it is both visible in About and grep-verifiable
+  // against docs/versioning/dev-build-ledger.md (SPEC-076 § 4.8). Store
+  // builds never set it, so the row stays hidden there.
+  const gitSha = process.env.EXPO_PUBLIC_GIT_SHA;
 
   const openLink = (url: string) => {
     onOpenChange(false);
@@ -112,6 +119,9 @@ export function AboutDialog({
       <View className="mt-4 rounded-xl border border-border bg-card p-4">
         <InfoRow icon={Package} label={t('label.version')} value={`v${version}`} />
         <InfoRow icon={Calendar} label={t('label.build_date')} value={formatDate(buildDate)} />
+        {gitSha ? (
+          <InfoRow icon={GitCommit} label={t('label.commit')} value={gitSha.slice(0, 12)} />
+        ) : null}
         <InfoRow icon={Globe} label={t('label.environment')} value={environment} />
       </View>
 
