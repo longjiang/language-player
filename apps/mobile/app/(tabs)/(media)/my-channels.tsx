@@ -131,7 +131,7 @@ export default function MyChannelsScreen() {
           <Pressable
             key={key}
             onPress={() => setTab(key)}
-            className={`flex-1 items-center border-b-2 px-2 py-2.5 ${
+            className={`flex-1 items-center border-b-2 px-2 py-2.5 active:bg-muted ${
               tab === key ? 'border-primary' : 'border-transparent'
             }`}
           >
@@ -154,7 +154,7 @@ export default function MyChannelsScreen() {
           <Pressable
             onPress={handleResetPress}
             disabled={busy}
-            className="rounded-md border border-border px-3 py-1.5"
+            className="rounded-md border border-border px-3 py-1.5 active:bg-muted"
           >
             <Text className="text-xs text-muted-foreground">
               {busy

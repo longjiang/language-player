@@ -39,6 +39,7 @@ export function ChannelCard({ channel }: { channel: Channel }) {
             `/(tabs)/(media)/channel/${encodeURIComponent(channel.channel_id)}` as any,
           )
         }
+        className="-m-3 rounded-lg p-3 active:bg-muted"
       >
         <View className="flex-row items-center gap-3">
           <Image

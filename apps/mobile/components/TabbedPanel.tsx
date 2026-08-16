@@ -133,7 +133,7 @@ export function TabbedPanel({
                 key={tab.key}
                 testID={`tab-${tab.key}`}
                 onPress={() => handleTabChange(tab.key)}
-                className={`flex-1 items-center px-2 py-2.5 ${
+                className={`flex-1 items-center px-2 py-2.5 active:bg-muted ${
                   activeTab === tab.key ? 'border-b-2 border-primary' : ''
                 }`}
               >

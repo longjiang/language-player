@@ -50,10 +50,10 @@ export function VisitedSitesSidebar({
                 className="absolute inset-0 z-10"
               />
             )}
-            <View className="relative z-20 flex-row items-center gap-2 rounded-md px-2 py-1.5 active:bg-muted">
-              <Globe size={14} color={ICON_MUTED} />
-              <View className="min-w-0 flex-1">
-                {isEditing ? (
+            {isEditing ? (
+              <View className="relative z-20 flex-row items-center gap-2 rounded-md px-2 py-1.5">
+                <Globe size={14} color={ICON_MUTED} />
+                <View className="min-w-0 flex-1">
                   <TextInput
                     autoFocus
                     value={editValue}
@@ -63,36 +63,39 @@ export function VisitedSitesSidebar({
                     placeholder={t('placeholder.enter_title')}
                     className="w-full rounded border border-primary bg-background px-1.5 py-0.5 text-xs text-foreground"
                   />
-                ) : (
-                  <>
-                    <Pressable
-                      onPress={() => { setMenuUrl(null); onLoad(site.url); }}
-                    >
-                      <Text className="text-sm text-foreground" numberOfLines={1}>
-                        {site.title}
-                      </Text>
-                    </Pressable>
-                    <Text className="text-[10px] text-muted-foreground/70" numberOfLines={1}>
-                      {site.url}
-                    </Text>
-                    {site.visitedAt > 0 && (
-                      <Text className="text-[10px] text-muted-foreground/70">
-                        {new Date(site.visitedAt).toLocaleDateString()}
-                      </Text>
-                    )}
-                  </>
-                )}
+                </View>
               </View>
-              {!isEditing && (
+            ) : (
+              <Pressable
+                onPress={() => { setMenuUrl(null); onLoad(site.url); }}
+                className="relative z-20 flex-row items-center gap-2 rounded-md px-2 py-1.5 active:bg-muted"
+              >
+                <Globe size={14} color={ICON_MUTED} />
+                <View className="min-w-0 flex-1">
+                  <Text className="text-sm text-foreground" numberOfLines={1}>
+                    {site.title}
+                  </Text>
+                  <Text className="text-[10px] text-muted-foreground/70" numberOfLines={1}>
+                    {site.url}
+                  </Text>
+                  {site.visitedAt > 0 && (
+                    <Text className="text-[10px] text-muted-foreground/70">
+                      {new Date(site.visitedAt).toLocaleDateString()}
+                    </Text>
+                  )}
+                </View>
                 <Pressable
-                  onPress={() => setMenuUrl(menuUrl === site.url ? null : site.url)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setMenuUrl(menuUrl === site.url ? null : site.url);
+                  }}
                   className="rounded p-1 active:bg-muted"
                   accessibilityLabel={t('action.more')}
                 >
                   <MoreHorizontal size={14} color={ICON_MUTED} />
                 </Pressable>
-              )}
-            </View>
+              </Pressable>
+            )}
 
             {menuUrl === site.url && !isEditing && (
               <View className="absolute right-2 top-9 z-30 min-w-[120px] overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg" style={{ elevation: 8 }}>

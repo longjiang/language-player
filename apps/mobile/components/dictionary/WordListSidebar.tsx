@@ -155,7 +155,7 @@ function SidebarEntryCard({
     content = (
       <Pressable
         onPress={() => onOpen(item)}
-        className="w-full rounded-lg border border-border bg-card p-3"
+        className="w-full rounded-lg border border-border bg-card p-3 active:bg-muted"
       >
         <Text className="text-lg font-bold text-foreground" numberOfLines={1}>{item.head}</Text>
       </Pressable>
