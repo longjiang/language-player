@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
+import kotlin.math.max
 
 /** One tappable text run inside a paragraph-level ruby renderer. */
 class RubyParagraphRun(
@@ -86,7 +87,13 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
 
   private fun dp(value: Float): Float = value * density
 
-  private class LineRun(val run: RubyParagraphRun, var x: Float, val width: Float)
+  private class LineRun(
+    val run: RubyParagraphRun,
+    var x: Float,
+    val baseWidth: Float,
+    val readingWidth: Float,
+    val advance: Float
+  )
 
   init {
     // Critical: a ViewGroup with no background is "will not draw" by default;
@@ -113,32 +120,40 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
     super.draw(canvas)
     if (runs.isEmpty() || width <= 0 || height <= 0) return
 
+    // Metrics for line positioning must reflect the actual base/reading sizes.
+    basePaint.textSize = dp(fontSize)
+    readingPaint.textSize = dp(readingSize)
+    val baseMetrics = basePaint.fontMetrics
+    val readingMetrics = readingPaint.fontMetrics
+
     val lines = buildLines()
     var lineTop = 0f
     for (line in lines) {
-      val baseBaseline = lineTop + dp(lineHeight) - basePaint.fontMetrics.descent
-      val readingBaseline = lineTop + dp(readingSize) - readingPaint.fontMetrics.descent
+      val baseBaseline = lineTop + dp(lineHeight) - baseMetrics.descent
+      // Ruby sits directly on top of the base text: its descent meets the
+      // base ascent, so lineHeight no longer leaves a big gap between them.
+      val readingBaseline = baseBaseline + baseMetrics.ascent - readingMetrics.descent
       for (lineRun in line) {
         val run = lineRun.run
         val paint = paintFor(run)
         val readingPaintForRun = readingPaintFor(run)
+        val baseX = lineRun.x + (lineRun.advance - lineRun.baseWidth) / 2f
+        val rubyX = lineRun.x + (lineRun.advance - lineRun.readingWidth) / 2f
         if (run.background != null) {
           val bgPaint = Paint().apply {
             color = applyAlpha(run.background, run.backgroundAlpha)
           }
-          canvas.drawRect(lineRun.x, lineTop, lineRun.x + lineRun.width, lineTop + dp(lineHeight), bgPaint)
+          canvas.drawRect(lineRun.x, lineTop, lineRun.x + lineRun.advance, lineTop + dp(lineHeight), bgPaint)
         }
-        val baseWidth = paint.measureText(run.text)
         if (!run.reading.isNullOrEmpty()) {
-          val rubyWidth = readingPaintForRun.measureText(run.reading)
           canvas.drawText(
             run.reading,
-            lineRun.x + (baseWidth - rubyWidth) / 2f,
+            rubyX,
             readingBaseline,
             readingPaintForRun
           )
         }
-        canvas.drawText(run.text, lineRun.x, baseBaseline, paint)
+        canvas.drawText(run.text, baseX, baseBaseline, paint)
       }
       lineTop += dp(lineHeight)
     }
@@ -157,25 +172,30 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
         }
         continue
       }
-      val runWidth = paintFor(run).measureText(run.text)
-      if (x > 0f && x + runWidth > width && current.isNotEmpty()) {
+      val baseWidth = paintFor(run).measureText(run.text)
+      val readingWidth =
+        if (!run.reading.isNullOrEmpty()) readingPaintFor(run).measureText(run.reading) else 0f
+      // Advance by the wider of base/ruby so a long reading can never spill
+      // into the neighboring token's box (no more accidental overhang/collisions).
+      val advance = max(baseWidth, readingWidth)
+      if (x > 0f && x + advance > width && current.isNotEmpty()) {
         lines.add(current)
         current = mutableListOf()
         x = 0f
       }
-      current.add(LineRun(run, x, runWidth))
-      x += runWidth
+      current.add(LineRun(run, x, baseWidth, readingWidth, advance))
+      x += advance
     }
     if (current.isNotEmpty()) lines.add(current)
 
     // Basic RTL: draw each line from the right edge.
     if (isRtl) {
       for (line in lines) {
-        val total = line.sumOf { it.width.toDouble() }.toFloat()
+        val total = line.sumOf { it.advance.toDouble() }.toFloat()
         var offset = width - total
         for (lineRun in line) {
           lineRun.x = offset
-          offset += lineRun.width
+          offset += lineRun.advance
         }
       }
     }
@@ -225,7 +245,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
       val lines = buildLines()
       if (lineIndex in lines.indices) {
         for (lineRun in lines[lineIndex]) {
-          if (x >= lineRun.x && x < lineRun.x + lineRun.width && lineRun.run.tappable) {
+          if (x >= lineRun.x && x < lineRun.x + lineRun.advance && lineRun.run.tappable) {
             onTokenTap(mapOf("tokenId" to lineRun.run.tokenId))
             break
           }
