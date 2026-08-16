@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TextInput, Pressable, Text, ActivityIndicator } from 'react-native';
+import { View, TextInput, Text, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';

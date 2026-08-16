@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, TextInput } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { Globe, MoreHorizontal, PenLine, Trash2 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Alert, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Alert, View, Text, TextInput, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';

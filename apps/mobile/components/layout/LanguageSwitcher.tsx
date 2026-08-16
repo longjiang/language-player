@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, Animated } from 'react-native';
+import { View, Text, Animated } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router, useSegments } from 'expo-router';
 import { ChevronDown } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';

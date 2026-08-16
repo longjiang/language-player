@@ -2,13 +2,13 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Pressable,
   Animated,
   Modal,
   useWindowDimensions,
   Share,
   ActivityIndicator,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, Share2, X } from 'lucide-react-native';

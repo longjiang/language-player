@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useT } from '@/hooks/use-t';
 import { Collocations } from './collocations';
 import { CorpusExamples } from './examples';

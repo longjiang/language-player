@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, Pressable, Modal, ScrollView, ActivityIndicator, Alert,
+  View, Text, Modal, ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';

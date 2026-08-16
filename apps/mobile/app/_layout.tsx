@@ -3,7 +3,8 @@ import '@/lib/intl-polyfills';
 
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import { View, Text, ScrollView, Pressable, LogBox } from 'react-native';
+import { View, Text, ScrollView, LogBox } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';

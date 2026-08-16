@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useIsFocused } from 'expo-router';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';

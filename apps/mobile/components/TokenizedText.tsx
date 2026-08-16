@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, Platform, Animated, Alert, Pressable } from 'react-native';
+import { View, Text, Platform, Animated, Alert } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useColorScheme } from 'nativewind';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';

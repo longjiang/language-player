@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Image, LayoutChangeEvent } from 'react-native';
+import { View, Text, Image, LayoutChangeEvent } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';

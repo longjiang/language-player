@@ -11,10 +11,10 @@ import {
   View,
   Text,
   TextInput,
-  Pressable,
   SectionList,
   type SectionListData,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { X, Search, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY, ICON_ON_ACCENT } from '@/lib/theme-colors';

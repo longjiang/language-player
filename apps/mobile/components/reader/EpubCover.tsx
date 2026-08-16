@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Image } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { BookOpen, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { BookOpen, MoreVertical, Trash2, Upload, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';

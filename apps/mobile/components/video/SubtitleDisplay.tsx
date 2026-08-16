@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, Pressable, Animated, Easing } from 'react-native';
+import { View, Text, FlatList, Animated, Easing } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';

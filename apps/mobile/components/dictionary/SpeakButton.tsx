@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useSpeech } from '@/hooks/use-speech';
 import { Volume2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';

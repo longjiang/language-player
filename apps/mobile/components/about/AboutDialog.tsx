@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, Image, Linking } from 'react-native';
+import { View, Text, ScrollView, Image, Linking } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Dialog from '@/components/ui/dialog';

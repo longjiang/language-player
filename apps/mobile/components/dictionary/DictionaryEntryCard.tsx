@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';

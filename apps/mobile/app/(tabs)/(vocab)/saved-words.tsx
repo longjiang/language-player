@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { View, Text, Pressable, TextInput, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';

@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  View, Text, TextInput, Pressable, ScrollView, ActivityIndicator,
+  View, Text, TextInput, ScrollView, ActivityIndicator,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { MoreVertical } from 'lucide-react-native';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';

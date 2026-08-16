@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Monitor, Play, Volume2, RotateCcw, Search, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, TextInput } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLocalSearchParams } from 'expo-router';
 import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';

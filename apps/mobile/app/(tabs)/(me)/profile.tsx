@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Modal, TextInput, Linking, AppState, Alert } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Modal, TextInput, Linking, AppState, Alert } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';

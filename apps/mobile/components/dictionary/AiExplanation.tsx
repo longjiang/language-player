@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useStreamingExplanation } from '@langplayer/api-client';

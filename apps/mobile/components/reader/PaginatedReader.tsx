@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  Animated, View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
+  Animated, View, Text, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
   type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isPhoneticsEligible } from '@langplayer/utils';

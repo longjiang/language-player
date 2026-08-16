@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, FlatList, Pressable } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useT } from '@/hooks/use-t';
 
 interface WordListItem {

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, Pressable, Modal, useWindowDimensions } from 'react-native';
+import { View, Text, Modal, useWindowDimensions } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Linking, Platform } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Linking, Platform } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';

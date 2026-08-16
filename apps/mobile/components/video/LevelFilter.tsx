@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Text, Pressable, ScrollView } from 'react-native';
+import { Text, ScrollView } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';

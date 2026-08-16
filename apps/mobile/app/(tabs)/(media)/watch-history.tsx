@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { View, Text, SectionList, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, SectionList, Image, ActivityIndicator, Alert } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';

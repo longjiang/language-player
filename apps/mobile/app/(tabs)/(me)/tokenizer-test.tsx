@@ -3,10 +3,10 @@ import {
   View,
   Text,
   TextInput,
-  Pressable,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
