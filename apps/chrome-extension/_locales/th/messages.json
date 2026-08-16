@@ -36,7 +36,7 @@
     "message": "ให้ DeepSeek อธิบาย"
   },
   "extensionDescription": {
-    "message": "คำบรรยายสองภาษาแบบโต้ตอบสำหรับการเรียนรู้ภาษาบน Prime Video, YouTube, Netflix, Disney+, Hulu และ Max"
+    "message": "คำบรรยายคู่แบบโต้ตอบและการค้นหาพจนานุกรมทันทีสำหรับการเรียนรู้ภาษาบนเว็บไซต์สตรีมมิ่งที่คุณชื่นชอบ"
   },
   "failedToLoadSubtitles": {
     "message": "โหลดคำบรรยายไม่สำเร็จ"

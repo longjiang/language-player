@@ -36,7 +36,7 @@
     "message": "让 DeepSeek 解释"
   },
   "extensionDescription": {
-    "message": "互动双语字幕，支持 Prime Video、YouTube、Netflix、Disney+、Hulu 与 Max。"
+    "message": "在你喜欢的流媒体网站上，用互动双语字幕和即时词典查询学习语言。"
   },
   "failedToLoadSubtitles": {
     "message": "字幕加载失败"
