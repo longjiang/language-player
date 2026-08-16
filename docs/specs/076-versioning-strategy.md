@@ -311,6 +311,42 @@ minor version when a milestone batch is complete and tag its commits
 **Web deploys** are not tagged per deploy (continuous Netlify/CI deploys are
 identified by deploy ID + git SHA); only product releases get tags.
 
+### 4.8 Dev builds: tracking, retention, and commit traceability
+
+**Adopted 2026-08-16.** Dev builds (simulator apps, device builds, Android
+APKs — anything not uploaded to a store) are tracked in
+`docs/versioning/dev-build-ledger.md`, in the same spirit as the store
+ledger, but with their own independent numbering (`dev N`) — they never
+consume store build numbers (§ 4.2).
+
+Each ledger row records the exact git commit the artifact mirrors (full SHA +
+`git describe`), the build date, the artifact name, and the artifact's
+SHA-256. **The commit SHA is also embedded in the binary itself** via
+`EXPO_PUBLIC_GIT_SHA` (inlined by Metro because the mobile About dialog reads
+it), so the mapping is verifiable from the artifact alone — no trust in the
+record required.
+
+Retention: the **3 most recent builds (current + 2 previous)** stay
+recoverable at `~/Desktop/LP-DevBuilds/` (override: `LP_DEV_BUILD_DIR`).
+Recording a new build moves the oldest beyond the window into `archive/` and
+marks its row `archived`. Dev build numbers are never reused.
+
+Rules:
+
+- **Clean tree only.** A dev build mirrors a commit "for sure" only when the
+  tree was clean at build time. `dev-build.mjs` refuses a dirty tree unless
+  `--allow-dirty` is passed; dirty builds are marked `(dirty)` in the ledger
+  and are not treated as mirroring their commit.
+- **Dev API URL.** Dev builds pin the API URL via `EXPO_PUBLIC_API_URL` —
+  default `http://127.0.0.1:5001` (iOS Simulator); physical devices and the
+  Android emulator must pass `--api-url` (Mac LAN IP / `10.0.2.2`).
+- **Release configuration.** Dev builds are built as Release (embedded JS
+  bundle), so the artifact is self-contained — installable and grep-verifiable
+  without a running Metro.
+- **Verify before trusting.** `verify-dev-build.mjs <N|latest>` re-hashes the
+  artifact, greps the embedded commit out of the bundle, and checks the
+  commit exists in git — exit non-zero on any mismatch.
+
 ## 5. Tooling & Verification Gates
 
 ### 5.1 New scripts (in `scripts/`)
@@ -322,6 +358,8 @@ identified by deploy ID + git SHA); only product releases get tags.
 | `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
 | `tag-release.mjs [--release] [--extension] [--milestone <N>]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>`, `--milestone <N>` creates `v<version>-m<N>` |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
+| `dev-build.mjs <ios-sim\|ios-device\|android>` | Builds a dev build (Release config, pinned dev API URL, embedded git SHA), records it in `docs/versioning/dev-build-ledger.md`, and retains only the 3 most recent artifacts (`--keep N`, `--allow-dirty`, `--dry-run`) |
+| `verify-dev-build.mjs <N\|latest>` | Verifies a dev build from the artifact alone: SHA-256 vs ledger, embedded commit SHA in the JS bundle, commit exists in git |
 | `upload.mjs ios <ipa> \| android <aab>` | Browserless store upload without EAS/Fastlane: Transporter CLI for App Store Connect, Play Developer API v3 (service-account JWT) for Google Play (§ 5.3.2) |
 
 ### 5.2 Pre-upload gate (`verify-version.mjs`)
@@ -390,6 +428,13 @@ into old commits (it changes every downstream SHA, breaks tags, and requires
 a force-push to the shared remote). Cuts are made at commit time going
 forward; `v3.1.0-m1…m11` remain documented markers pointing at the commits
 they represent.
+
+**Dev build** — build + record + retain in one step (§ 4.8):
+
+```bash
+node scripts/dev-build.mjs ios-sim             # or ios-device / android (needs --api-url)
+node scripts/verify-dev-build.mjs latest       # confirm the commit mapping from the artifact
+```
 
 ### 5.3.2 Browserless store uploads (no EAS)
 
