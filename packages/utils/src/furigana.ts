@@ -303,8 +303,18 @@ export function buildRuby(
     }));
   }
 
-  // ── Chinese / Cantonese: word-level pinyin/jyutping ──
+  // ── Chinese / Cantonese: per-character pinyin/jyutping ──
   if (base === 'zh' || base === 'yue') {
+    const chars = [...text];
+    const syllables = pronunciation.trim().split(/\s+/).filter(Boolean);
+    if (chars.length === syllables.length) {
+      // One annotation per hanzi — Core Text must never receive a single
+      // ruby annotation spanning multiple characters (it mis-distributes
+      // the reading when the run wraps across a line).
+      return chars.map((char, i) => ({ text: char, reading: syllables[i] }));
+    }
+    // Mismatched alignment (tokenizer quirk, contraction, Latin inside the
+    // token): fall back to one word-level annotation rather than mislabeling.
     return [{ text, reading: pronunciation }];
   }
 
