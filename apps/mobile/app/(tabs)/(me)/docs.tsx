@@ -151,7 +151,7 @@ export default function DocsScreen() {
         </Text>
         <ScrollView className="flex-1">
           {rootDocs.map((doc) => (
-            <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5">
+            <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5 active:bg-muted">
               <Text
                 className={
                   doc.path === selectedDoc.path
@@ -169,7 +169,7 @@ export default function DocsScreen() {
                 {t(categoryKey(cat))}
               </Text>
               {catDocs.map((doc) => (
-                <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5">
+                <Pressable key={doc.path} onPress={() => handleSelectDoc(doc)} className="py-1.5 active:bg-muted">
                   <Text
                     className={
                       doc.path === selectedDoc.path
@@ -194,7 +194,7 @@ export default function DocsScreen() {
               <Pressable
                 key={h.id}
                 onPress={() => scrollToHeading(h.id)}
-                className="py-1.5"
+                className="py-1.5 active:bg-muted"
                 style={{ paddingLeft: 4 + (h.level - 2) * 12 }}
               >
                 <Text className="text-sm text-muted-foreground">{h.text}</Text>

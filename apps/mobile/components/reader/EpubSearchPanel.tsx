@@ -79,7 +79,7 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
           autoFocus
         />
         {query ? (
-          <Pressable onPress={() => setQuery('')} className="p-1">
+          <Pressable onPress={() => setQuery('')} className="rounded p-1 active:bg-muted">
             <X size={14} color={ICON_MUTED} />
           </Pressable>
         ) : null}
