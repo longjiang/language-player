@@ -852,7 +852,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar — pills are clickable while loading; toggle shown as skeleton */}
-        <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+        <div className="flex items-center justify-center gap-2 py-2">
           {formCount > 1 && (
             <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
               <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
@@ -891,7 +891,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar — keep toggle + pills accessible even when empty */}
-        <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+        <div className="flex items-center justify-center gap-2 py-2">
           {formCount > 1 && (
             <div className="inline-flex items-center rounded-full bg-muted p-0.5">
               <button
@@ -935,7 +935,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
       {/* ── Nav bar (above list) — forms toggle + content-filter pills ── */}
-      <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+      <div className="flex items-center justify-center gap-2 py-2">
         {formCount > 1 && (
           <div className="inline-flex items-center rounded-full bg-muted p-0.5">
             <button
