@@ -37,6 +37,14 @@ interface VideoQueuePanelProps<T> {
   sortOptions?: QueueSortOption[];
   /** Draw a bottom border under the toolbar. Default: true. */
   toolbarBorder?: boolean;
+  /**
+   * When provided, rows are grouped consecutively by this key and a header is
+   * rendered before each group change. Headers don't carry `data-row-index`,
+   * so lazy-loading observers stay aligned with flat row indexes.
+   */
+  groupKeyFor?: (item: T, index: number) => string | null | undefined;
+  /** Renders the header element when a new group begins (key of this row). */
+  renderGroupHeader?: (key: string, item: T, index: number) => ReactNode;
 }
 
 /**
@@ -57,6 +65,8 @@ export function VideoQueuePanel<T>({
   onSortChange,
   sortOptions,
   toolbarBorder = true,
+  groupKeyFor,
+  renderGroupHeader,
 }: VideoQueuePanelProps<T>) {
   const t = useT();
   const showToolbar = Boolean(onFilterChange || (sortOptions && onSortChange));
@@ -105,11 +115,21 @@ export function VideoQueuePanel<T>({
         <p className="py-8 text-center text-xs text-muted-foreground">{emptyText}</p>
       ) : (
         <div className="space-y-1">
-          {items.map((item, i) => (
-            <div key={keyFor(item, i)} data-row-index={i}>
-              {renderRow(item, i)}
-            </div>
-          ))}
+          {items.map((item, i) => {
+            const key = groupKeyFor?.(item, i);
+            const prevKey = i > 0 && groupKeyFor ? groupKeyFor(items[i - 1]!, i - 1) : undefined;
+            const showHeader = Boolean(
+              renderGroupHeader && key && (i === 0 || key !== prevKey),
+            );
+            return (
+              <div key={keyFor(item, i)}>
+                {showHeader && renderGroupHeader && key && (
+                  <div className="px-1 pb-0.5 pt-1">{renderGroupHeader(key, item, i)}</div>
+                )}
+                <div data-row-index={i}>{renderRow(item, i)}</div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

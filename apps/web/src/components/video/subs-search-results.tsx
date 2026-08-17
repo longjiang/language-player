@@ -83,6 +83,19 @@ function lineHasAnyTerm(line: string, terms: string[]): boolean {
   return terms.some((f) => lower.includes(f.trim().toLowerCase()));
 }
 
+/** The character immediately before (side='left') or after (side='right') the
+ *  first occurrence of `term` in a video's matched line. Empty string when the
+ *  term is at the line edge. Used as the grouping key for left/right context sorts. */
+function contextChar(video: SubsSearchVideo, term: string, side: 'left' | 'right'): string {
+  const line = video.subs_l2[video.matchLineIndex]?.line ?? '';
+  const idx = line.toLowerCase().indexOf(term.toLowerCase());
+  if (idx < 0) return '';
+  if (side === 'left') {
+    return idx > 0 ? (line[idx - 1] ?? '') : '';
+  }
+  return idx + term.length < line.length ? (line[idx + term.length] ?? '') : '';
+}
+
 /** The first search form that appears in this line (used as the server-side
  *  highlight term so the emphasis lands on the right word in the translation). */
 function firstMatchingForm(line: string, terms: string[]): string | undefined {
@@ -577,6 +590,15 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return result;
   }, [videos, listSearch, listSort, term]);
 
+  // Grouping key for left/right-context sorts: the character immediately
+  // before (left) or after (right) the term in each matched line. Other sorts
+  // don't group. Consecutive runs of the same key become a single group.
+  const contextGroupKey = useMemo(() => {
+    if (listSort !== 'leftContext' && listSort !== 'rightContext') return undefined;
+    const side = listSort === 'leftContext' ? 'left' : 'right';
+    return (v: SubsSearchVideo) => contextChar(v, term, side);
+  }, [listSort, term]);
+
   // Per-row segments — the matched line only (no prev/next context in the
   // list), flagged with whether it contains a search term. Translations are
   // requested per segment so the translation can mirror the muted/normal
@@ -703,6 +725,26 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       );
     },
     [videos, currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
+  );
+
+  // Group header for left/right-context sorts: the boundary character (the one
+  // immediately before/after the term) as a badge, next to a small caption
+  // recalling which side of the term we're grouping by.
+  const renderGroupHeader = useCallback(
+    (key: string) => {
+      const label = listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext');
+      return (
+        <div className="flex items-center justify-center gap-2 px-1 pb-1 pt-2">
+          <span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-primary/10 px-1.5 text-[11px] font-semibold text-primary">
+            {key}
+          </span>
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {label}
+          </span>
+        </div>
+      );
+    },
+    [listSort, t],
   );
 
   // Content-filter pills (All / Non-Music / Music / TV Shows), rendered in the
@@ -883,6 +925,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             { value: 'rightContext', label: t('title.rightContext') },
           ]}
           renderRow={renderQueueRow}
+          groupKeyFor={contextGroupKey}
+          renderGroupHeader={renderGroupHeader}
         />
       </div>
 
