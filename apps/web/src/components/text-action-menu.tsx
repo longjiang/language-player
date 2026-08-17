@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
@@ -49,6 +49,7 @@ export function TextActionMenu({
   children,
 }: TextActionMenuProps) {
   const t = useT();
+  const [menuOpen, setMenuOpen] = useState(false);
   const {
     activeAction,
     close,
@@ -102,8 +103,9 @@ export function TextActionMenu({
         )}
       </div>
 
-      {/* Action menu dropdown */}
-      <Popover>
+      {/* Action menu dropdown — controlled so any option click closes it
+          immediately (Radix popovers don't auto-close on item click). */}
+      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100" aria-label={t('action.more')}>
           <MoreVertical className="h-4 w-4" />
         </PopoverTrigger>
@@ -111,7 +113,10 @@ export function TextActionMenu({
           {menuItems.map((item) => (
             <button
               key={item.kind}
-              onClick={item.onClick}
+              onClick={() => {
+                setMenuOpen(false);
+                item.onClick();
+              }}
               disabled={item.loading}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-50"
             >
