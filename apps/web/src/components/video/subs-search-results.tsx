@@ -626,24 +626,17 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return result;
   }, [videos, listSearch, listSort, term]);
 
-  // Per-row context segments (prev + match + next), each flagged with whether
-  // it contains a search term. Translations are requested per segment so the
-  // translation can mirror the muted/normal treatment of the original.
+  // Per-row segments — the matched line only (no prev/next context in the
+  // list), flagged with whether it contains a search term. Translations are
+  // requested per segment so the translation can mirror the muted/normal
+  // treatment of the original.
   const rowSegments = useMemo(
     () =>
       filteredVideos.map((video) => {
         const ml = video.subs_l2[video.matchLineIndex];
         const segs: { text: string; hasTerm: boolean }[] = [];
-        if (video.matchLineIndex > 0) {
-          const prev = video.subs_l2[video.matchLineIndex - 1]?.line ?? '';
-          if (prev) segs.push({ text: prev, hasTerm: lineHasAnyTerm(prev, highlightTerms) });
-        }
         const match = ml?.line ?? '';
         if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, highlightTerms) });
-        if (video.matchLineIndex < video.subs_l2.length - 1) {
-          const next = video.subs_l2[video.matchLineIndex + 1]?.line ?? '';
-          if (next) segs.push({ text: next, hasTerm: lineHasAnyTerm(next, highlightTerms) });
-        }
         return segs;
       }),
     [filteredVideos, highlightTerms],
