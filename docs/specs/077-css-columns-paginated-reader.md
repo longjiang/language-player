@@ -175,9 +175,9 @@ interface ReaderLocation { streamIndex: number; offset: number }  // block index
 `jumpTo(location)` — one path for every navigation source:
 
 1. **Estimate** the target page: `p = floor(charsBefore(location) / charsPerPage)` (same function `use-paginated-book.estimatePageNumber` uses today).
-2. **Set the window** around page `p` (§6.1) and rebuild (double-buffered).
-3. **Measure**: read geometry; the exact page of the target block = `globalPageOf(block)` from the measured break list.
-4. If the target block starts mid-window, no further work. If the estimate placed the target outside the measured range (rare — estimate error), extend/recenter and re-measure once.
+2. **Set the window starting at the target block** (§6.1) and rebuild (double-buffered): the anchor becomes the window's first block, so its first column — the revealed page — **begins with the clicked chapter** (real-reader behavior; the previous paginator anchored its window at the location too). Landing on the page merely *containing* the target would leave it at the bottom of a page starting with the previous chapter. Forward/backward recenters keep the anchor in the window's middle band.
+3. **Measure**: read geometry; the revealed page = the target block itself (the window start); its page number = `globalPageOf(block)` from the measured break list.
+4. If the estimate placed the target outside the measured range (rare — estimate error), extend/recenter and re-measure once.
 5. **Refine to char offset** only when a highlight must land on the exact character (§7.4). Otherwise block-start page is sufficient.
 
 The page counter shows the measured page number after step 3; between steps 1 and 3 it may show the estimate briefly (the existing `n / ~N` affordance already signals "estimate").

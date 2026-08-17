@@ -362,12 +362,23 @@ export function useCssColumnsPager<B>(
       const behindChars = (PAGES_BEHIND + 1) * div;
       const aheadChars = (PAGES_AHEAD + 2) * div;
       const anchorChars = cb(safeAnchor);
-      let winStart = blockIndexAtChars(stream.blockCount, cb, Math.max(0, anchorChars - behindChars));
-      // Snap the window start to a verified page start when the candidate is
-      // inside or near measured territory, so page numbers stay exact.
-      const estBlocksPerPage = Math.max(8, Math.round(div / EST_BLOCK_CHARS));
-      const snap = lastBreakAtOrBefore(globalBreaksRef.current, winStart);
-      if (snap !== null && winStart - snap <= 2 * estBlocksPerPage) winStart = snap;
+      // Jumps (TOC/search/link/restore) put the target AT THE TOP of the
+      // revealed page: the window starts at the anchor, so its first column
+      // begins with the clicked chapter — matching real readers. Landing on
+      // the page merely CONTAINING the target would leave it at the bottom
+      // of a page that starts with the previous chapter. Forward/backward
+      // recenters keep the anchor in the window's middle band.
+      const isJump = mode === 'jump' || mode === 'restore';
+      let winStart = isJump
+        ? safeAnchor
+        : blockIndexAtChars(stream.blockCount, cb, Math.max(0, anchorChars - behindChars));
+      if (!isJump) {
+        // Snap the window start to a verified page start when the candidate
+        // is inside or near measured territory, so page numbers stay exact.
+        const estBlocksPerPage = Math.max(8, Math.round(div / EST_BLOCK_CHARS));
+        const snap = lastBreakAtOrBefore(globalBreaksRef.current, winStart);
+        if (snap !== null && winStart - snap <= 2 * estBlocksPerPage) winStart = snap;
+      }
       const winEnd = Math.min(
         stream.blockCount,
         blockIndexAtChars(stream.blockCount, cb, anchorChars + aheadChars) + 1,
