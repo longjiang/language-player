@@ -53,6 +53,9 @@ interface PaginatedReaderProps<B> {
   layoutIdentity?: string | number;
   /** RTL books mirror the page column direction. */
   rtl?: boolean;
+  /** Content language / direction (applied to the pager containers). */
+  lang?: string;
+  dir?: 'ltr' | 'rtl';
   renderBlock: (block: B, streamIndex: number, ctx: BlockRenderContext) => ReactNode;
   onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
@@ -75,6 +78,8 @@ export function PaginatedReader<B>({
   locationNonce,
   layoutIdentity,
   rtl = false,
+  lang,
+  dir,
   renderBlock,
   onLemmatize,
   onPageTranslate,
@@ -265,7 +270,7 @@ export function PaginatedReader<B>({
       {hintRow}
       <div ref={viewportRef} className="relative min-h-0 flex-1 overflow-hidden">
         {active ? (
-          <div ref={activePagerRef} style={pagerStyle}>
+          <div ref={activePagerRef} style={pagerStyle} lang={lang} dir={dir}>
             {active.blocks.map((b, i) => wrapBlock(b, active.winStart + i))}
           </div>
         ) : (
@@ -274,7 +279,7 @@ export function PaginatedReader<B>({
           </div>
         )}
         {pending && (
-          <div ref={pendingPagerRef} aria-hidden="true" style={{ ...pagerStyle, visibility: 'hidden' }}>
+          <div ref={pendingPagerRef} aria-hidden="true" style={{ ...pagerStyle, visibility: 'hidden' }} lang={lang} dir={dir}>
             {pending.blocks.map((b, i) => wrapBlock(b, pending.winStart + i))}
           </div>
         )}

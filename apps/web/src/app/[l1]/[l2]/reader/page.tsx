@@ -57,7 +57,6 @@ export default function ReaderPage() {
   const [translation, setTranslation] = useState('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
-  const [translating, setTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('read');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -301,7 +300,6 @@ export default function ReaderPage() {
             l2={l2} l1={l1}
             text={text}
             loading={loading} activeTab={activeTab}
-            translating={translating}
             blocks={blocks}
             ctx={ctx}
             hideModeTabs={currentNoteId == null}
@@ -323,15 +321,12 @@ export default function ReaderPage() {
               return data?.results ?? [];
             }}
             onPageTranslate={async (texts) => {
-              setTranslating(true);
               try {
                 const { byKey } = await translateTextsKeyed(texts, l1.code, l2.code);
                 return byKey;
               } catch (e: any) {
                 setError(e?.message || 'Translation failed');
                 return {};
-              } finally {
-                setTranslating(false);
               }
             }}
           />
