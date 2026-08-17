@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { useColorScheme } from 'nativewind';
 import { colors } from '@langplayer/shared';
 import { semanticColorsForMobile, hslToHex } from '@langplayer/shared';
@@ -14,6 +15,17 @@ import { isNativeRubyActive, isNativeRubyParagraphActive } from '@/components/Ru
 export const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
 /** Whether the native paragraph ruby renderer is linked in this build. */
 export const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
+
+/**
+ * Platform-specific font family for a typeFace display setting (serif /
+ * sans-serif): real named fonts on iOS (Georgia / Avenir Next), generic
+ * families on Android. undefined for the 'default' typeface.
+ */
+export function typeFaceFontFamily(typeFace: 'default' | 'serif' | 'sans-serif'): string | undefined {
+  if (typeFace === 'serif') return Platform.OS === 'ios' ? 'Georgia' : 'serif';
+  if (typeFace === 'sans-serif') return Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif';
+  return undefined;
+}
 
 /** RTL-script languages: the View-based ruby layout must reverse its flex
  *  row, otherwise words and their readings render in mirrored (LTR) order. */
