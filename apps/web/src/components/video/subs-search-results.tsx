@@ -172,6 +172,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Scroll container for the multiline transcript — keeps auto-scroll inside
   // the card instead of scrolling the whole page.
   const subtitleScrollRef = useRef<HTMLDivElement>(null);
+  const handleToggleSubtitleMode = useCallback(() => {
+    setSubtitleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
+  }, []);
 
   // Visible results: drop videos whose embeds failed, then apply the free
   // quota (first 5) to the *playable* list so skipped videos don't consume a
@@ -846,6 +849,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           onNextLine={goToNextLine}
           onPreviousVideo={goToPrevious}
           onNextVideo={goToNext}
+          onTogglePanel={handleToggleSubtitleMode}
+          panelOpen={subtitleMode === 'multiline'}
           hasPreviousLine={hasPreviousLine}
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
@@ -855,32 +860,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             total: videos.length,
           })}
         />
-      </div>
-
-      {/* ── Subtitle display mode toggle ── */}
-      <div className="flex items-center justify-center border-b border-border px-2 py-1">
-        <div className="inline-flex items-center rounded-full bg-muted p-0.5">
-          <button
-            onClick={() => setSubtitleMode('singleline')}
-            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-              subtitleMode === 'singleline'
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t('label.subtitles')}
-          </button>
-          <button
-            onClick={() => setSubtitleMode('multiline')}
-            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-              subtitleMode === 'multiline'
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t('title.transcript')}
-          </button>
-        </div>
       </div>
 
       {/* ── Subtitle display (single-line follows playback / full transcript) ── */}
