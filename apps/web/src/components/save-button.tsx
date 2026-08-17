@@ -98,6 +98,12 @@ export function SaveButton({ wordId, head, context, forms, size = 'icon' }: Save
 
     setSaving(true);
     const allForms = forms ?? (await fetchInflectedForms(head, l2Code));
+    // The instance form must be the SURFACE the user actually saved
+    // (context.form — e.g. kana しかるべき), not the kanji head. Review
+    // highlighting matches instance forms against the context sentence
+    // tokens, so storing the head here makes a kana surface in the sentence
+    // un-highlightable (しかる + べき never match 然るべき).
+    const surfaceForm = context.form || head;
     saveWord(l2Code, {
       id: wordId,
       forms: allForms,
@@ -106,7 +112,7 @@ export function SaveButton({ wordId, head, context, forms, size = 'icon' }: Save
       instances: [
         {
           timestamp: Date.now(),
-          form: head,
+          form: surfaceForm,
           context,
         },
       ],

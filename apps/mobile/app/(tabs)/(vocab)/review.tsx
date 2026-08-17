@@ -1053,7 +1053,16 @@ export default function ReviewScreen() {
                   text={displayInstance.context.text}
                   l2Code={l2Code}
                   highlightTerms={Array.from(new Set(
-                    [displayInstance.form, ...(savedWord.forms ?? []), savedWord.head ?? ''].filter(Boolean),
+                    [
+                      displayInstance.form,
+                      // The record's context.form is the exact surface saved
+                      // (e.g. kana しかるべき) even when the instance form
+                      // falls back to the head (然るべき) — the sentence
+                      // contains the surface, so it must be matchable.
+                      savedWord.context?.form ?? '',
+                      ...(savedWord.forms ?? []),
+                      savedWord.head ?? '',
+                    ].filter((v): v is string => !!v),
                   ))}
                   highlightEntryIds={[savedWord.id]}
                   phoneticsOnHighlight={showTabs}

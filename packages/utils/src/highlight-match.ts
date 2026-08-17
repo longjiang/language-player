@@ -36,3 +36,28 @@ export function tokenMatchesAnyForm(
     return forms.has(lemma) || forms.has(l.lemma);
   });
 }
+
+/** The subset of a DictionaryEntry that can supply kana/alternate surfaces. */
+export interface KanaEntryForm {
+  alternate?: string | null;
+  phonetic_detail?: { kana?: string } | null;
+}
+
+/**
+ * Kana/alternate surface forms of dictionary entries — the bridge between a
+ * kanji headword and a kana surface in a context sentence (e.g. the entry
+ * 然るべき carries alternate/phonetic_detail.kana しかるべき, which is what
+ * actually appears in the sentence). Used by highlight matching: the forms
+ * are appended to the matchable terms so しかる + べき can merge and match.
+ */
+export function kanaFormsForEntries(entries: KanaEntryForm[] | undefined): string[] {
+  if (!entries) return [];
+  const out: string[] = [];
+  for (const e of entries) {
+    if (typeof e.alternate === 'string' && e.alternate) out.push(e.alternate);
+    if (typeof e.phonetic_detail?.kana === 'string' && e.phonetic_detail.kana) {
+      out.push(e.phonetic_detail.kana);
+    }
+  }
+  return [...new Set(out)];
+}

@@ -24,10 +24,11 @@ export default function Index() {
       // Not authenticated → show login
       router.replace('/login');
     } else {
-      // Authenticated → tokenizer test (debug default; replace Explore while
-      // debugging native ruby/tokenization).
+      // Authenticated → Explore (media home). The tokenizer-test screen
+      // remains reachable from the profile tab for ruby/tokenization
+      // debugging.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(me)/tokenizer-test' as any);
+      router.replace('/(tabs)/(media)' as any);
     }
   }, [user, authLoading]);
 
