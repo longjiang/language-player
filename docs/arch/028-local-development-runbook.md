@@ -6,7 +6,7 @@
 - **Type**: reference
 - **Status**: draft
 - **Created**: 2026-08-13
-- **Last Updated**: 2026-08-13
+- **Last Updated**: 2026-08-16
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (active), Admin (active), Mobile (active), Chrome Extension (active), Classic Nuxt (reference), Flask backend
 - **See also**:
@@ -276,14 +276,25 @@ devices only** — for the iOS Simulator use Workflow 1 (Expo Go).
 #### Check for an existing build first
 
 A dev build may already exist on this machine — don't rebuild if a usable one
-is found:
+is found. Check in this order:
 
-- Search the repo/Desktop first: `.app`/`.ipa`/`.xcarchive` under
-  `apps/mobile/ios/build`, `~/Desktop`, and Xcode DerivedData/Archives.
-- Then check CoreDevice's app-install cache:
-  `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app`
-  — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was
-  found there after the repo/Desktop check came back empty.
+1. **The dev build ledger** (authoritative since 2026-08-16, SPEC-076 § 4.8):
+   `docs/versioning/dev-build-ledger.md` lists every tracked dev build with
+   its exact git commit, artifact name, and SHA-256. The **3 most recent
+   builds** (current + 2 previous) are recoverable at the repo-local,
+   gitignored `.dev-builds/` (e.g. `lp-dev-3-ios-device-88135bde47af.zip`).
+   Prove what a build mirrors with:
+   `node scripts/verify-dev-build.mjs latest` (re-hashes the artifact,
+   checks `ip.txt` on device builds, confirms the commit exists in git).
+   Only build via `scripts/dev-build.mjs` when none of the retained builds
+   suits (or when native code changed since the last one).
+2. Then fall back to the older searches: `.app`/`.ipa`/`.xcarchive` under
+   `apps/mobile/ios/build`, `apps/mobile/build/devbuild` (dev-build outputs),
+   `~/Desktop`, and Xcode DerivedData/Archives.
+3. Then check CoreDevice's app-install cache:
+   `~/Library/Containers/com.apple.CoreDevice.CoreDeviceService/Data/Library/Caches/AppInstallationBinaryDeltas/<bundle-id>/.../Stashed/*.app`
+   — e.g. a verified `ca.zerotohero.go` debug device build from 2026-08-11 was
+   found there after the repo/Desktop check came back empty.
 
 **Sideload a cached build (step by step, verified 2026-08-14):**
 
@@ -312,11 +323,12 @@ iPad with:
 `xcrun devicectl device install app --device 2DFF9AA2-B075-5A68-8299-65C16DF38803 .../Stashed/LanguagePlayer.app`
 
 **Caveats when reusing a cached build:**
-- It can be stale — the 2026-08-11 cache is **3.0.0**, not the current 3.1.0.
+- It can be stale — the 2026-08-11 cache is **3.0.0**, not the current 3.1.2.
 - Debug builds have **no embedded JS bundle**; they load it from Metro. Metro
   must be running and `EXPO_PUBLIC_API_URL` must point at the Mac's LAN IP
   (never `127.0.0.1`) or the app cannot reach the Flask backend from the
-  device.
+  device. (For builds made by `dev-build.mjs`, `ip.txt` is baked in and the
+  app finds Metro at `http://<mac-lan-ip>:8081` automatically.)
 - Installing a dev build replaces any installed app with the same bundle ID
   (TestFlight/App Store included) — they cannot coexist on one device.
 
@@ -348,6 +360,20 @@ EXPO_PUBLIC_API_URL=http://<mac-lan-ip>:5001 npx expo run:ios --device
 
 Then open the app on the device — it connects to Metro over the LAN and loads
 the bundle.
+
+**Tracked alternative (recommended, SPEC-076 § 4.8):** build the same Debug
+app, record it in the dev ledger, and retain the 3-build window in one step:
+
+```bash
+node scripts/dev-build.mjs ios-device     # Debug build, ledger row, .dev-builds/
+node scripts/verify-dev-build.mjs latest  # prove which commit it mirrors
+```
+
+`dev-build.mjs` refuses a dirty git tree (a build must mirror a commit "for
+sure"), requires Metro already running (`npx expo start` above), and bakes
+`ip.txt` so the device finds Metro at `http://<mac-lan-ip>:8081`. To show the
+exact commit in the About dialog, start Metro with
+`EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start`.
 
 #### Android (physical device)
 
