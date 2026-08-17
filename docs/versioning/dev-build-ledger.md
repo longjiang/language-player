@@ -23,4 +23,6 @@ does not mirror the commit for sure.
 | N | Platform | Git commit | Describe | Date | Artifact | SHA-256 | Status |
 |---|---|---|---|---|---|---|---|
 
+
 | 1 | ios-device | 3c98c0bd6865d0a09c98cfec92264fcacc86f069 | v3.1.2-5-g3c98c0bd | 2026-08-17 | lp-dev-1-ios-device-3c98c0bd6865.zip | 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2 | active |
+| 2 | ios-device | ddb8cc50f8d93070870689a94ba5bb0c2d279aad | v3.1.2-7-gddb8cc50 | 2026-08-17 | lp-dev-2-ios-device-ddb8cc50f8d9.zip | 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea | active |
