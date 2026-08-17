@@ -79,6 +79,7 @@
 - ✅ TV Shows page
 - ✅ Live TV page
 - ✅ Reader and Notes
+- ✅ Shared CSS-columns paginated reader across notes / web-reader / EPUB (SPEC-077)
 - ✅ Music page
 - ✅ Level system
 - ✅ Documentation / Help

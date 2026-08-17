@@ -202,6 +202,7 @@ There is no "load a chapter" anymore. The reader just renders blocks around a lo
 Page breaks are computed over the **global block stream** (all linear spine items in order), not per chapter:
 
 - Extract the existing hidden-measuring-view logic from `ReaderPanel` into a reusable `usePaginatedBlocks` hook.
+  **Superseded (2026-08-16)** — this extraction direction did not ship. [SPEC-077](077-css-columns-paginated-reader.md) replaced measurement-based pagination entirely with a shared CSS-columns pager (`useCssColumnsPager` + `PaginatedReader`, consumed by all three web readers through `BlockStream`); `use-paginated-book.ts` was deleted.
 - The hook keeps: measured block heights (cache in memory), a sorted list of page-start block indices, and the viewport size (`clientWidth`, `clientHeight`, font-size settings from `SettingsContext`).
 - Breaks are computed **lazily**: to find the page containing a location, measure forward/backward from the nearest known page start in chunks (double-rAF per chunk, the pattern the reader already uses). Page breaks between spine items are not forced — a page may span a spine boundary, exactly like a real continuous reader.
 - On resize/font change: invalidate breaks and heights; recompute lazily from the current location.
