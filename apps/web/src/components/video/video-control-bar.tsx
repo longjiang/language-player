@@ -36,6 +36,10 @@ interface VideoControlBarProps {
   onNextLine?: () => void;
   onRewind?: () => void;
   onTogglePanel?: () => void;
+  /** Whether the side panel (transcript) is currently open. When provided,
+   *  the panel toggle icon reflects the state (PanelRightClose when open,
+   *  PanelRightOpen when closed). Defaults to the watch page's behavior. */
+  panelOpen?: boolean;
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
   onSeekBarClick?: (fraction: number) => void;
@@ -69,6 +73,7 @@ export function VideoControlBar({
   onNextLine,
   onRewind,
   onTogglePanel,
+  panelOpen,
   onPreviousVideo,
   onNextVideo,
   onSeekBarClick,
@@ -172,8 +177,11 @@ export function VideoControlBar({
             className="h-7 w-7 text-muted-foreground hover:text-foreground"
             onClick={onTogglePanel}
             title={t('a11y.video_info')}
+            aria-pressed={panelOpen}
           >
-            <PanelRightClose className="h-3.5 w-3.5" />
+            {panelOpen === false
+              ? <PanelRightOpen className="h-3.5 w-3.5" />
+              : <PanelRightClose className="h-3.5 w-3.5" />}
           </Button>
         )}
         {onToggleLike && (
