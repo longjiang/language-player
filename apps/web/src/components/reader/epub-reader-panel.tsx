@@ -240,7 +240,7 @@ export function EpubReaderPanel({
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
         [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0
-        [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_p]:mb-0 [&_p]:leading-relaxed [&_p]:indent-[1em]
         [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-0
         [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-0
         [&_li]:mb-0 [&_li]:leading-relaxed
@@ -257,7 +257,7 @@ export function EpubReaderPanel({
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
         [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0
-        [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_p]:mb-0 [&_p]:leading-relaxed [&_p]:indent-[1em]
         [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-0
         [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-0
         [&_li]:mb-0 [&_li]:leading-relaxed
