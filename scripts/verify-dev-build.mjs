@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Verify a dev build against its ledger row AND the artifact itself —
+ * Verify a dev build against its unified ledger row AND the artifact itself —
  * the "know for sure which commit this build mirrors" gate (SPEC-076 § 4.8).
  *
  * Usage:
@@ -8,10 +8,10 @@
  *
  * "Dev build" = Debug build (Metro-connected): JS is served by Metro at
  * runtime, so the artifact is the compiled native shell. Checks, in order:
- *   1. The ledger row exists.
- *   2. The artifact exists (in $LP_DEV_BUILD_DIR / .dev-builds/,
- *      or the --artifact override).
- *   3. The artifact's SHA-256 matches the ledger row.
+ *   1. The ledger row exists (dev tokens in docs/versioning/build-ledger.md).
+ *   2. The artifact exists (in $LP_DEV_BUILD_DIR / .dev-builds/, or the
+ *      --artifact override; archived builds are looked up in archive/ too).
+ *   3. The artifact's SHA-256 matches the ledger token.
  *   4. For ios-device Debug zips: ip.txt (Metro LAN host) is present and a
  *      valid IP. For Release-config artifacts that still contain a JS
  *      bundle, the recorded commit is grepped out of it.
@@ -26,12 +26,12 @@ import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { parseLedger, parseDevCell } from './version-lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
-const LEDGER = join(ROOT, 'docs/versioning/dev-build-ledger.md');
 const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(ROOT, '.dev-builds');
-const ROW_RE = /^\|\s*(\d+)\s*\|/;
+const ARCHIVE_DIR = join(STORE_DIR, 'archive');
 
 function fail(msg) {
   console.error(`❌ ${msg}`);
@@ -54,55 +54,46 @@ const artifactOverride = (() => {
   return i >= 0 ? args[i + 1] : null;
 })();
 
-if (!existsSync(LEDGER)) fail(`No ledger at ${LEDGER} — nothing to verify.`);
-
-const rows = readFileSync(LEDGER, 'utf8')
-  .split('\n')
-  .filter((l) => ROW_RE.test(l))
-  .map((line) => {
-    const c = line.split('|').map((x) => x.trim());
-    return {
-      n: Number(c[1]),
-      platform: c[2],
-      commit: c[3],
-      describe: c[4],
-      date: c[5],
-      artifact: c[6],
-      sha256: c[7],
-      status: c[8],
-    };
-  });
-
-const row =
+const rows = parseLedger();
+const builds = rows.flatMap((row) => parseDevCell(row.dev).map((d) => ({ ...d, commit: row.commit })));
+const build =
   target === 'latest'
-    ? rows.filter((r) => r.status.startsWith('active')).sort((a, b) => b.n - a.n)[0]
-    : rows.find((r) => r.n === Number(target));
+    ? builds.filter((b) => b.status.startsWith('active')).sort((a, b) => b.n - a.n)[0]
+    : builds.find((b) => b.n === Number(target));
 
-if (!row) fail(`Ledger row ${target} not found.`);
-if (row.status.startsWith('archived')) {
-  console.warn(`⚠  Row ${row.n} is archived — artifact lives in ${join(STORE_DIR, 'archive', row.artifact)}`);
+if (!build) fail(`Dev build ${target} not found in docs/versioning/build-ledger.md.`);
+
+const shortCommit = build.commit;
+let fullCommit = shortCommit;
+try {
+  fullCommit = sh(`git rev-parse --verify ${shortCommit}^{commit}`);
+} catch {
+  // reported by the git object check below
 }
 
-console.log(`Dev build ${row.n} — ${row.platform} (${row.date})`);
-console.log(`  ledger commit : ${row.commit} (${row.describe})`);
-console.log(`  artifact      : ${row.artifact}`);
+console.log(`Dev build ${build.n} — ${build.kind} (${build.status})`);
+console.log(`  ledger commit : ${shortCommit}${build.status.startsWith('archived') ? ' ⚠ archived' : ''}`);
+console.log(`  artifact      : ${build.artifact}`);
 
 const errors = [];
 
-// 1+2. Artifact exists.
-const artifactPath = artifactOverride || join(STORE_DIR, row.artifact);
-if (!existsSync(artifactPath)) {
-  errors.push(`artifact not found at ${artifactPath}`);
+// 1+2. Artifact exists (store dir, archive/ for archived builds, or override).
+const candidates = [artifactOverride, join(STORE_DIR, build.artifact), join(ARCHIVE_DIR, build.artifact)]
+  .filter(Boolean);
+const artifactPath = candidates.find((p) => existsSync(p));
+if (!artifactPath) {
+  errors.push(`artifact not found in .dev-builds/ or archive/ (${build.artifact})`);
 } else {
   // 3. SHA-256 matches.
   const digest = sha256(artifactPath);
-  const match = digest === row.sha256;
+  const match = digest === build.sha;
   console.log(`  sha256        : ${digest} ${match ? '✓ matches ledger' : '✗ MISMATCH'}`);
-  if (!match) errors.push('artifact SHA-256 does not match the ledger row');
+  if (!match) errors.push('artifact SHA-256 does not match the ledger token');
 
-  // 4. ip.txt (Metro LAN host) is written by RN for device Debug builds —
-  // checked independently of the bundle (Debug builds have no bundle).
-  if (row.platform === 'ios-device') {
+  // 4a. ip.txt (Metro LAN host) — RN writes it for Debug device builds.
+  // Release-config artifacts (legacy dev 1/2) never had one; they are
+  // covered by the embedded-bundle grep instead.
+  if (build.kind === 'Debug' && build.artifact.includes('-ios-device-')) {
     try {
       const listing = sh(`unzip -l '${artifactPath}'`);
       const ipMatch = listing.match(/[^\s]+ip\.txt/);
@@ -110,7 +101,7 @@ if (!existsSync(artifactPath)) {
         const ip = sh(`unzip -p '${artifactPath}' '${ipMatch[0]}'`).trim();
         const looksValid = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
         console.log(`  ip.txt        : ${looksValid ? `✓ ${ip}` : `✗ '${ip}' is not an IP`}`);
-        if (!looksValid) errors.push(`ip.txt in the artifact does not contain a valid Metro host IP`);
+        if (!looksValid) errors.push('ip.txt in the artifact does not contain a valid Metro host IP');
       } else {
         console.log('  ip.txt        : ⚠ absent (Debug device build should contain it)');
         errors.push('ip.txt missing — the app cannot find Metro on the LAN');
@@ -120,28 +111,19 @@ if (!existsSync(artifactPath)) {
     }
   }
 
-  // 5. Commit SHA embedded in the JS bundle — only when the artifact actually
+  // 4b. Commit SHA embedded in the JS bundle — only when the artifact
   // contains one (Release-config artifacts). Debug builds serve JS from
   // Metro at runtime, so there is nothing to grep. Streamed through the
   // shell (unzip -p | grep) so a megabyte bundle never fills the pipe
   // buffer (ENOBUFS) — only the tiny match count is captured.
   try {
-    let bundlePath = null;
-    if (row.platform === 'android') {
-      const listing = sh(`unzip -l '${artifactPath}'`);
-      if (listing.includes('assets/index.android.bundle')) bundlePath = 'assets/index.android.bundle';
-    } else {
-      const listing = sh(`unzip -l '${artifactPath}'`);
-      const m = listing.match(/[^\s]+main\.jsbundle/);
-      bundlePath = m ? m[0] : null;
-    }
-    if (bundlePath) {
-      const count = Number(
-        sh(`unzip -p '${artifactPath}' '${bundlePath}' | grep -ao '${row.commit}' | wc -l`),
-      );
+    const listing = sh(`unzip -l '${artifactPath}'`);
+    const bundleMatch = listing.match(/[^\s]+main\.jsbundle/) || listing.match(/[^\s]+index\.android\.bundle/);
+    if (bundleMatch) {
+      const count = Number(sh(`unzip -p '${artifactPath}' '${bundleMatch[0]}' | grep -ao '${fullCommit}' | wc -l`));
       const embedded = count > 0;
       console.log(`  embedded sha  : ${embedded ? `✓ found in bundle (${count}×)` : '✗ NOT in bundle'}`);
-      if (!embedded) errors.push(`commit ${row.commit} not found in the artifact's JS bundle`);
+      if (!embedded) errors.push(`commit ${fullCommit} not found in the artifact's JS bundle`);
     } else {
       console.log('  embedded sha  : — (Debug build: JS is served by Metro at runtime; no bundle to grep)');
     }
@@ -152,15 +134,15 @@ if (!existsSync(artifactPath)) {
 
 // 5. Commit exists in git.
 try {
-  const info = sh(`git log -1 --oneline ${row.commit}`);
+  const info = sh(`git log -1 --oneline ${shortCommit}`);
   console.log(`  git object    : ✓ ${info}`);
 } catch {
-  errors.push(`commit ${row.commit} does not exist in this repository`);
+  errors.push(`commit ${shortCommit} does not exist in this repository`);
 }
 
 console.log('');
 if (errors.length > 0) {
   for (const e of errors) console.error(`✖ ${e}`);
-  fail(`Verification FAILED for dev build ${row.n}.`);
+  fail(`Verification FAILED for dev build ${build.n}.`);
 }
-console.log(`✓ Dev build ${row.n} verified — artifact mirrors ${row.commit} (${row.describe}).`);
+console.log(`✓ Dev build ${build.n} verified — artifact mirrors ${shortCommit}.`);

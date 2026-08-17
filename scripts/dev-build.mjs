@@ -25,13 +25,16 @@
  * ios-device; it defaults to the Mac's primary interface IP.
  *
  * Every dev build:
+ *   - is ALWAYS Debug configuration — NEVER Release. Dev builds exist only
+ *     as Metro-connected debug artifacts (SPEC-076 § 4.8);
  *   - refuses a dirty git tree unless --allow-dirty (a dirty build cannot be
- *     said to mirror a commit "for sure"; the row is marked `(dirty)`);
- *   - records a row in docs/versioning/dev-build-ledger.md (number N = last + 1,
+ *     said to mirror a commit "for sure"; the token is marked `(dirty)`);
+ *   - records a dev token in the unified build ledger
+ *     (docs/versioning/build-ledger.md — one row per commit; number N = last + 1,
  *     never reused) with artifact SHA-256;
- *   - keeps only the <--keep> most recent builds (default 3: current + 2
- *     previous) at $LP_DEV_BUILD_DIR or .dev-builds/, moving older
- *     artifacts to archive/ and marking their rows `archived`.
+ *   - keeps only the <--keep> most recent dev builds (default 3: current +
+ *     2 previous) at $LP_DEV_BUILD_DIR or .dev-builds/, moving older
+ *     artifacts to archive/ and marking their tokens `archived`.
  *
  * NOTE on JS config (EXPO_PUBLIC_*): for Debug builds these are inlined by
  * METRO at serve time, not at build time — so start Metro with the env you
@@ -45,19 +48,18 @@
 
 import { execSync } from 'child_process';
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, renameSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { parseLedger, parseDevCell, writeLedger } from './version-lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
 const MOBILE = join(ROOT, 'apps/mobile');
-const LEDGER = join(ROOT, 'docs/versioning/dev-build-ledger.md');
 const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(ROOT, '.dev-builds');
 const ARCHIVE_DIR = join(STORE_DIR, 'archive');
 
 const PLATFORMS = ['ios-sim', 'ios-device', 'android'];
-const ROW_RE = /^\|\s*(\d+)\s*\|/;
 
 // ── Helpers ──────────────────────────────────────
 
@@ -90,42 +92,6 @@ function sha256(file) {
   return createHash('sha256')
     .update(readFileSync(file))
     .digest('hex');
-}
-
-function parseRows() {
-  if (!existsSync(LEDGER)) return { header: [], rows: [] };
-  const lines = readFileSync(LEDGER, 'utf8').split('\n');
-  const header = [];
-  const rows = [];
-  for (const line of lines) {
-    if (!ROW_RE.test(line)) {
-      header.push(line);
-      continue;
-    }
-    const cols = line.split('|').map((c) => c.trim());
-    // [ '', N, platform, commit, describe, date, artifact, sha256, status, '' ]
-    rows.push({
-      n: Number(cols[1]),
-      platform: cols[2],
-      commit: cols[3],
-      describe: cols[4],
-      date: cols[5],
-      artifact: cols[6],
-      sha256: cols[7],
-      status: cols[8],
-    });
-  }
-  return { header, rows };
-}
-
-function renderLedger(header, rows) {
-  const lines = [...header];
-  for (const r of rows) {
-    lines.push(
-      `| ${r.n} | ${r.platform} | ${r.commit} | ${r.describe} | ${r.date} | ${r.artifact} | ${r.sha256} | ${r.status} |`,
-    );
-  }
-  return lines.join('\n') + '\n';
 }
 
 function gitState() {
@@ -181,9 +147,11 @@ if (git.dirty && !allowDirty) {
 }
 const status = git.dirty ? 'active (dirty)' : 'active';
 
-const { header, rows } = parseRows();
-const n = rows.reduce((max, r) => Math.max(max, r.n), 0) + 1;
-const short = git.short;
+const ledger = parseLedger();
+const allDev = ledger.flatMap((r) => parseDevCell(r.dev));
+const n = allDev.reduce((max, d) => Math.max(max, d.n), 0) + 1;
+const short = git.short; // 12 chars — artifact-name convention (e.g. lp-dev-3-ios-device-88135bde47af.zip)
+const commit8 = git.short.slice(0, 8); // ledger row key
 const ext = platform === 'android' ? 'apk' : 'zip';
 const artifactName = `lp-dev-${n}-${platform}-${short}.${ext}`;
 const date = new Date().toISOString().slice(0, 10);
@@ -256,38 +224,47 @@ const digest = sha256(staged);
 console.log(`  staged   : ${staged}`);
 console.log(`  sha256   : ${digest}`);
 
-// ── Record ──────────────────────────────────────
+// ── Record into the unified ledger (one row per commit) ──
 
-rows.push({
-  n,
-  platform,
-  commit: git.commit,
-  describe: git.describe,
-  date,
-  artifact: artifactName,
-  sha256: digest,
-  status,
-});
-writeFileSync(LEDGER, renderLedger(header, rows));
-console.log(`  recorded : docs/versioning/dev-build-ledger.md (N=${n})`);
+const token = `dev ${n} (Debug; ${status}; ${artifactName}; ${digest})`;
+let row = ledger.find((r) => r.commit === commit8);
+if (row) {
+  row.dev = row.dev ? `${row.dev} · ${token}` : token;
+} else {
+  ledger.push({ idx: ledger.length + 1, commit: commit8, date, store: '', dev: token });
+}
+writeLedger(ledger);
+console.log(`  recorded : docs/versioning/build-ledger.md (dev ${n} @ ${commit8})`);
 
-// ── Retention: keep the <keep> newest, archive the rest ──
+// ── Retention: keep the <keep> newest dev builds, archive the rest ──
 
 mkdirSync(ARCHIVE_DIR, { recursive: true });
-const active = rows.filter((r) => r.status.startsWith('active')).sort((a, b) => b.n - a.n);
-let retired = 0;
-for (const r of active.slice(keep)) {
-  const from = join(STORE_DIR, r.artifact);
+const active = allDev.filter((d) => d.status.startsWith('active')).sort((a, b) => b.n - a.n);
+const retired = active.slice(keep);
+let retiredCount = 0;
+for (const d of retired) {
+  const from = join(STORE_DIR, d.artifact);
   if (existsSync(from)) {
-    renameSync(from, join(ARCHIVE_DIR, r.artifact));
-    console.log(`  archived : ${r.artifact} → archive/`);
+    renameSync(from, join(ARCHIVE_DIR, d.artifact));
+    console.log(`  archived : ${d.artifact} → archive/`);
   }
-  r.status = 'archived';
-  retired++;
+  retiredCount++;
 }
-if (retired > 0) {
-  writeFileSync(LEDGER, renderLedger(header, rows));
+if (retiredCount > 0) {
+  const retiredN = new Set(retired.map((d) => d.n));
+  for (const r of ledger) {
+    const tokens = parseDevCell(r.dev);
+    if (tokens.length === 0) continue;
+    r.dev = tokens
+      .map((t) =>
+        retiredN.has(t.n)
+          ? `dev ${t.n} (${t.kind}; archived; ${t.artifact}; ${t.sha})`
+          : `dev ${t.n} (${t.kind}; ${t.status}; ${t.artifact}; ${t.sha})`,
+      )
+      .join(' · ');
+  }
+  writeLedger(ledger);
 }
 
-console.log(`\nDone. ${active.length} active build(s) kept, ${retired} archived.`);
+console.log(`\nDone. ${active.length} active build(s) kept, ${retiredCount} archived.`);
 console.log(`Verify: node scripts/verify-dev-build.mjs ${n}`);

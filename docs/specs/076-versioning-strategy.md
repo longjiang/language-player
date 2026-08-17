@@ -162,10 +162,11 @@ same values. A release script (below) writes:
 N = max(last iOS build number, last Android versionCode) + 1
 ```
 
-Record every store-uploaded build in a ledger
-(`docs/versioning/build-ledger.md`), including testing-track uploads. A
-number is consumed the moment it is uploaded to **any** track of **either**
-store — even if the build is later rejected, archived, or rolled back.
+Record every store-uploaded build in the unified ledger
+(`docs/versioning/build-ledger.md`, store cell of the commit row), including
+testing-track uploads. A number is consumed the moment it is uploaded to
+**any** track of **either** store — even if the build is later rejected,
+archived, or rolled back.
 
 This mirrors Flutter's `1.2.3+45` model and eliminates the "did I bump iOS
 but not Android?" class of rejection. There is only one number to get right,
@@ -316,35 +317,44 @@ identified by deploy ID + git SHA); only product releases get tags.
 **Adopted 2026-08-16, corrected 2026-08-17.** Terminology: **"dev build"
 means a DEBUG build** — the Metro-connected development build (JS served by
 Metro at runtime, Fast Refresh), i.e. the artifact `npx expo run:ios --device`
-/ `run:android` produce. Dev builds are tracked in
-`docs/versioning/dev-build-ledger.md`, in the same spirit as the store
-ledger, but with their own independent numbering (`dev N`) — they never
+/ `run:android` produce. **Dev builds are ALWAYS Debug configuration.
+Release-configuration builds are only ever store builds — never dev builds.**
+
+**One ledger for everything.** Both store/TestFlight uploads and dev builds
+live in the single **`docs/versioning/build-ledger.md`**, one row per commit,
+chronological. Each row has a store cell (`3.1.2 — iOS TestFlight (b5,
+consumed) · …`) and a dev cell (`dev 4 (Debug; active; artifact; sha256) ·
+…`). Dev builds keep their own independent numbering (`dev N`) — they never
 consume store build numbers (§ 4.2).
 
-Each ledger row records the exact git commit the artifact's native shell
-mirrors (full SHA + `git describe`), the build date, the artifact name, and
-the artifact's SHA-256. Because a Debug build serves JS from Metro at
-runtime, the committed state covers the native binary + app config, not the
-JS (the JS is whatever Metro serves at launch). For the JS layer to be
-pinned too, start Metro with the commit you intend to test — see the
-`EXPO_PUBLIC_GIT_SHA` note below.
+Each dev token records the exact git commit the artifact's native shell
+mirrors, the artifact name, and the artifact's SHA-256. Because a Debug
+build serves JS from Metro at runtime, the committed state covers the native
+binary + app config, not the JS (the JS is whatever Metro serves at launch).
+For the JS layer to be pinned too, start Metro with the commit you intend to
+test — see the `EXPO_PUBLIC_GIT_SHA` note below.
 
-Retention: the **3 most recent builds (current + 2 previous)** stay
-recoverable at the repo-local `.dev-builds/` (gitignored; override: `LP_DEV_BUILD_DIR`).
-Recording a new build moves the oldest beyond the window into `archive/` and
-marks its row `archived`. Dev build numbers are never reused.
+Retention: the **3 most recent dev builds (current + 2 previous)** stay
+recoverable at the repo-local `.dev-builds/` (gitignored; override:
+`LP_DEV_BUILD_DIR`). Recording a new dev build moves the oldest beyond the
+window into `archive/` and marks its token `archived`. Dev build numbers are
+never reused. (The ledger's dev 1/2 tokens are the only historical
+Release-config dev builds, legacy + archived — none will ever be added
+again.)
 
 Rules:
 
+- **Never Release.** Dev builds are built with `-configuration Debug` /
+  `assembleDebug` only. A Release-configuration build is a store build and
+  belongs in the store cell.
 - **Clean tree only.** A dev build mirrors a commit "for sure" only when the
   tree was clean at build time. `dev-build.mjs` refuses a dirty tree unless
   `--allow-dirty` is passed; dirty builds are marked `(dirty)` in the ledger
   and are not treated as mirroring their commit.
-- **Debug configuration.** `dev-build.mjs` builds `-configuration Debug`
-  (iOS) / `assembleDebug` (Android). The JS bundle is **not** embedded — the
-  app loads it from Metro (Fast Refresh). An iOS device Debug build gets
-  `ip.txt` (the Mac's LAN IP) baked in by RN's `react-native-xcode.sh`, so it
-  connects to Metro at `http://<mac-lan-ip>:8081` automatically.
+- **Debug configuration.** The JS bundle is **not** embedded — the app loads
+  it from Metro (Fast Refresh). An iOS device Debug build gets `ip.txt` (the
+  Mac's LAN IP) baked in by RN's `react-native-xcode.sh`, so it connects to
+  Metro at `http://<mac-lan-ip>:8081` automatically.
 - **Metro must be running.** A Debug build is useless without Metro:
   `npx expo start --host lan` on the Mac (one instance only, per repo
   conventions). For Android, `adb reverse tcp:8081 tcp:8081` (USB) or the
@@ -366,10 +376,10 @@ Rules:
 |---|---|
 | `bump-product-version.mjs [major\|minor\|patch]` | Bumps `PRODUCT_VERSION` in `packages/shared/src/version.json` and `apps/web/package.json` together; `apps/mobile/app.config.js` picks it up automatically; fails if they drift |
 | `next-build.mjs` | Reads the ledger, prints `N = max(last iOS, last Android) + 1`, writes it into `packages/shared/src/version.json` (`PRODUCT_BUILD_NUMBER`), which feeds both `ios.buildNumber` and `android.versionCode` via `app.config.js` |
-| `record-build.mjs <N> <platform> <track> <version> <date>` | Appends a row to `docs/versioning/build-ledger.md`; refuses to add a duplicate or lower number |
+| `record-build.mjs <N> <platform> <track> <version> [date]` | Records a consumed store build into the unified `docs/versioning/build-ledger.md` (store cell of the commit row, from `--tag` or HEAD); refuses a duplicate or lower number |
 | `tag-release.mjs [--release] [--extension] [--milestone <N>]` | Creates `v<version>-b<N>` at HEAD before upload; `--release` also creates `v<version>`, `--extension` also creates `ext-v<manifest version>`, `--milestone <N>` creates `v<version>-m<N>` |
 | `verify-version.mjs` | Pre-upload gate (below); exits non-zero on any mismatch |
-| `dev-build.mjs <ios-sim\|ios-device\|android>` | Builds a dev (Debug) build — Metro-connected, `-configuration Debug` / `assembleDebug` — records it in `docs/versioning/dev-build-ledger.md`, and retains only the 3 most recent artifacts (`--keep N`, `--allow-dirty`, `--dry-run`) |
+| `dev-build.mjs <ios-sim\|ios-device\|android>` | Builds a dev (Debug) build — Metro-connected, `-configuration Debug` / `assembleDebug`, NEVER Release — records a dev token in the unified `docs/versioning/build-ledger.md`, and retains only the 3 most recent dev artifacts (`--keep N`, `--allow-dirty`, `--dry-run`) |
 | `verify-dev-build.mjs <N\|latest>` | Verifies a dev build from the artifact: SHA-256 vs ledger, `ip.txt` Metro host on device builds, embedded commit in the bundle when present, commit exists in git |
 | `upload.mjs ios <ipa> \| android <aab>` | Browserless store upload without EAS/Fastlane: Transporter CLI for App Store Connect, Play Developer API v3 (service-account JWT) for Google Play (§ 5.3.2) |
 
