@@ -13,6 +13,8 @@
 The EPUB Reader lets users upload `.epub` ebooks, navigate their table of contents, and read chapters with interactive word lookup (lemmatization + dictionary popup) and optional translation — the same language-learning features available for video subtitles and web articles. Both web and mobile share identical UX and a common book model (spine flow + TOC bookmarks + block locations), differing only in the I/O layer: web layers the whole-book model on `epubjs` (SPEC-032, ADR-0022); mobile uses JSZip + a hand-rolled XML parser (ADR-0012).
 
 > **SPEC-032 (2026-08-02)** — The web reader was re-engineered from "chapter at a time" to the whole-book model: TOC entries are bookmarks into the spine flow, every navigation/search/restore action resolves to a `BookLocation { spineIndex, blockIndex, offset }`, and pagination is continuous across the entire book. The spine-range concatenation algorithm below is **obsolete on web** (kept for historical context; mobile still uses it).
+>
+> **SPEC-077 (2026-08-16)** — Pagination across all three web readers (notes, web-reader, EPUB) was unified on a shared CSS-columns pager: pages are multicol columns, page breaks come from the browser's column layout (read back from geometry, never measured), only the estimated previous/next few pages are mounted ("the window"), and turns inside the window are pure CSS transforms. The EPUB reader consumes the shared panel through `EpubBlockStream` (whole spine as one block stream); `use-paginated-book.ts` and the hidden measuring window are gone.
 
 Every book the user opens gets its own persistent handle on web (an IndexedDB record keyed by a SHA-256 hash of the file), so returning to the reader shows a **bookshelf** of covers sorted by last read, each with a percentage-completed indicator derived from character counts. Opening a book resumes at its saved chapter and page instead of reopening the same book automatically. Mobile still stores a single `epub_state.json` — the bookshelf is a web-only feature for now.
 
@@ -282,7 +284,8 @@ BookLocation { spineIndex, blockIndex, offset }
   │   all resolve to a location (no text-anchor heuristics)
   │
   ▼
-usePaginatedBook → whole-book page breaks (lazy, viewport-aware)
+EpubBlockStream → useCssColumnsPager (SPEC-077: CSS-multicol pages,
+  windowed prev/next pages, transform page turns, geometry-derived breaks)
   ▼
 EpubReaderPanel → TokenizedText → word tap → dictionary
 ```
@@ -479,14 +482,16 @@ To avoid unnecessary API calls, only the visible page's text blocks are sent for
 src/
 ├── app/[l1]/[l2]/epub/page.tsx          ← Route: EPUB reader page
 ├── hooks/use-epub.ts                     ← Book-lifecycle hook (open/add/remove, search, saveLocation)
-├── hooks/use-paginated-book.ts           ← Whole-book lazy pagination engine
+├── hooks/use-css-columns-pager.ts        ← Shared CSS-columns pager (SPEC-077): window, breaks, estimates
 ├── lib/epub-book.ts                      ← EpubBook: epubjs + whole-book model (canonical hrefs, converter, locations)
 ├── lib/epub-book-types.ts                ← Shared book-model types (TocNode, BookLocation, EpubBlock, …)
+├── lib/block-stream.ts                   ← BlockStream abstraction: markdown stream + EpubBlockStream adapter
 ├── lib/epub-store.ts                     ← IndexedDB persistence (v3: lastLocation + per-spine search index)
 └── components/reader/
     ├── epub-upload.tsx                    ← Drag-and-drop UI
     ├── epub-chapter-sidebar.tsx           ← TOC tree with hierarchy + ancestor highlighting
     ├── epub-reader-panel.tsx              ← Block-driven reading pane (whole-book pages, tokens, translation)
+    ├── paginated-reader.tsx               ← Shared panel: viewport + active/pending pagers, nav, keyboard
     └── reader-sidebar.tsx                 ← Shared responsive sidebar shell
 ```
 
@@ -539,6 +544,6 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 3. **No ruby preservation** — Both platforms strip furigana/ruby annotations. This is intentional for language learning (user sees only base text, not pronunciation helpers), but means annotated Japanese texts lose furigana.
 4. **Position restore (web: locations; mobile: text anchors)** — Web (SPEC-032) restores via `lastLocation { spineIndex, blockIndex, offset }`, no text guessing. Mobile still restores via a ~40-char text anchor and remains a migration target.
 5. **epubjs TOC parsing gaps (web)** — epubjs never resolves nav-document hrefs against the nav doc's directory (fixed by `EpubBook`'s canonical hrefs) and drops TOC entries whose `<a>` isn't a direct `<li>` child (rare).
-6. **Whole-book pagination is lazy** — Page breaks are computed around the current page; the displayed total is an estimate until the full pagination pass runs (background).
+6. **Total page count is an estimate** — Page breaks are computed by the browser's CSS-column layout for the mounted window; the displayed total (`n / ~N`) comes from a chars-per-page divisor until (optionally) a full idle pagination pass measures the whole book (SPEC-077 §8).
 7. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
 8. **No CSS/formatting preservation** — Rich formatting (bold, italic, colors, alignment) is largely lost; the reader renders text-flow blocks with markdown-level structure (headings, paragraphs, lists, blockquotes).

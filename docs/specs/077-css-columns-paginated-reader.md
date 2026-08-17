@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-077
 - **Feature**: One shared paginated reader panel for all web readers, using CSS multi-column layout for pagination and windowed loading of only the estimated previous/next few pages
-- **Status**: draft
+- **Status**: implemented (2026-08-16; commits `bdcfed76`, `c5fdb877`, `8ce9a8cc`)
 - **Created**: 2026-08-16
 - **ROADMAP Phase**: Phase 4 (Reading)
 - **See also**:
