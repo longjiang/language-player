@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
-import { Search } from 'lucide-react';
+import { Search, ArrowUpDown } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -35,6 +35,8 @@ interface VideoQueuePanelProps<T> {
   sortValue?: string;
   onSortChange?: (value: string) => void;
   sortOptions?: QueueSortOption[];
+  /** Draw a bottom border under the toolbar. Default: true. */
+  toolbarBorder?: boolean;
 }
 
 /**
@@ -54,6 +56,7 @@ export function VideoQueuePanel<T>({
   sortValue,
   onSortChange,
   sortOptions,
+  toolbarBorder = true,
 }: VideoQueuePanelProps<T>) {
   const t = useT();
   const showToolbar = Boolean(onFilterChange || (sortOptions && onSortChange));
@@ -63,7 +66,9 @@ export function VideoQueuePanel<T>({
       {header && <div className="mb-2">{header}</div>}
 
       {showToolbar && (
-        <div className="mb-2 flex items-center gap-2 border-b border-border pb-2">
+        <div
+          className={`mb-2 flex items-center gap-2 ${toolbarBorder ? 'border-b border-border pb-2' : 'pb-2'}`}
+        >
           {onFilterChange && (
             <div className="relative flex-1">
               <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -78,8 +83,11 @@ export function VideoQueuePanel<T>({
           )}
           {sortOptions && onSortChange && (
             <Select value={sortValue} onValueChange={onSortChange}>
-              <SelectTrigger size="sm" className="h-8 rounded-md bg-muted/50 text-xs">
-                <SelectValue />
+              <SelectTrigger size="default" className="h-8 rounded-md bg-muted/50 text-xs">
+                <span className="flex items-center gap-1.5 pl-0.5">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <SelectValue />
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {sortOptions.map((opt) => (
