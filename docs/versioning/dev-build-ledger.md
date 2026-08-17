@@ -13,9 +13,9 @@ artifact mirrors plus the artifact's SHA-256, so a build can be verified
 from the artifact itself (SPEC-076 § 4.8, `scripts/verify-dev-build.mjs`).
 
 **Retention:** the 3 most recent builds (current + 2 previous) are kept
-active at the repo-local `.dev-builds/` (gitignored; override with `LP_DEV_BUILD_DIR`). When
+active at `~/Desktop/LP-DevBuilds/` (override with `LP_DEV_BUILD_DIR`). When
 a new build is recorded, the oldest beyond the window is moved to
-`.dev-builds/archive/` and its row is marked `archived`. Numbers
+`~/Desktop/LP-DevBuilds/archive/` and its row is marked `archived`. Numbers
 are never reused — a consumed number stays consumed even if the build is
 later discarded.
 
@@ -29,6 +29,10 @@ does not mirror the commit for sure.
 
 
 
-| 1 | ios-device | 3c98c0bd6865d0a09c98cfec92264fcacc86f069 | v3.1.2-5-g3c98c0bd | 2026-08-17 | lp-dev-1-ios-device-3c98c0bd6865.zip | 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2 | active |
-| 2 | ios-device | ddb8cc50f8d93070870689a94ba5bb0c2d279aad | v3.1.2-7-gddb8cc50 | 2026-08-17 | lp-dev-2-ios-device-ddb8cc50f8d9.zip | 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea | active |
+
+
+| 1 | ios-device | 3c98c0bd6865d0a09c98cfec92264fcacc86f069 | v3.1.2-5-g3c98c0bd | 2026-08-17 | lp-dev-1-ios-device-3c98c0bd6865.zip | 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2 | archived |
+| 2 | ios-device | ddb8cc50f8d93070870689a94ba5bb0c2d279aad | v3.1.2-7-gddb8cc50 | 2026-08-17 | lp-dev-2-ios-device-ddb8cc50f8d9.zip | 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea | archived |
 | 3 | ios-device | 88135bde47af0b8e26f3ef09754d28ff3b640d64 | v3.1.2-11-g88135bde | 2026-08-17 | lp-dev-3-ios-device-88135bde47af.zip | 6e10c5aed4541adf030f02325001dbe72bf0416388776ea0754446a694d8ea5e | active |
+| 4 | ios-device | 3c98c0bd6865d0a09c98cfec92264fcacc86f069 | v3.1.2-5-g3c98c0bd-dirty | 2026-08-17 | lp-dev-4-ios-device-3c98c0bd6865.zip | 8acff05f74d0c135cd0020dab5de5ea937812ac70e08a3861ba4763321a3a1b2 | active (dirty) |
+| 5 | ios-device | ddb8cc50f8d93070870689a94ba5bb0c2d279aad | v3.1.2-7-gddb8cc50-dirty | 2026-08-17 | lp-dev-5-ios-device-ddb8cc50f8d9.zip | 9d66e6cb66b44cd0183540c18ea7d5b5afe8a58edb140745184e1a80136ea1cb | active (dirty) |
