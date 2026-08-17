@@ -619,6 +619,22 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     });
   }, []);
 
+  // Every distinct group key present in the filtered list, so "Collapse All" /
+  // "Expand All" can flip them in one go. Only defined when grouping applies.
+  const allGroupKeys = useMemo(() => {
+    if (!contextGroupKey) return undefined;
+    return [...new Set(filteredVideos.map((v) => contextGroupKey(v)))].filter(Boolean);
+  }, [contextGroupKey, filteredVideos]);
+
+  const collapseAll = useCallback(() => {
+    if (!allGroupKeys) return;
+    setCollapsedGroups(new Set(allGroupKeys));
+  }, [allGroupKeys]);
+
+  const expandAll = useCallback(() => {
+    setCollapsedGroups(new Set());
+  }, []);
+
   // Per-row segments — the matched line only (no prev/next context in the
   // list), flagged with whether it contains a search term. Translations are
   // requested per segment so the translation can mirror the muted/normal
@@ -756,15 +772,49 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       key: string;
       count: number;
       collapsed: boolean;
+      isFirst: boolean;
       onToggle: () => void;
     }) => {
       const label = listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext');
+      const controls =
+        group.isFirst && allGroupKeys && allGroupKeys.length > 1 ? (
+          <span
+            className="ml-auto flex shrink-0 gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
+            >
+              {t('action.collapse_all')}
+            </button>
+            <button
+              type="button"
+              onClick={expandAll}
+              className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
+            >
+              {t('action.expand_all')}
+            </button>
+          </span>
+        ) : (
+          <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {group.count}
+          </span>
+        );
       return (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={group.onToggle}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              group.onToggle();
+            }
+          }}
           aria-expanded={!group.collapsed}
-          className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1 text-left transition-colors hover:bg-muted"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1 text-left transition-colors hover:bg-muted"
         >
           {group.collapsed ? (
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -777,13 +827,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           <span className="truncate text-[11px] font-medium text-muted-foreground">
             {label}
           </span>
-          <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            {group.count}
-          </span>
-        </button>
+          {controls}
+        </div>
       );
     },
-    [listSort, t],
+    [listSort, t, allGroupKeys, collapseAll, expandAll],
   );
 
   // Content-filter pills (All / Non-Music / Music / TV Shows), rendered in the
