@@ -13,9 +13,12 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useSavedPhraseCandidates, useHighlightKanaForms } from '@/hooks/use-highlight-forms';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
+import { enqueueLemmatize, lemmatizeCache, lemmatizeInflight } from '@/lib/lemmatize-queue';
+import { isSeparatorToken, karaokeWordWeight } from '@/lib/tokenized-text-helpers';
 import { addExtraForm } from '@/hooks/use-inflected-search-terms';
 import {
   isPhoneticsEligible,
@@ -34,145 +37,6 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 // Re-exported for callers that imported the constant from this component
 // before it moved to lib/text-scale.
 export { ZOOM_TO_REM };
-
-// Simple in-memory cache to avoid re-lemmatizing the same text
-const lemmatizeCache = new Map<string, LemmatizedToken[]>();
-
-// In-flight request deduplication — prevents thundering herd when many
-// TokenizedText instances mount simultaneously and all hit the fallback.
-const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
-
-// ── Queued batch lemmatization ────────────────────────────────────────
-// Visible TokenizedText instances enqueue their line; a short timer flushes
-// the queue through /lemmatize-normalized/batch in one request instead of
-// firing N per-line calls. Falls back to per-line requests on failure.
-interface LemmatizeBatchItem {
-  key: string;
-  text: string;
-  l2Code: string;
-  resolve: (tokens: LemmatizedToken[]) => void;
-  reject: (err: unknown) => void;
-}
-
-const lemmatizeBatchQueue: LemmatizeBatchItem[] = [];
-const lemmatizeBatchPending = new Map<string, Promise<LemmatizedToken[]>>();
-const LEMMATIZE_BATCH_MAX = 12;
-const LEMMATIZE_BATCH_DELAY_MS = 60;
-let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
-
-/** Queue a line for batched lemmatization; resolves with its tokens. */
-function enqueueLemmatize(text: string, l2Code: string): Promise<LemmatizedToken[]> {
-  const key = `${l2Code}:${text}`;
-  const existing = lemmatizeBatchPending.get(key);
-  if (existing) return existing;
-
-  const promise = new Promise<LemmatizedToken[]>((resolve, reject) => {
-    lemmatizeBatchQueue.push({ key, text, l2Code, resolve, reject });
-  });
-  lemmatizeBatchPending.set(key, promise);
-  scheduleLemmatizeBatchFlush();
-  return promise;
-}
-
-function scheduleLemmatizeBatchFlush() {
-  if (lemmatizeBatchTimer) return;
-  lemmatizeBatchTimer = setTimeout(() => {
-    lemmatizeBatchTimer = null;
-    void flushLemmatizeBatch();
-  }, LEMMATIZE_BATCH_DELAY_MS);
-}
-
-async function flushLemmatizeBatch() {
-  // Drain the whole queue in chunks — lines beyond LEMMATIZE_BATCH_MAX that
-  // enqueued before this flush must not be stranded until a later enqueue.
-  while (lemmatizeBatchQueue.length > 0) {
-    const items = lemmatizeBatchQueue.splice(0, LEMMATIZE_BATCH_MAX);
-    if (items.length === 0) break;
-
-    // Batch endpoint takes one language per call — group the queue by l2.
-    const byL2 = new Map<string, LemmatizeBatchItem[]>();
-    for (const item of items) {
-      const group = byL2.get(item.l2Code);
-      if (group) group.push(item);
-      else byL2.set(item.l2Code, [item]);
-    }
-
-    for (const [l2Code, group] of byL2) {
-      try {
-        const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: group.map((g) => g.text), l2: baseCode(l2Code) }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const results: LemmatizedToken[][] = data?.results ?? [];
-        group.forEach((item, i) => {
-          const tokens = results[i] ?? [];
-          lemmatizeCache.set(item.key, tokens);
-          item.resolve(tokens);
-          lemmatizeBatchPending.delete(item.key);
-        });
-      } catch (err) {
-        // Batch request failed — fall back to per-line requests so nothing is lost.
-        await Promise.allSettled(group.map(async (item) => {
-          try {
-            const tokens = await fetchLemmatizeLine(item.text, item.l2Code);
-            lemmatizeCache.set(item.key, tokens);
-            item.resolve(tokens);
-          } catch (lineErr) {
-            item.reject(lineErr);
-          } finally {
-            lemmatizeBatchPending.delete(item.key);
-          }
-        }));
-      }
-    }
-  }
-}
-
-/** Single-line /lemmatize-normalized request (batch failure fallback). */
-async function fetchLemmatizeLine(text: string, l2Code: string): Promise<LemmatizedToken[]> {
-  const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, l2: baseCode(l2Code) }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  return data.tokens as LemmatizedToken[];
-}
-
-/** True when a token is whitespace-only or punctuation-only — used to decide
- *  whether a quick gloss needs a trailing space to separate it from the next word. */
-function isSeparatorToken(text: string): boolean {
-  const t = text.trim();
-  return t === '' || /^[\p{P}]+$/u.test(t);
-}
-
-/**
- * Rough speaking-time weight for karaoke pacing, used when we have no
- * per-word timing data. CJK words: one unit per character (each hanzi/kana/
- * hangul ≈ one syllable/mora). Latin/Cyrillic/Greek: one unit per vowel
- * group. Everything else (Thai, Arabic, Hebrew, …): character count.
- * Long words keep the highlight longer; short words flip quickly.
- */
-function karaokeWordWeight(text: string): number {
-  const t = text.trim();
-  if (!t) return 0;
-
-  // CJK: character count is a near-exact syllable/mora proxy.
-  const cjk = t.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu);
-  if (cjk && cjk.length >= t.length * 0.5) return cjk.length;
-
-  // Latin/Cyrillic/Greek: vowel groups are a decent syllable proxy.
-  const vowelGroups = t.match(/[aeiouyà-öø-ÿаеёиоуыэюяіїєæœαεηιουωάέήίόύώϊϋΐΰ]+/giu);
-  if (vowelGroups && vowelGroups.length > 0) return Math.max(1, vowelGroups.length);
-
-  // Vowel-less scripts: fall back to character count.
-  const significant = t.replace(/[\s\p{P}]/gu, '');
-  return significant ? Math.max(1, significant.length) : 0;
-}
 
 export interface TokenizedTextProps {
   text: string;
@@ -356,42 +220,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // Saved phrase candidates — every saved form (head + inflections) that could
   // span multiple tokens. The merge below collapses exact token-boundary
   // matches into one atomic token so multi-token phrases highlight as saved.
-  const savedPhraseCandidates = useMemo(() => {
-    const words = savedWords[l2Code] ?? [];
-    const out: string[] = [];
-    const seen = new Set<string>();
-    const add = (form: string) => {
-      const key = form.toLowerCase();
-      if (!form.trim() || seen.has(key)) return;
-      seen.add(key);
-      out.push(form);
-    };
-    for (const w of words) {
-      for (const f of w.forms) add(f);
-      if (w.context?.form) add(w.context.form);
-      for (const inst of w.instances ?? []) if (inst.form) add(inst.form);
-    }
-    return out;
-  }, [savedWords, l2Code]);
-
-  // Kana/alternate surfaces of the highlight terms' dictionary entries (e.g.
-  // 然るべき → しかるべき): the bridge between a kanji headword and a kana
-  // surface in the context sentence. Recomputes when the enqueued term
-  // lookups resolve (cacheVersion).
-  const highlightKanaForms = useMemo(() => {
-    const base = baseCode(l2Code);
-    const terms = [
-      ...(highlightForm ? [highlightForm] : []),
-      ...(highlightForms ?? []),
-    ];
-    const out: string[] = [];
-    for (const term of terms) {
-      for (const form of kanaFormsForEntries(getCachedEntries(base, term))) {
-        if (!out.includes(form)) out.push(form);
-      }
-    }
-    return out;
-  }, [highlightForm, highlightForms, l2Code, cacheVersion]);
+  const savedPhraseCandidates = useSavedPhraseCandidates(savedWords, l2Code);
+  const highlightKanaForms = useHighlightKanaForms(highlightForm, highlightForms, l2Code, cacheVersion);
 
   // Tokens with saved multi-token phrases merged into single atomic tokens
   // (pure client-side retokenization — total length is preserved, so format
