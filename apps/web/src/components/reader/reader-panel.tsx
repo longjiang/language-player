@@ -493,12 +493,8 @@ export function ReaderPanel({
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                   )}
-                  {/* State 1b: loading tokens — show spinner above paginated content */}
-                  {hasMeasured && loadingTokens && blocks && (
-                    <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
-                    </div>
-                  )}
+                  {/* State 1b: loading tokens — indicator removed (no
+                      "making text interactive" row; content shows when ready) */}
                   {/* State 2: ready — paginated with tokens */}
                   {hasMeasured && allTokensReady && visibleBlocks && blocks && (
                     <>

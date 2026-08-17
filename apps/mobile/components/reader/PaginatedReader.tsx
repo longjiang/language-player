@@ -472,12 +472,8 @@ export function PaginatedReader({
                 >
                   {/* Loading indicator — inside the scroll content (web parity) so
                       it doesn't resize the measured viewport. */}
-                  {loadingTokens && (
-                    <View className="flex-row items-center justify-center gap-2 py-2">
-                      <Loader2 size={12} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-                    </View>
-                  )}
+                  {/* loadingTokens indicator removed — no "making text
+                      interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
                     renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true),
                   )}
