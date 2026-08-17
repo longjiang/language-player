@@ -62,6 +62,17 @@ function sh(cmd, opts = {}) {
   }).trim();
 }
 
+// Long build commands stream to the console (inherited stdio) instead of
+// being buffered — xcodebuild/gradle output can exceed any pipe buffer
+// (ENOBUFS) and never needs capturing.
+function run(cmd, opts = {}) {
+  execSync(cmd, {
+    cwd: ROOT,
+    stdio: 'inherit',
+    ...opts,
+  });
+}
+
 function sha256(file) {
   return createHash('sha256')
     .update(readFileSync(file))
@@ -187,7 +198,7 @@ if (platform === 'ios-sim' || platform === 'ios-device') {
   const dest = platform === 'ios-sim' ? 'generic/platform=iOS Simulator' : 'generic/platform=iOS';
   const cfg = platform === 'ios-sim' ? [] : ['-allowProvisioningUpdates'];
   console.log('\nBuilding (xcodebuild Release, this takes a while)…');
-  sh(
+  run(
     [
       'xcodebuild',
       '-workspace ios/LanguagePlayer3.xcworkspace',
@@ -205,7 +216,7 @@ if (platform === 'ios-sim' || platform === 'ios-device') {
   if (!existsSync(product)) fail(`Build finished but product missing: ${product}`);
 } else {
   console.log('\nBuilding (assembleRelease, this takes a while)…');
-  sh('./gradlew assembleRelease --console=plain', { cwd: join(MOBILE, 'android'), env });
+  run('./gradlew assembleRelease --console=plain', { cwd: join(MOBILE, 'android'), env });
   product = join(MOBILE, 'android/app/build/outputs/apk/release/app-release.apk');
   if (!existsSync(product)) fail(`Build finished but APK missing: ${product}`);
 }
