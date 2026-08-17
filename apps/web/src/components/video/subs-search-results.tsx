@@ -800,17 +800,15 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   if (loading) {
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-        {/* Nav bar skeleton */}
-        <div className="flex items-center justify-center border-b border-border py-2">
-          <div className="flex items-center gap-1">
-            {formCount > 1 && (
-              <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
-                <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
-                <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
-              </div>
-            )}
+        {/* Nav bar skeleton — only when the exact-match toggle will show */}
+        {formCount > 1 && (
+          <div className="flex items-center justify-center border-b border-border py-2">
+            <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
+              <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
+              <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
+            </div>
           </div>
-        </div>
+        )}
         {/* List skeleton — filter toolbar + rows */}
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-2">
@@ -841,8 +839,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar — keep toggle accessible even when empty */}
-        <div className="flex items-center justify-center border-b border-border py-2">
-          {formCount > 1 && (
+        {formCount > 1 && (
+          <div className="flex items-center justify-center border-b border-border py-2">
             <div className="inline-flex items-center rounded-full bg-muted p-0.5">
               <button
                 onClick={() => onExactToggle?.(true)}
@@ -867,8 +865,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 {t('msg.all_forms')}
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Empty list */}
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
@@ -883,47 +881,35 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-      {/* ── Nav bar (above list) ── */}
-      <div className="flex items-center justify-center border-b border-border py-2">
-        <div className="flex items-center gap-1">
-          {/* Exact-match toggle — only visible when formCount > 1 */}
-          {formCount > 1 && (
-            <div className="inline-flex items-center rounded-full bg-muted p-0.5">
-              <button
-                onClick={() => onExactToggle?.(true)}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  exactMatch
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-              >
-                {headTerm || term}
-              </button>
-              <button
-                onClick={() => onExactToggle?.(false)}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  !exactMatch
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                title={t('msg.exact_match_searching', { n: formCount })}
-              >
-                {t('msg.all_forms')}
-              </button>
-            </div>
-          )}
-          {currentVideo && (
-            <Link
-              href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
-              className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+      {/* ── Nav bar (above list) — exact-match toggle only ── */}
+      {formCount > 1 && (
+        <div className="flex items-center justify-center border-b border-border py-2">
+          <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+            <button
+              onClick={() => onExactToggle?.(true)}
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                exactMatch
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
             >
-              <Play className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t('action.watch')}</span>
-            </Link>
-          )}
+              {headTerm || term}
+            </button>
+            <button
+              onClick={() => onExactToggle?.(false)}
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                !exactMatch
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={t('msg.exact_match_searching', { n: formCount })}
+            >
+              {t('msg.all_forms')}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
         <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
