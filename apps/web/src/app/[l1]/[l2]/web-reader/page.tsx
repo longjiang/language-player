@@ -494,7 +494,6 @@ export default function WebReaderPage() {
           text={text}
           loading={loading}
           activeTab="read"
-          translating={false}
           blocks={blocks}
           ctx={ctx}
           hideModeTabs
