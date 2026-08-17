@@ -278,11 +278,12 @@ devices only** — for the iOS Simulator use Workflow 1 (Expo Go).
 A dev build may already exist on this machine — don't rebuild if a usable one
 is found. Check in this order:
 
-1. **The dev build ledger** (authoritative since 2026-08-16, SPEC-076 § 4.8):
-   `docs/versioning/dev-build-ledger.md` lists every tracked dev build with
-   its exact git commit, artifact name, and SHA-256. The **3 most recent
-   builds** (current + 2 previous) are recoverable at the repo-local,
-   gitignored `.dev-builds/` (e.g. `lp-dev-3-ios-device-88135bde47af.zip`).
+1. **The unified build ledger** (authoritative since 2026-08-16, SPEC-076
+   § 4.8): `docs/versioning/build-ledger.md` lists every tracked dev build
+   (and store upload), one row per commit, with artifact name and SHA-256.
+   The **3 most recent dev builds** (current + 2 previous) are recoverable
+   at the repo-local, gitignored `.dev-builds/` (e.g.
+   `lp-dev-3-ios-device-88135bde47af.zip`).
    Prove what a build mirrors with:
    `node scripts/verify-dev-build.mjs latest` (re-hashes the artifact,
    checks `ip.txt` on device builds, confirms the commit exists in git).
