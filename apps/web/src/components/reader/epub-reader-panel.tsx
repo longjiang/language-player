@@ -7,6 +7,7 @@ import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
+import { translationFontSizeRem } from '@/lib/reader-text-size';
 import {
   PaginatedReader,
   type BlockRenderCtx,
@@ -46,13 +47,15 @@ function blockClass(tb: EpubTextBlock): string {
   }
 }
 
-/** Muted variant for translation text below a block. */
+/** Muted variant for translation text below a block. Font size is set
+ *  explicitly via `translationFontSize` (`TRANSLATION_FACTOR` × the L2
+ *  rendered size), so these classes only carry non-size styling. */
 function translationClass(tb: EpubTextBlock): string {
   const base = 'leading-relaxed';
   switch (tb.type) {
-    case 'heading': return `${base} text-lg font-semibold`;
+    case 'heading': return `${base} font-semibold`;
     case 'blockquote': return `${base} border-l-4 border-muted/40 pl-4 italic`;
-    default: return `${base} text-sm`;
+    default: return `${base}`;
   }
 }
 
@@ -150,6 +153,7 @@ export function EpubReaderPanel({
             } : null}
             translationClass={translationClass(tb)}
             translationZoom={textZoom}
+            translationFontSize={translationFontSizeRem(tb, textZoom)}
             loading={showTranslation && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -193,11 +197,11 @@ export function EpubReaderPanel({
           {showTranslation && (
             <div
               className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
-              style={{ zoom: textZoom }}
+              style={{ fontSize: `${translationFontSizeRem(tb, textZoom)}rem` }}
             >
               <div className="flex flex-col gap-y-1.5">
                 {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
-                  <div key={li} className="h-3.5" />
+                  <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom)}rem` }} />
                 ))}
               </div>
             </div>
