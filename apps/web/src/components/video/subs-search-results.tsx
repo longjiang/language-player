@@ -27,16 +27,13 @@ import { VideoControlBar } from './video-control-bar';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import {
-  Loader2,
   Play,
-  List,
   X,
   Search,
   Eye,
   Clock,
   Calendar,
   FileText,
-  ListVideo,
   Info,
 } from 'lucide-react';
 
@@ -58,6 +55,11 @@ interface SubsSearchResultsProps {
 
 /** ADR-0034: free users see the first 5 subs-search hits. */
 const FREE_SUBS_SEARCH_HITS = 5;
+
+/** Persisted subtitle display mode for the playback modal. Stored in
+ *  localStorage only — deliberately no API sync (matches the flipped
+ *  list → modal design: the mode is a per-device UI preference). */
+const SUBTITLE_MODE_KEY = 'lp_subs_search_subtitle_mode';
 
 type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
 
@@ -159,8 +161,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   //  - Initial page load / mount: never autoplay (even when the term resolves
   //    right after mount, e.g. inflections loading).
   //  - Everything after that autoplays: a fresh search while the component is
-  //    already mounted (e.g. navigating to another word), and advancing to
-  //    another result (prev/next buttons or the list-all menu).
+  //    already mounted (e.g. navigating to another word), and opening a result
+  //    from the list or advancing to another result (prev/next buttons).
   const [autoplayEnabled, setAutoplayEnabled] = useState(false);
   const autoplayRef = useRef(autoplayEnabled);
   useEffect(() => {
@@ -173,27 +175,47 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const prevTermRef = useRef(term);
   const prevExactRef = useRef(exactMatch);
 
-  // Sidebar tabs (subs | queue | info) — the queue tab shows the same results
-  // list as the "list all" modal (shared VideoQueuePanel).
+  // Sidebar tabs (subs | info) inside the playback modal's multiline mode.
   const [panelTab, setPanelTab] = useState<SidebarTabKey>('subs');
-  // "List all" modal — independent of singleline/multiline mode.
-  const [listOpen, setListOpen] = useState(false);
-  // Modal scroll container for the lazy-translation observer.
-  const modalListRef = useRef<HTMLDivElement>(null);
-  // Queue tab: filter + sort
+  // Playback modal — the result list is the default surface; clicking a result
+  // opens the player + subtitles in this modal. Independent of singleline/multiline mode.
+  const [videoOpen, setVideoOpen] = useState(false);
+  // Scroll container for the page list (lazy-translation observer).
+  const listRef = useRef<HTMLDivElement>(null);
+  // Scroll container for the multiline sidebar's subs tab — the modal's
+  // SubtitleDisplay uses it for smart scrolling (only scrolls when a line
+  // leaves the viewport).
+  const sidebarContentRef = useRef<HTMLDivElement>(null);
+  // List: filter + sort
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SortKey>('views');
 
-  // Subtitle display mode: follow playback one line at a time, or show the
-  // full transcript (scrollable, with click-to-seek). Mirrors the watch page:
-  // singleline = subtitles mode (no sidebar); multiline = transcript mode
-  // (tabbed sidebar appears below the player).
+  // Subtitle display mode in the playback modal: follow playback one line at a
+  // time (singleline), or show the full transcript (multiline — tabbed subs |
+  // info sidebar). Mirrors the watch page's subtitles/transcript modes.
+  // The choice persists in localStorage (client-only): read after mount to
+  // avoid a hydration mismatch, written on every toggle. No API sync.
   const [subtitleMode, setSubtitleMode] = useState<'singleline' | 'multiline'>('singleline');
-  // Scroll container for the sidebar content — multiline auto-scroll and the
-  // queue lazy-translation observer both use it.
-  const sidebarContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SUBTITLE_MODE_KEY);
+      if (saved === 'singleline' || saved === 'multiline') setSubtitleMode(saved);
+    } catch {
+      /* localStorage unavailable (private mode etc.) — keep default */
+    }
+  }, []);
+
   const handleToggleSubtitleMode = useCallback(() => {
-    setSubtitleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
+    setSubtitleMode((m) => {
+      const next = m === 'singleline' ? 'multiline' : 'singleline';
+      try {
+        window.localStorage.setItem(SUBTITLE_MODE_KEY, next);
+      } catch {
+        /* localStorage unavailable — mode still applies for this session */
+      }
+      return next;
+    });
     // Mirror the watch page: reopening the sidebar (multiline) starts on the
     // subs tab, like the watch page's sidebar remount.
     setPanelTab('subs');
@@ -274,6 +296,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     prevTermRef.current = term;
     prevExactRef.current = exactMatch;
     const userInitiated = termChanged || exactToggled;
+
+    // A new search (new word, or exact-match toggle) returns to the list —
+    // close the playback modal so it never shows a stale result.
+    if (userInitiated) setVideoOpen(false);
 
     const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
 
@@ -495,7 +521,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return { hasPreviousLine: prev, hasNextLine: next };
   }, [currentTime, currentVideo]);
 
-  // ── Modal: filter + sort ─────────────────────
+  // ── List: filter + sort ──────────────────────
 
   const filteredVideos = useMemo(() => {
     let result = [...videos];
@@ -613,23 +639,20 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return { lines, forms, rowStarts };
   }, [rowSegments, highlightTerms]);
 
-  // ── Queue tab + "list all" modal: lazy row translations ──
+  // ── Page list: lazy row translations ──
   // Like the watch page, only rows near what's visible get translated
   // (visible rows + lookahead chunks). Scrolling feeds a new anchor index.
+  // The list is the default surface, so the observer runs whenever rows exist.
   const visibleIndexesRef = useRef<Set<number>>(new Set());
   const [listFirstVisible, setListFirstVisible] = useState(0);
 
   useEffect(() => {
-    // The rows live either in the modal (when open) or the sidebar's queue tab
-    // (multiline mode + queue tab). Observe whichever is currently mounted.
-    const queueTabVisible = subtitleMode === 'multiline' && panelTab === 'queue';
-    if (!listOpen && !queueTabVisible) return;
     visibleIndexesRef.current.clear();
     setListFirstVisible(0);
-    const contentDiv = listOpen ? modalListRef.current : sidebarContentRef.current;
+    const contentDiv = listRef.current;
     if (!contentDiv) return;
 
-    // The content ref div sits inside the panel's scrollable TabsContent
+    // The content ref div sits inside the list's scrollable container
     // (overflow-y-auto). Walk up to the actual scroller and use it as the
     // observer root, so rows stay "visible" only while inside the viewport.
     let scroller: HTMLElement | null = contentDiv;
@@ -655,11 +678,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       .querySelectorAll<HTMLElement>('[data-row-index]')
       .forEach((row) => observer.observe(row));
     return () => observer.disconnect();
-  }, [listOpen, subtitleMode, panelTab, filteredVideos, sidebarContentRef, modalListRef]);
+  }, [filteredVideos, listRef]);
 
   const listFirstLineIndex = translationInput.rowStarts[listFirstVisible] ?? 0;
-  const listTranslationsEnabled =
-    (listOpen || (subtitleMode === 'multiline' && panelTab === 'queue')) && display.translation;
+  const listTranslationsEnabled = display.translation;
   const {
     translatedLines: listTranslations,
     loading: listTranslating,
@@ -678,16 +700,16 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       if (realIdx >= 0) {
         setAutoplayEnabled(true);
         setCurrentIndex(realIdx);
-        setListOpen(false);
+        // Open the playback modal — the list stays mounted underneath.
+        setVideoOpen(true);
         setPanelTab('subs');
       }
     },
     [videos, filteredVideos],
   );
 
-  // Shared row renderer for both the sidebar's queue tab and the "list all"
-  // modal — same thumbnail + matched-line + translation layout, lazy
-  // translations via the IntersectionObserver above.
+  // Shared row renderer for the page list — thumbnail + matched-line +
+  // translation layout, lazy translations via the IntersectionObserver above.
   const renderQueueRow = useCallback(
     (video: SubsSearchVideo, i: number) => {
       const ml = video.subs_l2[video.matchLineIndex];
@@ -787,26 +809,23 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
               </div>
             )}
-            <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
-            <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
           </div>
         </div>
-        {/* Player skeleton */}
-        <div className="aspect-video w-full bg-black flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-white/40" />
-        </div>
-        {/* Controls skeleton */}
-        <div className="flex items-center justify-center gap-0.5 border-b border-border px-2 py-1">
-          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
-          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-12 animate-pulse rounded bg-muted" />
-          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
-          <div className="h-7 w-7 animate-pulse rounded bg-muted" />
-        </div>
-        {/* Subtitle skeleton — centered like the singleline display */}
-        <div className="min-h-[5rem] py-4 flex flex-col items-center justify-center gap-2">
-          <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted/50" />
+        {/* List skeleton — filter toolbar + rows */}
+        <div className="space-y-3 p-3">
+          <div className="flex items-center gap-2">
+            <div className="h-8 flex-1 animate-pulse rounded-md bg-muted" />
+            <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
+          </div>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3 rounded-lg px-3 py-2">
+              <div className="h-12 w-20 animate-pulse rounded bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted/50" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -822,54 +841,37 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
         {/* Nav bar — keep toggle accessible even when empty */}
-        <div className="flex items-center justify-between border-b border-border py-2">
-          <span className="text-xs text-muted-foreground">
-            {t('msg.video_n_of_total', { n: 0, total: 0 })}
-          </span>
-          <div className="flex items-center gap-1">
-            {formCount > 1 && (
-              <div className="inline-flex items-center rounded-full bg-muted p-0.5">
-                <button
-                  onClick={() => onExactToggle?.(true)}
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                    exactMatch
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-                >
-                  {headTerm || term}
-                </button>
-                <button
-                  onClick={() => onExactToggle?.(false)}
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                    !exactMatch
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  title={t('msg.exact_match_searching', { n: formCount })}
-                >
-                  {t('msg.all_forms')}
-                </button>
-              </div>
-            )}
-            <span className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50">
-              <Play className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t('action.watch')}</span>
-            </span>
-            <button
-              disabled
-              onClick={() => setListOpen(true)}
-              className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50 transition-colors disabled:pointer-events-none"
-            >
-              <List className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t('action.list_all')}</span>
-            </button>
-          </div>
+        <div className="flex items-center justify-center border-b border-border py-2">
+          {formCount > 1 && (
+            <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+              <button
+                onClick={() => onExactToggle?.(true)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  exactMatch
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
+              >
+                {headTerm || term}
+              </button>
+              <button
+                onClick={() => onExactToggle?.(false)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  !exactMatch
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={t('msg.exact_match_searching', { n: formCount })}
+              >
+                {t('msg.all_forms')}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Player placeholder */}
-        <div className="aspect-video w-full bg-black/90 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+        {/* Empty list */}
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
           <Search className="h-10 w-10 text-muted-foreground/30" />
           <p className="text-sm">{t('msg.no_results')}</p>
         </div>
@@ -881,7 +883,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-      {/* ── Nav bar (above video) ── */}
+      {/* ── Nav bar (above list) ── */}
       <div className="flex items-center justify-center border-b border-border py-2">
         <div className="flex items-center gap-1">
           {/* Exact-match toggle — only visible when formCount > 1 */}
@@ -920,13 +922,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               <span className="hidden sm:inline">{t('action.watch')}</span>
             </Link>
           )}
-          <button
-            onClick={() => setListOpen(true)}
-            className="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <List className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t('action.list_all')}</span>
-          </button>
         </div>
       </div>
 
@@ -944,205 +939,179 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         </div>
       )}
 
-      {/* ── Mini player ── */}
-      <div className="aspect-video w-full bg-black">
-        {currentVideo && (
-          <YouTubePlayer
-            ref={playerRef}
-            youtubeId={currentVideo.youtube_id}
-            autoplay={autoplayEnabled}
-            startTime={matchLine?.starttime}
-            onTimeUpdate={handleTimeUpdate}
-            onDuration={handleDuration}
-            onStateChange={handleStateChange}
-            onError={handleVideoError}
-          />
-        )}
-      </div>
-
-      {/* ── Controls ── */}
-      <div className="flex items-center justify-center border-b border-border px-2 py-1">
-        <VideoControlBar
-          reduced
-          playerRef={playerRef}
-          currentTime={currentTime}
-          duration={duration}
-          paused={paused}
-          onPauseToggle={() => {}}
-          onPreviousLine={goToPreviousLine}
-          onNextLine={goToNextLine}
-          onPreviousVideo={goToPrevious}
-          onNextVideo={goToNext}
-          onTogglePanel={handleToggleSubtitleMode}
-          panelOpen={subtitleMode === 'multiline'}
-          hasPreviousLine={hasPreviousLine}
-          hasNextLine={hasNextLine}
-          hasPreviousVideo={currentIndex > 0}
-          hasNextVideo={currentIndex < videos.length - 1}
-          videoCountText={t('msg.video_n_of_total', {
-            n: currentIndex + 1,
-            total: videos.length,
-          })}
-        />
-      </div>
-
-      {/* ── Singleline mode: no sidebar, just the line following playback ── */}
-      {subtitleMode === 'singleline' ? (
-        <SubtitleDisplay
-          mode="singleline"
-          youtubeId={currentVideo?.youtube_id}
-          currentTime={currentTime}
-          videoTitle={currentVideo?.title}
-          initialLines={subtitleInitialLines}
-          highlightTerms={highlightTerms}
-          defaultLine={defaultSubtitleLine}
-          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-        />
-      ) : (
-        /* ── Multiline mode: tabbed sidebar below the player ── */
-        <VideoSidebarPanel
-          tabs={[
-            { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
-            { key: 'queue', label: t('title.queue'), icon: <ListVideo className="h-4 w-4" /> },
-            { key: 'info', label: t('title.info'), icon: <Info className="h-4 w-4" /> },
+      {/* ── Result list — the default surface ── */}
+      <div ref={listRef} className="max-h-[70vh] overflow-y-auto p-2">
+        <VideoQueuePanel
+          items={filteredVideos}
+          keyFor={(v) => `${v.id}`}
+          emptyText={t('msg.no_results')}
+          header={
+            <h3 className="text-sm font-semibold">
+              {t('msg.videos_matching', { searchTerm: termDisplay })}
+            </h3>
+          }
+          filterValue={listSearch}
+          onFilterChange={setListSearch}
+          filterPlaceholder={t('placeholder.filter')}
+          sortValue={listSort}
+          onSortChange={(v) => setListSort(v as SortKey)}
+          sortOptions={[
+            { value: 'views', label: t('sort.most_viewed') },
+            { value: 'likes', label: t('title.likes') },
+            { value: 'date', label: t('title.date') },
+            { value: 'length', label: t('title.length') },
+            { value: 'leftContext', label: t('title.leftContext') },
+            { value: 'rightContext', label: t('title.rightContext') },
           ]}
-          activeTab={panelTab}
-          onTabChange={setPanelTab}
-          contentRef={sidebarContentRef}
-          className="max-h-[70vh]"
+          renderRow={renderQueueRow}
+        />
+      </div>
+
+      {/* ── Playback modal — opens when a result is clicked ── */}
+      {videoOpen && currentVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          onClick={() => setVideoOpen(false)}
         >
-          {(tab) => {
-            if (tab === 'subs') {
-              return (
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50" />
+          {/* Sheet */}
+          <div
+            className="relative z-10 flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header — video title + close */}
+            <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+              <h3 className="min-w-0 truncate text-sm font-semibold">{currentVideo.title}</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 flex-shrink-0"
+                onClick={() => setVideoOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Mini player */}
+            <div className="aspect-video w-full bg-black">
+              <YouTubePlayer
+                ref={playerRef}
+                youtubeId={currentVideo.youtube_id}
+                autoplay={autoplayEnabled}
+                startTime={matchLine?.starttime}
+                onTimeUpdate={handleTimeUpdate}
+                onDuration={handleDuration}
+                onStateChange={handleStateChange}
+                onError={handleVideoError}
+              />
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center justify-center border-b border-border px-2 py-1">
+              <VideoControlBar
+                reduced
+                playerRef={playerRef}
+                currentTime={currentTime}
+                duration={duration}
+                paused={paused}
+                onPauseToggle={() => {}}
+                onPreviousLine={goToPreviousLine}
+                onNextLine={goToNextLine}
+                onPreviousVideo={goToPrevious}
+                onNextVideo={goToNext}
+                onTogglePanel={handleToggleSubtitleMode}
+                panelOpen={subtitleMode === 'multiline'}
+                hasPreviousLine={hasPreviousLine}
+                hasNextLine={hasNextLine}
+                hasPreviousVideo={currentIndex > 0}
+                hasNextVideo={currentIndex < videos.length - 1}
+                videoCountText={t('msg.video_n_of_total', {
+                  n: currentIndex + 1,
+                  total: videos.length,
+                })}
+              />
+            </div>
+
+            {/* Subtitles — singleline line-follower, or multiline tabbed
+                sidebar (subs | info). The mode persists in localStorage. */}
+            {subtitleMode === 'singleline' ? (
+              <div className="min-h-0 flex-1 overflow-y-auto py-2">
                 <SubtitleDisplay
-                  mode="multiline"
+                  mode="singleline"
                   youtubeId={currentVideo?.youtube_id}
                   currentTime={currentTime}
                   videoTitle={currentVideo?.title}
                   initialLines={subtitleInitialLines}
                   highlightTerms={highlightTerms}
                   defaultLine={defaultSubtitleLine}
-                  scrollContainerRef={sidebarContentRef}
                   onSeekToLine={(t) => playerRef.current?.seekTo(t)}
                 />
-              );
-            }
-            if (tab === 'queue') {
-              return (
-                <VideoQueuePanel
-                  items={filteredVideos}
-                  keyFor={(v) => `${v.id}`}
-                  emptyText={t('msg.no_results')}
-                  header={
-                    <h3 className="text-sm font-semibold">
-                      {t('msg.videos_matching', { searchTerm: termDisplay })}
-                    </h3>
-                  }
-                  filterValue={listSearch}
-                  onFilterChange={setListSearch}
-                  filterPlaceholder={t('placeholder.filter')}
-                  sortValue={listSort}
-                  onSortChange={(v) => setListSort(v as SortKey)}
-                  sortOptions={[
-                    { value: 'views', label: t('sort.most_viewed') },
-                    { value: 'likes', label: t('title.likes') },
-                    { value: 'date', label: t('title.date') },
-                    { value: 'length', label: t('title.length') },
-                    { value: 'leftContext', label: t('title.leftContext') },
-                    { value: 'rightContext', label: t('title.rightContext') },
-                  ]}
-                  renderRow={renderQueueRow}
-                />
-              );
-            }
-            // info tab — lightweight current-video info (SubsSearchVideo has no
-            // likes/comments/difficulty, so a full VideoMeta isn't possible).
-            return currentVideo ? (
-              <div className="space-y-3">
-                <h2 className="text-base font-bold leading-tight">{currentVideo.title}</h2>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                  {currentVideo.views != null && (
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      {t('label.views_count', { count: formatNumber(currentVideo.views, l1.code) })}
-                    </span>
-                  )}
-                  {currentVideo.duration != null && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {formatTime(currentVideo.duration)}
-                    </span>
-                  )}
-                  {currentVideo.date && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(currentVideo.date).toLocaleDateString(l1.code)}
-                    </span>
-                  )}
-                </div>
-                <Link
-                  href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
-                  className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-muted transition-colors"
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  {t('action.watch')}
-                </Link>
               </div>
-            ) : null;
-          }}
-        </VideoSidebarPanel>
-      )}
-
-      {/* ── "List all" modal — independent of singleline/multiline mode ── */}
-      {listOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-          onClick={() => setListOpen(false)}
-        >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50" />
-          {/* Sheet */}
-          <div
-            className="relative z-10 flex max-h-[80vh] w-full max-w-2xl flex-col rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h3 className="text-sm font-semibold">
-                {t('msg.videos_matching', { searchTerm: termDisplay })}
-              </h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setListOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* List */}
-            <div ref={modalListRef} className="flex-1 overflow-y-auto p-2">
-              <VideoQueuePanel
-                items={filteredVideos}
-                keyFor={(v) => `${v.id}`}
-                emptyText={t('msg.no_results')}
-                filterValue={listSearch}
-                onFilterChange={setListSearch}
-                filterPlaceholder={t('placeholder.filter')}
-                sortValue={listSort}
-                onSortChange={(v) => setListSort(v as SortKey)}
-                sortOptions={[
-                  { value: 'views', label: t('sort.most_viewed') },
-                  { value: 'likes', label: t('title.likes') },
-                  { value: 'date', label: t('title.date') },
-                  { value: 'length', label: t('title.length') },
-                  { value: 'leftContext', label: t('title.leftContext') },
-                  { value: 'rightContext', label: t('title.rightContext') },
+            ) : (
+              <VideoSidebarPanel
+                tabs={[
+                  { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
+                  { key: 'info', label: t('title.info'), icon: <Info className="h-4 w-4" /> },
                 ]}
-                renderRow={renderQueueRow}
-              />
-            </div>
+                activeTab={panelTab}
+                onTabChange={setPanelTab}
+                contentRef={sidebarContentRef}
+                className="min-h-0 flex-1"
+              >
+                {(tab) => {
+                  if (tab === 'subs') {
+                    return (
+                      <SubtitleDisplay
+                        mode="multiline"
+                        youtubeId={currentVideo?.youtube_id}
+                        currentTime={currentTime}
+                        videoTitle={currentVideo?.title}
+                        initialLines={subtitleInitialLines}
+                        highlightTerms={highlightTerms}
+                        defaultLine={defaultSubtitleLine}
+                        scrollContainerRef={sidebarContentRef}
+                        onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+                      />
+                    );
+                  }
+                  // info tab — lightweight current-video info (SubsSearchVideo has no
+                  // likes/comments/difficulty, so a full VideoMeta isn't possible).
+                  return currentVideo ? (
+                    <div className="space-y-3">
+                      <h2 className="text-base font-bold leading-tight">{currentVideo.title}</h2>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                        {currentVideo.views != null && (
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            {t('label.views_count', { count: formatNumber(currentVideo.views, l1.code) })}
+                          </span>
+                        )}
+                        {currentVideo.duration != null && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {formatTime(currentVideo.duration)}
+                          </span>
+                        )}
+                        {currentVideo.date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(currentVideo.date).toLocaleDateString(l1.code)}
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
+                        className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-muted transition-colors"
+                      >
+                        <Play className="h-3.5 w-3.5" />
+                        {t('action.watch')}
+                      </Link>
+                    </div>
+                  ) : null;
+                }}
+              </VideoSidebarPanel>
+            )}
           </div>
         </div>
       )}
