@@ -137,6 +137,10 @@ export interface TokenizedTextProps {
   /** When true, selecting text inside the tokenized text opens the dictionary
    *  popup with the selected substring fed in as the lookup term (no lemma). */
   selectionDictionary?: boolean;
+  /** Called when the pointer enters/leaves a token: the token's char range in
+   *  `text` on enter (null when ranges can't be reconstructed), null on leave.
+   *  Used by the readers to highlight the matching translation sentence. */
+  onTokenHover?: (range: { start: number; end: number } | null) => void;
 }
 
 /**
@@ -172,6 +176,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   showDefinition,
   byeonggi,
   selectionDictionary = false,
+  onTokenHover,
   typeFace,
 }) => {
   const { l1 } = useLanguage();
@@ -257,6 +262,21 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     }
     return out;
   }, [displayTokens, formats, text]);
+
+  // Char ranges of each display token in `text` (same reconstruction guard as
+  // tokenFormatStyles — tokens concatenate back to `text` or we bail). Only
+  // computed when a hover listener is attached.
+  const tokenRanges = useMemo(() => {
+    if (!onTokenHover) return null;
+    const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return null;
+    let pos = 0;
+    return displayTokens.map(t => {
+      const range = { start: pos, end: pos + t.text.length };
+      pos = range.end;
+      return range;
+    });
+  }, [displayTokens, text, onTokenHover]);
 
   // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
   useEffect(() => {
@@ -719,6 +739,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isHighlighted={tokenMatchesHighlight(token)}
               nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={(rect) => handleTokenClick(token, rect)}
+              onHoverChange={onTokenHover && tokenRanges
+                ? (hovering) => onTokenHover(hovering ? tokenRanges[i]! : null)
+                : undefined}
               cacheVersion={cacheVersion}
               isKaraokeSpoken={isKaraokeSpoken}
               phoneticsOnHighlight={phoneticsOnHighlight}

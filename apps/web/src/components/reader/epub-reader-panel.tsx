@@ -12,6 +12,10 @@ import {
   type BlockRenderCtx,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
+import {
+  SegmentedTranslation,
+  SentenceHighlightBlock,
+} from '@/components/reader/sentence-highlight';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubTextBlock } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
@@ -136,20 +140,27 @@ export function EpubReaderPanel({
       if (end > start) formats = [...tb.formats, { start, end, type: 'highlight' as const }];
     }
     return (
-      <TextActionMenu key={item.key} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-        translation={showTranslation ? rctx.translation : undefined}
-        translationClass={translationClass(tb)}
-        translationZoom={textZoom}
-        loading={showTranslation && !rctx.translation}>
-        <Tag
-          className={blockClass(tb)}
-          style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
-        >
-          <TokenizedText text={tb.text} l2Code={l2.code}
-            inheritSize={tb.type === 'heading'} context={ctx}
-            tokens={rctx.tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary />
-        </Tag>
-      </TextActionMenu>
+      <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
+        {({ map, activeSentence, onTokenHover }) => (
+          <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
+            translation={showTranslation && rctx.translation ? (
+              <SegmentedTranslation text={rctx.translation} map={map} active={activeSentence} />
+            ) : undefined}
+            translationClass={translationClass(tb)}
+            translationZoom={textZoom}
+            loading={showTranslation && !rctx.translation}>
+            <Tag
+              className={blockClass(tb)}
+              style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
+            >
+              <TokenizedText text={tb.text} l2Code={l2.code}
+                inheritSize={tb.type === 'heading'} context={ctx}
+                tokens={rctx.tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary
+                onTokenHover={onTokenHover} />
+            </Tag>
+          </TextActionMenu>
+        )}
+      </SentenceHighlightBlock>
     );
   }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink]);
 
