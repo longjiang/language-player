@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { isContinua, type SketchExamplesResponse } from '@langplayer/shared';
 import { sentenceContaining } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -31,6 +32,7 @@ interface CorpusExamplesProps {
 export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, highlightForms = [], highlightEntryIds = [] }: CorpusExamplesProps) {
   const t = useT();
   const l2 = baseCode(l2Code);
+  const glyphLang = useGlyphLang(l2Code);
   const corpnameParam = corpname ? `&corpname=${encodeURIComponent(corpname)}` : '';
   const url = `${PYTHON_API_URL}/sketch-engine/examples?word=${encodeURIComponent(word)}&l2=${l2}&l1=${baseCode(l1Code)}${corpnameParam}`;
   const { data, loading, error } = useCorpusFetch<SketchExamplesResponse>(url);
@@ -103,7 +105,7 @@ export function CorpusExamples({ word, l2Code, l1Code = 'en', corpname = null, h
           const display = displayTexts[index] ?? '';
           return (
             <li key={`${example.l2}-${index}`} className="py-3">
-              <p lang={l2} className="text-sm leading-relaxed text-foreground">
+              <p lang={glyphLang} className="text-sm leading-relaxed text-foreground">
                 <TokenizedText
                   text={display}
                   l2Code={l2}

@@ -147,6 +147,28 @@ export function isHan(code: string): boolean {
   return HAN_CODES.has(baseCode(code));
 }
 
+/**
+ * Resolve a glyph-safe BCP47 `lang` tag for an L2 content container
+ * (SPEC-080). The browser uses `lang` to pick the correct regional glyph
+ * variant for a shared codepoint (e.g. a kanji that differs between Japanese
+ * and simplified/traditional Chinese).
+ *
+ * `useTraditional` is the user's simplified-vs-traditional preference, read
+ * from `useScriptPreference(l2Code).useTraditional`. It only affects Han
+ * codes that lack a script subtag (`zh`, `yue`, `lzh`, `zh-*`); unambiguous
+ * codes (`ja`, `ko`, `zh-Hans`, `zh-Hant`) are fixed.
+ */
+export function glyphLangTag(code: string, useTraditional: boolean): string {
+  if (code === 'ja') return 'ja';
+  if (code === 'ko') return 'ko';
+  if (code === 'zh-Hans') return 'zh-Hans';
+  if (code === 'zh-Hant') return 'zh-Hant';
+  if (HAN_CODES.has(baseCode(code)) || code.startsWith('zh-')) {
+    return useTraditional ? 'zh-Hant' : 'zh-Hans';
+  }
+  return code;
+}
+
 // ── Language flags ───────────────────────────
 
 /** Flag emoji for a language code — shared source of truth. */

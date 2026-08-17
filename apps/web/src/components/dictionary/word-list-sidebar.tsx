@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getCachedEntries, enqueueLookupWords } from '@/lib/dictionary-cache';
@@ -158,6 +159,7 @@ function SidebarEntryCard({
 }) {
   const router = useRouter();
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(undefined);
+  const glyphLang = useGlyphLang(l2Code);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,7 +180,7 @@ function SidebarEntryCard({
     // Still loading — show the head with a spinner.
     content = (
       <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
-        <span className="text-sm font-medium text-muted-foreground" lang={l2Code}>{item.head}</span>
+        <span className="text-sm font-medium text-muted-foreground" lang={glyphLang}>{item.head}</span>
         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -189,7 +191,7 @@ function SidebarEntryCard({
         type="button"
         onClick={() => router.push(`/${l1Code}/${l2Code}/dictionary?q=${encodeURIComponent(item.head)}`)}
         className="w-full rounded-lg border border-border bg-card p-3 text-left text-lg font-bold text-foreground transition-colors hover:bg-muted/30"
-        lang={l2Code}
+        lang={glyphLang}
       >
         {item.head}
       </button>

@@ -5,6 +5,7 @@ import { useInflection } from '@langplayer/api-client';
 import { isInflectable, type InflectedForm } from '@langplayer/shared';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { baseCode } from '@/lib/language-data';
 
 /** ISO 639-1 → ISO 639-3 mappings for languages with inflection support.
@@ -56,6 +57,7 @@ interface InflectionTableProps {
 export function InflectionTable({ head, l2Code, verbType, embedded = false }: InflectionTableProps) {
   const inflection = useInflection();
   const t = useT();
+  const glyphLang = useGlyphLang(l2Code);
   const [forms, setForms] = useState<InflectedForm[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -185,7 +187,7 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
                   className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/20 transition-colors break-inside-avoid-column"
                 >
                   <span className="text-muted-foreground">{f.field}</span>
-                  <span className="font-medium" lang={l2Code}>
+                  <span className="font-medium" lang={glyphLang}>
                     {f.form}
                   </span>
                 </div>

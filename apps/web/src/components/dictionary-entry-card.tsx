@@ -9,6 +9,7 @@ import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { normalizeInstances } from '@/hooks/use-saved-words';
@@ -86,6 +87,8 @@ export function DictionaryEntryCard({
   const { l1 } = useLanguage();
   const { getSavedWords } = useSavedWordsContext();
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
+  // SPEC-080: glyph-safe lang for the L2 head/related forms.
+  const glyphLang = useGlyphLang(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
   const lastLoggedEntryRef = useRef<DictionaryEntry | null>(null);
@@ -220,9 +223,9 @@ export function DictionaryEntryCard({
         {/* Header */}
         <div className="flex items-start gap-2">
           <div className="flex-1 flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-bold text-foreground" lang={l2Code}>{head}</span>
+            <span className="text-lg font-bold text-foreground" lang={glyphLang}>{head}</span>
             {displayAlternate && (
-              <span className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</span>
+              <span className="text-xs text-muted-foreground" lang={glyphLang}>{displayAlternate}</span>
             )}
             <SpeakButton text={head} l2Code={l2Code ?? ''} size="sm" />
             {formattedPron && (
@@ -269,7 +272,7 @@ export function DictionaryEntryCard({
               >
                 {cl.kind === 'measure_word' ? (
                   <>
-                    <span className="font-medium" lang="zh">{cl.simplified}</span>
+                    <span className="font-medium" lang="zh-Hans">{cl.simplified}</span>
                     <span className="text-muted-foreground">{cl.reading}</span>
                   </>
                 ) : cl.kind === 'gender' ? (
@@ -285,7 +288,7 @@ export function DictionaryEntryCard({
         {/* Saved metadata — date, context sentence, source type + title */}
         {savedRecord && (
           <div className="mt-2 text-xs text-muted-foreground">
-            <p className="line-clamp-3" lang={l2Code}>
+            <p className="line-clamp-3" lang={glyphLang}>
               <BookmarkCheck className="inline h-3 w-3 align-[-2px]" />
               {' '}
               <span className="whitespace-nowrap">{saveDateStr}</span>
@@ -335,11 +338,11 @@ export function DictionaryEntryCard({
       {/* Header: head + badges, then pronunciation row (matches mobile full) */}
       <div className="mb-3">
         <div className="flex items-start gap-3">
-          <HeadTag className="shrink-0 text-3xl font-bold" lang={l2Code}>
+          <HeadTag className="shrink-0 text-3xl font-bold" lang={glyphLang}>
             {head}
           </HeadTag>
           {displayAlternate && (
-            <span className="mt-2 shrink-0 text-base text-muted-foreground" lang={l2Code}>
+            <span className="mt-2 shrink-0 text-base text-muted-foreground" lang={glyphLang}>
               {displayAlternate}
             </span>
           )}
@@ -350,7 +353,7 @@ export function DictionaryEntryCard({
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <SpeakButton text={entry.head} l2Code={l2Code ?? ''} size="default" />
           {formattedPron && (
-            <span className="text-base text-muted-foreground" lang={l2Code}>
+            <span className="text-base text-muted-foreground" lang={glyphLang}>
               {formattedPron}
             </span>
           )}
@@ -394,7 +397,7 @@ export function DictionaryEntryCard({
               >
                 {cl.kind === 'measure_word' ? (
                   <>
-                    <span className="font-medium" lang="zh">{cl.simplified}</span>
+                    <span className="font-medium" lang="zh-Hans">{cl.simplified}</span>
                     <span className="text-muted-foreground">{cl.reading}</span>
                   </>
                 ) : cl.kind === 'gender' ? (
@@ -421,7 +424,7 @@ export function DictionaryEntryCard({
                 <span>{t('label.textbook_format', { material: m.material, book: m.location?.book ?? '', lesson: m.location?.lesson ?? '' })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
-                <p className="text-sm" lang={l2Code}>{m.example}</p>
+                <p className="text-sm" lang={glyphLang}>{m.example}</p>
               )}
               {m.exampleTranslation && (
                 <p className="text-sm text-muted-foreground">{m.exampleTranslation}</p>
@@ -456,7 +459,7 @@ export function DictionaryEntryCard({
       {/* Saved metadata — date, context sentence, source type + title */}
       {savedRecord && (
         <div className="mb-6 text-sm text-muted-foreground">
-          <p className="line-clamp-3" lang={l2Code}>
+          <p className="line-clamp-3" lang={glyphLang}>
             <BookmarkCheck className="inline h-4 w-4 align-[-2px]" />
             {' '}
             <span className="whitespace-nowrap">{saveDateStr}</span>
