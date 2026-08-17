@@ -1,19 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
+import { useCallback } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
-import { md5, isPhoneticsEligible } from '@langplayer/utils';
-import { useT } from '@/hooks/use-t';
+import { isPhoneticsEligible } from '@langplayer/utils';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
-import { Switch } from '@/components/ui/switch';
-import { usePaginatedBook, type PageBlock } from '@/hooks/use-paginated-book';
+import {
+  PaginatedReader,
+  type BlockRenderCtx,
+  type ReaderPageItem,
+} from '@/components/reader/paginated-reader';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubTextBlock } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import type { JSX } from 'react';
 
 function blockTag(tb: EpubTextBlock): keyof JSX.IntrinsicElements {
   switch (tb.type) {
@@ -86,8 +88,7 @@ export function EpubReaderPanel({
   onLocationChange,
   onOpenLink,
 }: EpubReaderPanelProps) {
-  const t = useT();
-  const { display, updateDisplay, getL2 } = useSettingsContext();
+  const { display, getL2 } = useSettingsContext();
   const showTranslation = display.translation;
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
   // factor. Applied to every block so headings keep their relative sizes.
@@ -102,274 +103,130 @@ export function EpubReaderPanel({
   // block heights changes (text scale, translation column, ruby estimate).
   const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}`;
 
-  const {
-    viewportRef,
-    measureRef,
-    measureWindow,
-    pageBlocks,
-    measuring,
-    pageNumber,
-    totalPagesEstimate,
-    pageStart,
-    jumpTo,
-    nextPage,
-    prevPage,
-    hasPrev,
-    hasNext,
-  } = usePaginatedBook(book, { chromeHeight: 40, measureNonce });
-
   // Paging away from the highlighted search result dismisses the highlight.
-  const handlePrevPage = useCallback(() => {
+  // The shared reader reports every visible-page start change through
+  // onLocationChange (page turns and jumps alike).
+  const handleLocationChange = useCallback((loc: { blockIndex: number } | BookLocation) => {
     onHighlightDismiss?.();
-    prevPage();
-  }, [prevPage, onHighlightDismiss]);
-  const handleNextPage = useCallback(() => {
-    onHighlightDismiss?.();
-    nextPage();
-  }, [nextPage, onHighlightDismiss]);
+    onLocationChange(loc as BookLocation);
+  }, [onHighlightDismiss, onLocationChange]);
 
-  const [tokenCache, setTokenCache] = useState<Record<string, LemmatizedToken[]>>({});
-  const [blockTranslations, setBlockTranslations] = useState<Record<string, string>>({});
-  const [loadingTokens, setLoadingTokens] = useState(false);
-  const tokenGenRef = useRef(0);
-  const translateGenRef = useRef(0);
-
-  // Apply external jumps (restore / TOC / search / links). Also re-applies
-  // when the book instance changes: a re-open swaps the EpubBook and the
-  // paginator reset invalidates any in-flight fetch, so the new book needs
-  // its own jump (otherwise the window stays empty and the spinner never
-  // clears).
-  const lastNonceRef = useRef<number | null>(null);
-  const lastJumpBookRef = useRef<EpubBook | null>(null);
-  useEffect(() => {
-    if (!location) return;
-    if (lastNonceRef.current === jumpNonce && lastJumpBookRef.current === book) return;
-    lastNonceRef.current = jumpNonce;
-    lastJumpBookRef.current = book;
-    jumpTo(location);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jumpNonce, book, location]);
-
-  // Persist the current page start whenever it changes.
-  const lastSavedKeyRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!pageStart) return;
-    const key = `${pageStart.spineIndex}:${pageStart.blockIndex}:${pageStart.offset}`;
-    if (lastSavedKeyRef.current === key) return;
-    lastSavedKeyRef.current = key;
-    onLocationChange(pageStart);
-  }, [pageStart, onLocationChange]);
-
-  // Per-page tokenization (lazy, keyed by spine:block).
-  useEffect(() => {
-    if (!pageBlocks.length) return;
-    const gen = ++tokenGenRef.current;
-    const textBlocks = pageBlocks
-      .filter((p): p is PageBlock & { block: EpubTextBlock } => p.block.kind === 'text');
-    const pending = textBlocks.filter(p => !tokenCache[`${p.loc.spineIndex}:${p.loc.blockIndex}`]);
-    if (pending.length === 0) return;
-    setLoadingTokens(true);
-    void onLemmatize(pending.map(p => p.block.text)).then(results => {
-      if (gen !== tokenGenRef.current) return;
-      setTokenCache(prev => {
-        const next = { ...prev };
-        pending.forEach((p, i) => {
-          next[`${p.loc.spineIndex}:${p.loc.blockIndex}`] = results[i] ?? [];
-        });
-        return next;
-      });
-    }).finally(() => {
-      if (gen === tokenGenRef.current) setLoadingTokens(false);
-    });
-  }, [pageBlocks, tokenCache, onLemmatize]);
-
-  // Auto-translate the page when the toggle is on (cleared on page change).
-  useEffect(() => {
-    const gen = ++translateGenRef.current;
-    if (!showTranslation || !pageBlocks.length) return;
-    const texts = pageBlocks
-      .filter((p): p is PageBlock & { block: EpubTextBlock } => p.block.kind === 'text')
-      .map(p => p.block.text);
-    if (!texts.length) return;
-    const missing = texts.filter(t => !blockTranslations[md5(t)]);
-    if (!missing.length) return;
-    void onPageTranslate(missing).then(byKey => {
-      if (gen !== translateGenRef.current) return;
-      setBlockTranslations(prev => ({ ...prev, ...byKey }));
-    }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showTranslation, pageBlocks]);
-
-  // Keyboard paging.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowLeft' || e.key === 'PageUp') handlePrevPage();
-      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-        e.preventDefault();
-        handleNextPage();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handlePrevPage, handleNextPage]);
-
-  const renderBlock = useCallback((p: PageBlock) => {
-    const { loc, block } = p;
+  const renderBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
+    const { loc, block } = item;
+    const bookLoc = loc as BookLocation;
     if (block.kind === 'image') {
       // eslint-disable-next-line @next/next/no-img-element
-      return <img key={`${loc.spineIndex}:${loc.blockIndex}`} src={block.imageUri}
+      return <img key={item.key} src={block.imageUri}
         alt={block.alt ?? ''} className="max-w-full h-auto rounded-lg my-4" />;
     }
-    const tb = block;
-    const blockKey = `${loc.spineIndex}:${loc.blockIndex}`;
-    const key = md5(tb.text);
+    // Windowed (EPUB) mode only produces text/image items, so after the
+    // image branch the block is always an EpubTextBlock.
+    const tb = block as EpubTextBlock;
     const Tag = blockTag(tb);
-    const tokens = tokenCache[blockKey];
     const href = tb.formats.find(f => f.type === 'link')?.url;
     // Append the search-match highlight range when this block contains it.
     let formats = tb.formats;
     if (
       highlight &&
-      highlight.spineIndex === loc.spineIndex &&
-      highlight.blockIndex === loc.blockIndex
+      highlight.spineIndex === bookLoc.spineIndex &&
+      highlight.blockIndex === bookLoc.blockIndex
     ) {
       const start = Math.max(0, Math.min(highlight.start, tb.text.length));
       const end = Math.max(start, Math.min(highlight.end, tb.text.length));
       if (end > start) formats = [...tb.formats, { start, end, type: 'highlight' as const }];
     }
     return (
-      <TextActionMenu key={blockKey} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-        translation={showTranslation ? blockTranslations[key] : undefined}
+      <TextActionMenu key={item.key} text={tb.text} l2Code={l2.code} l1Code={l1.code}
+        translation={showTranslation ? rctx.translation : undefined}
         translationClass={translationClass(tb)}
         translationZoom={textZoom}
-        loading={showTranslation && !blockTranslations[key]}>
+        loading={showTranslation && !rctx.translation}>
         <Tag
           className={blockClass(tb)}
           style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
         >
           <TokenizedText text={tb.text} l2Code={l2.code}
             inheritSize={tb.type === 'heading'} context={ctx}
-            tokens={tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary />
+            tokens={rctx.tokens} formats={formats} href={href} onOpenLink={onOpenLink} selectionDictionary />
         </Tag>
       </TextActionMenu>
     );
-  }, [tokenCache, blockTranslations, showTranslation, textZoom, highlight, l2.code, l1.code, ctx, onOpenLink]);
+  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink]);
 
-  return (
-    <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto">
-        <div
-          className="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
-          [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
-          [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
-          [&_p]:mb-0 [&_p]:leading-relaxed
-          [&_li]:mb-0 [&_li]:leading-relaxed
-          [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
-          [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
-          [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
-          lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
-        >
-          {measuring && pageBlocks.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+  /** Mirror of the visible rendering for the measuring container — one root
+   *  element per block. Mirrors the dual-column text/translation layout, the
+   *  action-menu button column's minimum height, and the ruby/furigana
+   *  line-height estimates. */
+  const renderMeasureBlock = useCallback((item: ReaderPageItem) => {
+    const { block } = item;
+    if (block.kind === 'image') {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img key={item.key} src={block.imageUri} alt="" className="max-w-full h-auto rounded-lg my-4" />;
+    }
+    // Windowed (EPUB) mode only produces text/image items (see renderBlock).
+    const tb = block as EpubTextBlock;
+    const Tag = blockTag(tb);
+    return (
+      <div key={item.key} className="mb-4 flex items-start gap-3">
+        <div className="flex-1 min-w-0 flex flex-col gap-y-1 lg:flex-row lg:gap-4 lg:items-center">
+          <div className="flex-[3] min-w-0">
+            <Tag
+              className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
+              style={{ zoom: textZoom }}
+            >
+              {tb.text}
+            </Tag>
+          </div>
+          {showTranslation && (
+            <div
+              className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
+              style={{ zoom: textZoom }}
+            >
+              <div className="flex flex-col gap-y-1.5">
+                {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
+                  <div key={li} className="h-3.5" />
+                ))}
+              </div>
             </div>
-          ) : (
-            <>
-              {/* loadingTokens indicator removed — no "making text
-                  interactive" row; content shows when ready */}
-              {pageBlocks.map(renderBlock)}
-            </>
           )}
         </div>
+        {/* Mirrors the action-menu button column's minimum height. */}
+        <div className="mt-1 h-6 w-6 shrink-0" />
       </div>
+    );
+  }, [phoneticsEstimate, showTranslation, textZoom]);
 
-      {/* Page navigation + translation */}
-      <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
-        <button onClick={handlePrevPage} disabled={!hasPrev || measuring}
-          aria-label={t('action.previous_chapter')}
-          className="rounded p-1 hover:bg-muted disabled:opacity-30">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <span>
-          {pageNumber}
-          {totalPagesEstimate > 0 ? ` / ${totalPagesEstimate}` : ''}
-        </span>
-        <button onClick={handleNextPage} disabled={!hasNext || measuring}
-          aria-label={t('action.next_chapter')}
-          className="rounded p-1 hover:bg-muted disabled:opacity-30">
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        <span className="mx-2 text-muted-foreground/30">|</span>
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <span className="text-xs">{t('action.translation')}</span>
-          <Switch
-            checked={showTranslation}
-            onCheckedChange={(checked) => updateDisplay({ translation: checked })}
-            className="shrink-0"
-          />
-        </label>
-      </div>
-
-      {/* Hidden measuring container — mirrors the current window exactly,
-          including per-block spacing, the translation column (when on) and
-          the text-zoom + ruby/furigana height estimates. Each block must be
-          ONE direct child of measureRef: the paginator reads
-          measureRef.children as one element per block to compute page breaks
-          (one wrapper around all blocks would measure a single child →
-          1-block pages). */}
-      <div
-        ref={measureRef}
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
-          [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
-          [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
-          [&_p]:mb-0 [&_p]:leading-relaxed
-          [&_li]:mb-0 [&_li]:leading-relaxed
-          [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
-          [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
-          [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
-          [&_.measure-ruby-all]:leading-[2.25] [&_.measure-ruby-hard]:leading-[2]"
-        lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
-      >
-        {measureWindow.map((p, i) =>
-          p.block.kind === 'image'
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img key={i} src={p.block.imageUri} alt="" className="max-w-full h-auto rounded-lg my-4" />
-            : (() => {
-                const tb = p.block as EpubTextBlock;
-                const Tag = blockTag(tb);
-                return (
-                  <div key={i} className="mb-4 flex items-start gap-3">
-                    <div className="flex-1 min-w-0 flex flex-col gap-y-1 lg:flex-row lg:gap-4 lg:items-center">
-                      <div className="flex-[3] min-w-0">
-                        <Tag
-                          className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
-                          style={{ zoom: textZoom }}
-                        >
-                          {tb.text}
-                        </Tag>
-                      </div>
-                      {showTranslation && (
-                        <div
-                          className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
-                          style={{ zoom: textZoom }}
-                        >
-                          <div className="flex flex-col gap-y-1.5">
-                            {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
-                              <div key={li} className="h-3.5" />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Mirrors the action-menu button column's minimum height. */}
-                    <div className="mt-1 h-6 w-6 shrink-0" />
-                  </div>
-                );
-              })(),
-        )}
-      </div>
-    </div>
+  return (
+    <PaginatedReader
+      book={book}
+      location={location}
+      jumpNonce={jumpNonce}
+      l1={l1} l2={l2}
+      ctx={ctx}
+      measureNonce={measureNonce}
+      chromeHeight={40}
+      onLemmatize={onLemmatize}
+      onPageTranslate={onPageTranslate}
+      onLocationChange={handleLocationChange}
+      contentClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
+        [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
+        [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
+        [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_li]:mb-0 [&_li]:leading-relaxed
+        [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
+        [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
+        [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
+      measureClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
+        [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
+        [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
+        [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_li]:mb-0 [&_li]:leading-relaxed
+        [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
+        [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
+        [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
+        [&_.measure-ruby-all]:leading-[2.25] [&_.measure-ruby-hard]:leading-[2]"
+      renderBlock={renderBlock}
+      renderMeasureBlock={renderMeasureBlock}
+    />
   );
 }
