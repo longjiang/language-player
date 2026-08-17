@@ -13,9 +13,9 @@ artifact mirrors plus the artifact's SHA-256, so a build can be verified
 from the artifact itself (SPEC-076 § 4.8, `scripts/verify-dev-build.mjs`).
 
 **Retention:** the 3 most recent builds (current + 2 previous) are kept
-active at `~/Desktop/LP-DevBuilds/` (override with `LP_DEV_BUILD_DIR`). When
+active at the repo-local `.dev-builds/` (gitignored; override with `LP_DEV_BUILD_DIR`). When
 a new build is recorded, the oldest beyond the window is moved to
-`~/Desktop/LP-DevBuilds/archive/` and its row is marked `archived`. Numbers
+`.dev-builds/archive/` and its row is marked `archived`. Numbers
 are never reused — a consumed number stays consumed even if the build is
 later discarded.
 

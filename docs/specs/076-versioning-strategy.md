@@ -330,7 +330,7 @@ pinned too, start Metro with the commit you intend to test — see the
 `EXPO_PUBLIC_GIT_SHA` note below.
 
 Retention: the **3 most recent builds (current + 2 previous)** stay
-recoverable at `~/Desktop/LP-DevBuilds/` (override: `LP_DEV_BUILD_DIR`).
+recoverable at the repo-local `.dev-builds/` (gitignored; override: `LP_DEV_BUILD_DIR`).
 Recording a new build moves the oldest beyond the window into `archive/` and
 marks its row `archived`. Dev build numbers are never reused.
 

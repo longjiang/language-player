@@ -30,7 +30,7 @@
  *   - records a row in docs/versioning/dev-build-ledger.md (number N = last + 1,
  *     never reused) with artifact SHA-256;
  *   - keeps only the <--keep> most recent builds (default 3: current + 2
- *     previous) at $LP_DEV_BUILD_DIR or ~/Desktop/LP-DevBuilds/, moving older
+ *     previous) at $LP_DEV_BUILD_DIR or .dev-builds/, moving older
  *     artifacts to archive/ and marking their rows `archived`.
  *
  * NOTE on JS config (EXPO_PUBLIC_*): for Debug builds these are inlined by
@@ -46,7 +46,6 @@
 import { execSync } from 'child_process';
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
-import { homedir } from 'os';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -54,7 +53,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
 const MOBILE = join(ROOT, 'apps/mobile');
 const LEDGER = join(ROOT, 'docs/versioning/dev-build-ledger.md');
-const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(homedir(), 'Desktop/LP-DevBuilds');
+const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(ROOT, '.dev-builds');
 const ARCHIVE_DIR = join(STORE_DIR, 'archive');
 
 const PLATFORMS = ['ios-sim', 'ios-device', 'android'];
