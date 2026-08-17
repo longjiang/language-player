@@ -6,17 +6,19 @@
  * Usage:
  *   node scripts/verify-dev-build.mjs <N|latest> [--artifact <path>]
  *
- * Checks, in order:
+ * "Dev build" = Debug build (Metro-connected): JS is served by Metro at
+ * runtime, so the artifact is the compiled native shell. Checks, in order:
  *   1. The ledger row exists.
  *   2. The artifact exists (in $LP_DEV_BUILD_DIR / ~/Desktop/LP-DevBuilds/,
  *      or the --artifact override).
  *   3. The artifact's SHA-256 matches the ledger row.
- *   4. The recorded commit SHA is embedded in the artifact's JS bundle
- *      (EXPO_PUBLIC_GIT_SHA, inlined by Metro because AboutDialog reads it).
+ *   4. For ios-device Debug zips: ip.txt (Metro LAN host) is present and a
+ *      valid IP. For Release-config artifacts that still contain a JS
+ *      bundle, the recorded commit is grepped out of it.
  *   5. The recorded commit exists in this git repository.
  *
  * Exits non-zero on any failure. Nothing here trusts the ledger alone:
- * the artifact is hashed and grepped independently.
+ * the artifact is hashed and inspected independently.
  */
 
 import { execSync } from 'child_process';
@@ -99,18 +101,36 @@ if (!existsSync(artifactPath)) {
   console.log(`  sha256        : ${digest} ${match ? '✓ matches ledger' : '✗ MISMATCH'}`);
   if (!match) errors.push('artifact SHA-256 does not match the ledger row');
 
-  // 4. Commit SHA embedded in the JS bundle. Streamed through the shell
-  // (unzip -p | grep) so the megabyte-sized bundle never fills the pipe
+  // 4. Commit SHA embedded in the JS bundle — only for Release-config
+  // artifacts (dev-build.mjs now builds Debug: JS is served by Metro at
+  // runtime, so there is no embedded bundle to grep; SHA-256 + commit
+  // existence + ip.txt are the checks that apply). Streamed through the
+  // shell (unzip -p | grep) so a megabyte bundle never fills the pipe
   // buffer (ENOBUFS) — only the tiny match count is captured.
   try {
-    let bundlePath;
+    let bundlePath = null;
     if (row.platform === 'android') {
-      bundlePath = 'assets/index.android.bundle';
+      const listing = sh(`unzip -l '${artifactPath}'`);
+      if (listing.includes('assets/index.android.bundle')) bundlePath = 'assets/index.android.bundle';
     } else {
       const listing = sh(`unzip -l '${artifactPath}'`);
       const m = listing.match(/[^\s]+main\.jsbundle/);
       bundlePath = m ? m[0] : null;
-      if (!bundlePath) errors.push('no main.jsbundle found inside the zip (was this built as Release?)');
+      if (bundlePath) {
+        // ip.txt (Metro host) is written by RN for device Debug builds.
+        if (row.platform === 'ios-device') {
+          const ipMatch = listing.match(/[^\s]+ip\.txt/);
+          if (ipMatch) {
+            const ip = sh(`unzip -p '${artifactPath}' '${ipMatch[0]}'`).trim();
+            const looksValid = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
+            console.log(`  ip.txt        : ${looksValid ? `✓ ${ip}` : `✗ '${ip}' is not an IP`}`);
+            if (!looksValid) errors.push(`ip.txt in the artifact does not contain a valid Metro host IP`);
+          } else {
+            console.log('  ip.txt        : ⚠ absent (Debug device build should contain it)');
+            errors.push('ip.txt missing — the app cannot find Metro on the LAN');
+          }
+        }
+      }
     }
     if (bundlePath) {
       const count = Number(
@@ -119,9 +139,11 @@ if (!existsSync(artifactPath)) {
       const embedded = count > 0;
       console.log(`  embedded sha  : ${embedded ? `✓ found in bundle (${count}×)` : '✗ NOT in bundle'}`);
       if (!embedded) errors.push(`commit ${row.commit} not found in the artifact's JS bundle`);
+    } else {
+      console.log('  embedded sha  : — (Debug build: JS is served by Metro at runtime; no bundle to grep)');
     }
   } catch (e) {
-    errors.push(`could not inspect bundle: ${e.message}`);
+    errors.push(`could not inspect artifact: ${e.message}`);
   }
 }
 

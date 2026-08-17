@@ -2,31 +2,45 @@
 /**
  * Build, record, and retain a dev build per SPEC-076 § 4.8.
  *
+ * "Dev build" means DEBUG build (Metro-connected): the JS bundle is NOT
+ * embedded — the app loads it from Metro at runtime, giving Fast Refresh.
+ * The artifact is the compiled native shell (signed .app / debug APK) at a
+ * pinned commit.
+ *
  * Usage:
  *   node scripts/dev-build.mjs <ios-sim|ios-device|android>
- *     [--api-url <url>] [--keep <N>] [--allow-dirty] [--dry-run]
+ *     [--metro-host <ip>] [--keep <N>] [--allow-dirty] [--dry-run]
  *
  * Platforms:
- *   ios-sim     Release build for the iOS Simulator (no signing) → .zip of the .app
- *   ios-device  Release build for a physical device (Apple Development signing) → .zip of the .app
- *   android     Release AAB-less APK (`assembleRelease`) → .apk
+ *   ios-sim     Debug build for the iOS Simulator → .zip of the .app
+ *               (loads JS from localhost:8081)
+ *   ios-device  Debug build for a physical device (Apple Development
+ *               signing) → .zip of the .app. RN's react-native-xcode.sh
+ *               writes ip.txt (the Mac's LAN IP) into the bundle, so the
+ *               app connects to Metro at http://<mac-lan-ip>:8081.
+ *   android     Debug APK (`assembleDebug`) → .apk
+ *               (loads JS from Metro — adb reverse or the LAN URL)
+ *
+ * --metro-host overrides the LAN IP used by the ip.txt check for
+ * ios-device; it defaults to the Mac's primary interface IP.
  *
  * Every dev build:
  *   - refuses a dirty git tree unless --allow-dirty (a dirty build cannot be
  *     said to mirror a commit "for sure"; the row is marked `(dirty)`);
- *   - embeds the full commit SHA via EXPO_PUBLIC_GIT_SHA (Metro inlines it
- *     because apps/mobile/components/about/AboutDialog.tsx reads it), so the
- *     artifact is grep-verifiable against this ledger;
- *   - pins the API URL via EXPO_PUBLIC_API_URL (defaults to the iOS
- *     simulator loopback; physical devices/Android need --api-url, e.g. the
- *     Mac's LAN IP or 10.0.2.2 for the Android emulator);
  *   - records a row in docs/versioning/dev-build-ledger.md (number N = last + 1,
  *     never reused) with artifact SHA-256;
  *   - keeps only the <--keep> most recent builds (default 3: current + 2
  *     previous) at $LP_DEV_BUILD_DIR or ~/Desktop/LP-DevBuilds/, moving older
  *     artifacts to archive/ and marking their rows `archived`.
  *
+ * NOTE on JS config (EXPO_PUBLIC_*): for Debug builds these are inlined by
+ * METRO at serve time, not at build time — so start Metro with the env you
+ * want, e.g. `EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start
+ * --host lan`. The About dialog's commit row then shows the SHA.
+ *
  * Verify afterwards: node scripts/verify-dev-build.mjs <N|latest>
+ * (for Debug builds the embedded-bundle grep is skipped — no bundle exists;
+ * SHA-256 + commit + ip.txt are checked instead).
  */
 
 import { execSync } from 'child_process';
@@ -134,18 +148,20 @@ const args = process.argv.slice(2);
 const platform = args.find((a) => PLATFORMS.includes(a));
 if (!platform) {
   fail(
-    'Usage: node scripts/dev-build.mjs <ios-sim|ios-device|android> [--api-url <url>] [--keep <N>] [--allow-dirty] [--dry-run]',
+    'Usage: node scripts/dev-build.mjs <ios-sim|ios-device|android> [--metro-host <ip>] [--keep <N>] [--allow-dirty] [--dry-run]',
   );
 }
 
-const apiUrl = (() => {
-  const i = args.indexOf('--api-url');
-  const explicit = i >= 0 ? args[i + 1] : null;
-  if (explicit) return explicit;
-  if (platform === 'ios-sim') return 'http://127.0.0.1:5001';
-  fail(
-    `${platform} needs --api-url (e.g. http://<mac-lan-ip>:5001 for physical devices, http://10.0.2.2:5001 for the Android emulator). iOS Simulator defaults to http://127.0.0.1:5001.`,
-  );
+// Metro host for the ip.txt check (ios-device only; Debug builds load JS from
+// Metro at runtime, so there is no build-time API URL to pin).
+const metroHost = (() => {
+  const i = args.indexOf('--metro-host');
+  if (i >= 0 && args[i + 1]) return args[i + 1];
+  try {
+    return sh('ipconfig getifaddr en0 || ipconfig getifaddr en1').split('\n')[0];
+  } catch {
+    return null;
+  }
 })();
 
 const keep = (() => {
@@ -174,9 +190,9 @@ const artifactName = `lp-dev-${n}-${platform}-${short}.${ext}`;
 const date = new Date().toISOString().slice(0, 10);
 
 console.log(`Dev build ${n} — ${platform}`);
-console.log(`  commit   : ${git.commit} (${git.describe})${git.dirty ? ' ⚠ dirty tree' : ''}`);
-console.log(`  api-url  : ${apiUrl}`);
-console.log(`  artifact : ${join(STORE_DIR, artifactName)}`);
+console.log(`  commit    : ${git.commit} (${git.describe})${git.dirty ? ' ⚠ dirty tree' : ''}`);
+console.log(`  metro-host: ${metroHost ?? '(auto)'}${platform !== 'ios-device' ? ' (not used for this platform)' : ''}`);
+console.log(`  artifact  : ${join(STORE_DIR, artifactName)}`);
 
 if (dryRun) {
   console.log('\nDry run — no build, no ledger write, no retention changes.');
@@ -186,38 +202,46 @@ if (dryRun) {
 // ── Build ──────────────────────────────────────
 
 mkdirSync(STORE_DIR, { recursive: true });
-const env = {
-  ...process.env,
-  EXPO_PUBLIC_GIT_SHA: git.commit,
-  EXPO_PUBLIC_API_URL: apiUrl,
-};
+// Debug builds bundle nothing: JS is served by Metro at runtime, so no
+// EXPO_PUBLIC_* env is baked here (Metro inlines those at serve time).
 
 let product; // path to the .app (ios) or .apk (android)
 
 if (platform === 'ios-sim' || platform === 'ios-device') {
   const dest = platform === 'ios-sim' ? 'generic/platform=iOS Simulator' : 'generic/platform=iOS';
   const cfg = platform === 'ios-sim' ? [] : ['-allowProvisioningUpdates'];
-  console.log('\nBuilding (xcodebuild Release, this takes a while)…');
+  console.log('\nBuilding (xcodebuild Debug, this takes a while)…');
   run(
     [
       'xcodebuild',
       '-workspace ios/LanguagePlayer3.xcworkspace',
       '-scheme LanguagePlayer3',
-      '-configuration Release',
+      '-configuration Debug',
       `-destination '${dest}'`,
       '-derivedDataPath build/devbuild',
       ...cfg,
       'build -jobs 4',
     ].join(' '),
-    { cwd: MOBILE, env },
+    { cwd: MOBILE },
   );
-  const sdk = platform === 'ios-sim' ? 'Release-iphonesimulator' : 'Release-iphoneos';
+  const sdk = platform === 'ios-sim' ? 'Debug-iphonesimulator' : 'Debug-iphoneos';
   product = join(MOBILE, `build/devbuild/Build/Products/${sdk}/LanguagePlayer3.app`);
   if (!existsSync(product)) fail(`Build finished but product missing: ${product}`);
+  if (platform === 'ios-device') {
+    // RN writes ip.txt (Metro host) into the bundle for device Debug builds
+    // — verify it landed so the app can find Metro on the LAN.
+    const ipFile = join(product, 'ip.txt');
+    if (existsSync(ipFile)) {
+      const ip = readFileSync(ipFile, 'utf8').trim();
+      console.log(`  ip.txt    : ${ip}`);
+    } else {
+      console.warn('  ⚠ ip.txt missing — the app may not reach Metro on the device (SKIP_BUNDLING_METRO_IP?); expected at runtime via react-native-xcode.sh.');
+    }
+  }
 } else {
-  console.log('\nBuilding (assembleRelease, this takes a while)…');
-  run('./gradlew assembleRelease --console=plain', { cwd: join(MOBILE, 'android'), env });
-  product = join(MOBILE, 'android/app/build/outputs/apk/release/app-release.apk');
+  console.log('\nBuilding (assembleDebug, this takes a while)…');
+  run('./gradlew assembleDebug --console=plain', { cwd: join(MOBILE, 'android') });
+  product = join(MOBILE, 'android/app/build/outputs/apk/debug/app-debug.apk');
   if (!existsSync(product)) fail(`Build finished but APK missing: ${product}`);
 }
 

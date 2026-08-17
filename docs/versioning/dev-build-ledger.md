@@ -2,11 +2,15 @@
 
 Tracked dev builds for Language Player 3 (`ca.zerotohero.go`).
 
-Dev builds are separate from store builds: they **never** consume store build
-numbers (SPEC-076 § 4.2) and are identified by git commit instead. Every row
-records the exact commit the artifact mirrors plus the artifact's SHA-256, so
-a build can be verified from the artifact alone — no trust in the record
-required (SPEC-076 § 4.8, `scripts/verify-dev-build.mjs`).
+**"Dev build" = DEBUG build** (Metro-connected, Fast Refresh — the artifact
+`npx expo run:ios --device` / `run:android` produce). The JS bundle is NOT
+embedded; the app loads it from Metro at runtime, so the ledger's commit
+covers the native shell + app config at build time.
+
+Dev builds never consume store build numbers (SPEC-076 § 4.2) and are
+identified by git commit instead. Every row records the exact commit the
+artifact mirrors plus the artifact's SHA-256, so a build can be verified
+from the artifact itself (SPEC-076 § 4.8, `scripts/verify-dev-build.mjs`).
 
 **Retention:** the 3 most recent builds (current + 2 previous) are kept
 active at `~/Desktop/LP-DevBuilds/` (override with `LP_DEV_BUILD_DIR`). When
