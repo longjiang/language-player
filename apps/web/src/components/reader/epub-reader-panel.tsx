@@ -1,63 +1,29 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { isPhoneticsEligible } from '@langplayer/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { translationFontSizeRem } from '@/lib/reader-text-size';
 import {
+  blockTag,
+  blockClass,
+  translationClass,
+} from '@/components/reader/shared-reader-styles';
+import {
   PaginatedReader,
   type BlockRenderCtx,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
-import {
-  SentenceHighlightBlock,
-} from '@/components/reader/sentence-highlight';
+import { SentenceHighlightBlock } from '@/components/reader/sentence-highlight';
 import type { EpubBook } from '@/lib/epub-book';
-import type { BookLocation, EpubTextBlock } from '@/lib/epub-book-types';
+import type { BookLocation } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
-import type { JSX } from 'react';
-
-function blockTag(tb: EpubTextBlock): keyof JSX.IntrinsicElements {
-  switch (tb.type) {
-    case 'heading': return `h${tb.depth ?? 1}` as keyof JSX.IntrinsicElements;
-    case 'list-item': return 'li';
-    case 'blockquote': return 'blockquote';
-    case 'pre': return 'pre';
-    default: return 'p';
-  }
-}
-
-function blockClass(tb: EpubTextBlock): string {
-  const base = 'leading-relaxed';
-  switch (tb.type) {
-    case 'heading': {
-      const sizes: Record<number, string> = {
-        1: 'text-2xl font-bold', 2: 'text-xl font-semibold', 3: 'text-lg font-semibold',
-      };
-      return `${base} ${sizes[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4`;
-    }
-    case 'list-item': return `${base} ml-4 list-disc whitespace-pre-line`;
-    case 'blockquote': return `${base} border-l-4 border-muted pl-4 italic text-muted-foreground whitespace-pre-line`;
-    case 'pre': return `${base} whitespace-pre-wrap bg-muted p-4 rounded-lg overflow-x-auto`;
-    default: return `${base} whitespace-pre-line`;
-  }
-}
-
-/** Muted variant for translation text below a block. Font size is set
- *  explicitly via `translationFontSize` (`TRANSLATION_FACTOR` × the L2
- *  rendered size), so these classes only carry non-size styling. */
-function translationClass(tb: EpubTextBlock): string {
-  const base = 'leading-relaxed';
-  switch (tb.type) {
-    case 'heading': return `${base} font-semibold`;
-    case 'blockquote': return `${base} border-l-4 border-muted/40 pl-4 italic`;
-    default: return `${base}`;
-  }
-}
 
 interface EpubReaderPanelProps {
   book: EpubBook;
@@ -76,7 +42,9 @@ interface EpubReaderPanelProps {
   onPageTranslate: (texts: string[]) => Promise<Record<string, string>>;
   /** Called whenever the visible page changes (persists the position). */
   onLocationChange: (loc: BookLocation) => void;
-  /** Open an internal link (resolved by the page against the current spine item). */
+/**
+ * Open an internal link (resolved by the page against the current spine item).
+ */
   onOpenLink: (href: string) => void;
 }
 
@@ -97,7 +65,7 @@ export function EpubReaderPanel({
   const { display, getL2, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
-  // factor. Applied to every block so headings keep their relative sizes.
+  // factor. Applied to blocks so headings keep their relative sizes.
   const textZoom = useTextScale();
   // Ruby/furigana/pinyin estimate for pagination: when phonetics are shown
   // above words, every annotated line is taller than the raw text line.
@@ -131,17 +99,40 @@ export function EpubReaderPanel({
     onLocationChange(loc as BookLocation);
   }, [onHighlightDismiss, onLocationChange]);
 
+  // EPUB links navigate inside the book (spine / #fragment) rather than to a
+  // URL — the one exception to the shared web-reader link behavior. Any link
+  // markdown block renders an anchor that calls onOpenLink, and tokenized
+  // blocks surface it through TokenizedText's onOpenLink.
+  const markdownComponents = useMemo(() => ({
+    a: ({ href, children, ...props }: any) => {
+      if (!href || href === '#') return <span {...props}>{children}</span>;
+      return (
+        <a
+          href={href}
+          onClick={(e) => {
+            e.preventDefault();
+            onOpenLink(href);
+          }}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
+  }), [onOpenLink]);
+
   const renderBlock = useCallback((item: ReaderPageItem, rctx: BlockRenderCtx) => {
-    const { loc, block } = item;
-    const bookLoc = loc as BookLocation;
-    if (block.kind === 'image') {
-      // eslint-disable-next-line @next/next/no-img-element
-      return <img key={item.key} src={block.imageUri}
-        alt={block.alt ?? ''} className="max-w-full h-auto rounded-lg my-4" />;
+    if (item.kind === 'markdown') {
+      return (
+        <div key={item.key}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {item.block.raw}
+          </ReactMarkdown>
+        </div>
+      );
     }
-    // Windowed (EPUB) mode only produces text/image items, so after the
-    // image branch the block is always an EpubTextBlock.
-    const tb = block as EpubTextBlock;
+    const tb = item.block;
+    const bookLoc = item.loc as BookLocation;
     const Tag = blockTag(tb);
     const href = tb.formats.find(f => f.type === 'link')?.url;
     // Append the search-match highlight range when this block contains it.
@@ -184,21 +175,25 @@ export function EpubReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
+  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, markdownComponents, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
 
   /** Mirror of the visible rendering for the measuring container — one root
-   *  element per block. Mirrors the dual-column text/translation layout, the
-   *  action-menu button column's minimum height, and the ruby/furigana
-   *  line-height estimates. */
+   *  element per block. Mirrors the shared web-reader measurement (dual-column
+   *  text/translation layout, ruby line-height estimates, markdown rich blocks). */
   const renderMeasureBlock = useCallback((item: ReaderPageItem) => {
-    const { block } = item;
-    if (block.kind === 'image') {
-      // eslint-disable-next-line @next/next/no-img-element
-      return <img key={item.key} src={block.imageUri} alt="" className="max-w-full h-auto rounded-lg my-4" />;
+    if (item.kind === 'markdown') {
+      return (
+        <div key={item.key} className="mb-4">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {item.block.raw}
+          </ReactMarkdown>
+          {showTranslation && <div className="h-6" />}
+        </div>
+      );
     }
-    // Windowed (EPUB) mode only produces text/image items (see renderBlock).
-    const tb = block as EpubTextBlock;
+    const tb = item.block;
     const Tag = blockTag(tb);
+    const lines = Math.max(1, Math.ceil(tb.text.length / 50));
     return (
       <div key={item.key} className="mb-4 flex items-start gap-3">
         <div className="flex-1 min-w-0 flex flex-col gap-y-1 lg:flex-row lg:gap-4 lg:items-center">
@@ -216,7 +211,7 @@ export function EpubReaderPanel({
               style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}
             >
               <div className="flex flex-col gap-y-1.5">
-                {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
+                {Array.from({ length: lines }).map((_, li) => (
                   <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }} />
                 ))}
               </div>
@@ -227,7 +222,7 @@ export function EpubReaderPanel({
         <div className="mt-1 h-6 w-6 shrink-0" />
       </div>
     );
-  }, [phoneticsEstimate, showTranslation, textZoom, tokenizedText.translationSize]);
+  }, [phoneticsEstimate, showTranslation, textZoom, markdownComponents, tokenizedText.translationSize]);
 
   return (
     <PaginatedReader
@@ -244,19 +239,37 @@ export function EpubReaderPanel({
       contentClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
+        [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0
         [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-0
+        [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-0
         [&_li]:mb-0 [&_li]:leading-relaxed
         [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
         [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
-        [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0"
+        [&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline
+        [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+        [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-1 [&_th]:text-left
+        [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-1
+        [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
+        [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
+        [&_hr]:border-border [&_hr]:my-6"
       measureClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
+        [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0
         [&_p]:mb-0 [&_p]:leading-relaxed
+        [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-0
+        [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-0
         [&_li]:mb-0 [&_li]:leading-relaxed
         [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-0
         [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
+        [&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline
+        [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+        [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-1 [&_th]:text-left
+        [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-1
+        [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
         [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
+        [&_hr]:border-border [&_hr]:my-6
         [&_.measure-ruby-all]:leading-[2.25] [&_.measure-ruby-hard]:leading-[2]"
       renderBlock={renderBlock}
       renderMeasureBlock={renderMeasureBlock}
