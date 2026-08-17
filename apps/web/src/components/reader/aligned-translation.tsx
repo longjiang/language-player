@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
+import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
 import { log, logwarn } from '@/lib/logger';
 import type { SentenceMap } from '@/lib/sentence-map';
 
@@ -66,6 +67,9 @@ export interface AlignedTranslationProps {
   anchorRef: React.RefObject<HTMLElement | null>;
   /** Layout identity — re-measure when it changes (zoom, ruby, fonts…). */
   measureNonce?: string | number;
+  /** Translation font size as a multiplier of the L2 rendered size
+   *  (defaults to `TRANSLATION_FACTOR`). */
+  translationFactor?: number;
 }
 
 /** Text nodes that don't carry the L2 base line: ruby annotations and the
@@ -147,6 +151,7 @@ export function AlignedTranslation({
   active,
   anchorRef,
   measureNonce = 0,
+  translationFactor = TRANSLATION_FACTOR,
 }: AlignedTranslationProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLDivElement>(null);
@@ -283,7 +288,7 @@ export function AlignedTranslation({
       // (the L1/UI font — the probe must wrap exactly like the rendered
       // lines, whose font it inherits from the column).
       const rcs = getComputedStyle(root);
-      const trSize = f2r * 0.875;
+      const trSize = f2r * translationFactor;
       probe.style.fontFamily = rcs.fontFamily;
       probe.style.fontWeight = rcs.fontWeight;
       probe.style.fontStyle = rcs.fontStyle;
@@ -331,7 +336,7 @@ export function AlignedTranslation({
       logwarn(`[AlignedTranslation] measure:bail reason=exception tag="${tag}" err=${(err as Error)?.message ?? String(err)}`);
       setLayout(null);
     }
-  }, [anchorRef, text, tag]);
+  }, [anchorRef, text, tag, translationFactor]);
 
   useLayoutEffect(() => {
     measure();
@@ -434,7 +439,7 @@ export function AlignedTranslation({
               {j < lines.length && (
                 <span
                   className="min-w-0 flex-1 overflow-hidden whitespace-nowrap"
-                  style={{ fontSize: `${l2FontSize * 0.875}px`, lineHeight: `${l2LineHeight}px` }}
+                  style={{ fontSize: `${l2FontSize * translationFactor}px`, lineHeight: `${l2LineHeight}px` }}
                 >
                   {renderSlicedLine(text, lines[j]!, map, active)}
                 </span>

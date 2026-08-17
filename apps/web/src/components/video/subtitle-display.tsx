@@ -10,6 +10,7 @@ import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
+import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
@@ -280,10 +281,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l1Code={l1Code}
             translation={
               showTranslation && activeTranslation ? (
-                // Single-line subtitle translations use the same 1.5×
-                // multiplier as the L2 text (SPEC-051), applied to their
-                // own text-sm base.
-                <div style={{ fontSize: `${0.875 * 1.5 * textZoomFactor}rem` }}>
+                // Single-line subtitle translations render at TRANSLATION_FACTOR
+                // × the L2 tokenized size (the L2 uses a 1.5× text scale).
+                <div style={{ fontSize: `${TRANSLATION_FACTOR * 1.5 * textZoomFactor}rem` }}>
                   <ReactMarkdown
                     components={{
                       p: ({ children }) => <span>{children}</span>,
@@ -301,6 +301,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             }
             translationClass="text-sm text-center"
             translationBelow
+            translationFontSize={TRANSLATION_FACTOR * 1.5 * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
           >
             <div className="text-center text-xl font-medium leading-relaxed">
@@ -385,7 +386,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               {showTranslation && line.l1Line && (
                 <p
                   className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}
-                  style={{ fontSize: `${0.75 * textZoomFactor}rem` }}
+                  style={{ fontSize: `${TRANSLATION_FACTOR * textZoomFactor}rem` }}
                 >
                   {line.l1Line}
                 </p>

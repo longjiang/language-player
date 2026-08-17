@@ -7,6 +7,7 @@ import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components
 import { TokenizedText } from '@/components/tokenized-text';
 import { AlignedTranslation } from '@/components/reader/aligned-translation';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
+import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
 import type { SentenceMap } from '@/lib/sentence-map';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
@@ -32,6 +33,11 @@ interface TextActionMenuProps {
   translationBelow?: boolean;
   /** Scale factor for the inline translation column (matches L2 text zoom). */
   translationZoom?: number;
+  /** Explicit translation font size (rem), typically `TRANSLATION_FACTOR` ×
+   *  the L2 block's rendered size. When set it overrides
+   *  `translationClass`'s size and the `zoom` on the translation column (the
+   *  caller already folded zoom in). */
+  translationFontSize?: number;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
   /** Per-line baseline alignment (readers): the translation column is sliced
@@ -58,6 +64,7 @@ export function TextActionMenu({
   translationClass = '',
   translationBelow = false,
   translationZoom = 1,
+  translationFontSize,
   loading = false,
   translationAligned = null,
   children,
@@ -103,7 +110,11 @@ export function TextActionMenu({
         {hasTranslation && (
           <div
             className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
-            style={aligned ? undefined : { zoom: translationZoom }}
+            style={
+              translationFontSize != null
+                ? { fontSize: `${translationFontSize}rem` }
+                : aligned ? undefined : { zoom: translationZoom }
+            }
           >
             {aligned ? (
               <AlignedTranslation
@@ -112,6 +123,7 @@ export function TextActionMenu({
                 active={aligned.active}
                 measureNonce={aligned.measureNonce}
                 anchorRef={l2Ref}
+                translationFactor={TRANSLATION_FACTOR}
               />
             ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
@@ -119,7 +131,11 @@ export function TextActionMenu({
         {loading && !translation && !aligned && (
           <div
             className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
-            style={{ zoom: translationZoom }}
+            style={
+              translationFontSize != null
+                ? { fontSize: `${translationFontSize}rem` }
+                : { zoom: translationZoom }
+            }
           >
             <TranslationSkeleton
               text={text}
