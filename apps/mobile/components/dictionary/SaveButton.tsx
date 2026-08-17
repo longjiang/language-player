@@ -37,6 +37,12 @@ export function SaveButton({ entry, size = 22, context }: SaveButtonProps) {
         router.push('/login' as any);
         return;
       }
+      // DEBUG (context segmentation): the exact context stored at save time.
+      if (__DEV__ && context) {
+        console.log(
+          `[LP Mobile] [SaveButton] SAVING head="${entry.head}" id=${wordId} contextForm=${String(context.form ?? '(none)')} contextTextLen=${context.text?.length ?? 0} contextText="${(context.text ?? '').slice(0, 60)}"`,
+        );
+      }
       saveWord(l2Lang.code, {
         id: wordId,
         head: entry.head,

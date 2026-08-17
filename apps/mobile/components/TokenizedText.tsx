@@ -699,12 +699,21 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── Stable token-press handlers (memoized tokens call these) ──
   const handlePressWord = useCallback<PressWordHandler>((index, word, lemma, pron, linkUrl) => {
     popupOpenStartRef.current = Date.now();
+    // DEBUG (context segmentation): which path the popup context takes.
+    const token = tokens[index];
+    const context = token
+      ? sentenceForToken(text, tokens, token, baseCode(l2Code))
+      : text;
+    log(
+      `[TokenizedText] 📝 POPUP-OPEN word="${word}" index=${index} tokens=${tokens.length} textLen=${text.length} contextLen=${context.length} segmented=${context.length < text.length} context="${context.slice(0, 40)}"`,
+    );
     setSelectedWord(word);
     setSelectedTokenIndex(index);
     setSelectedLemma(lemma);
     setSelectedTokenPron(pron);
     setSelectedLinkUrl(linkUrl);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens, text]);
 
   const handleReveal = useCallback((index: number) => {
     setRevealedTokens(prev => new Set(prev).add(index));
