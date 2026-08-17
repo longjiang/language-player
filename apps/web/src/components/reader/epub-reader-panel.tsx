@@ -14,7 +14,7 @@ import {
 } from '@/components/reader/paginated-reader';
 import { EpubBlockStream } from '@/lib/block-stream';
 import type { ReaderLocation } from '@/lib/block-stream';
-import { logwarn } from '@/lib/logger';
+import { log } from '@/lib/logger';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation, EpubBlock, EpubTextBlock } from '@/lib/epub-book-types';
 import type { EpubSearchMatch } from '@/hooks/use-epub';
@@ -120,7 +120,7 @@ export function EpubReaderPanel({
         if (lastJumpKeyRef.current !== jumpKey) {
           lastJumpKeyRef.current = jumpKey;
           const idx = stream.bookLocationToStreamIndex(location);
-          logwarn(`Epub: jump → streamIndex=${idx} (bookLoc spine=${location.spineIndex} block=${location.blockIndex})`);
+          log(`Epub: jump → streamIndex=${idx} (bookLoc spine=${location.spineIndex} block=${location.blockIndex})`);
           setReaderLocation({
             streamIndex: idx,
             offset: 0,

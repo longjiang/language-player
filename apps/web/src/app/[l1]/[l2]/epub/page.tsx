@@ -21,7 +21,7 @@ import type { EpubSearchMatch, EpubSearchResult } from '@/hooks/use-epub';
 import {
   ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
 } from 'lucide-react';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import { epubLog } from '@/lib/epub-log';
 
 export default function EpubPage() {
@@ -48,7 +48,7 @@ export default function EpubPage() {
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
     if (!loc) return;
-    logwarn(`Epub: goto spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
+    log(`Epub: goto spine=${loc.spineIndex} block=${loc.blockIndex} offset=${loc.offset}`);
     setLocation(loc);
     setJumpNonce(n => n + 1);
   }, []);
@@ -157,12 +157,12 @@ export default function EpubPage() {
   const handleLoadChapter = useCallback((href: string) => {
     setMobileSidebarOpen(false);
     setHighlight(null);
-    logwarn(`Epub: TOC click href="${href}"`);
+    log(`Epub: TOC click href="${href}"`);
     pushHistory(location);
     void epub.resolveHref(href).then(loc => {
       if (!loc) return;
       const label = epub.markers ? (markerForLocation(epub.markers, loc)?.node.label ?? '') : '';
-      logwarn(`Epub: TOC resolved → spine=${loc.spineIndex} block=${loc.blockIndex} chapter="${label}"`);
+      log(`Epub: TOC resolved → spine=${loc.spineIndex} block=${loc.blockIndex} chapter="${label}"`);
       gotoLocation(loc);
     });
   }, [epub, gotoLocation, pushHistory, location]);

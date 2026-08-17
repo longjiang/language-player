@@ -20,7 +20,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BlockStream, ReaderLocation } from '@/lib/block-stream';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 
 /** Estimated page capacity in chars before the first measurement. */
 export const DEFAULT_CHARS_PER_PAGE = 400;
@@ -386,7 +386,7 @@ export function useCssColumnsPager<B>(
       const blocks = await stream.blocks(winStart, winEnd);
       if (gen !== genRef.current) return;
       const estPage = 1 + Math.floor(anchorChars / Math.max(1, div));
-      logwarn(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length} estPage=${estPage}`);
+      log(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length} estPage=${estPage}`);
       setPending({ winStart, winEnd, blocks, mode, anchor: safeAnchor });
     } catch (e) {
       if (gen !== genRef.current) return;
@@ -447,7 +447,7 @@ export function useCssColumnsPager<B>(
           const newAnchor = p.mode === 'forward'
             ? Math.min(blockCount - 1, p.anchor + extendBy)
             : Math.max(0, p.anchor - extendBy);
-          logwarn(`Pager: target NOT in view! mode=${p.mode} anchor=${p.anchor} — page start unresolved, extending window (anchor → ${newAnchor})`);
+          log(`Pager: target NOT in view! mode=${p.mode} anchor=${p.anchor} — page start unresolved, extending window (anchor → ${newAnchor})`);
           void buildWindow(newAnchor, p.mode);
           return; // keep the old window visible and busy
         }
@@ -461,7 +461,7 @@ export function useCssColumnsPager<B>(
           const col = m.breaks.indexOf(ps);
           const visibleEnd = col >= 0 && col + 1 < m.breaks.length ? m.breaks[col + 1]! : p.winEnd;
           const inView = p.anchor >= ps && p.anchor < visibleEnd;
-          logwarn(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} target="${blockSnippet(p.blocks, p.anchor, p.winStart)}" visible=[${ps}, ${visibleEnd}) first="${blockSnippet(p.blocks, ps, p.winStart)}" page=${m.basePage + Math.max(0, col)} col=${col} pitch=${pitchRef.current} transform=${-Math.max(0, col) * pitchRef.current}px window=[${p.winStart}, ${p.winEnd})`);
+          log(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} target="${blockSnippet(p.blocks, p.anchor, p.winStart)}" visible=[${ps}, ${visibleEnd}) first="${blockSnippet(p.blocks, ps, p.winStart)}" page=${m.basePage + Math.max(0, col)} col=${col} pitch=${pitchRef.current} transform=${-Math.max(0, col) * pitchRef.current}px window=[${p.winStart}, ${p.winEnd})`);
         }
         pageStartRef.current = ps;
         setPageStart(ps);
@@ -518,7 +518,7 @@ export function useCssColumnsPager<B>(
       const ps = breaks[col + 1]!;
       pageStartRef.current = ps;
       setPageStart(ps);
-      logwarn(`Pager: turn next → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
+      log(`Pager: turn next → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
       cancelPending();
       return;
     }
@@ -537,7 +537,7 @@ export function useCssColumnsPager<B>(
       const ps = breaks[col - 1]!;
       pageStartRef.current = ps;
       setPageStart(ps);
-      logwarn(`Pager: turn prev → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
+      log(`Pager: turn prev → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
       cancelPending();
       return;
     }
