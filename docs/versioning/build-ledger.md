@@ -25,3 +25,27 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 6 | ddb8cc50 | 2026-08-16 | — | dev 2 (Release-config, legacy; archived; lp-dev-2-ios-device-ddb8cc50f8d9.zip; 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea) · dev 5 (Debug; active; lp-dev-5-ios-device-ddb8cc50f8d9.zip; 9d66e6cb66b44cd0183540c18ea7d5b5afe8a58edb140745184e1a80136ea1cb) |
 | 7 | 88135bde | 2026-08-16 | — | dev 3 (Debug; archived; lp-dev-3-ios-device-88135bde47af.zip; 6e10c5aed4541adf030f02325001dbe72bf0416388776ea0754446a694d8ea5e) |
 | 8 | e64bcf32 | 2026-08-17 | — | dev 6 (Debug; active; lp-dev-6-ios-device-e64bcf325739.zip; 72d49156cf3b018f9dd165319ef66d05e3f8aa1aabd971e96b56a63dbaf21183) |
+
+## Preserved working builds
+
+- **2026-08-16 — iPad 10 known-good Debug build** (`LanguagePlayer3-ipad10-working-debug-3.1.0-b3.app.zip`
+  in `.dev-builds/ipad10-backup/`; sha256 `17914b24…`; full 142 MB `.app`, debug-dylib split). Reports
+  `3.1.0 / b3` in About (version string from the 3.1.0 era, not the actual cut). Contains the native
+  paragraph ruby renderer (`RubyTextParagraphView`) and **renders furigana correctly** on iPadOS 26.5.2
+  (iPad 10). Extracted from CoreDevice's AppInstallationBinaryDeltas stash (3 identical copies found:
+  `1b42e1f4…`, `d894beaa…`, `700da082…`; dylib sha256 `d0eff78e…`). Preserved so the known-good debug
+  binary stays recoverable.
+
+## Incident log
+
+- **2026-08-16 — Furigana missing in Debug builds (root cause found & fixed).** Debug builds with the
+  native paragraph ruby renderer stopped painting readings (base kanji painted, furigana never drew);
+  TestFlight 3.1.2 (Release) and the iPad 10 debug build (pre-`088a9439`) were unaffected. Cause:
+  commit `088a9439` ("focus ruby diagnostics") added a `#if DEBUG` `logLineFragments` dump in
+  `RubyTextParagraphView.layoutSubviews` that accesses `textView.layoutManager` (forcing a TextKit 1
+  glyph-layout pass after every layout) — on iPadOS 26.6 that forced pass breaks `CTRubyAnnotation`
+  painting in Debug builds (26.5.2 unaffected). Fix: removed the `logLineFragments` machinery from
+  `RubyTextParagraphView.swift` (regression guard comment left in place). Debug now renders native
+  paragraph ruby with overhang again. Debug-vs-Release variables ruled out along the way:
+  `ENABLE_DEBUG_DYLIB` split (monolith still failed), fonts/typeFace, TextKit 1 vs 2, linked
+  frameworks, build flags, settings.

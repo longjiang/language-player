@@ -146,3 +146,11 @@ the View-column renderer there; `RubyTextParagraph` renders nothing and
 - The paragraph-level view is the path for future inline markdown + ruby (AI
   explanations, settings preview), where the JS supplies the paragraph width
   instead of a measured token box.
+
+## Known pitfalls
+
+- **2026-08-16**: Debug-only furigana paint failure caused by a `#if DEBUG`
+  diagnostics helper forcing `textView.layoutManager` layout on the paragraph
+  view (see [ARCH-030](../arch/030-ruby-text-native-rendering.md) — "The
+  logLineFragments incident" for the full evidence chain and rules). Never
+  force layout on a live text view from diagnostics.

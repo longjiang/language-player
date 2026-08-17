@@ -13,17 +13,20 @@ import { log, logwarn } from '@/lib/logger';
  * Kill switch: if the native renderer misbehaves in a build, flip this to
  * false and every token falls back to the View-column renderer (the previous
  * behavior), with no other code changes.
+ *
+ * EXPERIMENT B (furigana-missing diagnosis): temporarily false to confirm the
+ * JS View fallback paints readings when the native path does not. Reverted to
+ * true — the fallback is not an acceptable permanent fix.
  */
 const NATIVE_RUBY_ENABLED = true;
-/** Only run native paragraph diagnostics for readings long enough to hit the
- *  Core Text multi-syllable distribution issue (e.g. 不到长城非好汉). */
-const LONG_READING_MIN_SYLLABLES = 6;
 
 let NativeRubyTextView: React.ComponentType<NativeRubyTextProps> | null = null;
 type NativeParagraphComponent = React.ComponentType<
   NativeRubyTextParagraphProps & { ref?: React.Ref<unknown> }
 >;
 let NativeRubyTextParagraphView: NativeParagraphComponent | null = null;
+/** Dev-only: paragraph prop combos already logged (one-shot). */
+const loggedParagraphProps = new Set<string>();
 if (NATIVE_RUBY_ENABLED && (Platform.OS === 'ios' || Platform.OS === 'android')) {
   try {
     // The module only exists in development/release builds compiled from this
@@ -279,6 +282,27 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   } | null>(null);
   const nativeRef = useRef<unknown>(null);
 
+  // Dev-only: one-shot log of EVERY prop the native paragraph view receives
+  // (anything anomalous here — 0/NaN fontSize or readingSize, a surprise
+  // fontFamily, opacity — would explain readings not painting while base
+  // text still draws).
+  {
+    const propKey = [fontSize, lineHeight, readingSize, isRtl, fontFamily ?? '', fontWeight ?? '', runs.length, runs[0]?.text].join('|');
+    if (__DEV__ && !loggedParagraphProps.has(propKey)) {
+      loggedParagraphProps.add(propKey);
+      const firstRuns = runs.slice(0, 3).map((r) => ({
+        t: r.text,
+        ...(r.reading ? { rd: r.reading } : {}),
+        fs: r.fontSize ?? fontSize,
+        op: r.opacity,
+        bg: r.background ?? null,
+      }));
+      log(
+        `[LP Mobile] [RubyText] paragraph props fontSize=${fontSize} lineHeight=${lineHeight} readingSize=${readingSize} isRtl=${isRtl} fontFamily=${String(fontFamily)} fontWeight=${String(fontWeight)} runs=${runs.length} sample=${JSON.stringify(firstRuns)}`,
+      );
+    }
+  }
+
   // Only the glyph metrics matter for the box: text content, font, sizes.
   // Style-only changes (colors, bold, opacity) keep the same measured box.
   const plainText = useMemo(() => runs.map((run) => run.text).join(''), [runs]);
@@ -293,18 +317,13 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
 
   // Dev-only: after the native paragraph mounts, pull its internal state
   // (runs parsed, attributed-string length, frames) so a blank render can be
-  // diagnosed from the Metro log.
+  // diagnosed from the Metro log. Probes EVERY mounted paragraph in dev:
+  // the old gate counted space-separated syllables, which is 1 for Japanese
+  // readings (no spaces) — it never fired for ja.
   const mountedKey =
     measured && measured.sizeKey === sizeKey
       ? `${measured.width.toFixed(1)}x${measured.height.toFixed(1)}`
       : null;
-  const hasLongReading = useMemo(
-    () =>
-      runs.some(
-        (run) => (run.reading ?? '').split(' ').filter(Boolean).length >= LONG_READING_MIN_SYLLABLES,
-      ),
-    [runs],
-  );
   const probeDiagnostics = useCallback((tag: string) => {
     try {
       const module = requireOptionalNativeModule('RubyText') as
@@ -325,10 +344,10 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
   }, []);
 
   useEffect(() => {
-    if (!mountedKey || !hasLongReading) return;
+    if (!mountedKey || !__DEV__) return;
     const timer = setTimeout(() => probeDiagnostics('settled'), 250);
     return () => clearTimeout(timer);
-  }, [mountedKey, hasLongReading, probeDiagnostics]);
+  }, [mountedKey, probeDiagnostics]);
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
