@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
+import { mergeAbbreviationSegments, segmentFallback, segmentSentences, sentenceContaining, sentenceForToken } from './sentence';
 
 const token = (text: string): LemmatizedToken => ({ text, lemmas: [] });
 
@@ -63,6 +63,45 @@ describe('segmentSentences', () => {
     for (const s of segmentSentences(text, 'en')) {
       expect(text.slice(s.start, s.end)).toBe(s.text);
     }
+  });
+});
+
+// segmentFallback is the Hermes path (no Intl.Segmenter) — Node tests must
+// exercise it directly, since the native Segmenter never falls back here.
+describe('segmentFallback (Hermes / no Intl.Segmenter)', () => {
+  it('splits Japanese sentences with NO inter-sentence whitespace', () => {
+    const text =
+      '彼はその音楽を聴きながら、文字を打ち込んでいった。朝の早い時刻にヤナーチェックを聴いた。';
+    expect(segmentFallback(text).map(s => s.text)).toEqual([
+      '彼はその音楽を聴きながら、文字を打ち込んでいった。',
+      '朝の早い時刻にヤナーチェックを聴いた。',
+    ]);
+  });
+
+  it('splits Chinese without whitespace', () => {
+    expect(segmentFallback('他去了商店。然后回家了。').map(s => s.text)).toEqual([
+      '他去了商店。',
+      '然后回家了。',
+    ]);
+  });
+
+  it('keeps closing quotes/brackets with their CJK sentence', () => {
+    expect(segmentFallback('「こんにちは。」次に進む。').map(s => s.text)).toEqual([
+      '「こんにちは。」',
+      '次に進む。',
+    ]);
+  });
+
+  it('still requires whitespace after Latin terminals', () => {
+    // Abbreviation merging is applied upstream in segmentSentences.
+    expect(mergeAbbreviationSegments(segmentFallback('Dr. Smith lives here. He is a doctor.')).map(s => s.text.trim())).toEqual([
+      'Dr. Smith lives here.',
+      'He is a doctor.',
+    ]);
+    expect(segmentFallback('Pi is 3.14159. That is all.').map(s => s.text.trim())).toEqual([
+      'Pi is 3.14159.',
+      'That is all.',
+    ]);
   });
 });
 

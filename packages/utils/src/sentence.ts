@@ -58,10 +58,22 @@ function getSegmenter(locale: string): Intl.Segmenter | null {
   return seg;
 }
 
-/** Conservative fallback for runtimes without `Intl.Segmenter`. */
-const FALLBACK_SENTENCE_END = /[.!?。！？…]+[)\]»'"”’]*\s+/g;
+/**
+ * Conservative fallback for runtimes without `Intl.Segmenter` (Hermes).
+ *
+ * CJK sentence ends (。！？…) are ALWAYS boundaries — Japanese/Chinese text
+ * has no inter-sentence whitespace, so a `\s+` requirement would merge the
+ * whole paragraph into one segment (the saved-word context regression on
+ * Hermes: word-saving stored the entire reader block). Latin ends (.!?)
+ * still require whitespace (or closing quotes/brackets, or end-of-string)
+ * so "Mr. " / "3.14" don't split; the abbreviation merge below handles
+ * "Mr. " after the split.
+ */
+const FALLBACK_SENTENCE_END =
+  /[。！？…]+[)\]»'"”’」』】〉》]*|[.!?]+[)\]»'"”’」』】〉》]*(?=\s|$)/g;
 
-function segmentFallback(text: string): SentenceSegment[] {
+/** Exported for tests — exercises the Hermes/no-Intl.Segmenter path. */
+export function segmentFallback(text: string): SentenceSegment[] {
   const out: SentenceSegment[] = [];
   let start = 0;
   FALLBACK_SENTENCE_END.lastIndex = 0;
@@ -93,8 +105,9 @@ function isLatinAbbreviation(text: string): boolean {
   return m ? LATIN_ABBREVIATIONS.has(m[1]!.toLowerCase()) : false;
 }
 
-/** Merge "Mr. " into the following segment so "Dr. Smith went home." stays whole. */
-function mergeAbbreviationSegments(segs: SentenceSegment[]): SentenceSegment[] {
+/** Merge "Mr. " into the following segment so "Dr. Smith went home." stays whole.
+ *  Exported for tests (exercises the Hermes fallback path end-to-end). */
+export function mergeAbbreviationSegments(segs: SentenceSegment[]): SentenceSegment[] {
   if (segs.length < 2) return segs;
   const out: SentenceSegment[] = [];
   for (let i = 0; i < segs.length; i++) {
