@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
-import { useSubtitleTranslation, isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
+import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log } from '@/lib/logger';
-import { youtubeThumbnail } from '@/lib/video-service';
 import {
   YouTubePlayer,
   type YouTubePlayerHandle,
@@ -22,8 +20,8 @@ import { SubtitleDisplay } from './subtitle-display';
 import { VideoSidebarPanel, type SidebarTabKey } from './video-sidebar-panel';
 import { VideoQueuePanel } from './video-queue-panel';
 import { Button } from '@/components/ui/button';
-import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { VideoControlBar } from './video-control-bar';
+import { SubsSearchRow, formatTime } from './subs-search-row';
 import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import {
@@ -75,12 +73,6 @@ const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
 
 // ── Helpers ────────────────────────────────────
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 function formatNumber(n: number | undefined, locale: string): string {
   if (!n) return '';
   return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
@@ -99,47 +91,6 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .map((f) => f.trim())
     .filter(Boolean)
     .find((f) => lower.includes(f.toLowerCase()));
-}
-
-function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
-  const active = terms.map((t) => t.trim()).filter(Boolean);
-  if (active.length === 0) return <span>{line}</span>;
-
-  const lowerLine = line.toLowerCase();
-  const nodes: ReactNode[] = [];
-  let pos = 0;
-
-  while (pos < line.length) {
-    // Find the earliest match of any term; prefer the longest term on ties.
-    let bestIdx = -1;
-    let bestLen = 0;
-    for (const term of active) {
-      const idx = lowerLine.indexOf(term.toLowerCase(), pos);
-      if (
-        idx !== -1 &&
-        (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
-      ) {
-        bestIdx = idx;
-        bestLen = term.length;
-      }
-    }
-    if (bestIdx === -1) {
-      nodes.push(line.slice(pos));
-      break;
-    }
-    if (bestIdx > pos) nodes.push(line.slice(pos, bestIdx));
-    nodes.push(
-      <mark
-        key={`${bestIdx}-${bestLen}`}
-        className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30"
-      >
-        {line.slice(bestIdx, bestIdx + bestLen)}
-      </mark>,
-    );
-    pos = bestIdx + bestLen;
-  }
-
-  return <span>{nodes}</span>;
 }
 
 // ── Main Component ─────────────────────────────
@@ -730,86 +681,25 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   // Shared row renderer for the page list — thumbnail + matched-line +
   // translation layout, lazy translations via the IntersectionObserver above.
+  // The row itself lives in SubsSearchRow; this wrapper only supplies the
+  // per-row data and navigation callback.
   const renderQueueRow = useCallback(
     (video: SubsSearchVideo, i: number) => {
-      const ml = video.subs_l2[video.matchLineIndex];
       const isActive = videos.indexOf(video) === currentIndex;
       return (
-        <button
-          onClick={() => selectFromList(i)}
-          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted/50 ${
-            isActive ? 'bg-primary/5 ring-1 ring-primary/30' : ''
-          }`}
-        >
-          {/* Thumbnail */}
-          <div className="relative h-12 w-20 flex-shrink-0 overflow-hidden rounded bg-muted">
-            <img
-              src={youtubeThumbnail(video.youtube_id)}
-              alt=""
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-            {ml && (
-              <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 py-0 text-[10px] text-white">
-                {formatTime(ml.starttime)}
-              </span>
-            )}
-          </div>
-
-          {/* Original on top, translation (smaller, muted) below */}
-          <div className="min-w-0 flex-1 overflow-x-auto">
-            <div className="w-max">
-              <div className="whitespace-nowrap text-base leading-snug">
-                {rowSegments[i]?.map((seg, j) => (
-                  <span
-                    key={j}
-                    className={seg.hasTerm ? '' : 'text-muted-foreground'}
-                  >
-                    {j > 0 ? ' ' : ''}
-                    <HighlightTerms line={seg.text} terms={highlightTerms} />
-                  </span>
-                ))}
-              </div>
-              {display.translation && (
-                <div className="mt-1 whitespace-nowrap text-sm text-muted-foreground">
-                {rowSegments[i]?.map((seg, j) => {
-                  const flatIdx = (translationInput.rowStarts[i] ?? 0) + j;
-                  const translated = listTranslations[flatIdx]?.line;
-                  return (
-                    <span
-                      key={j}
-                      className={seg.hasTerm ? '' : 'text-muted-foreground/50'}
-                    >
-                      {j > 0 ? ' ' : ''}
-                      {translated ? (
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => <span>{children}</span>,
-                            strong: ({ children }) => (
-                              <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
-                                {children}
-                              </mark>
-                            ),
-                          }}
-                        >
-                          {translated}
-                        </ReactMarkdown>
-                      ) : listTranslating &&
-                        isLineInTranslationLookahead(flatIdx, listFirstLineIndex) ? (
-                        <TranslationSkeleton
-                          text={seg.text}
-                          className="inline-flex w-24 align-bottom"
-                          barClassName="h-3"
-                        />
-                      ) : null}
-                    </span>
-                  );
-                })}
-                </div>
-              )}
-            </div>
-          </div>
-        </button>
+        <SubsSearchRow
+          video={video}
+          index={i}
+          isActive={isActive}
+          onSelect={() => selectFromList(i)}
+          segments={rowSegments[i] ?? []}
+          highlightTerms={highlightTerms}
+          showTranslation={display.translation}
+          translationStart={translationInput.rowStarts[i] ?? 0}
+          translations={listTranslations}
+          translating={listTranslating}
+          firstLineIndex={listFirstLineIndex}
+        />
       );
     },
     [videos, currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
