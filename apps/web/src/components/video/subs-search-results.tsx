@@ -166,6 +166,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SortKey>('views');
 
+  // Subtitle display mode: follow playback one line at a time, or show the
+  // full transcript (scrollable, with click-to-seek).
+  const [subtitleMode, setSubtitleMode] = useState<'singleline' | 'multiline'>('singleline');
+  // Scroll container for the multiline transcript — keeps auto-scroll inside
+  // the card instead of scrolling the whole page.
+  const subtitleScrollRef = useRef<HTMLDivElement>(null);
+
   // Visible results: drop videos whose embeds failed, then apply the free
   // quota (first 5) to the *playable* list so skipped videos don't consume a
   // free member's slot.
@@ -850,17 +857,49 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         />
       </div>
 
-      {/* ── Single-line subtitle display (follows playback) ── */}
-      <SubtitleDisplay
-        mode="singleline"
-        youtubeId={currentVideo?.youtube_id}
-        currentTime={currentTime}
-        videoTitle={currentVideo?.title}
-        initialLines={subtitleInitialLines}
-        highlightTerms={highlightTerms}
-        defaultLine={defaultSubtitleLine}
-        onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-      />
+      {/* ── Subtitle display mode toggle ── */}
+      <div className="flex items-center justify-center border-b border-border px-2 py-1">
+        <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+          <button
+            onClick={() => setSubtitleMode('singleline')}
+            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+              subtitleMode === 'singleline'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t('label.subtitles')}
+          </button>
+          <button
+            onClick={() => setSubtitleMode('multiline')}
+            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+              subtitleMode === 'multiline'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t('title.transcript')}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Subtitle display (single-line follows playback / full transcript) ── */}
+      <div
+        ref={subtitleScrollRef}
+        className={subtitleMode === 'multiline' ? 'max-h-96 overflow-y-auto' : ''}
+      >
+        <SubtitleDisplay
+          mode={subtitleMode}
+          youtubeId={currentVideo?.youtube_id}
+          currentTime={currentTime}
+          videoTitle={currentVideo?.title}
+          initialLines={subtitleInitialLines}
+          highlightTerms={highlightTerms}
+          defaultLine={defaultSubtitleLine}
+          scrollContainerRef={subtitleMode === 'multiline' ? subtitleScrollRef : undefined}
+          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+        />
+      </div>
 
       {/* ── Modal: result list ── */}
       {listOpen && (
