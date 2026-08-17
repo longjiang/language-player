@@ -24,8 +24,11 @@ import {
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText, prewarmLocalLemmatizer } from '@/lib/tokenizer';
+import { enqueueLemmatize } from '@/lib/lemmatize-queue';
 import { lookupOfflineManyByL2 } from '@/lib/dictionary-db';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { computeRubyLayout, MOBILE_RUBY_SAVED_BG, useMobileRubyColors } from '@/lib/ruby-layout';
+import { logPhoneticsSummary, logRubyRenderPath, logRenderedTokens, scheduleTreeLog } from '@/lib/tokenized-text-log';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -50,91 +53,16 @@ import {
   getCachedEntryById,
   setCachedEntries,
 } from '@/lib/dictionary-cache';
+import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandidates } from '@/hooks/use-highlight-forms';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
 const { log, logwarn } = tokenizedTextLogger;
-
-// `bg-yellow-200/20` from the View fallback (saved-word highlight), resolved
-// to a hex base color; the native paragraph applies /20 alpha itself.
-const MOBILE_RUBY_SAVED_BG = hslToHex(colors.yellow[200]);
 const NATIVE_RUBY_ACTIVE = isNativeRubyActive();
 const NATIVE_PARAGRAPH_ACTIVE = isNativeRubyParagraphActive();
 
-/**
- * Resolved theme colors for the native ruby renderer. These mirror the
- * NativeWind classes used by the View fallback (text-foreground,
- * text-primary, text-muted-foreground) so both paths stay in sync — and they
- * follow the app's live light/dark/system theme instead of a fixed palette.
- */
-function useMobileRubyColors() {
-  const { colorScheme } = useColorScheme();
-  return useMemo(
-    () => semanticColorsForMobile(colorScheme === 'dark' ? 'dark' : 'light'),
-    [colorScheme],
-  );
-}
-
-// Dev-only: one-time per-text component-tree sketch of the ruby/definition
-// path, so the tokenized output structure can be inspected in the Metro log
-// (tokens → RubyTokenSpan → per-segment RubyTexts, gloss/byeonggi/defs).
-const loggedTreeTexts = new Set<string>();
-/** Last ruby render-path key logged (dev-only, see render body below). */
-let lastRenderPathKey = '';
-/** Only log trees/tokens whose reading has at least this many syllables —
- *  word-level pinyin long enough to trigger the Core Text distribution issue. */
-const LONG_READING_MIN_SYLLABLES = 6;
-function scheduleTreeLog(text: string, lines: string[]) {
-  if (!__DEV__ || loggedTreeTexts.has(text)) return;
-  const header = lines.slice(0, 2);
-  const longReadingLines = lines.filter((line) => {
-    const match = line.match(/syllables=(\d+)/);
-    return match != null && Number(match[1]) >= LONG_READING_MIN_SYLLABLES;
-  });
-  if (longReadingLines.length === 0) return;
-  loggedTreeTexts.add(text);
-  setTimeout(() => {
-    appLog(`[TokenizedText] 🌳 tokenized component tree text="${text.slice(0, 80)}"`);
-    for (const line of [...header, ...longReadingLines]) appLog(`[TokenizedText] 🌳 ${line}`);
-  }, 0);
-}
-
-// Dev-only: log each rendered line's token structure once per text, in the
-// compact { word, lemma, pronunciation } shape, so the exact tokens handed to
-// the render path can be inspected in the Metro log.
-const loggedRenderedTokenTexts = new Set<string>();
-
-// ── Queued batch lemmatization ────────────────────────────────────────
-// Visible TokenizedText instances enqueue their line; a short timer flushes
-// the queue through /lemmatize-normalized/batch in one request instead of
-// firing N per-line calls. Falls back to lemmatizeText() (server-first with
-// local tokenizer fallback) when the batch request fails.
-interface LemmatizeBatchItem {
-  key: string;
-  text: string;
-  l2Code: string;
-  resolve: (tokens: LemmatizedToken[]) => void;
-  reject: (err: unknown) => void;
-}
-
-const lemmatizeBatchQueue: LemmatizeBatchItem[] = [];
-const lemmatizeBatchPending = new Map<string, Promise<LemmatizedToken[]>>();
-const LEMMATIZE_BATCH_MAX = 12;
-const LEMMATIZE_BATCH_DELAY_MS = 60;
-let lemmatizeBatchTimer: ReturnType<typeof setTimeout> | null = null;
-
-/** RTL-script languages: the View-based ruby layout must reverse its flex
- *  row, otherwise words and their readings render in mirrored (LTR) order. */
-const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
-
-/** Target gap (px) between furigana glyphs and the base text. Web's native
- *  <ruby> annotation sits ~0–2px above the base, so mobile matches that
- *  instead of leaving the base line's full half-leading as a gap. */
-const RUBY_READING_GAP = 2;
-
-/** Stable signature for opening the dictionary popup from a memoized token. */
 type PressWordHandler = (
   index: number,
   word: string,
@@ -595,99 +523,6 @@ const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) 
   );
 });
 
-/** Queue a line for batched lemmatization; resolves with its tokens. */
-function enqueueLemmatize(text: string, l2Code: string): Promise<LemmatizedToken[]> {
-  const key = `${l2Code}:${text}`;
-  const existing = lemmatizeBatchPending.get(key);
-  if (existing) return existing;
-
-  const promise = new Promise<LemmatizedToken[]>((resolve, reject) => {
-    lemmatizeBatchQueue.push({ key, text, l2Code, resolve, reject });
-  });
-  lemmatizeBatchPending.set(key, promise);
-  scheduleLemmatizeBatchFlush();
-  return promise;
-}
-
-function scheduleLemmatizeBatchFlush() {
-  if (lemmatizeBatchTimer) return;
-  lemmatizeBatchTimer = setTimeout(() => {
-    lemmatizeBatchTimer = null;
-    void flushLemmatizeBatch();
-  }, LEMMATIZE_BATCH_DELAY_MS);
-}
-
-async function flushLemmatizeBatch() {
-  // Drain the whole queue in chunks — lines beyond LEMMATIZE_BATCH_MAX that
-  // enqueued before this flush must not be stranded until a later enqueue.
-  while (lemmatizeBatchQueue.length > 0) {
-    const items = lemmatizeBatchQueue.splice(0, LEMMATIZE_BATCH_MAX);
-    if (items.length === 0) break;
-
-    // Batch endpoint takes one language per call — group the queue by l2.
-    const byL2 = new Map<string, LemmatizeBatchItem[]>();
-    for (const item of items) {
-      const group = byL2.get(item.l2Code);
-      if (group) group.push(item);
-      else byL2.set(item.l2Code, [item]);
-    }
-
-    for (const [l2Code, group] of byL2) {
-      // Offline Mode: don't attempt the batch endpoint at all. The gate would
-      // reject instantly anyway; skipping keeps the local fallback instant
-      // and avoids the double failure (batch + per-line) in the logs.
-      if (isOfflineModeEnabled()) {
-        log('[TokenizedText] ⏭ OFFLINE-MODE — skipping /lemmatize-normalized/batch, using local lemmatizeText');
-        await Promise.allSettled(group.map(async (item) => {
-          try {
-            item.resolve(await lemmatizeText(item.text, item.l2Code));
-          } catch (lineErr) {
-            item.reject(lineErr);
-          } finally {
-            lemmatizeBatchPending.delete(item.key);
-          }
-        }));
-        continue;
-      }
-
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3000);
-        try {
-          const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ texts: group.map((g) => g.text), l2: l2Code }),
-            signal: controller.signal,
-          });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const results: LemmatizedToken[][] = data?.results ?? [];
-          group.forEach((item, i) => {
-            item.resolve(results[i] ?? []);
-            lemmatizeBatchPending.delete(item.key);
-          });
-        } finally {
-          clearTimeout(timeout);
-        }
-      } catch (err) {
-        // Batch failed — fall back to lemmatizeText() (server-first, then local
-        // tokenizer), preserving the offline pipeline.
-        logwarn('[LP Mobile] Batch lemmatize failed — falling back per-line:', err);
-        await Promise.allSettled(group.map(async (item) => {
-          try {
-            item.resolve(await lemmatizeText(item.text, item.l2Code));
-          } catch (lineErr) {
-            item.reject(lineErr);
-          } finally {
-            lemmatizeBatchPending.delete(item.key);
-          }
-        }));
-      }
-    }
-  }
-}
-
 // ── Word difficulty helpers for hardWords filter ──────────────────
 
 type WordDifficulty =
@@ -1081,46 +916,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // collapses exact token-boundary matches into one atomic token so
   // multi-token phrases (e.g. "got even with me" saved under "to get even
   // with someone") highlight as saved in the review context.
-  const savedPhraseCandidates = useMemo(() => {
-    const words = savedWords[l2Code] ?? [];
-    const out: string[] = [];
-    const seen = new Set<string>();
-    const add = (form: unknown) => {
-      if (typeof form !== 'string' || !form.trim()) return;
-      const key = form.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      out.push(form);
-    };
-    for (const w of words) {
-      if (w.head) add(w.head);
-      if (w.forms) for (const f of w.forms) add(f);
-      if (w.context?.form) add(w.context.form);
-      for (const inst of w.instances ?? []) if (inst.form) add(inst.form);
-    }
-    return out;
-  }, [savedWords, l2Code]);
-
-  // Kana/alternate surfaces of the highlight terms' dictionary entries (e.g.
-  // 然るべき → alternate しかるべき): the bridge between a kanji headword and
-  // a kana surface in the context sentence. Populated once the term lookups
-  // (enqueued below) resolve into the shared cache.
-  const highlightKanaForms = useMemo(() => {
-    const base = baseCode(l2Code);
-    const out: string[] = [];
-    for (const term of highlightTerms ?? []) {
-      for (const form of kanaFormsForEntries(getCachedEntries(base, term))) {
-        if (!out.includes(form)) out.push(form);
-      }
-    }
-    return out;
-  }, [highlightTerms, l2Code, cacheVersion]);
-
-  /** highlightTerms + the kana/alternate forms of their entries. */
-  const effectiveHighlightTerms = useMemo(() => {
-    if (highlightKanaForms.length === 0) return highlightTerms;
-    return [...new Set([...(highlightTerms ?? []), ...highlightKanaForms])];
-  }, [highlightTerms, highlightKanaForms]);
+  const savedPhraseCandidates = useSavedPhraseCandidates(savedWords, l2Code);
+  const highlightKanaForms = useHighlightKanaForms(highlightTerms, l2Code, cacheVersion);
+  const effectiveHighlightTerms = useEffectiveHighlightTerms(highlightTerms, highlightKanaForms);
 
   // Merge saved multi-token phrases only in interactive highlight contexts
   // (the review card). Readers keep the raw token indices so EPUB format
@@ -1135,22 +933,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
   // ── Rendered token structure (dev-only, once per text) ──
   useEffect(() => {
-    if (!__DEV__ || displayTokens.length === 0) return;
-    const key = `${l2Code}:${text}`;
-    const longTokens = displayTokens.filter((token) => {
-      const syllables = (token.pronunciation ?? '').split(' ').filter(Boolean).length;
-      return syllables >= LONG_READING_MIN_SYLLABLES;
-    });
-    if (longTokens.length === 0 || loggedRenderedTokenTexts.has(key)) return;
-    loggedRenderedTokenTexts.add(key);
-    const structure = longTokens.map((token) => ({
-      word: token.text,
-      lemma: token.lemmas[0]?.lemma ?? null,
-      pronunciation: token.pronunciation ?? null,
-    }));
-    appLog(
-      `[TokenizedText] 🧩 RENDERED-TOKENS (long) l2=${l2Code} text="${text.slice(0, 80)}" ${JSON.stringify(structure)}`,
-    );
+    logRenderedTokens(displayTokens, l2Code, text);
   }, [displayTokens, l2Code, text]);
 
   // Entry-id matching (web parity): highlight any token whose lemma (or
@@ -1265,23 +1048,15 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // EXPO_PUBLIC_LOG_LEVEL_TOKENIZED_TEXT=3 is set, which made this summary
   // invisible by default.
   useEffect(() => {
-    const base = baseCode(l2Code);
-    if (!__DEV__ || (base !== 'ko' && base !== 'ja') || tokens.length === 0) return;
-    const words = tokens.filter((t) => t.lemmas.length > 0);
-    const withPron = words.filter((t) => t.pronunciation).length;
-    const pronEqWord = words.filter((t) => t.pronunciation && t.pronunciation === t.text).length;
-    const eligible = words.filter(shouldShowPhonetics).length;
-    const rubyShown = words.filter(
-      (t) =>
-        showPhonetics &&
-        phonetics.show === 'ruby' &&
-        shouldShowPhonetics(t) &&
-        !!t.pronunciation &&
-        t.pronunciation !== t.text,
-    ).length;
-    appLog(
-      `[TokenizedText] 🎙 PHONETICS l2=${l2Code} show=${String(phonetics.show)} conditions=${phoneticsConditions} userLevel=${userLevel ?? 'none'} words=${words.length} eligible=${eligible} withPron=${withPron} pronEqWord=${pronEqWord} rubyShown=${rubyShown} sample=${words.slice(0, 10).map((t) => `${t.text}→${t.pronunciation ?? '∅'}`).join(', ')}`,
-    );
+    logPhoneticsSummary({
+      tokens,
+      l2Code,
+      showPhonetics,
+      phoneticsShow: phonetics.show,
+      phoneticsConditions,
+      userLevel,
+      shouldShowPhonetics,
+    });
   }, [tokens, l2Code, showPhonetics, phonetics.show, phoneticsConditions, userLevel, shouldShowPhonetics]);
 
   // ── Preloaded tokens: use directly ──
@@ -1648,17 +1423,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
-    const isRtl = RTL_L2S.has(baseCode(l2Code));
-    const tokenFontSize = textStyle.fontSize ?? 16;
-    const readingSize = Math.max(8, Math.round(tokenFontSize * 0.55));
-    const baseLeading = leadingRatio ? Math.round(tokenFontSize * leadingRatio) : undefined;
-    // Match web's native ruby: the reading's line box (readingSize, no extra
-    // leading) overlaps the base text's top half-leading, so the column stays
-    // ≈ baseLeading tall. Pulling the base text up by `rubyPull` leaves only
-    // RUBY_READING_GAP px between the reading glyphs and the base glyphs.
-    const halfLeading = Math.round(((baseLeading ?? tokenFontSize) - tokenFontSize) / 2);
-    const rubyPull = Math.max(0, halfLeading - RUBY_READING_GAP);
-    const isRubyMode = showPhonetics && phonetics.show === 'ruby';
+    const rubyLayout = computeRubyLayout(baseCode(l2Code), {
+      fontSize: textStyle.fontSize ?? 16,
+      lineHeight: leadingRatio ? Math.round((textStyle.fontSize ?? 16) * leadingRatio) : undefined,
+      showPhonetics,
+      phoneticsShow: phonetics.show,
+    });
+    const { isRtl, tokenFontSize, readingSize, baseLeading, halfLeading, rubyPull, isRubyMode } = rubyLayout;
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -1679,13 +1450,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // Dev-only: log the ruby render path once per change, so the
               // Metro log shows which path this build actually takes (native
               // paragraph / native per-token / JS fallback).
-              const renderPathKey = `${NATIVE_RUBY_ACTIVE}:${NATIVE_PARAGRAPH_ACTIVE}:${useParagraph}:${showDefinition}:${isRubyMode}`;
-              if (__DEV__ && lastRenderPathKey !== renderPathKey) {
-                lastRenderPathKey = renderPathKey;
-                appLog(
-                  `[TokenizedText] 🧭 ruby render-path native=${NATIVE_RUBY_ACTIVE} paragraphView=${NATIVE_PARAGRAPH_ACTIVE} paragraphUsed=${useParagraph} showDefinition=${showDefinition} rubyMode=${isRubyMode}`,
-                );
-              }
+              logRubyRenderPath(
+                NATIVE_RUBY_ACTIVE,
+                NATIVE_PARAGRAPH_ACTIVE,
+                useParagraph,
+                showDefinition,
+                isRubyMode,
+              );
               const runs: ParagraphRun[] = [];
               const taps: Array<ParagraphTapAction | null> = [];
               const treeLines: string[] = [
