@@ -99,23 +99,27 @@ if (!existsSync(artifactPath)) {
   console.log(`  sha256        : ${digest} ${match ? '✓ matches ledger' : '✗ MISMATCH'}`);
   if (!match) errors.push('artifact SHA-256 does not match the ledger row');
 
-  // 4. Commit SHA embedded in the JS bundle.
+  // 4. Commit SHA embedded in the JS bundle. Streamed through the shell
+  // (unzip -p | grep) so the megabyte-sized bundle never fills the pipe
+  // buffer (ENOBUFS) — only the tiny match count is captured.
   try {
     let bundlePath;
-    let bundle;
     if (row.platform === 'android') {
       bundlePath = 'assets/index.android.bundle';
-      bundle = sh(`unzip -p '${artifactPath}' ${bundlePath}`);
     } else {
       const listing = sh(`unzip -l '${artifactPath}'`);
       const m = listing.match(/[^\s]+main\.jsbundle/);
       bundlePath = m ? m[0] : null;
-      bundle = bundlePath ? sh(`unzip -p '${artifactPath}' '${bundlePath}'`) : '';
       if (!bundlePath) errors.push('no main.jsbundle found inside the zip (was this built as Release?)');
     }
-    const embedded = bundle.includes(row.commit);
-    console.log(`  embedded sha  : ${embedded ? '✓ found in bundle' : '✗ NOT in bundle'}`);
-    if (!embedded) errors.push(`commit ${row.commit} not found in the artifact's JS bundle`);
+    if (bundlePath) {
+      const count = Number(
+        sh(`unzip -p '${artifactPath}' '${bundlePath}' | grep -ao '${row.commit}' | wc -l`),
+      );
+      const embedded = count > 0;
+      console.log(`  embedded sha  : ${embedded ? `✓ found in bundle (${count}×)` : '✗ NOT in bundle'}`);
+      if (!embedded) errors.push(`commit ${row.commit} not found in the artifact's JS bundle`);
+    }
   } catch (e) {
     errors.push(`could not inspect bundle: ${e.message}`);
   }

@@ -37,23 +37,58 @@ export function formatRelativeDate(date: Date | string, now: Date = new Date()):
 }
 
 /** Locale-aware "next review" label: today/tomorrow include the time, later
- *  dates fall back to a plain date. */
+ *  dates fall back to a plain date.
+ *
+ *  Hermes (React Native) has no `Intl.RelativeTimeFormat`, so the near-day
+ *  branch falls back to a manual label — same capability-check pattern as
+ *  sentence.ts's `Intl.Segmenter` guard. Every Intl call here is guarded so
+ *  the label can never throw on any runtime. */
 export function formatNextDueLabel(
   dueMs: number,
   locale = 'en',
   now: Date = new Date(),
 ): string {
+  if (!Number.isFinite(dueMs)) return '';
   const due = new Date(dueMs);
   const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startDue = new Date(due.getFullYear(), due.getMonth(), due.getDate());
   const dayDiff = Math.round((startDue.getTime() - startToday.getTime()) / 86_400_000);
+
+  // Time — Intl.DateTimeFormat exists in Hermes (basic), but guard anyway so
+  // no runtime can make this label throw.
+  const time = (() => {
+    try {
+      return new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(due);
+    } catch {
+      return `${pad2(due.getHours())}:${pad2(due.getMinutes())}`;
+    }
+  })();
+
   if (dayDiff >= -1 && dayDiff <= 1) {
-    const relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(dayDiff, 'day');
-    const time = new Intl.DateTimeFormat(locale, {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(due);
-    return `${relative} ${time}`;
+    const hasRelative =
+      typeof Intl !== 'undefined' &&
+      typeof (Intl as { RelativeTimeFormat?: unknown }).RelativeTimeFormat === 'function';
+    if (hasRelative) {
+      try {
+        const relative = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(dayDiff, 'day');
+        return `${relative} ${time}`;
+      } catch {
+        // fall through to the manual label
+      }
+    }
+    const day = dayDiff === -1 ? 'yesterday' : dayDiff === 1 ? 'tomorrow' : 'today';
+    return `${day} ${time}`;
   }
-  return due.toLocaleDateString(locale);
+  try {
+    return due.toLocaleDateString(locale);
+  } catch {
+    return `${due.getFullYear()}-${pad2(due.getMonth() + 1)}-${pad2(due.getDate())}`;
+  }
+}
+
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : `${n}`;
 }
