@@ -14,6 +14,8 @@ export {
   subscribeToCache,
   bulkLookupWords,
   enqueueLookupWords,
+  getCachedEntryById,
+  setCachedEntryById,
   getL1CachedEntry,
   getL1CachedEntries,
   setL1CachedEntry,
