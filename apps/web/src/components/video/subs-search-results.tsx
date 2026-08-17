@@ -975,9 +975,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         >
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50" />
-          {/* Sheet */}
+          {/* Sheet — width matches the SRS review page's content (max-w-2xl) */}
           <div
-            className="relative z-10 flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl"
+            className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header — video title + close */}
