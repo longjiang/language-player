@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "Muziek",
+        "non_music": "Geen muziek"
     },
     "footnote": {
         "currency": "2. Alle valuta in Amerikaanse dollars (USD).",

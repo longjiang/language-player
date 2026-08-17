@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "Âm nhạc",
+        "non_music": "Không phải nhạc"
     },
     "footnote": {
         "currency": "2. Tất cả tiền tệ tính bằng đô la Mỹ (USD).",

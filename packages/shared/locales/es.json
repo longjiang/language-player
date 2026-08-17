@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "Música",
+        "non_music": "Sin música"
     },
     "footnote": {
         "currency": "2. Todas las monedas en dólares estadounidenses (USD).",

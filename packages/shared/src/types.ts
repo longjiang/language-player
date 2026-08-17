@@ -96,6 +96,10 @@ export interface SubsSearchVideo {
   views?: number;
   duration?: number;
   date?: string;
+  /** YouTube category id (10 = Music, 24 = Entertainment). Null when unset. */
+  category?: number | null;
+  /** Directus tv_show row id when the video belongs to a TV show. Null otherwise. */
+  tv_show?: number | null;
   /** Index of the best-matching subtitle line for the search terms. Set by client after parsing. */
   matchLineIndex: number;
 }
