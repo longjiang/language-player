@@ -10,7 +10,8 @@ import {
 import { DictionaryPopup } from './dictionary-popup';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { baseCode } from '@/lib/language-data';
+import { baseCode, isRTL } from '@/lib/language-data';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSavedPhraseCandidates, useHighlightKanaForms } from '@/hooks/use-highlight-forms';
@@ -181,6 +182,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 }) => {
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
+  // SPEC-080: tag L2 content with a glyph-safe `lang` and its matching `dir`
+  // so CJK renders with the correct regional glyph variants.
+  const glyphLang = useGlyphLang(l2Code);
+  const contentDir = isRTL(l2Code) ? 'rtl' : 'ltr';
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const userLevel = useProgressLevel(l2Code);
 
@@ -645,7 +650,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground/80 ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -653,7 +658,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -661,7 +666,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={textStyle}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground ${fontClass}`} style={textStyle}>
         {text}
       </span>
     );
@@ -669,7 +674,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <>
-      <span ref={containerRef} className={`${fontClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
+      <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`${fontClass} ${selectionDictionary ? '[-webkit-touch-callout:none]' : ''}`}>
       <span style={textStyle}>
         {/* Precompute karaoke word weights once, outside the per-token loop */}
         {(() => {

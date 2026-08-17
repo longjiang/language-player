@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DictionaryEntry, SavedWordContext, SketchThesaurusResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { buildEntryRouteWithList, entryToNavItem, setWordListNav } from '@/lib/word-list-navigation';
@@ -122,6 +123,7 @@ function RelatedWordCard({
   const router = useRouter();
   const t = useT();
   const base = baseCode(l2Code);
+  const glyphLang = useGlyphLang(l2Code);
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(() =>
     getCachedEntries(base, text)?.[0],
   );
@@ -170,7 +172,7 @@ function RelatedWordCard({
       <div
         className="cursor-pointer rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30"
         onClick={() => router.push(`/${l1Code}/${l2Code}/dictionary?q=${encodeURIComponent(text)}`)}
-        lang={base}
+        lang={glyphLang}
       >
         <span className="text-lg font-bold text-foreground">{text}</span>
       </div>

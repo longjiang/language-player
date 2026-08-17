@@ -77,7 +77,31 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+        // Inter has no CJK glyphs, so CJK falls through to the regional
+        // faces below. Modern browsers match these faces against the
+        // `lang` attribute (SPEC-080 Rule 6), so Japanese (`ja`) picks a JP
+        // face, simplified Chinese (`zh-Hans`) picks an SC face, and
+        // traditional (`zh-Hant`) picks a TC face — giving correct glyph
+        // variants for shared Han codepoints. `system-ui` stays last as the
+        // OS fallback.
+        sans: [
+          'var(--font-inter)',
+          'Hiragino Sans',
+          'Hiragino Kaku Gothic ProN',
+          'Yu Gothic',
+          'Meiryo',
+          'Noto Sans JP',
+          'PingFang SC',
+          'Microsoft YaHei',
+          'Noto Sans SC',
+          'Noto Sans CJK SC',
+          'Microsoft JhengHei',
+          'Noto Sans TC',
+          'Noto Sans CJK TC',
+          'system-ui',
+          '-apple-system',
+          'sans-serif',
+        ],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
     },

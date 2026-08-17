@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
@@ -114,6 +115,7 @@ export function PaginatedReader({
 }: PaginatedReaderProps) {
   const t = useT();
   const { display, updateDisplay } = useSettingsContext();
+  const glyphLang = useGlyphLang(l2.code);
   const showTranslation = display.translation;
 
   const pager = usePaginatedReader({
@@ -155,7 +157,7 @@ export function PaginatedReader({
   return (
     <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
       <div ref={pager.viewportRef} className="min-h-0 flex-1 overflow-auto">
-        <div className={contentClassName} lang={l2.code} dir={dir}>
+        <div className={contentClassName} lang={glyphLang} dir={dir}>
           {pager.pageBlocks.length > 0 && header}
           {showFallback ? (
             <TextActionMenu text={stripMarkdown(text!)} l2Code={l2.code} l1Code={l1.code}>
@@ -213,7 +215,7 @@ export function PaginatedReader({
         ref={pager.measureRef}
         aria-hidden="true"
         className={`absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none ${measureClassName ?? contentClassName}`}
-        lang={l2.code} dir={dir}
+        lang={glyphLang} dir={dir}
       >
         {pager.measureWindow.map((item, i) => renderMeasureBlock(item, i))}
       </div>

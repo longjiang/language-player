@@ -144,7 +144,6 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                   return (
                     <li
                       key={`${gramrel.name || gramrelIndex}-${w.word || w.cm || wordIndex}-${wordIndex}`}
-                      lang={baseCode(l2Code)}
                       className="rounded-md px-2 py-1 text-sm text-foreground transition-colors hover:bg-background"
                     >
                       <TokenizedText

@@ -61,7 +61,7 @@ export function Mistakes({ word, highlightForms = [], highlightEntryIds = [] }: 
               {mistake.leftContext ? (
                 <p className="text-xs text-muted-foreground/70">{mistake.leftContext}</p>
               ) : null}
-              <p lang="zh" className="mt-1 text-sm leading-relaxed">
+              <p lang="zh-Hans" className="mt-1 text-sm leading-relaxed">
                 <TokenizedText
                   text={`${mistake.left ?? ''}${word}${mistake.right ?? ''}`}
                   l2Code="zh"

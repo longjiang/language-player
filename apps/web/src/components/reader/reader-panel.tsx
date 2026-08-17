@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
 import { loadSampleContent, type LemmatizedToken, type SavedWordContext } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useGlyphLang } from '@/hooks/use-glyph-lang';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -79,6 +80,7 @@ export function ReaderPanel({
   const t = useT();
   const router = useRouter();
   const { display, tokenizedText, updateDisplay } = useSettingsContext();
+  const glyphLang = useGlyphLang(l2.code);
   const showTranslation = display.translation;
   const textZoom = useTextScale();
 
@@ -250,7 +252,7 @@ export function ReaderPanel({
           <textarea value={text} onChange={(e) => onTextChange(e.target.value)}
             placeholder={t('placeholder.paste_l2_text', { l2: languageName(l2.code, l1.code) })}
             className="min-h-0 flex-1 w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
-            dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
+            dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={glyphLang} />
           <div className="flex-shrink-0 flex gap-2">
             <Button
               variant="outline"
