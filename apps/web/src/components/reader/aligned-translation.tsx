@@ -208,28 +208,29 @@ export function AlignedTranslation({
 
       // Line boxes of the whole L2 block. With interlinear definitions the
       // tokens are inline-flex columns, so individual glyph rects are only
-      // ~font-size tall, not the full line box — pick up the most frequent
-      // non-tiny height (the base-text glyph run) instead of assuming the
-      // base line box is >= 0.9 * lineHeight. Tiny boxes (ruby band, the
-      // 0.55em gloss/def slots, leading/trailing whitespace) drop out.
+      // ~font-size tall, not the full line box. Pick the most frequent
+      // "glyph-sized" height (≈ the L2 font size) as the base-text run. Truly
+      // tiny boxes (the 0.55em interlinear gloss/def slots and ruby-band
+      // gaps, both well under half the font size) drop out; the one full-block
+      // rect (the L2 block's own tall box) is off-mode and also drops.
       const fullRange = document.createRange();
       fullRange.selectNodeContents(anchor);
       const fullRects = Array.from(fullRange.getClientRects());
       const heights = fullRects.map(r => r.height);
-      const minAll = heights.length ? Math.min(...heights) : 0;
-      const nonTiny = heights.filter(h => h >= minAll + 2 && h >= 4);
+      const minGlyph = Math.max(4, f2r * 0.45);
+      const nonTiny = fullRects.filter(r => r.height >= minGlyph).map(r => r.height);
       const freq = new Map<number, number>();
       for (const h of nonTiny) {
-        const key = Math.round(h * 10) / 10;
+        const key = Math.round(h);
         freq.set(key, (freq.get(key) ?? 0) + 1);
       }
       let run = 0;
-      let runMode = nonTiny.length ? nonTiny[0]! : 0;
+      let runMode = nonTiny.length ? Math.round(nonTiny[0]!) : 0;
       for (const [key, count] of freq) {
         if (count > run) { run = count; runMode = key; }
       }
-      const lineRects = fullRects.filter(r => Math.abs(r.height - runMode) < Math.max(2, runMode * 0.15));
-      log(`[AlignedTranslation] measure:l2-line-grid tag="${tag}" fullRects=${fullRects.length} minAll=${Math.round(minAll * 10) / 10} nonTiny=${nonTiny.length} runModH=${Math.round(runMode * 10) / 10} (x${run}) glyphRects=${lineRects.length} rectHeights=${heights.map(h => Math.round(h * 10) / 10).join(',')}`);
+      const lineRects = fullRects.filter(r => Math.abs(r.height - runMode) < Math.max(2.5, runMode * 0.2));
+      log(`[AlignedTranslation] measure:l2-line-grid tag="${tag}" fullRects=${fullRects.length} f2R=${Math.round(f2r * 10) / 10} minGlyph=${Math.round(minGlyph * 10) / 10} glyphCandidates=${nonTiny.length} runModH=${runMode} (x${run}) glyphRects=${lineRects.length} rectHeights=${heights.map(h => Math.round(h * 10) / 10).join(',')}`);
       if (lineRects.length === 0) {
         log(`[AlignedTranslation] measure:bail reason=no-base-lines tag="${tag}" fullRects=${fullRects.length}`);
         setLayout(null);
