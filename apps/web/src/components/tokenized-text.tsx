@@ -19,6 +19,7 @@ import { enqueueLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 import { addExtraForm } from '@/hooks/use-inflected-search-terms';
 import {
   isPhoneticsEligible,
+  kanaFormsForEntries,
   mergePhraseTokens,
   sentenceContaining,
   sentenceForToken,
@@ -373,12 +374,31 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return out;
   }, [savedWords, l2Code]);
 
+  // Kana/alternate surfaces of the highlight terms' dictionary entries (e.g.
+  // 然るべき → しかるべき): the bridge between a kanji headword and a kana
+  // surface in the context sentence. Recomputes when the enqueued term
+  // lookups resolve (cacheVersion).
+  const highlightKanaForms = useMemo(() => {
+    const base = baseCode(l2Code);
+    const terms = [
+      ...(highlightForm ? [highlightForm] : []),
+      ...(highlightForms ?? []),
+    ];
+    const out: string[] = [];
+    for (const term of terms) {
+      for (const form of kanaFormsForEntries(getCachedEntries(base, term))) {
+        if (!out.includes(form)) out.push(form);
+      }
+    }
+    return out;
+  }, [highlightForm, highlightForms, l2Code, cacheVersion]);
+
   // Tokens with saved multi-token phrases merged into single atomic tokens
   // (pure client-side retokenization — total length is preserved, so format
   // offsets, karaoke pacing, and sentence context stay aligned).
   const displayTokens = useMemo(
-    () => mergePhraseTokens(text, tokens, savedPhraseCandidates),
-    [text, tokens, savedPhraseCandidates],
+    () => mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms]),
+    [text, tokens, savedPhraseCandidates, highlightKanaForms],
   );
 
   // Map markdown format ranges onto token indices by reconstructing character
@@ -586,6 +606,23 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
   }, [displayTokens, loading, error, l2Code]);
 
+  // Enqueue lookups for the highlight terms themselves, so their dictionary
+  // entries (alternate / phonetic_detail.kana — e.g. しかるべき for 然るべき)
+  // land in the cache and highlightKanaForms can bridge kanji-head ↔ kana-
+  // surface matching in the context sentence.
+  useEffect(() => {
+    const terms = [
+      ...(highlightForm ? [highlightForm] : []),
+      ...(highlightForms ?? []),
+    ];
+    if (terms.length === 0) return;
+    enqueueLookupWords(
+      terms.map((text) => ({ text, l2Code: baseCode(l2Code) })),
+      PYTHON_API_URL,
+    ).then(() => setCacheVersion(v => v + 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightForm, highlightForms, l2Code]);
+
   const handleTokenClick = useCallback((token: LemmatizedToken, rect?: DOMRect) => {
     setSelectedToken(prev => prev === token ? null : token);
     if (rect) {
@@ -709,11 +746,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const tokenMatchesHighlight = (token: LemmatizedToken): boolean => {
     if (highlightForm && tokenMatchesAnyTerm(token, [highlightForm])) return true;
     if (highlightForms && highlightForms.length > 0) {
-      if (tokenMatchesAnyTerm(token, highlightForms)) return true;
+      // Effective forms: the requested forms + their entries' kana/alternate
+      // surfaces (e.g. しかるべき for 然るべき) so a kana surface in the
+      // context sentence matches its kanji headword.
+      const effectiveForms = [...highlightForms, ...highlightKanaForms];
+      if (tokenMatchesAnyTerm(token, effectiveForms)) return true;
       // Search terms can appear inside compound tokens (e.g. 武侠 in 武侠片) —
       // highlight the whole token so the L2 matches the translation bold.
       const surface = token.text.toLowerCase();
-      return highlightForms.some((f) => {
+      return effectiveForms.some((f) => {
         const form = f.toLowerCase();
         return form.length > 0 && surface.includes(form);
       });

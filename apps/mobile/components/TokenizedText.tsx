@@ -15,6 +15,7 @@ import {
 import {
   baseCode,
   buildRuby,
+  kanaFormsForEntries,
   mergePhraseTokens,
   sentenceForToken,
   tokenMatchesAnyForm,
@@ -1100,15 +1101,36 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     return out;
   }, [savedWords, l2Code]);
 
+  // Kana/alternate surfaces of the highlight terms' dictionary entries (e.g.
+  // 然るべき → alternate しかるべき): the bridge between a kanji headword and
+  // a kana surface in the context sentence. Populated once the term lookups
+  // (enqueued below) resolve into the shared cache.
+  const highlightKanaForms = useMemo(() => {
+    const base = baseCode(l2Code);
+    const out: string[] = [];
+    for (const term of highlightTerms ?? []) {
+      for (const form of kanaFormsForEntries(getCachedEntries(base, term))) {
+        if (!out.includes(form)) out.push(form);
+      }
+    }
+    return out;
+  }, [highlightTerms, l2Code, cacheVersion]);
+
+  /** highlightTerms + the kana/alternate forms of their entries. */
+  const effectiveHighlightTerms = useMemo(() => {
+    if (highlightKanaForms.length === 0) return highlightTerms;
+    return [...new Set([...(highlightTerms ?? []), ...highlightKanaForms])];
+  }, [highlightTerms, highlightKanaForms]);
+
   // Merge saved multi-token phrases only in interactive highlight contexts
   // (the review card). Readers keep the raw token indices so EPUB format
   // ranges and links stay aligned.
   const displayTokens = useMemo(
     () =>
-      highlightTerms && highlightTerms.length > 0 && !formats?.length
-        ? mergePhraseTokens(text, tokens, savedPhraseCandidates)
+      effectiveHighlightTerms && effectiveHighlightTerms.length > 0 && !formats?.length
+        ? mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms])
         : tokens,
-    [text, tokens, savedPhraseCandidates, highlightTerms, formats],
+    [text, tokens, savedPhraseCandidates, effectiveHighlightTerms, highlightKanaForms, formats],
   );
 
   // ── Rendered token structure (dev-only, once per text) ──
@@ -1154,13 +1176,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // Search terms can appear inside compound tokens (e.g. 武侠 in 武侠片) —
   // highlight the whole token so the L2 matches the translation bold.
   const tokenMatchesOrContainsTerm = useCallback((token: LemmatizedToken): boolean => {
-    if (tokenMatchesAnyTerm(token, highlightTerms)) return true;
+    if (tokenMatchesAnyTerm(token, effectiveHighlightTerms)) return true;
     const surface = token.text.toLowerCase();
-    return (highlightTerms ?? []).some((t) => {
+    return (effectiveHighlightTerms ?? []).some((t) => {
       const form = t.toLowerCase();
       return form.length > 0 && surface.includes(form);
     });
-  }, [highlightTerms]);
+  }, [effectiveHighlightTerms]);
 
   // ── Highlight diagnostics (dev-only, once per text) ──
   // Review-card target words (e.g. しかるべき) can fail to highlight when the
@@ -1480,6 +1502,20 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
     }
   }, [tokens, loading, l2Code]);
+
+  // Enqueue lookups for the highlight terms themselves, so their dictionary
+  // entries (alternate / phonetic_detail.kana — e.g. しかるべき for 然るべき)
+  // land in the cache and highlightKanaForms can bridge kanji-head ↔ kana-
+  // surface matching in the context sentence.
+  useEffect(() => {
+    const terms = effectiveHighlightTerms ?? [];
+    if (terms.length === 0 || isOfflineModeEnabled()) return;
+    const base = baseCode(l2Code);
+    enqueueLookupWords(
+      terms.map((text) => ({ text, l2Code: base })),
+      PYTHON_API_URL,
+    ).then(() => setCacheVersion(v => v + 1));
+  }, [effectiveHighlightTerms, l2Code]);
 
   // ── Pre-warm local tokenizer machinery ──
   // Start loading the kuromoji data pack / dictionary headword set as soon

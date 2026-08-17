@@ -89,8 +89,8 @@ export {
   dayKey,
   deviceTimezone,
 } from './day-boundary';
-export { tokenMatchesAnyTerm, tokenMatchesAnyForm } from './highlight-match';
-export type { HighlightToken } from './highlight-match';
+export { tokenMatchesAnyTerm, tokenMatchesAnyForm, kanaFormsForEntries } from './highlight-match';
+export type { HighlightToken, KanaEntryForm } from './highlight-match';
 export { pickSavedEntry } from './saved-gloss';
 export {
   getSyncEntityDef,
