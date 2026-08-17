@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "音楽",
+        "non_music": "音楽以外"
     },
     "footnote": {
         "currency": "2. すべての通貨は米ドル (USD) です。",

@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "موسيقى",
+        "non_music": "غير موسيقية"
     },
     "footnote": {
         "currency": "2. جميع العملات بالدولار الأمريكي (USD).",

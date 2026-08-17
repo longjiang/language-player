@@ -63,6 +63,16 @@ const SUBTITLE_MODE_KEY = 'lp_subs_search_subtitle_mode';
 
 type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
 
+/** Content filter pills shown in the nav bar next to the forms toggle. */
+type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
+
+const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
+  { key: 'all', labelKey: 'filter.all' },
+  { key: 'nonMusic', labelKey: 'filter.non_music' },
+  { key: 'music', labelKey: 'filter.music' },
+  { key: 'tvShows', labelKey: 'title.tv_shows' },
+];
+
 // ── Helpers ────────────────────────────────────
 
 function formatTime(seconds: number): string {
@@ -189,6 +199,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // List: filter + sort
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SortKey>('views');
+  // Content filter pill (All / Non-Music / Music / TV Shows).
+  const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
 
   // Subtitle display mode in the playback modal: follow playback one line at a
   // time (singleline), or show the full transcript (multiline — tabbed subs |
@@ -221,13 +233,34 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setPanelTab('subs');
   }, []);
 
-  // Visible results: drop videos whose embeds failed, then apply the free
-  // quota (first 5) to the *playable* list so skipped videos don't consume a
-  // free member's slot.
+  // Content filter: narrows the fetched pool by category / TV-show membership.
+  // Client-side over the already-fetched results, like the exact-match toggle
+  // (the server has no NOT-IN filter, so "Non-Music" can't be expressed there).
+  const applyVideoFilter = useCallback(
+    (list: SubsSearchVideo[]): SubsSearchVideo[] => {
+      switch (videoFilter) {
+        case 'music':
+          return list.filter((v) => v.category === 10 || v.category === 24);
+        case 'nonMusic':
+          return list.filter((v) => v.category !== 10 && v.category !== 24);
+        case 'tvShows':
+          return list.filter((v) => !!v.tv_show);
+        case 'all':
+        default:
+          return list;
+      }
+    },
+    [videoFilter],
+  );
+
+  // Visible results: drop videos whose embeds failed, apply the content
+  // filter pill, then apply the free quota (first 5) to the *playable* list so
+  // skipped videos don't consume a free member's slot.
   const videos = useMemo(() => {
     const playable = pool.filter((v) => !skippedIds.has(v.youtube_id));
-    return isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
-  }, [pool, skippedIds, isPro]);
+    const filtered = applyVideoFilter(playable);
+    return isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
+  }, [pool, skippedIds, isPro, applyVideoFilter]);
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
@@ -371,6 +404,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               views: v.views,
               duration: v.duration,
               date: v.date,
+              category: v.category != null ? Number(v.category) : null,
+              tv_show: v.tv_show != null ? Number(v.tv_show) : null,
               matchLineIndex: findMatchLine(lines, term),
             };
           })
@@ -450,7 +485,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
       const erroredIndex = videos.findIndex((v) => v.youtube_id === erroredId);
       const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
-      const nextVideos = isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
+      const filtered = applyVideoFilter(playable);
+      const nextVideos = isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
 
       setSkippedIds(nextSkipped);
       // The video after the errored one slides into its slot, so keep the
@@ -467,7 +503,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         remaining: nextVideos.length,
       });
     },
-    [currentVideo, videos, pool, isPro],
+    [currentVideo, videos, pool, isPro, applyVideoFilter],
   );
 
   const goToPrevious = useCallback(() => {
@@ -795,20 +831,45 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     [videos, currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
   );
 
+  // Content-filter pills (All / Non-Music / Music / TV Shows), rendered in the
+  // nav bar next to the forms toggle. Switching a pill resets to the first
+  // result (the list may shrink, so the current index could go stale).
+  const filterPills = (
+    <div className="inline-flex items-center rounded-full bg-muted p-0.5">
+      {FILTER_PILLS.map((pill) => (
+        <button
+          key={pill.key}
+          onClick={() => {
+            setVideoFilter(pill.key);
+            setCurrentIndex(0);
+          }}
+          className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+            videoFilter === pill.key
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {t(pill.labelKey)}
+        </button>
+      ))}
+    </div>
+  );
+
   // ── Loading / Error / Empty ──────────────────
 
   if (loading) {
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-        {/* Nav bar skeleton — only when the exact-match toggle will show */}
-        {formCount > 1 && (
-          <div className="flex items-center justify-center border-b border-border py-2">
+        {/* Nav bar — pills are clickable while loading; toggle shown as skeleton */}
+        <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+          {formCount > 1 && (
             <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-0.5">
               <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
               <div className="h-4 w-14 animate-pulse rounded-full bg-muted/70" />
             </div>
-          </div>
-        )}
+          )}
+          {filterPills}
+        </div>
         {/* List skeleton — filter toolbar + rows */}
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-2">
@@ -838,9 +899,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   if (videos.length === 0) {
     return (
       <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-        {/* Nav bar — keep toggle accessible even when empty */}
-        {formCount > 1 && (
-          <div className="flex items-center justify-center border-b border-border py-2">
+        {/* Nav bar — keep toggle + pills accessible even when empty */}
+        <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+          {formCount > 1 && (
             <div className="inline-flex items-center rounded-full bg-muted p-0.5">
               <button
                 onClick={() => onExactToggle?.(true)}
@@ -865,8 +926,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 {t('msg.all_forms')}
               </button>
             </div>
-          </div>
-        )}
+          )}
+          {filterPills}
+        </div>
 
         {/* Empty list */}
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
@@ -881,9 +943,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-      {/* ── Nav bar (above list) — exact-match toggle only ── */}
-      {formCount > 1 && (
-        <div className="flex items-center justify-center border-b border-border py-2">
+      {/* ── Nav bar (above list) — forms toggle + content-filter pills ── */}
+      <div className="flex items-center justify-center gap-2 border-b border-border py-2">
+        {formCount > 1 && (
           <div className="inline-flex items-center rounded-full bg-muted p-0.5">
             <button
               onClick={() => onExactToggle?.(true)}
@@ -908,8 +970,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               {t('msg.all_forms')}
             </button>
           </div>
-        </div>
-      )}
+        )}
+        {filterPills}
+      </div>
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
         <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">

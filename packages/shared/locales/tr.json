@@ -268,7 +268,9 @@
         "cefr_b1": "B1",
         "cefr_b2": "B2",
         "cefr_c1": "C1",
-        "cefr_c2": "C2"
+        "cefr_c2": "C2",
+        "music": "Müzik",
+        "non_music": "Müzik dışı"
     },
     "footnote": {
         "currency": "2. Tüm para birimleri ABD doları (USD) cinsindendir.",
