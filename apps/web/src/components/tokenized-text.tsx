@@ -433,7 +433,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     // Queue with other visible lines' lemmas so one flush covers many lines
     // (still lazy — only lemmatized, i.e. visible, lines enqueue anything).
-    enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
+    enqueueLookupWords(words, PYTHON_API_URL).then((queued) => { if (queued) setCacheVersion(v => v + 1); });
   }, [displayTokens, loading, error, l2Code]);
 
   // Enqueue lookups for the highlight terms themselves, so their dictionary
@@ -449,7 +449,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     enqueueLookupWords(
       terms.map((text) => ({ text, l2Code: baseCode(l2Code) })),
       PYTHON_API_URL,
-    ).then(() => setCacheVersion(v => v + 1));
+    ).then((queued) => { if (queued) setCacheVersion(v => v + 1); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightForm, highlightForms, l2Code]);
 

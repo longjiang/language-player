@@ -523,18 +523,36 @@ export class EpubBook {
         }
 
         // Resolve images to session blob URLs via the epubjs archive cache.
+        // Fall back to our own canonical path resolver (dirname of the spine
+        // href) when epubjs's book.path.resolve misses — otherwise the raw
+        // relative src (e.g. "0002.jpg") 404s against the page URL.
         const urlCache = this.book.archive?.urlCache ?? {};
+        const srcToBlob = (src: string): string | null => {
+          const resolvedByEpubjs = this.book.path?.resolve?.(src);
+          if (resolvedByEpubjs && urlCache[resolvedByEpubjs]) {
+            return urlCache[resolvedByEpubjs] as string;
+          }
+          const resolvedOurs = resolvePath(dirname(item.hrefRaw), src);
+          if (resolvedOurs && urlCache[resolvedOurs]) {
+            return urlCache[resolvedOurs] as string;
+          }
+          epubWarn(
+            `getBlocks spine ${spineIndex}: image src "${src}" unresolvable ` +
+              `(epubjs=${String(resolvedByEpubjs)} ours=${String(resolvedOurs)} urlCacheHits=${Object.keys(urlCache).length}) — keeping raw src`,
+          );
+          return null;
+        };
         body.querySelectorAll('img').forEach(img => {
           const src = img.getAttribute('src');
           if (!src) return;
-          const resolved = this.book.path?.resolve?.(src);
-          if (resolved && urlCache[resolved]) img.setAttribute('src', urlCache[resolved]);
+          const blob = srcToBlob(src);
+          if (blob) img.setAttribute('src', blob);
         });
         body.querySelectorAll('image').forEach(img => {
           const src = img.getAttribute('xlink:href') || img.getAttribute('href');
           if (!src) return;
-          const resolved = this.book.path?.resolve?.(src);
-          if (resolved && urlCache[resolved]) img.setAttribute('xlink:href', urlCache[resolved]);
+          const blob = srcToBlob(src);
+          if (blob) img.setAttribute('xlink:href', blob);
         });
 
         const blocks = convertDocument(body);
