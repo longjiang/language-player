@@ -118,6 +118,19 @@ function applyFilterAndSort(
 
   const getMatchLine = (v: SubsSearchVideo) => v.subs_l2[v.matchLineIndex];
 
+  // For left/right-context sorts, order groups by their size (descending) so
+  // the biggest groups land at the top. Within a group, keep the boundary
+  // character alphabetical for a stable, legible order.
+  let contextCounts: Map<string, number> | undefined;
+  if (listSort === 'leftContext' || listSort === 'rightContext') {
+    const side = listSort === 'leftContext' ? 'left' : 'right';
+    contextCounts = new Map();
+    for (const v of result) {
+      const key = contextChar(v, term, side) || '—';
+      contextCounts.set(key, (contextCounts.get(key) ?? 0) + 1);
+    }
+  }
+
   result.sort((a, b) => {
     switch (listSort) {
       case 'likes':
@@ -131,22 +144,13 @@ function applyFilterAndSort(
       }
       case 'leftContext':
       case 'rightContext': {
-        const la = a.subs_l2[a.matchLineIndex]?.line.toLowerCase().indexOf(term.toLowerCase()) ?? -1;
-        const lb = b.subs_l2[b.matchLineIndex]?.line.toLowerCase().indexOf(term.toLowerCase()) ?? -1;
-        if (listSort === 'leftContext') {
-          const ca = la > 0 ? (a.subs_l2[a.matchLineIndex]!.line[la - 1] ?? '') : '';
-          const cb = lb > 0 ? (b.subs_l2[b.matchLineIndex]!.line[lb - 1] ?? '') : '';
-          return ca.localeCompare(cb);
-        }
-        const ca =
-          la >= 0 && la + term.length < (a.subs_l2[a.matchLineIndex]?.line.length ?? 0)
-            ? (a.subs_l2[a.matchLineIndex]!.line[la + term.length] ?? '')
-            : '';
-        const cb =
-          lb >= 0 && lb + term.length < (b.subs_l2[b.matchLineIndex]?.line.length ?? 0)
-            ? (b.subs_l2[b.matchLineIndex]!.line[lb + term.length] ?? '')
-            : '';
-        return ca.localeCompare(cb);
+        const side = listSort === 'leftContext' ? 'left' : 'right';
+        const ka = contextChar(a, term, side) || '—';
+        const kb = contextChar(b, term, side) || '—';
+        // Largest group first, then alphabetical by boundary char.
+        const diff = (contextCounts?.get(kb) ?? 0) - (contextCounts?.get(ka) ?? 0);
+        if (diff !== 0) return diff;
+        return ka.localeCompare(kb);
       }
       case 'views':
       default:
@@ -773,32 +777,35 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       onToggle: () => void;
     }) => {
       const label = listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext');
-      const controls =
-        group.isFirst && allGroupKeys && allGroupKeys.length > 1 ? (
-          <span
-            className="ml-auto flex shrink-0 gap-1"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={collapseAll}
-              className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
-            >
-              {t('action.collapse_all')}
-            </button>
-            <button
-              type="button"
-              onClick={expandAll}
-              className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
-            >
-              {t('action.expand_all')}
-            </button>
-          </span>
-        ) : (
-          <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+      const hasBulkControls = group.isFirst && allGroupKeys && allGroupKeys.length > 1;
+      const controls = hasBulkControls ? (
+        <span
+          className="ml-auto flex shrink-0 items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             {group.count}
           </span>
-        );
+          <button
+            type="button"
+            onClick={collapseAll}
+            className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
+          >
+            {t('action.collapse_all')}
+          </button>
+          <button
+            type="button"
+            onClick={expandAll}
+            className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10"
+          >
+            {t('action.expand_all')}
+          </button>
+        </span>
+      ) : (
+        <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          {group.count}
+        </span>
+      );
       return (
         <div
           role="button"
