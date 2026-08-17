@@ -60,6 +60,8 @@ export interface QueueSortOption {
     collapsed: boolean;
     /** Toggle this group's collapsed state. */
     onToggle: () => void;
+    /** True for the first group rendered in the list. */
+    isFirst: boolean;
   }) => ReactNode;
 }
 
@@ -159,6 +161,8 @@ interface GroupedRowsProps<T> {
     index: number;
     count: number;
     collapsed: boolean;
+    /** True for the first group rendered in the list. */
+    isFirst: boolean;
     onToggle: () => void;
   }) => ReactNode;
 }
@@ -213,6 +217,7 @@ function GroupedRows<T>({
     if (gi < groups.length && groups[gi]!.start === i) {
       const group = groups[gi]!;
       const collapsed = collapsedGroups?.has(group.key) ?? false;
+      const isFirst = gi === 0;
       rows.push(
         <div key={`group-${group.key}-${group.start}`}>
           {renderGroupHeader({
@@ -221,6 +226,7 @@ function GroupedRows<T>({
             index: i,
             count: group.end - group.start,
             collapsed,
+            isFirst,
             onToggle: () => onToggleGroup?.(group.key),
           })}
         </div>,
