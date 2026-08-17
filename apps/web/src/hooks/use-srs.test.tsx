@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSrs } from '@/hooks/use-srs';
+import { useSrs, removeCardFromStorage } from '@/hooks/use-srs';
 import { fsrs, rate } from '@langplayer/utils';
 
 const mocks = vi.hoisted(() => ({
@@ -138,5 +138,25 @@ describe('useSrs (SPEC-066)', () => {
       reps: 1,
     }));
     expect(result.current.store.cards.ja!['w1']!.state).toBe(1);
+  });
+
+  it('drops a card from the store when removeCardFromStorage fires (unsave path)', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      cards: { ja: { w1: fsrs.newCard(NOW) } },
+    }));
+
+    const { result } = renderHook(() => useSrs());
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+    expect(result.current.store.cards.ja!['w1']).toBeDefined();
+
+    act(() => {
+      removeCardFromStorage('ja', 'w1');
+    });
+
+    // The in-memory store must drop the card too, or the next persist would
+    // resurrect it in localStorage (ADR-0040).
+    await waitFor(() => expect(result.current.store.cards.ja?.['w1']).toBeUndefined());
+    const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+    expect(persisted.cards?.ja?.['w1']).toBeUndefined();
   });
 });

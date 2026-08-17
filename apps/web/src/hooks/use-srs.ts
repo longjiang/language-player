@@ -12,132 +12,23 @@ import {
   mergeSrsCards,
 } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
+import {
+  enqueuePendingSrsOp,
+  flushAllPendingSrsOps,
+  loadPendingSrsOps,
+  savePendingSrsOps,
+} from '@/lib/srs-pending-queue';
 import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
-const SRS_PENDING_OPS_KEY = 'zthSrsProgressPendingOps';
-
-interface PendingSrsOp {
-  type: 'upsert' | 'delete';
-  l2: string;
-  wordId: string;
-  state?: SrsFields;
-  updatedAt: number;
-  timezone?: string;
-  dayStartHour?: number;
-}
-
-interface SrsRowApi {
-  putSrsCard: (
-    l2: string,
-    wordId: string,
-    state: SrsFields,
-    meta?: SrsCardMeta,
-  ) => Promise<unknown>;
-  deleteSrsCard: (l2: string, wordId: string) => Promise<unknown>;
-}
-
-let srsFlushInFlight: Promise<void> | null = null;
-let srsRetryTimer: ReturnType<typeof setTimeout> | null = null;
-
-function pendingSrsOpKey(op: PendingSrsOp): string {
-  return `${op.l2}\u0000${op.wordId}`;
-}
-
-function loadPendingSrsOps(): PendingSrsOp[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(SRS_PENDING_OPS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (op): op is PendingSrsOp =>
-        !!op && (op.type === 'upsert' || op.type === 'delete')
-        && typeof op.l2 === 'string' && typeof op.wordId === 'string',
-    );
-  } catch { /* corrupted queue — start fresh */ }
-  return [];
-}
-
-function savePendingSrsOps(ops: PendingSrsOp[]): void {
-  try {
-    localStorage.setItem(SRS_PENDING_OPS_KEY, JSON.stringify(ops));
-  } catch { /* quota exceeded — queue stays in memory only */ }
-}
-
-function enqueuePendingSrsOp(queue: PendingSrsOp[], op: PendingSrsOp): PendingSrsOp[] {
-  const key = pendingSrsOpKey(op);
-  return [...queue.filter((q) => pendingSrsOpKey(q) !== key), op];
-}
-
-function reducePendingSrsOps(queue: PendingSrsOp[]): PendingSrsOp[] {
-  const latest = new Map<string, PendingSrsOp>();
-  for (const op of queue) latest.set(pendingSrsOpKey(op), op);
-  return [...latest.values()].sort((a, b) => a.updatedAt - b.updatedAt);
-}
-
-async function flushPendingSrsOps(
-  queue: PendingSrsOp[],
-  api: SrsRowApi,
-): Promise<PendingSrsOp[]> {
-  const ops = reducePendingSrsOps(queue);
-  const remaining: PendingSrsOp[] = [];
-  for (let i = 0; i < ops.length; i++) {
-    const op = ops[i]!;
-    try {
-      if (op.type === 'upsert' && op.state) {
-        const hasMeta = !!op.timezone || typeof op.dayStartHour === 'number';
-        if (hasMeta) {
-          await api.putSrsCard(op.l2, op.wordId, op.state, {
-            timezone: op.timezone,
-            dayStartHour: op.dayStartHour,
-          });
-        } else {
-          await api.putSrsCard(op.l2, op.wordId, op.state);
-        }
-      } else {
-        await api.deleteSrsCard(op.l2, op.wordId);
-      }
-    } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 403 && typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('lp:srs-cap-reached'));
-      }
-      remaining.push(...ops.slice(i));
-      break;
-    }
-  }
-  return remaining;
-}
-
-/** Serialize flushes so concurrent callers share one attempt and never
- *  clobber each other's remaining-op lists. */
-async function flushAllPendingSrsOps(api: SrsRowApi): Promise<void> {
-  const ops = loadPendingSrsOps();
-  if (ops.length === 0) return;
-  if (srsFlushInFlight) return srsFlushInFlight;
-  const run = (async () => {
-    const remaining = await flushPendingSrsOps(ops, api);
-    savePendingSrsOps(remaining);
-    if (remaining.length > 0 && !srsRetryTimer) {
-      srsRetryTimer = setTimeout(() => {
-        srsRetryTimer = null;
-        void flushAllPendingSrsOps(api);
-      }, 10_000);
-    }
-  })();
-  srsFlushInFlight = run;
-  try {
-    await run;
-  } finally {
-    srsFlushInFlight = null;
-  }
-}
 
 /**
  * Remove a single SRS card from localStorage AND the server (row API).
  * Safe to call from components without the full useSrs hook.
+ *
+ * Notifies mounted useSrs hooks via `lp:srs-card-removed` so their in-memory
+ * store drops the card too — otherwise the next store change would persist
+ * the ghost card back into localStorage (ADR-0040).
  */
 export function removeCardFromStorage(l2Code: string, wordId: string): void {
   try {
@@ -150,6 +41,11 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
       }
     }
   } catch { /* ignore */ }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('lp:srs-card-removed', {
+      detail: { l2: l2Code, wordId },
+    }));
+  }
   savePendingSrsOps(enqueuePendingSrsOp(loadPendingSrsOps(), {
     type: 'delete',
     l2: l2Code,
@@ -270,6 +166,27 @@ export function useSrs() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(storeRef.current));
     } catch { /* quota exceeded */ }
   }, [store, loaded]);
+
+  // ── External card removals (removeCardFromStorage from unsave buttons) ──
+  // Components outside this hook delete cards directly from localStorage;
+  // keep the in-memory store in sync so a later persist can't resurrect the
+  // deleted card (ADR-0040).
+  useEffect(() => {
+    const onCardRemoved = (e: Event) => {
+      const detail = (e as CustomEvent<{ l2?: string; wordId?: string }>).detail;
+      const { l2, wordId } = detail ?? {};
+      if (!l2 || !wordId) return;
+      setStore((prev) => {
+        const langCards = prev.cards[l2];
+        if (!langCards || !langCards[wordId]) return prev;
+        const nextLang = { ...langCards };
+        delete nextLang[wordId];
+        return { cards: { ...prev.cards, [l2]: nextLang } };
+      });
+    };
+    window.addEventListener('lp:srs-card-removed', onCardRemoved);
+    return () => window.removeEventListener('lp:srs-card-removed', onCardRemoved);
+  }, []);
 
   // ── Card API (per-language) ──
 
