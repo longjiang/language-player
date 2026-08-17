@@ -284,15 +284,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setPool(all);
   }, []);
 
-  // Truncated display: "a, b, c" or "a, b, c, and X other forms" (localized)
-  const termDisplay = useMemo(() => {
-    const forms = highlightTerms;
-    if (forms.length <= 3) return forms.join(', ');
-    const shown = forms.slice(0, 3).join(', ');
-    const remaining = forms.length - 3;
-    return `${shown} ${t('msg.and_n_other_forms', { n: remaining })}`;
-  }, [highlightTerms, t]);
-
   // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
   const subtitleInitialLines = useMemo(
     () => {
@@ -994,11 +985,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           items={filteredVideos}
           keyFor={(v) => `${v.id}`}
           emptyText={t('msg.no_results')}
-          header={
-            <h3 className="text-sm font-semibold">
-              {t('msg.videos_matching', { searchTerm: termDisplay })}
-            </h3>
-          }
           filterValue={listSearch}
           onFilterChange={setListSearch}
           filterPlaceholder={t('placeholder.filter')}
