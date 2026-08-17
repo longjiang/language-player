@@ -393,8 +393,6 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     ? 'bg-yellow-200/25 rounded'
     : '';
 
-  const title = isQuizBlanking ? 'Click to reveal' : token.lemmas.map(l => l.lemma).join(', ');
-
   // ── Handle click: in quiz mode, reveal blank first; otherwise open popup ──
   const handleClick = (rect?: DOMRect) => {
     if (isQuizBlanking) {
@@ -436,7 +434,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     wordContent = flat ? (
       <span
         className={`${segmentClasses} px-1 text-muted-foreground/40 select-none`}
-        title={title}
+       
         onClick={segmentClick}
       >
         {'＿'.repeat(Math.max(1, token.text.length))}
@@ -450,7 +448,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       && (!isJapanese || hasKanji)) {
     const phoneticText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
     wordContent = flat
-      ? <span className={segmentClasses} title={title} onClick={segmentClick}>{phoneticText}</span>
+      ? <span className={segmentClasses} onClick={segmentClick}>{phoneticText}</span>
       : <span className={wordBgClass}>{phoneticText}</span>;
   } else {
     // ── Ruby text ──
@@ -468,19 +466,19 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         <>
           {rubySegments.map((seg, j) =>
             seg.reading ? (
-              <ruby key={j} className={segmentClasses} title={title} onClick={segmentClick}>
+              <ruby key={j} className={segmentClasses} onClick={segmentClick}>
                 {seg.text}
                 <rt className="select-none" dir="ltr">{seg.reading}</rt>
               </ruby>
             ) : (
-              <span key={j} className={segmentClasses} title={title} onClick={segmentClick}>
+              <span key={j} className={segmentClasses} onClick={segmentClick}>
                 {seg.text}
               </span>
             )
           )}
         </>
       ) : (
-        <span className={segmentClasses} title={title} onClick={segmentClick}>{displayText}</span>
+        <span className={segmentClasses} onClick={segmentClick}>{displayText}</span>
       );
     } else {
       wordContent = (
@@ -519,7 +517,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} title={title}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass}>
         <span className="inline-flex flex-col items-center">
           {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -538,7 +536,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} title={title}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass}>
       {wordWithGloss}
     </span>
   );

@@ -267,18 +267,24 @@ const LOOKUP_BATCH_DELAY_MS = 80;
  * Queue dictionary lookups for a set of words and resolve when they complete.
  * Words already in the cache are skipped. Identical words queued by multiple
  * lines are looked up once.
+ *
+ * Resolves with `true` when at least one word was actually queued for lookup,
+ * `false` when everything was already cached or already queued — callers can
+ * use this to gate cache-version bumps and avoid render loops (TokenizedText
+ * recomputes merge/highlight memos on cacheVersion).
  */
 export function enqueueLookupWords(
   words: { text: string; l2Code: string }[],
   apiUrl: string,
-): Promise<void> {
+): Promise<boolean> {
   const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
-  if (uncached.length === 0) return Promise.resolve();
+  if (uncached.length === 0) return Promise.resolve(false);
 
   let remaining = 0;
-  let resolveAll!: () => void;
+  let queuedAny = false;
+  let resolveAll!: (queued: boolean) => void;
   let rejectAll!: (err: unknown) => void;
-  const done = new Promise<void>((resolve, reject) => {
+  const done = new Promise<boolean>((resolve, reject) => {
     resolveAll = resolve;
     rejectAll = reject;
   });
@@ -287,6 +293,7 @@ export function enqueueLookupWords(
     const key = `${w.l2Code}:${w.text}`;
     if (lookupSeen.has(key)) continue;
     lookupSeen.add(key);
+    queuedAny = true;
     remaining++;
     lookupQueue.push({
       key,
@@ -294,13 +301,13 @@ export function enqueueLookupWords(
       l2Code: w.l2Code,
       resolve: () => {
         remaining--;
-        if (remaining === 0) resolveAll();
+        if (remaining === 0) resolveAll(queuedAny);
       },
       reject: rejectAll,
     });
   }
 
-  if (remaining === 0) return Promise.resolve();
+  if (remaining === 0) return Promise.resolve(queuedAny);
 
   lookupApiUrl = apiUrl;
   scheduleLookupFlush();

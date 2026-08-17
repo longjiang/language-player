@@ -789,7 +789,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     // Offline Mode skips this: the local hydration above already filled the
     // cache, and the popup runs a full offline lookup on tap.
     if (!isOfflineModeEnabled()) {
-      enqueueLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
+      enqueueLookupWords(words, PYTHON_API_URL).then((queued) => { if (queued) setCacheVersion(v => v + 1); });
     }
   }, [tokens, loading, l2Code]);
 
@@ -804,7 +804,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     enqueueLookupWords(
       terms.map((text) => ({ text, l2Code: base })),
       PYTHON_API_URL,
-    ).then(() => setCacheVersion(v => v + 1));
+    ).then((queued) => { if (queued) setCacheVersion(v => v + 1); });
   }, [effectiveHighlightTerms, l2Code]);
 
   // ── Pre-warm local tokenizer machinery ──
