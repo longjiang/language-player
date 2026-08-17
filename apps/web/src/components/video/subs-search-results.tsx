@@ -98,6 +98,23 @@ function contextChar(video: SubsSearchVideo, term: string, side: 'left' | 'right
   return idx + term.length < line.length ? (line[idx + term.length] ?? '') : '';
 }
 
+/** Convert an ISO 8601 duration (e.g. "PT6M52S", "PT1H30M", "P1DT2H3M4S") to
+ *  seconds. Returns `undefined` for values that aren't parseable. Plain numbers
+ *  (already in seconds) pass through unchanged. */
+function durationToSeconds(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  const num = typeof value === 'string' ? Number(value) : NaN;
+  if (Number.isFinite(num)) return num; // numeric string, e.g. "123"
+  if (typeof value !== 'string') return undefined;
+  const iso = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/.exec(value);
+  if (!iso) return undefined;
+  const d = Number(iso[1] ?? 0);
+  const h = Number(iso[2] ?? 0);
+  const m = Number(iso[3] ?? 0);
+  const s = Number(iso[4] ?? 0);
+  return ((d * 24 + h) * 60 + m) * 60 + s;
+}
+
 /** Shared filter+sort for the result list. Both the rendered list and the
  *  player's prev/next queue use this, so the queue matches what's displayed. */
 function applyFilterAndSort(
@@ -423,13 +440,21 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         const parsed: SubsSearchVideo[] = (Array.isArray(data) ? data : [])
           .map((v: any) => {
             const lines = parseSubsL2(v.subs_l2 ?? '');
+            const duration = durationToSeconds(v.duration);
+            if (v.duration != null && duration == null) {
+              log('[subsSearch] raw duration value is null/NaN/empty', {
+                youtube_id: v.youtube_id,
+                duration: v.duration,
+                type: typeof v.duration,
+              });
+            }
             return {
               id: v.id,
               title: v.title ?? t('label.untitled_video'),
               youtube_id: v.youtube_id,
               subs_l2: lines,
               views: v.views,
-              duration: v.duration,
+              duration,
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
