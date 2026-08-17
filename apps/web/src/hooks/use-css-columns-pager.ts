@@ -280,8 +280,10 @@ export function useCssColumnsPager<B>(
 
     // Re-derive chars-per-page from up to 3 full pages inside this window
     // (skip the first page — winStart may be mid-page). Keep the old divisor
-    // when the window is too small to sample.
-    const cb = streamRef.current?.charsBefore;
+    // when the window is too small to sample. The charsBefore reference must
+    // stay bound to the stream (class methods use `this`).
+    const stream = streamRef.current;
+    const cb = stream ? stream.charsBefore.bind(stream) : null;
     let nextDivisor = divisorRef.current;
     if (cb) {
       const samples: number[] = [];
@@ -294,8 +296,8 @@ export function useCssColumnsPager<B>(
         nextDivisor = Math.max(50, Math.min(50000, Math.round(avg)));
       }
     }
-    const basePage = streamRef.current
-      ? globalPageOfBlock(globalBreaksRef.current, streamRef.current.charsBefore, nextDivisor, winStart)
+    const basePage = stream && cb
+      ? globalPageOfBlock(globalBreaksRef.current, cb, nextDivisor, winStart)
       : 1;
     return { breaks, divisor: nextDivisor, basePage };
   }, []);

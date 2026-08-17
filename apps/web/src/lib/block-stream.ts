@@ -177,8 +177,8 @@ export class EpubBlockStream implements BlockStream<EpubBlock> {
   }
 
   charsBefore(streamIndex: number): number {
-    const map = this.spineMap!;
-    if (map.length === 0) return 0;
+    const map = this.spineMap;
+    if (!map || map.length === 0) return 0;
     if (streamIndex >= this.blockCount) return this.totalCharsValue;
     const { spine, block } = this.locate(streamIndex);
     const s = map[spine]!;
@@ -186,8 +186,8 @@ export class EpubBlockStream implements BlockStream<EpubBlock> {
   }
 
   async blocks(from: number, to: number): Promise<EpubBlock[]> {
-    const map = this.spineMap!;
-    if (map.length === 0 || to <= from) return [];
+    const map = this.spineMap;
+    if (!map || map.length === 0 || to <= from) return [];
     const out: EpubBlock[] = [];
     const { spine, block } = this.locate(from);
     let s = spine;
@@ -222,16 +222,16 @@ export class EpubBlockStream implements BlockStream<EpubBlock> {
 
   /** EPUB-specific: global stream index → book location (for persistence). */
   bookLocationAt(streamIndex: number): BookLocation {
-    const map = this.spineMap!;
-    if (map.length === 0) return { spineIndex: 0, blockIndex: 0, offset: 0 };
+    const map = this.spineMap;
+    if (!map || map.length === 0) return { spineIndex: 0, blockIndex: 0, offset: 0 };
     const { spine, block } = this.locate(streamIndex);
     return { spineIndex: spine, blockIndex: block, offset: 0 };
   }
 
   /** EPUB-specific: book location → global stream index. */
   bookLocationToStreamIndex(loc: BookLocation): number {
-    const map = this.spineMap!;
-    if (map.length === 0) return 0;
+    const map = this.spineMap;
+    if (!map || map.length === 0) return 0;
     if (loc.spineIndex < 0 || loc.spineIndex >= map.length) return this.blockCount - 1;
     const s = map[loc.spineIndex]!;
     if (s.blockCount === 0) return s.blockStart;
