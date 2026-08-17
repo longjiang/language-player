@@ -21,10 +21,11 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 2 | 97a05bd0 | 2026-08-14 | 3.1.0 — iOS App Store (b3, consumed) · Android Internal testing (b3, consumed) | — |
 | 3 | 1c86cd8a | 2026-08-15 | 3.1.1 — iOS TestFlight (b4, consumed) | — |
 | 4 | 92a611ed | 2026-08-16 | 3.1.2 — iOS TestFlight (b5, consumed) · Android Internal testing (b5, consumed) · tags v3.1.2, v3.1.2-b5 | — |
-| 5 | 3c98c0bd | 2026-08-16 | — | dev 1 (Release-config, legacy; archived; lp-dev-1-ios-device-3c98c0bd6865.zip; 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2) · dev 4 (Debug; active; lp-dev-4-ios-device-3c98c0bd6865.zip; 8acff05f74d0c135cd0020dab5de5ea937812ac70e08a3861ba4763321a3a1b2) |
+| 5 | 3c98c0bd | 2026-08-16 | — | dev 1 (Release-config, legacy; archived; lp-dev-1-ios-device-3c98c0bd6865.zip; 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2) · dev 4 (Debug; archived; lp-dev-4-ios-device-3c98c0bd6865.zip; 8acff05f74d0c135cd0020dab5de5ea937812ac70e08a3861ba4763321a3a1b2) |
 | 6 | ddb8cc50 | 2026-08-16 | — | dev 2 (Release-config, legacy; archived; lp-dev-2-ios-device-ddb8cc50f8d9.zip; 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea) · dev 5 (Debug; active; lp-dev-5-ios-device-ddb8cc50f8d9.zip; 9d66e6cb66b44cd0183540c18ea7d5b5afe8a58edb140745184e1a80136ea1cb) |
 | 7 | 88135bde | 2026-08-16 | — | dev 3 (Debug; archived; lp-dev-3-ios-device-88135bde47af.zip; 6e10c5aed4541adf030f02325001dbe72bf0416388776ea0754446a694d8ea5e) |
 | 8 | e64bcf32 | 2026-08-17 | — | dev 6 (Debug; active; lp-dev-6-ios-device-e64bcf325739.zip; 72d49156cf3b018f9dd165319ef66d05e3f8aa1aabd971e96b56a63dbaf21183) |
+| 9 | abbafdc0 | 2026-08-16 | — | dev 7 (Debug; active; lp-dev-7-ios-device-abbafdc0.zip; 3d0c594cc25a4e0c88eb9f080f89be4223837ac8f24924e3b255bc90b06ef321) |
 
 ## Preserved working builds
 
@@ -35,6 +36,10 @@ uploads and dev (Debug) builds, one row per commit, chronological.
   (iPad 10). Extracted from CoreDevice's AppInstallationBinaryDeltas stash (3 identical copies found:
   `1b42e1f4…`, `d894beaa…`, `700da082…`; dylib sha256 `d0eff78e…`). Preserved so the known-good debug
   binary stays recoverable.
+- **2026-08-16 — dev 7 = the working ruby-fix Debug build** (what is installed on the iPad Air M4 after
+  the logLineFragments fix). Built from the working tree of the fix (≈`abbafdc0`); note it still
+  contains the temporary `getParagraphSnapshotForTag` probe (removed from source in `abbafdc0`) — the
+  binary is archived as-is so the exact installed build is recoverable.
 
 ## Incident log
 

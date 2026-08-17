@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { firstGloss } from '@langplayer/shared';
-import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
+import { buildRuby, katakanaToHiragana, pickSavedEntry } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import { getCachedEntries } from '@/lib/dictionary-cache';
+import { getCachedEntries, getCachedEntryById, getL1CachedEntry } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -74,6 +74,11 @@ export interface TokenSpanProps {
   showDefinition: boolean;
   isSelected: boolean;
   isSaved: boolean;
+  /** Entry id of the saved word this token belongs to (e.g. "cedict-0").
+   *  When set, the quick gloss prefers this entry's definition over the
+   *  first dictionary match — multiple entries can match one surface form,
+   *  and the saved entry is the one the user actually chose. */
+  savedWordId?: string;
   isHighlighted: boolean;
   /** `normal` = show all words; `quiz` = blank out saved words for self-testing. */
   mode: 'normal' | 'quiz';
@@ -127,6 +132,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   showDefinition,
   isSelected,
   isSaved,
+  savedWordId,
   isHighlighted,
   mode,
   byeonggi,
@@ -160,7 +166,22 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
     // Try each lemma and surface form to find the best cache key
     const lookupText = token.lemmas[0]?.lemma || token.text;
-    const cacheKey = `${l2Code}:${lookupText}:${l1Code}`;
+    // Include the saved entry id in the key: two tokens with the same text
+    // but different saved entries must not share a cached gloss.
+    const cacheKey = `${l2Code}:${lookupText}:${savedWordId ?? ''}:${l1Code}`;
+
+    // Already-translated entry for the exact saved word (cached by entry id
+    // by the dictionary popup and review page)? Prefer it — the L1 definition
+    // of the entry the user saved, fetched at most once per (l2, l1, entry).
+    if (savedWordId) {
+      const savedL1Entry =
+        getL1CachedEntry(l2Code, l1Code, savedWordId) ??
+        getL1CachedEntry(baseCode(l2Code), l1Code, savedWordId);
+      if (savedL1Entry && savedL1Entry.definitions.length > 0) {
+        setL1GlossDef(firstGloss(savedL1Entry.definitions));
+        return;
+      }
+    }
 
     // Already cached at module level?
     const cached = _l1DefCache.get(cacheKey);
@@ -187,7 +208,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       .then((r) => r.json())
       .then((data) => {
         const results = (data.results ?? []) as DictionaryEntry[];
-        const gloss = results[0]?.definitions ? firstGloss(results[0].definitions) : null;
+        // Prefer the entry the user actually saved over the first match —
+        // a lookup can return several entries for one surface form.
+        const entry = pickSavedEntry(results, savedWordId, baseCode(l2Code)) ?? results[0];
+        const gloss = entry?.definitions ? firstGloss(entry.definitions) : null;
         _l1DefCache.set(cacheKey, gloss ?? '');
         return gloss;
       })
@@ -198,7 +222,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     promise.then((def) => { if (!cancelled) setL1GlossDef(def); });
 
     return () => { cancelled = true; };
-  }, [isSaved, quickGloss, isHighlighted, quickGlossOnHighlight, l1Code, l2Code, token.lemmas, token.text]);
+  }, [isSaved, quickGloss, isHighlighted, quickGlossOnHighlight, l1Code, l2Code, token.lemmas, token.text, savedWordId]);
 
   // ── Quiz blanking state — computed early since byeonggiNode, wrapperClass, etc. depend on it ──
   const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
@@ -249,13 +273,33 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     return null;
   }, [l2Code, token.text, token.lemmas]);
 
+  // ── Saved-word definition — the entry the user actually saved, resolved
+  //    by its id from the dictionary cache. Multiple dictionary entries can
+  //    match one surface form; the saved entry is the one the user chose, so
+  //    the quick gloss must prefer it over the first match. Re-runs when the
+  //    cache version bumps (the bulk lookup usually fills the id cache after
+  //    the first render). ──
+  const savedFirstDef = useMemo(() => {
+    if (!savedWordId) return null;
+    const savedEntry =
+      getCachedEntryById(l2Code, savedWordId) ??
+      getCachedEntryById(baseCode(l2Code), savedWordId);
+    if (savedEntry && savedEntry.definitions.length > 0) {
+      return firstGloss(savedEntry.definitions);
+    }
+    return null;
+  }, [l2Code, savedWordId, cacheVersion]);
+
   // ── Quick gloss: only for saved words with gloss enabled.
   //    Suppressed for highlighted words only when quickGlossOnHighlight is false
   //    (the review page hides the target word's gloss until the card is revealed).
-  //    Prefer L1-translated definition (fetched per-word) over cached English def. ──
-  const quickGlossDef = (isSaved && quickGloss && (quickGlossOnHighlight || !isHighlighted)) ? (l1GlossDef ?? firstDef) : null;
-  // ── Interlinear definition: for all words (when enabled) ──
-  const interlinearDef = showDefinition ? firstDef : null;
+  //    Prefer L1-translated definition (fetched per-word) over the saved entry's
+  //    cached definition, then the first cached match. ──
+  const quickGlossDef = (isSaved && quickGloss && (quickGlossOnHighlight || !isHighlighted)) ? (l1GlossDef ?? savedFirstDef ?? firstDef) : null;
+  // ── Interlinear definition: for all words (when enabled). Saved words show
+  //    the definition of the entry the user saved (same source as the quick
+  //    gloss), matching mobile — unsaved words keep the first cached match. ──
+  const interlinearDef = showDefinition ? (savedFirstDef ?? firstDef) : null;
 
   // ── Byeonggi: hanja (ko) / hán tự (vi) from first cached dictionary entry ──
   const byeonggiText = useMemo(() => {
