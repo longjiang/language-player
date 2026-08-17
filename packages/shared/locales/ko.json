@@ -1215,7 +1215,7 @@
         "good_hint": "올바르게 기억됨",
         "hard": "어려움",
         "hard_hint": "어렵게 기억함",
-        "no_definition_available": "Ce mot est introuvable dans notre dictionnaire.",
+        "no_definition_available": "이 단어는 사전에서 찾을 수 없습니다.",
         "shortcut_hint": "<space></space> 눌러 뒤집기, <k1></k1>–<k2></k2> 평가, <enter></enter> 계속",
         "show_definition": "정의 보기",
         "srs_new": "새로 배우기",

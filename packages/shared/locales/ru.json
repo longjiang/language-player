@@ -1215,7 +1215,7 @@
         "good_hint": "Вспомнил правильно",
         "hard": "Трудно",
         "hard_hint": "Вспомнил с трудом",
-        "no_definition_available": "Ez a szó nem található a szótárunkban.",
+        "no_definition_available": "Это слово не найдено в нашем словаре.",
         "shortcut_hint": "Нажми <space></space> чтобы перевернуть, <k1></k1>–<k2></k2> чтобы оценить, <enter></enter> чтобы продолжить",
         "show_definition": "Показать определение",
         "srs_new": "новый",
