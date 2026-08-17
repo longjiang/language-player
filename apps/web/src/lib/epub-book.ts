@@ -199,7 +199,8 @@ const SKIP_TAGS = new Set([
 
 type BlockKind = EpubTextBlock['type'];
 
-function convertDocument(body: Element): EpubBlock[] {
+/** Convert an HTML document body to EpubBlock[] (exported for tests). */
+export function convertDocument(body: Element): EpubBlock[] {
   const blocks: EpubBlock[] = [];
   const idStack: string[] = [];
   const activeFormats: { type: 'bold' | 'italic' | 'code' | 'link'; url?: string }[] = [];

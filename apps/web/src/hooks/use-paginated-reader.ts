@@ -25,11 +25,9 @@ import type { LemmatizedToken } from '@langplayer/shared';
 import { md5 } from '@langplayer/utils';
 import type { ReaderBlock, MarkdownBlock, TextBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
+import { epubBlocksToReaderBlocks } from '@/lib/epub-reader-blocks';
 import type {
   BookLocation,
-  EpubBlock,
-  EpubImageBlock,
-  EpubTextBlock,
 } from '@/lib/epub-book-types';
 import { epubLog, epubWarn } from '@/lib/epub-log';
 
@@ -37,13 +35,14 @@ import { epubLog, epubWarn } from '@/lib/epub-log';
 export type ReaderLoc = BookLocation | { blockIndex: number };
 
 /**
- * One block in the pager's unified stream. `kind` discriminates the item so
- * render callbacks can narrow `block` without casts.
+ * One block in the pager's unified stream. Every web reader (notes, web
+ * reader, EPUB) renders the same markdown block stream (`ReaderBlock`), so
+ * items are `text` or `markdown` — images/tables/code arrive as markdown
+ * blocks and render via ReactMarkdown. `loc` carries the reader's position.
  */
 export type ReaderPageItem =
-  | { key: string; kind: 'text'; text: string; block: TextBlock | EpubTextBlock; loc: ReaderLoc }
-  | { key: string; kind: 'markdown'; block: MarkdownBlock; loc: ReaderLoc }
-  | { key: string; kind: 'image'; block: EpubImageBlock; loc: ReaderLoc };
+  | { key: string; kind: 'text'; text: string; block: TextBlock; loc: ReaderLoc }
+  | { key: string; kind: 'markdown'; block: MarkdownBlock; loc: ReaderLoc };
 
 /** Per-block render context handed to `renderBlock` by PaginatedReader. */
 export interface BlockRenderCtx {
@@ -120,7 +119,7 @@ export function computeBackwardStart(
 
 interface PageBlock {
   loc: BookLocation;
-  block: EpubBlock;
+  block: ReaderBlock;
 }
 
 export interface UsePaginatedReaderOptions {
@@ -382,9 +381,9 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
       let s = from.spineIndex;
       let b = from.blockIndex;
       while (s < book.spine.length && out.length < limit) {
-        const blocks = await book.getBlocks(s);
-        while (b < blocks.length && out.length < limit) {
-          out.push({ loc: { spineIndex: s, blockIndex: b, offset: 0 }, block: blocks[b]! });
+        const readerBlocks = epubBlocksToReaderBlocks(await book.getBlocks(s), s);
+        while (b < readerBlocks.length && out.length < limit) {
+          out.push({ loc: { spineIndex: s, blockIndex: b, offset: 0 }, block: readerBlocks[b]! });
           b += 1;
         }
         s += 1;
@@ -394,17 +393,17 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
       let s = from.spineIndex;
       let b = from.blockIndex - 1;
       while (s >= 0 && out.length < limit) {
-        const blocks = await book.getBlocks(s);
+        const readerBlocks = epubBlocksToReaderBlocks(await book.getBlocks(s), s);
         if (b < 0) {
           s -= 1;
           if (s >= 0) {
-            const prev = await book.getBlocks(s);
+            const prev = epubBlocksToReaderBlocks(await book.getBlocks(s), s);
             b = prev.length - 1;
           }
           continue;
         }
         while (b >= 0 && out.length < limit) {
-          out.unshift({ loc: { spineIndex: s, blockIndex: b, offset: 0 }, block: blocks[b]! });
+          out.unshift({ loc: { spineIndex: s, blockIndex: b, offset: 0 }, block: readerBlocks[b]! });
           b -= 1;
         }
       }
@@ -727,19 +726,23 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
   }, [mode, pageBlocks, onLocationChange]);
 
   const windowItems = useMemo<ReaderPageItem[]>(() =>
-    win.map((p): ReaderPageItem =>
-      p.block.kind === 'image'
-        ? { key: `${p.loc.spineIndex}:${p.loc.blockIndex}`, kind: 'image', block: p.block, loc: p.loc }
-        : { key: `${p.loc.spineIndex}:${p.loc.blockIndex}`, kind: 'text', text: p.block.text, block: p.block, loc: p.loc },
-    ),
+    win.map((p): ReaderPageItem => {
+      const key = `${p.loc.spineIndex}:${p.loc.blockIndex}`;
+      if (p.block.kind === 'markdown') {
+        return { key, kind: 'markdown', block: p.block, loc: p.loc };
+      }
+      return { key, kind: 'text', text: p.block.text, block: p.block, loc: p.loc };
+    }),
   [win]);
 
   const windowedPageItems = useMemo<ReaderPageItem[]>(() =>
-    pageBlocks.map((p): ReaderPageItem =>
-      p.block.kind === 'image'
-        ? { key: `${p.loc.spineIndex}:${p.loc.blockIndex}`, kind: 'image', block: p.block, loc: p.loc }
-        : { key: `${p.loc.spineIndex}:${p.loc.blockIndex}`, kind: 'text', text: p.block.text, block: p.block, loc: p.loc },
-    ),
+    pageBlocks.map((p): ReaderPageItem => {
+      const key = `${p.loc.spineIndex}:${p.loc.blockIndex}`;
+      if (p.block.kind === 'markdown') {
+        return { key, kind: 'markdown', block: p.block, loc: p.loc };
+      }
+      return { key, kind: 'text', text: p.block.text, block: p.block, loc: p.loc };
+    }),
   [pageBlocks]);
 
   // ═══════════════════════════════════════════════════════════════════════
