@@ -365,7 +365,8 @@ export function useCssColumnsPager<B>(
       );
       const blocks = await stream.blocks(winStart, winEnd);
       if (gen !== genRef.current) return;
-      log(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length}`);
+      const estPage = 1 + Math.floor(anchorChars / Math.max(1, div));
+      log(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length} estPage=${estPage}`);
       setPending({ winStart, winEnd, blocks, mode, anchor: safeAnchor });
     } catch (e) {
       if (gen !== genRef.current) return;
@@ -426,12 +427,22 @@ export function useCssColumnsPager<B>(
           const newAnchor = p.mode === 'forward'
             ? Math.min(blockCount - 1, p.anchor + extendBy)
             : Math.max(0, p.anchor - extendBy);
-          log(`Pager: page start unresolved (mode=${p.mode}) — extending window, anchor ${p.anchor} → ${newAnchor}`);
+          log(`Pager: target NOT in view! mode=${p.mode} anchor=${p.anchor} — page start unresolved, extending window (anchor → ${newAnchor})`);
           void buildWindow(newAnchor, p.mode);
           return; // keep the old window visible and busy
         }
         retryRef.current = 0;
         if (ps === null) ps = p.winStart;
+        // Navigation verdict: for jump/restore builds the anchor IS the
+        // navigation target — report whether its block starts on the page
+        // being revealed (splittable paragraphs refine to the exact column
+        // later via the search-highlight refinement).
+        if (p.mode === 'jump' || p.mode === 'restore') {
+          const col = m.breaks.indexOf(ps);
+          const visibleEnd = col >= 0 && col + 1 < m.breaks.length ? m.breaks[col + 1]! : p.winEnd;
+          const inView = p.anchor >= ps && p.anchor < visibleEnd;
+          log(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} visible=[${ps}, ${visibleEnd}) page=${m.basePage + Math.max(0, col)} window=[${p.winStart}, ${p.winEnd})`);
+        }
         pageStartRef.current = ps;
         setPageStart(ps);
         setActive({ winStart: p.winStart, winEnd: p.winEnd, blocks: p.blocks, localBreaks: m.breaks, basePage: m.basePage });
