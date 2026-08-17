@@ -9,9 +9,9 @@ import { useT } from '@/hooks/use-t';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
 import { VideoControlBar } from '@/components/video/video-control-bar';
-import { TranscriptQueuePanel } from '@/components/video/transcript-queue-panel';
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
+import { VideoSidebarPanel } from '@/components/video/video-sidebar-panel';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import {
@@ -19,7 +19,7 @@ import {
   extractSubtitleDuration,
   type SyncedLine,
 } from '@/lib/subtitle-csv';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, FileText, ListVideo, Info } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
@@ -452,12 +452,24 @@ export default function WatchPage() {
         {/* Transcript / queue panel (transcript mode) */}
         {v && !isSubtitles && (
           <div className={isWide ? 'min-h-0 overflow-hidden' : 'flex-1 min-h-0 px-4 pb-4'}>
-            <TranscriptQueuePanel
+            <VideoSidebarPanel
               contentRef={transcriptScrollRef}
-              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
-              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-              info={isWide ? undefined : videoInfo}
-            />
+              tabs={[
+                { key: 'subs', label: t('title.transcript'), icon: <FileText className="h-4 w-4" /> },
+                { key: 'queue', label: t('title.queue'), icon: <ListVideo className="h-4 w-4" /> },
+                ...(isWide ? [] : [{ key: 'info' as const, label: t('title.info'), icon: <Info className="h-4 w-4" /> }]),
+              ]}
+            >
+              {(tab) => {
+                if (tab === 'subs') {
+                  return <SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} isGenerated={isGenerated} normalizedOverlay={subtitleLines.length > 0 ? captionOverlay : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />;
+                }
+                if (tab === 'queue') {
+                  return <VideoQueueList currentYoutubeId={v.youtube_id} />;
+                }
+                return videoInfo;
+              }}
+            </VideoSidebarPanel>
           </div>
         )}
       </div>

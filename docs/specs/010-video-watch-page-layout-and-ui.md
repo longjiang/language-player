@@ -202,6 +202,16 @@ The mode can be toggled via:
 > passes `initialLines={displaySubtitleLines}`. Singleline mode also gained
 > click-to-seek (`onSeekToLine`). `subtitles-mode-band.tsx` was deleted.
 
+> **Note (sidebar merged):** The watch page's transcript/queue/info sidebar
+> (`TranscriptQueuePanel`) and the subs-search results list were unified into
+> one shared `VideoSidebarPanel` (`apps/web/src/components/video/
+> video-sidebar-panel.tsx`) with configurable `subs | queue | info` tabs, plus
+> a shared `VideoQueuePanel` (`video-queue-panel.tsx`) for the queue content
+> (watch page: queue videos; subs search: the search results with filter +
+> sort). `transcript-queue-panel.tsx` was deleted. Subs search is always
+> stacked (player → controls → sidebar) — never two-column, since it renders
+> inside the dictionary panel even on large screens.
+
 Two-row layout: controls on top, subtitle text below.
 
 ```
