@@ -28,5 +28,7 @@ does not mirror the commit for sure.
 |---|---|---|---|---|---|---|---|
 
 
+
 | 1 | ios-device | 3c98c0bd6865d0a09c98cfec92264fcacc86f069 | v3.1.2-5-g3c98c0bd | 2026-08-17 | lp-dev-1-ios-device-3c98c0bd6865.zip | 75ffcf2242dc9ca9f3c293cb0ef63dee9482d8edbea90087baf1f1ca84a3b9c2 | active |
 | 2 | ios-device | ddb8cc50f8d93070870689a94ba5bb0c2d279aad | v3.1.2-7-gddb8cc50 | 2026-08-17 | lp-dev-2-ios-device-ddb8cc50f8d9.zip | 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea | active |
+| 3 | ios-device | 88135bde47af0b8e26f3ef09754d28ff3b640d64 | v3.1.2-11-g88135bde | 2026-08-17 | lp-dev-3-ios-device-88135bde47af.zip | 6e10c5aed4541adf030f02325001dbe72bf0416388776ea0754446a694d8ea5e | active |
