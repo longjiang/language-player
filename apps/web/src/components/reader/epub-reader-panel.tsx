@@ -94,7 +94,7 @@ export function EpubReaderPanel({
   onLocationChange,
   onOpenLink,
 }: EpubReaderPanelProps) {
-  const { display, getL2, updateDisplay } = useSettingsContext();
+  const { display, getL2, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
   // factor. Applied to every block so headings keep their relative sizes.
@@ -121,7 +121,7 @@ export function EpubReaderPanel({
     setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
   }, [persistedSplit]);
 
-  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}:${persistedSplit}`;
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}:${persistedSplit}:${tokenizedText.translationSize}`;
 
   // Paging away from the highlighted search result dismisses the highlight.
   // The shared reader reports every visible-page start change through
@@ -166,8 +166,7 @@ export function EpubReaderPanel({
               measureNonce,
             } : null}
             translationClass={translationClass(tb)}
-            translationZoom={textZoom}
-            translationFontSize={translationFontSizeRem(tb, textZoom)}
+            translationFontSize={translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}
             translationSplit={appliedSplit}
             onTranslationSplitChange={onTranslationSplitChange}
             onTranslationSplitCommit={onTranslationSplitCommit}
@@ -214,11 +213,11 @@ export function EpubReaderPanel({
           {showTranslation && (
             <div
               className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
-              style={{ fontSize: `${translationFontSizeRem(tb, textZoom)}rem` }}
+              style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}
             >
               <div className="flex flex-col gap-y-1.5">
                 {Array.from({ length: Math.max(1, Math.ceil(tb.text.length / 50)) }).map((_, li) => (
-                  <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom)}rem` }} />
+                  <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }} />
                 ))}
               </div>
             </div>
@@ -228,7 +227,7 @@ export function EpubReaderPanel({
         <div className="mt-1 h-6 w-6 shrink-0" />
       </div>
     );
-  }, [phoneticsEstimate, showTranslation, textZoom]);
+  }, [phoneticsEstimate, showTranslation, textZoom, tokenizedText.translationSize]);
 
   return (
     <PaginatedReader

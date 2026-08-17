@@ -26,6 +26,7 @@ import {
   setL1CachedEntry,
 } from '@langplayer/utils';
 import { lookupL1Text } from '@/lib/l1-lookup';
+import { clampTranslationSize } from '@/lib/reader-text-size';
 import {
   decomposeWordId,
   isSameEntryId,
@@ -99,7 +100,7 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, cloudHydrated, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, cloudHydrated: srsCloudHydrated, updateCard, removeCard, pruneOrphans } = useSrs();
-  const { display, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
+  const { display, tokenizedText, review: { dailyNewLimit: dailyLimit, dayStartHour } } = useSettingsContext();
   const srsCardMeta = useMemo(
     () => ({ timezone: deviceTimezone(), dayStartHour }),
     [dayStartHour],
@@ -1025,11 +1026,17 @@ export default function ReviewPage() {
             )}
             {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
               wordCtx.translation ? (
-                <p className="text-sm mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2">
+                <p
+                  className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
+                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
+                >
                   {wordCtx.translation}
                 </p>
               ) : (
-                <div className="text-sm mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2">
+                <div
+                  className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
+                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize)}rem` }}
+                >
                   <ReactMarkdown
                     components={{
                       p: ({ children }) => <span>{children}</span>,

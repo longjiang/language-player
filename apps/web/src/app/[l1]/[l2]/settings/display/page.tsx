@@ -11,6 +11,7 @@ import { translateText } from '@/lib/translate';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { renderInlineMarkdown } from '@/components/text-action-panels';
+import { clampTranslationSize } from '@/lib/reader-text-size';
 import { SectionHeader } from '../_components/SectionHeader';
 import { SegmentedRow } from '../_components/SegmentedRow';
 import { ToggleRow } from '../_components/ToggleRow';
@@ -151,7 +152,10 @@ export default function DisplaySettingsPage() {
               </span>
             </TextActionMenu>
             {previewTranslation && (
-              <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
+              <p
+                className="pt-1 text-muted-foreground leading-relaxed"
+                style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize) * zoomRem}rem` }}
+              >
                 {renderInlineMarkdown(previewTranslation, { markBold: true })}
               </p>
             )}
@@ -197,6 +201,15 @@ export default function DisplaySettingsPage() {
                 leftLabel={t('setting.smaller')}
                 rightLabel={t('setting.bigger')}
                 centerLabel={`${Math.round(ZOOM_TO_REM[0] * 16)}–${Math.round(ZOOM_TO_REM[7] * 16)}px`}
+              />
+              <SliderRow
+                label={t('label.translation_size')}
+                description={t('msg.translation_size_desc')}
+                min={0.5} max={1} step={0.05} value={clampTranslationSize(tokenizedText.translationSize)}
+                onChange={v => updateTokenizedText({ translationSize: clampTranslationSize(v) })}
+                valueDisplay={`${Math.round(clampTranslationSize(tokenizedText.translationSize) * 100)}%`}
+                leftLabel="50%"
+                rightLabel="100%"
               />
               <SliderRow
                 label={t('setting.leading')}

@@ -2,13 +2,14 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
 import { AlignedTranslation } from '@/components/reader/aligned-translation';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
-import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
+import { clampTranslationSize } from '@/lib/reader-text-size';
 import type { SentenceMap } from '@/lib/sentence-map';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
@@ -32,12 +33,15 @@ interface TextActionMenuProps {
   translationClass?: string;
   /** Always render the translation below the content, even on xl screens. */
   translationBelow?: boolean;
-  /** Scale factor for the inline translation column (matches L2 text zoom). */
-  translationZoom?: number;
-  /** Explicit translation font size (rem), typically `TRANSLATION_FACTOR` ×
-   *  the L2 block's rendered size. When set it overrides
-   *  `translationClass`'s size and the `zoom` on the translation column (the
-   *  caller already folded zoom in). */
+  /** The L2 tokenized text's rendered size (rem). The translation column is
+   *  sized at `tokenizedText.translationSize` × this. Omit (defaults to 1)
+   *  when the L2 text is at its base size, and also omit for the aligned
+   *  readers, which set `translationFontSize` per block or let
+   *  AlignedTranslation measure the L2 size itself. */
+  translationFactor?: number;
+  /** Explicit translation font size (rem). When set, overrides the default
+   *  `TRANSLATION_FACTOR × translationFactor` sizing — used by the readers,
+   *  which size each aligned block individually (headings vs body text). */
   translationFontSize?: number;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
@@ -72,7 +76,7 @@ export function TextActionMenu({
   translation,
   translationClass = '',
   translationBelow = false,
-  translationZoom = 1,
+  translationFactor,
   translationFontSize,
   loading = false,
   translationAligned = null,
@@ -82,11 +86,18 @@ export function TextActionMenu({
   children,
 }: TextActionMenuProps) {
   const t = useT();
+  const { tokenizedText } = useSettingsContext();
   const [menuOpen, setMenuOpen] = useState(false);
   // The L2 content wrapper — the aligned translation measures its line grid.
   const l2Ref = useRef<HTMLDivElement>(null);
   const aligned = translationAligned ?? null;
   const hasTranslation = !!(translation || aligned);
+  // Translation:tokenized ratio from settings (0.5–1); the caller's
+  // `translationFactor` carries the L2 text size (rem) it should scale against
+  // (defaults to 1). The aligned readers let AlignedTranslation measure the L2
+  // size itself and only needs the ratio.
+  const translationRatio = clampTranslationSize(tokenizedText.translationSize);
+  const l2Scale = translationFactor ?? 1;
   // Show the draggable splitter only when the caller wired a ratio + handler
   // (readers); everything else keeps the fixed default split and no handle.
   const resizable = translationSplit != null && onTranslationSplitChange != null;
@@ -136,11 +147,9 @@ export function TextActionMenu({
           <div
             className={`min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
             style={
-              translationFontSize != null
-                ? { fontSize: `${translationFontSize}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
-                : aligned
-                  ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
-                  : { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, zoom: translationZoom }
+              aligned
+                ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
+                : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
             }
           >
             {aligned ? (
@@ -150,7 +159,7 @@ export function TextActionMenu({
                 active={aligned.active}
                 measureNonce={aligned.measureNonce}
                 anchorRef={l2Ref}
-                translationFactor={TRANSLATION_FACTOR}
+                translationFactor={translationRatio}
               />
             ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
@@ -158,11 +167,7 @@ export function TextActionMenu({
         {loading && !translation && !aligned && (
           <div
             className={`min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
-            style={
-              translationFontSize != null
-                ? { fontSize: `${translationFontSize}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
-                : { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, zoom: translationZoom }
-            }
+            style={{ fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }}
           >
             <TranslationSkeleton
               text={text}

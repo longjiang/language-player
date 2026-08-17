@@ -112,7 +112,7 @@ export function ReaderPanel({
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
   const textZoom = useTextScale();
 
@@ -139,7 +139,7 @@ export function ReaderPanel({
   // Layout identity: any change re-measures page breaks (SPEC-077 §9 policy,
   // measurement-based). Only the COMMITTED split participates, so a live drag
   // does not re-paginate on every pixel; re-measure happens on release.
-  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${persistedSplit}`;
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${persistedSplit}:${tokenizedText.translationSize}`;
 
   // Markdown-block links (images, tables, raw-markdown fallbacks) open inside
   // the web reader instead of sending the user to the original site in a new
@@ -203,8 +203,7 @@ export function ReaderPanel({
               measureNonce,
             } : null}
             translationClass={translationClass(tb)}
-            translationZoom={textZoom}
-            translationFontSize={translationFontSizeRem(tb, textZoom)}
+            translationFontSize={translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}
             translationSplit={appliedSplit}
             onTranslationSplitChange={onTranslationSplitChange}
             onTranslationSplitCommit={onTranslationSplitCommit}
@@ -251,15 +250,15 @@ export function ReaderPanel({
           {tb.text}
         </Tag>
         {showTranslation && (
-          <div className="flex flex-col gap-y-1.5 pt-1" style={{ fontSize: `${translationFontSizeRem(tb, textZoom)}rem` }}>
+          <div className="flex flex-col gap-y-1.5 pt-1" style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}>
             {Array.from({ length: lines }).map((_, li) => (
-              <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom)}rem` }} />
+              <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }} />
             ))}
           </div>
         )}
       </div>
     );
-  }, [showTranslation, textZoom, markdownComponents]);
+  }, [showTranslation, textZoom, markdownComponents, tokenizedText.translationSize]);
 
   const [loadingSample, setLoadingSample] = useState(false);
 
