@@ -645,6 +645,42 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return forms;
   }, [savedWords, l2Code]);
 
+  // Map each saved word form to the entry id the user actually saved. A form
+  // can match several saved entries (homographs, multiple senses) — when that
+  // happens the most recently saved entry wins, so the quick gloss reflects
+  // the user's latest intent. TokenSpan uses this to show the saved entry's
+  // definition instead of the first dictionary match.
+  const savedWordIdByForm = useMemo(() => {
+    const words = [...(savedWords[l2Code] ?? [])].sort(
+      (a, b) => (b.date ?? 0) - (a.date ?? 0),
+    );
+    const map = new Map<string, string>();
+    const add = (form: string, id: string) => {
+      const key = form.toLowerCase();
+      if (!form.trim() || map.has(key)) return;
+      map.set(key, id);
+    };
+    for (const w of words) {
+      for (const f of w.forms) add(f, w.id);
+      if (w.context?.form) add(w.context.form, w.id);
+      for (const inst of w.instances ?? []) if (inst.form) add(inst.form, w.id);
+    }
+    return map;
+  }, [savedWords, l2Code]);
+
+  // Entry id of the saved word this token belongs to (undefined when the
+  // token isn't saved, or the saved record can't be matched). Mirrors
+  // tokenMatchesAnyForm: surface form first, then lemma forms.
+  const savedWordIdForToken = (token: LemmatizedToken): string | undefined => {
+    const surfaceId = savedWordIdByForm.get(token.text.toLowerCase());
+    if (surfaceId) return surfaceId;
+    for (const l of token.lemmas) {
+      const id = savedWordIdByForm.get(l.lemma.toLowerCase());
+      if (id) return id;
+    }
+    return undefined;
+  };
+
   // Entry-id matching: once the batch dictionary lookup populates the cache,
   // highlight any token whose lemma resolves to one of the requested entries
   // (compared by id — e.g. the dictionary entry currently being viewed). The
@@ -808,6 +844,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               byeonggi={byeonggi ?? l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
               isSaved={highlightSaved === false ? false : tokenMatchesAnyForm(token, savedFormSet)}
+              savedWordId={savedWordIdForToken(token)}
               isHighlighted={tokenMatchesHighlight(token)}
               nextTokenIsSeparator={nextTokenIsSeparator}
               onClick={(rect) => handleTokenClick(token, rect)}
