@@ -6,6 +6,7 @@ import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
 import { AlignedTranslation } from '@/components/reader/aligned-translation';
+import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
 import type { SentenceMap } from '@/lib/sentence-map';
@@ -51,6 +52,14 @@ interface TextActionMenuProps {
     active: number | null;
     measureNonce?: string | number;
   } | null;
+  /** Fraction (0–1) of the side-by-side row given to the L2 column. When set
+   *  with `onTranslationSplitChange`, renders the draggable splitter handle on
+   *  wide screens (readers only); otherwise uses the default 3:2 split. */
+  translationSplit?: number;
+  /** Called with a new L2-column fraction while the splitter is dragged. */
+  onTranslationSplitChange?: (ratio: number) => void;
+  /** Called ONCE with the final fraction when a splitter drag ends. */
+  onTranslationSplitCommit?: (ratio: number) => void;
   children: ReactNode;
 }
 
@@ -67,6 +76,9 @@ export function TextActionMenu({
   translationFontSize,
   loading = false,
   translationAligned = null,
+  translationSplit,
+  onTranslationSplitChange,
+  onTranslationSplitCommit,
   children,
 }: TextActionMenuProps) {
   const t = useT();
@@ -75,6 +87,12 @@ export function TextActionMenu({
   const l2Ref = useRef<HTMLDivElement>(null);
   const aligned = translationAligned ?? null;
   const hasTranslation = !!(translation || aligned);
+  // Show the draggable splitter only when the caller wired a ratio + handler
+  // (readers); everything else keeps the fixed default split and no handle.
+  const resizable = translationSplit != null && onTranslationSplitChange != null;
+  // L2 column flex-grow factor (basis 0% → grow ratio distributes the row).
+  const l2Grow = resizable ? translationSplit! : 3;
+  const trGrow = resizable ? 1 - translationSplit! : 2;
   const {
     activeAction,
     close,
@@ -103,17 +121,26 @@ export function TextActionMenu({
   return (
     <div className="group relative flex items-start gap-3 mb-4">
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4'} ${aligned && !translationBelow ? 'lg:items-start' : translationBelow ? '' : 'lg:items-center'}`}>
-        <div className="flex-[3] min-w-0" ref={l2Ref}>
+      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : resizable ? 'lg:flex-row lg:gap-2' : 'lg:flex-row lg:gap-4'} ${aligned && !translationBelow ? 'lg:items-start' : translationBelow ? '' : 'lg:items-center'}`}>
+        <div className="min-w-0" style={{ flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }} ref={l2Ref}>
           {children}
         </div>
+        {resizable && hasTranslation && !translationBelow && (
+          <TranslationSplitHandle
+            ratio={translationSplit!}
+            onChange={onTranslationSplitChange!}
+            onCommit={onTranslationSplitCommit}
+          />
+        )}
         {hasTranslation && (
           <div
-            className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
+            className={`min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
             style={
               translationFontSize != null
-                ? { fontSize: `${translationFontSize}rem` }
-                : aligned ? undefined : { zoom: translationZoom }
+                ? { fontSize: `${translationFontSize}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
+                : aligned
+                  ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
+                  : { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, zoom: translationZoom }
             }
           >
             {aligned ? (
@@ -130,11 +157,11 @@ export function TextActionMenu({
         )}
         {loading && !translation && !aligned && (
           <div
-            className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
+            className={`min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
             style={
               translationFontSize != null
-                ? { fontSize: `${translationFontSize}rem` }
-                : { zoom: translationZoom }
+                ? { fontSize: `${translationFontSize}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
+                : { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, zoom: translationZoom }
             }
           >
             <TranslationSkeleton

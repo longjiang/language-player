@@ -849,6 +849,11 @@ export interface DisplaySettings {
   theme: 'light' | 'dark' | 'system';
   /** Show L1 translation lines alongside L2 text. */
   translation: boolean;
+  /** Fraction (0–1) of the side-by-side row width given to the L2 tokenized
+   *  text column, the remainder going to the translation column. 0.6 matches
+   *  the legacy 3:2 `flex-[3]`/`flex-[2]` split. Used by the readers' resizable
+   *  text|translation splitter. */
+  translationSplit: number;
 }
 
 export interface PlaybackSettings {
@@ -983,6 +988,7 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
 export const DISPLAY_DEFAULTS: DisplaySettings = {
   theme: 'dark',
   translation: true,
+  translationSplit: 0.6,
 };
 
 export const PLAYBACK_DEFAULTS: PlaybackSettings = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { isPhoneticsEligible } from '@langplayer/utils';
 import { useTextScale } from '@/hooks/use-text-scale';
@@ -94,7 +94,7 @@ export function EpubReaderPanel({
   onLocationChange,
   onOpenLink,
 }: EpubReaderPanelProps) {
-  const { display, getL2 } = useSettingsContext();
+  const { display, getL2, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
   // factor. Applied to every block so headings keep their relative sizes.
@@ -107,7 +107,21 @@ export function EpubReaderPanel({
     : '';
   // Re-measure page breaks whenever a display setting that changes rendered
   // block heights changes (text scale, translation column, ruby estimate).
-  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}`;
+  const persistedSplit = display.translationSplit;
+  // Splitter live state — the row re-splits immediately while dragging (no
+  // persistence, no re-pagination); the final ratio is committed on release.
+  const [liveSplit, setLiveSplit] = useState(persistedSplit);
+  const appliedSplit = liveSplit;
+  const onTranslationSplitChange = useCallback((r: number) => setLiveSplit(r), []);
+  const onTranslationSplitCommit = useCallback((r: number) => {
+    setLiveSplit(r);
+    updateDisplay({ translationSplit: r });
+  }, [updateDisplay]);
+  useEffect(() => {
+    setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
+  }, [persistedSplit]);
+
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}:${persistedSplit}`;
 
   // Paging away from the highlighted search result dismisses the highlight.
   // The shared reader reports every visible-page start change through
@@ -154,6 +168,9 @@ export function EpubReaderPanel({
             translationClass={translationClass(tb)}
             translationZoom={textZoom}
             translationFontSize={translationFontSizeRem(tb, textZoom)}
+            translationSplit={appliedSplit}
+            onTranslationSplitChange={onTranslationSplitChange}
+            onTranslationSplitCommit={onTranslationSplitCommit}
             loading={showTranslation && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -168,7 +185,7 @@ export function EpubReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, measureNonce]);
+  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block. Mirrors the dual-column text/translation layout, the
