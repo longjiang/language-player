@@ -1,7 +1,9 @@
 export { VideoCard } from './video-card';
 export { VideoGrid } from './video-grid';
 export { VideoQueueList } from './video-queue-list';
-export { TranscriptQueuePanel } from './transcript-queue-panel';
+export { VideoQueuePanel } from './video-queue-panel';
+export { VideoSidebarPanel } from './video-sidebar-panel';
+export type { SidebarTabKey } from './video-sidebar-panel';
 export { LevelFilter } from './level-filter';
 export { YouTubePlayer } from './youtube-player';
 export { HTML5Player, PLAYER_STATES as HTML5_PLAYER_STATES } from './html5-player';
