@@ -16,6 +16,10 @@ import {
   type BlockRenderCtx,
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
+import {
+  SegmentedTranslation,
+  SentenceHighlightBlock,
+} from '@/components/reader/sentence-highlight';
 import { type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { languageName } from '@/lib/language-data';
 import {
@@ -171,21 +175,28 @@ export function ReaderPanel({
       f => f.type === 'link' && (onOpenLink ? true : /^https?:\/\//i.test(f.url ?? '')),
     )?.url;
     return (
-      <TextActionMenu key={item.key} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-        translation={showTranslation ? rctx.translation : undefined}
-        translationClass={translationClass(tb)}
-        translationZoom={textZoom}
-        loading={rctx.isTranslating && !rctx.translation}>
-        <Tag
-          className={blockClass(tb)}
-          style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
-        >
-          <TokenizedText text={tb.text} l2Code={l2.code}
-            inheritSize={tb.type === 'heading'} context={ctx}
-            tokens={rctx.tokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
-            deferTokenization={!!onLemmatize} selectionDictionary />
-        </Tag>
-      </TextActionMenu>
+      <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
+        {({ map, activeSentence, onTokenHover }) => (
+          <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
+            translation={showTranslation && rctx.translation ? (
+              <SegmentedTranslation text={rctx.translation} map={map} active={activeSentence} />
+            ) : undefined}
+            translationClass={translationClass(tb)}
+            translationZoom={textZoom}
+            loading={rctx.isTranslating && !rctx.translation}>
+            <Tag
+              className={blockClass(tb)}
+              style={tb.type === 'heading' ? { zoom: textZoom } : undefined}
+            >
+              <TokenizedText text={tb.text} l2Code={l2.code}
+                inheritSize={tb.type === 'heading'} context={ctx}
+                tokens={rctx.tokens} formats={tb.formats} href={blockHref} onOpenLink={onOpenLink}
+                deferTokenization={!!onLemmatize} selectionDictionary
+                onTokenHover={onTokenHover} />
+            </Tag>
+          </TextActionMenu>
+        )}
+      </SentenceHighlightBlock>
     );
   }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize]);
 

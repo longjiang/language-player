@@ -87,6 +87,10 @@ export interface TokenSpanProps {
   /** Called when the token is clicked; passes the clicked span's bounding
    *  rect so callers can anchor popups to the word (e.g. spawn animations). */
   onClick: (rect?: DOMRect) => void;
+  /** Called with true when the pointer enters the token and false when it
+   *  leaves. Used by the readers to highlight the matching sentence in the
+   *  translation. Optional — no-op when absent. */
+  onHoverChange?: (hovering: boolean) => void;
   /** Monotonically incremented by TokenizedText when bulk dictionary lookup completes.
    *  TokenSpan reads this to know when cached entries may have updated. */
   cacheVersion: number;
@@ -137,6 +141,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   mode,
   byeonggi,
   onClick,
+  onHoverChange,
   cacheVersion,
   isKaraokeSpoken,
   nextTokenIsSeparator,
@@ -433,6 +438,16 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     handleClick(e.currentTarget.getBoundingClientRect());
   };
 
+  // Enter/leave handlers for the readers' translation-sentence highlight.
+  // Attached to the token's root element (the hover scope in every layout
+  // variant, including the display:contents flat-run group).
+  const hoverHandlers = onHoverChange
+    ? {
+        onMouseEnter: () => onHoverChange(true),
+        onMouseLeave: () => onHoverChange(false),
+      }
+    : undefined;
+
   // ── Word content (reused by both layout variants) ──
   let wordContent: React.ReactNode;
 
@@ -524,7 +539,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} {...hoverHandlers}>
         <span className="inline-flex flex-col items-center">
           {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -538,12 +553,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Flat run: the segments are already bare inline siblings carrying all
   //    interaction + styling — no wrapper box around the token. ──
   if (flat) {
-    return <span className="group/token contents">{wordWithGloss}</span>;
+    return <span className="group/token contents" {...hoverHandlers}>{wordWithGloss}</span>;
   }
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(e.currentTarget.getBoundingClientRect()); }} className={wrapperClass} {...hoverHandlers}>
       {wordWithGloss}
     </span>
   );
