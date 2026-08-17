@@ -337,6 +337,15 @@ export function useCssColumnsPager<B>(
     return lastBreakAtOrBefore(breaks, anchor);
   }, []);
 
+  /** First ~40 chars of a block, for navigation verdict logs. */
+  const blockSnippet = useCallback((blocks: unknown[], blockIndex: number, winStart: number): string => {
+    const stream = streamRef.current;
+    const block = blocks[blockIndex - winStart];
+    if (!stream || !block) return '';
+    const text = stream.blockText(block as never);
+    return text ? text.slice(0, 40).replace(/\s+/g, ' ') : '';
+  }, []);
+
   // ── Window build ──
 
   const buildWindow = useCallback(async (anchor: number, mode: BuildMode) => {
@@ -441,7 +450,7 @@ export function useCssColumnsPager<B>(
           const col = m.breaks.indexOf(ps);
           const visibleEnd = col >= 0 && col + 1 < m.breaks.length ? m.breaks[col + 1]! : p.winEnd;
           const inView = p.anchor >= ps && p.anchor < visibleEnd;
-          logwarn(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} visible=[${ps}, ${visibleEnd}) page=${m.basePage + Math.max(0, col)} window=[${p.winStart}, ${p.winEnd})`);
+          logwarn(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} target="${blockSnippet(p.blocks, p.anchor, p.winStart)}" visible=[${ps}, ${visibleEnd}) first="${blockSnippet(p.blocks, ps, p.winStart)}" page=${m.basePage + Math.max(0, col)} col=${col} pitch=${pitchRef.current} transform=${-Math.max(0, col) * pitchRef.current}px window=[${p.winStart}, ${p.winEnd})`);
         }
         pageStartRef.current = ps;
         setPageStart(ps);
@@ -498,13 +507,14 @@ export function useCssColumnsPager<B>(
       const ps = breaks[col + 1]!;
       pageStartRef.current = ps;
       setPageStart(ps);
+      logwarn(`Pager: turn next → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
       cancelPending();
       return;
     }
     // At the window's last page — only rebuild when the book continues.
     if (a.winEnd >= (streamRef.current?.blockCount ?? 0)) return;
     void buildWindow(pageStartRef.current, 'forward');
-  }, [buildWindow, cancelPending]);
+  }, [buildWindow, cancelPending, blockSnippet]);
 
   const prevPage = useCallback(() => {
     const a = activeRef.current;
@@ -516,13 +526,14 @@ export function useCssColumnsPager<B>(
       const ps = breaks[col - 1]!;
       pageStartRef.current = ps;
       setPageStart(ps);
+      logwarn(`Pager: turn prev → pageStart=${ps} first="${blockSnippet(a.blocks, ps, a.winStart)}"`);
       cancelPending();
       return;
     }
     // At the window's first page — only rebuild when the book continues.
     if (a.winStart === 0) return;
     void buildWindow(pageStartRef.current, 'backward');
-  }, [buildWindow, cancelPending]);
+  }, [buildWindow, cancelPending, blockSnippet]);
 
   const jumpTo = useCallback((loc: ReaderLocation) => {
     const stream = streamRef.current;
