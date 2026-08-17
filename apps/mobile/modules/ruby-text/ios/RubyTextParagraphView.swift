@@ -38,14 +38,11 @@ internal final class RubyTextParagraphView: ExpoView {
   /// attributedText while the container is still zero-sized can leave the
   /// text blank even after the frame is set, so we re-apply once bounds exist.
   private var hasLaidOutText = false
-#if DEBUG
-  /// One-shot line-fragment dump per rebuild (diagnostic only).
-  private var didLogLineFragments = false
-#endif
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
     RubyTextParagraphView.lastDiagnosticsView = self
+    print("[LP Mobile] [RubyTextParagraph] init textKit=\(textView.textLayoutManager != nil ? "2" : "1") textLayoutManager=\(String(describing: textView.textLayoutManager))")
 
     isOpaque = false
     clipsToBounds = false
@@ -73,6 +70,9 @@ internal final class RubyTextParagraphView: ExpoView {
       "tvTextLen": textView.attributedText?.length ?? -1,
       "tvText": String(textView.text.prefix(40)),
       "runTexts": runs.prefix(8).map(\.text),
+      "textKit": textView.textLayoutManager != nil ? "2" : "1",
+      "readingSize": readingSize,
+      "fontFamily": fontFamily ?? "nil",
     ]
   }
 
@@ -85,11 +85,11 @@ internal final class RubyTextParagraphView: ExpoView {
       hasLaidOutText = true
     }
     print("[LP Mobile] [RubyTextParagraph] layout bounds=\(bounds) tvFrame=\(textView.frame) textLen=\(textView.attributedText?.length ?? -1)")
-#if DEBUG
-    if !didLogLineFragments {
-      DispatchQueue.main.async { [weak self] in self?.logLineFragments() }
-    }
-#endif
+    // ⚠️ DO NOT re-add layoutManager access here (e.g. a debug-only
+    // logLineFragments dump): forcing `textView.layoutManager` glyph layout
+    // after layout breaks CTRubyAnnotation painting on iPadOS 26.6 (readings
+    // silently never draw in Debug builds; Release was unaffected only
+    // because the code was #if DEBUG). See build ledger — 2026-08-16.
   }
 
   @objc
@@ -122,21 +122,7 @@ internal final class RubyTextParagraphView: ExpoView {
       textView.attributedText = attributedString
       hasLaidOutText = true
     }
-    print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight)")
-#if DEBUG
-    didLogLineFragments = false
-    if let attributedString {
-      attributedString.enumerateAttribute(
-        NSAttributedString.Key(kCTRubyAnnotationAttributeName as String),
-        in: NSRange(location: 0, length: attributedString.length),
-        options: []
-      ) { value, range, _ in
-        guard value != nil else { return }
-        let base = (attributedString.string as NSString).substring(with: range)
-        print("[LP Mobile] [RubyTextParagraph] ruby-attr range=\(range.location)..<\(range.location + range.length) base=\"\(base)\" baseLen=\(range.length)")
-      }
-    }
-#endif
+    print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight) readingSize=\(readingSize) fontFamily=\(fontFamily ?? "nil") readingFont=\(makeReadingFont().fontName)")
   }
 
   private func makeAttributedString() -> NSAttributedString? {
@@ -201,49 +187,6 @@ internal final class RubyTextParagraphView: ExpoView {
     }
     return result
   }
-
-#if DEBUG
-  /** Dump the line fragments (and their character ranges) once per rebuild,
-   *  so a ruby annotation split across a line break is visible in the log. */
-  private func logLineFragments() {
-    guard !didLogLineFragments,
-          let attributedText = textView.attributedText,
-          attributedText.length > 0 else { return }
-    didLogLineFragments = true
-    let layoutManager = textView.layoutManager
-    let glyphRange = layoutManager.glyphRange(for: textView.textContainer)
-    guard glyphRange.location != NSNotFound, glyphRange.length > 0 else {
-      didLogLineFragments = false
-      return
-    }
-    var rubyRanges: [NSRange] = []
-    attributedText.enumerateAttribute(
-      NSAttributedString.Key(kCTRubyAnnotationAttributeName as String),
-      in: NSRange(location: 0, length: attributedText.length),
-      options: []
-    ) { value, range, _ in
-      if value != nil { rubyRanges.append(range) }
-    }
-    var glyphIndex = glyphRange.location
-    var lineIndex = 0
-    while glyphIndex < NSMaxRange(glyphRange) {
-      var effectiveGlyphRange = NSRange()
-      let rect = layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: &effectiveGlyphRange)
-      if effectiveGlyphRange.length == 0 {
-        didLogLineFragments = false
-        break
-      }
-      let charRange = layoutManager.characterRange(forGlyphRange: effectiveGlyphRange, actualGlyphRange: nil)
-      let lineText = (attributedText.string as NSString).substring(with: charRange)
-      let hasRuby = rubyRanges.contains { NSIntersectionRange($0, charRange).length > 0 }
-      if hasRuby {
-        print("[LP Mobile] [RubyTextParagraph] line[\(lineIndex)] glyphs=\(effectiveGlyphRange.location)..<\(NSMaxRange(effectiveGlyphRange)) chars=\(charRange.location)..<\(NSMaxRange(charRange)) rect=\(rect) text=\"\(lineText)\"")
-      }
-      lineIndex += 1
-      glyphIndex = NSMaxRange(effectiveGlyphRange)
-    }
-  }
-#endif
 
   private func makeFont(size: CGFloat, weight: UIFont.Weight) -> UIFont {
     if let family = fontFamily, !family.isEmpty {

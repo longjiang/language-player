@@ -455,6 +455,21 @@ bundle error instead of guessing.
 - If you don't own the Metro terminal, structured JSON logs are written to
   `apps/mobile/.expo/dev/logs/start.log`
 - Native crashes can be viewed with `idb log` (iOS Simulator)
+- **Native `print()` output (Swift/Kotlin) NEVER reaches Metro** — it goes to
+  the app process's stdout. Capture it on a physical device by relaunching
+  the app with the console attached (streams until the app exits; run it in
+  its own terminal or a background job):
+
+  ```bash
+  xcrun devicectl device process launch --console --terminate-existing \
+    --device 2DFF9AA2-B075-5A68-8299-65C16DF38803 ca.zerotohero.go
+  ```
+
+  This is how the ruby-text module's `attach-ruby`/`rebuild` prints are
+  inspected. ⚠️ Keep such diagnostics read-only: forcing
+  `textView.layoutManager` layout from a debug print broke
+  `CTRubyAnnotation` painting on iPadOS 26.6 (see
+  [ARCH-030 — Native Ruby Text Rendering](030-ruby-text-native-rendering.md)).
 
 ### Reload / restart
 

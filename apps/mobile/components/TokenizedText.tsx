@@ -77,6 +77,8 @@ function useMobileRubyColors() {
 // path, so the tokenized output structure can be inspected in the Metro log
 // (tokens → RubyTokenSpan → per-segment RubyTexts, gloss/byeonggi/defs).
 const loggedTreeTexts = new Set<string>();
+/** Last ruby render-path key logged (dev-only, see render body below). */
+let lastRenderPathKey = '';
 /** Only log trees/tokens whose reading has at least this many syllables —
  *  word-level pinyin long enough to trigger the Core Text distribution issue. */
 const LONG_READING_MIN_SYLLABLES = 6;
@@ -1110,9 +1112,14 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     return diff.value >= userLevel;
   }, [phoneticsConditions, userLevel, l2Code]);
 
-  // ── Phonetics debug summary (Korean) — why is ruby/romanization missing? ──
+  // ── Phonetics debug summary (Japanese/Korean) — why is ruby/romanization missing? ──
+  // Logged through the GLOBAL logger (appLog), not the tokenized-text domain:
+  // defaultOff('tokenized-text') silences that domain unless
+  // EXPO_PUBLIC_LOG_LEVEL_TOKENIZED_TEXT=3 is set, which made this summary
+  // invisible by default.
   useEffect(() => {
-    if (!__DEV__ || baseCode(l2Code) !== 'ko' || tokens.length === 0) return;
+    const base = baseCode(l2Code);
+    if (!__DEV__ || (base !== 'ko' && base !== 'ja') || tokens.length === 0) return;
     const words = tokens.filter((t) => t.lemmas.length > 0);
     const withPron = words.filter((t) => t.pronunciation).length;
     const pronEqWord = words.filter((t) => t.pronunciation && t.pronunciation === t.text).length;
@@ -1125,7 +1132,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         !!t.pronunciation &&
         t.pronunciation !== t.text,
     ).length;
-    log(
+    appLog(
       `[TokenizedText] 🎙 PHONETICS l2=${l2Code} show=${String(phonetics.show)} conditions=${phoneticsConditions} userLevel=${userLevel ?? 'none'} words=${words.length} eligible=${eligible} withPron=${withPron} pronEqWord=${pronEqWord} rubyShown=${rubyShown} sample=${words.slice(0, 10).map((t) => `${t.text}→${t.pronunciation ?? '∅'}`).join(', ')}`,
     );
   }, [tokens, l2Code, showPhonetics, phonetics.show, phoneticsConditions, userLevel, shouldShowPhonetics]);
@@ -1481,6 +1488,16 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             {(() => {
               let wordIndexSoFar = 0;
               const useParagraph = NATIVE_PARAGRAPH_ACTIVE && !showDefinition;
+              // Dev-only: log the ruby render path once per change, so the
+              // Metro log shows which path this build actually takes (native
+              // paragraph / native per-token / JS fallback).
+              const renderPathKey = `${NATIVE_RUBY_ACTIVE}:${NATIVE_PARAGRAPH_ACTIVE}:${useParagraph}:${showDefinition}:${isRubyMode}`;
+              if (__DEV__ && lastRenderPathKey !== renderPathKey) {
+                lastRenderPathKey = renderPathKey;
+                appLog(
+                  `[TokenizedText] 🧭 ruby render-path native=${NATIVE_RUBY_ACTIVE} paragraphView=${NATIVE_PARAGRAPH_ACTIVE} paragraphUsed=${useParagraph} showDefinition=${showDefinition} rubyMode=${isRubyMode}`,
+                );
+              }
               const runs: ParagraphRun[] = [];
               const taps: Array<ParagraphTapAction | null> = [];
               const treeLines: string[] = [

@@ -70,6 +70,7 @@ internal final class RubyTextView: ExpoView {
     attributedString = makeAttributedString()
     label.attributedText = attributedString
     setNeedsLayout()
+    print("[LP Mobile] [RubyTextView] rebuild segs=\(segments.count) fontSize=\(fontSize) readingSize=\(readingSize) rubyPull=\(rubyPull) fontFamily=\(fontFamily ?? "nil") readingFont=\(makeReadingFont().fontName)")
   }
 
   private func readingSlotHeight() -> CGFloat {
