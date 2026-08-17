@@ -1215,7 +1215,7 @@
         "good_hint": "Richtig erinnert",
         "hard": "Schwer",
         "hard_hint": "Mit Mühe erinnert",
-        "no_definition_available": "لم يتم العثور على هذه الكلمة في قاموسنا.",
+        "no_definition_available": "Dieses Wort wurde in unserem Wörterbuch nicht gefunden.",
         "shortcut_hint": "Drücke <space></space> zum Umdrehen, <k1></k1>–<k2></k2> zum Bewerten, <enter></enter> zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "srs_new": "neu",

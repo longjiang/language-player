@@ -1215,7 +1215,7 @@
         "good_hint": "Doğru hatırlandı",
         "hard": "Zor",
         "hard_hint": "Zorlukla hatırlandı",
-        "no_definition_available": "Questa parola non è presente nel nostro dizionario.",
+        "no_definition_available": "Bu kelime sözlüğümüzde bulunamadı.",
         "shortcut_hint": "Çevirmek için <space></space>, puanlamak için <k1></k1>–<k2></k2>, devam etmek için <enter></enter> tuşuna bas",
         "show_definition": "Tanımı Göster",
         "srs_new": "yeni",
