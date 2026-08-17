@@ -12,7 +12,6 @@ import { VideoControlBar } from '@/components/video/video-control-bar';
 import { TranscriptQueuePanel } from '@/components/video/transcript-queue-panel';
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
-import { SubtitlesModeBand } from '@/components/video/subtitles-mode-band';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import { findActiveLineIndex } from '@langplayer/shared';
 import {
@@ -391,9 +390,10 @@ export default function WatchPage() {
           {v && !isSubtitles && isWide && videoInfo}
 
           {v && isSubtitles && !isWide && (
-            <SubtitlesModeBand
+            <SubtitleDisplay
+              band
               overlay={false}
-              subtitleLines={displaySubtitleLines}
+              initialLines={displaySubtitleLines}
               currentTime={currentTime}
               onSeekToLine={handleSeekToLine}
               onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
@@ -427,9 +427,10 @@ export default function WatchPage() {
 
         {/* Subtitles overlay (wide) */}
         {v && isSubtitles && isWide && (
-          <SubtitlesModeBand
+          <SubtitleDisplay
+            band
             overlay
-            subtitleLines={displaySubtitleLines}
+            initialLines={displaySubtitleLines}
             currentTime={currentTime}
             onSeekToLine={handleSeekToLine}
             onSwitchToTranscriptMode={handleSwitchToTranscriptMode}

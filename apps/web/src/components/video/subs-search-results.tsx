@@ -859,6 +859,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         initialLines={subtitleInitialLines}
         highlightTerms={highlightTerms}
         defaultLine={defaultSubtitleLine}
+        onSeekToLine={(t) => playerRef.current?.seekTo(t)}
       />
 
       {/* ── Modal: result list ── */}
