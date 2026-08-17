@@ -783,9 +783,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           className="ml-auto flex shrink-0 items-center gap-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            {group.count}
-          </span>
           <button
             type="button"
             onClick={collapseAll}
@@ -800,6 +797,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           >
             {t('action.expand_all')}
           </button>
+          <span className="shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {group.count}
+          </span>
         </span>
       ) : (
         <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
