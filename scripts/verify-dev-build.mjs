@@ -101,10 +101,29 @@ if (!existsSync(artifactPath)) {
   console.log(`  sha256        : ${digest} ${match ? '✓ matches ledger' : '✗ MISMATCH'}`);
   if (!match) errors.push('artifact SHA-256 does not match the ledger row');
 
-  // 4. Commit SHA embedded in the JS bundle — only for Release-config
-  // artifacts (dev-build.mjs now builds Debug: JS is served by Metro at
-  // runtime, so there is no embedded bundle to grep; SHA-256 + commit
-  // existence + ip.txt are the checks that apply). Streamed through the
+  // 4. ip.txt (Metro LAN host) is written by RN for device Debug builds —
+  // checked independently of the bundle (Debug builds have no bundle).
+  if (row.platform === 'ios-device') {
+    try {
+      const listing = sh(`unzip -l '${artifactPath}'`);
+      const ipMatch = listing.match(/[^\s]+ip\.txt/);
+      if (ipMatch) {
+        const ip = sh(`unzip -p '${artifactPath}' '${ipMatch[0]}'`).trim();
+        const looksValid = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
+        console.log(`  ip.txt        : ${looksValid ? `✓ ${ip}` : `✗ '${ip}' is not an IP`}`);
+        if (!looksValid) errors.push(`ip.txt in the artifact does not contain a valid Metro host IP`);
+      } else {
+        console.log('  ip.txt        : ⚠ absent (Debug device build should contain it)');
+        errors.push('ip.txt missing — the app cannot find Metro on the LAN');
+      }
+    } catch (e) {
+      errors.push(`could not inspect ip.txt: ${e.message}`);
+    }
+  }
+
+  // 5. Commit SHA embedded in the JS bundle — only when the artifact actually
+  // contains one (Release-config artifacts). Debug builds serve JS from
+  // Metro at runtime, so there is nothing to grep. Streamed through the
   // shell (unzip -p | grep) so a megabyte bundle never fills the pipe
   // buffer (ENOBUFS) — only the tiny match count is captured.
   try {
@@ -116,21 +135,6 @@ if (!existsSync(artifactPath)) {
       const listing = sh(`unzip -l '${artifactPath}'`);
       const m = listing.match(/[^\s]+main\.jsbundle/);
       bundlePath = m ? m[0] : null;
-      if (bundlePath) {
-        // ip.txt (Metro host) is written by RN for device Debug builds.
-        if (row.platform === 'ios-device') {
-          const ipMatch = listing.match(/[^\s]+ip\.txt/);
-          if (ipMatch) {
-            const ip = sh(`unzip -p '${artifactPath}' '${ipMatch[0]}'`).trim();
-            const looksValid = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
-            console.log(`  ip.txt        : ${looksValid ? `✓ ${ip}` : `✗ '${ip}' is not an IP`}`);
-            if (!looksValid) errors.push(`ip.txt in the artifact does not contain a valid Metro host IP`);
-          } else {
-            console.log('  ip.txt        : ⚠ absent (Debug device build should contain it)');
-            errors.push('ip.txt missing — the app cannot find Metro on the LAN');
-          }
-        }
-      }
     }
     if (bundlePath) {
       const count = Number(
