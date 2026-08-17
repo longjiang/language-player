@@ -7,10 +7,13 @@ import { useRef, useState, type PointerEvent, type MouseEvent } from 'react';
  *
  * Sits in the boundary between the L2 tokenized column and the L1 translation
  * column on side-by-side rows. Dragging it updates a shared, persisted ratio
- * (`display.translationSplit`): the caller stores the ratio, the handle only
- * reports deltas anchored to its parent row's measured width. Because every
- * block shares the same setting, dragging one handle resizes every block's
- * columns at once.
+ * (`display.translationSplit`). Because every block shares the same setting,
+ * dragging one handle resizes every block's columns at once.
+ *
+ * The split is derived DIRECTLY from the pointer's x-position within the row
+ * on each pointermove — `ratio = (cursorX - rowLeft) / rowWidth`. There is no
+ * delta accumulation, so the handle tracks the cursor 1:1 and can never race
+ * ahead regardless of render timing or how fast the user drags.
  *
  * The handle is deliberately slim and neutral — a faint highlight on hover /
  * drag plus a col-resize cursor — so per-block rows stay visually quiet until
@@ -37,30 +40,40 @@ export function TranslationSplitHandle({
   className?: string;
 }) {
   const [active, setActive] = useState(false);
-  const dragAnchor = useRef<{ width: number; end: number } | null>(null);
+  const draggingRef = useRef(false);
 
   const clamp = (r: number) => Math.min(max, Math.max(min, r));
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
-    const row = e.currentTarget.parentElement;
-    if (!row) return;
-    dragAnchor.current = { width: row.getBoundingClientRect().width, end: e.clientX };
+    draggingRef.current = true;
     setActive(true);
     e.currentTarget.setPointerCapture(e.pointerId);
     e.preventDefault();
+    // Apply the split immediately at the grab point so the handle "picks up"
+    // the boundary where the user clicked.
+    const row = e.currentTarget.parentElement;
+    if (row) {
+      const rect = row.getBoundingClientRect();
+      if (rect.width > 0) {
+        const next = clamp((e.clientX - rect.left) / rect.width);
+        if (next !== ratio) onChange(next);
+      }
+    }
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!dragAnchor.current) return;
-    const delta = e.clientX - dragAnchor.current.end;
-    const width = Math.max(1, dragAnchor.current.width);
-    const next = clamp(ratio + delta / width);
+    if (!draggingRef.current) return;
+    const row = e.currentTarget.parentElement;
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const next = clamp((e.clientX - rect.left) / rect.width);
     if (next !== ratio) onChange(next);
   };
 
   const stop = (e: PointerEvent<HTMLDivElement>) => {
-    dragAnchor.current = null;
+    draggingRef.current = false;
     setActive(false);
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
