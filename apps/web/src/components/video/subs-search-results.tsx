@@ -873,6 +873,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           filterPlaceholder={t('placeholder.filter')}
           sortValue={listSort}
           onSortChange={(v) => setListSort(v as SortKey)}
+          toolbarBorder={false}
           sortOptions={[
             { value: 'views', label: t('sort.most_viewed') },
             { value: 'likes', label: t('title.likes') },
