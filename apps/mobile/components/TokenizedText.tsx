@@ -6,7 +6,6 @@ import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import {
   colors,
-  decomposeWordId,
   firstGloss,
   hslToHex,
   isSameEntryId,
@@ -46,12 +45,10 @@ import {
   enqueueLookupWords,
   getCachedEntries,
   getCacheVersion,
-  getCachedEntryById,
   setCachedEntries,
 } from '@/lib/dictionary-cache';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
-import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
 const { log, logwarn } = tokenizedTextLogger;
@@ -1014,65 +1011,6 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     return forms;
   }, [savedWords, l2Code]);
 
-  // ── Saved word records by form (quick-gloss entry resolution) ──
-  // A surface form can match several dictionary entries; the record the user
-  // saved carries the exact entry id. Map each form to the most recently
-  // saved record so the quick gloss shows the entry the user chose.
-  const savedRecordByForm = useMemo(() => {
-    const words = [...(savedWords[l2Code] ?? [])].sort((a, b) => {
-      const ta = typeof a.date === 'number' ? a.date : a.savedAt ? Date.parse(a.savedAt) : 0;
-      const tb = typeof b.date === 'number' ? b.date : b.savedAt ? Date.parse(b.savedAt) : 0;
-      return (tb || 0) - (ta || 0);
-    });
-    const map = new Map<string, SavedWordMeta>();
-    const add = (form: string | undefined, w: SavedWordMeta) => {
-      if (!form || !form.trim()) return;
-      const key = form.toLowerCase();
-      if (!map.has(key)) map.set(key, w);
-    };
-    for (const w of words) {
-      if (w.head) add(w.head, w);
-      for (const f of w.forms ?? []) add(f, w);
-      if (w.context?.form) add(w.context.form as string, w);
-      for (const inst of w.instances ?? []) if (inst.form) add(inst.form, w);
-    }
-    return map;
-  }, [savedWords, l2Code]);
-
-  // Saved record for a token — surface form first, then lemma forms
-  // (mirrors tokenMatchesAnyForm used for the saved highlight).
-  const savedRecordForToken = useCallback((token: LemmatizedToken): SavedWordMeta | undefined => {
-    const surface = savedRecordByForm.get(token.text.toLowerCase());
-    if (surface) return surface;
-    for (const l of token.lemmas) {
-      const hit = savedRecordByForm.get(l.lemma.toLowerCase());
-      if (hit) return hit;
-    }
-    return undefined;
-  }, [savedRecordByForm]);
-
-  // Resolve the exact dictionary entry behind a saved word record, from the
-  // shared cache (the popup, review page, and offline hydration all index
-  // entries by id) or the enriched canonicalEntry stored on the record.
-  const resolveSavedEntry = useCallback((savedRecord: SavedWordMeta): DictionaryEntry | undefined => {
-    const base = baseCode(l2Code);
-    // Enriched entry stored on the record (saved-word cards) — only accept it
-    // when it really is the saved entry (the API may return a scoped id).
-    if (savedRecord.canonicalEntry && isSameEntryId(savedRecord.id, savedRecord.canonicalEntry.id, base)) {
-      return savedRecord.canonicalEntry;
-    }
-    const tryIds = (id: string | undefined): DictionaryEntry | undefined => {
-      if (!id) return undefined;
-      return getCachedEntryById(l2Code, id) ?? getCachedEntryById(base, id);
-    };
-    const decomposed = decomposeWordId(savedRecord.id, base);
-    return (
-      tryIds(savedRecord.id) ??
-      tryIds(savedRecord.entryId) ??
-      (decomposed ? tryIds(decomposed.id) : undefined)
-    );
-  }, [l2Code]);
-
   // Saved phrase candidates — every saved form (head + inflections + per-
   // instance surface) that could span multiple tokens. The merge below
   // collapses exact token-boundary matches into one atomic token so
@@ -1159,69 +1097,6 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       return form.length > 0 && surface.includes(form);
     });
   }, [highlightTerms]);
-
-  // ── Highlight diagnostics (dev-only, once per text) ──
-  // Review-card target words (e.g. しかるべき) can fail to highlight when the
-  // lemmatizer splits them (しかる + べき). Two logs, both fired only in
-  // target-highlight contexts (review card / entry-id highlight):
-  //   1. HIGHLIGHT-MERGE — raw tokens, saved phrase candidates, and which
-  //      candidates appear in the text but never become an atomic display
-  //      token (the merge step in mergePhraseTokens failed or the form is
-  //      missing from savedPhraseCandidates).
-  //   2. HIGHLIGHT-VERDICT — per display-token predicates exactly as the
-  //      render computes them (isSaved / isHighlighted / isSavedWord), so a
-  //      missing highlight is traceable to either the merge or the match.
-  const loggedHighlightDiagTexts = useRef(new Set<string>());
-  useEffect(() => {
-    if (!__DEV__) return;
-    const key = `merge:${l2Code}:${text}`;
-    if (loggedHighlightDiagTexts.current.has(key)) return;
-    const terms = highlightTerms ?? [];
-    if (terms.length === 0 && (highlightEntryIds?.length ?? 0) === 0) return;
-    loggedHighlightDiagTexts.current.add(key);
-
-    const mergedSurfaces = new Set(displayTokens.map((t) => t.text.toLowerCase()));
-    const lowerText = text.toLowerCase();
-    const missedPhrases = savedPhraseCandidates.filter((p) => {
-      const lp = p.toLowerCase();
-      return lp.length >= 2 && lowerText.includes(lp) && !mergedSurfaces.has(lp);
-    });
-    appLog(
-      `[TokenizedText] 🔎 HIGHLIGHT-MERGE l2=${l2Code} text="${text.slice(0, 100)}"`,
-      {
-        rawTokens: tokens.map((t) => ({ text: t.text, lemmas: t.lemmas.map((l) => l.lemma) })),
-        displayTokens: displayTokens.map((t) => ({ text: t.text, lemmas: t.lemmas.map((l) => l.lemma) })),
-        highlightTerms: terms,
-        highlightEntryIds: highlightEntryIds ?? [],
-        savedPhraseCandidates: savedPhraseCandidates.slice(0, 50),
-        missedPhrases,
-      },
-    );
-  }, [displayTokens, tokens, savedPhraseCandidates, highlightTerms, highlightEntryIds, l2Code, text]);
-
-  useEffect(() => {
-    if (!__DEV__) return;
-    const key = `verdict:${l2Code}:${text}`;
-    if (loggedHighlightDiagTexts.current.has(key)) return;
-    const terms = highlightTerms ?? [];
-    if (terms.length === 0 && (highlightEntryIds?.length ?? 0) === 0) return;
-    loggedHighlightDiagTexts.current.add(key);
-    const verdicts = displayTokens.map((token) => {
-      const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
-      const isHighlighted = tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
-      return {
-        text: token.text,
-        lemmas: token.lemmas.map((l) => l.lemma),
-        isSaved,
-        isHighlighted,
-        isSavedWord: isSaved && !isHighlighted,
-      };
-    });
-    appLog(
-      `[TokenizedText] 🎯 HIGHLIGHT-VERDICT l2=${l2Code} text="${text.slice(0, 100)}"`,
-      { highlightSaved, verdicts },
-    );
-  }, [displayTokens, savedFormSet, highlightTerms, highlightEntryIds, highlightSaved, tokenMatchesOrContainsTerm, tokenHasTargetEntry, l2Code, text]);
 
   // ── Phonetics filter: per-token hardWords check ──
   const shouldShowPhonetics = useCallback((token: LemmatizedToken): boolean => {
@@ -1483,28 +1358,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   }, [l2Code]);
 
   // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
-  // When the token is a saved word, the definition/byeonggi come from the
-  // exact entry the user saved — multiple dictionary entries can match one
-  // surface form, and the saved record pins the one the user chose. Falls
-  // back to the first cached match for unsaved words (or when the saved
-  // entry isn't resolvable yet).
   const getTokenEntryData = useCallback((token: LemmatizedToken) => {
-    if (!token.lemmas.length) {
-      return { byeonggiText: null as string | null, firstDef: null as string | null, savedWordId: undefined as string | undefined };
-    }
-
-    const savedRecord = savedRecordForToken(token);
-    if (savedRecord) {
-      const savedEntry = resolveSavedEntry(savedRecord);
-      if (savedEntry?.definitions?.length) {
-        return {
-          byeonggiText: savedEntry.han_script?.hanja ?? savedEntry.han_script?.hantu ?? savedEntry.han_script?.han ?? null,
-          firstDef: firstGloss(savedEntry.definitions),
-          savedWordId: savedRecord.id,
-        };
-      }
-    }
-
+    if (!token.lemmas.length) return { byeonggiText: null as string | null, firstDef: null as string | null };
     const firstLemma = token.lemmas[0]!.lemma;
     // Cache/backend keys use the base L2 code (e.g. "zh" not "zh-Hans"), but
     // components may be mounted with the regional code. Check both so quick
@@ -1537,41 +1392,34 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? firstEntry.han_script?.han ?? null,
       firstDef: firstEntry.definitions ? firstGloss(firstEntry.definitions) : null,
     };
-  }, [l2Code, cacheVersion, savedRecordForToken, resolveSavedEntry]);
+  }, [l2Code, cacheVersion]);
 
   // ── L1-translated quick gloss (matches web token-span) ──
   useEffect(() => {
     if (l1Lang.code === 'en' || !quickGlossEnabled) return;
     let cancelled = false;
 
-    const pending: Array<{ lookupText: string; l1Key: string; preferredId?: string }> = [];
+    const pending: Array<{ lookupText: string }> = [];
     const seen = new Set<string>();
     for (const token of tokens) {
       const lower = token.text.toLowerCase();
-      if (!savedFormSet.has(lower)) continue;
-      const { firstDef, savedWordId } = getTokenEntryData(token);
+      if (!savedFormSet.has(lower) || seen.has(lower)) continue;
+      seen.add(lower);
+      const { firstDef } = getTokenEntryData(token);
       if (!firstDef) continue;
       const lookupText = token.lemmas[0]?.lemma || token.text;
-      // Dedupe by (surface form, saved entry) — the same surface form can be
-      // saved under two different entries, each needing its own L1 gloss.
-      const dedupeKey = `${lower}:${savedWordId ?? ''}`;
-      if (seen.has(dedupeKey)) continue;
-      seen.add(dedupeKey);
-      // Key the state by lookup text + saved entry so tokens of the same text
-      // but different saved entries don't share a gloss.
-      const l1Key = `${lookupText}:${savedWordId ?? ''}`;
-      const cached = getL1Gloss(lookupText, l2Code, l1Lang.code, savedWordId);
+      const cached = getL1Gloss(lookupText, l2Code, l1Lang.code);
       if (cached !== null) {
-        setL1Glosses((prev) => (prev[l1Key] ? prev : { ...prev, [l1Key]: cached }));
+        setL1Glosses((prev) => (prev[lookupText] ? prev : { ...prev, [lookupText]: cached }));
       } else {
-        pending.push({ lookupText, l1Key, preferredId: savedWordId });
+        pending.push({ lookupText });
       }
     }
 
-    for (const { lookupText, l1Key, preferredId } of pending) {
-      void fetchL1Gloss(lookupText, l2Code, l1Lang.code, preferredId).then((gloss) => {
+    for (const { lookupText } of pending) {
+      void fetchL1Gloss(lookupText, l2Code, l1Lang.code).then((gloss) => {
         if (!cancelled && gloss) {
-          setL1Glosses((prev) => (prev[l1Key] ? prev : { ...prev, [l1Key]: gloss }));
+          setL1Glosses((prev) => (prev[lookupText] ? prev : { ...prev, [lookupText]: gloss }));
         }
       });
     }
@@ -1715,11 +1563,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
-              const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
-              // L1 glosses are keyed by lookup text + saved entry id so two
-              // tokens of the same text saved under different entries each get
-              // their own gloss; the bare-text fallback covers older state.
-              const l1GlossDef = l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ?? l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
+              const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
@@ -1961,11 +1806,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
-              const { byeonggiText, firstDef, savedWordId } = getTokenEntryData(token);
-              // L1 glosses are keyed by lookup text + saved entry id so two
-              // tokens of the same text saved under different entries each get
-              // their own gloss; the bare-text fallback covers older state.
-              const l1GlossDef = l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ?? l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
+              const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const l1GlossDef = l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);

@@ -663,31 +663,11 @@ export default function ReviewScreen() {
     const rawInstances = (card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
     const instances = (rawInstances ?? (card.word.context ? [{ timestamp: card.word.date ?? 0, form: card.word.forms?.[0] ?? '', context: card.word.context as unknown as SavedWordContext }] : []))
       .filter((inst) => !!inst.context?.text);
-    // ── Highlight diagnostics (review-card target word) ──
-    // Mirrors the highlightTerms array passed to TokenizedText in the card
-    // render (displayInstance.form = last instance form, then forms, then
-    // head), so a missing/un-highlighted target word (e.g. a multi-token
-    // selection like しかるべき) is traceable to which source field carries —
-    // or fails to carry — the surface form.
-    const instanceForms = instances.map((inst) => inst.form);
-    const highlightTerms = Array.from(new Set(
-      [...instanceForms, ...(card.word.forms ?? []), card.word.head ?? ''].filter(Boolean),
-    ));
     log('[srs] context-loaded', {
       wordId: card.word.id,
       head: wordLabel(card.word),
       count: instances.length,
       hasSavedTranslation: instances.some((inst) => !!inst.context.translation),
-      highlight: {
-        highlightTerms,
-        contextText: instances[instances.length - 1]?.context.text ?? null,
-        record: {
-          head: card.word.head ?? null,
-          forms: card.word.forms ?? [],
-          contextForm: card.word.context?.form ?? null,
-          instanceForms,
-        },
-      },
     });
   }, [cards[currentIndex]?.word.id]);
 
