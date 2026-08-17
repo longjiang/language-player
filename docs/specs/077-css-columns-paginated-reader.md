@@ -72,8 +72,9 @@ Contract rules (each is load-bearing):
 - **The pager has zero horizontal padding and no border**, so `offsetLeft` of a child equals `columnIndex × pitch` exactly. Horizontal reading padding moves onto each block wrapper (`px-4` etc.), uniform across columns.
 - **`column-fill: auto`** (not the default `balance`): columns fill top-to-bottom in order. Requires the definite height the pager has.
 - **`PAGE_W` and `GAP` are integers in px**, set from JS (`PAGE_W = viewport.clientWidth`, see §10; `GAP = 40` default). `pitch = PAGE_W + GAP`; geometry math divides by it, so fractional pitches would accumulate rounding errors.
-- **Block splitting**: default `break-inside: auto` — long paragraphs may split across a page boundary, like a real book (browser `orphans`/`widows` default to 2). Headings get `break-after: avoid`. Images, `pre`, tables, and markdown blocks get `break-inside: avoid`.
-- **Blocks taller than the page** (a huge `pre`, a giant image): with `break-inside: avoid` they land in their own column and overflow the pager height. Give them `max-height: 100%; overflow: auto` so they scroll inside their page instead of clipping (matches today's overflow behavior).
+- **Block splitting** (confirmed 2026-08-16): `break-inside: auto` — **paragraphs flow across page columns**, like a real book (browser `orphans`/`widows` default to 2). Headings get `break-inside: avoid` + `break-after: avoid` (never dangle at a page bottom). Images, `pre`, tables, and markdown blocks get `break-inside: avoid`.
+- **Blocks taller than the page** (a huge `pre`, a giant image): with `break-inside: avoid` they land in their own column and overflow the pager height. Give them `max-height: 100%; overflow: auto` so they scroll inside their page instead of clipping (matches today's overflow behavior). Splittable text blocks never need this — the browser fragments them.
+- **Content must not sit inside flex containers.** Flex items fragment inconsistently across engines inside multicol (WebKit bug 303178, WPT interop #1039, csswg flexbox-fragmentation discussion), so splittable block content must be a normal block flow. The reader therefore uses a `TextActionMenu` reader variant: content in plain flow, action-menu button absolutely positioned in the corner (subtitle/dictionary callers keep the flex layout).
 - **RTL**: `page-progression-direction: rtl` books mirror the transform direction (§12).
 
 ### 5.2 Reading page breaks back from geometry
@@ -101,7 +102,7 @@ transform = translateX(-(currentPageInWindow) × pitch)
 
 `currentPageInWindow` is the current page's index among the window's columns (0-based). Because the window always contains the current page (invariant, §6.1), a page turn inside the window is **only** a transform change — no layout, no re-render of blocks. This is the performance win over both current readers.
 
-Alternative considered: a horizontally scrolling viewport (`scrollLeft = page × pitch`, optional `scroll-snap-type: x mandatory`). Transform is chosen because it never shows a scrollbar, never fights programmatic positioning with snap, and composes on the GPU. (Decision point, easy to flip — §17.)
+Alternative considered: a horizontally scrolling viewport (`scrollLeft = page × pitch`, optional `scroll-snap-type: x mandatory`). **Resolved (2026-08-16): transform.** It never shows a scrollbar, never fights programmatic positioning with snap, and composes on the GPU; touch swipe (the one gap) can be added as a viewport gesture handler without changing the mechanism.
 
 Fixed-position hazards: the token dictionary popup and the action-menu popover are dialogs portaled to `document.body` (Radix), so the pager's transform does not break their positioning.
 
@@ -197,12 +198,14 @@ The page counter shows the measured page number after step 3; between steps 1 an
 
 **Search highlight**: the existing `highlight: { block, start, end }` prop pattern generalizes to `{ streamIndex, start, end }`. `onHighlightDismiss` on page-away stays.
 
-### 7.4 Highlight refinement (exact char page)
+### 7.4 Highlight refinement (exact char page) — live with splitting
 
 A target block may span two columns (paragraph split). The highlight must land on the page containing the character range. Two-stage refinement:
 
 1. **Immediately**: show the highlight on the block's start page (block-start page from the measured break list).
-2. **Once the block's tokens load**: compute the range's column with real DOM geometry — `document.createRange()` from block start to the offset, `range.getBoundingClientRect().left`, page = round(left / pitch) — and if that page differs from the start page, re-position the transform to it. `getBoundingClientRect` accounts for the pager transform, so this works on live rendered content with no sentinel elements.
+2. **Once the block's tokens load**: compute the range's column with real DOM geometry — `document.createRange()` from block start to the offset, `range.getBoundingClientRect().left`, page = round(left / pitch) — and if that page differs from the start page, re-position the transform to it. `getBoundingClientRect` accounts for the pager transform, so this works on live rendered content with no sentinel elements. If the DOM text can't be offset-matched to the block text (script conversion, phonetics replacement), the refinement is skipped and the block-start page is kept.
+
+The highlight-dismiss check uses the **refined match column**, not the block's start: revealing the match's column (while the block starts on the previous page) must not dismiss the highlight; paging away from the match's column does.
 
 ## 8. Page count
 
@@ -373,13 +376,13 @@ The shared panel. Renders the viewport + active/pending pagers, the page-nav bar
 - No new npm dependencies — CSS multicol is native.
 - New translation keys: none expected (`msg.page_of` exists; `n / ~N` display exists). If the exact-count phase adds a "Jump to page" control, one key follows the usual 31-locale pipeline.
 
-## 17. Open questions
+## 17. Open questions (all resolved 2026-08-16)
 
-1. **Transform vs scroll viewport** — transform (this spec's choice) vs `scrollLeft` + scroll-snap. Transform wins on control; scroll wins on native gesture/accessibility. Confirm during Phase A with a quick prototype.
-2. **Block splitting** — default `break-inside: auto` (book-like paragraph splits) vs `break-inside: avoid` (current behavior, no split blocks, but tall blocks overflow). The spec defaults to splitting; flag if product wants the old guarantee.
-3. **Window constants** — `K = 2`, 30% slack, 150ms resize debounce, 15-page LRU. Tune against the fixture books.
-4. **`PAGE_W` cap** — full-width columns vs a `44rem` cap + centering. Try full-width first.
-5. **Exact count job** — worth the phase-2 cost? The estimate has satisfied EPUB so far (SPEC-032 open question 3); revisit when jump-to-page is requested.
+1. **Transform vs scroll viewport** — **Resolved: transform.** Deterministic page turns (one GPU-composited CSS property), exact integer math, no scroll physics fighting programmatic jumps, no scrollbar handling during window swaps. The one product gap (touch swipe on iPads) is a small gesture handler on the viewport, not a mechanism change. `scrollLeft` + `scroll-snap` remains the fallback if native touch paging is ever wanted without custom code.
+2. **Block splitting** — **Resolved: split.** Paragraphs flow across page columns (book-like), with `orphans`/`widows` at their defaults. Images, `pre`, tables, and raw-markdown blocks stay atomic (`break-inside: avoid`) and self-scroll when taller than a page; headings get `break-after: avoid`. **Implementation requirement discovered during resolution:** the reader's block content must NOT sit inside flex containers — flex items fragment inconsistently across engines in multicol (WebKit bug 303178, WPT interop #1039, unresolved csswg flexbox-fragmentation discussion). `TextActionMenu` therefore gains a reader variant whose content is a normal block flow with the action-menu button absolutely positioned in the corner; subtitle/dictionary callers keep the flex layout. Search-highlight refinement (§7.4) goes live with splitting (a match in a split paragraph's tail sits on the next column).
+3. **Window constants** — **Resolved: keep spec defaults.** `K = 2` pages behind/ahead, ~30% slack, chars-per-page estimates; windows rebuild every ~3 page turns and adjacent pages stay tokenized ahead of time.
+4. **`PAGE_W` cap** — **Resolved: full-width columns.** One page fills the reader; no centering math. Revisit only if ultrawide line lengths become a complaint.
+5. **Exact count job** — **Resolved: estimate-only.** Totals stay `n / ~N` via the chars-per-page divisor (exact current page within measured stretches). The idle-time exact-count job (§8.2) remains a possible follow-up when jump-to-page is requested.
 
 ## 18. Verification plan
 
