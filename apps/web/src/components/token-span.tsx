@@ -421,6 +421,13 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ride on the segment element itself, so no wrapper box sits between
   // adjacent <ruby> elements.
   const segmentClasses = `${wrapperClass} ${wordBgClass} ${formatClasses}`.trim();
+  // Flat run: whole-token hover — segments use group-hover/token so hovering
+  // anywhere in the token highlights ALL segments together. The display:contents
+  // group wrapper (see flat return below) provides the hover scope without
+  // creating the per-token box the flat run exists to remove.
+  const flatSegmentClasses = flat
+    ? segmentClasses.replace('hover:bg-muted/80', 'group-hover/token:bg-muted/80')
+    : segmentClasses;
   const segmentClick = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     handleClick(e.currentTarget.getBoundingClientRect());
@@ -433,7 +440,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   if (isQuizBlanking) {
     wordContent = flat ? (
       <span
-        className={`${segmentClasses} px-1 text-muted-foreground/40 select-none`}
+        className={`${flatSegmentClasses} px-1 text-muted-foreground/40 select-none`}
        
         onClick={segmentClick}
       >
@@ -448,7 +455,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       && (!isJapanese || hasKanji)) {
     const phoneticText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
     wordContent = flat
-      ? <span className={segmentClasses} onClick={segmentClick}>{phoneticText}</span>
+      ? <span className={flatSegmentClasses} onClick={segmentClick}>{phoneticText}</span>
       : <span className={wordBgClass}>{phoneticText}</span>;
   } else {
     // ── Ruby text ──
@@ -466,19 +473,19 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
         <>
           {rubySegments.map((seg, j) =>
             seg.reading ? (
-              <ruby key={j} className={segmentClasses} onClick={segmentClick}>
+              <ruby key={j} className={flatSegmentClasses} onClick={segmentClick}>
                 {seg.text}
                 <rt className="select-none" dir="ltr">{seg.reading}</rt>
               </ruby>
             ) : (
-              <span key={j} className={segmentClasses} onClick={segmentClick}>
+              <span key={j} className={flatSegmentClasses} onClick={segmentClick}>
                 {seg.text}
               </span>
             )
           )}
         </>
       ) : (
-        <span className={segmentClasses} onClick={segmentClick}>{displayText}</span>
+        <span className={flatSegmentClasses} onClick={segmentClick}>{displayText}</span>
       );
     } else {
       wordContent = (
@@ -531,7 +538,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   // ── Flat run: the segments are already bare inline siblings carrying all
   //    interaction + styling — no wrapper box around the token. ──
   if (flat) {
-    return <>{wordWithGloss}</>;
+    return <span className="group/token contents">{wordWithGloss}</span>;
   }
 
   // ── Inline layout: word with optional quick gloss (no definition below) ──
