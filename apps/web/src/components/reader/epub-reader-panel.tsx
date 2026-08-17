@@ -35,11 +35,13 @@ function blockClass(tb: EpubTextBlock): string {
       const sizes: Record<number, string> = {
         1: 'text-2xl font-bold', 2: 'text-xl font-semibold', 3: 'text-lg font-semibold',
       };
-      return `${base} ${sizes[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4`;
+      // Headings never split and stay with the following block (no dangling
+      // heading at a page bottom) — the body paragraphs around them split.
+      return `${base} ${sizes[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4 break-inside-avoid break-after-avoid`;
     }
     case 'list-item': return `${base} ml-4 list-disc whitespace-pre-line`;
     case 'blockquote': return `${base} border-l-4 border-muted pl-4 italic text-muted-foreground whitespace-pre-line`;
-    case 'pre': return `${base} whitespace-pre-wrap bg-muted p-4 rounded-lg overflow-x-auto`;
+    case 'pre': return `${base} whitespace-pre-wrap bg-muted p-4 rounded-lg overflow-x-auto overflow-y-auto break-inside-avoid max-h-full`;
     default: return `${base} whitespace-pre-line`;
   }
 }
@@ -150,9 +152,11 @@ export function EpubReaderPanel({
 
   const renderBlock = useCallback((block: EpubBlock, streamIndex: number, rctx: BlockRenderContext) => {
     if (block.kind === 'image') {
+      // Images are atomic; max-h-full caps them at the page height so they
+      // scale down instead of overflowing the column.
       // eslint-disable-next-line @next/next/no-img-element
       return <img key={streamIndex} src={block.imageUri}
-        alt={block.alt ?? ''} loading="lazy" className="max-w-full h-auto rounded-lg my-4" />;
+        alt={block.alt ?? ''} loading="lazy" className="max-w-full h-auto max-h-full rounded-lg my-4 break-inside-avoid-column" />;
     }
     const tb = block as EpubTextBlock;
     const Tag = blockTag(tb);
@@ -166,6 +170,7 @@ export function EpubReaderPanel({
     }
     return (
       <TextActionMenu key={streamIndex} text={tb.text} l2Code={l2.code} l1Code={l1.code}
+        readerVariant
         translation={showTranslation ? rctx.translation : undefined}
         translationClass={translationClass(tb)}
         translationZoom={textZoom}

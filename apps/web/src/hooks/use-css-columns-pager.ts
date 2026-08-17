@@ -181,10 +181,16 @@ export interface CssColumnsPager<B> {
   divisor: number;
   /** Pager geometry (px). Width uses generous slack columns. */
   pager: { width: number; height: number; columnWidth: number; columnGap: number };
+  /** Column pitch (page width + gutter) in px. */
+  pitch: number;
   /** Number of columns the pager is sized for. */
   widthCols: number;
   /** CSS transform aligning the visible page's column with the viewport. */
   transform: string;
+  /** Jump to the page starting at `blockIndex` (must be a page start in the
+   *  current window; in-window transform change, no rebuild). Used by the
+   *  search-highlight refinement. Returns false when not applicable. */
+  revealBreak: (blockIndex: number) => boolean;
   jumpTo: (loc: ReaderLocation) => void;
   nextPage: () => void;
   prevPage: () => void;
@@ -516,6 +522,16 @@ export function useCssColumnsPager<B>(
     void buildWindow(idx, 'jump');
   }, [buildWindow]);
 
+  /** Reveal the page that starts at a specific break (in-window only). */
+  const revealBreak = useCallback((blockIndex: number): boolean => {
+    const a = activeRef.current;
+    if (!a) return false;
+    if (!a.localBreaks.includes(blockIndex)) return false;
+    pageStartRef.current = blockIndex;
+    setPageStart(blockIndex);
+    return true;
+  }, []);
+
   // ── Derived values ──
 
   const col = active ? active.localBreaks.indexOf(pageStart) : -1;
@@ -545,8 +561,7 @@ export function useCssColumnsPager<B>(
     height: Math.max(1, Math.round(viewport.h)),
     columnWidth: Math.max(1, Math.round(viewport.w)),
     columnGap: COLUMN_GAP,
-  };
-  const transform = active
+  };  const transform = active
     ? rtl
       ? `translateX(${Math.max(0, widthCols - 1 - Math.max(0, col)) * pitch}px)`
       : `translateX(${-Math.max(0, col) * pitch}px)`
@@ -572,8 +587,10 @@ export function useCssColumnsPager<B>(
     totalPagesEstimate,
     divisor,
     pager,
+    pitch,
     widthCols,
     transform,
+    revealBreak,
     jumpTo,
     nextPage,
     prevPage,

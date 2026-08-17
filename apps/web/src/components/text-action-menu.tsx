@@ -32,6 +32,14 @@ interface TextActionMenuProps {
   translationZoom?: number;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
+  /**
+   * Reader layout (SPEC-077): content in a normal block flow instead of a
+   * flex row, with the action button absolutely positioned in the corner.
+   * Required for paragraphs to fragment across CSS-column page boundaries —
+   * flex items fragment inconsistently across engines inside multicol. The
+   * translation always renders below the content in this variant.
+   */
+  readerVariant?: boolean;
   children: ReactNode;
 }
 
@@ -46,6 +54,7 @@ export function TextActionMenu({
   translationBelow = false,
   translationZoom = 1,
   loading = false,
+  readerVariant = false,
   children,
 }: TextActionMenuProps) {
   const t = useT();
@@ -76,15 +85,20 @@ export function TextActionMenu({
   ];
 
   return (
-    <div className="group relative flex items-start gap-3 mb-4">
+    <div className={`group relative mb-4 ${readerVariant ? '' : 'flex items-start gap-3'}`}>
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4 lg:items-center'}`}>
-        <div className="flex-[3] min-w-0">
+      <div className={readerVariant
+        ? 'min-w-0 pr-8'
+        : `flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4 lg:items-center'}`}
+      >
+        <div className={readerVariant ? 'min-w-0' : 'flex-[3] min-w-0'}>
           {children}
         </div>
         {translation && (
           <div
-            className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
+            className={readerVariant
+              ? `pt-1 text-muted-foreground leading-relaxed ${translationClass}`
+              : `flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
             style={{ zoom: translationZoom }}
           >
             {typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
@@ -92,7 +106,9 @@ export function TextActionMenu({
         )}
         {loading && !translation && (
           <div
-            className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
+            className={readerVariant
+              ? `pt-1 ${translationClass || 'text-sm'}`
+              : `flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
             style={{ zoom: translationZoom }}
           >
             <TranslationSkeleton
@@ -106,7 +122,10 @@ export function TextActionMenu({
       {/* Action menu dropdown — controlled so any option click closes it
           immediately (Radix popovers don't auto-close on item click). */}
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-        <PopoverTrigger className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100" aria-label={t('action.more')}>
+        <PopoverTrigger className={readerVariant
+          ? 'absolute right-0 top-1 z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100'
+          : 'z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100'}
+          aria-label={t('action.more')}>
           <MoreVertical className="h-4 w-4" />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" sideOffset={4} className="min-w-[180px] p-1">

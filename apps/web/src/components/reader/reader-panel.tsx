@@ -59,7 +59,9 @@ function blockClass(tb: TextBlock): string {
   switch (tb.type) {
     case 'heading': {
       const s: Record<number, string> = { 1: 'text-2xl font-bold', 2: 'text-xl font-semibold', 3: 'text-lg font-semibold' };
-      return `${b} ${s[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4`;
+      // Headings never split and stay with the following block (no dangling
+      // heading at a page bottom) — the body paragraphs around them split.
+      return `${b} ${s[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4 break-inside-avoid break-after-avoid`;
     }
     case 'paragraph': return `${b}`;
     case 'list-item': return `${b} ml-4 list-disc`;
@@ -215,8 +217,10 @@ export function ReaderPanel({
 
   const renderBlock = useCallback((block: ReaderBlock, streamIndex: number, rctx: BlockRenderContext) => {
     if (block.kind === 'markdown') {
+      // Raw-markdown blocks (tables, code, images) are atomic and self-scroll
+      // when taller than the page.
       return (
-        <div className={MARKDOWN_BLOCK_CLASSES}>
+        <div className={`${MARKDOWN_BLOCK_CLASSES} break-inside-avoid-column max-h-full overflow-y-auto`}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={markdownComponents}
@@ -236,6 +240,7 @@ export function ReaderPanel({
     )?.url;
     return (
       <TextActionMenu key={streamIndex} text={tb.text} l2Code={l2.code} l1Code={l1.code}
+        readerVariant
         translation={showTranslation ? rctx.translation : undefined}
         translationClass={translationClass(tb)}
         translationZoom={textZoom}
