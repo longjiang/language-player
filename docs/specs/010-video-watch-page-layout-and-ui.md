@@ -195,6 +195,13 @@ The mode can be toggled via:
 
 ### Subtitle Overlay Band Component (`SubtitlesModeBand`)
 
+> **Note (merged):** The band was merged into `SubtitleDisplay`
+> (`apps/web/src/components/video/subtitle-display.tsx`) as `band` mode —
+> render `<SubtitleDisplay band ...>` with `initialLines` (SyncedLine[], API-
+> embedded L1), `overlay`, video-nav, and like/save props. The watch page
+> passes `initialLines={displaySubtitleLines}`. Singleline mode also gained
+> click-to-seek (`onSeekToLine`). `subtitles-mode-band.tsx` was deleted.
+
 Two-row layout: controls on top, subtitle text below.
 
 ```

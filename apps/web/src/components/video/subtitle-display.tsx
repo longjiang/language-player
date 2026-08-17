@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
@@ -10,6 +10,8 @@ import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { clampTranslationSize } from '@/lib/reader-text-size';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useTextScale } from '@/hooks/use-text-scale';
@@ -24,6 +26,15 @@ import {
   extractSubtitleDuration,
   type SyncedLine,
 } from '@/lib/subtitle-csv';
+import {
+  ChevronLeft,
+  ChevronRight,
+  SkipBack,
+  SkipForward,
+  PanelRightOpen,
+  Heart,
+  Bookmark,
+} from 'lucide-react';
 
 /** Karaoke lead: bias the highlight slightly ahead of the caption clock, since
  *  caption start times often trail the audio by a few hundred milliseconds. */
@@ -69,6 +80,25 @@ interface SubtitleDisplayProps {
   onPauseLine?: () => void;
   /** Called with translation progress. `null` = not translating. */
   onTranslationProgress?: (text: string | null) => void;
+  /** Band mode: render as the subtitles-mode band (control row + active single
+   *  line), the watch page's subtitles display. Uses `initialLines` directly
+   *  (SyncedLine[], with embedded L1) — no fetch, no client translation. */
+  band?: boolean;
+  /** Band styling: overlay on the player (wide) vs solid band below (narrow). */
+  overlay?: boolean;
+  /** Band: previous/next video availability + handlers. */
+  hasPrevVideo?: boolean;
+  hasNextVideo?: boolean;
+  onPrevVideo?: () => void;
+  onNextVideo?: () => void;
+  /** Band: switch back to the multiline transcript. */
+  onSwitchToTranscriptMode?: () => void;
+  /** Band: like + save-to-playlist actions. */
+  liked?: boolean;
+  onToggleLike?: () => void;
+  likeDisabled?: boolean;
+  onSaveToPlaylist?: () => void;
+  playlistDisabled?: boolean;
 }
 
 /** First search form that appears in this line — sent as the server-side
@@ -82,7 +112,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2, tokenizedText } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
@@ -108,8 +138,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onLinesLoaded?.(l2Only.map(l => l.starttime));
       return;
     }
-    // In singleline mode, initialLines is required — don't fetch
-    if (isSingleline) return;
+    // In singleline/band mode, initialLines is required — don't fetch
+    if (isSingleline || band) return;
     if (!youtubeId) return;
     setFetchedIsGenerated(false);
     const fetchSubtitles = async () => {
@@ -169,7 +199,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     l2Lines,
     l1.code,
     l2Code,
-    showTranslation,
+    // Band mode shows the API-embedded L1 from initialLines — no client
+    // translation, exactly like the old SubtitlesModeBand.
+    showTranslation && !band,
     activeIndex,
     lineHighlightForms,
   );
@@ -234,6 +266,165 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onTranslationProgress?.(null);
     }
   }, [translating, progress, l2Lines.length, onTranslationProgress, t]);
+
+  // ── Band mode (subtitles-mode band) ──
+  // The band reads initialLines directly (SyncedLine[], API-embedded L1), the
+  // same data the old SubtitlesModeBand received — no client translation.
+  const bandLines = initialLines ?? [];
+  const bandActiveIndex = useMemo(() => {
+    if (bandLines.length === 0) return -1;
+    let idx = 0;
+    for (let i = 1; i < bandLines.length; i++) {
+      if (bandLines[i]!.starttime <= currentTime) idx = i;
+      else break;
+    }
+    return idx;
+  }, [currentTime, bandLines]);
+  const bandActiveLine = bandActiveIndex >= 0 ? bandLines[bandActiveIndex] : null;
+  const bandIsFirstLine = bandActiveIndex <= 0;
+  const bandIsLastLine = bandActiveIndex >= bandLines.length - 1;
+  const handleBandPrevLine = useCallback(() => {
+    if (bandIsFirstLine) return;
+    const prev = bandLines[bandActiveIndex - 1];
+    if (prev) onSeekToLine?.(prev.starttime);
+  }, [bandActiveIndex, bandLines, onSeekToLine, bandIsFirstLine]);
+  const handleBandNextLine = useCallback(() => {
+    if (bandIsLastLine) return;
+    const next = bandLines[bandActiveIndex + 1];
+    if (next) onSeekToLine?.(next.starttime);
+  }, [bandActiveIndex, bandLines, onSeekToLine, bandIsLastLine]);
+  const handleBandRowClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (bandActiveLine && e.target === e.currentTarget) {
+        onSeekToLine?.(bandActiveLine.starttime);
+      }
+    },
+    [bandActiveLine, onSeekToLine],
+  );
+
+  if (band) {
+    const containerClass = overlay
+      ? 'absolute bottom-14 left-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-t-xl'
+      : 'bg-card border-t border-border';
+    const btnColorClass = overlay
+      ? 'text-white/80 hover:text-white hover:bg-white/10'
+      : 'text-muted-foreground hover:text-foreground';
+    const separatorClass = overlay ? 'border-white/20' : 'border-border';
+    const textClass = overlay ? 'text-white' : 'text-foreground';
+    const transClass = overlay ? 'text-white/70' : 'text-muted-foreground';
+    const placeholderClass = overlay ? 'text-white/50' : 'text-muted-foreground';
+    const bandActiveText = bandActiveLine ? stripSubtitleDurationPrefix(bandActiveLine.l2Line) : '';
+
+    return (
+      <div className={cn(containerClass, 'min-h-[6rem] flex flex-col')}>
+        <div className="flex items-center gap-0.5 px-2 py-1">
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={onPrevVideo} disabled={!hasPrevVideo}
+            title={t('player.previous_video')}
+          >
+            <SkipBack className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={handleBandPrevLine} disabled={bandIsFirstLine}
+            title={t('player.previous_subtitle_line')}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={handleBandNextLine} disabled={bandIsLastLine}
+            title={t('player.next_subtitle_line')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={onNextVideo} disabled={!hasNextVideo}
+            title={t('player.next_video')}
+          >
+            <SkipForward className="h-4 w-4" />
+          </Button>
+          <div className="flex-1" />
+          {onToggleLike && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'h-8 w-8',
+                btnColorClass,
+                liked && 'text-destructive hover:text-destructive',
+              )}
+              onClick={onToggleLike}
+              disabled={likeDisabled}
+              title={liked ? t('action.unlike_video') : t('action.like_video')}
+              aria-pressed={liked}
+            >
+              <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+            </Button>
+          )}
+          {onSaveToPlaylist && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('h-8 w-8', btnColorClass)}
+              onClick={onSaveToPlaylist}
+              disabled={playlistDisabled}
+              title={t('action.add_to_playlist')}
+            >
+              <Bookmark className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost" size="icon"
+            className={cn('h-8 w-8', btnColorClass)}
+            onClick={onSwitchToTranscriptMode}
+            title={t('player.show_transcript_and_queue')}
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className={cn('mx-3 border-t', separatorClass)} />
+
+        <div
+          className="flex-1 flex flex-col items-center justify-center px-4 py-2 cursor-pointer min-h-0"
+          onClick={handleBandRowClick}
+        >
+          {bandActiveLine ? (
+            <>
+              <div className={cn('text-center', textClass)}>
+                <TokenizedText
+                  text={bandActiveText}
+                  l2Code={l2.code}
+                  textScale={1.5}
+                  tokenCache={tokenCache}
+                  tokenCacheLoaded={tokenCacheLoaded}
+                  context={videoTitle ? { videoTitle } : undefined}
+                />
+              </div>
+              {showTranslation && bandActiveLine.l1Line && (
+                // Same 1.5× multiplier as the L2 subtitle line (SPEC-051).
+                <p
+                  className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
+                  style={{ fontSize: `${0.875 * 1.5 * textZoomFactor}rem` }}
+                >
+                  {bandActiveLine.l1Line}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className={cn('text-sm', placeholderClass)}>...</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // ── Empty state ──
   if (l2Lines.length === 0) {
@@ -302,7 +493,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             translationFactor={1.5 * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
           >
-            <div className="text-center text-xl font-medium leading-relaxed">
+            <div
+              className="text-center text-xl font-medium leading-relaxed cursor-pointer"
+              onClick={() => onSeekToLine?.(shownLine.starttime)}
+            >
               <TokenizedText
                 text={shownLine.line}
                 l2Code={l2Code}
