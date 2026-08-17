@@ -13,7 +13,6 @@ import {
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
 import {
-  SegmentedTranslation,
   SentenceHighlightBlock,
 } from '@/components/reader/sentence-highlight';
 import type { EpubBook } from '@/lib/epub-book';
@@ -143,9 +142,12 @@ export function EpubReaderPanel({
       <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
         {({ map, activeSentence, onTokenHover }) => (
           <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
-            translation={showTranslation && rctx.translation ? (
-              <SegmentedTranslation text={rctx.translation} map={map} active={activeSentence} />
-            ) : undefined}
+            translationAligned={showTranslation && rctx.translation ? {
+              text: rctx.translation,
+              map,
+              active: activeSentence,
+              measureNonce,
+            } : null}
             translationClass={translationClass(tb)}
             translationZoom={textZoom}
             loading={showTranslation && !rctx.translation}>
@@ -162,7 +164,7 @@ export function EpubReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink]);
+  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, measureNonce]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block. Mirrors the dual-column text/translation layout, the
