@@ -7,10 +7,23 @@
  * text-zoom, in rem), while heading blocks inherit their size from the
  * heading element's Tailwind class (text-2xl/xl/lg) multiplied by the heading's
  * `zoom` factor.
+ *
+ * The translation:tokenized ratio is a user setting (`translationSize`, see
+ * `TokenizedTextSettings`). These helpers accept the factor explicitly; when
+ * omitted they fall back to `TRANSLATION_FACTOR` (the settings default).
  */
 
-/** The translation font size expressed as a ratio of the L2 rendered size. */
-export const TRANSLATION_FACTOR = 0.618;
+/** Default translation:tokenized ratio — matches `translationSize`'s default. */
+export const TRANSLATION_FACTOR = 0.8;
+
+/** Clamp bounds for the `translationSize` setting (shared with the slider). */
+export const TRANSLATION_SIZE_MIN = 0.5;
+export const TRANSLATION_SIZE_MAX = 1;
+
+/** Clamp a translation-size factor into the valid range. */
+export function clampTranslationSize(f: number): number {
+  return Math.min(TRANSLATION_SIZE_MAX, Math.max(TRANSLATION_SIZE_MIN, f));
+}
 
 /** The L2 tokenized text's rendered font size (rem) for a reader block. */
 export function l2RenderedFontSizeRem(tb: { type: string; depth?: number }, zoom: number): number {
@@ -23,8 +36,12 @@ export function l2RenderedFontSizeRem(tb: { type: string; depth?: number }, zoom
   return zoom;
 }
 
-/** The translation font size (rem) = `TRANSLATION_FACTOR` × the L2 rendered
- *  size (incl. heading size and the user's text zoom). */
-export function translationFontSizeRem(tb: { type: string; depth?: number }, zoom: number): number {
-  return l2RenderedFontSizeRem(tb, zoom) * TRANSLATION_FACTOR;
+/** The translation font size (rem) = `factor` × the L2 rendered size (incl.
+ *  heading size and the user's text zoom). */
+export function translationFontSizeRem(
+  tb: { type: string; depth?: number },
+  zoom: number,
+  factor: number = TRANSLATION_FACTOR,
+): number {
+  return l2RenderedFontSizeRem(tb, zoom) * clampTranslationSize(factor);
 }

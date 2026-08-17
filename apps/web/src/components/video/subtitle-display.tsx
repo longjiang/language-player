@@ -10,7 +10,7 @@ import { useCaptionNormalization } from '@/hooks/use-caption-normalization';
 import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
-import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
+import { clampTranslationSize } from '@/lib/reader-text-size';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
@@ -84,7 +84,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, playback, getL2 } = useSettingsContext();
+  const { display, playback, getL2, tokenizedText } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   // Scale the design sizes by the user's text-size setting (zoom index 0 = 1×).
   const textZoomFactor = useTextScale();
@@ -281,27 +281,25 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             l1Code={l1Code}
             translation={
               showTranslation && activeTranslation ? (
-                // Single-line subtitle translations render at TRANSLATION_FACTOR
-                // × the L2 tokenized size (the L2 uses a 1.5× text scale).
-                <div style={{ fontSize: `${TRANSLATION_FACTOR * 1.5 * textZoomFactor}rem` }}>
-                  <ReactMarkdown
-                    components={{
-                      p: ({ children }) => <span>{children}</span>,
-                      strong: ({ children }) => (
-                        <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
-                          {children}
-                        </mark>
-                      ),
-                    }}
-                  >
-                    {activeTranslation.line}
-                  </ReactMarkdown>
-                </div>
+                // Sizing follows the column's default rule — when `translationFactor`
+                // is set the column renders at TRANSLATION_FACTOR × that scale.
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <span>{children}</span>,
+                    strong: ({ children }) => (
+                      <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                        {children}
+                      </mark>
+                    ),
+                  }}
+                >
+                  {activeTranslation.line}
+                </ReactMarkdown>
               ) : undefined
             }
             translationClass="text-sm text-center"
             translationBelow
-            translationFontSize={TRANSLATION_FACTOR * 1.5 * textZoomFactor}
+            translationFactor={1.5 * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
           >
             <div className="text-center text-xl font-medium leading-relaxed">
@@ -386,7 +384,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               {showTranslation && line.l1Line && (
                 <p
                   className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}
-                  style={{ fontSize: `${TRANSLATION_FACTOR * textZoomFactor}rem` }}
+                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize) * textZoomFactor}rem` }}
                 >
                   {line.l1Line}
                 </p>

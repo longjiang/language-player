@@ -842,6 +842,10 @@ export interface TokenizedTextSettings {
 
   /** Show first definition inline for saved/bookmarked words. */
   quickGloss: boolean;
+
+  /** Translation text size as a ratio of the L2 tokenized text size (0.5–1).
+   *  Applied wherever a side-by-side/subtitle translation is shown. */
+  translationSize: number;
 }
 
 export interface DisplaySettings {
@@ -983,6 +987,7 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
   leading: 1.625,
   mode: 'normal',
   quickGloss: true,
+  translationSize: 0.8,
 };
 
 export const DISPLAY_DEFAULTS: DisplaySettings = {
