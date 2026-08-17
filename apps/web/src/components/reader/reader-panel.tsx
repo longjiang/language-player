@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, type JSX } from 'react';
+import { useState, useEffect, useCallback, useMemo, type JSX } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
@@ -112,15 +112,34 @@ export function ReaderPanel({
 }: ReaderPanelProps) {
   const t = useT();
   const router = useRouter();
-  const { display } = useSettingsContext();
+  const { display, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
-  // Reader headings keep their natural size and scale via the container zoom;
-  // body blocks scale through TokenizedText's own zoom (SPEC-051).
   const textZoom = useTextScale();
 
+  // Splitter live state. During a drag the row re-splits immediately via
+  // `liveSplit` (no persistence, no pagination re-measure); the final ratio
+  // is committed once on release, persisting it and re-measuring page breaks.
+  const [liveSplit, setLiveSplit] = useState(display.translationSplit);
+  const persistedSplit = display.translationSplit;
+  const appliedSplit = liveSplit;
+
+  const onTranslationSplitChange = useCallback((r: number) => setLiveSplit(r), []);
+
+  const onTranslationSplitCommit = useCallback((r: number) => {
+    setLiveSplit(r);
+    updateDisplay({ translationSplit: r });
+  }, [updateDisplay]);
+
+  // Keep the live value in sync if the persisted value changes externally
+  // (e.g. another tab, or a settings update) while not mid-drag.
+  useEffect(() => {
+    setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
+  }, [persistedSplit]);
+
   // Layout identity: any change re-measures page breaks (SPEC-077 §9 policy,
-  // measurement-based).
-  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}`;
+  // measurement-based). Only the COMMITTED split participates, so a live drag
+  // does not re-paginate on every pixel; re-measure happens on release.
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${persistedSplit}`;
 
   // Markdown-block links (images, tables, raw-markdown fallbacks) open inside
   // the web reader instead of sending the user to the original site in a new
@@ -186,6 +205,9 @@ export function ReaderPanel({
             translationClass={translationClass(tb)}
             translationZoom={textZoom}
             translationFontSize={translationFontSizeRem(tb, textZoom)}
+            translationSplit={appliedSplit}
+            onTranslationSplitChange={onTranslationSplitChange}
+            onTranslationSplitCommit={onTranslationSplitCommit}
             loading={rctx.isTranslating && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -201,7 +223,7 @@ export function ReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize, measureNonce]);
+  }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block, matching spacing, the translation skeleton, and the
