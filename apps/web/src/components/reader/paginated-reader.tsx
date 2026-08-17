@@ -68,8 +68,10 @@ interface PaginatedReaderProps<B> {
   onToggleTranslation?: (checked: boolean) => void;
 }
 
-/** Block wrapper classes: atomic blocks (never split across page columns). */
-const BLOCK_WRAPPER_CLASS = 'break-inside-avoid-column px-1';
+/** Block wrapper classes: splittable by default (paragraphs flow across page
+ *  columns); atomic exceptions (images, pre, tables, raw-markdown) are
+ *  applied by the readers' renderBlock. */
+const BLOCK_WRAPPER_CLASS = 'px-1';
 
 export function PaginatedReader<B>({
   stream,
@@ -202,12 +204,87 @@ export function PaginatedReader<B>({
     onLocationChange(loc);
   }, [pager.pageStart, stream, onLocationChange]);
 
-  // ── Dismiss the search highlight when paging away from its block ──
+  // ── Search-highlight refinement (SPEC-077 §7.4) ──
+  // With paragraphs flowing across pages, a match in a split paragraph can
+  // sit on the NEXT column even though the block starts on the current page.
+  // Once the block's tokens render, measure the match's real column and
+  // reveal it. The measured column also drives dismissal: revealing the
+  // match's column (while the block starts on the previous page) must not
+  // dismiss the highlight; paging away from the match's column does.
+  const matchColumnRef = useRef<number | null>(null);
+  const highlightKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!highlight) {
+      matchColumnRef.current = null;
+      highlightKeyRef.current = null;
+      return;
+    }
+    // A new highlight invalidates the previous measurement — otherwise the
+    // dismiss check could compare the old match column against the new page.
+    const key = `${highlight.streamIndex}:${highlight.start}:${highlight.end}`;
+    if (key !== highlightKeyRef.current) {
+      highlightKeyRef.current = key;
+      matchColumnRef.current = null;
+    }
+    // Only refine while the highlighted block is on the visible page.
+    const vr = pagerVisibleRange;
+    const w = pagerActive;
+    if (!vr || !w) return;
+    if (highlight.streamIndex < vr[0] || highlight.streamIndex >= vr[1]) return;
+    const tokens = tokenCache.get(highlight.streamIndex);
+    if (!tokens || tokens.length === 0) return; // wait for tokenization/layout
+    const id = requestAnimationFrame(() => {
+      const pagerEl = activePagerRef.current;
+      if (!pagerEl) return;
+      const wrapper = pagerEl.querySelector(`[data-block="${highlight.streamIndex}"]`);
+      if (!wrapper) return;
+      // Scope the walk to the L2 text container (wrapper > TextActionMenu
+      // root > content > children) so the translation column below it can't
+      // shift the offsets. Bail when the DOM text can't be offset-matched
+      // (script conversion, phonetics replacement) — keep the block-start page.
+      const contentEl = wrapper.firstElementChild?.firstElementChild?.firstElementChild;
+      if (!contentEl) return;
+      const texts: { node: Text; start: number }[] = [];
+      let pos = 0;
+      const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT);
+      let n: Node | null;
+      while ((n = walker.nextNode())) {
+        const len = n.textContent?.length ?? 0;
+        if (len > 0) texts.push({ node: n as Text, start: pos });
+        pos += len;
+      }
+      if (pos < highlight.end) return;
+      const startIdx = texts.findIndex(t => t.start + (t.node.textContent?.length ?? 0) > highlight.start);
+      const endIdx = texts.findIndex(t => t.start + (t.node.textContent?.length ?? 0) >= highlight.end);
+      if (startIdx < 0 || endIdx < 0) return;
+      const range = document.createRange();
+      range.setStart(texts[startIdx]!.node, highlight.start - texts[startIdx]!.start);
+      range.setEnd(texts[endIdx]!.node, highlight.end - texts[endIdx]!.start);
+      const rects = range.getClientRects();
+      const rect = rects[0] ?? range.getBoundingClientRect();
+      const pagerRect = pagerEl.getBoundingClientRect();
+      const col = Math.round((rect.left - pagerRect.left) / Math.max(1, pager.pitch));
+      matchColumnRef.current = col;
+      if (col !== w.localBreaks.indexOf(pager.pageStart)) {
+        const target = w.localBreaks[col];
+        if (target !== undefined) pager.revealBreak(target);
+      }
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlight, tokenCache, pagerVisibleRange, pagerActive, layoutIdentity, pager.pageStart, pager.pitch, pager.divisor, pager.transform]);
+
+  // ── Dismiss the search highlight when paging away from the match ──
   useEffect(() => {
     if (!highlight || !onHighlightDismiss || !pagerVisibleRange) return;
+    if (matchColumnRef.current !== null && pagerActive) {
+      const col = pagerActive.localBreaks.indexOf(pager.pageStart);
+      if (matchColumnRef.current !== col) onHighlightDismiss();
+      return;
+    }
     const [s, e] = pagerVisibleRange;
     if (highlight.streamIndex < s || highlight.streamIndex >= e) onHighlightDismiss();
-  }, [highlight, pagerVisibleRange, onHighlightDismiss]);
+  }, [highlight, pagerVisibleRange, pagerActive, pager.pageStart, onHighlightDismiss]);
 
   // ── Keyboard paging (shared by all readers) ──
   const { prevPage: pagerPrev, nextPage: pagerNext } = pager;
@@ -243,7 +320,6 @@ export function PaginatedReader<B>({
         key={streamIndex}
         data-block={streamIndex}
         className={BLOCK_WRAPPER_CLASS}
-        style={{ maxHeight: '100%', overflowY: 'auto' }}
       >
         {renderBlock(block, streamIndex, ctx)}
       </div>
