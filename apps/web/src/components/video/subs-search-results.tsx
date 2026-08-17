@@ -98,6 +98,64 @@ function contextChar(video: SubsSearchVideo, term: string, side: 'left' | 'right
   return idx + term.length < line.length ? (line[idx + term.length] ?? '') : '';
 }
 
+/** Shared filter+sort for the result list. Both the rendered list and the
+ *  player's prev/next queue use this, so the queue matches what's displayed. */
+function applyFilterAndSort(
+  videos: SubsSearchVideo[],
+  listSearch: string,
+  listSort: SortKey,
+  term: string,
+): SubsSearchVideo[] {
+  let result = [...videos];
+  if (listSearch.trim()) {
+    const q = listSearch.toLowerCase();
+    result = result.filter(
+      (v) =>
+        v.title.toLowerCase().includes(q) ||
+        v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
+    );
+  }
+
+  const getMatchLine = (v: SubsSearchVideo) => v.subs_l2[v.matchLineIndex];
+
+  result.sort((a, b) => {
+    switch (listSort) {
+      case 'likes':
+        return (b.views ?? 0) - (a.views ?? 0);
+      case 'date':
+        return new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime();
+      case 'length': {
+        const la = getMatchLine(a)?.line.length ?? 0;
+        const lb = getMatchLine(b)?.line.length ?? 0;
+        return la - lb;
+      }
+      case 'leftContext':
+      case 'rightContext': {
+        const la = a.subs_l2[a.matchLineIndex]?.line.toLowerCase().indexOf(term.toLowerCase()) ?? -1;
+        const lb = b.subs_l2[b.matchLineIndex]?.line.toLowerCase().indexOf(term.toLowerCase()) ?? -1;
+        if (listSort === 'leftContext') {
+          const ca = la > 0 ? (a.subs_l2[a.matchLineIndex]!.line[la - 1] ?? '') : '';
+          const cb = lb > 0 ? (b.subs_l2[b.matchLineIndex]!.line[lb - 1] ?? '') : '';
+          return ca.localeCompare(cb);
+        }
+        const ca =
+          la >= 0 && la + term.length < (a.subs_l2[a.matchLineIndex]?.line.length ?? 0)
+            ? (a.subs_l2[a.matchLineIndex]!.line[la + term.length] ?? '')
+            : '';
+        const cb =
+          lb >= 0 && lb + term.length < (b.subs_l2[b.matchLineIndex]?.line.length ?? 0)
+            ? (b.subs_l2[b.matchLineIndex]!.line[lb + term.length] ?? '')
+            : '';
+        return ca.localeCompare(cb);
+      }
+      case 'views':
+      default:
+        return (b.views ?? 0) - (a.views ?? 0);
+    }
+  });
+  return result;
+}
+
 /** The first search form that appears in this line (used as the server-side
  *  highlight term so the emphasis lands on the right word in the translation). */
 function firstMatchingForm(line: string, terms: string[]): string | undefined {
@@ -228,7 +286,15 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
   }, [pool, skippedIds, isPro, applyVideoFilter]);
 
-  const currentVideo = videos[currentIndex] ?? null;
+  // ── Result list / player queue: filter + sort ──
+  // This same ordering drives both the rendered list and the player's prev/next
+  // queue, so moving through the player follows the displayed order.
+  const filteredVideos = useMemo(
+    () => applyFilterAndSort(videos, listSearch, listSort, term),
+    [videos, listSearch, listSort, term],
+  );
+
+  const currentVideo = filteredVideos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
   // Show the search-match line immediately, even before the video plays.
   const defaultSubtitleLine = matchLine
@@ -440,17 +506,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       nextSkipped.add(erroredId);
       skippedIdsRef.current = nextSkipped;
 
-      const erroredIndex = videos.findIndex((v) => v.youtube_id === erroredId);
+      // Recompute the full pipeline (content filter → quota → filter/sort) that
+      // `filteredVideos` produces after this skip, so the queue stays in the
+      // displayed order and the index clamp is exact.
       const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
-      const filtered = applyVideoFilter(playable);
-      const nextVideos = isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
+      const contentFiltered = applyVideoFilter(playable);
+      const base = isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS);
+      const nextVideos = applyFilterAndSort(base, listSearch, listSort, term);
 
       setSkippedIds(nextSkipped);
       // The video after the errored one slides into its slot, so keep the
       // same index; only clamp when the errored video was the last one.
       setCurrentIndex((i) => {
         let nextIndex = i;
-        if (erroredIndex !== -1 && i > erroredIndex) nextIndex = i - 1;
         if (nextIndex >= nextVideos.length) nextIndex = Math.max(0, nextVideos.length - 1);
         return nextIndex;
       });
@@ -460,7 +528,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         remaining: nextVideos.length,
       });
     },
-    [currentVideo, videos, pool, isPro, applyVideoFilter],
+    [currentVideo, pool, isPro, applyVideoFilter, listSearch, listSort, term],
   );
 
   const goToPrevious = useCallback(() => {
@@ -471,11 +539,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   }, [currentIndex]);
 
   const goToNext = useCallback(() => {
-    if (currentIndex < videos.length - 1) {
+    if (currentIndex < filteredVideos.length - 1) {
       setAutoplayEnabled(true);
       setCurrentIndex((i) => i + 1);
     }
-  }, [currentIndex, videos.length]);
+  }, [currentIndex, filteredVideos.length]);
+
+  // Changing the sort or the text filter reorders/shrinks the queue, so the
+  // current index may now point at a different (or missing) video. Reset to
+  // the top of the newly-ordered list. (The content-filter pills reset eagerly
+  // in their own click handler.)
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [listSort, listSearch]);
 
   const goToPreviousLine = useCallback(() => {
     if (!currentVideo) return;
@@ -513,84 +589,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     }
     return { hasPreviousLine: prev, hasNextLine: next };
   }, [currentTime, currentVideo]);
-
-  // ── List: filter + sort ──────────────────────
-
-  const filteredVideos = useMemo(() => {
-    let result = [...videos];
-    if (listSearch.trim()) {
-      const q = listSearch.toLowerCase();
-      result = result.filter(
-        (v) =>
-          v.title.toLowerCase().includes(q) ||
-          v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
-      );
-    }
-
-    const getMatchLine = (v: SubsSearchVideo) => v.subs_l2[v.matchLineIndex];
-
-    result.sort((a, b) => {
-      switch (listSort) {
-        case 'likes':
-          return (b.views ?? 0) - (a.views ?? 0);
-        case 'date':
-          return (
-            new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime()
-          );
-        case 'length': {
-          const la = getMatchLine(a)?.line.length ?? 0;
-          const lb = getMatchLine(b)?.line.length ?? 0;
-          return la - lb;
-        }
-        case 'leftContext': {
-          const la =
-            a.subs_l2[a.matchLineIndex]?.line
-              .toLowerCase()
-              .indexOf(term.toLowerCase()) ?? -1;
-          const lb =
-            b.subs_l2[b.matchLineIndex]?.line
-              .toLowerCase()
-              .indexOf(term.toLowerCase()) ?? -1;
-          const ca =
-            la > 0
-              ? (a.subs_l2[a.matchLineIndex]!.line[la - 1] ?? '')
-              : '';
-          const cb =
-            lb > 0
-              ? (b.subs_l2[b.matchLineIndex]!.line[lb - 1] ?? '')
-              : '';
-          return ca.localeCompare(cb);
-        }
-        case 'rightContext': {
-          const la =
-            a.subs_l2[a.matchLineIndex]?.line
-              .toLowerCase()
-              .indexOf(term.toLowerCase()) ?? -1;
-          const lb =
-            b.subs_l2[b.matchLineIndex]?.line
-              .toLowerCase()
-              .indexOf(term.toLowerCase()) ?? -1;
-          const ca =
-            la >= 0 &&
-            la + term.length <
-              (a.subs_l2[a.matchLineIndex]?.line.length ?? 0)
-              ? (a.subs_l2[a.matchLineIndex]!.line[la + term.length] ?? '')
-              : '';
-          const cb =
-            lb >= 0 &&
-            lb + term.length <
-              (b.subs_l2[b.matchLineIndex]?.line.length ?? 0)
-              ? (b.subs_l2[b.matchLineIndex]!.line[lb + term.length] ?? '')
-              : '';
-          return ca.localeCompare(cb);
-        }
-        case 'views':
-        default:
-          return (b.views ?? 0) - (a.views ?? 0);
-      }
-    });
-    return result;
-  }, [videos, listSearch, listSort, term]);
 
   // Grouping key for left/right-context sorts: the character immediately
   // before (left) or after (right) the term in each matched line. Other sorts
@@ -725,16 +723,15 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   const selectFromList = useCallback(
     (idx: number) => {
-      const realIdx = videos.indexOf(filteredVideos[idx]!);
-      if (realIdx >= 0) {
-        setAutoplayEnabled(true);
-        setCurrentIndex(realIdx);
-        // Open the playback modal — the list stays mounted underneath.
-        setVideoOpen(true);
-        setPanelTab('subs');
-      }
+      // idx is already the filtered/sorted list index, which is also the
+      // player-queue index — no remap needed.
+      setAutoplayEnabled(true);
+      setCurrentIndex(idx);
+      // Open the playback modal — the list stays mounted underneath.
+      setVideoOpen(true);
+      setPanelTab('subs');
     },
-    [videos, filteredVideos],
+    [],
   );
 
   // Shared row renderer for the page list — thumbnail + matched-line +
@@ -743,7 +740,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // per-row data and navigation callback.
   const renderQueueRow = useCallback(
     (video: SubsSearchVideo, i: number) => {
-      const isActive = videos.indexOf(video) === currentIndex;
+      const isActive = i === currentIndex;
       return (
         <SubsSearchRow
           video={video}
@@ -760,7 +757,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         />
       );
     },
-    [videos, currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
+    [currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
   );
 
   // Group header bar for left/right-context sorts: a tappable bar showing the
@@ -1077,10 +1074,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                 hasPreviousLine={hasPreviousLine}
                 hasNextLine={hasNextLine}
                 hasPreviousVideo={currentIndex > 0}
-                hasNextVideo={currentIndex < videos.length - 1}
+                hasNextVideo={currentIndex < filteredVideos.length - 1}
                 videoCountText={t('msg.video_n_of_total', {
                   n: currentIndex + 1,
-                  total: videos.length,
+                  total: filteredVideos.length,
                 })}
               />
             </div>
