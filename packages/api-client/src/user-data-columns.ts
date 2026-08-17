@@ -51,9 +51,13 @@ export const putSrsCard = (
     ...(typeof meta.dayStartHour === 'number' ? { dayStartHour: meta.dayStartHour } : {}),
   });
 
-export const deleteSrsCard = (l2: string, wordId: string) =>
+/** Delete a card. `updatedAt` (client unsave time) lets the server drop
+ *  stale deletes that would destroy newer writes from another device
+ *  (ADR-0040). */
+export const deleteSrsCard = (l2: string, wordId: string, updatedAt?: number) =>
   apiClient.delete<{ success: boolean }>(
-    `/srs/cards/${encodeURIComponent(l2)}/${encodeURIComponent(wordId)}`,
+    `/srs/cards/${encodeURIComponent(l2)}/${encodeURIComponent(wordId)}`
+    + (typeof updatedAt === 'number' ? `?updatedAt=${updatedAt}` : ''),
   );
 
 export const getUserSettings = () =>

@@ -828,6 +828,37 @@ deliberately add another instance yet.
 instance before inserting, a one-time cleanup deletes existing duplicates,
 and mobile renders only the latest context sentence.
 
+### Web outbox audit follow-up (2026-08-17, ADR-0040)
+
+A follow-up audit of the web pending-op queue found five defects, all fixed
+in ADR-0040:
+
+1. **In-flight flush dropped newly enqueued ops** — the flush snapshotted the
+   queue and overwrote it with its `remaining` list, erasing ops enqueued
+   while it ran. The deck auto-init loop (up to `dailyLimit` synchronous
+   `updateCard` calls) lost every card after the first each session; rapid
+   ratings and unsaves lost the same way. The queue now lives in
+   `apps/web/src/lib/srs-pending-queue.ts` and re-reads/merges the queue
+   after each flush pass (multi-pass, bounded), so no op is lost.
+2. **A 403 cap rejection blocked the whole queue all day** — the failing op
+   (and everything after it) was re-queued with 10s retries that the server
+   keeps rejecting until the next local day. 403s are now detected on the
+   normalized `ApiError.code` (the old `err.response.status` check never
+   matched), the op is dropped (rating stays local-only, banner fires), and
+   the rest of the queue keeps flushing.
+3. **Undo did not propagate** — the restored card's older `lastReview` made
+   the server's LWW guard reject the restore, so the undone rating
+   re-applied on the next hydration. `PUT /srs/cards` now timestamps
+   `voidRatingId` writes as fresh writes (`now_ms`), fixing web and mobile
+   alike.
+4. **Stale queued deletes could destroy newer ratings** — `DELETE
+   /srs/cards/...` now accepts `?updatedAt=<client unsave time>` and the
+   server drops the delete (no tombstone) when the row was written more
+   recently.
+5. **`removeCardFromStorage` left ghost cards in mounted hook stores** —
+   unsave paths now dispatch `lp:srs-card-removed`; `useSrs` listens and
+   drops the card, so the persist effect can't resurrect it.
+
 ## Stale Related Docs
 
 - **SPEC-053 inventory staleness** — fixed (2026-08-11): the syncable-data
