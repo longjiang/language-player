@@ -6,11 +6,20 @@ import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { isLineInTranslationLookahead } from '@/hooks/use-subtitle-translation';
+import { log } from '@/lib/logger';
 
 /** mm:ss clock label for a subtitle timestamp or video duration. */
 export function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
+  // Duration can arrive as a numeric string (e.g. "123") or empty/NaN from the
+  // API; coerce to a number. Log non-numeric input so we can see what the API
+  // actually sent.
+  const n = typeof seconds === 'number' ? seconds : Number(seconds);
+  if (!Number.isFinite(n) || n < 0) {
+    log('[LP Web] formatTime received non-number', { seconds, type: typeof seconds, coerced: n });
+    return '--:--';
+  }
+  const m = Math.floor(n / 60);
+  const s = Math.floor(n % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
