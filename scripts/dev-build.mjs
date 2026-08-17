@@ -237,9 +237,13 @@ writeLedger(ledger);
 console.log(`  recorded : docs/versioning/build-ledger.md (dev ${n} @ ${commit8})`);
 
 // ── Retention: keep the <keep> newest dev builds, archive the rest ──
+// Re-parse AFTER recording so the just-built token participates in the
+// window (otherwise the oldest active build is never retired).
 
 mkdirSync(ARCHIVE_DIR, { recursive: true });
-const active = allDev.filter((d) => d.status.startsWith('active')).sort((a, b) => b.n - a.n);
+const freshRows = parseLedger();
+const freshDev = freshRows.flatMap((r) => parseDevCell(r.dev));
+const active = freshDev.filter((d) => d.status.startsWith('active')).sort((a, b) => b.n - a.n);
 const retired = active.slice(keep);
 let retiredCount = 0;
 for (const d of retired) {
@@ -252,7 +256,7 @@ for (const d of retired) {
 }
 if (retiredCount > 0) {
   const retiredN = new Set(retired.map((d) => d.n));
-  for (const r of ledger) {
+  for (const r of freshRows) {
     const tokens = parseDevCell(r.dev);
     if (tokens.length === 0) continue;
     r.dev = tokens
@@ -263,7 +267,7 @@ if (retiredCount > 0) {
       )
       .join(' · ');
   }
-  writeLedger(ledger);
+  writeLedger(freshRows);
 }
 
 console.log(`\nDone. ${active.length} active build(s) kept, ${retiredCount} archived.`);
