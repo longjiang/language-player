@@ -17,7 +17,6 @@ import {
   type ReaderPageItem,
 } from '@/components/reader/paginated-reader';
 import {
-  SegmentedTranslation,
   SentenceHighlightBlock,
 } from '@/components/reader/sentence-highlight';
 import { type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
@@ -178,9 +177,12 @@ export function ReaderPanel({
       <SentenceHighlightBlock key={item.key} text={tb.text} translation={showTranslation ? rctx.translation : null}>
         {({ map, activeSentence, onTokenHover }) => (
           <TextActionMenu text={tb.text} l2Code={l2.code} l1Code={l1.code}
-            translation={showTranslation && rctx.translation ? (
-              <SegmentedTranslation text={rctx.translation} map={map} active={activeSentence} />
-            ) : undefined}
+            translationAligned={showTranslation && rctx.translation ? {
+              text: rctx.translation,
+              map,
+              active: activeSentence,
+              measureNonce,
+            } : null}
             translationClass={translationClass(tb)}
             translationZoom={textZoom}
             loading={rctx.isTranslating && !rctx.translation}>
@@ -198,7 +200,7 @@ export function ReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize]);
+  }, [showTranslation, textZoom, ctx, l2.code, l1.code, onOpenLink, markdownComponents, onLemmatize, measureNonce]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block, matching spacing, the translation skeleton, and the

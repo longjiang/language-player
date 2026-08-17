@@ -1,0 +1,448 @@
+'use client';
+
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
+import { renderInlineMarkdown } from '@/components/text-action-panels';
+import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
+import { log, logwarn } from '@/lib/logger';
+import type { SentenceMap } from '@/lib/sentence-map';
+
+/**
+ * Per-line baseline-aligned translation for the paginated readers.
+ *
+ * The translation column keeps its smaller font but is sliced into its
+ * visual lines (measured on a hidden probe with the same width and font) and
+ * rendered as flex rows that sit on the L2 block's line grid. Each row
+ * contains an invisible anchor that reproduces the L2 font / size / line
+ * height (same font stack + "Ag中" glyphs, so CJK and Latin metrics both
+ * resolve like the L2 text), and `align-items: baseline` pulls the smaller
+ * translation line's baseline onto the anchor's baseline — i.e. the L2
+ * line's baseline, whatever the two fonts' metrics are.
+ *
+ * Rows are spaced by the measured inter-base gaps of the L2 block, so the
+ * grid holds even when ruby annotations (phonetics) or interlinear
+ * definitions inflate individual L2 lines: the base text's line boxes are
+ * recovered from the full line boxes by filtering out the thin annotation /
+ * definition boxes and offsetting by the ruby band above each base line.
+ *
+ * Falls back to a plain paragraph when the layout can't be measured or the
+ * translation is stacked below the L2 text (narrow viewports), where the
+ * line grid can't be shared.
+ */
+
+interface LineSlice {
+  /** Offsets into the translation text (whitespace-trimmed). */
+  start: number;
+  end: number;
+}
+
+interface LineLayout {
+  /** Spacer height (px) after each L2 line, incl. the last. */
+  gaps: number[];
+  /** The translation's visual lines, sliced on the probe. */
+  lines: LineSlice[];
+  /** The L2 text's rendered font metrics (px). */
+  l2FontSize: number;
+  l2LineHeight: number;
+  anchorFont: { family: string; weight: string; style: string };
+}
+
+export interface AlignedTranslationProps {
+  /** The translation text (L1). */
+  text: string;
+  /** L2↔translation sentence map (from SentenceHighlightBlock). */
+  map: SentenceMap | null;
+  /** Index into `map.pairs` of the hovered L2 sentence, or null. */
+  active: number | null;
+  /** Ref to the L2 text element whose line grid we align to. */
+  anchorRef: React.RefObject<HTMLElement | null>;
+  /** Layout identity — re-measure when it changes (zoom, ruby, fonts…). */
+  measureNonce?: string | number;
+}
+
+/** Text nodes that don't carry the L2 base line: ruby annotations and the
+ *  interlinear definition / byeonggi slots (both use `text-[0.55em]`). */
+function isAuxiliary(node: Text, anchor: HTMLElement): boolean {
+  for (let el = node.parentElement; el && el !== anchor; el = el.parentElement) {
+    if (el.tagName === 'RT') return true;
+    if (el.classList.contains('text-[0.55em]')) return true;
+  }
+  return false;
+}
+
+/** First non-whitespace text node of the L2 content (skips annotations). */
+function firstTextNode(root: HTMLElement): Text | null {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    const text = node as Text;
+    if (text.data.trim().length && !isAuxiliary(text, root)) return text;
+  }
+  return null;
+}
+
+/** Rects of all line boxes under `root`, restricted to text nodes matching
+ *  `keep` (default: all). */
+function textRects(root: HTMLElement, keep?: (node: Text) => boolean): DOMRect[] {
+  const out: DOMRect[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    const text = node as Text;
+    if (!text.data.length) continue;
+    if (keep && !keep(text)) continue;
+    range.selectNodeContents(text);
+    for (const r of Array.from(range.getClientRects())) out.push(r);
+  }
+  return out;
+}
+
+/** Top of the single character at `offset` in `node`. */
+function charTop(node: Text, offset: number): number {
+  const range = document.createRange();
+  range.setStart(node, offset);
+  range.setEnd(node, Math.min(node.length, offset + 1));
+  return range.getBoundingClientRect().top;
+}
+
+/** One visual line of the translation, rendered as sentence spans so the
+ *  active-sentence hover highlight still works across sliced lines. */
+function renderSlicedLine(
+  text: string,
+  line: LineSlice,
+  map: SentenceMap | null,
+  active: number | null,
+): ReactNode {
+  const clean = (s: number, e: number) => text.slice(s, e).replace(/\r\n/g, ' ').replace(/\n/g, ' ');
+  if (!map) return renderInlineMarkdown(clean(line.start, line.end));
+  const pair = active != null ? map.pairs[active] : undefined;
+  const activeTrIndex = pair ? map.tr.findIndex(t => t.start === pair.tr.start) : -1;
+  const out: ReactNode[] = [];
+  for (let i = 0; i < map.tr.length; i++) {
+    const seg = map.tr[i]!;
+    const s = Math.max(seg.start, line.start);
+    const e = Math.min(seg.end, line.end);
+    if (s >= e) continue;
+    out.push(
+      <span key={i} className={i === activeTrIndex ? 'rounded-sm bg-primary/10' : undefined}>
+        {renderInlineMarkdown(clean(s, e))}
+      </span>,
+    );
+  }
+  return out;
+}
+
+export function AlignedTranslation({
+  text,
+  map,
+  active,
+  anchorRef,
+  measureNonce = 0,
+}: AlignedTranslationProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLDivElement>(null);
+  const rowsRef = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<LineLayout | null>(null);
+  // Short text preview so log lines from different blocks are distinguishable.
+  const tag = text.slice(0, 24).replace(/\s+/g, ' ');
+
+  const measure = useCallback(() => {
+    const anchor = anchorRef.current;
+    const root = rootRef.current;
+    const probe = probeRef.current;
+    log(`[AlignedTranslation] measure:start tag="${tag}" textLen=${text.length} anchor=${!!anchor} root=${!!root} probe=${!!probe}`);
+    if (!anchor || !root || !probe || !text) {
+      logwarn(`[AlignedTranslation] measure:bail reason=missing-element tag="${tag}" anchor=${!!anchor} root=${!!root} probe=${!!probe} textLen=${text.length}`);
+      setLayout(null);
+      return;
+    }
+    try {
+      // Side-by-side only: the translation column must start at the L2's top
+      // for the row grid to pair up. Stacked (below) layouts fall back.
+      const aRect = anchor.getBoundingClientRect();
+      const rRect = root.getBoundingClientRect();
+      const topDelta = Math.round(aRect.top - rRect.top);
+      if (Math.abs(topDelta) > 4) {
+        log(`[AlignedTranslation] measure:bail reason=not-side-by-side tag="${tag}" anchorTop=${Math.round(aRect.top)} rootTop=${Math.round(rRect.top)} delta=${topDelta}`);
+        setLayout(null);
+        return;
+      }
+      log(`[AlignedTranslation] measure:side-by-side-ok tag="${tag}" anchorTop=${Math.round(aRect.top)} rootTop=${Math.round(rRect.top)} delta=${topDelta}`);
+
+      // The L2 base text's font metrics (the first real text node's chain —
+      // inline token spans inherit the TokenizedText font-size/leading).
+      const base = firstTextNode(anchor);
+      if (!base) {
+        log(`[AlignedTranslation] measure:bail reason=no-base-text-node tag="${tag}"`);
+        setLayout(null);
+        return;
+      }
+      const cs = getComputedStyle(base.parentElement!);
+      const f2 = parseFloat(cs.fontSize);
+      const lh2 = parseFloat(cs.lineHeight);
+      log(`[AlignedTranslation] measure:l2-metrics tag="${tag}" fontFamily="${cs.fontFamily}" fontSize=${f2} lineHeight=${lh2} (computed of ${base.parentElement!.tagName}.${base.parentElement!.className.slice(0, 30)})`);
+      if (!isFinite(f2) || !isFinite(lh2) || f2 <= 0 || lh2 <= 0) {
+        log(`[AlignedTranslation] measure:bail reason=bad-metrics tag="${tag}" f2=${f2} lh2=${lh2}`);
+        setLayout(null);
+        return;
+      }
+      // `zoom` (headings) scales rendered size without changing computed
+      // values — fold the nearest zoomed ancestor in.
+      let z = 1;
+      for (let el: HTMLElement | null = base.parentElement; el && el !== anchor; el = el.parentElement) {
+        const zv = parseFloat(getComputedStyle(el).zoom);
+        if (isFinite(zv) && zv > 0) { z = zv; break; }
+      }
+      const f2r = f2 * z;
+      const lh2r = lh2 * z;
+      log(`[AlignedTranslation] measure:zoom tag="${tag}" z=${z} f2Rendered=${f2r} lh2Rendered=${lh2r}`);
+
+      // Line boxes of the whole L2 block. With interlinear definitions the
+      // tokens are inline-flex columns, so individual glyph rects are only
+      // ~font-size tall, not the full line box — pick up the most frequent
+      // non-tiny height (the base-text glyph run) instead of assuming the
+      // base line box is >= 0.9 * lineHeight. Tiny boxes (ruby band, the
+      // 0.55em gloss/def slots, leading/trailing whitespace) drop out.
+      const fullRange = document.createRange();
+      fullRange.selectNodeContents(anchor);
+      const fullRects = Array.from(fullRange.getClientRects());
+      const heights = fullRects.map(r => r.height);
+      const minAll = heights.length ? Math.min(...heights) : 0;
+      const nonTiny = heights.filter(h => h >= minAll + 2 && h >= 4);
+      const freq = new Map<number, number>();
+      for (const h of nonTiny) {
+        const key = Math.round(h * 10) / 10;
+        freq.set(key, (freq.get(key) ?? 0) + 1);
+      }
+      let run = 0;
+      let runMode = nonTiny.length ? nonTiny[0]! : 0;
+      for (const [key, count] of freq) {
+        if (count > run) { run = count; runMode = key; }
+      }
+      const lineRects = fullRects.filter(r => Math.abs(r.height - runMode) < Math.max(2, runMode * 0.15));
+      log(`[AlignedTranslation] measure:l2-line-grid tag="${tag}" fullRects=${fullRects.length} minAll=${Math.round(minAll * 10) / 10} nonTiny=${nonTiny.length} runModH=${Math.round(runMode * 10) / 10} (x${run}) glyphRects=${lineRects.length} rectHeights=${heights.map(h => Math.round(h * 10) / 10).join(',')}`);
+      if (lineRects.length === 0) {
+        log(`[AlignedTranslation] measure:bail reason=no-base-lines tag="${tag}" fullRects=${fullRects.length}`);
+        setLayout(null);
+        return;
+      }
+      // Cluster line boxes by horizontal offset — each line box spans the
+      // full line width but only the glyph-containing rects survive; group
+      // them by row (thin ruby-annotation and 0.55em zones are distinct
+      // offsets) and union each row's bounds to derive a single base line.
+      interface Row { top: number; bottom: number; right: number; }
+      const TOL = 8;
+      const rows: Row[] = [];
+      for (const r of lineRects) {
+        const cur = rows.find(x => Math.abs(x.top - r.top) <= TOL && Math.abs(x.bottom - r.bottom) <= TOL);
+        if (cur) {
+          cur.right = Math.max(cur.right, r.right);
+          cur.bottom = Math.max(cur.bottom, r.bottom);
+        } else {
+          rows.push({ top: r.top, bottom: r.bottom, right: r.right });
+        }
+      }
+      rows.sort((a, b) => a.top - b.top);
+      // Ruby annotations sit above each line's base text — measure the band
+      // so the align rows land on the base lines, not the annotation tops.
+      const rtRects = textRects(anchor, n => !!n.parentElement?.closest?.('rt'));
+      const baseTops = rows.map(r => {
+        let band = 0;
+        for (const rr of rtRects) {
+          if (rr.top >= r.top - 1 && rr.bottom <= r.bottom + 1) {
+            band = Math.max(band, rr.bottom - r.top);
+          }
+        }
+        return r.top + band;
+      });
+      log(`[AlignedTranslation] measure:base-tops tag="${tag}" rtRects=${rtRects.length} rows=${rows.length} tops=${baseTops.map(t => Math.round(t)).join(',')}`);
+
+      // Inter-base gaps: what separates consecutive L2 baselines, plus the
+      // last line's tail (interlinear definitions extend it downward).
+      const gaps: number[] = [];
+      for (let j = 0; j < baseTops.length - 1; j++) {
+        gaps.push(Math.max(0, baseTops[j + 1]! - baseTops[j]! - lh2r));
+      }
+      const lastBottom = rows[rows.length - 1]!.bottom;
+      const lastGap = Math.max(0, lastBottom - baseTops[baseTops.length - 1]! - lh2r);
+      gaps.push(Math.min(lastGap, lh2r * 0.6));
+      log(`[AlignedTranslation] measure:gaps tag="${tag}" lh2=${Math.round(lh2r)} gaps=${gaps.map(g => Math.round(g * 10) / 10).join(',')}`);
+
+      // Slice the translation into its visual lines on a hidden probe that
+      // shares the column width and the translation column's own font
+      // (the L1/UI font — the probe must wrap exactly like the rendered
+      // lines, whose font it inherits from the column).
+      const rcs = getComputedStyle(root);
+      const trSize = f2r * 0.875;
+      probe.style.fontFamily = rcs.fontFamily;
+      probe.style.fontWeight = rcs.fontWeight;
+      probe.style.fontStyle = rcs.fontStyle;
+      probe.style.fontSize = `${trSize}px`;
+      probe.style.lineHeight = `${lh2r}px`;
+      const node = probe.firstChild as Text | null;
+      const lines: LineSlice[] = [];
+      if (node && node.length > 0) {
+        const probeRange = document.createRange();
+        probeRange.selectNodeContents(probe);
+        const rects = Array.from(probeRange.getClientRects());
+        log(`[AlignedTranslation] measure:probe tag="${tag}" fontFamily="${rcs.fontFamily}" trSize=${Math.round(trSize * 10) / 10} lh=${Math.round(lh2r)} probeRects=${rects.length} probeWidth=${Math.round(probe.getBoundingClientRect().width)} probeTextLen=${node.length}`);
+        let start = 0;
+        for (const rect of rects) {
+          // Last offset whose char still sits on this line.
+          let lo = start;
+          let hi = node.length;
+          while (lo < hi) {
+            const mid = (lo + hi + 1) >> 1;
+            if (mid >= node.length || charTop(node, mid) < rect.bottom - 0.5) lo = mid;
+            else hi = mid - 1;
+          }
+          // Trim leading/trailing whitespace (incl. newlines) from the slice.
+          let s = start;
+          let e = lo;
+          while (s < e && /\s/.test(text[s]!)) s++;
+          while (e > s && /\s/.test(text[e - 1]!)) e--;
+          if (e > s) lines.push({ start: s, end: e });
+          start = lo;
+        }
+        log(`[AlignedTranslation] measure:slices tag="${tag}" count=${lines.length} ${lines.map((l, i) => `${i}:${l.start}-${l.end}:"${text.slice(l.start, l.end).slice(0, 18)}"`).join(' | ')}`);
+      } else {
+        log(`[AlignedTranslation] measure:slices tag="${tag}" probeEmptyOrNoText`);
+      }
+
+      setLayout({
+        gaps,
+        lines,
+        l2FontSize: f2r,
+        l2LineHeight: lh2r,
+        anchorFont: { family: cs.fontFamily, weight: cs.fontWeight, style: cs.fontStyle },
+      });
+      log(`[AlignedTranslation] measure:ready tag="${tag}" l2Lines=${gaps.length} trLines=${lines.length} f2=${Math.round(f2r)} lh2=${Math.round(lh2r)}`);
+    } catch (err) {
+      logwarn(`[AlignedTranslation] measure:bail reason=exception tag="${tag}" err=${(err as Error)?.message ?? String(err)}`);
+      setLayout(null);
+    }
+  }, [anchorRef, text, tag]);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure, measureNonce]);
+
+  // Re-measure when the L2 column resizes (width changes re-wrap lines).
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(anchor);
+    return () => ro.disconnect();
+  }, [anchorRef, measure]);
+
+  // Fonts arriving late change metrics and wrapping — re-align once loaded.
+  useEffect(() => {
+    let alive = true;
+    document.fonts?.ready?.then(() => {
+      if (alive) requestAnimationFrame(() => measure());
+    });
+    return () => { alive = false; };
+  }, [measure]);
+
+  // Post-layout probe of the RENDERED row geometry — confirms the rows land
+  // on the L2 line grid (each row ≈ lh2, spacers = gaps) and that the
+  // translation baselines fall inside their rows (not overflowing).
+  useEffect(() => {
+    if (!layout) return;
+    const rowsEl = rowsRef.current;
+    if (!rowsEl) return;
+    const id = requestAnimationFrame(() => {
+      const children = Array.from(rowsEl.children) as HTMLElement[];
+      const rowHeights = children.map(c => Math.round(c.offsetHeight));
+      const rowsStyle =
+        children.length > 0
+          ? getComputedStyle(children[0]!)
+          : null;
+      // First non-empty row's translation baseline vs its row box: confirm the
+      // translation glyph sits within the row (baseline top < row bottom).
+      let transBaselineInfo = 'n/a';
+      const firstLineSpan = children[0]?.querySelector(':scope > span:nth-child(2)') as HTMLElement | null;
+      if (firstLineSpan) {
+        const boxTop = children[0]!.getBoundingClientRect().top;
+        const sp = getComputedStyle(firstLineSpan);
+        const fs = parseFloat(sp.fontSize);
+        const lh = parseFloat(sp.lineHeight);
+        const spTop = firstLineSpan.getBoundingClientRect().top;
+        // approx baseline = top + ascent(~0.8*fontSize)
+        transBaselineInfo = `rowTop=${Math.round(boxTop)} spanTop=${Math.round(spTop)} fs=${Math.round(fs * 10) / 10} lh=${Math.round(lh)} baseline≈${Math.round(spTop + 0.8 * fs)}`;
+      }
+      log(`[AlignedTranslation] render:row-heights tag="${tag}" children=${rowHeights.length} heights=${rowHeights.join(',')} rowStyleH=${rowsStyle?.height ?? 'n/a'} ${transBaselineInfo}`);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [layout, tag]);
+
+  if (!layout) {
+    // Plain fallback: unpaired paragraph (same as the pre-alignment column).
+    return (
+      <div ref={rootRef} className="relative">
+        <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 w-full">{text}</div>
+        {map ? <SegmentedTranslation text={text} map={map} active={active} /> : <>{text}</>}
+      </div>
+    );
+  }
+
+  const { gaps, lines, l2FontSize, l2LineHeight, anchorFont } = layout;
+  const rows = Math.max(gaps.length, lines.length);
+  // Each grid row is EXACTLY one L2 line height (a fixed height, so flex
+  // baseline alignment repositions the translation to the L2 baseline instead
+  // of inflating the row past one grid unit). The invisible anchor reproduces
+  // the L2 font/size so its baseline = the L2 line's baseline; `align-items:
+  // baseline` pulls the smaller translation line onto it. The row never grows
+  // beyond l2LineHeight because its height is explicit.
+  const rowStyle: CSSProperties = { height: `${l2LineHeight}px` };
+  const anchorStyle: CSSProperties = {
+    flex: 'none',
+    display: 'inline-block',
+    width: 0,
+    lineHeight: 1,
+    overflow: 'visible',
+    visibility: 'hidden',
+    fontFamily: anchorFont.family,
+    fontWeight: anchorFont.weight,
+    fontStyle: anchorFont.style,
+    fontSize: `${l2FontSize}px`,
+  };
+
+  return (
+    <div ref={rootRef} className="relative">
+      <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 w-full">{text}</div>
+      <div ref={rowsRef}>
+        {Array.from({ length: rows }).map((_, j) => (
+          <Fragment key={j}>
+            <div className="flex items-baseline" style={rowStyle}>
+              {j < gaps.length && (
+                <span aria-hidden="true" className="select-none" style={anchorStyle}>
+                  Ag中
+                </span>
+              )}
+              {j < lines.length && (
+                <span
+                  className="min-w-0 flex-1 overflow-hidden whitespace-nowrap"
+                  style={{ fontSize: `${l2FontSize * 0.875}px`, lineHeight: `${l2LineHeight}px` }}
+                >
+                  {renderSlicedLine(text, lines[j]!, map, active)}
+                </span>
+              )}
+            </div>
+            {gaps[j]! > 0.5 && <div aria-hidden="true" style={{ height: `${gaps[j]}px` }} />}
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}

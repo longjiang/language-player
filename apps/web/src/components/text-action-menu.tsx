@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { useTextActions } from '@/hooks/use-text-actions';
 import { ExplainPanel, TranslatePanel, renderInlineMarkdown } from '@/components/text-action-panels';
 import { TokenizedText } from '@/components/tokenized-text';
+import { AlignedTranslation } from '@/components/reader/aligned-translation';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
+import type { SentenceMap } from '@/lib/sentence-map';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
 } from 'lucide-react';
@@ -32,6 +34,17 @@ interface TextActionMenuProps {
   translationZoom?: number;
   /** When true and no translation, show skeleton placeholder lines. */
   loading?: boolean;
+  /** Per-line baseline alignment (readers): the translation column is sliced
+   *  into its visual lines and each line is baseline-aligned to the L2
+   *  block's line grid (same leading, top-aligned). Replaces `translation`
+   *  with a measuring renderer; falls back to a plain paragraph when the
+   *  layout can't be measured or the column is stacked below the L2 text. */
+  translationAligned?: {
+    text: string;
+    map: SentenceMap | null;
+    active: number | null;
+    measureNonce?: string | number;
+  } | null;
   children: ReactNode;
 }
 
@@ -46,10 +59,15 @@ export function TextActionMenu({
   translationBelow = false,
   translationZoom = 1,
   loading = false,
+  translationAligned = null,
   children,
 }: TextActionMenuProps) {
   const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
+  // The L2 content wrapper — the aligned translation measures its line grid.
+  const l2Ref = useRef<HTMLDivElement>(null);
+  const aligned = translationAligned ?? null;
+  const hasTranslation = !!(translation || aligned);
   const {
     activeAction,
     close,
@@ -78,19 +96,27 @@ export function TextActionMenu({
   return (
     <div className="group relative flex items-start gap-3 mb-4">
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4 lg:items-center'}`}>
-        <div className="flex-[3] min-w-0">
+      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : 'lg:flex-row lg:gap-4'} ${aligned && !translationBelow ? 'lg:items-start' : translationBelow ? '' : 'lg:items-center'}`}>
+        <div className="flex-[3] min-w-0" ref={l2Ref}>
           {children}
         </div>
-        {translation && (
+        {hasTranslation && (
           <div
             className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
-            style={{ zoom: translationZoom }}
+            style={aligned ? undefined : { zoom: translationZoom }}
           >
-            {typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
+            {aligned ? (
+              <AlignedTranslation
+                text={aligned.text}
+                map={aligned.map}
+                active={aligned.active}
+                measureNonce={aligned.measureNonce}
+                anchorRef={l2Ref}
+              />
+            ) : typeof translation === 'string' ? renderInlineMarkdown(translation) : translation}
           </div>
         )}
-        {loading && !translation && (
+        {loading && !translation && !aligned && (
           <div
             className={`flex-[2] min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
             style={{ zoom: translationZoom }}
