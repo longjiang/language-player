@@ -55,6 +55,69 @@ export interface BlockRenderCtx {
 /** Max blocks rendered into the hidden measuring window at once (EPUB). */
 const WINDOW_LIMIT = 240;
 
+/**
+ * A block's height plus which spine document it belongs to — the two inputs
+ * the page-break math needs. `heights[i]` must align index-for-index with
+ * the block window.
+ */
+export interface BreakInput {
+  height: number;
+  spineIndex: number;
+}
+
+/**
+ * True when block `i` is the first block of a new spine document. A new spine
+ * document always begins on a fresh page (EPUB-native semantics — in 1Q84 each
+ * chapter is its own XHTML file), so a block that crosses a spine boundary is
+ * a hard page start even when it would otherwise fit on the current page.
+ */
+export function startsNewSpine(win: BreakInput[], i: number): boolean {
+  return i > 0 && win[i]!.spineIndex !== win[i - 1]!.spineIndex;
+}
+
+/**
+ * Compute the index of the first block that does NOT fit on the first page of
+ * the forward window (i.e. `endIdx` — the page is `win[0..endIdx)`). Progress
+ * is stopped by either a page-height overflow or a spine boundary, whichever
+ * occurs first. The spine-boundary rule means a chapter/document title never
+ * shares a page with the previous document's tail.
+ */
+export function computeForwardEnd(
+  win: BreakInput[],
+  pageHeight: number,
+): number {
+  let acc = 0;
+  for (let i = 0; i < win.length; i++) {
+    const h = win[i]!.height;
+    if (startsNewSpine(win, i) && acc > 0) return i;
+    if (acc + h > pageHeight && acc > 0) return i;
+    acc += h;
+  }
+  return win.length;
+}
+
+/**
+ * Compute the first block (lowest index) of the visible page when paging
+ * backward: `page = win[prevStart..end]`. Two distinct triggers:
+ *  - height overflow: block i doesn't fit with everything after it, so it
+ *    belongs to the previous page → the visible page starts at i+1;
+ *  - spine boundary: block i opens a new spine document (a hard page start)
+ *    → the visible page starts at i.
+ */
+export function computeBackwardStart(
+  win: BreakInput[],
+  pageHeight: number,
+): number {
+  let acc = 0;
+  for (let i = win.length - 1; i >= 0; i--) {
+    const h = win[i]!.height;
+    if (acc + h > pageHeight && acc > 0) return i + 1;
+    if (startsNewSpine(win, i) && acc > 0) return i;
+    acc += h;
+  }
+  return 0;
+}
+
 interface PageBlock {
   loc: BookLocation;
   block: EpubBlock;
@@ -457,16 +520,15 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
       }
 
       if (modeDir === 'forward') {
-        let acc = 0;
-        let endIdx = children.length;
-        for (let i = 0; i < children.length; i++) {
-          const h = children[i]!.offsetHeight;
-          if (acc + h > pageHeight && acc > 0) {
-            endIdx = i;
-            break;
-          }
-          acc += h;
-        }
+        // A new spine document always begins on a fresh page (EPUB-native
+        // semantics — in 1Q84 each chapter is its own XHTML file), so a block
+        // that starts a new spine item is a hard page boundary even when it
+        // would otherwise fit — chapter titles never share a page with the
+        // previous document's tail.
+        const endIdx = computeForwardEnd(
+          win.map((p, i) => ({ height: children[i]!.offsetHeight, spineIndex: p.loc.spineIndex })),
+          pageHeight,
+        );
         const start = base ?? win[0]!.loc;
         const end = endIdx < win.length ? win[endIdx]!.loc : null;
         pageStartRef.current = start;
@@ -482,11 +544,15 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
           // drifts on later page turns. Re-derived only when the book,
           // viewport, or display settings change.
           charsPerPageLayoutRef.current = layout;
+          const breakInput = win.map((p, i) => ({
+            height: children[i]!.offsetHeight,
+            spineIndex: p.loc.spineIndex,
+          }));
           const breaks: number[] = [];
           let acc2 = 0;
           for (let i = 0; i < children.length && breaks.length < 3; i++) {
             const h = children[i]!.offsetHeight;
-            if (acc2 + h > pageHeight && acc2 > 0) {
+            if ((startsNewSpine(breakInput, i) || acc2 + h > pageHeight) && acc2 > 0) {
               breaks.push(i);
               acc2 = 0;
             }
@@ -522,18 +588,12 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
           });
         }
       } else {
-        // Backward: walk from the end; prevStart = first block that fits
-        // together with everything after it.
-        let acc = 0;
-        let prevStart = 0;
-        for (let i = children.length - 1; i >= 0; i--) {
-          const h = children[i]!.offsetHeight;
-          if (acc + h > pageHeight && acc > 0) {
-            prevStart = i + 1;
-            break;
-          }
-          acc += h;
-        }
+        // Backward: walk from the end; prevStart = first block of the visible
+        // page. Spine-boundary blocks are hard page starts (see forward).
+        const prevStart = computeBackwardStart(
+          win.map((p, i) => ({ height: children[i]!.offsetHeight, spineIndex: p.loc.spineIndex })),
+          pageHeight,
+        );
         if (prevStart === 0 && children.length === WINDOW_LIMIT) {
           // Window wasn't enough — extend backward and retry.
           const b = base ?? win[0]!.loc;
