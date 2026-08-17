@@ -88,11 +88,13 @@ export function AboutDialog({
   const version = Constants.expoConfig?.version ?? '0.0.0';
   const environment = __DEV__ ? 'development' : 'production';
   const buildDate = new Date().toISOString();
-  // Dev builds embed the exact git commit via EXPO_PUBLIC_GIT_SHA (set by
-  // scripts/dev-build.mjs). Referencing it here makes Metro inline the value
-  // into the bundle, so it is both visible in About and grep-verifiable
-  // against docs/versioning/dev-build-ledger.md (SPEC-076 § 4.8). Store
-  // builds never set it, so the row stays hidden there.
+  // Debug builds ("dev builds") can embed the exact git commit via
+  // EXPO_PUBLIC_GIT_SHA — set it when starting Metro (Metro inlines
+  // EXPO_PUBLIC_* at serve time), e.g.:
+  //   EXPO_PUBLIC_GIT_SHA=$(git rev-parse HEAD) npx expo start --host lan
+  // Referencing it here is what makes Metro inline the value into the served
+  // bundle, so it shows in About (SPEC-076 § 4.8). Store builds never set
+  // it, so the row stays hidden there.
   const gitSha = process.env.EXPO_PUBLIC_GIT_SHA;
 
   const openLink = (url: string) => {
