@@ -20,7 +20,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BlockStream, ReaderLocation } from '@/lib/block-stream';
-import { log, logwarn } from '@/lib/logger';
+import { logwarn } from '@/lib/logger';
 
 /** Estimated page capacity in chars before the first measurement. */
 export const DEFAULT_CHARS_PER_PAGE = 400;
@@ -366,7 +366,7 @@ export function useCssColumnsPager<B>(
       const blocks = await stream.blocks(winStart, winEnd);
       if (gen !== genRef.current) return;
       const estPage = 1 + Math.floor(anchorChars / Math.max(1, div));
-      log(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length} estPage=${estPage}`);
+      logwarn(`Pager: window [${winStart}, ${winEnd}) mode=${mode} anchor=${safeAnchor} blocks=${blocks.length} estPage=${estPage}`);
       setPending({ winStart, winEnd, blocks, mode, anchor: safeAnchor });
     } catch (e) {
       if (gen !== genRef.current) return;
@@ -427,7 +427,7 @@ export function useCssColumnsPager<B>(
           const newAnchor = p.mode === 'forward'
             ? Math.min(blockCount - 1, p.anchor + extendBy)
             : Math.max(0, p.anchor - extendBy);
-          log(`Pager: target NOT in view! mode=${p.mode} anchor=${p.anchor} — page start unresolved, extending window (anchor → ${newAnchor})`);
+          logwarn(`Pager: target NOT in view! mode=${p.mode} anchor=${p.anchor} — page start unresolved, extending window (anchor → ${newAnchor})`);
           void buildWindow(newAnchor, p.mode);
           return; // keep the old window visible and busy
         }
@@ -441,7 +441,7 @@ export function useCssColumnsPager<B>(
           const col = m.breaks.indexOf(ps);
           const visibleEnd = col >= 0 && col + 1 < m.breaks.length ? m.breaks[col + 1]! : p.winEnd;
           const inView = p.anchor >= ps && p.anchor < visibleEnd;
-          log(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} visible=[${ps}, ${visibleEnd}) page=${m.basePage + Math.max(0, col)} window=[${p.winStart}, ${p.winEnd})`);
+          logwarn(`${inView ? 'Pager: target in view!' : 'Pager: target NOT in view!'} mode=${p.mode} anchor=${p.anchor} visible=[${ps}, ${visibleEnd}) page=${m.basePage + Math.max(0, col)} window=[${p.winStart}, ${p.winEnd})`);
         }
         pageStartRef.current = ps;
         setPageStart(ps);
