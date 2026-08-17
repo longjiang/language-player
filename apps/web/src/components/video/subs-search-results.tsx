@@ -33,6 +33,8 @@ import {
   Calendar,
   FileText,
   Info,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────
@@ -593,11 +595,29 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Grouping key for left/right-context sorts: the character immediately
   // before (left) or after (right) the term in each matched line. Other sorts
   // don't group. Consecutive runs of the same key become a single group.
+  // When the term sits at the line edge there is no boundary char, so fall
+  // back to a placeholder key so every row still belongs to a group.
   const contextGroupKey = useMemo(() => {
     if (listSort !== 'leftContext' && listSort !== 'rightContext') return undefined;
     const side = listSort === 'leftContext' ? 'left' : 'right';
-    return (v: SubsSearchVideo) => contextChar(v, term, side);
+    return (v: SubsSearchVideo) => contextChar(v, term, side) || '—';
   }, [listSort, term]);
+
+  // Collapsed context groups (rows hidden, header stays). Reset whenever the
+  // sort mode changes so a fresh sort starts fully expanded.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    setCollapsedGroups(new Set());
+  }, [listSort]);
+
+  const toggleGroup = useCallback((key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   // Per-row segments — the matched line only (no prev/next context in the
   // list), flagged with whether it contains a search term. Translations are
@@ -671,7 +691,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       .querySelectorAll<HTMLElement>('[data-row-index]')
       .forEach((row) => observer.observe(row));
     return () => observer.disconnect();
-  }, [filteredVideos, listRef]);
+  }, [filteredVideos, collapsedGroups, listRef]);
 
   const listFirstLineIndex = translationInput.rowStarts[listFirstVisible] ?? 0;
   const listTranslationsEnabled = display.translation;
@@ -727,21 +747,40 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     [videos, currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
   );
 
-  // Group header for left/right-context sorts: the boundary character (the one
-  // immediately before/after the term) as a badge, next to a small caption
-  // recalling which side of the term we're grouping by.
+  // Group header bar for left/right-context sorts: a tappable bar showing the
+  // boundary character (one immediately before/after the term), a label
+  // recalling which side of the term we're grouping by, and the group's result
+  // count. Clicking toggles the group's collapsed state.
   const renderGroupHeader = useCallback(
-    (key: string) => {
+    (group: {
+      key: string;
+      count: number;
+      collapsed: boolean;
+      onToggle: () => void;
+    }) => {
       const label = listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext');
       return (
-        <div className="flex items-center justify-center gap-2 px-1 pb-1 pt-2">
-          <span className="flex h-6 min-w-6 items-center justify-center rounded-md bg-primary/10 px-1.5 text-[11px] font-semibold text-primary">
-            {key}
+        <button
+          type="button"
+          onClick={group.onToggle}
+          aria-expanded={!group.collapsed}
+          className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1 text-left transition-colors hover:bg-muted"
+        >
+          {group.collapsed ? (
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          )}
+          <span className="flex h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1 text-[11px] font-semibold text-primary">
+            {group.key}
           </span>
-          <span className="text-[11px] font-medium text-muted-foreground">
+          <span className="truncate text-[11px] font-medium text-muted-foreground">
             {label}
           </span>
-        </div>
+          <span className="ml-auto shrink-0 rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {group.count}
+          </span>
+        </button>
       );
     },
     [listSort, t],
@@ -927,6 +966,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           renderRow={renderQueueRow}
           groupKeyFor={contextGroupKey}
           renderGroupHeader={renderGroupHeader}
+          collapsedGroups={collapsedGroups}
+          onToggleGroup={toggleGroup}
         />
       </div>
 
