@@ -9,7 +9,7 @@
  * "Dev build" = Debug build (Metro-connected): JS is served by Metro at
  * runtime, so the artifact is the compiled native shell. Checks, in order:
  *   1. The ledger row exists.
- *   2. The artifact exists (in $LP_DEV_BUILD_DIR / ~/Desktop/LP-DevBuilds/,
+ *   2. The artifact exists (in $LP_DEV_BUILD_DIR / .dev-builds/,
  *      or the --artifact override).
  *   3. The artifact's SHA-256 matches the ledger row.
  *   4. For ios-device Debug zips: ip.txt (Metro LAN host) is present and a
@@ -24,14 +24,13 @@
 import { execSync } from 'child_process';
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
-import { homedir } from 'os';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
 const LEDGER = join(ROOT, 'docs/versioning/dev-build-ledger.md');
-const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(homedir(), 'Desktop/LP-DevBuilds');
+const STORE_DIR = process.env.LP_DEV_BUILD_DIR || join(ROOT, '.dev-builds');
 const ROW_RE = /^\|\s*(\d+)\s*\|/;
 
 function fail(msg) {
