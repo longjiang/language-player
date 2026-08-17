@@ -276,11 +276,8 @@ export function EpubReaderPanel({
             </div>
           ) : (
             <>
-              {loadingTokens && pageBlocks.length > 0 && (
-                <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
-                </div>
-              )}
+              {/* loadingTokens indicator removed — no "making text
+                  interactive" row; content shows when ready */}
               {pageBlocks.map(renderBlock)}
             </>
           )}
