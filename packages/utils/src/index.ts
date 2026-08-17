@@ -91,7 +91,6 @@ export {
 } from './day-boundary';
 export { tokenMatchesAnyTerm, tokenMatchesAnyForm } from './highlight-match';
 export type { HighlightToken } from './highlight-match';
-export { pickSavedEntry } from './saved-gloss';
 export {
   getSyncEntityDef,
   validateSyncPayload,
