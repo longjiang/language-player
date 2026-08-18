@@ -44,7 +44,7 @@ export function Header() {
           </Pressable>
 
           {/* Desktop/tablet navigation — mirrors web md+ dropdowns */}
-          {isMd && <NavBar headerHeight={headerHeight} />}
+          {isMd && <NavBar />}
 
           {/* Spacer */}
           <View className="flex-1" />

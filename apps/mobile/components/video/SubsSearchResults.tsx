@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, Image, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
@@ -38,7 +39,7 @@ import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play } from 'lucide-react-native';
+import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play, ArrowUpDown } from 'lucide-react-native';
 
 /** Compact number label (e.g. "12K") with a plain fallback. */
 function formatNumber(n: number | undefined, locale: string): string {
@@ -645,37 +646,38 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return currentVideo.subs_l2.some((l) => l.starttime > currentTime + 0.3);
   }, [currentVideo, currentTime]);
 
-  // ── Toolbar — text filter + sort chips + AI status (SPEC-082 Tasks 8/10),
-  // shown above the list on the default surface ──
+  // ── Toolbar — text filter + sort dropdown (SPEC-082 Tasks 8/10),
+  // shown above the list on the default surface. Sort is a native
+  // UIMenu/PopupMenu next to the search field, matching web's layout
+  // (search input flex-1 + sort Select in one row).
+  const currentSortLabel = t(SORT_OPTIONS.find((o) => o.key === listSort)?.labelKey ?? SORT_OPTIONS[0]!.labelKey);
   const toolbar = (
     <View className="mb-2 gap-2">
-      <TextInput
-        value={listSearch}
-        onChangeText={setListSearch}
-        placeholder={t('placeholder.filter')}
-        placeholderTextColor={ICON_MUTED}
-        className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
-      />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-row gap-1.5">
-          {SORT_OPTIONS.map((opt) => {
-            const active = listSort === opt.key;
-            return (
-              <Pressable
-                key={opt.key}
-                onPress={() => setListSort(opt.key)}
-                className={`rounded-full px-2.5 py-1 ${active ? 'bg-primary/10' : 'bg-muted'}`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-              >
-                <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {t(opt.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
+      <View className="flex-row items-center gap-2">
+        <TextInput
+          value={listSearch}
+          onChangeText={setListSearch}
+          placeholder={t('placeholder.filter')}
+          placeholderTextColor={ICON_MUTED}
+          className="h-8 flex-1 rounded-md border border-border bg-muted/50 px-2 text-xs text-foreground"
+        />
+        <MenuView
+          onPressAction={({ nativeEvent }) => setListSort(nativeEvent.event as SubsSearchSortKey)}
+          actions={SORT_OPTIONS.map((opt) => ({
+            id: opt.key,
+            title: t(opt.labelKey),
+            state: (listSort === opt.key ? 'on' : 'off') as 'on' | 'off',
+          }))}
+        >
+          <Pressable className="h-8 flex-row items-center gap-1.5 rounded-md bg-muted/50 px-2.5">
+            <ArrowUpDown size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-foreground" numberOfLines={1}>
+              {currentSortLabel}
+            </Text>
+            <ChevronDown size={12} color={ICON_MUTED} />
+          </Pressable>
+        </MenuView>
+      </View>
       {/* AI status row — spinner while analyzing, retry on failure
           (web belowToolbar parity). */}
       {listSort === 'ai' && aiLoading ? (

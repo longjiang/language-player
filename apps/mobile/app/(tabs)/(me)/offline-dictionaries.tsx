@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, ScrollView, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Alert, TextInput, Platform } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -7,10 +8,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L2S, TOKENIZER_CONFIG, POPULAR_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
-import { ContextMenu } from '@/components/ui/context-menu';
-import type { ContextMenuItem } from '@/components/ui/context-menu';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search } from 'lucide-react-native';
+import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search, MoreVertical } from 'lucide-react-native';
 import { log } from '@/lib/logger';
 
 // ── Language name lookup ─────────────────────
@@ -416,19 +415,27 @@ export default function OfflineDictionariesScreen() {
           </Text>
         </View>
         {downloadedList.length > 0 && (
-          <ContextMenu
-            items={[
+          <MenuView
+            onPressAction={({ nativeEvent }) => {
+              if (nativeEvent.event === 'delete-all') handleDeleteAll();
+            }}
+            actions={[
               {
-                key: 'delete-all',
-                icon: Trash2,
-                label: t('action.delete_all'),
-                destructive: true,
-                onPress: handleDeleteAll,
+                id: 'delete-all',
+                title: t('action.delete_all'),
+                attributes: { destructive: true },
+                image: Platform.OS === 'ios' ? 'trash' : undefined,
               },
             ]}
-            triggerClassName="rounded-lg p-2 -mt-1"
-            triggerSize={20}
-          />
+          >
+            <Pressable
+              className="rounded-lg p-2 -mt-1"
+              hitSlop={6}
+              accessibilityRole="button"
+            >
+              <MoreVertical size={20} color={ICON_MUTED} />
+            </Pressable>
+          </MenuView>
         )}
       </View>
 

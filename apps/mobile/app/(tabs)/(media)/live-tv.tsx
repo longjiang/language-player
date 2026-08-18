@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Image, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Image, TextInput } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -25,7 +25,7 @@ function countryName(code: string, locale: string): string {
   }
 }
 
-/** Dropdown picker — native ActionSheet on iOS, safe-area-aware modal on Android. */
+/** Dropdown picker — native UIMenu on iOS, PopupMenu on Android. */
 function DropdownPicker<T extends string>({
   value,
   options,
@@ -37,68 +37,25 @@ function DropdownPicker<T extends string>({
   getLabel: (opt: T) => string;
   onChange: (opt: T) => void;
 }) {
-  const insets = useSafeAreaInsets();
-  const [open, setOpen] = useState(false);
-
-  const handlePress = () => {
-    if (Platform.OS === 'ios') {
-      const labels = options.map(getLabel);
-      const cancelIndex = options.length;
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [...labels, 'Cancel'],
-          cancelButtonIndex: cancelIndex,
-        },
-        (index) => {
-          if (index !== cancelIndex) onChange(options[index]);
-        },
-      );
-    } else {
-      setOpen(true);
-    }
-  };
+  // Native menu actions; `state: 'on'` shows a checkmark on the selected option.
+  const actions = options.map((opt) => ({
+    id: opt,
+    title: getLabel(opt),
+    state: (opt === value ? 'on' : 'off') as 'on' | 'off',
+  }));
 
   return (
-    <View>
-      <Pressable
-        onPress={handlePress}
-        className="flex-row items-center gap-1 rounded-lg border border-border bg-card px-3 py-2"
-      >
+    <MenuView
+      onPressAction={({ nativeEvent }) => onChange(nativeEvent.event as T)}
+      actions={actions}
+    >
+      <Pressable className="flex-row items-center gap-1 rounded-lg border border-border bg-card px-3 py-2">
         <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
           {getLabel(value)}
         </Text>
         <ChevronDown size={14} color={ICON_MUTED} />
       </Pressable>
-
-      {open && Platform.OS !== 'ios' && (
-        <Modal transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-          <Pressable className="flex-1 bg-black/30" onPress={() => setOpen(false)}>
-            <View style={{ height: insets.top + 8 }} />
-            <View className="mx-4 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
-              <ScrollView className="max-h-64">
-                {options.map((opt) => (
-                  <Pressable
-                    key={opt}
-                    onPress={() => { onChange(opt); setOpen(false); }}
-                    className={`px-4 py-3 border-b border-border active:bg-muted ${
-                      opt === value ? 'bg-primary/10' : ''
-                    }`}
-                  >
-                    <Text
-                      className={`text-sm ${
-                        opt === value ? 'text-primary font-medium' : 'text-foreground'
-                      }`}
-                    >
-                      {getLabel(opt)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          </Pressable>
-        </Modal>
-      )}
-    </View>
+    </MenuView>
   );
 }
 

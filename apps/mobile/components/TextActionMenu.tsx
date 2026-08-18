@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, Modal, ScrollView, ActivityIndicator, Alert,
+  View, Text, Modal, ScrollView, ActivityIndicator, Alert, Platform,
 } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,12 +13,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
-import { ContextMenu } from '@/components/ui/context-menu';
-import type { ContextMenuItem } from '@/components/ui/context-menu';
-import { ICON_MUTED } from '@/lib/theme-colors';
-import {
-  Copy, Volume2, Square, Sparkles, Languages, X,
-} from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { MoreVertical, X } from 'lucide-react-native';
 
 interface TextActionMenuProps {
   /** Plain text content to act on. */
@@ -59,7 +56,6 @@ export function TextActionMenu(props: TextActionMenuProps) {
     reset: resetExplain,
   } = useStreamingExplanation();
 
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activeAction, setActiveAction] = useState<ActionKind | null>(null);
   const [translateResult, setTranslateResult] = useState<string | null>(null);
   const [translateLoading, setTranslateLoading] = useState(false);
@@ -131,45 +127,73 @@ export function TextActionMenu(props: TextActionMenuProps) {
     }
   }, [text, l2Code, effectiveL1, t]);
 
-  // ── Build ContextMenu items ──
+  // ── Build native UIMenu actions ──
+  // iOS SF Symbol per item (Android PopupMenu renders text-only). `imageColor`
+  // must be set or New-Arch iOS 26 tints the icon transparent (see
+  // ChannelActionsMenu for the react-native-menu#1034/#1200 workaround).
 
-  const menuItems: ContextMenuItem[] = [
+  const sf = (name: string) => (Platform.OS === 'ios' ? name : undefined);
+
+  const actions = [
     {
-      key: 'copy',
-      icon: Copy,
-      label: t('action.copy'),
-      onPress: handleCopy,
+      id: 'copy',
+      title: t('action.copy'),
+      image: sf('doc.on.doc'),
+      imageColor: ICON_PRIMARY,
     },
     {
-      key: 'speak',
-      icon: isSpeaking ? Square : Volume2,
-      label: isSpeaking ? t('action.stop') : t('action.speak'),
-      onPress: handleSpeak,
+      id: 'speak',
+      title: isSpeaking ? t('action.stop') : t('action.speak'),
+      image: sf(isSpeaking ? 'stop.fill' : 'speaker.wave.2'),
+      imageColor: ICON_PRIMARY,
     },
     {
-      key: 'explain',
-      icon: Sparkles,
-      label: t('action.let_ai_explain'),
-      onPress: handleExplain,
-      loading: activeAction === 'explain' && explainLoading,
+      id: 'explain',
+      title: t('action.let_ai_explain'),
+      image: sf('sparkles'),
+      imageColor: ICON_PRIMARY,
     },
     {
-      key: 'translate',
-      icon: Languages,
-      label: t('action.translation'),
-      onPress: handleTranslate,
-      loading: activeAction === 'translate' && translateLoading,
+      id: 'translate',
+      title: t('action.translation'),
+      image: sf('character.bubble'),
+      imageColor: ICON_PRIMARY,
     },
   ];
 
+  const handleAction = useCallback(
+    (event: string) => {
+      switch (event) {
+        case 'copy':
+          void handleCopy();
+          break;
+        case 'speak':
+          handleSpeak();
+          break;
+        case 'explain':
+          handleExplain();
+          break;
+        case 'translate':
+          void handleTranslate();
+          break;
+      }
+    },
+    [handleCopy, handleSpeak, handleExplain, handleTranslate],
+  );
+
   const menu = (
-    <ContextMenu
-      items={menuItems}
-      open={menuOpen}
-      onOpenChange={setMenuOpen}
-      triggerClassName="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
-      triggerSize={16}
-    />
+    <MenuView
+      onPressAction={({ nativeEvent }) => handleAction(nativeEvent.event)}
+      actions={actions}
+    >
+      <Pressable
+        className="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
+        hitSlop={6}
+        accessibilityRole="button"
+      >
+        <MoreVertical size={16} color={ICON_MUTED} />
+      </Pressable>
+    </MenuView>
   );
 
   return (

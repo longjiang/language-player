@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import * as Speech from 'expo-speech';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,7 +8,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { getSampleSentence } from '@langplayer/shared';
 import { Volume2, Square, ChevronDown } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 const RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
@@ -21,7 +22,6 @@ export function VoicePicker() {
   const { getL2, updateL2, loaded } = useSettingsContext();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceList, setVoiceList] = useState<{ identifier: string; name: string; language: string }[]>([]);
-  const [showVoices, setShowVoices] = useState(false);
 
   const l2Settings = loaded ? getL2(l2Lang.code) : null;
   const rate = l2Settings?.speech.rate ?? 1.0;
@@ -63,74 +63,51 @@ export function VoicePicker() {
         {t('setting.speech')}
       </Text>
 
-      {/* Voice picker (only if voices are available) */}
+      {/* Voice picker (only if voices are available) — native UIMenu/PopupMenu */}
       {voiceList.length > 0 && (
         <View className="mb-4">
           <Text className="text-sm font-medium text-foreground mb-1.5">{t('label.pronunciation_voice')}</Text>
-          <Pressable
-            onPress={() => setShowVoices(!showVoices)}
-            className="flex-row items-center justify-between rounded-lg border border-border bg-card px-3 py-3"
+          <MenuView
+            onPressAction={({ nativeEvent }) => {
+              const ev = nativeEvent.event;
+              if (ev === '__auto__') {
+                updateL2(l2Lang.code, { speech: { ...l2Settings!.speech, voiceURI: null } });
+              } else {
+                updateL2(l2Lang.code, { speech: { ...l2Settings!.speech, voiceURI: ev } });
+              }
+            }}
+            actions={[
+              // "Auto" option — only shown when a custom voice is already set.
+              ...(selectedVoice
+                ? [{ id: '__auto__', title: t('label.auto_best_available'), state: 'off' as const }]
+                : []),
+              // L2 voices (preferred).
+              ...l2Voices.map((v) => ({
+                id: v.identifier,
+                title: v.name,
+                state: (selectedVoice === v.identifier ? 'on' : 'off') as 'on' | 'off',
+              })),
+              // Other voices — only shown when no L2 voices are available.
+              ...(l2Voices.length === 0
+                ? otherVoices.slice(0, 10).map((v) => ({
+                    id: v.identifier,
+                    title: v.name,
+                    state: (selectedVoice === v.identifier ? 'on' : 'off') as 'on' | 'off',
+                  }))
+                : []),
+            ]}
           >
-            <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
-              {selectedVoice
-                ? voiceList.find((v) => v.identifier === selectedVoice)?.name ?? t('label.custom_voice')
-                : l2Voices.length > 0
-                  ? t('label.auto_best_available')
-                  : t('label.auto_best_for', { l2: l2Lang.code.toUpperCase() })}
-            </Text>
-            <ChevronDown size={16} color={ICON_MUTED} />
-          </Pressable>
-
-          {showVoices && (
-            <View className="mt-1 rounded-lg border border-border bg-card overflow-hidden max-h-48">
-              {/* Auto option */}
-              {selectedVoice && (
-                <Pressable
-                  onPress={() => { updateL2(l2Lang.code, { speech: { ...l2Settings!.speech, voiceURI: null } }); setShowVoices(false); }}
-                  className="flex-row items-center gap-2 px-3 py-3 border-b border-border"
-                >
-                  <Volume2 size={14} color={ICON_MUTED} />
-                  <Text className="text-sm text-foreground flex-1">{t('label.auto_best_available')}</Text>
-                </Pressable>
-              )}
-
-              {/* L2 voices */}
-              {l2Voices.map((v) => (
-                <Pressable
-                  key={v.identifier}
-                  onPress={() => { updateL2(l2Lang.code, { speech: { ...l2Settings!.speech, voiceURI: v.identifier } }); setShowVoices(false); }}
-                  className={`flex-row items-center gap-2 px-3 py-3 border-b border-border ${selectedVoice === v.identifier ? 'bg-primary/10' : ''}`}
-                >
-                  <Volume2 size={14} color={selectedVoice === v.identifier ? ICON_PRIMARY : ICON_MUTED} />
-                  <Text
-                    className={`text-sm flex-1 ${selectedVoice === v.identifier ? 'text-primary font-semibold' : 'text-foreground'}`}
-                    numberOfLines={1}
-                  >
-                    {v.name}
-                  </Text>
-                  <Text className="text-xs text-muted-foreground">{v.language}</Text>
-                </Pressable>
-              ))}
-
-              {/* Other voices — only show if no L2 voices available */}
-              {l2Voices.length === 0 && otherVoices.slice(0, 10).map((v) => (
-                <Pressable
-                  key={v.identifier}
-                  onPress={() => { updateL2(l2Lang.code, { speech: { ...l2Settings!.speech, voiceURI: v.identifier } }); setShowVoices(false); }}
-                  className={`flex-row items-center gap-2 px-3 py-3 border-b border-border ${selectedVoice === v.identifier ? 'bg-primary/10' : ''}`}
-                >
-                  <Volume2 size={14} color={selectedVoice === v.identifier ? ICON_PRIMARY : ICON_MUTED} />
-                  <Text
-                    className={`text-sm flex-1 ${selectedVoice === v.identifier ? 'text-primary font-semibold' : 'text-foreground'}`}
-                    numberOfLines={1}
-                  >
-                    {v.name}
-                  </Text>
-                  <Text className="text-xs text-muted-foreground">{v.language}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
+            <Pressable className="flex-row items-center justify-between rounded-lg border border-border bg-card px-3 py-3">
+              <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
+                {selectedVoice
+                  ? voiceList.find((v) => v.identifier === selectedVoice)?.name ?? t('label.custom_voice')
+                  : l2Voices.length > 0
+                    ? t('label.auto_best_available')
+                    : t('label.auto_best_for', { l2: l2Lang.code.toUpperCase() })}
+              </Text>
+              <ChevronDown size={16} color={ICON_MUTED} />
+            </Pressable>
+          </MenuView>
         </View>
       )}
 
