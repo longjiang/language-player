@@ -54,6 +54,12 @@ interface LineLayout {
   l2FontSize: number;
   l2LineHeight: number;
   anchorFont: { family: string; weight: string; style: string };
+  /** Distance (px) from the column top to the FIRST L2 base-text line.
+   *  Zero without phonetics; with ruby annotations it equals the first
+   *  line's ruby band, which must be prepended to the row grid so the
+   *  translation baselines land on the base lines, not the annotation
+   *  tops. */
+  firstLineOffset: number;
 }
 
 export interface AlignedTranslationProps {
@@ -281,7 +287,12 @@ export function AlignedTranslation({
       const lastBottom = rows[rows.length - 1]!.bottom;
       const lastGap = Math.max(0, lastBottom - baseTops[baseTops.length - 1]! - lh2r);
       gaps.push(Math.min(lastGap, lh2r * 0.6));
-      log(`[AlignedTranslation] measure:gaps tag="${tag}" lh2=${Math.round(lh2r)} gaps=${gaps.map(g => Math.round(g * 10) / 10).join(',')}`);
+      // The row grid below starts at the column top; the L2 base text starts
+      // below the first line's ruby band (baseTops[0] is viewport-absolute).
+      // Shift the whole grid down by that offset or every translation line
+      // sits `band` px above its L2 line.
+      const firstLineOffset = Math.max(0, baseTops[0]! - rRect.top);
+      log(`[AlignedTranslation] measure:gaps tag="${tag}" lh2=${Math.round(lh2r)} gaps=${gaps.map(g => Math.round(g * 10) / 10).join(',')} firstLineOffset=${Math.round(firstLineOffset * 10) / 10}`);
 
       // Slice the translation into its visual lines on a hidden probe that
       // shares the column width and the translation column's own font
@@ -330,6 +341,7 @@ export function AlignedTranslation({
         l2FontSize: f2r,
         l2LineHeight: lh2r,
         anchorFont: { family: cs.fontFamily, weight: cs.fontWeight, style: cs.fontStyle },
+        firstLineOffset,
       });
       log(`[AlignedTranslation] measure:ready tag="${tag}" l2Lines=${gaps.length} trLines=${lines.length} f2=${Math.round(f2r)} lh2=${Math.round(lh2r)}`);
     } catch (err) {
@@ -402,7 +414,7 @@ export function AlignedTranslation({
     );
   }
 
-  const { gaps, lines, l2FontSize, l2LineHeight, anchorFont } = layout;
+  const { gaps, lines, l2FontSize, l2LineHeight, anchorFont, firstLineOffset } = layout;
   const rows = Math.max(gaps.length, lines.length);
   // Each grid row is EXACTLY one L2 line height (a fixed height, so flex
   // baseline alignment repositions the translation to the L2 baseline instead
@@ -427,7 +439,7 @@ export function AlignedTranslation({
   return (
     <div ref={rootRef} className="relative">
       <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 w-full">{text}</div>
-      <div ref={rowsRef}>
+      <div ref={rowsRef} style={{ marginTop: firstLineOffset }}>
         {Array.from({ length: rows }).map((_, j) => (
           <Fragment key={j}>
             <div className="flex items-baseline" style={rowStyle}>
