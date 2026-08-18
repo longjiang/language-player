@@ -5,11 +5,19 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ReplacementSpan
 import android.util.Log
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.ViewConfiguration
+import androidx.appcompat.widget.AppCompatTextView
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
-import expo.modules.kotlin.views.ExpoView
+import kotlin.math.abs
 import kotlin.math.max
 
 /** One tappable text run inside a paragraph-level ruby renderer. */
@@ -30,16 +38,31 @@ class RubyParagraphRun(
 )
 
 /**
- * Paragraph-level ruby renderer for Android, mirroring the iOS
- * RubyTextParagraphView: ONE ExpoView per block draws the entire line with
- * Canvas — base text plus readings above it — instead of one native view per
- * token. JS measures an invisible RN Text and passes the exact box via style.
+ * Paragraph-level ruby renderer for Android (SPEC-084 Task 2 rewrite).
  *
- * Fabric/Yoga does not lay out or draw children of custom ExpoViews
- * reliably, so everything is painted in this view's own draw() (and
- * setWillNotDraw(false) guarantees draw() runs).
+ * Replaces the previous Canvas-painted ExpoView with a real AppCompatTextView
+ * so Android's native text selection (long-press handles, selection highlight,
+ * onSelectionChanged) works on ruby text. One [RubyReplacementSpan] per token
+ * paints the reading above the base text inside the span's box — the same
+ * advance/line-height math as the old canvas renderer, so the ruby visuals are
+ * unchanged. The span's CharSequence is BASE TEXT ONLY (readings live in the
+ * span's draw()), so selection.toString() matches the source text like web's
+ * select-none annotations.
+ *
+ * Atomic spans are acceptable: the old canvas renderer already never split a
+ * run across lines (buildLines() wrapped whole tokens), so span atomicity is
+ * behavior parity, not a regression.
+ *
+ * Fabric/Yoga does not lay out children of custom ExpoViews, so JS measures an
+ * invisible RN Text and passes the exact box via `style` — this view is the
+ * TextView itself (no child to lay out) and sizes from that style.
+ *
+ * expo-modules-kotlin registers any android.view.View subclass
+ * (ViewDefinitionBuilder<T : View>); ExpoView is a convenience base, not a
+ * requirement, so extending AppCompatTextView is supported. The constructor
+ * (Context, AppContext) matches the module's view factory.
  */
-class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompatTextView(context) {
 
   var runs: List<RubyParagraphRun> = emptyList()
     set(value) {
@@ -77,145 +100,233 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
       rebuild()
     }
 
-  private val onTokenTap by EventDispatcher<Map<String, Any>>()
+  /** Bump to collapse the native selection (dictionary popup dismiss) —
+   *  SPEC-084 Task 1.3 / Task 2. */
+  var clearSelection: Int = 0
+    set(value) {
+      if (value != field) {
+        field = value
+        collapseSelection()
+      }
+    }
 
-  private val basePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-  private val readingPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-  // RN passes sizes in dp; Canvas measures in px. Scale so a 16dp font is a
-  // 16dp font on high-density screens.
+  private val onTokenTap by EventDispatcher<Map<String, Any>>()
+  private val onSelection by EventDispatcher<Map<String, Any>>()
+
+  // RN passes sizes in dp; Canvas/TextView draw in px.
   private val density: Float = resources.displayMetrics.density
+  private var downX = 0f
+  private var downY = 0f
 
   private fun dp(value: Float): Float = value * density
 
-  private class LineRun(
-    val run: RubyParagraphRun,
-    var x: Float,
-    val baseWidth: Float,
-    val readingWidth: Float,
-    val advance: Float
-  )
-
   init {
-    // Critical: a ViewGroup with no background is "will not draw" by default;
-    // without this Fabric skips our draw() entirely.
-    setWillNotDraw(false)
-    isClickable = true
-    Log.i("LP Mobile", "[RubyText] Android RubyTextParagraphView created (canvas renderer)")
+    Log.i("LP Mobile", "[RubyText] Android RubyTextParagraphView created (TextView + spans)")
+    // Native selection: long-press handles, highlight, onSelectionChanged.
+    setTextIsSelectable(true)
+    // Hide the Copy / Select All context menu — the dictionary popup is the
+    // only consumer of a selection. Selection handles remain.
+    setCustomSelectionActionModeCallback(object : ActionMode.Callback {
+      override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean = false
+      override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
+      override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean = false
+      override fun onDestroyActionMode(mode: ActionMode) {}
+    })
+    setIncludeFontPadding(false)
   }
 
-  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-    super.onSizeChanged(w, h, oldw, oldh)
-    Log.i("LP Mobile", "[RubyText] paragraph size ${w}x$h runs=${runs.size}")
+  /** Collapse the current selection (web clear() parity — SPEC-084). */
+  private fun collapseSelection() {
+    val start = selectionStart
+    val end = selectionEnd
+    if (start >= 0 && end >= 0 && start != end) {
+      setSelection(max(start, end))
+    }
+  }
+
+  override fun onSelectionChanged(selStart: Int, selEnd: Int) {
+    super.onSelectionChanged(selStart, selEnd)
+    // Report non-collapsed selections as { start, end } (offsets into the base
+    // text — readings are drawn by the spans, not part of the CharSequence).
+    // Fires continuously while handles are dragged — JS applies a settle timer.
+    if (selStart >= 0 && selEnd >= 0 && selStart != selEnd) {
+      onSelection(mapOf("start" to selStart, "end" to selEnd))
+    }
+  }
+
+  /** Map a tap to the token whose span contains the tapped offset — only for
+   *  real taps (movement within touch slop), so releasing a selection-handle
+   *  drag never opens the token popup. */
+  override fun onTouchEvent(event: MotionEvent): Boolean {
+    when (event.actionMasked) {
+      MotionEvent.ACTION_DOWN -> {
+        downX = event.x
+        downY = event.y
+      }
+      MotionEvent.ACTION_UP -> {
+        val slop = ViewConfiguration.get(context).scaledTouchSlop
+        if (abs(event.x - downX) <= slop && abs(event.y - downY) <= slop) {
+          val layout = layout
+          if (layout != null) {
+            val offset = layout.getOffsetForPosition(event.x, event.y)
+            val span = (text as? Spanned)?.getSpans(offset, offset, RubyReplacementSpan::class.java)
+              ?.firstOrNull()
+            val run = span?.run
+            if (run?.tappable == true) {
+              onTokenTap(mapOf("tokenId" to run.tokenId))
+            }
+          }
+        }
+      }
+    }
+    return super.onTouchEvent(event)
   }
 
   private fun rebuild() {
-    invalidate()
+    if (runs.isEmpty()) {
+      setText("")
+      return
+    }
+    val basePaint = makeBasePaint()
+    basePaint.textSize = dp(fontSize)
+    // Force every line box to exactly dp(lineHeight): base line (font metrics
+    // with includeFontPadding=false) plus the reserved reading slot.
+    val fm = basePaint.fontMetricsInt
+    val baseLineHeight = (fm.descent - fm.ascent).toFloat()
+    setLineSpacing(dp(lineHeight) - baseLineHeight, 1f)
+    setTextDirection(if (isRtl) TEXT_DIRECTION_RTL else TEXT_DIRECTION_LTR)
+
+    val builder = SpannableStringBuilder()
+    for (run in runs) {
+      if (run.text.isEmpty()) continue
+      val start = builder.length
+      builder.append(run.text)
+      builder.setSpan(
+        RubyReplacementSpan(run, density, fontSize, readingSize, fontFamily),
+        start,
+        start + run.text.length,
+        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+      )
+    }
+    setText(builder)
     Log.i(
       "LP Mobile",
-      "[RubyText] paragraph rebuild runs=${runs.size} first=\"${runs.firstOrNull()?.text}\" lineHeight=$lineHeight"
+      "[RubyText] paragraph rebuild runs=${runs.size} chars=${builder.length} lineHeight=$lineHeight"
     )
   }
 
-  override fun draw(canvas: Canvas) {
-    super.draw(canvas)
-    if (runs.isEmpty() || width <= 0 || height <= 0) return
+  /** Shared base paint metrics mirror the old canvas basePaint. */
+  private fun makeBasePaint(): Paint =
+    Paint(Paint.ANTI_ALIAS_FLAG).apply {
+      textSize = dp(fontSize)
+      typeface = makeTypeface(null)
+    }
 
-    // Metrics for line positioning must reflect the actual base/reading sizes.
-    basePaint.textSize = dp(fontSize)
-    readingPaint.textSize = dp(readingSize)
-    val baseMetrics = basePaint.fontMetrics
-    val readingMetrics = readingPaint.fontMetrics
-
-    val lines = buildLines()
-    var lineTop = 0f
-    for (line in lines) {
-      val baseBaseline = lineTop + dp(lineHeight) - baseMetrics.descent
-      // Ruby sits directly on top of the base text: its descent meets the
-      // base ascent, so lineHeight no longer leaves a big gap between them.
-      val readingBaseline = baseBaseline + baseMetrics.ascent - readingMetrics.descent
-      for (lineRun in line) {
-        val run = lineRun.run
-        val paint = paintFor(run)
-        val readingPaintForRun = readingPaintFor(run)
-        val baseX = lineRun.x + (lineRun.advance - lineRun.baseWidth) / 2f
-        val rubyX = lineRun.x + (lineRun.advance - lineRun.readingWidth) / 2f
-        if (run.background != null) {
-          val bgPaint = Paint().apply {
-            color = applyAlpha(run.background, run.backgroundAlpha)
-          }
-          canvas.drawRect(lineRun.x, lineTop, lineRun.x + lineRun.advance, lineTop + dp(lineHeight), bgPaint)
-        }
-        if (!run.reading.isNullOrEmpty()) {
-          canvas.drawText(
-            run.reading,
-            rubyX,
-            readingBaseline,
-            readingPaintForRun
-          )
-        }
-        canvas.drawText(run.text, baseX, baseBaseline, paint)
-      }
-      lineTop += dp(lineHeight)
+  private fun makeTypeface(run: RubyParagraphRun?): Typeface {
+    val style = when {
+      run?.bold == true && run.italic == true -> Typeface.BOLD_ITALIC
+      run?.bold == true -> Typeface.BOLD
+      run?.italic == true -> Typeface.ITALIC
+      else -> Typeface.NORMAL
+    }
+    return if (fontFamily != null) {
+      Typeface.create(fontFamily, style)
+    } else {
+      Typeface.create(Typeface.DEFAULT, style)
     }
   }
 
-  private fun buildLines(): List<List<LineRun>> {
-    val lines = mutableListOf<MutableList<LineRun>>()
-    var current = mutableListOf<LineRun>()
-    var x = 0f
-    for (run in runs) {
-      if (run.text == "\n") {
-        if (current.isNotEmpty()) {
-          lines.add(current)
-          current = mutableListOf()
-          x = 0f
-        }
-        continue
-      }
-      val baseWidth = paintFor(run).measureText(run.text)
-      val readingWidth =
-        if (!run.reading.isNullOrEmpty()) readingPaintFor(run).measureText(run.reading) else 0f
-      // Advance by the wider of base/ruby so a long reading can never spill
-      // into the neighboring token's box (no more accidental overhang/collisions).
-      val advance = max(baseWidth, readingWidth)
-      if (x > 0f && x + advance > width && current.isNotEmpty()) {
-        lines.add(current)
-        current = mutableListOf()
-        x = 0f
-      }
-      current.add(LineRun(run, x, baseWidth, readingWidth, advance))
-      x += advance
-    }
-    if (current.isNotEmpty()) lines.add(current)
+  private fun applyAlpha(color: Int, alpha: Float): Int {
+    val a = ((Color.alpha(color) * alpha).toInt().coerceIn(0, 255))
+    return (a shl 24) or (color and 0x00ffffff)
+  }
+}
 
-    // Basic RTL: draw each line from the right edge.
-    if (isRtl) {
-      for (line in lines) {
-        val total = line.sumOf { it.advance.toDouble() }.toFloat()
-        var offset = width - total
-        for (lineRun in line) {
-          lineRun.x = offset
-          offset += lineRun.advance
-        }
-      }
-    }
-    return lines
+/**
+ * One token's ruby cell: draws the reading above the base text inside the
+ * span's box (centered per token, advance = wider of base/reading) — exactly
+ * the old canvas renderer's per-run math, now inside a selectable TextView.
+ */
+private class RubyReplacementSpan(
+  val run: RubyParagraphRun,
+  private val density: Float,
+  private val fontSize: Float,
+  private val readingSize: Float,
+  private val fontFamily: String?
+) : ReplacementSpan() {
+
+  private fun dp(value: Float): Float = value * density
+
+  override fun getSize(
+    paint: Paint,
+    text: CharSequence,
+    start: Int,
+    end: Int,
+    fm: android.graphics.Paint.FontMetricsInt?
+  ): Int {
+    val base = basePaint(paint)
+    val reading = readingPaint(paint)
+    val baseWidth = base.measureText(text, start, end)
+    val readingWidth = if (!run.reading.isNullOrEmpty()) reading.measureText(run.reading) else 0f
+    // fm intentionally untouched: the TextView's setLineSpacing owns the line
+    // height, so the span contributes width only.
+    return max(baseWidth, readingWidth).toInt()
   }
 
-  private fun paintFor(run: RubyParagraphRun): Paint {
-    val paint = Paint(basePaint)
-    paint.textSize = dp(run.fontSize ?: fontSize)
-    paint.color = applyAlpha(run.color, run.opacity)
-    paint.typeface = makeTypeface(run)
-    paint.isUnderlineText = run.underline
-    return paint
+  override fun draw(
+    canvas: Canvas,
+    text: CharSequence,
+    start: Int,
+    end: Int,
+    x: Float,
+    top: Int,
+    y: Int,
+    bottom: Int,
+    paint: Paint
+  ) {
+    val base = basePaint(paint)
+    val reading = readingPaint(paint)
+    val baseMetrics = base.fontMetrics
+    val readingMetrics = reading.fontMetrics
+    val baseWidth = base.measureText(text, start, end)
+    val readingWidth = if (!run.reading.isNullOrEmpty()) reading.measureText(run.reading) else 0f
+    val advance = max(baseWidth, readingWidth)
+    val baseX = x + (advance - baseWidth) / 2f
+    val rubyX = x + (advance - readingWidth) / 2f
+
+    // Background highlight (saved word / search hit) over the whole box.
+    if (run.background != null) {
+      val bgPaint = Paint().apply {
+        color = applyAlpha(run.background, run.backgroundAlpha)
+      }
+      canvas.drawRect(x, top.toFloat(), x + advance, bottom.toFloat(), bgPaint)
+    }
+
+    // Line box: reading sits at the top, base text at the bottom (mirrors the
+    // canvas renderer: baseBaseline = lineBottom - baseDescent).
+    val baseBaseline = bottom.toFloat() - baseMetrics.descent
+    val readingBaseline = baseBaseline + baseMetrics.ascent - readingMetrics.descent
+    if (!run.reading.isNullOrEmpty()) {
+      canvas.drawText(run.reading, rubyX, readingBaseline, reading)
+    }
+    canvas.drawText(text, start, end, baseX, baseBaseline, base)
   }
 
-  private fun readingPaintFor(run: RubyParagraphRun): Paint {
-    val paint = Paint(readingPaint)
-    paint.textSize = dp(readingSize)
-    paint.color = applyAlpha(run.readingColor, run.opacity)
-    return paint
+  /** Base glyph paint: per-run size/typeface/color/opacity + decorations. */
+  private fun basePaint(paint: Paint): Paint {
+    val p = Paint(paint)
+    p.textSize = dp(run.fontSize ?: fontSize)
+    p.color = applyAlpha(run.color, run.opacity)
+    p.typeface = makeTypeface(run)
+    p.isUnderlineText = run.underline
+    return p
+  }
+
+  private fun readingPaint(paint: Paint): Paint {
+    val p = Paint(paint)
+    p.textSize = dp(readingSize)
+    p.color = applyAlpha(run.readingColor, run.opacity)
+    return p
   }
 
   private fun makeTypeface(run: RubyParagraphRun): Typeface {
@@ -235,24 +346,5 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : ExpoView
   private fun applyAlpha(color: Int, alpha: Float): Int {
     val a = ((Color.alpha(color) * alpha).toInt().coerceIn(0, 255))
     return (a shl 24) or (color and 0x00ffffff)
-  }
-
-  override fun onTouchEvent(event: MotionEvent): Boolean {
-    if (event.action == MotionEvent.ACTION_UP) {
-      val x = event.x
-      val y = event.y
-      val lineIndex = (y / dp(lineHeight)).toInt()
-      val lines = buildLines()
-      if (lineIndex in lines.indices) {
-        for (lineRun in lines[lineIndex]) {
-          if (x >= lineRun.x && x < lineRun.x + lineRun.advance && lineRun.run.tappable) {
-            onTokenTap(mapOf("tokenId" to lineRun.run.tokenId))
-            break
-          }
-        }
-      }
-      return true
-    }
-    return super.onTouchEvent(event)
   }
 }
