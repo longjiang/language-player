@@ -21,6 +21,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.music_and_entertainment', href: '/(tabs)/(media)/music', sf: 'music.note' },
       { key: 'title.live_tv', href: '/(tabs)/(media)/live-tv', sf: 'tv' },
       { key: 'title.tv_shows', href: '/(tabs)/(media)/tv-shows', sf: 'play.rectangle' },
+      { key: 'title.channels', href: '/(tabs)/(media)/channels', sf: 'play.tv' },
       { key: 'title.local_media', href: '/(tabs)/(media)/local-media', sf: 'arrow.up.doc' },
     ],
   },
