@@ -1243,7 +1243,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             { value: 'rightContext', label: t('title.rightContext') },
             { value: 'ai', label: t('sort.ai') },
           ]}
-          header={
+          belowToolbar={
             listSort === 'ai' && aiLoading ? (
               <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
                 <span className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
