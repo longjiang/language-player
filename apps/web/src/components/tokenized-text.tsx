@@ -39,13 +39,43 @@ import { ZOOM_TO_REM } from '@/lib/text-scale';
 // before it moved to lib/text-scale.
 export { ZOOM_TO_REM };
 
+/**
+ * Plain-text fallback with search-highlight ranges applied. The tokenized
+ * render only shows once lemmatization resolves, but a search match must be
+ * visible immediately — whether or not the text was previously seen, loaded,
+ * or tokenized (EPUB search). Other format types (bold/italic/code/…) are
+ * left for the tokenized render, matching pre-tokenization behavior.
+ */
+function highlightPlainText(text: string, formats: FormatRange[] | undefined): React.ReactNode {
+  const ranges = (formats ?? []).filter((f) => f.type === 'highlight' && f.end > f.start);
+  if (ranges.length === 0) return text;
+  const sorted = [...ranges].sort((a, b) => a.start - b.start);
+  const out: React.ReactNode[] = [];
+  let pos = 0;
+  for (const f of sorted) {
+    const start = Math.max(0, Math.min(f.start, text.length));
+    const end = Math.max(start, Math.min(f.end, text.length));
+    if (start > pos) out.push(text.slice(pos, start));
+    if (end > start) {
+      out.push(
+        <mark key={start} className="rounded-sm bg-primary/40 px-0.5 text-primary dark:bg-primary/60">
+          {text.slice(start, end)}
+        </mark>,
+      );
+    }
+    pos = Math.max(pos, end);
+  }
+  if (pos < text.length) out.push(text.slice(pos));
+  return out;
+}
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
   /**
    * Extra multiplier on top of the user's zoom setting from SettingsContext
    * (tokenizedText.zoom). Defaults to 1 (user zoom alone). Only single-line
-   * subtitles pass 1.5. SPEC-051: this is the only allowed non-default value.
+   * subtitles pass 1.33. SPEC-051: this is the only allowed non-default value.
    */
   textScale?: number;
   /**
@@ -198,7 +228,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   // Resolve effective font size (rem). The user's zoom setting from
   // SettingsContext always applies to block-level TokenizedText:
-  //   - textScale provided → textScale × user zoom (1.5 only for subtitles)
+  //   - textScale provided → textScale × user zoom (1.33 only for subtitles)
   //   - textScale omitted  → user zoom alone
   //   - inline / inheritSize → no inline font-size; parent controls size
   // Inline text also skips leading; inheritSize keeps leading.
@@ -651,7 +681,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (!hasBeenVisible && !preloadedTokens) {
     return (
       <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground/80 ${fontClass}`} style={textStyle}>
-        {text}
+        {highlightPlainText(text, formats)}
       </span>
     );
   }
@@ -659,7 +689,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (loading) {
     return (
       <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textStyle}>
-        {text}
+        {highlightPlainText(text, formats)}
       </span>
     );
   }
@@ -667,7 +697,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (error && tokens.length <= 1) {
     return (
       <span ref={containerRef} lang={glyphLang} dir={contentDir} className={`text-muted-foreground ${fontClass}`} style={textStyle}>
-        {text}
+        {highlightPlainText(text, formats)}
       </span>
     );
   }
