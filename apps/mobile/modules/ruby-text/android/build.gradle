@@ -13,3 +13,10 @@ android {
     versionName '0.1.0'
   }
 }
+
+dependencies {
+  // RubyTextParagraphView extends AppCompatTextView (SPEC-084 Task 2 rewrite).
+  // Declared here because appcompat is not transitively exposed to this
+  // module's compile classpath (it is `implementation` in other modules).
+  implementation 'androidx.appcompat:appcompat:1.7.1'
+}
