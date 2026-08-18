@@ -185,7 +185,7 @@ function SidePanelApp() {
     sendToTab('pageFollowLink', { href });
   }, [sendToTab]);
 
-  const closePanel = useCallback(() => {
+  const closePanel = useCallback(async () => {
     if (mode === 'page') {
       // Closing the panel from page mode disables page tokenization, exactly
       // like the old in-page close button (SPEC-075).
@@ -195,10 +195,16 @@ function SidePanelApp() {
       sendToTab('pageTokenizationOff');
     }
     try {
-      // Chrome 141+; older versions close via the browser's native ✕.
-      const tid = tabIdRef.current;
-      if (chrome.sidePanel?.close && tid != null) {
-        chrome.sidePanel.close({ tabId: tid });
+      // Chrome 141+ closes programmatically. The panel is a GLOBAL side panel
+      // (manifest side_panel.default_path, no per-tab setOptions), so
+      // close({ tabId }) rejects on Chrome 145+ when only the global panel is
+      // open. Pass windowId instead — that closes the global panel in the
+      // hosting window on every Chrome 141+ version.
+      if (chrome.sidePanel?.close) {
+        const win = await chrome.windows.getCurrent();
+        if (win?.id != null) {
+          await chrome.sidePanel.close({ windowId: win.id });
+        }
       }
     } catch {}
   }, [mode, sendToTab]);
