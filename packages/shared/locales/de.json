@@ -353,6 +353,8 @@
         "noun_class": "Klasse:",
         "offline": "Offline",
         "on_this_page": "Auf dieser Seite",
+        "other": "Andere",
+        "other_patterns": "Andere Muster",
         "overview": "Übersicht",
         "payment_email": "Zahlungs-E-Mail",
         "payment_id": "Zahlungs-ID",
@@ -741,6 +743,8 @@
         "admin_granted": "Admin-Rechte gewährt.",
         "admin_only_hint": "Nur für Administratoren.",
         "admin_removed": "Admin-Rechte entzogen.",
+        "ai_analyzing": "Muster werden mit KI analysiert…",
+        "ai_grouping_failed": "KI-Gruppierung fehlgeschlagen. Ergebnisse werden in Standardreihenfolge angezeigt.",
         "ai_pro_feature": "Profi-Funktion: KI-Erklärungen für Wörter im Kontext erhalten.",
         "all_done_desc": "Du hast alle fälligen Karten wiederholt. Komm später für weitere Wiederholungen zurück oder entdecke Videos, um neue Wörter zu speichern.",
         "all_done_for_now": "Für jetzt ist alles erledigt!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in semantische Bestandteile (Morpheme) zerlegt werden kann, und nenne wörtliche Deutungen des Wortes.",
         "followup_morphemes_context": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in \"{context}\" in semantische Bestandteile (Morpheme) zerlegt werden kann, und nenne wörtliche Deutungen des Wortes.",
         "followup_syntax": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
-        "followup_syntax_context": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in \"{context}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.)."
+        "followup_syntax_context": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in \"{context}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
+        "subs_ai_group": "Du bist ein Sprachlern-Assistent. Unten sind {n} Untertitelzeilen aus Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten."
     },
     "review": {
         "again": "Erneut",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Wortebene-Anzeige"
     },
     "sort": {
+        "ai": "KI",
         "alphabetical": "Alphabetisch",
         "most_viewed": "Meistgesehen",
         "newest": "Neueste",

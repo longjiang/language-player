@@ -342,6 +342,8 @@
         "noun_class": "词类：",
         "offline": "离线",
         "on_this_page": "本页内容",
+        "other": "其他",
+        "other_patterns": "其他模式",
         "overview": "概览",
         "payment_email": "付款邮箱",
         "payment_id": "付款ID",
@@ -727,6 +729,8 @@
         "admin_granted": "管理员权限已授予。",
         "admin_only_hint": "仅限管理员访问。",
         "admin_removed": "管理员权限已移除。",
+        "ai_analyzing": "正在用 AI 分析用法…",
+        "ai_grouping_failed": "AI 分组失败。按默认顺序显示结果。",
         "ai_pro_feature": "Pro 功能：获取单词在上下文中的 AI 解释。",
         "all_done_desc": "您已复习完所有到期卡片。稍后再来进行更多复习，或浏览视频收藏新单词。",
         "all_done_for_now": "暂时全部完成！",
@@ -1186,7 +1190,8 @@
         "followup_morphemes": "请解释{l2Name}单词\"{word}\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
         "followup_morphemes_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
         "followup_syntax": "请解释{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
-        "followup_syntax_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。"
+        "followup_syntax_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
+        "subs_ai_group": "你是一名语言学习助手。以下是来自视频的{n}行字幕，均为{l2Name}，包含术语\"{term}\"。"
     },
     "review": {
         "again": "重来",
@@ -1253,6 +1258,7 @@
         "word_level_display": "单词级显示"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "按字母顺序",
         "most_viewed": "最多观看",
         "newest": "最新",

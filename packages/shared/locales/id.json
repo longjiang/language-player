@@ -353,6 +353,8 @@
         "noun_class": "Kelas:",
         "offline": "Offline",
         "on_this_page": "Di halaman ini",
+        "other": "Lainnya",
+        "other_patterns": "Pola lainnya",
         "overview": "Ringkasan",
         "payment_email": "Email pembayaran",
         "payment_id": "ID pembayaran",
@@ -741,6 +743,8 @@
         "admin_granted": "Akses admin diberikan.",
         "admin_only_hint": "Khusus administrator.",
         "admin_removed": "Akses admin dihapus.",
+        "ai_analyzing": "Menganalisis pola dengan AI…",
+        "ai_grouping_failed": "Pengelompokan AI gagal. Menampilkan hasil dalam urutan default.",
         "ai_pro_feature": "Fitur premium: Dapatkan penjelasan kata dengan AI berdasarkan konteks.",
         "all_done_desc": "Anda telah meninjau semua kartu yang jatuh tempo. Kembali lagi nanti untuk peninjauan lebih lanjut, atau jelajahi video untuk menyimpan kata baru.",
         "all_done_for_now": "Selesai untuk Saat Ini!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Jelaskan apakah kata {l2Name} \"{word}\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
         "followup_morphemes_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" dapat dipecah menjadi bagian-bagian semantik (morfem), dan sebutkan interpretasi harfiah dari kata tersebut.",
         "followup_syntax": "Jelaskan apakah kata {l2Name} \"{word}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
-        "followup_syntax_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.)."
+        "followup_syntax_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
+        "subs_ai_group": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah {n} baris subtitle dari video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\"."
     },
     "review": {
         "again": "Lagi",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Tampilan per kata"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "Abjad",
         "most_viewed": "Paling Banyak Dilihat",
         "newest": "Terbaru",

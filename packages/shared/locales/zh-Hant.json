@@ -342,6 +342,8 @@
         "noun_class": "類別：",
         "offline": "離線",
         "on_this_page": "本頁內容",
+        "other": "其他",
+        "other_patterns": "其他模式",
         "overview": "總覽",
         "payment_email": "付款電子郵件",
         "payment_id": "付款ID",
@@ -727,6 +729,8 @@
         "admin_granted": "管理員權限已授予。",
         "admin_only_hint": "僅限管理員存取。",
         "admin_removed": "管理員權限已移除。",
+        "ai_analyzing": "正在用 AI 分析用法…",
+        "ai_grouping_failed": "AI 分組失敗。按預設順序顯示結果。",
         "ai_pro_feature": "專業版功能：取得單字的 AI 上下文解釋。",
         "all_done_desc": "你已複習完所有待處理的卡片。稍後再回來，或探索影片以儲存新單字。",
         "all_done_for_now": "全部完成！",
@@ -1178,7 +1182,8 @@
         "followup_morphemes": "請解釋{l2Name}單詞\"{word}\"是否可以分解成語義部分（語素），並指出該詞是否有字面解釋。",
         "followup_morphemes_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否可以分解成語義部分（語素），並指出該詞是否有字面解釋。",
         "followup_syntax": "請解釋{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
-        "followup_syntax_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。"
+        "followup_syntax_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
+        "subs_ai_group": "你是一名語言學習助手。以下是來自影片的{n}行字幕，均為{l2Name}，包含術語\"{term}\"。"
     },
     "review": {
         "again": "重來",
@@ -1231,6 +1236,7 @@
         "word_level_display": "單字級顯示"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "按字母順序",
         "most_viewed": "最多觀看",
         "newest": "最新",

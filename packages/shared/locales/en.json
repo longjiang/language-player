@@ -353,6 +353,8 @@
         "noun_class": "Class:",
         "offline": "Offline",
         "on_this_page": "On this page",
+        "other": "Other",
+        "other_patterns": "Other Patterns",
         "overview": "Overview",
         "payment_email": "Payment Email",
         "payment_id": "Payment ID",
@@ -741,6 +743,8 @@
         "admin_granted": "Admin access granted.",
         "admin_only_hint": "Administrator access only.",
         "admin_removed": "Admin access removed.",
+        "ai_analyzing": "Analyzing patterns with AI…",
+        "ai_grouping_failed": "AI grouping failed. Showing results in default order.",
         "ai_pro_feature": "Pro feature: Get AI explanations of words in context.",
         "all_done_desc": "You've reviewed all due cards. Come back later for more reviews, or explore videos to save new words.",
         "all_done_for_now": "All Done for Now!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Please explain whether the {l2Name} word \"{word}\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
         "followup_morphemes_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" can be broken down into semantic parts (morphemes), and note any literal interpretations of the word.",
         "followup_syntax": "Please explain whether the {l2Name} word \"{word}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
-        "followup_syntax_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc)."
+        "followup_syntax_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
+        "subs_ai_group": "You are a language-learning assistant. Below are {n} subtitle lines from videos, each in {l2Name}, that contain the term \"{term}\"."
     },
     "review": {
         "again": "Again",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Word-Level Display"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "Alphabetical",
         "most_viewed": "Most Viewed",
         "newest": "Newest",

@@ -353,6 +353,8 @@
         "noun_class": "Classe :",
         "offline": "Hors ligne",
         "on_this_page": "Sur cette page",
+        "other": "Autres",
+        "other_patterns": "Autres modèles",
         "overview": "Aperçu",
         "payment_email": "E-mail de paiement",
         "payment_id": "ID de paiement",
@@ -741,6 +743,8 @@
         "admin_granted": "Droits d'administrateur accordés.",
         "admin_only_hint": "Accès administrateur uniquement.",
         "admin_removed": "Droits d'administrateur retirés.",
+        "ai_analyzing": "Analyse des modèles par IA…",
+        "ai_grouping_failed": "Le regroupement par IA a échoué. Affichage des résultats dans l'ordre par défaut.",
         "ai_pro_feature": "Fonctionnalité Pro : Obtenez des explications IA des mots en contexte.",
         "all_done_desc": "Vous avez révisé toutes les cartes dues. Revenez plus tard pour d'autres révisions, ou explorez des vidéos pour enregistrer de nouveaux mots.",
         "all_done_for_now": "Tout est terminé pour l'instant !",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Expliquez si le mot {l2Name} \"{word}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
         "followup_morphemes_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
         "followup_syntax": "Expliquez si le mot {l2Name} \"{word}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
-        "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.)."
+        "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
+        "subs_ai_group": "Vous êtes un assistant d'apprentissage des langues. Voici {n} lignes de sous-titres de vidéos, chacune en {l2Name}, contenant le terme \"{term}\"."
     },
     "review": {
         "again": "Encore",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Affichage par mot"
     },
     "sort": {
+        "ai": "IA",
         "alphabetical": "Alphabétique",
         "most_viewed": "Les plus vus",
         "newest": "Plus récent",
