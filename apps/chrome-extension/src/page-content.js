@@ -15,7 +15,11 @@ import { buildRuby } from '@langplayer/utils';
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
 /** Language Player's own web assets — never tokenize these (mirrors popup.js). */
 const OWN_HOST_RE = /(^|\.)(languageplayer\.io|language-player\.netlify\.app)$/i;
-const BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote, td, figcaption, dt, dd';
+// Leaf text containers. `div` is included because many sites put whole article
+// bodies in a bare <div> with <br> separators (e.g. sengoku-his.com's .desc) —
+// the leaf-only filter below keeps wrapper divs (those containing other blocks)
+// out, so only text-bearing leaf divs are tokenized.
+const BLOCK_SELECTOR = 'p, li, h1, h2, h3, h4, h5, h6, blockquote, td, figcaption, dt, dd, div';
 const SKIP_SELECTOR = 'script, style, noscript, template, svg, canvas, iframe, input, textarea, select, [contenteditable], #lpv-transcript-panel';
 /** Tokenize blocks this far before they scroll into view (matches web TokenizedText). */
 const NEAR_VIEWPORT_MARGIN = '200px';
