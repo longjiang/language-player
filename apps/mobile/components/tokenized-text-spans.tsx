@@ -16,7 +16,7 @@ import type { RubySegment } from '@langplayer/utils';
 import { buildRuby } from '@langplayer/utils';
 import { RubyText, RubyTextParagraph } from '@/components/RubyText';
 import { NATIVE_RUBY_ACTIVE, useMobileRubyColors } from '@/lib/ruby-layout';
-import type { TextLayoutLine } from '@/lib/aligned-translation';
+import type { GridLine } from '@/lib/aligned-translation';
 import { tokenizedTextLogger } from '@/lib/logger';
 
 const { log } = tokenizedTextLogger;
@@ -347,7 +347,7 @@ interface RubyTextParagraphBlockProps {
   onReveal: (index: number) => void;
   /** Measured paragraph line grid — reported up to readers for translation
    *  baseline alignment. Must be identity-stable (memoized component). */
-  onLineGrid?: (lines: TextLayoutLine[]) => void;
+  onLineGrid?: (lines: GridLine[]) => void;
 }
 
 export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props: RubyTextParagraphBlockProps) {

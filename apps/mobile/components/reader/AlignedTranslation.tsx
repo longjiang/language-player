@@ -9,17 +9,19 @@
  * does not survive the nested View token layout, so this component computes
  * the same geometry explicitly:
  *
- *   - The L2 line grid comes from `onLineGrid` on the block's TokenizedText
- *     (measured on the same invisible RN Text that sizes the native ruby
- *     paragraph, so it matches the rendered line boxes exactly). Rows are
- *     spaced at the grid's line pitch (`lines[1].y − lines[0].y`).
+ *   - The L2 line grid comes from `onLineGrid` on the block's TokenizedText:
+ *     for ruby paragraphs it is measured natively on the paragraph's own
+ *     TextKit 2 layout WITH the ruby annotations (the reading band pushes
+ *     the base text's baseline down inside each pinned line box, so a
+ *     ruby-free RN Text cannot reproduce it); the plain inline-Text path
+ *     reports RN's own lines. Rows use each L2 line's own height and
+ *     baseline (`l2Lines[j].height` / `l2Lines[j].ascender`).
  *   - The translation is sliced into its visual lines on a hidden probe
  *     Text with the translation font and `lineHeight = L2 line pitch`
  *     (`onTextLayout` reports each line's text and metrics directly).
- *   - Each translation line renders in a row of exactly one L2 line box,
- *     shifted by `l2BaselineOffset − lineBaselineOffset` so its baseline
- *     coincides with the L2 line's baseline, whatever the two fonts'
- *     metrics are.
+ *   - Each translation line renders in a row of exactly its L2 line box,
+ *     shifted by `l2Line.ascender − lineAscender` so its baseline coincides
+ *     with the L2 line's baseline, whatever the two fonts' metrics are.
  *
  * Rows are only rendered once the probe has measured (the same measure-then-
  * render two-phase the web component uses); until then, a plain paragraph
@@ -32,13 +34,13 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import type { TextLayoutEvent } from 'react-native';
-import { lineOffsets, type TextLayoutLine } from '@/lib/aligned-translation';
+import { lineOffsets, type GridLine, type TextLayoutLine } from '@/lib/aligned-translation';
 
 export interface AlignedTranslationProps {
   /** Translation text (L1). */
   text: string;
   /** The L2 block's measured line grid (from TokenizedText's onLineGrid). */
-  l2Lines: TextLayoutLine[];
+  l2Lines: GridLine[];
   /** Translation font size (px) — the column's existing size. */
   trFontSize: number;
   /** Tailwind color class for the translation text (e.g. text-muted-foreground). */
@@ -55,10 +57,11 @@ interface ProbeState {
 }
 
 /** Baseline offset from the line's top. RN reports the per-line ascent in
- *  `ascender` on both platforms — verified on the iOS TextKit 2 paragraph
- *  layout path (constant per line while `y` varies: y=0→a=29, y=43→a=29),
- *  matching Android's `-getLineAscent`. */
-export function lineBaselineOffset(ln: TextLayoutLine): number {
+ *  `ascender` on both platforms (verified on the iOS TextKit 2 layout path:
+ *  constant per line while `y` varies), matching Android's `-getLineAscent`.
+ *  For the native ruby paragraph the native reporter provides the same
+ *  semantics with the ruby band already included. */
+export function lineBaselineOffset(ln: GridLine): number {
   return ln.ascender;
 }
 
@@ -71,15 +74,14 @@ function AlignedTranslationImpl({
 }: AlignedTranslationProps) {
   const [probe, setProbe] = useState<ProbeState | null>(null);
 
-  // L2 line pitch: consecutive line tops (exact grid spacing). For a
-  // single-line block the only measure is the line's own height.
+  // L2 line pitch: consecutive line tops (probe spacing + stand-in line
+  // height). For a single-line block the only measure is the line's height.
   const lh2 =
     l2Lines.length > 1
       ? l2Lines[1]!.y - l2Lines[0]!.y
       : l2Lines.length === 1
         ? l2Lines[0]!.height
         : 0;
-  const l2BaselineOffset = l2Lines.length > 0 ? lineBaselineOffset(l2Lines[0]!) : 0;
   const probeKey = `${text}:${trFontSize}:${lh2}`;
 
   const handleProbeLayout = useCallback(
@@ -142,14 +144,16 @@ function AlignedTranslationImpl({
       {probe!.lines.map((ln, j) => {
         const off = offsets[j] ?? { start: 0, end: 0 };
         const lineText = text.slice(off.start, off.end);
-        // Baseline of this translation line within its own line box
-        // (same font/size/lineHeight as the probe measured) vs the L2 line's
-        // baseline — the shift that puts the two baselines on top of each
-        // other. Negative when the translation font's ascent is larger.
-        const shift = l2BaselineOffset - lineBaselineOffset(ln);
+        // This row pairs with L2 line j: its own box height and baseline
+        // (per-line — the ruby band can shift the first line differently
+        // from the rest). The shift puts the translation line's baseline on
+        // the L2 line's baseline; negative when the translation font's
+        // ascent is larger.
+        const l2Line = l2Lines[Math.min(j, l2Lines.length - 1)] ?? l2Lines[l2Lines.length - 1]!;
+        const shift = lineBaselineOffset(l2Line) - lineBaselineOffset(ln);
         const hl = highlight && highlight.start < off.end && highlight.end > off.start;
         return (
-          <View key={j} style={{ height: lh2 }}>
+          <View key={j} style={{ height: l2Line.height }}>
             <Text
               numberOfLines={1}
               className={className}

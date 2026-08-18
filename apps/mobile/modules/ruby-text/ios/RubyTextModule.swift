@@ -86,7 +86,7 @@ public final class RubyTextModule: Module {
     }
 
     View(RubyTextParagraphView.self) {
-      Events("onTokenTap")
+      Events("onTokenTap", "onLineGrid")
 
       // Same raw-dictionary parsing as `segments` above: Expo's record
       // converter chokes on NSNull for an absent optional field, so missing

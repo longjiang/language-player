@@ -7,7 +7,7 @@ import type {
   NativeRubyTextParagraphRun,
   NativeRubyTextProps,
 } from '../modules/ruby-text/src';
-import type { TextLayoutLine } from '@/lib/aligned-translation';
+import type { GridLine, TextLayoutLine } from '@/lib/aligned-translation';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -254,12 +254,12 @@ export interface RubyTextParagraphProps {
   fontWeight?: 'normal' | 'bold';
   /** Reported with the tapped token's index. */
   onTokenTap?: (tokenId: number) => void;
-  /** Real line grid of the paragraph (measured on the same invisible RN Text
-   *  that sizes the native view, so it matches the native render's wrapping
-   *  and line boxes exactly). Readers use it to baseline-align the
-   *  translation column (SPEC-082 web AlignedTranslation parity). Must be
-   *  identity-stable (the paragraph is memoized). */
-  onLineGrid?: (lines: TextLayoutLine[]) => void;
+  /** Real base-text line grid of the paragraph (measured natively on the
+   *  paragraph's own TextKit 2 layout WITH the ruby annotations, so the
+   *  baseline includes the reading band). Readers use it to baseline-align
+   *  the translation column (SPEC-082 web AlignedTranslation parity). Must
+   *  be identity-stable (the paragraph is memoized). */
+  onLineGrid?: (lines: GridLine[]) => void;
   testID?: string;
 }
 
@@ -369,6 +369,35 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     );
   }, [runs.length, sizeKey]);
 
+  // ── Base-text line grid for translation baseline alignment ──
+  // The ruby-free measuring Text gives the line count, pitch, and box
+  // heights; the native paragraph reports the REAL base baseline(s) with the
+  // ruby band included (the reading pushes the base text down inside the
+  // pinned line box — at least on the first line). Two sources merged:
+  //   - nativeGrid with >1 line (future native fix) → use it directly;
+  //   - nativeGrid with 1 line (current build: the whole paragraph comes
+  //     back as one fragment, so only line 0's baseline is meaningful) →
+  //     override line 0's ascender on the measuring grid;
+  //   - no native grid yet → measuring grid as-is.
+  const [measuringLines, setMeasuringLines] = useState<TextLayoutLine[] | null>(null);
+  const [nativeGrid, setNativeGrid] = useState<GridLine[] | null>(null);
+
+  useEffect(() => {
+    if (!onLineGrid) return;
+    if (nativeGrid && nativeGrid.length > 1) {
+      onLineGrid(nativeGrid);
+      return;
+    }
+    if (!measuringLines || measuringLines.length === 0) return;
+    const firstBaseline = nativeGrid && nativeGrid.length === 1 ? nativeGrid[0]!.ascender : null;
+    const merged: GridLine[] = measuringLines.map((l, i) => ({
+      y: l.y,
+      height: l.height,
+      ascender: i === 0 && firstBaseline != null ? firstBaseline : l.ascender,
+    }));
+    onLineGrid(merged);
+  }, [onLineGrid, nativeGrid, measuringLines]);
+
   if (!NativeRubyTextParagraphView) return null;
 
   return (
@@ -396,7 +425,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           ...(fontFamily ? { fontFamily } : {}),
         }}
         onLayout={onLayout}
-        onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines) : undefined}
+        onTextLayout={onLineGrid ? (e) => setMeasuringLines(e.nativeEvent.lines) : undefined}
       >
         {plainText}
       </Text>
@@ -412,6 +441,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               isRtl={isRtl}
               fontFamily={fontFamily ?? null}
               onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
+              onLineGrid={(event) => setNativeGrid(event.nativeEvent.lines)}
               style={{ width: measured.width, height: measured.height }}
             />
           );

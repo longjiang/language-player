@@ -17,11 +17,11 @@ import { Root as Switch } from '@/components/ui/switch';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
-import type { TextLayoutLine } from '@/lib/aligned-translation';
+import type { GridLine } from '@/lib/aligned-translation';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
-import { readerLogger, translationLogger } from '@/lib/logger';
+import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import {
   calibrationSignature,
   cacheCalibration,
@@ -205,12 +205,12 @@ export function PaginatedReader({
   // plain render paths) through a stable per-block callback; the side-by-side
   // translation column then places every line on the L2 line grid. Keyed by
   // global block index; stale entries are harmless (overwritten or unused).
-  const [lineGrids, setLineGrids] = useState<Record<number, TextLayoutLine[]>>({});
-  const lineGridHandlersRef = useRef<Map<number, (lines: TextLayoutLine[]) => void>>(new Map());
+  const [lineGrids, setLineGrids] = useState<Record<number, GridLine[]>>({});
+  const lineGridHandlersRef = useRef<Map<number, (lines: GridLine[]) => void>>(new Map());
   /** Full-geometry signature: a re-wrap can change later lines while the
    *  first line's metrics stay identical, so compare every line's top/height/
    *  baseline — not just the first. */
-  const gridSignature = useCallback((lines: TextLayoutLine[]): string =>
+  const gridSignature = useCallback((lines: GridLine[]): string =>
     lines
       .slice(0, 60)
       .map((l) => `${Math.round(l.y)}:${Math.round(l.height)}:${Math.round(lineBaselineOffset(l))}`)
@@ -222,6 +222,16 @@ export function PaginatedReader({
     if (!handler) {
       handler = (lines) => {
         if (!lines || lines.length === 0) return;
+        // TEMP DIAG (keep while furigana baseline alignment is in progress):
+        // prints the stored L2 line grid (native ruby-correct baselines).
+        if (__DEV__) {
+          appLog(
+            `[Reader] GRID block=${globalIdx} n=${lines.length} ${lines
+              .slice(0, 4)
+              .map((l) => `[y=${Math.round(l.y)} h=${Math.round(l.height)} a=${Math.round(l.ascender)}]`)
+              .join(' ')} lastY=${Math.round(lines[lines.length - 1]!.y)}`,
+          );
+        }
         const sig = gridSignature(lines);
         if (lineGridSigsRef.current[globalIdx] === sig) return; // same grid
         lineGridSigsRef.current[globalIdx] = sig;
@@ -711,8 +721,8 @@ function renderBlock(
   activeSentence?: { blockIndex: number; sentenceIndex: number } | null,
   sentenceMapFor?: (globalIdx: number, text: string, translation: string) => SentenceMap | null,
   getTokenPressHandler?: (globalIdx: number) => (range: { start: number; end: number } | null) => void,
-  lineGrids?: Record<number, TextLayoutLine[]>,
-  getLineGridHandler?: (globalIdx: number) => (lines: TextLayoutLine[]) => void,
+  lineGrids?: Record<number, GridLine[]>,
+  getLineGridHandler?: (globalIdx: number) => (lines: GridLine[]) => void,
   firstLineIndent = false,
 ) {
   const scale = textScale ?? 1;
