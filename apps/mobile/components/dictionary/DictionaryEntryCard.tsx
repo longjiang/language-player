@@ -259,12 +259,20 @@ export function DictionaryEntryCard({
           {savedRecord && (
             <View className="mt-2 flex-row items-start gap-1">
               <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
+              {/* Source-type icon lives OUTSIDE the Text — Svg (lucide icon)
+                  cannot be a child of an RN <Text> (crashes on Android, drops
+                  the icon on iOS). Web renders it inline in a DOM <p>. */}
+              {(hasVideoSource || hasTextSource) && (
+                <View style={{ marginTop: 3 }}>
+                  {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}
+                </View>
+              )}
               <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
                 {saveDateStr
                   ? <Text className="text-muted-foreground">{saveDateStr}</Text>
                   : null}
-                {(hasVideoSource || hasTextSource) && (
-                  <Text> · {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}{sourceLabel ? ` ${sourceLabel}` : ''}</Text>
+                {sourceLabel && (
+                  <Text>{' · '}{sourceLabel}</Text>
                 )}
                 {contextSentence && (
                   <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>

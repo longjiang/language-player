@@ -7,7 +7,9 @@ import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
 import { Sidebar } from '@/components/ui/sidebar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
-import { getCachedEntries, enqueueLookupWords, getCachedEntryById, bulkLookupWords } from '@/lib/dictionary-cache';
+import { getCachedEntries, enqueueLookupWords, getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
+import { getOfflineEntryById } from '@/lib/dictionary-db';
+import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -91,28 +93,81 @@ function getCachedEntryByIdEither(
 }
 
 /**
- * Resolve an entry for a sidebar item, lazily fetching it through the shared
- * batch lookup cache (mirrors the web SidebarEntryCard). Search-fallback items
- * (unknown dictionary id) resolve by head; everything else by composite id.
+ * Resolve an entry for a sidebar item, lazily fetching it (mirrors the web
+ * SidebarEntryCard / fetchSavedWordEntry). Search-fallback items (unknown
+ * dictionary id) resolve by head; everything else resolves by its composite
+ * id — shared id cache first, then the offline dictionary, then the exact
+ * `/dictionary/entry` fetch (the same call the entry detail page makes), with
+ * a head lookup as the last resort for legacy/unrecognized ids. The returned
+ * entry's id is normalized to the list item's id so the card's bookmark state
+ * and saved-metadata stay tied to the list item (web parity). Never throws —
+ * failures resolve to null so the card falls back to the clickable head row.
  */
 async function resolveItemEntry(
   item: SidebarListItem,
   l2Code: string,
   l2Base: string,
+  l1Code: string,
 ): Promise<DictionaryEntry | null> {
-  if (item.dictionaryId === 'unknown') {
-    const cached = getCachedEntries(l2Base, item.head);
-    if (cached && cached.length > 0) return cached[0] ?? null;
-    await enqueueLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
-    return getCachedEntries(l2Base, item.head)?.[0] ?? null;
+  try {
+    if (item.dictionaryId === 'unknown') {
+      const cached = getCachedEntries(l2Base, item.head);
+      if (cached && cached.length > 0) return cached[0] ?? null;
+      await enqueueLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
+      return getCachedEntries(l2Base, item.head)?.[0] ?? null;
+    }
+
+    // ── 1. Shared id cache (populated by batch lookups / detail fetches) ──
+    const cached = getCachedEntryByIdEither(l2Code, l2Base, item.id);
+    if (cached) return cached;
+
+    const decomposed = decomposeWordId(item.id, l2Code);
+    if (decomposed) {
+      // ── 2. Offline dictionary first (works in airplane mode) ──
+      try {
+        const offline = await getOfflineEntryById(l2Base, decomposed.id);
+        if (offline) {
+          const normalized = offline.id === item.id ? offline : { ...offline, id: item.id };
+          setCachedEntryById(l2Base, offline);
+          setCachedEntryById(l2Base, normalized);
+          return normalized;
+        }
+      } catch { /* no offline dict / corrupt — try the network */ }
+
+      // ── 3. Exact entry fetch — same endpoint as the entry detail page.
+      // A head batch lookup can't be used here: it may return a different
+      // sense of a multi-sense head, or nothing at all for LLM entries. ──
+      try {
+        const res = await apiClient.get<{ entry: DictionaryEntry }>('/dictionary/entry', {
+          params: { l2: l2Base, dict: decomposed.dict, id: decomposed.id, l1: l1Code },
+        });
+        const entry = res.entry;
+        if (entry) {
+          const normalized = entry.id === item.id ? entry : { ...entry, id: item.id };
+          setCachedEntryById(l2Base, entry);
+          setCachedEntryById(l2Code, entry);
+          setCachedEntryById(l2Base, normalized);
+          setCachedEntryById(l2Code, normalized);
+          return normalized;
+        }
+      } catch {
+        // 404 / network failure — fall through to the head lookup below.
+      }
+    }
+
+    // ── 4. Legacy/unrecognized ids — find the entry by its head form
+    // (e.g. LLM words saved without a resolvable prefix). ──
+    if (item.head) {
+      const byHead = getCachedEntries(l2Base, item.head);
+      if (byHead && byHead.length > 0) return byHead[0] ?? null;
+      await enqueueLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
+      return getCachedEntries(l2Base, item.head)?.[0] ?? null;
+    }
+    return null;
+  } catch {
+    // Resolution must never crash the card — fall back to the head row.
+    return null;
   }
-  const cached = getCachedEntryByIdEither(l2Code, l2Base, item.id);
-  if (cached) return cached;
-  const decomposed = decomposeWordId(item.id, l2Code);
-  if (!decomposed) return null;
-  // Try bulk lookup via the shared cache (populates the id cache too).
-  await bulkLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
-  return getCachedEntryByIdEither(l2Code, l2Base, item.id) ?? null;
 }
 
 function SidebarEntryCard({
@@ -136,12 +191,18 @@ function SidebarEntryCard({
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const e = await resolveItemEntry(item, l2Code, l2Base);
-      if (!cancelled) setEntry(e);
+      try {
+        const e = await resolveItemEntry(item, l2Code, l2Base, l1Code);
+        if (!cancelled) setEntry(e);
+      } catch {
+        // Resolution already guards itself; this is belt-and-suspenders so an
+        // unexpected rejection can never crash the sidebar with a redbox.
+        if (!cancelled) setEntry(null);
+      }
     };
     void load();
     return () => { cancelled = true; };
-  }, [item.id, item.head, item.dictionaryId, l2Code, l2Base]);
+  }, [item.id, item.head, item.dictionaryId, l2Code, l2Base, l1Code]);
 
   let content: React.ReactNode;
   if (entry === undefined) {
