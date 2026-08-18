@@ -33,6 +33,29 @@ import {
 const { log } = readerLogger;
 const displayLoggedState = new WeakMap<ContentBlock, boolean>();
 
+/** Unordered bullet glyphs by list nesting depth (SPEC-083). */
+const LIST_BULLETS = ['•', '◦', '▪'] as const;
+
+/**
+ * Ordinal (0-based) of a list item within its own flat list run: consecutive
+ * blocks sharing (listDepth, ordered, start) count from the run's start.
+ */
+function listItemOrdinal(block: TextBlock, allBlocks: ContentBlock[]): number {
+  const idx = allBlocks.indexOf(block);
+  let count = 0;
+  for (let i = idx; i >= 0; i--) {
+    const b = allBlocks[i];
+    if (b?.kind !== 'text' || b.type !== 'list-item') break;
+    if (
+      (b.ordered ?? false) !== (block.ordered ?? false)
+      || (b.listDepth ?? 0) !== (block.listDepth ?? 0)
+      || (b.start ?? 1) !== (block.start ?? 1)
+    ) break;
+    count++;
+  }
+  return count - 1;
+}
+
 /** Tokenize blocks within this many px of the viewport (web parity: 200px rootMargin). */
 const VISIBILITY_BUFFER = 200;
 
@@ -770,6 +793,40 @@ function renderBlock(
     );
   }
 
+  // ── Non-text block kinds (SPEC-083): code / hr / raw html — measured like
+  //    every other block so pagination stays exact.
+  if (block.kind === 'code') {
+    return (
+      <View
+        key={bi}
+        className="my-2 rounded-lg border border-border bg-muted/40 px-3 py-2"
+        onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+      >
+        <Text className="font-mono text-xs leading-relaxed text-foreground">{block.text}</Text>
+      </View>
+    );
+  }
+  if (block.kind === 'hr') {
+    return (
+      <View
+        key={bi}
+        className="my-3 h-px bg-border"
+        onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+      />
+    );
+  }
+  if (block.kind === 'html') {
+    return (
+      <View
+        key={bi}
+        className="my-2 rounded-lg bg-muted/40 px-3 py-2"
+        onLayout={onBlockLayout ? (e) => onBlockLayout(globalIdx, e.nativeEvent.layout.y, e.nativeEvent.layout.height) : undefined}
+      >
+        <Text className="font-mono text-xs leading-relaxed text-muted-foreground">{block.text}</Text>
+      </View>
+    );
+  }
+
   const visibleTextBlocks = visibleBlocks.filter(
     (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
   );
@@ -901,15 +958,20 @@ function renderBlock(
         ) : (
           <View className="border-l-2 border-muted-foreground/30 pl-3">{tokenEl}{transEl}</View>
         );
-      case 'list-item':
+      case 'list-item': {
+        const depth = block.listDepth ?? 0;
+        const marker = block.ordered === true
+          ? `${(block.start ?? 1) + listItemOrdinal(block, allBlocks)}.`
+          : LIST_BULLETS[Math.min(depth, LIST_BULLETS.length - 1)];
         return (
-          <View>
-            <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
+          <View style={{ paddingLeft: 8 + depth * 16 }}>
+            <View className="flex-row"><Text className="mr-2 text-muted-foreground">{marker}</Text>
               <View className="flex-1">{tokenEl}</View>
             </View>
             {transEl}
           </View>
         );
+      }
       case 'heading':
         return sideBySide ? (
           <View className="flex-row items-start gap-4">
@@ -1090,6 +1152,28 @@ function renderMeasuringBlock(
             ))}
           </View>
         ))}
+      </View>
+    );
+  }
+
+  if (block.kind === 'code') {
+    return (
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+        <Text className="font-mono text-xs leading-relaxed text-foreground">{block.text}</Text>
+      </View>
+    );
+  }
+
+  if (block.kind === 'hr') {
+    return (
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-3 h-px bg-border" />
+    );
+  }
+
+  if (block.kind === 'html') {
+    return (
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height, e.nativeEvent.layout.y, origin)} className="my-2 rounded-lg bg-muted/40 px-3 py-2">
+        <Text className="font-mono text-xs leading-relaxed text-muted-foreground">{block.text}</Text>
       </View>
     );
   }

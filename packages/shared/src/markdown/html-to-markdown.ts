@@ -21,6 +21,28 @@ export interface HtmlToMarkdownOptions {
   preserveIds?: boolean;
 }
 
+/** Decode common HTML entities (named + numeric) — EPUB fidelity (ported
+ *  from the legacy mobile EPUB parser's decodeEntities). */
+export function decodeHtmlEntities(text: string): string {
+  const named: Record<string, string> = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+    mdash: '—', ndash: '–', hellip: '…', lsquo: '\u2018', rsquo: '\u2019',
+    ldquo: '\u201C', rdquo: '\u201D', middot: '·', bull: '•', eacute: 'é',
+    egrave: 'è', ecirc: 'ê', agrave: 'à', uuml: 'ü', ouml: 'ö', auml: 'ä',
+    szlig: 'ß', deg: '°', times: '×', copy: '©', reg: '®',
+  };
+  return text
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, hex: string) => {
+      const cp = parseInt(hex, 16);
+      return Number.isNaN(cp) ? _m : String.fromCodePoint(cp);
+    })
+    .replace(/&#(\d+);/g, (_m, dec: string) => {
+      const cp = parseInt(dec, 10);
+      return Number.isNaN(cp) ? _m : String.fromCodePoint(cp);
+    })
+    .replace(/&([a-zA-Z]+);/g, (_m, name: string) => named[name] ?? _m);
+}
+
 /** Block-level elements that can anchor a `#fragment`. */
 const BLOCK_TAGS = new Set([
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -98,6 +120,10 @@ function nearestAncestorId(stack: string[]): string | null {
  */
 function stripUnwanted(html: string): string {
   return html
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\?xml[^>]*\?>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
@@ -262,14 +288,8 @@ export function htmlToMarkdown(
     md = injectIdAnchors(md);
   }
 
-  // Decode common HTML entities
-  md = md
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+  // Decode common HTML entities (named + numeric)
+  md = decodeHtmlEntities(md);
 
   // Remove inline styles and class/data attrs to clean up. (`id` is kept:
   // id-bearing tags are stripped wholesale below; only preserved anchors

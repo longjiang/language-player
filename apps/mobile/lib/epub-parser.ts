@@ -1,4 +1,9 @@
-import type { FormatRange } from '@langplayer/shared';
+import {
+  htmlToMarkdown,
+  parseMarkdownBlocks,
+  type ContentBlock,
+  type FormatRange,
+} from '@langplayer/shared';
 
 export interface TocItem {
   label: string;
@@ -358,341 +363,40 @@ export function resolvePath(base: string, href: string): string {
 }
 
 // ── HTML → block conversion (whole-book model, SPEC-049 §9.1/9.7) ─────────
-
-/** Decode common HTML entities (named + numeric). */
-function decodeEntities(text: string): string {
-  const named: Record<string, string> = {
-    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
-    mdash: '—', ndash: '–', hellip: '…', lsquo: '\u2018', rsquo: '\u2019',
-    ldquo: '\u201C', rdquo: '\u201D', middot: '·', bull: '•', eacute: 'é',
-    egrave: 'è', ecirc: 'ê', agrave: 'à', uuml: 'ü', ouml: 'ö', auml: 'ä',
-    szlig: 'ß', deg: '°', times: '×', copy: '©', reg: '®',
-  };
-  return text
-    .replace(/&#x([0-9a-fA-F]+);/g, (_m, hex: string) => {
-      const cp = parseInt(hex, 16);
-      return Number.isNaN(cp) ? _m : String.fromCodePoint(cp);
-    })
-    .replace(/&#(\d+);/g, (_m, dec: string) => {
-      const cp = parseInt(dec, 10);
-      return Number.isNaN(cp) ? _m : String.fromCodePoint(cp);
-    })
-    .replace(/&([a-zA-Z]+);/g, (_m, name: string) => named[name] ?? _m);
-}
+//
+// SPEC-083 single pipeline: EPUB chapter HTML → markdown → shared blocks.
+// The chapter HTML is converted by the shared htmlToMarkdown (with
+// preserveIds anchors so `#fragment` TOC entries keep resolving, and
+// resolveImage so archive images become local file:// URIs), then parsed by
+// the shared parseMarkdownBlocks. This replaces the legacy native frame
+// walker; inline formatting (bold/italic/code/link) now survives via
+// markdown, which the old converter dropped (links only).
 
 /** Normalize a fragment id for comparison (percent-decoding, best effort). */
 export function normalizeFragmentId(id: string): string {
   try { return decodeURIComponent(id); } catch { return id; }
 }
 
-type EpubFrameType =
-  | 'root'
-  | 'container'
-  | 'paragraph'
-  | 'heading'
-  | 'list-item'
-  | 'blockquote'
-  | 'pre';
-
-interface BlockFrame {
-  type: EpubFrameType;
-  /** Original HTML tag name (for matching closing tags). */
-  tag: string;
-  depth?: number;
-  /** Element's own id attribute. */
-  id?: string;
-  /** Nearest ancestor (or own) id — becomes the block's srcElementId. */
-  nearestId?: string;
-  text: string;
-  formats: EpubFormatRange[];
-  /** True when the frame has direct inline text/images/links (not just child blocks). */
-  hasInlineContent: boolean;
-  /** Blocks emitted by nested block frames (finalized when they close). */
-  emitted: EpubBlock[];
-}
-
-const BLOCK_TAGS: Record<string, { type: EpubFrameType; depth?: number }> = {
-  p: { type: 'paragraph' },
-  h1: { type: 'heading', depth: 1 },
-  h2: { type: 'heading', depth: 2 },
-  h3: { type: 'heading', depth: 3 },
-  h4: { type: 'heading', depth: 4 },
-  h5: { type: 'heading', depth: 5 },
-  h6: { type: 'heading', depth: 6 },
-  blockquote: { type: 'blockquote' },
-  li: { type: 'list-item' },
-  pre: { type: 'pre' },
-  div: { type: 'container' },
-  section: { type: 'container' },
-  article: { type: 'container' },
-  main: { type: 'container' },
-  table: { type: 'container' },
-  thead: { type: 'container' },
-  tbody: { type: 'container' },
-  tfoot: { type: 'container' },
-  tr: { type: 'container' },
-  ul: { type: 'container' },
-  ol: { type: 'container' },
-  nav: { type: 'container' },
-  header: { type: 'container' },
-  footer: { type: 'container' },
-};
-
-/** Extract an attribute value (double or single quoted) from a tag string. */
-function attrValue(tagAttrs: string, name: string): string | undefined {
-  const re = new RegExp(`${name}\\s*=\\s*("([^"]*)"|'([^']*)')`, 'i');
-  const m = tagAttrs.match(re);
-  return m?.[2] ?? m?.[3];
-}
-
-const IMG_MARKER_RE = /\[IMG:([^\]]+)\]/g;
-
 /**
- * Convert an EPUB content document's HTML into content blocks.
+ * Convert an EPUB content document's HTML into shared content blocks.
  *
- * This is the whole-book model's per-spine converter (SPEC-049 §9.1): it walks
- * block-level elements, records each block's source element id (own or nearest
- * ancestor) so `#fragment` TOC entries and internal links resolve precisely,
- * and captures `<a href>` ranges as link formats (SPEC-049 §9.7). Images are
- * resolved through `resolveImage` and emitted as standalone image blocks.
+ * Keeps the SPEC-049 §9.1 contract: each block records the source element id
+ * (own or nearest ancestor) as `srcElementId` so `#fragment` TOC entries and
+ * internal links resolve precisely, and `<a href>` ranges survive as link
+ * formats (§9.7). Images are resolved through `resolveImage` and emitted as
+ * standalone image blocks.
  */
 export function convertHtmlToBlocks(
   html: string,
   contentDir: string,
   resolveImage: (resolvedPath: string) => string | null,
-): EpubBlock[] {
-  const clean = html
-    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<!DOCTYPE[^>]*>/gi, '')
-    .replace(/<\?xml[^>]*\?>/gi, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
-
-  const root: BlockFrame = { type: 'root', tag: '', text: '', formats: [], hasInlineContent: false, emitted: [] };
-  const stack: BlockFrame[] = [root];
-  /** Link ranges still open per frame (closed on `</a>`). */
-  const openLinks = new Map<BlockFrame, EpubFormatRange>();
-
-  const current = () => stack[stack.length - 1]!;
-
-  const openFrame = (type: EpubFrameType, tag: string, depth: number | undefined, attrs: string) => {
-    const ownId = attrValue(attrs, 'id');
-    const frame: BlockFrame = {
-      type,
-      tag,
-      depth,
-      id: ownId,
-      nearestId: ownId,
-      text: '',
-      formats: [],
-      hasInlineContent: false,
-      emitted: [],
-    };
-    stack.push(frame);
-    return frame;
-  };
-
-  const closeFrame = () => {
-    const frame = stack.pop()!;
-    const blocks = finalizeFrame(frame);
-    stack[stack.length - 1]!.emitted.push(...blocks);
-  };
-
-  const tagRe = /<\/?([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>/g;
-  let scanPos = 0;
-  let m: RegExpExecArray | null;
-
-  while ((m = tagRe.exec(clean)) !== null) {
-    const textBefore = clean.slice(scanPos, m.index);
-    if (textBefore) appendText(current(), decodeEntities(textBefore));
-    scanPos = tagRe.lastIndex;
-
-    const rawTag = m[0];
-    const tag = m[1]!.toLowerCase();
-    const attrs = m[2] ?? '';
-    const isClosing = rawTag.startsWith('</');
-
-    if (isClosing) {
-      if (tag === 'a') {
-        const frame = current();
-        const range = openLinks.get(frame);
-        if (range) {
-          range.end = frame.text.length;
-          openLinks.delete(frame);
-        }
-        continue;
-      }
-      // Close the innermost open frame with this tag name (handles stray nesting).
-      for (let i = stack.length - 1; i >= 1; i--) {
-        if (stack[i]!.tag === tag) {
-          while (stack.length - 1 >= i) closeFrame();
-          break;
-        }
-      }
-      continue;
-    }
-
-    const blockSpec = BLOCK_TAGS[tag];
-    if (blockSpec) {
-      const parent = current();
-      const frame = openFrame(blockSpec.type, tag, blockSpec.depth, attrs);
-      // Inherit the nearest anchor id from the parent so fragments on inline
-      // elements inside this block are preserved.
-      if (!frame.id) frame.nearestId = parent.nearestId ?? parent.id;
-      // A link may wrap a block (rare) — keep the range attached to the frame.
-      const openRange = openLinks.get(parent);
-      if (openRange) openLinks.set(frame, openRange);
-      continue;
-    }
-
-    if (tag === 'br') {
-      current().text += '\n';
-      continue;
-    }
-
-    if (tag === 'img') {
-      const src = attrValue(attrs, 'src');
-      if (src && !src.includes('://')) {
-        const resolvedPath = resolvePath(contentDir, src);
-        const uri = resolveImage(resolvedPath);
-        if (uri) {
-          current().text += `[IMG:${uri}]`;
-          current().hasInlineContent = true;
-        }
-      }
-      continue;
-    }
-
-    if (tag === 'a') {
-      const href = attrValue(attrs, 'href');
-      const start = current().text.length;
-      const range: EpubFormatRange = { start, end: start, type: 'link', url: href ?? '#' };
-      current().formats.push(range);
-      openLinks.set(current(), range);
-      continue;
-    }
-
-    // Any other opening tag: ids on inline elements (span/a/div) matter for
-    // fragment resolution — record the nearest id and continue walking.
-    const id = attrValue(attrs, 'id');
-    if (id) {
-      const frame = current();
-      if (!frame.id && !frame.nearestId) frame.nearestId = id;
-    }
-  }
-
-  const tail = clean.slice(scanPos);
-  if (tail) appendText(current(), decodeEntities(tail));
-
-  // Close any frames left open by malformed HTML.
-  while (stack.length > 1) closeFrame();
-
-  return finalizeFrame(root);
-}
-
-function appendText(frame: BlockFrame, text: string): void {
-  if (!text) return;
-  frame.text += text;
-  if (text.trim()) frame.hasInlineContent = true;
-}
-
-/**
- * Finalize a frame into EpubBlock[]. Frames that contain nested block frames
- * only contribute their own text when they have direct inline content.
- * The text is trimmed (with link format offsets adjusted) and `[IMG:…]`
- * markers are split into standalone image blocks.
- */
-function finalizeFrame(frame: BlockFrame): EpubBlock[] {
-  const blocks: EpubBlock[] = [...frame.emitted];
-
-  const ownHasContent = frame.hasInlineContent && frame.text.trim().length > 0;
-  if (!ownHasContent) return blocks;
-
-  const text = frame.text;
-  const firstChar = text.search(/\S/);
-  let lastChar = text.length;
-  while (lastChar > firstChar && /\s/.test(text[lastChar - 1]!)) lastChar--;
-  if (firstChar === -1 || lastChar <= firstChar) return blocks;
-
-  const body = text.slice(firstChar, lastChar);
-  const formats = frame.formats
-    .filter((f) => f.end > firstChar && f.start < lastChar && f.end > f.start)
-    .map((f) => ({
-      start: Math.max(0, f.start - firstChar),
-      end: Math.min(body.length, f.end - firstChar),
-      type: 'link' as const,
-      url: f.url,
-    }));
-
-  const type = frame.type === 'heading' || frame.type === 'list-item' || frame.type === 'blockquote' || frame.type === 'pre'
-    ? frame.type
-    : 'paragraph';
-  const srcElementId = frame.id ?? frame.nearestId;
-
-  // Haodoo-style EPUBs separate paragraphs with <br><br> inside a single
-  // container (no <p> tags). Split on 2+ newlines so a whole chapter never
-  // becomes one giant tokenized block (SPEC-049 §9.1 — large chapters froze
-  // the reader with thousands of tokens in a single block).
-  const splitByParagraphs = frame.type === 'container' || frame.type === 'paragraph';
-  const parts: Array<{ start: number; text: string }> = [];
-  if (splitByParagraphs && /\n{2,}/.test(body)) {
-    const partRe = /\n{2,}/g;
-    let partStart = 0;
-    let pm: RegExpExecArray | null;
-    while ((pm = partRe.exec(body)) !== null) {
-      const seg = body.slice(partStart, pm.index);
-      if (seg.trim()) parts.push({ start: partStart, text: seg });
-      partStart = pm.index + pm[0].length;
-    }
-    const tailSeg = body.slice(partStart);
-    if (tailSeg.trim()) parts.push({ start: partStart, text: tailSeg });
-  } else {
-    parts.push({ start: 0, text: body });
-  }
-
-  for (const part of parts) {
-    // Rebase link formats onto this paragraph, then split on image markers so
-    // images keep their position in the flow.
-    const partFormats = formats
-      .map((f) => ({ ...f, start: f.start - part.start, end: f.end - part.start }))
-      .filter((f) => f.start >= 0 && f.end <= part.text.length && f.end > f.start);
-    let cursor = 0;
-    let markerOffset = 0;
-    IMG_MARKER_RE.lastIndex = 0;
-    let imgMatch: RegExpExecArray | null;
-    while ((imgMatch = IMG_MARKER_RE.exec(part.text)) !== null) {
-      const seg = part.text.slice(cursor, imgMatch.index);
-      if (seg.trim()) {
-        blocks.push(makeTextBlock(type, frame.depth, seg, srcElementId, partFormats, markerOffset));
-      }
-      blocks.push({ kind: 'image', uri: imgMatch[1]! });
-      markerOffset += imgMatch[0].length;
-      cursor = imgMatch.index + imgMatch[0].length;
-    }
-    const rest = part.text.slice(cursor);
-    if (rest.trim()) {
-      blocks.push(makeTextBlock(type, frame.depth, rest, srcElementId, partFormats, markerOffset));
-    }
-  }
-
-  return blocks;
-}
-
-function makeTextBlock(
-  type: EpubTextBlock['type'],
-  depth: number | undefined,
-  text: string,
-  srcElementId: string | undefined,
-  formats: EpubFormatRange[],
-  markerOffset: number,
-): EpubTextBlock {
-  const block: EpubTextBlock = { kind: 'text', type, text };
-  if (type === 'heading') block.depth = depth ?? 1;
-  if (srcElementId) block.srcElementId = srcElementId;
-  const adjusted = formats
-    .map((f) => ({ ...f, start: f.start - markerOffset, end: f.end - markerOffset }))
-    .filter((f) => f.start >= 0 && f.end <= text.length && f.end > f.start);
-  if (adjusted.length > 0) block.formats = adjusted;
-  return block;
+): ContentBlock[] {
+  const md = htmlToMarkdown(html, `epub://${contentDir}/`, {
+    preserveIds: true,
+    resolveImage: (src) => {
+      if (src.includes('://') || src.startsWith('data:')) return null;
+      return resolveImage(resolvePath(contentDir, src));
+    },
+  });
+  return parseMarkdownBlocks(md, { preserveIds: true });
 }

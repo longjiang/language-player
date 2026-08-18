@@ -284,13 +284,14 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     bold?: boolean;
     italic?: boolean;
     code?: boolean;
+    strikethrough?: boolean;
   } | null>>(() => {
     if (!formats?.length || tokens.length === 0) return [];
     const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return [];
     let pos = 0;
     return tokens.map((token) => {
-      let format: { url?: string; highlight?: boolean; bold?: boolean; italic?: boolean; code?: boolean } | null = null;
+      let format: { url?: string; highlight?: boolean; bold?: boolean; italic?: boolean; code?: boolean; strikethrough?: boolean } | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
           if (f.type === 'highlight') {
@@ -303,6 +304,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             format = { ...(format ?? {}), italic: true };
           } else if (f.type === 'code') {
             format = { ...(format ?? {}), code: true };
+          } else if (f.type === 'strikethrough') {
+            format = { ...(format ?? {}), strikethrough: true };
           }
         }
       }
@@ -1140,6 +1143,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const isBoldFormat = !!tokenFormat?.bold;
               const isItalicFormat = !!tokenFormat?.italic;
               const isCodeFormat = !!tokenFormat?.code;
+              const isStrikethroughFormat = !!tokenFormat?.strikethrough;
               const isTokenSelected = selectedTokenIndex === i;
               const rawUrl = tokenFormat?.url ?? null;
               const linkUrl = rawUrl && (onOpenLink || /^https?:\/\//i.test(rawUrl)) ? rawUrl : null;
@@ -1261,6 +1265,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 isBoldFormat,
                 isItalicFormat,
                 isCodeFormat,
+                isStrikethroughFormat,
                 isLink,
                 isSearchHighlight,
                 isSavedWord,
@@ -1371,6 +1376,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               const isBoldFormat = !!tokenFormat?.bold;
               const isItalicFormat = !!tokenFormat?.italic;
               const isCodeFormat = !!tokenFormat?.code;
+              const isStrikethroughFormat = !!tokenFormat?.strikethrough;
               const isTokenSelected = selectedTokenIndex === i;
               const isPressed = pressedTokenIndex === i;
 
@@ -1390,6 +1396,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   isBoldFormat={isBoldFormat}
                   isItalicFormat={isItalicFormat}
                   isCodeFormat={isCodeFormat}
+                  isStrikethroughFormat={isStrikethroughFormat}
                   isLink={isLink}
                   isSearchHighlight={isSearchHighlight}
                   isSavedWord={isSavedWord}

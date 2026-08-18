@@ -42,6 +42,21 @@ describe('htmlToMarkdown — basic conversion', () => {
     expect(md).toContain('keep');
   });
 
+  it('strips head/doctype/comments (EPUB chapters)', () => {
+    const md = htmlToMarkdown(
+      '<!DOCTYPE html><html><head><title>Book</title><meta name="x" content="y"></head><body><p>Body text</p></body></html>',
+      'https://example.com',
+    );
+    expect(md).not.toContain('Book');
+    expect(md).not.toContain('DOCTYPE');
+    expect(md).toContain('Body text');
+  });
+
+  it('decodes named and numeric entities', () => {
+    const md = htmlToMarkdown('<p>a&mdash;b &amp; c &#65; &#x42;</p>', 'https://example.com');
+    expect(md).toContain('a—b & c A B');
+  });
+
   it('extracts main content via article/main/body fallback', () => {
     const md = htmlToMarkdown(
       '<html><body><header>head</header><article><p>core</p></article></body></html>',
