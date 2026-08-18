@@ -75,6 +75,10 @@ interface PaginatedReaderProps {
   showTextActions?: boolean;
   /** Render L1 translation beside the L2 block at lg+ widths (web parity). */
   translationSideBySide?: boolean;
+  /** Enable native text selection on reader blocks — a settled selection
+   *  opens the dictionary popup with the selected text (SPEC-084 Task 6,
+   *  web SPEC-033 parity). */
+  selectionDictionary?: boolean;
   /** Hide the text|translation split handle's visible grip while keeping it
    *  draggable (EPUB reader — the affordance is hidden until we design a
    *  discoverable way to surface it). Default false (visible grip). */
@@ -162,6 +166,7 @@ export function PaginatedReader({
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
   hideSplitHandle = false,
+  selectionDictionary = false,
   firstLineIndent = false,
   flipping = false,
   measuring = false,
@@ -656,7 +661,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary),
           )}
         </View>
         {onToggleTranslation && (
@@ -704,7 +709,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -832,6 +837,7 @@ function renderBlock(
   plainText = false,
   upgradedBlocks?: ReadonlySet<number>,
   hideSplitHandle = false,
+  selectionDictionary = false,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -965,6 +971,7 @@ function renderBlock(
             leadingIndent={firstLineIndent && block.type === 'paragraph'}
             textScale={scale * headingFactor}
             bold={block.type === 'heading'}
+            selectionDictionary={selectionDictionary}
           />
     );
     // SPEC-082 Task 4: when a translation sentence is active for this block,

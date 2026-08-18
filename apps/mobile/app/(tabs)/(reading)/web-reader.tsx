@@ -237,6 +237,7 @@ export default function WebReaderScreen() {
                   onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
                   showTextActions
                   translationSideBySide={isWide}
+                  selectionDictionary
                   onOpenLink={handleOpenLinkInReader}
                   t={t}
                 />
