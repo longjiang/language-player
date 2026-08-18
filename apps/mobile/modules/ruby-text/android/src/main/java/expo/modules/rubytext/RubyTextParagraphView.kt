@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.Selection
 import android.text.style.ReplacementSpan
 import android.util.Log
 import android.view.ActionMode
@@ -140,7 +141,10 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
     val start = selectionStart
     val end = selectionEnd
     if (start >= 0 && end >= 0 && start != end) {
-      setSelection(max(start, end))
+      // TextView.setSelection is not exposed on this compile stub; the
+      // static Selection helper is the equivalent buffer-level operation
+      // (TextView.setSelection(int) delegates to it internally).
+      Selection.setSelection(text as Spanned, max(start, end))
     }
   }
 
@@ -168,7 +172,9 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
         if (abs(event.x - downX) <= slop && abs(event.y - downY) <= slop) {
           val layout = layout
           if (layout != null) {
-            val offset = layout.getOffsetForPosition(event.x, event.y)
+            // getOffsetForPosition is a TextView method (not on Layout on
+            // this compile stub); Layout exposes getOffsetForHorizontal.
+            val offset = getOffsetForPosition(event.x, event.y)
             val span = (text as? Spanned)?.getSpans(offset, offset, RubyReplacementSpan::class.java)
               ?.firstOrNull()
             val run = span?.run
