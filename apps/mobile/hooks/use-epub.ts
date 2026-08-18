@@ -28,6 +28,14 @@ import { log } from '@/lib/logger';
 import { useT } from '@/hooks/use-t';
 import { localizedError } from '@/lib/errors';
 
+/** Reuse the persisted cover only while its file still exists; otherwise
+ *  return null so openEpubBook re-extracts the cover from the EPUB. */
+async function coverUriIfExists(coverUri: string | null): Promise<string | null> {
+  if (!coverUri?.startsWith('file://')) return coverUri;
+  const info = await FileSystem.getInfoAsync(coverUri);
+  return info.exists ? coverUri : null;
+}
+
 /** Recursively copy a directory (used for unzipped EPUB folder packages). */
 async function copyDirectoryContents(srcDir: string, destDir: string): Promise<void> {
   const entries = await FileSystem.readDirectoryAsync(srcDir);
@@ -238,12 +246,15 @@ export function useEpub(): UseEpubReturn {
           const m = await openEpubBook(dest, displayName);
           let coverUrl = m.coverUrl;
           if (coverUrl?.startsWith('file://')) {
-            const src = coverUrl.slice(7);
-            const ext = src.split('.').pop() ?? 'jpg';
+            // Persist the extracted cover next to the book (cacheDirectory
+            // temp files can be purged). Both sides are already file:// URIs —
+            // pass them through as-is (a second 'file://' prefix or a bare
+            // path after slice(7) breaks RN Image / copyAsync).
+            const ext = /\.([a-zA-Z0-9]+)$/.exec(coverUrl)?.[1] ?? 'jpg';
             const coverDest = `${LIBRARY_DIR}${id.replace(/\.epub$/i, '')}_cover.${ext}`;
             try {
-              await FileSystem.copyAsync({ from: src, to: coverDest });
-              coverUrl = 'file://' + coverDest;
+              await FileSystem.copyAsync({ from: coverUrl, to: coverDest });
+              coverUrl = coverDest;
             } catch { /* keep temp cover */ }
           }
           const info = await FileSystem.getInfoAsync(dest);
@@ -305,7 +316,7 @@ export function useEpub(): UseEpubReturn {
       const fileUri = libraryFileUri(id);
       const info = await FileSystem.getInfoAsync(fileUri);
       if (!info.exists) { setError('Book file missing'); return null; }
-      const m = await openEpubBook(fileUri, meta.fileName, { coverUri: meta.coverUrl });
+      const m = await openEpubBook(fileUri, meta.fileName, { coverUri: await coverUriIfExists(meta.coverUrl) });
       const resume = meta.lastLocation && meta.lastLocation.blockIndex < m.blocks.length
         ? meta.lastLocation
         : (m.markers[0]?.location ?? (m.blocks.length > 0 ? { blockIndex: 0, offset: 0 } : null));
