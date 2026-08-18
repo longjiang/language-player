@@ -368,6 +368,8 @@ export default function EpubReaderScreen() {
             hasPrev={pagination.hasPrev}
             hasNext={pagination.hasNext}
             flipping={pagination.flipping}
+            measuring={pagination.measuring}
+            lazyPagination
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
             showTranslation={display.translation}
