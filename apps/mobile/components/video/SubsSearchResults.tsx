@@ -41,6 +41,17 @@ interface SubsSearchResultsProps {
 /** ADR-0034: free users see the first 5 subs-search hits. */
 const FREE_SUBS_SEARCH_HITS = 5;
 
+/** Content filter pills shown in the nav bar next to the forms toggle
+ *  (SPEC-079 parity, SPEC-082 Task 6). */
+type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
+
+const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
+  { key: 'all', labelKey: 'filter.all' },
+  { key: 'nonMusic', labelKey: 'filter.non_music' },
+  { key: 'music', labelKey: 'filter.music' },
+  { key: 'tvShows', labelKey: 'title.tv_shows' },
+];
+
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
@@ -102,6 +113,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
+  // Content filter pill (All / Non-Music / Music / TV Shows) — SPEC-082 Task 6.
+  const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
   const [listOpen, setListOpen] = useAnimatedBoolean();
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
@@ -123,13 +136,34 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     [term],
   );
 
-  // Visible results: drop videos whose embeds failed, then apply the free
-  // quota (first 5) to the *playable* list so skipped videos don't consume a
-  // free member's slot.
+  // Content filter: narrows the fetched pool by category / TV-show membership.
+  // Client-side over the already-fetched results, like the exact-match toggle
+  // (the server has no NOT-IN filter, so "Non-Music" can't be expressed there).
+  const applyVideoFilter = useCallback(
+    (list: SubsSearchVideo[]): SubsSearchVideo[] => {
+      switch (videoFilter) {
+        case 'music':
+          return list.filter((v) => v.category === 10 || v.category === 24);
+        case 'nonMusic':
+          return list.filter((v) => v.category !== 10 && v.category !== 24);
+        case 'tvShows':
+          return list.filter((v) => !!v.tv_show);
+        case 'all':
+        default:
+          return list;
+      }
+    },
+    [videoFilter],
+  );
+
+  // Visible results: drop videos whose embeds failed, apply the content
+  // filter pill, then apply the free quota (first 5) to the *playable* list so
+  // skipped videos don't consume a free member's slot.
   const videos = useMemo(() => {
     const playable = pool.filter((v) => !skippedIds.has(v.youtube_id));
-    return isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
-  }, [pool, skippedIds, isPro]);
+    const filtered = applyVideoFilter(playable);
+    return isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
+  }, [pool, skippedIds, isPro, applyVideoFilter]);
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
@@ -256,6 +290,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               views: v.views,
               duration: v.duration,
               date: v.date,
+              category: v.category != null ? Number(v.category) : null,
+              tv_show: v.tv_show != null ? Number(v.tv_show) : null,
               matchLineIndex: findMatchLine(lines, term),
             };
           })
@@ -318,7 +354,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
       const erroredIndex = videos.findIndex((v) => v.youtube_id === erroredId);
       const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
-      const nextVideos = isPro ? playable : playable.slice(0, FREE_SUBS_SEARCH_HITS);
+      const contentFiltered = applyVideoFilter(playable);
+      const nextVideos = isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS);
       let nextIndex = currentIndex;
       if (erroredIndex !== -1 && currentIndex > erroredIndex) nextIndex = currentIndex - 1;
       if (nextIndex >= nextVideos.length) nextIndex = Math.max(0, nextVideos.length - 1);
@@ -340,7 +377,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         isPro,
       });
     },
-    [currentVideo, videos, pool, isPro, currentIndex],
+    [currentVideo, videos, pool, isPro, currentIndex, applyVideoFilter],
   );
 
   const selectFromList = (idx: number) => {
@@ -540,6 +577,31 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           <List size={14} color={ICON_MUTED} />
           <Text className="text-xs font-medium text-muted-foreground">{t('action.list_all')}</Text>
         </Pressable>
+      </View>
+
+      {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
+          segmented pattern as the forms toggle (SPEC-082 Task 6). */}
+      <View className="mb-2 flex-row flex-wrap items-center justify-center gap-1.5">
+        {FILTER_PILLS.map((pill) => {
+          const active = videoFilter === pill.key;
+          return (
+            <Pressable
+              key={pill.key}
+              onPress={() => {
+                setVideoFilter(pill.key);
+                // The list may shrink — reset to the first result (web parity).
+                setCurrentIndex(0);
+              }}
+              className={`rounded-full px-2.5 py-0.5 ${active ? 'bg-primary/10' : ''}`}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+            >
+              <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                {t(pill.labelKey)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
