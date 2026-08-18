@@ -346,6 +346,11 @@ interface RubyTextParagraphBlockProps {
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
+  /** Drag-selected base-text range { start, end } (SPEC-084) — forwarded to
+   *  TokenizedText's selection dictionary popup. */
+  onSelectionChange?: (range: { start: number; end: number }) => void;
+  /** Bump to collapse the native selection (popup dismiss — SPEC-084). */
+  clearSelection?: number;
   /** Measured paragraph line grid — reported up to readers for translation
    *  baseline alignment. Must be identity-stable (memoized component). */
   onLineGrid?: (lines: GridLine[]) => void;
@@ -367,6 +372,8 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
     onOpenLink,
     onPressWord,
     onReveal,
+    onSelectionChange,
+    clearSelection,
     onLineGrid,
   } = props;
 
@@ -398,6 +405,8 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
       isRtl={isRtl}
       fontWeight={fontWeight}
       onTokenTap={handleTokenTap}
+      onSelectionChange={onSelectionChange}
+      clearSelection={clearSelection}
       onLineGrid={onLineGrid}
     />
   );

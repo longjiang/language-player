@@ -254,6 +254,13 @@ export interface RubyTextParagraphProps {
   fontWeight?: 'normal' | 'bold';
   /** Reported with the tapped token's index. */
   onTokenTap?: (tokenId: number) => void;
+  /** Reported with the drag-selected base-text range { start, end } (UTF-16,
+   *  readings excluded — SPEC-084). Fires continuously while selection
+   *  handles move; the consumer applies a settle timer. */
+  onSelectionChange?: (range: { start: number; end: number }) => void;
+  /** Bump to collapse the native selection (dictionary popup dismiss —
+   *  SPEC-084). */
+  clearSelection?: number;
   /** Real base-text line grid of the paragraph (measured natively on the
    *  paragraph's own TextKit 2 layout WITH the ruby annotations, so the
    *  baseline includes the reading band). Readers use it to baseline-align
@@ -279,6 +286,8 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     fontFamily,
     fontWeight,
     onTokenTap,
+    onSelectionChange,
+    clearSelection,
     onLineGrid,
     testID,
   } = props;
@@ -446,6 +455,10 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
               isRtl={isRtl}
               fontFamily={fontFamily ?? null}
               onTokenTap={(event) => onTokenTap?.(event.nativeEvent.tokenId)}
+              onSelection={(event) =>
+                onSelectionChange?.({ start: event.nativeEvent.start, end: event.nativeEvent.end })
+              }
+              clearSelection={clearSelection ?? 0}
               onLineGrid={(event) => setNativeGrid(event.nativeEvent.lines)}
               style={{ width: measured.width, height: measured.height }}
             />
