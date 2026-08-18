@@ -21,6 +21,40 @@ export interface AiGroupingResult {
 }
 
 /**
+ * Flatten a validated grouping into display order over an arbitrary pool:
+ * pattern groups (LLM order), then Other Patterns (analyzed ids the LLM didn't
+ * assign to any pattern — including unmentioned leftovers), then everything
+ * beyond the analyzed set in original order. Keeps exactly one copy of each id;
+ * ids not present in `pool` are dropped.
+ */
+export function buildAiOrderedVideos<T extends { id: number }>(
+  groups: AiGroupingResult,
+  analyzed: T[],
+  pool: T[],
+): T[] {
+  const byId = new Map(pool.map((v) => [v.id, v]));
+  const used = new Set<number>();
+  const ordered: T[] = [];
+  const push = (id: number) => {
+    if (used.has(id)) return;
+    const v = byId.get(id);
+    if (v) {
+      ordered.push(v);
+      used.add(id);
+    }
+  };
+  for (const g of groups.patterns) {
+    for (const id of g.videoIds) push(id);
+  }
+  for (const id of groups.otherIds) push(id);
+  // Analyzed ids the LLM never mentioned → Other Patterns.
+  for (const v of analyzed) push(v.id);
+  // Beyond-analyzed videos → Other (original order).
+  for (const v of pool) push(v.id);
+  return ordered;
+}
+
+/**
  * Serialize the first `limit` videos as the two-column CSV payload described
  * in SPEC-081 ("CSV Payload Format"):
  *
@@ -94,22 +128,55 @@ function toIds(values: unknown[]): number[] {
 }
 
 /**
+ * Extract the first complete, balanced JSON object from `text` (the substring
+ * between the first `{` and the matching closing `}`), ignoring any trailing
+ * garbage the model may have emitted after the object (e.g. a stray `]}`/`}`).
+ * Returns `undefined` if no balanced object is found.
+ */
+function extractJsonObject(text: string): string | undefined {
+  const start = text.indexOf('{');
+  if (start === -1) return undefined;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]!;
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === '{') {
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return undefined;
+}
+
+/**
  * Parse the LLM's reply into an {@link AiGroupingResult}. Tolerates markdown
- * code fences and surrounding prose; validates the shape; returns `null` on
- * malformed output (caller falls back to the default order).
+ * code fences, surrounding prose, and trailing garbage after the JSON object;
+ * validates the shape; returns `null` on malformed output (caller falls back to
+ * the default order).
  */
 export function parseAiResponse(text: string): AiGroupingResult | null {
   let cleaned = text.trim();
   const fence = /^```(?:json)?\s*([\s\S]*?)\s*```$/.exec(cleaned);
   if (fence) cleaned = fence[1]!.trim();
 
-  const start = cleaned.indexOf('{');
-  const end = cleaned.lastIndexOf('}');
-  if (start === -1 || end <= start) return null;
+  const json = extractJsonObject(cleaned);
+  if (!json) return null;
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(cleaned.slice(start, end + 1));
+    parsed = JSON.parse(json);
   } catch {
     return null;
   }
