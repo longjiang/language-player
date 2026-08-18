@@ -136,13 +136,6 @@ export default function WordDetailScreen() {
     // CEDICT ids contain commas, which are encoded as ~ in the route.
     const decodedId = entryId.replace(/~/g, ',');
 
-    // Check ID cache first (populated by bulkLookupWords or previous fetches)
-    const cached = getCachedEntryById(l2, decodedId);
-    if (cached) {
-      setApiEntry(cached);
-      return;
-    }
-
     // Sidebar items may carry a composite id (e.g. saved words) even though
     // the route shows the raw id. Prefer the item's entryId when present.
     const sidebarItem =
@@ -156,6 +149,18 @@ export default function WordDetailScreen() {
           )
         : null;
     const lookupId = sidebarItem?.entryId || decodedId;
+
+    // Check ID cache first (populated by bulkLookupWords, saved-word
+    // enrichment, or previous fetches). Try both the raw route id and the
+    // scoped id so LLM words — whose saved id carries an `llm-` prefix the
+    // API strips (llm-ja-… vs ja-…) — still hit without a network fetch.
+    const cached =
+      getCachedEntryById(l2, decodedId) ?? getCachedEntryById(l2, lookupId);
+    if (cached) {
+      setApiEntry(cached);
+      return;
+    }
+
     const decomposed = decomposeWordId(lookupId, l2);
     if (!decomposed) {
       setApiError(t('error.entry_not_found'));

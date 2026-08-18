@@ -15,6 +15,7 @@ import { log, logwarn, syncLogger } from '@/lib/logger';
 import { enqueueSyncOp, subscribeEntity } from '@/lib/sync-engine';
 import { getEntityCache } from '@/lib/sync-db';
 import { getOfflineEntryById } from '@/lib/dictionary-db';
+import { setCachedEntryById } from '@/lib/dictionary-cache';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 const STORAGE_KEY = 'zthSavedWords';
@@ -333,6 +334,15 @@ export function SavedWordsProvider({ children }: { children: ReactNode }) {
     });
 
     const applyEntry = (entry: DictionaryEntry | null, unresolvable: boolean) => {
+      // Warm the shared ID cache so the word detail page (and any other
+      // entry page) opens instantly from this saved word without re-fetching
+      // /dictionary/entry. Cache under both the full l2 code and its base so
+      // lookups by either key hit (mirrors the vocab search page).
+      if (entry) {
+        setCachedEntryById(l2Code, entry);
+        const base = l2Code.split('-')[0];
+        if (base !== l2Code) setCachedEntryById(base, entry);
+      }
       setSavedWords((prev) => {
         const updated = { ...prev };
         updated[l2Code] = (prev[l2Code] ?? []).map((w) =>
