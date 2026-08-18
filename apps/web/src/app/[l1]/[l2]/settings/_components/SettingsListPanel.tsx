@@ -127,7 +127,7 @@ export function SettingsListPanel({ hideTitle = false }: SettingsListPanelProps)
         <h1 className="text-3xl font-bold mb-1">{t('title.settings')}</h1>
       )}
 
-      <div className={hideTitle ? '' : 'mt-6 mb-8'}>
+      <div className={hideTitle ? 'mb-6' : 'mt-6 mb-8'}>
         <SearchBar
           value={query}
           onChange={setQuery}
