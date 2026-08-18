@@ -21,12 +21,6 @@
  *     coincides with the L2 line's baseline, whatever the two fonts'
  *     metrics are.
  *
- * Baseline offsets are cross-platform: RN's iOS `TextLayoutLine.ascender`
- * is the ABSOLUTE baseline y (`locationForGlyphAtIndex.y`), while Android's
- * is the per-line ascent (`-getLineAscent`, baseline = `y + ascender`), so
- * the per-line offset from the line top is `ascender − y` on iOS and
- * `ascender` on Android.
- *
  * Rows are only rendered once the probe has measured (the same measure-then-
  * render two-phase the web component uses); until then, a plain paragraph
  * with the same font size and line spacing stands in, so the swap is
@@ -36,12 +30,9 @@
  */
 
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { TextLayoutEvent } from 'react-native';
 import { lineOffsets, type TextLayoutLine } from '@/lib/aligned-translation';
-import { readerLogger } from '@/lib/logger';
-
-const { log } = readerLogger;
 
 export interface AlignedTranslationProps {
   /** Translation text (L1). */
@@ -63,11 +54,12 @@ interface ProbeState {
   lines: TextLayoutLine[];
 }
 
-/** Baseline offset from the line's top. Cross-platform: iOS reports the
- *  absolute baseline y in `ascender` (line offset included), Android the
- *  per-line ascent (`y + ascender` = baseline). */
+/** Baseline offset from the line's top. RN reports the per-line ascent in
+ *  `ascender` on both platforms — verified on the iOS TextKit 2 paragraph
+ *  layout path (constant per line while `y` varies: y=0→a=29, y=43→a=29),
+ *  matching Android's `-getLineAscent`. */
 export function lineBaselineOffset(ln: TextLayoutLine): number {
-  return Platform.OS === 'ios' ? ln.ascender - ln.y : ln.ascender;
+  return ln.ascender;
 }
 
 function AlignedTranslationImpl({
@@ -96,13 +88,8 @@ function AlignedTranslationImpl({
       setProbe((prev) =>
         prev && prev.key === probeKey && prev.lines === lines ? prev : { key: probeKey, lines },
       );
-      if (__DEV__) {
-        log(
-          `[Reader] AlignedTranslation probe key="${text.slice(0, 20).replace(/\s+/g, ' ')}" lines=${lines.length} lh2=${Math.round(lh2 * 10) / 10} l2Baseline=${Math.round(l2BaselineOffset * 10) / 10}`,
-        );
-      }
     },
-    [probeKey, lh2, l2BaselineOffset, text],
+    [probeKey],
   );
 
   const ready = probe != null && probe.key === probeKey && probe.lines.length > 0;
