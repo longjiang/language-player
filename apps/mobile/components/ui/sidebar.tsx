@@ -1,16 +1,16 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, Modal, Animated, useWindowDimensions } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PanelRightClose } from 'lucide-react-native';
-import * as Dialog from '@/components/ui/dialog';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { LG_BREAKPOINT } from '@/lib/constants';
 
 /**
  * Shared right-side sidebar — mirrors apps/web/src/components/ui/sidebar.tsx.
- * Narrow screens render a slide-in sheet through Dialog.DrawerContent; wide
+ * Narrow screens render a slide-in sheet in an RN Modal (see SidebarSheet —
+ * NOT the Dialog portal, whose host is outside the navigation context); wide
  * screens render a persistent collapsible panel.
  */
 
@@ -100,6 +100,79 @@ export interface SidebarProps extends SidebarPanelProps {
 }
 
 /**
+ * Narrow-screen slide-in drawer — rendered in an RN `Modal`, NOT the Dialog
+ * portal. The @rn-primitives/portal (Zustand-based) renders content at the
+ * root `PortalHost` (app/_layout.tsx), which sits OUTSIDE the expo-router
+ * navigator's per-screen context — portal content crashes with "Couldn't find
+ * a navigation context" the moment anything (app hook or react-navigation
+ * library code) touches navigation state. RN Modal children render inside the
+ * screen's React tree, keeping full navigation context (SPEC-023 fixed
+ * HamburgerDrawer the same way).
+ */
+function SidebarSheet({
+  open,
+  onClose,
+  drawerWidth,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  drawerWidth: number;
+  children: React.ReactNode;
+}) {
+  const translateX = useRef(new Animated.Value(drawerWidth)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: open ? 0 : drawerWidth,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: open ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [open, translateX, overlayOpacity, drawerWidth]);
+
+  return (
+    <Modal
+      transparent
+      visible={open}
+      animationType="none"
+      onRequestClose={onClose}
+      supportedOrientations={['portrait', 'landscape']}
+    >
+      {/* Semi-transparent overlay — tap to close */}
+      <Animated.View
+        pointerEvents={open ? 'auto' : 'none'}
+        className="absolute inset-0 bg-black/20"
+        style={{ opacity: overlayOpacity }}
+      >
+        <Pressable className="flex-1" onPress={onClose} />
+      </Animated.View>
+
+      {/* Drawer panel — slides in from the right */}
+      <Animated.View
+        className="absolute border-l border-border bg-card"
+        style={{
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: drawerWidth,
+          transform: [{ translateX }],
+        }}
+      >
+        {children}
+      </Animated.View>
+    </Modal>
+  );
+}
+
+/**
  * Shared right-side sidebar: a persistent collapsible panel on wide screens
  * and a slide-in sheet on narrow screens. Both render the same panel chrome.
  */
@@ -125,13 +198,13 @@ export function Sidebar({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.DrawerContent className="p-0" drawerWidth={sidebarSheetWidth(screenWidth)}>
-          <SidebarPanel {...panel} onClose={() => onOpenChange(false)} />
-        </Dialog.DrawerContent>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <SidebarSheet
+      open={open}
+      onClose={() => onOpenChange(false)}
+      drawerWidth={sidebarSheetWidth(screenWidth)}
+    >
+      <SidebarPanel {...panel} onClose={() => onOpenChange(false)} />
+    </SidebarSheet>
   );
 }
 

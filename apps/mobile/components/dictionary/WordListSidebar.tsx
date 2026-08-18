@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
@@ -185,7 +185,11 @@ function SidebarEntryCard({
   isActive: boolean;
   onOpen: (item: SidebarListItem, entry?: DictionaryEntry) => void;
 }) {
-  const router = useRouter();
+  // NOTE: no `useRouter()` here — the sidebar sheet renders in an RN Modal
+  // (ui/sidebar.tsx), and the dictionary popup renders through a portal;
+  // neither is guaranteed to be inside the expo-router per-screen context.
+  // The imperative `router` dispatches on the global navigation ref and works
+  // in every rendering context.
   const [entry, setEntry] = useState<DictionaryEntry | null | undefined>(undefined);
 
   useEffect(() => {
@@ -253,7 +257,9 @@ export function WordListSidebar({
   onNavigate,
 }: WordListSidebarProps) {
   const t = useT();
-  const router = useRouter();
+  // Imperative `router` (not useRouter) — see SidebarEntryCard note: the sheet
+  // renders in an RN Modal / the popup in a portal, so navigation must not
+  // depend on the surrounding React context.
 
   if (!isSidebarAvailable(source)) return null;
 
