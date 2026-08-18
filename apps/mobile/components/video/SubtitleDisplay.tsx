@@ -18,6 +18,9 @@ import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/s
 
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
+/** Single-line subtitles render at 1.33× the user's zoom; multiline transcript
+ *  rows at 1× (SPEC-051 §Target behavior). */
+const SINGLELINE_TEXT_SCALE = 1.33;
 
 interface SubtitleDisplayProps {
   lines: SubtitleSyncedLine[];
@@ -231,7 +234,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
-                  textScale={1.5}
+                  textScale={SINGLELINE_TEXT_SCALE}
                   textColor={overlay ? 'text-white' : undefined}
                   // SPEC-084: selection on the transcript single-line mode,
                   // not the on-video band.
@@ -240,7 +243,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 {showTranslation && shownLine.l1Line ? (
                   <Text
                     className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
-                    style={{ fontSize: translationFactor * 14 * 1.5 * zoomRem }}
+                    style={{ fontSize: translationFactor * 14 * SINGLELINE_TEXT_SCALE * zoomRem }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>

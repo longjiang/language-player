@@ -39,6 +39,9 @@ import {
 const KARAOKE_LEAD_SECONDS = 0.15;
 /** ADR-0034: free users see the first 10 transcript lines. */
 const FREE_TRANSCRIPT_LINES = 10;
+/** Single-line subtitles render at 1.33× the user's zoom; multiline transcript
+ *  rows at 1× (SPEC-051 §Target behavior). */
+const SINGLELINE_TEXT_SCALE = 1.33;
 
 interface SubtitleDisplayProps {
   youtubeId?: string;
@@ -400,17 +403,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 <TokenizedText
                   text={bandActiveText}
                   l2Code={l2.code}
-                  textScale={1.5}
+                  textScale={SINGLELINE_TEXT_SCALE}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
                   context={videoTitle ? { videoTitle } : undefined}
                 />
               </div>
               {showTranslation && bandActiveLine.l1Line && (
-                // Same 1.5× multiplier as the L2 subtitle line (SPEC-051).
+                // Same multiplier as the L2 subtitle line (SPEC-051).
                 <p
                   className={cn('text-sm text-center mt-0.5 leading-relaxed', transClass)}
-                  style={{ fontSize: `${0.875 * 1.5 * textZoomFactor}rem` }}
+                  style={{ fontSize: `${0.875 * SINGLELINE_TEXT_SCALE * textZoomFactor}rem` }}
                 >
                   {bandActiveLine.l1Line}
                 </p>
@@ -488,7 +491,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             }
             translationClass="text-sm text-center"
             translationBelow
-            translationFactor={1.5 * textZoomFactor}
+            translationFactor={SINGLELINE_TEXT_SCALE * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
             noMargin
           >
@@ -499,7 +502,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               <TokenizedText
                 text={shownLine.line}
                 l2Code={l2Code}
-                textScale={1.5}
+                textScale={SINGLELINE_TEXT_SCALE}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
