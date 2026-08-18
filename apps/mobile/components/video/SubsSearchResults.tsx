@@ -33,10 +33,10 @@ import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { VideoControlBar } from './VideoControlBar';
 import { TranscriptQueuePanel } from './TranscriptQueuePanel';
+import { SubsSearchRow, formatTime, youtubeThumbnail } from './SubsSearchRow';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
-import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play } from 'lucide-react-native';
 
@@ -48,10 +48,6 @@ function formatNumber(n: number | undefined, locale: string): string {
   } catch {
     return String(n);
   }
-}
-
-function youtubeThumbnail(id: string): string {
-  return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
 }
 
 interface SubsSearchResultsProps {
@@ -88,12 +84,6 @@ const SORT_OPTIONS: { key: SubsSearchSortKey; labelKey: string }[] = [
   { key: 'ai', labelKey: 'sort.ai' },
 ];
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 function lineHasAnyTerm(line: string, terms: string[]): boolean {
   const lower = line.toLowerCase();
   return terms.some((f) => lower.includes(f.trim().toLowerCase()));
@@ -106,46 +96,6 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .map((f) => f.trim())
     .filter(Boolean)
     .find((f) => lower.includes(f.toLowerCase()));
-}
-
-/** Highlight every search-term match in a line, preferring the longest term
- *  on a tie (web subs-search-row fidelity, SPEC-082 Task 7). */
-function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
-  const active = terms.map((t) => t.trim()).filter(Boolean);
-  if (active.length === 0) return <Text>{line}</Text>;
-
-  const lowerLine = line.toLowerCase();
-  const nodes: React.ReactNode[] = [];
-  let pos = 0;
-
-  while (pos < line.length) {
-    // Find the earliest match of any term; prefer the longest term on ties.
-    let bestIdx = -1;
-    let bestLen = 0;
-    for (const term of active) {
-      const idx = lowerLine.indexOf(term.toLowerCase(), pos);
-      if (
-        idx !== -1 &&
-        (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
-      ) {
-        bestIdx = idx;
-        bestLen = term.length;
-      }
-    }
-    if (bestIdx === -1) {
-      nodes.push(<Text key={`tail-${pos}`}>{line.slice(pos)}</Text>);
-      break;
-    }
-    if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{line.slice(pos, bestIdx)}</Text>);
-    nodes.push(
-      <Text key={`hit-${bestIdx}-${bestLen}`} className="font-semibold text-primary">
-        {line.slice(bestIdx, bestIdx + bestLen)}
-      </Text>,
-    );
-    pos = bestIdx + bestLen;
-  }
-
-  return <Text>{nodes}</Text>;
 }
 
 export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
@@ -1075,71 +1025,17 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                 }
 
                 const { videoIndex, video: listItem } = item;
-                const ml = listItem.subs_l2[listItem.matchLineIndex];
-                const isActive = videoIndex === currentIndex;
                 return (
-                  <Pressable
-                    onPress={() => selectFromList(videoIndex)}
-                    className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
-                  >
-                    {/* Thumbnail */}
-                    <View className="h-12 w-20 overflow-hidden rounded bg-muted">
-                      <Image
-                        source={{ uri: youtubeThumbnail(listItem.youtube_id) }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
-                      {ml && (
-                        <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
-                          <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
-                        </View>
-                      )}
-                    </View>
-
-                    {/* Info — original on top, translation below, horizontal scroll for long lines */}
-                    <View className="min-w-0 flex-1">
-                      <View className="flex-row items-center gap-1.5">
-                        <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
-                          {listItem.title}
-                        </Text>
-                        {listItem.duration != null && (
-                          <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                            {formatTime(listItem.duration)}
-                          </Text>
-                        )}
-                      </View>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
-                        <View>
-                          <View className="flex-row">
-                            {rowSegments[videoIndex]?.map((seg, j) => (
-                              <Text
-                                key={j}
-                                className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
-                              >
-                                {j > 0 ? ' ' : ''}
-                                <HighlightTerms line={seg.text} terms={highlightTerms} />
-                              </Text>
-                            ))}
-                          </View>
-                          {display.translation && (
-                            <View className="mt-0.5 flex-row">
-                              {rowSegments[videoIndex]?.map((seg, j) => {
-                                const flatIdx = (translationInput.rowStarts[videoIndex] ?? 0) + j;
-                                const translated = listTranslations[flatIdx]?.line;
-                                if (!translated) return null;
-                                return (
-                                  <Text key={j} className="text-xs text-muted-foreground">
-                                    {j > 0 ? ' ' : ''}
-                                    {renderInlineMarkdown(translated, { markBold: true })}
-                                  </Text>
-                                );
-                              })}
-                            </View>
-                          )}
-                        </View>
-                      </ScrollView>
-                    </View>
-                  </Pressable>
+                  <SubsSearchRow
+                    video={listItem}
+                    isActive={videoIndex === currentIndex}
+                    onSelect={() => selectFromList(videoIndex)}
+                    segments={rowSegments[videoIndex] ?? []}
+                    highlightTerms={highlightTerms}
+                    showTranslation={display.translation}
+                    translationStart={translationInput.rowStarts[videoIndex] ?? 0}
+                    translations={listTranslations}
+                  />
                 );
               }}
             />
