@@ -119,25 +119,16 @@ export function SubsSearchRow({
         )}
       </View>
 
-      {/* Info — original on top, translation below, horizontal scroll for long lines */}
+      {/* Info — matched line on top, translation below, horizontal scroll for long lines.
+          No video title/duration — matches web subs-search-row (SPEC-082). */}
       <View className="min-w-0 flex-1">
-        <View className="flex-row items-center gap-1.5">
-          <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
-            {video.title}
-          </Text>
-          {video.duration != null && (
-            <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-              {formatTime(video.duration)}
-            </Text>
-          )}
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View>
             <View className="flex-row">
               {segments.map((seg, j) => (
                 <Text
                   key={j}
-                  className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
+                  className={`text-base ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
                 >
                   {j > 0 ? ' ' : ''}
                   <HighlightTerms line={seg.text} terms={highlightTerms} />
@@ -145,13 +136,13 @@ export function SubsSearchRow({
               ))}
             </View>
             {showTranslation && (
-              <View className="mt-0.5 flex-row">
+              <View className="mt-1 flex-row">
                 {segments.map((seg, j) => {
                   const flatIdx = (translationStart ?? 0) + j;
                   const translated = translations[flatIdx]?.line;
                   if (!translated) return null;
                   return (
-                    <Text key={j} className="text-xs text-muted-foreground">
+                    <Text key={j} className="text-sm text-muted-foreground">
                       {j > 0 ? ' ' : ''}
                       {renderInlineMarkdown(translated, { markBold: true })}
                     </Text>
