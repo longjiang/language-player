@@ -1,7 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { View, Text, Image, useWindowDimensions } from 'react-native';
-import { TokenizedText } from '@/components/TokenizedText';
 import type { ContentBlock, FormatRange, TextBlock } from '@langplayer/shared';
+
+// Loaded on demand to break the static require cycle:
+// TokenizedText → DictionaryPopup → AiExplanation → MarkdownExplanation →
+// MarkdownBlocks → TokenizedText (Metro warns about the cycle; lazy-loading
+// keeps rendering synchronous after first use).
+const LazyTokenizedText = React.lazy(async () => ({
+  default: (await import('@/components/TokenizedText')).TokenizedText,
+}));
 
 /** Unordered bullet glyphs by nesting depth. */
 const BULLETS = ['•', '◦', '▪'] as const;
@@ -11,6 +18,13 @@ export interface MarkdownBlocksProps {
   /** When set, text blocks render via TokenizedText (L2 tokenization,
    *  clickable words); otherwise plain Text with inline formatting. */
   l2Code?: string;
+  /**
+   * How backticked (code-format) spans render when `l2Code` is set:
+   * - `'code'` (default): monospace, part of the tokenized text (readers);
+   * - `'tokenize'`: split out and rendered as interactive TokenizedText
+   *   spans (AI explanations — backticked L2 words stay clickable).
+   */
+  codeSpans?: 'code' | 'tokenize';
   /** Open links inside the app (reader-style) instead of the OS browser. */
   onOpenLink?: (href: string) => void;
   /** Text scale multiplier for headings/paragraphs. */
@@ -34,6 +48,7 @@ export interface MarkdownBlocksProps {
 export function MarkdownBlocks({
   blocks,
   l2Code,
+  codeSpans = 'code',
   onOpenLink,
   textScale = 1,
   ruleOverrides,
@@ -66,6 +81,7 @@ export function MarkdownBlocks({
                 key={i}
                 block={block}
                 l2Code={l2Code}
+                codeSpans={codeSpans}
                 onOpenLink={onOpenLink}
                 textScale={textScale}
                 ruleOverrides={ruleOverrides}
@@ -151,6 +167,7 @@ const HEADING_FONT: Record<number, number> = { 1: 24, 2: 20, 3: 17, 4: 16, 5: 16
 function TextBlockView({
   block,
   l2Code,
+  codeSpans,
   onOpenLink,
   textScale,
   ruleOverrides,
@@ -158,21 +175,36 @@ function TextBlockView({
 }: {
   block: TextBlock;
   l2Code?: string;
+  codeSpans: 'code' | 'tokenize';
   onOpenLink?: (href: string) => void;
   textScale: number;
   ruleOverrides?: MarkdownBlocksProps['ruleOverrides'];
   orderedNumber?: number;
 }) {
   const isHeading = block.type === 'heading';
+  const headingFactor = isHeading
+    ? block.depth === 1 ? 1.5 : block.depth === 2 ? 1.25 : block.depth === 3 ? 1.125 : 1
+    : 1;
+
   const content = l2Code ? (
-    <TokenizedText
-      text={block.text}
-      l2Code={l2Code}
-      formats={block.formats}
-      onOpenLink={onOpenLink}
-      textScale={textScale * (isHeading ? (block.depth === 1 ? 1.5 : block.depth === 2 ? 1.25 : 1.125) : 1)}
-      bold={isHeading}
-    />
+    codeSpans === 'tokenize' ? (
+      <TokenizedCodeSpans
+        block={block}
+        l2Code={l2Code}
+        onOpenLink={onOpenLink}
+        fontSize={(isHeading ? HEADING_FONT[block.depth ?? 1] : 16) * textScale * headingFactor}
+        textScale={textScale * headingFactor}
+      />
+    ) : (
+      <TokenizedTextLazy
+        text={block.text}
+        l2Code={l2Code}
+        formats={block.formats}
+        onOpenLink={onOpenLink}
+        textScale={textScale * headingFactor}
+        bold={isHeading}
+      />
+    )
   ) : (
     <FormattedText
       text={block.text}
@@ -216,6 +248,123 @@ function TextBlockView({
     default:
       return <View className="mb-3">{wrapped}</View>;
   }
+}
+
+/** TokenizedText through the lazy boundary (breaks the require cycle). */
+function TokenizedTextLazy(props: {
+  text: string;
+  l2Code: string;
+  formats?: FormatRange[];
+  onOpenLink?: (href: string) => void;
+  textScale: number;
+  bold?: boolean;
+}) {
+  return (
+    <Suspense fallback={<Text className="text-foreground">{props.text}</Text>}>
+      <LazyTokenizedText
+        text={props.text}
+        l2Code={props.l2Code}
+        formats={props.formats}
+        onOpenLink={props.onOpenLink}
+        textScale={props.textScale}
+        bold={props.bold}
+      />
+    </Suspense>
+  );
+}
+
+interface CodeSegment {
+  isCode: boolean;
+  text: string;
+  /** Non-code formats, offsets rebased to the segment start. */
+  formats: FormatRange[];
+}
+
+/**
+ * Split a block's text into [plain | backticked-code] segments. Used by the
+ * AI explanation policy (`codeSpans: 'tokenize'`): backticked L2 spans become
+ * interactive TokenizedText, everything else renders as formatted plain text
+ * (mirrors the legacy MarkdownExplanation splitter, but from the shared
+ * parser's format model).
+ */
+function splitByCodeFormats(text: string, formats: FormatRange[]): CodeSegment[] {
+  const codeRanges = formats
+    .filter((f) => f.type === 'code')
+    .map((f) => [f.start, f.end] as const)
+    .sort((a, b) => a[0] - b[0]);
+  const segments: CodeSegment[] = [];
+  let pos = 0;
+  for (const [start, end] of codeRanges) {
+    if (start > pos) segments.push(makePlain(pos, start));
+    if (end > start) segments.push({ isCode: true, text: text.slice(start, end), formats: [] });
+    pos = Math.max(pos, end);
+  }
+  if (pos < text.length) segments.push(makePlain(pos, text.length));
+  if (segments.length === 0) segments.push({ isCode: false, text, formats: [] });
+  return segments;
+
+  function makePlain(from: number, to: number): CodeSegment {
+    return {
+      isCode: false,
+      text: text.slice(from, to),
+      formats: formats
+        .filter((f) => f.type !== 'code' && f.end > from && f.start < to)
+        .map((f) => ({
+          ...f,
+          start: Math.max(f.start, from) - from,
+          end: Math.min(f.end, to) - from,
+        })),
+    };
+  }
+}
+
+/** Tokenize-mode text block: code spans interactive, rest formatted. */
+function TokenizedCodeSpans({
+  block,
+  l2Code,
+  onOpenLink,
+  fontSize,
+  textScale,
+}: {
+  block: TextBlock;
+  l2Code: string;
+  onOpenLink?: (href: string) => void;
+  fontSize: number;
+  textScale: number;
+}) {
+  const segments = useMemo(
+    () => splitByCodeFormats(block.text, block.formats),
+    [block.text, block.formats],
+  );
+  return (
+    <Text
+      className="text-foreground"
+      style={{ fontSize, lineHeight: fontSize * 2 }}
+    >
+      {segments.map((seg, i) =>
+        seg.isCode ? (
+          <Suspense key={i} fallback={<Text className="text-foreground">{seg.text}</Text>}>
+            <LazyTokenizedText
+              text={seg.text}
+              l2Code={l2Code}
+              inline
+              phonetics={false}
+              highlightSaved={false}
+              quickGloss={false}
+              showDefinition={false}
+              byeonggi={false}
+              mode="normal"
+              bold
+              onOpenLink={onOpenLink}
+              textScale={textScale}
+            />
+          </Suspense>
+        ) : (
+          <FormattedText key={i} text={seg.text} formats={seg.formats} fontSize={fontSize} />
+        ),
+      )}
+    </Text>
+  );
 }
 
 /** Plain-text inline formatting (no tokenization) — bold/italic/code/strike. */
