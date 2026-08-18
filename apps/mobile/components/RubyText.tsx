@@ -7,6 +7,7 @@ import type {
   NativeRubyTextParagraphRun,
   NativeRubyTextProps,
 } from '../modules/ruby-text/src';
+import type { TextLayoutLine } from '@/lib/aligned-translation';
 import { log, logwarn } from '@/lib/logger';
 
 /**
@@ -253,6 +254,12 @@ export interface RubyTextParagraphProps {
   fontWeight?: 'normal' | 'bold';
   /** Reported with the tapped token's index. */
   onTokenTap?: (tokenId: number) => void;
+  /** Real line grid of the paragraph (measured on the same invisible RN Text
+   *  that sizes the native view, so it matches the native render's wrapping
+   *  and line boxes exactly). Readers use it to baseline-align the
+   *  translation column (SPEC-082 web AlignedTranslation parity). Must be
+   *  identity-stable (the paragraph is memoized). */
+  onLineGrid?: (lines: TextLayoutLine[]) => void;
   testID?: string;
 }
 
@@ -272,6 +279,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
     fontFamily,
     fontWeight,
     onTokenTap,
+    onLineGrid,
     testID,
   } = props;
 
@@ -388,6 +396,7 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
           ...(fontFamily ? { fontFamily } : {}),
         }}
         onLayout={onLayout}
+        onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines) : undefined}
       >
         {plainText}
       </Text>
