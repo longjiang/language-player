@@ -6,7 +6,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useChannelPreference } from '@/hooks/use-channel-preference';
 import { Pressable } from '@/components/ui/pressable';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { AddToPlaylistDialog } from './AddToPlaylistDialog';
 
 interface ChannelActionsMenuProps {
@@ -37,7 +37,11 @@ export function ChannelActionsMenu({ channelId, video }: ChannelActionsMenuProps
   if (!channelId && !video) return null;
 
   // iOS SF Symbol for a menu item; Android's PopupMenu renders text-only, so
-  // no image is passed there.
+  // no image is passed there. `imageColor` is REQUIRED on New-Architecture
+  // builds running iOS 26+: the codegen defaults it to 0 (transparent) and the
+  // native layer tints the SF Symbol with `rgba(0,0,0,0)`, making the icon
+  // invisible (react-native-menu#1034/#1200). Use the brand primary color so
+  // the icons are visible and match the theme.
   const sf = (name: string) => (Platform.OS === 'ios' ? name : undefined);
 
   const actions = [
@@ -48,22 +52,26 @@ export function ChannelActionsMenu({ channelId, video }: ChannelActionsMenuProps
                 id: 'subscribe',
                 title: t('action.subscribe'),
                 image: sf('bell'),
+                imageColor: ICON_PRIMARY,
               }
             : {
                 id: 'unsubscribe',
                 title: t('action.unsubscribe'),
                 image: sf('bell.slash'),
+                imageColor: ICON_PRIMARY,
               },
           pref !== 'not_interested'
             ? {
                 id: 'not-interested',
                 title: t('action.not_interested'),
                 image: sf('eye.slash'),
+                imageColor: ICON_PRIMARY,
               }
             : {
                 id: 'remove-not-interested',
                 title: t('action.remove_not_interested'),
                 image: sf('eye'),
+                imageColor: ICON_PRIMARY,
               },
         ]
       : []),
@@ -73,6 +81,7 @@ export function ChannelActionsMenu({ channelId, video }: ChannelActionsMenuProps
             id: 'add-to-playlist',
             title: t('action.add_to_playlist'),
             image: sf('music.note.list'),
+            imageColor: ICON_PRIMARY,
           },
         ]
       : []),
