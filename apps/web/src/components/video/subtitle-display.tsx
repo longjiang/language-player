@@ -564,7 +564,21 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 l1Code={l1Code}
                 translation={
                   showTranslation && line.l1Line ? (
-                    <span>{line.l1Line}</span>
+                    // Same markdown treatment as singleline mode: the translate
+                    // backend bolds highlighted terms with **…**, rendered here
+                    // as the highlighted mark so multiline matches singleline.
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <span>{children}</span>,
+                        strong: ({ children }) => (
+                          <mark className="rounded bg-primary/15 px-0.5 font-semibold text-primary ring-1 ring-primary/30">
+                            {children}
+                          </mark>
+                        ),
+                      }}
+                    >
+                      {line.l1Line}
+                    </ReactMarkdown>
                   ) : undefined
                 }
                 translationBelow
@@ -584,6 +598,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                     tokenCache={tokenCache}
                     tokenCacheLoaded={tokenCacheLoaded}
                     karaokeProgress={karaokeProgress}
+                    // Highlight the search terms in multiline mode too (like
+                    // singleline mode) so the matched line stands out.
+                    highlightForms={highlightTerms}
                     selectionDictionary
                     context={{
                       starttime: line.starttime,
