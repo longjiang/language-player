@@ -353,6 +353,8 @@
         "noun_class": "Classe:",
         "offline": "Offline",
         "on_this_page": "In questa pagina",
+        "other": "Altro",
+        "other_patterns": "Altri modelli",
         "overview": "Panoramica",
         "payment_email": "Email di pagamento",
         "payment_id": "ID di pagamento",
@@ -741,6 +743,8 @@
         "admin_granted": "Accesso amministratore concesso.",
         "admin_only_hint": "Solo accesso amministratore.",
         "admin_removed": "Accesso amministratore rimosso.",
+        "ai_analyzing": "Analisi dei modelli con AI…",
+        "ai_grouping_failed": "Raggruppamento AI non riuscito. Visualizzazione dei risultati nell'ordine predefinito.",
         "ai_pro_feature": "Funzionalità Pro: Ottieni spiegazioni con intelligenza artificiale sulle parole nel contesto.",
         "all_done_desc": "Hai ripassato tutte le carte in scadenza. Torna più tardi per ulteriori ripassi o esplora i video per salvare nuove parole.",
         "all_done_for_now": "Tutto fatto per ora!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Spiega se la parola {l2Name} \"{word}\" può essere scomposta in parti semantiche (morfemi) e segnala eventuali interpretazioni letterali della parola.",
         "followup_morphemes_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" può essere scomposta in parti semantiche (morfemi) e segnala eventuali interpretazioni letterali della parola.",
         "followup_syntax": "Spiega se la parola {l2Name} \"{word}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
-        "followup_syntax_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.)."
+        "followup_syntax_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
+        "subs_ai_group": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono {n} righe di sottotitoli di video, ciascuna in {l2Name}, che contengono il termine \"{term}\"."
     },
     "review": {
         "again": "Di nuovo",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Visualizzazione a livello di parola"
     },
     "sort": {
+        "ai": "IA",
         "alphabetical": "Alfabetico",
         "most_viewed": "Più visti",
         "newest": "Più recente",

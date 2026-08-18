@@ -7,9 +7,16 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { baseCode } from '@/lib/language-data';
+import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { log } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
+import {
+  AI_ANALYZE_LIMIT,
+  buildAiPayload,
+  buildAiPrompt,
+  parseAiResponse,
+  type AiGroupingResult,
+} from '@/lib/subs-ai-grouping';
 import {
   YouTubePlayer,
   type YouTubePlayerHandle,
@@ -61,7 +68,7 @@ const FREE_SUBS_SEARCH_HITS = 5;
  *  list → modal design: the mode is a per-device UI preference). */
 const SUBTITLE_MODE_KEY = 'lp_subs_search_subtitle_mode';
 
-type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
+type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext' | 'ai';
 
 /** Content filter pills shown in the nav bar next to the forms toggle. */
 type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
@@ -150,6 +157,10 @@ function applyFilterAndSort(
 
   result.sort((a, b) => {
     switch (listSort) {
+      case 'ai':
+        // Ordering comes from the LLM grouping (applied in the component);
+        // keep the input order here.
+        return 0;
       case 'likes':
         return (b.views ?? 0) - (a.views ?? 0);
       case 'date':
@@ -247,6 +258,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Content filter pill (All / Non-Music / Music / TV Shows).
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
 
+  // ── AI grouping ("Sort by AI") ──
+  // The LLM analyzes the first 50 most-popular results and assigns each video
+  // id to a meaning/pattern group. `aiKey` records which cache key the current
+  // `aiGroups` corresponds to, so a stale result (new term / new videos) is
+  // never applied. Results are cached per key to avoid re-requesting when the
+  // user toggles away from AI sort and back.
+  const [aiGroups, setAiGroups] = useState<AiGroupingResult | null>(null);
+  const [aiKey, setAiKey] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(false);
+  const aiCacheRef = useRef<Map<string, AiGroupingResult>>(new Map());
+  const [aiRetryTick, setAiRetryTick] = useState(0);
+
   // Subtitle display mode in the playback modal: follow playback one line at a
   // time (singleline), or show the full transcript (multiline — tabbed subs |
   // info sidebar). Mirrors the watch page's subtitles/transcript modes.
@@ -307,13 +331,167 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
   }, [pool, skippedIds, isPro, applyVideoFilter]);
 
+  // ── AI grouping ("Sort by AI") ──
+  // The LLM analyzes the first AI_ANALYZE_LIMIT most-popular results and
+  // assigns each video id to a meaning/pattern group. Results are cached per
+  // key so toggling away and back doesn't re-request.
+  const aiAnalyzed = useMemo(
+    () => (listSort === 'ai' ? videos.slice(0, AI_ANALYZE_LIMIT) : []),
+    [listSort, videos],
+  );
+  const aiCacheKey = useMemo(
+    () =>
+      aiAnalyzed.length > 0
+        ? `${l2.code}|${term}|${aiAnalyzed.map((v) => v.id).join(',')}`
+        : '',
+    [aiAnalyzed, term, l2.code],
+  );
+  const aiGroupsValid = listSort === 'ai' && aiKey === aiCacheKey && aiGroups !== null;
+
+  useEffect(() => {
+    if (listSort !== 'ai' || aiAnalyzed.length === 0) return;
+    const key = aiCacheKey;
+    const cached = aiCacheRef.current.get(key);
+    if (cached) {
+      setAiGroups(cached);
+      setAiKey(key);
+      setAiLoading(false);
+      setAiError(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAiLoading(true);
+    setAiError(false);
+
+    const l1Name = languageName(l1.code, l1.code);
+    const l2Name = languageName(l2.code, l1.code);
+    const lines = buildAiPayload(aiAnalyzed);
+    const prose = t('prompt.subs_ai_group', {
+      n: aiAnalyzed.length,
+      l2Name,
+      term,
+    });
+    const prompt = buildAiPrompt({ prose, lines, l1Name, l2Name, term });
+    log('[subsSearch] AI grouping request', {
+      term,
+      n: aiAnalyzed.length,
+      promptChars: prompt.length,
+    });
+
+    fetch(`${PYTHON_API_URL}/chatgpt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, cache: true }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: any) => {
+        if (cancelled) return;
+        if (data?.status !== 'success' || typeof data.response !== 'string') {
+          throw new Error('bad /chatgpt response');
+        }
+        const parsed = parseAiResponse(data.response);
+        if (!parsed) throw new Error('unparseable AI grouping response');
+        aiCacheRef.current.set(key, parsed);
+        setAiGroups(parsed);
+        setAiKey(key);
+        setAiLoading(false);
+        setAiError(false);
+        log('[subsSearch] AI grouping applied', {
+          patterns: parsed.patterns.length,
+          otherIds: parsed.otherIds.length,
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          logwarn('[subsSearch] AI grouping failed', {
+            message: err?.message ?? String(err),
+          });
+          setAiError(true);
+          setAiLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listSort, aiAnalyzed, aiCacheKey, l1.code, l2.code, term, t, aiRetryTick]);
+
+  // Ordered display list for AI sort: pattern groups (LLM order), then
+  // Other Patterns (analyzed ids the LLM didn't assign to any pattern —
+  // including unmentioned leftovers), then everything beyond the analyzed 50
+  // in original order.
+  const aiOrderedVideos = useMemo(() => {
+    if (!aiGroupsValid) return null;
+    const byId = new Map(videos.map((v) => [v.id, v]));
+    const used = new Set<number>();
+    const ordered: SubsSearchVideo[] = [];
+    const push = (id: number) => {
+      if (used.has(id)) return;
+      const v = byId.get(id);
+      if (v) {
+        ordered.push(v);
+        used.add(id);
+      }
+    };
+    for (const g of aiGroups!.patterns) {
+      for (const id of g.videoIds) push(id);
+    }
+    for (const id of aiGroups!.otherIds) push(id);
+    // Analyzed ids the LLM never mentioned → Other Patterns.
+    for (const v of aiAnalyzed) push(v.id);
+    // Beyond-50 videos → Other (original order).
+    for (const v of videos) push(v.id);
+    return ordered;
+  }, [aiGroupsValid, aiGroups, aiAnalyzed, videos]);
+
   // ── Result list / player queue: filter + sort ──
   // This same ordering drives both the rendered list and the player's prev/next
   // queue, so moving through the player follows the displayed order.
-  const filteredVideos = useMemo(
-    () => applyFilterAndSort(videos, listSearch, listSort, term),
-    [videos, listSearch, listSort, term],
+  const filteredVideos = useMemo(() => {
+    if (listSort !== 'ai' || !aiOrderedVideos) {
+      return applyFilterAndSort(videos, listSearch, listSort, term);
+    }
+    const q = listSearch.trim().toLowerCase();
+    return q
+      ? aiOrderedVideos.filter(
+          (v) =>
+            v.title.toLowerCase().includes(q) ||
+            v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
+        )
+      : aiOrderedVideos;
+  }, [listSort, aiOrderedVideos, videos, listSearch, term]);
+
+  // Group key per video for AI sort: `ai-<i>` per pattern group,
+  // `other-patterns` for analyzed-but-unclassified (including ids the LLM
+  // never mentioned), `other` for beyond-50.
+  const aiGroupKeyFor = useCallback(
+    (v: SubsSearchVideo): string | undefined => {
+      if (!aiGroupsValid) return undefined;
+      for (let i = 0; i < aiGroups!.patterns.length; i++) {
+        if (aiGroups!.patterns[i]!.videoIds.includes(v.id)) return `ai-${i}`;
+      }
+      if (aiAnalyzed.some((a) => a.id === v.id)) return 'other-patterns';
+      return 'other';
+    },
+    [aiGroupsValid, aiGroups, aiAnalyzed],
   );
+
+  // Header content per AI group key: L1 heading + L2 pattern (the LLM writes
+  // the heading in L1 and the pattern in L2, per the prompt).
+  const aiHeaderInfo = useMemo(() => {
+    if (!aiGroupsValid) return undefined;
+    const map = new Map<string, { heading: string; pattern?: string }>();
+    aiGroups!.patterns.forEach((g, i) => {
+      map.set(`ai-${i}`, { heading: g.heading, pattern: g.pattern });
+    });
+    map.set('other-patterns', { heading: t('label.other_patterns') });
+    map.set('other', { heading: t('label.other') });
+    return map;
+  }, [aiGroupsValid, aiGroups, t]);
 
   const currentVideo = filteredVideos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
@@ -647,11 +825,13 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   }, []);
 
   // Every distinct group key present in the filtered list, so "Collapse All" /
-  // "Expand All" can flip them in one go. Only defined when grouping applies.
+  // "Expand All" can flip them in one go. Only defined when grouping applies
+  // (AI sort or left/right-context sorts).
+  const activeGroupKey = listSort === 'ai' ? aiGroupKeyFor : contextGroupKey;
   const allGroupKeys = useMemo(() => {
-    if (!contextGroupKey) return undefined;
-    return [...new Set(filteredVideos.map((v) => contextGroupKey(v)))].filter(Boolean);
-  }, [contextGroupKey, filteredVideos]);
+    if (!activeGroupKey) return undefined;
+    return [...new Set(filteredVideos.map((v) => activeGroupKey(v)))].filter(Boolean) as string[];
+  }, [activeGroupKey, filteredVideos]);
 
   const collapseAll = useCallback(() => {
     if (!allGroupKeys) return;
@@ -789,10 +969,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     [currentIndex, selectFromList, rowSegments, highlightTerms, display.translation, translationInput, listTranslations, listTranslating, listFirstLineIndex],
   );
 
-  // Group header bar for left/right-context sorts: a tappable bar showing the
-  // boundary character (one immediately before/after the term), a label
-  // recalling which side of the term we're grouping by, and the group's result
-  // count. Clicking toggles the group's collapsed state.
+  // Group header bar: a tappable bar showing the group's title and its result
+  // count. For left/right-context sorts the title is the boundary character
+  // (one immediately before/after the term) plus a label; for AI sort it's the
+  // LLM's L1 heading plus the L2 syntax pattern. Clicking toggles collapsed.
   const renderGroupHeader = useCallback(
     (group: {
       key: string;
@@ -801,7 +981,14 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       isFirst: boolean;
       onToggle: () => void;
     }) => {
-      const label = listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext');
+      const isAi = listSort === 'ai';
+      const aiInfo = isAi ? aiHeaderInfo?.get(group.key) : undefined;
+      const label = isAi
+        ? aiInfo?.heading ?? group.key
+        : listSort === 'leftContext'
+          ? t('title.leftContext')
+          : t('title.rightContext');
+      const pattern = isAi ? aiInfo?.pattern : undefined;
       const hasBulkControls = group.isFirst && allGroupKeys && allGroupKeys.length > 1;
       const controls = hasBulkControls ? (
         <span
@@ -850,17 +1037,32 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           ) : (
             <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           )}
-          <span className="flex h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1 text-[11px] font-semibold text-primary">
-            {group.key}
-          </span>
-          <span className="truncate text-[11px] font-medium text-muted-foreground">
-            {label}
-          </span>
+          {isAi ? (
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[11px] font-semibold text-foreground">
+                {label}
+              </span>
+              {pattern && (
+                <span className="block truncate text-[10px] text-muted-foreground">
+                  {pattern}
+                </span>
+              )}
+            </span>
+          ) : (
+            <>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1 text-[11px] font-semibold text-primary">
+                {group.key}
+              </span>
+              <span className="truncate text-[11px] font-medium text-muted-foreground">
+                {label}
+              </span>
+            </>
+          )}
           {controls}
         </div>
       );
     },
-    [listSort, t, allGroupKeys, collapseAll, expandAll],
+    [listSort, t, allGroupKeys, collapseAll, expandAll, aiHeaderInfo],
   );
 
   // Content-filter pills (All / Non-Music / Music / TV Shows), rendered in the
@@ -1039,9 +1241,34 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             { value: 'length', label: t('title.length') },
             { value: 'leftContext', label: t('title.leftContext') },
             { value: 'rightContext', label: t('title.rightContext') },
+            { value: 'ai', label: t('sort.ai') },
           ]}
+          header={
+            listSort === 'ai' && aiLoading ? (
+              <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
+                <span className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                {t('msg.ai_analyzing')}
+              </div>
+            ) : listSort === 'ai' && aiError ? (
+              <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
+                <span>{t('msg.ai_grouping_failed')}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (aiCacheKey) aiCacheRef.current.delete(aiCacheKey);
+                    setAiKey('');
+                    setAiGroups(null);
+                    setAiRetryTick((n) => n + 1);
+                  }}
+                  className="font-semibold text-primary underline"
+                >
+                  {t('action.retry')}
+                </button>
+              </div>
+            ) : undefined
+          }
           renderRow={renderQueueRow}
-          groupKeyFor={contextGroupKey}
+          groupKeyFor={listSort === 'ai' ? aiGroupKeyFor : contextGroupKey}
           renderGroupHeader={renderGroupHeader}
           collapsedGroups={collapsedGroups}
           onToggleGroup={toggleGroup}

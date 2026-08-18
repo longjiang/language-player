@@ -353,6 +353,8 @@
         "noun_class": "Clase:",
         "offline": "Fuera de línea",
         "on_this_page": "En esta página",
+        "other": "Otros",
+        "other_patterns": "Otros patrones",
         "overview": "Resumen",
         "payment_email": "Correo de pago",
         "payment_id": "ID de pago",
@@ -741,6 +743,8 @@
         "admin_granted": "Acceso de administrador concedido.",
         "admin_only_hint": "Solo acceso de administradores.",
         "admin_removed": "Acceso de administrador eliminado.",
+        "ai_analyzing": "Analizando patrones con IA…",
+        "ai_grouping_failed": "Falló la agrupación con IA. Mostrando resultados en el orden predeterminado.",
         "ai_pro_feature": "Función Pro: Obtén explicaciones de IA sobre palabras en contexto.",
         "all_done_desc": "Has repasado todas las tarjetas pendientes. Vuelve más tarde para más repasos, o explora videos para guardar nuevas palabras.",
         "all_done_for_now": "¡Todo listo por ahora!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Explica si la palabra en {l2Name} \"{word}\" se puede descomponer en partes semánticas (morfemas) y señala las interpretaciones literales de la palabra.",
         "followup_morphemes_context": "Explica si la palabra en {l2Name} \"{word}\" en \"{context}\" se puede descomponer en partes semánticas (morfemas) y señala las interpretaciones literales de la palabra.",
         "followup_syntax": "Explica si la palabra en {l2Name} \"{word}\" funciona como elemento sintáctico y explica cuál es la estructura sintáctica (p. ej. estructura de la oración, parte de una frase, un determinado fenómeno gramatical, etc.).",
-        "followup_syntax_context": "Explica si la palabra en {l2Name} \"{word}\" en \"{context}\" funciona como elemento sintáctico y explica cuál es la estructura sintáctica (p. ej. estructura de la oración, parte de una frase, un determinado fenómeno gramatical, etc.)."
+        "followup_syntax_context": "Explica si la palabra en {l2Name} \"{word}\" en \"{context}\" funciona como elemento sintáctico y explica cuál es la estructura sintáctica (p. ej. estructura de la oración, parte de una frase, un determinado fenómeno gramatical, etc.).",
+        "subs_ai_group": "Eres un asistente de aprendizaje de idiomas. A continuación hay {n} líneas de subtítulos de videos, cada una en {l2Name}, que contienen el término \"{term}\"."
     },
     "review": {
         "again": "Otra vez",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Visualización por palabra"
     },
     "sort": {
+        "ai": "IA",
         "alphabetical": "Alfabético",
         "most_viewed": "Más vistos",
         "newest": "Más reciente",

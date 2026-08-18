@@ -353,6 +353,8 @@
         "noun_class": "Klasa:",
         "offline": "Offline",
         "on_this_page": "Na tej stronie",
+        "other": "Inne",
+        "other_patterns": "Inne wzorce",
         "overview": "Przegląd",
         "payment_email": "E-mail płatności",
         "payment_id": "ID płatności",
@@ -741,6 +743,8 @@
         "admin_granted": "Przyznano dostęp administratorski.",
         "admin_only_hint": "Tylko dla administratorów.",
         "admin_removed": "Usunięto dostęp administratorski.",
+        "ai_analyzing": "Analizowanie wzorców za pomocą AI…",
+        "ai_grouping_failed": "Grupowanie AI nie powiodło się. Wyświetlanie wyników w domyślnej kolejności.",
         "ai_pro_feature": "Funkcja Pro: Uzyskaj wyjaśnienia słów w kontekście za pomocą AI.",
         "all_done_desc": "Przejrzałeś wszystkie karty do powtórki. Wróć później, aby kontynuować, lub odkrywaj filmy, aby zapisać nowe słowa.",
         "all_done_for_now": "Na razie wszystko gotowe!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
         "followup_morphemes_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
         "followup_syntax": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
-        "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.)."
+        "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
+        "subs_ai_group": "Jesteś asystentem nauki języków. Poniżej znajduje się {n} linii napisów z filmów, każda w języku {l2Name}, zawierających termin \"{term}\"."
     },
     "review": {
         "again": "Ponownie",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Wyświetlanie na poziomie słowa"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "Alfabetycznie",
         "most_viewed": "Najczęściej oglądane",
         "newest": "Najnowsze",

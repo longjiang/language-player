@@ -353,6 +353,8 @@
         "noun_class": "Klas:",
         "offline": "Offline",
         "on_this_page": "Op deze pagina",
+        "other": "Overig",
+        "other_patterns": "Andere patronen",
         "overview": "Overzicht",
         "payment_email": "Betaal-e-mail",
         "payment_id": "Betaal-ID",
@@ -741,6 +743,8 @@
         "admin_granted": "Beheerdersrechten toegekend.",
         "admin_only_hint": "Alleen voor beheerders.",
         "admin_removed": "Beheerdersrechten ingetrokken.",
+        "ai_analyzing": "Patronen analyseren met AI…",
+        "ai_grouping_failed": "AI-groepering mislukt. Resultaten worden in standaardvolgorde weergegeven.",
         "ai_pro_feature": "Pro-functie: Krijg AI-uitleg van woorden in context.",
         "all_done_desc": "Je hebt alle vervallen kaarten bekeken. Kom later terug voor meer herhalingen of bekijk video’s om nieuwe woorden op te slaan.",
         "all_done_for_now": "Klaar voor nu!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Leg uit of het {l2Name}-woord \"{word}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
         "followup_morphemes_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
         "followup_syntax": "Leg uit of het {l2Name}-woord \"{word}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
-        "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.)."
+        "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
+        "subs_ai_group": "Je bent een taalhulp-assistent. Hieronder staan {n} ondertitelregels uit video's, elk in het {l2Name}, die de term \"{term}\" bevatten."
     },
     "review": {
         "again": "Opnieuw",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Weergave op woordniveau"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "Alfabetisch",
         "most_viewed": "Meest bekeken",
         "newest": "Nieuwste",

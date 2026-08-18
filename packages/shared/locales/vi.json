@@ -353,6 +353,8 @@
         "noun_class": "Lớp:",
         "offline": "Ngoại tuyến",
         "on_this_page": "Trên trang này",
+        "other": "Khác",
+        "other_patterns": "Các mẫu khác",
         "overview": "Tổng quan",
         "payment_email": "Email thanh toán",
         "payment_id": "Mã thanh toán",
@@ -741,6 +743,8 @@
         "admin_granted": "Đã cấp quyền quản trị.",
         "admin_only_hint": "Chỉ dành cho quản trị viên.",
         "admin_removed": "Đã gỡ quyền quản trị.",
+        "ai_analyzing": "Đang phân tích mẫu bằng AI…",
+        "ai_grouping_failed": "Nhóm bằng AI thất bại. Đang hiển thị kết quả theo thứ tự mặc định.",
         "ai_pro_feature": "Tính năng Pro: Nhận giải thích từ ngữ trong ngữ cảnh bằng AI.",
         "all_done_desc": "Bạn đã ôn hết các thẻ hiện đến hạn. Hãy quay lại sau để ôn thêm, hoặc khám phá video để lưu từ mới.",
         "all_done_for_now": "Tạm thời đã xong!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
         "followup_morphemes_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có thể được phân tách thành các phần ngữ nghĩa (hình vị) hay không và nêu bất kỳ cách hiểu theo nghĩa đen nào của từ.",
         "followup_syntax": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
-        "followup_syntax_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.)."
+        "followup_syntax_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
+        "subs_ai_group": "Bạn là trợ lý học ngôn ngữ. Dưới đây là {n} dòng phụ đề từ video, mỗi dòng bằng tiếng {l2Name}, có chứa thuật ngữ \"{term}\"."
     },
     "review": {
         "again": "Lại nữa",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Hiển thị cấp độ từ"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "Theo bảng chữ cái",
         "most_viewed": "Xem nhiều nhất",
         "newest": "Mới nhất",

@@ -353,6 +353,8 @@
         "noun_class": "등급:",
         "offline": "오프라인",
         "on_this_page": "이 페이지에서",
+        "other": "기타",
+        "other_patterns": "기타 패턴",
         "overview": "개요",
         "payment_email": "결제 이메일",
         "payment_id": "결제 ID",
@@ -741,6 +743,8 @@
         "admin_granted": "관리자 권한이 부여되었습니다.",
         "admin_only_hint": "관리자 전용입니다.",
         "admin_removed": "관리자 권한이 제거되었습니다.",
+        "ai_analyzing": "AI로 패턴 분석 중…",
+        "ai_grouping_failed": "AI 그룹화에 실패했습니다. 기본 순서로 결과를 표시합니다.",
         "ai_pro_feature": "프로 기능: 문맥 속 단어에 대한 AI 설명을 확인하세요.",
         "all_done_desc": "모든 복습할 카드를 검토했습니다. 나중에 다시 와서 더 복습하거나, 영상을 탐색하여 새 단어를 저장하세요.",
         "all_done_for_now": "지금은 모두 완료했습니다!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "{l2Name} 단어 \"{word}\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
         "followup_morphemes_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
         "followup_syntax": "{l2Name} 단어 \"{word}\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등).",
-        "followup_syntax_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등)."
+        "followup_syntax_context": "\"{context}\"에서 {l2Name} 단어 \"{word}\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등).",
+        "subs_ai_group": "당신은 언어 학습 도우미입니다. 아래는 {l2Name}로 된 동영상 자막 {n}줄이며, 모두 \"{term}\"이라는 용어를 포함합니다."
     },
     "review": {
         "again": "다시",
@@ -1276,6 +1281,7 @@
         "word_level_display": "단어 수준 표시"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "알파벳순",
         "most_viewed": "가장 많이 본",
         "newest": "최신",

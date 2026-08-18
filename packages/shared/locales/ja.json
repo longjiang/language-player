@@ -353,6 +353,8 @@
         "noun_class": "クラス：",
         "offline": "オフライン",
         "on_this_page": "このページ内",
+        "other": "その他",
+        "other_patterns": "その他のパターン",
         "overview": "概要",
         "payment_email": "支払いメール",
         "payment_id": "支払いID",
@@ -741,6 +743,8 @@
         "admin_granted": "管理者権限を付与しました。",
         "admin_only_hint": "管理者のみアクセス可能。",
         "admin_removed": "管理者権限を削除しました。",
+        "ai_analyzing": "AIでパターンを分析中…",
+        "ai_grouping_failed": "AIによるグループ化に失敗しました。結果をデフォルトの順序で表示します。",
         "ai_pro_feature": "プロ機能：文脈に応じた単語のAI解説を取得できます。",
         "all_done_desc": "復習すべきカードはすべて終了しました。後でもう一度復習するか、動画を探索して新しい単語を保存してください。",
         "all_done_for_now": "一旦すべて完了！",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "{l2Name}の単語\"{word}\"を意味のある部分（形態素）に分解できるか説明し、その単語の文字通りの解釈があれば指摘してください。",
         "followup_morphemes_context": "\"{context}\"における{l2Name}の単語\"{word}\"を意味のある部分（形態素）に分解できるか説明し、その単語の文字通りの解釈があれば指摘してください。",
         "followup_syntax": "{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。",
-        "followup_syntax_context": "\"{context}\"における{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。"
+        "followup_syntax_context": "\"{context}\"における{l2Name}の単語\"{word}\"が統語的要素として機能しているか説明し、その統語構造が何であるか（例：文構造、句の一部、特定の文法現象など）を説明してください。",
+        "subs_ai_group": "あなたは言語学習アシスタントです。以下は、{l2Name}の動画の字幕{n}行で、いずれも用語「{term}」を含んでいます。"
     },
     "review": {
         "again": "もう一度",
@@ -1276,6 +1281,7 @@
         "word_level_display": "単語レベルの表示"
     },
     "sort": {
+        "ai": "AI",
         "alphabetical": "アルファベット順",
         "most_viewed": "最も視聴された",
         "newest": "最新",

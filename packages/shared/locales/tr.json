@@ -353,6 +353,8 @@
         "noun_class": "Sınıf:",
         "offline": "Çevrimdışı",
         "on_this_page": "Bu sayfada",
+        "other": "Diğer",
+        "other_patterns": "Diğer kalıplar",
         "overview": "Genel bakış",
         "payment_email": "Ödeme e-postası",
         "payment_id": "Ödeme kimliği",
@@ -741,6 +743,8 @@
         "admin_granted": "Yönetici erişimi verildi.",
         "admin_only_hint": "Yalnızca yöneticiler.",
         "admin_removed": "Yönetici erişimi kaldırıldı.",
+        "ai_analyzing": "AI ile kalıplar analiz ediliyor…",
+        "ai_grouping_failed": "AI gruplaması başarısız oldu. Sonuçlar varsayılan sırada gösteriliyor.",
         "ai_pro_feature": "Profesyonel özellik: Kelimelerin bağlam içindeki yapay zeka açıklamalarını alın.",
         "all_done_desc": "Tüm gecikmiş kartları gözden geçirdiniz. Daha fazla tekrar için daha sonra gelin veya yeni kelimeler kaydetmek için videoları keşfedin.",
         "all_done_for_now": "Şimdilik Her Şey Tamamlandı!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
         "followup_morphemes_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
         "followup_syntax": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
-        "followup_syntax_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.)."
+        "followup_syntax_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
+        "subs_ai_group": "Sen bir dil öğrenme asistanısın. Aşağıda {l2Name} dilindeki videolardan \"{term}\" terimini içeren {n} altyazı satırı var."
     },
     "review": {
         "again": "Tekrar",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Kelime Düzeyinde Görüntüleme"
     },
     "sort": {
+        "ai": "Yapay Zekâ",
         "alphabetical": "Alfabetik",
         "most_viewed": "En Çok İzlenen",
         "newest": "En yeni",

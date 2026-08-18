@@ -353,6 +353,8 @@
         "noun_class": "Classe:",
         "offline": "Offline",
         "on_this_page": "Nesta página",
+        "other": "Outros",
+        "other_patterns": "Outros padrões",
         "overview": "Visão geral",
         "payment_email": "E-mail de pagamento",
         "payment_id": "ID do pagamento",
@@ -741,6 +743,8 @@
         "admin_granted": "Acesso de administrador concedido.",
         "admin_only_hint": "Apenas administradores.",
         "admin_removed": "Acesso de administrador removido.",
+        "ai_analyzing": "Analisando padrões com IA…",
+        "ai_grouping_failed": "Falha no agrupamento por IA. Mostrando resultados na ordem padrão.",
         "ai_pro_feature": "Recurso premium: Obtenha explicações com IA para palavras no contexto.",
         "all_done_desc": "Você revisou todos os cartões pendentes. Volte mais tarde para mais revisões ou explore vídeos para salvar novas palavras.",
         "all_done_for_now": "Tudo pronto por agora!",
@@ -1209,7 +1213,8 @@
         "followup_morphemes": "Explica se a palavra em {l2Name} \"{word}\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
         "followup_morphemes_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" pode ser decomposta em partes semânticas (morfemas) e indica as interpretações literais da palavra.",
         "followup_syntax": "Explica se a palavra em {l2Name} \"{word}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
-        "followup_syntax_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.)."
+        "followup_syntax_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
+        "subs_ai_group": "Você é um assistente de aprendizado de idiomas. Abaixo estão {n} linhas de legendas de vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\"."
     },
     "review": {
         "again": "Novamente",
@@ -1276,6 +1281,7 @@
         "word_level_display": "Exibição por palavra"
     },
     "sort": {
+        "ai": "IA",
         "alphabetical": "Alfabético",
         "most_viewed": "Mais vistos",
         "newest": "Mais recente",
