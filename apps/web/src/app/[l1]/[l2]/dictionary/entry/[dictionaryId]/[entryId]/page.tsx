@@ -7,7 +7,8 @@ import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { getWordListNav } from '@/lib/word-list-navigation';
+import { getWordListNav, savedWordToNavItem } from '@/lib/word-list-navigation';
+import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { log } from '@/lib/logger';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
@@ -44,6 +45,7 @@ export default function DictionaryEntryPage() {
   const searchParams = useSearchParams();
 
   const { setDetailHead, setSidebarSource } = useDictionaryContext();
+  const { getSavedWords } = useSavedWordsContext();
 
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +107,24 @@ export default function DictionaryEntryPage() {
   // ?listCurrent= points at a stored list with more than one item — otherwise
   // there is no list to show. Also logs every dictionary nav from a wordlist.
   useEffect(() => {
-    const nav = searchParams.get('listCurrent') ? getWordListNav() : null;
+    const listCurrent = searchParams.get('listCurrent');
+    let nav = listCurrent ? getWordListNav() : null;
+
+    // Fallback: the stored nav can be lost (opened in a new tab, storage
+    // cleared, or a write race). When the tapped word is one of the user's
+    // saved words, rebuild the saved-words list from the provider so the
+    // sidebar still appears instead of silently disappearing.
+    if (listCurrent && (!nav || nav.items.length === 0)) {
+      const saved = getSavedWords(l2.code);
+      if (saved.some((w) => w.id === listCurrent)) {
+        nav = {
+          items: saved.map((w) => savedWordToNavItem(w, l2.code)),
+          currentEntryId: listCurrent,
+          source: 'saved',
+        };
+      }
+    }
+
     if (nav) {
       log('Dictionary nav from wordlist', {
         source: nav.source,
@@ -119,7 +138,7 @@ export default function DictionaryEntryPage() {
     } else {
       setSidebarSource({ kind: 'none' });
     }
-  }, [searchParams, setSidebarSource]);
+  }, [searchParams, setSidebarSource, getSavedWords, l2.code]);
 
   const saveContext = {
     form: entry?.head ?? '',

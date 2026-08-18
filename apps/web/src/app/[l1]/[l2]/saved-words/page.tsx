@@ -144,8 +144,11 @@ export default function SavedWordsPage() {
 
   /** Navigate to the entry detail page for a saved word. */
   const handleWordClick = (word: SavedLexicalItemRecord) => {
-    // Store the full saved-words list so the entry page can show a sidebar
-    setWordListNav(words.map(w => savedWordToNavItem(w, l2.code)), word.id, 'saved');
+    // Store the full saved-words list (not the filtered view) so the entry
+    // page's sidebar always shows every saved word — a text filter narrowing
+    // the visible list to one item used to make the sidebar disappear
+    // entirely (isSidebarAvailable requires > 1 item).
+    setWordListNav(allWords.map(w => savedWordToNavItem(w, l2.code)), word.id, 'saved');
 
     const decomposed = decomposeWordId(word.id, l2.code);
     if (decomposed) {
