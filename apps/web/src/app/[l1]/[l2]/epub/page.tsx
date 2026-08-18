@@ -173,11 +173,12 @@ export default function EpubPage() {
     void epub.resolveHref(href).then(gotoLocation);
   }, [epub, gotoLocation, pushHistory, location]);
 
-  // Search result → jump to its location.
+  // Search result → jump to its location. The desktop sidebar stays open so
+  // the results list remains visible (matching TOC chapter clicks, which only
+  // dismiss the mobile sheet); the mobile sheet still closes so the matched
+  // content gets the full reader width.
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
-    // Dismiss the sidebar so the matched content gets the full reader width.
     setMobileSidebarOpen(false);
-    setSidebarOpen(false);
     navigateTo(result.location);
     if (result.match) {
       setHighlight({
