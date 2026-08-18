@@ -59,7 +59,7 @@ export function LanguagePicker({
 }: LanguagePickerProps) {
   const t = useT();
   const { isSm } = useResponsive();
-  const { setL1Lang, setL2Lang } = useLanguage();
+  const { setL1Lang, setL2Lang, previewL1Lang, clearL1Preview } = useLanguage();
   const { getL2, setUseTraditional } = useSettingsContext();
 
   // Platform-specific getName callback
@@ -105,15 +105,33 @@ export function LanguagePicker({
     onConfirm(picker.selectedL1, picker.selectedL2);
   }, [picker.selectedL1, picker.selectedL2, picker.useTraditional, onConfirm, setL1Lang, setL2Lang, setUseTraditional]);
 
+  // Picking a new L1 immediately retranslates the entire UI into that
+  // language (before the user confirms), matching web's behavior. It is not
+  // persisted until confirm — dismissal clears the preview and reverts.
+  const handleSetL1 = useCallback(
+    (code: string) => {
+      picker.setSelectedL1(code);
+      previewL1Lang(code);
+    },
+    [picker.setSelectedL1, previewL1Lang],
+  );
+
+  // Clear any unconfirmed preview when the picker is dismissed.
+  const handleDismiss = useCallback(() => {
+    clearL1Preview();
+    onDismiss?.();
+  }, [clearL1Preview, onDismiss]);
+
   // Dialog mode always uses narrow
   const isWide = variant !== 'dialog' && isSm;
 
   const narrowProps = {
     ...picker,
+    setSelectedL1: handleSetL1,
     onConfirm: handleConfirm,
     showTitle,
     showClose,
-    onDismiss,
+    onDismiss: handleDismiss,
     getName,
     getNameL1,
     // In dialog mode the picker sizes to its content; `flex-1` collapses to a
@@ -125,6 +143,7 @@ export function LanguagePicker({
     return (
       <LanguagePickerWide
         {...picker}
+        setSelectedL1={handleSetL1}
         onConfirm={handleConfirm}
         showTitle={showTitle}
         getName={getName}

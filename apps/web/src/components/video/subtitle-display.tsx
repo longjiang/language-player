@@ -553,7 +553,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             <div
               key={i}
               data-subtitle-index={i}
-              className={`rounded-lg px-3 py-2 transition-colors ${
+              onClick={() => onSeekToLine?.(line.starttime)}
+              className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
                 isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
             >
@@ -574,8 +575,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 noMargin
               >
                 <div
-                  className={`cursor-pointer text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}
-                  onClick={() => onSeekToLine?.(line.starttime)}
+                  className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}
                 >
                   <TokenizedText
                     text={line.l2Line}

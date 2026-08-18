@@ -39,6 +39,21 @@ const _getRecommendations = (params: {
 const _getLiveTV = (lang: string) =>
   apiClient.get<YouTubeVideo[]>('/videos/live-tv', { params: { lang } });
 
+const _getMusicEntertainment = (params: {
+  l2: string;
+  level?: number;
+  page?: number;
+  limit?: number;
+  userId?: string;
+}) => {
+  const { userId, ...rest } = params;
+  // The Flask endpoint reads `user_id`, not `userId`; without this mapping
+  // the music feed never receives the user context.
+  return apiClient.get<YouTubeVideo[]>('/recommend-music-entertainment', {
+    params: { ...rest, user_id: userId },
+  });
+};
+
 const _report = (videoId: string, reason: string) =>
   apiClient.post<void>(`/videos/${videoId}/report`, { reason });
 
@@ -60,6 +75,7 @@ const _stableReturn = {
   getSubtitles: _getSubtitles,
   getRecommendations: _getRecommendations,
   getLiveTV: _getLiveTV,
+  getMusicEntertainment: _getMusicEntertainment,
   report: _report,
   searchSubs: _searchSubs,
   getVideoTokenCache: _getVideoTokenCache,

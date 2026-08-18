@@ -22,6 +22,13 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
   const t = useT();
   const [channel, setChannel] = useState<ChannelInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [avatarError, setAvatarError] = useState(false);
+  // Classic polyfills avatars through /channel-thumbnail (fresh from YouTube,
+  // cached server-side) instead of trusting the DB thumbnail, which can go
+  // stale/broken (SPEC-072).
+  const avatarSrc = avatarError
+    ? 'https://www.youtube.com/favicon.ico'
+    : `${PYTHON_API_URL}/channel-thumbnail?channel_id=${encodeURIComponent(channelId)}`;
 
   useEffect(() => {
     if (!channelId) return;
@@ -56,7 +63,8 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
         className="flex-shrink-0"
       >
         <img
-          src={channel.thumbnail || `https://www.youtube.com/favicon.ico`}
+          src={avatarSrc}
+          onError={() => setAvatarError(true)}
           alt=""
           className="h-10 w-10 rounded-full object-cover"
         />
