@@ -1132,6 +1132,7 @@
         "exclude_terms": "Hariç tutulacak terimler, virgülle ayrılmış…",
         "filter": "Filtrele...",
         "filter_by_title": "Başlığa göre filtrele...",
+        "filter_videos": "{n} videoyu filtrele",
         "first_name": "Ad",
         "last_name": "Soyad",
         "more_languages": "Daha fazla dil ({count})",

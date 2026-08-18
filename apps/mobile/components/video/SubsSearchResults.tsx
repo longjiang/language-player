@@ -844,7 +844,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         <TextInput
           value={listSearch}
           onChangeText={setListSearch}
-          placeholder={t('placeholder.filter')}
+          placeholder={t('placeholder.filter_videos', { n: filteredVideos.length })}
           placeholderTextColor={ICON_MUTED}
           className="h-8 flex-1 rounded-md border border-border bg-muted/50 px-2 text-xs text-foreground"
         />

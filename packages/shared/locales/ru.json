@@ -1132,6 +1132,7 @@
         "exclude_terms": "Исключаемые термины через запятую…",
         "filter": "Фильтр...",
         "filter_by_title": "Фильтр по названию...",
+        "filter_videos": "Фильтр: {n} видео",
         "first_name": "Имя",
         "last_name": "Фамилия",
         "more_languages": "Другие языки ({count})",

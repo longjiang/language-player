@@ -1408,7 +1408,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           emptyText={t('msg.no_results')}
           filterValue={listSearch}
           onFilterChange={setListSearch}
-          filterPlaceholder={t('placeholder.filter')}
+          filterPlaceholder={t('placeholder.filter_videos', { n: filteredVideos.length })}
           sortValue={listSort}
           onSortChange={(v) => setListSort(v as SortKey)}
           toolbarBorder={false}

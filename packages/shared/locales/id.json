@@ -1132,6 +1132,7 @@
         "exclude_terms": "Istilah yang dikecualikan, dipisahkan koma…",
         "filter": "Filter...",
         "filter_by_title": "Filter berdasarkan judul...",
+        "filter_videos": "Filter {n} video",
         "first_name": "Depan",
         "last_name": "Belakang",
         "more_languages": "Bahasa lebih banyak ({count})",
