@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useVideos } from '@langplayer/api-client';
-import { parseSubsL2, findMatchLine } from '@langplayer/utils';
+import { parseSubsL2, findMatchLine, durationToSeconds } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
@@ -305,7 +305,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               youtube_id: v.youtube_id,
               subs_l2: lines,
               views: v.views,
-              duration: v.duration,
+              duration: durationToSeconds(v.duration),
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
@@ -509,9 +509,16 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
               {/* Info — original on top, translation below, horizontal scroll for long lines */}
               <View className="min-w-0 flex-1">
-                <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                  {item.title}
-                </Text>
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  {item.duration != null && (
+                    <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                      {formatTime(item.duration)}
+                    </Text>
+                  )}
+                </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
                   <View>
                     <View className="flex-row">
