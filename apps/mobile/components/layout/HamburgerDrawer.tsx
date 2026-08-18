@@ -4,6 +4,7 @@ import {
   Modal, Animated,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import {
@@ -11,6 +12,7 @@ import {
   FileText, BookMarked, RotateCcw, Globe, BookOpen,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { SIDEBAR_EDGE_MARGIN } from '@/components/ui/sidebar';
 
 const ICON_COLOR = ICON_MUTED;
 
@@ -83,17 +85,21 @@ interface HamburgerDrawerProps {
 
 export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
+  const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const drawerWidth = Math.min(256, screenWidth * 0.6);
 
+  // Hidden position: fully off the right edge (resting position is
+  // right: SIDEBAR_EDGE_MARGIN), so the floating panel clears the screen.
+  const hiddenX = drawerWidth + SIDEBAR_EDGE_MARGIN + 16;
   // Animated value for slide-in from the right
-  const translateX = useRef(new Animated.Value(drawerWidth)).current;
+  const translateX = useRef(new Animated.Value(hiddenX)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(translateX, {
-        toValue: open ? 0 : drawerWidth,
+        toValue: open ? 0 : hiddenX,
         duration: 250,
         useNativeDriver: true,
       }),
@@ -103,7 +109,7 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
         useNativeDriver: true,
       }),
     ]).start();
-  }, [open, translateX, overlayOpacity, drawerWidth]);
+  }, [open, translateX, overlayOpacity, hiddenX]);
 
   return (
     <Modal
@@ -122,14 +128,17 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
         <Pressable className="flex-1" onPress={onClose} />
       </Animated.View>
 
-      {/* Drawer panel — slides in from the right below the header */}
+      {/* Floating drawer panel — inset from the header and the screen edges
+          (right/bottom) with rounded corners, matching the shared sidebar
+          sheet so no panel ever touches the screen edges. */}
       <Animated.View
-        className="absolute bg-background border-l border-border shadow-lg"
+        className="absolute bg-background border border-border shadow-lg"
         style={{
-          top: headerHeight,
-          bottom: 0,
-          right: 0,
+          top: headerHeight + SIDEBAR_EDGE_MARGIN,
+          bottom: insets.bottom + SIDEBAR_EDGE_MARGIN,
+          right: SIDEBAR_EDGE_MARGIN,
           width: drawerWidth,
+          borderRadius: 12,
           transform: [{ translateX }],
         }}
       >
