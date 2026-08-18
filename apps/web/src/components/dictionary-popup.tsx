@@ -4,11 +4,10 @@ import { useEffect, useState, useCallback, useMemo, type CSSProperties } from 'r
 import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, X, AlertCircle, AlertTriangle, ExternalLink, ImageIcon } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
-import { ImageSearchResults } from './dictionary/image-search-results';
 import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { removeCardFromStorage } from '@/hooks/use-srs';
@@ -21,6 +20,8 @@ import { lookupL1Text } from '@/lib/l1-lookup';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -463,16 +464,18 @@ export function DictionaryPopup({
             entryFound={entries.length > 0}
           />
 
-          {/* Compact image strip — one scrolling row, 3 images per query */}
-          <ImageSearchResults
-            variant="compact"
-            term={token.text}
-            l2Code={l2Code}
-            l1Code={l1Code}
-            definition={entries[0]?.definitions?.[0]}
-            contextText={context?.text}
-            contextForm={context?.form ?? token.text}
-          />
+          {/* Search Google Images — external link (replaces the in-popup gallery),
+              styled to match the "Let DeepSeek explain" button (outline variant). */}
+          <a
+            href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(token.text)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full')}
+            title={t('action.search_images')}
+          >
+            <ImageIcon className="h-4 w-4" />
+            {t('action.search_images')}
+          </a>
 
           {/* Canonical phrase cards from /extract-phrases (selection popup) */}
           {extractPhrases && !phraseLoading && visiblePhraseCards.length > 0 && (
