@@ -208,12 +208,51 @@ if (pageResult.warnings.length > 0) {
   console.warn('[build] Page tokenizer warnings:', pageResult.warnings);
 }
 
+// Step 2e: Bundle the side panel host (chrome.sidePanel page)
+console.log('[build] Bundling side panel host...');
+
+const sidePanelResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/sidepanel.tsx')],
+  bundle: true,
+  outfile: resolve(outDir, 'sidepanel.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  jsx: 'automatic',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (sidePanelResult.errors.length > 0) {
+  console.error('[build] Side panel errors:', sidePanelResult.errors);
+  process.exit(1);
+}
+if (sidePanelResult.warnings.length > 0) {
+  console.warn('[build] Side panel warnings:', sidePanelResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),
   resolve(outDir, 'content.css'),
 );
 console.log('[build] Copied content.css');
+
+// Copy side panel host CSS overrides
+copyFileSync(
+  resolve(__dirname, 'src/sidepanel.css'),
+  resolve(outDir, 'sidepanel.css'),
+);
+console.log('[build] Copied sidepanel.css');
 
 // Copy Netflix MAIN world script (injected via <script src> at document_start)
 copyFileSync(

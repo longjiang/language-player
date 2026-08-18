@@ -8,7 +8,6 @@
  * dictionary lookup, word saving, and AI explanations.
  */
 
-import { mountTranscript, unmountTranscript } from './transcript-app';
 import { SUPPORTED_L1S, CONTENT_L2S, POPULAR_L2S } from '@langplayer/shared';
 import { baseCode } from '@langplayer/utils';
 import {
@@ -47,8 +46,6 @@ function trace(phase, msg) {
 const STATE = {
   cues: [],           // parsed subtitle cues: { start, end, text }
   activeCueIdx: -1,   // index of currently active cue
-  panelVisible: false,
-  panelReady: false,
   subtitleUrl: null,
   loading: false,
 };
@@ -58,11 +55,12 @@ const STATE = {
  *  overwrites a newer one that loaded faster. */
 let fetchGen = 0;
 
-// ── DOM refs ─────────────────────────────────────────────────────────────
-let panelRoot = null;
-let panelContent = null;
-let statusEl = null;
-let openInWebBtn = null;
+// ── Panel state ───────────────────────────────────────────────────────────
+/** True while the native side panel is open on this tab (told by the
+ *  background via the panelOpenState message). Gates ArrowUp/Down seeking in
+ *  setupKeyboard(). The panel UI itself lives in the side panel page, not the
+ *  page DOM. */
+let panelOpen = false;
 
 // ── L2 language state ────────────────────────────────────────────────────
 
@@ -82,69 +80,12 @@ let ytCaptionTracks = [];
 let ytPlayerResponse = null;
 
 // ── L2 Mismatch Detection ────────────────────────────────────────────────
+// The mismatch prompt now renders in the side panel. The content script only
+// detects the mismatch and folds it into the pushed panel state
+// (buildPanelState) — no page DOM banner. Kept as a no-op for call-site
+// clarity; the following renderTranscript/pushPanelState carries the state.
 
-let mismatchBannerEl = null;
-
-/** Compare detected subtitle language against user's saved L2.
- *  Shows a prompt if they don't match (after stripping region codes). */
-function checkL2Mismatch() {
-  if (!detectedSubLang) return;
-  if (!savedL2Code) return;
-
-  const detectedBase = baseCode(detectedSubLang);
-  const savedBase = baseCode(savedL2Code);
-
-  if (detectedBase === savedBase) {
-    hideL2MismatchBanner();
-    return;
-  }
-
-  showL2MismatchBanner(detectedSubLang, savedL2Code);
-}
-
-function showL2MismatchBanner(subLang, savedLang) {
-  if (!panelRoot) return;
-
-  if (!mismatchBannerEl) {
-    mismatchBannerEl = document.createElement('div');
-    mismatchBannerEl.id = 'lpv-mismatch-banner';
-    const header = document.getElementById('lpv-panel-header');
-    if (header?.nextSibling) {
-      panelRoot.insertBefore(mismatchBannerEl, header.nextSibling);
-    } else {
-      panelRoot.appendChild(mismatchBannerEl);
-    }
-  }
-
-  const subLangName = languageName(subLang);
-  const savedLangName = languageName(savedLang);
-
-  mismatchBannerEl.innerHTML = `
-    <div class="lpv-mismatch-content">
-      <span class="lpv-mismatch-icon">⚠️</span>
-      <span class="lpv-mismatch-text">${t('l2Mismatch', [subLangName, savedLangName])}</span>
-    </div>
-    <div class="lpv-mismatch-actions">
-      <button class="lpv-mismatch-switch-btn">${t('l2MismatchSwitch', [subLangName])}</button>
-      <button class="lpv-mismatch-dismiss-btn">${t('close')}</button>
-    </div>
-  `;
-
-  mismatchBannerEl.querySelector('.lpv-mismatch-switch-btn').addEventListener('click', () => {
-    onL2Change(subLang);
-  });
-  mismatchBannerEl.querySelector('.lpv-mismatch-dismiss-btn').addEventListener('click', () => {
-    hideL2MismatchBanner();
-  });
-
-  mismatchBannerEl.style.display = 'block';
-}
-
-function hideL2MismatchBanner() {
-  if (mismatchBannerEl) {
-    mismatchBannerEl.style.display = 'none';
-  }
-}
+function checkL2Mismatch() {}
 
 // ── Video Integration ────────────────────────────────────────────────────
 
@@ -426,26 +367,43 @@ function seekTo(timeSec) {
   renderTranscript();
 }
 
-// ── React Rendering ───────────────────────────────────────────────────────
+// ── Panel State Push ──────────────────────────────────────────────────────
+// The transcript now renders inside the native side panel (chrome.sidePanel).
+// Every point that used to re-render the in-page React panel now pushes the
+// full panel state; the background relays it to the side panel host.
 
-function renderTranscript(loadingL2) {
-  if (!panelContent) return;
-  updateOpenInWebBtn();
+function buildPanelState(loadingL2) {
   // Extract video title — strip platform suffixes like " | Prime Video", " - YouTube"
   const rawTitle = document.title || '';
   const videoTitle = rawTitle.replace(/\s*[|\\-]\s*(Prime Video|YouTube|Netflix|Disney\+|Hulu|Max|HBO Max).*$/i, '').trim() || rawTitle;
-  mountTranscript(
-    panelContent,
-    STATE.cues,
-    STATE.activeCueIdx,
-    savedL2Code,
-    L1_CODE,
-    seekTo,
-    loadingL2,
-    getLocaleVersion(),
+  const mismatch =
+    detectedSubLang && savedL2Code && baseCode(detectedSubLang) !== baseCode(savedL2Code)
+      ? { detected: detectedSubLang, saved: savedL2Code }
+      : null;
+  return {
+    mode: 'video',
+    cues: STATE.cues,
+    activeCueIdx: STATE.activeCueIdx,
+    l2Code: savedL2Code,
+    l1Code: L1_CODE,
     videoTitle,
-    location.href,
-  );
+    pageUrl: location.href,
+    loadingL2,
+    localeVersion: getLocaleVersion(),
+    webUrl: buildWebUrl(),
+    mismatch,
+  };
+}
+
+function pushPanelState(loadingL2) {
+  try {
+    chrome.runtime.sendMessage({ action: 'panelState', state: buildPanelState(loadingL2) })
+      .catch(() => {});
+  } catch {}
+}
+
+function renderTranscript(loadingL2) {
+  pushPanelState(loadingL2);
 }
 
 // ── Subtitle Fetching ────────────────────────────────────────────────────
@@ -552,17 +510,14 @@ async function fetchAndParseSubtitles(url) {
     checkL2Mismatch();
 
     if (cues.length === 0) {
-      mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
+      pushPanelState(undefined);
     } else {
       STATE.activeCueIdx = -1;
       renderTranscript();
       updateStatus('');
-      if (!STATE.panelVisible) {
-        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
-        if (pref !== false) {
-          setPanelVisible(true);
-        }
-      }
+      // Note: the panel can no longer auto-open (chrome.sidePanel.open()
+      // requires a user gesture). The user opens it via the popup button or
+      // the Alt+T / Ctrl+Shift+Y keyboard shortcut; state stays ready.
     }
   } catch (err) {
     logerr('Failed to fetch/parse subtitles:', err);
@@ -788,18 +743,6 @@ async function fetchInnerTubeTracks(videoId) {
   }
 }
 
-/** Cache tab ID from background (set once on init) */
-let _tabId = null;
-function getTabId() {
-  return new Promise((resolve) => {
-    if (_tabId) { resolve(_tabId); return; }
-    chrome.runtime.sendMessage({ action: 'getTabId' }, (id) => {
-      _tabId = id || null;
-      resolve(_tabId);
-    });
-  });
-}
-
 /** Fetch a URL via background worker (which calls executeScript in MAIN world).
  *  Content scripts can't call chrome.scripting.executeScript directly. */
 function mainWorldFetch(url) {
@@ -863,12 +806,6 @@ async function fetchYTTrack(track) {
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) {
-        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
-        if (pref !== false) {
-          setPanelVisible(true);
-        }
-      }
     }
     setBadge(true);
     updateStatus('');
@@ -957,9 +894,6 @@ async function onL1Change(newCode) {
   // Load locale messages for UI translation (panel labels, tooltips, status)
   await setLocale(newCode);
 
-  // Refresh all static UI labels that were set during createPanelUI()
-  refreshUILabels();
-
   log('L1 changed to:', newCode);
   // Re-render transcript with new L1 (re-triggers translation with new l1Code)
   renderTranscript();
@@ -984,13 +918,11 @@ async function loadSavedLanguagePreferences() {
 async function onL2Change(newCode) {
   if (newCode === savedL2Code) return;
   savedL2Code = newCode;
-  hideL2MismatchBanner();
 
   // Persist user preference
   try {
     chrome.storage.local.set({ l2Language: newCode });
   } catch {}
-  updateOpenInWebBtn();
 
   // For Netflix: try to load a different subtitle track from cache
   if (isNetflix && Object.keys(cachedNetflixTracks).length > 0) {
@@ -1042,7 +974,6 @@ function setupYouTubeNavigationObserver() {
     if (currentId && currentId !== lastVideoId) {
       lastVideoId = currentId;
       log(`Navigated to video: ${currentId}`);
-      updateOpenInWebBtn();
       ytCaptionTracks = [];
       ytPlayerResponse = null;
       setTimeout(() => loadYouTubeSubtitles(), 1500);
@@ -1060,79 +991,14 @@ function setBadge(found) {
 }
 
 // ── Panel UI ─────────────────────────────────────────────────────────────
-
-function createPanelUI() {
-  if (panelRoot) return;
-
-  panelRoot = document.createElement('div');
-  panelRoot.id = 'lpv-transcript-panel';
-  panelRoot.classList.add('lpv-collapsed');
-
-  // "Open in Language Player" — shown in the panel header for YouTube videos
-  openInWebBtn = document.createElement('a');
-  openInWebBtn.id = 'lpv-open-web-btn';
-  openInWebBtn.target = '_blank';
-  openInWebBtn.rel = 'noopener noreferrer';
-  openInWebBtn.addEventListener('click', () => {
-    log('Open in Language Player clicked:', openInWebBtn.href);
-  });
-
-  const header = document.createElement('div');
-  header.id = 'lpv-panel-header';
-
-  const title = document.createElement('span');
-  title.id = 'lpv-panel-title';
-
-  const logoImg = document.createElement('img');
-  logoImg.id = 'lpv-panel-logo';
-  logoImg.src = chrome.runtime.getURL('src/language-player-logo-64.png');
-  logoImg.alt = '';
-  logoImg.width = 24;
-  logoImg.height = 24;
-
-  title.appendChild(logoImg);
-
-  const headerRight = document.createElement('div');
-  headerRight.id = 'lpv-header-right';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.id = 'lpv-close-btn';
-  closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
-  closeBtn.title = t('closePanel');
-  closeBtn.addEventListener('click', () => {
-    log('User closed the transcript panel with ✕');
-    chrome.storage.sync.set({ autoOpenPanel: false });
-    setPanelVisible(false);
-  });
-
-  headerRight.appendChild(openInWebBtn);
-  headerRight.appendChild(closeBtn);
-
-  header.appendChild(title);
-  header.appendChild(headerRight);
-
-  statusEl = document.createElement('div');
-  statusEl.id = 'lpv-status';
-  statusEl.textContent = '';
-
-  panelContent = document.createElement('div');
-  panelContent.id = 'lpv-panel-content';
-
-  panelRoot.appendChild(header);
-  panelRoot.appendChild(panelContent);
-
-  document.body.appendChild(panelRoot);
-
-  STATE.panelReady = true;
-  updateOpenInWebBtn();
-
-  // Initial empty render
-  mountTranscript(panelContent, [], -1, savedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
-}
+// The panel UI (header, transcript, page reader) now lives in the native
+// side panel (src/sidepanel.jsx). This content script no longer creates any
+// page DOM for it — it only computes the web-app link for the header button
+// and pushes panel state (see buildPanelState above).
 
 /** Web app URL for the current page.
  *  - YouTube video with subtitles loaded → watch page: {l1}/{l2}/watch/{videoId}
- *  - everything else → null (no web-app button; the panel is the in-page reader) */
+ *  - everything else → null (no web-app button) */
 function buildWebUrl() {
   const base = `https://language-player.netlify.app/${encodeURIComponent(L1_CODE)}/${encodeURIComponent(savedL2Code)}`;
   const videoId = getYTVideoId();
@@ -1142,65 +1008,11 @@ function buildWebUrl() {
   return null;
 }
 
-/** Show the web-app button and refresh its URL/label.
- *  Hidden on every supported subtitle site unless a YouTube watch link applies —
- *  the transcript panel already provides the in-place reading experience there.
- *  Warns (tooltip + warning style) when the detected page L2 differs from the
- *  user's saved L2. Called on panel creation, L1/L2 changes, and YouTube SPA
- *  navigation. */
-function updateOpenInWebBtn() {
-  if (!openInWebBtn) return;
-  const target = buildWebUrl();
-  if (!target) {
-    openInWebBtn.removeAttribute('href');
-    openInWebBtn.title = '';
-    openInWebBtn.classList.remove('lpv-visible', 'lpv-warning');
-    return;
-  }
-  openInWebBtn.href = target.url;
-  openInWebBtn.textContent = t(target.labelKey);
-  openInWebBtn.classList.add('lpv-visible');
-
-  const mismatch = detectedSubLang && baseCode(detectedSubLang) !== baseCode(savedL2Code);
-  if (mismatch) {
-    openInWebBtn.title = t('l2Mismatch', [languageName(detectedSubLang), languageName(savedL2Code)]);
-    openInWebBtn.classList.add('lpv-warning');
-  } else {
-    openInWebBtn.title = '';
-    openInWebBtn.classList.remove('lpv-warning');
-  }
-}
-
-/** Refresh all static UI labels after a locale change.
- *  Called by onL1Change() after setLocale() loads the new messages. */
-function refreshUILabels() {
-  updateOpenInWebBtn();
-  if (statusEl && STATE.cues.length === 0) {
-    statusEl.textContent = '';
-  }
-  // Close button uses SVG icon (no text to update)
-}
-
-function setPanelVisible(visible) {
-  if (!panelRoot) return;
-  STATE.panelVisible = visible;
-
-  if (visible) {
-    panelRoot.classList.remove('lpv-collapsed');
-    document.body.classList.add('lpv-panel-open');
-  } else {
-    panelRoot.classList.add('lpv-collapsed');
-    document.body.classList.remove('lpv-panel-open');
-  }
-}
-
-function togglePanel() {
-  setPanelVisible(!STATE.panelVisible);
-}
-
+/** Status messages now surface in the side panel via the pushed state
+ *  (loadingL2) — kept as a log-only hook for the old call sites. */
 function updateStatus(message) {
-  if (statusEl) {
-    statusEl.textContent = message;
+  if (message) {
+    log('[STATUS]', message);
   }
 }
 
@@ -1511,12 +1323,6 @@ async function loadNetflixTrackForLanguage(langCode) {
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) {
-        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
-        if (pref !== false) {
-          setPanelVisible(true);
-        }
-      }
     }
     setBadge(true);
     updateStatus('');
@@ -1636,25 +1442,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getTranscriptStatus') {
     sendResponse({
       cuesCount: STATE.cues.length,
-      panelVisible: STATE.panelVisible,
       savedL2Code,
       detectedSubLang,
     });
     return true;
   }
 
-  if (message.action === 'showTranscript') {
-    log('Opening transcript panel via popup — enabling auto-open');
-    chrome.storage.sync.set({ autoOpenPanel: true });
-    setPanelVisible(true);
+  if (message.action === 'panelSeek') {
+    // Seek command from the side panel (clicking a cue in the transcript).
+    seekTo(message.timeSec);
     sendResponse({ success: true });
+    return true;
   }
 
-  if (message.action === 'hideTranscript') {
-    log('Hiding transcript panel via popup — disabling auto-open');
-    chrome.storage.sync.set({ autoOpenPanel: false });
-    setPanelVisible(false);
-    sendResponse({ success: true });
+  if (message.action === 'getPanelState') {
+    // Side panel pulled state (open, tab switch, navigation).
+    sendResponse({ state: buildPanelState() });
+    return true;
+  }
+
+  if (message.action === 'panelOpenState') {
+    // Background reports the native side panel open/closed state.
+    panelOpen = !!message.open;
+    sendResponse({ received: true });
+    return true;
   }
 
   if (message.action === 'changeLanguage') {
@@ -1672,22 +1483,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // ── Keyboard Shortcuts ───────────────────────────────────────────────────
+// Alt+T / Ctrl+Shift+Y now toggle the native side panel via manifest
+// commands (handled by the background service worker). Only cue seeking stays
+// here, active while the side panel is open on this tab.
 
 function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Y' || e.key === 'y')) {
-      e.preventDefault();
-      togglePanel();
-      return;
-    }
-
-    if (e.altKey && (e.key === 't' || e.key === 'T')) {
-      e.preventDefault();
-      togglePanel();
-      return;
-    }
-
-    if (!STATE.panelVisible) return;
+    if (!panelOpen) return;
 
     if (e.key === 'ArrowDown' && STATE.cues.length > 0) {
       e.preventDefault();
@@ -1718,12 +1520,14 @@ async function init() {
   const playerEl = await waitForPlayer();
   log('Player found');
 
-  // Load saved L1/L2 preferences and locale BEFORE creating the UI,
+  // Load saved L1/L2 preferences and locale BEFORE pushing state,
   // so the panel renders in the correct language from the start.
   await loadSavedLanguagePreferences();
   await setLocale(L1_CODE);
 
-  createPanelUI();
+  // Push the initial (empty) panel state so the side panel shows the loading
+  // empty state instead of nothing while subtitles load.
+  pushPanelState();
   setupKeyboard();
 
   if (isYouTube) {
@@ -1738,15 +1542,9 @@ async function init() {
     // Cues may have already been loaded while we were waiting for the player.
     // If so, render them now that the panel exists.
     if (STATE.cues.length > 0) {
-      log('Rendering pre-loaded cues:', STATE.cues.length);
+      log('Pushing pre-loaded cues:', STATE.cues.length);
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) {
-        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
-        if (pref !== false) {
-          setPanelVisible(true);
-        }
-      }
       setBadge(true);
       updateStatus('');
     }

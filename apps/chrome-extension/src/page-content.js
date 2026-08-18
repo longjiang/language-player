@@ -3,13 +3,12 @@
  *
  * Opt-in mode: turns visible text on any webpage into clickable L2 tokens.
  * Uses the same panel shell, DictionaryCard, SavedWordsProvider, and bottom
- * bar as video mode via mountPagePanel().
+ * bar as video mode — rendered in the native side panel (src/sidepanel.jsx).
  */
 
 import { API_BASE } from './api-config';
 import { apiFetch } from './api-fetch';
-import { t, setLocale, log, logwarn } from './i18n';
-import { mountPagePanel, unmountPagePanel } from './transcript-app';
+import { setLocale, log, logwarn } from './i18n';
 import { buildRuby } from '@langplayer/utils';
 
 const VIDEO_HOST_RE = /(^|\.)(netflix\.com|primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)|youtube\.com|disneyplus\.com|hulu\.com|max\.com|hbonow\.com|hbomax\.com)$/i;
@@ -31,7 +30,6 @@ let enabled = false;
 let l1Code = 'en';
 let l2Code = 'en';
 let showPhonetics = true;
-let panelRoot = null;
 let observer = null;
 let mutationTimer = null;
 let io = null; // IntersectionObserver — tokenizes blocks as they near the viewport
@@ -42,6 +40,22 @@ const tokenCache = new Map();
 const tokenizedBlocks = new Set();
 let nextBlockId = 1;
 let pageTokenStats = { words: 0, withPron: 0, rubyCount: 0 };
+
+/** Cached tab id (via background) — used to open the side panel. */
+let _tabId = null;
+function getTabId() {
+  return new Promise((resolve) => {
+    if (_tabId) { resolve(_tabId); return; }
+    chrome.runtime.sendMessage({ action: 'getTabId' }, (id) => {
+      _tabId = id || null;
+      resolve(_tabId);
+    });
+  });
+}
+
+/** Most recent token lookup — included in pageModeState pulls so the side
+ *  panel doesn't lose a lookup that raced its open. */
+let lastLookup = null;
 
 function isVideoHost() {
   try {
@@ -202,19 +216,29 @@ function onTokenClick(e, token, textNodeParent) {
   const blockText = normalizeBlockText(block?.innerText || block?.textContent || '');
   const blockId = block?.__lpvBlockId || null;
 
-  createPanel();
-  window.dispatchEvent(new CustomEvent('lpv-page-lookup', {
-    detail: {
-      token: {
-        text: token.text,
-        lemmas: token.lemmas || [],
-        pronunciation: token.pronunciation || null,
-      },
-      blockText,
-      blockId,
-      href,
+  const payload = {
+    token: {
+      text: token.text,
+      lemmas: token.lemmas || [],
+      pronunciation: token.pronunciation || null,
     },
-  }));
+    blockText,
+    blockId,
+    href,
+  };
+  lastLookup = payload;
+  try {
+    chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
+  } catch {}
+
+  // Open the native side panel — this click is a user gesture, which
+  // chrome.sidePanel.open() requires (Chrome 116+).
+  getTabId().then((tid) => {
+    if (!tid) return;
+    try {
+      if (chrome.sidePanel?.open) chrome.sidePanel.open({ tabId: tid });
+    } catch {}
+  });
 }
 
 function onIntersect(entries) {
@@ -366,68 +390,21 @@ async function tokenizePage() {
   if (queued > 0 || pendingBlocks.size > 0) scheduleFlush();
 }
 
-function createPanel() {
-  if (panelRoot) {
-    panelRoot.classList.remove('lpv-collapsed');
-    document.body.classList.add('lpv-panel-open');
-    return;
-  }
-
-  panelRoot = document.createElement('div');
-  panelRoot.id = 'lpv-transcript-panel';
-  panelRoot.classList.add('lpv-page-panel');
-
-  const header = document.createElement('div');
-  header.id = 'lpv-panel-header';
-
-  const title = document.createElement('span');
-  title.id = 'lpv-panel-title';
-  title.innerHTML = `<img id="lpv-panel-logo" src="${chrome.runtime.getURL('src/language-player-logo-64.png')}" alt="" width="24" height="24" />`;
-
-  const right = document.createElement('div');
-  right.id = 'lpv-header-right';
-
-  const readBtn = document.createElement('a');
-  readBtn.id = 'lpv-open-web-btn';
-  readBtn.className = 'lpv-visible';
-  readBtn.target = '_blank';
-  readBtn.rel = 'noopener noreferrer';
-  readBtn.href = `https://language-player.netlify.app/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/web-reader?url=${encodeURIComponent(location.href)}`;
-  readBtn.textContent = t('readInLanguagePlayer');
-
-  const closeBtn = document.createElement('button');
-  closeBtn.id = 'lpv-close-btn';
-  closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
-  closeBtn.title = t('closePanel');
-  closeBtn.addEventListener('click', closePanel);
-
-  right.appendChild(readBtn);
-  right.appendChild(closeBtn);
-  header.appendChild(title);
-  header.appendChild(right);
-
-  const content = document.createElement('div');
-  content.id = 'lpv-panel-content';
-
-  panelRoot.appendChild(header);
-  panelRoot.appendChild(content);
-  document.body.appendChild(panelRoot);
-  document.body.classList.add('lpv-panel-open');
-
-  mountPagePanel(content, {
-    l1Code,
-    l2Code,
-    pageUrl: location.href,
-    onFollowLink: (href) => { location.href = href; },
-  });
-  log('[PAGE] side panel opened');
-}
-
-async function closePanel() {
+/** Push page-mode state to the side panel (via the background relay) so it
+ *  can render the PagePanel when opened on this tab. */
+function pushPageModeState() {
   try {
-    await chrome.storage.sync.set({ pageTokenizationEnabled: false });
+    chrome.runtime.sendMessage({
+      action: 'pageModeState',
+      state: {
+        mode: 'page',
+        l1Code,
+        l2Code,
+        pageUrl: location.href,
+        lookup: lastLookup,
+      },
+    }).catch(() => {});
   } catch {}
-  cleanup();
 }
 
 function cleanup() {
@@ -454,12 +431,7 @@ function cleanup() {
   tokenizing = false;
   restoreTokens();
   tokenCache.clear();
-  if (panelRoot) {
-    unmountPagePanel();
-    panelRoot.remove();
-    panelRoot = null;
-  }
-  document.body.classList.remove('lpv-panel-open');
+  lastLookup = null;
 }
 
 function restoreTokens() {
@@ -501,7 +473,7 @@ async function init() {
   enabled = true;
   log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}`);
   await tokenizePage();
-  createPanel();
+  pushPageModeState();
   startObserver();
 }
 
@@ -516,6 +488,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     log('[PAGE] toggle disabled from popup');
     cleanup();
     sendResponse({ ok: true });
+    return true;
+  }
+  if (message.action === 'getPanelState') {
+    // Side panel pulled state (open, tab switch, navigation).
+    sendResponse({
+      state: enabled
+        ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup }
+        : null,
+    });
+    return true;
+  }
+  if (message.action === 'pageFollowLink') {
+    // "Follow link" from the side panel's dictionary card.
+    if (message.href) location.href = message.href;
+    sendResponse({ ok: true });
+    return true;
   }
 });
 

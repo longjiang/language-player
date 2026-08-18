@@ -86,9 +86,74 @@ chrome.webRequest.onCompleted.addListener(
 const readyTabs = new Set();
 const tabIdMap = {};
 
+// ── Side panel (chrome.sidePanel) ─────────────────────────────────────────
+// The side panel page (src/sidepanel.html) connects a long-lived runtime port
+// on load and disconnects on close. Content scripts push panel state through
+// runtime.sendMessage; we tag it with the sender's tabId and relay it over
+// the port. We also tell the active tab's content script whether the side
+// panel is open (gates ArrowUp/Down cue seeking).
+let sidePanelPort = null;
+let sidePanelConnected = false;
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'lpv-sidepanel') return;
+  sidePanelPort = port;
+  sidePanelConnected = true;
+  console.log('[LP Extension] Side panel connected');
+  notifyActiveTabPanelOpenState(true);
+  port.onDisconnect.addListener(() => {
+    sidePanelPort = null;
+    sidePanelConnected = false;
+    console.log('[LP Extension] Side panel disconnected');
+    notifyActiveTabPanelOpenState(false);
+  });
+});
+
+function notifyActiveTabPanelOpenState(open) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs?.[0];
+    if (!tab?.id) return;
+    chrome.tabs.sendMessage(tab.id, { action: 'panelOpenState', open }).catch(() => {
+      // Content script may not be ready yet; that's ok.
+    });
+  });
+}
+
+// When the user switches tabs while the side panel is open, tell the newly
+// active tab's content script the panel is open.
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  if (!sidePanelConnected) return;
+  chrome.tabs.sendMessage(tabId, { action: 'panelOpenState', open: true }).catch(() => {});
+});
+
+// Alt+T / Ctrl+Shift+Y — registered in manifest "commands".
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== 'toggle-panel' && command !== 'toggle-panel-alt') return;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+  try {
+    if (sidePanelConnected && chrome.sidePanel?.close) {
+      await chrome.sidePanel.close({ tabId: tab.id });
+    } else {
+      await chrome.sidePanel.open({ tabId: tab.id });
+    }
+  } catch (err) {
+    console.log('[LP Extension] toggle-panel failed:', err?.message);
+  }
+});
+
 // Listen for messages from popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "clearSubtitles") {
+    if (request.action === "panelState" || request.action === "pageModeState" || request.action === "pageLookup") {
+        // Content script → side panel relay (tagged with the sender tab).
+        if (sidePanelPort && sender.tab?.id) {
+            try {
+                sidePanelPort.postMessage({ ...request, tabId: sender.tab.id });
+            } catch {}
+        }
+        sendResponse({ ok: true });
+        return true;
+    } else if (request.action === "clearSubtitles") {
         detectedSubtitles = [];
         updateBadge();
         sendResponse({success: true});
