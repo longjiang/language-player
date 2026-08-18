@@ -102,7 +102,7 @@ The side panel header shows the logo, the existing **Read in Language Player** b
 ### Tokenization model
 
 - Scan the document for **visible text nodes**.
-- Group text nodes into **blocks** using their nearest block-level ancestor (`p`, `li`, `h1`–`h6`, `blockquote`, `td`, `figcaption`, etc.).
+- Group text nodes into **blocks** using their nearest block-level ancestor (`p`, `li`, `h1`–`h6`, `blockquote`, `td`, `figcaption`, `dt`, `dd`, `div`). `div` is included because many sites render article bodies as a bare `<div>` with `<br>` separators (e.g. sengoku-his.com's `.desc`); the leaf-only filter excludes wrapper divs that contain other blocks.
 - Skip `script`, `style`, `noscript`, `template`, `svg`, `canvas`, `iframe`, form controls, `[contenteditable]`, and elements with zero rendered size or `visibility: hidden` / `display: none`.
 - Tokenize blocks strictly with the saved L2 from `chrome.storage.local.l2Language`. **Never auto-detect language.**
 - Replace each block's text node(s) with token spans, preserving whitespace and existing line breaks.
