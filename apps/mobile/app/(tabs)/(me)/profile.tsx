@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Modal, TextInput, Linking, AppState, Alert } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
@@ -39,7 +40,6 @@ const PLANS = [
 function LevelPicker({ l2Code, value, onChange, t }: {
   l2Code: string; value: number | undefined; onChange: (level: number) => void; t: (key: string) => string;
 }) {
-  const [open, setOpen] = useState(false);
   const scaleId = primaryScale(l2Code);
 
   const options = useMemo(() => {
@@ -54,33 +54,25 @@ function LevelPicker({ l2Code, value, onChange, t }: {
 
   const selectedLabel = value ? options.find((o) => o.value === value)?.label : null;
 
+  // Native menu actions; `state: 'on'` shows a checkmark on the selected level.
+  const actions = options.map((opt) => ({
+    id: String(opt.value),
+    title: opt.label,
+    state: (value === opt.value ? 'on' : 'off') as 'on' | 'off',
+  }));
+
   return (
-    <View>
-      <Pressable
-        onPress={() => setOpen(!open)}
-        className="flex-row items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5"
-      >
+    <MenuView
+      onPressAction={({ nativeEvent }) => onChange(Number(nativeEvent.event))}
+      actions={actions}
+    >
+      <Pressable className="flex-row items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5">
         <Text className={`text-sm ${selectedLabel ? 'text-foreground' : 'text-muted-foreground'}`}>
           {selectedLabel ?? t('msg.select_your_level')}
         </Text>
         <ChevronDown size={16} color={ICON_MUTED} />
       </Pressable>
-      {open && (
-        <View className="mt-1 rounded-lg border border-border bg-card overflow-hidden">
-          {options.map((opt) => (
-            <Pressable
-              key={opt.value}
-              onPress={() => { onChange(opt.value); setOpen(false); }}
-              className={`px-3 py-2.5 border-b border-border ${value === opt.value ? 'bg-primary/10' : ''}`}
-            >
-              <Text className={`text-sm ${value === opt.value ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-    </View>
+    </MenuView>
   );
 }
 
