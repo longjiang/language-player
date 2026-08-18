@@ -14,3 +14,8 @@ export * from './language-data';
 export * from './transcript-scroll';
 export * from './sale';
 export * from './reading-suggestions';
+export * from './markdown/types';
+export * from './markdown/parser';
+export * from './markdown/reconstruct';
+export * from './markdown/html-to-markdown';
+export * from './markdown/inline';
