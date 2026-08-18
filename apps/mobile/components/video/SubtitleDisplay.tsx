@@ -12,7 +12,7 @@ import { TextActionMenu } from '@/components/TextActionMenu';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
-import { baseCode } from '@langplayer/utils';
+import { baseCode, translationSizeFactor } from '@langplayer/utils';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache } from '@langplayer/shared';
 
@@ -41,6 +41,9 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
   const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
+  // SPEC-082 Task 1: the translation renders at `translationSize` × the L2
+  // text size (clamped to [0.5, 1], default 0.8).
+  const translationFactor = translationSizeFactor({ tokenizedText });
   const { isPro } = useSubscription();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
@@ -234,7 +237,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 {showTranslation && shownLine.l1Line ? (
                   <Text
                     className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
-                    style={{ fontSize: 14 * 1.5 * zoomRem }}
+                    style={{ fontSize: translationFactor * 14 * 1.5 * zoomRem }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>
@@ -304,7 +307,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   textScale={1}
                 />
                 {item.l1Line ? (
-                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: 14 * zoomRem }}>
+                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: translationFactor * 14 * zoomRem }}>
                     {renderInlineMarkdown(item.l1Line, { markBold: true })}
                   </Text>
                 ) : null}

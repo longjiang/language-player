@@ -100,3 +100,11 @@ export {
   canCoalesceOps,
 } from './sync-entities';
 export type { SyncEntityDef, SyncFieldType, SyncOutboxOp } from './sync-entities';
+export {
+  TRANSLATION_FACTOR,
+  TRANSLATION_SIZE_MIN,
+  TRANSLATION_SIZE_MAX,
+  clampTranslationSize,
+  translationSizeFactor,
+} from './reader-text-size';
+export type { TranslationSizeSettings } from './reader-text-size';
