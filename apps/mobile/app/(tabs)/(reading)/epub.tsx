@@ -18,6 +18,10 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
 
+/** Persist the reading location this long after the last page turn. Rapid
+ *  flipping would otherwise write to disk on every single turn. */
+const SAVE_LOCATION_DEBOUNCE_MS = 800;
+
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
@@ -34,8 +38,27 @@ export default function EpubReaderScreen() {
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
+  const saveLocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { locationRef.current = location; }, [location]);
+
+  /** Persist the current position — debounced so rapid flipping doesn't write
+   *  the location to disk on every turn. Flushed on close/unmount. */
+  const flushSaveLocation = useCallback(() => {
+    if (saveLocationTimerRef.current) {
+      clearTimeout(saveLocationTimerRef.current);
+      saveLocationTimerRef.current = null;
+      const cur = locationRef.current;
+      if (cur) void epub.saveLocation(cur);
+    }
+  }, [epub]);
+
+  // Flush any pending save when the screen unmounts (tab switch).
+  useEffect(() => {
+    return () => {
+      flushSaveLocation();
+    };
+  }, [flushSaveLocation]);
 
   const hasBook = epub.openBookId != null;
 
@@ -51,7 +74,13 @@ export default function EpubReaderScreen() {
     onBlockChange: useCallback((blockIndex: number) => {
       const loc: BookLocation = { blockIndex, offset: 0 };
       setLocation(loc);
-      void epub.saveLocation(loc);
+      // Debounce persistence: rapid page flipping would otherwise write the
+      // reading location to disk on every turn. Flushed on close/unmount.
+      if (saveLocationTimerRef.current) clearTimeout(saveLocationTimerRef.current);
+      saveLocationTimerRef.current = setTimeout(() => {
+        saveLocationTimerRef.current = null;
+        void epub.saveLocation(loc);
+      }, SAVE_LOCATION_DEBOUNCE_MS);
     }, [epub]),
     estimate: true,
   });
@@ -133,12 +162,13 @@ export default function EpubReaderScreen() {
   }, [epub]);
 
   const handleClose = useCallback(async () => {
+    flushSaveLocation(); // persist the final position before the book closes
     setLocation(null);
     historyRef.current = [];
     setMobileOpen(false);
     setHighlight(null);
     await epub.close();
-  }, [epub]);
+  }, [epub, flushSaveLocation]);
 
   const handleBack = useCallback(() => {
     const prev = historyRef.current.pop();
