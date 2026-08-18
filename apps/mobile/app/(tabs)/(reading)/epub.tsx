@@ -380,6 +380,7 @@ export default function EpubReaderScreen() {
             }}
             showTextActions
             translationSideBySide={isWide}
+            hideSplitHandle
             firstLineIndent
             onOpenLink={handleOpenLink}
             highlight={highlight}
