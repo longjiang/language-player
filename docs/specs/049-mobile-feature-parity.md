@@ -194,10 +194,15 @@ the next/previous page past it.
 A turn applies instantly — the break is computed from already-measured heights
 when the current window covers it, otherwise from a chars-per-page estimate —
 so content (plain text via the `TokenizedText` defer path) is visible
-immediately with no spinner. The heavy work runs only once flipping stops
-(`SETTLE_MS` = 600 ms after the last turn): an exact background re-measure
-refines the page boundaries in place, then the visible blocks are lemmatized
-and translated. Stale in-flight lemmatize/translate responses are dropped by
+immediately with no spinner. The heavy work runs only once flipping stops: at
+`SETTLE_MS` (600 ms) after the last turn the background lemmatize/translate
+requests and the exact re-measure start (the page still renders plain text),
+and at `RENDER_COMMIT_MS` (1500 ms) of continuous idle the heavy tokenized
+(ruby/furigana) render is committed. The two-stage gap means a short pause
+(~1 s) followed by another flip streak never pays for a tokenized render that
+gets thrown away: resuming flipping aborts the in-flight lemmatize/translate
+requests (AbortControllers) and bumps the generation counters, so nothing from
+the pause leaks into the next streak. Stale in-flight responses are dropped by
 bumping the generation counters at navigation time (translations are keyed by
 local block index, so a stale response would otherwise land the old page's
 text on the new page). Reading-location persistence is debounced (800 ms) and

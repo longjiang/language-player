@@ -51,6 +51,12 @@ const DEFAULT_BLOCK_GAP = 12;
  *  work (exact re-measure, tokenization, translation). Rapid flipping shows
  *  instant estimated pages; the heavy work runs once flipping stops. */
 const SETTLE_MS = 600;
+/** After this much continuous idle, the reader commits to the current page and
+ *  lets the heavy tokenized (ruby/furigana) render happen. Longer than
+ *  SETTLE_MS on purpose: tokenization/translation run in the background during
+ *  the gap, and if the user flips again before this fires, no heavy render was
+ *  ever started — so nothing from the pause leaks into the next flip streak. */
+const RENDER_COMMIT_MS = 1500;
 
 const TERMINAL_PUNCTUATION = /[。．.！？!?…"”』」"')\]]$/;
 
@@ -345,6 +351,15 @@ export function useEpubPagination({
    *  true, so rapid flipping stays cheap (instant estimated pages). */
   const [interactionSettled, setInteractionSettled] = useState(true);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** True once the user has been idle long enough (RENDER_COMMIT_MS) that the
+   *  heavy tokenized render is worth committing to. `flipping` = !this. */
+  const [renderCommitted, setRenderCommitted] = useState(true);
+  const renderCommitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Abort controllers for the settle-triggered lemmatize/translate requests —
+   *  aborted the moment the user starts flipping again so no pause work leaks
+   *  into the new streak. */
+  const lemmatizeAbortRef = useRef<AbortController | null>(null);
+  const translateAbortRef = useRef<AbortController | null>(null);
   /** Whether the current page boundaries came from measured data (exact)
    *  rather than an estimate — skips the settle-time re-measure when already
    *  exact, so stopping after in-window flips causes no boundary correction. */
@@ -375,14 +390,22 @@ export function useEpubPagination({
 
   /** Mark that the user is actively flipping pages: defers tokenization,
    *  translation, and exact re-measurement until flipping stops (SETTLE_MS
-   *  after the last navigation). */
+   *  after the last navigation), and keeps the page rendering plain until
+   *  RENDER_COMMIT_MS of continuous idle so a short pause never pays for a
+   *  heavy tokenized render that gets thrown away on the next flip. */
   const noteInteraction = useCallback(() => {
     setInteractionSettled(false);
+    setRenderCommitted(false);
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     settleTimerRef.current = setTimeout(() => {
       settleTimerRef.current = null;
       setInteractionSettled(true);
     }, SETTLE_MS);
+    if (renderCommitTimerRef.current) clearTimeout(renderCommitTimerRef.current);
+    renderCommitTimerRef.current = setTimeout(() => {
+      renderCommitTimerRef.current = null;
+      setRenderCommitted(true);
+    }, RENDER_COMMIT_MS);
   }, []);
 
   /** Instant (non-blocking) forward boundary: exact when the break is already
@@ -463,6 +486,12 @@ export function useEpubPagination({
     // (settle-gated) translate effect next runs.
     tokenLoadGenRef.current += 1;
     translateGenRef.current += 1;
+    // Abort any in-flight lemmatize/translate requests from the paused page —
+    // nothing from the pause should leak into the new flip streak.
+    lemmatizeAbortRef.current?.abort();
+    lemmatizeAbortRef.current = null;
+    translateAbortRef.current?.abort();
+    translateAbortRef.current = null;
     translateInFlightRef.current = false;
     translateDoneRef.current = new Set();
     translateAttemptsRef.current = new Map();
@@ -544,11 +573,20 @@ export function useEpubPagination({
     anchorSeenRef.current = false;
     prevPageRef.current = 0;
     setInteractionSettled(true);
+    setRenderCommitted(true);
     boundariesExactRef.current = false;
     if (settleTimerRef.current) {
       clearTimeout(settleTimerRef.current);
       settleTimerRef.current = null;
     }
+    if (renderCommitTimerRef.current) {
+      clearTimeout(renderCommitTimerRef.current);
+      renderCommitTimerRef.current = null;
+    }
+    lemmatizeAbortRef.current?.abort();
+    lemmatizeAbortRef.current = null;
+    translateAbortRef.current?.abort();
+    translateAbortRef.current = null;
     // Estimate mode: 0 keeps the hidden measuring view empty until the seek
     // sets the window (MAX would render the whole book for a frame).
     setMeasuredWindow(estimate ? 0 : (measureChunkSize ?? Number.MAX_SAFE_INTEGER));
@@ -975,6 +1013,7 @@ export function useEpubPagination({
     }
 
     const controller = new AbortController();
+    lemmatizeAbortRef.current = controller;
     const timeout = setTimeout(() => controller.abort(), 3000);
     fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST',
@@ -1070,10 +1109,13 @@ export function useEpubPagination({
     );
     const fetchStart = Date.now();
 
+    const controller = new AbortController();
+    translateAbortRef.current = controller;
     fetch(`${PYTHON_API_URL}/translate_array`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: chunk.map(p => p.text), l1: l1Code, l2: l2Code }),
+      signal: controller.signal,
     })
       .then(async res => {
         if (!res.ok) throw new Error(`translate_array HTTP ${res.status}`);
@@ -1180,6 +1222,9 @@ export function useEpubPagination({
   useEffect(() => {
     return () => {
       if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+      if (renderCommitTimerRef.current) clearTimeout(renderCommitTimerRef.current);
+      lemmatizeAbortRef.current?.abort();
+      translateAbortRef.current?.abort();
     };
   }, []);
 
@@ -1299,6 +1344,6 @@ export function useEpubPagination({
     /** True while the user is actively flipping — the reader renders visible
      *  pages as plain text (fast) and defers tokenized/translated rendering
      *  until flipping stops. */
-    flipping: !interactionSettled,
+    flipping: !renderCommitted,
   };
 }
