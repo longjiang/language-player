@@ -1,3 +1,5 @@
+import type { FormatRange } from '@langplayer/shared';
+
 export interface TocItem {
   label: string;
   href: string;
@@ -11,14 +13,12 @@ export interface EpubManifestItem {
   props?: string;
 }
 
-/** Inline format range mapped onto a text block's characters (SPEC-049 §9.7). */
-export interface EpubFormatRange {
-  start: number;
-  end: number;
-  type: 'link' | 'highlight' | 'bold' | 'italic' | 'code';
-  /** Raw href from the source document (relative or absolute, may carry #fragment). */
-  url?: string;
-}
+/**
+ * Inline format range mapped onto a text block's characters (SPEC-049 §9.7).
+ * Alias of the shared markdown FormatRange (SPEC-083) — adds `strikethrough`
+ * to the legacy mobile union so both apps share one format model.
+ */
+export type EpubFormatRange = FormatRange;
 
 /** A converted EPUB text block (paragraph/heading/list item/…). */
 export interface EpubTextBlock {
