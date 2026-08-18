@@ -180,7 +180,30 @@ export function writeLedger(rows) {
     (row, i) =>
       `| ${i + 1} | ${row.commit} | ${row.date} | ${row.store || '—'} | ${row.dev || '—'} |`,
   );
-  writeFileSync(paths.ledger, LEDGER_HEADER + '\n' + lines.join('\n') + '\n');
+  // Preserve any prose after the table (e.g. "Preserved working builds" /
+  // "Incident log"). The old behaviour regenerated only the header + table,
+  // silently discarding trailing markdown sections (data loss seen 2026-08-18).
+  let trailing = '';
+  if (existsSync(paths.ledger)) {
+    const current = readFileSync(paths.ledger, 'utf8');
+    const idx = lastTableRowEnd(current);
+    if (idx >= 0) trailing = current.slice(idx);
+  }
+  const table = LEDGER_HEADER + '\n' + lines.join('\n') + '\n';
+  // Trim trailing blank lines from the regenerated table so only the preserved
+  // sections (and whatever blank line separates them) remain.
+  writeFileSync(paths.ledger, table.replace(/\n+$/, '\n') + (trailing ? '\n' + trailing.trimStart() : ''));
+}
+
+/** Index just past the last table row (`| n | <commit> | … |`), or -1 if none. */
+function lastTableRowEnd(text) {
+  const lines = text.split('\n');
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (/^\| \d+ \| [0-9a-f]{7,40} \|/.test(lines[i])) {
+      return lines.slice(0, i + 1).join('\n').length;
+    }
+  }
+  return -1;
 }
 
 export function isDryRun(argv) {
