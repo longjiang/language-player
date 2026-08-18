@@ -44,6 +44,7 @@ export default function EpubReaderScreen() {
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
+    translationSplit: display.translationSplit,
     resetKey: epub.openBookId,
     preParsedBlocks: epub.blocks,
     initialBlockIndex: seekBlock,

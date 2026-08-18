@@ -60,6 +60,7 @@ export default function WebReaderScreen() {
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
+    translationSplit: display.translationSplit,
     resetKey: title || null,
     initialAnchor,
     onAnchorChange: handleAnchorChange,

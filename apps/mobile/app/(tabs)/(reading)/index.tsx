@@ -79,6 +79,7 @@ export default function ReaderScreen() {
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
     showTranslation: display.translation,
+    translationSplit: display.translationSplit,
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
     initialAnchor,
     onAnchorChange: handleAnchorChange,

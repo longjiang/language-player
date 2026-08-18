@@ -10,6 +10,7 @@ import { isPhoneticsEligible, translationSizeFactor } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
+import { TranslationSplitHandle } from '@/components/reader/TranslationSplitHandle';
 import { Root as Switch } from '@/components/ui/switch';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
@@ -248,7 +249,7 @@ export function PaginatedReader({
   const hasNext = scrollMode ? false : (hasNextProp ?? page < totalPages - 1);
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
-  const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
+  const { getL2, tokenizedText: tokenSettings, display, updateDisplay } = useSettingsContext();
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showDefinition = l2Settings.tokenSpan.definition.show;
@@ -256,6 +257,25 @@ export function PaginatedReader({
   // SPEC-082 Task 1: translation text renders at `translationSize` × the L2
   // rendered size (clamped to [0.5, 1], default 0.8).
   const translationFactor = translationSizeFactor({ tokenizedText: tokenSettings });
+
+  // ── Splitter live state (SPEC-082 Task 3, web parity) ──
+  // During a drag the row re-splits immediately via `liveSplit` (no
+  // persistence, no pagination re-measure); the final ratio is committed once
+  // on release, persisting it and re-measuring page breaks (the pagination
+  // hook keys off `display.translationSplit`).
+  const persistedSplit = display.translationSplit;
+  const [liveSplit, setLiveSplit] = useState(persistedSplit);
+  const appliedSplit = liveSplit;
+  const onSplitChange = useCallback((r: number) => setLiveSplit(r), []);
+  const onSplitCommit = useCallback((r: number) => {
+    setLiveSplit(r);
+    updateDisplay({ translationSplit: r });
+  }, [updateDisplay]);
+  // Keep the live value in sync if the persisted value changes externally
+  // (e.g. another device's cloud sync, or the settings screen) while not mid-drag.
+  useEffect(() => {
+    setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
+  }, [persistedSplit]);
   const effectiveScale = (textScale ?? 1) * zoomRem;
   const measureFontSize = 16 * effectiveScale;
   const measureFontFamily = tokenSettings.typeFace === 'serif'
@@ -430,7 +450,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit),
           )}
         </View>
         {onToggleTranslation && (
@@ -478,7 +498,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -552,6 +572,7 @@ export function PaginatedReader({
                 showTextActions,
                 measureTextStyle,
                 translationSideBySide,
+                appliedSplit,
               ),
             );
           })()}
@@ -591,6 +612,9 @@ function renderBlock(
   onBlockLayout?: (globalIdx: number, top: number, height: number) => void,
   deferTokenization = false,
   translationFactor = 0.8,
+  translationSplit = 0.6,
+  onSplitChange?: (r: number) => void,
+  onSplitCommit?: (r: number) => void,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -694,13 +718,26 @@ function renderBlock(
       </View>
     ) : null;
     const sideBySide = translationSideBySide && transEl;
+    // SPEC-082 Task 3: resizable text|translation split. The handle renders
+    // between the columns when a change handler is wired (side-by-side active).
+    const splitHandle = sideBySide && onSplitChange ? (
+      <TranslationSplitHandle
+        ratio={translationSplit}
+        rowWidth={contentWidth}
+        onChange={onSplitChange}
+        onCommit={onSplitCommit}
+      />
+    ) : null;
+    const l2Style = { flex: translationSplit } as const;
+    const trStyle = { flex: 1 - translationSplit } as const;
 
     switch (type) {
       case 'paragraph':
         return sideBySide ? (
           <View className="flex-row items-start gap-4">
-            <View className="min-w-0 flex-[3]">{tokenEl}</View>
-            <View className="min-w-0 flex-[2]">{transEl}</View>
+            <View className="min-w-0" style={l2Style}>{tokenEl}</View>
+            {splitHandle}
+            <View className="min-w-0" style={trStyle}>{transEl}</View>
           </View>
         ) : (
           <View>{tokenEl}{transEl}</View>
@@ -709,8 +746,9 @@ function renderBlock(
         return sideBySide ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
             <View className="flex-row items-start gap-4">
-              <View className="min-w-0 flex-[3]">{tokenEl}</View>
-              <View className="min-w-0 flex-[2]">{transEl}</View>
+              <View className="min-w-0" style={l2Style}>{tokenEl}</View>
+              {splitHandle}
+              <View className="min-w-0" style={trStyle}>{transEl}</View>
             </View>
           </View>
         ) : (
@@ -728,8 +766,9 @@ function renderBlock(
       case 'heading':
         return sideBySide ? (
           <View className="flex-row items-start gap-4">
-            <View className="min-w-0 flex-[3]">{tokenEl}</View>
-            <View className="min-w-0 flex-[2]">{transEl}</View>
+            <View className="min-w-0" style={l2Style}>{tokenEl}</View>
+            {splitHandle}
+            <View className="min-w-0" style={trStyle}>{transEl}</View>
           </View>
         ) : (
           <View>{tokenEl}{transEl}</View>
@@ -863,6 +902,7 @@ function renderMeasuringBlock(
   showTextActions: boolean,
   measureTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string },
   translationSideBySide = false,
+  translationSplit = 0.6,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
    *  blocks don't measure shorter than they render. */
@@ -912,8 +952,8 @@ function renderMeasuringBlock(
       {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="flex-row items-start gap-4">
-            <View className="min-w-0 flex-[3]"><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
-            <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
+            <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
+            <View className="min-w-0" style={{ flex: 1 - translationSplit }}><MeasuringSkeleton text={block.text} /></View>
           </View>
         ) : (
           <View>
@@ -926,8 +966,8 @@ function renderMeasuringBlock(
         translationSideBySide && showTranslation ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
             <View className="flex-row items-start gap-4">
-              <View className="min-w-0 flex-[3]"><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
-              <View className="min-w-0 flex-[2]"><MeasuringSkeleton text={block.text} /></View>
+              <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
+              <View className="min-w-0" style={{ flex: 1 - translationSplit }}><MeasuringSkeleton text={block.text} /></View>
             </View>
           </View>
         ) : (

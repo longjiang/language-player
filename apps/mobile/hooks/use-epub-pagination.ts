@@ -15,6 +15,9 @@ interface UseEpubPaginationOptions {
   l1Code: string;
   l2Code: string;
   showTranslation: boolean;
+  /** Committed side-by-side split (display.translationSplit, SPEC-082 Task 3).
+   *  Changing it invalidates page-break measurements. Default 0.6. */
+  translationSplit?: number;
   /** Resets all state when changed (e.g., file name changes) */
   resetKey: string | null;
   /** Pre-parsed whole-book blocks (EPUB, SPEC-049 §9.1) — skips markdown parsing. */
@@ -242,7 +245,7 @@ interface UseEpubPaginationReturn {
 }
 
 export function useEpubPagination({
-  text, l1Code, l2Code, showTranslation, resetKey,
+  text, l1Code, l2Code, showTranslation, translationSplit = 0.6, resetKey,
   preParsedBlocks, initialAnchor, initialBlockIndex,
   onAnchorChange, onBlockChange, measureChunkSize, estimate = false,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
@@ -687,7 +690,7 @@ export function useEpubPagination({
   // ── Lazy mode: re-measure when the real viewport / translation layout changes ──
   useEffect(() => {
     if (!estimate || !blocks || !hasMeasured || lazyPageStart == null) return;
-    const key = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}`;
+    const key = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}:${translationSplit}`;
     if (layoutKeyRef.current === key) return;
     paginationLog(`[Pagination] 🔄 layout changed ${layoutKeyRef.current ?? 'none'} → ${key} — remeasuring from block ${lazyPageStart}`);
     layoutKeyRef.current = key;
@@ -697,21 +700,25 @@ export function useEpubPagination({
     startLazyMeasure('forward', lazyPageStart, page + 1);
   }, [
     estimate, blocks, hasMeasured, lazyPageStart, page,
-    contentWidth, availableHeight, showTranslation, startLazyMeasure,
+    contentWidth, availableHeight, showTranslation, translationSplit, startLazyMeasure,
   ]);
 
-  // ── Non-lazy readers: invalidate measurements when translation is toggled ──
+  // ── Non-lazy readers: invalidate measurements when translation is toggled
+  // or the committed side-by-side split changes (SPEC-082 Task 3) ──
   useEffect(() => {
     if (estimate || !blocks) return;
+    const key = `${showTranslation ? 1 : 0}:${translationSplit}`;
+    if (layoutKeyRef.current === key) return;
+    layoutKeyRef.current = key;
     if (prevShowTranslationRef.current !== showTranslation) {
       prevShowTranslationRef.current = showTranslation;
-      setHasMeasured(false);
-      setMeasuredBlockCount(0);
-      setPageBreaks([]);
-      blockHeightsRef.current = [];
-      blockMetricsRef.current = [];
     }
-  }, [estimate, blocks, showTranslation]);
+    setHasMeasured(false);
+    setMeasuredBlockCount(0);
+    setPageBreaks([]);
+    blockHeightsRef.current = [];
+    blockMetricsRef.current = [];
+  }, [estimate, blocks, showTranslation, translationSplit]);
 
   // Cancel a pending measurement rAF on unmount.
   useEffect(() => {
