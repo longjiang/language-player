@@ -389,11 +389,16 @@ export const RubyTextParagraph = memo(function RubyTextParagraph(props: RubyText
       return;
     }
     if (!measuringLines || measuringLines.length === 0) return;
-    const firstBaseline = nativeGrid && nativeGrid.length === 1 ? nativeGrid[0]!.ascender : null;
-    const merged: GridLine[] = measuringLines.map((l, i) => ({
+    // The ruby band pushes the base baseline down inside EVERY pinned line
+    // box, not just the first. The current native build reports only line 0's
+    // true baseline, so apply its delta to every measuring line (uniform
+    // shift — e.g. 38 − 29 = 9px at 20px/43px settings).
+    const native0 = nativeGrid && nativeGrid.length === 1 ? nativeGrid[0]!.ascender : null;
+    const shift = native0 != null ? native0 - measuringLines[0]!.ascender : 0;
+    const merged: GridLine[] = measuringLines.map((l) => ({
       y: l.y,
       height: l.height,
-      ascender: i === 0 && firstBaseline != null ? firstBaseline : l.ascender,
+      ascender: l.ascender + shift,
     }));
     onLineGrid(merged);
   }, [onLineGrid, nativeGrid, measuringLines]);
