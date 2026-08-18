@@ -140,6 +140,7 @@
         "stop": "Arrêter",
         "subscribe": "S'abonner",
         "sync_now": "Synchroniser maintenant",
+        "synonyms": "Synonymes",
         "syntax": "Syntaxe",
         "table_of_contents": "Table des matières",
         "tap_to_hide": "Appuyez pour masquer",
@@ -1212,6 +1213,8 @@
         "followup_inflection_context_form": "Expliquez le lemme (forme de dictionnaire) du mot {l2Name} \"{word}\" (forme fléchie : {contextForm}), comment le mot se fléchit dans \"{context}\" et le sens de la forme fléchie.",
         "followup_morphemes": "Expliquez si le mot {l2Name} \"{word}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
         "followup_morphemes_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" peut être décomposé en parties sémantiques (morphèmes) et signalez toute interprétation littérale du mot.",
+        "followup_synonyms": "Veuillez lister les synonymes du mot {l2Name} \"{word}\". Pour chaque synonyme, donnez la vedette (forme de dictionnaire) et sa prononciation, expliquez en quoi il diffère de \"{word}\" par le sens et l'usage, et fournissez des exemples illustrant la différence.",
+        "followup_synonyms_context": "Veuillez lister les synonymes du mot {l2Name} \"{word}\" dans \"{context}\". Pour chaque synonyme, donnez la vedette (forme de dictionnaire) et sa prononciation, expliquez en quoi il diffère de \"{word}\" par le sens et l'usage, et fournissez des exemples illustrant la différence.",
         "followup_syntax": "Expliquez si le mot {l2Name} \"{word}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
         "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
         "subs_ai_group": "Vous êtes un assistant d'apprentissage des langues. Voici {n} lignes de sous-titres de vidéos, chacune en {l2Name}, contenant le terme \"{term}\"."

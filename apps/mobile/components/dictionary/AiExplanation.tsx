@@ -12,13 +12,14 @@ import { localizedError } from '@/lib/errors';
 import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax';
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';
 
 const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
   { kind: 'inflection', labelKey: 'action.inflection' },
   { kind: 'morphemes', labelKey: 'action.morphemes' },
   { kind: 'etymology', labelKey: 'action.etymology' },
   { kind: 'syntax', labelKey: 'action.syntax' },
+  { kind: 'synonyms', labelKey: 'action.synonyms' },
 ];
 
 interface ChatMessage {
@@ -47,7 +48,7 @@ interface AiExplanationProps {
 /**
  * "Let DeepSeek Explain" — Pro-only feature for the dictionary popup.
  * Matches web: streaming chat with regenerate, copy, and follow-up question
- * buttons (inflection / morphemes / etymology / syntax).
+ * buttons (inflection / morphemes / etymology / syntax / synonyms).
  */
 export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
@@ -123,10 +124,15 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         : t('prompt.followup_morphemes', wordParams);
     } else if (kind === 'etymology') {
       prompt = t('prompt.followup_etymology', wordParams);
-    } else {
+    } else if (kind === 'syntax') {
       prompt = cleanContext
         ? t('prompt.followup_syntax_context', { ...wordParams, context: cleanContext })
         : t('prompt.followup_syntax', wordParams);
+    } else {
+      // synonyms
+      prompt = cleanContext
+        ? t('prompt.followup_synonyms_context', { ...wordParams, context: cleanContext })
+        : t('prompt.followup_synonyms', wordParams);
     }
 
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });

@@ -140,6 +140,7 @@
         "stop": "Stoppen",
         "subscribe": "Abonneren",
         "sync_now": "Nu synchroniseren",
+        "synonyms": "Synoniemen",
         "syntax": "Syntaxis",
         "table_of_contents": "Inhoudsopgave",
         "tap_to_hide": "Tik om te verbergen",
@@ -1212,6 +1213,8 @@
         "followup_inflection_context_form": "Leg het lemma (woordenboekvorm) uit van het {l2Name}-woord \"{word}\" (verbuigingsvorm: {contextForm}), hoe het woord in \"{context}\" verbuigt en de betekenis van de verbogen vorm.",
         "followup_morphemes": "Leg uit of het {l2Name}-woord \"{word}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
         "followup_morphemes_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" kan worden opgesplitst in betekenisvolle delen (morfemen) en vermeld eventuele letterlijke interpretaties van het woord.",
+        "followup_synonyms": "Geef een lijst van synoniemen van het {l2Name}-woord \"{word}\". Geef voor elk synoniem het trefwoord en de uitspraak, leg uit waarin het in betekenis en gebruik verschilt van \"{word}\" en geef voorbeeldzinnen die het verschil illustreren.",
+        "followup_synonyms_context": "Geef een lijst van synoniemen van het {l2Name}-woord \"{word}\" in \"{context}\". Geef voor elk synoniem het trefwoord en de uitspraak, leg uit waarin het in betekenis en gebruik verschilt van \"{word}\" en geef voorbeeldzinnen die het verschil illustreren.",
         "followup_syntax": "Leg uit of het {l2Name}-woord \"{word}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
         "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
         "subs_ai_group": "Je bent een taalhulp-assistent. Hieronder staan {n} ondertitelregels uit video's, elk in het {l2Name}, die de term \"{term}\" bevatten."

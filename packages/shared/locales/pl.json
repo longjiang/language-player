@@ -140,6 +140,7 @@
         "stop": "Zatrzymaj",
         "subscribe": "Subskrybuj",
         "sync_now": "Synchronizuj teraz",
+        "synonyms": "Synonimy",
         "syntax": "Składnia",
         "table_of_contents": "Spis treści",
         "tap_to_hide": "Dotknij, aby ukryć",
@@ -1212,6 +1213,8 @@
         "followup_inflection_context_form": "Wyjaśnij lemat (formę słownikową) słowa w języku {l2Name} \"{word}\" (forma odmieniona: {contextForm}), jak słowo odmienia się w zdaniu \"{context}\" oraz znaczenie formy odmienionej.",
         "followup_morphemes": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
         "followup_morphemes_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" można rozłożyć na części znaczeniowe (morfemy), i podaj ewentualne dosłowne interpretacje słowa.",
+        "followup_synonyms": "Wymień synonimy słowa w języku {l2Name} \"{word}\". Dla każdego synonimu podaj formę hasłową i wymowę, wyjaśnij, czym różni się od \"{word}\" pod względem znaczenia i użycia, oraz podaj przykładowe zdania ilustrujące różnicę.",
+        "followup_synonyms_context": "Wymień synonimy słowa w języku {l2Name} \"{word}\" w zdaniu \"{context}\". Dla każdego synonimu podaj formę hasłową i wymowę, wyjaśnij, czym różni się od \"{word}\" pod względem znaczenia i użycia, oraz podaj przykładowe zdania ilustrujące różnicę.",
         "followup_syntax": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
         "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
         "subs_ai_group": "Jesteś asystentem nauki języków. Poniżej znajduje się {n} linii napisów z filmów, każda w języku {l2Name}, zawierających termin \"{term}\"."

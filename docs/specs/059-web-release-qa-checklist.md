@@ -143,7 +143,7 @@ comments go in brackets.
 - ⬜ Image search — Openverse grid with skeletons, query relaxation,
   compact strip in the popup dictionary
 - ⬜ AI Explain — Pro-gated; streams explanation, follow-up buttons
-  (inflection/morphemes/etymology/syntax), copy
+  (inflection/morphemes/etymology/syntax/synonyms), copy
 - ⬜ Subs-search — show-all list with translations, target form highlighted
 - ⬜ Saved Words page — today/earlier groups, filter, entry cards with
   source/context/form, SRS status, export CSV, clear all (with confirm)

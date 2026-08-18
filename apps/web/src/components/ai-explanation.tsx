@@ -12,13 +12,14 @@ import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, Check, Copy } from 'lucide-react';
 
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax';
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';
 
 const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
   { kind: 'inflection', labelKey: 'action.inflection' },
   { kind: 'morphemes', labelKey: 'action.morphemes' },
   { kind: 'etymology', labelKey: 'action.etymology' },
   { kind: 'syntax', labelKey: 'action.syntax' },
+  { kind: 'synonyms', labelKey: 'action.synonyms' },
 ];
 
 interface ChatMessage {
@@ -214,10 +215,15 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         : t('prompt.followup_morphemes', wordParams);
     } else if (kind === 'etymology') {
       prompt = t('prompt.followup_etymology', wordParams);
-    } else {
+    } else if (kind === 'syntax') {
       prompt = cleanContext
         ? t('prompt.followup_syntax_context', { ...wordParams, context: cleanContext })
         : t('prompt.followup_syntax', wordParams);
+    } else {
+      // synonyms
+      prompt = cleanContext
+        ? t('prompt.followup_synonyms_context', { ...wordParams, context: cleanContext })
+        : t('prompt.followup_synonyms', wordParams);
     }
 
     // L2 strings are backticked so they render as interactive tokenized text

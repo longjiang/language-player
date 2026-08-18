@@ -136,6 +136,7 @@
         "stop": "停止",
         "subscribe": "訂閱",
         "sync_now": "立即同步",
+        "synonyms": "同義詞",
         "syntax": "句法",
         "table_of_contents": "目錄",
         "tokenize": "分詞",
@@ -1181,6 +1182,8 @@
         "followup_inflection_context_form": "請解釋{l2Name}單詞\"{word}\"（屈折形式：{contextForm}）的詞元（詞典形式）、該詞在\"{context}\"中的屈折變化方式，以及屈折形式的意義。",
         "followup_morphemes": "請解釋{l2Name}單詞\"{word}\"是否可以分解成語義部分（語素），並指出該詞是否有字面解釋。",
         "followup_morphemes_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否可以分解成語義部分（語素），並指出該詞是否有字面解釋。",
+        "followup_synonyms": "請列出{l2Name}單詞\"{word}\"的同義詞。對於每個同義詞，給出詞頭（詞典形式）和發音，說明它在意義和用法上與\"{word}\"有何不同，並給出例句說明差異。",
+        "followup_synonyms_context": "請列出\"{context}\"中{l2Name}單詞\"{word}\"的同義詞。對於每個同義詞，給出詞頭（詞典形式）和發音，說明它在意義和用法上與\"{word}\"有何不同，並給出例句說明差異。",
         "followup_syntax": "請解釋{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
         "followup_syntax_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
         "subs_ai_group": "你是一名語言學習助手。以下是來自影片的{n}行字幕，均為{l2Name}，包含術語\"{term}\"。"
