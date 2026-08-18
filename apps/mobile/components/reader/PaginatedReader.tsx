@@ -121,6 +121,10 @@ interface PaginatedReaderProps {
   /** First-line indent (1 em) for body paragraphs — EPUB typography
    *  (SPEC-082 Task 5, web `[&_p]:indent-[1em]` parity). */
   firstLineIndent?: boolean;
+  /** True while the user is actively flipping pages: visible blocks render as
+   *  plain text (fast) even when tokens are cached; the tokenized/translated
+   *  render returns once flipping stops. */
+  flipping?: boolean;
 }
 
 export function PaginatedReader({
@@ -143,6 +147,7 @@ export function PaginatedReader({
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
   firstLineIndent = false,
+  flipping = false,
 }: PaginatedReaderProps) {
   // ── Visibility-based lazy tokenization (SPEC-019 O2) ──
   // Track scroll position + viewport height imperatively (refs, no re-render
@@ -473,10 +478,10 @@ export function PaginatedReader({
       if (shouldNext || shouldPrev) {
         swipeExitPageRef.current = page;
         swipeExitRef.current = { direction: shouldNext ? 'next' : 'prev' };
-        log(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)}`);
+        appLog(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)} t=${Date.now()}`);
         Animated.timing(swipeTranslateX, {
           toValue: shouldNext ? -width : width,
-          duration: 180,
+          duration: 100,
           useNativeDriver: true,
         }).start(() => {
           swipeAnimatingRef.current = false;
@@ -522,7 +527,7 @@ export function PaginatedReader({
     const key = `${page}:${visibleBlocksProp.length}`;
     if (lastPageShownLogKeyRef.current === key) return;
     lastPageShownLogKeyRef.current = key;
-    log(`[Reader] ✅ page content shown page=${page} blocks=${visibleBlocksProp.length} t=${Date.now()}`);
+    appLog(`[Reader] ✅ page content shown page=${page} blocks=${visibleBlocksProp.length} t=${Date.now()}`);
   }, [hasMeasured, page, visibleBlocksProp]);
 
   const handleCalibrationComplete = useCallback((c: TokenizedTextCalibration) => {
@@ -541,6 +546,7 @@ export function PaginatedReader({
   // user's actual settings, then cache a line-height ratio for the session.
   const calibrationSamples = useMemo(() => {
     if (!__DEV__) return null;
+    if (flipping) return null; // never run the probe mid-flip — it renders heavy tokenized samples
     if (!hasMeasured || !visibleBlocksProp || !blocks) return null;
     if (getCachedCalibration(calibrationSignatureValue)) return null;
     const samples: { block: TextBlock; tokens: LemmatizedToken[] }[] = [];
@@ -555,7 +561,7 @@ export function PaginatedReader({
       if (samples.length >= 8) break;
     }
     return samples.length >= 3 ? samples : null;
-  }, [hasMeasured, visibleBlocksProp, blocks, tokenCache, calibrationSignatureValue]);
+  }, [hasMeasured, visibleBlocksProp, blocks, tokenCache, calibrationSignatureValue, flipping]);
 
   useEffect(() => {
     if (loadingTokens && tokenLoadStartRef.current === 0) {
@@ -575,7 +581,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false),
           )}
         </View>
         {onToggleTranslation && (
@@ -623,7 +629,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -667,10 +673,13 @@ export function PaginatedReader({
         </View>
       )}
 
-      {/* Hidden measuring view. Non-lazy readers render it while measuring;
-          lazy readers keep a window mounted so forward/backward page breaks
-          can be measured ahead and cached. */}
-      {blocks && handleMeasureBlock && (
+      {/* Hidden measuring view. Skipped entirely while the user is flipping —
+          during flips pages are estimates and the visible page is plain text,
+          so mounting 320 measuring blocks would only block the JS thread.
+          Non-lazy readers render it while measuring; lazy readers keep a
+          window mounted so forward/backward page breaks can be measured ahead
+          and cached. */}
+      {blocks && handleMeasureBlock && !flipping && (
         measureEnd > measureStart
         || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
       ) && (
@@ -747,6 +756,7 @@ function renderBlock(
   lineGrids?: Record<number, GridLine[]>,
   getLineGridHandler?: (globalIdx: number) => (lines: GridLine[]) => void,
   firstLineIndent = false,
+  plainText = false,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -866,9 +876,9 @@ function renderBlock(
       : 1;
     const tokenEl = (
           <TokenizedText
-            text={block.text}
+            text={plainText && firstLineIndent && block.type === 'paragraph' ? `\u3000${block.text}` : block.text}
             l2Code={l2Code}
-            tokens={cachedTokens}
+            tokens={plainText ? undefined : cachedTokens}
             deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
@@ -904,7 +914,13 @@ function renderBlock(
     // baseline). Falls back to the plain column when no grid is available
     // (non-paragraph render paths, e.g. Expo Go / Android view columns).
     const l2Grid = translationSideBySide ? lineGrids?.[globalIdx] : undefined;
-    const transEl = showTranslation && highlightedTranslation ? (
+    const transEl = plainText && showTranslation ? (
+      // During rapid flipping the translation is deferred, but the skeleton
+      // stays visible immediately so the reader doesn't look broken.
+      <View className="mt-1">
+        <TranslationSkeleton text={block.text} />
+      </View>
+    ) : showTranslation && highlightedTranslation ? (
       l2Grid && l2Grid.length > 0 ? (
         <AlignedTranslation
           text={translation ?? ''}
