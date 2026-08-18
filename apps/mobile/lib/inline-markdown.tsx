@@ -1,6 +1,17 @@
 import React from 'react';
 import { Text } from 'react-native';
+import { splitInlineMarkdown } from '@langplayer/shared';
 import type { EpubFormatRange } from '@/lib/epub-parser';
+
+/**
+ * Mobile inline-markdown wrappers (SPEC-083 Task 5).
+ *
+ * The tokenizer lives in packages/shared (splitInlineMarkdown) — the same
+ * implementation both apps use — and these two RN-facing helpers build on
+ * it with unchanged signatures, so all existing call sites keep working:
+ * TextActionMenu, SubtitleDisplay, SubsSearchRow, settings/display, and the
+ * dictionary corpus examples/collocations.
+ */
 
 /**
  * Strip simple inline markdown (**bold**, *italic*, `code`) while recording
@@ -13,30 +24,19 @@ export function parseInlineMarkdownRanges(text: string): {
   formats: EpubFormatRange[];
 } {
   const out: { text: string; formats: EpubFormatRange[] } = { text: '', formats: [] };
-  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = pattern.exec(text)) !== null) {
-    if (m.index > last) out.text += text.slice(last, m.index);
-    const token = m[0];
-    const start = out.text.length;
-    let inner: string;
-    let type: EpubFormatRange['type'];
-    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
-      inner = token.slice(2, -2);
-      type = 'bold';
-    } else if (token.startsWith('`') && token.endsWith('`')) {
-      inner = token.slice(1, -1);
-      type = 'code';
-    } else {
-      inner = token.slice(1, -1);
-      type = 'italic';
+  for (const part of splitInlineMarkdown(text)) {
+    if (part.type === 'text') {
+      out.text += part.value;
+      continue;
     }
-    out.text += inner;
-    out.formats.push({ start, end: out.text.length, type });
-    last = m.index + token.length;
+    const start = out.text.length;
+    out.text += part.value;
+    out.formats.push({
+      start,
+      end: out.text.length,
+      type: part.type === 'bold' ? 'bold' : part.type === 'code' ? 'code' : 'italic',
+    });
   }
-  if (last < text.length) out.text += text.slice(last);
   return out;
 }
 
@@ -54,36 +54,30 @@ export function renderInlineMarkdown(
   opts?: { markBold?: boolean },
 ): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
-  let last = 0;
-  let m: RegExpExecArray | null;
   let key = 0;
-  while ((m = pattern.exec(text)) !== null) {
-    if (m.index > last) parts.push(text.slice(last, m.index));
-    const token = m[0];
-    if (token.length >= 4 && token.startsWith('**') && token.endsWith('**')) {
-      const inner = token.slice(2, -2);
+  for (const part of splitInlineMarkdown(text)) {
+    if (part.type === 'text') {
+      parts.push(part.value);
+    } else if (part.type === 'bold') {
       parts.push(
         opts?.markBold ? (
           <Text key={key} className="rounded bg-primary/15 px-0.5 font-semibold text-primary">
-            {inner}
+            {part.value}
           </Text>
         ) : (
-          <Text key={key} className="font-bold">{inner}</Text>
+          <Text key={key} className="font-bold">{part.value}</Text>
         ),
       );
-    } else if (token.startsWith('`') && token.endsWith('`')) {
+    } else if (part.type === 'code') {
       parts.push(
         <Text key={key} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]">
-          {token.slice(1, -1)}
+          {part.value}
         </Text>,
       );
     } else {
-      parts.push(<Text key={key} className="italic">{token.slice(1, -1)}</Text>);
+      parts.push(<Text key={key} className="italic">{part.value}</Text>);
     }
-    last = m.index + token.length;
     key++;
   }
-  if (last < text.length) parts.push(text.slice(last));
   return parts;
 }
