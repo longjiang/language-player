@@ -269,6 +269,7 @@ export default function ReaderScreen() {
                 onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
                 showTextActions
                 translationSideBySide={isWide}
+                selectionDictionary
                 t={t}
               />
             </View>

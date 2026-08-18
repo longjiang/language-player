@@ -233,6 +233,9 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   highlightTerms={highlightTerms}
                   textScale={1.5}
                   textColor={overlay ? 'text-white' : undefined}
+                  // SPEC-084: selection on the transcript single-line mode,
+                  // not the on-video band.
+                  selectionDictionary={!overlay}
                 />
                 {showTranslation && shownLine.l1Line ? (
                   <Text
@@ -305,6 +308,8 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
                   textScale={1}
+                  // SPEC-084: selection on the transcript list.
+                  selectionDictionary
                 />
                 {item.l1Line ? (
                   <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: translationFactor * 14 * zoomRem }}>
