@@ -867,8 +867,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // ── Render (list-first, SPEC-082 Task 13) ──
   return (
     <View className="my-4">
-      {/* Nav bar — forms toggle + list controls (matches web) */}
-      <View className="mb-2 flex-row items-center justify-center gap-2">
+      {/* Nav bar — forms toggle + content-filter pills on one line (web
+          parity; wraps only when the row is too narrow) */}
+      <View className="mb-2 flex-row flex-wrap items-center justify-center gap-2">
         {formCount > 1 && (
           <View className="flex-row items-center rounded-full bg-muted p-0.5">
             <Pressable
@@ -891,11 +892,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             </Pressable>
           </View>
         )}
-      </View>
 
-      {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
-          segmented pattern as the forms toggle (SPEC-082 Task 6). */}
-      <View className="mb-2 flex-row flex-wrap items-center justify-center gap-1.5">
+        {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
+            segmented pattern as the forms toggle (SPEC-082 Task 6). */}
         {FILTER_PILLS.map((pill) => {
           const active = videoFilter === pill.key;
           return (
