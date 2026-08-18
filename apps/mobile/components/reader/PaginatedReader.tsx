@@ -6,7 +6,8 @@ import {
 import { Pressable } from '@/components/ui/pressable';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPhoneticsEligible, translationSizeFactor } from '@langplayer/utils';
+import { isPhoneticsEligible, translationSizeFactor, buildSentenceMap, sentenceIndexAt } from '@langplayer/utils';
+import type { SentenceMap } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
@@ -146,6 +147,56 @@ export function PaginatedReader({
   const tokenLoadStartRef = useRef(0);
   const onVisibleBlocksChangeRef = useRef(onVisibleBlocksChange);
   onVisibleBlocksChangeRef.current = onVisibleBlocksChange;
+
+  // ── Translation-sentence highlight on tap (SPEC-082 Task 4) ──
+  // Tapping a token highlights the paired translation sentence until the
+  // selection clears (scroll, or a token outside any sentence). There is no
+  // hover on touch — the highlight is tap-to-toggle.
+  const [activeSentence, setActiveSentence] = useState<{
+    blockIndex: number;
+    sentenceIndex: number;
+  } | null>(null);
+  const activeSentenceRef = useRef(activeSentence);
+  activeSentenceRef.current = activeSentence;
+  // Stable per-block tap handlers + sentence-map cache so TokenizedText's
+  // memoization is never defeated by fresh closures (reader perf rule).
+  const blocksRef = useRef(blocks);
+  blocksRef.current = blocks;
+  const blockTranslationsRef = useRef(blockTranslations);
+  blockTranslationsRef.current = blockTranslations;
+  const sentenceMapCacheRef = useRef<Map<string, SentenceMap | null>>(new Map());
+  const sentenceMapFor = useCallback((globalIdx: number, text: string, translation: string): SentenceMap | null => {
+    const key = `${globalIdx}:${translation}`;
+    const cached = sentenceMapCacheRef.current.get(key);
+    if (cached !== undefined) return cached;
+    const map = buildSentenceMap(text, translation);
+    sentenceMapCacheRef.current.set(key, map);
+    return map;
+  }, []);
+  const tokenPressHandlersRef = useRef<Map<number, (range: { start: number; end: number } | null) => void>>(new Map());
+  const getTokenPressHandler = useCallback((globalIdx: number) => {
+    let handler = tokenPressHandlersRef.current.get(globalIdx);
+    if (!handler) {
+      handler = (range) => {
+        const blk = blocksRef.current?.[globalIdx];
+        const tr = blockTranslationsRef.current[globalIdx];
+        if (!range || !blk || blk.kind !== 'text' || !tr) {
+          if (activeSentenceRef.current) setActiveSentence(null);
+          return;
+        }
+        const map = sentenceMapFor(globalIdx, blk.text, tr);
+        const idx = map ? sentenceIndexAt(map, range.start) : null;
+        setActiveSentence(idx != null ? { blockIndex: globalIdx, sentenceIndex: idx } : null);
+      };
+      tokenPressHandlersRef.current.set(globalIdx, handler);
+    }
+    return handler;
+  }, [sentenceMapFor]);
+  // Scroll clears the highlight ("tap elsewhere / scroll → clear").
+  const clearActiveSentence = useCallback(() => {
+    if (activeSentenceRef.current) setActiveSentence(null);
+  }, []);
+
   // The visible page is a contiguous slice of `blocks`; resolve its global
   // offset once so per-scroll visibility math is O(page) instead of
   // O(page × book).
@@ -182,8 +233,10 @@ export function PaginatedReader({
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     scrollYRef.current = e.nativeEvent.contentOffset.y;
+    // SPEC-082 Task 4: scrolling clears the translation-sentence highlight.
+    clearActiveSentence();
     reportVisible();
-  }, [reportVisible]);
+  }, [reportVisible, clearActiveSentence]);
 
   const handleViewportLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height: h } = e.nativeEvent.layout;
@@ -450,7 +503,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler),
           )}
         </View>
         {onToggleTranslation && (
@@ -498,7 +551,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -615,6 +668,9 @@ function renderBlock(
   translationSplit = 0.6,
   onSplitChange?: (r: number) => void,
   onSplitCommit?: (r: number) => void,
+  activeSentence?: { blockIndex: number; sentenceIndex: number } | null,
+  sentenceMapFor?: (globalIdx: number, text: string, translation: string) => SentenceMap | null,
+  getTokenPressHandler?: (globalIdx: number) => (range: { start: number; end: number } | null) => void,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -706,12 +762,29 @@ function renderBlock(
             deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
+            onTokenPress={getTokenPressHandler?.(globalIdx)}
             textScale={scale * headingFactor}
             bold={block.type === 'heading'}
           />
     );
-    const transEl = showTranslation && translation ? (
-      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: translationFactor * 14 * blockScale * headingFactor }}>{translation}</Text>
+    // SPEC-082 Task 4: when a translation sentence is active for this block,
+    // tint the paired translation sentence's char range.
+    let highlightedTranslation: React.ReactNode = translation;
+    if (translation && activeSentence && activeSentence.blockIndex === globalIdx && sentenceMapFor) {
+      const map = sentenceMapFor(globalIdx, block.text, translation);
+      const pair = map?.pairs[activeSentence.sentenceIndex];
+      if (pair && pair.tr.start < pair.tr.end) {
+        highlightedTranslation = (
+          <Text>
+            {translation.slice(0, pair.tr.start)}
+            <Text className="bg-primary/15">{translation.slice(pair.tr.start, pair.tr.end)}</Text>
+            {translation.slice(pair.tr.end)}
+          </Text>
+        );
+      }
+    }
+    const transEl = showTranslation && highlightedTranslation ? (
+      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: translationFactor * 14 * blockScale * headingFactor }}>{highlightedTranslation}</Text>
     ) : showTranslation && isTranslating ? (
       <View className="mt-1">
         <TranslationSkeleton text={block.text} />
