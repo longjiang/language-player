@@ -12,8 +12,6 @@ import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { clampTranslationSize } from '@/lib/reader-text-size';
-import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { useTextScale } from '@/hooks/use-text-scale';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import type { SubtitleLine } from '@langplayer/shared';
@@ -114,7 +112,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, playback, getL2, tokenizedText } = useSettingsContext();
+  const { display, playback, getL2 } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
   // Scale the design sizes by the user's text-size setting (zoom index 0 = 1×).
   const textZoomFactor = useTextScale();
@@ -554,38 +552,45 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             <div
               key={i}
               data-subtitle-index={i}
-              onClick={() => onSeekToLine?.(line.starttime)}
-              className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
+              className={`rounded-lg px-3 py-2 transition-colors ${
                 isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
             >
-              <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-                <TokenizedText
-                  text={line.l2Line}
-                  l2Code={l2Code}
-                  textScale={1}
-                  tokenCache={tokenCache}
-                  tokenCacheLoaded={tokenCacheLoaded}
-                  karaokeProgress={karaokeProgress}
-                  selectionDictionary
-                  context={{
-                    starttime: line.starttime,
-                    youtube_id: youtubeId,
-                    videoTitle,
-                  }}
-                />
-              </div>
-              {showTranslation && line.l1Line && (
-                <p
-                  className={`mt-0.5 text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}
-                  style={{ fontSize: `${clampTranslationSize(tokenizedText.translationSize) * textZoomFactor}rem` }}
+              <TextActionMenu
+                text={line.l2Line}
+                l2Code={l2Code}
+                l1Code={l1Code}
+                translation={
+                  showTranslation && line.l1Line ? (
+                    <span>{line.l1Line}</span>
+                  ) : undefined
+                }
+                translationBelow
+                translationClass={`text-xs leading-relaxed ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}
+                loading={
+                  showTranslation && !line.l1Line && translating && isLineInTranslationLookahead(i, activeIndex)
+                }
+              >
+                <div
+                  className={`cursor-pointer text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}
+                  onClick={() => onSeekToLine?.(line.starttime)}
                 >
-                  {line.l1Line}
-                </p>
-              )}
-              {showTranslation && !line.l1Line && translating && isLineInTranslationLookahead(i, activeIndex) && (
-                <TranslationSkeleton text={line.l2Line} className="mt-0.5" barClassName="h-2.5" />
-              )}
+                  <TokenizedText
+                    text={line.l2Line}
+                    l2Code={l2Code}
+                    textScale={1}
+                    tokenCache={tokenCache}
+                    tokenCacheLoaded={tokenCacheLoaded}
+                    karaokeProgress={karaokeProgress}
+                    selectionDictionary
+                    context={{
+                      starttime: line.starttime,
+                      youtube_id: youtubeId,
+                      videoTitle,
+                    }}
+                  />
+                </div>
+              </TextActionMenu>
             </div>
           );
         })}
