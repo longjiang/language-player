@@ -1045,7 +1045,17 @@ export const L2_DEFAULTS: L2Settings = {
   content: { ...CONTENT_DEFAULTS },
 };
 
-/** Factory: create a fresh settings object with all defaults. */
+/** Factory: create a fresh settings object with all defaults.
+ *
+ *  The default `ts` is the EPOCH, not "now": a freshly created defaults blob
+ *  must never look like the latest write. The apps hydrate from the cloud row
+ *  with ts-based last-write-wins (`cloud.ts > local.ts` wins), so when local
+ *  storage is absent or was wiped (logout wipe, cleared browser storage, new
+ *  device, app reinstall) the fresh defaults must LOSE to the user's cloud
+ *  copy — otherwise every such boot shows defaults and the next change
+ *  overwrites the saved settings. A real settings change stamps a new `ts`,
+ *  so the epoch value only ever surfaces for placeholder/fresh state.
+ */
 export function createSettingsV2(l2Code?: string): SettingsV2 {
   const l2: Record<string, L2Settings> = {};
   if (l2Code) {
@@ -1061,7 +1071,7 @@ export function createSettingsV2(l2Code?: string): SettingsV2 {
   }
   return {
     v: 2,
-    ts: new Date().toISOString(),
+    ts: new Date(0).toISOString(),
     tokenizedText: { ...TOKENIZED_TEXT_DEFAULTS },
     display: { ...DISPLAY_DEFAULTS },
     playback: { ...PLAYBACK_DEFAULTS },

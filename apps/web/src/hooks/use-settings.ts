@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserDataColumns } from '@langplayer/api-client';
-import { logwarn } from '@/lib/logger';
+import { log, logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
   normalizeSettingsV2,
@@ -63,20 +63,25 @@ export function useSettings() {
   }, [session, putUserSettings]);
 
   // ── Migrate from legacy keys (unchanged) ──
+  // Returns null when no legacy keys exist: an empty local store must NOT be
+  // persisted/synced (that would overwrite the user's cloud copy with
+  // defaults — `createSettingsV2()` now stamps an epoch ts precisely so the
+  // cloud row wins the LWW comparison on the next hydrate).
   const migrateFromLegacy = useCallback((): SettingsV2 | null => {
     try {
+      let migrated = false;
       const newSettings = createSettingsV2();
       const oldTranslation = localStorage.getItem('lp_show_translation');
       if (oldTranslation !== null) {
-        try { newSettings.display.translation = JSON.parse(oldTranslation) as boolean; } catch {}
+        try { newSettings.display.translation = JSON.parse(oldTranslation) as boolean; migrated = true; } catch {}
       }
       const oldPhonetics = localStorage.getItem('lp_show_phonetics');
       if (oldPhonetics !== null) {
-        try { (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean; } catch {}
+        try { (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean; migrated = true; } catch {}
       }
       const oldTraditional = localStorage.getItem('lp_use_traditional');
       if (oldTraditional !== null) {
-        try { (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean; } catch {}
+        try { (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean; migrated = true; } catch {}
       }
       const oldSrs = localStorage.getItem('zthSrsProgress');
       if (oldSrs) {
@@ -84,6 +89,7 @@ export function useSettings() {
           const parsed = JSON.parse(oldSrs);
           if (parsed?.settings?.dailyNewLimit != null) {
             newSettings.review.dailyNewLimit = parsed.settings.dailyNewLimit;
+            migrated = true;
           }
         } catch {}
       }
@@ -93,9 +99,14 @@ export function useSettings() {
           const parsed = JSON.parse(oldSpeech);
           if (parsed.voiceURI || parsed.rate != null) {
             (newSettings as any).__migratedSpeech = parsed;
+            migrated = true;
           }
         } catch {}
       }
+      if (!migrated) return null;
+      // A real migration is a real write — stamp a fresh ts so the migrated
+      // values win the LWW comparison on other devices.
+      newSettings.ts = new Date().toISOString();
       return newSettings;
     } catch {
       return null;
@@ -138,9 +149,18 @@ export function useSettings() {
         const cloud = res.settings_v2;
         if (!cloud || cloud.v !== 2) return;
         setSettings((prev) => {
+          // Stale cloud (older than the local blob) must not touch local
+          // state — and must not bump the local ts either, or the next
+          // comparison would silently discard a still-newer cloud row.
+          if (cloud.ts <= prev.ts) {
+            log('[settings] hydrate SKIP cloud — cloud.ts <= local.ts',
+              { cloudTs: cloud.ts, localTs: prev.ts });
+            return prev;
+          }
           const merged = normalizeSettingsV2({
             ...prev,
-            ...(cloud.ts > prev.ts ? cloud : {}),
+            ...cloud,
+            v: 2 as const,
             ts: new Date().toISOString(),
           });
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
