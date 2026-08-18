@@ -83,6 +83,22 @@ entry cards with rich metadata. Mobile now renders the same tiled entry cards.
 | 2.5 | Remove the sort toggle from the saved-words toolbar | `a155f593`, `46a7aae2` | **Ported** — toolbar is filter-only, always newest-first |
 | 2.6 | Cap video titles in the entry-card save bar | `b243f825` | **Ported** — `capSourceTitle` (5 words / 15 chars) applied to source titles |
 
+**Fix log (to-do: "dictionary sidebar entry cards broken / crash")**:
+- The compact card's saved-metadata block nested lucide **Svg icons inside an RN
+  `<Text>`** (the only such case in the app) — a hard crash on Android and
+  dropped icons on iOS whenever a saved entry with a video/text source rendered
+  (common in the dictionary sidebar). Icons now render as sibling `View`s next
+  to the text (web renders them inline in a DOM `<p>`).
+- `WordListSidebar.resolveItemEntry` was a weak port of web's
+  `fetchSavedWordEntry`: it did a head **batch** lookup then re-checked the id
+  cache, which returns the wrong sense for multi-sense heads, nothing at all for
+  LLM entries, and null for ids that don't decompose (no head fallback). It now
+  resolves by composite id through the shared id cache → offline dictionary →
+  the exact `/dictionary/entry` fetch (same call as the entry detail page) →
+  head lookup for legacy ids, normalizes the returned entry's id to the list
+  item's id (bookmark/saved-metadata tie), and never throws (failures fall back
+  to the clickable head row).
+
 ## 3. Dictionary — Image Search (popup + entry)
 
 The web image-search experience went through several iterations (Openverse →
