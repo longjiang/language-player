@@ -28,6 +28,7 @@ export function TranslationSplitHandle({
   onCommit,
   min = 0.3,
   max = 0.7,
+  hidden = false,
 }: {
   /** Current left-column (L2) fraction, 0–1. */
   ratio: number;
@@ -40,6 +41,8 @@ export function TranslationSplitHandle({
   /** Clamp bounds for the left-column fraction. */
   min?: number;
   max?: number;
+  /** Hide the visible grip but keep the draggable touch target (EPUB). */
+  hidden?: boolean;
 }) {
   const [active, setActive] = useState(false);
   const handleRef = useRef<View>(null);
@@ -90,11 +93,13 @@ export function TranslationSplitHandle({
         accessibilityRole="adjustable"
         accessibilityLabel="Language text and translation divider"
       >
-        <View
-          pointerEvents="none"
-          className="absolute inset-y-0 left-1 right-1 rounded-sm"
-          style={{ backgroundColor: active ? ICON_PRIMARY : ICON_MUTED, opacity: active ? 0.5 : 0.15 }}
-        />
+        {(!hidden || active) && (
+          <View
+            pointerEvents="none"
+            className="absolute inset-y-0 left-1 right-1 rounded-sm"
+            style={{ backgroundColor: active ? ICON_PRIMARY : ICON_MUTED, opacity: active ? 0.5 : 0.15 }}
+          />
+        )}
       </View>
     </GestureDetector>
   );
