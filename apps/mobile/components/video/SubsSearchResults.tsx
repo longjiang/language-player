@@ -72,19 +72,44 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-/** Simple highlight of search terms inside a subtitle segment. */
+/** Highlight every search-term match in a line, preferring the longest term
+ *  on a tie (web subs-search-row fidelity, SPEC-082 Task 7). */
 function HighlightTerms({ line, terms }: { line: string; terms: string[] }) {
-  const term = firstMatchingForm(line, terms);
-  if (!term) return <Text>{line}</Text>;
-  const idx = line.toLowerCase().indexOf(term.toLowerCase());
-  if (idx < 0) return <Text>{line}</Text>;
-  return (
-    <Text>
-      {line.slice(0, idx)}
-      <Text className="font-semibold text-primary">{line.slice(idx, idx + term.length)}</Text>
-      {line.slice(idx + term.length)}
-    </Text>
-  );
+  const active = terms.map((t) => t.trim()).filter(Boolean);
+  if (active.length === 0) return <Text>{line}</Text>;
+
+  const lowerLine = line.toLowerCase();
+  const nodes: React.ReactNode[] = [];
+  let pos = 0;
+
+  while (pos < line.length) {
+    // Find the earliest match of any term; prefer the longest term on ties.
+    let bestIdx = -1;
+    let bestLen = 0;
+    for (const term of active) {
+      const idx = lowerLine.indexOf(term.toLowerCase(), pos);
+      if (
+        idx !== -1 &&
+        (bestIdx === -1 || idx < bestIdx || (idx === bestIdx && term.length > bestLen))
+      ) {
+        bestIdx = idx;
+        bestLen = term.length;
+      }
+    }
+    if (bestIdx === -1) {
+      nodes.push(<Text key={`tail-${pos}`}>{line.slice(pos)}</Text>);
+      break;
+    }
+    if (bestIdx > pos) nodes.push(<Text key={`pre-${pos}`}>{line.slice(pos, bestIdx)}</Text>);
+    nodes.push(
+      <Text key={`hit-${bestIdx}-${bestLen}`} className="font-semibold text-primary">
+        {line.slice(bestIdx, bestIdx + bestLen)}
+      </Text>,
+    );
+    pos = bestIdx + bestLen;
+  }
+
+  return <Text>{nodes}</Text>;
 }
 
 export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
@@ -190,23 +215,15 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return `${shown} ${t('msg.and_n_other_forms', { n: remaining })}`;
   }, [highlightTerms, t]);
 
-  // Per-row context segments (prev + match + next) for the show-all list,
-  // mirroring web so translations can be requested per segment.
+  // Per-row segments — the matched line only (no prev/next context), matching
+  // web; translations are requested per segment (SPEC-082 Task 7).
   const rowSegments = useMemo(
     () =>
       videos.map((video) => {
         const ml = video.subs_l2[video.matchLineIndex];
         const segs: { text: string; hasTerm: boolean }[] = [];
-        if (video.matchLineIndex > 0) {
-          const prev = video.subs_l2[video.matchLineIndex - 1]?.line ?? '';
-          if (prev) segs.push({ text: prev, hasTerm: lineHasAnyTerm(prev, highlightTerms) });
-        }
         const match = ml?.line ?? '';
         if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, highlightTerms) });
-        if (video.matchLineIndex < video.subs_l2.length - 1) {
-          const next = video.subs_l2[video.matchLineIndex + 1]?.line ?? '';
-          if (next) segs.push({ text: next, hasTerm: lineHasAnyTerm(next, highlightTerms) });
-        }
         return segs;
       }),
     [videos, highlightTerms],
