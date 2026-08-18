@@ -58,6 +58,9 @@ function listItemOrdinal(block: TextBlock, allBlocks: ContentBlock[]): number {
 
 /** Tokenize blocks within this many px of the viewport (web parity: 200px rootMargin). */
 const VISIBILITY_BUFFER = 200;
+/** Horizontal velocity (px/s) at end of a gesture that counts as a "flick":
+ *  turns the page even when the drag distance is short (iBooks-style). */
+const FLICK_VELOCITY = 800;
 
 interface PaginatedReaderProps {
   blocks: ContentBlock[] | null;
@@ -448,7 +451,12 @@ export function PaginatedReader({
     setCalibration(getCachedCalibration(calibrationSignatureValue));
   }, [calibrationSignatureValue]);
 
-  // ── Swipe left/right page turns (drag follows the finger) ──
+  // ── Swipe/flick left/right page turns (drag follows the finger) ──
+  // The pan is tuned for flicks: it activates on a small horizontal offset,
+  // tolerates vertical drift (so quick diagonal flicks don't get swallowed by
+  // the ScrollView), and a fast horizontal velocity turns the page even with a
+  // short stroke. A turn already animating is superseded immediately by the
+  // next flick, so rapid page-flipping never queues behind an animation.
   const swipeTranslateX = useRef(new Animated.Value(0)).current;
   const swipeAnimatingRef = useRef(false);
   const swipeExitRef = useRef<{ direction: 'next' | 'prev' } | null>(null);
@@ -458,8 +466,8 @@ export function PaginatedReader({
 
   const panGesture = Gesture.Pan()
     .enabled(!scrollMode && (hasPrev || hasNext))
-    .activeOffsetX([-16, 16])
-    .failOffsetY([-16, 16])
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-40, 40])
     .runOnJS(true)
     .onUpdate((e) => {
       if (swipeAnimatingRef.current) return;
@@ -469,16 +477,28 @@ export function PaginatedReader({
       swipeTranslateX.setValue(e.translationX);
     })
     .onEnd((e) => {
-      if (swipeAnimatingRef.current) return;
       const { hasPrev: canPrev, hasNext: canNext, prevPage: goPrev, nextPage: goNext, width } = swipeActionsRef.current;
-      const threshold = Math.min(90, width * 0.25);
-      const shouldNext = e.translationX < -threshold && canNext;
-      const shouldPrev = e.translationX > threshold && canPrev;
-      swipeAnimatingRef.current = true;
+      const isFlick = Math.abs(e.velocityX) > FLICK_VELOCITY;
+      const threshold = Math.min(64, width * 0.18);
+      const shouldNext = (e.translationX < -threshold || (isFlick && e.velocityX < -FLICK_VELOCITY)) && canNext;
+      const shouldPrev = (e.translationX > threshold || (isFlick && e.velocityX > FLICK_VELOCITY)) && canPrev;
       if (shouldNext || shouldPrev) {
+        // Rapid flipping: if a turn animation is already in flight, don't queue
+        // behind it — cancel it and navigate immediately.
+        if (swipeAnimatingRef.current) {
+          swipeTranslateX.stopAnimation();
+          swipeTranslateX.setValue(0);
+          swipeAnimatingRef.current = false;
+          swipeExitRef.current = null;
+          appLog(`[Reader] 👉 flick (mid-anim) ${shouldNext ? 'next' : 'prev'} vx=${Math.round(e.velocityX)} t=${Date.now()}`);
+          if (shouldNext) goNext?.();
+          else goPrev?.();
+          return;
+        }
         swipeExitPageRef.current = page;
         swipeExitRef.current = { direction: shouldNext ? 'next' : 'prev' };
-        appLog(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)} t=${Date.now()}`);
+        appLog(`[Reader] 👉 swipe ${shouldNext ? 'next' : 'prev'} dx=${Math.round(e.translationX)} vx=${Math.round(e.velocityX)} t=${Date.now()}`);
+        swipeAnimatingRef.current = true;
         Animated.timing(swipeTranslateX, {
           toValue: shouldNext ? -width : width,
           duration: 100,
@@ -490,7 +510,8 @@ export function PaginatedReader({
         });
       } else {
         swipeExitRef.current = null;
-        log(`[Reader] 👉 swipe snap back dx=${Math.round(e.translationX)}`);
+        appLog(`[Reader] 👉 swipe snap back dx=${Math.round(e.translationX)} vx=${Math.round(e.velocityX)}`);
+        swipeAnimatingRef.current = true;
         Animated.spring(swipeTranslateX, {
           toValue: 0,
           useNativeDriver: true,
