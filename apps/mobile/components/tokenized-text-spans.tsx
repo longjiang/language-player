@@ -50,6 +50,7 @@ interface RubyTokenSpanProps {
   isBoldFormat: boolean;
   isItalicFormat: boolean;
   isCodeFormat: boolean;
+  isStrikethroughFormat: boolean;
   isLink: boolean;
   isSearchHighlight: boolean;
   isSavedWord: boolean;
@@ -80,7 +81,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
   const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, showDefinition, showInterlinear, trimmedDef, firstLemma,
     linkUrl, l2Code, quizMode, popupEnabled, rubyPull, readingSize, baseLeading, textStyle,
     onOpenLink, onPressWord, onReveal,
@@ -151,7 +152,7 @@ export const RubyTokenSpan = memo(function RubyTokenSpan(props: RubyTokenSpanPro
                   ? 'text-foreground'
                   : isTokenSelected
                     ? 'text-primary'
-                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                    : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
               }
               fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
             />
@@ -220,7 +221,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
   const rubyColors = useMobileRubyColors();
   const {
     index, word, displayText, pronunciation, hasRuby, reserveRubySlot, isBlanked, isHighlighted, isLink,
-    isBoldFormat, isItalicFormat, isCodeFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSearchHighlight, isSavedWord, isTokenSelected, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, linkUrl, l2Code, quizMode, popupEnabled,
     rubyPull, readingSize, baseLeading, textStyle, onOpenLink, onPressWord, onReveal,
   } = props;
@@ -268,7 +269,7 @@ export const RubyTokenFlat = memo(function RubyTokenFlat(props: RubyTokenSpanPro
               ? 'text-foreground'
               : isTokenSelected
                 ? 'text-primary'
-                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
+                : `${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : 'text-foreground'} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`
           }
           fallbackReadingClassName={isTokenSelected ? 'text-primary' : 'text-muted-foreground'}
         />
@@ -413,6 +414,7 @@ interface PlainTokenSpanProps {
   isBoldFormat: boolean;
   isItalicFormat: boolean;
   isCodeFormat: boolean;
+  isStrikethroughFormat: boolean;
   isLink: boolean;
   isSearchHighlight: boolean;
   isSavedWord: boolean;
@@ -440,7 +442,7 @@ interface PlainTokenSpanProps {
 export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpanProps) {
   const {
     index, word, displayText, isWordToken, isBlanked, isHighlighted, isLink, isSearchHighlight,
-    isBoldFormat, isItalicFormat, isCodeFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
+    isBoldFormat, isItalicFormat, isCodeFormat, isStrikethroughFormat, isSavedWord, isTokenSelected, isPressed, isKaraokeDimmed, showByeonggi, byeonggiText,
     showQuickGloss, quickGlossDef, firstLemma, tokenPron, linkUrl, quizMode, popupEnabled,
     textColor, textStyle, onOpenLink, onPressWord, onReveal, onPressIn, onPressOut,
   } = props;
@@ -478,7 +480,7 @@ export const PlainTokenSpan = memo(function PlainTokenSpan(props: PlainTokenSpan
       {isBlanked ? (
         <Text className={textColor}>▯</Text>
       ) : (
-        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+        <Text className={`${isHighlighted || isBoldFormat ? 'font-bold' : ''} ${isHighlighted ? 'text-primary' : ''} ${isItalicFormat ? 'italic' : ''} ${isStrikethroughFormat ? 'line-through' : ''} ${isCodeFormat ? 'font-mono' : ''} ${isLink ? 'underline text-primary' : ''} ${isSearchHighlight ? 'bg-primary/20 rounded' : ''} ${isSavedWord && !isTokenSelected ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
       )}
       {showByeonggi ? ` ${byeonggiText}` : ''}
       {showQuickGloss ? <Text style={{ fontSize: textStyle.fontSize ?? 16 }} className="text-muted-foreground">{` (‘${quickGlossDef}’) `}</Text> : ''}

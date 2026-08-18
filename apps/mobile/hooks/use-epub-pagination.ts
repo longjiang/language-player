@@ -68,8 +68,12 @@ function isSuspectedTruncated(source: string, translation: string): boolean {
 function estimateBlockHeight(block: ContentBlock, contentWidth: number): number {
   if (block.kind === 'image') return contentWidth * 0.6 + 24;
   if (block.kind === 'table') return (block.rows.length + 1) * 32 + 16 + 12;
+  if (block.kind === 'hr') return 25;
+  const text = block.kind === 'text' || block.kind === 'code' || block.kind === 'html'
+    ? block.text
+    : '';
   const charsPerLine = Math.max(20, Math.floor(contentWidth / 8));
-  const lines = Math.max(1, Math.ceil(block.text.length / charsPerLine));
+  const lines = Math.max(1, Math.ceil(text.length / charsPerLine));
   return lines * 24 + 12;
 }
 

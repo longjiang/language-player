@@ -8,10 +8,8 @@ import {
   normalizeFragmentId,
   type TocItem,
   type EpubManifestItem,
-  type EpubTextBlock,
-  type EpubImageBlock,
 } from '@/lib/epub-parser';
-import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
+import type { ContentBlock, TextBlock, ImageBlock } from '@/lib/parse-markdown';
 import { log } from '@/lib/logger';
 
 /** A position in the whole-book block stream (SPEC-049 §9.1). */
@@ -32,7 +30,7 @@ export interface TocMarker {
 /** Per-spine conversion result used for fragment resolution + progress. */
 interface SpineData {
   href: string;
-  blocks: (EpubTextBlock | EpubImageBlock)[];
+  blocks: ContentBlock[];
   /** Global block index where this spine item's blocks begin. */
   globalStart: number;
 }
@@ -306,35 +304,34 @@ export async function openEpubBook(
   for (const spine of meta.spine) {
     const file = zip.file(spine.href);
     const start = globalIndex;
-    const converted: (EpubTextBlock | EpubImageBlock)[] = [];
+    const converted: ContentBlock[] = [];
     if (file) {
       const html = await file.async('text');
       const contentDir = spine.href.substring(0, spine.href.lastIndexOf('/') + 1);
+      // SPEC-083 single pipeline: chapter HTML -> markdown -> shared blocks.
       const raw = convertHtmlToBlocks(html, contentDir, (p) => imageCache.get(p) ?? null);
       for (const b of raw) {
         // SPEC-082 Task 5: the first block of each spine item is a hard page
         // start — chapters begin on a fresh page even if the block would fit.
         const startsNewSpine = globalIndex === start;
+        const spineIndex = spineData.length;
         if (b.kind === 'text') {
-          const tb: TextBlock = {
-            kind: 'text',
-            type: b.type === 'pre' ? 'paragraph' : b.type,
-            text: b.text,
-            srcElementId: b.srcElementId,
-            formats: b.formats,
-            spineIndex: spineData.length,
-            startsNewSpine,
-          };
-          if (b.type === 'heading') tb.depth = b.depth ?? 1;
+          const tb: TextBlock = { ...b, spineIndex, startsNewSpine };
           converted.push(tb);
           blocks.push(tb);
           blockLengths.push(b.text.length);
           globalIndex++;
-        } else {
-          const ib: EpubImageBlock = { kind: 'image', uri: b.uri, alt: b.alt, startsNewSpine };
+        } else if (b.kind === 'image') {
+          const ib: ImageBlock = { kind: 'image', uri: b.uri, alt: b.alt, startsNewSpine };
           converted.push(ib);
           blocks.push(ib);
           blockLengths.push(0);
+          globalIndex++;
+        } else {
+          // code / table / hr / html — pass through with spine metadata.
+          converted.push(b);
+          blocks.push(b);
+          blockLengths.push(b.kind === 'code' ? b.text.length : 0);
           globalIndex++;
         }
       }
