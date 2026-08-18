@@ -95,15 +95,30 @@ function lineHasAnyTerm(line: string, terms: string[]): boolean {
 
 /** The character immediately before (side='left') or after (side='right') the
  *  first occurrence of `term` in a video's matched line. Empty string when the
- *  term is at the line edge. Used as the grouping key for left/right context sorts. */
+ *  term is at the line edge. Used as the grouping key for left/right context sorts.
+ *  `term` may be a comma-separated list of inflected forms (like the search
+ *  term) — we match the earliest form that actually appears in the line.
+ */
 function contextChar(video: SubsSearchVideo, term: string, side: 'left' | 'right'): string {
   const line = video.subs_l2[video.matchLineIndex]?.line ?? '';
-  const idx = line.toLowerCase().indexOf(term.toLowerCase());
+  const lower = line.toLowerCase();
+  let idx = -1;
+  let matchedLen = 0;
+  for (const raw of term.split(',')) {
+    const f = raw.trim().toLowerCase();
+    if (!f) continue;
+    const i = lower.indexOf(f);
+    if (i >= 0 && (idx === -1 || i < idx)) {
+      idx = i;
+      matchedLen = f.length;
+    }
+  }
   if (idx < 0) return '';
   if (side === 'left') {
     return idx > 0 ? (line[idx - 1] ?? '') : '';
   }
-  return idx + term.length < line.length ? (line[idx + term.length] ?? '') : '';
+  const after = idx + matchedLen;
+  return after < line.length ? (line[after] ?? '') : '';
 }
 
 /** Convert an ISO 8601 duration (e.g. "PT6M52S", "PT1H30M", "P1DT2H3M4S") to
@@ -154,6 +169,13 @@ function applyFilterAndSort(
       const key = contextChar(v, term, side) || '—';
       contextCounts.set(key, (contextCounts.get(key) ?? 0) + 1);
     }
+    log('[subsSearch] context sort computed groups', {
+      listSort,
+      term,
+      side,
+      nResults: result.length,
+      groupCounts: [...contextCounts.entries()],
+    });
   }
 
   result.sort((a, b) => {
@@ -186,6 +208,21 @@ function applyFilterAndSort(
         return (b.views ?? 0) - (a.views ?? 0);
     }
   });
+
+  if (listSort === 'leftContext' || listSort === 'rightContext') {
+    const side = listSort === 'leftContext' ? 'left' : 'right';
+    log('[subsSearch] context sort applied', {
+      listSort,
+      term,
+      firstTen: result
+        .slice(0, 10)
+        .map((v) => ({
+          id: v.id,
+          boundary: contextChar(v, term, side) || '—',
+          line: v.subs_l2[v.matchLineIndex]?.line,
+        })),
+    });
+  }
   return result;
 }
 
@@ -774,6 +811,18 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setCurrentIndex(0);
   }, [listSort, listSearch]);
 
+  // Diagnostic: log when the user selects a left/right-context sort so we can
+  // trace the full pipeline (selection → sort → group → display).
+  useEffect(() => {
+    if (listSort === 'leftContext' || listSort === 'rightContext') {
+      log('[subsSearch] context sort selected', {
+        listSort,
+        term,
+        inputVideos: videos.length,
+      });
+    }
+  }, [listSort, term, videos]);
+
   const goToPreviousLine = useCallback(() => {
     if (!currentVideo) return;
     const subs = currentVideo.subs_l2;
@@ -844,8 +893,18 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const activeGroupKey = listSort === 'ai' ? aiGroupKeyFor : contextGroupKey;
   const allGroupKeys = useMemo(() => {
     if (!activeGroupKey) return undefined;
-    return [...new Set(filteredVideos.map((v) => activeGroupKey(v)))].filter(Boolean) as string[];
-  }, [activeGroupKey, filteredVideos]);
+    const keys = [...new Set(filteredVideos.map((v) => activeGroupKey(v)))].filter(
+      Boolean,
+    ) as string[];
+    if (listSort === 'leftContext' || listSort === 'rightContext') {
+      log('[subsSearch] context groups for display', {
+        listSort,
+        keys,
+        nDisplayVideos: filteredVideos.length,
+      });
+    }
+    return keys;
+  }, [activeGroupKey, filteredVideos, listSort]);
 
   const collapseAll = useCallback(() => {
     if (!allGroupKeys) return;
@@ -995,6 +1054,14 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       isFirst: boolean;
       onToggle: () => void;
     }) => {
+      if (listSort === 'leftContext' || listSort === 'rightContext') {
+        log('[subsSearch] rendering context group header', {
+          listSort,
+          groupKey: group.key,
+          count: group.count,
+          isFirst: group.isFirst,
+        });
+      }
       const isAi = listSort === 'ai';
       const aiInfo = isAi ? aiHeaderInfo?.get(group.key) : undefined;
       const label = isAi
