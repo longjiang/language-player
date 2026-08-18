@@ -71,7 +71,7 @@ class RubyTextModule : Module() {
     }
 
     View(RubyTextParagraphView::class) {
-      Events("onTokenTap")
+      Events("onTokenTap", "onSelection")
 
       Prop("runs") { view: RubyTextParagraphView, runs: List<Map<String, Any?>> ->
         view.runs = runs.mapNotNull { dict ->
@@ -113,6 +113,10 @@ class RubyTextModule : Module() {
 
       Prop("fontFamily") { view: RubyTextParagraphView, family: String? ->
         view.fontFamily = family
+      }
+
+      Prop("clearSelection") { view: RubyTextParagraphView, nonce: Int ->
+        view.clearSelection = nonce
       }
     }
   }
