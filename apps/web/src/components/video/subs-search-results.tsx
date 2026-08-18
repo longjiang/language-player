@@ -12,12 +12,16 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import {
   AI_ANALYZE_LIMIT,
+  applyFilterAndSort,
   buildAiPayload,
   buildAiPrompt,
   buildAiOrderedVideos,
+  contextChar,
+  durationToSeconds,
   parseAiResponse,
   type AiGroupingResult,
-} from '@/lib/subs-ai-grouping';
+  type SubsSearchSortKey,
+} from '@langplayer/utils';
 import {
   YouTubePlayer,
   type YouTubePlayerHandle,
@@ -69,7 +73,7 @@ const FREE_SUBS_SEARCH_HITS = 5;
  *  list → modal design: the mode is a per-device UI preference). */
 const SUBTITLE_MODE_KEY = 'lp_subs_search_subtitle_mode';
 
-type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext' | 'ai';
+type SortKey = SubsSearchSortKey;
 
 /** Content filter pills shown in the nav bar next to the forms toggle. */
 type VideoFilterKey = 'all' | 'nonMusic' | 'music' | 'tvShows';
@@ -91,139 +95,6 @@ function formatNumber(n: number | undefined, locale: string): string {
 function lineHasAnyTerm(line: string, terms: string[]): boolean {
   const lower = line.toLowerCase();
   return terms.some((f) => lower.includes(f.trim().toLowerCase()));
-}
-
-/** The character immediately before (side='left') or after (side='right') the
- *  first occurrence of `term` in a video's matched line. Empty string when the
- *  term is at the line edge. Used as the grouping key for left/right context sorts.
- *  `term` may be a comma-separated list of inflected forms (like the search
- *  term) — we match the earliest form that actually appears in the line.
- */
-function contextChar(video: SubsSearchVideo, term: string, side: 'left' | 'right'): string {
-  const line = video.subs_l2[video.matchLineIndex]?.line ?? '';
-  const lower = line.toLowerCase();
-  let idx = -1;
-  let matchedLen = 0;
-  for (const raw of term.split(',')) {
-    const f = raw.trim().toLowerCase();
-    if (!f) continue;
-    const i = lower.indexOf(f);
-    if (i >= 0 && (idx === -1 || i < idx)) {
-      idx = i;
-      matchedLen = f.length;
-    }
-  }
-  if (idx < 0) return '';
-  if (side === 'left') {
-    return idx > 0 ? (line[idx - 1] ?? '') : '';
-  }
-  const after = idx + matchedLen;
-  return after < line.length ? (line[after] ?? '') : '';
-}
-
-/** Convert an ISO 8601 duration (e.g. "PT6M52S", "PT1H30M", "P1DT2H3M4S") to
- *  seconds. Returns `undefined` for values that aren't parseable. Plain numbers
- *  (already in seconds) pass through unchanged. */
-function durationToSeconds(value: unknown): number | undefined {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
-  const num = typeof value === 'string' ? Number(value) : NaN;
-  if (Number.isFinite(num)) return num; // numeric string, e.g. "123"
-  if (typeof value !== 'string') return undefined;
-  const iso = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/.exec(value);
-  if (!iso) return undefined;
-  const d = Number(iso[1] ?? 0);
-  const h = Number(iso[2] ?? 0);
-  const m = Number(iso[3] ?? 0);
-  const s = Number(iso[4] ?? 0);
-  return ((d * 24 + h) * 60 + m) * 60 + s;
-}
-
-/** Shared filter+sort for the result list. Both the rendered list and the
- *  player's prev/next queue use this, so the queue matches what's displayed. */
-function applyFilterAndSort(
-  videos: SubsSearchVideo[],
-  listSearch: string,
-  listSort: SortKey,
-  term: string,
-): SubsSearchVideo[] {
-  let result = [...videos];
-  if (listSearch.trim()) {
-    const q = listSearch.toLowerCase();
-    result = result.filter(
-      (v) =>
-        v.title.toLowerCase().includes(q) ||
-        v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
-    );
-  }
-
-  const getMatchLine = (v: SubsSearchVideo) => v.subs_l2[v.matchLineIndex];
-
-  // For left/right-context sorts, order groups by their size (descending) so
-  // the biggest groups land at the top. Within a group, keep the boundary
-  // character alphabetical for a stable, legible order.
-  let contextCounts: Map<string, number> | undefined;
-  if (listSort === 'leftContext' || listSort === 'rightContext') {
-    const side = listSort === 'leftContext' ? 'left' : 'right';
-    contextCounts = new Map();
-    for (const v of result) {
-      const key = contextChar(v, term, side) || '—';
-      contextCounts.set(key, (contextCounts.get(key) ?? 0) + 1);
-    }
-    log('[subsSearch] context sort computed groups', {
-      listSort,
-      term,
-      side,
-      nResults: result.length,
-      groupCounts: [...contextCounts.entries()],
-    });
-  }
-
-  result.sort((a, b) => {
-    switch (listSort) {
-      case 'ai':
-        // Ordering comes from the LLM grouping (applied in the component);
-        // keep the input order here.
-        return 0;
-      case 'likes':
-        return (b.views ?? 0) - (a.views ?? 0);
-      case 'date':
-        return new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime();
-      case 'length': {
-        const la = getMatchLine(a)?.line.length ?? 0;
-        const lb = getMatchLine(b)?.line.length ?? 0;
-        return la - lb;
-      }
-      case 'leftContext':
-      case 'rightContext': {
-        const side = listSort === 'leftContext' ? 'left' : 'right';
-        const ka = contextChar(a, term, side) || '—';
-        const kb = contextChar(b, term, side) || '—';
-        // Largest group first, then alphabetical by boundary char.
-        const diff = (contextCounts?.get(kb) ?? 0) - (contextCounts?.get(ka) ?? 0);
-        if (diff !== 0) return diff;
-        return ka.localeCompare(kb);
-      }
-      case 'views':
-      default:
-        return (b.views ?? 0) - (a.views ?? 0);
-    }
-  });
-
-  if (listSort === 'leftContext' || listSort === 'rightContext') {
-    const side = listSort === 'leftContext' ? 'left' : 'right';
-    log('[subsSearch] context sort applied', {
-      listSort,
-      term,
-      firstTen: result
-        .slice(0, 10)
-        .map((v) => ({
-          id: v.id,
-          boundary: contextChar(v, term, side) || '—',
-          line: v.subs_l2[v.matchLineIndex]?.line,
-        })),
-    });
-  }
-  return result;
 }
 
 /** The first search form that appears in this line (used as the server-side

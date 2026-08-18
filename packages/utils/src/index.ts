@@ -108,3 +108,23 @@ export {
   translationSizeFactor,
 } from './reader-text-size';
 export type { TranslationSizeSettings } from './reader-text-size';
+export {
+  buildSentenceMap,
+  sentenceIndexAt,
+} from './sentence-map';
+export type { SentenceRange, SentenceMap } from './sentence-map';
+export {
+  AI_ANALYZE_LIMIT,
+  buildAiPayload,
+  buildAiPrompt,
+  buildAiOrderedVideos,
+  parseAiResponse,
+} from './subs-ai-grouping';
+export type { AiPatternGroup, AiGroupingResult } from './subs-ai-grouping';
+export {
+  durationToSeconds,
+  contextChar,
+  applyFilterAndSort,
+  CONTEXT_GROUP_PLACEHOLDER,
+} from './subs-search';
+export type { SubsSearchSortKey } from './subs-search';

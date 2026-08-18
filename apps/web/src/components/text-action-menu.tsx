@@ -10,7 +10,7 @@ import { AlignedTranslation } from '@/components/reader/aligned-translation';
 import { TranslationSplitHandle } from '@/components/reader/translation-split-handle';
 import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { clampTranslationSize } from '@/lib/reader-text-size';
-import type { SentenceMap } from '@/lib/sentence-map';
+import type { SentenceMap } from '@langplayer/utils';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
 } from 'lucide-react';

@@ -14,7 +14,7 @@ import { renderInlineMarkdown } from '@/components/text-action-panels';
 import { SegmentedTranslation } from '@/components/reader/sentence-highlight';
 import { TRANSLATION_FACTOR } from '@/lib/reader-text-size';
 import { log, logwarn } from '@/lib/logger';
-import type { SentenceMap } from '@/lib/sentence-map';
+import type { SentenceMap } from '@langplayer/utils';
 
 /**
  * Per-line baseline-aligned translation for the paginated readers.

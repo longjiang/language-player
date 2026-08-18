@@ -6,7 +6,7 @@ import {
   buildSentenceMap,
   sentenceIndexAt,
   type SentenceMap,
-} from '@/lib/sentence-map';
+} from '@langplayer/utils';
 
 export interface SentenceHighlightCtx {
   /** L2↔translation sentence map for this block (null when unaligned). */
