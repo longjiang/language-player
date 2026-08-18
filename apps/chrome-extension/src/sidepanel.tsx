@@ -54,6 +54,9 @@ interface PagePanelState {
   l2Code: string;
   pageUrl: string;
   lookup?: PageLookupDetail | null;
+  /** Page-declared language ≠ saved L2 (page reader warning, web parity of
+   *  the video-mode mismatch). */
+  mismatch?: { detected: string; saved: string } | null;
 }
 
 function SidePanelApp() {
@@ -138,6 +141,7 @@ function SidePanelApp() {
       } else if (msg.action === 'pageModeState') {
         setPageState(msg.state);
         setMode('page');
+        setMismatchDismissed(false);
         if (msg.state?.lookup) setLookup(msg.state.lookup);
       } else if (msg.action === 'pageLookup') {
         setLookup(msg.payload);
@@ -210,10 +214,13 @@ function SidePanelApp() {
   }, [mode, sendToTab]);
 
   const switchL2 = useCallback(() => {
-    if (!videoState?.mismatch) return;
-    sendToTab('changeLanguage', { l1: videoState.l1Code, l2: videoState.mismatch.detected });
+    const mismatch =
+      mode === 'video' ? videoState?.mismatch : mode === 'page' ? pageState?.mismatch : null;
+    if (!mismatch) return;
+    const l1 = mode === 'video' ? videoState?.l1Code : pageState?.l1Code;
+    sendToTab('changeLanguage', { l1: l1 ?? 'en', l2: mismatch.detected });
     setMismatchDismissed(true);
-  }, [videoState, sendToTab]);
+  }, [videoState, pageState, mode, sendToTab]);
 
   // Header "open in web app" button: YouTube watch page (video) or web-reader (page).
   const webBtn =
@@ -226,9 +233,9 @@ function SidePanelApp() {
           }
         : null;
 
-  const mismatch = mode === 'video' && videoState?.mismatch && !mismatchDismissed
-    ? videoState.mismatch
-    : null;
+  const mismatch =
+    (mode === 'video' && videoState?.mismatch) || (mode === 'page' && pageState?.mismatch) || null;
+  const mismatchShown = mismatch && !mismatchDismissed ? mismatch : null;
 
   let content;
   if (mode === 'video' && videoState) {
@@ -300,17 +307,17 @@ function SidePanelApp() {
         </div>
       </div>
 
-      {mismatch && (
+      {mismatchShown && (
         <div id="lpv-mismatch-banner" style={{ display: 'block' }}>
           <div className="lpv-mismatch-content">
             <span className="lpv-mismatch-icon">⚠️</span>
             <span className="lpv-mismatch-text">
-              {t('l2Mismatch', [languageName(mismatch.detected, l1Code), languageName(mismatch.saved, l1Code)])}
+              {t('l2Mismatch', [languageName(mismatchShown.detected, l1Code), languageName(mismatchShown.saved, l1Code)])}
             </span>
           </div>
           <div className="lpv-mismatch-actions">
             <button className="lpv-mismatch-switch-btn" onClick={switchL2}>
-              {t('l2MismatchSwitch', [languageName(mismatch.detected, l1Code)])}
+              {t('l2MismatchSwitch', [languageName(mismatchShown.detected, l1Code)])}
             </button>
             <button className="lpv-mismatch-dismiss-btn" onClick={() => setMismatchDismissed(true)}>
               {t('close')}

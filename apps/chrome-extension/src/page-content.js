@@ -92,6 +92,41 @@ function isHidden(el) {
   }
 }
 
+/**
+ * Detect the page's language before tokenizing (SPEC-…): `<html lang>`
+ * first, then meta content-language / name=language. Returns the ISO 639-1
+ * base code (e.g. "ja", "zh") or null when the page doesn't declare one.
+ */
+function detectPageLanguage() {
+  try {
+    const htmlLang = document.documentElement?.getAttribute?.('lang');
+    const meta = document.querySelector('meta[http-equiv="content-language"], meta[name="language"]');
+    const raw = (htmlLang || meta?.getAttribute?.('content') || '').trim();
+    if (!raw) return null;
+    const base = raw.toLowerCase().split(/[_-]/)[0];
+    return /^[a-z]{2,3}$/.test(base) ? base : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Page-language vs saved-L2 mismatch (null when the page declares no
+ * language, or it matches the L2 base). Shown as a side-panel banner and
+ * logged before tokenization starts.
+ */
+function pageLangMismatch() {
+  try {
+    const detected = detectPageLanguage();
+    if (!detected) return null;
+    const saved = (l2Code || 'en').split('-')[0].toLowerCase();
+    if (detected === saved) return null;
+    return { detected, saved };
+  } catch {
+    return null;
+  }
+}
+
 function isInsideSkipped(el) {
   try {
     return !!el.closest(SKIP_SELECTOR);
@@ -391,7 +426,8 @@ async function tokenizePage() {
 }
 
 /** Push page-mode state to the side panel (via the background relay) so it
- *  can render the PagePanel when opened on this tab. */
+ *  can render the PagePanel when opened on this tab. Includes the page-lang
+ *  vs L2 mismatch so the panel can warn before the user taps a token. */
 function pushPageModeState() {
   try {
     chrome.runtime.sendMessage({
@@ -402,6 +438,7 @@ function pushPageModeState() {
         l2Code,
         pageUrl: location.href,
         lookup: lastLookup,
+        mismatch: pageLangMismatch(),
       },
     }).catch(() => {});
   } catch {}
@@ -472,6 +509,12 @@ async function init() {
 
   enabled = true;
   log(`[PAGE] init: enabled=true, l2=${l2Code}, l1=${l1Code}, showPhonetics=${showPhonetics}`);
+  // Warn BEFORE tokenizing when the page declares a language different from
+  // the saved L2 — the side panel shows a banner with a one-tap switch.
+  const mismatch = pageLangMismatch();
+  if (mismatch) {
+    logwarn(`[PAGE] ⚠️ page language ${mismatch.detected} ≠ saved L2 ${mismatch.saved} — tokenizing as ${l2Code} anyway; panel shows the mismatch banner`);
+  }
   await tokenizePage();
   pushPageModeState();
   startObserver();
@@ -494,9 +537,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Side panel pulled state (open, tab switch, navigation).
     sendResponse({
       state: enabled
-        ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup }
+        ? { mode: 'page', l1Code, l2Code, pageUrl: location.href, lookup: lastLookup, mismatch: pageLangMismatch() }
         : null,
     });
+    return true;
+  }
+  if (message.action === 'changeLanguage') {
+    // One-tap switch from the side-panel mismatch banner (page mode). Persist
+    // the preference; the storage.onChanged handler below re-inits with the
+    // new L2.
+    log(`[PAGE] language change via mismatch banner: ${message.l1 ?? l1Code} → ${message.l2}`);
+    if (message.l1 && message.l1 !== l1Code) {
+      l1Code = message.l1;
+      try { chrome.storage.local.set({ l1Language: message.l1 }); } catch {}
+    }
+    if (message.l2 && message.l2 !== l2Code) {
+      try { chrome.storage.local.set({ l2Language: message.l2 }); } catch {}
+    }
+    sendResponse({ success: true });
     return true;
   }
   if (message.action === 'pageFollowLink') {
