@@ -612,7 +612,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       lines.sort((a, b) => a.starttime - b.starttime);
       return lines;
     },
-    [currentVideo?.youtube_id, playerSubLines],
+    [playerSubLines],
   );
 
   // ── Fetch ────────────────────────────────────

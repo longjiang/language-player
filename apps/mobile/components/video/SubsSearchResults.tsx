@@ -675,7 +675,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         l2Line: l.line,
         l1Line: '',
       })) ?? [],
-    [currentVideo?.youtube_id, playerSubLines],
+    [playerSubLines],
   );
 
   // Compute active line index from currentTime
