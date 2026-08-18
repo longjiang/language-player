@@ -1,18 +1,33 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import * as Dialog from '@/components/ui/dialog';
+import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { MarkdownExplanation } from '@/components/dictionary/MarkdownExplanation';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
-import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react-native';
+import { PYTHON_API_URL } from '@/lib/api-url';
+import { log, logwarn } from '@/lib/logger';
+import { baseCode, parseSubsL2, findMatchLine, durationToSeconds, buildAiExamplesPayload, buildAiExamplesPrompt, parseAiExamplesResponse } from '@langplayer/utils';
+import type { SubtitleLine, SubsSearchVideo } from '@langplayer/shared';
+import { SubsSearchRow, type SubsSearchRowSegment, formatTime } from '@/components/video/SubsSearchRow';
+import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
+import { VideoControlBar } from '@/components/video/VideoControlBar';
+import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
+import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
+import { useActiveLineIndex } from '@/hooks/use-active-line-index';
+import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { Sparkles, RefreshCw, Copy, Check, X, Play, Eye, Clock, Calendar } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
-type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms' | 'examples';
 
 const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
   { kind: 'inflection', labelKey: 'action.inflection' },
@@ -20,7 +35,15 @@ const FOLLOW_UPS: { kind: FollowUpKind; labelKey: string }[] = [
   { kind: 'etymology', labelKey: 'action.etymology' },
   { kind: 'syntax', labelKey: 'action.syntax' },
   { kind: 'synonyms', labelKey: 'action.synonyms' },
+  { kind: 'examples', labelKey: 'title.examples_from_videos' },
 ];
+
+/** One AI-selected video example: the search result (for the chip) plus the
+ *  LLM's explanation of the word's usage in that line. */
+interface AiVideoExampleData {
+  video: SubsSearchVideo;
+  explanation: string;
+}
 
 interface ChatMessage {
   id: number;
@@ -30,6 +53,38 @@ interface ChatMessage {
   label?: string;
   /** The exact prompt that produced this assistant message (for regenerate). */
   prompt?: string;
+  /** AI-selected video examples ("Examples from Videos" follow-up): rendered
+   *  as subs-search-style chips, each followed by the explanation. */
+  examples?: AiVideoExampleData[];
+  /** True while the "Examples from Videos" follow-up is fetching/analyzing
+   *  (non-streaming request — shows a spinner in the assistant bubble). */
+  loading?: boolean;
+}
+
+// ── Subs-search helpers (mirror SubsSearchResults.tsx) ──
+
+function lineHasAnyTerm(line: string, terms: string[]): boolean {
+  const lower = line.toLowerCase();
+  return terms.some((f) => lower.includes(f.trim().toLowerCase()));
+}
+
+/** The first search form that appears in this line (translation highlight). */
+function firstMatchingForm(line: string, terms: string[]): string | undefined {
+  const lower = line.toLowerCase();
+  return terms
+    .map((f) => f.trim())
+    .filter(Boolean)
+    .find((f) => lower.includes(f.toLowerCase()));
+}
+
+/** Compact number label (e.g. "12K") with a plain fallback. */
+function formatNumber(n: number | undefined, locale: string): string {
+  if (!n) return '';
+  try {
+    return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  } catch {
+    return String(n);
+  }
 }
 
 interface AiExplanationProps {
@@ -54,6 +109,10 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const { isPro, loaded: subLoaded } = useSubscription();
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
+  const router = useRouter();
+  const { display } = useSettingsContext();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { isMd } = useResponsive();
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
   const [showAi, setShowAi] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -62,6 +121,16 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const messageIdRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── "Examples from Videos" player modal state — mirrors the subs-search
+  // playback modal (mini player + controls + subtitles). ──
+  const examplePlayerRef = useRef<YouTubePlayerHandle>(null);
+  const [examplePlayerIndex, setExamplePlayerIndex] = useState<number | null>(null);
+  const [exampleTime, setExampleTime] = useState(0);
+  const [exampleDuration, setExampleDuration] = useState(0);
+  const [examplePaused, setExamplePaused] = useState(true);
+  const [exampleMode, setExampleMode] = useState<'singleline' | 'multiline'>('singleline');
+  const [exampleContainerWidth, setExampleContainerWidth] = useState(screenWidth);
 
   const l1NameRef = useRef(l1Lang.name);
   const l2NameRef = useRef(l2Lang.name);
@@ -157,7 +226,114 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     void stream(target.prompt ?? buildPrompt(), { regenerate: true });
   }, [messages, updateMessage, buildPrompt, stream]);
 
+  // ── "Examples from Videos" follow-up (web parity) ──
+  // 1. Search subtitles (limit 50) for the word being explained.
+  // 2. Feed a succinct payload (≤3 subtitle lines per video) to the LLM.
+  // 3. The LLM replies with strict JSON: { examples: [{ video_id, explanation }] }.
+  // 4. The client maps ids back to the fetched results and renders the chips
+  //    (the same SubsSearchRow component the results list uses, translations
+  //    included), each followed by the LLM's explanation.
+  const fetchSubsSearch = useCallback(
+    async (term: string): Promise<SubsSearchVideo[]> => {
+      const res = await fetch(
+        `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2Lang.code)}&limit=50&context=3`,
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: any = await res.json();
+      if (!Array.isArray(data)) return [];
+      return data
+        .map((v: any) => {
+          const lines = parseSubsL2(v.subs_l2 ?? '');
+          return {
+            id: v.id,
+            title: v.title ?? '',
+            youtube_id: v.youtube_id,
+            subs_l2: lines,
+            views: v.views,
+            duration: durationToSeconds(v.duration),
+            date: v.date,
+            category: v.category != null ? Number(v.category) : null,
+            tv_show: v.tv_show != null ? Number(v.tv_show) : null,
+            matchLineIndex: findMatchLine(lines, term),
+          };
+        })
+        .filter((v) => v.subs_l2.length > 0 && v.matchLineIndex >= 0);
+    },
+    [l2Lang.code],
+  );
+
+  const handleExamplesFollowUp = useCallback(async () => {
+    setUsedFollowUps((prev) => {
+      const next = new Set(prev);
+      next.add('examples');
+      return next;
+    });
+    appendMessage({ role: 'user', text: '', label: t('title.examples_from_videos') });
+    const aiId = appendMessage({ role: 'assistant', text: '', loading: true });
+    log('AI examples follow-up start', { word });
+    try {
+      // Include the inflected surface form too, so inflected occurrences match.
+      const searchTerms =
+        contextForm && contextForm !== word ? `${word},${contextForm}` : word;
+      const results = await fetchSubsSearch(searchTerms);
+      if (results.length === 0) throw new Error('no subs-search results');
+
+      const l1Name = l1NameRef.current;
+      const l2Name = l2NameRef.current;
+      const lines = buildAiExamplesPayload(results);
+      const prose = t('prompt.subs_ai_examples', {
+        n: results.length,
+        l2Name,
+        term: word,
+      });
+      const prompt = buildAiExamplesPrompt({ prose, lines, l1Name, l2Name, term: word });
+      log('AI examples follow-up request', {
+        word,
+        n: results.length,
+        promptChars: prompt.length,
+      });
+
+      const res = await fetch(`${PYTHON_API_URL}/chatgpt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, cache: true }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: any = await res.json();
+      if (data?.status !== 'success' || typeof data.response !== 'string') {
+        throw new Error('bad /chatgpt response');
+      }
+      const parsed = parseAiExamplesResponse(data.response);
+      if (!parsed) throw new Error('unparseable AI examples response');
+
+      const byId = new Map(results.map((v) => [v.id, v]));
+      const examples: AiVideoExampleData[] = parsed.examples
+        .map((e) => {
+          const video = byId.get(e.videoId);
+          return video ? { video, explanation: e.explanation } : null;
+        })
+        .filter((e): e is AiVideoExampleData => e !== null);
+      if (examples.length === 0) throw new Error('no examples matched to results');
+
+      updateMessage(aiId, {
+        text: t('msg.examples_from_videos_intro'),
+        examples,
+        loading: false,
+      });
+      log('AI examples follow-up applied', { word, n: examples.length });
+    } catch (err) {
+      logwarn('AI examples follow-up failed', {
+        message: err instanceof Error ? err.message : String(err),
+      });
+      updateMessage(aiId, { text: t('msg.ai_examples_failed'), loading: false });
+    }
+  }, [word, contextForm, t, appendMessage, updateMessage, fetchSubsSearch]);
+
   const handleFollowUp = useCallback((kind: FollowUpKind) => {
+    if (kind === 'examples') {
+      void handleExamplesFollowUp();
+      return;
+    }
     const followUp = FOLLOW_UPS.find((f) => f.kind === kind);
     setUsedFollowUps((prev) => {
       const next = new Set(prev);
@@ -166,7 +342,259 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     });
     appendMessage({ role: 'user', text: '', label: followUp ? t(followUp.labelKey) : '' });
     startStream(buildFollowUpPrompt(kind));
-  }, [appendMessage, startStream, buildFollowUpPrompt, t]);
+  }, [appendMessage, startStream, buildFollowUpPrompt, t, handleExamplesFollowUp]);
+
+  // ── Example chips: lazy translations (same pipeline as the results list) ──
+  const examplesMessage = useMemo(
+    () => messages.find((m) => m.examples && m.examples.length > 0),
+    [messages],
+  );
+  const exampleVideos = examplesMessage?.examples ?? [];
+  const exampleSegments = useMemo(
+    () =>
+      exampleVideos.map((ex) => {
+        const ml = ex.video.subs_l2[ex.video.matchLineIndex];
+        const segs: SubsSearchRowSegment[] = [];
+        const match = ml?.line ?? '';
+        if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, [word]) });
+        return segs;
+      }),
+    [exampleVideos, word],
+  );
+  const exampleTranslationInput = useMemo(() => {
+    const lines: SubtitleLine[] = [];
+    const forms: (string | null | undefined)[] = [];
+    const rowStarts: number[] = [];
+    for (const segs of exampleSegments) {
+      rowStarts.push(lines.length);
+      for (const seg of segs) {
+        lines.push({ line: seg.text, starttime: 0 });
+        forms.push(seg.hasTerm ? firstMatchingForm(seg.text, [word]) : undefined);
+      }
+    }
+    return { lines, forms, rowStarts };
+  }, [exampleSegments, word]);
+  const {
+    translatedLines: exampleTranslations,
+  } = useSubtitleTranslation(
+    exampleTranslationInput.lines,
+    l1Lang.code,
+    baseCode(l2Lang.code),
+    display.translation && exampleTranslationInput.lines.length > 0,
+    0,
+    exampleTranslationInput.forms,
+  );
+
+  // ── Example player modal (mirrors the subs-search playback modal) ──
+  const exampleVideo =
+    examplePlayerIndex !== null ? (exampleVideos[examplePlayerIndex]?.video ?? null) : null;
+  const exampleMatchLine = exampleVideo?.subs_l2[exampleVideo.matchLineIndex] ?? null;
+  const exampleDefaultLine = exampleMatchLine
+    ? { starttime: exampleMatchLine.starttime, l2Line: exampleMatchLine.line, l1Line: '' }
+    : undefined;
+  const exampleInitialLines = useMemo(
+    () =>
+      exampleVideo?.subs_l2.map((l) => ({
+        starttime: l.starttime,
+        l2Line: l.line,
+        l1Line: '',
+      })) ?? [],
+    [exampleVideo?.id, exampleVideo?.subs_l2],
+  );
+  const exampleStartTimes = useMemo(
+    () => exampleInitialLines.map((l) => l.starttime),
+    [exampleInitialLines],
+  );
+  const exampleActiveLineIndex = useActiveLineIndex(exampleStartTimes, exampleTime);
+
+  const openExamplePlayer = useCallback((index: number) => {
+    setExamplePlayerIndex(index);
+    setExampleTime(0);
+  }, []);
+
+  const closeExamplePlayer = useCallback(() => {
+    setExamplePlayerIndex(null);
+    setExampleTime(0);
+  }, []);
+
+  const handleExampleTimeUpdate = useCallback((time: number) => setExampleTime(time), []);
+  const handleExampleDuration = useCallback((d: number) => setExampleDuration(d), []);
+  const handleExampleStateChange = useCallback((state: string) => {
+    setExamplePaused(state !== 'playing');
+  }, []);
+  const toggleExampleMode = useCallback(() => {
+    setExampleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
+  }, []);
+  const goToExamplePreviousVideo = useCallback(() => {
+    if (examplePlayerIndex !== null && examplePlayerIndex > 0) {
+      setExamplePlayerIndex((i) => (i === null ? null : i - 1));
+    }
+  }, [examplePlayerIndex]);
+  const goToExampleNextVideo = useCallback(() => {
+    if (examplePlayerIndex !== null && examplePlayerIndex < exampleVideos.length - 1) {
+      setExamplePlayerIndex((i) => (i === null ? null : i + 1));
+    }
+  }, [examplePlayerIndex, exampleVideos.length]);
+  const goToExamplePreviousLine = useCallback(() => {
+    if (!exampleVideo) return;
+    const subs = exampleVideo.subs_l2;
+    for (let i = subs.length - 1; i >= 0; i--) {
+      if (subs[i]!.starttime < exampleTime - 0.3) {
+        examplePlayerRef.current?.seekTo(subs[i]!.starttime);
+        return;
+      }
+    }
+  }, [exampleTime, exampleVideo]);
+  const goToExampleNextLine = useCallback(() => {
+    if (!exampleVideo) return;
+    const subs = exampleVideo.subs_l2;
+    for (let i = 0; i < subs.length; i++) {
+      if (subs[i]!.starttime > exampleTime + 0.3) {
+        examplePlayerRef.current?.seekTo(subs[i]!.starttime);
+        return;
+      }
+    }
+  }, [exampleTime, exampleVideo]);
+  const exampleHasPrevLine = useMemo(() => {
+    if (!exampleVideo) return false;
+    return exampleVideo.subs_l2.some((l) => l.starttime < exampleTime - 0.3);
+  }, [exampleVideo, exampleTime]);
+  const exampleHasNextLine = useMemo(() => {
+    if (!exampleVideo) return false;
+    return exampleVideo.subs_l2.some((l) => l.starttime > exampleTime + 0.3);
+  }, [exampleVideo, exampleTime]);
+
+  // Player modal content — mirrors the subs-search playback modal (header,
+  // mini player, controls, singleline | multiline subtitles).
+  const examplePlayerContent = exampleVideo ? (
+    <View>
+      {/* Header — video title + close */}
+      <View className="flex-row items-center justify-between gap-2 border-b border-border px-4 py-3">
+        <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+          {exampleVideo.title}
+        </Text>
+        <Dialog.Close className="rounded-full bg-muted p-2">
+          <X size={16} color={ICON_MUTED} />
+        </Dialog.Close>
+      </View>
+
+      {/* Mini player */}
+      <View
+        className="w-full bg-black"
+        style={{ aspectRatio: 16 / 9 }}
+        onLayout={(e: LayoutChangeEvent) => setExampleContainerWidth(e.nativeEvent.layout.width)}
+      >
+        <YouTubePlayer
+          ref={examplePlayerRef}
+          youtubeId={exampleVideo.youtube_id}
+          onTimeUpdate={handleExampleTimeUpdate}
+          onDuration={handleExampleDuration}
+          onStateChange={handleExampleStateChange}
+          autoplay={false}
+          startTime={exampleMatchLine?.starttime}
+          containerWidth={exampleContainerWidth}
+        />
+      </View>
+
+      {/* Controls */}
+      <View className="flex-row justify-center border-b border-border py-1">
+        <VideoControlBar
+          reduced
+          playerRef={examplePlayerRef}
+          currentTime={exampleTime}
+          duration={exampleDuration}
+          paused={examplePaused}
+          onPauseToggle={() => {}}
+          onPreviousLine={goToExamplePreviousLine}
+          onNextLine={goToExampleNextLine}
+          onPreviousVideo={goToExamplePreviousVideo}
+          onNextVideo={goToExampleNextVideo}
+          onTogglePanel={toggleExampleMode}
+          panelOpen={exampleMode === 'multiline'}
+          hasPreviousLine={exampleHasPrevLine}
+          hasNextLine={exampleHasNextLine}
+          hasPreviousVideo={examplePlayerIndex !== null && examplePlayerIndex > 0}
+          hasNextVideo={examplePlayerIndex !== null && examplePlayerIndex < exampleVideos.length - 1}
+          videoCountText={t('msg.video_n_of_total', {
+            n: (examplePlayerIndex ?? 0) + 1,
+            total: exampleVideos.length,
+          })}
+        />
+      </View>
+
+      {/* Subtitles — singleline line-follower, or multiline tabbed panel */}
+      {exampleMode === 'singleline' ? (
+        <View className="min-h-32 w-full">
+          <SubtitleDisplay
+            singleLine
+            lines={exampleInitialLines}
+            activeLineIndex={exampleActiveLineIndex}
+            currentTime={exampleTime}
+            highlightTerms={[word]}
+            defaultLine={exampleDefaultLine}
+            onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
+          />
+        </View>
+      ) : (
+        <View style={{ height: Math.min(screenHeight * 0.4, 320) }}>
+          <TranscriptQueuePanel
+            transcript={
+              <SubtitleDisplay
+                lines={exampleInitialLines}
+                activeLineIndex={exampleActiveLineIndex}
+                currentTime={exampleTime}
+                highlightTerms={[word]}
+                defaultLine={exampleDefaultLine}
+                onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
+              />
+            }
+            queue={<View />}
+            info={
+              <View className="gap-3">
+                <Text className="text-base font-bold leading-tight text-foreground">
+                  {exampleVideo.title}
+                </Text>
+                <View className="flex-row flex-wrap items-center gap-3">
+                  {exampleVideo.views != null && (
+                    <View className="flex-row items-center gap-1">
+                      <Eye size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {t('label.views_count', { count: formatNumber(exampleVideo.views, l1Lang.code) })}
+                      </Text>
+                    </View>
+                  )}
+                  {exampleVideo.duration != null && (
+                    <View className="flex-row items-center gap-1">
+                      <Clock size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {formatTime(exampleVideo.duration)}
+                      </Text>
+                    </View>
+                  )}
+                  {exampleVideo.date && (
+                    <View className="flex-row items-center gap-1">
+                      <Calendar size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {new Date(exampleVideo.date).toLocaleDateString(l1Lang.code)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Pressable
+                  onPress={() => router.push(`/(tabs)/(media)/watch/${exampleVideo.youtube_id}` as any)}
+                  className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
+                  accessibilityRole="button"
+                >
+                  <Play size={14} color={ICON_MUTED} />
+                  <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
+                </Pressable>
+              </View>
+            }
+          />
+        </View>
+      )}
+    </View>
+  ) : null;
 
   const handleCopy = useCallback(async (messageId: number) => {
     const target = messages.find((m) => m.id === messageId);
@@ -273,7 +701,12 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
             ) : (
               <View key={message.id} className="mb-3 items-start">
                 <View className="max-w-[95%] rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
-                  {loading && message.id === streamingId && !message.text ? (
+                  {message.loading ? (
+                    <View className="flex-row items-center gap-2">
+                      <ActivityIndicator size="small" color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">{t('msg.getting_ai_response')}</Text>
+                    </View>
+                  ) : loading && message.id === streamingId && !message.text ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
                   ) : (
                     <MarkdownExplanation
@@ -282,19 +715,42 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                       streaming={loading && message.id === streamingId}
                     />
                   )}
+                  {(message.examples?.length ?? 0) > 0 && (
+                    <View className="mt-2">
+                      {message.examples!.map((ex, i) => (
+                        <View key={ex.video.id}>
+                          <SubsSearchRow
+                            video={ex.video}
+                            isActive={false}
+                            onSelect={() => openExamplePlayer(i)}
+                            segments={exampleSegments[i] ?? []}
+                            highlightTerms={[word]}
+                            showTranslation={display.translation}
+                            translationStart={exampleTranslationInput.rowStarts[i] ?? 0}
+                            translations={exampleTranslations}
+                          />
+                          <Text className="mb-2 text-xs leading-relaxed text-muted-foreground">
+                            {ex.explanation}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
                 <View className="mt-1 flex-row items-center gap-1 pl-1">
-                  <Pressable
-                    onPress={() => handleRegenerate(message.id)}
-                    disabled={loading}
-                    className="rounded p-1 active:bg-muted disabled:opacity-40"
-                    accessibilityLabel={t('action.regenerate')}
-                  >
-                    <RefreshCw size={12} color={ICON_MUTED} />
-                  </Pressable>
+                  {(message.examples?.length ?? 0) === 0 && (
+                    <Pressable
+                      onPress={() => handleRegenerate(message.id)}
+                      disabled={loading}
+                      className="rounded p-1 active:bg-muted disabled:opacity-40"
+                      accessibilityLabel={t('action.regenerate')}
+                    >
+                      <RefreshCw size={12} color={ICON_MUTED} />
+                    </Pressable>
+                  )}
                   <Pressable
                     onPress={() => handleCopy(message.id)}
-                    disabled={loading || !message.text}
+                    disabled={loading || message.loading || !message.text}
                     className="rounded p-1 active:bg-muted disabled:opacity-40"
                     accessibilityLabel={t('action.copy')}
                   >
@@ -328,6 +784,37 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
             ))}
           </View>
         )}
+
+        {/* ── Example player modal — same playback experience as the
+            subs-search results modal (mini player + controls + subtitles with
+            singleline | multiline). Opened by tapping an example chip. ── */}
+        <Dialog.Root
+          open={examplePlayerIndex !== null}
+          onOpenChange={(v) => { if (!v) closeExamplePlayer(); }}
+        >
+          <Dialog.Portal>
+            {isMd ? (
+              <View className="absolute inset-0 items-center justify-center px-4">
+                <View
+                  className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-background"
+                  style={{
+                    shadowColor: ICON_MUTED,
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 4 },
+                    elevation: 8,
+                  }}
+                >
+                  {exampleVideo && examplePlayerContent}
+                </View>
+              </View>
+            ) : (
+              <Dialog.SheetContent className="max-h-[90%]">
+                {exampleVideo && examplePlayerContent}
+              </Dialog.SheetContent>
+            )}
+          </Dialog.Portal>
+        </Dialog.Root>
       </View>
     );
   }

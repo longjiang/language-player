@@ -755,6 +755,7 @@
         "admin_only_hint": "Chỉ dành cho quản trị viên.",
         "admin_removed": "Đã gỡ quyền quản trị.",
         "ai_analyzing": "Đang phân tích mẫu bằng AI…",
+        "ai_examples_failed": "Xin lỗi, tôi không tìm thấy ví dụ video cho từ này.",
         "ai_grouping_failed": "Nhóm bằng AI thất bại. Đang hiển thị kết quả theo thứ tự mặc định.",
         "ai_pro_feature": "Tính năng Pro: Nhận giải thích từ ngữ trong ngữ cảnh bằng AI.",
         "all_done_desc": "Bạn đã ôn hết các thẻ hiện đến hạn. Hãy quay lại sau để ôn thêm, hoặc khám phá video để lưu từ mới.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Mọi thứ bạn cần để học",
         "exact_match_searching": "Đang tìm trong {n} dạng — nhấp để khớp chính xác",
         "exact_match_searching_only": "Chỉ tìm \"{term}\" — nhấp để tìm trong {n} dạng",
+        "examples_from_videos_intro": "Dưới đây là một số kết quả minh họa rõ nhất cách dùng cụ thể này.",
         "existing_subscription_warning": "Hiện tại bạn có một gói {planType} đang hoạt động sẽ tự động gia hạn. Để tránh bị tính phí trùng lặp, bạn phải hủy đăng ký hiện tại trước khi mua gói mới. Bạn có muốn hủy đăng ký {planType} hiện tại không?",
         "expired": "Đã hết hạn",
         "expired_label": "(Đã hết hạn)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Vui lòng liệt kê các từ đồng nghĩa của từ tiếng {l2Name} \"{word}\" trong \"{context}\". Với mỗi từ đồng nghĩa, hãy đưa ra dạng mục từ và cách phát âm, giải thích nó khác \"{word}\" như thế nào về nghĩa và cách dùng, đồng thời đưa ra các câu ví dụ minh họa sự khác biệt.",
         "followup_syntax": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
         "followup_syntax_context": "Vui lòng giải thích từ tiếng {l2Name} \"{word}\" trong \"{context}\" có đóng vai trò là một thành tố cú pháp hay không, và giải thích cấu trúc cú pháp là gì (ví dụ: cấu trúc câu, thành phần của cụm từ, một hiện tượng ngữ pháp nhất định, v.v.).",
+        "subs_ai_examples": "Bạn là trợ lý học ngôn ngữ. Dưới đây là các dòng phụ đề từ {n} video, mỗi dòng bằng tiếng {l2Name}, có chứa từ \"{term}\". Các dòng bắt đầu bằng * là các dòng khớp.",
         "subs_ai_group": "Bạn là trợ lý học ngôn ngữ. Dưới đây là {n} dòng phụ đề từ video, mỗi dòng bằng tiếng {l2Name}, có chứa thuật ngữ \"{term}\"."
     },
     "review": {

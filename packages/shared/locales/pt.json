@@ -755,6 +755,7 @@
         "admin_only_hint": "Apenas administradores.",
         "admin_removed": "Acesso de administrador removido.",
         "ai_analyzing": "Analisando padrões com IA…",
+        "ai_examples_failed": "Desculpe, não consegui encontrar exemplos em vídeo para esta palavra.",
         "ai_grouping_failed": "Falha no agrupamento por IA. Mostrando resultados na ordem padrão.",
         "ai_pro_feature": "Recurso premium: Obtenha explicações com IA para palavras no contexto.",
         "all_done_desc": "Você revisou todos os cartões pendentes. Volte mais tarde para mais revisões ou explore vídeos para salvar novas palavras.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Tudo que você precisa para aprender",
         "exact_match_searching": "Procurando em {n} formas — clique para correspondência exata",
         "exact_match_searching_only": "Procurando apenas \"{term}\" — clique para buscar em {n} formas",
+        "examples_from_videos_intro": "Aqui estão alguns resultados que melhor ilustram este uso específico.",
         "existing_subscription_warning": "Você tem atualmente um plano {planType} ativo que será renovado automaticamente. Para evitar cobranças duplicadas, você deve cancelar sua assinatura existente antes de comprar uma nova. Você gostaria de cancelar sua assinatura {planType} existente?",
         "expired": "Expirado",
         "expired_label": "(Expirado)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Enumere os sinônimos da palavra em {l2Name} \"{word}\" em \"{context}\". Para cada sinônimo, dê a forma de entrada (forma de dicionário) e a pronúncia, explique como ele difere de \"{word}\" em significado e uso e forneça exemplos que ilustrem a diferença.",
         "followup_syntax": "Explica se a palavra em {l2Name} \"{word}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
         "followup_syntax_context": "Explica se a palavra em {l2Name} \"{word}\" em \"{context}\" funciona como elemento sintático e explica qual é a estrutura sintática (p. ex. estrutura da frase, parte de um sintagma, um certo fenómeno gramatical, etc.).",
+        "subs_ai_examples": "Você é um assistente de aprendizado de idiomas. Abaixo estão linhas de legendas de {n} vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\". As linhas que começam com * são as linhas correspondentes.",
         "subs_ai_group": "Você é um assistente de aprendizado de idiomas. Abaixo estão {n} linhas de legendas de vídeos, cada uma em {l2Name}, que contêm o termo \"{term}\"."
     },
     "review": {

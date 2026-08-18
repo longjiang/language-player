@@ -755,6 +755,7 @@
         "admin_only_hint": "Tylko dla administratorów.",
         "admin_removed": "Usunięto dostęp administratorski.",
         "ai_analyzing": "Analizowanie wzorców za pomocą AI…",
+        "ai_examples_failed": "Przepraszam, nie udało mi się znaleźć przykładów wideo dla tego słowa.",
         "ai_grouping_failed": "Grupowanie AI nie powiodło się. Wyświetlanie wyników w domyślnej kolejności.",
         "ai_pro_feature": "Funkcja Pro: Uzyskaj wyjaśnienia słów w kontekście za pomocą AI.",
         "all_done_desc": "Przejrzałeś wszystkie karty do powtórki. Wróć później, aby kontynuować, lub odkrywaj filmy, aby zapisać nowe słowa.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Wszystko, czego potrzebujesz do nauki",
         "exact_match_searching": "Szukanie w {n} formach — kliknij dla dokładnego dopasowania",
         "exact_match_searching_only": "Szukanie tylko \"{term}\" — kliknij, aby przeszukać {n} form",
+        "examples_from_videos_intro": "Oto kilka wyników, które najlepiej ilustrują to konkretne użycie.",
         "existing_subscription_warning": "Masz obecnie aktywny plan {planType}, który odnowi się automatycznie. Aby uniknąć podwójnych opłat, musisz anulować istniejącą subskrypcję przed zakupem nowej. Czy chcesz anulować istniejącą subskrypcję {planType}?",
         "expired": "Wygasło",
         "expired_label": "(Wygasło)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Wymień synonimy słowa w języku {l2Name} \"{word}\" w zdaniu \"{context}\". Dla każdego synonimu podaj formę hasłową i wymowę, wyjaśnij, czym różni się od \"{word}\" pod względem znaczenia i użycia, oraz podaj przykładowe zdania ilustrujące różnicę.",
         "followup_syntax": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
         "followup_syntax_context": "Wyjaśnij, czy słowo w języku {l2Name} \"{word}\" w zdaniu \"{context}\" pełni funkcję elementu składniowego, i wyjaśnij, jaka jest struktura składniowa (np. struktura zdania, część frazy, pewne zjawisko gramatyczne itd.).",
+        "subs_ai_examples": "Jesteś asystentem nauki języków. Poniżej znajdują się linie napisów z {n} filmów, każda w języku {l2Name}, zawierające termin \"{term}\". Linie zaczynające się od * to linie pasujące.",
         "subs_ai_group": "Jesteś asystentem nauki języków. Poniżej znajduje się {n} linii napisów z filmów, każda w języku {l2Name}, zawierających termin \"{term}\"."
     },
     "review": {

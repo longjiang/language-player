@@ -755,6 +755,7 @@
         "admin_only_hint": "Yalnızca yöneticiler.",
         "admin_removed": "Yönetici erişimi kaldırıldı.",
         "ai_analyzing": "AI ile kalıplar analiz ediliyor…",
+        "ai_examples_failed": "Üzgünüm, bu kelime için video örnekleri bulamadım.",
         "ai_grouping_failed": "AI gruplaması başarısız oldu. Sonuçlar varsayılan sırada gösteriliyor.",
         "ai_pro_feature": "Profesyonel özellik: Kelimelerin bağlam içindeki yapay zeka açıklamalarını alın.",
         "all_done_desc": "Tüm gecikmiş kartları gözden geçirdiniz. Daha fazla tekrar için daha sonra gelin veya yeni kelimeler kaydetmek için videoları keşfedin.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Öğrenmek için ihtiyacınız olan her şey",
         "exact_match_searching": "{n} biçimde aranıyor — tam eşleşme için tıklayın",
         "exact_match_searching_only": "Sadece \"{term}\" aranıyor — {n} biçimde aramak için tıklayın",
+        "examples_from_videos_intro": "İşte bu özel kullanımı en iyi gösteren bazı sonuçlar.",
         "existing_subscription_warning": "Şu anda otomatik olarak yenilenecek aktif bir {planType} planınız var. Çift ücretlendirmeden kaçınmak için, yeni bir plan satın almadan önce mevcut aboneliğinizi iptal etmeniz gerekir. Mevcut {planType} aboneliğinizi iptal etmek ister misiniz?",
         "expired": "Süresi doldu",
         "expired_label": "(Süresi Doldu)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Lütfen \"{context}\" içindeki {l2Name} dilindeki \"{word}\" kelimesinin eş anlamlılarını listele. Her eş anlamlı için madde başını (sözlük biçimi) ve telaffuzunu ver, \"{word}\" ile anlam ve kullanım bakımından nasıl farklılaştığını açıkla ve farkı gösteren örnek cümleler sun.",
         "followup_syntax": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
         "followup_syntax_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
+        "subs_ai_examples": "Sen bir dil öğrenme asistanısın. Aşağıda, \"{term}\" terimini içeren {n} videonun her biri {l2Name} dilindeki altyazı satırları yer alıyor. * ile başlayan satırlar eşleşen satırlardır.",
         "subs_ai_group": "Sen bir dil öğrenme asistanısın. Aşağıda {l2Name} dilindeki videolardan \"{term}\" terimini içeren {n} altyazı satırı var."
     },
     "review": {

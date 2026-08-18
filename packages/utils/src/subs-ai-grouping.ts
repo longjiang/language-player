@@ -85,6 +85,8 @@ function csvQuote(line: string): string {
   return `"${s}"`;
 }
 
+export { csvQuote };
+
 /**
  * Assemble the full LLM prompt: the localized intro prose (from
  * `prompt.subs_ai_group`), the CSV payload, then the task + strict-JSON
@@ -133,7 +135,7 @@ function toIds(values: unknown[]): number[] {
  * garbage the model may have emitted after the object (e.g. a stray `]}`/`}`).
  * Returns `undefined` if no balanced object is found.
  */
-function extractJsonObject(text: string): string | undefined {
+export function extractJsonObject(text: string): string | undefined {
   const start = text.indexOf('{');
   if (start === -1) return undefined;
 
@@ -175,7 +177,7 @@ function extractJsonObject(text: string): string | undefined {
  * valid JSON. Strings are scanned with backslash-escape awareness, so
  * already-escaped `\"` sequences are left alone.
  */
-function sanitizeJson(text: string): string {
+export function sanitizeJson(text: string): string {
   let out = '';
   let inString = false;
   let prevWasDigit = false;

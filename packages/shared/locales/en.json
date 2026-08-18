@@ -755,6 +755,7 @@
         "admin_only_hint": "Administrator access only.",
         "admin_removed": "Admin access removed.",
         "ai_analyzing": "Analyzing patterns with AI…",
+        "ai_examples_failed": "Sorry, I couldn't find video examples for this word.",
         "ai_grouping_failed": "AI grouping failed. Showing results in default order.",
         "ai_pro_feature": "Pro feature: Get AI explanations of words in context.",
         "all_done_desc": "You've reviewed all due cards. Come back later for more reviews, or explore videos to save new words.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Everything you need to learn",
         "exact_match_searching": "Searching {n} forms — click for exact match only",
         "exact_match_searching_only": "Searching only \"{term}\" — click to search {n} forms",
+        "examples_from_videos_intro": "Here are some results that best illustrate this particular usage.",
         "existing_subscription_warning": "You currently have an active {planType} plan that will auto-renew. To avoid duplicate charges, you must cancel your existing subscription before purchasing a new one. Would you like to cancel your existing {planType} subscription?",
         "expired": "Expired",
         "expired_label": "(Expired)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Please list synonyms of the {l2Name} word \"{word}\" in \"{context}\". For each synonym, give the head word and its pronunciation, explain how it contrasts with \"{word}\" in meaning and in use, and provide example sentences illustrating the difference.",
         "followup_syntax": "Please explain whether the {l2Name} word \"{word}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
         "followup_syntax_context": "Please explain whether the {l2Name} word \"{word}\" in \"{context}\" is functioning as a syntactic element, and explain what the syntactical structure is (e.g. sentence structure, part of a phrase, a certain grammatical phenomenon, etc).",
+        "subs_ai_examples": "You are a language-learning assistant. Below are subtitle lines from {n} videos, each in {l2Name}, that contain the term \"{term}\". Lines marked with a leading * are the matched lines.",
         "subs_ai_group": "You are a language-learning assistant. Below are {n} subtitle lines from videos, each in {l2Name}, that contain the term \"{term}\"."
     },
     "review": {

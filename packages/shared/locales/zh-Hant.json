@@ -741,6 +741,7 @@
         "admin_only_hint": "僅限管理員存取。",
         "admin_removed": "管理員權限已移除。",
         "ai_analyzing": "正在用 AI 分析用法…",
+        "ai_examples_failed": "抱歉，我找不到這個單字的影片示例。",
         "ai_grouping_failed": "AI 分組失敗。按預設順序顯示結果。",
         "ai_pro_feature": "專業版功能：取得單字的 AI 上下文解釋。",
         "all_done_desc": "你已複習完所有待處理的卡片。稍後再回來，或探索影片以儲存新單字。",
@@ -824,6 +825,7 @@
         "everything_you_need": "學習所需的一切",
         "exact_match_searching": "正在搜尋{n}種形式 — 點擊僅精確匹配",
         "exact_match_searching_only": "僅搜尋\"{term}\" — 點擊搜尋{n}種形式",
+        "examples_from_videos_intro": "以下是一些最能說明這一用法的示例。",
         "existing_subscription_warning": "您目前有一個會自動續訂的{planType}計劃。為避免重複收費，您必須在購買新計劃之前取消現有訂閱。您想取消現有的{planType}訂閱嗎？",
         "expired": "已過期",
         "expired_label": "（已到期）",
@@ -1198,6 +1200,7 @@
         "followup_synonyms_context": "請列出\"{context}\"中{l2Name}單詞\"{word}\"的同義詞。對於每個同義詞，給出詞頭（詞典形式）和發音，說明它在意義和用法上與\"{word}\"有何不同，並給出例句說明差異。",
         "followup_syntax": "請解釋{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
         "followup_syntax_context": "請解釋\"{context}\"中的{l2Name}單詞\"{word}\"是否在充當某種句法成分，並說明其句法結構是什麼（例如句子結構、短語的一部分、某種語法現象等）。",
+        "subs_ai_examples": "你是一名語言學習助手。以下是來自{n}個影片的字幕行，均為{l2Name}，包含術語\"{term}\"。以*開頭的行是匹配行。",
         "subs_ai_group": "你是一名語言學習助手。以下是來自影片的{n}行字幕，均為{l2Name}，包含術語\"{term}\"。"
     },
     "review": {

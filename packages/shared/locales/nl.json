@@ -755,6 +755,7 @@
         "admin_only_hint": "Alleen voor beheerders.",
         "admin_removed": "Beheerdersrechten ingetrokken.",
         "ai_analyzing": "Patronen analyseren met AI…",
+        "ai_examples_failed": "Sorry, ik kon geen video-voorbeelden voor dit woord vinden.",
         "ai_grouping_failed": "AI-groepering mislukt. Resultaten worden in standaardvolgorde weergegeven.",
         "ai_pro_feature": "Pro-functie: Krijg AI-uitleg van woorden in context.",
         "all_done_desc": "Je hebt alle vervallen kaarten bekeken. Kom later terug voor meer herhalingen of bekijk video’s om nieuwe woorden op te slaan.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Alles wat je nodig hebt om te leren",
         "exact_match_searching": "Zoeken in {n} vormen — klik voor exacte overeenkomst",
         "exact_match_searching_only": "Alleen \"{term}\" zoeken — klik om in {n} vormen te zoeken",
+        "examples_from_videos_intro": "Hier zijn enkele resultaten die dit specifieke gebruik het best illustreren.",
         "existing_subscription_warning": "U heeft momenteel een actief {planType}-abonnement dat automatisch wordt verlengd. Om dubbele kosten te voorkomen, moet u uw bestaande abonnement opzeggen voordat u een nieuwe koopt. Wilt u uw bestaande {planType}-abonnement opzeggen?",
         "expired": "Verlopen",
         "expired_label": "(Verlopen)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Geef een lijst van synoniemen van het {l2Name}-woord \"{word}\" in \"{context}\". Geef voor elk synoniem het trefwoord en de uitspraak, leg uit waarin het in betekenis en gebruik verschilt van \"{word}\" en geef voorbeeldzinnen die het verschil illustreren.",
         "followup_syntax": "Leg uit of het {l2Name}-woord \"{word}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
         "followup_syntax_context": "Leg uit of het {l2Name}-woord \"{word}\" in \"{context}\" als syntactisch element functioneert en leg uit wat de syntactische structuur is (bijv. zinsstructuur, deel van een zinsdeel/frase, een bepaald grammaticaal verschijnsel, enz.).",
+        "subs_ai_examples": "Je bent een taalleerassistent. Hieronder staan ondertitelregels uit {n} video's, elk in het {l2Name}, die de term \"{term}\" bevatten. Regels die met een * beginnen zijn de overeenkomende regels.",
         "subs_ai_group": "Je bent een taalhulp-assistent. Hieronder staan {n} ondertitelregels uit video's, elk in het {l2Name}, die de term \"{term}\" bevatten."
     },
     "review": {
