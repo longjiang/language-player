@@ -1587,14 +1587,15 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
           />
         )}
 
-        {/* Selection dictionary popup (SPEC-084 Task 4) — the selected text
-            becomes the lookup term, lemma-less (web parity). extractPhrases
-            is wired in Task 5. */}
+        {/* Selection dictionary popup (SPEC-084 Task 4/5) — the selected text
+            becomes the lookup term, lemma-less, with the /extract-phrases
+            Phrases section (web parity). */}
         {selectionDictionary && textSelection && selectionTerm && selectionTerm.trim() !== '' && (
           <DictionaryPopup
             visible
             word={selectionTerm}
             context={selectionContext ?? text}
+            extractPhrases
             onClose={closeTextSelection}
           />
         )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import * as DialogPrimitive from '@rn-primitives/dialog';
@@ -45,6 +45,10 @@ interface DictionaryPopupProps {
   linkUrl?: string | null;
   /** Custom handler for the link action (e.g. in-book EPUB navigation). */
   onOpenLink?: (href: string) => void;
+  /** When true (text-selection popup, SPEC-084 Task 5), also call
+   *  /extract-phrases on `word` and render canonical dictionary cards for
+   *  each extracted phrase (web dictionary-popup.tsx parity). */
+  extractPhrases?: boolean;
   onClose: () => void;
   onViewDetail?: (entry: DictionaryEntry, allResults: DictionaryEntry[]) => void;
 }
@@ -90,6 +94,7 @@ export function DictionaryPopup({
   context,
   linkUrl,
   onOpenLink,
+  extractPhrases = false,
   onClose,
   onViewDetail,
 }: DictionaryPopupProps) {
@@ -120,6 +125,15 @@ export function DictionaryPopup({
   const popupLookupStartRef = useRef<number | null>(null);
   const popupShownLoggedRef = useRef(false);
   const popupRenderStartLoggedRef = useRef(false);
+
+  // ── Phrase extraction (selection popup — SPEC-084 Task 5) ──
+  // Ask the LLM for the canonical forms of the main words/phrases in the
+  // selected snippet, then look each phrase up through the standard dictionary
+  // pipeline and render entry cards for whatever comes back (web
+  // dictionary-popup.tsx parity).
+  const [phraseCards, setPhraseCards] = useState<DictionaryEntry[]>([]);
+  const [phraseLoading, setPhraseLoading] = useState(false);
+  const [phrasePronunciation, setPhrasePronunciation] = useState<string | null>(null);
 
   // ── Slide-up animation ──
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -339,6 +353,89 @@ export function DictionaryPopup({
     if (!visible) popupLookupStartRef.current = null;
   }, [visible]);
 
+  // ── Phrase extraction (selection popup — SPEC-084 Task 5) ──
+  // POST /extract-phrases, look up each canonical phrase through the same
+  // cache → offline → bulk → single-lookup chain as the main lookup, and
+  // dedupe against both themselves and the standard results. Failure never
+  // blocks the standard cards (web parity).
+  useEffect(() => {
+    if (!extractPhrases || !word.trim()) return;
+    let cancelled = false;
+    const controller = new AbortController();
+    setPhraseLoading(true);
+    setPhraseCards([]);
+    setPhrasePronunciation(null);
+
+    const run = async () => {
+      try {
+        const res = await fetch(`${PYTHON_API_URL}/extract-phrases`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: word, lang: l2 }),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+
+        const phrases = Array.isArray(data?.phrases)
+          ? (data.phrases as unknown[]).filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
+          : [];
+        if (typeof data?.pronunciation === 'string' && data.pronunciation.trim()) {
+          setPhrasePronunciation(data.pronunciation);
+        }
+        if (phrases.length === 0) return;
+
+        const found: DictionaryEntry[] = [];
+        for (const phrase of phrases) {
+          if (cancelled) break;
+          const cached = getCachedEntries(l2, phrase);
+          if (cached && cached.length > 0) {
+            found.push(...cached);
+            continue;
+          }
+          const offline = await lookupOfflineByL2(l2, phrase).then((r) => r ?? []);
+          if (offline.length > 0) {
+            setCachedEntries(l2, phrase, offline);
+            found.push(...offline);
+            continue;
+          }
+          await bulkLookupWords([{ text: phrase, l2Code: l2 }], PYTHON_API_URL);
+          let entries = getCachedEntries(l2, phrase) ?? [];
+          if (entries.length === 0) {
+            const rich = await dictRef.current.lookup(phrase, l2, l1Lang.code);
+            entries = rich.results ?? [];
+            if (entries.length > 0) setCachedEntries(l2, phrase, entries);
+          }
+          found.push(...entries);
+        }
+
+        if (!cancelled) {
+          const seen = new Set<string>();
+          setPhraseCards(
+            found.filter((e) => {
+              if (!e.id || seen.has(e.id)) return false;
+              seen.add(e.id);
+              return true;
+            }),
+          );
+        }
+      } catch (err: any) {
+        if (!cancelled && err?.name !== 'AbortError') {
+          log(`[DictionaryPopup] ⚠️ phrase extraction failed word="${word.slice(0, 40)}" error=${err?.message ?? String(err)}`);
+        }
+      } finally {
+        if (!cancelled) setPhraseLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [extractPhrases, word, l2, l1Lang.code, dictRef]);
+
   const lemmaForm = lemma && lemma !== word ? lemma : null;
 
   // ── Popup render timing (phase 2) ──
@@ -354,12 +451,35 @@ export function DictionaryPopup({
   // ── Force-mount so exit slide-down animation plays ──
   const [wasVisible, setWasVisible] = useState(false);
   useEffect(() => { if (visible) setWasVisible(true); }, [visible]);
+
+  // Phrases section cards dedupe against the standard lookup results (a phrase
+  // that IS the selection's main entry shouldn't render twice — web parity).
+  const mainEntryIds = useMemo(() => new Set((results ?? []).map((e) => e.id)), [results]);
+  const visiblePhraseCards = useMemo(
+    () => phraseCards.filter((e) => !mainEntryIds.has(e.id)),
+    [phraseCards, mainEntryIds],
+  );
+
   if (!visible && !wasVisible) return null;
 
   const popupHeight = isMd ? Math.min(screenHeight * 0.75, 640) : screenHeight * 0.75;
   // pt-4 (16) + header mb-3 (12) + pb-8 (32) around the scroll area.
   const FIXED_VERTICAL_SPACE = 60;
   const maxScrollHeight = Math.max(0, popupHeight - headerHeight - FIXED_VERTICAL_SPACE);
+
+  // Entry-card press — shared by the standard results and the Phrases section.
+  const handleCardPress = (entry: DictionaryEntry, allResults: DictionaryEntry[]) => {
+    if (onViewDetail) {
+      onViewDetail(entry, allResults);
+      return;
+    }
+    const safeId = entry.id.replace(/,/g, '~');
+    setDetailHead(entry.head);
+    setSidebarSource({ kind: 'results', items: allResults });
+    setCameFromSearch(true);
+    onClose();
+    router.push(`/word/${safeId}` as any);
+  };
 
   return (
     // asChild: the only child is the portal, so the Root renders no placeholder
@@ -403,9 +523,13 @@ export function DictionaryPopup({
                     <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
                       {word}
                     </Text>
-                    {tokenPron && (
+                    {tokenPron ? (
                       <Text className="text-sm text-muted-foreground">[{tokenPron}]</Text>
-                    )}
+                    ) : extractPhrases && phrasePronunciation ? (
+                      /* Selection popup: the LLM pronunciation of the selected
+                         phrase, next to the header (web parity). */
+                      <Text className="text-sm text-muted-foreground">[{phrasePronunciation}]</Text>
+                    ) : null}
                   </View>
                   {lemmaForm && (
                     <Text className="text-xs text-muted-foreground" numberOfLines={1}>
@@ -492,18 +616,7 @@ export function DictionaryPopup({
                     <DictionaryEntryCard
                       entry={entry}
                       variant="compact"
-                      onPress={(e) => {
-                        if (onViewDetail) {
-                          onViewDetail(e, results ?? []);
-                        } else {
-                          const safeId = e.id.replace(/,/g, '~');
-                          setDetailHead(e.head);
-                          setSidebarSource({ kind: 'results', items: results ?? [] });
-                          setCameFromSearch(true);
-                          onClose();
-                          router.push(`/word/${safeId}` as any);
-                        }
-                      }}
+                      onPress={(e) => handleCardPress(e, results ?? [])}
                       l2Code={l2}
                       saveButton={
                         <SaveButton
@@ -515,6 +628,38 @@ export function DictionaryPopup({
                     />
                   </View>
                 ))}
+
+                {/* Canonical phrase cards from /extract-phrases (selection
+                    popup — SPEC-084 Task 5, web parity). */}
+                {extractPhrases && !phraseLoading && visiblePhraseCards.length > 0 && (
+                  <View className="mb-2">
+                    <Text className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t('label.phrases')}
+                    </Text>
+                    {visiblePhraseCards.map((entry) => (
+                      <View key={entry.id} className="mb-2">
+                        <DictionaryEntryCard
+                          entry={entry}
+                          variant="compact"
+                          onPress={(e) => handleCardPress(e, phraseCards)}
+                          l2Code={l2}
+                          saveButton={
+                            <SaveButton
+                              entry={entry}
+                              size={20}
+                              context={context ? { form: word, text: context, textTitle: '' } : undefined}
+                            />
+                          }
+                        />
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {extractPhrases && phraseLoading && (
+                  <View className="items-center py-6">
+                    <ActivityIndicator size="small" className="text-primary" />
+                  </View>
+                )}
 
                 {loading && (
                   <View className="items-center py-12">
