@@ -161,6 +161,72 @@ function extractJsonObject(text: string): string | undefined {
 }
 
 /**
+ * Repair common LLM-JSON corruption before parsing, in a single scan:
+ *
+ * 1. Stray punctuation glued onto numbers outside strings (e.g. `700000268?`
+ *    → `700000268`) — the model often appends `?`/`!`/`！` to an id.
+ * 2. Unescaped double quotes inside string values (e.g. `表示"纠缠的""`) — the
+ *    model frequently writes literal quotes inside JSON strings. A quote is
+ *    treated as a closing quote only when followed by `,` `}` `]` `:` or end
+ *    of text (after whitespace); otherwise it's an interior quote and is
+ *    escaped as `\"`.
+ *
+ * Only ever removes a stray char or adds `\` before a quote — never rewrites
+ * valid JSON. Strings are scanned with backslash-escape awareness, so
+ * already-escaped `\"` sequences are left alone.
+ */
+function sanitizeJson(text: string): string {
+  let out = '';
+  let inString = false;
+  let prevWasDigit = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    if (inString) {
+      out += ch;
+      if (ch === '\\') {
+        // Copy the escaped char verbatim (e.g. \" or \\), then continue.
+        if (i + 1 < text.length) {
+          out += text[i + 1]!;
+          i++;
+        }
+        continue;
+      }
+      if (ch === '"') {
+        // Closing-quote heuristic: the next non-space char decides.
+        let j = i + 1;
+        while (
+          j < text.length &&
+          (text[j] === ' ' || text[j] === '\t' || text[j] === '\n' || text[j] === '\r')
+        ) {
+          j++;
+        }
+        const next = text[j];
+        if (j >= text.length || next === ',' || next === '}' || next === ']' || next === ':') {
+          inString = false; // real closing quote
+        } else {
+          out = out.slice(0, -1) + '\\"'; // interior quote → escape it
+        }
+      }
+      continue;
+    }
+    // Outside strings.
+    if (ch === '"') {
+      inString = true;
+      out += ch;
+      prevWasDigit = false;
+      continue;
+    }
+    if (prevWasDigit && (ch === '?' || ch === '!' || ch === '！')) {
+      prevWasDigit = false; // drop stray punctuation after a number
+      continue;
+    }
+    out += ch;
+    prevWasDigit = /\d/.test(ch);
+  }
+  return out;
+}
+
+/**
  * Parse the LLM's reply into an {@link AiGroupingResult}. Tolerates markdown
  * code fences, surrounding prose, and trailing garbage after the JSON object;
  * validates the shape; returns `null` on malformed output (caller falls back to
@@ -176,7 +242,7 @@ export function parseAiResponse(text: string): AiGroupingResult | null {
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(json);
+    parsed = JSON.parse(sanitizeJson(json));
   } catch {
     return null;
   }
