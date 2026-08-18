@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.Selection
@@ -144,7 +145,7 @@ class RubyTextParagraphView(context: Context, appContext: AppContext) : AppCompa
       // TextView.setSelection is not exposed on this compile stub; the
       // static Selection helper is the equivalent buffer-level operation
       // (TextView.setSelection(int) delegates to it internally).
-      Selection.setSelection(text as Spanned, max(start, end))
+      Selection.setSelection(text as Spannable, max(start, end))
     }
   }
 
