@@ -916,10 +916,15 @@ function renderBlock(
     const l2Grid = translationSideBySide ? lineGrids?.[globalIdx] : undefined;
     const transEl = plainText && showTranslation ? (
       // During rapid flipping the translation is deferred, but the skeleton
-      // stays visible immediately so the reader doesn't look broken.
-      <View className="mt-1">
-        <TranslationSkeleton text={block.text} />
-      </View>
+      // stays visible immediately so the reader doesn't look broken; show the
+      // real translation once it has arrived (pause window).
+      translation ? (
+        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: trFontSize }}>{translation}</Text>
+      ) : (
+        <View className="mt-1">
+          <TranslationSkeleton text={block.text} />
+        </View>
+      )
     ) : showTranslation && highlightedTranslation ? (
       l2Grid && l2Grid.length > 0 ? (
         <AlignedTranslation
