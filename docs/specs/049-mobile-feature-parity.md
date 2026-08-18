@@ -190,6 +190,19 @@ re-measure the current layout. Page turns also support swipe left/right: the
 page follows the drag, springs back under the threshold, and animates out to
 the next/previous page past it.
 
+**Defer-until-settle page flipping:** page turns never block on measurement.
+A turn applies instantly — the break is computed from already-measured heights
+when the current window covers it, otherwise from a chars-per-page estimate —
+so content (plain text via the `TokenizedText` defer path) is visible
+immediately with no spinner. The heavy work runs only once flipping stops
+(`SETTLE_MS` = 600 ms after the last turn): an exact background re-measure
+refines the page boundaries in place, then the visible blocks are lemmatized
+and translated. Stale in-flight lemmatize/translate responses are dropped by
+bumping the generation counters at navigation time (translations are keyed by
+local block index, so a stale response would otherwise land the old page's
+text on the new page). Reading-location persistence is debounced (800 ms) and
+flushed on close/unmount.
+
 `.epub.zip` / `.zip` wrappers are unwrapped on import (archive itself, single
 inner `.epub`, or extracted EPUB folder).
 

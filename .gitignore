@@ -70,3 +70,4 @@ scripts/payloads/*.json
 tmp/
 scripts/lp-play-service-account.json
 .dev-builds/
+docs/to-do.md

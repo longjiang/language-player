@@ -47,6 +47,10 @@ const MAX_TRUNCATED_ATTEMPTS = 3;
 const WINDOW_LIMIT = 160;
 /** Fallback vertical gap between blocks when measured tops aren't available. */
 const DEFAULT_BLOCK_GAP = 12;
+/** How long after the last page flip the reader waits before running heavy
+ *  work (exact re-measure, tokenization, translation). Rapid flipping shows
+ *  instant estimated pages; the heavy work runs once flipping stops. */
+const SETTLE_MS = 600;
 
 const TERMINAL_PUNCTUATION = /[。．.！？!?…"”』」"')\]]$/;
 
@@ -84,17 +88,13 @@ interface BlockMetrics {
   origin: number;
 }
 
-/** All blocks in [start, end) have been measured by the hidden view. */
-function allMeasured(
-  metrics: (BlockMetrics | undefined)[],
-  start: number,
-  end: number,
-  origin: number,
-): boolean {
+/** Count blocks in [start, end) that have no measured metric yet. */
+function missingCount(metrics: (BlockMetrics | undefined)[], start: number, end: number): number {
+  let n = 0;
   for (let i = start; i < end; i++) {
-    if (!metrics[i] || metrics[i]!.origin !== origin) return false;
+    if (!metrics[i]) n++;
   }
-  return true;
+  return n;
 }
 
 /** Vertical gap between block i-1 and block i, using real layout tops when possible. */
@@ -122,68 +122,72 @@ function blockCost(
 }
 
 /**
- * Walk forward from `start` and return the first block that no longer fits
- * (exclusive end index). `needsMore` means the whole window fit and the
- * measuring window must be extended before a break can be trusted.
+ * Forward walk over measured metrics only: the exclusive end of the page
+ * starting at `start`. `blocked` means the walk needs the height of an
+ * unmeasured block inside the window (caller should wait for more layout
+ * events); `needsMore` means the whole window fit and must be extended before
+ * a break can be trusted. Unlike the old full-window gate, this only needs the
+ * handful of blocks that actually determine the break.
  */
-function computeForwardEnd(
+function walkForwardEnd(
   blocks: ContentBlock[],
   start: number,
   end: number,
   availableHeight: number,
   metrics: (BlockMetrics | undefined)[],
-  contentWidth: number,
   hardStarts: ReadonlySet<number>,
-): { endIndex: number; needsMore: boolean } {
+): { endIndex: number; blocked: boolean; needsMore: boolean } {
   let accumulated = 0;
   for (let i = start; i < end; i++) {
     // SPEC-082 Task 5: a hard page start (new EPUB spine item) begins a new
     // page even if it would fit on the current one.
     if (i > start && hardStarts.has(i)) {
-      return { endIndex: i, needsMore: false };
+      return { endIndex: i, blocked: false, needsMore: false };
     }
-    const cost = blockCost(blocks[i]!, i, start, metrics, contentWidth);
+    const m = metrics[i];
+    if (!m) return { endIndex: i, blocked: true, needsMore: false };
+    const gap = i > start ? gapBetween(metrics, i) : 0;
+    const cost = m.height + gap;
     if (accumulated + cost > availableHeight && accumulated > 0) {
-      return { endIndex: i, needsMore: false };
+      return { endIndex: i, blocked: false, needsMore: false };
     }
     accumulated += cost;
   }
-  return { endIndex: end, needsMore: end < blocks.length };
+  return { endIndex: end, blocked: false, needsMore: end < blocks.length };
 }
 
 /**
- * Walk backward from `end` (exclusive) and return the first block that starts
- * the page ending at `end`. Extends backward when the whole window fits.
+ * Backward walk over measured metrics only: the start index of the page ending
+ * at `end` (exclusive). Same blocked/needsMore semantics as walkForwardEnd.
  */
-function computeBackwardStart(
+function walkBackwardStart(
   blocks: ContentBlock[],
   start: number,
   end: number,
   availableHeight: number,
   metrics: (BlockMetrics | undefined)[],
-  contentWidth: number,
   hardStarts: ReadonlySet<number>,
-): { startIndex: number; needsMore: boolean } {
+): { startIndex: number; blocked: boolean; needsMore: boolean } {
   let accumulated = 0;
-  let prevStart = 0;
+  let prevStart = start;
   for (let i = end - 1; i >= start; i--) {
     const m = metrics[i];
-    const height = m ? m.height : estimateBlockHeight(blocks[i]!, contentWidth);
+    if (!m) return { startIndex: i + 1, blocked: true, needsMore: false };
     const gap = i < end - 1 ? gapBetween(metrics, i + 1) : 0;
-    const cost = height + gap;
+    const cost = m.height + gap;
     if (accumulated + cost > availableHeight && accumulated > 0) {
       prevStart = i + 1;
       break;
     }
-    // SPEC-082 Task 5: a hard page start (new EPUB spine item) is always the
-    // first block of a page, so the page ending at `end` starts here.
+    // SPEC-082 Task 5: a hard page start is always the first block of a page,
+    // so the page ending at `end` starts here.
     if (i > start && hardStarts.has(i)) {
       prevStart = i;
       break;
     }
     accumulated += cost;
   }
-  return { startIndex: prevStart, needsMore: prevStart === 0 && start > 0 };
+  return { startIndex: prevStart, blocked: false, needsMore: prevStart === start && start > 0 };
 }
 
 /** Average chars per page sampled from up to 3 measured page breaks. */
@@ -315,7 +319,7 @@ export function useEpubPagination({
   const charsPerPageRef = useRef(400);
   const charsPerPageLayoutRef = useRef<string | null>(null);
   const layoutKeyRef = useRef<string | null>(null);
-  const requestRef = useRef<{ id: number; dir: 'forward' | 'backward'; base: number; pageNumber: number } | null>(null);
+  const requestRef = useRef<{ id: number; mode: 'refine'; base: number; endBase: number | null } | null>(null);
   const requestIdRef = useRef(0);
   const requestStartedAtRef = useRef(0);
   const measureOriginRef = useRef(0);
@@ -334,6 +338,15 @@ export function useEpubPagination({
   const [translateRetry, setTranslateRetry] = useState(0);
   const anchorSeenRef = useRef(false);
   const prevPageRef = useRef(0);
+  /** True once the user has stopped flipping. Navigation resets this via a
+   *  debounce; tokenization / translation / exact re-measure run only when
+   *  true, so rapid flipping stays cheap (instant estimated pages). */
+  const [interactionSettled, setInteractionSettled] = useState(true);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Whether the current page boundaries came from measured data (exact)
+   *  rather than an estimate — skips the settle-time re-measure when already
+   *  exact, so stopping after in-window flips causes no boundary correction. */
+  const boundariesExactRef = useRef(false);
 
   /** Report visible blocks from PaginatedReader (deduped by index set). */
   const onVisibleBlocksChange = useCallback((indices: number[]) => {
@@ -358,31 +371,131 @@ export function useEpubPagination({
     });
   }, []);
 
-  /** Start a lazy measurement pass from a global block boundary. */
-  const startLazyMeasure = useCallback((
-    dir: 'forward' | 'backward',
-    base: number,
-    pageNumber: number,
-  ) => {
+  /** Mark that the user is actively flipping pages: defers tokenization,
+   *  translation, and exact re-measurement until flipping stops (SETTLE_MS
+   *  after the last navigation). */
+  const noteInteraction = useCallback(() => {
+    setInteractionSettled(false);
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      settleTimerRef.current = null;
+      setInteractionSettled(true);
+    }, SETTLE_MS);
+  }, []);
+
+  /** Instant (non-blocking) forward boundary: exact when the break is already
+   *  computable from measured metrics inside the current window, else a
+   *  char-count estimate. Never waits for measurement. */
+  const estimateForwardEnd = useCallback((base: number): { end: number; exact: boolean } => {
+    if (!blocks) return { end: base, exact: false };
+    if (base >= blocks.length) return { end: blocks.length, exact: true };
+    const endCap = Math.min(blocks.length, measureEnd);
+    if (endCap > base) {
+      const r = walkForwardEnd(blocks, base, endCap, availableHeight, blockMetricsRef.current, hardStarts);
+      if (!r.blocked && !r.needsMore) return { end: r.endIndex, exact: true };
+    }
+    const target = (prefixCharsRef.current[base] ?? 0) + Math.max(1, charsPerPageRef.current);
+    let lo = base;
+    let hi = blocks.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if ((prefixCharsRef.current[mid] ?? 0) >= target) hi = mid;
+      else lo = mid + 1;
+    }
+    return { end: Math.max(base + 1, Math.min(blocks.length, lo)), exact: false };
+  }, [blocks, measureEnd, availableHeight, hardStarts]);
+
+  /** Instant (non-blocking) backward boundary: start of the page ending at
+   *  `base`. Exact when computable from measured metrics, else char estimate. */
+  const estimateBackwardStart = useCallback((base: number): { start: number; exact: boolean } => {
+    if (!blocks) return { start: 0, exact: false };
+    if (base <= 0) return { start: 0, exact: true };
+    const loCap = Math.max(0, measureStart);
+    if (base > loCap) {
+      const r = walkBackwardStart(blocks, loCap, base, availableHeight, blockMetricsRef.current, hardStarts);
+      if (!r.blocked && !r.needsMore) return { start: r.startIndex, exact: true };
+    }
+    const target = Math.max(0, (prefixCharsRef.current[base] ?? 0) - Math.max(1, charsPerPageRef.current));
+    let lo = 0;
+    let hi = base;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if ((prefixCharsRef.current[mid] ?? 0) >= target) hi = mid;
+      else lo = mid + 1;
+    }
+    return { start: Math.min(base - 1, Math.max(0, lo)), exact: false };
+  }, [blocks, measureStart, availableHeight, hardStarts]);
+
+  /** Apply a page turn instantly — exact when the break is already measured,
+   *  otherwise estimated. Never blocks, never shows a spinner, never waits. */
+  const applyEstimatedPage = useCallback((dir: 'forward' | 'backward', base: number, pageNumber: number) => {
+    if (!blocks || blocks.length === 0) return;
+    const clamped = Math.max(0, Math.min(base, blocks.length));
+    let start: number;
+    let end: number;
+    let exact: boolean;
+    if (dir === 'forward') {
+      const r = estimateForwardEnd(clamped);
+      start = clamped;
+      end = r.end;
+      exact = r.exact;
+    } else {
+      const r = estimateBackwardStart(clamped);
+      start = r.start;
+      end = clamped;
+      exact = r.exact;
+    }
+    if (end < start) end = start;
+    paginationLog(`[Pagination] ⚡ navigate ${dir} page=${pageNumber - 1} base=${clamped} → [${start},${end}) exact=${exact} t=${Date.now()}`);
+    // Drop any in-flight refinement — it targeted the previous page.
+    requestIdRef.current += 1;
+    requestRef.current = null;
+    // Drop in-flight lemmatize/translate responses from the previous page.
+    // Tokenization is keyed by global block index (stale writes are harmless
+    // but wasteful), while translations are keyed by the page's LOCAL block
+    // index — a stale response would put the old page's text under the new
+    // page's blocks, so the generation must advance here, not only when the
+    // (settle-gated) translate effect next runs.
+    tokenLoadGenRef.current += 1;
+    translateGenRef.current += 1;
+    translateInFlightRef.current = false;
+    translateDoneRef.current = new Set();
+    translateAttemptsRef.current = new Map();
+    translateRetryDelayRef.current = 1000;
+    if (translateRetryTimerRef.current) {
+      clearTimeout(translateRetryTimerRef.current);
+      translateRetryTimerRef.current = null;
+    }
+    pageTextKeyRef.current = '';
+    setLazyPageStart(start);
+    setLazyPageEnd(end);
+    setPage(pageNumber - 1);
+    setHasMeasured(true);
+    setBlockTranslations({});
+    setIsTranslating(false);
+    boundariesExactRef.current = exact;
+    noteInteraction();
+  }, [blocks, estimateForwardEnd, estimateBackwardStart, noteInteraction]);
+
+  /** Queue an exact re-measure of the page [base, endBase): extends the hidden
+   *  measuring window as needed and recomputes the true page boundaries. Runs
+   *  in the background — the visible page keeps its estimated content until
+   *  the refined boundaries land. */
+  const startRefine = useCallback((base: number, endBase: number | null) => {
     if (!blocks || blocks.length === 0) return;
     const id = ++requestIdRef.current;
-    requestRef.current = { id, dir, base, pageNumber };
+    requestRef.current = { id, mode: 'refine', base, endBase };
     requestStartedAtRef.current = Date.now();
-    const start = dir === 'forward' ? base : Math.max(0, base - WINDOW_LIMIT);
-    const end = dir === 'forward' ? Math.min(blocks.length, base + WINDOW_LIMIT) : base;
-    paginationLog(`[Pagination] ▶ start measure request #${id} dir=${dir} base=${base} page=${pageNumber} window=[${start},${end}) blocks=${blocks.length} t=${requestStartedAtRef.current}`);
-    setHasMeasured(false);
-    setPage(pageNumber - 1);
-    if (dir === 'forward') {
-      setMeasureStart(start);
-      setMeasureEnd(end);
-      measureOriginRef.current = base;
-    } else {
-      setMeasureStart(start);
-      setMeasureEnd(end);
-      measureOriginRef.current = start;
+    const end = endBase ?? Math.min(blocks.length, base + 1);
+    const neededStart = Math.max(0, base - WINDOW_LIMIT);
+    const neededEnd = Math.min(blocks.length, Math.max(end, base + WINDOW_LIMIT));
+    paginationLog(`[Pagination] 🎯 refine #${id} page=[${base},${end}) window=[${neededStart},${neededEnd}) t=${Date.now()}`);
+    if (measureStart !== neededStart || measureEnd !== neededEnd) {
+      setMeasureStart(neededStart);
+      setMeasureEnd(neededEnd);
+      measureOriginRef.current = neededStart;
     }
-  }, [blocks]);
+  }, [blocks, measureStart, measureEnd]);
 
   /** Estimated 1-based page number for a global block (lazy mode). */
   const lazyPageForBlock = useCallback((index: number) => {
@@ -424,7 +537,15 @@ export function useEpubPagination({
     setPage(0);
     anchorSeenRef.current = false;
     prevPageRef.current = 0;
-    setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
+    setInteractionSettled(true);
+    boundariesExactRef.current = false;
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    // Estimate mode: 0 keeps the hidden measuring view empty until the seek
+    // sets the window (MAX would render the whole book for a frame).
+    setMeasuredWindow(estimate ? 0 : (measureChunkSize ?? Number.MAX_SAFE_INTEGER));
   }, [resetKey, measureChunkSize]);
 
   // ── Use pre-parsed whole-book blocks, or parse markdown when text changes ──
@@ -464,7 +585,8 @@ export function useEpubPagination({
     paginationLog(`[Pagination] 📊 built prefix chars blocks=${blocks.length} totalChars=${total} initialTotalPages=${Math.max(1, Math.ceil(total / 400))}`);
   }, [estimate, blocks]);
 
-  // Start the first lazy measurement at the requested location (or page 1).
+  // Show an estimated page at the requested location (or page 1) immediately,
+  // then refine the exact boundaries in the background — no initial spinner.
   useEffect(() => {
     if (!estimate || !blocks || blocks.length === 0) return;
     const seekKey = `${blocks.length}:${initialBlockIndex ?? ''}:${initialAnchor ?? ''}`;
@@ -484,8 +606,14 @@ export function useEpubPagination({
       if (found >= 0) base = found;
     }
     paginationLog(`[Pagination] 🎯 initial seek initialBlockIndex=${initialBlockIndex ?? 'null'} initialAnchor=${initialAnchor ? JSON.stringify(initialAnchor.slice(0, 40)) : 'null'} → base=${base}`);
-    startLazyMeasure('forward', base, lazyPageForBlock(base));
-  }, [estimate, blocks, initialAnchor, initialBlockIndex, lazyPageForBlock, startLazyMeasure]);
+    const est = estimateForwardEnd(base);
+    setLazyPageStart(base);
+    setLazyPageEnd(est.end);
+    setPage(Math.max(0, lazyPageForBlock(base) - 1));
+    setHasMeasured(true);
+    boundariesExactRef.current = est.exact;
+    startRefine(base, est.end);
+  }, [estimate, blocks, initialAnchor, initialBlockIndex, lazyPageForBlock, estimateForwardEnd, startRefine]);
 
   // ── Reset measurement state when text (chapter) changes ──
   useEffect(() => {
@@ -517,7 +645,9 @@ export function useEpubPagination({
     waitingMissingRef.current = -1;
     lazySeekKeyRef.current = null;
     setPage(0);
-    setMeasuredWindow(measureChunkSize ?? Number.MAX_SAFE_INTEGER);
+    // Estimate mode: 0 keeps the hidden measuring view empty until the seek
+    // sets the window (MAX would render the whole book for a frame).
+    setMeasuredWindow(estimate ? 0 : (measureChunkSize ?? Number.MAX_SAFE_INTEGER));
   }, [text, measureChunkSize]);
 
   // ── Advance the chunked measurement window as blocks report heights ──
@@ -574,25 +704,16 @@ export function useEpubPagination({
     if (wasUnmeasured) setMeasuredBlockCount(c => c + 1);
   }, [estimate]);
 
-  // ── Lazy page computation: runs once the measuring window has real heights ──
+  // ── Lazy refinement: recompute the current page's exact boundaries once the
+  // blocks that determine them are measured (greedy — never waits for the
+  // whole window). Runs only for 'refine' requests (initial seek, settle, and
+  // layout changes); page navigation is instant and never enqueues here. ──
   useEffect(() => {
     if (!estimate || !blocks || blocks.length === 0) return;
     const req = requestRef.current;
-    if (!req || req.id !== requestIdRef.current) return;
+    if (!req || req.id !== requestIdRef.current || req.mode !== 'refine') return;
     if (measureEnd <= measureStart) return;
-    if (!allMeasured(blockMetricsRef.current, measureStart, measureEnd, measureOriginRef.current)) {
-      let missing = 0;
-      for (let i = measureStart; i < measureEnd; i++) {
-        const m = blockMetricsRef.current[i];
-        if (!m || m.origin !== measureOriginRef.current) missing++;
-      }
-      if (waitingMissingRef.current !== missing) {
-        waitingMissingRef.current = missing;
-        paginationLog(`[Pagination] ⏳ waiting for measurements: missing=${missing}/${measureEnd - measureStart} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
-      }
-      return;
-    }
-    waitingMissingRef.current = -1;
+
     if (totalCharsRef.current <= 0) {
       let total = 0;
       const prefix: number[] = new Array(blocks.length);
@@ -605,78 +726,27 @@ export function useEpubPagination({
       prefixCharsRef.current = prefix;
       paginationLog(`[Pagination] 📊 fallback prefix rebuild totalChars=${total}`);
     }
-    paginationLog(`[Pagination] ⚙ compute request #${req.id} dir=${req.dir} base=${req.base} targetPage=${req.pageNumber} window=[${measureStart},${measureEnd}) origin=${measureOriginRef.current} available=${availableHeight} width=${contentWidth} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
 
-    if (req.dir === 'forward') {
-      const res = computeForwardEnd(
-        blocks,
-        req.base,
-        measureEnd,
-        availableHeight,
-        blockMetricsRef.current,
-        contentWidth,
-        hardStarts,
-      );
-      if (res.needsMore) {
-        paginationLog(`[Pagination] ⚙ forward needsMore endIndex=${res.endIndex} — extending window`);
-        const nextEnd = Math.min(blocks.length, measureEnd + WINDOW_LIMIT);
-        if (nextEnd > measureEnd) {
-          setMeasureEnd(nextEnd);
-          return;
-        }
+    // Anchor: the middle of the requested (possibly estimated) page range. The
+    // true page containing the anchor is what the user is looking at — this
+    // keeps the refined page stable when the estimate was slightly off.
+    const anchor = Math.max(0, Math.min(
+      blocks.length - 1,
+      Math.floor((req.base + (req.endBase ?? req.base + 1)) / 2),
+    ));
+
+    // Backward walk from the anchor to find the true page start.
+    const bwd = walkBackwardStart(blocks, measureStart, anchor + 1, availableHeight, blockMetricsRef.current, hardStarts);
+    if (bwd.blocked) {
+      const missing = missingCount(blockMetricsRef.current, measureStart, anchor + 1);
+      if (waitingMissingRef.current !== missing) {
+        waitingMissingRef.current = missing;
+        paginationLog(`[Pagination] ⏳ refine waiting backward missing=${missing}/${anchor + 1 - measureStart} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
       }
-      const endIndex = res.endIndex;
-      const end = endIndex < blocks.length ? endIndex : null;
-      paginationLog(`[Pagination] ⚙ forward break → page=[${req.base},${end ?? 'END'}) pageBlocks=${end == null ? blocks.length - req.base : end - req.base}`);
-      // Must match the layout-change effect's key below (incl. the committed
-      // split) or every applied page looks like a layout change and triggers
-      // an endless remeasure loop (spinner ↔ content flash). SPEC-082 Task 3.
-      const layoutKey = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}:${translationSplit}`;
-      if (charsPerPageLayoutRef.current !== layoutKey) {
-        charsPerPageLayoutRef.current = layoutKey;
-        const sampled = sampleCharsPerPage(
-          blocks,
-          req.base,
-          measureEnd,
-          availableHeight,
-          blockMetricsRef.current,
-          contentWidth,
-          hardStarts,
-        );
-        if (sampled) {
-          charsPerPageRef.current = sampled;
-          paginationLog(`[Pagination] 📄 charsPerPage sample=${sampled} totalPages=${Math.max(1, Math.ceil(totalCharsRef.current / sampled))}`);
-        } else {
-          paginationLog(`[Pagination] 📄 charsPerPage sample skipped (no break in window)`);
-        }
-      }
-      if (totalCharsRef.current > 0) {
-        const nextTotal = Math.max(1, Math.ceil(totalCharsRef.current / Math.max(1, charsPerPageRef.current)));
-        setTotalPagesEstimate(nextTotal);
-        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${nextTotal} totalChars=${totalCharsRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
-      } else {
-        paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${req.base} end=${end ?? 'END'} totalPages=${totalPagesEstimate} totalChars=${totalCharsRef.current} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
-      }
-      layoutKeyRef.current = layoutKey;
-      setLazyPageStart(req.base);
-      setLazyPageEnd(end);
-      setPage(req.pageNumber - 1);
-      setHasMeasured(true);
-      requestRef.current = null;
       return;
     }
-
-    const res = computeBackwardStart(
-      blocks,
-      measureStart,
-      req.base,
-      availableHeight,
-      blockMetricsRef.current,
-      contentWidth,
-      hardStarts,
-    );
-    if (res.needsMore) {
-      paginationLog(`[Pagination] ⚙ backward needsMore prevStart=${res.startIndex} — extending window`);
+    if (bwd.needsMore) {
+      paginationLog(`[Pagination] ⚙ refine backward needsMore — extending window`);
       const nextStart = Math.max(0, measureStart - WINDOW_LIMIT);
       if (nextStart < measureStart) {
         measureOriginRef.current = nextStart;
@@ -684,12 +754,58 @@ export function useEpubPagination({
         return;
       }
     }
-    paginationLog(`[Pagination] ⚙ backward break → page=[${res.startIndex},${req.base}) pageBlocks=${req.base - res.startIndex}`);
-    paginationLog(`[Pagination] ✅ page applied page=${req.pageNumber - 1} start=${res.startIndex} end=${req.base} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
-    setLazyPageStart(res.startIndex);
-    setLazyPageEnd(req.base);
-    setPage(req.pageNumber - 1);
+    const trueStart = bwd.needsMore ? 0 : bwd.startIndex;
+
+    // Forward walk from the true start to find the page end.
+    const fwd = walkForwardEnd(blocks, trueStart, measureEnd, availableHeight, blockMetricsRef.current, hardStarts);
+    if (fwd.blocked) {
+      const missing = missingCount(blockMetricsRef.current, trueStart, measureEnd);
+      if (waitingMissingRef.current !== missing) {
+        waitingMissingRef.current = missing;
+        paginationLog(`[Pagination] ⏳ refine waiting forward missing=${missing}/${measureEnd - trueStart} elapsed=${Date.now() - requestStartedAtRef.current}ms`);
+      }
+      return;
+    }
+    if (fwd.needsMore) {
+      paginationLog(`[Pagination] ⚙ refine forward needsMore — extending window`);
+      const nextEnd = Math.min(blocks.length, measureEnd + WINDOW_LIMIT);
+      if (nextEnd > measureEnd) {
+        setMeasureEnd(nextEnd);
+        return;
+      }
+    }
+    const trueEnd = fwd.needsMore ? blocks.length : fwd.endIndex;
+    waitingMissingRef.current = -1;
+    paginationLog(`[Pagination] ⚙ refine applied page=[${trueStart},${trueEnd}) requested=[${req.base},${req.endBase ?? '?'}) elapsed=${Date.now() - requestStartedAtRef.current}ms`);
+
+    // Re-sample chars-per-page when the layout signature changed so future
+    // estimates stay grounded in the real page size.
+    const layoutKey = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}:${translationSplit}`;
+    if (charsPerPageLayoutRef.current !== layoutKey) {
+      charsPerPageLayoutRef.current = layoutKey;
+      const sampled = sampleCharsPerPage(
+        blocks,
+        trueStart,
+        Math.min(measureEnd, blocks.length),
+        availableHeight,
+        blockMetricsRef.current,
+        contentWidth,
+        hardStarts,
+      );
+      if (sampled) {
+        charsPerPageRef.current = sampled;
+        paginationLog(`[Pagination] 📄 charsPerPage sample=${sampled} totalPages=${Math.max(1, Math.ceil(totalCharsRef.current / sampled))}`);
+      } else {
+        paginationLog(`[Pagination] 📄 charsPerPage sample skipped (no break in window)`);
+      }
+    }
+    if (totalCharsRef.current > 0) {
+      setTotalPagesEstimate(Math.max(1, Math.ceil(totalCharsRef.current / Math.max(1, charsPerPageRef.current))));
+    }
+    setLazyPageStart(trueStart);
+    setLazyPageEnd(trueEnd);
     setHasMeasured(true);
+    boundariesExactRef.current = true;
     requestRef.current = null;
   }, [
     estimate, blocks, measureStart, measureEnd, metricsVersion,
@@ -724,21 +840,40 @@ export function useEpubPagination({
     setHasMeasured(true);
   }, [blocks, availableHeight, measuredBlockCount, estimate, hardStarts]);
 
-  // ── Lazy mode: re-measure when the real viewport / translation layout changes ──
+  // ── Lazy mode: when the real viewport / translation layout changes, keep the
+  // current page visible (its boundaries are close) and refine exactly in the
+  // background — never show a spinner. ──
   useEffect(() => {
     if (!estimate || !blocks || !hasMeasured || lazyPageStart == null) return;
     const key = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}:${translationSplit}`;
     if (layoutKeyRef.current === key) return;
-    paginationLog(`[Pagination] 🔄 layout changed ${layoutKeyRef.current ?? 'none'} → ${key} — remeasuring from block ${lazyPageStart}`);
+    paginationLog(`[Pagination] 🔄 layout changed ${layoutKeyRef.current ?? 'none'} → ${key} — keep page visible, refine in background`);
     layoutKeyRef.current = key;
+    // Invalidate every measurement: fonts / viewport / translation layout
+    // changed, so old heights no longer apply.
     blockMetricsRef.current = [];
+    charsPerPageRef.current = 400;
+    charsPerPageLayoutRef.current = null;
     setMeasureNonce(n => n + 1);
     setMetricsVersion(v => v + 1);
-    startLazyMeasure('forward', lazyPageStart, page + 1);
+    boundariesExactRef.current = false;
+    startRefine(lazyPageStart, lazyPageEnd);
   }, [
-    estimate, blocks, hasMeasured, lazyPageStart, page,
-    contentWidth, availableHeight, showTranslation, translationSplit, startLazyMeasure,
+    estimate, blocks, hasMeasured, lazyPageStart, lazyPageEnd,
+    contentWidth, availableHeight, showTranslation, translationSplit, startRefine,
   ]);
+
+  // ── When flipping stops, refine the current page's boundaries exactly if
+  // they were estimated (flipped beyond the measured window, or a layout
+  // change invalidated them). In-window flips were already exact — no jump. ──
+  useEffect(() => {
+    if (!estimate || !blocks || !interactionSettled) return;
+    if (lazyPageStart == null || boundariesExactRef.current) return;
+    const req = requestRef.current;
+    if (req && req.id === requestIdRef.current && req.mode === 'refine') return;
+    boundariesExactRef.current = true; // one refinement per settle
+    startRefine(lazyPageStart, lazyPageEnd);
+  }, [interactionSettled, estimate, blocks, lazyPageStart, startRefine]);
 
   // ── Non-lazy readers: invalidate measurements when translation is toggled
   // or the committed side-by-side split changes (SPEC-082 Task 3) ──
@@ -786,7 +921,11 @@ export function useEpubPagination({
   }, [initialAnchor, initialBlockIndex, blocks, hasMeasured, pageBreaks]);
 
   // ── Batch lemmatize visible text blocks (per-page) ──
+  // Gated on interactionSettled: while the user is rapidly flipping pages we
+  // render instant plain text (TokenizedText defer path) and skip the network
+  // batch entirely; tokenization runs once flipping stops.
   useEffect(() => {
+    if (!interactionSettled) return;
     if (!hasMeasured || !blocks || !visibleBlocks) return;
     const textBlocks = visibleBlocks.filter(
       (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
@@ -872,7 +1011,7 @@ export function useEpubPagination({
         clearTimeout(timeout);
         if (tokenLoadGenRef.current === gen) setLoadingTokens(false);
       });
-  }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code, visibleSet]);
+  }, [interactionSettled, hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code, visibleSet]);
 
   // ── Auto-translate visible text blocks (per-page) when showTranslation is on ──
   // Fetches in small chunks and only counts non-empty results as done. The
@@ -881,6 +1020,7 @@ export function useEpubPagination({
   // lines are retried with backoff; each retry is a different numbered subset,
   // so it misses the truncated server-cache entry and gets a fresh translation.
   useEffect(() => {
+    if (!interactionSettled) return;
     if (!showTranslation || !hasMeasured || !blocks || !visibleBlocks) return;
     if (loadingTokens) return;
     const textBlocks = visibleBlocks.filter(
@@ -1021,7 +1161,7 @@ export function useEpubPagination({
           translationLogger.log(`complete — all ${textBlocks.length} visible paragraphs translated`);
         }
       });
-  }, [visibleBlocks, hasMeasured, showTranslation, loadingTokens, blocks, l1Code, l2Code, translateRetry]);
+  }, [interactionSettled, visibleBlocks, hasMeasured, showTranslation, loadingTokens, blocks, l1Code, l2Code, translateRetry]);
 
   // Clear the retry timer if the hook unmounts.
   useEffect(() => {
@@ -1030,32 +1170,41 @@ export function useEpubPagination({
     };
   }, []);
 
+  // Clear the settle timer if the hook unmounts.
+  useEffect(() => {
+    return () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
+  }, []);
+
   // ── Page navigation ──
+  // Estimate mode: turns are instant — the break is computed from already
+  // measured metrics when possible, else a char-count estimate. No spinner,
+  // no measurement wait; exact re-measurement runs in the background once the
+  // user stops flipping.
   const prevPage = useCallback(() => {
     if (estimate) {
       if (!blocks || lazyPageStart == null || lazyPageStart <= 0) return;
-      paginationLog(`[Pagination] ◀ prevPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd ?? 'END'} t=${Date.now()} → measure backward`);
-      startLazyMeasure('backward', lazyPageStart, page);
-      setBlockTranslations({});
+      paginationLog(`[Pagination] ◀ prevPage currentPage=${page} start=${lazyPageStart} t=${Date.now()}`);
+      applyEstimatedPage('backward', lazyPageStart, page);
       return;
     }
     if (page <= 0) return;
     setPage(p => p - 1);
     setBlockTranslations({});
-  }, [estimate, blocks, lazyPageStart, page, startLazyMeasure]);
+  }, [estimate, blocks, lazyPageStart, page, applyEstimatedPage]);
 
   const nextPage = useCallback(() => {
     if (estimate) {
       if (!blocks || lazyPageEnd == null || lazyPageEnd >= blocks.length) return;
-      paginationLog(`[Pagination] ▶ nextPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd} t=${Date.now()} → measure forward`);
-      startLazyMeasure('forward', lazyPageEnd, page + 2);
-      setBlockTranslations({});
+      paginationLog(`[Pagination] ▶ nextPage currentPage=${page} start=${lazyPageStart} end=${lazyPageEnd} t=${Date.now()}`);
+      applyEstimatedPage('forward', lazyPageEnd, page + 2);
       return;
     }
     if (page >= totalPages - 1) return;
     setPage(p => p + 1);
     setBlockTranslations({});
-  }, [estimate, blocks, lazyPageEnd, page, totalPages, startLazyMeasure]);
+  }, [estimate, blocks, lazyPageEnd, page, totalPages, applyEstimatedPage]);
 
   const goToPage = useCallback((target: number) => {
     if (estimate) {
@@ -1075,15 +1224,14 @@ export function useEpubPagination({
       }
       const base = Math.max(0, lo - 1);
       paginationLog(`[Pagination] 🔢 goToPage target=${clamped} chars=${targetChars} → block ${base} t=${Date.now()}`);
-      startLazyMeasure('forward', base, clamped + 1);
-      setBlockTranslations({});
+      applyEstimatedPage('forward', base, clamped + 1);
       return;
     }
     const clamped = Math.max(0, Math.min(target, totalPages - 1));
     if (clamped === page) return;
     setPage(clamped);
     setBlockTranslations({});
-  }, [estimate, blocks, page, totalPages, startLazyMeasure]);
+  }, [estimate, blocks, page, totalPages, applyEstimatedPage]);
 
   // ── Map a global block index to the page that contains it (in-book search) ──
   const blockPage = useCallback((blockIndex: number): number => {
@@ -1110,12 +1258,12 @@ export function useEpubPagination({
     setBlockTranslations({});
     if (estimate) {
       paginationLog(`[Pagination] 🎯 goToBlock block=${blockIndex} estimatedPage=${lazyPageForBlock(blockIndex)} t=${Date.now()}`);
-      startLazyMeasure('forward', blockIndex, lazyPageForBlock(blockIndex));
+      applyEstimatedPage('forward', blockIndex, lazyPageForBlock(blockIndex));
       return;
     }
     const targetPage = blockPage(blockIndex);
     if (targetPage !== page) setPage(targetPage);
-  }, [blocks, estimate, lazyPageForBlock, startLazyMeasure, blockPage, page]);
+  }, [blocks, estimate, lazyPageForBlock, applyEstimatedPage, blockPage, page]);
 
   // ── Report anchor / block index on page change (matches web ReaderPanel) ──
   useEffect(() => {
