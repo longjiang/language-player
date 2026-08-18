@@ -128,3 +128,12 @@ export {
   CONTEXT_GROUP_PLACEHOLDER,
 } from './subs-search';
 export type { SubsSearchSortKey } from './subs-search';
+export {
+  AI_EXAMPLES_LIMIT,
+  AI_EXAMPLES_TARGET,
+  AI_EXAMPLES_CONTEXT_LINES,
+  buildAiExamplesPayload,
+  buildAiExamplesPrompt,
+  parseAiExamplesResponse,
+} from './subs-ai-examples';
+export type { AiVideoExample, AiExamplesResult } from './subs-ai-examples';

@@ -741,6 +741,7 @@
         "admin_only_hint": "仅限管理员访问。",
         "admin_removed": "管理员权限已移除。",
         "ai_analyzing": "正在用 AI 分析用法…",
+        "ai_examples_failed": "抱歉，我找不到这个单词的视频示例。",
         "ai_grouping_failed": "AI 分组失败。按默认顺序显示结果。",
         "ai_pro_feature": "Pro 功能：获取单词在上下文中的 AI 解释。",
         "all_done_desc": "您已复习完所有到期卡片。稍后再来进行更多复习，或浏览视频收藏新单词。",
@@ -824,6 +825,7 @@
         "everything_you_need": "学习所需的一切",
         "exact_match_searching": "正在搜索{n}种形式 — 点击仅精确匹配",
         "exact_match_searching_only": "仅搜索\"{term}\" — 点击搜索{n}种形式",
+        "examples_from_videos_intro": "以下是一些最能说明这一用法的示例。",
         "existing_subscription_warning": "您目前有一个会自动续订的{planType}计划。为避免重复收费，您必须在购买新计划之前取消现有订阅。您想取消现有的{planType}订阅吗？",
         "expired": "已过期",
         "expired_label": "（已过期）",
@@ -1206,6 +1208,7 @@
         "followup_synonyms_context": "请列出\"{context}\"中{l2Name}单词\"{word}\"的同义词。对于每个同义词，给出词头（词典形式）和发音，说明它在意义和用法上与\"{word}\"有何不同，并给出例句说明差异。",
         "followup_syntax": "请解释{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
         "followup_syntax_context": "请解释\"{context}\"中的{l2Name}单词\"{word}\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
+        "subs_ai_examples": "你是一名语言学习助手。以下是来自{n}个视频的字幕行，均为{l2Name}，包含术语\"{term}\"。以*开头的行是匹配行。",
         "subs_ai_group": "你是一名语言学习助手。以下是来自视频的{n}行字幕，均为{l2Name}，包含术语\"{term}\"。"
     },
     "review": {

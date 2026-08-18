@@ -755,6 +755,7 @@
         "admin_only_hint": "Accès administrateur uniquement.",
         "admin_removed": "Droits d'administrateur retirés.",
         "ai_analyzing": "Analyse des modèles par IA…",
+        "ai_examples_failed": "Désolé, je n'ai pas trouvé d'exemples vidéo pour ce mot.",
         "ai_grouping_failed": "Le regroupement par IA a échoué. Affichage des résultats dans l'ordre par défaut.",
         "ai_pro_feature": "Fonctionnalité Pro : Obtenez des explications IA des mots en contexte.",
         "all_done_desc": "Vous avez révisé toutes les cartes dues. Revenez plus tard pour d'autres révisions, ou explorez des vidéos pour enregistrer de nouveaux mots.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Tout ce dont vous avez besoin pour apprendre",
         "exact_match_searching": "Recherche dans {n} formes — cliquer pour correspondance exacte",
         "exact_match_searching_only": "Recherche seulement \"{term}\" — cliquer pour chercher dans {n} formes",
+        "examples_from_videos_intro": "Voici quelques résultats qui illustrent le mieux cet usage particulier.",
         "existing_subscription_warning": "Vous avez actuellement un plan {planType} actif qui se renouvellera automatiquement. Pour éviter les doubles facturations, vous devez annuler votre abonnement existant avant d'en acheter un nouveau. Voulez-vous annuler votre abonnement {planType} existant ?",
         "expired": "Expiré",
         "expired_label": "(Expiré)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Veuillez lister les synonymes du mot {l2Name} \"{word}\" dans \"{context}\". Pour chaque synonyme, donnez la vedette (forme de dictionnaire) et sa prononciation, expliquez en quoi il diffère de \"{word}\" par le sens et l'usage, et fournissez des exemples illustrant la différence.",
         "followup_syntax": "Expliquez si le mot {l2Name} \"{word}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
         "followup_syntax_context": "Expliquez si le mot {l2Name} \"{word}\" dans \"{context}\" fonctionne comme élément syntaxique et expliquez quelle est la structure syntaxique (p. ex. structure de la phrase, partie d'un syntagme, un phénomène grammatical particulier, etc.).",
+        "subs_ai_examples": "Vous êtes un assistant d'apprentissage des langues. Voici des lignes de sous-titres de {n} vidéos, chacune en {l2Name}, contenant le terme « {term} ». Les lignes commençant par * sont les lignes correspondantes.",
         "subs_ai_group": "Vous êtes un assistant d'apprentissage des langues. Voici {n} lignes de sous-titres de vidéos, chacune en {l2Name}, contenant le terme \"{term}\"."
     },
     "review": {

@@ -755,6 +755,7 @@
         "admin_only_hint": "Khusus administrator.",
         "admin_removed": "Akses admin dihapus.",
         "ai_analyzing": "Menganalisis pola dengan AI…",
+        "ai_examples_failed": "Maaf, saya tidak dapat menemukan contoh video untuk kata ini.",
         "ai_grouping_failed": "Pengelompokan AI gagal. Menampilkan hasil dalam urutan default.",
         "ai_pro_feature": "Fitur premium: Dapatkan penjelasan kata dengan AI berdasarkan konteks.",
         "all_done_desc": "Anda telah meninjau semua kartu yang jatuh tempo. Kembali lagi nanti untuk peninjauan lebih lanjut, atau jelajahi video untuk menyimpan kata baru.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Semua yang Anda butuhkan untuk belajar",
         "exact_match_searching": "Mencari {n} bentuk — klik untuk pencocokan tepat",
         "exact_match_searching_only": "Hanya mencari \"{term}\" — klik untuk mencari {n} bentuk",
+        "examples_from_videos_intro": "Berikut adalah beberapa hasil yang paling menggambarkan penggunaan khusus ini.",
         "existing_subscription_warning": "Saat ini Anda memiliki rencana {planType} aktif yang akan diperpanjang secara otomatis. Untuk menghindari biaya ganda, Anda harus membatalkan langganan yang ada sebelum membeli yang baru. Apakah Anda ingin membatalkan langganan {planType} yang ada?",
         "expired": "Kedaluwarsa",
         "expired_label": "(Kedaluwarsa)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Silakan sebutkan sinonim dari kata {l2Name} \"{word}\" dalam \"{context}\". Untuk setiap sinonim, berikan kata dasarnya dan pelafalannya, jelaskan perbedaannya dengan \"{word}\" dalam makna dan penggunaan, serta berikan contoh kalimat yang menggambarkan perbedaannya.",
         "followup_syntax": "Jelaskan apakah kata {l2Name} \"{word}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
         "followup_syntax_context": "Jelaskan apakah kata {l2Name} \"{word}\" dalam \"{context}\" berfungsi sebagai elemen sintaksis, dan jelaskan apa struktur sintaksisnya (mis. struktur kalimat, bagian dari frasa, fenomena gramatikal tertentu, dll.).",
+        "subs_ai_examples": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah baris subtitle dari {n} video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\". Baris yang diawali * adalah baris yang cocok.",
         "subs_ai_group": "Anda adalah asisten pembelajaran bahasa. Di bawah ini adalah {n} baris subtitle dari video, masing-masing dalam {l2Name}, yang mengandung istilah \"{term}\"."
     },
     "review": {

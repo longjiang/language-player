@@ -755,6 +755,7 @@
         "admin_only_hint": "Nur für Administratoren.",
         "admin_removed": "Admin-Rechte entzogen.",
         "ai_analyzing": "Muster werden mit KI analysiert…",
+        "ai_examples_failed": "Leider konnte ich keine Video-Beispiele für dieses Wort finden.",
         "ai_grouping_failed": "KI-Gruppierung fehlgeschlagen. Ergebnisse werden in Standardreihenfolge angezeigt.",
         "ai_pro_feature": "Profi-Funktion: KI-Erklärungen für Wörter im Kontext erhalten.",
         "all_done_desc": "Du hast alle fälligen Karten wiederholt. Komm später für weitere Wiederholungen zurück oder entdecke Videos, um neue Wörter zu speichern.",
@@ -839,6 +840,7 @@
         "everything_you_need": "Alles, was du zum Lernen brauchst",
         "exact_match_searching": "Suche in {n} Formen — klicke für exakte Übereinstimmung",
         "exact_match_searching_only": "Suche nur \"{term}\" — klicke um {n} Formen zu durchsuchen",
+        "examples_from_videos_intro": "Hier sind einige Ergebnisse, die diese besondere Verwendung am besten veranschaulichen.",
         "existing_subscription_warning": "Sie haben derzeit einen aktiven {planType}-Plan, der sich automatisch verlängert. Um doppelte Gebühren zu vermeiden, müssen Sie Ihr bestehendes Abonnement kündigen, bevor Sie ein neues erwerben. Möchten Sie Ihr bestehendes {planType}-Abonnement kündigen?",
         "expired": "Abgelaufen",
         "expired_label": "(Abgelaufen)",
@@ -1229,6 +1231,7 @@
         "followup_synonyms_context": "Bitte liste Synonyme des {l2Name}-Wortes \"{word}\" in \"{context}\" auf. Gib für jedes Synonym das Stichwort (Wörterbuchform) und seine Aussprache an, erkläre, wie es sich in Bedeutung und Verwendung von \"{word}\" unterscheidet, und gib Beispielsätze, die den Unterschied veranschaulichen.",
         "followup_syntax": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
         "followup_syntax_context": "Erkläre bitte, ob das {l2Name}-Wort \"{word}\" in \"{context}\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
+        "subs_ai_examples": "Du bist ein Sprachlern-Assistent. Unten findest du Untertitelzeilen aus {n} Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten. Zeilen mit führendem * sind die Trefferzeilen.",
         "subs_ai_group": "Du bist ein Sprachlern-Assistent. Unten sind {n} Untertitelzeilen aus Videos, jeweils auf {l2Name}, die den Begriff \"{term}\" enthalten."
     },
     "review": {
