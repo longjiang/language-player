@@ -125,7 +125,7 @@ export interface TokenizedTextProps {
   /** When true, renders the L2 token text bold (AI explanation spans). */
   bold?: boolean;
   /** Extra multiplier on top of the user's zoom setting. Defaults to 1 (user
-   *  zoom alone); only single-line subtitles pass 1.5. SPEC-051: this is the
+   *  zoom alone); only single-line subtitles pass 1.33. SPEC-051: this is the
    *  only allowed non-default value. */
   textScale?: number;
   /** Inline tokenized text (e.g. AI explanation spans): no user-zoom scaling
@@ -341,7 +341,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     const zoom = tokenSettings.zoom;
     const zoomRem = ZOOM_TO_REM[zoom] ?? 1;
     // Matches web: block-level text is user zoom × textScale (1 default,
-    // 1.5 for single-line subtitles). Inline text has no size of its own —
+    // 1.33 for single-line subtitles). Inline text has no size of its own —
     // it inherits from the parent Text.
     const effectiveScale = (textScale ?? 1) * zoomRem;
     const style: { fontSize?: number; fontFamily?: string; lineHeight?: number; fontWeight?: 'normal' | 'bold' } = {};

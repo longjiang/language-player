@@ -29,7 +29,7 @@ zoom 7.
 
 1. **Block-level `TokenizedText` always renders at the user's zoom.** Default
    multiplier is `1` (× user zoom). Single-line subtitles are the only
-   exception at `1.5` (× user zoom). No other surface gets a different
+   exception at `1.33` (× user zoom). No other surface gets a different
    multiplier.
 2. **Scaling and leading apply only to block-level tokenized text.** Inline
    tokenized text (e.g. AI explanation code spans embedded in a markdown
@@ -39,7 +39,7 @@ zoom 7.
    factor**, preserving the hierarchy (h1 24px, h2 20px, h3 18px, h4+ 16px at
    zoom 0). They are not forced down to the 16px body size.
 4. **Translations use the same multiplier as the adjacent tokenized text**
-   (1.5 for single-line subtitle translations, 1 everywhere else), applied to
+   (1.33 for single-line subtitle translations, 1 everywhere else), applied to
    the translation's own base font size. Web's current behavior is the
    reference.
 5. **Default line height for block-level `TokenizedText` is `relaxed`
@@ -63,7 +63,7 @@ equivalent) remains only for the single-line subtitle case.
 
 1. Keep the shared `ZOOM_TO_REM` arrays and `useTextScale()` in both apps.
 2. Block-level `TokenizedText` always applies the user zoom; single-line
-   subtitles pass `1.5`. Inline tokenized text (AI explanation) renders without
+   subtitles pass `1.33`. Inline tokenized text (AI explanation) renders without
    zoom or leading.
 3. Readers: multiply heading natural sizes by zoom on both web and mobile.
    Translations scale with the same multiplier as adjacent tokenized text on
@@ -79,12 +79,12 @@ equivalent) remains only for the single-line subtitle case.
 
 ## Acceptance criteria
 
-- Only two multipliers exist: `1` (default) and `1.5` (single-line subtitles).
+- Only two multipliers exist: `1` (default) and `1.33` (single-line subtitles).
 - Block-level `TokenizedText` renders 16px–36px following
   `ZOOM_TO_REM[index] × 16`.
 - Inline tokenized text (AI explanation) does not scale with zoom and does not
   apply leading.
-- Single-line subtitles render at 1.5× the user zoom; transcript rows at 1×.
+- Single-line subtitles render at 1.33× the user zoom; transcript rows at 1×.
 - Reader headings keep their natural hierarchy and scale with zoom.
 - Translations scale by the same multiplier as their adjacent tokenized text.
 - Mobile corpus mistakes render through `TokenizedText` at 1× zoom, matching
