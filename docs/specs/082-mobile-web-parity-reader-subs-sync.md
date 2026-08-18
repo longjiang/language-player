@@ -252,6 +252,15 @@ test) on every page.
 - **Edge cases**: legacy outbox rows without `updated_at` (default to now — same as web's behavior); delete of a card that was never created server-side (no-op).
 - **Test**: two-device simulation — device A queues delete, device B rates the card, A's sync flushes → card survives; then A's delete with a newer timestamp → card deleted.
 
+## Task 18 — Subs search + AI examples: watch-page modal layout on wide screens in multiline mode
+
+- **Web ref**: subs-search playback modal (`apps/web/src/components/video/subs-search-results.tsx`) shows subtitles on the side and video info below the player on wide (landscape) screens in multiline mode, mirroring the watch page — inside the modal: modal widens to `sm:max-w-5xl`, content becomes a `grid-cols-[minmax(0,1fr)_320px]` (player + controls + info left, subs transcript right), and the sidebar's info tab is dropped on wide (info lives below the player).
+- **Mobile state**: `SubsSearchResults.tsx` already mirrors web (rows `flex-row` on wide+multiline, `w-[320px]` sidebar, `max-w-4xl` dialog). **Gap:** the "Let DeepSeek Explain" example player modal (`AiExplanation.tsx` / `ai-explanation.tsx`) — opened from an example chip in the dictionary popup or the dictionary entry tabs' "Let DeepSeek Explain" tab — always stacked player → controls → subtitles vertically.
+- **Plan**:
+  1. Web `ai-explanation.tsx`: add `isWide` (resize-tracked `innerWidth > innerHeight`); extract `exampleVideoInfoContent`; wrap player/controls/subtitles in the same grid/flex structure as subs-search; widen the modal to `sm:max-w-5xl` on wide+multiline; drop the info tab from the sidebar on wide.
+  2. Mobile `AiExplanation.tsx`: same restructure with `isWide = width > height`, `flex-row` + `w-[320px]` sidebar, info below the player, info tab dropped on wide, `max-w-4xl` dialog; `key={exampleMode}` remount keeps the transcript tab on mode change (subs-search parity).
+- **Test**: open an AI example chip → toggle multiline → rotate to landscape: subtitles appear beside the player with info below it; rotate back to portrait: subtitles return below the player with the info tab restored.
+
 ---
 
 ## Shared Logic (move to `packages/` per AGENTS.md "share logic, not views")
