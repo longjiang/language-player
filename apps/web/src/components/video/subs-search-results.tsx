@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { baseCode, languageName } from '@/lib/language-data';
+import { stripSubtitleDurationPrefix, extractSubtitleDuration } from '@/lib/subtitle-csv';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { log, logwarn } from '@/lib/logger';
 import {
@@ -150,6 +152,15 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // ── Full-subtitles loading ("Load Full Subtitles") ──
+  // The subs-search pool only carries a limited subtitle range around each
+  // match. When the playhead leaves that range we pause and offer to load the
+  // full transcript. Full subtitles are cached per youtube_id; loading them
+  // only swaps the line data — the YouTube player never remounts and the
+  // playhead stays exactly where it is.
+  const [fullSubsMap, setFullSubsMap] = useState<Record<string, SubtitleLine[]>>({});
+  const [loadingFullSubs, setLoadingFullSubs] = useState(false);
 
   // Never autoplay. Videos are cued/paused at the match line; the user presses
   // play in the player controls to start.
@@ -484,6 +495,91 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     </div>
   ) : null;
 
+  // The subtitle lines the player uses: the full transcript once loaded,
+  // otherwise the limited range that came with the search.
+  const playerSubLines = useMemo(() => {
+    const lines = currentVideo?.youtube_id
+      ? (fullSubsMap[currentVideo.youtube_id] ?? currentVideo.subs_l2)
+      : (currentVideo?.subs_l2 ?? []);
+    return lines;
+  }, [currentVideo?.youtube_id, currentVideo?.subs_l2, fullSubsMap]);
+
+  // Covered interval of the available lines (chronological), for the
+  // out-of-range detection. Durations: explicit duration → gap to the next
+  // line → 5s fallback for the last line.
+  const subsCoverage = useMemo(() => {
+    if (playerSubLines.length === 0) return null;
+    const sorted = [...playerSubLines].sort((a, b) => a.starttime - b.starttime);
+    const first = sorted[0]!.starttime;
+    let lastEnd = -Infinity;
+    for (let i = 0; i < sorted.length; i++) {
+      const l = sorted[i]!;
+      const next = sorted[i + 1];
+      const dur = l.duration ?? (next ? next.starttime - l.starttime : 5);
+      lastEnd = Math.max(lastEnd, l.starttime + dur);
+    }
+    return { first, lastEnd };
+  }, [playerSubLines]);
+
+  const isOutOfRange =
+    subsCoverage !== null &&
+    (currentTime < subsCoverage.first - 0.3 || currentTime > subsCoverage.lastEnd);
+
+  // Pause once when the playhead leaves the covered range.
+  const wasInRangeRef = useRef(true);
+  useEffect(() => {
+    if (!isOutOfRange) {
+      wasInRangeRef.current = true;
+      return;
+    }
+    if (wasInRangeRef.current) {
+      wasInRangeRef.current = false;
+      log('[subsSearch] playhead left loaded subtitle range', {
+        youtubeId: currentVideo?.youtube_id,
+        currentTime,
+        coverage: subsCoverage,
+      });
+      playerRef.current?.pause();
+      setPaused(true);
+    }
+  }, [isOutOfRange, currentVideo?.youtube_id, currentTime, subsCoverage]);
+
+  // Fetch the complete transcript for the current video. The player element
+  // depends only on youtube_id, so this never reloads it; we don't seek, so
+  // the playhead stays unchanged.
+  const handleLoadFullSubtitles = useCallback(async () => {
+    if (!currentVideo || loadingFullSubs) return;
+    const youtubeId = currentVideo.youtube_id;
+    if (fullSubsMap[youtubeId]?.length) return;
+    setLoadingFullSubs(true);
+    try {
+      const res = await fetch(
+        `/api/videos/${youtubeId}/subtitles?l2=${baseCode(l2.code)}&l1=${baseCode(l1.code)}&clean_generated=0`,
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: any = await res.json();
+      const lines: SubtitleLine[] = (Array.isArray(data?.lines) ? data.lines : [])
+        .map((l: any) => ({
+          starttime: l.starttime ?? 0,
+          duration: extractSubtitleDuration(l),
+          line: stripSubtitleDurationPrefix(l.l2Line ?? ''),
+        }))
+        .filter((l: SubtitleLine) => l.line.trim().length > 0);
+      if (lines.length === 0) throw new Error('empty subtitles');
+      setFullSubsMap((prev) => ({ ...prev, [youtubeId]: lines }));
+      toast.success(t('msg.full_subtitles_loaded'));
+      log('[subsSearch] full subtitles loaded', { youtubeId, lines: lines.length });
+    } catch (err) {
+      logwarn('[subsSearch] full subtitles load failed', {
+        youtubeId,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      toast.error(t('msg.full_subtitles_failed'));
+    } finally {
+      setLoadingFullSubs(false);
+    }
+  }, [currentVideo, fullSubsMap, loadingFullSubs, l1.code, l2.code, t]);
+
   // Split comma-separated search terms for highlighting
   const highlightTerms = useMemo(
     () => searchTerm.split(',').map((t) => t.trim()).filter(Boolean),
@@ -499,21 +595,24 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setPool(all);
   }, []);
 
-  // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
+  // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every
+  // render. Uses `playerSubLines` (full transcript once loaded, otherwise the
+  // limited search range) so "Load Full Subtitles" flows straight into the
+  // player's subtitle display.
   const subtitleInitialLines = useMemo(
     () => {
-      const lines = currentVideo?.subs_l2.map((l) => ({
+      const lines = playerSubLines.map((l) => ({
         starttime: l.starttime,
         l1Line: '',
         l2Line: l.line,
-      })) ?? [];
+      }));
       // Sort by starttime ascending — SubtitleDisplay's activeIndex logic
       // iterates sequentially and breaks on the first line > currentTime,
       // so lines MUST be in chronological order.
       lines.sort((a, b) => a.starttime - b.starttime);
       return lines;
     },
-    [currentVideo?.id, currentVideo?.subs_l2],
+    [currentVideo?.youtube_id, playerSubLines],
   );
 
   // ── Fetch ────────────────────────────────────
@@ -1444,6 +1543,24 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
                     })}
                   />
                 </div>
+
+                {/* Out-of-range notice — the playhead left the loaded subtitle
+                    range (shown in both singleline and multiline modes). */}
+                {isOutOfRange && (
+                  <div className="flex items-center justify-between gap-2 border-b border-border bg-amber-50 px-3 py-2 dark:bg-amber-950">
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      {t('msg.subs_out_of_range')}
+                    </p>
+                    <Button
+                      size="sm"
+                      className="shrink-0"
+                      onClick={handleLoadFullSubtitles}
+                      disabled={loadingFullSubs}
+                    >
+                      {loadingFullSubs ? t('msg.loading') : t('action.load_full_subtitles')}
+                    </Button>
+                  </div>
+                )}
 
                 {/* Video info below the player on wide multiline (watch page) */}
                 {subtitleMode === 'multiline' && isWide && videoInfoContent}
