@@ -38,8 +38,8 @@ import { SubsSearchRow, formatTime, youtubeThumbnail } from './SubsSearchRow';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
-import { ICON_MUTED } from '@/lib/theme-colors';
-import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play, ArrowUpDown } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
 
 /** Compact number label (e.g. "12K") with a plain fallback. */
 function formatNumber(n: number | undefined, locale: string): string {
@@ -143,6 +143,45 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
 
+  // ── Advanced search (custom terms / exclude terms / shows / categories) ──
+  // Empty tvShowIds / categoryIds mean "all". `customTerms` replaces the
+  // auto-derived term string when non-empty (web parity).
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [customTerms, setCustomTerms] = useState('');
+  const [excludeTerms, setExcludeTerms] = useState('');
+  const [tvShowIds, setTvShowIds] = useState<number[]>([]);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [shows, setShows] = useState<Array<{ id: number; title: string }>>([]);
+  const [showsExpanded, setShowsExpanded] = useState(true);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+
+  // The term string actually searched: custom terms win over the auto-derived
+  // head + inflections. Everything below uses this effective term.
+  const searchTerm = customTerms.trim() ? customTerms : term;
+  const isAdvancedActive =
+    customTerms.trim().length > 0 ||
+    excludeTerms.trim().length > 0 ||
+    tvShowIds.length > 0 ||
+    categoryIds.length > 0;
+
+  // Load the TV-show checklist for this L2 when the modal first opens.
+  const [showsLoaded, setShowsLoaded] = useState(false);
+  useEffect(() => {
+    if (!advancedOpen || showsLoaded) return;
+    setShowsLoaded(true);
+    fetch(`${PYTHON_API_URL}/tv-shows?l2=${baseCode(l2Lang.code)}&limit=200`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : [];
+        setShows(
+          list
+            .filter((s: any) => s && typeof s.id === 'number' && s.title)
+            .map((s: any) => ({ id: s.id, title: String(s.title) })),
+        );
+      })
+      .catch((err) => logwarn('[LP Mobile] subs-search failed to load tv shows for advanced search:', err));
+  }, [advancedOpen, showsLoaded, l2Lang.code]);
+
   // Never autoplay (SPEC-082 Task 12, web parity): videos are cued/paused at
   // the match line via `startTime`; playback starts only on explicit user
   // action. Kept as a named constant so the policy can be revisited.
@@ -150,8 +189,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   // Split comma-separated terms for highlighting
   const highlightTerms = useMemo(
-    () => term.split(',').map((t) => t.trim()).filter(Boolean),
-    [term],
+    () => searchTerm.split(',').map((t) => t.trim()).filter(Boolean),
+    [searchTerm],
   );
 
   // Content filter: narrows the fetched pool by category / TV-show membership.
@@ -207,9 +246,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const aiCacheKey = useMemo(
     () =>
       aiAnalyzed.length > 0
-        ? `${l2Lang.code}|${term}|${aiAnalyzed.map((v) => v.id).join(',')}`
+        ? `${l2Lang.code}|${searchTerm}|${aiAnalyzed.map((v) => v.id).join(',')}`
         : '',
-    [aiAnalyzed, term, l2Lang.code],
+    [aiAnalyzed, searchTerm, l2Lang.code],
   );
   const aiGroupsValid = listSort === 'ai' && aiKey === aiCacheKey && aiGroups !== null;
 
@@ -232,10 +271,10 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     const l1Name = l1Lang.name;
     const l2Name = l2Lang.name;
     const lines = buildAiPayload(aiAnalyzed);
-    const prose = t('prompt.subs_ai_group', { n: aiAnalyzed.length, l2Name, term });
-    const prompt = buildAiPrompt({ prose, lines, l1Name, l2Name, term });
+    const prose = t('prompt.subs_ai_group', { n: aiAnalyzed.length, l2Name, term: searchTerm });
+    const prompt = buildAiPrompt({ prose, lines, l1Name, l2Name, term: searchTerm });
     log('[subsSearch] AI grouping request', {
-      term,
+      term: searchTerm,
       n: aiAnalyzed.length,
       promptChars: prompt.length,
     });
@@ -277,7 +316,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       });
 
     return () => { cancelled = true; };
-  }, [listSort, aiAnalyzed, aiCacheKey, l1Lang.code, l2Lang.code, term, t, aiRetryTick]);
+  }, [listSort, aiAnalyzed, aiCacheKey, l1Lang.code, l2Lang.code, searchTerm, t, aiRetryTick]);
 
   // Ordered display list for AI sort: pattern groups (LLM order), then
   // Other Patterns (analyzed ids the LLM didn't assign to any pattern —
@@ -290,7 +329,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   const filteredVideos = useMemo(() => {
     if (listSort !== 'ai' || !aiOrderedVideos) {
-      return applyFilterAndSort(videos, listSearch, listSort, term);
+      return applyFilterAndSort(videos, listSearch, listSort, searchTerm);
     }
     // Video-type pill + free-user quota filter the already-grouped AI order
     // (no re-analysis), then the text filter narrows within groups.
@@ -304,7 +343,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
         )
       : result;
-  }, [listSort, aiOrderedVideos, videos, listSearch, term, applyVideoFilter, isPro]);
+  }, [listSort, aiOrderedVideos, videos, listSearch, searchTerm, applyVideoFilter, isPro]);
 
   // Group key per video for AI sort: `ai-<i>` per pattern group,
   // `other-patterns` for analyzed-but-unclassified (including ids the LLM
@@ -348,8 +387,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const contextGroupKey = useMemo(() => {
     if (listSort !== 'leftContext' && listSort !== 'rightContext') return undefined;
     const side = listSort === 'leftContext' ? 'left' : 'right';
-    return (v: SubsSearchVideo) => contextChar(v, term, side) || CONTEXT_GROUP_PLACEHOLDER;
-  }, [listSort, term]);
+    return (v: SubsSearchVideo) => contextChar(v, searchTerm, side) || CONTEXT_GROUP_PLACEHOLDER;
+  }, [listSort, searchTerm]);
   const activeGroupKey = listSort === 'ai' ? aiGroupKeyFor : contextGroupKey;
 
   // Collapsed context groups (rows hidden, header stays). Reset whenever the
@@ -499,15 +538,31 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   // ── Fetch ──
   useEffect(() => {
-    if (!term) return;
+    if (!searchTerm) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch && isPro ? 500 : 50, context: 3 })
+    // Advanced filters: category / tv_show narrow server-side; exclude terms
+    // drop matching videos client-side after the fetch.
+    const categoryQuery = categoryIds.length > 0 ? categoryIds.join(',') : undefined;
+    const tvShowQuery = tvShowIds.length > 0 ? tvShowIds.join(',') : undefined;
+    const excludeList = excludeTerms
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+
+    videosApi.searchSubs({
+      terms: searchTerm,
+      l2: l2Lang.code,
+      limit: search.expandSubsSearch && isPro ? 500 : 50,
+      context: 3,
+      ...(categoryQuery ? { category: categoryQuery } : {}),
+      ...(tvShowQuery ? { tv_show: tvShowQuery } : {}),
+    })
       .then((data) => {
         if (cancelled) return;
-        const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+        const searchForms = searchTerm.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = data
           .map((v: any) => {
             const lines = parseSubsL2(v.subs_l2 ?? '');
@@ -521,14 +576,22 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
-              matchLineIndex: findMatchLine(lines, term),
+              matchLineIndex: findMatchLine(lines, searchTerm),
             };
           })
           .filter((v) =>
             v.subs_l2.some((l) =>
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
-          );
+          )
+          // Exclude terms: drop any video whose matched line contains one.
+          .filter((v) => {
+            if (excludeList.length === 0) return true;
+            const match = v.subs_l2[v.matchLineIndex];
+            if (!match) return true;
+            const lower = match.line.toLowerCase();
+            return !excludeList.some((x) => lower.includes(x));
+          });
         applyVideos(parsed);
         setCurrentIndex(0);
         setLoading(false);
@@ -541,7 +604,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       });
 
     return () => { cancelled = true; };
-  }, [term, l2Lang.code, search.expandSubsSearch, isPro]);
+  }, [searchTerm, l2Lang.code, search.expandSubsSearch, isPro, categoryIds, tvShowIds, excludeTerms]);
 
   // Changing the sort or the text filter reorders/shrinks the queue, so the
   // current index may now point at a different (or missing) video. Reset to
@@ -604,7 +667,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         isPro,
       });
     },
-    [currentVideo, filteredVideos, pool, isPro, currentIndex, applyVideoFilter, listSearch, listSort, term],
+    [currentVideo, filteredVideos, pool, isPro, currentIndex, applyVideoFilter, listSearch, listSort, searchTerm],
   );
 
   const selectFromList = (idx: number) => {
@@ -866,6 +929,195 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     </View>
   ) : null;
 
+  // ── Advanced search modal content ──
+  // Distinct categories present in the current result pool — the checklist
+  // source for "categories to include" (known categories get real names).
+  const poolCategories = useMemo(() => {
+    const seen = new Map<number, number>();
+    for (const v of pool) {
+      if (v.category == null) continue;
+      seen.set(v.category, (seen.get(v.category) ?? 0) + 1);
+    }
+    return Array.from(seen.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, count]) => ({ id, count }));
+  }, [pool]);
+
+  const categoryLabel = (id: number) =>
+    id === 10 ? t('filter.music') : id === 24 ? t('title.music_and_entertainment') : t('label.category_n', { n: id });
+
+  const toggleShow = (id: number) =>
+    setTvShowIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggleCategory = (id: number) =>
+    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const resetAdvanced = () => {
+    setCustomTerms('');
+    setExcludeTerms('');
+    setTvShowIds([]);
+    setCategoryIds([]);
+  };
+
+  const advancedModalContent = (
+    <>
+      {/* Header */}
+      <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+        <View className="flex-row items-center gap-2">
+          <SlidersHorizontal size={16} color={ICON_PRIMARY} />
+          <Text className="text-sm font-bold text-foreground">{t('action.advanced_search')}</Text>
+        </View>
+        <Dialog.Close className="rounded-full bg-muted p-2">
+          <X size={16} color={ICON_MUTED} />
+        </Dialog.Close>
+      </View>
+
+      <ScrollView className="max-h-[70vh] p-4">
+        {/* Custom search terms */}
+        <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('label.search_terms')}</Text>
+        <TextInput
+          value={customTerms}
+          onChangeText={setCustomTerms}
+          placeholder={t('placeholder.custom_search_terms')}
+          placeholderTextColor={ICON_MUTED}
+          className="mb-4 h-9 rounded-lg border border-border bg-muted/50 px-3 text-sm text-foreground"
+        />
+
+        {/* Exclude terms */}
+        <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('label.exclude_terms')}</Text>
+        <TextInput
+          value={excludeTerms}
+          onChangeText={setExcludeTerms}
+          placeholder={t('placeholder.exclude_terms')}
+          placeholderTextColor={ICON_MUTED}
+          className="mb-4 h-9 rounded-lg border border-border bg-muted/50 px-3 text-sm text-foreground"
+        />
+
+        {/* Shows to include */}
+        <View className="mb-3 overflow-hidden rounded-lg border border-border">
+          <Pressable
+            onPress={() => setShowsExpanded((v) => !v)}
+            className="flex-row items-center gap-2 px-3 py-2"
+            accessibilityRole="button"
+          >
+            {showsExpanded ? (
+              <ChevronDown size={14} color={ICON_MUTED} />
+            ) : (
+              <ChevronRight size={14} color={ICON_MUTED} />
+            )}
+            <Text className="flex-1 text-sm font-medium text-foreground">{t('label.shows_to_include')}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {tvShowIds.length === 0 ? t('label.all_shows') : String(tvShowIds.length)}
+            </Text>
+          </Pressable>
+          {showsExpanded && (
+            <View className="max-h-52 border-t border-border p-2">
+              <Pressable
+                onPress={() => setTvShowIds([])}
+                className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: tvShowIds.length === 0 }}
+              >
+                <View className={`h-4 w-4 items-center justify-center rounded border ${tvShowIds.length === 0 ? 'border-primary bg-primary' : 'border-border'}`}>
+                  {tvShowIds.length === 0 && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+                </View>
+                <Text className="text-sm text-foreground">{t('label.all_shows')}</Text>
+              </Pressable>
+              {shows.length === 0 ? (
+                <Text className="px-2 py-2 text-xs text-muted-foreground">{t('msg.no_results')}</Text>
+              ) : (
+                shows.map((show) => (
+                  <Pressable
+                    key={show.id}
+                    onPress={() => toggleShow(show.id)}
+                    className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: tvShowIds.includes(show.id) }}
+                  >
+                    <View className={`h-4 w-4 items-center justify-center rounded border ${tvShowIds.includes(show.id) ? 'border-primary bg-primary' : 'border-border'}`}>
+                      {tvShowIds.includes(show.id) && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+                    </View>
+                    <Text className="min-w-0 flex-1 text-sm text-foreground" numberOfLines={1}>{show.title}</Text>
+                  </Pressable>
+                ))
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Categories to include */}
+        <View className="mb-3 overflow-hidden rounded-lg border border-border">
+          <Pressable
+            onPress={() => setCategoriesExpanded((v) => !v)}
+            className="flex-row items-center gap-2 px-3 py-2"
+            accessibilityRole="button"
+          >
+            {categoriesExpanded ? (
+              <ChevronDown size={14} color={ICON_MUTED} />
+            ) : (
+              <ChevronRight size={14} color={ICON_MUTED} />
+            )}
+            <Text className="flex-1 text-sm font-medium text-foreground">{t('label.categories_to_include')}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {categoryIds.length === 0 ? t('label.all_categories') : String(categoryIds.length)}
+            </Text>
+          </Pressable>
+          {categoriesExpanded && (
+            <View className="max-h-52 border-t border-border p-2">
+              <Pressable
+                onPress={() => setCategoryIds([])}
+                className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: categoryIds.length === 0 }}
+              >
+                <View className={`h-4 w-4 items-center justify-center rounded border ${categoryIds.length === 0 ? 'border-primary bg-primary' : 'border-border'}`}>
+                  {categoryIds.length === 0 && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+                </View>
+                <Text className="text-sm text-foreground">{t('label.all_categories')}</Text>
+              </Pressable>
+              {poolCategories.length === 0 ? (
+                <Text className="px-2 py-2 text-xs text-muted-foreground">{t('msg.no_results')}</Text>
+              ) : (
+                poolCategories.map(({ id, count }) => (
+                  <Pressable
+                    key={id}
+                    onPress={() => toggleCategory(id)}
+                    className="flex-row items-center gap-2 rounded px-2 py-1.5 active:bg-muted"
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: categoryIds.includes(id) }}
+                  >
+                    <View className={`h-4 w-4 items-center justify-center rounded border ${categoryIds.includes(id) ? 'border-primary bg-primary' : 'border-border'}`}>
+                      {categoryIds.includes(id) && <Text className="text-[10px] font-bold text-primary-foreground">✓</Text>}
+                    </View>
+                    <Text className="min-w-0 flex-1 text-sm text-foreground">{categoryLabel(id)}</Text>
+                    <Text className="text-xs text-muted-foreground">{count}</Text>
+                  </Pressable>
+                ))
+              )}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Footer — reset / apply */}
+      <View className="flex-row items-center justify-between gap-2 border-t border-border px-4 py-3">
+        <Pressable
+          onPress={resetAdvanced}
+          className="rounded-md px-3 py-2 active:bg-muted"
+          accessibilityRole="button"
+        >
+          <Text className="text-xs font-medium text-muted-foreground">{t('action.reset')}</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setAdvancedOpen(false)}
+          className="rounded-md bg-primary px-4 py-2 active:opacity-80"
+          accessibilityRole="button"
+        >
+          <Text className="text-xs font-semibold text-primary-foreground">{t('action.apply')}</Text>
+        </Pressable>
+      </View>
+    </>
+  );
+
   // ── Render (list-first, SPEC-082 Task 13) ──
   return (
     <View className="my-4">
@@ -917,6 +1169,21 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             </Pressable>
           );
         })}
+
+        {/* Advanced search — opens the modal (custom terms / exclude terms /
+            shows / categories), highlighted while any setting is active. */}
+        <Pressable
+          onPress={() => setAdvancedOpen(true)}
+          className={`flex-row items-center gap-1 rounded-full px-2.5 py-0.5 ${isAdvancedActive ? 'bg-primary/10' : ''}`}
+          accessibilityRole="button"
+          accessibilityState={{ selected: isAdvancedActive }}
+          accessibilityLabel={t('action.advanced_search')}
+        >
+          <SlidersHorizontal size={12} color={isAdvancedActive ? ICON_PRIMARY : ICON_MUTED} />
+          <Text className={`text-xs font-medium ${isAdvancedActive ? 'text-primary' : 'text-muted-foreground'}`}>
+            {t('action.advanced_search')}
+          </Text>
+        </Pressable>
       </View>
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
@@ -1067,6 +1334,23 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           ) : (
             <Dialog.SheetContent className="max-h-[90%]">
               {videoContent}
+            </Dialog.SheetContent>
+          )}
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* ── Advanced search modal ── */}
+      <Dialog.Root open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <Dialog.Portal>
+          {isMd ? (
+            <View className="absolute inset-0 items-center justify-center px-4">
+              <View className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background">
+                {advancedModalContent}
+              </View>
+            </View>
+          ) : (
+            <Dialog.SheetContent className="max-h-[92%]">
+              {advancedModalContent}
             </Dialog.SheetContent>
           )}
         </Dialog.Portal>

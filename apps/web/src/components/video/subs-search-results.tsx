@@ -47,7 +47,15 @@ import {
   Info,
   ChevronDown,
   ChevronRight,
+  Settings2,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 // ── Types ──────────────────────────────────────
 
@@ -156,6 +164,46 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Content filter pill (All / Non-Music / Music / TV Shows).
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
 
+  // ── Advanced search (custom terms / exclude terms / shows / categories) ──
+  // Empty tvShowIds / categoryIds mean "all". `customTerms` replaces the
+  // auto-derived term string when non-empty.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [customTerms, setCustomTerms] = useState('');
+  const [excludeTerms, setExcludeTerms] = useState('');
+  const [tvShowIds, setTvShowIds] = useState<number[]>([]);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  // TV show checklist data (fetched once from /tv-shows when the modal opens).
+  const [shows, setShows] = useState<Array<{ id: number; title: string }>>([]);
+  const [showsExpanded, setShowsExpanded] = useState(true);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+
+  // The term string actually searched: custom terms win over the auto-derived
+  // head + inflections. Everything below (highlighting, matching, grouping,
+  // AI analysis) uses this effective term.
+  const searchTerm = customTerms.trim() ? customTerms : term;
+  const isAdvancedActive =
+    customTerms.trim().length > 0 ||
+    excludeTerms.trim().length > 0 ||
+    tvShowIds.length > 0 ||
+    categoryIds.length > 0;
+
+  // Load the TV-show checklist for this L2 when the modal first opens.
+  const [showsLoaded, setShowsLoaded] = useState(false);
+  useEffect(() => {
+    if (!advancedOpen || showsLoaded) return;
+    setShowsLoaded(true);
+    fetch(`${PYTHON_API_URL}/tv-shows?l2=${baseCode(l2.code)}&limit=200`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data: any[]) => {
+        setShows(
+          (Array.isArray(data) ? data : [])
+            .filter((s) => s && typeof s.id === 'number' && s.title)
+            .map((s) => ({ id: s.id, title: String(s.title) })),
+        );
+      })
+      .catch((err) => logwarn('[subsSearch] failed to load tv shows for advanced search', err));
+  }, [advancedOpen, showsLoaded, l2.code]);
+
   // ── AI grouping ("Sort by AI") ──
   // The LLM analyzes the first 50 most-popular results and assigns each video
   // id to a meaning/pattern group. `aiKey` records which cache key the current
@@ -245,9 +293,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const aiCacheKey = useMemo(
     () =>
       aiAnalyzed.length > 0
-        ? `${l2.code}|${term}|${aiAnalyzed.map((v) => v.id).join(',')}`
+        ? `${l2.code}|${searchTerm}|${aiAnalyzed.map((v) => v.id).join(',')}`
         : '',
-    [aiAnalyzed, term, l2.code],
+    [aiAnalyzed, searchTerm, l2.code],
   );
   const aiGroupsValid = listSort === 'ai' && aiKey === aiCacheKey && aiGroups !== null;
 
@@ -273,11 +321,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     const prose = t('prompt.subs_ai_group', {
       n: aiAnalyzed.length,
       l2Name,
-      term,
+      term: searchTerm,
     });
-    const prompt = buildAiPrompt({ prose, lines, l1Name, l2Name, term });
+    const prompt = buildAiPrompt({ prose, lines, l1Name, l2Name, term: searchTerm });
     log('[subsSearch] AI grouping request', {
-      term,
+      term: searchTerm,
       n: aiAnalyzed.length,
       promptChars: prompt.length,
     });
@@ -321,7 +369,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return () => {
       cancelled = true;
     };
-  }, [listSort, aiAnalyzed, aiCacheKey, l1.code, l2.code, term, t, aiRetryTick]);
+  }, [listSort, aiAnalyzed, aiCacheKey, l1.code, l2.code, searchTerm, t, aiRetryTick]);
 
   // Ordered display list for AI sort: pattern groups (LLM order), then
   // Other Patterns (analyzed ids the LLM didn't assign to any pattern —
@@ -337,7 +385,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // queue, so moving through the player follows the displayed order.
   const filteredVideos = useMemo(() => {
     if (listSort !== 'ai' || !aiOrderedVideos) {
-      return applyFilterAndSort(videos, listSearch, listSort, term);
+      return applyFilterAndSort(videos, listSearch, listSort, searchTerm);
     }
     // Video-type pill + free-user quota filter the already-grouped AI order
     // (no re-analysis), then the text filter narrows within groups.
@@ -351,7 +399,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
         )
       : result;
-  }, [listSort, aiOrderedVideos, videos, listSearch, term, applyVideoFilter, isPro]);
+  }, [listSort, aiOrderedVideos, videos, listSearch, searchTerm, applyVideoFilter, isPro]);
 
   // Group key per video for AI sort: `ai-<i>` per pattern group,
   // `other-patterns` for analyzed-but-unclassified (including ids the LLM
@@ -390,8 +438,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   // Split comma-separated search terms for highlighting
   const highlightTerms = useMemo(
-    () => term.split(',').map((t) => t.trim()).filter(Boolean),
-    [term],
+    () => searchTerm.split(',').map((t) => t.trim()).filter(Boolean),
+    [searchTerm],
   );
 
   const applyVideos = useCallback((all: SubsSearchVideo[]) => {
@@ -428,7 +476,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const allFormTermRef = useRef('');
 
   useEffect(() => {
-    if (!term) return;
+    if (!searchTerm) return;
 
     // A change of term or exact-match toggle is "user initiated" — used to
     // return to the list below. Non-user re-runs (e.g. `isPro` finishing load)
@@ -463,7 +511,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             searchForms.some((f) => l.line.toLowerCase().includes(f)),
           ),
         )
-        .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, term) }));
+        .map((v) => ({ ...v, matchLineIndex: findMatchLine(v.subs_l2, searchTerm) }));
       if (exactVideos.length > 0) {
         applyVideos(exactVideos);
         setCurrentIndex(0);
@@ -476,7 +524,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     // Back to all forms: restore the cached all-forms results.
     if (
       !exactMatch &&
-      allFormTermRef.current === term &&
+      allFormTermRef.current === searchTerm &&
       allFormVideosRef.current.length > 0
     ) {
       applyVideos(allFormVideosRef.current);
@@ -490,8 +538,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     setLoading(true);
     setError(null);
 
+    // Advanced filters: category / tv_show narrow server-side; exclude terms
+    // drop matching videos client-side after the fetch.
+    const advancedParams: string[] = [];
+    if (categoryIds.length > 0) advancedParams.push(`category=${encodeURIComponent(categoryIds.join(','))}`);
+    if (tvShowIds.length > 0) advancedParams.push(`tv_show=${encodeURIComponent(tvShowIds.join(','))}`);
+    const advancedQuery = advancedParams.length > 0 ? `&${advancedParams.join('&')}` : '';
+    const excludeList = excludeTerms
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+
     fetch(
-      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch && isPro ? 500 : 50}&context=3`,
+      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(searchTerm)}&l2=${baseCode(l2.code)}&limit=${search.expandSubsSearch && isPro ? 500 : 50}&context=3${advancedQuery}`,
     )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -520,18 +579,26 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               date: v.date,
               category: v.category != null ? Number(v.category) : null,
               tv_show: v.tv_show != null ? Number(v.tv_show) : null,
-              matchLineIndex: findMatchLine(lines, term),
+              matchLineIndex: findMatchLine(lines, searchTerm),
             };
           })
           .filter((v) =>
             v.subs_l2.some((l) =>
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
-          );
+          )
+          // Exclude terms: drop any video whose matched line contains one.
+          .filter((v) => {
+            if (excludeList.length === 0) return true;
+            const match = v.subs_l2[v.matchLineIndex];
+            if (!match) return true;
+            const lower = match.line.toLowerCase();
+            return !excludeList.some((x) => lower.includes(x));
+          });
         applyVideos(parsed);
         if (!exactMatch) {
           allFormVideosRef.current = parsed;
-          allFormTermRef.current = term;
+          allFormTermRef.current = searchTerm;
         }
         setCurrentIndex(0);
         setLoading(false);
@@ -546,7 +613,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     return () => {
       cancelled = true;
     };
-  }, [term, l2.code, exactMatch, search.expandSubsSearch, isPro]);
+  }, [searchTerm, l2.code, exactMatch, search.expandSubsSearch, isPro, categoryIds, tvShowIds, excludeTerms]);
 
   // ── Seek to match when video changes ─────────
   // startTime is passed to YouTubePlayer, which cues (never plays) the video at
@@ -621,7 +688,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
         remaining: finalNext.length,
       });
     },
-    [currentVideo, pool, isPro, applyVideoFilter, listSearch, listSort, term, aiGroupsValid, aiGroups, aiAnalyzed],
+    [currentVideo, pool, isPro, applyVideoFilter, listSearch, listSort, searchTerm, aiGroupsValid, aiGroups, aiAnalyzed],
   );
 
   const goToPrevious = useCallback(() => {
@@ -650,11 +717,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     if (listSort === 'leftContext' || listSort === 'rightContext') {
       log('[subsSearch] context sort selected', {
         listSort,
-        term,
+        term: searchTerm,
         inputVideos: videos.length,
       });
     }
-  }, [listSort, term, videos]);
+  }, [listSort, searchTerm, videos]);
 
   const goToPreviousLine = useCallback(() => {
     if (!currentVideo) return;
@@ -701,8 +768,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const contextGroupKey = useMemo(() => {
     if (listSort !== 'leftContext' && listSort !== 'rightContext') return undefined;
     const side = listSort === 'leftContext' ? 'left' : 'right';
-    return (v: SubsSearchVideo) => contextChar(v, term, side) || '—';
-  }, [listSort, term]);
+    return (v: SubsSearchVideo) => contextChar(v, searchTerm, side) || '—';
+  }, [listSort, searchTerm]);
 
   // Collapsed context groups (rows hidden, header stays). Reset whenever the
   // sort mode changes so a fresh sort starts fully expanded.
@@ -1002,6 +1069,54 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     </div>
   );
 
+  // "Advanced" button — opens the advanced-search modal (custom terms,
+  // exclude terms, shows/categories to include). Highlighted while any
+  // advanced setting is active.
+  const advancedButton = (
+    <button
+      type="button"
+      onClick={() => setAdvancedOpen(true)}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+        isAdvancedActive
+          ? 'bg-primary/10 text-primary'
+          : 'text-muted-foreground hover:text-foreground'
+      }`}
+      title={t('action.advanced_search')}
+    >
+      <Settings2 className="h-3 w-3" />
+      {t('action.advanced_search')}
+    </button>
+  );
+
+  // Distinct categories present in the current result pool — the checklist
+  // source for "categories to include". Known categories get real names;
+  // the rest fall back to "Category {n}".
+  const poolCategories = useMemo(() => {
+    const seen = new Map<number, number>();
+    for (const v of pool) {
+      if (v.category == null) continue;
+      seen.set(v.category, (seen.get(v.category) ?? 0) + 1);
+    }
+    return Array.from(seen.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, count]) => ({ id, count }));
+  }, [pool]);
+
+  const categoryLabel = (id: number) =>
+    id === 10 ? t('filter.music') : id === 24 ? t('title.music_and_entertainment') : t('label.category_n', { n: id });
+
+  const toggleShow = (id: number) =>
+    setTvShowIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggleCategory = (id: number) =>
+    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const resetAdvanced = () => {
+    setCustomTerms('');
+    setExcludeTerms('');
+    setTvShowIds([]);
+    setCategoryIds([]);
+  };
+
   // ── Loading / Error / Empty ──────────────────
 
   if (loading) {
@@ -1016,6 +1131,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             </div>
           )}
           {filterPills}
+          {advancedButton}
         </div>
         {/* List skeleton — filter toolbar + rows */}
         <div className="space-y-3 p-3">
@@ -1075,6 +1191,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
             </div>
           )}
           {filterPills}
+          {advancedButton}
         </div>
 
         {/* Empty list */}
@@ -1119,6 +1236,7 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           </div>
         )}
         {filterPills}
+        {advancedButton}
       </div>
 
       {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
@@ -1336,6 +1454,150 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
           </div>
         </div>
       )}
+
+      {/* ── Advanced search modal ── */}
+      <Dialog open={advancedOpen} onOpenChange={setAdvancedOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto p-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Settings2 className="h-4 w-4" />
+              {t('action.advanced_search')}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Custom search terms */}
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                {t('label.search_terms')}
+              </label>
+              <input
+                type="text"
+                value={customTerms}
+                onChange={(e) => setCustomTerms(e.target.value)}
+                placeholder={t('placeholder.custom_search_terms')}
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Exclude terms */}
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                {t('label.exclude_terms')}
+              </label>
+              <input
+                type="text"
+                value={excludeTerms}
+                onChange={(e) => setExcludeTerms(e.target.value)}
+                placeholder={t('placeholder.exclude_terms')}
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Shows to include */}
+            <div className="rounded-lg border border-border">
+              <button
+                type="button"
+                onClick={() => setShowsExpanded((v) => !v)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${showsExpanded ? '' : '-rotate-90'}`}
+                />
+                <span className="flex-1 text-sm font-medium">{t('label.shows_to_include')}</span>
+                <span className="text-xs text-muted-foreground">
+                  {tvShowIds.length === 0 ? t('label.all_shows') : `${tvShowIds.length}`}
+                </span>
+              </button>
+              {showsExpanded && (
+                <div className="max-h-52 overflow-y-auto border-t border-border p-2">
+                  <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40">
+                    <input
+                      type="checkbox"
+                      checked={tvShowIds.length === 0}
+                      onChange={() => setTvShowIds([])}
+                    />
+                    {t('label.all_shows')}
+                  </label>
+                  {shows.length === 0 ? (
+                    <p className="px-2 py-2 text-xs text-muted-foreground">{t('msg.no_results')}</p>
+                  ) : (
+                    shows.map((show) => (
+                      <label
+                        key={show.id}
+                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={tvShowIds.includes(show.id)}
+                          onChange={() => toggleShow(show.id)}
+                        />
+                        <span className="min-w-0 flex-1 truncate">{show.title}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Categories to include */}
+            <div className="rounded-lg border border-border">
+              <button
+                type="button"
+                onClick={() => setCategoriesExpanded((v) => !v)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${categoriesExpanded ? '' : '-rotate-90'}`}
+                />
+                <span className="flex-1 text-sm font-medium">{t('label.categories_to_include')}</span>
+                <span className="text-xs text-muted-foreground">
+                  {categoryIds.length === 0 ? t('label.all_categories') : `${categoryIds.length}`}
+                </span>
+              </button>
+              {categoriesExpanded && (
+                <div className="max-h-52 overflow-y-auto border-t border-border p-2">
+                  <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40">
+                    <input
+                      type="checkbox"
+                      checked={categoryIds.length === 0}
+                      onChange={() => setCategoryIds([])}
+                    />
+                    {t('label.all_categories')}
+                  </label>
+                  {poolCategories.length === 0 ? (
+                    <p className="px-2 py-2 text-xs text-muted-foreground">{t('msg.no_results')}</p>
+                  ) : (
+                    poolCategories.map(({ id, count }) => (
+                      <label
+                        key={id}
+                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/40"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={categoryIds.includes(id)}
+                          onChange={() => toggleCategory(id)}
+                        />
+                        <span className="min-w-0 flex-1">{categoryLabel(id)}</span>
+                        <span className="text-xs text-muted-foreground">{count}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4 flex items-center justify-between gap-2">
+            <Button variant="ghost" size="sm" onClick={resetAdvanced}>
+              {t('action.reset')}
+            </Button>
+            <Button size="sm" onClick={() => setAdvancedOpen(false)}>
+              {t('action.apply')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

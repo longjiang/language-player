@@ -62,6 +62,10 @@ const _searchSubs = (params: {
   l2: string;
   limit?: number;
   context?: number;
+  /** Comma-separated category ids (e.g. "10,24") — advanced search. */
+  category?: string;
+  /** Comma-separated tv_show ids — advanced search. */
+  tv_show?: string;
 }) => apiClient.get<import('@langplayer/shared').SubsSearchVideo[]>('/subs-search', { params });
 
 const _getVideoTokenCache = (videoId: string, lang: string) =>
