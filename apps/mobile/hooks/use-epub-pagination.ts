@@ -273,6 +273,8 @@ interface UseEpubPaginationReturn {
   hasNext: boolean;
   /** True while the user is actively flipping pages (plain-text fast render). */
   flipping: boolean;
+  /** True while an exact re-measure is in flight (hidden window mounted). */
+  measuring: boolean;
 }
 
 export function useEpubPagination({
@@ -360,6 +362,10 @@ export function useEpubPagination({
    *  into the new streak. */
   const lemmatizeAbortRef = useRef<AbortController | null>(null);
   const translateAbortRef = useRef<AbortController | null>(null);
+  /** True while an exact-measure (refine) request is in flight — the reader
+   *  only mounts the hidden measuring window during this window, so a page
+   *  with already-exact boundaries never pays a 320-block remount at commit. */
+  const [measuring, setMeasuring] = useState(false);
   /** Whether the current page boundaries came from measured data (exact)
    *  rather than an estimate — skips the settle-time re-measure when already
    *  exact, so stopping after in-window flips causes no boundary correction. */
@@ -478,6 +484,7 @@ export function useEpubPagination({
     // Drop any in-flight refinement — it targeted the previous page.
     requestIdRef.current += 1;
     requestRef.current = null;
+    setMeasuring(false);
     // Drop in-flight lemmatize/translate responses from the previous page.
     // Tokenization is keyed by global block index (stale writes are harmless
     // but wasteful), while translations are keyed by the page's LOCAL block
@@ -492,6 +499,7 @@ export function useEpubPagination({
     lemmatizeAbortRef.current = null;
     translateAbortRef.current?.abort();
     translateAbortRef.current = null;
+    setMeasuring(false);
     translateInFlightRef.current = false;
     translateDoneRef.current = new Set();
     translateAttemptsRef.current = new Map();
@@ -518,6 +526,7 @@ export function useEpubPagination({
    *  the refined boundaries land. */
   const startRefine = useCallback((base: number, endBase: number | null) => {
     if (!blocks || blocks.length === 0) return;
+    setMeasuring(true);
     const id = ++requestIdRef.current;
     requestRef.current = { id, mode: 'refine', base, endBase };
     requestStartedAtRef.current = Date.now();
@@ -587,6 +596,7 @@ export function useEpubPagination({
     lemmatizeAbortRef.current = null;
     translateAbortRef.current?.abort();
     translateAbortRef.current = null;
+    setMeasuring(false);
     // Estimate mode: 0 keeps the hidden measuring view empty until the seek
     // sets the window (MAX would render the whole book for a frame).
     setMeasuredWindow(estimate ? 0 : (measureChunkSize ?? Number.MAX_SAFE_INTEGER));
@@ -850,6 +860,7 @@ export function useEpubPagination({
     setLazyPageEnd(trueEnd);
     setHasMeasured(true);
     boundariesExactRef.current = true;
+    setMeasuring(false);
     requestRef.current = null;
   }, [
     estimate, blocks, measureStart, measureEnd, metricsVersion,
@@ -1345,5 +1356,7 @@ export function useEpubPagination({
      *  pages as plain text (fast) and defers tokenized/translated rendering
      *  until flipping stops. */
     flipping: !renderCommitted,
+    /** True while an exact re-measure is in flight. */
+    measuring,
   };
 }

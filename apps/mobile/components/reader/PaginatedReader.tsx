@@ -128,6 +128,14 @@ interface PaginatedReaderProps {
    *  plain text (fast) even when tokens are cached; the tokenized/translated
    *  render returns once flipping stops. */
   flipping?: boolean;
+  /** True while an exact re-measure is in flight — the hidden measuring
+   *  window is only mounted during this window (a page with already-exact
+   *  boundaries never pays a 320-block remount at commit). */
+  measuring?: boolean;
+  /** True for the lazy/estimate (whole-book EPUB) reader: it upgrades visible
+   *  blocks to tokenized progressively instead of one full-page commit.
+   *  Non-estimate readers keep their existing immediate tokenized render. */
+  lazyPagination?: boolean;
 }
 
 export function PaginatedReader({
@@ -151,6 +159,8 @@ export function PaginatedReader({
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
   firstLineIndent = false,
   flipping = false,
+  measuring = false,
+  lazyPagination = false,
 }: PaginatedReaderProps) {
   // ── Visibility-based lazy tokenization (SPEC-019 O2) ──
   // Track scroll position + viewport height imperatively (refs, no re-render
@@ -584,6 +594,41 @@ export function PaginatedReader({
     return samples.length >= 3 ? samples : null;
   }, [hasMeasured, visibleBlocksProp, blocks, tokenCache, calibrationSignatureValue, flipping]);
 
+  // ── Progressive tokenized upgrade after the user stops flipping ──
+  // While flipping, visible pages render as plain text. Once the user commits
+  // (flipping=false), upgrade visible blocks to tokenized ONE AT A TIME with
+  // yields between them, so the JS thread never blocks on a whole page of ruby
+  // layout in one commit (that froze button presses). Navigating cancels the
+  // remaining upgrades. Only the estimate (lazy) reader upgrades progressively;
+  // scroll mode renders everything tokenized as before.
+  const [upgradedBlocks, setUpgradedBlocks] = useState<ReadonlySet<number>>(new Set());
+  useEffect(() => {
+    if (!lazyPagination) return; // non-estimate readers keep full tokenized render
+    if (flipping || !blocks || !visibleBlocksProp || visibleBlocksProp.length === 0) {
+      setUpgradedBlocks(new Set());
+      return;
+    }
+    const queue = visibleBlocksProp
+      .map((b) => blocks.indexOf(b))
+      .filter((i) => i >= 0);
+    if (queue.length === 0) { setUpgradedBlocks(new Set()); return; }
+    setUpgradedBlocks(new Set());
+    let cursor = 0;
+    // Upgrade the first block immediately, then one per tick.
+    setUpgradedBlocks((prev) => new Set(prev).add(queue[0]!));
+    cursor = 1;
+    const timer = setInterval(() => {
+      if (cursor >= queue.length) {
+        clearInterval(timer);
+        return;
+      }
+      const idx = queue[cursor]!;
+      cursor++;
+      setUpgradedBlocks((prev) => new Set(prev).add(idx));
+    }, 48);
+    return () => clearInterval(timer);
+  }, [flipping, visibleBlocksProp, blocks]);
+
   useEffect(() => {
     if (loadingTokens && tokenLoadStartRef.current === 0) {
       tokenLoadStartRef.current = Date.now();
@@ -650,7 +695,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -694,14 +739,12 @@ export function PaginatedReader({
         </View>
       )}
 
-      {/* Hidden measuring view. Skipped entirely while the user is flipping —
-          during flips pages are estimates and the visible page is plain text,
-          so mounting 320 measuring blocks would only block the JS thread.
-          Non-lazy readers render it while measuring; lazy readers keep a
-          window mounted so forward/backward page breaks can be measured ahead
-          and cached. */}
+      {/* Hidden measuring view. Mounted only while an exact re-measure is
+          actually in flight (or while a non-estimate reader is measuring),
+          never as a standing window — a page with already-exact boundaries
+          never pays a 320-block remount at commit. Skipped while flipping. */}
       {blocks && handleMeasureBlock && !flipping && (
-        measureEnd > measureStart
+        (measuring && measureEnd > measureStart)
         || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
       ) && (
         <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
@@ -778,10 +821,14 @@ function renderBlock(
   getLineGridHandler?: (globalIdx: number) => (lines: GridLine[]) => void,
   firstLineIndent = false,
   plainText = false,
+  upgradedBlocks?: ReadonlySet<number>,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
   const globalIdx = allBlocks.indexOf(block);
+  // A block renders plain while flipping, or (lazy reader) until its slot in
+  // the progressive tokenized upgrade has been reached.
+  const isPlain = plainText || (upgradedBlocks !== undefined && !upgradedBlocks.has(globalIdx));
 
   if (block.kind === 'image') {
     return (
@@ -897,9 +944,9 @@ function renderBlock(
       : 1;
     const tokenEl = (
           <TokenizedText
-            text={plainText && firstLineIndent && block.type === 'paragraph' ? `\u3000${block.text}` : block.text}
+            text={isPlain && firstLineIndent && block.type === 'paragraph' ? `\u3000${block.text}` : block.text}
             l2Code={l2Code}
-            tokens={plainText ? undefined : cachedTokens}
+            tokens={isPlain ? undefined : cachedTokens}
             deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
@@ -935,7 +982,7 @@ function renderBlock(
     // baseline). Falls back to the plain column when no grid is available
     // (non-paragraph render paths, e.g. Expo Go / Android view columns).
     const l2Grid = translationSideBySide ? lineGrids?.[globalIdx] : undefined;
-    const transEl = plainText && showTranslation ? (
+    const transEl = isPlain && showTranslation ? (
       // During rapid flipping the translation is deferred, but the skeleton
       // stays visible immediately so the reader doesn't look broken; show the
       // real translation once it has arrived (pause window).
