@@ -30,6 +30,7 @@ import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { computeRubyLayout, MOBILE_RUBY_SAVED_BG, typeFaceFontFamily, useMobileRubyColors } from '@/lib/ruby-layout';
 import { getWordDifficulty, type WordDifficulty } from '@/lib/word-difficulty';
 import { PlainTokenSpan, RubyTextParagraphBlock, RubyTokenFlat, RubyTokenSpan, type ParagraphRun, type ParagraphTapAction, type PressWordHandler } from '@/components/tokenized-text-spans';
+import type { TextLayoutLine } from '@/lib/aligned-translation';
 import { logPhoneticsSummary, logRubyRenderPath, logRenderedTokens, scheduleTreeLog } from '@/lib/tokenized-text-log';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -144,6 +145,11 @@ export interface TokenizedTextProps {
    *  prefix) — EPUB paragraph typography (SPEC-082 Task 5, web
    *  `[&_p]:indent-[1em]` parity). Rendering-only: `text`/`tokens` unchanged. */
   leadingIndent?: boolean;
+  /** Reports the rendered L2 line grid (paragraph and plain-text render
+   *  paths only) — readers use it to baseline-align the translation column
+   *  (SPEC-082 web AlignedTranslation parity). Must be identity-stable: the
+   *  component is memoized and this prop is compared by reference. */
+  onLineGrid?: (lines: TextLayoutLine[]) => void;
 }
 
 /**
@@ -160,7 +166,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, leadingIndent = false }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -1309,6 +1315,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     onOpenLink={onOpenLink}
                     onPressWord={handlePressWord}
                     onReveal={handleReveal}
+                    onLineGrid={onLineGrid}
                   />
                 );
               }
@@ -1322,7 +1329,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
              Line-height is controlled by the `leading` prop (default: relaxed). */
-          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor}>
+          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor} onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines) : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
               // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).
@@ -1475,7 +1482,8 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.onTokenPress === next.onTokenPress &&
     prev.leadingIndent === next.leadingIndent &&
     prev.highlightTerms === next.highlightTerms &&
-    prev.tokenCacheLoaded === next.tokenCacheLoaded
+    prev.tokenCacheLoaded === next.tokenCacheLoaded &&
+    prev.onLineGrid === next.onLineGrid
   );
 }
 

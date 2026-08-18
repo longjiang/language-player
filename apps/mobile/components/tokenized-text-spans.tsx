@@ -16,6 +16,7 @@ import type { RubySegment } from '@langplayer/utils';
 import { buildRuby } from '@langplayer/utils';
 import { RubyText, RubyTextParagraph } from '@/components/RubyText';
 import { NATIVE_RUBY_ACTIVE, useMobileRubyColors } from '@/lib/ruby-layout';
+import type { TextLayoutLine } from '@/lib/aligned-translation';
 import { tokenizedTextLogger } from '@/lib/logger';
 
 const { log } = tokenizedTextLogger;
@@ -344,6 +345,9 @@ interface RubyTextParagraphBlockProps {
   onOpenLink?: (href: string) => void;
   onPressWord: PressWordHandler;
   onReveal: (index: number) => void;
+  /** Measured paragraph line grid — reported up to readers for translation
+   *  baseline alignment. Must be identity-stable (memoized component). */
+  onLineGrid?: (lines: TextLayoutLine[]) => void;
 }
 
 export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props: RubyTextParagraphBlockProps) {
@@ -362,6 +366,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
     onOpenLink,
     onPressWord,
     onReveal,
+    onLineGrid,
   } = props;
 
   const handleTokenTap = useCallback((tokenId: number) => {
@@ -392,6 +397,7 @@ export const RubyTextParagraphBlock = memo(function RubyTextParagraphBlock(props
       isRtl={isRtl}
       fontWeight={fontWeight}
       onTokenTap={handleTokenTap}
+      onLineGrid={onLineGrid}
     />
   );
 });

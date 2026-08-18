@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isPhoneticsEligible, translationSizeFactor, buildSentenceMap, sentenceIndexAt } from '@langplayer/utils';
 import type { SentenceMap } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
+import { AlignedTranslation, lineBaselineOffset } from '@/components/reader/AlignedTranslation';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
 import { TranslationSplitHandle } from '@/components/reader/TranslationSplitHandle';
@@ -16,6 +17,7 @@ import { Root as Switch } from '@/components/ui/switch';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
+import type { TextLayoutLine } from '@/lib/aligned-translation';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
@@ -196,6 +198,39 @@ export function PaginatedReader({
     }
     return handler;
   }, [sentenceMapFor]);
+
+  // ── L2 line grids for translation baseline alignment (SPEC-082 web
+  // AlignedTranslation parity) ──
+  // Each block's TokenizedText reports its measured line grid (paragraph /
+  // plain render paths) through a stable per-block callback; the side-by-side
+  // translation column then places every line on the L2 line grid. Keyed by
+  // global block index; stale entries are harmless (overwritten or unused).
+  const [lineGrids, setLineGrids] = useState<Record<number, TextLayoutLine[]>>({});
+  const lineGridHandlersRef = useRef<Map<number, (lines: TextLayoutLine[]) => void>>(new Map());
+  /** Full-geometry signature: a re-wrap can change later lines while the
+   *  first line's metrics stay identical, so compare every line's top/height/
+   *  baseline — not just the first. */
+  const gridSignature = useCallback((lines: TextLayoutLine[]): string =>
+    lines
+      .slice(0, 60)
+      .map((l) => `${Math.round(l.y)}:${Math.round(l.height)}:${Math.round(lineBaselineOffset(l))}`)
+      .join('|'),
+  []);
+  const lineGridSigsRef = useRef<Record<number, string>>({});
+  const getLineGridHandler = useCallback((globalIdx: number) => {
+    let handler = lineGridHandlersRef.current.get(globalIdx);
+    if (!handler) {
+      handler = (lines) => {
+        if (!lines || lines.length === 0) return;
+        const sig = gridSignature(lines);
+        if (lineGridSigsRef.current[globalIdx] === sig) return; // same grid
+        lineGridSigsRef.current[globalIdx] = sig;
+        setLineGrids((prev) => ({ ...prev, [globalIdx]: lines }));
+      };
+      lineGridHandlersRef.current.set(globalIdx, handler);
+    }
+    return handler;
+  }, [gridSignature]);
   // Scroll clears the highlight ("tap elsewhere / scroll → clear").
   const clearActiveSentence = useCallback(() => {
     if (activeSentenceRef.current) setActiveSentence(null);
@@ -507,7 +542,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, firstLineIndent),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent),
           )}
         </View>
         {onToggleTranslation && (
@@ -555,7 +590,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, firstLineIndent),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -676,6 +711,8 @@ function renderBlock(
   activeSentence?: { blockIndex: number; sentenceIndex: number } | null,
   sentenceMapFor?: (globalIdx: number, text: string, translation: string) => SentenceMap | null,
   getTokenPressHandler?: (globalIdx: number) => (range: { start: number; end: number } | null) => void,
+  lineGrids?: Record<number, TextLayoutLine[]>,
+  getLineGridHandler?: (globalIdx: number) => (lines: TextLayoutLine[]) => void,
   firstLineIndent = false,
 ) {
   const scale = textScale ?? 1;
@@ -769,6 +806,7 @@ function renderBlock(
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
             onTokenPress={getTokenPressHandler?.(globalIdx)}
+            onLineGrid={getLineGridHandler?.(globalIdx)}
             leadingIndent={firstLineIndent && block.type === 'paragraph'}
             textScale={scale * headingFactor}
             bold={block.type === 'heading'}
@@ -777,10 +815,12 @@ function renderBlock(
     // SPEC-082 Task 4: when a translation sentence is active for this block,
     // tint the paired translation sentence's char range.
     let highlightedTranslation: React.ReactNode = translation;
+    let trHighlightRange: { start: number; end: number } | null = null;
     if (translation && activeSentence && activeSentence.blockIndex === globalIdx && sentenceMapFor) {
       const map = sentenceMapFor(globalIdx, block.text, translation);
       const pair = map?.pairs[activeSentence.sentenceIndex];
       if (pair && pair.tr.start < pair.tr.end) {
+        trHighlightRange = { start: pair.tr.start, end: pair.tr.end };
         highlightedTranslation = (
           <Text>
             {translation.slice(0, pair.tr.start)}
@@ -790,8 +830,25 @@ function renderBlock(
         );
       }
     }
+    const trFontSize = translationFactor * 14 * blockScale * headingFactor;
+    // SPEC-082 web AlignedTranslation parity: when the block's L2 text has
+    // reported its measured line grid, the side-by-side translation renders
+    // line-by-line on the L2 grid (each line's baseline = the L2 line's
+    // baseline). Falls back to the plain column when no grid is available
+    // (non-paragraph render paths, e.g. Expo Go / Android view columns).
+    const l2Grid = translationSideBySide ? lineGrids?.[globalIdx] : undefined;
     const transEl = showTranslation && highlightedTranslation ? (
-      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: translationFactor * 14 * blockScale * headingFactor }}>{highlightedTranslation}</Text>
+      l2Grid && l2Grid.length > 0 ? (
+        <AlignedTranslation
+          text={translation ?? ''}
+          l2Lines={l2Grid}
+          trFontSize={trFontSize}
+          className="text-muted-foreground"
+          highlight={trHighlightRange}
+        />
+      ) : (
+        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: trFontSize }}>{highlightedTranslation}</Text>
+      )
     ) : showTranslation && isTranslating ? (
       <View className="mt-1">
         <TranslationSkeleton text={block.text} />
