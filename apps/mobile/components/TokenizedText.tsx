@@ -136,6 +136,10 @@ export interface TokenizedTextProps {
   /** Tailwind text color class for the L2 text. Defaults to `text-foreground`
    *  (used by the on-video subtitle band to render white text). */
   textColor?: string;
+  /** Called with the char range (in `text`) of the tapped token, or null when
+   *  the range can't be reconstructed. Web parity of onTokenHover, adapted to
+   *  touch (SPEC-082 Task 4: reader translation-sentence highlight). */
+  onTokenPress?: (range: { start: number; end: number } | null) => void;
 }
 
 /**
@@ -152,7 +156,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground' }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -437,6 +441,21 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     [text, tokens, savedPhraseCandidates, effectiveHighlightTerms, highlightKanaForms, formats],
   );
 
+  // Char ranges of each display token in `text` (tokens concatenate back to
+  // `text` or we bail). Only computed when a tap listener is attached
+  // (SPEC-082 Task 4 — web tokenRanges parity).
+  const tokenRanges = useMemo(() => {
+    if (!onTokenPress) return null;
+    const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return null;
+    let pos = 0;
+    return displayTokens.map((t) => {
+      const range = { start: pos, end: pos + t.text.length };
+      pos = range.end;
+      return range;
+    });
+  }, [displayTokens, text, onTokenPress]);
+
   // ── Rendered token structure (dev-only, once per text) ──
   useEffect(() => {
     logRenderedTokens(displayTokens, l2Code, text);
@@ -699,6 +718,10 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── Stable token-press handlers (memoized tokens call these) ──
   const handlePressWord = useCallback<PressWordHandler>((index, word, lemma, pron, linkUrl) => {
     popupOpenStartRef.current = Date.now();
+    // SPEC-082 Task 4: report the tapped token's char range (or null when the
+    // reconstruction guard fails) so the reader can highlight the paired
+    // translation sentence.
+    onTokenPress?.(tokenRanges?.[index] ?? null);
     // DEBUG (context segmentation): which path the popup context takes.
     const token = tokens[index];
     const context = token
@@ -713,7 +736,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     setSelectedTokenPron(pron);
     setSelectedLinkUrl(linkUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokens, text]);
+  }, [tokens, text, onTokenPress, tokenRanges]);
 
   const handleReveal = useCallback((index: number) => {
     setRevealedTokens(prev => new Set(prev).add(index));
@@ -1423,6 +1446,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.inline === next.inline &&
     prev.inlineFontSize === next.inlineFontSize &&
     prev.textColor === next.textColor &&
+    prev.onTokenPress === next.onTokenPress &&
     prev.highlightTerms === next.highlightTerms &&
     prev.tokenCacheLoaded === next.tokenCacheLoaded
   );
