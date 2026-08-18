@@ -605,17 +605,20 @@ export function PaginatedReader({
   useEffect(() => {
     if (!lazyPagination) return; // non-estimate readers keep full tokenized render
     if (flipping || !blocks || !visibleBlocksProp || visibleBlocksProp.length === 0) {
+      appLog(`[Reader] 🔄 upgrade reset flipping=${flipping} blocks=${blocks?.length ?? 0} vis=${visibleBlocksProp?.length ?? 0} t=${Date.now()}`);
       setUpgradedBlocks(new Set());
       return;
     }
     const queue = visibleBlocksProp
       .map((b) => blocks.indexOf(b))
       .filter((i) => i >= 0);
+    appLog(`[Reader] 🔄 upgrade start flipping=${flipping} queue=[${queue.join(',')}] t=${Date.now()}`);
     if (queue.length === 0) { setUpgradedBlocks(new Set()); return; }
     setUpgradedBlocks(new Set());
     let cursor = 0;
     // Upgrade the first block immediately, then one per tick.
     setUpgradedBlocks((prev) => new Set(prev).add(queue[0]!));
+    appLog(`[Reader] 🔄 upgrade +${queue[0]} t=${Date.now()}`);
     cursor = 1;
     const timer = setInterval(() => {
       if (cursor >= queue.length) {
@@ -625,6 +628,7 @@ export function PaginatedReader({
       const idx = queue[cursor]!;
       cursor++;
       setUpgradedBlocks((prev) => new Set(prev).add(idx));
+      appLog(`[Reader] 🔄 upgrade +${idx} t=${Date.now()}`);
     }, 48);
     return () => clearInterval(timer);
   }, [flipping, visibleBlocksProp, blocks]);
