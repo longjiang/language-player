@@ -32,12 +32,23 @@ import { SubtitleDisplay } from './SubtitleDisplay';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { VideoControlBar } from './VideoControlBar';
+import { TranscriptQueuePanel } from './TranscriptQueuePanel';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { X, ChevronDown, ChevronRight } from 'lucide-react-native';
+import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play } from 'lucide-react-native';
+
+/** Compact number label (e.g. "12K") with a plain fallback. */
+function formatNumber(n: number | undefined, locale: string): string {
+  if (!n) return '';
+  try {
+    return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  } catch {
+    return String(n);
+  }
+}
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -151,6 +162,14 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // opens the player + subtitles in this modal (SPEC-082 Task 13).
   const [videoOpen, setVideoOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(screenWidth);
+  // Subtitle display mode in the playback modal: follow playback one line at a
+  // time (singleline), or show the full transcript in a tabbed sidebar
+  // (multiline — subs | queue | info). Default singleline, matching web
+  // (SPEC-082 Task 15). In-memory per session (web persists in localStorage).
+  const [subtitleMode, setSubtitleMode] = useState<'singleline' | 'multiline'>('singleline');
+  const handleToggleSubtitleMode = useCallback(() => {
+    setSubtitleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
+  }, []);
 
   // Full fetched result pool + the youtube_ids skipped for failed embeds.
   // `videos` below is derived from these so a skipped video can be replaced
@@ -759,7 +778,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         />
       </View>
 
-      {/* Controls — centered; result count between prev/next line buttons */}
+      {/* Controls — centered; result count between prev/next line buttons;
+          the panel toggle flips singleline ↔ multiline (SPEC-082 Task 15). */}
       <View className="flex-row justify-center border-b border-border py-1">
         <VideoControlBar
           reduced
@@ -772,6 +792,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onNextLine={goToNextLine}
           onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
           onNextVideo={() => { if (currentIndex < filteredVideos.length - 1) { setCurrentIndex((i) => i + 1); } }}
+          onTogglePanel={handleToggleSubtitleMode}
+          panelOpen={subtitleMode === 'multiline'}
           hasPreviousLine={hasPreviousLine}
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
@@ -780,18 +802,115 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         />
       </View>
 
-      {/* Subtitle — action menu is attached inside TokenizedText blocks */}
-      <View className="min-h-32 w-full">
-        <SubtitleDisplay
-          singleLine
-          lines={subtitleInitialLines}
-          activeLineIndex={activeLineIndex}
-          currentTime={currentTime}
-          highlightTerms={highlightTerms}
-          defaultLine={defaultSubtitleLine}
-          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-        />
-      </View>
+      {/* Subtitles — singleline line-follower, or multiline tabbed sidebar
+          (subs | queue | info). Remount on mode change so the sidebar starts
+          on the subs tab, like the watch page's sidebar remount. */}
+      {subtitleMode === 'singleline' ? (
+        <View className="min-h-32 w-full">
+          <SubtitleDisplay
+            singleLine
+            lines={subtitleInitialLines}
+            activeLineIndex={activeLineIndex}
+            currentTime={currentTime}
+            highlightTerms={highlightTerms}
+            defaultLine={defaultSubtitleLine}
+            onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+          />
+        </View>
+      ) : (
+        <View style={{ height: Math.min(screenHeight * 0.4, 320) }}>
+          <TranscriptQueuePanel
+            key={subtitleMode}
+            transcript={
+              <SubtitleDisplay
+                lines={subtitleInitialLines}
+                activeLineIndex={activeLineIndex}
+                currentTime={currentTime}
+                highlightTerms={highlightTerms}
+                defaultLine={defaultSubtitleLine}
+                onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+              />
+            }
+            queue={
+              <ScrollView className="flex-1">
+                {filteredVideos.map((v, i) => {
+                  const ml = v.subs_l2[v.matchLineIndex];
+                  const isActive = i === currentIndex;
+                  return (
+                    <Pressable
+                      key={v.id}
+                      onPress={() => selectFromList(i)}
+                      className={`mb-1.5 flex-row items-center gap-2 rounded-lg p-1.5 ${isActive ? 'bg-primary/5' : ''}`}
+                    >
+                      <View className="h-9 w-16 overflow-hidden rounded bg-muted">
+                        <Image
+                          source={{ uri: youtubeThumbnail(v.youtube_id) }}
+                          className="h-full w-full"
+                          resizeMode="cover"
+                        />
+                      </View>
+                      <View className="min-w-0 flex-1">
+                        <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                          {v.title}
+                        </Text>
+                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                          {ml?.line}
+                        </Text>
+                      </View>
+                      {ml && (
+                        <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                          {formatTime(ml.starttime)}
+                        </Text>
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            }
+            info={
+              <View className="gap-3">
+                <Text className="text-base font-bold leading-tight text-foreground">
+                  {currentVideo.title}
+                </Text>
+                <View className="flex-row flex-wrap items-center gap-3">
+                  {currentVideo.views != null && (
+                    <View className="flex-row items-center gap-1">
+                      <Eye size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {t('label.views_count', { count: formatNumber(currentVideo.views, l1Lang.code) })}
+                      </Text>
+                    </View>
+                  )}
+                  {currentVideo.duration != null && (
+                    <View className="flex-row items-center gap-1">
+                      <Clock size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {formatTime(currentVideo.duration)}
+                      </Text>
+                    </View>
+                  )}
+                  {currentVideo.date && (
+                    <View className="flex-row items-center gap-1">
+                      <Calendar size={14} color={ICON_MUTED} />
+                      <Text className="text-xs text-muted-foreground">
+                        {new Date(currentVideo.date).toLocaleDateString(l1Lang.code)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Pressable
+                  onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any)}
+                  className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
+                  accessibilityRole="button"
+                >
+                  <Play size={14} color={ICON_MUTED} />
+                  <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
+                </Pressable>
+              </View>
+            }
+          />
+        </View>
+      )}
     </View>
   ) : null;
 
