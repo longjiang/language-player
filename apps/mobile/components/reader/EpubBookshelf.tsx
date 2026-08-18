@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
+import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { BookOpen, MoreVertical, Trash2, Upload, X } from 'lucide-react-native';
+import { BookOpen, MoreVertical, Upload } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { baseCode } from '@langplayer/utils';
@@ -31,7 +32,8 @@ interface EpubBookshelfProps {
 
 /**
  * Per-book EPUB bookshelf (SPEC-049 §9.2/9.3): cover tiles with reading
- * progress, a remove action, an add-a-book slot, and a language filter that
+ * progress, a native "…" action menu (iOS UIMenu / Android PopupMenu via
+ * `@react-native-menu/menu`), an add-a-book slot, and a language filter that
  * only shows books tagged with the current L2 (books are tagged with the L2
  * they were uploaded under — no OPF language sniffing; only legacy untagged
  * books appear everywhere so they never disappear).
@@ -49,7 +51,15 @@ export function EpubBookshelf({
 }: EpubBookshelfProps) {
   const t = useT();
   const { width: windowWidth } = useResponsive();
-  const [menuId, setMenuId] = useState<string | null>(null);
+  // Covers whose file:// URI can't be resolved (e.g. a purged temp cover)
+  // fall back to the placeholder icon instead of an empty tile.
+  const [coverFailedIds, setCoverFailedIds] = useState<Set<string>>(new Set());
+
+  // iOS SF Symbol for a menu item; Android's PopupMenu renders text-only, so
+  // no image is passed there. `imageColor` is REQUIRED on New-Architecture
+  // builds running iOS 26+ (see ChannelActionsMenu) — the remove action uses
+  // the destructive color so the icon matches the red label.
+  const sf = (name: string) => (Platform.OS === 'ios' ? name : undefined);
 
   const columns = windowWidth >= 1280 ? 5 : windowWidth >= 768 ? 4 : windowWidth >= 640 ? 3 : 2;
   const gap = 16;
@@ -68,7 +78,6 @@ export function EpubBookshelf({
   }
 
   const confirmRemove = (book: EpubSummary) => {
-    setMenuId(null);
     Alert.alert(
       book.fileName,
       t('msg.confirm_delete_book'),
@@ -117,11 +126,18 @@ export function EpubBookshelf({
                   >
                     {/* Cover */}
                     <View className="relative w-full overflow-hidden rounded-md border border-border bg-muted" style={{ aspectRatio: 2 / 3 }}>
-                      {book.coverUrl ? (
+                      {book.coverUrl && !coverFailedIds.has(book.id) ? (
                         <Image
                           source={{ uri: book.coverUrl }}
                           className="h-full w-full"
                           resizeMode="cover"
+                          onError={() =>
+                            setCoverFailedIds((prev) => {
+                              const next = new Set(prev);
+                              next.add(book.id);
+                              return next;
+                            })
+                          }
                         />
                       ) : (
                         <View className="h-full w-full items-center justify-center">
@@ -135,18 +151,13 @@ export function EpubBookshelf({
                       )}
                     </View>
 
-                    {/* Title + "..." menu */}
-                    <View className="mt-2 flex-row items-center gap-1">
-                      <Text className="min-w-0 flex-1 truncate text-sm font-medium text-foreground" numberOfLines={1}>
+                    {/* Title row — right padding keeps the truncated title
+                        clear of the "…" button, which floats above as a
+                        sibling of the opening Pressable (see below). */}
+                    <View className="mt-2 flex-row items-center">
+                      <Text className="min-w-0 flex-1 truncate pr-7 text-sm font-medium text-foreground" numberOfLines={1}>
                         {book.fileName.replace(/\.epub$/i, '')}
                       </Text>
-                      <Pressable
-                        onPress={() => setMenuId(menuId === book.id ? null : book.id)}
-                        className="rounded p-1 active:bg-muted"
-                        accessibilityLabel={t('action.more')}
-                      >
-                        <MoreVertical size={14} color={ICON_MUTED} />
-                      </Pressable>
                     </View>
 
                     {pct !== null && (
@@ -161,25 +172,39 @@ export function EpubBookshelf({
                     )}
                   </Pressable>
 
-                  {/* "..." action menu */}
-                  {menuId === book.id && (
-                    <View className="absolute right-1 top-1 z-20 min-w-[140px] rounded-lg border border-border bg-card py-1 shadow-lg" style={{ elevation: 8 }}>
+                  {/* "…" action menu — native UIMenu (iOS) / PopupMenu
+                      (Android) via MenuView (same pattern as ChannelActionsMenu).
+                      Rendered OUTSIDE the opening Pressable, as an absolutely
+                      positioned sibling over the title row, so a tap on the
+                      menu can never bubble to the book-open handler. */}
+                  <View
+                    className="absolute z-10"
+                    style={{ right: 8, top: 16 + (cardWidth - 16) * 1.5 }}
+                  >
+                    <MenuView
+                      onPressAction={({ nativeEvent }) => {
+                        if (nativeEvent.event === 'remove') confirmRemove(book);
+                      }}
+                      actions={[
+                        {
+                          id: 'remove',
+                          title: t('action.remove'),
+                          attributes: { destructive: true },
+                          image: sf('trash'),
+                          imageColor: ICON_DESTRUCTIVE,
+                        },
+                      ]}
+                    >
                       <Pressable
-                        onPress={() => confirmRemove(book)}
-                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+                        className="rounded p-1 active:bg-muted"
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('action.more')}
                       >
-                        <Trash2 size={13} color={ICON_DESTRUCTIVE} />
-                        <Text className="text-xs text-destructive">{t('action.remove')}</Text>
+                        <MoreVertical size={14} color={ICON_MUTED} />
                       </Pressable>
-                      <Pressable
-                        onPress={() => setMenuId(null)}
-                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
-                      >
-                        <X size={13} color={ICON_MUTED} />
-                        <Text className="text-xs text-muted-foreground">{t('action.cancel')}</Text>
-                      </Pressable>
-                    </View>
-                  )}
+                    </MenuView>
+                  </View>
                 </View>
               );
             })}
@@ -187,9 +212,6 @@ export function EpubBookshelf({
             {/* Add-a-book slot — dashed tile after the last book */}
             <AddBookTile width={cardWidth} onPress={onAddBook} t={t} />
           </View>
-          {menuId !== null && (
-            <Pressable onPress={() => setMenuId(null)} className="absolute inset-0 z-10" />
-          )}
         </>
       )}
     </ScrollView>
