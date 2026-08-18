@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, Image, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
+import Toast from 'react-native-toast-message';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
@@ -24,6 +25,7 @@ import {
   buildAiPrompt,
   buildAiOrderedVideos,
   parseAiResponse,
+  parseSubtitleCSV,
 } from '@langplayer/utils';
 import type { AiGroupingResult, SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
@@ -522,15 +524,133 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     translationInput.forms,
   );
 
-  // Pre-parsed subtitle lines for SubtitleDisplay
+  // ── Full-subtitles loading ("Load Full Subtitles", web parity) ──
+  // The subs-search pool only carries a limited subtitle range around each
+  // match. When the playhead leaves that range we pause and offer to load the
+  // full transcript. Full subtitles are cached per youtube_id; loading them
+  // only swaps the line data — the YouTube player never remounts and the
+  // playhead stays exactly where it is.
+  const [fullSubsMap, setFullSubsMap] = useState<Record<string, SubtitleLine[]>>({});
+  const [loadingFullSubs, setLoadingFullSubs] = useState(false);
+
+  // The subtitle lines the player uses: the full transcript once loaded,
+  // otherwise the limited range that came with the search.
+  const playerSubLines = useMemo(() => {
+    if (!currentVideo) return [];
+    return fullSubsMap[currentVideo.youtube_id] ?? currentVideo.subs_l2;
+  }, [currentVideo, fullSubsMap]);
+
+  // Covered interval of the available lines (chronological), for the
+  // out-of-range detection. Durations: explicit duration → gap to the next
+  // line → 5s fallback for the last line.
+  const subsCoverage = useMemo(() => {
+    if (playerSubLines.length === 0) return null;
+    const sorted = [...playerSubLines].sort((a, b) => a.starttime - b.starttime);
+    const first = sorted[0]!.starttime;
+    let lastEnd = -Infinity;
+    for (let i = 0; i < sorted.length; i++) {
+      const l = sorted[i]!;
+      const next = sorted[i + 1];
+      const dur = l.duration ?? (next ? next.starttime - l.starttime : 5);
+      lastEnd = Math.max(lastEnd, l.starttime + dur);
+    }
+    return { first, lastEnd };
+  }, [playerSubLines]);
+
+  const isOutOfRange =
+    subsCoverage !== null &&
+    (currentTime < subsCoverage.first - 0.3 || currentTime > subsCoverage.lastEnd);
+
+  // Pause once when the playhead leaves the covered range (programmatic pause
+  // is a no-op on iOS — the notice still appears).
+  const wasInRangeRef = useRef(true);
+  useEffect(() => {
+    if (!isOutOfRange) {
+      wasInRangeRef.current = true;
+      return;
+    }
+    if (wasInRangeRef.current) {
+      wasInRangeRef.current = false;
+      log('[subsSearch] playhead left loaded subtitle range', {
+        youtubeId: currentVideo?.youtube_id,
+        currentTime,
+        coverage: subsCoverage,
+      });
+      playerRef.current?.pause();
+      setPaused(true);
+    }
+  }, [isOutOfRange, currentVideo?.youtube_id, currentTime, subsCoverage]);
+
+  // Fetch the complete transcript for the current video (same source as the
+  // watch page). The player element depends only on youtube_id, so this never
+  // reloads it; we don't seek, so the playhead stays unchanged.
+  const handleLoadFullSubtitles = useCallback(async () => {
+    if (!currentVideo || loadingFullSubs) return;
+    const youtubeId = currentVideo.youtube_id;
+    if (fullSubsMap[youtubeId]?.length) return;
+    setLoadingFullSubs(true);
+    try {
+      const l2Code = baseCode(l2Lang.code);
+      const res = await fetch(
+        `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(youtubeId)}&subs_l2=1&l2=${l2Code}`,
+        { signal: AbortSignal.timeout(15000) },
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: any = await res.json();
+      const rawVideo = data?.video ?? data;
+      let lines: SubtitleLine[] = [];
+      if (rawVideo?.subs_l2 && typeof rawVideo.subs_l2 === 'string' && rawVideo.subs_l2.length > 100) {
+        lines = parseSubtitleCSV(rawVideo.subs_l2);
+      } else if (data.lines && Array.isArray(data.lines)) {
+        lines = data.lines.map((l: any) => ({
+          line: l.line ?? l.text ?? '',
+          starttime: l.starttime ?? l.start ?? 0,
+        }));
+      }
+      // Imported video without saved subs — fetch captions through the
+      // captions endpoint (watch-page fallback).
+      if (lines.length === 0) {
+        const captionsRes = await fetch(
+          `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(youtubeId)}&l2=${l2Code}`,
+          { signal: AbortSignal.timeout(15000) },
+        );
+        if (captionsRes.ok) {
+          const captions: any[] | null = await captionsRes.json();
+          if (Array.isArray(captions)) {
+            lines = captions.map((c: any) => ({
+              line: c.text ?? '',
+              starttime: c.start ?? 0,
+            }));
+          }
+        }
+      }
+      lines = lines.filter((l) => l.line.trim().length > 0);
+      if (lines.length === 0) throw new Error('empty subtitles');
+      setFullSubsMap((prev) => ({ ...prev, [youtubeId]: lines }));
+      Toast.show({ type: 'success', text1: t('msg.full_subtitles_loaded') });
+      log('[subsSearch] full subtitles loaded', { youtubeId, lines: lines.length });
+    } catch (err) {
+      logwarn('[subsSearch] full subtitles load failed', {
+        youtubeId,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      Toast.show({ type: 'error', text1: t('msg.full_subtitles_failed') });
+    } finally {
+      setLoadingFullSubs(false);
+    }
+  }, [currentVideo, fullSubsMap, loadingFullSubs, l2Lang.code, t]);
+
+  // Pre-parsed subtitle lines for SubtitleDisplay. Uses `playerSubLines` (the
+  // full transcript once "Load Full Subtitles" runs, otherwise the limited
+  // search range) so the loaded full subs flow straight into the display.
   const subtitleInitialLines = useMemo(
     () =>
-      currentVideo?.subs_l2.map((l) => ({
+      playerSubLines.map((l) => ({
         starttime: l.starttime,
         l2Line: l.line,
         l1Line: '',
       })) ?? [],
-    [currentVideo?.id, currentVideo?.subs_l2],
+    [currentVideo?.youtube_id, playerSubLines],
   );
 
   // Compute active line index from currentTime
@@ -877,6 +997,26 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           {/* Video info below the player on wide multiline (watch page) */}
           {isWide && subtitleMode === 'multiline' && (
             <View className="px-4 py-3">{videoInfoContent}</View>
+          )}
+
+          {/* Out-of-range notice — the playhead left the loaded subtitle
+              range (shown in both singleline and multiline modes). */}
+          {isOutOfRange && (
+            <View className="flex-row items-center justify-between gap-2 border-b border-border bg-amber-50 px-3 py-2 dark:bg-amber-950">
+              <Text className="flex-1 text-xs text-amber-700 dark:text-amber-300">
+                {t('msg.subs_out_of_range')}
+              </Text>
+              <Pressable
+                onPress={handleLoadFullSubtitles}
+                disabled={loadingFullSubs}
+                className="shrink-0 rounded-md bg-primary px-3 py-1.5 active:opacity-80 disabled:opacity-50"
+                accessibilityRole="button"
+              >
+                <Text className="text-xs font-semibold text-primary-foreground">
+                  {loadingFullSubs ? t('msg.loading') : t('action.load_full_subtitles')}
+                </Text>
+              </Pressable>
+            </View>
           )}
         </View>
 
