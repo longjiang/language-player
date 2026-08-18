@@ -995,17 +995,20 @@ export function useEpubPagination({
       if (!visibleSet.has(globalIdx)) continue;
       if (!(globalIdx in tokenCache)) missing.push({ idx: globalIdx, text: tb.text });
     }
-    if (missing.length === 0) return;
+    if (missing.length === 0) {
+      appLog(`[lemmatize] 📦 DECISION settled=${interactionSettled} visible=${visibleSet.size} page=${page} skip=no_missing_blocks`);
+      return;
+    }
 
     const gen = ++tokenLoadGenRef.current;
     setLoadingTokens(true);
     const batchStart = Date.now();
-    log(`[lemmatize] 📦 BATCH REQ l2=${l2Code} blocks=${missing.length}`);
+    appLog(`[lemmatize] 📦 BATCH REQ l2=${l2Code} blocks=${missing.length} gen=${gen} t=${batchStart}`);
 
     // Offline Mode: skip the batch endpoint entirely — lemmatizeText() has
     // the same fast path and goes straight to the local fallback chain.
     if (isOfflineModeEnabled()) {
-      log(`[lemmatize] 📦 OFFLINE-MODE l2=${l2Code} → local per-block lemmatizeText()`);
+      appLog(`[lemmatize] 📦 OFFLINE-MODE l2=${l2Code} → local per-block lemmatizeText()`);
       void (async () => {
         if (tokenLoadGenRef.current !== gen) return;
         const { lemmatizeText } = await import('@/lib/tokenizer');
@@ -1037,7 +1040,7 @@ export function useEpubPagination({
         if (tokenLoadGenRef.current !== gen) return;
         const results: LemmatizedToken[][] = data?.results ?? [];
         const withLemmas = results.filter(r => r?.some(t => t.lemmas.length > 0)).length;
-        log(`[lemmatize] 📦 BATCH OK l2=${l2Code} results=${results.length} withLemmas=${withLemmas} elapsed=${Date.now() - batchStart}ms`);
+        appLog(`[lemmatize] 📦 BATCH OK l2=${l2Code} results=${results.length} withLemmas=${withLemmas} elapsed=${Date.now() - batchStart}ms`);
         // Tag server tokens with source so the debug metadata is consistent
         // with the single-line lemmatizeFromServer() path (SPEC-018).
         const tagged = results.map(r => r.map(t => ({ ...t, source: 'server' as const })));
@@ -1050,7 +1053,7 @@ export function useEpubPagination({
       .catch(async (e: any) => {
         // Offline fallback: lemmatizeText() has server-first-then-local chain.
         // lemmatizeInflight dedup handles concurrent calls for identical text.
-        log(`[lemmatize] 📦 BATCH FAIL l2=${l2Code} → falling back to per-block lemmatizeText() elapsed=${Date.now() - batchStart}ms`, e?.message ?? e);
+        appLog(`[lemmatize] 📦 BATCH FAIL l2=${l2Code} → falling back to per-block lemmatizeText() elapsed=${Date.now() - batchStart}ms`, e?.message ?? e);
         if (tokenLoadGenRef.current !== gen) return;
         const { lemmatizeText } = await import('@/lib/tokenizer');
         const results = await Promise.all(
