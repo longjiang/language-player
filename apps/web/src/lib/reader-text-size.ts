@@ -9,21 +9,20 @@
  * `zoom` factor.
  *
  * The translation:tokenized ratio is a user setting (`translationSize`, see
- * `TokenizedTextSettings`). These helpers accept the factor explicitly; when
- * omitted they fall back to `TRANSLATION_FACTOR` (the settings default).
+ * `TokenizedTextSettings`). The clamp bounds/default live in the shared
+ * `@langplayer/utils` module (SPEC-082 Task 1) so web and mobile agree; the
+ * rem-based sizing helpers below are web-specific.
  */
 
-/** Default translation:tokenized ratio — matches `translationSize`'s default. */
-export const TRANSLATION_FACTOR = 0.8;
+import {
+  TRANSLATION_FACTOR,
+  TRANSLATION_SIZE_MIN,
+  TRANSLATION_SIZE_MAX,
+  clampTranslationSize,
+  translationSizeFactor,
+} from '@langplayer/utils';
 
-/** Clamp bounds for the `translationSize` setting (shared with the slider). */
-export const TRANSLATION_SIZE_MIN = 0.5;
-export const TRANSLATION_SIZE_MAX = 1;
-
-/** Clamp a translation-size factor into the valid range. */
-export function clampTranslationSize(f: number): number {
-  return Math.min(TRANSLATION_SIZE_MAX, Math.max(TRANSLATION_SIZE_MIN, f));
-}
+export { TRANSLATION_FACTOR, TRANSLATION_SIZE_MIN, TRANSLATION_SIZE_MAX, clampTranslationSize, translationSizeFactor };
 
 /** The L2 tokenized text's rendered font size (rem) for a reader block. */
 export function l2RenderedFontSizeRem(tb: { type: string; depth?: number }, zoom: number): number {

@@ -6,7 +6,7 @@ import {
 import { Pressable } from '@/components/ui/pressable';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPhoneticsEligible } from '@langplayer/utils';
+import { isPhoneticsEligible, translationSizeFactor } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { TranslationSkeleton } from '@/components/reader/TranslationSkeleton';
@@ -253,6 +253,9 @@ export function PaginatedReader({
   const phonetics = l2Settings.tokenSpan.phonetics;
   const showDefinition = l2Settings.tokenSpan.definition.show;
   const zoomRem = ZOOM_TO_REM[tokenSettings.zoom] ?? 1;
+  // SPEC-082 Task 1: translation text renders at `translationSize` × the L2
+  // rendered size (clamped to [0.5, 1], default 0.8).
+  const translationFactor = translationSizeFactor({ tokenizedText: tokenSettings });
   const effectiveScale = (textScale ?? 1) * zoomRem;
   const measureFontSize = 16 * effectiveScale;
   const measureFontFamily = tokenSettings.typeFace === 'serif'
@@ -427,7 +430,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor),
           )}
         </View>
         {onToggleTranslation && (
@@ -475,7 +478,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -587,6 +590,7 @@ function renderBlock(
   translationSideBySide = false,
   onBlockLayout?: (globalIdx: number, top: number, height: number) => void,
   deferTokenization = false,
+  translationFactor = 0.8,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -665,6 +669,11 @@ function renderBlock(
       highlight && block.kind === 'text' && highlight.blockIndex === globalIdx
         ? [...(formats ?? []), { start: highlight.start, end: highlight.end, type: 'highlight' as const }]
         : formats;
+    // Heading blocks scale by heading depth (web: text-2xl/xl/lg × zoom);
+    // the translation inherits the same relative size (SPEC-082 Task 1).
+    const headingFactor = block.type === 'heading'
+      ? (block.depth === 1 ? 1.5 : block.depth === 2 ? 1.25 : block.depth === 3 ? 1.125 : 1)
+      : 1;
     const tokenEl = (
           <TokenizedText
             text={block.text}
@@ -673,12 +682,12 @@ function renderBlock(
             deferTokenization={deferTokenization}
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
-            textScale={scale * (block.type === 'heading' ? (block.depth === 1 ? 1.5 : block.depth === 2 ? 1.25 : block.depth === 3 ? 1.125 : 1) : 1)}
+            textScale={scale * headingFactor}
             bold={block.type === 'heading'}
           />
     );
     const transEl = showTranslation && translation ? (
-      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: 14 * blockScale }}>{translation}</Text>
+      <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: translationFactor * 14 * blockScale * headingFactor }}>{translation}</Text>
     ) : showTranslation && isTranslating ? (
       <View className="mt-1">
         <TranslationSkeleton text={block.text} />
