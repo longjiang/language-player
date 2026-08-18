@@ -185,7 +185,7 @@ export function useSrs() {
         entity: 'srs_card',
         entityId: `${lang}::${wordId}`,
         op: 'delete',
-        payload: { l2: lang, wordId },
+        payload: { l2: lang, wordId, updatedAt: Date.now() },
         updatedAt: Date.now(),
       }).catch((err) => {
         logwarn('[srs] Card delete enqueue failed:', err);
@@ -209,7 +209,7 @@ export function useSrs() {
           entity: 'srs_card',
           entityId: `${lang}::${id}`,
           op: 'delete',
-          payload: { l2: lang, wordId: id },
+          payload: { l2: lang, wordId: id, updatedAt: Date.now() },
           updatedAt: Date.now(),
         }).catch((err) => {
           logwarn('[srs] Orphan card delete enqueue failed:', err);
