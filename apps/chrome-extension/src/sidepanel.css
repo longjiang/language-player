@@ -1,0 +1,51 @@
+/* Side panel (chrome.sidePanel) host overrides.
+ *
+ * The extension's React panels (video transcript + page reader) previously
+ * rendered inside the page as #lpv-transcript-panel with position:fixed.
+ * Now they render inside the native side panel page, where the same element
+ * must fill the panel area instead of floating over the page.
+ */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: rgb(14, 16, 27);
+  color: #ddd;
+  font-family: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+  overflow: hidden;
+}
+
+#lpv-side-panel-root {
+  height: 100%;
+}
+
+/* Neutralize the in-page floating-panel styles inside the side panel host. */
+.lpv-side-panel-body #lpv-transcript-panel {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  z-index: auto;
+  border-left: none;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.lpv-side-panel-body #lpv-transcript-panel.lpv-collapsed {
+  transform: none;
+}
+
+/* Mismatch banner inside the side panel — full width, no absolute offsets. */
+.lpv-side-panel-body #lpv-mismatch-banner {
+  position: static;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: auto;
+  margin: 0;
+}

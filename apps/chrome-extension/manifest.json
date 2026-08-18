@@ -1,15 +1,36 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "1.0.110.5",
+  "version": "1.0.110.10",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "webRequest",
     "downloads",
     "storage",
-    "scripting"
+    "scripting",
+    "sidePanel",
+    "tabs"
   ],
+  "commands": {
+    "toggle-panel": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "Alt+T"
+      },
+      "description": "Toggle the Language Player side panel"
+    },
+    "toggle-panel-alt": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle the Language Player side panel (alternate)"
+    }
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel.html"
+  },
   "host_permissions": [
     "http://*/*",
     "https://*/*"

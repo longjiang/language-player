@@ -113,6 +113,7 @@ The side panel header shows the logo, the existing **Read in Language Player** b
 
 ### Side panel
 
+- The panel renders in the **native Chrome side panel** (`chrome.sidePanel`, Chrome 116+), not as an in-page overlay. `src/sidepanel.tsx` hosts both modes; content scripts push state and never mount React into the page (ARCH-019 "Native Side Panel").
 - Reuse the **same panel component as video mode** — only the content differs: video mode scrolls time-synced subtitles; text mode shows the translated block and dictionary card.
 - Shared shell: header with logo, the existing **Read in Language Player** button, and close button (no L2 name in text mode); scrollable content; bottom bar with translation toggle, ruby/furigana toggle, and text-scale controls.
 - The ruby/furigana and translation toggles live only in the side panel's bottom bar, exactly like video mode. They are **not** duplicated in the popup.
@@ -125,16 +126,17 @@ The side panel header shows the logo, the existing **Read in Language Player** b
 
 ### Click interaction
 
-- Clicking a token stops default navigation and opens/refocuses the side panel.
+- Clicking a token stops default navigation, sends the lookup to the side panel (`pageLookup` message), and **opens the side panel** — the click is a user gesture, which `chrome.sidePanel.open()` requires.
 - The dictionary card renders exactly as in video mode.
 - If translation is enabled, the containing block is sent to `/translate_array` and the translation is displayed in the panel.
-- If the token is inside a link, the dictionary card shows **Follow link**. Clicking it navigates the current tab to the link's `href` (same-tab navigation by default; new-tab behavior is an open question).
+- If the token is inside a link, the dictionary card shows **Follow link**. Clicking it sends `pageFollowLink` to the content script, which navigates the tab (same-tab navigation by default; new-tab behavior is an open question).
 
 ### Persistence across navigation
 
 - Because the page content script runs on every http/https page and checks the flag, enabling once keeps tokenization active across navigations.
-- When a page loads with the flag enabled, the content script tokenizes and reopens the panel automatically.
-- Closing the panel flips the flag off and performs cleanup; subsequent navigations stay clean until the user re-enables.
+- When a page loads with the flag enabled, the content script tokenizes and pushes page-mode state; the side panel shows the page panel whenever it is open on that tab.
+- The panel's ✕ disables page tokenization (`pageTokenizationEnabled: false` + cleanup) and closes the panel. Closing via the browser's native side-panel ✕ just closes the panel — tokens stay until the user disables the feature.
+- **Auto-open on subtitle/video load is not possible** with the native side panel: `chrome.sidePanel.open()` requires a user gesture. Users open the panel via the popup button, the Alt+T / Ctrl+Shift+Y commands, or a token click.
 
 ## Implementation Plan
 

@@ -504,6 +504,12 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.tabs.sendMessage(tab.id, {
           action: next ? 'pageTokenizationOn' : 'pageTokenizationOff',
         }).catch(() => {});
+
+        if (next) {
+          // This popup change is a user gesture — open the native side panel
+          // so the page reader is visible right away.
+          chrome.sidePanel.open({ tabId: tab.id }).catch(() => {});
+        }
       }
     } catch {}
 
@@ -551,20 +557,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (res?.cuesCount > 0) {
       transcriptHint.classList.add('hidden');
-      if (res.panelVisible) {
-        // Panel is already open — don't show the transcript button at all
-        transcriptBtn.classList.add('hidden');
-        transcriptBtn.disabled = true;
-      } else {
-        transcriptBtn.classList.remove('hidden');
-        transcriptBtn.textContent = t('popupShowTranscript');
-        transcriptBtn.className = 'lpv-btn-available';
-        transcriptBtn.disabled = false;
-        transcriptBtn.onclick = () => {
-          chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
-          window.close();
-        };
-      }
+      transcriptBtn.classList.remove('hidden');
+      transcriptBtn.textContent = t('popupShowTranscript');
+      transcriptBtn.className = 'lpv-btn-available';
+      transcriptBtn.disabled = false;
+      transcriptBtn.onclick = () => {
+        // Open the native side panel — this popup click is a user gesture
+        // (chrome.sidePanel.open() requires one).
+        chrome.sidePanel.open({ tabId: tab.id }).catch(() => {});
+        window.close();
+      };
     } else {
       showNoTranscript();
     }

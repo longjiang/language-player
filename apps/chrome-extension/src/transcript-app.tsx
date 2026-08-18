@@ -7,7 +7,6 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
@@ -360,7 +359,7 @@ const TOKENIZE_LOOKAHEAD = 5;
 /** Font size percentages for text scale levels 0–4. */
 const TEXT_SCALE_SIZES = [87, 100, 112, 125, 150] as const;
 
-const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
+export const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   cues,
   activeCueIdx,
   l2Code,
@@ -719,6 +718,8 @@ interface PagePanelProps {
   l2Code: string;
   pageUrl: string;
   onFollowLink?: (href: string) => void;
+  /** Latest token lookup pushed from the page content script. */
+  lookup?: PageLookupDetail | null;
 }
 
 interface PageLookupDetail {
@@ -728,9 +729,11 @@ interface PageLookupDetail {
   href?: string | null;
 }
 
+export type { PageLookupDetail };
+
 /** Side panel content for page mode: translated block + dictionary card.
  *  Shares the video mode's bottom bar, SavedWordsProvider, and DictionaryCard. */
-const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollowLink }) => {
+export const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollowLink, lookup }) => {
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
   const [blockText, setBlockText] = useState('');
   const [blockId, setBlockId] = useState<string | null>(null);
@@ -755,23 +758,18 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
   }, []);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<PageLookupDetail>).detail;
-      if (!detail?.token) return;
-      log(`[PAGE] lookup: "${detail.token.text}", blockText chars=${(detail.blockText || '').length}, href=${detail.href || 'none'}`);
-      log(`[FURIGANA] page mode lookup: token="${detail.token.text}" pron="${detail.token.pronunciation || 'none'}" — rendered as dictionary header text, not ruby`);
-      const newBlockId = detail.blockId || null;
-      setSelectedToken(detail.token);
-      setBlockText(detail.blockText || '');
-      setBlockId(newBlockId);
-      setHref(detail.href || null);
-      if (translatedBlockIdRef.current !== newBlockId) {
-        setTranslation('');
-      }
-    };
-    window.addEventListener('lpv-page-lookup', handler);
-    return () => window.removeEventListener('lpv-page-lookup', handler);
-  }, []);
+    if (!lookup?.token) return;
+    log(`[PAGE] lookup: "${lookup.token.text}", blockText chars=${(lookup.blockText || '').length}, href=${lookup.href || 'none'}`);
+    log(`[FURIGANA] page mode lookup: token="${lookup.token.text}" pron="${lookup.token.pronunciation || 'none'}" — rendered as dictionary header text, not ruby`);
+    const newBlockId = lookup.blockId || null;
+    setSelectedToken(lookup.token);
+    setBlockText(lookup.blockText || '');
+    setBlockId(newBlockId);
+    setHref(lookup.href || null);
+    if (translatedBlockIdRef.current !== newBlockId) {
+      setTranslation('');
+    }
+  }, [lookup]);
 
   useEffect(() => {
     if (!selectedToken || !showTranslation || !blockText) {
@@ -912,63 +910,10 @@ const PagePanel: React.FC<PagePanelProps> = ({ l1Code, l2Code, pageUrl, onFollow
   );
 };
 
-// ── Mount function — called by content-entry.js ────────────────────────────
+// ── Mounting ──────────────────────────────────────────────────────────────
+// The transcript and page panels now render inside the extension's native
+// side panel (src/sidepanel.jsx, chrome.sidePanel API). Content scripts no
+// longer mount React into the page — they push state to the side panel via
+// chrome.runtime messages. TranscriptAppInner and PagePanel are exported
+// here for the side panel host to render.
 
-let root: ReturnType<typeof createRoot> | null = null;
-
-export function mountTranscript(
-  container: HTMLElement,
-  cues: SubtitleCue[],
-  activeCueIdx: number,
-  l2Code: string,
-  l1Code: string,
-  onSeekTo: (timeSec: number) => void,
-  loadingL2?: string,
-  localeVersion?: number,
-  videoTitle?: string,
-  pageUrl?: string,
-): void {
-  if (!root) {
-    root = createRoot(container);
-  }
-  root.render(
-    <SavedWordsProvider l2Code={l2Code}>
-      <TranscriptAppInner
-        cues={cues}
-        activeCueIdx={activeCueIdx}
-        l2Code={l2Code}
-        l1Code={l1Code}
-        onSeekTo={onSeekTo}
-        loadingL2={loadingL2}
-        localeVersion={localeVersion}
-        videoTitle={videoTitle}
-        pageUrl={pageUrl}
-      />
-    </SavedWordsProvider>,
-  );
-}
-
-export function unmountTranscript(): void {
-  if (root) {
-    root.unmount();
-    root = null;
-  }
-}
-
-let pageRoot: ReturnType<typeof createRoot> | null = null;
-
-export function mountPagePanel(container: HTMLElement, props: PagePanelProps): void {
-  if (!pageRoot) pageRoot = createRoot(container);
-  pageRoot.render(
-    <SavedWordsProvider l2Code={props.l2Code}>
-      <PagePanel {...props} />
-    </SavedWordsProvider>,
-  );
-}
-
-export function unmountPagePanel(): void {
-  if (pageRoot) {
-    pageRoot.unmount();
-    pageRoot = null;
-  }
-}
