@@ -259,16 +259,19 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
         </View>
 
-        <View className="space-y-3">
+        {/* Chat transcript — explicit per-message margins (mb-3) so the gap
+            between a user follow-up bubble and the AI response that follows
+            is always visible, independent of container space-y support. */}
+        <View>
           {messages.map((message) =>
             message.role === 'user' ? (
-              <View key={message.id} className="items-end">
+              <View key={message.id} className="mb-3 items-end">
                 <View className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2">
                   <Text className="text-sm text-primary-foreground">{message.label}</Text>
                 </View>
               </View>
             ) : (
-              <View key={message.id} className="items-start">
+              <View key={message.id} className="mb-3 items-start">
                 <View className="max-w-[95%] rounded-2xl rounded-bl-sm border border-border bg-background px-3 py-2">
                   {loading && message.id === streamingId && !message.text ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
