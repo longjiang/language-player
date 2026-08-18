@@ -320,45 +320,6 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
   const byeonggiEnabled = byeonggiOverride ?? (l2Settings.display.byeonggi !== false);
 
-  // ── Map format ranges (links, highlights, markdown bold/italic/code) onto
-  //    token indices. Surface tokens concatenate back to `text`; when that
-  //    invariant breaks (e.g. a tokenizer quirk), formats are not applied. ──
-  const tokenFormatMap = useMemo<Array<{
-    url?: string;
-    highlight?: boolean;
-    bold?: boolean;
-    italic?: boolean;
-    code?: boolean;
-    strikethrough?: boolean;
-  } | null>>(() => {
-    if (!formats?.length || tokens.length === 0) return [];
-    const total = tokens.reduce((sum, t) => sum + t.text.length, 0);
-    if (total !== text.length) return [];
-    let pos = 0;
-    return tokens.map((token) => {
-      let format: { url?: string; highlight?: boolean; bold?: boolean; italic?: boolean; code?: boolean; strikethrough?: boolean } | null = null;
-      for (const f of formats) {
-        if (pos < f.end && pos + token.text.length > f.start) {
-          if (f.type === 'highlight') {
-            format = { ...(format ?? {}), highlight: true };
-          } else if (f.type === 'link') {
-            format = { ...(format ?? {}), url: f.url };
-          } else if (f.type === 'bold') {
-            format = { ...(format ?? {}), bold: true };
-          } else if (f.type === 'italic') {
-            format = { ...(format ?? {}), italic: true };
-          } else if (f.type === 'code') {
-            format = { ...(format ?? {}), code: true };
-          } else if (f.type === 'strikethrough') {
-            format = { ...(format ?? {}), strikethrough: true };
-          }
-        }
-      }
-      pos += token.text.length;
-      return format;
-    });
-  }, [formats, tokens, text]);
-
   // Quiz mode: track which tokens have been revealed
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
   // Plain-text branch: pressed-token index for immediate touch feedback.
@@ -488,16 +449,58 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   const highlightKanaForms = useHighlightKanaForms(highlightTerms, l2Code, cacheVersion);
   const effectiveHighlightTerms = useEffectiveHighlightTerms(highlightTerms, highlightKanaForms);
 
-  // Merge saved multi-token phrases only in interactive highlight contexts
-  // (the review card). Readers keep the raw token indices so EPUB format
-  // ranges and links stay aligned.
+  // Merge saved multi-token phrases into atomic tokens (web parity): a saved
+  // expression like しかるべき that the tokenizer split (しかる + べき) — or a
+  // phrase spanning several tokens — becomes one token so it highlights as
+  // saved in the source text immediately after saving from the selection
+  // popup. mergePhraseTokens returns the SAME `tokens` identity when nothing
+  // merges, so downstream memos stay stable. Formats are mapped over
+  // displayTokens (tokenFormatMap below), so EPUB format ranges/links stay
+  // aligned even when a merge happens.
   const displayTokens = useMemo(
-    () =>
-      effectiveHighlightTerms && effectiveHighlightTerms.length > 0 && !formats?.length
-        ? mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms])
-        : tokens,
-    [text, tokens, savedPhraseCandidates, effectiveHighlightTerms, highlightKanaForms, formats],
+    () => mergePhraseTokens(text, tokens, [...savedPhraseCandidates, ...highlightKanaForms]),
+    [text, tokens, savedPhraseCandidates, highlightKanaForms],
   );
+
+  // ── Map format ranges (links, highlights, markdown bold/italic/code) onto
+  //    display-token indices. Merged saved phrases keep their exact source
+  //    slice, so display tokens still concatenate back to `text`; when that
+  //    invariant breaks (e.g. a tokenizer quirk), formats are not applied. ──
+  const tokenFormatMap = useMemo<Array<{
+    url?: string;
+    highlight?: boolean;
+    bold?: boolean;
+    italic?: boolean;
+    code?: boolean;
+    strikethrough?: boolean;
+  } | null>>(() => {
+    if (!formats?.length || displayTokens.length === 0) return [];
+    const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
+    if (total !== text.length) return [];
+    let pos = 0;
+    return displayTokens.map((token) => {
+      let format: { url?: string; highlight?: boolean; bold?: boolean; italic?: boolean; code?: boolean; strikethrough?: boolean } | null = null;
+      for (const f of formats) {
+        if (pos < f.end && pos + token.text.length > f.start) {
+          if (f.type === 'highlight') {
+            format = { ...(format ?? {}), highlight: true };
+          } else if (f.type === 'link') {
+            format = { ...(format ?? {}), url: f.url };
+          } else if (f.type === 'bold') {
+            format = { ...(format ?? {}), bold: true };
+          } else if (f.type === 'italic') {
+            format = { ...(format ?? {}), italic: true };
+          } else if (f.type === 'code') {
+            format = { ...(format ?? {}), code: true };
+          } else if (f.type === 'strikethrough') {
+            format = { ...(format ?? {}), strikethrough: true };
+          }
+        }
+      }
+      pos += token.text.length;
+      return format;
+    });
+  }, [formats, displayTokens, text]);
 
   // Char ranges of each display token in `text` (tokens concatenate back to
   // `text` or we bail). Only computed when a tap listener is attached
