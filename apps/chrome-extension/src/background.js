@@ -133,7 +133,10 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (!tab?.id) return;
   try {
     if (sidePanelConnected && chrome.sidePanel?.close) {
-      await chrome.sidePanel.close({ tabId: tab.id });
+      // Close by windowId: this is a GLOBAL side panel (manifest default_path,
+      // no per-tab setOptions), and close({ tabId }) rejects on Chrome 145+
+      // when only the global panel is open.
+      await chrome.sidePanel.close({ windowId: tab.windowId });
     } else {
       await chrome.sidePanel.open({ tabId: tab.id });
     }
