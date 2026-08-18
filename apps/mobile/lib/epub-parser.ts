@@ -35,6 +35,8 @@ export interface EpubImageBlock {
   kind: 'image';
   uri: string;
   alt?: string;
+  /** SPEC-082 Task 5: first block of a spine item — a hard page start. */
+  startsNewSpine?: boolean;
 }
 
 export type EpubBlock = EpubTextBlock | EpubImageBlock;

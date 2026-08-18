@@ -140,6 +140,10 @@ export interface TokenizedTextProps {
    *  the range can't be reconstructed. Web parity of onTokenHover, adapted to
    *  touch (SPEC-082 Task 4: reader translation-sentence highlight). */
   onTokenPress?: (range: { start: number; end: number } | null) => void;
+  /** When true, indents the first line by one em (U+3000 ideographic space
+   *  prefix) — EPUB paragraph typography (SPEC-082 Task 5, web
+   *  `[&_p]:indent-[1em]` parity). Rendering-only: `text`/`tokens` unchanged. */
+  leadingIndent?: boolean;
 }
 
 /**
@@ -156,7 +160,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, leadingIndent = false }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -996,6 +1000,21 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 isRubyMode,
               );
               const runs: ParagraphRun[] = [];
+              // SPEC-082 Task 5: first-line indent as a leading non-tappable
+              // run (U+3000 ideographic space = 1 em in CJK fonts).
+              if (leadingIndent) {
+                runs.push({
+                  tokenId: -1,
+                  text: '\u3000',
+                  fontSize: tokenFontSize,
+                  tappable: false,
+                  color: rubyColors.foreground,
+                  readingColor: rubyColors.foreground,
+                  bold: false,
+                  underline: false,
+                  opacity: 1,
+                });
+              }
               const taps: Array<ParagraphTapAction | null> = [];
               const treeLines: string[] = [
                 'TokenizedText',
@@ -1293,7 +1312,11 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                   />
                 );
               }
-              return rendered;
+              // SPEC-082 Task 5: first-line indent as a leading flex item
+              // (U+3000 ideographic space = 1 em) in the wrapping token row.
+              return leadingIndent
+                ? [<Text key="indent">{'\u3000'}</Text>, ...rendered]
+                : rendered;
             })()}
           </View>
         ) : (
@@ -1302,7 +1325,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
           <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor}>
             {(() => {
               let wordIndexSoFar = 0;
-              return displayTokens.map((token, i) => {
+              // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).
+              const indentNode = leadingIndent ? '\u3000' : '';
+              const spans = displayTokens.map((token, i) => {
               const isWordToken = isWord(token);
               if (isWordToken) wordIndexSoFar++;
               const isKaraokeSpoken = karaokeProgress !== undefined ? wordIndexSoFar <= spokenWordCount : undefined;
@@ -1383,6 +1408,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                 />
               );
             });
+              return indentNode ? [indentNode, ...spans] : spans;
           })()}
           </Text>
         )}
@@ -1447,6 +1473,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.inlineFontSize === next.inlineFontSize &&
     prev.textColor === next.textColor &&
     prev.onTokenPress === next.onTokenPress &&
+    prev.leadingIndent === next.leadingIndent &&
     prev.highlightTerms === next.highlightTerms &&
     prev.tokenCacheLoaded === next.tokenCacheLoaded
   );

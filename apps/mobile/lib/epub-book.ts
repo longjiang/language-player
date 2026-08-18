@@ -312,6 +312,9 @@ export async function openEpubBook(
       const contentDir = spine.href.substring(0, spine.href.lastIndexOf('/') + 1);
       const raw = convertHtmlToBlocks(html, contentDir, (p) => imageCache.get(p) ?? null);
       for (const b of raw) {
+        // SPEC-082 Task 5: the first block of each spine item is a hard page
+        // start — chapters begin on a fresh page even if the block would fit.
+        const startsNewSpine = globalIndex === start;
         if (b.kind === 'text') {
           const tb: TextBlock = {
             kind: 'text',
@@ -320,6 +323,7 @@ export async function openEpubBook(
             srcElementId: b.srcElementId,
             formats: b.formats,
             spineIndex: spineData.length,
+            startsNewSpine,
           };
           if (b.type === 'heading') tb.depth = b.depth ?? 1;
           converted.push(tb);
@@ -327,7 +331,7 @@ export async function openEpubBook(
           blockLengths.push(b.text.length);
           globalIndex++;
         } else {
-          const ib: EpubImageBlock = { kind: 'image', uri: b.uri, alt: b.alt };
+          const ib: EpubImageBlock = { kind: 'image', uri: b.uri, alt: b.alt, startsNewSpine };
           converted.push(ib);
           blocks.push(ib);
           blockLengths.push(0);

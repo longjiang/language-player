@@ -12,12 +12,17 @@ export interface TextBlock {
   formats?: EpubFormatRange[];
   /** EPUB: index of the containing spine item (whole-book flow). */
   spineIndex?: number;
+  /** EPUB (SPEC-082 Task 5): first block of a spine item — a hard page
+   *  start (chapters begin on a fresh page). */
+  startsNewSpine?: boolean;
 }
 
 export interface ImageBlock {
   kind: 'image';
   uri: string;
   alt?: string;
+  /** EPUB (SPEC-082 Task 5): first block of a spine item — a hard page start. */
+  startsNewSpine?: boolean;
 }
 
 export interface TableBlock {

@@ -347,6 +347,7 @@ export default function EpubReaderScreen() {
             }}
             showTextActions
             translationSideBySide={isWide}
+            firstLineIndent
             onOpenLink={handleOpenLink}
             highlight={highlight}
             textScale={1}
