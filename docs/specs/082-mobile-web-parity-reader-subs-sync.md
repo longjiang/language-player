@@ -3,8 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-082
 - **Feature**: Port the 2026-08-16/17 web feature cluster (readers, subs search, subtitle modes, SRS sync hardening) to `apps/mobile/`
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-17
+- **Completed**: 2026-08-18 (all 17 tasks executed, each committed separately)
 - **ROADMAP Phase**: Mobile parity — Reading / Media / Vocab
 
 ## Overview
@@ -291,3 +292,50 @@ commit** (no duplicated sources). Port or adapt existing web tests into
 3. **AI sort LLM cost on mobile** — web analyzes top 50 results per term with caching; confirm mobile should reuse the exact same limit/cache keys so results are identical across devices.
 4. **`translationSplit` on narrow screens** — mobile side-by-side only activates at a width breakpoint; should the splitter be hidden on narrow (match web) or still draggable?
 5. **Task 17 server change scope** — is `zerotohero-python-server/` still an independent repo (not committed from the monorepo)? Confirm the commit procedure before touching server files.
+
+---
+
+## Completion Log
+
+All 17 tasks executed in the suggested order; each task committed separately.
+Typecheck (`tsc --noEmit` in `apps/mobile` and `apps/web`) passes after every
+commit; `packages/utils` vitest suite passes (160 tests, incl. fresh tests for
+sentence-map, subs-ai-grouping, subs-search, reader-text-size). No app builds
+were run (AGENTS.md build consent rule); manual device QA still recommended.
+
+| # | Task | Commit (monorepo) |
+|---|---|---|
+| 17 | SRS stale-delete guard (server `utils_sync.py` + mobile delete payloads) | `a0a8ebc0` (+ server repo `f910002`) |
+| 1 | Translation-size ratio rendering (reader + subtitles) | `d674d1ae` |
+| 2 | Translation Size slider in display settings | `4fb56337` |
+| — | Shared logic extraction (sentence-map, subs-ai-grouping, subs-search) | `8cf9512f` |
+| 6 | Content filter pills | `2aba9a4f` |
+| 7 | Matched-line-only rows + longest-term highlight | `edc0a670` |
+| 11 | ISO 8601 duration parsing + row duration | `da3fd623` |
+| 12 | Never autoplay; cue at match line via `startTime` | `066cdc5d` |
+| 14 | Remove Watch button + videos-matching header | `44a28c86` |
+| 8 | Sort/filter toolbar; queue follows the list | `29eb01e6` |
+| 9 | Context-group headers + Collapse/Expand All | `7f7864d3` |
+| 10 | Sort by AI grouping + spinner/retry | `3afc1d6c` |
+| 13 | List-first layout + playback modal | `79aa0098` |
+| 15 | Singleline↔multiline toggle + tabbed sidebar (subs/queue/info) | `2416fbef` |
+| 16 | Extract `SubsSearchRow` | `92e95394` |
+| 3 | Resizable text\|translation splitter | `e7d846fd` |
+| 4 | Translation-sentence highlight on token tap | `b83da08e` |
+| 5 | EPUB fresh page per spine + JP first-line indent | `f5b2dea3` |
+
+### Open Questions — resolution
+
+1. **Splitter clamp bounds** — mobile matches web's [0.3, 0.7]; no device-level
+   adjustment made.
+2. **Info tab on mobile** — added as the third tab of the Task 15
+   `TranscriptQueuePanel` (views, duration, date, Watch), matching web's
+   modal info tab.
+3. **AI sort LLM cost** — mobile reuses the exact web limits/cache keys
+   (`l2|term|first-50 ids`, `AI_ANALYZE_LIMIT = 50`).
+4. **`translationSplit` on narrow screens** — the handle only renders inside
+   side-by-side rows, which mobile gates at the wide breakpoint (`isWide`),
+   so narrow screens never show it (web parity).
+5. **Task 17 server change scope** — `zerotohero-python-server/` is an
+   independent repo; the `utils_sync.py` fix + test were committed there
+   (`f910002`) and the mobile payload hardening in the monorepo.
