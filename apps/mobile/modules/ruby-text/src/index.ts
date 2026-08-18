@@ -95,5 +95,13 @@ export interface NativeRubyTextParagraphProps {
    *  (per-line y/height/ascender — ascender includes the ruby band, so the
    *  reader's translation baseline alignment can match the real render). */
   onLineGrid?: (event: { nativeEvent: { lines: NativeRubyTextParagraphLineGrid[] } }) => void;
+  /** Dispatched with { start, end } (UTF-16 offsets into the BASE text —
+   *  readings are ruby attributes, not part of the string) when the user
+   *  drag-selects a non-collapsed range (SPEC-084). Fires continuously while
+   *  selection handles move; JS applies a settle timer. */
+  onSelection?: (event: { nativeEvent: { start: number; end: number } }) => void;
+  /** Bump to collapse the native selection (dictionary popup dismiss) —
+   *  SPEC-084 Task 1.3. */
+  clearSelection?: number;
   style?: ViewStyle | ViewStyle[];
 }
