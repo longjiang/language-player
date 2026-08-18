@@ -206,6 +206,9 @@ function renderTextNode(node, tokens) {
     const span = document.createElement('span');
     span.className = 'lpv-page-token';
     span.dataset.tokenText = token.text;
+    // Keep the resolved token on the span so the phonetics toggle can
+    // re-render ruby purely visually (no tokenCache lookup, no retokenize).
+    try { span.dataset.token = JSON.stringify(token); } catch {}
 
     // Inline ruby/furigana, gated by the same showPhonetics pref as video mode.
     let rubyRendered = false;
@@ -584,11 +587,56 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
   if (area === 'local' && changes.showPhonetics && enabled) {
     showPhonetics = changes.showPhonetics.newValue !== false;
-    log(`[FURIGANA] page mode showPhonetics → ${showPhonetics}; re-rendering visible page tokens (off-screen blocks re-tokenize on scroll)`);
-    restoreTokens();
-    tokenizePage();
+    // Purely visual toggle: re-render the ruby inside the existing token
+    // spans. No restoreTokens() + tokenizePage() round-trip — the spans keep
+    // their click listeners, off-screen blocks stay untouched, and nothing
+    // is re-fetched or re-tokenized.
+    reRenderTokenPhonetics();
   }
 });
+
+/**
+ * Re-render ruby/furigana in the existing token spans after the phonetics
+ * toggle. Each span carries its resolved token in `data-token`, so the
+ * re-render is a pure DOM update — no tokenization, no network, no layout
+ * re-scan.
+ */
+function reRenderTokenPhonetics() {
+  const spans = document.querySelectorAll('span.lpv-page-token');
+  let withRuby = 0;
+  for (const span of spans) {
+    const raw = span.dataset.token;
+    if (!raw) continue;
+    let token;
+    try { token = JSON.parse(raw); } catch { continue; }
+    if (!token || typeof token.text !== 'string') continue;
+    const canRuby = showPhonetics && !!token.pronunciation && token.pronunciation !== token.text;
+    if (!canRuby) {
+      span.textContent = token.text;
+      continue;
+    }
+    const segments = buildRuby(token.text, token.pronunciation, l2Code);
+    if (!segments.some((seg) => seg.reading)) {
+      span.textContent = token.text;
+      continue;
+    }
+    span.textContent = '';
+    for (const seg of segments) {
+      if (seg.reading) {
+        const ruby = document.createElement('ruby');
+        ruby.appendChild(document.createTextNode(seg.text));
+        const rt = document.createElement('rt');
+        rt.textContent = seg.reading;
+        ruby.appendChild(rt);
+        span.appendChild(ruby);
+      } else {
+        span.appendChild(document.createTextNode(seg.text));
+      }
+    }
+    withRuby++;
+  }
+  log(`[FURIGANA] page mode showPhonetics → ${showPhonetics}; re-rendered ${spans.length} token spans (${withRuby} with ruby) — no retokenization`);
+}
 
 init();
 log('Page tokenization content script loaded');
