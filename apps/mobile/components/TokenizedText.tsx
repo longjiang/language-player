@@ -194,9 +194,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // Native selection events (RN Text onSelectionChange / native paragraph
   // onSelection) fire continuously while selection handles are dragged. The
   // popup opens only after the selection has been quiet for
-  // SELECTION_SETTLE_MS — web's 400 ms touch settle window (use-selection-
-  // popup.ts).
-  const SELECTION_SETTLE_MS = 400;
+  // SELECTION_SETTLE_MS so the user can finalize their drag handles first.
+  // Web uses a 400 ms touch settle window (use-selection-popup.ts), but on
+  // touch, 400 ms fires while you are still adjusting a handle — we want the
+  // selection to feel finalized before the popup appears. ~1 s gives room to
+  // read the highlighted span and nudge the handles without feeling laggy.
+  const SELECTION_SETTLE_MS = 1000;
   const [textSelection, setTextSelection] = useState<{ start: number; end: number } | null>(null);
   const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
   const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
