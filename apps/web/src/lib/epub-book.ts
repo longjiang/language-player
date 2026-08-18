@@ -297,19 +297,19 @@ export function convertDocument(body: Element): EpubBlock[] {
       return;
     }
     if (tag === 'ruby') {
-      // Strip furigana; keep base text only.
+      // Strip furigana; keep base text only (rt readings + rp fallback parens).
       const base: string[] = [];
       for (const child of el.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) base.push(child.textContent ?? '');
         else if (child.nodeType === Node.ELEMENT_NODE) {
           const t = (child as Element).tagName.toLowerCase();
-          if (t !== 'rt' && t !== 'rtc') base.push((child as Element).textContent ?? '');
+          if (t !== 'rt' && t !== 'rtc' && t !== 'rp') base.push((child as Element).textContent ?? '');
         }
       }
       appendText(base.join(''));
       return;
     }
-    if (tag === 'rt' || tag === 'rtc') return;
+    if (tag === 'rt' || tag === 'rtc' || tag === 'rp') return;
 
     if (BLOCK_TAGS.has(tag)) {
       flushInline();

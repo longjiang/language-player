@@ -65,6 +65,19 @@ describe('htmlToMarkdown — basic conversion', () => {
     expect(md).toContain('core');
     expect(md).not.toContain('head');
   });
+
+  it('strips ruby annotations, keeping only the base text', () => {
+    const md = htmlToMarkdown(
+      '<p><ruby>漢字<rt>かんじ</rt></ruby>を読む<ruby>本<rp>（</rp><rt>ほん</rt><rp>）</rp></ruby>。</p>',
+      'https://example.com',
+    );
+    expect(md).toBe('漢字を読む本。');
+  });
+
+  it('drops bare rt/rp elements outside a ruby wrapper', () => {
+    const md = htmlToMarkdown('<p>a<rt>x</rt>b<rp>(</rp>c<rtc>y</rtc></p>', 'https://example.com');
+    expect(md).toBe('abc');
+  });
 });
 
 describe('htmlToMarkdown — resolveImage', () => {

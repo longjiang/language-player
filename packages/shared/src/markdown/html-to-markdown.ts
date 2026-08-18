@@ -267,6 +267,25 @@ function extractMainContent(html: string): string {
 }
 
 /**
+ * Strip ruby annotations from raw HTML (EPUB/Japanese books): keep the base
+ * text and drop the reading (`rt`), the annotation container (`rtc`) and the
+ * fallback parens (`rp`). The readers render their own phonetics, so publisher
+ * ruby would otherwise duplicate the reading inline ("漢字かんじ").
+ */
+function stripRuby(html: string): string {
+  return html
+    // <ruby>base<rt>reading</rt></ruby> → base (rp fallback parens dropped).
+    .replace(/<ruby\b[^>]*>([\s\S]*?)<\/ruby>/gi, (_m, inner: string) =>
+      inner
+        .replace(/<rtc\b[^>]*>[\s\S]*?<\/rtc>/gi, '')
+        .replace(/<rt\b[^>]*>[\s\S]*?<\/rt>/gi, '')
+        .replace(/<rp\b[^>]*>[\s\S]*?<\/rp>/gi, ''),
+    )
+    // Bare rt/rtc/rp outside a <ruby> element.
+    .replace(/<(?:rt|rtc|rp)\b[^>]*>[\s\S]*?<\/(?:rt|rtc|rp)>/gi, '');
+}
+
+/**
  * Convert HTML to Markdown.
  * Handles: h1-h6, p, a, strong/b, em/i, ul/ol/li, pre/code, blockquote, img, br, hr.
  */
@@ -290,6 +309,9 @@ export function htmlToMarkdown(
 
   // Decode common HTML entities (named + numeric)
   md = decodeHtmlEntities(md);
+
+  // Strip ruby annotations (EPUB): keep base text, drop readings/fallbacks.
+  md = stripRuby(md);
 
   // Remove inline styles and class/data attrs to clean up. (`id` is kept:
   // id-bearing tags are stripped wholesale below; only preserved anchors
