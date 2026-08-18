@@ -129,9 +129,15 @@ function computeForwardEnd(
   availableHeight: number,
   metrics: (BlockMetrics | undefined)[],
   contentWidth: number,
+  hardStarts: ReadonlySet<number>,
 ): { endIndex: number; needsMore: boolean } {
   let accumulated = 0;
   for (let i = start; i < end; i++) {
+    // SPEC-082 Task 5: a hard page start (new EPUB spine item) begins a new
+    // page even if it would fit on the current one.
+    if (i > start && hardStarts.has(i)) {
+      return { endIndex: i, needsMore: false };
+    }
     const cost = blockCost(blocks[i]!, i, start, metrics, contentWidth);
     if (accumulated + cost > availableHeight && accumulated > 0) {
       return { endIndex: i, needsMore: false };
@@ -152,6 +158,7 @@ function computeBackwardStart(
   availableHeight: number,
   metrics: (BlockMetrics | undefined)[],
   contentWidth: number,
+  hardStarts: ReadonlySet<number>,
 ): { startIndex: number; needsMore: boolean } {
   let accumulated = 0;
   let prevStart = 0;
@@ -162,6 +169,12 @@ function computeBackwardStart(
     const cost = height + gap;
     if (accumulated + cost > availableHeight && accumulated > 0) {
       prevStart = i + 1;
+      break;
+    }
+    // SPEC-082 Task 5: a hard page start (new EPUB spine item) is always the
+    // first block of a page, so the page ending at `end` starts here.
+    if (i > start && hardStarts.has(i)) {
+      prevStart = i;
       break;
     }
     accumulated += cost;
@@ -177,12 +190,14 @@ function sampleCharsPerPage(
   availableHeight: number,
   metrics: (BlockMetrics | undefined)[],
   contentWidth: number,
+  hardStarts: ReadonlySet<number>,
 ): number | null {
   const breaks: number[] = [];
   let accumulated = 0;
   for (let i = start; i < end && breaks.length < 4; i++) {
     const cost = blockCost(blocks[i]!, i, start, metrics, contentWidth);
-    if (accumulated + cost > availableHeight && accumulated > 0) {
+    // SPEC-082 Task 5: hard page starts count as breaks for the estimate.
+    if ((hardStarts.has(i) && accumulated > 0) || (accumulated + cost > availableHeight && accumulated > 0)) {
       breaks.push(i);
       accumulated = cost;
     } else {
@@ -252,6 +267,16 @@ export function useEpubPagination({
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
 
   const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
+  /** SPEC-082 Task 5: global block indices that start a new EPUB spine item
+   *  (hard page starts). Derived from the block metadata set in epub-book.ts. */
+  const hardStarts = useMemo(() => {
+    if (!blocks) return new Set<number>();
+    const set = new Set<number>();
+    blocks.forEach((b, i) => {
+      if (i > 0 && (b as { startsNewSpine?: boolean }).startsNewSpine) set.add(i);
+    });
+    return set;
+  }, [blocks]);
   const [measuredWindow, setMeasuredWindow] = useState(0);
   const [page, setPage] = useState(0);
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
@@ -586,6 +611,7 @@ export function useEpubPagination({
         availableHeight,
         blockMetricsRef.current,
         contentWidth,
+        hardStarts,
       );
       if (res.needsMore) {
         paginationLog(`[Pagination] ⚙ forward needsMore endIndex=${res.endIndex} — extending window`);
@@ -608,6 +634,7 @@ export function useEpubPagination({
           availableHeight,
           blockMetricsRef.current,
           contentWidth,
+          hardStarts,
         );
         if (sampled) {
           charsPerPageRef.current = sampled;
@@ -639,6 +666,7 @@ export function useEpubPagination({
       availableHeight,
       blockMetricsRef.current,
       contentWidth,
+      hardStarts,
     );
     if (res.needsMore) {
       paginationLog(`[Pagination] ⚙ backward needsMore prevStart=${res.startIndex} — extending window`);
@@ -658,7 +686,7 @@ export function useEpubPagination({
     requestRef.current = null;
   }, [
     estimate, blocks, measureStart, measureEnd, metricsVersion,
-    availableHeight, contentWidth, showTranslation,
+    availableHeight, contentWidth, showTranslation, hardStarts,
   ]);
 
   // ── Compute page breaks when all blocks have been measured ──
@@ -674,7 +702,9 @@ export function useEpubPagination({
       const m = blockMetricsRef.current[i]!;
       const gap = i > 0 ? gapBetween(blockMetricsRef.current, i) : 0;
       const h = m.height + gap;
-      if (accumulated + h > availableHeight && accumulated > 0) {
+      // SPEC-082 Task 5: a hard page start (new EPUB spine item) begins a new
+      // page even if it would fit on the current one.
+      if ((hardStarts.has(i) && accumulated > 0) || (accumulated + h > availableHeight && accumulated > 0)) {
         breaks.push(i);
         accumulated = h;
       } else {
@@ -685,7 +715,7 @@ export function useEpubPagination({
     setPageBreaks(breaks);
     setPage(0);
     setHasMeasured(true);
-  }, [blocks, availableHeight, measuredBlockCount, estimate]);
+  }, [blocks, availableHeight, measuredBlockCount, estimate, hardStarts]);
 
   // ── Lazy mode: re-measure when the real viewport / translation layout changes ──
   useEffect(() => {

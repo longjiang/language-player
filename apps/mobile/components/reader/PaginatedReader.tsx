@@ -93,6 +93,9 @@ interface PaginatedReaderProps {
   onVisibleBlocksChange?: (globalIndices: number[]) => void;
   /** True while the current page's paragraphs are being translated (skeleton bars). */
   isTranslating?: boolean;
+  /** First-line indent (1 em) for body paragraphs — EPUB typography
+   *  (SPEC-082 Task 5, web `[&_p]:indent-[1em]` parity). */
+  firstLineIndent?: boolean;
 }
 
 export function PaginatedReader({
@@ -114,6 +117,7 @@ export function PaginatedReader({
   onVisibleBlocksChange,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, translationSideBySide = false, scrollMode = false, t,
+  firstLineIndent = false,
 }: PaginatedReaderProps) {
   // ── Visibility-based lazy tokenization (SPEC-019 O2) ──
   // Track scroll position + viewport height imperatively (refs, no re-render
@@ -503,7 +507,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, firstLineIndent),
           )}
         </View>
         {onToggleTranslation && (
@@ -551,7 +555,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, firstLineIndent),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -626,6 +630,7 @@ export function PaginatedReader({
                 measureTextStyle,
                 translationSideBySide,
                 appliedSplit,
+                firstLineIndent,
               ),
             );
           })()}
@@ -671,6 +676,7 @@ function renderBlock(
   activeSentence?: { blockIndex: number; sentenceIndex: number } | null,
   sentenceMapFor?: (globalIdx: number, text: string, translation: string) => SentenceMap | null,
   getTokenPressHandler?: (globalIdx: number) => (range: { start: number; end: number } | null) => void,
+  firstLineIndent = false,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -763,6 +769,7 @@ function renderBlock(
             formats={effectiveFormats}
             onOpenLink={onOpenLink}
             onTokenPress={getTokenPressHandler?.(globalIdx)}
+            leadingIndent={firstLineIndent && block.type === 'paragraph'}
             textScale={scale * headingFactor}
             bold={block.type === 'heading'}
           />
@@ -976,6 +983,7 @@ function renderMeasuringBlock(
   measureTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string },
   translationSideBySide = false,
   translationSplit = 0.6,
+  firstLineIndent = false,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
    *  blocks don't measure shorter than they render. */
@@ -1025,12 +1033,12 @@ function renderMeasuringBlock(
       {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="flex-row items-start gap-4">
-            <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
+            <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{firstLineIndent ? '\u3000' : ''}{block.text}</Text></View>
             <View className="min-w-0" style={{ flex: 1 - translationSplit }}><MeasuringSkeleton text={block.text} /></View>
           </View>
         ) : (
           <View>
-            <Text style={measureTextStyle} className="text-foreground">{block.text}</Text>
+            <Text style={measureTextStyle} className="text-foreground">{firstLineIndent ? '\u3000' : ''}{block.text}</Text>
             {showTranslation && <View className="mt-1"><MeasuringSkeleton text={block.text} /></View>}
           </View>
         )
