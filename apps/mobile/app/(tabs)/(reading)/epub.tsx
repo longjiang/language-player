@@ -14,6 +14,7 @@ import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Sidebar, useSidebar } from '@/components/ui/sidebar';
 import { TabbedPanel } from '@/components/TabbedPanel';
 import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose, List, Search } from 'lucide-react-native';
+import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger } from '@/lib/logger';
 import type { BookLocation, TocMarker } from '@/lib/epub-book';
@@ -39,6 +40,10 @@ export default function EpubReaderScreen() {
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
   const saveLocationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Auto-open the last-read book once per mount (returning to the epub
+   *  screen resumes reading instead of landing on the bookshelf). An explicit
+   *  Close keeps the shelf for the rest of this session. */
+  const autoOpenedRef = useRef(false);
 
   useEffect(() => { locationRef.current = location; }, [location]);
 
@@ -149,6 +154,21 @@ export default function EpubReaderScreen() {
       setOpeningId(null);
     }
   }, [epub, openingId]);
+
+  // Auto-open the last-read book in the current L2 once the shelf is ready —
+  // returning to the epub screen resumes reading instead of showing the
+  // bookshelf. Same language filter as the bookshelf (legacy untagged books
+  // count everywhere); opens straight to content like a card tap. Fires once
+  // per mount so an explicit Close keeps the shelf for this session.
+  useEffect(() => {
+    if (autoOpenedRef.current || !epub.ready || epub.openBookId != null) return;
+    autoOpenedRef.current = true;
+    const l2Primary = baseCode(l2Lang.code);
+    const last = [...epub.books]
+      .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
+      .find((b) => !b.language || baseCode(b.language) === l2Primary);
+    if (last) void handleOpenBook(last.id);
+  }, [epub.ready, epub.books, epub.openBookId, l2Lang.code, handleOpenBook]);
 
   const handleAddBook = useCallback(async () => {
     setLocation(null);
