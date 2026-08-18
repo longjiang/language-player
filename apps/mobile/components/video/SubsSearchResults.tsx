@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, FlatList, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, Text, Image, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
@@ -10,7 +10,8 @@ import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useVideos } from '@langplayer/api-client';
-import { parseSubsL2, findMatchLine, durationToSeconds } from '@langplayer/utils';
+import { parseSubsL2, findMatchLine, durationToSeconds, applyFilterAndSort } from '@langplayer/utils';
+import type { SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
@@ -50,6 +51,17 @@ const FILTER_PILLS: { key: VideoFilterKey; labelKey: string }[] = [
   { key: 'nonMusic', labelKey: 'filter.non_music' },
   { key: 'music', labelKey: 'filter.music' },
   { key: 'tvShows', labelKey: 'title.tv_shows' },
+];
+
+/** Sort options for the results toolbar (SPEC-082 Task 8; AI arrives in Task 10). */
+const SORT_OPTIONS: { key: SubsSearchSortKey; labelKey: string }[] = [
+  { key: 'views', labelKey: 'sort.most_viewed' },
+  { key: 'likes', labelKey: 'title.likes' },
+  { key: 'date', labelKey: 'title.date' },
+  { key: 'length', labelKey: 'title.length' },
+  { key: 'leftContext', labelKey: 'title.leftContext' },
+  { key: 'rightContext', labelKey: 'title.rightContext' },
+  { key: 'ai', labelKey: 'sort.ai' },
 ];
 
 function formatTime(seconds: number): string {
@@ -140,6 +152,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [paused, setPaused] = useState(true);
   // Content filter pill (All / Non-Music / Music / TV Shows) — SPEC-082 Task 6.
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
+  // List: text filter + sort (SPEC-082 Task 8).
+  const [listSearch, setListSearch] = useState('');
+  const [listSort, setListSort] = useState<SubsSearchSortKey>('views');
   const [listOpen, setListOpen] = useAnimatedBoolean();
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
@@ -184,7 +199,15 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return isPro ? filtered : filtered.slice(0, FREE_SUBS_SEARCH_HITS);
   }, [pool, skippedIds, isPro, applyVideoFilter]);
 
-  const currentVideo = videos[currentIndex] ?? null;
+  // ── Result list / player queue: filter + sort ──
+  // This same ordering drives both the rendered list and the player's prev/next
+  // queue, so moving through the player follows the displayed order (web parity).
+  const filteredVideos = useMemo(
+    () => applyFilterAndSort(videos, listSearch, listSort, term),
+    [videos, listSearch, listSort, term],
+  );
+
+  const currentVideo = filteredVideos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
   // Show the search-match line immediately, even before the video plays.
   const defaultSubtitleLine = matchLine
@@ -201,17 +224,18 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, []);
 
   // Per-row segments — the matched line only (no prev/next context), matching
-  // web; translations are requested per segment (SPEC-082 Task 7).
+  // web; translations are requested per segment (SPEC-082 Task 7). Built over
+  // `filteredVideos` so translations index 1:1 with the displayed list.
   const rowSegments = useMemo(
     () =>
-      videos.map((video) => {
+      filteredVideos.map((video) => {
         const ml = video.subs_l2[video.matchLineIndex];
         const segs: { text: string; hasTerm: boolean }[] = [];
         const match = ml?.line ?? '';
         if (match) segs.push({ text: match, hasTerm: lineHasAnyTerm(match, highlightTerms) });
         return segs;
       }),
-    [videos, highlightTerms],
+    [filteredVideos, highlightTerms],
   );
 
   const translationInput = useMemo(() => {
@@ -303,6 +327,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return () => { cancelled = true; };
   }, [term, l2Lang.code, search.expandSubsSearch, isPro]);
 
+  // Changing the sort or the text filter reorders/shrinks the queue, so the
+  // current index may now point at a different (or missing) video. Reset to
+  // the top of the newly-ordered list (web parity).
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [listSort, listSearch]);
+
   // ── Player callbacks ──
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
   const handleDuration = useCallback((d: number) => setDuration(d), []);
@@ -324,10 +355,18 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       nextSkipped.add(erroredId);
       skippedIdsRef.current = nextSkipped;
 
-      const erroredIndex = videos.findIndex((v) => v.youtube_id === erroredId);
+      const erroredIndex = filteredVideos.findIndex((v) => v.youtube_id === erroredId);
       const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
       const contentFiltered = applyVideoFilter(playable);
-      const nextVideos = isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS);
+      // Recompute the full pipeline (content filter → quota → filter/sort) that
+      // `filteredVideos` produces after this skip, so the queue stays in the
+      // displayed order and the index clamp is exact (web parity).
+      const nextVideos = applyFilterAndSort(
+        isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS),
+        listSearch,
+        listSort,
+        term,
+      );
       let nextIndex = currentIndex;
       if (erroredIndex !== -1 && currentIndex > erroredIndex) nextIndex = currentIndex - 1;
       if (nextIndex >= nextVideos.length) nextIndex = Math.max(0, nextVideos.length - 1);
@@ -343,13 +382,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         currentIndex,
         nextIndex,
         nextYoutubeId: nextVideos[nextIndex]?.youtube_id ?? null,
-        videosLength: videos.length,
+        videosLength: filteredVideos.length,
         poolLength: pool.length,
         remaining: nextVideos.length,
         isPro,
       });
     },
-    [currentVideo, videos, pool, isPro, currentIndex, applyVideoFilter],
+    [currentVideo, filteredVideos, pool, isPro, currentIndex, applyVideoFilter, listSearch, listSort, term],
   );
 
   const selectFromList = (idx: number) => {
@@ -423,9 +462,41 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         </Dialog.Close>
       </View>
 
-      {/* Video list */}
+      {/* Toolbar — text filter + sort chips (SPEC-082 Task 8). */}
+      <View className="mb-2 gap-2">
+        <TextInput
+          value={listSearch}
+          onChangeText={setListSearch}
+          placeholder={t('placeholder.filter')}
+          placeholderTextColor={ICON_MUTED}
+          className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-1.5">
+            {SORT_OPTIONS.map((opt) => {
+              const active = listSort === opt.key;
+              return (
+                <Pressable
+                  key={opt.key}
+                  onPress={() => setListSort(opt.key)}
+                  className={`rounded-full px-2.5 py-1 ${active ? 'bg-primary/10' : 'bg-muted'}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {t(opt.labelKey)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* Video list — driven by the same filtered/sorted array as the player
+          queue, so the queue follows the displayed order (SPEC-082 Task 8). */}
       <FlatList
-        data={videos}
+        data={filteredVideos}
         keyExtractor={(v) => String(v.id)}
         style={isMd ? { flex: 1 } : undefined}
         viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
@@ -609,12 +680,12 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onPreviousLine={goToPreviousLine}
           onNextLine={goToNextLine}
           onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
-          onNextVideo={() => { if (currentIndex < videos.length - 1) { setCurrentIndex((i) => i + 1); } }}
+          onNextVideo={() => { if (currentIndex < filteredVideos.length - 1) { setCurrentIndex((i) => i + 1); } }}
           hasPreviousLine={hasPreviousLine}
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
-          hasNextVideo={currentIndex < videos.length - 1}
-          videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
+          hasNextVideo={currentIndex < filteredVideos.length - 1}
+          videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: filteredVideos.length })}
         />
       </View>
 
