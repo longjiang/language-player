@@ -24,6 +24,11 @@ internal final class RubyTextParagraphView: ExpoView {
 
   private let textView = UITextView()
   let onTokenTap = EventDispatcher()
+  let onLineGrid = EventDispatcher()
+  /// Cheap key of the last emitted line grid (content length + width) — the
+  /// grid depends only on those, so this dedupes re-layouts without paying
+  /// for the in-memory replica layout.
+  private var lastGridKey = ""
 
   var runs: [RubyTextParagraphRun] = [] { didSet { rebuild() } }
   var fontSize: Double = 16 { didSet { rebuild() } }
@@ -90,6 +95,7 @@ internal final class RubyTextParagraphView: ExpoView {
     // after layout breaks CTRubyAnnotation painting on iPadOS 26.6 (readings
     // silently never draw in Debug builds; Release was unaffected only
     // because the code was #if DEBUG). See build ledger — 2026-08-16.
+    emitLineGridIfChanged()
   }
 
   @objc
@@ -123,6 +129,60 @@ internal final class RubyTextParagraphView: ExpoView {
       hasLaidOutText = true
     }
     print("[LP Mobile] [RubyTextParagraph] rebuild runs=\(runs.count) chars=\(attributedString?.length ?? -1) readingSlotLineHeight=\(lineHeight) readingSize=\(readingSize) fontFamily=\(fontFamily ?? "nil") readingFont=\(makeReadingFont().fontName)")
+    emitLineGridIfChanged()
+  }
+
+  /// Line grid of the base text exactly as this paragraph lays out WITH its
+  /// ruby annotations — the reading band pushes the base text's baseline down
+  /// inside each pinned line box, so a ruby-free RN Text cannot reproduce it.
+  /// Measured on a throwaway in-memory TextKit 2 layout (same attributed
+  /// string, same width): never touches the live textView, so it can't trip
+  /// the CTRubyAnnotation painting bug (see layoutSubviews note).
+  private func makeLineGrid() -> [[String: Double]] {
+    guard let attributedString, bounds.width > 0, bounds.height > 0 else { return [] }
+    let contentStorage = NSTextContentStorage()
+    contentStorage.attributedString = attributedString
+    let layoutManager = NSTextLayoutManager()
+    contentStorage.addTextLayoutManager(layoutManager)
+    let container = NSTextContainer(size: CGSize(width: bounds.width, height: .greatestFiniteMagnitude))
+    container.lineFragmentPadding = 0
+    layoutManager.textContainer = container
+    let range = contentStorage.documentRange
+    layoutManager.ensureLayout(for: range)
+
+    var grid: [[String: Double]] = []
+    layoutManager.enumerateTextLayoutFragments(from: range.location, options: [.ensuresLayout]) { fragment in
+      let frame = fragment.layoutFragmentFrame
+      // Base text baseline offset from the line top: the first text line
+      // fragment's glyph origin (the glyph origin IS the baseline origin).
+      var ascender = Double(frame.size.height)
+      if let line = fragment.textLineFragments.first {
+        ascender = Double(line.glyphOrigin.y)
+      }
+      grid.append([
+        "y": Double(frame.origin.y),
+        "height": Double(frame.size.height),
+        "ascender": ascender,
+      ])
+      return true
+    }
+    return grid
+  }
+
+  /// Emits the base-text line grid to JS when it changed (mount, re-layout,
+  /// width change, content change, font/line-height prop change).
+  private func emitLineGridIfChanged() {
+    guard let attributedString, bounds.width > 0, bounds.height > 0 else { return }
+    let key = "\(attributedString.length):\(Int(bounds.width)):\(Int(lineHeight)):\(Int(readingSize)):\(Int(fontSize)):\(isRtl ? 1 : 0):\(fontFamily ?? "")"
+    guard key != lastGridKey else { return }
+    lastGridKey = key
+    let grid = makeLineGrid()
+    guard !grid.isEmpty else { return }
+    let sig = grid
+      .map { "\(Int($0["y"] ?? 0)):\(Int($0["height"] ?? 0)):\(Int($0["ascender"] ?? 0))" }
+      .joined(separator: "|")
+    print("[LP Mobile] [RubyTextParagraph] line-grid lines=\(grid.count) sig=\(sig)")
+    onLineGrid(["lines": grid])
   }
 
   private func makeAttributedString() -> NSAttributedString? {

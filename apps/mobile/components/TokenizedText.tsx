@@ -30,7 +30,7 @@ import { isOfflineModeEnabled } from '@/lib/offline-mode';
 import { computeRubyLayout, MOBILE_RUBY_SAVED_BG, typeFaceFontFamily, useMobileRubyColors } from '@/lib/ruby-layout';
 import { getWordDifficulty, type WordDifficulty } from '@/lib/word-difficulty';
 import { PlainTokenSpan, RubyTextParagraphBlock, RubyTokenFlat, RubyTokenSpan, type ParagraphRun, type ParagraphTapAction, type PressWordHandler } from '@/components/tokenized-text-spans';
-import type { TextLayoutLine } from '@/lib/aligned-translation';
+import type { GridLine } from '@/lib/aligned-translation';
 import { logPhoneticsSummary, logRubyRenderPath, logRenderedTokens, scheduleTreeLog } from '@/lib/tokenized-text-log';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -149,7 +149,7 @@ export interface TokenizedTextProps {
    *  paths only) — readers use it to baseline-align the translation column
    *  (SPEC-082 web AlignedTranslation parity). Must be identity-stable: the
    *  component is memoized and this prop is compared by reference. */
-  onLineGrid?: (lines: TextLayoutLine[]) => void;
+  onLineGrid?: (lines: GridLine[]) => void;
 }
 
 /**
@@ -1329,7 +1329,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
              Line-height is controlled by the `leading` prop (default: relaxed). */
-          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor} onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines) : undefined}>
+          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className={textColor} onTextLayout={onLineGrid ? (e) => onLineGrid(e.nativeEvent.lines.map((l) => ({ y: l.y, height: l.height, ascender: l.ascender }))) : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
               // SPEC-082 Task 5: first-line indent (U+3000 = 1 em).

@@ -63,6 +63,14 @@ export interface NativeRubyTextParagraphRun {
   opacity: number;
 }
 
+/** One measured line of the paragraph's base-text grid (line box top/height
+ *  and the base text's baseline offset from the line top, ruby included). */
+export interface NativeRubyTextParagraphLineGrid {
+  y: number;
+  height: number;
+  ascender: number;
+}
+
 /**
  * Props for the paragraph-level RubyText view.
  *
@@ -83,5 +91,9 @@ export interface NativeRubyTextParagraphProps {
   fontFamily?: string | null;
   /** Dispatched with { tokenId } when a tappable run is tapped. */
   onTokenTap?: (event: { nativeEvent: { tokenId: number } }) => void;
+  /** Dispatched with the base-text line grid once the paragraph lays out
+   *  (per-line y/height/ascender — ascender includes the ruby band, so the
+   *  reader's translation baseline alignment can match the real render). */
+  onLineGrid?: (event: { nativeEvent: { lines: NativeRubyTextParagraphLineGrid[] } }) => void;
   style?: ViewStyle | ViewStyle[];
 }

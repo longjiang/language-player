@@ -18,6 +18,23 @@ import type { TextLayoutEvent } from 'react-native';
 export type TextLayoutLine = TextLayoutEvent['nativeEvent']['lines'][number];
 
 /**
+ * One line of the L2 base-text grid. Reported by the render path that owns
+ * the real baseline:
+ *   - the native ruby paragraph (RubyTextParagraphView) measures its own
+ *     TextKit 2 layout WITH the ruby annotations — the base text's baseline
+ *     is pushed down by the reading band, which a ruby-free RN Text cannot
+ *     reproduce;
+ *   - the plain inline-Text path reports RN's own lines.
+ * `ascender` is the base text's baseline offset from the line's top (RN
+ * reports the per-line ascent on both platforms).
+ */
+export interface GridLine {
+  y: number;
+  height: number;
+  ascender: number;
+}
+
+/**
  * Map probe line texts back to offsets in the original `text`.
  *
  * Lines are produced in order and concatenate back to `text` (the layout
