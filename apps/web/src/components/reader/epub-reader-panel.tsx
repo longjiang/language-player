@@ -93,11 +93,20 @@ export function EpubReaderPanel({
 
   // Paging away from the highlighted search result dismisses the highlight.
   // The shared reader reports every visible-page start change through
-  // onLocationChange (page turns and jumps alike).
+  // onLocationChange — page turns and jumps alike. A jump lands ON the
+  // highlighted block (the window starts there), so only dismiss when the new
+  // page start has clearly moved past the highlighted block (or into another
+  // spine); otherwise the search jump would clear its own highlight.
   const handleLocationChange = useCallback((loc: { blockIndex: number } | BookLocation) => {
-    onHighlightDismiss?.();
+    if (highlight) {
+      const next = loc as BookLocation;
+      const pagedPast =
+        next.spineIndex !== highlight.spineIndex ||
+        next.blockIndex > highlight.blockIndex;
+      if (pagedPast) onHighlightDismiss?.();
+    }
     onLocationChange(loc as BookLocation);
-  }, [onHighlightDismiss, onLocationChange]);
+  }, [highlight, onHighlightDismiss, onLocationChange]);
 
   // EPUB links navigate inside the book (spine / #fragment) rather than to a
   // URL — the one exception to the shared web-reader link behavior. Any link
