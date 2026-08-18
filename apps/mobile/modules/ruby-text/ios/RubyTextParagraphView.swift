@@ -3,6 +3,20 @@ import ExpoModulesCore
 import UIKit
 
 /**
+ * Selectable UITextView whose edit-menu actions are all disabled (SPEC-084
+ * Task 1): long-press still enters selection mode with native handles, but no
+ * Copy / Select All callout appears — the app's own dictionary popup is the
+ * only consumer of a selection. `canPerformAction` returning false works on
+ * every iOS version; iOS 16+ also returns an empty edit menu from the
+ * delegate (RubyTextParagraphView.textView(_:editMenuForTextIn:)).
+ */
+private final class RubySelectionTextView: UITextView {
+  override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+    false
+  }
+}
+
+/**
  * Paragraph-level ruby renderer (iOS only).
  *
  * Unlike RubyTextView (one UILabel per token), this view puts an entire
@@ -16,15 +30,27 @@ import UIKit
  * RN Text with the same font/line-height and passes the exact box via
  * `style`. Taps are mapped back to a token id using UITextView's UITextInput
  * geometry (closestPosition → UTF-16 offset → run lookup).
+ *
+ * The text view is selectable (SPEC-084): drag-selection reports UTF-16
+ * offsets of the BASE text (readings are CTRubyAnnotation attributes, not
+ * part of the string), so selection.toString() matches the source text like
+ * web's select-none annotations.
  */
 internal final class RubyTextParagraphView: ExpoView {
   /// Last mounted paragraph view, so the JS side can pull diagnostics through
   /// the module when a paragraph renders blank (dev builds only).
   internal static weak var lastDiagnosticsView: RubyTextParagraphView?
 
-  private let textView = UITextView()
+  private let textView = RubySelectionTextView()
   let onTokenTap = EventDispatcher()
   let onLineGrid = EventDispatcher()
+  /// Selection changed (SPEC-084): { start, end } — UTF-16 offsets into the
+  /// base-text string. Emitted only for non-collapsed ranges; JS applies its
+  /// own settle timer while handles are being dragged.
+  let onSelection = EventDispatcher()
+  /// Bump this prop to collapse the native selection (popup dismiss) —
+  /// SPEC-084 Task 1.3, web's clear() equivalent.
+  var clearSelection: Int = 0 { didSet { if clearSelection != oldValue { collapseSelection() } } }
   /// Cheap key of the last emitted line grid (content length + width) — the
   /// grid depends only on those, so this dedupes re-layouts without paying
   /// for the in-memory replica layout.
@@ -53,17 +79,33 @@ internal final class RubyTextParagraphView: ExpoView {
     clipsToBounds = false
 
     textView.isEditable = false
-    textView.isSelectable = false
+    // SPEC-084: selectable so long-press drag-selection works; readings are
+    // CTRubyAnnotation attributes (not in the string), so selection text is
+    // pure base text. The callout is suppressed by RubySelectionTextView.
+    textView.isSelectable = true
     textView.isScrollEnabled = false
     textView.textContainerInset = .zero
     textView.textContainer.lineFragmentPadding = 0
     textView.backgroundColor = .clear
     textView.isOpaque = false
     textView.clipsToBounds = false
+    textView.delegate = self
     addSubview(textView)
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+    // Allow the textView's own selection gestures to recognize alongside our
+    // tap — a single tap still opens the token popup, while long-press/drag
+    // drives native selection (SPEC-084 Task 1.4).
+    tap.delegate = self
     addGestureRecognizer(tap)
+  }
+
+  /// Collapse the current selection so a dismissed popup cannot be
+  /// re-triggered by a stray gesture on the still-highlighted text
+  /// (web clear() parity — SPEC-084 Task 1.3).
+  private func collapseSelection() {
+    guard textView.selectedRange.length > 0 else { return }
+    textView.selectedRange = NSRange(location: NSMaxRange(textView.selectedRange), length: 0)
   }
 
   internal var diagnostics: [String: Any] {
@@ -268,5 +310,41 @@ internal final class RubyTextParagraphView: ExpoView {
       return font
     }
     return UIFont.systemFont(ofSize: CGFloat(readingSize), weight: .regular)
+  }
+}
+
+// ── Selection + gesture arbitration (SPEC-084 Task 1) ──────────────────────
+
+extension RubyTextParagraphView: UITextViewDelegate {
+  /// Report non-collapsed selections as { start, end } (UTF-16, base text).
+  /// Fires continuously while selection handles are dragged — JS applies a
+  /// settle timer and opens the dictionary popup once the selection is quiet.
+  func textViewDidChangeSelection(_ textView: UITextView) {
+    let sel = textView.selectedRange
+    guard sel.length > 0 else { return }
+    onSelection(["start": sel.location, "end": sel.location + sel.length])
+  }
+
+  /// iOS 16+: return an empty edit menu so no Copy / Select All callout
+  /// appears over the selection (the dictionary popup is the consumer).
+  @available(iOS 16.0, *)
+  func textView(
+    _ textView: UITextView,
+    editMenuForTextIn range: NSRange,
+    suggestedActions: [UIMenuElement]
+  ) -> UIMenu? {
+    UIMenu()
+  }
+}
+
+extension RubyTextParagraphView: UIGestureRecognizerDelegate {
+  /// Let the textView's own selection gestures recognize alongside our tap
+  /// recognizer: single taps still map to the tapped token, while
+  /// long-press / drag drives native selection.
+  func gestureRecognizer(
+    _ gestureRecognizer: UIGestureRecognizer,
+    shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+  ) -> Bool {
+    true
   }
 }

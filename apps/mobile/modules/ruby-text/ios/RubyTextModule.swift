@@ -86,7 +86,7 @@ public final class RubyTextModule: Module {
     }
 
     View(RubyTextParagraphView.self) {
-      Events("onTokenTap", "onLineGrid")
+      Events("onTokenTap", "onLineGrid", "onSelection")
 
       // Same raw-dictionary parsing as `segments` above: Expo's record
       // converter chokes on NSNull for an absent optional field, so missing
@@ -130,6 +130,10 @@ public final class RubyTextModule: Module {
 
       Prop("fontFamily") { (view: RubyTextParagraphView, family: String?) in
         view.fontFamily = family
+      }
+
+      Prop("clearSelection") { (view: RubyTextParagraphView, nonce: Int) in
+        view.clearSelection = nonce
       }
     }
   }
