@@ -3,8 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-083
 - **Feature**: One markdown engine, one block model, one parse entry point (`parseMarkdownBlocks()`) in `packages/shared`, consumed by **both** `apps/web` and `apps/mobile`; every markdown surface renders through it
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-08-18
+- **Completed**: 2026-08-18 (all 6 tasks committed separately; web swap + cleanup landed in the final commit)
 - **ROADMAP Phase**: Mobile parity — Reading / Vocab / Docs
 
 ## Overview
