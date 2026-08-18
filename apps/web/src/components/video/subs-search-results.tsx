@@ -14,6 +14,7 @@ import {
   AI_ANALYZE_LIMIT,
   buildAiPayload,
   buildAiPrompt,
+  buildAiOrderedVideos,
   parseAiResponse,
   type AiGroupingResult,
 } from '@/lib/subs-ai-grouping';
@@ -335,9 +336,14 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // The LLM analyzes the first AI_ANALYZE_LIMIT most-popular results and
   // assigns each video id to a meaning/pattern group. Results are cached per
   // key so toggling away and back doesn't re-request.
+  //
+  // Analysis is based on the raw `pool` (most-popular fetch order), NOT the
+  // video-filtered `videos`, so toggling the All/Music/Non-Music/TV-Show pill
+  // doesn't invalidate the cache or trigger a new LLM call — it only filters
+  // the already-grouped list below.
   const aiAnalyzed = useMemo(
-    () => (listSort === 'ai' ? videos.slice(0, AI_ANALYZE_LIMIT) : []),
-    [listSort, videos],
+    () => (listSort === 'ai' ? pool.slice(0, AI_ANALYZE_LIMIT) : []),
+    [listSort, pool],
   );
   const aiCacheKey = useMemo(
     () =>
@@ -423,30 +429,11 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   // Ordered display list for AI sort: pattern groups (LLM order), then
   // Other Patterns (analyzed ids the LLM didn't assign to any pattern —
   // including unmentioned leftovers), then everything beyond the analyzed 50
-  // in original order.
-  const aiOrderedVideos = useMemo(() => {
-    if (!aiGroupsValid) return null;
-    const byId = new Map(videos.map((v) => [v.id, v]));
-    const used = new Set<number>();
-    const ordered: SubsSearchVideo[] = [];
-    const push = (id: number) => {
-      if (used.has(id)) return;
-      const v = byId.get(id);
-      if (v) {
-        ordered.push(v);
-        used.add(id);
-      }
-    };
-    for (const g of aiGroups!.patterns) {
-      for (const id of g.videoIds) push(id);
-    }
-    for (const id of aiGroups!.otherIds) push(id);
-    // Analyzed ids the LLM never mentioned → Other Patterns.
-    for (const v of aiAnalyzed) push(v.id);
-    // Beyond-50 videos → Other (original order).
-    for (const v of videos) push(v.id);
-    return ordered;
-  }, [aiGroupsValid, aiGroups, aiAnalyzed, videos]);
+  // in original order. Based on the raw `pool` so the ordering is stable.
+  const aiOrderedVideos = useMemo(
+    () => (aiGroupsValid ? buildAiOrderedVideos(aiGroups!, aiAnalyzed, pool) : null),
+    [aiGroupsValid, aiGroups, aiAnalyzed, pool],
+  );
 
   // ── Result list / player queue: filter + sort ──
   // This same ordering drives both the rendered list and the player's prev/next
@@ -455,15 +442,19 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     if (listSort !== 'ai' || !aiOrderedVideos) {
       return applyFilterAndSort(videos, listSearch, listSort, term);
     }
+    // Video-type pill + free-user quota filter the already-grouped AI order
+    // (no re-analysis), then the text filter narrows within groups.
+    let result = applyVideoFilter(aiOrderedVideos);
+    if (!isPro) result = result.slice(0, FREE_SUBS_SEARCH_HITS);
     const q = listSearch.trim().toLowerCase();
     return q
-      ? aiOrderedVideos.filter(
+      ? result.filter(
           (v) =>
             v.title.toLowerCase().includes(q) ||
             v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
         )
-      : aiOrderedVideos;
-  }, [listSort, aiOrderedVideos, videos, listSearch, term]);
+      : result;
+  }, [listSort, aiOrderedVideos, videos, listSearch, term, applyVideoFilter, isPro]);
 
   // Group key per video for AI sort: `ai-<i>` per pattern group,
   // `other-patterns` for analyzed-but-unclassified (including ids the LLM
@@ -713,29 +704,52 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       nextSkipped.add(erroredId);
       skippedIdsRef.current = nextSkipped;
 
-      // Recompute the full pipeline (content filter → quota → filter/sort) that
-      // `filteredVideos` produces after this skip, so the queue stays in the
-      // displayed order and the index clamp is exact.
+      // Recompute the full pipeline (content filter → quota → filter/sort, or
+      // AI-group order) that `filteredVideos` produces after this skip, so the
+      // queue stays in the displayed order and the index clamp is exact.
       const playable = pool.filter((v) => !nextSkipped.has(v.youtube_id));
-      const contentFiltered = applyVideoFilter(playable);
-      const base = isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS);
-      const nextVideos = applyFilterAndSort(base, listSearch, listSort, term);
+      let nextBase: SubsSearchVideo[];
+      if (listSort === 'ai') {
+        // Re-order the reduced pool by the AI grouping (unchanged), then cap by
+        // the analyzed slice so "beyond-50" buckets recompute correctly.
+        nextBase = aiGroupsValid
+          ? buildAiOrderedVideos(aiGroups!, aiAnalyzed, playable)
+          : playable;
+      } else {
+        const contentFiltered = applyVideoFilter(playable);
+        nextBase = applyFilterAndSort(
+          isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS),
+          listSearch,
+          listSort,
+          term,
+        );
+      }
+      const contentFiltered = applyVideoFilter(nextBase);
+      const nextVideos = isPro ? contentFiltered : contentFiltered.slice(0, FREE_SUBS_SEARCH_HITS);
+      const q = listSearch.trim().toLowerCase();
+      const finalNext = q
+        ? nextVideos.filter(
+            (v) =>
+              v.title.toLowerCase().includes(q) ||
+              v.subs_l2.some((l) => l.line.toLowerCase().includes(q)),
+          )
+        : nextVideos;
 
       setSkippedIds(nextSkipped);
       // The video after the errored one slides into its slot, so keep the
       // same index; only clamp when the errored video was the last one.
       setCurrentIndex((i) => {
         let nextIndex = i;
-        if (nextIndex >= nextVideos.length) nextIndex = Math.max(0, nextVideos.length - 1);
+        if (nextIndex >= finalNext.length) nextIndex = Math.max(0, finalNext.length - 1);
         return nextIndex;
       });
 
       log('[subsSearch] skipped unavailable video', {
         youtubeId: erroredId,
-        remaining: nextVideos.length,
+        remaining: finalNext.length,
       });
     },
-    [currentVideo, pool, isPro, applyVideoFilter, listSearch, listSort, term],
+    [currentVideo, pool, isPro, applyVideoFilter, listSearch, listSort, term, aiGroupsValid, aiGroups, aiAnalyzed],
   );
 
   const goToPrevious = useCallback(() => {
