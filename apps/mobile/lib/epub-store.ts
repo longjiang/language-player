@@ -58,11 +58,25 @@ export async function ensureLibraryDir(): Promise<void> {
   }
 }
 
+/** Older builds persisted covers with a doubled scheme (`file://file://…`)
+ *  because documentDirectory/cacheDirectory already include `file://`.
+ *  Normalize on every read so existing books show their covers without
+ *  re-importing (and any later save persists the corrected value). */
+function normalizeCoverUrl(coverUrl: string | null): string | null {
+  if (coverUrl && coverUrl.startsWith('file://file://')) {
+    return coverUrl.slice('file://'.length);
+  }
+  return coverUrl;
+}
+
 async function readAll(): Promise<EpubMeta[]> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
+    return (Array.isArray(arr) ? arr : []).map((b) => ({
+      ...b,
+      coverUrl: normalizeCoverUrl(b?.coverUrl ?? null),
+    }));
   } catch {
     return [];
   }
@@ -129,7 +143,9 @@ export async function deleteEpub(meta: EpubMeta): Promise<void> {
 export async function deleteEpubFiles(meta: EpubMeta): Promise<void> {
   try { await FileSystem.deleteAsync(libraryFileUri(meta.id)); } catch { /* already gone */ }
   if (meta.coverUrl?.startsWith('file://')) {
-    try { await FileSystem.deleteAsync(meta.coverUrl.slice(7)); } catch { /* already gone */ }
+    // coverUrl is a full file:// URI — pass it through as-is (slice(7) would
+    // strip the scheme and make the delete target a bare path).
+    try { await FileSystem.deleteAsync(meta.coverUrl); } catch { /* already gone */ }
   }
 }
 

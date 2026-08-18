@@ -270,7 +270,10 @@ export async function openEpubBook(
           const ext = ((item.mediaType.split('/')[1] || 'jpg') as string).replace('jpeg', 'jpg');
           const imgPath = `${tempDir}img_${imgIdx++}.${ext}`;
           await FileSystem.writeAsStringAsync(imgPath, b64, { encoding: FileSystem.EncodingType.Base64 });
-          imageCache.set(resolvedPath, 'file://' + imgPath);
+          // tempDir is already a file:// URI (cacheDirectory) — store it as-is
+          // for RN Image. Prepending 'file://' again yields an unloadable
+          // `file://file:///…` URI (book covers were broken by exactly this).
+          imageCache.set(resolvedPath, imgPath);
           tempPaths.push(imgPath);
         } catch { /* skip corrupt images */ }
       }
@@ -290,7 +293,9 @@ export async function openEpubBook(
         const ext = (mimeType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         const coverPath = `${tempDir}cover.${ext}`;
         await FileSystem.writeAsStringAsync(coverPath, b64, { encoding: FileSystem.EncodingType.Base64 });
-        coverUrl = 'file://' + coverPath;
+        // tempDir is already a file:// URI — do not re-prefix (see image cache
+        // comment above).
+        coverUrl = coverPath;
         tempPaths.push(coverPath);
       } catch { /* generated cover fallback */ }
     }
