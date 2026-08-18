@@ -140,6 +140,7 @@
         "stop": "Durdur",
         "subscribe": "Abone Ol",
         "sync_now": "Şimdi eşitle",
+        "synonyms": "Eş anlamlılar",
         "syntax": "Sözdizimi",
         "table_of_contents": "İçindekiler",
         "tap_to_hide": "Gizlemek için dokun",
@@ -1212,6 +1213,8 @@
         "followup_inflection_context_form": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin lemmasını (sözlük biçimini) (çekimli biçimi: {contextForm}), kelimenin \"{context}\" içinde nasıl çekimlendiğini ve çekimli biçimin anlamını açıkla.",
         "followup_morphemes": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
         "followup_morphemes_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde anlamlı parçalara (biçimbirimlere) ayrılıp ayrılamayacağını açıkla ve kelimenin varsa gerçek anlamdaki yorumlarını belirt.",
+        "followup_synonyms": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin eş anlamlılarını listele. Her eş anlamlı için madde başını (sözlük biçimi) ve telaffuzunu ver, \"{word}\" ile anlam ve kullanım bakımından nasıl farklılaştığını açıkla ve farkı gösteren örnek cümleler sun.",
+        "followup_synonyms_context": "Lütfen \"{context}\" içindeki {l2Name} dilindeki \"{word}\" kelimesinin eş anlamlılarını listele. Her eş anlamlı için madde başını (sözlük biçimi) ve telaffuzunu ver, \"{word}\" ile anlam ve kullanım bakımından nasıl farklılaştığını açıkla ve farkı gösteren örnek cümleler sun.",
         "followup_syntax": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
         "followup_syntax_context": "Lütfen {l2Name} dilindeki \"{word}\" kelimesinin \"{context}\" içinde sözdizimsel bir öğe olarak işlev görüp görmediğini açıkla ve sözdizimsel yapının ne olduğunu açıkla (örn. cümle yapısı, bir ifadenin parçası, belirli bir dilbilgisi olgusu vb.).",
         "subs_ai_group": "Sen bir dil öğrenme asistanısın. Aşağıda {l2Name} dilindeki videolardan \"{term}\" terimini içeren {n} altyazı satırı var."

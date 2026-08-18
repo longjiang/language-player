@@ -140,6 +140,7 @@
         "stop": "Ferma",
         "subscribe": "Abbònati",
         "sync_now": "Sincronizza ora",
+        "synonyms": "Sinonimi",
         "syntax": "Sintassi",
         "table_of_contents": "Indice",
         "tap_to_hide": "Tocca per nascondere",
@@ -1212,6 +1213,8 @@
         "followup_inflection_context_form": "Spiega il lemma (forma di dizionario) della parola {l2Name} \"{word}\" (forma flessa: {contextForm}), come si flette la parola in \"{context}\" e il significato della forma flessa.",
         "followup_morphemes": "Spiega se la parola {l2Name} \"{word}\" può essere scomposta in parti semantiche (morfemi) e segnala eventuali interpretazioni letterali della parola.",
         "followup_morphemes_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" può essere scomposta in parti semantiche (morfemi) e segnala eventuali interpretazioni letterali della parola.",
+        "followup_synonyms": "Elenca i sinonimi della parola {l2Name} \"{word}\". Per ogni sinonimo, indica la forma lemma e la pronuncia, spiega in cosa differisce da \"{word}\" nel significato e nell'uso e fornisci esempi che illustrino la differenza.",
+        "followup_synonyms_context": "Elenca i sinonimi della parola {l2Name} \"{word}\" in \"{context}\". Per ogni sinonimo, indica la forma lemma e la pronuncia, spiega in cosa differisce da \"{word}\" nel significato e nell'uso e fornisci esempi che illustrino la differenza.",
         "followup_syntax": "Spiega se la parola {l2Name} \"{word}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
         "followup_syntax_context": "Spiega se la parola {l2Name} \"{word}\" in \"{context}\" funziona come elemento sintattico e spiega qual è la struttura sintattica (ad es. struttura della frase, parte di un sintagma, un certo fenomeno grammaticale, ecc.).",
         "subs_ai_group": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono {n} righe di sottotitoli di video, ciascuna in {l2Name}, che contengono il termine \"{term}\"."
