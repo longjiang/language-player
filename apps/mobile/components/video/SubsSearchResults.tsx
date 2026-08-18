@@ -397,12 +397,11 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, [listSort, searchTerm]);
   const activeGroupKey = listSort === 'ai' ? aiGroupKeyFor : contextGroupKey;
 
-  // Collapsed context groups (rows hidden, header stays). Reset whenever the
-  // sort mode changes so a fresh sort starts fully expanded.
+  // Collapsed groups (rows hidden, header stays). Grouped sorts
+  // (left/right-context, AI) start fully collapsed by default — the user
+  // expands the headers they care about. Reset logic lives below (after the
+  // group keys are computable).
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
-  useEffect(() => {
-    setCollapsedGroups(new Set());
-  }, [listSort]);
 
   const toggleGroup = useCallback((key: string) => {
     setCollapsedGroups((prev) => {
@@ -424,6 +423,32 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     }
     return keys;
   }, [activeGroupKey, filteredVideos]);
+
+  // Latest values via refs so the collapse-by-default effect can read them
+  // without re-running on every filter keystroke (which would re-collapse
+  // groups the user already expanded).
+  const activeGroupKeyRef = useRef(activeGroupKey);
+  activeGroupKeyRef.current = activeGroupKey;
+  const filteredVideosRef = useRef(filteredVideos);
+  filteredVideosRef.current = filteredVideos;
+
+  // Grouped sorts start fully collapsed by default. Runs when the sort
+  // changes, and again when AI groups first arrive (until then aiGroupKeyFor
+  // has no keys to collapse).
+  useEffect(() => {
+    if (listSort !== 'leftContext' && listSort !== 'rightContext' && listSort !== 'ai') {
+      setCollapsedGroups(new Set());
+      return;
+    }
+    const keyFn = activeGroupKeyRef.current;
+    if (!keyFn) return;
+    const keys = new Set<string>();
+    for (const v of filteredVideosRef.current) {
+      const k = keyFn(v);
+      if (k) keys.add(k);
+    }
+    setCollapsedGroups(keys);
+  }, [listSort, aiGroupsValid]);
 
   const collapseAll = useCallback(() => {
     if (allGroupKeys) setCollapsedGroups(new Set(allGroupKeys));
