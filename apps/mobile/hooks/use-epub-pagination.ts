@@ -4,7 +4,7 @@ import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { lemmatizeLogger, readerLogger, translationLogger } from '@/lib/logger';
+import { lemmatizeLogger, readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
 
 const { log } = lemmatizeLogger;
@@ -265,6 +265,8 @@ interface UseEpubPaginationReturn {
   /** Whether the current page has a previous / next page (lazy mode). */
   hasPrev: boolean;
   hasNext: boolean;
+  /** True while the user is actively flipping pages (plain-text fast render). */
+  flipping: boolean;
 }
 
 export function useEpubPagination({
@@ -446,7 +448,10 @@ export function useEpubPagination({
       exact = r.exact;
     }
     if (end < start) end = start;
-    paginationLog(`[Pagination] ⚡ navigate ${dir} page=${pageNumber - 1} base=${clamped} → [${start},${end}) exact=${exact} t=${Date.now()}`);
+    const navigateAt = Date.now();
+    // Timing markers use the GLOBAL logger (appLog) — always visible, no env
+    // var needed — so flip timing shows up unconditionally.
+    appLog(`[Pagination] ⚡ navigate ${dir} page=${pageNumber - 1} base=${clamped} → [${start},${end}) exact=${exact} t=${navigateAt}`);
     // Drop any in-flight refinement — it targeted the previous page.
     requestIdRef.current += 1;
     requestRef.current = null;
@@ -475,6 +480,7 @@ export function useEpubPagination({
     setIsTranslating(false);
     boundariesExactRef.current = exact;
     noteInteraction();
+    paginationLog(`[Pagination] ✅ navigate applied page=${pageNumber - 1} stateSet elapsed=${Date.now() - navigateAt}ms t=${Date.now()}`);
   }, [blocks, estimateForwardEnd, estimateBackwardStart, noteInteraction]);
 
   /** Queue an exact re-measure of the page [base, endBase): extends the hidden
@@ -1290,5 +1296,9 @@ export function useEpubPagination({
     hasNext: estimate
       ? (lazyPageEnd != null && blocks != null && lazyPageEnd < blocks.length)
       : page < totalPages - 1,
+    /** True while the user is actively flipping — the reader renders visible
+     *  pages as plain text (fast) and defers tokenized/translated rendering
+     *  until flipping stops. */
+    flipping: !interactionSettled,
   };
 }

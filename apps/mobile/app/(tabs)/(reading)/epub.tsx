@@ -367,6 +367,7 @@ export default function EpubReaderScreen() {
             onViewportLayout={pagination.handleViewportLayout}
             hasPrev={pagination.hasPrev}
             hasNext={pagination.hasNext}
+            flipping={pagination.flipping}
             l2Code={l2Lang.code}
             l1Code={l1Lang.code}
             showTranslation={display.translation}
