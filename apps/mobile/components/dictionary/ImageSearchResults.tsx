@@ -4,8 +4,9 @@ import { Pressable } from '@/components/ui/pressable';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ErrorNotice } from '@/components/ui/error-notice';
-import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { WebViewSheet } from '@/components/WebViewSheet';
+import { ImageOff, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 // Openverse is the direct image source (matches web / ADR-0024): stable JSON
 // API with CC-license metadata. LLM-rewritten query polyfill runs through Flask.
@@ -138,6 +139,33 @@ export function ImageSearchResults({
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
+  // "Search Images" — opens Google Images in the in-app browser (WebViewSheet,
+  // same as the popup dictionary).
+  const [showImageSearch, setShowImageSearch] = useState(false);
+  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(term)}`;
+
+  // "Search Images" button + sheet — same design/logic as the popup
+  // dictionary's button (outline Pressable, centered, image icon). Shown
+  // below the gallery as a manual fallback (grid variant only).
+  const searchImagesControl = (
+    <>
+      <Pressable
+        onPress={() => setShowImageSearch(true)}
+        className="mt-3 flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
+        accessibilityRole="button"
+        accessibilityLabel={t('action.search_images')}
+      >
+        <ImageIcon size={16} color={ICON_PRIMARY} />
+        <Text className="text-sm font-medium text-foreground">{t('action.search_images')}</Text>
+      </Pressable>
+      <WebViewSheet
+        visible={showImageSearch}
+        url={googleImagesUrl}
+        title={t('action.search_images')}
+        onClose={() => setShowImageSearch(false)}
+      />
+    </>
+  );
 
   const markBroken = useCallback((id: string) => {
     setBrokenIds((prev) => {
@@ -273,7 +301,14 @@ export function ImageSearchResults({
   }, [term, l2Code, l2Name, l1Code, definition, contextText, contextForm, isCompact]);
 
   if (error) {
-    return <ErrorNotice message={t('msg.failed_to_load_images')} className="mx-2" />;
+    return (
+      <>
+        <ErrorNotice message={t('msg.failed_to_load_images')} className="mx-2" />
+        {/* Manual Google Images fallback — same button/logic as the popup
+            dictionary (opens the in-app browser). */}
+        {!isCompact && searchImagesControl}
+      </>
+    );
   }
 
   const pageSize = cols * 3;
@@ -343,6 +378,9 @@ export function ImageSearchResults({
           <ImageOff size={32} color={ICON_MUTED} />
           <Text className="text-sm text-muted-foreground">{t('msg.no_images_found', { term })}</Text>
         </View>
+        {/* Manual Google Images fallback — same button/logic as the popup
+            dictionary (opens the in-app browser). */}
+        {!isCompact && searchImagesControl}
       </>
     );
   }
@@ -388,6 +426,10 @@ export function ImageSearchResults({
           </Pressable>
         </View>
       )}
+
+      {/* Search Google Images — below the gallery, same button/logic as the
+          popup dictionary (opens the in-app browser). */}
+      {!isCompact && searchImagesControl}
     </>
   );
 }

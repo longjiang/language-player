@@ -5,7 +5,8 @@ import { useT } from '@/hooks/use-t';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { cn } from '@/lib/utils';
-import { AlertCircle, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { AlertCircle, ChevronLeft, ChevronRight, ImageOff, ImageIcon } from 'lucide-react';
 
 // Openverse is the direct image source for the web app (see ADR-0024): it has
 // a stable JSON API, CC-license metadata, and server-side dead-thumbnail
@@ -336,9 +337,14 @@ export function ImageSearchResults({
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-        {t('msg.failed_to_load_images')}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          {t('msg.failed_to_load_images')}
+        </div>
+        {/* Manual Google Images fallback — same button/logic as the popup
+            dictionary (opens in a new tab). */}
+        {!isCompact && <SearchImagesButton term={term} />}
       </div>
     );
   }
@@ -411,6 +417,9 @@ export function ImageSearchResults({
           <ImageOff className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">{t('msg.no_images_found', { term })}</p>
         </div>
+        {/* Manual Google Images fallback — same button/logic as the popup
+            dictionary (opens in a new tab). */}
+        {!isCompact && <SearchImagesButton term={term} className="mt-3" />}
       </>
     );
   }
@@ -486,6 +495,10 @@ export function ImageSearchResults({
             </button>
           </div>
         )}
+
+        {/* Search Google Images — below the gallery, same button/logic as the
+            popup dictionary (opens in a new tab). */}
+        {!isCompact && <SearchImagesButton term={term} className="mt-3" />}
       </>
       )}
     </>
@@ -612,6 +625,25 @@ function ImageTile({
           {image.creator ? `${image.creator} · ${image.provider}` : image.provider}
         </p>
       </div>
+    </a>
+  );
+}
+
+/** "Search Images" — opens Google Images for the term in a new tab. Mirrors
+ *  the popup dictionary's button (outline variant + image icon + label),
+ *  shown below the gallery as a manual fallback. */
+function SearchImagesButton({ term, className }: { term: string; className?: string }) {
+  const t = useT();
+  return (
+    <a
+      href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(term)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full', className)}
+      title={t('action.search_images')}
+    >
+      <ImageIcon className="h-4 w-4" />
+      {t('action.search_images')}
     </a>
   );
 }
