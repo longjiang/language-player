@@ -1132,6 +1132,7 @@
         "exclude_terms": "Terms to exclude, comma-separated…",
         "filter": "Filter...",
         "filter_by_title": "Filter by title...",
+        "filter_videos": "Filter {n} videos",
         "first_name": "First",
         "last_name": "Last",
         "more_languages": "More languages ({count})",

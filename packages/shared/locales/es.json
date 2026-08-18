@@ -1132,6 +1132,7 @@
         "exclude_terms": "Términos a excluir separados por comas…",
         "filter": "Filtrar...",
         "filter_by_title": "Filtrar por título...",
+        "filter_videos": "Filtrar {n} videos",
         "first_name": "Nombre",
         "last_name": "Apellido",
         "more_languages": "Más idiomas ({count})",

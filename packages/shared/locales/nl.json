@@ -1132,6 +1132,7 @@
         "exclude_terms": "Uit te sluiten termen, gescheiden door komma's…",
         "filter": "Filter...",
         "filter_by_title": "Filter op titel...",
+        "filter_videos": "{n} video's filteren",
         "first_name": "Voornaam",
         "last_name": "Achternaam",
         "more_languages": "Meer talen ({count})",

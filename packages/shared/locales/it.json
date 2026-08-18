@@ -1132,6 +1132,7 @@
         "exclude_terms": "Termini da escludere separati da virgole…",
         "filter": "Filtro...",
         "filter_by_title": "Filtra per titolo...",
+        "filter_videos": "Filtra {n} video",
         "first_name": "Nome",
         "last_name": "Cognome",
         "more_languages": "Altre lingue ({count})",

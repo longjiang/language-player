@@ -1132,6 +1132,7 @@
         "exclude_terms": "مصطلحات لاستبعادها مفصولة بفواصل…",
         "filter": "تصفية...",
         "filter_by_title": "تصفية حسب العنوان...",
+        "filter_videos": "تصفية {n} فيديو",
         "first_name": "الاسم الأول",
         "last_name": "اسم العائلة",
         "more_languages": "المزيد من اللغات ({count})",

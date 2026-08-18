@@ -1132,6 +1132,7 @@
         "exclude_terms": "Từ loại trừ, phân tách bằng dấu phẩy…",
         "filter": "Lọc...",
         "filter_by_title": "Lọc theo tiêu đề...",
+        "filter_videos": "Lọc {n} video",
         "first_name": "Tên",
         "last_name": "Họ",
         "more_languages": "Thêm ngôn ngữ ({count})",

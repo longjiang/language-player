@@ -1132,6 +1132,7 @@
         "exclude_terms": "除外する語（カンマ区切り）…",
         "filter": "フィルター…",
         "filter_by_title": "タイトルで絞り込む...",
+        "filter_videos": "{n} 件の動画を絞り込む",
         "first_name": "名",
         "last_name": "姓",
         "more_languages": "その他の言語 ({count})",

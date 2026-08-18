@@ -1104,6 +1104,7 @@
         "exclude_terms": "要排除的詞，逗號分隔…",
         "filter": "篩選…",
         "filter_by_title": "按標題篩選...",
+        "filter_videos": "篩選 {n} 個影片",
         "first_name": "名",
         "last_name": "姓",
         "more_languages": "更多語言（{count}種）",
