@@ -12,10 +12,17 @@ import { LG_BREAKPOINT } from '@/lib/constants';
  * Narrow screens render a slide-in sheet in an RN Modal (see SidebarSheet —
  * NOT the Dialog portal, whose host is outside the navigation context); wide
  * screens render a persistent collapsible panel.
+ *
+ * Layout rule (matches web): the sidebar never touches the screen edges —
+ * the sheet floats inside the safe area with a margin on every side, and the
+ * desktop panel sits inset from the content row with vertical margins.
  */
 
 /** Width at which the sidebar switches from sheet to persistent panel. */
 export const SIDEBAR_BREAKPOINT = LG_BREAKPOINT;
+
+/** Margin (px) kept between the sidebar and the screen edges. */
+export const SIDEBAR_EDGE_MARGIN = 8;
 
 /** Sheet width matching web's `w-80 max-w-[85vw]`. */
 export function sidebarSheetWidth(screenWidth: number): number {
@@ -120,13 +127,18 @@ function SidebarSheet({
   drawerWidth: number;
   children: React.ReactNode;
 }) {
-  const translateX = useRef(new Animated.Value(drawerWidth)).current;
+  const insets = useSafeAreaInsets();
+  // Hidden position: fully off the right edge — the resting position is
+  // `right: SIDEBAR_EDGE_MARGIN`, so slide by width + margin + a little extra
+  // to guarantee the floating panel is completely off-screen.
+  const hiddenX = drawerWidth + SIDEBAR_EDGE_MARGIN + 16;
+  const translateX = useRef(new Animated.Value(hiddenX)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(translateX, {
-        toValue: open ? 0 : drawerWidth,
+        toValue: open ? 0 : hiddenX,
         duration: 250,
         useNativeDriver: true,
       }),
@@ -136,7 +148,7 @@ function SidebarSheet({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [open, translateX, overlayOpacity, drawerWidth]);
+  }, [open, translateX, overlayOpacity, hiddenX]);
 
   return (
     <Modal
@@ -155,14 +167,24 @@ function SidebarSheet({
         <Pressable className="flex-1" onPress={onClose} />
       </Animated.View>
 
-      {/* Drawer panel — slides in from the right */}
+      {/* Floating drawer panel — inset from every screen edge (safe-area
+          aware) with rounded corners, so it never touches the screen edges
+          (web parity: the sidebar sits inside the page margins). The inner
+          SidebarPanel owns the border + rounded-xl; this wrapper only adds
+          the drop shadow and the same corner radius for Android elevation. */}
       <Animated.View
-        className="absolute border-l border-border bg-card"
+        className="absolute bg-card"
         style={{
-          top: 0,
-          bottom: 0,
-          right: 0,
+          top: insets.top + SIDEBAR_EDGE_MARGIN,
+          bottom: insets.bottom + SIDEBAR_EDGE_MARGIN,
+          right: SIDEBAR_EDGE_MARGIN,
           width: drawerWidth,
+          borderRadius: 12,
+          shadowColor: '#000',
+          shadowOpacity: 0.18,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 12,
           transform: [{ translateX }],
         }}
       >
@@ -189,7 +211,7 @@ export function Sidebar({
   if (isWide) {
     return (
       <View
-        className={sidebarOpen ? `flex-shrink-0 ${desktopClassName}` : 'overflow-hidden'}
+        className={sidebarOpen ? `flex-shrink-0 py-2 ${desktopClassName}` : 'overflow-hidden'}
         style={sidebarOpen ? undefined : { width: 0 }}
       >
         {sidebarOpen && <SidebarPanel {...panel} />}
