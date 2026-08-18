@@ -33,6 +33,9 @@ interface TextActionMenuProps {
   translationClass?: string;
   /** Always render the translation below the content, even on xl screens. */
   translationBelow?: boolean;
+  /** Remove the default bottom margin (`mb-4`). Used in dense lists (e.g.
+   *  per-line subtitles) where the container supplies its own spacing. */
+  noMargin?: boolean;
   /** The L2 tokenized text's rendered size (rem). The translation column is
    *  sized at `tokenizedText.translationSize` × this. Omit (defaults to 1)
    *  when the L2 text is at its base size, and also omit for the aligned
@@ -76,6 +79,7 @@ export function TextActionMenu({
   translation,
   translationClass = '',
   translationBelow = false,
+  noMargin = false,
   translationFactor,
   translationFontSize,
   loading = false,
@@ -130,7 +134,7 @@ export function TextActionMenu({
   ];
 
   return (
-    <div className="group relative flex items-start gap-3 mb-4">
+    <div className={`group relative flex items-start gap-3 ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
       <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : resizable ? 'lg:flex-row lg:gap-2' : 'lg:flex-row lg:gap-4'} ${aligned && !translationBelow ? 'lg:items-start' : translationBelow ? '' : 'lg:items-center'}`}>
         <div className="min-w-0" style={{ flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }} ref={l2Ref}>

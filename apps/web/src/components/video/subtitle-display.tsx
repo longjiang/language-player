@@ -490,6 +490,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             translationBelow
             translationFactor={1.5 * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
+            noMargin
           >
             <div
               className="text-center text-xl font-medium leading-relaxed cursor-pointer"
@@ -570,6 +571,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                 loading={
                   showTranslation && !line.l1Line && translating && isLineInTranslationLookahead(i, activeIndex)
                 }
+                noMargin
               >
                 <div
                   className={`cursor-pointer text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}
