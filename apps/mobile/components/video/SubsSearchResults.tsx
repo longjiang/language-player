@@ -23,7 +23,7 @@ import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { List, X, Play } from 'lucide-react-native';
+import { List, X } from 'lucide-react-native';
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -199,15 +199,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     setSkippedIds(freshSkips);
     setPool(all);
   }, []);
-
-  // Truncated display: "a, b, c, and X other forms" (localized).
-  const termDisplay = useMemo(() => {
-    const forms = highlightTerms;
-    if (forms.length <= 3) return forms.join(', ');
-    const shown = forms.slice(0, 3).join(', ');
-    const remaining = forms.length - 3;
-    return `${shown} ${t('msg.and_n_other_forms', { n: remaining })}`;
-  }, [highlightTerms, t]);
 
   // Per-row segments — the matched line only (no prev/next context), matching
   // web; translations are requested per segment (SPEC-082 Task 7).
@@ -398,12 +389,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return currentVideo.subs_l2.some((l) => l.starttime > currentTime + 0.3);
   }, [currentVideo, currentTime]);
 
-  const handleWatch = useCallback(() => {
-    if (currentVideo) {
-      router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any);
-    }
-  }, [currentVideo, router]);
-
   // ── Loading ──
   if (loading) {
     return (
@@ -430,9 +415,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // Shared body for the bottom sheet (narrow) and centered dialog (md+).
   const listBody = (
     <>
-      {/* Dialog header */}
-      <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
-        <Dialog.Title>{t('msg.videos_matching', { searchTerm: termDisplay })}</Dialog.Title>
+      {/* Dialog header — close only; the "N videos matching …" header was
+          dropped for web parity (SPEC-082 Task 14). */}
+      <View className="mb-2 flex-row items-center justify-end border-b border-border pb-3">
         <Dialog.Close className="rounded-full bg-muted p-2">
           <X size={18} color={ICON_MUTED} />
         </Dialog.Close>
@@ -550,13 +535,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             </Pressable>
           </View>
         )}
-        <Pressable
-          onPress={handleWatch}
-          className="flex-row items-center gap-1 rounded-full bg-muted px-3 py-1.5"
-        >
-          <Play size={14} color={ICON_MUTED} />
-          <Text className="text-xs font-medium text-muted-foreground">{t('action.watch')}</Text>
-        </Pressable>
         <Pressable
           onPress={() => setListOpen(true)}
           className="flex-row items-center gap-1 rounded-full bg-muted px-3 py-1.5"
