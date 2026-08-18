@@ -144,16 +144,10 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
 
-  // Autoplay policy (matches web): the initial load never autoplays; every
-  // navigation after mount (prev/next, list selection, new search) does.
-  const [autoplayEnabled, setAutoplayEnabled] = useState(false);
-  const autoplayRef = useRef(autoplayEnabled);
-  useEffect(() => {
-    autoplayRef.current = autoplayEnabled;
-  }, [autoplayEnabled]);
-  const initialLoadRef = useRef(true);
-  const prevTermRef = useRef(term);
-  const prevExactRef = useRef(exactMatch);
+  // Never autoplay (SPEC-082 Task 12, web parity): videos are cued/paused at
+  // the match line via `startTime`; playback starts only on explicit user
+  // action. Kept as a named constant so the policy can be revisited.
+  const autoplayEnabled = false;
 
   // Split comma-separated terms for highlighting
   const highlightTerms = useMemo(
@@ -275,26 +269,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // ── Fetch ──
   useEffect(() => {
     if (!term) return;
-    // Only user-initiated changes (a different word, or toggling exact match)
-    // may autoplay; dependency re-runs must keep the current policy.
-    const termChanged = prevTermRef.current !== term;
-    const exactToggled = prevExactRef.current !== exactMatch;
-    prevTermRef.current = term;
-    prevExactRef.current = exactMatch;
-    const userInitiated = termChanged || exactToggled;
     let cancelled = false;
-    const firstLoad = initialLoadRef.current;
     setLoading(true);
     setError(null);
 
     videosApi.searchSubs({ terms: term, l2: l2Lang.code, limit: search.expandSubsSearch && isPro ? 500 : 50, context: 3 })
       .then((data) => {
         if (cancelled) return;
-        // Only the fetch that actually applies results may flip the flag —
-        // flipping it at effect start makes StrictMode's second effect pass
-        // treat the initial load as a "later search" and autoplay.
-        initialLoadRef.current = false;
-        const autoplay = !firstLoad && userInitiated;
         const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
         const parsed: SubsSearchVideo[] = data
           .map((v: any) => {
@@ -319,7 +300,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           );
         applyVideos(parsed);
         setCurrentIndex(0);
-        setAutoplayEnabled(autoplay);
         setLoading(false);
       })
       .catch((err) => {
@@ -331,22 +311,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
     return () => { cancelled = true; };
   }, [term, l2Lang.code, search.expandSubsSearch, isPro]);
-
-  // ── Seek to match on video change ──
-  useEffect(() => {
-    if (currentVideo && matchLine) {
-      const timer = setTimeout(() => {
-        // Seeking from the CUED state starts playback, so only seek when
-        // autoplay is on. With autoplay off the player is already cued at the
-        // match line via `start` (matches web).
-        if (autoplayRef.current) {
-          playerRef.current?.seekTo(matchLine.starttime);
-          playerRef.current?.play();
-        }
-      }, 600);
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, currentVideo?.youtube_id]);
 
   // ── Player callbacks ──
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
@@ -399,7 +363,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   const selectFromList = (idx: number) => {
     setCurrentIndex(idx);
-    setAutoplayEnabled(true);
     setListOpen(false);
   };
 
@@ -651,6 +614,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onStateChange={handleStateChange}
           onError={handleVideoError}
           autoplay={autoplayEnabled}
+          startTime={matchLine?.starttime}
           containerWidth={containerWidth}
         />
       </View>
@@ -666,8 +630,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onPauseToggle={() => {}}
           onPreviousLine={goToPreviousLine}
           onNextLine={goToNextLine}
-          onPreviousVideo={() => { if (currentIndex > 0) { setAutoplayEnabled(true); setCurrentIndex((i) => i - 1); } }}
-          onNextVideo={() => { if (currentIndex < videos.length - 1) { setAutoplayEnabled(true); setCurrentIndex((i) => i + 1); } }}
+          onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
+          onNextVideo={() => { if (currentIndex < videos.length - 1) { setCurrentIndex((i) => i + 1); } }}
           hasPreviousLine={hasPreviousLine}
           hasNextLine={hasNextLine}
           hasPreviousVideo={currentIndex > 0}
