@@ -27,7 +27,7 @@ import {
 import type { AiGroupingResult, SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
-import { useAnimatedBoolean } from '@/lib/animations';
+
 import { SubtitleDisplay } from './SubtitleDisplay';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
@@ -37,7 +37,7 @@ import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { List, X, ChevronDown, ChevronRight } from 'lucide-react-native';
+import { X, ChevronDown, ChevronRight } from 'lucide-react-native';
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -147,8 +147,10 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { isMd } = useResponsive();
+  // Playback modal — the result list is the default surface; clicking a result
+  // opens the player + subtitles in this modal (SPEC-082 Task 13).
+  const [videoOpen, setVideoOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(screenWidth);
-  const videoHeight = (containerWidth / 16) * 9;
 
   // Full fetched result pool + the youtube_ids skipped for failed embeds.
   // `videos` below is derived from these so a skipped video can be replaced
@@ -168,7 +170,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // List: text filter + sort (SPEC-082 Task 8).
   const [listSearch, setListSearch] = useState('');
   const [listSort, setListSort] = useState<SubsSearchSortKey>('views');
-  const [listOpen, setListOpen] = useAnimatedBoolean();
   /** First visible row in the show-all list — drives lazy translation. */
   const [listFirstVisible, setListFirstVisible] = useState(0);
 
@@ -503,7 +504,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     translationInput.lines,
     l1Lang.code,
     baseCode(l2Lang.code),
-    listOpen && display.translation,
+    display.translation,
     listFirstVisible,
     translationInput.forms,
   );
@@ -638,7 +639,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
   const selectFromList = (idx: number) => {
     setCurrentIndex(idx);
-    setListOpen(false);
+    // Open the playback modal — the list stays mounted underneath (SPEC-082
+    // Task 13 list-first layout).
+    setVideoOpen(true);
   };
 
   const goToPreviousLine = useCallback(() => {
@@ -673,318 +676,79 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     return currentVideo.subs_l2.some((l) => l.starttime > currentTime + 0.3);
   }, [currentVideo, currentTime]);
 
-  // ── Loading ──
-  if (loading) {
-    return (
-      <View className="my-4 items-center justify-center py-8">
-        <ActivityIndicator size="large" color={ICON_MUTED} />
-      </View>
-    );
-  }
+  // ── Toolbar — text filter + sort chips + AI status (SPEC-082 Tasks 8/10),
+  // shown above the list on the default surface ──
+  const toolbar = (
+    <View className="mb-2 gap-2">
+      <TextInput
+        value={listSearch}
+        onChangeText={setListSearch}
+        placeholder={t('placeholder.filter')}
+        placeholderTextColor={ICON_MUTED}
+        className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row gap-1.5">
+          {SORT_OPTIONS.map((opt) => {
+            const active = listSort === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => setListSort(opt.key)}
+                className={`rounded-full px-2.5 py-1 ${active ? 'bg-primary/10' : 'bg-muted'}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {t(opt.labelKey)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
+      {/* AI status row — spinner while analyzing, retry on failure
+          (web belowToolbar parity). */}
+      {listSort === 'ai' && aiLoading ? (
+        <View className="flex-row items-center gap-2 px-1">
+          <ActivityIndicator size="small" color={ICON_MUTED} />
+          <Text className="text-xs text-muted-foreground">{t('msg.ai_analyzing')}</Text>
+        </View>
+      ) : listSort === 'ai' && aiError ? (
+        <View className="flex-row items-center gap-2 px-1">
+          <Text className="text-xs text-muted-foreground">{t('msg.ai_grouping_failed')}</Text>
+          <Pressable onPress={handleRetryAi} hitSlop={6} accessibilityRole="button">
+            <Text className="text-xs font-semibold text-primary underline">{t('action.retry')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
+  );
 
-  // ── Error ──
-  if (error) {
-    return <ErrorNotice message={error} className="my-4" />;
-  }
-
-  // ── Empty ──
-  if (videos.length === 0) {
-    return (
-      <View className="my-4 px-4">
-        <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
-      </View>
-    );
-  }
-
-  // Shared body for the bottom sheet (narrow) and centered dialog (md+).
-  const listBody = (
-    <>
-      {/* Dialog header — close only; the "N videos matching …" header was
-          dropped for web parity (SPEC-082 Task 14). */}
-      <View className="mb-2 flex-row items-center justify-end border-b border-border pb-3">
+  // ── Playback modal content — player + controls + singleline subtitle.
+  // Shared by the bottom sheet (narrow) and centered dialog (md+). The
+  // multiline tabbed sidebar arrives in Task 15. ──
+  const videoContent = currentVideo ? (
+    <View>
+      {/* Header — video title + close */}
+      <View className="flex-row items-center justify-between gap-2 border-b border-border px-4 py-3">
+        <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+          {currentVideo.title}
+        </Text>
         <Dialog.Close className="rounded-full bg-muted p-2">
-          <X size={18} color={ICON_MUTED} />
+          <X size={16} color={ICON_MUTED} />
         </Dialog.Close>
       </View>
 
-      {/* Toolbar — text filter + sort chips (SPEC-082 Task 8). */}
-      <View className="mb-2 gap-2">
-        <TextInput
-          value={listSearch}
-          onChangeText={setListSearch}
-          placeholder={t('placeholder.filter')}
-          placeholderTextColor={ICON_MUTED}
-          className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
-        />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-1.5">
-            {SORT_OPTIONS.map((opt) => {
-              const active = listSort === opt.key;
-              return (
-                <Pressable
-                  key={opt.key}
-                  onPress={() => setListSort(opt.key)}
-                  className={`rounded-full px-2.5 py-1 ${active ? 'bg-primary/10' : 'bg-muted'}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                >
-                  <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                    {t(opt.labelKey)}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
-        {/* AI status row — spinner while analyzing, retry on failure
-            (SPEC-082 Task 10, web belowToolbar parity). */}
-        {listSort === 'ai' && aiLoading ? (
-          <View className="flex-row items-center gap-2 px-1">
-            <ActivityIndicator size="small" color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{t('msg.ai_analyzing')}</Text>
-          </View>
-        ) : listSort === 'ai' && aiError ? (
-          <View className="flex-row items-center gap-2 px-1">
-            <Text className="text-xs text-muted-foreground">{t('msg.ai_grouping_failed')}</Text>
-            <Pressable onPress={handleRetryAi} hitSlop={6} accessibilityRole="button">
-              <Text className="text-xs font-semibold text-primary underline">{t('action.retry')}</Text>
-            </Pressable>
-          </View>
-        ) : null}
-      </View>
-
-      {/* Video list — driven by the same filtered/sorted array as the player
-          queue, so the queue follows the displayed order (SPEC-082 Task 8).
-          Left/right-context sorts render group headers (SPEC-082 Task 9). */}
-      <FlatList
-        data={listItems}
-        keyExtractor={(item) => (item.kind === 'header' ? `h-${item.key}` : String(item.video.id))}
-        style={isMd ? { flex: 1 } : undefined}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
-        onViewableItemsChanged={({ viewableItems }) => {
-          const first = viewableItems[0];
-          if (first?.item?.kind === 'row' && first.item.videoIndex != null) {
-            setListFirstVisible(first.item.videoIndex);
-          }
-        }}
-        renderItem={({ item }) => {
-          if (item.kind === 'header') {
-            const collapsed = collapsedGroups.has(item.key);
-            const hasBulkControls = item.isFirst && allGroupKeys && allGroupKeys.length > 1;
-            const isAi = listSort === 'ai';
-            const aiInfo = isAi ? aiHeaderInfo?.get(item.key) : undefined;
-            return (
-              <Pressable
-                onPress={() => toggleGroup(item.key)}
-                className="mb-1 flex-row items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1.5"
-                accessibilityRole="button"
-                accessibilityState={{ expanded: !collapsed }}
-              >
-                {collapsed ? (
-                  <ChevronRight size={14} color={ICON_MUTED} />
-                ) : (
-                  <ChevronDown size={14} color={ICON_MUTED} />
-                )}
-                {isAi ? (
-                  <View className="min-w-0 flex-1">
-                    <Text className="truncate text-[11px] font-semibold text-foreground">
-                      {aiInfo?.heading ?? item.key}
-                    </Text>
-                    {aiInfo?.pattern ? (
-                      <Text className="truncate text-[10px] text-muted-foreground">
-                        {aiInfo.pattern}
-                      </Text>
-                    ) : null}
-                  </View>
-                ) : (
-                  <>
-                    <View className="h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1">
-                      <Text className="text-[11px] font-semibold text-primary">{item.key}</Text>
-                    </View>
-                    <Text className="flex-1 truncate text-[11px] font-medium text-muted-foreground">
-                      {listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext')}
-                    </Text>
-                  </>
-                )}
-                <Text className="rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  {item.count}
-                </Text>
-                {hasBulkControls && (
-                  <View className="flex-row items-center gap-2">
-                    <Pressable
-                      onPress={collapseAll}
-                      hitSlop={4}
-                      accessibilityRole="button"
-                    >
-                      <Text className="text-[10px] font-semibold text-primary">{t('action.collapse_all')}</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={expandAll}
-                      hitSlop={4}
-                      accessibilityRole="button"
-                    >
-                      <Text className="text-[10px] font-semibold text-primary">{t('action.expand_all')}</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </Pressable>
-            );
-          }
-
-          const { videoIndex, video: listItem } = item;
-          const ml = listItem.subs_l2[listItem.matchLineIndex];
-          const isActive = videoIndex === currentIndex;
-          return (
-            <Pressable
-              onPress={() => selectFromList(videoIndex)}
-              className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
-            >
-              {/* Thumbnail */}
-              <View className="h-12 w-20 overflow-hidden rounded bg-muted">
-                <Image
-                  source={{ uri: youtubeThumbnail(listItem.youtube_id) }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
-                {ml && (
-                  <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
-                    <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Info — original on top, translation below, horizontal scroll for long lines */}
-              <View className="min-w-0 flex-1">
-                <View className="flex-row items-center gap-1.5">
-                  <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
-                    {listItem.title}
-                  </Text>
-                  {listItem.duration != null && (
-                    <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                      {formatTime(listItem.duration)}
-                    </Text>
-                  )}
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
-                  <View>
-                    <View className="flex-row">
-                      {rowSegments[videoIndex]?.map((seg, j) => (
-                        <Text
-                          key={j}
-                          className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
-                        >
-                          {j > 0 ? ' ' : ''}
-                          <HighlightTerms line={seg.text} terms={highlightTerms} />
-                        </Text>
-                      ))}
-                    </View>
-                    {display.translation && (
-                      <View className="mt-0.5 flex-row">
-                        {rowSegments[videoIndex]?.map((seg, j) => {
-                          const flatIdx = (translationInput.rowStarts[videoIndex] ?? 0) + j;
-                          const translated = listTranslations[flatIdx]?.line;
-                          if (!translated) return null;
-                          return (
-                            <Text key={j} className="text-xs text-muted-foreground">
-                              {j > 0 ? ' ' : ''}
-                              {renderInlineMarkdown(translated, { markBold: true })}
-                            </Text>
-                          );
-                        })}
-                      </View>
-                    )}
-                  </View>
-                </ScrollView>
-              </View>
-            </Pressable>
-          );
-        }}
-      />
-    </>
-  );
-
-  // ── Render ──
-  return (
-    <View
-      className="my-4"
-      onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
-    >
-      {/* Nav bar — forms toggle, watch, list all (matches web) */}
-      <View className="mb-2 flex-row items-center justify-center gap-2">
-        {formCount > 1 && (
-          <View className="flex-row items-center rounded-full bg-muted p-0.5">
-            <Pressable
-              onPress={() => onExactToggle?.(true)}
-              className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
-              accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
-            >
-              <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                {headTerm || term}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => onExactToggle?.(false)}
-              className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
-              accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
-            >
-              <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
-                {t('msg.all_forms')}
-              </Text>
-            </Pressable>
-          </View>
-        )}
-        <Pressable
-          onPress={() => setListOpen(true)}
-          className="flex-row items-center gap-1 rounded-full bg-muted px-3 py-1.5"
-        >
-          <List size={14} color={ICON_MUTED} />
-          <Text className="text-xs font-medium text-muted-foreground">{t('action.list_all')}</Text>
-        </Pressable>
-      </View>
-
-      {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
-          segmented pattern as the forms toggle (SPEC-082 Task 6). */}
-      <View className="mb-2 flex-row flex-wrap items-center justify-center gap-1.5">
-        {FILTER_PILLS.map((pill) => {
-          const active = videoFilter === pill.key;
-          return (
-            <Pressable
-              key={pill.key}
-              onPress={() => {
-                setVideoFilter(pill.key);
-                // The list may shrink — reset to the first result (web parity).
-                setCurrentIndex(0);
-              }}
-              className={`rounded-full px-2.5 py-0.5 ${active ? 'bg-primary/10' : ''}`}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-            >
-              <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                {t(pill.labelKey)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
-        <View className="flex-row items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
-          <Text className="flex-1 text-xs text-muted-foreground">
-            {t('msg.upgrade_to_pro_banner')}
-          </Text>
-          <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}>
-            <Text className="text-xs font-semibold text-primary underline">
-              {t('action.upgrade_to_pro')}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* Player */}
-      <View style={{ width: containerWidth, height: videoHeight }} className="bg-black">
+      {/* Mini player */}
+      <View
+        className="w-full bg-black"
+        style={{ aspectRatio: 16 / 9 }}
+        onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
         <YouTubePlayer
           ref={playerRef}
-          youtubeId={currentVideo!.youtube_id}
+          youtubeId={currentVideo.youtube_id}
           onTimeUpdate={handleTimeUpdate}
           onDuration={handleDuration}
           onStateChange={handleStateChange}
@@ -1028,16 +792,251 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onSeekToLine={(t) => playerRef.current?.seekTo(t)}
         />
       </View>
+    </View>
+  ) : null;
 
-      {/* ── Video List Dialog ── */}
-      <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
+  // ── Render (list-first, SPEC-082 Task 13) ──
+  return (
+    <View className="my-4">
+      {/* Nav bar — forms toggle + list controls (matches web) */}
+      <View className="mb-2 flex-row items-center justify-center gap-2">
+        {formCount > 1 && (
+          <View className="flex-row items-center rounded-full bg-muted p-0.5">
+            <Pressable
+              onPress={() => onExactToggle?.(true)}
+              className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
+              accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
+            >
+              <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                {headTerm || term}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => onExactToggle?.(false)}
+              className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
+              accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
+            >
+              <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+                {t('msg.all_forms')}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+
+      {/* Content-filter pills (All / Non-Music / Music / TV Shows) — same
+          segmented pattern as the forms toggle (SPEC-082 Task 6). */}
+      <View className="mb-2 flex-row flex-wrap items-center justify-center gap-1.5">
+        {FILTER_PILLS.map((pill) => {
+          const active = videoFilter === pill.key;
+          return (
+            <Pressable
+              key={pill.key}
+              onPress={() => {
+                setVideoFilter(pill.key);
+                // The list may shrink — reset to the first result (web parity).
+                setCurrentIndex(0);
+              }}
+              className={`rounded-full px-2.5 py-0.5 ${active ? 'bg-primary/10' : ''}`}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+            >
+              <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                {t(pill.labelKey)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {!isPro && totalHits > FREE_SUBS_SEARCH_HITS && (
+        <View className="flex-row items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
+          <Text className="flex-1 text-xs text-muted-foreground">
+            {t('msg.upgrade_to_pro_banner')}
+          </Text>
+          <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}>
+            <Text className="text-xs font-semibold text-primary underline">
+              {t('action.upgrade_to_pro')}
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
+      {loading ? (
+        <View className="items-center justify-center py-8">
+          <ActivityIndicator size="large" color={ICON_MUTED} />
+        </View>
+      ) : error ? (
+        <ErrorNotice message={error} className="my-4" />
+      ) : videos.length === 0 ? (
+        <View className="px-4 py-8">
+          <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+        </View>
+      ) : (
+        <>
+          {toolbar}
+
+          {/* Result list — the default surface (max height like web's
+              max-h-[70vh]); driven by the same filtered/sorted array as the
+              player queue. Left/right-context and AI sorts render group
+              headers (Tasks 9/10). */}
+          <View style={{ maxHeight: Math.min(screenHeight * 0.55, 520) }}>
+            <FlatList
+              data={listItems}
+              keyExtractor={(item) => (item.kind === 'header' ? `h-${item.key}` : String(item.video.id))}
+              viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
+              onViewableItemsChanged={({ viewableItems }) => {
+                const first = viewableItems[0];
+                if (first?.item?.kind === 'row' && first.item.videoIndex != null) {
+                  setListFirstVisible(first.item.videoIndex);
+                }
+              }}
+              renderItem={({ item }) => {
+                if (item.kind === 'header') {
+                  const collapsed = collapsedGroups.has(item.key);
+                  const hasBulkControls = item.isFirst && allGroupKeys && allGroupKeys.length > 1;
+                  const isAi = listSort === 'ai';
+                  const aiInfo = isAi ? aiHeaderInfo?.get(item.key) : undefined;
+                  return (
+                    <Pressable
+                      onPress={() => toggleGroup(item.key)}
+                      className="mb-1 flex-row items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1.5"
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: !collapsed }}
+                    >
+                      {collapsed ? (
+                        <ChevronRight size={14} color={ICON_MUTED} />
+                      ) : (
+                        <ChevronDown size={14} color={ICON_MUTED} />
+                      )}
+                      {isAi ? (
+                        <View className="min-w-0 flex-1">
+                          <Text className="truncate text-[11px] font-semibold text-foreground">
+                            {aiInfo?.heading ?? item.key}
+                          </Text>
+                          {aiInfo?.pattern ? (
+                            <Text className="truncate text-[10px] text-muted-foreground">
+                              {aiInfo.pattern}
+                            </Text>
+                          ) : null}
+                        </View>
+                      ) : (
+                        <>
+                          <View className="h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1">
+                            <Text className="text-[11px] font-semibold text-primary">{item.key}</Text>
+                          </View>
+                          <Text className="flex-1 truncate text-[11px] font-medium text-muted-foreground">
+                            {listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext')}
+                          </Text>
+                        </>
+                      )}
+                      <Text className="rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {item.count}
+                      </Text>
+                      {hasBulkControls && (
+                        <View className="flex-row items-center gap-2">
+                          <Pressable
+                            onPress={collapseAll}
+                            hitSlop={4}
+                            accessibilityRole="button"
+                          >
+                            <Text className="text-[10px] font-semibold text-primary">{t('action.collapse_all')}</Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={expandAll}
+                            hitSlop={4}
+                            accessibilityRole="button"
+                          >
+                            <Text className="text-[10px] font-semibold text-primary">{t('action.expand_all')}</Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </Pressable>
+                  );
+                }
+
+                const { videoIndex, video: listItem } = item;
+                const ml = listItem.subs_l2[listItem.matchLineIndex];
+                const isActive = videoIndex === currentIndex;
+                return (
+                  <Pressable
+                    onPress={() => selectFromList(videoIndex)}
+                    className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
+                  >
+                    {/* Thumbnail */}
+                    <View className="h-12 w-20 overflow-hidden rounded bg-muted">
+                      <Image
+                        source={{ uri: youtubeThumbnail(listItem.youtube_id) }}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                      {ml && (
+                        <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
+                          <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Info — original on top, translation below, horizontal scroll for long lines */}
+                    <View className="min-w-0 flex-1">
+                      <View className="flex-row items-center gap-1.5">
+                        <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
+                          {listItem.title}
+                        </Text>
+                        {listItem.duration != null && (
+                          <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                            {formatTime(listItem.duration)}
+                          </Text>
+                        )}
+                      </View>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
+                        <View>
+                          <View className="flex-row">
+                            {rowSegments[videoIndex]?.map((seg, j) => (
+                              <Text
+                                key={j}
+                                className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
+                              >
+                                {j > 0 ? ' ' : ''}
+                                <HighlightTerms line={seg.text} terms={highlightTerms} />
+                              </Text>
+                            ))}
+                          </View>
+                          {display.translation && (
+                            <View className="mt-0.5 flex-row">
+                              {rowSegments[videoIndex]?.map((seg, j) => {
+                                const flatIdx = (translationInput.rowStarts[videoIndex] ?? 0) + j;
+                                const translated = listTranslations[flatIdx]?.line;
+                                if (!translated) return null;
+                                return (
+                                  <Text key={j} className="text-xs text-muted-foreground">
+                                    {j > 0 ? ' ' : ''}
+                                    {renderInlineMarkdown(translated, { markBold: true })}
+                                  </Text>
+                                );
+                              })}
+                            </View>
+                          )}
+                        </View>
+                      </ScrollView>
+                    </View>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        </>
+      )}
+
+      {/* ── Playback modal — opens when a result is clicked. The list stays
+          mounted underneath (SPEC-082 Task 13 list-first layout). */}
+      <Dialog.Root open={videoOpen} onOpenChange={setVideoOpen}>
         <Dialog.Portal>
           {isMd ? (
             <View className="absolute inset-0 items-center justify-center px-4">
               <View
-                className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background"
+                className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-background"
                 style={{
-                  height: Math.min(screenHeight * 0.75, 640),
                   // Inline shadow — see NavBar workaround for the css-interop crash.
                   shadowColor: ICON_MUTED,
                   shadowOpacity: 0.3,
@@ -1046,12 +1045,12 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                   elevation: 8,
                 }}
               >
-                <View className="flex-1 p-4">{listBody}</View>
+                {videoContent}
               </View>
             </View>
           ) : (
-            <Dialog.SheetContent className="max-h-[85%]">
-              {listBody}
+            <Dialog.SheetContent className="max-h-[90%]">
+              {videoContent}
             </Dialog.SheetContent>
           )}
         </Dialog.Portal>
