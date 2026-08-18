@@ -111,6 +111,7 @@ async function resolveItemEntry(
 ): Promise<DictionaryEntry | null> {
   try {
     if (item.dictionaryId === 'unknown') {
+      if (!item.head) return null;
       const cached = getCachedEntries(l2Base, item.head);
       if (cached && cached.length > 0) return cached[0] ?? null;
       await enqueueLookupWords([{ text: item.head, l2Code: l2Base }], PYTHON_API_URL);
@@ -209,10 +210,13 @@ function SidebarEntryCard({
   }, [item.id, item.head, item.dictionaryId, l2Code, l2Base, l1Code]);
 
   let content: React.ReactNode;
+  // Head fallback: a source item with an empty head (legacy/malformed
+  // records) must still show something — the entry id, then the raw id.
+  const displayHead = item.head || item.entryId || item.id;
   if (entry === undefined) {
     content = (
       <View className="flex-row items-center gap-2 rounded-lg border border-border bg-card p-3">
-        <Text className="flex-1 text-sm font-medium text-muted-foreground" numberOfLines={1}>{item.head}</Text>
+        <Text className="flex-1 text-sm font-medium text-muted-foreground" numberOfLines={1}>{displayHead}</Text>
         <ActivityIndicator size="small" color={ICON_MUTED} />
       </View>
     );
@@ -222,7 +226,7 @@ function SidebarEntryCard({
         onPress={() => onOpen(item)}
         className="w-full rounded-lg border border-border bg-card p-3 active:bg-muted"
       >
-        <Text className="text-lg font-bold text-foreground" numberOfLines={1}>{item.head}</Text>
+        <Text className="text-lg font-bold text-foreground" numberOfLines={1}>{displayHead}</Text>
       </Pressable>
     );
   } else {

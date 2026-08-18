@@ -171,8 +171,11 @@ export function DictionaryEntryCard({
   const scale = primaryScale(l2Code);
   // Format each level with its own scale so HSK badges show the year/version
   // (e.g. "HSK:2025 3"); Chinese shows only HSK levels, other languages all.
-  const formattedLevels = (entry.levels ?? [])
-    .filter((l) => l.numeric != null && shouldShowLevel(l, l2Code))
+  // Defensive: a malformed/partial entry (missing levels array or a null
+  // element) must never crash the card — the sidebar renders many of these
+  // at once and one bad row used to take the whole sheet down.
+  const formattedLevels = (Array.isArray(entry.levels) ? entry.levels : [])
+    .filter((l): l is NonNullable<typeof l> => !!l && l.numeric != null && shouldShowLevel(l, l2Code))
     .map((l) => formatProficiencyLevel(l, scale));
   const isFull = variant === 'full';
 
@@ -221,7 +224,12 @@ export function DictionaryEntryCard({
 
   // ── COMPACT variant ──
   if (!isFull) {
-    const compactDefs = entry.definitions ?? [];
+    // Defensive shape guards: entries arriving from the sidebar/popup pipeline
+    // can be partial (enrichment fallbacks, legacy ids) — a non-array
+    // definitions field or a missing head must degrade, never throw.
+    const compactDefs = Array.isArray(entry.definitions) ? entry.definitions : [];
+    const pos = typeof entry.part_of_speech === 'string' ? entry.part_of_speech : undefined;
+    const displayHead = head || entry.head || entry.id || '?';
     return (
       <Pressable
         onPress={() => { onPress?.(entry); }}
@@ -230,11 +238,11 @@ export function DictionaryEntryCard({
         {/* Head + alt + pronunciation + badges */}
         <View className="flex-row items-start">
           <View className="flex-1 flex-row items-center gap-2 flex-wrap">
-            <Text className="text-lg font-bold text-foreground">{head}</Text>
+            <Text className="text-lg font-bold text-foreground">{displayHead}</Text>
             {displayAlternate && displayAlternate !== head && (
               <Text className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</Text>
             )}
-            <SpeakButton text={head} l2Code={l2Code} size={14} />
+            <SpeakButton text={displayHead} l2Code={l2Code} size={14} />
             {formattedPron ? (
               <Text className="text-sm text-muted-foreground">{formattedPron}</Text>
             ) : null}
@@ -243,10 +251,10 @@ export function DictionaryEntryCard({
         </View>
 
         {/* Definitions */}
-        {(entry.part_of_speech || compactDefs.length > 0) && (
+        {(pos || compactDefs.length > 0) && (
           <Text className="mt-2 text-sm leading-snug text-muted-foreground">
-            {entry.part_of_speech && (
-              <Text className="italic">{entry.part_of_speech}{'  '}</Text>
+            {pos && (
+              <Text className="italic">{pos}{'  '}</Text>
             )}
             {compactDefs.map((def, i) => (
               <Text key={i}>
