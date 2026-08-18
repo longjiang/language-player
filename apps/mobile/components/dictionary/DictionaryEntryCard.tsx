@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
@@ -80,7 +80,10 @@ export function DictionaryEntryCard({
   saveContext,
   pronunciation: pronunciationOverride,
 }: DictionaryEntryCardProps) {
-  const router = useRouter();
+  // Imperative `router` (not useRouter): the compact variant renders inside
+  // sheets/dialogs (dictionary sidebar, popup) whose rendering context varies
+  // (RN Modal today, portal historically) — the context-free imperative router
+  // works everywhere and matches the app's dialog-content pattern.
   const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { l2Lang } = useLanguage();

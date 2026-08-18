@@ -98,6 +98,14 @@ entry cards with rich metadata. Mobile now renders the same tiled entry cards.
   head lookup for legacy ids, normalizes the returned entry's id to the list
   item's id (bookmark/saved-metadata tie), and never throws (failures fall back
   to the clickable head row).
+- **Tapping a sidebar card crashed with "Couldn't find a navigation context"**
+  on narrow screens: the sheet rendered through the Zustand Dialog portal, whose
+  root `PortalHost` (app/_layout.tsx) sits OUTSIDE the expo-router navigator's
+  per-screen context. `ui/sidebar.tsx` now renders the narrow-screen drawer in
+  an RN `<Modal>` (children keep full React/navigation context) — the same fix
+  SPEC-023 applied to `HamburgerDrawer`. Sidebar content also uses the
+  context-free imperative `router` instead of `useRouter` so navigation never
+  depends on the surrounding rendering context.
 
 ## 3. Dictionary — Image Search (popup + entry)
 

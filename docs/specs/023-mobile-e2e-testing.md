@@ -710,6 +710,7 @@ Before shipping the E2E testing pipeline:
 | Bug | Component | Description | Severity | Status |
 |---|---|---|---|---|
 | Hamburger drawer renders offscreen | `HamburgerDrawer.tsx` | Dialog portal (Zustand-based) re-mounted children asynchronously when `open` changed, placing the panel offscreen. Fixed by replacing with React Native `<Modal>`. | 🔴 Blocks E2E | ✅ Fixed |
+| Sidebar sheet crashes with "Couldn't find a navigation context" | `ui/sidebar.tsx` | The narrow-screen sidebar sheet rendered through the Zustand Dialog portal, whose root `PortalHost` sits OUTSIDE the expo-router navigator's per-screen context — any navigation-state touch in sheet content (dictionary sidebar cards) crashed with the missing-context error. Fixed by replacing the portal with an RN `<Modal>` drawer (same fix as HamburgerDrawer above); Modal children keep full React/navigation context. | 🔴 Blocks | ✅ Fixed |
 | Logout doesn't navigate to login | `index.tsx` | `logout()` cleared token/user but left user on the Me tab showing guest state. Fixed by adding `router.replace('/login')` after logout. | 🔴 Blocks E2E | ✅ Fixed |
 | "Save Password" dialog persists on iOS 26.5 | `login.tsx` | iOS system dialog appears after sign-in despite `textContentType="none"` and `autoComplete="off"`. Maestro mitigation uses `repeat: 3` + `waitToSettleTimeoutMs`. | 🟡 Medium | ✅ Mitigated |
 | `label.guest` key not in translations.csv | — | Raw translation key displayed after logout. Added `label.guest_user` with 31 locale translations. | 🟡 Medium | ✅ Fixed |
