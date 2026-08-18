@@ -105,6 +105,18 @@ multicol a web-only mechanism; mobile keeps its measurement-based reader).
 - **Edge cases**: sentence alignment failure → `null` (render plain translation, no crash); proportional alignment when sentence counts differ; punctuation sets already in the module handle L2 scripts.
 - **Test**: unit tests for `sentence-map.ts` (ported from web); manual: tap token in a JP paragraph → correct translation sentence highlights.
 
+### Implementation status
+
+Implemented at `b83da08e`. **Follow-up fix (local/global keying)**: the initial
+tap handler looked up the tapped block's translation with `blockTranslations[globalIdx]`,
+but `use-epub-pagination` keys translations by the block's **local** index within the
+current page's text blocks (reset on every page) — so the highlight only worked when
+global and local indices coincided (first page with no preceding non-text blocks). The
+handler now resolves the local index the same way `renderBlock` does, via
+`apps/mobile/lib/reader-sentence-highlight.ts` (`isReaderTextBlock`, `localTextBlockIndex`,
+unit-tested), so the tap-highlight works in every reader (Notes/Web reader/EPUB/tokenizer
+test) on every page.
+
 ## Task 5 — EPUB fresh page per spine doc + Japanese first-line indent
 
 - **Web ref**: `45e4fd35` (fresh page), `4a55690d` (indent, `[&_p]:indent-[1em]` in `epub-reader-panel.tsx`).

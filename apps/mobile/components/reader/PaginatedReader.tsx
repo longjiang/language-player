@@ -21,6 +21,7 @@ import type { GridLine } from '@/lib/aligned-translation';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
+import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import {
   calibrationSignature,
@@ -221,6 +222,10 @@ export function PaginatedReader({
   blocksRef.current = blocks;
   const blockTranslationsRef = useRef(blockTranslations);
   blockTranslationsRef.current = blockTranslations;
+  // The visible page slice (scrollMode: the whole block list). Token press
+  // handlers are cached per global block index, so the translation lookup
+  // must resolve the current page's LOCAL index at press time.
+  const visibleBlocksRef = useRef<ContentBlock[] | null | undefined>(null);
   const sentenceMapCacheRef = useRef<Map<string, SentenceMap | null>>(new Map());
   const sentenceMapFor = useCallback((globalIdx: number, text: string, translation: string): SentenceMap | null => {
     const key = `${globalIdx}:${translation}`;
@@ -236,8 +241,18 @@ export function PaginatedReader({
     if (!handler) {
       handler = (range) => {
         const blk = blocksRef.current?.[globalIdx];
-        const tr = blockTranslationsRef.current[globalIdx];
-        if (!range || !blk || blk.kind !== 'text' || !tr) {
+        if (!range || !blk || blk.kind !== 'text') {
+          if (activeSentenceRef.current) setActiveSentence(null);
+          return;
+        }
+        // Translations are keyed by the block's LOCAL index within the
+        // current page's text blocks (use-epub-pagination resets the map on
+        // every page), never by its global index — resolve the same local
+        // index renderBlock uses so the tap-highlight works on every page,
+        // not just the first one where global == local.
+        const localIdx = localTextBlockIndex(visibleBlocksRef.current, blk);
+        const tr = localIdx >= 0 ? blockTranslationsRef.current[localIdx] : undefined;
+        if (!tr) {
           if (activeSentenceRef.current) setActiveSentence(null);
           return;
         }
@@ -395,6 +410,7 @@ export function PaginatedReader({
     }
   }, [goToPage, t]);
   const visibleBlocks = scrollMode ? blocks : visibleBlocksProp;
+  visibleBlocksRef.current = visibleBlocks;
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
   const loadingTokens = scrollMode ? false : (loadingTokensProp ?? false);
@@ -921,9 +937,7 @@ function renderBlock(
     );
   }
 
-  const visibleTextBlocks = visibleBlocks.filter(
-    (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item' || b.type === 'heading'),
-  );
+  const visibleTextBlocks = visibleBlocks.filter(isReaderTextBlock);
   const localIdx = visibleTextBlocks.indexOf(block as TextBlock);
   const translation = localIdx >= 0 ? blockTranslations[localIdx] : undefined;
   const cachedTokens = tokenCache[globalIdx];
