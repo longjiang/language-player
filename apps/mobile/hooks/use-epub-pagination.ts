@@ -624,7 +624,10 @@ export function useEpubPagination({
       const endIndex = res.endIndex;
       const end = endIndex < blocks.length ? endIndex : null;
       paginationLog(`[Pagination] ⚙ forward break → page=[${req.base},${end ?? 'END'}) pageBlocks=${end == null ? blocks.length - req.base : end - req.base}`);
-      const layoutKey = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}`;
+      // Must match the layout-change effect's key below (incl. the committed
+      // split) or every applied page looks like a layout change and triggers
+      // an endless remeasure loop (spinner ↔ content flash). SPEC-082 Task 3.
+      const layoutKey = `${contentWidth}:${availableHeight}:${showTranslation ? 1 : 0}:${translationSplit}`;
       if (charsPerPageLayoutRef.current !== layoutKey) {
         charsPerPageLayoutRef.current = layoutKey;
         const sampled = sampleCharsPerPage(
