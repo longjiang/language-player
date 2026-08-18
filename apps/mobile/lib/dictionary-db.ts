@@ -853,20 +853,27 @@ export async function autocompleteOffline(
     l2Db = null;
   }
 
-  const parse = (rows: { entry_json: string }[] | null): DictionaryEntry[] =>
-    (rows ?? []).map((r) => JSON.parse(r.entry_json) as DictionaryEntry);
+  // Raw row shape — ranking uses the indexed columns only, so up to 100
+  // candidates can be ranked WITHOUT parsing their entry_json on the JS
+  // thread (parsing is the main-thread cost of offline autocomplete).
+  type AutocompleteRow = {
+    head: string;
+    alternate: string | null;
+    pronunciation: string | null;
+    definitions: string | null;
+    entry_json: string;
+  };
 
-  const rank = (entries: DictionaryEntry[]): DictionaryEntry[] =>
-    entries
-      .map((entry) => {
-        const head = (entry.head ?? '').trim();
-        const alt = (entry.alternate ?? '').trim();
-        const pron = (entry.pronunciation ?? '').trim();
+  const rankAndParse = (rows: AutocompleteRow[] | null): DictionaryEntry[] => {
+    const ranked = (rows ?? [])
+      .map((r) => {
+        const head = (r.head ?? '').trim();
+        const alt = (r.alternate ?? '').trim();
+        const pron = (r.pronunciation ?? '').trim();
         const headL = head.toLowerCase();
         const altL = alt.toLowerCase();
         const pronNorm = pron.toLowerCase().replace(/ /g, '');
-        const defsL = (entry.definitions ?? []).join(' ').toLowerCase();
-        const freq = typeof entry.frequency === 'number' ? entry.frequency : -1;
+        const defsL = (r.definitions ?? '').toLowerCase();
 
         let rankScore: number;
         if (headL === qLower || (altL && altL === qLower)) rankScore = 0;
@@ -877,16 +884,26 @@ export async function autocompleteOffline(
         else if (defsL.includes(qLower)) rankScore = 5;
         else rankScore = 6;
 
-        return { entry, rankScore, freq, headLen: head.length };
+        return { r, rankScore, headLen: head.length };
       })
       .sort((a, b) =>
         a.rankScore - b.rankScore ||
-        b.freq - a.freq ||
         a.headLen - b.headLen,
       )
-      .map(({ entry }) => entry);
+      .slice(0, limit);
+    // Only the finalists pay the entry_json parse cost.
+    const out: DictionaryEntry[] = [];
+    for (const { r } of ranked) {
+      try {
+        out.push(JSON.parse(r.entry_json) as DictionaryEntry);
+      } catch {
+        // Corrupt row — skip.
+      }
+    }
+    return out;
+  };
 
-  const querySql = `SELECT entry_json FROM ${table}
+  const querySql = `SELECT head, alternate, pronunciation, definitions, entry_json FROM ${table}
     WHERE head LIKE ? COLLATE NOCASE
        OR alternate LIKE ? COLLATE NOCASE
        OR LOWER(REPLACE(pronunciation, ' ', '')) LIKE ?
@@ -895,14 +912,14 @@ export async function autocompleteOffline(
 
   if (l2Db) {
     try {
-      const rows = await l2Db.getAllAsync<{ entry_json: string }>(querySql, [
+      const rows = await l2Db.getAllAsync<AutocompleteRow>(querySql, [
         like,
         like,
         `%${qNorm}%`,
         `%${qLower}%`,
       ]);
       if (rows.length > 0) {
-        const ranked = rank(parse(rows)).slice(0, limit);
+        const ranked = rankAndParse(rows);
         log('[DictDB] ✅ offline autocomplete hit — l2:', l2, 'query:', query, 'rows:', ranked.length);
         return ranked;
       }
@@ -913,13 +930,13 @@ export async function autocompleteOffline(
 
   const db = await openDictionaryDB();
   try {
-    const rows = await db.getAllAsync<{ entry_json: string }>(querySql, [
+    const rows = await db.getAllAsync<AutocompleteRow>(querySql, [
       like,
       like,
       `%${qNorm}%`,
       `%${qLower}%`,
     ]);
-    return rank(parse(rows)).slice(0, limit);
+    return rankAndParse(rows);
   } catch (e) {
     const msg = (e as Error)?.message ?? String(e);
     if (msg.includes('no such table')) {

@@ -458,38 +458,55 @@ async function runWarmDict(l2: string): Promise<void> {
     // part_of_speech is optional — the column doesn't exist in current zh
     // downloads (POS parity for zh needs a server sidecar export), so probe
     // it defensively and fall back to the two-column query.
-    let rows: Array<{ head: string; pronunciation: string | null; part_of_speech: string | null }>;
+    //
+    // Stream rows with getEachAsync instead of materializing the whole
+    // headword set at once (100k+ rows for zh) — getAllAsync resolves with one
+    // big native→JS materialization that stalls the main thread. The async
+    // cursor yields rows one at a time, and we also yield to the event loop
+    // every 10k rows so the UI never blocks for a long synchronous stretch.
+    const ROW_YIELD_EVERY = 10000;
+    const seen = new Set<string>();
+    const pinyin = new Map<string, string>();
+    const posByWord = new Map<string, string>();
+    let rowCount = 0;
+    const consume = async (
+      iterable: AsyncIterable<{ head: string; pronunciation: string | null; part_of_speech?: string | null }>,
+    ): Promise<void> => {
+      for await (const row of iterable) {
+        if (row.head && !seen.has(row.head)) {
+          seen.add(row.head);
+          const cleaned = cleanPronunciation(row.pronunciation);
+          if (cleaned) pinyin.set(row.head, cleaned);
+          if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
+        }
+        if (++rowCount % ROW_YIELD_EVERY === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+      }
+    };
     try {
-      rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
-        `SELECT head, pronunciation, part_of_speech FROM ${table} WHERE head != ''
-         UNION
-         SELECT alternate, pronunciation, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      await consume(
+        db.getEachAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
+          `SELECT head, pronunciation, part_of_speech FROM ${table} WHERE head != ''
+           UNION
+           SELECT alternate, pronunciation, part_of_speech FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+        ),
       );
     } catch {
-      rows = await db.getAllAsync<{ head: string; pronunciation: string | null; part_of_speech: string | null }>(
-        `SELECT head, pronunciation FROM ${table} WHERE head != ''
-         UNION
-         SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+      await consume(
+        db.getEachAsync<{ head: string; pronunciation: string | null; part_of_speech?: string | null }>(
+          `SELECT head, pronunciation FROM ${table} WHERE head != ''
+           UNION
+           SELECT alternate, pronunciation FROM ${table} WHERE alternate IS NOT NULL AND alternate != ''`,
+        ),
       );
     }
-    if (!rows || rows.length === 0) {
+    if (seen.size === 0) {
       if (dictInitTimers.get(l2)) { clearTimeout(dictInitTimers.get(l2)!); dictInitTimers.delete(l2); }
       dictStatus.set(l2, 'failed');
       log(`[tokenizer-worker] no dict data for ${l2} — worker idle (main-thread fallback stays)`);
       finish(false);
       return;
-    }
-
-    const seen = new Set<string>();
-    const pinyin = new Map<string, string>();
-    const posByWord = new Map<string, string>();
-    for (const row of rows) {
-      if (row.head && !seen.has(row.head)) {
-        seen.add(row.head);
-        const cleaned = cleanPronunciation(row.pronunciation);
-        if (cleaned) pinyin.set(row.head, cleaned);
-        if (row.part_of_speech) posByWord.set(row.head, row.part_of_speech);
-      }
     }
     const words = Array.from(seen);
     const pronunciations = words.map((w) => pinyin.get(w) ?? null);
