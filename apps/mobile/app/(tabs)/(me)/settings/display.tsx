@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { getSampleSentence, loadSampleShort } from '@langplayer/shared';
+import { clampTranslationSize, translationSizeFactor } from '@langplayer/utils';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { parseInlineMarkdownRanges, renderInlineMarkdown } from '@/lib/inline-markdown';
@@ -126,7 +127,10 @@ export function DisplaySettings() {
                 />
               </TextActionMenu>
               {previewTranslation ? (
-                <Text className="pt-1 text-sm text-muted-foreground leading-relaxed">
+                <Text
+                  className="pt-1 text-sm text-muted-foreground leading-relaxed"
+                  style={{ fontSize: 14 * translationSizeFactor({ tokenizedText }) }}
+                >
                   {renderInlineMarkdown(previewTranslation, { markBold: true })}
                 </Text>
               ) : null}
@@ -156,6 +160,18 @@ export function DisplaySettings() {
                 leftLabel={t('setting.smaller')}
                 rightLabel={t('setting.bigger')}
                 centerLabel={`${Math.round(1 * 16)}–${Math.round(2.25 * 16)}px`}
+              />
+              <SliderRow
+                label={t('label.translation_size')}
+                desc={t('msg.translation_size_desc')}
+                value={translationSizeFactor({ tokenizedText })}
+                min={0.5}
+                max={1}
+                step={0.05}
+                onValueChange={(v) => updateTokenizedText({ translationSize: clampTranslationSize(v) })}
+                valueDisplay={`${Math.round(translationSizeFactor({ tokenizedText }) * 100)}%`}
+                leftLabel="50%"
+                rightLabel="100%"
               />
               <SliderRow
                 label={t('setting.leading')}
