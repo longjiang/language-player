@@ -108,7 +108,7 @@ export interface TokenSpanProps {
    *  In flat mode the format styling is folded into the segment element
    *  classes instead of a <strong>/<em>/<mark>/<code> wrapper — the wrapper
    *  would re-create a per-token box. Ignored when flat is false. */
-  format?: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | null;
+  format?: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | null;
   /** When false, phonetics (ruby) are suppressed on highlighted tokens. Used by
    *  the SRS review page so the target word's reading stays hidden until the
    *  card is revealed. Defaults to true — highlighting alone does not hide a
@@ -418,6 +418,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       : format === 'code' ? 'rounded bg-muted font-mono text-[0.9em]'
       : format === 'link' ? 'text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary'
       : format === 'highlight' ? 'rounded-sm bg-primary/40 text-primary dark:bg-primary/60'
+      : format === 'strikethrough' ? 'line-through decoration-muted-foreground/60'
       : ''
     : '';
 

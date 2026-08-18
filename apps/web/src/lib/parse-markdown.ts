@@ -1,25 +1,31 @@
 /**
- * Parses markdown text into reader blocks using remark-parse AST.
+ * Web shim for the unified markdown core (SPEC-083).
+ *
+ * The shared `parseMarkdownBlocks` (packages/shared/src/markdown) is the
+ * single markdown parser for BOTH apps. This module keeps the web
+ * `@/lib/parse-markdown` API (`parseMarkdown` → `ReaderBlock`) working for
+ * existing importers:
+ * - text blocks pass through as the shared TextBlock;
+ * - non-text blocks (tables, code fences, images, hr, raw HTML) become raw
+ *   `MarkdownBlock`s via `reconstructRaw` so the reader's ReactMarkdown
+ *   rendering path keeps working unchanged.
+ *
+ * Behavior upgrades over the legacy remark-only walker (intended, SPEC-083):
+ * GFM tables are now parsed into TableBlocks (and rendered as real tables),
+ * code fences / hr / raw HTML become markdown-kind blocks instead of being
+ * dropped, mixed text+image paragraphs split into separate blocks, and list
+ * items carry listDepth/ordered/start.
  */
 
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import type { Root, PhrasingContent } from 'mdast';
+import {
+  parseMarkdownBlocks,
+  reconstructRaw,
+  type ContentBlock,
+  type FormatRange,
+  type TextBlock,
+} from '@langplayer/shared';
 
-export interface FormatRange {
-  start: number;
-  end: number;
-  type: 'bold' | 'italic' | 'code' | 'link' | 'highlight';
-  url?: string;
-}
-
-export interface TextBlock {
-  kind: 'text';
-  type: 'heading' | 'paragraph' | 'list-item' | 'blockquote';
-  depth?: number;
-  text: string;
-  formats: FormatRange[];
-}
+export type { FormatRange, TextBlock };
 
 export interface MarkdownBlock {
   kind: 'markdown';
@@ -28,109 +34,7 @@ export interface MarkdownBlock {
 
 export type ReaderBlock = TextBlock | MarkdownBlock;
 
-/**
- * CommonMark's flanking rules refuse to close `**…**` / `*…*` when the marked
- * text ends in punctuation immediately followed by more non-space text — e.g.
- * `**調理時間：**20分` (the closing `**` is preceded by `：` and followed by a
- * digit, so it can't right-flank and remark keeps the asterisks literal).
- * Turndown emits exactly this shape for CJK pages. Repair by moving the
- * trailing punctuation after the closing delimiter: the plain text is
- * unchanged, only the punctuation's boldness differs.
- */
-function repairDelimiters(md: string): string {
-  return md
-    .replace(/\*\*([^*\n]+?)([\p{P}]+)\*\*(?=[^\s\p{P}])/gu, '**$1**$2')
-    .replace(/(?<!\*)\*([^*\n]+?)([\p{P}]+)\*(?!\*)(?=[^\s\p{P}])/gu, '*$1*$2');
-}
-
-export function parseMarkdown(md: string): ReaderBlock[] {
-  const ast = unified().use(remarkParse).parse(repairDelimiters(md)) as Root;
-  const blocks: ReaderBlock[] = [];
-
-  for (const node of ast.children) {
-    const result = convertTopLevel(node);
-    if (Array.isArray(result)) {
-      blocks.push(...result);
-    } else if (result) {
-      blocks.push(result);
-    }
-  }
-
-  return blocks;
-}
-
-/** Wrap a markdown destination in angle brackets when it contains characters
- *  that would break re-parsing (spaces or parentheses) — e.g. image URLs like
- *  `![](<https://x/logo (1).png>)` must keep their brackets on reconstruction. */
-function mdDestination(url: string): string {
-  return /[\s()]/.test(url) ? `<${url}>` : url;
-}
-
-function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
-  switch (node.type) {
-    case 'heading': {
-      // If heading contains an image, render as markdown block so image is preserved
-      if (hasImage(node)) {
-        return toMarkdownBlock(node);
-      }
-      return makeTextBlock(node, 'heading', (node as any).depth);
-    }
-
-    case 'paragraph': {
-      // If paragraph contains an image, render as markdown block
-      if (hasImage(node)) {
-        return toMarkdownBlock(node);
-      }
-      return makeTextBlock(node, 'paragraph');
-    }
-
-    case 'blockquote': {
-      if (hasImage(node)) {
-        return toMarkdownBlock(node);
-      }
-      return makeTextBlock(node, 'blockquote');
-    }
-
-    case 'list': {
-      const items: ReaderBlock[] = [];
-      for (const item of node.children) {
-        if (item.type === 'listItem') {
-          if (hasImage(item)) {
-            const block = toMarkdownBlock(item);
-            if (block) items.push(block);
-          } else {
-            const b = makeTextBlock(item, 'list-item');
-            if (b) items.push(b);
-          }
-        }
-      }
-      return items;
-    }
-
-    case 'code':
-    case 'table':
-    case 'thematicBreak':
-    case 'image':
-      return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
-
-    default:
-      return null;
-  }
-}
-
-/**
- * Reconstruct a node as a raw-markdown block, or null when the result has no
- * visible content — e.g. lazy-load placeholder images (1×1 data-URI GIFs) or
- * icon-only links that collapse to an empty list marker. Rendering those would
- * produce empty bullets with no text.
- */
-function toMarkdownBlock(node: any): MarkdownBlock | null {
-  const raw = reconstructNode(node);
-  if (isEmptyMarkdown(raw)) return null;
-  return { kind: 'markdown', raw };
-}
-
-/** True when a reconstructed markdown block has no visible content. */
+/** True when a reconstructed raw block has no visible content. */
 function isEmptyMarkdown(raw: string): boolean {
   return raw
     .replace(/!\[[^\]]*\]\(\s*\)/g, '') // empty images
@@ -139,201 +43,16 @@ function isEmptyMarkdown(raw: string): boolean {
     .length === 0;
 }
 
-/** Check if a node tree contains an image (recursive). */
-function hasImage(node: any): boolean {
-  if (node.type === 'image') return true;
-  if (!node.children) return false;
-  return node.children.some((c: any) => hasImage(c));
+function toReaderBlock(block: ContentBlock): ReaderBlock | null {
+  if (block.kind === 'text') return block;
+  const raw = reconstructRaw(block);
+  if (!raw || isEmptyMarkdown(raw)) return null;
+  return { kind: 'markdown', raw };
 }
 
-/** Extract plain text + formatting ranges from any node with children. */
-function makeTextBlock(
-  node: any, // Blockquote / ListItem / Heading / Paragraph — all have children
-  type: TextBlock['type'],
-  depth?: number,
-): TextBlock | null {
-  const children = node.children as any[] | undefined;
-  if (!children || children.length === 0) return null;
-
-  // Collect phrasing content, flattening paragraph wrappers (common in blockquote/listitems)
-  const phrasing: PhrasingContent[] = [];
-  for (const c of children) {
-    if (isPhrasing(c)) {
-      phrasing.push(c);
-    } else if (c.type === 'paragraph' && c.children) {
-      for (const pc of c.children) {
-        if (isPhrasing(pc)) phrasing.push(pc);
-      }
-    }
-  }
-  if (phrasing.length === 0) return null;
-
-  const { text, formats } = extractTextAndFormats(phrasing);
-  if (!text.trim()) return null;
-
-  return { kind: 'text', type, depth, text, formats };
-}
-
-function isPhrasing(node: any): node is PhrasingContent {
-  const phrasingTypes = ['text', 'strong', 'emphasis', 'inlineCode', 'link', 'image', 'break', 'delete'];
-  return phrasingTypes.includes(node.type);
-}
-
-/** Walk phrasing children, building plain text and format ranges with offsets. */
-function extractTextAndFormats(children: PhrasingContent[]): {
-  text: string;
-  formats: FormatRange[];
-} {
-  let text = '';
-  const formats: FormatRange[] = [];
-
-  function walk(nodes: PhrasingContent[]) {
-    for (const node of nodes) {
-      switch (node.type) {
-        case 'text':
-          text += node.value;
-          break;
-
-        case 'strong': {
-          const start = text.length;
-          walk(node.children);
-          formats.push({ start, end: text.length, type: 'bold' });
-          break;
-        }
-
-        case 'emphasis': {
-          const start = text.length;
-          walk(node.children);
-          formats.push({ start, end: text.length, type: 'italic' });
-          break;
-        }
-
-        case 'inlineCode': {
-          const start = text.length;
-          text += node.value;
-          formats.push({ start, end: text.length, type: 'code' });
-          break;
-        }
-
-        case 'link': {
-          const start = text.length;
-          walk(node.children);
-          formats.push({ start, end: text.length, type: 'link', url: node.url });
-          break;
-        }
-
-        case 'image':
-          text += node.alt ?? '';
-          break;
-
-        case 'break':
-          text += '\n';
-          break;
-
-        case 'delete':
-          if ('children' in node) walk(node.children as PhrasingContent[]);
-          break;
-
-        default:
-          break;
-      }
-    }
-  }
-
-  walk(children);
-  return { text, formats };
-}
-
-/** Reconstruct a node's original markdown (approximate, for ReactMarkdown). */
-function reconstructNode(node: any): string {
-  switch (node.type) {
-    case 'heading': {
-      const hashes = '#'.repeat((node as any).depth ?? 1);
-      return hashes + ' ' + reconstructChildren(node);
-    }
-    case 'paragraph':
-      return reconstructChildren(node);
-    case 'blockquote':
-      return '> ' + reconstructChildren(node).replace(/\n/g, '\n> ');
-    case 'listItem': {
-      const content = reconstructChildren(node);
-      // Detect ordered vs unordered from parent context — default to unordered
-      return '- ' + content;
-    }
-    case 'code': {
-      const lang = 'lang' in node ? (node as any).lang ?? '' : '';
-      return '```' + lang + '\n' + (node as any).value + '\n```';
-    }
-    case 'thematicBreak':
-      return '---';
-    case 'table': {
-      const rows: string[] = [];
-      for (const row of node.children) {
-        const cells: string[] = [];
-        for (const cell of row.children) {
-          cells.push(cell.children.map((c: any) => ('value' in c ? c.value : '')).join(''));
-        }
-        rows.push('| ' + cells.join(' | ') + ' |');
-      }
-      return rows.join('\n');
-    }
-    case 'image': {
-      const img = node as any;
-      const title = img.title ? ` "${img.title}"` : '';
-      return `![${img.alt ?? ''}](${mdDestination(img.url ?? '')}${title})`;
-    }
-    default:
-      return '';
-  }
-}
-
-/** Reconstruct inline children as markdown. */
-function reconstructChildren(node: any): string {
-  if (!node.children) return '';
-  let out = '';
-  for (const child of node.children) {
-    switch (child.type) {
-      case 'text':
-        out += child.value;
-        break;
-      // remark wraps list-item/blockquote content in paragraph nodes — recurse
-      // so image-bearing list items reconstruct their full markdown instead of
-      // collapsing to an empty bullet.
-      case 'paragraph':
-      case 'blockquote':
-        out += reconstructChildren(child);
-        break;
-      case 'strong':
-        out += '**' + reconstructChildren(child) + '**';
-        break;
-      case 'emphasis':
-        out += '*' + reconstructChildren(child) + '*';
-        break;
-      case 'inlineCode':
-        out += '`' + child.value + '`';
-        break;
-      case 'link':
-        out += '[' + reconstructChildren(child) + '](' + mdDestination(child.url ?? '') + ')';
-        break;
-      case 'image': {
-        // No source → would render as <img src="">; skip it entirely.
-        if (!child.url) break;
-        const title = child.title ? ` "${child.title}"` : '';
-        out += `![${child.alt ?? ''}](${mdDestination(child.url ?? '')}${title})`;
-        break;
-      }
-      case 'break':
-        out += '\n';
-        break;
-      case 'delete':
-        out += '~~' + reconstructChildren(child) + '~~';
-        break;
-      case 'html':
-        out += child.value ?? '';
-        break;
-      default:
-        break;
-    }
-  }
-  return out;
+/** Parse markdown into web reader blocks (shared core + raw fallbacks). */
+export function parseMarkdown(md: string): ReaderBlock[] {
+  return parseMarkdownBlocks(md)
+    .map(toReaderBlock)
+    .filter((b): b is ReaderBlock => b !== null);
 }

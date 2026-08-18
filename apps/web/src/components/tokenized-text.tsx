@@ -250,9 +250,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const total = displayTokens.reduce((sum, t) => sum + t.text.length, 0);
     if (total !== text.length) return null;
     let pos = 0;
-    const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | null> = [];
+    const out: Array<'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | null> = [];
     for (const token of displayTokens) {
-      let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | null = null;
+      let fmt: 'bold' | 'italic' | 'code' | 'link' | 'highlight' | 'strikethrough' | null = null;
       for (const f of formats) {
         if (pos < f.end && pos + token.text.length > f.start) {
           // Link styling wins over bold/italic/code so linked tokens always
@@ -770,6 +770,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           }
           if (fmt === 'code') {
             return <code key={i} className="rounded bg-muted px-1 font-mono text-[0.9em]">{tokenSpan}</code>;
+          }
+          if (fmt === 'strikethrough') {
+            return <del key={i} className="line-through decoration-muted-foreground/60">{tokenSpan}</del>;
           }
           if (fmt === 'link') {
             return (
