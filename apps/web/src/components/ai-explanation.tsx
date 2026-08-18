@@ -155,6 +155,18 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const [examplePanelTab, setExamplePanelTab] = useState<SidebarTabKey>('subs');
   const exampleSidebarRef = useRef<HTMLDivElement>(null);
 
+  // Wide = landscape (width > height), matching the watch page's definition.
+  // When wide + multiline, the example player modal shows subtitles on the
+  // side and the video info below the player, like the watch page — inside
+  // the modal.
+  const [isWide, setIsWide] = useState(false);
+  useEffect(() => {
+    const check = () => setIsWide(window.innerWidth > window.innerHeight);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   // SSE-level diagnostics for the shared streaming hook — reveals whether an
   // empty bubble came from an empty server response, malformed SSE, an HTTP
   // error, or something else, without adding app-specific logging to
@@ -503,6 +515,43 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     return lines;
   }, [exampleVideo?.subs_l2]);
 
+  // Lightweight current-video info (SubsSearchVideo has no
+  // likes/comments/difficulty, so a full VideoMeta isn't possible). Shown in
+  // the info tab (narrow) and below the player on wide screens in multiline
+  // mode (watch-page layout).
+  const exampleVideoInfoContent = exampleVideo ? (
+    <div className="space-y-3">
+      <h2 className="text-base font-bold leading-tight">{exampleVideo.title}</h2>
+      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        {exampleVideo.views != null && (
+          <span className="flex items-center gap-1">
+            <Eye className="h-4 w-4" />
+            {t('label.views_count', { count: formatNumber(exampleVideo.views, l1.code) })}
+          </span>
+        )}
+        {exampleVideo.duration != null && (
+          <span className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            {formatTime(exampleVideo.duration)}
+          </span>
+        )}
+        {exampleVideo.date && (
+          <span className="flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            {new Date(exampleVideo.date).toLocaleDateString(l1.code)}
+          </span>
+        )}
+      </div>
+      <Link
+        href={`/${l1.code}/${l2.code}/watch/${exampleVideo.youtube_id}`}
+        className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-muted transition-colors"
+      >
+        <Play className="h-3.5 w-3.5" />
+        {t('action.watch')}
+      </Link>
+    </div>
+  ) : null;
+
   const openExamplePlayer = useCallback((index: number) => {
     setExamplePlayerIndex(index);
     setExampleTime(0);
@@ -846,7 +895,9 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
           >
             <div className="absolute inset-0 bg-black/50" />
             <div
-              className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl"
+              className={`relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl ${
+                exampleMode === 'multiline' && isWide ? 'sm:max-w-5xl' : ''
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header — video title + close */}
@@ -862,121 +913,133 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                 </Button>
               </div>
 
-              {/* Mini player */}
-              <div className="aspect-video w-full bg-black">
-                <YouTubePlayer
-                  ref={examplePlayerRef}
-                  youtubeId={exampleVideo.youtube_id}
-                  autoplay={false}
-                  startTime={exampleMatchLine?.starttime}
-                  onTimeUpdate={handleExampleTimeUpdate}
-                  onDuration={handleExampleDuration}
-                  onStateChange={handleExampleStateChange}
-                />
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-center border-b border-border px-2 py-1">
-                <VideoControlBar
-                  reduced
-                  playerRef={examplePlayerRef}
-                  currentTime={exampleTime}
-                  duration={exampleDuration}
-                  paused={examplePaused}
-                  onPauseToggle={() => {}}
-                  onPreviousLine={goToExamplePreviousLine}
-                  onNextLine={goToExampleNextLine}
-                  onPreviousVideo={goToExamplePreviousVideo}
-                  onNextVideo={goToExampleNextVideo}
-                  onTogglePanel={toggleExampleMode}
-                  panelOpen={exampleMode === 'multiline'}
-                  hasPreviousLine={exampleHasPrevLine}
-                  hasNextLine={exampleHasNextLine}
-                  hasPreviousVideo={examplePlayerIndex > 0}
-                  hasNextVideo={examplePlayerIndex < exampleVideos.length - 1}
-                  videoCountText={t('msg.video_n_of_total', {
-                    n: examplePlayerIndex + 1,
-                    total: exampleVideos.length,
-                  })}
-                />
-              </div>
-
-              {/* Subtitles — singleline line-follower, or multiline tabbed sidebar */}
-              {exampleMode === 'singleline' ? (
-                <div className="min-h-0 flex-1 overflow-y-auto py-2">
-                  <SubtitleDisplay
-                    mode="singleline"
-                    youtubeId={exampleVideo.youtube_id}
-                    currentTime={exampleTime}
-                    videoTitle={exampleVideo.title}
-                    initialLines={exampleInitialLines}
-                    highlightTerms={[word]}
-                    defaultLine={exampleDefaultLine}
-                    onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
-                  />
-                </div>
-              ) : (
-                <VideoSidebarPanel
-                  tabs={[
-                    { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
-                    { key: 'info', label: t('title.info'), icon: <Info className="h-4 w-4" /> },
-                  ]}
-                  activeTab={examplePanelTab}
-                  onTabChange={setExamplePanelTab}
-                  contentRef={exampleSidebarRef}
-                  className="min-h-0 flex-1"
+              {/* Player + controls + subtitles — the player lives in a stable
+                  tree position (the first grid/flex child), so toggling
+                  singleline/multiline or wide/narrow never remounts the
+                  YouTube iframe. On wide screens in multiline mode, subtitles
+                  sit beside the player and the video info sits below it, like
+                  the watch page — but inside the modal. */}
+              <div
+                className={
+                  exampleMode === 'multiline' && isWide
+                    ? 'grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_320px]'
+                    : 'flex min-h-0 flex-1 flex-col'
+                }
+              >
+                {/* Column 1 — player + controls (+ info below on wide multiline) */}
+                <div
+                  className={
+                    exampleMode === 'multiline' && isWide
+                      ? 'min-w-0 overflow-y-auto border-r border-border'
+                      : 'shrink-0'
+                  }
                 >
-                  {(tab) => {
-                    if (tab === 'subs') {
-                      return (
-                        <SubtitleDisplay
-                          mode="multiline"
-                          youtubeId={exampleVideo.youtube_id}
-                          currentTime={exampleTime}
-                          videoTitle={exampleVideo.title}
-                          initialLines={exampleInitialLines}
-                          highlightTerms={[word]}
-                          defaultLine={exampleDefaultLine}
-                          scrollContainerRef={exampleSidebarRef}
-                          onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
-                        />
-                      );
-                    }
-                    return (
-                      <div className="space-y-3">
-                        <h2 className="text-base font-bold leading-tight">{exampleVideo.title}</h2>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                          {exampleVideo.views != null && (
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-4 w-4" />
-                              {t('label.views_count', { count: formatNumber(exampleVideo.views, l1.code) })}
-                            </span>
-                          )}
-                          {exampleVideo.duration != null && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {formatTime(exampleVideo.duration)}
-                            </span>
-                          )}
-                          {exampleVideo.date && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(exampleVideo.date).toLocaleDateString(l1.code)}
-                            </span>
-                          )}
-                        </div>
-                        <Link
-                          href={`/${l1.code}/${l2.code}/watch/${exampleVideo.youtube_id}`}
-                          className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-muted transition-colors"
-                        >
-                          <Play className="h-3.5 w-3.5" />
-                          {t('action.watch')}
-                        </Link>
-                      </div>
-                    );
-                  }}
-                </VideoSidebarPanel>
-              )}
+                  {/* Mini player */}
+                  <div className="aspect-video w-full bg-black">
+                    <YouTubePlayer
+                      ref={examplePlayerRef}
+                      youtubeId={exampleVideo.youtube_id}
+                      autoplay={false}
+                      startTime={exampleMatchLine?.starttime}
+                      onTimeUpdate={handleExampleTimeUpdate}
+                      onDuration={handleExampleDuration}
+                      onStateChange={handleExampleStateChange}
+                    />
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-center border-b border-border px-2 py-1">
+                    <VideoControlBar
+                      reduced
+                      playerRef={examplePlayerRef}
+                      currentTime={exampleTime}
+                      duration={exampleDuration}
+                      paused={examplePaused}
+                      onPauseToggle={() => {}}
+                      onPreviousLine={goToExamplePreviousLine}
+                      onNextLine={goToExampleNextLine}
+                      onPreviousVideo={goToExamplePreviousVideo}
+                      onNextVideo={goToExampleNextVideo}
+                      onTogglePanel={toggleExampleMode}
+                      panelOpen={exampleMode === 'multiline'}
+                      hasPreviousLine={exampleHasPrevLine}
+                      hasNextLine={exampleHasNextLine}
+                      hasPreviousVideo={examplePlayerIndex > 0}
+                      hasNextVideo={examplePlayerIndex < exampleVideos.length - 1}
+                      videoCountText={t('msg.video_n_of_total', {
+                        n: examplePlayerIndex + 1,
+                        total: exampleVideos.length,
+                      })}
+                    />
+                  </div>
+
+                  {/* Video info below the player on wide multiline (watch page) */}
+                  {exampleMode === 'multiline' && isWide && exampleVideoInfoContent}
+                </div>
+
+                {/* Column 2 — subtitles: singleline line-follower, or multiline
+                    tabbed sidebar (subs | info). On wide multiline the info tab
+                    is dropped (info lives below the player) and the sidebar is
+                    the subs transcript. */}
+                <div
+                  className={
+                    exampleMode === 'multiline' && isWide
+                      ? 'min-h-0 min-w-0'
+                      : 'min-h-0 flex-1'
+                  }
+                >
+                  {exampleMode === 'singleline' ? (
+                    <div className="h-full min-h-0 overflow-y-auto py-2">
+                      <SubtitleDisplay
+                        mode="singleline"
+                        youtubeId={exampleVideo.youtube_id}
+                        currentTime={exampleTime}
+                        videoTitle={exampleVideo.title}
+                        initialLines={exampleInitialLines}
+                        highlightTerms={[word]}
+                        defaultLine={exampleDefaultLine}
+                        onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
+                      />
+                    </div>
+                  ) : (
+                    <VideoSidebarPanel
+                      tabs={
+                        exampleMode === 'multiline' && isWide
+                          ? [
+                              { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
+                            ]
+                          : [
+                              { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
+                              { key: 'info', label: t('title.info'), icon: <Info className="h-4 w-4" /> },
+                            ]
+                      }
+                      activeTab={examplePanelTab}
+                      onTabChange={setExamplePanelTab}
+                      contentRef={exampleSidebarRef}
+                      className="h-full min-h-0"
+                    >
+                      {(tab) => {
+                        if (tab === 'subs') {
+                          return (
+                            <SubtitleDisplay
+                              mode="multiline"
+                              youtubeId={exampleVideo.youtube_id}
+                              currentTime={exampleTime}
+                              videoTitle={exampleVideo.title}
+                              initialLines={exampleInitialLines}
+                              highlightTerms={[word]}
+                              defaultLine={exampleDefaultLine}
+                              scrollContainerRef={exampleSidebarRef}
+                              onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
+                            />
+                          );
+                        }
+                        return exampleVideoInfoContent;
+                      }}
+                    </VideoSidebarPanel>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

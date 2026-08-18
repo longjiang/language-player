@@ -113,6 +113,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   const { display } = useSettingsContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { isMd } = useResponsive();
+  // Wide = landscape (width > height), matching the watch page's definition.
+  // When wide + multiline, the example player modal shows subtitles on the
+  // side and the video info below the player, like the watch page — inside
+  // the modal.
+  const isWide = screenWidth > screenHeight;
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
   const [showAi, setShowAi] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -407,6 +412,51 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   );
   const exampleActiveLineIndex = useActiveLineIndex(exampleStartTimes, exampleTime);
 
+  // Lightweight current-video info (SubsSearchVideo has no likes/comments/
+  // difficulty). Shown in the info tab (narrow) and below the player on wide
+  // screens in multiline mode (watch-page layout).
+  const exampleVideoInfoContent = exampleVideo ? (
+    <View className="gap-3">
+      <Text className="text-base font-bold leading-tight text-foreground">
+        {exampleVideo.title}
+      </Text>
+      <View className="flex-row flex-wrap items-center gap-3">
+        {exampleVideo.views != null && (
+          <View className="flex-row items-center gap-1">
+            <Eye size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {t('label.views_count', { count: formatNumber(exampleVideo.views, l1Lang.code) })}
+            </Text>
+          </View>
+        )}
+        {exampleVideo.duration != null && (
+          <View className="flex-row items-center gap-1">
+            <Clock size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {formatTime(exampleVideo.duration)}
+            </Text>
+          </View>
+        )}
+        {exampleVideo.date && (
+          <View className="flex-row items-center gap-1">
+            <Calendar size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {new Date(exampleVideo.date).toLocaleDateString(l1Lang.code)}
+            </Text>
+          </View>
+        )}
+      </View>
+      <Pressable
+        onPress={() => router.push(`/(tabs)/(media)/watch/${exampleVideo.youtube_id}` as any)}
+        className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
+        accessibilityRole="button"
+      >
+        <Play size={14} color={ICON_MUTED} />
+        <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
+      </Pressable>
+    </View>
+  ) : null;
+
   const openExamplePlayer = useCallback((index: number) => {
     setExamplePlayerIndex(index);
     setExampleTime(0);
@@ -478,68 +528,80 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         </Dialog.Close>
       </View>
 
-      {/* Mini player */}
-      <View
-        className="w-full bg-black"
-        style={{ aspectRatio: 16 / 9 }}
-        onLayout={(e: LayoutChangeEvent) => setExampleContainerWidth(e.nativeEvent.layout.width)}
-      >
-        <YouTubePlayer
-          ref={examplePlayerRef}
-          youtubeId={exampleVideo.youtube_id}
-          onTimeUpdate={handleExampleTimeUpdate}
-          onDuration={handleExampleDuration}
-          onStateChange={handleExampleStateChange}
-          autoplay={false}
-          startTime={exampleMatchLine?.starttime}
-          containerWidth={exampleContainerWidth}
-        />
-      </View>
+      {/* Player + controls + subtitles — the player lives in a stable tree
+          position (the first flex child), so toggling singleline/multiline or
+          wide/narrow never remounts the YouTube iframe. On wide screens in
+          multiline mode, subtitles sit beside the player and the video info
+          sits below it, like the watch page — but inside the modal. */}
+      <View className={isWide && exampleMode === 'multiline' ? 'flex-row min-h-0' : 'min-h-0'}>
+        {/* Column 1 — player + controls (+ info below on wide multiline) */}
+        <View className={isWide && exampleMode === 'multiline' ? 'min-w-0 flex-1' : ''}>
+          {/* Mini player */}
+          <View
+            className="w-full bg-black"
+            style={{ aspectRatio: 16 / 9 }}
+            onLayout={(e: LayoutChangeEvent) => setExampleContainerWidth(e.nativeEvent.layout.width)}
+          >
+            <YouTubePlayer
+              ref={examplePlayerRef}
+              youtubeId={exampleVideo.youtube_id}
+              onTimeUpdate={handleExampleTimeUpdate}
+              onDuration={handleExampleDuration}
+              onStateChange={handleExampleStateChange}
+              autoplay={false}
+              startTime={exampleMatchLine?.starttime}
+              containerWidth={exampleContainerWidth}
+            />
+          </View>
 
-      {/* Controls */}
-      <View className="flex-row justify-center border-b border-border py-1">
-        <VideoControlBar
-          reduced
-          playerRef={examplePlayerRef}
-          currentTime={exampleTime}
-          duration={exampleDuration}
-          paused={examplePaused}
-          onPauseToggle={() => {}}
-          onPreviousLine={goToExamplePreviousLine}
-          onNextLine={goToExampleNextLine}
-          onPreviousVideo={goToExamplePreviousVideo}
-          onNextVideo={goToExampleNextVideo}
-          onTogglePanel={toggleExampleMode}
-          panelOpen={exampleMode === 'multiline'}
-          hasPreviousLine={exampleHasPrevLine}
-          hasNextLine={exampleHasNextLine}
-          hasPreviousVideo={examplePlayerIndex !== null && examplePlayerIndex > 0}
-          hasNextVideo={examplePlayerIndex !== null && examplePlayerIndex < exampleVideos.length - 1}
-          videoCountText={t('msg.video_n_of_total', {
-            n: (examplePlayerIndex ?? 0) + 1,
-            total: exampleVideos.length,
-          })}
-        />
-      </View>
+          {/* Controls */}
+          <View className="flex-row justify-center border-b border-border py-1">
+            <VideoControlBar
+              reduced
+              playerRef={examplePlayerRef}
+              currentTime={exampleTime}
+              duration={exampleDuration}
+              paused={examplePaused}
+              onPauseToggle={() => {}}
+              onPreviousLine={goToExamplePreviousLine}
+              onNextLine={goToExampleNextLine}
+              onPreviousVideo={goToExamplePreviousVideo}
+              onNextVideo={goToExampleNextVideo}
+              onTogglePanel={toggleExampleMode}
+              panelOpen={exampleMode === 'multiline'}
+              hasPreviousLine={exampleHasPrevLine}
+              hasNextLine={exampleHasNextLine}
+              hasPreviousVideo={examplePlayerIndex !== null && examplePlayerIndex > 0}
+              hasNextVideo={examplePlayerIndex !== null && examplePlayerIndex < exampleVideos.length - 1}
+              videoCountText={t('msg.video_n_of_total', {
+                n: (examplePlayerIndex ?? 0) + 1,
+                total: exampleVideos.length,
+              })}
+            />
+          </View>
 
-      {/* Subtitles — singleline line-follower, or multiline tabbed panel */}
-      {exampleMode === 'singleline' ? (
-        <View className="min-h-32 w-full">
-          <SubtitleDisplay
-            singleLine
-            lines={exampleInitialLines}
-            activeLineIndex={exampleActiveLineIndex}
-            currentTime={exampleTime}
-            highlightTerms={[word]}
-            defaultLine={exampleDefaultLine}
-            onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
-          />
+          {/* Video info below the player on wide multiline (watch page) */}
+          {isWide && exampleMode === 'multiline' && (
+            <View className="px-4 py-3">{exampleVideoInfoContent}</View>
+          )}
         </View>
-      ) : (
-        <View style={{ height: Math.min(screenHeight * 0.4, 320) }}>
-          <TranscriptQueuePanel
-            transcript={
+
+        {/* Column 2 — subtitles: singleline line-follower, or multiline
+            tabbed sidebar (transcript | queue | info). On wide multiline the
+            info tab is dropped (info lives below the player). Remount on mode
+            change so the sidebar starts on the transcript tab, like the watch
+            page's sidebar remount. */}
+        <View
+          className={
+            isWide && exampleMode === 'multiline'
+              ? 'min-h-0 w-[320px] border-l border-border'
+              : 'min-h-0 flex-1'
+          }
+        >
+          {exampleMode === 'singleline' ? (
+            <View className="min-h-32 w-full">
               <SubtitleDisplay
+                singleLine
                 lines={exampleInitialLines}
                 activeLineIndex={exampleActiveLineIndex}
                 currentTime={exampleTime}
@@ -547,52 +609,35 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                 defaultLine={exampleDefaultLine}
                 onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
               />
-            }
-            queue={<View />}
-            info={
-              <View className="gap-3">
-                <Text className="text-base font-bold leading-tight text-foreground">
-                  {exampleVideo.title}
-                </Text>
-                <View className="flex-row flex-wrap items-center gap-3">
-                  {exampleVideo.views != null && (
-                    <View className="flex-row items-center gap-1">
-                      <Eye size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {t('label.views_count', { count: formatNumber(exampleVideo.views, l1Lang.code) })}
-                      </Text>
-                    </View>
-                  )}
-                  {exampleVideo.duration != null && (
-                    <View className="flex-row items-center gap-1">
-                      <Clock size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {formatTime(exampleVideo.duration)}
-                      </Text>
-                    </View>
-                  )}
-                  {exampleVideo.date && (
-                    <View className="flex-row items-center gap-1">
-                      <Calendar size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {new Date(exampleVideo.date).toLocaleDateString(l1Lang.code)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Pressable
-                  onPress={() => router.push(`/(tabs)/(media)/watch/${exampleVideo.youtube_id}` as any)}
-                  className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
-                  accessibilityRole="button"
-                >
-                  <Play size={14} color={ICON_MUTED} />
-                  <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
-                </Pressable>
-              </View>
-            }
-          />
+            </View>
+          ) : (
+            <View
+              style={
+                isWide && exampleMode === 'multiline'
+                  ? undefined
+                  : { height: Math.min(screenHeight * 0.4, 320) }
+              }
+              className={isWide && exampleMode === 'multiline' ? 'flex-1' : ''}
+            >
+              <TranscriptQueuePanel
+                key={exampleMode}
+                transcript={
+                  <SubtitleDisplay
+                    lines={exampleInitialLines}
+                    activeLineIndex={exampleActiveLineIndex}
+                    currentTime={exampleTime}
+                    highlightTerms={[word]}
+                    defaultLine={exampleDefaultLine}
+                    onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
+                  />
+                }
+                queue={<View />}
+                info={isWide && exampleMode === 'multiline' ? undefined : exampleVideoInfoContent}
+              />
+            </View>
+          )}
         </View>
-      )}
+      </View>
     </View>
   ) : null;
 
@@ -796,7 +841,9 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
             {isMd ? (
               <View className="absolute inset-0 items-center justify-center px-4">
                 <View
-                  className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-background"
+                  className={`w-full overflow-hidden rounded-xl border border-border bg-background ${
+                    isWide && exampleMode === 'multiline' ? 'max-w-4xl' : 'max-w-2xl'
+                  }`}
                   style={{
                     shadowColor: ICON_MUTED,
                     shadowOpacity: 0.3,
