@@ -1,146 +1,42 @@
-import React from 'react';
-import { useWindowDimensions } from 'react-native';
-import Markdown from 'react-native-markdown-display';
+import React, { useMemo } from 'react';
+import { parseMarkdownBlocks } from '@langplayer/shared';
+import { MarkdownBlocks } from '@/components/markdown/MarkdownBlocks';
 
 interface MarkdownTextProps {
   children: string;
-  /** Optional render-rule overrides (e.g. heading onLayout for TOC scrolling). */
+  /**
+   * Optional render-rule overrides, kept API-compatible with the old
+   * react-native-markdown-display rules (e.g. heading onLayout for TOC
+   * scrolling in the docs screen). Each rule receives a node-like object
+   * (`{ key, content }` — content is the plain heading text), the rendered
+   * children, an empty parent array, and `_VIEW_SAFE_heading{n}` styles.
+   */
   rules?: Record<string, (node: any, children: any[], parent: any[], styles: any) => React.ReactNode>;
 }
 
 /**
- * Renders markdown content using react-native-markdown-display.
- * Styled with NativeWind-compatible rules matching the app's design tokens.
+ * Renders markdown content through the shared parseMarkdownBlocks →
+ * MarkdownBlocks pipeline (SPEC-083) — the same engine the readers and AI
+ * explanations use. Replaces the react-native-markdown-display renderer.
  */
 export function MarkdownText({ children, rules }: MarkdownTextProps) {
-  const { width } = useWindowDimensions();
+  const blocks = useMemo(() => parseMarkdownBlocks(children), [children]);
 
   return (
-    <Markdown
-      rules={rules}
-      style={{
-        body: {
-          color: 'rgb(248 250 252)',
-          fontSize: 14,
-          lineHeight: 28, // 2 × 14
-        },
-        paragraph: {
-          marginBottom: 12,
-        },
-        heading1: {
-          fontSize: 18,
-          fontWeight: '700',
-          lineHeight: 36, // 2 × 18
-          marginBottom: 8,
-          marginTop: 4,
-          color: 'rgb(248 250 252)',
-        },
-        heading2: {
-          fontSize: 16,
-          fontWeight: '700',
-          lineHeight: 32, // 2 × 16
-          marginBottom: 6,
-          marginTop: 4,
-          color: 'rgb(248 250 252)',
-        },
-        heading3: {
-          fontSize: 14,
-          fontWeight: '700',
-          lineHeight: 28, // 2 × 14
-          marginBottom: 4,
-          color: 'rgb(248 250 252)',
-        },
-        strong: {
-          fontWeight: '700',
-        },
-        em: {
-          fontStyle: 'italic',
-        },
-        code_inline: {
-          backgroundColor: 'rgba(148 163 184 / 0.15)',
-          borderRadius: 4,
-          paddingHorizontal: 4,
-          fontFamily: 'monospace',
-          fontSize: 12,
-          lineHeight: 24, // 2 × 12
-        },
-        code_block: {
-          backgroundColor: 'rgba(148 163 184 / 0.1)',
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 12,
-          fontFamily: 'monospace',
-          fontSize: 12,
-          lineHeight: 24, // 2 × 12
-        },
-        fence: {
-          backgroundColor: 'rgba(148 163 184 / 0.1)',
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 12,
-          fontFamily: 'monospace',
-          fontSize: 12,
-          lineHeight: 24, // 2 × 12
-        },
-        blockquote: {
-          borderLeftWidth: 2,
-          borderLeftColor: 'rgba(148 163 184 / 0.3)',
-          paddingLeft: 12,
-          marginBottom: 12,
-          fontStyle: 'italic',
-          color: 'rgb(148 163 184)',
-        },
-        bullet_list: {
-          marginBottom: 8,
-        },
-        ordered_list: {
-          marginBottom: 8,
-        },
-        list_item: {
-          flexDirection: 'row',
-          marginBottom: 4,
-        },
-        hr: {
-          marginVertical: 12,
-          height: 1,
-          backgroundColor: 'rgba(148 163 184 / 0.2)',
-        },
-        link: {
-          color: 'rgb(56 189 248)',
-          textDecorationLine: 'underline',
-        },
-        image: {
-          width: width - 64,
-          height: (width - 64) * 0.6,
-          borderRadius: 8,
-          marginBottom: 12,
-          resizeMode: 'contain',
-        },
-        table: {
-          borderWidth: 1,
-          borderColor: 'rgba(148 163 184 / 0.2)',
-          borderRadius: 8,
-          marginBottom: 12,
-        },
-        thead: {
-          backgroundColor: 'rgba(148 163 184 / 0.1)',
-        },
-        th: {
-          padding: 8,
-          fontWeight: '600',
-          fontSize: 13,
-        },
-        td: {
-          padding: 8,
-          fontSize: 13,
-        },
-        tr: {
-          borderBottomWidth: 1,
-          borderBottomColor: 'rgba(148 163 184 / 0.1)',
+    <MarkdownBlocks
+      blocks={blocks}
+      ruleOverrides={{
+        heading: (depth, text, rendered) => {
+          const rule = rules?.[`heading${depth}`];
+          if (!rule) return rendered;
+          return rule(
+            { key: `md-heading-${depth}`, content: text },
+            [rendered],
+            [],
+            { _VIEW_SAFE_heading2: {}, _VIEW_SAFE_heading3: {}, _VIEW_SAFE_heading4: {} },
+          );
         },
       }}
-    >
-      {children}
-    </Markdown>
+    />
   );
 }
