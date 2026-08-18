@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
-import { ImageSearchResults } from '@/components/dictionary/ImageSearchResults';
+import { WebViewSheet } from '@/components/WebViewSheet';
 import {
   getCachedEntries,
   setCachedEntries,
@@ -28,7 +28,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExternalLink, X } from 'lucide-react-native';
+import { ExternalLink, ImageIcon, X } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 const { log } = popupLogger;
@@ -120,6 +120,7 @@ export function DictionaryPopup({
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showImageSearch, setShowImageSearch] = useState(false);
   const [scrollContentHeight, setScrollContentHeight] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
   const popupLookupStartRef = useRef<number | null>(null);
@@ -438,6 +439,10 @@ export function DictionaryPopup({
 
   const lemmaForm = lemma && lemma !== word ? lemma : null;
 
+  // Google Images URL for the "Search images" button — same term the popup's
+  // compact image strip used (first result head, else lemma, else surface form).
+  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(results?.[0]?.head ?? lemmaForm ?? word)}`;
+
   // ── Popup render timing (phase 2) ──
   // When the popup subtree begins rendering on this open. Combined with the
   // SHOWN log above: SHOWN - RENDER-START = popup render + commit cost;
@@ -586,16 +591,24 @@ export function DictionaryPopup({
                       entryFound={(results?.length ?? 0) > 0}
                     />
 
-                    {/* Compact image strip — Openverse thumbnails for the looked-up term */}
-                    <View className="mb-3">
-                      <ImageSearchResults
-                        term={results?.[0]?.head ?? lemmaForm ?? word}
-                        l2Code={l2}
-                        l2Name={l2Lang.name}
-                        l1Code={l1Lang.code}
-                        variant="compact"
-                      />
-                    </View>
+                    {/* Search Google Images — opens the in-app browser (replaces
+                        the in-popup gallery), styled to match the "Let DeepSeek
+                        explain" button (outline Pressable, centered). */}
+                    <Pressable
+                      onPress={() => setShowImageSearch(true)}
+                      className="mb-3 flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
+                      accessibilityRole="button"
+                      accessibilityLabel={t('action.search_images')}
+                    >
+                      <ImageIcon size={16} color={ICON_PRIMARY} />
+                      <Text className="text-sm font-medium text-foreground">{t('action.search_images')}</Text>
+                    </Pressable>
+                    <WebViewSheet
+                      visible={showImageSearch}
+                      url={googleImagesUrl}
+                      title={t('action.search_images')}
+                      onClose={() => setShowImageSearch(false)}
+                    />
                   </>
                 )}
 
