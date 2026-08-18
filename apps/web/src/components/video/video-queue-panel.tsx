@@ -27,6 +27,8 @@ export interface QueueSortOption {
   emptyText: string;
   /** Optional header shown above the toolbar/list (e.g. "N videos matching X"). */
   header?: ReactNode;
+  /** Optional status row shown between the toolbar and the list (e.g. a loading spinner). */
+  belowToolbar?: ReactNode;
   /** Optional filter toolbar — shown when onFilterChange is provided. */
   filterValue?: string;
   onFilterChange?: (value: string) => void;
@@ -75,7 +77,6 @@ export function VideoQueuePanel<T>({
   renderRow,
   keyFor,
   emptyText,
-  header,
   filterValue,
   onFilterChange,
   filterPlaceholder,
@@ -83,6 +84,8 @@ export function VideoQueuePanel<T>({
   onSortChange,
   sortOptions,
   toolbarBorder = true,
+  header,
+  belowToolbar,
   groupKeyFor,
   collapsedGroups,
   onToggleGroup,
@@ -130,6 +133,8 @@ export function VideoQueuePanel<T>({
           )}
         </div>
       )}
+
+      {belowToolbar && <div className="mb-2">{belowToolbar}</div>}
 
       {items.length === 0 ? (
         <p className="py-8 text-center text-xs text-muted-foreground">{emptyText}</p>
