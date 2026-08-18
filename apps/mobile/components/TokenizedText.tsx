@@ -17,6 +17,7 @@ import {
   buildRuby,
   kanaFormsForEntries,
   mergePhraseTokens,
+  sentenceContaining,
   sentenceForToken,
   tokenMatchesAnyForm,
   tokenMatchesAnyTerm,
@@ -59,6 +60,7 @@ import {
 import { useEffectiveHighlightTerms, useHighlightKanaForms, useSavedPhraseCandidates } from '@/hooks/use-highlight-forms';
 import { fetchL1Gloss, getL1Gloss } from '@/lib/l1-gloss';
 import { getConverter, getSimplifiedConverter } from '@/lib/chinese-script';
+import { buildSelectionMap, selectionSourceOffset, selectionTermAt } from '@/lib/selection-map';
 import type { SavedWordMeta } from '@/contexts/SavedWordsContext';
 import type { EpubFormatRange } from '@/lib/epub-parser';
 
@@ -141,6 +143,14 @@ export interface TokenizedTextProps {
    *  the range can't be reconstructed. Web parity of onTokenHover, adapted to
    *  touch (SPEC-082 Task 4: reader translation-sentence highlight). */
   onTokenPress?: (range: { start: number; end: number } | null) => void;
+  /** When true, enables native drag-selection on the tokenized text: a
+   *  non-collapsed selection opens the dictionary popup with the selected
+   *  text as the lookup term (SPEC-033 port — SPEC-084 Task 4, web parity of
+   *  the `selectionDictionary` prop). Selection supersedes the token popup
+   *  and vice versa. In selection-enabled contexts the paragraph/plain
+   *  render paths suppress byeonggi/quick-gloss so selection offsets map
+   *  exactly to the source text. */
+  selectionDictionary?: boolean;
   /** When true, indents the first line by one em (U+3000 ideographic space
    *  prefix) — EPUB paragraph typography (SPEC-082 Task 5, web
    *  `[&_p]:indent-[1em]` parity). Rendering-only: `text`/`tokens` unchanged. */
@@ -166,7 +176,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
+function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, deferTokenization = false, karaokeProgress, leading, testID, phoneticsOnHighlight = false, formats, onOpenLink, phonetics: phoneticsOverride, highlightSaved, quickGloss: quickGlossOverride, showDefinition: showDefinitionOverride, byeonggi: byeonggiOverride, mode: modeOverride, bold, textScale, inline = false, inlineFontSize, textColor = 'text-foreground', onTokenPress, selectionDictionary = false, leadingIndent = false, onLineGrid }: TokenizedTextProps) {
   const t = useT();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens && !deferTokenization);
@@ -179,6 +189,31 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   const popupOpenStartRef = useRef<number | null>(null);
   const popupCloseStartRef = useRef<number | null>(null);
   const popupRenderStartLoggedRef = useRef(false);
+
+  // ── Selection dictionary (SPEC-084 Task 4) ──
+  // Native selection events (RN Text onSelectionChange / native paragraph
+  // onSelection) fire continuously while selection handles are dragged. The
+  // popup opens only after the selection has been quiet for
+  // SELECTION_SETTLE_MS — web's 400 ms touch settle window (use-selection-
+  // popup.ts).
+  const SELECTION_SETTLE_MS = 400;
+  const [textSelection, setTextSelection] = useState<{ start: number; end: number } | null>(null);
+  const [clearSelectionNonce, setClearSelectionNonce] = useState(0);
+  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
+  const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending settle timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current);
+    };
+  }, []);
+
+  // A different block text invalidates any in-flight selection (readers swap
+  // block content while pages turn).
+  useEffect(() => {
+    setTextSelection(null);
+  }, [text]);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
@@ -234,6 +269,13 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──
   const quickGlossEnabled = quickGlossOverride ?? tokenSettings.quickGloss;
   const showDefinition = showDefinitionOverride ?? l2Settings.tokenSpan.definition.show;
+  // SPEC-084: in selection-enabled contexts, byeonggi/quick-gloss are hidden
+  // in the selectable render paths (paragraph + plain, both require
+  // !showDefinition) so the native selection string equals displayTexts +
+  // indent exactly — the selection map depends on that equality. The ruby
+  // View path (showDefinition on) has no native selection, so it keeps its
+  // decorations.
+  const suppressSelectionDecorations = selectionDictionary && !showDefinition;
   const phoneticsConditions = phonetics.conditions;
   const userLevel = useProgressLevel(l2Code);
   const { savedWords } = useSavedWords();
@@ -580,6 +622,60 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     return diff.value >= userLevel;
   }, [phoneticsConditions, userLevel, l2Code]);
 
+  // ── Selection dictionary (SPEC-084 Task 4) ──
+  // Rendered→source map: reconstructs the exact string the selectable render
+  // shows (displayTexts + optional indent) so native selection offsets produce
+  // the displayed lookup term + a source offset for sentence context. The
+  // per-token displayText logic MUST stay in sync with the render paths below
+  // (script conversion, phonetics-replace, quiz blank).
+  const selectionMap = useMemo(() => {
+    if (!selectionDictionary) return null;
+    return buildSelectionMap(
+      displayTokens.map((token, i) => {
+        const word = token.text;
+        const tokenDisplayText = convertedTexts.get(word) ?? word;
+        const isWordToken = token.lemmas.length > 0;
+        const isHighlightedToken = tokenMatchesOrContainsTerm(token) || tokenHasTargetEntry(token);
+        let displayText = tokenDisplayText;
+        if (quizMode && !revealedTokens.has(i)) {
+          displayText = '▯';
+        } else if (
+          replaceWithPhonetics && isWordToken && shouldShowPhonetics(token)
+          && token.pronunciation && (!isHighlightedToken || phoneticsOnHighlight)
+        ) {
+          displayText = token.pronunciation;
+        }
+        return { text: token.text, displayText };
+      }),
+      !!leadingIndent,
+    );
+  }, [
+    selectionDictionary, displayTokens, convertedTexts, quizMode, revealedTokens,
+    replaceWithPhonetics, shouldShowPhonetics, phoneticsOnHighlight,
+    tokenMatchesOrContainsTerm, tokenHasTargetEntry, leadingIndent,
+  ]);
+
+  // Lookup term for the selection popup — the selected text as displayed
+  // (web parity: visible glyphs/pronunciation are used as-is).
+  const selectionTerm = textSelection && selectionMap
+    ? selectionTermAt(selectionMap, textSelection.start, textSelection.end)
+    : null;
+
+  // Immediate-sentence context for the selection (mirrors the token path and
+  // web's selectedTextContext: offset map first, substring-search fallback).
+  const selectionContext = useMemo(() => {
+    if (!textSelection || !selectionMap) return null;
+    const term = selectionTermAt(selectionMap, textSelection.start, textSelection.end);
+    if (!term.trim()) return null;
+    const offset = selectionSourceOffset(selectionMap, textSelection.start);
+    if (offset !== null && text.slice(offset, offset + term.length) === term) {
+      return sentenceContaining(text, offset, baseCode(l2Code));
+    }
+    const hit = text.indexOf(term);
+    if (hit !== -1) return sentenceContaining(text, hit, baseCode(l2Code));
+    return text;
+  }, [textSelection, selectionMap, text, l2Code]);
+
   // ── Phonetics debug summary (Japanese/Korean) — why is ruby/romanization missing? ──
   // Logged through the GLOBAL logger (appLog), not the tokenized-text domain:
   // defaultOff('tokenized-text') silences that domain unless
@@ -748,11 +844,49 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
     setSelectedLemma(lemma);
     setSelectedTokenPron(pron);
     setSelectedLinkUrl(linkUrl);
+    // A token press supersedes the selection popup (web parity).
+    setTextSelection(null);
+    setClearSelectionNonce((n) => n + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens, text, onTokenPress, tokenRanges]);
 
   const handleReveal = useCallback((index: number) => {
     setRevealedTokens(prev => new Set(prev).add(index));
+  }, []);
+
+  // ── Selection dictionary (SPEC-084 Task 4) ──
+  // Bump the settle timer on every native selection event; open the popup
+  // once the selection has been quiet (handles no longer moving).
+  const handleNativeSelection = useCallback((range: { start: number; end: number }) => {
+    if (!selectionDictionary) return;
+    pendingSelectionRef.current = range;
+    if (selectionTimerRef.current) clearTimeout(selectionTimerRef.current);
+    selectionTimerRef.current = setTimeout(() => {
+      selectionTimerRef.current = null;
+      const sel = pendingSelectionRef.current;
+      pendingSelectionRef.current = null;
+      if (!sel || sel.start === sel.end) return;
+      setTextSelection(sel);
+    }, SELECTION_SETTLE_MS);
+  }, [selectionDictionary]);
+
+  // A new text selection supersedes the token dictionary popup (web parity).
+  useEffect(() => {
+    if (textSelection) {
+      setSelectedWord(null);
+      setSelectedTokenIndex(null);
+      setSelectedLemma(null);
+      setSelectedTokenPron(null);
+      setSelectedLinkUrl(null);
+    }
+  }, [textSelection]);
+
+  // Close the selection popup + collapse the native selection so a dismissed
+  // popup cannot be re-triggered by a stray gesture on the highlight (web
+  // clear() parity — SPEC-084 Task 1.3/2).
+  const closeTextSelection = useCallback(() => {
+    setTextSelection(null);
+    setClearSelectionNonce((n) => n + 1);
   }, []);
 
   // ── Batch dictionary lookup after tokens are loaded ──
@@ -981,6 +1115,10 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
       phoneticsShow: phonetics.show,
     });
     const { isRtl, tokenFontSize, readingSize, baseLeading, halfLeading, rubyPull, isRubyMode } = rubyLayout;
+    // SPEC-084: the native paragraph's line box only reserves the reading slot
+    // in actual ruby mode — selection-enabled plain/word-replace contexts keep
+    // the plain path's line height (no slot), so visuals stay unchanged.
+    const paragraphLineHeight = (baseLeading ?? tokenFontSize) + (isRubyMode ? (readingSize - rubyPull) : 0);
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -992,8 +1130,12 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
 
     return (
       <>
-        {/* View-based flex row: used for ruby readings-above-characters or interlinear definitions */}
-        {(showPhonetics && phonetics.show === 'ruby') || showDefinition ? (
+        {/* View-based flex row: used for ruby readings-above-characters or
+            interlinear definitions. SPEC-084: selectionDictionary also routes
+            through here (and on to the native paragraph view) — RN's Text has
+            no selection-change event, so the native paragraph is the only
+            selection host for both ruby and plain render paths. */}
+        {(showPhonetics && phonetics.show === 'ruby') || showDefinition || selectionDictionary ? (
           <View testID={testID} className="flex-row flex-wrap items-end" style={isRtl ? { direction: 'rtl' } : undefined}>
             {(() => {
               let wordIndexSoFar = 0;
@@ -1111,7 +1253,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // their own gloss; the bare-text fallback covers older state.
               const l1GlossDef = l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ?? l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
-              const showByeonggi = byeonggiEnabled && !!byeonggiText;
+              const showByeonggi = byeonggiEnabled && !!byeonggiText && !suppressSelectionDecorations;
               const showTokenPhonetics = shouldShowPhonetics(token);
               const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
 
@@ -1127,7 +1269,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // Quick gloss and interlinear definition coexist (matching web).
               // Quick gloss: 'def' marker inline after saved words.
               // Interlinear: definition stacked below all words.
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted && !suppressSelectionDecorations;
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
@@ -1310,7 +1452,7 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     runs={runs}
                     taps={taps}
                     fontSize={tokenFontSize}
-                    lineHeight={(baseLeading ?? tokenFontSize) + (readingSize - rubyPull)}
+                    lineHeight={paragraphLineHeight}
                     readingSize={readingSize}
                     fontFamily={textStyle.fontFamily ?? null}
                     isRtl={isRtl}
@@ -1320,6 +1462,8 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
                     onOpenLink={onOpenLink}
                     onPressWord={handlePressWord}
                     onReveal={handleReveal}
+                    onSelectionChange={selectionDictionary ? handleNativeSelection : undefined}
+                    clearSelection={clearSelectionNonce}
                     onLineGrid={onLineGrid}
                   />
                 );
@@ -1366,9 +1510,9 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
               // their own gloss; the bare-text fallback covers older state.
               const l1GlossDef = l1Glosses[`${firstLemma ?? word}:${savedWordId ?? ''}`] ?? l1Glosses[firstLemma ?? word] ?? l1Glosses[word] ?? null;
               const quickGlossDef = l1GlossDef ?? firstDef;
-              const showByeonggi = byeonggiEnabled && !!byeonggiText;
+              const showByeonggi = byeonggiEnabled && !!byeonggiText && !suppressSelectionDecorations;
               const isSaved = highlightSaved !== false && tokenMatchesAnyForm(token, savedFormSet);
-              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted;
+              const showQuickGloss = isSaved && quickGlossEnabled && !!quickGlossDef && !isHighlighted && !suppressSelectionDecorations;
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
               const tokenFormat = tokenFormatMap[i] ?? null;
               const isLink = !!tokenFormat?.url;
@@ -1442,6 +1586,18 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
             onClose={() => { popupCloseStartRef.current = Date.now(); setSelectedWord(null); setSelectedTokenIndex(null); setSelectedLemma(null); setSelectedTokenPron(null); setSelectedLinkUrl(null); }}
           />
         )}
+
+        {/* Selection dictionary popup (SPEC-084 Task 4) — the selected text
+            becomes the lookup term, lemma-less (web parity). extractPhrases
+            is wired in Task 5. */}
+        {selectionDictionary && textSelection && selectionTerm && selectionTerm.trim() !== '' && (
+          <DictionaryPopup
+            visible
+            word={selectionTerm}
+            context={selectionContext ?? text}
+            onClose={closeTextSelection}
+          />
+        )}
       </>
     );
   }
@@ -1487,6 +1643,7 @@ function tokenizedTextPropsEqual(prev: TokenizedTextProps, next: TokenizedTextPr
     prev.inlineFontSize === next.inlineFontSize &&
     prev.textColor === next.textColor &&
     prev.onTokenPress === next.onTokenPress &&
+    prev.selectionDictionary === next.selectionDictionary &&
     prev.leadingIndent === next.leadingIndent &&
     prev.highlightTerms === next.highlightTerms &&
     prev.tokenCacheLoaded === next.tokenCacheLoaded &&
