@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { log } from '@/lib/logger';
 import { useResponsive } from '@/hooks/use-responsive';
 import { useVideos } from '@langplayer/api-client';
-import { parseSubsL2, findMatchLine, durationToSeconds, applyFilterAndSort } from '@langplayer/utils';
+import { parseSubsL2, findMatchLine, durationToSeconds, applyFilterAndSort, contextChar, CONTEXT_GROUP_PLACEHOLDER } from '@langplayer/utils';
 import type { SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
@@ -24,7 +24,7 @@ import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { renderInlineMarkdown } from '@/lib/inline-markdown';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { List, X } from 'lucide-react-native';
+import { List, X, ChevronDown, ChevronRight } from 'lucide-react-native';
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -206,6 +206,83 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     () => applyFilterAndSort(videos, listSearch, listSort, term),
     [videos, listSearch, listSort, term],
   );
+
+  // ── Grouping (SPEC-082 Task 9) ──
+  // Left/right-context sorts group rows by the boundary character; the shared
+  // sort orders groups largest-first with stable within-group order, so
+  // consecutive runs of the same key are the groups.
+  const contextGroupKey = useMemo(() => {
+    if (listSort !== 'leftContext' && listSort !== 'rightContext') return undefined;
+    const side = listSort === 'leftContext' ? 'left' : 'right';
+    return (v: SubsSearchVideo) => contextChar(v, term, side) || CONTEXT_GROUP_PLACEHOLDER;
+  }, [listSort, term]);
+  const activeGroupKey = contextGroupKey;
+
+  // Collapsed context groups (rows hidden, header stays). Reset whenever the
+  // sort mode changes so a fresh sort starts fully expanded.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    setCollapsedGroups(new Set());
+  }, [listSort]);
+
+  const toggleGroup = useCallback((key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // Every distinct group key present in the filtered list, so "Collapse All" /
+  // "Expand All" can flip them in one go. Only defined when grouping applies.
+  const allGroupKeys = useMemo(() => {
+    if (!activeGroupKey) return undefined;
+    return [...new Set(filteredVideos.map((v) => activeGroupKey(v)))];
+  }, [activeGroupKey, filteredVideos]);
+
+  const collapseAll = useCallback(() => {
+    if (allGroupKeys) setCollapsedGroups(new Set(allGroupKeys));
+  }, [allGroupKeys]);
+
+  const expandAll = useCallback(() => {
+    setCollapsedGroups(new Set());
+  }, []);
+
+  // Flat display items for the list: plain rows, or header+rows per group when
+  // a grouping sort is active. Collapsed groups keep their header.
+  type ListItem =
+    | { kind: 'header'; key: string; count: number; isFirst: boolean }
+    | { kind: 'row'; videoIndex: number; video: SubsSearchVideo };
+  const listItems = useMemo<ListItem[]>(() => {
+    if (!activeGroupKey) {
+      return filteredVideos.map((v, i) => ({ kind: 'row', videoIndex: i, video: v }));
+    }
+    const groupIndexOf = new Map<string, number>();
+    for (const v of filteredVideos) {
+      const key = activeGroupKey(v);
+      if (!groupIndexOf.has(key)) groupIndexOf.set(key, groupIndexOf.size);
+    }
+    const countOf = new Map<string, number>();
+    for (const v of filteredVideos) {
+      const key = activeGroupKey(v);
+      countOf.set(key, (countOf.get(key) ?? 0) + 1);
+    }
+    const items: ListItem[] = [];
+    const emitted = new Set<string>();
+    filteredVideos.forEach((v, i) => {
+      const key = activeGroupKey(v);
+      if (emitted.has(key)) return;
+      emitted.add(key);
+      const isFirst = groupIndexOf.get(key) === 0;
+      items.push({ kind: 'header', key, count: countOf.get(key) ?? 0, isFirst });
+      if (collapsedGroups.has(key)) return;
+      for (let j = i; j < filteredVideos.length && activeGroupKey(filteredVideos[j]!) === key; j++) {
+        items.push({ kind: 'row', videoIndex: j, video: filteredVideos[j]! });
+      }
+    });
+    return items;
+  }, [filteredVideos, activeGroupKey, collapsedGroups]);
 
   const currentVideo = filteredVideos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
@@ -494,28 +571,78 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       </View>
 
       {/* Video list — driven by the same filtered/sorted array as the player
-          queue, so the queue follows the displayed order (SPEC-082 Task 8). */}
+          queue, so the queue follows the displayed order (SPEC-082 Task 8).
+          Left/right-context sorts render group headers (SPEC-082 Task 9). */}
       <FlatList
-        data={filteredVideos}
-        keyExtractor={(v) => String(v.id)}
+        data={listItems}
+        keyExtractor={(item) => (item.kind === 'header' ? `h-${item.key}` : String(item.video.id))}
         style={isMd ? { flex: 1 } : undefined}
         viewabilityConfig={{ itemVisiblePercentThreshold: 10, minimumViewTime: 100 }}
         onViewableItemsChanged={({ viewableItems }) => {
           const first = viewableItems[0];
-          if (first?.index != null) setListFirstVisible(first.index);
+          if (first?.item?.kind === 'row' && first.item.videoIndex != null) {
+            setListFirstVisible(first.item.videoIndex);
+          }
         }}
-        renderItem={({ item, index }) => {
-          const ml = item.subs_l2[item.matchLineIndex];
-          const isActive = index === currentIndex;
+        renderItem={({ item }) => {
+          if (item.kind === 'header') {
+            const collapsed = collapsedGroups.has(item.key);
+            const hasBulkControls = item.isFirst && allGroupKeys && allGroupKeys.length > 1;
+            return (
+              <Pressable
+                onPress={() => toggleGroup(item.key)}
+                className="mb-1 flex-row items-center gap-2 rounded-lg border border-border bg-muted/60 px-2 py-1.5"
+                accessibilityRole="button"
+                accessibilityState={{ expanded: !collapsed }}
+              >
+                {collapsed ? (
+                  <ChevronRight size={14} color={ICON_MUTED} />
+                ) : (
+                  <ChevronDown size={14} color={ICON_MUTED} />
+                )}
+                <View className="h-5 min-w-5 items-center justify-center rounded bg-primary/15 px-1">
+                  <Text className="text-[11px] font-semibold text-primary">{item.key}</Text>
+                </View>
+                <Text className="flex-1 truncate text-[11px] font-medium text-muted-foreground">
+                  {listSort === 'leftContext' ? t('title.leftContext') : t('title.rightContext')}
+                </Text>
+                <Text className="rounded-full bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {item.count}
+                </Text>
+                {hasBulkControls && (
+                  <View className="flex-row items-center gap-2">
+                    <Pressable
+                      onPress={collapseAll}
+                      hitSlop={4}
+                      accessibilityRole="button"
+                    >
+                      <Text className="text-[10px] font-semibold text-primary">{t('action.collapse_all')}</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={expandAll}
+                      hitSlop={4}
+                      accessibilityRole="button"
+                    >
+                      <Text className="text-[10px] font-semibold text-primary">{t('action.expand_all')}</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </Pressable>
+            );
+          }
+
+          const { videoIndex, video: listItem } = item;
+          const ml = listItem.subs_l2[listItem.matchLineIndex];
+          const isActive = videoIndex === currentIndex;
           return (
             <Pressable
-              onPress={() => selectFromList(index)}
+              onPress={() => selectFromList(videoIndex)}
               className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
             >
               {/* Thumbnail */}
               <View className="h-12 w-20 overflow-hidden rounded bg-muted">
                 <Image
-                  source={{ uri: youtubeThumbnail(item.youtube_id) }}
+                  source={{ uri: youtubeThumbnail(listItem.youtube_id) }}
                   className="h-full w-full"
                   resizeMode="cover"
                 />
@@ -530,18 +657,18 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               <View className="min-w-0 flex-1">
                 <View className="flex-row items-center gap-1.5">
                   <Text className="min-w-0 flex-1 text-xs font-medium text-foreground" numberOfLines={1}>
-                    {item.title}
+                    {listItem.title}
                   </Text>
-                  {item.duration != null && (
+                  {listItem.duration != null && (
                     <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                      {formatTime(item.duration)}
+                      {formatTime(listItem.duration)}
                     </Text>
                   )}
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-0.5">
                   <View>
                     <View className="flex-row">
-                      {rowSegments[index]?.map((seg, j) => (
+                      {rowSegments[videoIndex]?.map((seg, j) => (
                         <Text
                           key={j}
                           className={`text-sm ${seg.hasTerm ? 'text-foreground' : 'text-muted-foreground'}`}
@@ -553,8 +680,8 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                     </View>
                     {display.translation && (
                       <View className="mt-0.5 flex-row">
-                        {rowSegments[index]?.map((seg, j) => {
-                          const flatIdx = (translationInput.rowStarts[index] ?? 0) + j;
+                        {rowSegments[videoIndex]?.map((seg, j) => {
+                          const flatIdx = (translationInput.rowStarts[videoIndex] ?? 0) + j;
                           const translated = listTranslations[flatIdx]?.line;
                           if (!translated) return null;
                           return (
