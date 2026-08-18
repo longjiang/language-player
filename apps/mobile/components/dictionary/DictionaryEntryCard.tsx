@@ -225,94 +225,92 @@ export function DictionaryEntryCard({
     return (
       <Pressable
         onPress={() => { onPress?.(entry); }}
-        style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+        className="rounded-xl border border-border bg-card px-4 pt-4 pb-2 active:bg-muted"
       >
-        <View className="rounded-xl border border-border bg-card px-4 pt-4 pb-2">
-          {/* Head + alt + pronunciation + badges */}
-          <View className="flex-row items-start">
-            <View className="flex-1 flex-row items-center gap-2 flex-wrap">
-              <Text className="text-lg font-bold text-foreground">{head}</Text>
-              {displayAlternate && displayAlternate !== head && (
-                <Text className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</Text>
-              )}
-              <SpeakButton text={head} l2Code={l2Code} size={14} />
-              {formattedPron ? (
-                <Text className="text-sm text-muted-foreground">{formattedPron}</Text>
-              ) : null}
-            </View>
-            {badges}
+        {/* Head + alt + pronunciation + badges */}
+        <View className="flex-row items-start">
+          <View className="flex-1 flex-row items-center gap-2 flex-wrap">
+            <Text className="text-lg font-bold text-foreground">{head}</Text>
+            {displayAlternate && displayAlternate !== head && (
+              <Text className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</Text>
+            )}
+            <SpeakButton text={head} l2Code={l2Code} size={14} />
+            {formattedPron ? (
+              <Text className="text-sm text-muted-foreground">{formattedPron}</Text>
+            ) : null}
           </View>
-
-          {/* Definitions */}
-          {(entry.part_of_speech || compactDefs.length > 0) && (
-            <Text className="mt-2 text-sm leading-snug text-muted-foreground">
-              {entry.part_of_speech && (
-                <Text className="italic">{entry.part_of_speech}{'  '}</Text>
-              )}
-              {compactDefs.map((def, i) => (
-                <Text key={i}>
-                  <Text className="font-bold">{i + 1}</Text>
-                  {' '}{def}{i < compactDefs.length - 1 ? '  ' : ''}
-                </Text>
-              ))}
-            </Text>
-          )}
-
-          {/* Saved metadata — date · source type + title · context sentence (form highlighted) */}
-          {savedRecord && (
-            <View className="mt-2 flex-row items-start gap-1">
-              <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
-              {/* Source-type icon lives OUTSIDE the Text — Svg (lucide icon)
-                  cannot be a child of an RN <Text> (crashes on Android, drops
-                  the icon on iOS). Web renders it inline in a DOM <p>. */}
-              {(hasVideoSource || hasTextSource) && (
-                <View style={{ marginTop: 3 }}>
-                  {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}
-                </View>
-              )}
-              <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
-                {saveDateStr
-                  ? <Text className="text-muted-foreground">{saveDateStr}</Text>
-                  : null}
-                {sourceLabel && (
-                  <Text>{' · '}{sourceLabel}</Text>
-                )}
-                {contextSentence && (
-                  <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
-                )}
-              </Text>
-            </View>
-          )}
-
-          {/* Source + save */}
-          {(displaySource || saveContext || saveButton) && (
-            <View className="mt-2 flex-row items-center justify-between">
-              {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
-              {saveButton
-                ? <View className="-mr-1">{saveButton as any}</View>
-                : saveContext ? (
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); toggleSave(); }}
-                    hitSlop={8}
-                    className="rounded p-1"
-                    accessibilityLabel={wordSaved ? t('action.remove_from_saved') : t('action.save_word')}
-                  >
-                    {wordSaved
-                      ? <BookmarkCheck size={20} color="#f59e0b" fill="#f59e0b" />
-                      : <Bookmark size={20} color="#f59e0b" />}
-                  </Pressable>
-                ) : null}
-            </View>
-          )}
-
-          {/* Image Search Sheet — full-screen modal (also works in compact cards) */}
-          <WebViewSheet
-            visible={showImageSearch}
-            url={googleImagesUrl}
-            title={t('action.search_images')}
-            onClose={() => setShowImageSearch(false)}
-          />
+          {badges}
         </View>
+
+        {/* Definitions */}
+        {(entry.part_of_speech || compactDefs.length > 0) && (
+          <Text className="mt-2 text-sm leading-snug text-muted-foreground">
+            {entry.part_of_speech && (
+              <Text className="italic">{entry.part_of_speech}{'  '}</Text>
+            )}
+            {compactDefs.map((def, i) => (
+              <Text key={i}>
+                <Text className="font-bold">{i + 1}</Text>
+                {' '}{def}{i < compactDefs.length - 1 ? '  ' : ''}
+              </Text>
+            ))}
+          </Text>
+        )}
+
+        {/* Saved metadata — date · source type + title · context sentence (form highlighted) */}
+        {savedRecord && (
+          <View className="mt-2 flex-row items-start gap-1">
+            <BookmarkCheck size={12} color={ICON_MUTED} style={{ marginTop: 2 }} />
+            {/* Source-type icon lives OUTSIDE the Text — Svg (lucide icon)
+                cannot be a child of an RN <Text> (crashes on Android, drops
+                the icon on iOS). Web renders it inline in a DOM <p>. */}
+            {(hasVideoSource || hasTextSource) && (
+              <View style={{ marginTop: 3 }}>
+                {hasVideoSource ? <Video size={12} color={ICON_MUTED} /> : <BookOpen size={12} color={ICON_MUTED} />}
+              </View>
+            )}
+            <Text className="flex-1 text-xs text-muted-foreground" numberOfLines={3}>
+              {saveDateStr
+                ? <Text className="text-muted-foreground">{saveDateStr}</Text>
+                : null}
+              {sourceLabel && (
+                <Text>{' · '}{sourceLabel}</Text>
+              )}
+              {contextSentence && (
+                <Text> · “<HighlightForm text={contextSentence} form={savedCtx?.form} />”</Text>
+              )}
+            </Text>
+          </View>
+        )}
+
+        {/* Source + save */}
+        {(displaySource || saveContext || saveButton) && (
+          <View className="mt-2 flex-row items-center justify-between">
+            {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
+            {saveButton
+              ? <View className="-mr-1">{saveButton as any}</View>
+              : saveContext ? (
+                <Pressable
+                  onPress={(e) => { e.stopPropagation(); toggleSave(); }}
+                  hitSlop={8}
+                  className="rounded p-1"
+                  accessibilityLabel={wordSaved ? t('action.remove_from_saved') : t('action.save_word')}
+                >
+                  {wordSaved
+                    ? <BookmarkCheck size={20} color="#f59e0b" fill="#f59e0b" />
+                    : <Bookmark size={20} color="#f59e0b" />}
+                </Pressable>
+              ) : null}
+          </View>
+        )}
+
+        {/* Image Search Sheet — full-screen modal (also works in compact cards) */}
+        <WebViewSheet
+          visible={showImageSearch}
+          url={googleImagesUrl}
+          title={t('action.search_images')}
+          onClose={() => setShowImageSearch(false)}
+        />
       </Pressable>
     );
   }
