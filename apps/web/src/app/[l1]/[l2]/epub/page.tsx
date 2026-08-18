@@ -12,6 +12,7 @@ import { EpubBookshelf } from '@/components/reader/epub-bookshelf';
 import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/epub-search-panel';
+import { normalizeLanguageCode } from '@/lib/epub-book';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEpub, markerForLocation } from '@/hooks/use-epub';
 import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
@@ -71,10 +72,21 @@ export default function EpubPage() {
     gotoLocation(loc);
   }, [pushHistory, gotoLocation, location]);
 
-  // Load the bookshelf on mount — books are opened explicitly, not auto-resumed.
+  // Load the bookshelf on mount and auto-open the last-read book in the
+  // current L2 (books are tagged with the L2 they were uploaded under — same
+  // filter the bookshelf uses) instead of landing on the shelf. Opens
+  // straight to the content (skipCover), like a bookshelf card tap; the shelf
+  // only appears when no book matches the current L2.
   useEffect(() => {
     (async () => {
-      await epub.refreshBooks();
+      const list = await epub.refreshBooks();
+      const l2Primary = normalizeLanguageCode(l2.code);
+      const last = [...list]
+        .sort((a, b) => (b.lastReadAt ?? 0) - (a.lastReadAt ?? 0))
+        .find((b) => !b.language || normalizeLanguageCode(b.language) === l2Primary);
+      if (last) {
+        await handleOpenBook(last.id);
+      }
       setInitialized(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
