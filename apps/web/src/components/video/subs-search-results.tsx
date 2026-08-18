@@ -261,21 +261,10 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Autoplay policy:
-  //  - Initial page load / mount: never autoplay (even when the term resolves
-  //    right after mount, e.g. inflections loading).
-  //  - Everything after that autoplays: a fresh search while the component is
-  //    already mounted (e.g. navigating to another word), and opening a result
-  //    from the list or advancing to another result (prev/next buttons).
-  const [autoplayEnabled, setAutoplayEnabled] = useState(false);
-  const autoplayRef = useRef(autoplayEnabled);
-  useEffect(() => {
-    autoplayRef.current = autoplayEnabled;
-  }, [autoplayEnabled]);
+  // Never autoplay. Videos are cued/paused at the match line; the user presses
+  // play in the player controls to start.
+  const autoplayEnabled = false;
 
-  // Whether the first search after mount has completed. The initial load never
-  // autoplays; only activity after mount (new search or result navigation) may.
-  const initialLoadRef = useRef(true);
   const prevTermRef = useRef(term);
   const prevExactRef = useRef(exactMatch);
 
@@ -570,10 +559,9 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   useEffect(() => {
     if (!term) return;
 
-    // Only user-initiated changes (a different word, or toggling exact match)
-    // may autoplay. Dependency re-runs — e.g. `isPro` finishing loading right
-    // after the first fetch — must keep the current autoplay policy, not
-    // suddenly start the video on a page refresh.
+    // A change of term or exact-match toggle is "user initiated" — used to
+    // return to the list below. Non-user re-runs (e.g. `isPro` finishing load)
+    // must not disturb the current view.
     const termChanged = prevTermRef.current !== term;
     const exactToggled = prevExactRef.current !== exactMatch;
     prevTermRef.current = term;
@@ -608,7 +596,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
       if (exactVideos.length > 0) {
         applyVideos(exactVideos);
         setCurrentIndex(0);
-        setAutoplayEnabled(userInitiated);
         setLoading(false);
         setError(null);
         return;
@@ -623,14 +610,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     ) {
       applyVideos(allFormVideosRef.current);
       setCurrentIndex(0);
-      setAutoplayEnabled(userInitiated);
       setLoading(false);
       setError(null);
       return;
     }
 
     let cancelled = false;
-    const firstLoad = initialLoadRef.current;
     setLoading(true);
     setError(null);
 
@@ -672,18 +657,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
           );
-        // Only the fetch that actually applies results may flip the flag —
-        // flipping it at effect start makes StrictMode's second effect pass
-        // treat the initial load as a "later search" and autoplay.
-        initialLoadRef.current = false;
-        const autoplay = !firstLoad && userInitiated;
         applyVideos(parsed);
         if (!exactMatch) {
           allFormVideosRef.current = parsed;
           allFormTermRef.current = term;
         }
         setCurrentIndex(0);
-        setAutoplayEnabled(autoplay);
         setLoading(false);
       })
       .catch((err) => {
@@ -699,23 +678,8 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
   }, [term, l2.code, exactMatch, search.expandSubsSearch, isPro]);
 
   // ── Seek to match when video changes ─────────
-  // startTime is also passed to YouTubePlayer for reliable seeking during onReady.
-
-  useEffect(() => {
-    if (currentVideo && playerRef.current) {
-      const matchTime = matchLine?.starttime ?? 0;
-      const timer = setTimeout(() => {
-        if (autoplayRef.current) {
-          playerRef.current?.seekTo(matchTime);
-          playerRef.current?.play();
-        }
-        // When autoplay is off, onReady already cued the video at the exact
-        // match time (paused). Seeking again here would restart playback from
-        // the cued state, so we intentionally don't seek in that case.
-      }, 600);
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, currentVideo?.youtube_id]);
+  // startTime is passed to YouTubePlayer, which cues (never plays) the video at
+  // the match position during onReady. No manual seek is needed here.
 
   // ── Player callbacks ─────────────────────────
 
@@ -791,14 +755,12 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
 
   const goToPrevious = useCallback(() => {
     if (currentIndex > 0) {
-      setAutoplayEnabled(true);
       setCurrentIndex((i) => i - 1);
     }
   }, [currentIndex]);
 
   const goToNext = useCallback(() => {
     if (currentIndex < filteredVideos.length - 1) {
-      setAutoplayEnabled(true);
       setCurrentIndex((i) => i + 1);
     }
   }, [currentIndex, filteredVideos.length]);
@@ -1007,7 +969,6 @@ export function SubsSearchResults({ term, headTerm = '', embedded = false, exact
     (idx: number) => {
       // idx is already the filtered/sorted list index, which is also the
       // player-queue index — no remap needed.
-      setAutoplayEnabled(true);
       setCurrentIndex(idx);
       // Open the playback modal — the list stays mounted underneath.
       setVideoOpen(true);
