@@ -109,6 +109,10 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { isMd } = useResponsive();
+  // Wide = landscape (width > height), matching the watch page's definition.
+  // When wide + multiline, the playback modal shows subtitles on the side and
+  // the video info below the player, like the watch page — inside the modal.
+  const isWide = screenWidth > screenHeight;
   // Playback modal — the result list is the default surface; clicking a result
   // opens the player + subtitles in this modal (SPEC-082 Task 13).
   const [videoOpen, setVideoOpen] = useState(false);
@@ -762,6 +766,51 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   // ── Playback modal content — player + controls + singleline subtitle.
   // Shared by the bottom sheet (narrow) and centered dialog (md+). The
   // multiline tabbed sidebar arrives in Task 15. ──
+  // Lightweight current-video info (SubsSearchVideo has no likes/comments/
+  // difficulty). Shown in the info tab (narrow) and below the player on wide
+  // screens in multiline mode (watch-page layout).
+  const videoInfoContent = currentVideo ? (
+    <View className="gap-3">
+      <Text className="text-base font-bold leading-tight text-foreground">
+        {currentVideo.title}
+      </Text>
+      <View className="flex-row flex-wrap items-center gap-3">
+        {currentVideo.views != null && (
+          <View className="flex-row items-center gap-1">
+            <Eye size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {t('label.views_count', { count: formatNumber(currentVideo.views, l1Lang.code) })}
+            </Text>
+          </View>
+        )}
+        {currentVideo.duration != null && (
+          <View className="flex-row items-center gap-1">
+            <Clock size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {formatTime(currentVideo.duration)}
+            </Text>
+          </View>
+        )}
+        {currentVideo.date && (
+          <View className="flex-row items-center gap-1">
+            <Calendar size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {new Date(currentVideo.date).toLocaleDateString(l1Lang.code)}
+            </Text>
+          </View>
+        )}
+      </View>
+      <Pressable
+        onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any)}
+        className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
+        accessibilityRole="button"
+      >
+        <Play size={14} color={ICON_MUTED} />
+        <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
+      </Pressable>
+    </View>
+  ) : null;
+
   const videoContent = currentVideo ? (
     <View>
       {/* Header — video title + close */}
@@ -774,70 +823,79 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         </Dialog.Close>
       </View>
 
-      {/* Mini player */}
-      <View
-        className="w-full bg-black"
-        style={{ aspectRatio: 16 / 9 }}
-        onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
-      >
-        <YouTubePlayer
-          ref={playerRef}
-          youtubeId={currentVideo.youtube_id}
-          onTimeUpdate={handleTimeUpdate}
-          onDuration={handleDuration}
-          onStateChange={handleStateChange}
-          onError={handleVideoError}
-          autoplay={autoplayEnabled}
-          startTime={matchLine?.starttime}
-          containerWidth={containerWidth}
-        />
-      </View>
+      {/* Player + controls + subtitles — the player lives in a stable tree
+          position (the first flex child), so toggling singleline/multiline or
+          wide/narrow never remounts the YouTube iframe. On wide screens in
+          multiline mode, subtitles sit beside the player and the video info
+          sits below it, like the watch page — but inside the modal. */}
+      <View className={isWide && subtitleMode === 'multiline' ? 'flex-row min-h-0' : 'min-h-0'}>
+        {/* Column 1 — player + controls (+ info below on wide multiline) */}
+        <View className={isWide && subtitleMode === 'multiline' ? 'min-w-0 flex-1' : ''}>
+          {/* Mini player */}
+          <View
+            className="w-full bg-black"
+            style={{ aspectRatio: 16 / 9 }}
+            onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
+          >
+            <YouTubePlayer
+              ref={playerRef}
+              youtubeId={currentVideo.youtube_id}
+              onTimeUpdate={handleTimeUpdate}
+              onDuration={handleDuration}
+              onStateChange={handleStateChange}
+              onError={handleVideoError}
+              autoplay={autoplayEnabled}
+              startTime={matchLine?.starttime}
+              containerWidth={containerWidth}
+            />
+          </View>
 
-      {/* Controls — centered; result count between prev/next line buttons;
-          the panel toggle flips singleline ↔ multiline (SPEC-082 Task 15). */}
-      <View className="flex-row justify-center border-b border-border py-1">
-        <VideoControlBar
-          reduced
-          playerRef={playerRef}
-          currentTime={currentTime}
-          duration={duration}
-          paused={paused}
-          onPauseToggle={() => {}}
-          onPreviousLine={goToPreviousLine}
-          onNextLine={goToNextLine}
-          onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
-          onNextVideo={() => { if (currentIndex < filteredVideos.length - 1) { setCurrentIndex((i) => i + 1); } }}
-          onTogglePanel={handleToggleSubtitleMode}
-          panelOpen={subtitleMode === 'multiline'}
-          hasPreviousLine={hasPreviousLine}
-          hasNextLine={hasNextLine}
-          hasPreviousVideo={currentIndex > 0}
-          hasNextVideo={currentIndex < filteredVideos.length - 1}
-          videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: filteredVideos.length })}
-        />
-      </View>
+          {/* Controls — centered; result count between prev/next line buttons;
+              the panel toggle flips singleline ↔ multiline (SPEC-082 Task 15). */}
+          <View className="flex-row justify-center border-b border-border py-1">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={() => {}}
+              onPreviousLine={goToPreviousLine}
+              onNextLine={goToNextLine}
+              onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
+              onNextVideo={() => { if (currentIndex < filteredVideos.length - 1) { setCurrentIndex((i) => i + 1); } }}
+              onTogglePanel={handleToggleSubtitleMode}
+              panelOpen={subtitleMode === 'multiline'}
+              hasPreviousLine={hasPreviousLine}
+              hasNextLine={hasNextLine}
+              hasPreviousVideo={currentIndex > 0}
+              hasNextVideo={currentIndex < filteredVideos.length - 1}
+              videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: filteredVideos.length })}
+            />
+          </View>
 
-      {/* Subtitles — singleline line-follower, or multiline tabbed sidebar
-          (subs | queue | info). Remount on mode change so the sidebar starts
-          on the subs tab, like the watch page's sidebar remount. */}
-      {subtitleMode === 'singleline' ? (
-        <View className="min-h-32 w-full">
-          <SubtitleDisplay
-            singleLine
-            lines={subtitleInitialLines}
-            activeLineIndex={activeLineIndex}
-            currentTime={currentTime}
-            highlightTerms={highlightTerms}
-            defaultLine={defaultSubtitleLine}
-            onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-          />
+          {/* Video info below the player on wide multiline (watch page) */}
+          {isWide && subtitleMode === 'multiline' && (
+            <View className="px-4 py-3">{videoInfoContent}</View>
+          )}
         </View>
-      ) : (
-        <View style={{ height: Math.min(screenHeight * 0.4, 320) }}>
-          <TranscriptQueuePanel
-            key={subtitleMode}
-            transcript={
+
+        {/* Column 2 — subtitles: singleline line-follower, or multiline
+            tabbed sidebar (subs | queue | info). On wide multiline the info
+            tab is dropped (info lives below the player). Remount on mode
+            change so the sidebar starts on the subs tab, like the watch
+            page's sidebar remount. */}
+        <View
+          className={
+            isWide && subtitleMode === 'multiline'
+              ? 'min-h-0 w-[320px] border-l border-border'
+              : 'min-h-0 flex-1'
+          }
+        >
+          {subtitleMode === 'singleline' ? (
+            <View className="min-h-32 w-full">
               <SubtitleDisplay
+                singleLine
                 lines={subtitleInitialLines}
                 activeLineIndex={activeLineIndex}
                 currentTime={currentTime}
@@ -845,87 +903,70 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
                 defaultLine={defaultSubtitleLine}
                 onSeekToLine={(t) => playerRef.current?.seekTo(t)}
               />
-            }
-            queue={
-              <ScrollView className="flex-1">
-                {filteredVideos.map((v, i) => {
-                  const ml = v.subs_l2[v.matchLineIndex];
-                  const isActive = i === currentIndex;
-                  return (
-                    <Pressable
-                      key={v.id}
-                      onPress={() => selectFromList(i)}
-                      className={`mb-1.5 flex-row items-center gap-2 rounded-lg p-1.5 ${isActive ? 'bg-primary/5' : ''}`}
-                    >
-                      <View className="h-9 w-16 overflow-hidden rounded bg-muted">
-                        <Image
-                          source={{ uri: youtubeThumbnail(v.youtube_id) }}
-                          className="h-full w-full"
-                          resizeMode="cover"
-                        />
-                      </View>
-                      <View className="min-w-0 flex-1">
-                        <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                          {v.title}
-                        </Text>
-                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                          {ml?.line}
-                        </Text>
-                      </View>
-                      {ml && (
-                        <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                          {formatTime(ml.starttime)}
-                        </Text>
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            }
-            info={
-              <View className="gap-3">
-                <Text className="text-base font-bold leading-tight text-foreground">
-                  {currentVideo.title}
-                </Text>
-                <View className="flex-row flex-wrap items-center gap-3">
-                  {currentVideo.views != null && (
-                    <View className="flex-row items-center gap-1">
-                      <Eye size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {t('label.views_count', { count: formatNumber(currentVideo.views, l1Lang.code) })}
-                      </Text>
-                    </View>
-                  )}
-                  {currentVideo.duration != null && (
-                    <View className="flex-row items-center gap-1">
-                      <Clock size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {formatTime(currentVideo.duration)}
-                      </Text>
-                    </View>
-                  )}
-                  {currentVideo.date && (
-                    <View className="flex-row items-center gap-1">
-                      <Calendar size={14} color={ICON_MUTED} />
-                      <Text className="text-xs text-muted-foreground">
-                        {new Date(currentVideo.date).toLocaleDateString(l1Lang.code)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Pressable
-                  onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any)}
-                  className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
-                  accessibilityRole="button"
-                >
-                  <Play size={14} color={ICON_MUTED} />
-                  <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
-                </Pressable>
-              </View>
-            }
-          />
+            </View>
+          ) : (
+            <View
+              style={
+                isWide && subtitleMode === 'multiline'
+                  ? undefined
+                  : { height: Math.min(screenHeight * 0.4, 320) }
+              }
+              className={isWide && subtitleMode === 'multiline' ? 'flex-1' : ''}
+            >
+              <TranscriptQueuePanel
+                key={subtitleMode}
+                transcript={
+                  <SubtitleDisplay
+                    lines={subtitleInitialLines}
+                    activeLineIndex={activeLineIndex}
+                    currentTime={currentTime}
+                    highlightTerms={highlightTerms}
+                    defaultLine={defaultSubtitleLine}
+                    onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+                  />
+                }
+                queue={
+                  <ScrollView className="flex-1">
+                    {filteredVideos.map((v, i) => {
+                      const ml = v.subs_l2[v.matchLineIndex];
+                      const isActive = i === currentIndex;
+                      return (
+                        <Pressable
+                          key={v.id}
+                          onPress={() => selectFromList(i)}
+                          className={`mb-1.5 flex-row items-center gap-2 rounded-lg p-1.5 ${isActive ? 'bg-primary/5' : ''}`}
+                        >
+                          <View className="h-9 w-16 overflow-hidden rounded bg-muted">
+                            <Image
+                              source={{ uri: youtubeThumbnail(v.youtube_id) }}
+                              className="h-full w-full"
+                              resizeMode="cover"
+                            />
+                          </View>
+                          <View className="min-w-0 flex-1">
+                            <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                              {v.title}
+                            </Text>
+                            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                              {ml?.line}
+                            </Text>
+                          </View>
+                          {ml && (
+                            <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                              {formatTime(ml.starttime)}
+                            </Text>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                }
+                info={isWide && subtitleMode === 'multiline' ? undefined : videoInfoContent}
+              />
+            </View>
+          )}
         </View>
-      )}
+      </View>
     </View>
   ) : null;
 
@@ -1318,7 +1359,9 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           {isMd ? (
             <View className="absolute inset-0 items-center justify-center px-4">
               <View
-                className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-background"
+                className={`w-full overflow-hidden rounded-xl border border-border bg-background ${
+                  isWide && subtitleMode === 'multiline' ? 'max-w-4xl' : 'max-w-2xl'
+                }`}
                 style={{
                   // Inline shadow — see NavBar workaround for the css-interop crash.
                   shadowColor: ICON_MUTED,
