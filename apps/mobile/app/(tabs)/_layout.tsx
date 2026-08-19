@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { Header } from '@/components/layout/Header';
+import { ReaderChromeProvider } from '@/contexts/ReaderChromeContext';
 
 export default function TabLayout() {
   return (
-    <>
+    <ReaderChromeProvider>
       <Header />
       <Stack
         screenOptions={{ headerShown: false }}
@@ -14,6 +15,6 @@ export default function TabLayout() {
         <Stack.Screen name="(vocab)" />
         <Stack.Screen name="(me)" />
       </Stack>
-    </>
+    </ReaderChromeProvider>
   );
 }

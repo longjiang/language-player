@@ -8,6 +8,7 @@ import { Search, Menu, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
+import { useReaderChrome } from '@/contexts/ReaderChromeContext';
 import { e2e } from '@/lib/e2e';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -19,8 +20,14 @@ export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
   const { isMd, isSm } = useResponsive();
+  const { immersed } = useReaderChrome();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+
+  // An immersive reader (EPUB) is open — the header hides so the book fills
+  // the screen; the reader shows its own chrome (including this same Header
+  // component) as overlays.
+  if (immersed) return null;
 
   return (
     <>

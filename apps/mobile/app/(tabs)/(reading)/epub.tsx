@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking } from 'react-native';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
+import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -12,9 +15,9 @@ import { EpubSearchPanel } from '@/components/reader/EpubSearchPanel';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { EpubBookshelf } from '@/components/reader/EpubBookshelf';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { Sidebar, useSidebar } from '@/components/ui/sidebar';
-import { TabbedPanel } from '@/components/TabbedPanel';
-import { ArrowLeft, X, ChevronLeft, ChevronRight, PanelRightOpen, PanelRightClose, List, Search } from 'lucide-react-native';
+import { Header } from '@/components/layout/Header';
+import { ReaderChromeProvider, useReaderChrome } from '@/contexts/ReaderChromeContext';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { translationLogger } from '@/lib/logger';
@@ -30,16 +33,26 @@ export default function EpubReaderScreen() {
   const t = useT();
   const epub = useEpub();
   const { height: windowHeight } = useWindowDimensions();
-  const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
-  // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
-  // while the outer sidebar layout still switches at the wider breakpoint.
+  const insets = useSafeAreaInsets();
+  const { setImmersed } = useReaderChrome();
+  // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
+
+  /** Top strip reserved for the app-header chrome + the muted chapter title. */
+  const TOP_CHROME_RESERVE = insets.top + 48;
+  /** Bottom strip reserved for the pagination-bar chrome + the muted page count. */
+  const BOTTOM_CHROME_RESERVE = 44 + insets.bottom;
 
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
   const [seekBlock, setSeekBlock] = useState<number | null>(null);
   /** Active search-match highlight (block + char range), if any. */
   const [highlight, setHighlight] = useState<{ blockIndex: number; start: number; end: number } | null>(null);
+  /** Immersive reader chrome: hidden by default, toggled by tapping blank space. */
+  const [chromeVisible, setChromeVisible] = useState(false);
+  /** TOC and Search are modals now (the sidebar is gone). */
+  const [tocOpen, setTocOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const locationRef = useRef<BookLocation | null>(null);
   const historyRef = useRef<BookLocation[]>([]);
   const pendingJumpRef = useRef<BookLocation | null>(null);
@@ -189,31 +202,27 @@ export default function EpubReaderScreen() {
     flushSaveLocation(); // persist the final position before the book closes
     setLocation(null);
     historyRef.current = [];
-    setMobileOpen(false);
+    setChromeVisible(false);
+    setTocOpen(false);
+    setSearchOpen(false);
     setHighlight(null);
     await epub.close();
   }, [epub, flushSaveLocation]);
 
-  const handleBack = useCallback(() => {
-    const prev = historyRef.current.pop();
-    if (prev) {
-      setMobileOpen(false);
-      setHighlight(null);
-      jumpToBlock(prev);
-    } else {
-      void handleClose();
-    }
-  }, [jumpToBlock, handleClose]);
+  // Close button (top-right X in the immersive reader).
+  const handleCloseReader = useCallback(() => {
+    void handleClose();
+  }, [handleClose]);
 
   const handleChapterSelect = useCallback((href: string) => {
-    setMobileOpen(false);
+    setTocOpen(false);
     setHighlight(null);
     pushHistory();
     void epub.resolveHref(href).then(jumpToBlock);
   }, [epub, pushHistory, jumpToBlock]);
 
   const handleSearchSelect = useCallback((match: { blockIndex: number; start: number; end: number }) => {
-    setMobileOpen(false);
+    setSearchOpen(false);
     setHighlight(match);
     pushHistory();
     jumpToBlock({ blockIndex: match.blockIndex, offset: match.start });
@@ -267,6 +276,55 @@ export default function EpubReaderScreen() {
   }, [location, epub.markers]);
 
   const errorText = epub.error ? t('msg.epub_parse_error') : null;
+
+  // The book reader is active — the final render path after the bookshelf,
+  // opening, error and cover screens.
+  const readerActive = hasBook
+    && !openingId
+    && !(epub.loading && !epub.coverTapped)
+    && !epub.error
+    && epub.coverTapped;
+
+  // Immerse while the book reader is open — the global app header hides so the
+  // book fills the screen; the reader renders its own chrome as overlays.
+  // Reset on blur so switching tabs restores the normal chrome.
+  useFocusEffect(
+    useCallback(() => {
+      setImmersed(readerActive);
+      return () => setImmersed(false);
+    }, [readerActive, setImmersed]),
+  );
+
+  // Reset the overlay chrome whenever the reader is not active.
+  useEffect(() => {
+    if (!readerActive) {
+      setChromeVisible(false);
+      setTocOpen(false);
+      setSearchOpen(false);
+    }
+  }, [readerActive]);
+
+  // ── Immersive chrome animations: the app header slides down from the top
+  // and the close button fades in with the chrome (pure overlay, no reflow). ──
+  const topChromeTranslateY = useRef(new Animated.Value(-160)).current;
+  const closeOpacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(topChromeTranslateY, {
+        toValue: chromeVisible ? 0 : -160,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(closeOpacity, {
+        toValue: chromeVisible ? 1 : 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [chromeVisible, topChromeTranslateY, closeOpacity]);
+
+  // Blank-space tap in the reader toggles the immersive chrome.
+  const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
 
   // ── Bookshelf (no book open) ──
   if (!hasBook) {
@@ -341,89 +399,112 @@ export default function EpubReaderScreen() {
   // ── Reader ──
   return (
     <View className="flex-1 bg-background">
-      <View className="px-4 py-5 flex-row items-center gap-3">
-        <Button onPress={handleBack} variant="ghost" size="icon" accessibilityLabel={t('action.back')}>
-          <ArrowLeft size={18} color={ICON_MUTED} />
-        </Button>
-        <View className="flex-1 min-w-0">
-          <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
-            {nearestMarker?.label || epub.fileName || t('title.epub_reader')}
-          </Text>
-          <Text className="text-xs text-muted-foreground">{l2Lang.name} → {l1Lang.name}</Text>
-        </View>
-        <Button onPress={handleClose} variant="ghost" size="sm">
-          <X size={14} color={ICON_MUTED} /><Text className={buttonTextClass('ghost')}>{t('action.close')}</Text>
-        </Button>
-        <Button
-          onPress={toggle}
-          variant="ghost"
-          size="icon"
-          accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
-        >
-          {isWide && sidebarOpen ? (
-            <PanelRightClose size={20} color={ICON_MUTED} />
-          ) : (
-            <PanelRightOpen size={20} color={ICON_MUTED} />
+      <View className="flex-1">
+        <PaginatedReader
+          blocks={pagination.blocks}
+          visibleBlocks={pagination.visibleBlocks}
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          hasMeasured={pagination.hasMeasured}
+          loadingTokens={pagination.loadingTokens}
+          tokenCache={pagination.tokenCache}
+          blockTranslations={pagination.blockTranslations}
+          isTranslating={pagination.isTranslating}
+          prevPage={pagination.prevPage}
+          nextPage={pagination.nextPage}
+          goToPage={pagination.goToPage}
+          handleMeasureBlock={pagination.handleMeasureBlock}
+          onVisibleBlocksChange={pagination.onVisibleBlocksChange}
+          contentWidth={pagination.contentWidth}
+          measureStart={pagination.measureStart}
+          measureEnd={pagination.measureEnd}
+          measureNonce={pagination.measureNonce}
+          onViewportLayout={pagination.handleViewportLayout}
+          hasPrev={pagination.hasPrev}
+          hasNext={pagination.hasNext}
+          flipping={pagination.flipping}
+          measuring={pagination.measuring}
+          lazyPagination
+          l2Code={l2Lang.code}
+          l1Code={l1Lang.code}
+          showTranslation={display.translation}
+          onToggleTranslation={() => {
+            const next = !display.translation;
+            translationLogger.log(`toggle translation → ${next ? 'on' : 'off'}`);
+            updateDisplay({ translation: next });
+          }}
+          showTextActions
+          translationSideBySide={isMd}
+          hideSplitHandle
+          selectionDictionary
+          firstLineIndent
+          onOpenLink={handleOpenLink}
+          highlight={highlight}
+          textScale={1}
+          t={t}
+          immersive
+          immersiveReserve={{ top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE }}
+          chromeVisible={chromeVisible}
+          onToggleChrome={toggleChrome}
+          onOpenToc={epub.toc.length > 0 ? () => setTocOpen(true) : undefined}
+          onOpenSearch={() => setSearchOpen(true)}
+          topOverlay={
+            <Text
+              className="max-w-[85%] text-xs text-muted-foreground"
+              style={{ paddingTop: insets.top }}
+              numberOfLines={1}
+            >
+              {nearestMarker?.label || epub.fileName || t('title.epub_reader')}
+            </Text>
+          }
+          pageInfoOverlay={(page, total) => (
+            <Text className="text-xs text-muted-foreground">{page} / {total}</Text>
           )}
-        </Button>
+        />
       </View>
 
-      <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
-        <View className="flex-1">
-          <PaginatedReader
-            blocks={pagination.blocks}
-            visibleBlocks={pagination.visibleBlocks}
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            hasMeasured={pagination.hasMeasured}
-            loadingTokens={pagination.loadingTokens}
-            tokenCache={pagination.tokenCache}
-            blockTranslations={pagination.blockTranslations}
-            isTranslating={pagination.isTranslating}
-            prevPage={pagination.prevPage}
-            nextPage={pagination.nextPage}
-            goToPage={pagination.goToPage}
-            handleMeasureBlock={pagination.handleMeasureBlock}
-            onVisibleBlocksChange={pagination.onVisibleBlocksChange}
-            contentWidth={pagination.contentWidth}
-            measureStart={pagination.measureStart}
-            measureEnd={pagination.measureEnd}
-            measureNonce={pagination.measureNonce}
-            onViewportLayout={pagination.handleViewportLayout}
-            hasPrev={pagination.hasPrev}
-            hasNext={pagination.hasNext}
-            flipping={pagination.flipping}
-            measuring={pagination.measuring}
-            lazyPagination
-            l2Code={l2Lang.code}
-            l1Code={l1Lang.code}
-            showTranslation={display.translation}
-            onToggleTranslation={() => {
-              const next = !display.translation;
-              translationLogger.log(`toggle translation → ${next ? 'on' : 'off'}`);
-              updateDisplay({ translation: next });
-            }}
-            showTextActions
-            translationSideBySide={isMd}
-            hideSplitHandle
-            selectionDictionary
-            firstLineIndent
-            onOpenLink={handleOpenLink}
-            highlight={highlight}
-            textScale={1}
-            t={t}
-          />
-        </View>
+      {/* Top chrome: the app header (logo, cloud, search…) — hidden by
+          default, slides down when the chrome is shown. */}
+      <Animated.View
+        pointerEvents={chromeVisible ? 'auto' : 'none'}
+        className="absolute inset-x-0 top-0 z-30"
+        style={{ transform: [{ translateY: topChromeTranslateY }] }}
+      >
+        <ReaderChromeProvider immersed={false}>
+          <Header />
+        </ReaderChromeProvider>
+      </Animated.View>
 
-        {/* Sidebar — shared panel + sheet with chapters/search tabs (web parity) */}
-        <Sidebar
-          open={mobileOpen}
-          onOpenChange={setMobileOpen}
-          sidebarOpen={sidebarOpen}
-          title={t('title.epub_reader')}
-          desktopClassName="w-64 ml-3"
-          headerActions={
-            <View className="flex-row items-center gap-1">
+      {/* Close button (chrome): X in a 24px circle, top right — fades in
+          with the chrome. */}
+      <Animated.View
+        pointerEvents={chromeVisible ? 'auto' : 'none'}
+        className="absolute z-40"
+        style={{ top: insets.top + 10, right: 12, opacity: closeOpacity }}
+      >
+        <Pressable
+          onPress={handleCloseReader}
+          className="h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 active:bg-muted"
+          accessibilityLabel={t('action.close')}
+        >
+          <X size={14} color={ICON_MUTED} />
+        </Pressable>
+      </Animated.View>
+
+      {/* ── TOC modal (replaces the sidebar) ── */}
+      {epub.toc.length > 0 && (
+        <Modal
+          visible={tocOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setTocOpen(false)}
+        >
+        <View className="flex-1 items-center justify-center bg-black/40 px-6">
+          <View className="max-h-[85%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+            <View className="flex-row items-center gap-2 border-b border-border px-4 py-3">
+              <Text className="flex-1 text-base font-semibold text-foreground" numberOfLines={1}>
+                {t('title.chapters')}
+              </Text>
               <Button
                 onPress={() => jumpToMarker(markerNav.prev)}
                 disabled={!markerNav.prev}
@@ -444,36 +525,55 @@ export default function EpubReaderScreen() {
                 <Text className={buttonTextClass('ghost')}>{t('action.next_chapter')}</Text>
                 <ChevronRight size={16} color={ICON_MUTED} />
               </Button>
+              <Pressable
+                onPress={() => setTocOpen(false)}
+                className="rounded p-1 active:bg-muted"
+                accessibilityLabel={t('action.close')}
+              >
+                <X size={18} color={ICON_MUTED} />
+              </Pressable>
             </View>
-          }
-          footer={
-            <Text className="px-3 py-2 text-xs text-muted-foreground">
-              {epub.markers.length} {t('msg.chapters')}
-            </Text>
-          }
-        >
-          <TabbedPanel
-            tabs={[
-              { key: 'chapters', label: t('title.chapters'), icon: () => <List size={14} color={ICON_MUTED} /> },
-              { key: 'search', label: t('action.search'), icon: () => <Search size={14} color={ICON_MUTED} /> },
-            ]}
-            defaultTab="chapters"
-            className="h-full"
-            contentClassName="min-h-0"
-          >
-            <EpubChapterSidebar
-              toc={epub.toc}
-              chapterHref={nearestMarker?.href ?? null}
-              onSelect={handleChapterSelect}
-            />
-            <EpubSearchPanel
-              blocks={pagination.blocks}
-              chapterLabels={epub.chapterLabels}
-              onSelect={handleSearchSelect}
-            />
-          </TabbedPanel>
-        </Sidebar>
-      </View>
+            <ScrollView className="max-h-[70%]" keyboardShouldPersistTaps="handled">
+              <EpubChapterSidebar
+                toc={epub.toc}
+                chapterHref={nearestMarker?.href ?? null}
+                onSelect={handleChapterSelect}
+              />
+            </ScrollView>
+          </View>
+        </View>
+        </Modal>
+      )}
+
+      {/* ── Search modal (replaces the sidebar) ── */}
+      <Modal
+        visible={searchOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSearchOpen(false)}
+      >
+        <View className="flex-1 items-center justify-center bg-black/40 px-6">
+          <View className="max-h-[85%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+            <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+              <Text className="flex-1 text-base font-semibold text-foreground">{t('action.search')}</Text>
+              <Pressable
+                onPress={() => setSearchOpen(false)}
+                className="rounded p-1 active:bg-muted"
+                accessibilityLabel={t('action.close')}
+              >
+                <X size={18} color={ICON_MUTED} />
+              </Pressable>
+            </View>
+            <ScrollView className="max-h-[70%]" keyboardShouldPersistTaps="handled">
+              <EpubSearchPanel
+                blocks={pagination.blocks}
+                chapterLabels={epub.chapterLabels}
+                onSelect={handleSearchSelect}
+              />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
