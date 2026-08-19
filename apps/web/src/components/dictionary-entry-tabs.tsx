@@ -131,7 +131,16 @@ export function DictionaryEntryTabs({
           />
         )}
         {effectiveTab === 'deepseek' && (
-          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+          <AiExplanation
+            word={entry.head}
+            contextText={contextText}
+            contextForm={contextForm}
+            entryFound={true}
+            autoLoad
+            // Same term set the Examples tab's subs search uses — the AI
+            // "Examples from Videos" follow-up must find the same videos.
+            searchTerms={allTerms}
+          />
         )}
         {/* Prefetch strategy: Examples/Images/Inflections stay mounted (hidden)
             so their fetches start as soon as the tabs mount or the entry changes.

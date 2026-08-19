@@ -23,6 +23,7 @@ import {
   parseSubsL2,
   findMatchLine,
   durationToSeconds,
+  AI_EXAMPLES_LIMIT,
   buildAiExamplesPayload,
   buildAiExamplesPrompt,
   parseAiExamplesResponse,
@@ -89,6 +90,12 @@ interface AiExplanationProps {
   entryFound: boolean;
   /** When true, streams the explanation immediately without showing a button. */
   autoLoad?: boolean;
+  /** Full searchable form list (head + script variants + inflections) — the
+   *  same term set the dictionary tabs' subs search uses. When provided, the
+   *  "Examples from Videos" follow-up searches all of them so a kana/kanji
+   *  (or written-form) mismatch can't zero out the results. Falls back to
+   *  head + inflected surface form when omitted (dictionary popup). */
+  searchTerms?: string[];
 }
 
 // ── Subs-search helpers (mirror subs-search-results.tsx) ──
@@ -122,7 +129,7 @@ function formatNumber(n: number | undefined, locale: string): string {
  * - Pro users get an AI explanation of the word in context
  * - The prompt asks for a succinct explanation plus 2 translated examples
  */
-export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false, searchTerms }: AiExplanationProps) {
   const { data: session } = useSession();
   const { l1, l2 } = useLanguage();
   const t = useT();
@@ -336,7 +343,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const fetchSubsSearch = useCallback(
     async (term: string): Promise<SubsSearchVideo[]> => {
       const res = await fetch(
-        `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=50&context=3`,
+        `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=${AI_EXAMPLES_LIMIT}&context=3`,
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: any[] = await res.json();
@@ -372,10 +379,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     const aiId = appendMessage({ role: 'assistant', text: '', loading: true });
     log('AI examples follow-up start', { word });
     try {
-      // Include the inflected surface form too, so inflected occurrences match.
-      const searchTerms =
-        contextForm && contextForm !== word ? `${word},${contextForm}` : word;
-      const results = await fetchSubsSearch(searchTerms);
+      // Search every known form of the word (head + script variants +
+      // inflections) — the same term set the dictionary tabs' subs search
+      // uses — so a kana/kanji (or written-form) mismatch can't zero out the
+      // results. Falls back to head + inflected surface form when no form
+      // list is supplied (dictionary popup). All results (up to
+      // AI_EXAMPLES_LIMIT) are passed to the LLM below.
+      const terms =
+        searchTerms && searchTerms.length > 0
+          ? searchTerms.join(',')
+          : (contextForm && contextForm !== word ? `${word},${contextForm}` : word);
+      const results = await fetchSubsSearch(terms);
       if (results.length === 0) throw new Error('no subs-search results');
 
       const l1Name = languageName(l1.code, l1.code);
@@ -384,11 +398,12 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       const prose = t('prompt.subs_ai_examples', {
         n: results.length,
         l2Name,
-        term: word,
+        term: terms,
       });
-      const prompt = buildAiExamplesPrompt({ prose, lines, l1Name, l2Name, term: word });
+      const prompt = buildAiExamplesPrompt({ prose, lines, l1Name, l2Name, term: terms });
       log('AI examples follow-up request', {
         word,
+        terms,
         n: results.length,
         promptChars: prompt.length,
       });
@@ -427,7 +442,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
       });
       updateMessage(aiId, { text: t('msg.ai_examples_failed'), loading: false });
     }
-  }, [word, contextForm, l1.code, l2.code, t, appendMessage, updateMessage, fetchSubsSearch]);
+  }, [word, contextForm, searchTerms, l1.code, l2.code, t, appendMessage, updateMessage, fetchSubsSearch]);
 
   const handleFollowUp = useCallback((kind: FollowUpKind) => {
     if (kind === 'examples') {
