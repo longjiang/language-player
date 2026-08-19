@@ -46,6 +46,24 @@ interface EpubReaderPanelProps {
  * Open an internal link (resolved by the page against the current spine item).
  */
   onOpenLink: (href: string) => void;
+
+  // ── Immersive reader chrome (passed through to the shared PaginatedReader) ──
+  /** Immersive mode: chrome floats over the content; see PaginatedReader. */
+  immersive?: boolean;
+  /** Constant top/bottom strips reserved for the chrome + page metadata. */
+  immersiveReserve?: { top: number; bottom: number };
+  /** Whether the bottom chrome is visible (slides away when false). */
+  chromeVisible?: boolean;
+  /** Blank-space tap toggles the chrome. */
+  onToggleChrome?: () => void;
+  /** Opens the TOC modal from the bottom bar. */
+  onOpenToc?: () => void;
+  /** Opens the Search modal from the bottom bar. */
+  onOpenSearch?: () => void;
+  /** Muted chapter title rendered in the top reserved strip. */
+  topOverlay?: React.ReactNode;
+  /** Muted page count rendered in the bottom reserved strip. */
+  pageInfoOverlay?: (page: number, total: number, isEstimate: boolean) => React.ReactNode;
 }
 
 export function EpubReaderPanel({
@@ -61,6 +79,14 @@ export function EpubReaderPanel({
   onPageTranslate,
   onLocationChange,
   onOpenLink,
+  immersive,
+  immersiveReserve,
+  chromeVisible,
+  onToggleChrome,
+  onOpenToc,
+  onOpenSearch,
+  topOverlay,
+  pageInfoOverlay,
 }: EpubReaderPanelProps) {
   const { display, getL2, tokenizedText, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
@@ -242,7 +268,14 @@ export function EpubReaderPanel({
       l1={l1} l2={l2}
       ctx={ctx}
       measureNonce={measureNonce}
-      chromeHeight={40}
+      immersive={immersive}
+      immersiveReserve={immersiveReserve}
+      chromeVisible={chromeVisible}
+      onToggleChrome={onToggleChrome}
+      onOpenToc={onOpenToc}
+      onOpenSearch={onOpenSearch}
+      topOverlay={topOverlay}
+      pageInfoOverlay={pageInfoOverlay}
       onLemmatize={onLemmatize}
       onPageTranslate={onPageTranslate}
       onLocationChange={handleLocationChange}

@@ -13,25 +13,30 @@ import { EpubImportDialog } from '@/components/reader/epub-import-dialog';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubSearchPanel } from '@/components/reader/epub-search-panel';
 import { normalizeLanguageCode } from '@/lib/epub-book';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEpub, markerForLocation } from '@/hooks/use-epub';
 import type { BookLocation, TocMarker } from '@/lib/epub-book-types';
-import { Sidebar } from '@/components/ui/sidebar';
 import type { EpubFileError, EpubUploadResult } from '@/components/reader/epub-upload';
 import type { EpubSearchMatch, EpubSearchResult } from '@/hooks/use-epub';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Header } from '@/components/layout/header';
+import { ReaderChromeProvider, useReaderChrome } from '@/providers/reader-chrome-provider';
 import {
-  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, PanelRightClose, PanelRight,
+  ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Loader2, X,
 } from 'lucide-react';
 import { epubLog } from '@/lib/epub-log';
+
+/** Height of the app header (h-14 + border) — reserved for the top chrome. */
+const TOP_CHROME_RESERVE = 56;
+/** Height of the reader's bottom pagination bar — reserved for the bottom chrome. */
+const BOTTOM_CHROME_RESERVE = 40;
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const router = useRouter();
   const epub = useEpub();
+  const { setImmersed } = useReaderChrome();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const openingIdRef = useRef<string | null>(null);
@@ -44,6 +49,11 @@ export default function EpubPage() {
   /** Locations to return to via Back — pushed on in-book jumps (TOC clicks,
    *  search results, internal links), never on plain page turns. */
   const historyRef = useRef<BookLocation[]>([]);
+  /** Immersive reader chrome: hidden by default, toggled by tapping blank space. */
+  const [chromeVisible, setChromeVisible] = useState(false);
+  /** TOC and Search are modals now (the sidebar is gone). */
+  const [tocOpen, setTocOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   /** Jump the reader to a location (TOC, search, links, restore). */
   const gotoLocation = useCallback((loc: BookLocation | null) => {
@@ -164,21 +174,18 @@ export default function EpubPage() {
     gotoLocation(pendingStartRef.current);
   }, [epub, gotoLocation]);
 
-  // TOC entry click → resolve + jump.
+  // TOC entry click → resolve + jump (closes the TOC modal).
   const handleLoadChapter = useCallback((href: string) => {
-    setMobileSidebarOpen(false);
+    setTocOpen(false);
     setHighlight(null);
     epubLog(`TOC chapter click: href="${href}"`);
     pushHistory(location);
     void epub.resolveHref(href).then(gotoLocation);
   }, [epub, gotoLocation, pushHistory, location]);
 
-  // Search result → jump to its location. The desktop sidebar stays open so
-  // the results list remains visible (matching TOC chapter clicks, which only
-  // dismiss the mobile sheet); the mobile sheet still closes so the matched
-  // content gets the full reader width.
+  // Search result → jump to its location and close the search modal.
   const handleSearchNavigate = useCallback((result: EpubSearchResult) => {
-    setMobileSidebarOpen(false);
+    setSearchOpen(false);
     navigateTo(result.location);
     if (result.match) {
       setHighlight({
@@ -217,11 +224,19 @@ export default function EpubPage() {
 
   // Close the book and return to the bookshelf (the handle is kept).
   const handleClose = useCallback(async () => {
+    setChromeVisible(false);
+    setTocOpen(false);
+    setSearchOpen(false);
     await epub.close();
     setLocation(null);
     pendingStartRef.current = null;
     historyRef.current = [];
   }, [epub]);
+
+  // Close button (top-right X in the immersive reader).
+  const handleCloseReader = useCallback(() => {
+    void handleClose();
+  }, [handleClose]);
 
   // Back: undo the last in-book jump (e.g. a footnote link); when there is
   // nothing to return to, close the book and go back to the bookshelf.
@@ -240,15 +255,38 @@ export default function EpubPage() {
     await epub.removeBook(id);
   }, [epub]);
 
-  // Page turns keep header + sidebar in sync and persist the position.
+  // Page turns keep the position in sync and persist it.
   const handleLocationChange = useCallback((loc: BookLocation) => {
     setLocation(loc);
     void epub.saveLocation(loc);
   }, [epub]);
 
+  // Blank-space tap in the reader toggles the immersive chrome.
+  const toggleChrome = useCallback(() => setChromeVisible(v => !v), []);
+
   const ctx: Partial<SavedWordContext> = {
     textTitle: chapterLabel || epub.fileName || 'EPUB Reader',
   };
+
+  // The book reader is active (book open, cover dismissed, content located).
+  const readerActive =
+    epub.openBookId !== null && epub.coverTapped && !!epub.book && !!location;
+
+  // Immerse while the book reader is open — the global app header hides so the
+  // book fills the screen; the reader renders its own chrome as overlays.
+  useEffect(() => {
+    setImmersed(readerActive);
+    return () => setImmersed(false);
+  }, [readerActive, setImmersed]);
+
+  // Reset the overlay chrome whenever the reader is not active.
+  useEffect(() => {
+    if (!readerActive) {
+      setChromeVisible(false);
+      setTocOpen(false);
+      setSearchOpen(false);
+    }
+  }, [readerActive]);
 
   // Loading state while restoring from storage.
   if (!initialized) {
@@ -261,92 +299,51 @@ export default function EpubPage() {
     );
   }
 
-  const readerActive = epub.openBookId !== null && epub.coverTapped && epub.book && location;
-
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
-      {/* ── Title bar ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
-        {epub.openBookId ? (
-          <button
-            onClick={handleBack}
-            aria-label={t('action.back')}
-            title={t('action.back')}
-            className="flex-shrink-0 rounded-md p-1 text-foreground transition-colors hover:bg-muted"
+    <div
+      className={`relative flex flex-col overflow-hidden ${
+        readerActive
+          ? 'h-screen w-full'
+          : 'mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)]'
+      }`}
+    >
+      {readerActive ? (
+        /* ── Immersive book reader ── */
+        <>
+          {/* Top chrome: the app header (logo, cloud, search…) — hidden by
+              default, glides down when the chrome is shown. */}
+          <div
+            className={`absolute inset-x-0 top-0 z-30 transition-transform duration-300 ${
+              chromeVisible ? 'translate-y-0' : '-translate-y-full'
+            }`}
+            style={{ pointerEvents: chromeVisible ? 'auto' : 'none' }}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ReaderChromeProvider immersed={false}>
+              <Header />
+            </ReaderChromeProvider>
+          </div>
+
+          {/* Close button (chrome): X in a 24px circle, top right — fades in
+              with the chrome. */}
+          <button
+            onClick={handleCloseReader}
+            aria-label={t('action.close')}
+            title={t('action.close')}
+            className={`absolute right-3 top-3 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
+              chromeVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+          >
+            <X className="h-3.5 w-3.5" />
           </button>
-        ) : (
-          <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
-        )}
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold truncate">
-            {chapterLabel || epub.fileName || t('title.epub_reader')}
-          </h1>
-        </div>
-        {/* Sidebar toggles — only when EPUB loaded */}
-        {epub.toc.length > 0 && (
-          <>
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              aria-label={t('action.show_sidebar')}
-            >
-              <PanelRight className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setSidebarOpen(o => !o)}
-              className="hidden lg:flex flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
-            >
-              {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-            </button>
-          </>
-        )}
-      </div>
 
-      {/* ── Content row ── */}
-      <div className="flex gap-4 flex-1 min-h-0">
-
-        {/* Content area */}
-        <div className="min-w-0 flex-1 flex flex-col min-h-0">
-          {!epub.openBookId ? (
-            <EpubBookshelf
-              books={epub.books}
-              l2Code={l2.code}
-              onOpenBook={handleOpenBook}
-              onRemoveBook={handleRemoveBook}
-              onFilesProcessed={handleFilesProcessed}
-              openingId={openingId}
-              error={epub.error ? t(epub.error) : null}
-            />
-          ) : openingId ? (
-            <div className="flex min-h-[40vh] items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : !epub.coverTapped && epub.coverUrl && epub.book ? (
-            /* ── Cover ── */
-            <div className="flex items-center justify-center min-h-[60vh]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={epub.coverUrl}
-                alt={t('label.cover')}
-                className="max-h-[70vh] max-w-full cursor-pointer rounded-lg shadow-xl transition-transform hover:scale-[1.02]"
-                onClick={handleCoverTap}
-              />
-            </div>
-          ) : epub.book && !location ? (
-            /* Book open but the resume jump hasn't landed yet — never a
-               blank page. */
-            <div className="flex min-h-[40vh] items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : epub.book && location ? (
-            /* ── Reader ── */
+          {/* The reader — top/bottom strips are reserved for the chrome and
+              the muted chapter title / page count, so toggling the chrome
+              never reflows the book. */}
+          <div className="min-h-0 flex-1">
             <EpubReaderPanel
               key={epub.openBookId}
-              book={epub.book}
-              location={location}
+              book={epub.book!}
+              location={location!}
               jumpNonce={jumpNonce}
               l2={l2} l1={l1}
               ctx={ctx}
@@ -369,85 +366,156 @@ export default function EpubPage() {
               }}
               onLocationChange={handleLocationChange}
               onOpenLink={handleOpenLink}
+              immersive
+              immersiveReserve={{ top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE }}
+              chromeVisible={chromeVisible}
+              onToggleChrome={toggleChrome}
+              onOpenToc={() => setTocOpen(true)}
+              onOpenSearch={() => setSearchOpen(true)}
+              topOverlay={
+                <span className="max-w-[85%] truncate text-xs text-muted-foreground">
+                  {chapterLabel || epub.fileName || t('title.epub_reader')}
+                </span>
+              }
+              pageInfoOverlay={(page, total, isEstimate) => (
+                <span className="text-xs text-muted-foreground">
+                  {page}
+                  {total > 0 ? ` / ${isEstimate ? '~' : ''}${total}` : ''}
+                </span>
+              )}
             />
-          ) : epub.error ? (
-            <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
-              <p className="text-sm text-destructive">{t(epub.error)}</p>
+          </div>
+        </>
+      ) : (
+        /* ── Bookshelf / cover / error (regular app chrome) ── */
+        <>
+          {/* Title row — bookshelf header (the book reader itself has no
+              title bar; its metadata lives in the reader overlays). */}
+          <div className="mb-4 flex items-center gap-3 flex-shrink-0">
+            {epub.openBookId ? (
               <button
-                onClick={handleClose}
-                className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                onClick={handleBack}
+                aria-label={t('action.back')}
+                title={t('action.back')}
+                className="flex-shrink-0 rounded-md p-1 text-foreground transition-colors hover:bg-muted"
               >
-                {t('action.close')}
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            ) : (
+              <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
+            )}
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl font-bold truncate">
+                {chapterLabel || epub.fileName || t('title.epub_reader')}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-0">
+            {!epub.openBookId ? (
+              <EpubBookshelf
+                books={epub.books}
+                l2Code={l2.code}
+                onOpenBook={handleOpenBook}
+                onRemoveBook={handleRemoveBook}
+                onFilesProcessed={handleFilesProcessed}
+                openingId={openingId}
+                error={epub.error ? t(epub.error) : null}
+              />
+            ) : openingId ? (
+              <div className="flex min-h-[40vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : !epub.coverTapped && epub.coverUrl && epub.book ? (
+              /* ── Cover ── */
+              <div className="flex items-center justify-center min-h-[60vh]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={epub.coverUrl}
+                  alt={t('label.cover')}
+                  className="max-h-[70vh] max-w-full cursor-pointer rounded-lg shadow-xl transition-transform hover:scale-[1.02]"
+                  onClick={handleCoverTap}
+                />
+              </div>
+            ) : epub.book && !location ? (
+              /* Book open but the resume jump hasn't landed yet — never a
+                 blank page. */
+              <div className="flex min-h-[40vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : epub.error ? (
+              <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
+                <p className="text-sm text-destructive">{t(epub.error)}</p>
+                <button
+                  onClick={handleClose}
+                  className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  {t('action.close')}
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Import failure dialog */}
+          <EpubImportDialog
+            failures={importFailures}
+            onClose={() => setImportFailures([])}
+          />
+        </>
+      )}
+
+      {/* ── TOC modal (replaces the sidebar) ── */}
+      <Dialog open={tocOpen} onOpenChange={setTocOpen}>
+        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
+          <DialogHeader className="flex-row items-center justify-between pr-10">
+            <DialogTitle>{t('title.chapters')}</DialogTitle>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => navigateTo(chapterNav.prev?.location ?? null)}
+                disabled={!chapterNav.prev}
+                className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                {t('action.previous_chapter')}
+              </button>
+              <button
+                onClick={() => navigateTo(chapterNav.next?.location ?? null)}
+                disabled={!chapterNav.next}
+                className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+              >
+                {t('action.next_chapter')}
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
-          ) : null}
-        </div>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <EpubChapterSidebar
+              toc={epub.toc}
+              markers={epub.markers}
+              activeLocation={location}
+              onLoadChapter={handleLoadChapter}
+            />
+          </div>
+          <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+            {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
+          </p>
+        </DialogContent>
+      </Dialog>
 
-        {/* Sidebar — shared desktop panel + mobile sheet */}
-        {epub.toc.length > 0 && (
-          <Sidebar
-            open={mobileSidebarOpen}
-            onOpenChange={setMobileSidebarOpen}
-            sidebarOpen={sidebarOpen}
-            title={t('title.epub_reader')}
-            desktopClassName="w-64 ml-3"
-            headerActions={
-              <>
-                <button
-                  onClick={() => navigateTo(chapterNav.prev?.location ?? null)}
-                  disabled={!chapterNav.prev || !readerActive}
-                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  {t('action.previous_chapter')}
-                </button>
-                <button
-                  onClick={() => navigateTo(chapterNav.next?.location ?? null)}
-                  disabled={!chapterNav.next || !readerActive}
-                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
-                >
-                  {t('action.next_chapter')}
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </>
-            }
-            footer={
-              <div className="px-3 py-2">
-                <p className="text-xs text-muted-foreground">
-                  {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
-                </p>
-              </div>
-            }
-          >
-            <Tabs defaultValue="chapters" className="flex h-full min-h-0 flex-col gap-2">
-              <TabsList className="mx-2 mt-2 grid w-[calc(100%-1rem)] grid-cols-2">
-                <TabsTrigger value="chapters">{t('title.chapters')}</TabsTrigger>
-                <TabsTrigger value="search">{t('action.search')}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="chapters" className="min-h-0 flex-1 overflow-y-auto">
-                <EpubChapterSidebar
-                  toc={epub.toc}
-                  markers={epub.markers}
-                  activeLocation={location}
-                  onLoadChapter={handleLoadChapter}
-                />
-              </TabsContent>
-              <TabsContent value="search" className="min-h-0 flex-1 overflow-y-auto">
-                <EpubSearchPanel
-                  onSearch={epub.searchBook}
-                  onNavigate={handleSearchNavigate}
-                />
-              </TabsContent>
-            </Tabs>
-          </Sidebar>
-        )}
-      </div>
-
-      {/* Import failure dialog */}
-      <EpubImportDialog
-        failures={importFailures}
-        onClose={() => setImportFailures([])}
-      />
+      {/* ── Search modal (replaces the sidebar) ── */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
+          <DialogHeader>
+            <DialogTitle>{t('action.search')}</DialogTitle>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <EpubSearchPanel
+              onSearch={epub.searchBook}
+              onNavigate={handleSearchNavigate}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

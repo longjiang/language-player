@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
+import { useReaderChrome } from '@/providers/reader-chrome-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
 import { Logo } from '@/components/ui/logo';
@@ -136,6 +137,7 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
 export function Header() {
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const { immersed } = useReaderChrome();
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const exploreHref = `/${l1.code}/${l2.code}/explore`;
@@ -143,6 +145,11 @@ export function Header() {
     pathname === exploreHref || pathname === `${exploreHref}/`
       ? '/?landing=1'
       : exploreHref;
+
+  // An immersive reader (EPUB) is open — the header hides so the book fills
+  // the screen; the reader shows its own chrome (including this same Header
+  // component) as overlays.
+  if (immersed) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">

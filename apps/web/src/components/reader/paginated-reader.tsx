@@ -17,7 +17,7 @@ import {
 import type { ReaderBlock } from '@/lib/parse-markdown';
 import type { EpubBook } from '@/lib/epub-book';
 import type { BookLocation } from '@/lib/epub-book-types';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react';
 
 export type { BlockRenderCtx, ReaderLoc, ReaderPageItem } from '@/hooks/use-paginated-reader';
 
@@ -85,6 +85,31 @@ export interface PaginatedReaderProps {
   contentClassName?: string;
   /** Applied to the hidden measuring mirror; defaults to `contentClassName`. */
   measureClassName?: string;
+
+  // ── Immersive reader mode (EPUB) ──
+  /**
+   * Immersive mode: the page chrome (bottom pagination bar) floats over the
+   * content instead of taking layout space, and page metadata overlays render
+   * on top. Toggling `chromeVisible` never reflows the book — the caller
+   * reserves constant top/bottom strips via `immersiveReserve`.
+   */
+  immersive?: boolean;
+  /** Constant strips reserved for the chrome (and the muted page metadata)
+   *  — applied as padding so pagination is identical with chrome shown/hidden. */
+  immersiveReserve?: { top: number; bottom: number };
+  /** Immersive: whether the bottom bar chrome is visible (slides away when false). */
+  chromeVisible?: boolean;
+  /** Immersive: called on a blank-space tap to toggle the chrome. */
+  onToggleChrome?: () => void;
+  /** Immersive: renders the TOC button in the bottom bar. */
+  onOpenToc?: () => void;
+  /** Immersive: renders the Search button in the bottom bar. */
+  onOpenSearch?: () => void;
+  /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
+  topOverlay?: ReactNode;
+  /** Immersive: overlay rendered in the bottom reserved strip (muted page count). */
+  pageInfoOverlay?: (page: number, total: number, isEstimate: boolean) => ReactNode;
+
   /** Render one visible block (reader-specific types/styles). */
   renderBlock: (item: ReaderPageItem, ctx: BlockRenderCtx) => ReactNode;
   /** Render one mirror block — must be ONE root element per block, and must
@@ -110,6 +135,14 @@ export function PaginatedReader({
   header,
   contentClassName = '',
   measureClassName,
+  immersive = false,
+  immersiveReserve,
+  chromeVisible = true,
+  onToggleChrome,
+  onOpenToc,
+  onOpenSearch,
+  topOverlay,
+  pageInfoOverlay,
   renderBlock,
   renderMeasureBlock,
 }: PaginatedReaderProps) {
@@ -296,6 +329,25 @@ export function PaginatedReader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Blank-space tap toggles the immersive chrome. Token clicks stopPropagation
+  // in token-span, so only taps on truly empty space reach this handler; links
+  // and controls are excluded via closest(). Text selection never toggles.
+  useEffect(() => {
+    if (!immersive || !onToggleChrome) return;
+    const el = pager.viewportRef.current;
+    if (!el) return;
+    const onTap = (e: MouseEvent) => {
+      if (window.getSelection()?.toString()) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
+      onToggleChrome();
+    };
+    el.addEventListener('click', onTap);
+    return () => el.removeEventListener('click', onTap);
+    // The viewport element is stable for the reader's lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [immersive, onToggleChrome]);
+
   // Pre-parse fallback: raw text, stripped of markdown (parse failure or the
   // frame before blocks arrive).
   const showFallback = !blocks && !!text && !book;
@@ -303,7 +355,12 @@ export function PaginatedReader({
   const dir = l2.direction === 'rtl' ? 'rtl' : 'ltr';
 
   return (
-    <div className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div
+      className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden"
+      style={immersive && immersiveReserve
+        ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
+        : undefined}
+    >
       <div ref={pager.viewportRef} className="min-h-0 flex-1 overflow-auto touch-pan-y">
         <div ref={dragRef} className={contentClassName} lang={glyphLang} dir={dir}>
           {pager.pageBlocks.length > 0 && header}
@@ -327,8 +384,21 @@ export function PaginatedReader({
         </div>
       </div>
 
-      {/* Page navigation + translation */}
-      <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
+      {/* Page navigation + translation — the immersive reader floats it over
+          the reserved bottom strip; non-immersive readers keep it in flow. */}
+      <div
+        className={`flex items-center justify-center gap-3 border-t border-border bg-background py-2 text-xs text-muted-foreground ${
+          immersive
+            ? 'absolute inset-x-0 bottom-0 transition-transform duration-300'
+            : 'flex-shrink-0'
+        }`}
+        style={immersive
+          ? {
+              transform: chromeVisible ? 'translateY(0)' : 'translateY(100%)',
+              pointerEvents: chromeVisible ? 'auto' : 'none',
+            }
+          : undefined}
+      >
         <button onClick={pager.prevPage} disabled={!pager.hasPrev || pager.measuring}
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronLeft className="h-4 w-4" />
@@ -350,7 +420,44 @@ export function PaginatedReader({
             className="shrink-0"
           />
         </label>
+        {onOpenToc && (
+          <button
+            onClick={onOpenToc}
+            className="rounded p-1 hover:bg-muted"
+            aria-label={t('action.table_of_contents')}
+            title={t('action.table_of_contents')}
+          >
+            <List className="h-4 w-4" />
+          </button>
+        )}
+        {onOpenSearch && (
+          <button
+            onClick={onOpenSearch}
+            className="rounded p-1 hover:bg-muted"
+            aria-label={t('action.search')}
+            title={t('action.search')}
+          >
+            <Search className="h-4 w-4" />
+          </button>
+        )}
       </div>
+
+      {/* Immersive metadata overlays — muted chapter title (top strip) and
+          page count (bottom strip). Non-interactive, never reflow the book. */}
+      {immersive && (
+        <>
+          {topOverlay && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center px-4 pt-2.5">
+              {topOverlay}
+            </div>
+          )}
+          {pageInfoOverlay && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-2.5">
+              {pageInfoOverlay(pager.page, pager.totalPages, pager.totalPagesIsEstimate)}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Hidden measuring mirror — mirrors the current window exactly,
           including per-block spacing, the translation column (when on) and
