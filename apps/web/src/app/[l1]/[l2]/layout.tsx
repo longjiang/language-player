@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { LanguageProvider } from '@/providers/language-provider';
 import { VideoPlayerProvider } from '@/providers/video-player-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
+import { ThemeSync } from '@/components/theme-sync';
 import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { UserLibraryProvider } from '@/providers/user-library-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
@@ -31,6 +32,7 @@ export default async function LanguageLayout(
     <LanguageProvider l1={params.l1} l2={params.l2}>
       <UserLibraryProvider>
         <SettingsProvider>
+          <ThemeSync />
           <ExploreCacheProvider>
             <VideoPlayerProvider>
               <div className="flex min-h-screen flex-col">
