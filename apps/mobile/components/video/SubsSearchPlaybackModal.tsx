@@ -368,9 +368,13 @@ export function SubsSearchPlaybackModal({
           }
         >
           {subtitleMode === 'singleline' ? (
-            <View className="min-h-32 w-full">
+            // Padding around the single-line subtitle so the text never
+            // touches the modal's edge; text renders at 1× the user zoom
+            // (singleline elsewhere keeps the 1.33× band scale).
+            <View className="min-h-32 w-full px-4 py-3">
               <SubtitleDisplay
                 singleLine
+                singlelineTextScale={1}
                 lines={subtitleInitialLines}
                 activeLineIndex={activeLineIndex}
                 currentTime={currentTime}

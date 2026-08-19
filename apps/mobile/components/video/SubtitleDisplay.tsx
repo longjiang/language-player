@@ -35,11 +35,15 @@ interface SubtitleDisplayProps {
   defaultLine?: SubtitleSyncedLine;
   /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
   singleLine?: boolean;
+  /** Single-line text scale — 1.33× by default (SPEC-051), but callers that
+   *  show the single line in a compact surface (e.g. the subs-search playback
+   *  modal) can pass 1 to keep the text at the user's zoom scale. */
+  singlelineTextScale?: number;
   /** When true (single-line mode), renders transparent/white for an on-video band. */
   overlay?: boolean;
 }
 
-export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, defaultLine, singleLine = false, overlay = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, defaultLine, singleLine = false, singlelineTextScale = SINGLELINE_TEXT_SCALE, overlay = false }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { display, playback, tokenizedText } = useSettingsContext();
@@ -234,7 +238,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   tokenCacheLoaded={tokenCacheLoaded}
                   karaokeProgress={karaokeProgress}
                   highlightTerms={highlightTerms}
-                  textScale={SINGLELINE_TEXT_SCALE}
+                  textScale={singlelineTextScale}
                   textColor={overlay ? 'text-white' : undefined}
                   // SPEC-084: selection on the transcript single-line mode,
                   // not the on-video band.
@@ -243,7 +247,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 {showTranslation && shownLine.l1Line ? (
                   <Text
                     className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
-                    style={{ fontSize: translationFactor * 14 * SINGLELINE_TEXT_SCALE * zoomRem }}
+                    style={{ fontSize: translationFactor * 14 * singlelineTextScale * zoomRem }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>

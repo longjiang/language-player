@@ -77,6 +77,10 @@ interface SubtitleDisplayProps {
   highlightTerms?: string[];
   /** In singleline mode, shown until playback reaches the first line (e.g. the subs-search match line). */
   defaultLine?: SubtitleLine | null;
+  /** Singleline text scale — 1.33× by default (SPEC-051), but callers that
+   *  show the single line in a compact surface (e.g. the subs-search playback
+   *  modal) can pass 1 to keep the text at the user's zoom scale. */
+  singlelineTextScale?: number;
   /** Called when autoPause triggers — the current subtitle line has finished. */
   onPauseLine?: () => void;
   /** Called with translation progress. `null` = not translating. */
@@ -113,7 +117,7 @@ function firstMatchingForm(line: string, terms: string[] | undefined): string | 
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, isGenerated, normalizedOverlay, mode = 'multiline', contextLines = 1, highlightTerms, defaultLine, singlelineTextScale = SINGLELINE_TEXT_SCALE, onPauseLine, onTranslationProgress, band = false, overlay = true, hasPrevVideo, hasNextVideo, onPrevVideo, onNextVideo, onSwitchToTranscriptMode, liked = false, onToggleLike, likeDisabled = false, onSaveToPlaylist, playlistDisabled = false }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, playback, getL2 } = useSettingsContext();
   const { isPro } = useSubscriptionContext();
@@ -491,7 +495,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             }
             translationClass="text-sm text-center"
             translationBelow
-            translationFactor={SINGLELINE_TEXT_SCALE * textZoomFactor}
+            translationFactor={singlelineTextScale * textZoomFactor}
             loading={showTranslation && translating && !activeTranslation}
             noMargin
           >
@@ -502,7 +506,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               <TokenizedText
                 text={shownLine.line}
                 l2Code={l2Code}
-                textScale={SINGLELINE_TEXT_SCALE}
+                textScale={singlelineTextScale}
                 tokenCache={tokenCache}
                 tokenCacheLoaded={tokenCacheLoaded}
                 highlightForms={highlightTerms}
