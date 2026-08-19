@@ -449,7 +449,10 @@ export function SubsSearchPlaybackModal({
     <Dialog.Root open={index !== null} onOpenChange={(v) => { if (!v) onIndexChange(null); }}>
       <Dialog.Portal>
         {isMd ? (
-          <View className="absolute inset-0 items-center justify-center px-4">
+          // pointerEvents="auto": explicit so this dialog stays interactive
+          // when opened from inside another dialog (e.g. the dictionary popup
+          // bottom sheet) — the popup's sheet must never swallow touches.
+          <View pointerEvents="auto" className="absolute inset-0 items-center justify-center px-4">
             <View
               className={`w-full overflow-hidden rounded-xl border border-border bg-background ${
                 isWide && subtitleMode === 'multiline' ? 'max-w-4xl' : 'max-w-2xl'

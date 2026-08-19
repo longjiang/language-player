@@ -278,7 +278,14 @@ export function SubsSearchPlaybackModal({
   const modal =
     currentVideo && index !== null ? (
       <div
-        className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+        // pointer-events-auto: while a Radix modal dialog (e.g. the dictionary
+        // popup) is open, react-remove-scroll (used by Radix's scroll lock)
+        // puts `pointer-events: none` on <body> and only re-enables events on
+        // the dialog content itself. This modal portals to document.body, so
+        // without explicitly re-enabling pointer events here it would render
+        // on top but be click-transparent — clicks would pass through it to
+        // the popup behind.
+        className="pointer-events-auto fixed inset-0 z-50 flex items-end justify-center sm:items-center"
         onClick={() => onIndexChange(null)}
       >
         {/* Backdrop */}
