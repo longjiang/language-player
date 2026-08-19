@@ -7,6 +7,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { localizedError } from '@/lib/errors';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -34,6 +35,9 @@ export default function WebReaderScreen() {
   const t = useT();
   const { url: urlParam } = useLocalSearchParams<{ url?: string }>();
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
+  // while the outer sidebar layout still switches at the wider breakpoint.
+  const { isMd } = useResponsive();
 
   const [url, setUrl] = useState(
     typeof urlParam === 'string' ? urlParam : '',
@@ -236,7 +240,7 @@ export default function WebReaderScreen() {
                   showTranslation={display.translation}
                   onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
                   showTextActions
-                  translationSideBySide={isWide}
+                  translationSideBySide={isMd}
                   selectionDictionary
                   onOpenLink={handleOpenLinkInReader}
                   t={t}

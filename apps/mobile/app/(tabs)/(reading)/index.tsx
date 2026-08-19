@@ -4,6 +4,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
@@ -21,6 +22,9 @@ export default function ReaderScreen() {
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
+  // while the outer sidebar layout still switches at the wider breakpoint.
+  const { isMd } = useResponsive();
 
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
@@ -268,7 +272,7 @@ export default function ReaderScreen() {
                 showTranslation={display.translation}
                 onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
                 showTextActions
-                translationSideBySide={isWide}
+                translationSideBySide={isMd}
                 selectionDictionary
                 t={t}
               />
