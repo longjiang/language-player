@@ -278,14 +278,16 @@ export function SubsSearchPlaybackModal({
   const modal =
     currentVideo && index !== null ? (
       <div
-        // pointer-events-auto: while a Radix modal dialog (e.g. the dictionary
-        // popup) is open, react-remove-scroll (used by Radix's scroll lock)
-        // puts `pointer-events: none` on <body> and only re-enables events on
-        // the dialog content itself. This modal portals to document.body, so
-        // without explicitly re-enabling pointer events here it would render
-        // on top but be click-transparent — clicks would pass through it to
-        // the popup behind.
+        // pointer-events: auto — while a Radix modal dialog (e.g. the
+        // dictionary popup) is open, DismissableLayer sets an INLINE
+        // `pointer-events: none` on <body> and re-enables events only on the
+        // dialog content. This modal portals to document.body, so without
+        // re-enabling pointer events here it would render on top but be
+        // click-transparent — clicks would pass through it to the popup
+        // behind. Set inline (not just a Tailwind class) so no CSS
+        // generation/purging can strip it.
         className="pointer-events-auto fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+        style={{ pointerEvents: 'auto' }}
         onClick={() => onIndexChange(null)}
       >
         {/* Backdrop */}
