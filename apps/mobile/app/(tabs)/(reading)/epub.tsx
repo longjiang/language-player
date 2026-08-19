@@ -479,11 +479,13 @@ export default function EpubReaderScreen() {
       </Animated.View>
 
       {/* Close button (chrome): X in a 24px circle, top right — fades in
-          with the chrome. */}
+          with the chrome. top = insets.top + 6 centers the 24px circle on
+          the chapter-title line (title top insets.top + 10 + half its 16px
+          line box). */}
       <Animated.View
         pointerEvents={chromeVisible ? 'auto' : 'none'}
         className="absolute z-40"
-        style={{ top: insets.top + 10, right: 12, opacity: closeOpacity }}
+        style={{ top: insets.top + 6, right: 12, opacity: closeOpacity }}
       >
         <Pressable
           onPress={handleCloseReader}
