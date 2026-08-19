@@ -441,7 +441,11 @@ export function SubsSearchPlaybackModal({
                   activeTab={panelTab}
                   onTabChange={setPanelTab}
                   contentRef={sidebarContentRef}
-                  className="h-full min-h-0"
+                  // Inside the modal the sheet is already the card: drop the
+                  // sidebar's own border/rounding so its left edge doesn't
+                  // double the player column's border-r divider (the tab bar's
+                  // border-b still separates tabs from content).
+                  className="h-full min-h-0 border-0 rounded-none"
                 >
                   {(tab) => {
                     if (tab === 'subs') {
