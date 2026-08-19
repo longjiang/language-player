@@ -6,6 +6,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeLogger, readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import { isOfflineModeEnabled } from '@/lib/offline-mode';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { readerHorizontalPadding } from '@/lib/reader-layout';
 
 const { log } = lemmatizeLogger;
 const { log: paginationLog, logwarn: paginationWarn } = readerLogger;
@@ -36,6 +38,10 @@ interface UseEpubPaginationOptions {
    *  the current page is measured, heights are cached, and the total page
    *  count is an estimate. Used by the whole-book EPUB reader. */
   estimate?: boolean;
+  /** Reader text scale (1 = default) — the pagination content width derives
+   *  from the reader's horizontal padding (left margin = the text's leading,
+   *  right = 16px), so measured widths match the visible ScrollView. */
+  textScale?: number;
 }
 
 /** Translate at most this many paragraphs per request (progressive/lazy). */
@@ -280,9 +286,10 @@ interface UseEpubPaginationReturn {
 export function useEpubPagination({
   text, l1Code, l2Code, showTranslation, translationSplit = 0.6, resetKey,
   preParsedBlocks, initialAnchor, initialBlockIndex,
-  onAnchorChange, onBlockChange, measureChunkSize, estimate = false,
+  onAnchorChange, onBlockChange, measureChunkSize, estimate = false, textScale = 1,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const { tokenizedText } = useSettingsContext();
 
   const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
   /** SPEC-082 Task 5: global block indices that start a new EPUB spine item
@@ -309,7 +316,15 @@ export function useEpubPagination({
   const visibleIndicesKeyRef = useRef('');
   /** Real reader viewport (lazy mode; window dimensions are the fallback). */
   const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
-  const contentWidth = viewportSize ? viewportSize.width - 32 : windowWidth - 32;
+  // Reader horizontal padding: left = the text's leading (reader layout rule),
+  // right = 16px. The content width is the viewport minus that padding, so it
+  // always matches the visible ScrollView (and the hidden measuring mirror).
+  const { total: readerPadX } = readerHorizontalPadding(
+    tokenizedText.zoom,
+    tokenizedText.leading ?? 1.625,
+    textScale,
+  );
+  const contentWidth = viewportSize ? viewportSize.width - readerPadX : windowWidth - readerPadX;
   const availableHeight = estimate
     ? Math.max(120, viewportSize ? viewportSize.height : windowHeight - 260)
     : windowHeight - 260;

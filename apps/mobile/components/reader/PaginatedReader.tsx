@@ -21,6 +21,7 @@ import type { GridLine } from '@/lib/aligned-translation';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
+import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
 import { isReaderTextBlock, localTextBlockIndex } from '@/lib/reader-sentence-highlight';
 import { readerLogger, translationLogger, log as appLog } from '@/lib/logger';
 import {
@@ -450,6 +451,13 @@ export function PaginatedReader({
     setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
   }, [persistedSplit]);
   const effectiveScale = (textScale ?? 1) * zoomRem;
+  // Reader layout rule: the L2 body text's rendered line-height (its
+  // typographic "leading") drives the reader's left margin and the
+  // side-by-side text|translation gap — the distance from the device's left
+  // edge to the text's left edge, and the gap between the L2 text and its L1
+  // translation, both equal the text's leading.
+  const leadingPx = readerLeadingPx(tokenSettings.zoom, translationLeading, textScale ?? 1);
+  const readerPad = readerHorizontalPadding(tokenSettings.zoom, translationLeading, textScale ?? 1);
   const measureFontSize = 16 * effectiveScale;
   const measureFontFamily = tokenSettings.typeFace === 'serif'
     ? (Platform.OS === 'ios' ? 'Georgia' : 'serif')
@@ -679,7 +687,7 @@ export function PaginatedReader({
     if (!blocks) return null;
     return (
       <View className="flex-1">
-        <View className="px-4">
+        <View style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}>
           {blocks.map((block, bi) =>
               renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading),
           )}
@@ -711,7 +719,8 @@ export function PaginatedReader({
                 <ScrollView
                   key={scrollViewKey}
                   ref={scrollRef}
-                  className="flex-1 px-4"
+                  className="flex-1"
+                  style={{ paddingLeft: readerPad.left, paddingRight: readerPad.right }}
                   onScroll={handleScroll}
                   scrollEventThrottle={16}
                   onLayout={handleViewportLayout}
@@ -781,7 +790,7 @@ export function PaginatedReader({
         (measuring && measureEnd > measureStart)
         || (!hasMeasured && (measuredWindow > 0 || (measureStart === -1 && measureEnd === -1)))
       ) && (
-        <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
+        <View key={`measure-${measureStart}-${measureNonce}-${measureLineHeight}`} style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0, paddingLeft: readerPad.left, paddingRight: readerPad.right }} pointerEvents="none">
           {(() => {
             const hasLazyWindow = measureEnd > measureStart;
             const sliceStart = hasLazyWindow ? measureStart : 0;
@@ -806,6 +815,7 @@ export function PaginatedReader({
                 translationSideBySide,
                 appliedSplit,
                 firstLineIndent,
+                readerPad.left,
               ),
             );
           })()}
@@ -822,6 +832,8 @@ export function PaginatedReader({
             lineHeight: Math.round(measureFontSize * 2),
             ...(measureFontFamily ? { fontFamily: measureFontFamily } : {}),
           }}
+          paddingLeft={readerPad.left}
+          paddingRight={readerPad.right}
           signature={calibrationSignatureValue}
           onComplete={handleCalibrationComplete}
         />
@@ -1066,11 +1078,19 @@ function renderBlock(
     ) : null;
     const l2Style = { flex: translationSplit } as const;
     const trStyle = { flex: 1 - translationSplit } as const;
+    // Reader layout rule: the side-by-side gap equals this row's text leading
+    // (the row's own rendered line-height). With the split handle between the
+    // columns (16px bar with −4px margins → 8px net inside the row gaps), the
+    // visible text|translation distance is 2×gap + 8, so solve the gap for
+    // that distance to equal the leading. Without a handle the gap is the
+    // leading directly.
+    const rowLeadingPx = Math.round(16 * blockScale * headingFactor * translationLeading);
+    const sideGap = splitHandle ? Math.max(0, (rowLeadingPx - 8) / 2) : rowLeadingPx;
 
     switch (type) {
       case 'paragraph':
         return sideBySide ? (
-          <View className="flex-row items-start gap-4">
+          <View className="flex-row items-start" style={{ gap: sideGap }}>
             <View className="min-w-0" style={l2Style}>{tokenEl}</View>
             {splitHandle}
             <View className="min-w-0" style={trStyle}>{transEl}</View>
@@ -1081,7 +1101,7 @@ function renderBlock(
       case 'blockquote':
         return sideBySide ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
-            <View className="flex-row items-start gap-4">
+            <View className="flex-row items-start" style={{ gap: sideGap }}>
               <View className="min-w-0" style={l2Style}>{tokenEl}</View>
               {splitHandle}
               <View className="min-w-0" style={trStyle}>{transEl}</View>
@@ -1106,7 +1126,7 @@ function renderBlock(
       }
       case 'heading':
         return sideBySide ? (
-          <View className="flex-row items-start gap-4">
+          <View className="flex-row items-start" style={{ gap: sideGap }}>
             <View className="min-w-0" style={l2Style}>{tokenEl}</View>
             {splitHandle}
             <View className="min-w-0" style={trStyle}>{transEl}</View>
@@ -1174,6 +1194,11 @@ interface TokenizedTextCalibrationProbeProps {
   l2Code: string;
   textScale: number;
   plainTextStyle: { fontSize: number; lineHeight: number; fontFamily?: string };
+  /** Reader content horizontal padding — the probe mirrors the visible
+   *  ScrollView's padding so measured wrap widths match (reader layout rule:
+   *  left margin = the text's leading). */
+  paddingLeft: number;
+  paddingRight: number;
   signature: string;
   onComplete: (calibration: TokenizedTextCalibration) => void;
 }
@@ -1181,7 +1206,7 @@ interface TokenizedTextCalibrationProbeProps {
 /** Hidden dev-only probe: measures real TokenizedText vs plain Text with the
  *  user's current settings so pagination can use a grounded height ratio. */
 function TokenizedTextCalibrationProbe({
-  samples, l2Code, textScale, plainTextStyle, signature, onComplete,
+  samples, l2Code, textScale, plainTextStyle, paddingLeft, paddingRight, signature, onComplete,
 }: TokenizedTextCalibrationProbeProps) {
   const heightsRef = useRef<Record<number, { plain?: number; tokenized?: number }>>({});
   const [version, setVersion] = useState(0);
@@ -1211,7 +1236,7 @@ function TokenizedTextCalibrationProbe({
   }, [version, samples, signature, plainTextStyle.lineHeight, onComplete]);
 
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} className="px-4">
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0, paddingLeft, paddingRight }}>
       {samples.map((s, i) => (
         <View key={`cal-${i}`}>
           <View className="mb-3">
@@ -1245,6 +1270,10 @@ function renderMeasuringBlock(
   translationSideBySide = false,
   translationSplit = 0.6,
   firstLineIndent = false,
+  /** Side-by-side mirror gap (px): the visible row's text|translation distance
+   *  (= the text's leading). The mirror has no split handle, so this is the
+   *  full leading — keeps the L2 column width identical to the visible row. */
+  measureGap = 16,
 ) {
   /** Mirrors TextActionMenu's persistent ⋮ button column so short body
    *  blocks don't measure shorter than they render. */
@@ -1315,7 +1344,7 @@ function renderMeasuringBlock(
       {block.type === 'heading' && <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>{block.text}</Text>}
       {block.type === 'paragraph' && withActionSpacer(
         translationSideBySide && showTranslation ? (
-          <View className="flex-row items-start gap-4">
+          <View className="flex-row items-start" style={{ gap: measureGap }}>
             <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{firstLineIndent ? '\u3000' : ''}{block.text}</Text></View>
             <View className="min-w-0" style={{ flex: 1 - translationSplit }}><MeasuringSkeleton text={block.text} /></View>
           </View>
@@ -1329,7 +1358,7 @@ function renderMeasuringBlock(
       {block.type === 'blockquote' && withActionSpacer(
         translationSideBySide && showTranslation ? (
           <View className="border-l-2 border-muted-foreground/30 pl-3">
-            <View className="flex-row items-start gap-4">
+            <View className="flex-row items-start" style={{ gap: measureGap }}>
               <View className="min-w-0" style={{ flex: translationSplit }}><Text style={measureTextStyle} className="text-foreground">{block.text}</Text></View>
               <View className="min-w-0" style={{ flex: 1 - translationSplit }}><MeasuringSkeleton text={block.text} /></View>
             </View>
