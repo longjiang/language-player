@@ -67,6 +67,11 @@ interface TextActionMenuProps {
   onTranslationSplitChange?: (ratio: number) => void;
   /** Called ONCE with the final fraction when a splitter drag ends. */
   onTranslationSplitCommit?: (ratio: number) => void;
+  /** Breakpoint at which the translation goes side-by-side with the L2 text.
+   *  Readers pass 'md' so portrait iPads (>=768px) get the dual-column layout;
+   *  everything else keeps 'lg' (>=1024px) so e.g. subtitle rows only split on
+   *  genuinely wide screens. Default 'lg'. */
+  sideBySideBreakpoint?: 'md' | 'lg';
   children: ReactNode;
 }
 
@@ -87,6 +92,7 @@ export function TextActionMenu({
   translationSplit,
   onTranslationSplitChange,
   onTranslationSplitCommit,
+  sideBySideBreakpoint = 'lg',
   children,
 }: TextActionMenuProps) {
   const t = useT();
@@ -102,6 +108,10 @@ export function TextActionMenu({
   // size itself and only needs the ratio.
   const translationRatio = clampTranslationSize(tokenizedText.translationSize);
   const l2Scale = translationFactor ?? 1;
+  // The L2 tokenized text's leading (user setting, default 1.625). The
+  // stacked translation column uses the SAME leading so its line pitch
+  // matches the L2 text exactly (narrow screens / below md).
+  const translationLeading = tokenizedText.leading ?? 1.625;
   // Show the draggable splitter only when the caller wired a ratio + handler
   // (readers); everything else keeps the fixed default split and no handle.
   const resizable = translationSplit != null && onTranslationSplitChange != null;
@@ -136,7 +146,7 @@ export function TextActionMenu({
   return (
     <div className={`group relative flex items-start gap-3 ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-1 ${translationBelow ? '' : resizable ? 'lg:flex-row lg:gap-2' : 'lg:flex-row lg:gap-4'} ${aligned && !translationBelow ? 'lg:items-start' : translationBelow ? '' : 'lg:items-center'}`}>
+      <div className={`flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : resizable ? `${sideBySideBreakpoint}:flex-row ${sideBySideBreakpoint}:gap-2` : `${sideBySideBreakpoint}:flex-row ${sideBySideBreakpoint}:gap-4`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}>
         <div className="min-w-0" style={{ flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }} ref={l2Ref}>
           {children}
         </div>
@@ -149,11 +159,11 @@ export function TextActionMenu({
         )}
         {hasTranslation && (
           <div
-            className={`min-w-0 text-muted-foreground leading-relaxed ${translationBelow ? '' : 'lg:pt-0'} ${translationClass}`}
+            className={`min-w-0 text-muted-foreground ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass}`}
             style={
               aligned
-                ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
-                : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }
+                ? { flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
+                : { fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }
             }
           >
             {aligned ? (
@@ -170,8 +180,8 @@ export function TextActionMenu({
         )}
         {loading && !translation && !aligned && (
           <div
-            className={`min-w-0 pt-1 ${translationBelow ? '' : 'lg:pt-0'} ${translationClass || 'text-sm'}`}
-            style={{ fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1 }}
+            className={`min-w-0 pt-1 ${translationBelow ? '' : `${sideBySideBreakpoint}:pt-0`} ${translationClass || 'text-sm'}`}
+            style={{ fontSize: `${translationFontSize ?? (translationRatio * l2Scale)}rem`, flexBasis: 0, flexGrow: trGrow, flexShrink: 1, lineHeight: translationLeading }}
           >
             <TranslationSkeleton
               text={text}
