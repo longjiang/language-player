@@ -369,7 +369,15 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     () => messages.find((m) => m.examples && m.examples.length > 0),
     [messages],
   );
-  const exampleVideos = examplesMessage?.examples ?? [];
+  // Memoized exactly like web (ai-explanation.tsx): a raw `?? []` would hand
+  // useSubtitleTranslation a NEW l2Lines identity on every render, re-firing
+  // its `[l2Lines]` reset effect (setState) after every render — an infinite
+  // update loop that crashed the dictionary popup with "Maximum update depth
+  // exceeded" on any re-render (saving a word, Let DeepSeek Explain, etc.).
+  const exampleVideos = useMemo(
+    () => examplesMessage?.examples ?? [],
+    [examplesMessage],
+  );
   const exampleSegments = useMemo(
     () =>
       exampleVideos.map((ex) => {
