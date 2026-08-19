@@ -7,6 +7,7 @@ import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { UserLibraryProvider } from '@/providers/user-library-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { Header } from '@/components/layout/header';
+import { ReaderChromeProvider } from '@/providers/reader-chrome-provider';
 
 export default async function LanguageLayout(
   props: {
@@ -35,10 +36,12 @@ export default async function LanguageLayout(
           <ThemeSync />
           <ExploreCacheProvider>
             <VideoPlayerProvider>
-              <div className="flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-              </div>
+              <ReaderChromeProvider>
+                <div className="flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                </div>
+              </ReaderChromeProvider>
             </VideoPlayerProvider>
           </ExploreCacheProvider>
         </SettingsProvider>
