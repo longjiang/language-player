@@ -28,8 +28,9 @@ import { epubLog } from '@/lib/epub-log';
 /** Height of the app header (h-14 content + border-b) — the reader's top
  *  margin equals this so the dropped-down header never obscures content. */
 const TOP_CHROME_RESERVE = 57;
-/** Height of the reader's bottom pagination bar — reserved for the bottom chrome. */
-const BOTTOM_CHROME_RESERVE = 40;
+/** Height of the reader's bottom pagination bar — reserved for the bottom
+ *  chrome. Same height as the top margin (symmetric design). */
+const BOTTOM_CHROME_RESERVE = TOP_CHROME_RESERVE;
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
