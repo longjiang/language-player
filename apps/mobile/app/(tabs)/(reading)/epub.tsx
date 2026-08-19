@@ -108,6 +108,10 @@ export default function EpubReaderScreen() {
       }, SAVE_LOCATION_DEBOUNCE_MS);
     }, [epub]),
     estimate: true,
+    // The reader fills the screen with the top/bottom chrome strips reserved
+    // as padding — the paginator measures against the true remaining height
+    // (viewportReserve only seeds the pre-layout fallback).
+    viewportReserve: { top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE },
   });
 
   // Seek to the resume location once the reader enters content (cover tap or

@@ -477,7 +477,12 @@ export function usePaginatedReader(opts: UsePaginatedReaderOptions): UsePaginate
       widthRef.current = viewport.w;
       heightsRef.current.clear();
     }
-    pageHeightRef.current = Math.max(120, viewport.h - chromeHeight);
+    // Only adopt the computed page height once a real viewport is known — the
+    // initial {0,0} read would pin the page height to the 120px floor until
+    // the next viewport update, producing one-block pages.
+    if (viewport.h > 0) {
+      pageHeightRef.current = Math.max(120, viewport.h - chromeHeight);
+    }
   }, [mode, viewport, chromeHeight]);
 
   // ── Measure the current window and derive the page ──

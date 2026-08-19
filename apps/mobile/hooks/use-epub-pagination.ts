@@ -38,6 +38,11 @@ interface UseEpubPaginationOptions {
    *  the current page is measured, heights are cached, and the total page
    *  count is an estimate. Used by the whole-book EPUB reader. */
   estimate?: boolean;
+  /** Top/bottom chrome strips reserved around the reader (immersive mode).
+   *  Only used as the pre-layout fallback page height, so the first estimate
+   *  matches the real page area instead of a fixed windowHeight - 260 (which
+   *  leaves ~130px pages on short landscape windows). */
+  viewportReserve?: { top: number; bottom: number };
   /** Reader text scale (1 = default) — the pagination content width derives
    *  from the reader's horizontal padding (left margin = the text's leading,
    *  right = 16px), so measured widths match the visible ScrollView. */
@@ -287,6 +292,7 @@ export function useEpubPagination({
   text, l1Code, l2Code, showTranslation, translationSplit = 0.6, resetKey,
   preParsedBlocks, initialAnchor, initialBlockIndex,
   onAnchorChange, onBlockChange, measureChunkSize, estimate = false, textScale = 1,
+  viewportReserve,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const { tokenizedText } = useSettingsContext();
@@ -325,8 +331,15 @@ export function useEpubPagination({
     textScale,
   );
   const contentWidth = viewportSize ? viewportSize.width - readerPadX : windowWidth - readerPadX;
+  // Pre-layout fallback page height: the real reader viewport (ScrollView
+  // onLayout) wins once reported; until then subtract the reader's actual
+  // reserved chrome (or the legacy 260px guess) — windowHeight - 260 leaves
+  // ~130px pages on short landscape windows (one paragraph per page).
+  const fallbackHeight = viewportReserve
+    ? Math.max(120, windowHeight - viewportReserve.top - viewportReserve.bottom)
+    : windowHeight - 260;
   const availableHeight = estimate
-    ? Math.max(120, viewportSize ? viewportSize.height : windowHeight - 260)
+    ? Math.max(120, viewportSize ? viewportSize.height : fallbackHeight)
     : windowHeight - 260;
   /** Lazy mode: current page boundaries in the global block stream. */
   const [lazyPageStart, setLazyPageStart] = useState<number | null>(null);

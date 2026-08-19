@@ -302,6 +302,10 @@ export default function EpubPage() {
   }
 
   return (
+    // The opened book fills the entire viewport (h-screen): the top/bottom
+    // chrome strips are reserved as padding inside the reader, so the page
+    // area is exactly screen height − top margin − bottom margin and the
+    // paginator measures against the true remaining height.
     <div
       className={`relative flex flex-col overflow-hidden ${
         readerActive
