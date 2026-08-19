@@ -94,9 +94,10 @@ Netflix) is user-facing UI, not store metadata, and was left unchanged.
 |---|---|
 | `host_permissions: http://*/*, https://*/*` | Intercept subtitle files and inject the transcript panel on the six supported streaming sites |
 | `webRequest` | Capture subtitle network requests on streaming sites |
-| `downloads` | Download transcript/subtitle exports |
 | `storage` | Persist language preferences and session (`chrome.storage`) |
 | `scripting` | Inject the content script and Netflix MAIN-world hook |
+| `sidePanel` | Open/close the native transcript/dictionary side panel (user gesture only — button, Alt+T, Ctrl+Shift+Y) |
+| `tabs` | Find the active tab and message its content script (panel state, language change); track open/close to keep the panel in sync |
 
 ## Data collection (Privacy tab — must certify)
 
@@ -179,7 +180,7 @@ Built ZIP: `/tmp/language-player-extension-v1.0.77.zip` (373 KB, 2026-08-12).
 
 Filled and saved on the item's Privacy page:
 - **Single purpose description**: interactive time-synced transcript + clickable word definitions for language learning on the 6 streaming sites.
-- **Permission justifications** (all required): webRequest (subtitle interception), downloads (user-initiated transcript/subtitle saves), storage (language prefs + session token), scripting (content-script + MAIN-world Netflix injection), host permission (only the 6 streaming domains; no browsing history).
+- **Permission justifications** (all required, saved 2026-08-19 to match manifest v1.0.110.14): webRequest (subtitle interception), storage (language prefs + session token), scripting (content-script + MAIN-world Netflix injection), sidePanel (opens the interactive transcript/dictionary panel after a user gesture), tabs (finds the active tab and syncs panel state — no browsing-history access), host permission (only the 6 streaming domains; no browsing history). `downloads` was removed from the manifest and its justification deleted after the Purple Potassium rejection (2026-08-19).
 - **Remote code**: **No** (all code bundled via esbuild — no eval/external JS).
 - **Data usage**: Personally identifiable information (email login), Authentication information (credentials/token), Website content (subtitle text). All 3 certifications checked (no selling, single-purpose only, no creditworthiness).
 - **Privacy policy URL**: https://language-player.netlify.app/en/en/docs/privacy-policy
