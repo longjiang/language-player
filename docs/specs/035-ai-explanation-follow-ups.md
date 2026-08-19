@@ -53,6 +53,41 @@ Here are synonyms of `run` as used in "She runs a company" (meaning: to manage, 
 - *Example*: `He leads the marketing department.`
 ```
 
+## Examples from Videos (AI usage-pattern grouping)
+
+The **Examples from Videos** follow-up (`title.examples_from_videos`) is built on
+the subs-search **Sort by AI** grouping (SPEC-081). Instead of a flat list of
+picked examples, DeepSeek analyzes the subtitle-search hits and returns the
+*single usage pattern* of the word — the one that best matches how the word is
+used in the context sentence (when one is available), or the most
+representative usage when the lookup has no context (dictionary entry page).
+
+### Behavior
+
+- The follow-up searches subtitles with `/subs-search` for every known form of
+  the word (head + script variants + inflections; falls back to head +
+  inflected surface form), up to `AI_EXAMPLES_LIMIT = 50` results.
+- The first 50 results are serialized as a CSV payload (each video contributes
+  the matched line ± 1 context line, matched line starred) and sent to
+  `POST /chatgpt` together with the localized prose and — when present — the
+  context sentence.
+- The LLM replies with strict JSON:
+  `{"heading": "<meaning in L1>", "pattern": "<syntax pattern in L2>", "examples": [{"video_id": <id>, "explanation": "<L1 text>"}]}`
+  — one pattern, and up to `AI_EXAMPLES_MAX = 3` example results that follow it.
+- The chat bubble renders a sort-by-AI-style pattern header (L1 heading on top,
+  L2 syntax pattern beneath) followed by the example chips, each chip keeping
+  its own per-result explanation of the word's usage in that video.
+- Parsing (`parseAiExamplesResponse`) tolerates markdown fences, trailing
+  garbage, and duplicate ids; a malformed reply (missing heading, no usable
+  examples) shows the existing `msg.ai_examples_failed` error.
+
+### Sample prompt task block (English, appended after the CSV payload)
+
+> The {l2Name} word "{term}" is used in this sentence: "{context}". Identify
+> the usage pattern of "{term}" in that sentence, then pick videos above whose
+> matched lines follow that same pattern. Reply with ONLY strict JSON … with
+> "heading" in {l1Name}, "pattern" in {l2Name}, and up to 3 "examples".
+
 ## i18n
 
 New keys:
