@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName, baseCode } from '@/lib/language-data';
@@ -14,11 +13,8 @@ import { log, logwarn } from '@/lib/logger';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
-import { SubsSearchRow, type SubsSearchRowSegment, formatTime } from '@/components/video/subs-search-row';
-import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
-import { VideoControlBar } from '@/components/video/video-control-bar';
-import { SubtitleDisplay } from '@/components/video/subtitle-display';
-import { VideoSidebarPanel, type SidebarTabKey } from '@/components/video/video-sidebar-panel';
+import { SubsSearchRow, type SubsSearchRowSegment } from '@/components/video/subs-search-row';
+import { SubsSearchPlaybackModal } from '@/components/video/subs-search-playback-modal';
 import {
   parseSubsL2,
   findMatchLine,
@@ -36,13 +32,6 @@ import {
   RefreshCw,
   Check,
   Copy,
-  Play,
-  X,
-  FileText,
-  Info,
-  Eye,
-  Clock,
-  Calendar,
 } from 'lucide-react';
 
 type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms' | 'examples';
@@ -118,12 +107,6 @@ function firstMatchingForm(line: string, terms: string[]): string | undefined {
     .find((f) => lower.includes(f.toLowerCase()));
 }
 
-/** Compact number label (e.g. "12K") with a plain fallback. */
-function formatNumber(n: number | undefined, locale: string): string {
-  if (!n) return '';
-  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-}
-
 /**
  * "Let DeepSeek Explain" — Pro-only feature shown in the dictionary popup.
  *
@@ -153,29 +136,10 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const emptyAssistantIdRef = useRef<number | null>(null);
 
   // ── "Examples from Videos" player modal state ──
-  // Mirrors the subs-search playback modal: a mini player with controls and
-  // the subtitles display (singleline | multiline). Opened by tapping an
-  // example chip in the AI chat.
-  const examplePlayerRef = useRef<YouTubePlayerHandle>(null);
+  // The shared SubsSearchPlaybackModal (the same modal the subs-search results
+  // rows open) renders the player; this component only tracks which example
+  // chip is open. Opened by tapping an example chip in the AI chat.
   const [examplePlayerIndex, setExamplePlayerIndex] = useState<number | null>(null);
-  const [exampleTime, setExampleTime] = useState(0);
-  const [exampleDuration, setExampleDuration] = useState(0);
-  const [examplePaused, setExamplePaused] = useState(true);
-  const [exampleMode, setExampleMode] = useState<'singleline' | 'multiline'>('singleline');
-  const [examplePanelTab, setExamplePanelTab] = useState<SidebarTabKey>('subs');
-  const exampleSidebarRef = useRef<HTMLDivElement>(null);
-
-  // Wide = landscape (width > height), matching the watch page's definition.
-  // When wide + multiline, the example player modal shows subtitles on the
-  // side and the video info below the player, like the watch page — inside
-  // the modal.
-  const [isWide, setIsWide] = useState(false);
-  useEffect(() => {
-    const check = () => setIsWide(window.innerWidth > window.innerHeight);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   // SSE-level diagnostics for the shared streaming hook — reveals whether an
   // empty bubble came from an empty server response, malformed SSE, an HTTP
@@ -537,119 +501,13 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     exampleTranslationInput.forms,
   );
 
-  // ── Example player modal (mirrors the subs-search playback modal) ──
-  const exampleVideo =
-    examplePlayerIndex !== null ? (exampleVideos[examplePlayerIndex]?.video ?? null) : null;
-  const exampleMatchLine = exampleVideo?.subs_l2[exampleVideo.matchLineIndex] ?? null;
-  const exampleDefaultLine = exampleMatchLine
-    ? { starttime: exampleMatchLine.starttime, line: exampleMatchLine.line }
-    : undefined;
-  const exampleInitialLines = useMemo(() => {
-    const lines =
-      exampleVideo?.subs_l2.map((l) => ({
-        starttime: l.starttime,
-        l1Line: '',
-        l2Line: l.line,
-      })) ?? [];
-    lines.sort((a, b) => a.starttime - b.starttime);
-    return lines;
-  }, [exampleVideo?.subs_l2]);
-
-  // Lightweight current-video info (SubsSearchVideo has no
-  // likes/comments/difficulty, so a full VideoMeta isn't possible). Shown in
-  // the info tab (narrow) and below the player on wide screens in multiline
-  // mode (watch-page layout).
-  const exampleVideoInfoContent = exampleVideo ? (
-    <div className="space-y-3">
-      <h2 className="text-base font-bold leading-tight">{exampleVideo.title}</h2>
-      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-        {exampleVideo.views != null && (
-          <span className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
-            {t('label.views_count', { count: formatNumber(exampleVideo.views, l1.code) })}
-          </span>
-        )}
-        {exampleVideo.duration != null && (
-          <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {formatTime(exampleVideo.duration)}
-          </span>
-        )}
-        {exampleVideo.date && (
-          <span className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            {new Date(exampleVideo.date).toLocaleDateString(l1.code)}
-          </span>
-        )}
-      </div>
-      <Link
-        href={`/${l1.code}/${l2.code}/watch/${exampleVideo.youtube_id}`}
-        className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-primary hover:bg-muted transition-colors"
-      >
-        <Play className="h-3.5 w-3.5" />
-        {t('action.watch')}
-      </Link>
-    </div>
-  ) : null;
-
+  // ── Example player modal ──
+  // The shared SubsSearchPlaybackModal (same component + behavior as the
+  // subs-search results rows) handles the player, controls, and subtitles.
+  // This component only opens it on the tapped example chip's video.
   const openExamplePlayer = useCallback((index: number) => {
     setExamplePlayerIndex(index);
-    setExampleTime(0);
-    setExamplePanelTab('subs');
   }, []);
-
-  const closeExamplePlayer = useCallback(() => {
-    setExamplePlayerIndex(null);
-    setExampleTime(0);
-  }, []);
-
-  const handleExampleTimeUpdate = useCallback((time: number) => setExampleTime(time), []);
-  const handleExampleDuration = useCallback((d: number) => setExampleDuration(d), []);
-  const handleExampleStateChange = useCallback((state: number) => {
-    setExamplePaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
-  }, []);
-  const toggleExampleMode = useCallback(() => {
-    setExampleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
-    setExamplePanelTab('subs');
-  }, []);
-  const goToExamplePreviousVideo = useCallback(() => {
-    if (examplePlayerIndex !== null && examplePlayerIndex > 0) {
-      setExamplePlayerIndex((i) => (i === null ? null : i - 1));
-    }
-  }, [examplePlayerIndex]);
-  const goToExampleNextVideo = useCallback(() => {
-    if (examplePlayerIndex !== null && examplePlayerIndex < exampleVideos.length - 1) {
-      setExamplePlayerIndex((i) => (i === null ? null : i + 1));
-    }
-  }, [examplePlayerIndex, exampleVideos.length]);
-  const goToExamplePreviousLine = useCallback(() => {
-    if (!exampleVideo) return;
-    const subs = exampleVideo.subs_l2;
-    for (let i = subs.length - 1; i >= 0; i--) {
-      if (subs[i]!.starttime < exampleTime - 0.3) {
-        examplePlayerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  }, [exampleTime, exampleVideo]);
-  const goToExampleNextLine = useCallback(() => {
-    if (!exampleVideo) return;
-    const subs = exampleVideo.subs_l2;
-    for (let i = 0; i < subs.length; i++) {
-      if (subs[i]!.starttime > exampleTime + 0.3) {
-        examplePlayerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  }, [exampleTime, exampleVideo]);
-  const exampleHasPrevLine = useMemo(() => {
-    if (!exampleVideo) return false;
-    return exampleVideo.subs_l2.some((l) => l.starttime < exampleTime - 0.3);
-  }, [exampleVideo, exampleTime]);
-  const exampleHasNextLine = useMemo(() => {
-    if (!exampleVideo) return false;
-    return exampleVideo.subs_l2.some((l) => l.starttime > exampleTime + 0.3);
-  }, [exampleVideo, exampleTime]);
 
   const handleCopy = useCallback(async (messageId: number) => {
     const target = messages.find((m) => m.id === messageId);
@@ -936,165 +794,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
           ))}
         </div>
 
-        {/* ── Example player modal — same playback experience as the
-            subs-search results component's modal (header, mini player,
-            controls, subtitles with singleline | multiline toggle). Opened by
-            tapping an example chip above. ── */}
-        {examplePlayerIndex !== null && exampleVideo && (
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-            onClick={closeExamplePlayer}
-          >
-            <div className="absolute inset-0 bg-black/50" />
-            <div
-              className={`relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-xl sm:m-4 sm:rounded-2xl ${
-                exampleMode === 'multiline' && isWide ? 'sm:max-w-5xl' : ''
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header — video title + close */}
-              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-                <h3 className="min-w-0 truncate text-sm font-semibold">{exampleVideo.title}</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0"
-                  onClick={closeExamplePlayer}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Player + controls + subtitles — the player lives in a stable
-                  tree position (the first grid/flex child), so toggling
-                  singleline/multiline or wide/narrow never remounts the
-                  YouTube iframe. On wide screens in multiline mode, subtitles
-                  sit beside the player and the video info sits below it, like
-                  the watch page — but inside the modal. */}
-              <div
-                className={
-                  exampleMode === 'multiline' && isWide
-                    ? 'grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_320px]'
-                    : 'flex min-h-0 flex-1 flex-col'
-                }
-              >
-                {/* Column 1 — player + controls (+ info below on wide multiline) */}
-                <div
-                  className={
-                    exampleMode === 'multiline' && isWide
-                      ? 'min-w-0 overflow-y-auto border-r border-border'
-                      : 'shrink-0'
-                  }
-                >
-                  {/* Mini player */}
-                  <div className="aspect-video w-full bg-black">
-                    <YouTubePlayer
-                      ref={examplePlayerRef}
-                      youtubeId={exampleVideo.youtube_id}
-                      autoplay={false}
-                      startTime={exampleMatchLine?.starttime}
-                      onTimeUpdate={handleExampleTimeUpdate}
-                      onDuration={handleExampleDuration}
-                      onStateChange={handleExampleStateChange}
-                    />
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center justify-center border-b border-border px-2 py-1">
-                    <VideoControlBar
-                      reduced
-                      playerRef={examplePlayerRef}
-                      currentTime={exampleTime}
-                      duration={exampleDuration}
-                      paused={examplePaused}
-                      onPauseToggle={() => {}}
-                      onPreviousLine={goToExamplePreviousLine}
-                      onNextLine={goToExampleNextLine}
-                      onPreviousVideo={goToExamplePreviousVideo}
-                      onNextVideo={goToExampleNextVideo}
-                      onTogglePanel={toggleExampleMode}
-                      panelOpen={exampleMode === 'multiline'}
-                      hasPreviousLine={exampleHasPrevLine}
-                      hasNextLine={exampleHasNextLine}
-                      hasPreviousVideo={examplePlayerIndex > 0}
-                      hasNextVideo={examplePlayerIndex < exampleVideos.length - 1}
-                      videoCountText={t('msg.video_n_of_total', {
-                        n: examplePlayerIndex + 1,
-                        total: exampleVideos.length,
-                      })}
-                    />
-                  </div>
-
-                  {/* Video info below the player on wide multiline (watch page) */}
-                  {exampleMode === 'multiline' && isWide && exampleVideoInfoContent}
-                </div>
-
-                {/* Column 2 — subtitles: singleline line-follower, or multiline
-                    tabbed sidebar (subs | info). On wide multiline the info tab
-                    is dropped (info lives below the player) and the sidebar is
-                    the subs transcript. */}
-                <div
-                  className={
-                    exampleMode === 'multiline' && isWide
-                      ? 'min-h-0 min-w-0'
-                      : 'min-h-0 flex-1'
-                  }
-                >
-                  {exampleMode === 'singleline' ? (
-                    <div className="h-full min-h-0 overflow-y-auto py-2">
-                      <SubtitleDisplay
-                        mode="singleline"
-                        youtubeId={exampleVideo.youtube_id}
-                        currentTime={exampleTime}
-                        videoTitle={exampleVideo.title}
-                        initialLines={exampleInitialLines}
-                        highlightTerms={[word]}
-                        defaultLine={exampleDefaultLine}
-                        onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
-                      />
-                    </div>
-                  ) : (
-                    <VideoSidebarPanel
-                      tabs={
-                        exampleMode === 'multiline' && isWide
-                          ? [
-                              { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
-                            ]
-                          : [
-                              { key: 'subs', label: t('label.subtitles'), icon: <FileText className="h-4 w-4" /> },
-                              { key: 'info', label: t('title.info'), icon: <Info className="h-4 w-4" /> },
-                            ]
-                      }
-                      activeTab={examplePanelTab}
-                      onTabChange={setExamplePanelTab}
-                      contentRef={exampleSidebarRef}
-                      className="h-full min-h-0"
-                    >
-                      {(tab) => {
-                        if (tab === 'subs') {
-                          return (
-                            <SubtitleDisplay
-                              mode="multiline"
-                              youtubeId={exampleVideo.youtube_id}
-                              currentTime={exampleTime}
-                              videoTitle={exampleVideo.title}
-                              initialLines={exampleInitialLines}
-                              highlightTerms={[word]}
-                              defaultLine={exampleDefaultLine}
-                              scrollContainerRef={exampleSidebarRef}
-                              onSeekToLine={(t) => examplePlayerRef.current?.seekTo(t)}
-                            />
-                          );
-                        }
-                        return exampleVideoInfoContent;
-                      }}
-                    </VideoSidebarPanel>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ── Example player modal — the same shared modal the subs-search
+            results rows open (header, mini player, controls, subtitles with
+            singleline | multiline toggle). Rendered through a portal to the
+            body, so it sizes against the viewport even when opened from the
+            dictionary popup dialog. Opened by tapping an example chip. ── */}
+        <SubsSearchPlaybackModal
+          videos={exampleVideos.map((ex) => ex.video)}
+          index={examplePlayerIndex}
+          onIndexChange={setExamplePlayerIndex}
+          highlightTerms={[word]}
+        />
       </div>
     );
   }
