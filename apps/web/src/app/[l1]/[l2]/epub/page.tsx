@@ -25,8 +25,9 @@ import {
 } from 'lucide-react';
 import { epubLog } from '@/lib/epub-log';
 
-/** Height of the app header (h-14 + border) — reserved for the top chrome. */
-const TOP_CHROME_RESERVE = 56;
+/** Height of the app header (h-14 content + border-b) — the reader's top
+ *  margin equals this so the dropped-down header never obscures content. */
+const TOP_CHROME_RESERVE = 57;
 /** Height of the reader's bottom pagination bar — reserved for the bottom chrome. */
 const BOTTOM_CHROME_RESERVE = 40;
 

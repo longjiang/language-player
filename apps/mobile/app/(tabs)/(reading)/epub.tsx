@@ -38,8 +38,10 @@ export default function EpubReaderScreen() {
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
-  /** Top strip reserved for the app-header chrome + the muted chapter title. */
-  const TOP_CHROME_RESERVE = insets.top + 48;
+  /** Top strip reserved for the app-header chrome + the muted chapter title.
+   *  Equals the real Header height (insets.top + 8 pt + 40 icon row + 8 pb +
+   *  1 border) so the dropped-down header never obscures content. */
+  const TOP_CHROME_RESERVE = insets.top + 57;
   /** Bottom strip reserved for the pagination-bar chrome + the muted page count. */
   const BOTTOM_CHROME_RESERVE = 44 + insets.bottom;
 
