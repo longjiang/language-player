@@ -391,8 +391,11 @@ export function SubsSearchPlaybackModal({
                 </div>
               )}
 
-              {/* Video info below the player on wide multiline (watch page) */}
-              {subtitleMode === 'multiline' && isWide && videoInfoContent}
+              {/* Video info below the player on wide multiline (watch page) —
+                  padded (the controls row above already provides the divider). */}
+              {subtitleMode === 'multiline' && isWide && (
+                <div className="px-4 py-3">{videoInfoContent}</div>
+              )}
             </div>
 
             {/* Column 2 — subtitles: singleline line-follower, or multiline
