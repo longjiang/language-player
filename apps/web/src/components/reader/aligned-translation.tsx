@@ -34,6 +34,14 @@ import type { SentenceMap } from '@langplayer/utils';
  * recovered from the full line boxes by filtering out the thin annotation /
  * definition boxes and offsetting by the ruby band above each base line.
  *
+ * With phonetics (ruby) on, the measured grid rows are the base text's
+ * content boxes (ruby splits the inline contexts), so each L2 baseline sits
+ * `halfLeading + ascent` below its row top — exactly as in the ruby-off
+ * grid (line boxes). The row grid therefore starts halfLeading BELOW the
+ * first base top (`topPad = band − halfLeading`, ≈0 without ruby): the
+ * translation baseline then lands on the L2 baselines with the same
+ * (sub-pixel) offset the ruby-off layout already has.
+ *
  * Falls back to a plain paragraph when the layout can't be measured or the
  * translation is stacked below the L2 text (narrow viewports), where the
  * line grid can't be shared.
@@ -50,6 +58,14 @@ interface LineLayout {
   gaps: number[];
   /** The translation's visual lines, sliced on the probe. */
   lines: LineSlice[];
+  /** Offset (px) from the translation column top to the first row's start:
+   *  `band − halfLeading`, where band is the first line's ruby-band height
+   *  (the ruby-on line box grows upward past the base text) and halfLeading
+   *  is the L2 line box's half-leading. With ruby on the measured grid rows
+   *  are content-box tops, so the rows must start halfLeading BELOW the
+   *  base tops to reproduce the ruby-off baseline geometry; without ruby
+   *  band ≈ halfLeading (or 0), so the offset is ≈0 and nothing changes. */
+  topPad: number;
   /** The L2 text's rendered font metrics (px). */
   l2FontSize: number;
   l2LineHeight: number;
@@ -272,6 +288,31 @@ export function AlignedTranslation({
       });
       log(`[AlignedTranslation] measure:base-tops tag="${tag}" rtRects=${rtRects.length} rows=${rows.length} tops=${baseTops.map(t => Math.round(t)).join(',')}`);
 
+      // L2 font's content height (ascent + descent), measured on canvas —
+      // exact for the real fonts (falls back to 1em). With ruby on, the
+      // measured grid rows are the base text's CONTENT boxes (ruby splits
+      // the inline contexts), so the L2 baseline sits `halfLeading + ascent`
+      // below each row top, exactly as it does in the ruby-off grid (line
+      // boxes). The translation rows therefore start halfLeading BELOW the
+      // base tops, not on them: pad = band − halfLeading, where band is the
+      // first line's ruby band (ruby expands the line box upward past the
+      // content). Without ruby the band is ≈0 (line-box rows) or ≈halfLeading
+      // (content-box rows), so the offset clamps to ≈0 and nothing changes.
+      let contentH = f2r;
+      try {
+        const ctx = document.createElement('canvas').getContext('2d');
+        if (ctx) {
+          ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${f2r}px ${cs.fontFamily}`;
+          const tm = ctx.measureText('Ag中');
+          if (isFinite(tm.fontBoundingBoxAscent) && isFinite(tm.fontBoundingBoxDescent)) {
+            contentH = tm.fontBoundingBoxAscent + tm.fontBoundingBoxDescent;
+          }
+        }
+      } catch { /* canvas unavailable — keep the 1em fallback */ }
+      const halfLeading = Math.max(0, (lh2r - contentH) / 2);
+      const topPad = Math.min(lh2r, Math.max(0, baseTops[0]! - rRect.top - halfLeading));
+      log(`[AlignedTranslation] measure:top-pad tag="${tag}" contentH=${Math.round(contentH * 10) / 10} halfLeading=${Math.round(halfLeading * 10) / 10} band0=${Math.round((baseTops[0]! - rRect.top) * 10) / 10} topPad=${Math.round(topPad * 10) / 10}`);
+
       // Inter-base gaps: what separates consecutive L2 baselines, plus the
       // last line's tail (interlinear definitions extend it downward).
       const gaps: number[] = [];
@@ -327,6 +368,7 @@ export function AlignedTranslation({
       setLayout({
         gaps,
         lines,
+        topPad,
         l2FontSize: f2r,
         l2LineHeight: lh2r,
         anchorFont: { family: cs.fontFamily, weight: cs.fontWeight, style: cs.fontStyle },
@@ -402,7 +444,7 @@ export function AlignedTranslation({
     );
   }
 
-  const { gaps, lines, l2FontSize, l2LineHeight, anchorFont } = layout;
+  const { gaps, lines, topPad, l2FontSize, l2LineHeight, anchorFont } = layout;
   const rows = Math.max(gaps.length, lines.length);
   // Each grid row is EXACTLY one L2 line height (a fixed height, so flex
   // baseline alignment repositions the translation to the L2 baseline instead
@@ -427,7 +469,11 @@ export function AlignedTranslation({
   return (
     <div ref={rootRef} className="relative">
       <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 w-full">{text}</div>
-      <div ref={rowsRef}>
+      {/* `topPad` drops the rows onto the L2 baseline geometry: with ruby on
+          the grid rows are content-box tops, so the rows start halfLeading
+          below them (≈0 without ruby — padding, not a child, keeps the
+          row-children layout intact). */}
+      <div ref={rowsRef} style={{ paddingTop: `${topPad}px` }}>
         {Array.from({ length: rows }).map((_, j) => (
           <Fragment key={j}>
             <div className="flex items-baseline" style={rowStyle}>
