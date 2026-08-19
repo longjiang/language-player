@@ -42,8 +42,9 @@ export default function EpubReaderScreen() {
    *  Equals the real Header height (insets.top + 8 pt + 40 icon row + 8 pb +
    *  1 border) so the dropped-down header never obscures content. */
   const TOP_CHROME_RESERVE = insets.top + 57;
-  /** Bottom strip reserved for the pagination-bar chrome + the muted page count. */
-  const BOTTOM_CHROME_RESERVE = 44 + insets.bottom;
+  /** Bottom strip reserved for the pagination-bar chrome + the muted page
+   *  count — same height as the top margin (symmetric design). */
+  const BOTTOM_CHROME_RESERVE = TOP_CHROME_RESERVE;
 
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
