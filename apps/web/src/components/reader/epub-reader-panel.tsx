@@ -170,6 +170,7 @@ export function EpubReaderPanel({
             translationSplit={appliedSplit}
             onTranslationSplitChange={onTranslationSplitChange}
             onTranslationSplitCommit={onTranslationSplitCommit}
+            sideBySideBreakpoint="md"
             loading={showTranslation && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -205,7 +206,7 @@ export function EpubReaderPanel({
     const lines = Math.max(1, Math.ceil(tb.text.length / 50));
     return (
       <div key={item.key} className="mb-4 flex items-start gap-3">
-        <div className="flex-1 min-w-0 flex flex-col gap-y-1 lg:flex-row lg:gap-4 lg:items-center">
+        <div className="flex-1 min-w-0 flex flex-col gap-y-2 md:flex-row md:gap-4 md:items-center">
           <div className="flex-[3] min-w-0">
             <Tag
               className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
@@ -216,7 +217,7 @@ export function EpubReaderPanel({
           </div>
           {showTranslation && (
             <div
-              className={`flex-[2] min-w-0 pt-1 lg:pt-0 ${translationClass(tb)}`}
+              className={`flex-[2] min-w-0 pt-1 md:pt-0 ${translationClass(tb)}`}
               style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}
             >
               <div className="flex flex-col gap-y-1.5">

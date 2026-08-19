@@ -175,6 +175,7 @@ export function ReaderPanel({
             translationSplit={appliedSplit}
             onTranslationSplitChange={onTranslationSplitChange}
             onTranslationSplitCommit={onTranslationSplitCommit}
+            sideBySideBreakpoint="md"
             loading={rctx.isTranslating && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -214,16 +215,29 @@ export function ReaderPanel({
     const lines = Math.max(1, Math.ceil(tb.text.length / 50));
     return (
       <div key={item.key} className="mb-4">
-        <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
-          {tb.text}
-        </Tag>
-        {showTranslation && (
-          <div className="flex flex-col gap-y-1.5 pt-1" style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}>
-            {Array.from({ length: lines }).map((_, li) => (
-              <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }} />
-            ))}
+        {/* Mirrors TextActionMenu's dual-column layout: stacked below md,
+            side-by-side at md+ (the translation is a flex sibling, not a
+            stacked block) — otherwise the mirror measures taller than the
+            visible row and pages break early. */}
+        <div className="flex flex-col gap-y-2 md:flex-row md:gap-2 md:items-start">
+          <div className="flex-[3] min-w-0">
+            <Tag className={blockClass(tb)} style={{ zoom: textZoom }}>
+              {tb.text}
+            </Tag>
           </div>
-        )}
+          {showTranslation && (
+            <div
+              className="flex-[2] min-w-0 pt-1 md:pt-0"
+              style={{ fontSize: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }}
+            >
+              <div className="flex flex-col gap-y-1.5">
+                {Array.from({ length: lines }).map((_, li) => (
+                  <div key={li} style={{ height: `${translationFontSizeRem(tb, textZoom, tokenizedText.translationSize)}rem` }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }, [showTranslation, textZoom, markdownComponents, tokenizedText.translationSize]);

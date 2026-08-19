@@ -173,8 +173,23 @@ export function AlignedTranslation({
   const probeRef = useRef<HTMLDivElement>(null);
   const rowsRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<LineLayout | null>(null);
+  // The L2 block's first-line text-indent (px) — e.g. the EPUB reader's
+  // `[&_p]:indent-[1em]`. Mirrored onto the stacked (narrow-screen) fallback
+  // so the translation starts at the same indentation as the tokenized text.
+  const [l2TextIndent, setL2TextIndent] = useState(0);
   // Short text preview so log lines from different blocks are distinguishable.
   const tag = text.slice(0, 24).replace(/\s+/g, ' ');
+
+  // Read the anchor's rendered first-line indent whenever the layout identity
+  // changes (the indent lives on the L2 block's element, not the column div).
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    const base = firstTextNode(anchor);
+    const el = base?.parentElement ?? anchor;
+    const ti = parseFloat(getComputedStyle(el).textIndent);
+    setL2TextIndent(isFinite(ti) && ti > 0 ? ti : 0);
+  }, [anchorRef, measureNonce]);
 
   const measure = useCallback(() => {
     const anchor = anchorRef.current;
@@ -436,8 +451,10 @@ export function AlignedTranslation({
 
   if (!layout) {
     // Plain fallback: unpaired paragraph (same as the pre-alignment column).
+    // `l2TextIndent` carries the L2 block's first-line indent (EPUB
+    // indent-[1em]) so the stacked translation starts at the same x-offset.
     return (
-      <div ref={rootRef} className="relative">
+      <div ref={rootRef} className="relative" style={l2TextIndent > 0 ? { textIndent: l2TextIndent } : undefined}>
         <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute left-0 top-0 w-full">{text}</div>
         {map ? <SegmentedTranslation text={text} map={map} active={active} /> : <>{text}</>}
       </div>

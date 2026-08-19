@@ -91,7 +91,7 @@ export function TranslationSplitHandle({
     <div
       role="separator"
       aria-label="Language text and translation divider"
-      className={`group/divider relative hidden lg:block self-stretch w-4 -mx-1 flex-none cursor-col-resize select-none touch-none transition-colors ${active ? 'bg-primary/40' : ''} ${className}`}
+      className={`group/divider relative hidden md:block self-stretch w-4 -mx-1 flex-none cursor-col-resize select-none touch-none transition-colors ${active ? 'bg-primary/40' : ''} ${className}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
