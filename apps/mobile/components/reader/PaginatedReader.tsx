@@ -18,7 +18,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
 import type { GridLine } from '@/lib/aligned-translation';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, List, Loader2, Search } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ZOOM_TO_REM } from '@/lib/text-scale';
 import { readerLeadingPx, readerHorizontalPadding } from '@/lib/reader-layout';
@@ -146,6 +146,31 @@ interface PaginatedReaderProps {
    *  blocks to tokenized progressively instead of one full-page commit.
    *  Non-estimate readers keep their existing immediate tokenized render. */
   lazyPagination?: boolean;
+
+  // ── Immersive reader mode (EPUB) ──
+  /**
+   * Immersive mode: the page chrome (bottom pagination bar) floats over the
+   * content instead of taking layout space, and page metadata overlays render
+   * on top. Toggling `chromeVisible` never reflows the book — the caller
+   * reserves constant top/bottom strips via `immersiveReserve`.
+   */
+  immersive?: boolean;
+  /** Constant strips reserved for the chrome (and the muted page metadata) —
+   *  applied as padding so pagination is identical with chrome shown/hidden. */
+  immersiveReserve?: { top: number; bottom: number };
+  /** Immersive: whether the bottom bar chrome is visible (slides away when false). */
+  chromeVisible?: boolean;
+  /** Immersive: called on a blank-space tap to toggle the chrome. */
+  onToggleChrome?: () => void;
+  /** Immersive: renders the TOC button in the bottom bar. */
+  onOpenToc?: () => void;
+  /** Immersive: renders the Search button in the bottom bar. */
+  onOpenSearch?: () => void;
+  /** Immersive: overlay rendered in the top reserved strip (muted chapter title). */
+  topOverlay?: React.ReactNode;
+  /** Immersive: overlay rendered in the bottom reserved strip (muted page count);
+   *  receives the 1-based page and total. */
+  pageInfoOverlay?: (page: number, total: number) => React.ReactNode;
 }
 
 export function PaginatedReader({
@@ -173,6 +198,14 @@ export function PaginatedReader({
   flipping = false,
   measuring = false,
   lazyPagination = false,
+  immersive = false,
+  immersiveReserve,
+  chromeVisible = true,
+  onToggleChrome,
+  onOpenToc,
+  onOpenSearch,
+  topOverlay,
+  pageInfoOverlay,
 }: PaginatedReaderProps) {
   // ── Visibility-based lazy tokenization (SPEC-019 O2) ──
   // Track scroll position + viewport height imperatively (refs, no re-render
@@ -682,6 +715,18 @@ export function PaginatedReader({
     }
   }, [loadingTokens]);
 
+  // ── Immersive chrome: the bottom bar slides out of the reserved strip when
+  // the chrome is hidden. Pure overlay — pagination never changes. ──
+  const barTranslateY = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!immersive) return;
+    Animated.timing(barTranslateY, {
+      toValue: chromeVisible ? 0 : 180,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [immersive, chromeVisible, barTranslateY]);
+
   // ── Scroll mode: simple block list ──
   if (scrollMode) {
     if (!blocks) return null;
@@ -704,7 +749,12 @@ export function PaginatedReader({
 
   // ── Paginated mode ──
   return (
-    <View className="flex-1 flex-col">
+    <View
+      className="flex-1 flex-col"
+      style={immersive && immersiveReserve
+        ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
+        : undefined}
+    >
       {blocks && !hasMeasured && (
         <View className="flex-1 items-center justify-center" onLayout={handleViewportLayout}>
           <ActivityIndicator size="small" color={ICON_MUTED} />
@@ -737,8 +787,20 @@ export function PaginatedReader({
                       it doesn't resize the measured viewport. */}
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
-                  {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
+                  {/* Immersive mode: the whole page is a Pressable whose onPress
+                      only fires for blank-space taps (the deeper token/link
+                      Pressables claim touches on interactive elements), toggling
+                      the reader chrome. */}
+                  {immersive && onToggleChrome ? (
+                    <Pressable onPress={onToggleChrome} className="active:bg-transparent">
+                      {visibleBlocks.map((block, bi) =>
+                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
+                      )}
+                    </Pressable>
+                  ) : (
+                    visibleBlocks.map((block, bi) =>
+                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
+                    )
                   )}
                 </ScrollView>
               </Animated.View>
@@ -747,39 +809,85 @@ export function PaginatedReader({
         </View>
       )}
 
-      {/* Page navigation + translation switch — always present while a book is
-          open so the measured viewport excludes it (web parity). */}
-      {blocks && !hasMeasured && (
-        <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3 opacity-40" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
-          <ChevronLeft size={18} color={ICON_MUTED} />
-          <Text className="text-xs text-muted-foreground">{page + 1} / {Math.max(1, totalPages)}</Text>
-          <ChevronRight size={18} color={ICON_MUTED} />
-          {onToggleTranslation && (
-            <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
-              <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
-              <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+      {/* Immersive metadata overlays — muted chapter title (top strip) and
+          page count (bottom strip). Non-interactive, never reflow the book. */}
+      {immersive && (
+        <>
+          {topOverlay && (
+            <View pointerEvents="none" className="absolute inset-x-0 top-0 z-10 items-center px-4 pt-2.5">
+              {topOverlay}
             </View>
           )}
-        </View>
+          {pageInfoOverlay && (
+            <View pointerEvents="none" className="absolute inset-x-0 bottom-0 z-10 items-center px-4 pb-2.5">
+              {pageInfoOverlay(page + 1, Math.max(1, totalPages))}
+            </View>
+          )}
+        </>
       )}
-      {blocks && hasMeasured && (
-        <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
-          <Pressable onPress={prevPage} disabled={!hasPrev || !prevPage} className={`rounded p-1 ${!hasPrev || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
+
+      {/* Page navigation + translation switch — always present while a book is
+          open so the measured viewport excludes it (web parity). The immersive
+          reader floats it over the reserved bottom strip (slides away with the
+          chrome); non-immersive readers keep it in flow. */}
+      {blocks && (
+        <Animated.View
+          pointerEvents={immersive ? (chromeVisible ? 'auto' : 'none') : 'auto'}
+          className={`flex-row items-center justify-center border-t border-border px-4 gap-3 ${
+            immersive ? 'absolute inset-x-0 bottom-0' : 'flex-shrink-0'
+          } ${!hasMeasured ? 'opacity-40' : ''}`}
+          style={{
+            paddingBottom: insets.bottom,
+            paddingTop: 8,
+            ...(immersive ? { transform: [{ translateY: barTranslateY }] } : undefined),
+          }}
+        >
+          {hasMeasured ? (
+            <Pressable onPress={prevPage} disabled={!hasPrev || !prevPage} className={`rounded p-1 ${!hasPrev || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
+              <ChevronLeft size={18} color={ICON_MUTED} />
+            </Pressable>
+          ) : (
             <ChevronLeft size={18} color={ICON_MUTED} />
-          </Pressable>
-          <Pressable onPress={handlePageNumberTap} disabled={!goToPage} className={`rounded px-2 py-0.5 ${!goToPage ? 'opacity-50' : 'active:bg-muted'}`}>
-            <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
-          </Pressable>
-          <Pressable onPress={nextPage} disabled={!hasNext || !nextPage} className={`rounded p-1 ${!hasNext || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
+          )}
+          {hasMeasured ? (
+            <Pressable onPress={handlePageNumberTap} disabled={!goToPage} className={`rounded px-2 py-0.5 ${!goToPage ? 'opacity-50' : 'active:bg-muted'}`}>
+              <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+            </Pressable>
+          ) : (
+            <Text className="text-xs text-muted-foreground">{page + 1} / {Math.max(1, totalPages)}</Text>
+          )}
+          {hasMeasured ? (
+            <Pressable onPress={nextPage} disabled={!hasNext || !nextPage} className={`rounded p-1 ${!hasNext || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
+              <ChevronRight size={18} color={ICON_MUTED} />
+            </Pressable>
+          ) : (
             <ChevronRight size={18} color={ICON_MUTED} />
-          </Pressable>
+          )}
           {onToggleTranslation && (
             <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
               <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
               <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
             </View>
           )}
-        </View>
+          {onOpenToc && (
+            <Pressable
+              onPress={onOpenToc}
+              className="rounded p-1 active:bg-muted ml-1"
+              accessibilityLabel={t('action.table_of_contents')}
+            >
+              <List size={18} color={ICON_MUTED} />
+            </Pressable>
+          )}
+          {onOpenSearch && (
+            <Pressable
+              onPress={onOpenSearch}
+              className="rounded p-1 active:bg-muted"
+              accessibilityLabel={t('action.search')}
+            >
+              <Search size={18} color={ICON_MUTED} />
+            </Pressable>
+          )}
+        </Animated.View>
       )}
 
       {/* Hidden measuring view. Mounted only while an exact re-measure is
