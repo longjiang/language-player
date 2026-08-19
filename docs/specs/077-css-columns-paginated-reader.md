@@ -299,7 +299,7 @@ All pagination logic, no rendering:
 
 ### 11.3 `PaginatedReader` — `apps/web/src/components/reader/paginated-reader.tsx`
 
-The shared panel. Renders the viewport + active/pending pagers, the page-nav bar (`‹ n / ~N ›` + translation toggle, unchanged UX), keyboard paging (arrows/PageUp/PageDown/space, unchanged), and reports `onLocationChange(location)` whenever the visible page's start block changes (the existing EPUB persistence hook generalizes to all three readers). A `renderBlock(block, index) => ReactNode` injection lets each reader supply its own block rendering (markdown `TextActionMenu`+`TokenizedText` vs EPUB image/link handling) while all layout, windowing, and navigation stay shared.
+The shared panel. Renders the viewport + active/pending pagers, the page-nav bar (`‹ n / ~N ›` + translation toggle, unchanged UX), keyboard paging (arrows/PageUp/PageDown/space, unchanged), flick/swipe page turns (horizontal pointer drag on the viewport, mobile-parity thresholds: ≥800 px/s flick velocity or ≥min(64 px, 18% width) drag distance; vertical pans stay native via `touch-action: pan-y`), and reports `onLocationChange(location)` whenever the visible page's start block changes (the existing EPUB persistence hook generalizes to all three readers). A `renderBlock(block, index) => ReactNode` injection lets each reader supply its own block rendering (markdown `TextActionMenu`+`TokenizedText` vs EPUB image/link handling) while all layout, windowing, and navigation stay shared.
 
 ### 11.4 Per-reader integration
 
