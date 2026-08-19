@@ -28,6 +28,7 @@
     "@rn-primitives/switch": "^1.5.2",
     "@rn-primitives/tabs": "^1.5.2",
     "arabic-stem": "^0.0.12",
+    "clsx": "^2.1.1",
     "expo": "~57.0.8",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "~57.0.6",
@@ -66,6 +67,7 @@
     "react-native-youtube-iframe": "^2.3.0",
     "snowball-stemmers": "^0.6.0",
     "spark-md5": "^3.0.2",
+    "tailwind-merge": "^2.6.1",
     "tailwindcss": "^3.4.0"
   },
   "devDependencies": {
