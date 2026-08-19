@@ -153,7 +153,14 @@ function AlignedTranslationImpl({
         const shift = lineBaselineOffset(l2Line) - lineBaselineOffset(ln);
         const hl = highlight && highlight.start < off.end && highlight.end > off.start;
         return (
-          <View key={j} style={{ height: l2Line.height }}>
+          // Rows stack at the L2 line PITCH (lh2), not the per-line measured
+          // height: RN's reported line `height` can exceed the pitch by a few
+          // px on iOS, so rows sized by it drift further from the L2 grid on
+          // every line (2–5px per line with ruby on or off). The web
+          // AlignedTranslation uses the same fixed-pitch rows; the baseline
+          // inside each row is still positioned by `shift`, so ruby's
+          // per-line baseline delta keeps working.
+          <View key={j} style={{ height: lh2 }}>
             <Text
               numberOfLines={1}
               className={className}
