@@ -254,11 +254,11 @@ test) on every page.
 
 ## Task 18 — Subs search + AI examples: watch-page modal layout on wide screens in multiline mode
 
-- **Web ref**: subs-search playback modal (`apps/web/src/components/video/subs-search-results.tsx`) shows subtitles on the side and video info below the player on wide (landscape) screens in multiline mode, mirroring the watch page — inside the modal: modal widens to `sm:max-w-5xl`, content becomes a `grid-cols-[minmax(0,1fr)_320px]` (player + controls + info left, subs transcript right), and the sidebar's info tab is dropped on wide (info lives below the player).
-- **Mobile state**: `SubsSearchResults.tsx` already mirrors web (rows `flex-row` on wide+multiline, `w-[320px]` sidebar, `max-w-4xl` dialog). **Gap:** the "Let DeepSeek Explain" example player modal (`AiExplanation.tsx` / `ai-explanation.tsx`) — opened from an example chip in the dictionary popup or the dictionary entry tabs' "Let DeepSeek Explain" tab — always stacked player → controls → subtitles vertically.
-- **Plan**:
-  1. Web `ai-explanation.tsx`: add `isWide` (resize-tracked `innerWidth > innerHeight`); extract `exampleVideoInfoContent`; wrap player/controls/subtitles in the same grid/flex structure as subs-search; widen the modal to `sm:max-w-5xl` on wide+multiline; drop the info tab from the sidebar on wide.
-  2. Mobile `AiExplanation.tsx`: same restructure with `isWide = width > height`, `flex-row` + `w-[320px]` sidebar, info below the player, info tab dropped on wide, `max-w-4xl` dialog; `key={exampleMode}` remount keeps the transcript tab on mode change (subs-search parity).
+- **Web ref**: subs-search playback modal shows subtitles on the side and video info below the player on wide (landscape) screens in multiline mode, mirroring the watch page — inside the modal: modal widens to `sm:max-w-5xl`, content becomes a `grid-cols-[minmax(0,1fr)_320px]` (player + controls + info left, subs transcript right), and the sidebar's info tab is dropped on wide (info lives below the player).
+- **Implementation** (shared component, web + mobile): the playback modal is extracted once per platform into `SubsSearchPlaybackModal` (`apps/web/src/components/video/subs-search-playback-modal.tsx`, `apps/mobile/components/video/SubsSearchPlaybackModal.tsx`) and used by **both** the subs-search result rows and the "Let DeepSeek Explain" example chips — same component, same behavior, same modal.
+  - The web modal renders through a **portal to `document.body`**, so it always sizes against the viewport even when opened from the dictionary popup (whose `DialogContent` centering transform would otherwise trap a `position: fixed` child at the popup's 28rem width — the "so narrow there's no space for subs on the side" bug).
+  - The mobile modal renders through the native `Dialog.Portal` (bottom sheet on narrow, centered dialog on md+), widened to `max-w-4xl` on wide+multiline.
+  - Both keep every existing behavior: singleline | multiline toggle, subs/info (web) and transcript/queue/info (mobile) sidebars, prev/next queue following the passed `videos` order, video info below the player on wide, "Load Full Subtitles" out-of-range notice (subs-search only, via optional props), and the embed-failure auto-skip (subs-search only, via `onVideoError`). The subs-search singleline/multiline choice still persists to `lp_subs_search_subtitle_mode`.
 - **Test**: open an AI example chip → toggle multiline → rotate to landscape: subtitles appear beside the player with info below it; rotate back to portrait: subtitles return below the player with the info tab restored.
 
 ---
@@ -341,6 +341,7 @@ were run (AGENTS.md build consent rule); manual device QA still recommended.
 | 13 | List-first layout + playback modal | `79aa0098` |
 | 15 | Singleline↔multiline toggle + tabbed sidebar (subs/queue/info) | `2416fbef` |
 | 16 | Extract `SubsSearchRow` | `92e95394` |
+| 18 | Shared playback modal for subs-search + AI examples (wide-screen multiline) | `fbe53a77` |
 | 3 | Resizable text\|translation splitter | `e7d846fd` |
 | 4 | Translation-sentence highlight on token tap | `b83da08e` |
 | 5 | EPUB fresh page per spine + JP first-line indent | `f5b2dea3` |

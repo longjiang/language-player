@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
+import { View, Text, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import Toast from 'react-native-toast-message';
 import { Pressable } from '@/components/ui/pressable';
@@ -29,29 +29,15 @@ import {
 } from '@langplayer/utils';
 import type { AiGroupingResult, SubsSearchSortKey } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
-import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 
-import { SubtitleDisplay } from './SubtitleDisplay';
-import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { VideoControlBar } from './VideoControlBar';
-import { TranscriptQueuePanel } from './TranscriptQueuePanel';
-import { SubsSearchRow, formatTime, youtubeThumbnail } from './SubsSearchRow';
+import { SubsSearchRow } from './SubsSearchRow';
+import { SubsSearchPlaybackModal } from './SubsSearchPlaybackModal';
 import { ErrorNotice } from '@/components/ui/error-notice';
 import { localizedError } from '@/lib/errors';
 import { baseCode } from '@langplayer/utils';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { X, ChevronDown, ChevronRight, Eye, Clock, Calendar, Play, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
-
-/** Compact number label (e.g. "12K") with a plain fallback. */
-function formatNumber(n: number | undefined, locale: string): string {
-  if (!n) return '';
-  try {
-    return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-  } catch {
-    return String(n);
-  }
-}
+import { X, ChevronDown, ChevronRight, ArrowUpDown, SlidersHorizontal } from 'lucide-react-native';
 
 interface SubsSearchResultsProps {
   term: string;
@@ -108,25 +94,11 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const t = useT();
   const router = useRouter();
   const videosApi = useVideos();
-  const playerRef = useRef<YouTubePlayerHandle>(null);
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { height: screenHeight } = useWindowDimensions();
   const { isMd } = useResponsive();
-  // Wide = landscape (width > height), matching the watch page's definition.
-  // When wide + multiline, the playback modal shows subtitles on the side and
-  // the video info below the player, like the watch page — inside the modal.
-  const isWide = screenWidth > screenHeight;
   // Playback modal — the result list is the default surface; clicking a result
-  // opens the player + subtitles in this modal (SPEC-082 Task 13).
+  // opens the shared playback modal (SubsSearchPlaybackModal) on that video.
   const [videoOpen, setVideoOpen] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(screenWidth);
-  // Subtitle display mode in the playback modal: follow playback one line at a
-  // time (singleline), or show the full transcript in a tabbed sidebar
-  // (multiline — subs | queue | info). Default singleline, matching web
-  // (SPEC-082 Task 15). In-memory per session (web persists in localStorage).
-  const [subtitleMode, setSubtitleMode] = useState<'singleline' | 'multiline'>('singleline');
-  const handleToggleSubtitleMode = useCallback(() => {
-    setSubtitleMode((m) => (m === 'singleline' ? 'multiline' : 'singleline'));
-  }, []);
 
   // Full fetched result pool + the youtube_ids skipped for failed embeds.
   // `videos` below is derived from these so a skipped video can be replaced
@@ -138,9 +110,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [paused, setPaused] = useState(true);
   // Content filter pill (All / Non-Music / Music / TV Shows) — SPEC-082 Task 6.
   const [videoFilter, setVideoFilter] = useState<VideoFilterKey>('all');
   // List: text filter + sort (SPEC-082 Task 8).
@@ -187,11 +156,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       })
       .catch((err) => logwarn('[LP Mobile] subs-search failed to load tv shows for advanced search:', err));
   }, [advancedOpen, showsLoaded, l2Lang.code]);
-
-  // Never autoplay (SPEC-082 Task 12, web parity): videos are cued/paused at
-  // the match line via `startTime`; playback starts only on explicit user
-  // action. Kept as a named constant so the policy can be revisited.
-  const autoplayEnabled = false;
 
   // Split comma-separated terms for highlighting
   const highlightTerms = useMemo(
@@ -494,11 +458,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, [filteredVideos, activeGroupKey, collapsedGroups]);
 
   const currentVideo = filteredVideos[currentIndex] ?? null;
-  const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
-  // Show the search-match line immediately, even before the video plays.
-  const defaultSubtitleLine = matchLine
-    ? { starttime: matchLine.starttime, l2Line: matchLine.line, l1Line: '' }
-    : undefined;
 
   const applyVideos = useCallback((all: SubsSearchVideo[]) => {
     setTotalHits(all.length);
@@ -558,54 +517,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const [fullSubsMap, setFullSubsMap] = useState<Record<string, SubtitleLine[]>>({});
   const [loadingFullSubs, setLoadingFullSubs] = useState(false);
 
-  // The subtitle lines the player uses: the full transcript once loaded,
-  // otherwise the limited range that came with the search.
-  const playerSubLines = useMemo(() => {
-    if (!currentVideo) return [];
-    return fullSubsMap[currentVideo.youtube_id] ?? currentVideo.subs_l2;
-  }, [currentVideo, fullSubsMap]);
-
-  // Covered interval of the available lines (chronological), for the
-  // out-of-range detection. Durations: explicit duration → gap to the next
-  // line → 5s fallback for the last line.
-  const subsCoverage = useMemo(() => {
-    if (playerSubLines.length === 0) return null;
-    const sorted = [...playerSubLines].sort((a, b) => a.starttime - b.starttime);
-    const first = sorted[0]!.starttime;
-    let lastEnd = -Infinity;
-    for (let i = 0; i < sorted.length; i++) {
-      const l = sorted[i]!;
-      const next = sorted[i + 1];
-      const dur = l.duration ?? (next ? next.starttime - l.starttime : 5);
-      lastEnd = Math.max(lastEnd, l.starttime + dur);
-    }
-    return { first, lastEnd };
-  }, [playerSubLines]);
-
-  const isOutOfRange =
-    subsCoverage !== null &&
-    (currentTime < subsCoverage.first - 0.3 || currentTime > subsCoverage.lastEnd);
-
-  // Pause once when the playhead leaves the covered range (programmatic pause
-  // is a no-op on iOS — the notice still appears).
-  const wasInRangeRef = useRef(true);
-  useEffect(() => {
-    if (!isOutOfRange) {
-      wasInRangeRef.current = true;
-      return;
-    }
-    if (wasInRangeRef.current) {
-      wasInRangeRef.current = false;
-      log('[subsSearch] playhead left loaded subtitle range', {
-        youtubeId: currentVideo?.youtube_id,
-        currentTime,
-        coverage: subsCoverage,
-      });
-      playerRef.current?.pause();
-      setPaused(true);
-    }
-  }, [isOutOfRange, currentVideo?.youtube_id, currentTime, subsCoverage]);
-
   // Fetch the complete transcript for the current video (same source as the
   // watch page). The player element depends only on youtube_id, so this never
   // reloads it; we don't seek, so the playhead stays unchanged.
@@ -664,26 +575,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       setLoadingFullSubs(false);
     }
   }, [currentVideo, fullSubsMap, loadingFullSubs, l2Lang.code, t]);
-
-  // Pre-parsed subtitle lines for SubtitleDisplay. Uses `playerSubLines` (the
-  // full transcript once "Load Full Subtitles" runs, otherwise the limited
-  // search range) so the loaded full subs flow straight into the display.
-  const subtitleInitialLines = useMemo(
-    () =>
-      playerSubLines.map((l) => ({
-        starttime: l.starttime,
-        l2Line: l.line,
-        l1Line: '',
-      })) ?? [],
-    [playerSubLines],
-  );
-
-  // Compute active line index from currentTime
-  const subtitleStartTimes = useMemo(
-    () => subtitleInitialLines.map((l) => l.starttime),
-    [subtitleInitialLines],
-  );
-  const activeLineIndex = useActiveLineIndex(subtitleStartTimes, currentTime);
 
   // ── Fetch ──
   useEffect(() => {
@@ -763,11 +654,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   }, [listSort, listSearch]);
 
   // ── Player callbacks ──
-  const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
-  const handleDuration = useCallback((d: number) => setDuration(d), []);
-  const handleStateChange = useCallback((state: string) => {
-    setPaused(state !== 'playing');
-  }, []);
 
   // Auto-skip videos whose embeds fail (private, embed-disabled, removed…).
   // Each youtube_id is skipped at most once per search (skippedIdsRef guard),
@@ -826,38 +712,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     setVideoOpen(true);
   };
 
-  const goToPreviousLine = useCallback(() => {
-    if (!currentVideo) return;
-    const subs = currentVideo.subs_l2;
-    for (let i = subs.length - 1; i >= 0; i--) {
-      if (subs[i]!.starttime < currentTime - 0.3) {
-        playerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  }, [currentVideo, currentTime]);
-
-  const goToNextLine = useCallback(() => {
-    if (!currentVideo) return;
-    const subs = currentVideo.subs_l2;
-    for (let i = 0; i < subs.length; i++) {
-      if (subs[i]!.starttime > currentTime + 0.3) {
-        playerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  }, [currentVideo, currentTime]);
-
-  const hasPreviousLine = useMemo(() => {
-    if (!currentVideo) return false;
-    return currentVideo.subs_l2.some((l) => l.starttime < currentTime - 0.3);
-  }, [currentVideo, currentTime]);
-
-  const hasNextLine = useMemo(() => {
-    if (!currentVideo) return false;
-    return currentVideo.subs_l2.some((l) => l.starttime > currentTime + 0.3);
-  }, [currentVideo, currentTime]);
-
   // ── Toolbar — text filter + sort dropdown (SPEC-082 Tasks 8/10),
   // shown above the list on the default surface. Sort is a native
   // UIMenu/PopupMenu next to the search field, matching web's layout
@@ -908,232 +762,6 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
     </View>
   );
 
-  // ── Playback modal content — player + controls + singleline subtitle.
-  // Shared by the bottom sheet (narrow) and centered dialog (md+). The
-  // multiline tabbed sidebar arrives in Task 15. ──
-  // Lightweight current-video info (SubsSearchVideo has no likes/comments/
-  // difficulty). Shown in the info tab (narrow) and below the player on wide
-  // screens in multiline mode (watch-page layout).
-  const videoInfoContent = currentVideo ? (
-    <View className="gap-3">
-      <Text className="text-base font-bold leading-tight text-foreground">
-        {currentVideo.title}
-      </Text>
-      <View className="flex-row flex-wrap items-center gap-3">
-        {currentVideo.views != null && (
-          <View className="flex-row items-center gap-1">
-            <Eye size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
-              {t('label.views_count', { count: formatNumber(currentVideo.views, l1Lang.code) })}
-            </Text>
-          </View>
-        )}
-        {currentVideo.duration != null && (
-          <View className="flex-row items-center gap-1">
-            <Clock size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
-              {formatTime(currentVideo.duration)}
-            </Text>
-          </View>
-        )}
-        {currentVideo.date && (
-          <View className="flex-row items-center gap-1">
-            <Calendar size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
-              {new Date(currentVideo.date).toLocaleDateString(l1Lang.code)}
-            </Text>
-          </View>
-        )}
-      </View>
-      <Pressable
-        onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any)}
-        className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
-        accessibilityRole="button"
-      >
-        <Play size={14} color={ICON_MUTED} />
-        <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
-      </Pressable>
-    </View>
-  ) : null;
-
-  const videoContent = currentVideo ? (
-    <View>
-      {/* Header — video title + close */}
-      <View className="flex-row items-center justify-between gap-2 border-b border-border px-4 py-3">
-        <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-semibold text-foreground">
-          {currentVideo.title}
-        </Text>
-        <Dialog.Close className="rounded-full bg-muted p-2">
-          <X size={16} color={ICON_MUTED} />
-        </Dialog.Close>
-      </View>
-
-      {/* Player + controls + subtitles — the player lives in a stable tree
-          position (the first flex child), so toggling singleline/multiline or
-          wide/narrow never remounts the YouTube iframe. On wide screens in
-          multiline mode, subtitles sit beside the player and the video info
-          sits below it, like the watch page — but inside the modal. */}
-      <View className={isWide && subtitleMode === 'multiline' ? 'flex-row min-h-0' : 'min-h-0'}>
-        {/* Column 1 — player + controls (+ info below on wide multiline) */}
-        <View className={isWide && subtitleMode === 'multiline' ? 'min-w-0 flex-1' : ''}>
-          {/* Mini player */}
-          <View
-            className="w-full bg-black"
-            style={{ aspectRatio: 16 / 9 }}
-            onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            <YouTubePlayer
-              ref={playerRef}
-              youtubeId={currentVideo.youtube_id}
-              onTimeUpdate={handleTimeUpdate}
-              onDuration={handleDuration}
-              onStateChange={handleStateChange}
-              onError={handleVideoError}
-              autoplay={autoplayEnabled}
-              startTime={matchLine?.starttime}
-              containerWidth={containerWidth}
-            />
-          </View>
-
-          {/* Controls — centered; result count between prev/next line buttons;
-              the panel toggle flips singleline ↔ multiline (SPEC-082 Task 15). */}
-          <View className="flex-row justify-center border-b border-border py-1">
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={() => {}}
-              onPreviousLine={goToPreviousLine}
-              onNextLine={goToNextLine}
-              onPreviousVideo={() => { if (currentIndex > 0) { setCurrentIndex((i) => i - 1); } }}
-              onNextVideo={() => { if (currentIndex < filteredVideos.length - 1) { setCurrentIndex((i) => i + 1); } }}
-              onTogglePanel={handleToggleSubtitleMode}
-              panelOpen={subtitleMode === 'multiline'}
-              hasPreviousLine={hasPreviousLine}
-              hasNextLine={hasNextLine}
-              hasPreviousVideo={currentIndex > 0}
-              hasNextVideo={currentIndex < filteredVideos.length - 1}
-              videoCountText={t('msg.video_n_of_total', { n: currentIndex + 1, total: filteredVideos.length })}
-            />
-          </View>
-
-          {/* Video info below the player on wide multiline (watch page) */}
-          {isWide && subtitleMode === 'multiline' && (
-            <View className="px-4 py-3">{videoInfoContent}</View>
-          )}
-
-          {/* Out-of-range notice — the playhead left the loaded subtitle
-              range (shown in both singleline and multiline modes). */}
-          {isOutOfRange && (
-            <View className="flex-row items-center justify-between gap-2 border-b border-border bg-amber-50 px-3 py-2 dark:bg-amber-950">
-              <Text className="flex-1 text-xs text-amber-700 dark:text-amber-300">
-                {t('msg.subs_out_of_range')}
-              </Text>
-              <Pressable
-                onPress={handleLoadFullSubtitles}
-                disabled={loadingFullSubs}
-                className="shrink-0 rounded-md bg-primary px-3 py-1.5 active:opacity-80 disabled:opacity-50"
-                accessibilityRole="button"
-              >
-                <Text className="text-xs font-semibold text-primary-foreground">
-                  {loadingFullSubs ? t('msg.loading') : t('action.load_full_subtitles')}
-                </Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
-
-        {/* Column 2 — subtitles: singleline line-follower, or multiline
-            tabbed sidebar (subs | queue | info). On wide multiline the info
-            tab is dropped (info lives below the player). Remount on mode
-            change so the sidebar starts on the subs tab, like the watch
-            page's sidebar remount. */}
-        <View
-          className={
-            isWide && subtitleMode === 'multiline'
-              ? 'min-h-0 w-[320px] border-l border-border'
-              : 'min-h-0 flex-1'
-          }
-        >
-          {subtitleMode === 'singleline' ? (
-            <View className="min-h-32 w-full">
-              <SubtitleDisplay
-                singleLine
-                lines={subtitleInitialLines}
-                activeLineIndex={activeLineIndex}
-                currentTime={currentTime}
-                highlightTerms={highlightTerms}
-                defaultLine={defaultSubtitleLine}
-                onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-              />
-            </View>
-          ) : (
-            <View
-              style={
-                isWide && subtitleMode === 'multiline'
-                  ? undefined
-                  : { height: Math.min(screenHeight * 0.4, 320) }
-              }
-              className={isWide && subtitleMode === 'multiline' ? 'flex-1' : ''}
-            >
-              <TranscriptQueuePanel
-                key={subtitleMode}
-                transcript={
-                  <SubtitleDisplay
-                    lines={subtitleInitialLines}
-                    activeLineIndex={activeLineIndex}
-                    currentTime={currentTime}
-                    highlightTerms={highlightTerms}
-                    defaultLine={defaultSubtitleLine}
-                    onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-                  />
-                }
-                queue={
-                  <ScrollView className="flex-1">
-                    {filteredVideos.map((v, i) => {
-                      const ml = v.subs_l2[v.matchLineIndex];
-                      const isActive = i === currentIndex;
-                      return (
-                        <Pressable
-                          key={v.id}
-                          onPress={() => selectFromList(i)}
-                          className={`mb-1.5 flex-row items-center gap-2 rounded-lg p-1.5 ${isActive ? 'bg-primary/5' : ''}`}
-                        >
-                          <View className="h-9 w-16 overflow-hidden rounded bg-muted">
-                            <Image
-                              source={{ uri: youtubeThumbnail(v.youtube_id) }}
-                              className="h-full w-full"
-                              resizeMode="cover"
-                            />
-                          </View>
-                          <View className="min-w-0 flex-1">
-                            <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                              {v.title}
-                            </Text>
-                            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                              {ml?.line}
-                            </Text>
-                          </View>
-                          {ml && (
-                            <Text className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                              {formatTime(ml.starttime)}
-                            </Text>
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                }
-                info={isWide && subtitleMode === 'multiline' ? undefined : videoInfoContent}
-              />
-            </View>
-          )}
-        </View>
-      </View>
-    </View>
-  ) : null;
 
   // ── Advanced search modal content ──
   // Distinct categories present in the current result pool — the checklist
@@ -1517,35 +1145,27 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
         </>
       )}
 
-      {/* ── Playback modal — opens when a result is clicked. The list stays
-          mounted underneath (SPEC-082 Task 13 list-first layout). */}
-      <Dialog.Root open={videoOpen} onOpenChange={setVideoOpen}>
-        <Dialog.Portal>
-          {isMd ? (
-            <View className="absolute inset-0 items-center justify-center px-4">
-              <View
-                className={`w-full overflow-hidden rounded-xl border border-border bg-background ${
-                  isWide && subtitleMode === 'multiline' ? 'max-w-4xl' : 'max-w-2xl'
-                }`}
-                style={{
-                  // Inline shadow — see NavBar workaround for the css-interop crash.
-                  shadowColor: ICON_MUTED,
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
-                  elevation: 8,
-                }}
-              >
-                {videoContent}
-              </View>
-            </View>
-          ) : (
-            <Dialog.SheetContent className="max-h-[90%]">
-              {videoContent}
-            </Dialog.SheetContent>
-          )}
-        </Dialog.Portal>
-      </Dialog.Root>
+      {/* ── Playback modal — the same shared modal the DeepSeek "Examples
+          from Videos" chips open. Rendered through the native Dialog portal,
+          so it sizes against the screen (wider on wide screens in multiline
+          mode). The list stays mounted underneath (SPEC-082 Task 13). */}
+      <SubsSearchPlaybackModal
+        videos={filteredVideos}
+        index={videoOpen ? currentIndex : null}
+        onIndexChange={(i) => {
+          if (i === null) {
+            setVideoOpen(false);
+          } else {
+            setCurrentIndex(i);
+          }
+        }}
+        highlightTerms={highlightTerms}
+        autoplay={false}
+        getLines={(v) => fullSubsMap[v.youtube_id] ?? v.subs_l2}
+        onLoadFullSubtitles={handleLoadFullSubtitles}
+        loadingFullSubs={loadingFullSubs}
+        onVideoError={handleVideoError}
+      />
 
       {/* ── Advanced search modal ── */}
       <Dialog.Root open={advancedOpen} onOpenChange={setAdvancedOpen}>
