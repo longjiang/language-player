@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { View, Text, TextInput, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -210,22 +212,23 @@ export default function SavedWordsScreen() {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable
+          <Button
             onPress={handleExport}
             disabled={exporting || allWords.length === 0}
-            className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5"
+            variant="outline"
+            size="sm"
           >
             {exporting ? (
               <ActivityIndicator size="small" color={ICON_MUTED} />
             ) : (
               <Download size={14} color={ICON_MUTED} />
             )}
-            <Text className="text-xs text-muted-foreground">{t('action.export')}</Text>
-          </Pressable>
-          <Pressable onPress={handleClearAll} className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5">
+            <Text className={`text-xs ${buttonTextClass('outline')}`}>{t('action.export')}</Text>
+          </Button>
+          <Button onPress={handleClearAll} variant="outline" size="sm">
             <Trash2 size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{t('action.clear_all')}</Text>
-          </Pressable>
+            <Text className={`text-xs ${buttonTextClass('outline')}`}>{t('action.clear_all')}</Text>
+          </Button>
         </View>
       </View>
 
@@ -233,8 +236,8 @@ export default function SavedWordsScreen() {
       <View className="flex-row items-center gap-3 px-4 pb-3">
         <View className="flex-row items-center rounded-lg border border-border bg-background px-3 py-2 flex-1">
           <Search size={14} color={ICON_MUTED} />
-          <TextInput
-            className="ml-2 flex-1 text-sm text-foreground"
+          <Input
+            className="ml-2 flex-1 text-sm text-foreground border-0 bg-background px-0 py-0"
             placeholder={t('placeholder.filter')}
             placeholderTextColor={ICON_MUTED}
             value={filterText}

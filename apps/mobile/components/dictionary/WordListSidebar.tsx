@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -215,10 +217,10 @@ function SidebarEntryCard({
   const displayHead = item.head || item.entryId || item.id;
   if (entry === undefined) {
     content = (
-      <View className="flex-row items-center gap-2 rounded-lg border border-border bg-card p-3">
+      <Card className="flex-row items-center gap-2 p-3">
         <Text className="flex-1 text-sm font-medium text-muted-foreground" numberOfLines={1}>{displayHead}</Text>
         <ActivityIndicator size="small" color={ICON_MUTED} />
-      </View>
+      </Card>
     );
   } else if (!entry) {
     content = (
@@ -286,7 +288,7 @@ export function WordListSidebar({
       headerActions={
         currentIdx >= 0 ? (
           <View className="flex-row items-center gap-1">
-            <Pressable
+            <Button
               onPress={() => {
                 const prev = currentIdx > 0 ? items[currentIdx - 1] : null;
                 if (prev) {
@@ -295,13 +297,14 @@ export function WordListSidebar({
                 }
               }}
               disabled={currentIdx <= 0}
-              className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+              variant="ghost"
+              size="sm"
               accessibilityLabel={t('action.previous')}
             >
               <ChevronLeft size={16} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('action.previous')}</Text>
-            </Pressable>
-            <Pressable
+              <Text className={`text-xs ${buttonTextClass('ghost')}`}>{t('action.previous')}</Text>
+            </Button>
+            <Button
               onPress={() => {
                 const next = currentIdx >= 0 && currentIdx < items.length - 1 ? items[currentIdx + 1] : null;
                 if (next) {
@@ -310,12 +313,13 @@ export function WordListSidebar({
                 }
               }}
               disabled={currentIdx < 0 || currentIdx >= items.length - 1}
-              className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+              variant="ghost"
+              size="sm"
               accessibilityLabel={t('action.next')}
             >
-              <Text className="text-xs text-muted-foreground">{t('action.next')}</Text>
+              <Text className={`text-xs ${buttonTextClass('ghost')}`}>{t('action.next')}</Text>
               <ChevronRight size={16} color={ICON_MUTED} />
-            </Pressable>
+            </Button>
           </View>
         ) : undefined
       }

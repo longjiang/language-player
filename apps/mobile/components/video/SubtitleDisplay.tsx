@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, Animated, Easing } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -332,14 +333,14 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
             <Text className="text-sm text-center text-muted-foreground">
               {t('msg.upgrade_to_pro_banner')}
             </Text>
-            <Pressable
+            <Button
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
-              className="mt-3 rounded-lg bg-primary px-4 py-2"
+              className="mt-3"
             >
               <Text className="text-sm font-semibold text-primary-foreground">
                 {t('action.upgrade_to_pro')}
               </Text>
-            </Pressable>
+            </Button>
           </View>
         ) : null}
       />

@@ -10,11 +10,12 @@ import React from 'react';
 import {
   View,
   Text,
-  TextInput,
   SectionList,
   type SectionListData,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { X, Search, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY, ICON_ON_ACCENT } from '@/lib/theme-colors';
@@ -160,9 +161,9 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
 
       {showClose && (
         <View className="flex-row justify-end px-4 pt-2">
-          <Pressable onPress={onDismiss} className="p-1.5 rounded-lg">
+          <Button onPress={onDismiss} variant="ghost" size="icon">
             <X size={20} color={ICON_MUTED} />
-          </Pressable>
+          </Button>
         </View>
       )}
 
@@ -199,8 +200,8 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
           <View className="px-3 pt-3 pb-1">
             <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2">
               <Search size={16} color={ICON_MUTED} />
-              <TextInput
-                className="flex-1 ml-2 text-foreground text-sm"
+              <Input
+                className="flex-1 ml-2 border-0 bg-transparent px-0 py-0 text-foreground text-sm"
                 placeholder={t('placeholder.search_languages')}
                 placeholderTextColor={PLACEHOLDER_COLOR}
                 value={search}
@@ -266,16 +267,17 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
         {/* Bottom action: Next (L1) or Start Learning (L2) */}
         <View className="flex-row flex-wrap items-center justify-end">
           {activeTab === 'l1' && (
-            <Pressable
+            <Button
               onPress={() => setActiveTab('l2')}
-              className="bg-primary px-4 py-2 rounded-lg flex-row flex-wrap items-center gap-1.5 max-w-full"
+              variant="default"
+              className="max-w-full flex-wrap"
               {...e2e('picker-next-button')}
             >
               <Text className="text-primary-foreground font-bold text-sm flex-shrink">
                 {t('action.next')}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />
-            </Pressable>
+            </Button>
           )}
 
           {activeTab === 'l2' && selectedL2 && (

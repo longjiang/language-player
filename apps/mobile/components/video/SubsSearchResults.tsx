@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, FlatList, ScrollView, TextInput, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, FlatList, ScrollView, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import Toast from 'react-native-toast-message';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import * as Dialog from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -720,7 +722,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
   const toolbar = (
     <View className="mb-2 gap-2">
       <View className="flex-row items-center gap-2">
-        <TextInput
+        <Input
           value={listSearch}
           onChangeText={setListSearch}
           placeholder={t('placeholder.filter_videos', { n: filteredVideos.length })}
@@ -754,9 +756,15 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       ) : listSort === 'ai' && aiError ? (
         <View className="flex-row items-center gap-2 px-1">
           <Text className="text-xs text-muted-foreground">{t('msg.ai_grouping_failed')}</Text>
-          <Pressable onPress={handleRetryAi} hitSlop={6} accessibilityRole="button">
+          <Button
+            variant="link"
+            size="sm"
+            onPress={handleRetryAi}
+            hitSlop={6}
+            accessibilityRole="button"
+          >
             <Text className="text-xs font-semibold text-primary underline">{t('action.retry')}</Text>
-          </Pressable>
+          </Button>
         </View>
       ) : null}
     </View>
@@ -808,7 +816,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       <ScrollView className="max-h-[70vh] p-4">
         {/* Custom search terms */}
         <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('label.search_terms')}</Text>
-        <TextInput
+        <Input
           value={customTerms}
           onChangeText={setCustomTerms}
           placeholder={t('placeholder.custom_search_terms')}
@@ -818,7 +826,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
         {/* Exclude terms */}
         <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('label.exclude_terms')}</Text>
-        <TextInput
+        <Input
           value={excludeTerms}
           onChangeText={setExcludeTerms}
           placeholder={t('placeholder.exclude_terms')}
@@ -934,20 +942,20 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
 
       {/* Footer — reset / apply */}
       <View className="flex-row items-center justify-between gap-2 border-t border-border px-4 py-3">
-        <Pressable
+        <Button
           onPress={resetAdvanced}
-          className="rounded-md px-3 py-2 active:bg-muted"
+          variant="ghost"
+          size="sm"
           accessibilityRole="button"
         >
-          <Text className="text-xs font-medium text-muted-foreground">{t('action.reset')}</Text>
-        </Pressable>
-        <Pressable
+          <Text className={buttonTextClass('ghost') + ' text-xs font-medium'}>{t('action.reset')}</Text>
+        </Button>
+        <Button
           onPress={() => setAdvancedOpen(false)}
-          className="rounded-md bg-primary px-4 py-2 active:opacity-80"
           accessibilityRole="button"
         >
           <Text className="text-xs font-semibold text-primary-foreground">{t('action.apply')}</Text>
-        </Pressable>
+        </Button>
       </View>
     </>
   );
@@ -1025,11 +1033,15 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           <Text className="flex-1 text-xs text-muted-foreground">
             {t('msg.upgrade_to_pro_banner')}
           </Text>
-          <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}>
+          <Button
+            variant="link"
+            size="sm"
+            onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
+          >
             <Text className="text-xs font-semibold text-primary underline">
               {t('action.upgrade_to_pro')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       )}
 

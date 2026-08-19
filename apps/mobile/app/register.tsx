@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY, ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -98,7 +100,7 @@ export default function RegisterScreen() {
 
       <View className="flex-row gap-3 mb-3">
         <View className="flex-1">
-          <TextInput
+          <Input
             className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
             placeholder={t('placeholder.first_name')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -108,7 +110,7 @@ export default function RegisterScreen() {
           />
         </View>
         <View className="flex-1">
-          <TextInput
+          <Input
             className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
             placeholder={t('placeholder.last_name')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -119,7 +121,7 @@ export default function RegisterScreen() {
         </View>
       </View>
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -132,7 +134,7 @@ export default function RegisterScreen() {
         {...e2e('register-email-input')}
       />
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.password_min')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -144,7 +146,7 @@ export default function RegisterScreen() {
         {...e2e('register-password-input')}
       />
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
         placeholder={t('placeholder.confirm_password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -202,7 +204,7 @@ export default function RegisterScreen() {
         )}
 
         {acquisitionSource === 'other' && (
-          <TextInput
+          <Input
             className="mt-3 bg-card border border-border rounded-lg px-4 py-3 text-foreground"
             placeholder={t('placeholder.please_specify')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -216,8 +218,8 @@ export default function RegisterScreen() {
         )}
       </View>
 
-      <Pressable
-        className="bg-primary py-3 rounded-lg items-center mb-3"
+      <Button
+        className="mb-3"
         onPress={handleRegister}
         disabled={loading}
         {...e2e('register-create-button')}
@@ -229,7 +231,7 @@ export default function RegisterScreen() {
             {t('action.create_account')}
           </Text>
         )}
-      </Pressable>
+      </Button>
 
       <Pressable onPress={() => router.back()} {...e2e('register-back-to-login')}>
         <Text className="text-primary text-center text-sm">

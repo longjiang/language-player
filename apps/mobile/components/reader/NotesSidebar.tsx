@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Plus, MoreHorizontal, PenLine, Trash2, Check, Cloud } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -46,13 +48,13 @@ export function NotesSidebar({
   return (
     <View>
       <View className="px-3 py-2">
-        <Pressable
+        <Button
           onPress={onNewNote}
-          className="flex-row items-center gap-1.5 rounded-lg border border-border px-3 py-2 active:bg-muted"
+          variant="outline"
         >
           <Plus size={14} color={ICON_MUTED} />
           <Text className="text-xs text-foreground">{t('action.new_note')}</Text>
-        </Pressable>
+        </Button>
       </View>
 
       <View className="px-1">
@@ -69,7 +71,7 @@ export function NotesSidebar({
           <View key={n.id}>
             {renameId === n.id ? (
               <View className="flex-row items-center px-2 py-1">
-                <TextInput
+                <Input
                   className="flex-1 rounded border border-border px-2 py-1 text-xs text-foreground"
                   value={renameText}
                   onChangeText={setRenameText}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, Image, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, FlatList, Image, ActivityIndicator } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { baseCode } from '@langplayer/utils';
@@ -185,7 +186,7 @@ export default function TvShowsScreen() {
         }
       >
         {/* Search */}
-        <TextInput
+        <Input
           className={`rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground ${
             isMd ? 'flex-1' : ''
           }`}

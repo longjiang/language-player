@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -61,7 +63,7 @@ export default function LoginScreen() {
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
       )}
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -71,7 +73,7 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         {...e2e('login-email-input')}
       />
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -92,8 +94,8 @@ export default function LoginScreen() {
         </Text>
       </Pressable>
 
-      <Pressable
-        className="bg-primary py-3 rounded-lg items-center mb-3"
+      <Button
+        className="mb-3"
         onPress={handleLogin}
         disabled={loading}
         {...e2e('login-signin-button')}
@@ -105,7 +107,7 @@ export default function LoginScreen() {
             {t('action.login')}
           </Text>
         )}
-      </Pressable>
+      </Button>
 
       <Pressable onPress={() => { Keyboard.dismiss(); router.push('/register'); }}>
         <Text className="text-primary text-center text-sm">

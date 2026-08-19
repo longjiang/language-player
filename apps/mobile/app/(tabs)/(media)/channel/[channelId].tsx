@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -166,12 +167,12 @@ export default function ChannelPage() {
           <View className="items-center gap-4 rounded-2xl border-2 border-dashed border-destructive/30 p-8">
             <AlertCircle size={40} color={ICON_DESTRUCTIVE} />
             <Text className="text-center text-muted-foreground">{error}</Text>
-            <Pressable
+            <Button
               onPress={() => fetchVideos(1)}
-              className="rounded-lg border border-border px-4 py-2 active:bg-muted"
+              variant="outline"
             >
               <Text className="text-sm font-medium text-foreground">{t('action.try_again')}</Text>
-            </Pressable>
+            </Button>
           </View>
         )}
 
@@ -192,10 +193,10 @@ export default function ChannelPage() {
 
           {hasMore && (
             <View className="mt-6 items-center px-4">
-              <Pressable
+              <Button
                 onPress={loadMore}
                 disabled={loading}
-                className="rounded-lg border border-border px-6 py-3 active:bg-muted"
+                variant="outline"
               >
                 <View className="flex-row items-center gap-2">
                   {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
@@ -203,7 +204,7 @@ export default function ChannelPage() {
                     {t('action.load_more')}
                   </Text>
                 </View>
-              </Pressable>
+              </Button>
             </View>
           )}
         </>

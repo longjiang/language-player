@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Alert, View, Text, TextInput, ActivityIndicator } from 'react-native';
+import { Alert, View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useAuth } from '@/contexts/AuthContext';
@@ -167,15 +169,16 @@ export default function VerifyEmailScreen() {
               {errorMsg}
             </Text>
           )}
-          <Pressable
-            className="mt-6 border border-border rounded-lg px-6 py-3"
+          <Button
+            className="mt-6"
+            variant="outline"
             onPress={() => router.replace('/login')}
             {...e2e('verify-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
               {t('action.back_to_login')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       </AuthContainer>
     );
@@ -192,7 +195,7 @@ export default function VerifyEmailScreen() {
           <Text className="text-muted-foreground text-sm text-center mt-2">
             {t('msg.verification_code_sent', { email: email ?? '' })}
           </Text>
-          <TextInput
+          <Input
             className="mt-4 w-full rounded-lg border border-input bg-background px-4 py-3 text-center text-2xl tracking-widest text-foreground"
             placeholder={t('placeholder.verification_code')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -211,8 +214,8 @@ export default function VerifyEmailScreen() {
               {codeError}
             </Text>
           )}
-          <Pressable
-            className="mt-6 w-full bg-primary px-6 py-3 rounded-lg items-center"
+          <Button
+            className="mt-6 w-full"
             onPress={handleVerifyCode}
             disabled={verifyingCode || code.length < 8}
           >
@@ -223,16 +226,17 @@ export default function VerifyEmailScreen() {
                 {t('action.verify')}
               </Text>
             )}
-          </Pressable>
-          <Pressable
-            className="mt-4 w-full border border-border rounded-lg px-6 py-3 items-center"
+          </Button>
+          <Button
+            className="mt-4 w-full"
+            variant="outline"
             onPress={handleResend}
             disabled={resending}
           >
             <Text className="text-foreground font-medium text-sm">
               {resending ? t('msg.verifying') : t('action.resend_code')}
             </Text>
-          </Pressable>
+          </Button>
           <Pressable
             className="mt-4"
             onPress={() => router.replace('/login')}
@@ -256,15 +260,15 @@ export default function VerifyEmailScreen() {
         <Text className="text-muted-foreground text-sm text-center mt-2">
           {t('msg.email_verified')}
         </Text>
-        <Pressable
-          className="mt-6 bg-primary px-6 py-3 rounded-lg"
+        <Button
+          className="mt-6"
           onPress={() => router.replace('/login')}
           {...e2e('verify-back-to-login-button')}
         >
           <Text className="text-primary-foreground font-medium text-sm">
             {t('action.back_to_login')}
           </Text>
-        </Pressable>
+        </Button>
       </View>
     </AuthContainer>
   );

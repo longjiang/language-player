@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -68,15 +68,15 @@ export default function DeleteAccountScreen() {
           <Text className="text-muted-foreground text-sm text-center mt-2">
             {t('msg.account_deleted')}
           </Text>
-          <Pressable
-            className="mt-6 bg-primary px-6 py-3 rounded-lg"
+          <Button
+            className="mt-6"
             onPress={() => router.replace('/login')}
             {...e2e('delete-account-back-button')}
           >
             <Text className="text-primary-foreground font-medium text-sm">
               {t('action.back_to_login')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       </AuthContainer>
     );
@@ -101,25 +101,26 @@ export default function DeleteAccountScreen() {
           <ActivityIndicator color={ICON_ON_PRIMARY} size="large" />
         ) : (
           <>
-            <Pressable
-              className="bg-destructive py-3 rounded-lg items-center mb-3"
+            <Button
+              className="mb-3"
+              variant="destructive"
               onPress={handleDelete}
               {...e2e('delete-account-confirm-button')}
             >
               <Text className="text-destructive-foreground font-bold text-base">
                 {t('action.confirm_deletion')}
               </Text>
-            </Pressable>
+            </Button>
 
-            <Pressable
-              className="border border-border py-3 rounded-lg items-center"
+            <Button
+              variant="outline"
               onPress={() => router.back()}
               {...e2e('delete-account-cancel-button')}
             >
               <Text className="text-foreground font-medium text-sm">
                 {t('action.cancel')}
               </Text>
-            </Pressable>
+            </Button>
           </>
         )}
       </View>

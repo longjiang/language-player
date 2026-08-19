@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -233,9 +233,9 @@ export default function WordDetailScreen() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Pressable onPress={() => router.push('/(tabs)/(vocab)' as any)} className="self-start px-1 py-3">
+        <Button onPress={() => router.push('/(tabs)/(vocab)' as any)} variant="link" className="self-start">
           <Text className="text-sm text-primary">← {t('action.back')}</Text>
-        </Pressable>
+        </Button>
         <ErrorNotice message={error} />
       </View>
     );
@@ -245,9 +245,9 @@ export default function WordDetailScreen() {
   if (!entry) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Pressable onPress={() => router.push('/(tabs)/(vocab)' as any)} className="self-start px-1 py-3">
+        <Button onPress={() => router.push('/(tabs)/(vocab)' as any)} variant="link" className="self-start">
           <Text className="text-sm text-primary">← {t('action.back')}</Text>
-        </Pressable>
+        </Button>
         <Text className="text-muted-foreground">{t('msg.no_notes_yet')}</Text>
       </View>
     );
@@ -284,9 +284,10 @@ export default function WordDetailScreen() {
             />
           </View>
           {sidebarAvailable && (
-            <Pressable
+            <Button
               onPress={toggle}
-              className="flex-row items-center gap-1.5 rounded-md border border-border px-3 py-1.5 active:bg-muted"
+              variant="outline"
+              size="sm"
               accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
             >
               {isWide && sidebarOpen ? (
@@ -294,10 +295,10 @@ export default function WordDetailScreen() {
               ) : (
                 <PanelRight size={16} color={ICON_MUTED} />
               )}
-              <Text className="text-xs text-muted-foreground">
+              <Text className={`text-xs ${buttonTextClass('outline')}`}>
                 {t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
               </Text>
-            </Pressable>
+            </Button>
           )}
         </View>
 

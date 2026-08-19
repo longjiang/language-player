@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { RefreshCw, CloudOff, CloudUpload, CheckCircle2, AlertTriangle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -83,14 +84,15 @@ export default function SyncStatusScreen() {
       </View>
 
       {errorCount > 0 && (
-        <Pressable
+        <Button
           onPress={() => void retryFailedOps()}
-          className="mt-3 flex-row items-center justify-center gap-2 rounded-lg border border-border bg-card py-2.5"
+          variant="outline"
+          className="mt-3"
           accessibilityRole="button"
         >
           <RefreshCw size={16} color={ICON_MUTED} />
           <Text className="text-sm font-medium text-foreground">{t('action.retry')}</Text>
-        </Pressable>
+        </Button>
       )}
 
       <Text className="mt-6 mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -101,9 +103,9 @@ export default function SyncStatusScreen() {
         <Text className="text-sm text-muted-foreground">{t('msg.no_pending_changes')}</Text>
       ) : (
         ops.map((op) => (
-          <View
+          <Card
             key={op.id}
-            className="mb-2 rounded-lg border border-border bg-card p-3"
+            className="mb-2 p-3"
           >
             <View className="flex-row items-center justify-between">
               <Text className="text-sm font-medium text-foreground">
@@ -123,7 +125,7 @@ export default function SyncStatusScreen() {
             {op.last_error ? (
               <Text className="mt-1 text-xs text-destructive">{op.last_error}</Text>
             ) : null}
-          </View>
+          </Card>
         ))
       )}
     </ScrollView>

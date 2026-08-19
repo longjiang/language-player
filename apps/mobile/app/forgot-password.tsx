@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TextInput, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, ActivityIndicator, Keyboard } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -47,15 +49,16 @@ export default function ForgotPasswordScreen() {
           <Text className="text-muted-foreground text-sm text-center mt-2">
             {t('msg.password_reset_sent', { email })}
           </Text>
-          <Pressable
-            className="mt-6 border border-border rounded-lg px-6 py-3"
+          <Button
+            className="mt-6"
+            variant="outline"
             onPress={() => router.back()}
             {...e2e('forgot-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
               {t('action.back_to_login')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       </AuthContainer>
     );
@@ -79,7 +82,7 @@ export default function ForgotPasswordScreen() {
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
       )}
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -90,8 +93,8 @@ export default function ForgotPasswordScreen() {
         {...e2e('forgot-email-input')}
       />
 
-      <Pressable
-        className="bg-primary py-3 rounded-lg items-center mb-3"
+      <Button
+        className="mb-3"
         onPress={handleRequestReset}
         disabled={loading}
         {...e2e('forgot-send-button')}
@@ -103,7 +106,7 @@ export default function ForgotPasswordScreen() {
             {t('action.send_reset_link')}
           </Text>
         )}
-      </Pressable>
+      </Button>
 
       <Pressable onPress={() => router.back()}>
         <Text className="text-primary text-center text-sm">

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -151,19 +152,20 @@ export default function MyChannelsScreen() {
           {tabIds.length} {t('msg.channels')}
         </Text>
         {tabIds.length > 0 && (
-          <Pressable
+          <Button
             onPress={handleResetPress}
             disabled={busy}
-            className="rounded-md border border-border px-3 py-1.5 active:bg-muted"
+            variant="outline"
+            size="sm"
           >
-            <Text className="text-xs text-muted-foreground">
+            <Text className={buttonTextClass('outline') + ' text-xs'}>
               {busy
                 ? t('msg.loading')
                 : tab === 'subscribed'
                   ? t('action.unsubscribe_all')
                   : t('action.unmark_all_not_interested')}
             </Text>
-          </Pressable>
+          </Button>
         )}
       </View>
 
@@ -189,9 +191,10 @@ export default function MyChannelsScreen() {
           <Text className="flex-1 text-2xl font-bold text-foreground">
             {t('title.my_channels')}
           </Text>
-          <Pressable
+          <Button
             onPress={toggle}
-            className="rounded p-1 active:bg-muted"
+            variant="ghost"
+            size="icon"
             accessibilityRole="button"
             accessibilityLabel={
               isWide
@@ -206,7 +209,7 @@ export default function MyChannelsScreen() {
             ) : (
               <PanelRight size={20} color={ICON_MUTED} />
             )}
-          </Pressable>
+          </Button>
         </View>
 
         <View className="flex-1 flex-row">

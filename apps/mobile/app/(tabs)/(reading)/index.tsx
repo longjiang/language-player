@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -191,9 +193,10 @@ export default function ReaderScreen() {
               : savedFlash
                 ? <Text className="mr-2 text-xs text-muted-foreground">{t('msg.saved_locally')}</Text>
                 : null}
-            <Pressable
+            <Button
               onPress={toggle}
-              className="rounded p-1.5 active:bg-muted"
+              variant="ghost"
+              size="icon"
               accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
             >
               {isWide && sidebarOpen ? (
@@ -201,28 +204,26 @@ export default function ReaderScreen() {
               ) : (
                 <PanelRightOpen size={18} color={ICON_MUTED} />
               )}
-            </Pressable>
+            </Button>
           </View>
 
           {/* Editor / Reader */}
           {activeTab === 'edit' && (
             <View className="flex-1">
-              <TextInput
+              <Textarea
                 className="flex-1 px-5 pt-4 pb-4 text-sm text-foreground"
                 placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
                 placeholderTextColor={ICON_MUTED}
                 value={text}
                 onChangeText={handleTextChange}
-                multiline
-                textAlignVertical="top"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
               <View className="flex-row gap-2 border-t border-border px-4 py-3">
-                <Pressable
+                <Button
                   onPress={handleAddSampleText}
                   disabled={loadingSample}
-                  className="flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted"
+                  variant="outline"
                 >
                   {loadingSample ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
@@ -232,19 +233,17 @@ export default function ReaderScreen() {
                   <Text className="text-sm font-medium text-foreground">
                     {t('action.add_sample_text')}
                   </Text>
-                </Pressable>
-                <Pressable
+                </Button>
+                <Button
                   onPress={() => setActiveTab('read')}
                   disabled={!text.trim()}
-                  className={`flex-row items-center gap-1.5 rounded-lg px-4 py-2 ${
-                    !text.trim() ? 'bg-muted' : 'bg-primary active:bg-primary/80'
-                  }`}
+                  variant="default"
                 >
                   <Sparkles size={14} color="#fff" />
                   <Text className="text-sm font-medium text-primary-foreground">
                     {t('action.tokenize')}
                   </Text>
-                </Pressable>
+                </Button>
               </View>
             </View>
           )}
@@ -284,13 +283,14 @@ export default function ReaderScreen() {
             <View className="flex-1 items-center justify-center px-6 pb-12">
               <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
               <Text className="text-center text-sm leading-relaxed text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
-              <Pressable
+              <Button
                 onPress={() => setActiveTab('edit')}
-                className="mt-4 flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted"
+                variant="outline"
+                className="mt-4"
               >
                 <PenLine size={14} color={ICON_MUTED} />
                 <Text className="text-xs text-foreground">{t('action.edit')}</Text>
-              </Pressable>
+              </Button>
             </View>
           )}
         </View>

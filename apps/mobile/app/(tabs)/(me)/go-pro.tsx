@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Linking, Platform } from 'react-native';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -353,7 +355,7 @@ export default function GoProScreen() {
 
       {/* ── Current Subscription Status ── */}
       {subLoaded && isPro && (
-        <View className="mt-6 rounded-xl border border-border bg-card p-4">
+        <Card className="mt-6">
           <View className="flex-row items-center gap-2">
             <Crown size={18} color={ICON_WARNING} />
             <Text className="text-base font-semibold text-foreground">{t('title.subscription')}</Text>
@@ -384,7 +386,7 @@ export default function GoProScreen() {
               {t('msg.days_remaining', { n: daysUntilExpiry })}
             </Text>
           )}
-        </View>
+        </Card>
       )}
 
       {/* ── Plan Selection ── */}
@@ -466,7 +468,7 @@ export default function GoProScreen() {
 
       {/* ── Purchase (store billing only, SPEC-014 / SPEC-068) ── */}
       {IAP_AVAILABLE && selectedPlan === 'lifetime' && selectedPlanData && (
-          <View className="mt-8 rounded-xl border border-border bg-card p-4">
+          <Card className="mt-8">
             <View className="flex-row items-center gap-2 mb-4">
               {Platform.OS === 'android' ? (
                 <CreditCard size={20} color={ICON_PRIMARY} />
@@ -482,14 +484,15 @@ export default function GoProScreen() {
                 <Text className="mt-2 text-center text-sm font-medium text-foreground">
                   {t('msg.cancel_existing_subscription_first')}
                 </Text>
-                <Pressable
+                <Button
                   onPress={() => router.push('/(tabs)/(me)/profile' as any)}
-                  className="mt-4 rounded-lg border border-border px-4 py-2"
+                  variant="outline"
+                  className="mt-4"
                 >
                   <Text className="text-sm font-medium text-foreground">
                     {t('action.view_profile')}
                   </Text>
-                </Pressable>
+                </Button>
               </View>
             ) : isLifetimeOwner ? (
               <View className="rounded-lg border border-border bg-muted/40 p-4 items-center">
@@ -536,18 +539,19 @@ export default function GoProScreen() {
 
             {/* Restore Purchases (iOS / Android) — hidden for lifetime owners (A5) */}
             {!isLifetimeOwner && (
-              <Pressable
+              <Button
                 onPress={handleRestorePurchases}
                 disabled={restoring}
-                className="mt-3 flex-row items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-2.5"
+                variant="outline"
+                className="mt-3"
               >
                 {restoring ? (
                   <ActivityIndicator size="small" color={ICON_MUTED} />
                 ) : (
                   <RefreshCw size={16} color={ICON_MUTED} />
                 )}
-                <Text className="text-sm text-muted-foreground">{t('action.restore_purchases')}</Text>
-              </Pressable>
+                <Text className="text-sm text-foreground">{t('action.restore_purchases')}</Text>
+              </Button>
             )}
 
             {/* Error */}
@@ -567,11 +571,11 @@ export default function GoProScreen() {
                 <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
               </Pressable>
             </View>
-          </View>
+          </Card>
       )}
 
       {/* Features */}
-      <View className="mt-8 rounded-xl border border-border bg-card p-4">
+      <Card className="mt-8">
         <Text className="mb-3 text-sm font-semibold text-foreground">{t('pro.features_title')}</Text>
         {FEATURE_KEYS.map((key) => (
           <View key={key} className="flex-row items-center gap-2 py-1.5">
@@ -579,7 +583,7 @@ export default function GoProScreen() {
             <Text className="text-sm text-foreground">{t(key)}</Text>
           </View>
         ))}
-      </View>
+      </Card>
 
       <Text className="mt-6 text-center text-xs text-muted-foreground">
         {t('msg.contact_support_email', { email: 'jon.long@zerotohero.ca' })}

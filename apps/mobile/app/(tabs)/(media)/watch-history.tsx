@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { View, Text, SectionList, Image, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -236,18 +237,19 @@ export default function WatchHistoryScreen() {
       <View className="flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         {items.length > 0 && (
-          <Pressable
+          <Button
             onPress={handleClearAll}
             disabled={clearing}
-            className="flex-row items-center gap-1 rounded-lg px-3 py-2 active:bg-muted"
+            variant="ghost"
+            size="sm"
           >
             {clearing ? (
               <ActivityIndicator size="small" className="text-destructive" />
             ) : (
               <Trash2 size={16} color={ICON_MUTED} />
             )}
-            <Text className="text-sm text-muted-foreground">{t('action.clear_all')}</Text>
-          </Pressable>
+            <Text className={buttonTextClass('ghost') + ' text-sm'}>{t('action.clear_all')}</Text>
+          </Button>
         )}
       </View>
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
@@ -69,13 +71,13 @@ export default function PlaylistsScreen() {
   };
 
   const renderNewButton = () => (
-    <Pressable
+    <Button
       onPress={openCreate}
-      className="flex-row items-center gap-1 rounded-lg bg-primary px-3 py-2 active:opacity-90"
+      variant="default"
     >
       <Plus size={16} color="#fff" />
       <Text className="text-sm font-bold text-primary-foreground">{t('action.new_playlist')}</Text>
-    </Pressable>
+    </Button>
   );
 
   // Exact card width keeps incomplete last rows at normal size (no flex:1 stretch).
@@ -92,7 +94,7 @@ export default function PlaylistsScreen() {
           <Dialog.Description className="mt-1 text-sm text-muted-foreground">
             {t('msg.enter_playlist_name')}
           </Dialog.Description>
-          <TextInput
+          <Input
             value={name}
             onChangeText={setName}
             placeholder={t('label.playlist_name')}
@@ -106,17 +108,17 @@ export default function PlaylistsScreen() {
             <Dialog.Close className="rounded-lg px-4 py-2.5">
               <Text className="text-sm text-muted-foreground">{t('action.cancel')}</Text>
             </Dialog.Close>
-            <Pressable
+            <Button
               onPress={() => void handleCreate()}
               disabled={creating || !name.trim()}
-              className="flex-row items-center rounded-lg bg-primary px-4 py-2.5 disabled:opacity-50"
+              variant="default"
             >
               {creating ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text className="text-sm font-bold text-primary-foreground">{t('action.create')}</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
         </Dialog.Content>
       </Dialog.Portal>

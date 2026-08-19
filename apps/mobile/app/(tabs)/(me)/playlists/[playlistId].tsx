@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
@@ -162,12 +164,13 @@ export default function PlaylistDetailScreen() {
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
           <Text className="text-center text-muted-foreground">{t('msg.playlist_not_found')}</Text>
-          <Pressable
+          <Button
             onPress={() => router.push('/(tabs)/(me)/playlists' as any)}
-            className="mt-3 rounded-lg px-3 py-2 active:bg-muted"
+            variant="link"
+            className="mt-3"
           >
             <Text className="text-sm font-medium text-primary">{t('title.playlists')}</Text>
-          </Pressable>
+          </Button>
         </View>
       </PageContainer>
     );
@@ -203,16 +206,16 @@ export default function PlaylistDetailScreen() {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable
+          <Button
             onPress={() => {
               setRenameValue(playlist.title);
               setRenameOpen(true);
             }}
-            className="flex-row items-center gap-1 rounded-lg border border-border px-3 py-2 active:bg-muted"
+            variant="outline"
           >
             <Pencil size={14} color={ICON_MUTED} />
             <Text className="text-sm text-foreground">{t('action.rename_playlist')}</Text>
-          </Pressable>
+          </Button>
           <Pressable
             onPress={handleDelete}
             disabled={deleting}
@@ -283,7 +286,7 @@ export default function PlaylistDetailScreen() {
             <Dialog.Description className="mt-1 text-sm text-muted-foreground">
               {t('msg.enter_playlist_name')}
             </Dialog.Description>
-            <TextInput
+            <Input
               value={renameValue}
               onChangeText={setRenameValue}
               placeholder={t('label.playlist_name')}
@@ -297,17 +300,17 @@ export default function PlaylistDetailScreen() {
               <Dialog.Close className="rounded-lg px-4 py-2.5">
                 <Text className="text-sm text-muted-foreground">{t('action.cancel')}</Text>
               </Dialog.Close>
-              <Pressable
+              <Button
                 onPress={() => void handleRename()}
                 disabled={renaming || !renameValue.trim()}
-                className="flex-row items-center rounded-lg bg-primary px-4 py-2.5 disabled:opacity-50"
+                variant="default"
               >
                 {renaming ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <Text className="text-sm font-bold text-primary-foreground">{t('action.save')}</Text>
                 )}
-              </Pressable>
+              </Button>
             </View>
           </Dialog.Content>
         </Dialog.Portal>

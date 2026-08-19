@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Image, TextInput } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Image } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -142,7 +144,7 @@ export default function LiveTvScreen() {
       <View className="flex-row items-center gap-2 border-b border-border px-3 py-2">
         <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-2.5">
           <Search size={14} color={ICON_MUTED} />
-          <TextInput
+          <Input
             className="flex-1 px-2 py-1.5 text-sm text-foreground"
             placeholder={t('action.search')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -150,12 +152,13 @@ export default function LiveTvScreen() {
             onChangeText={setSearch}
           />
         </View>
-        <Pressable
+        <Button
           onPress={() => setShowFilters(!showFilters)}
-          className={`rounded-lg p-2 ${showFilters ? 'bg-primary' : 'bg-card border border-border'}`}
+          variant={showFilters ? 'default' : 'outline'}
+          size="icon"
         >
           <SlidersHorizontal size={16} color={showFilters ? ICON_ON_PRIMARY : ICON_MUTED} />
-        </Pressable>
+        </Button>
       </View>
 
       {/* Filter dropdowns — Countries + Categories side by side */}

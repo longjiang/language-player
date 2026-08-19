@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ScrollView, TextInput } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { useLocalSearchParams } from 'expo-router';
 import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
@@ -207,9 +209,9 @@ export default function DocsScreen() {
 
     const docContent = (
       <>
-        <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
+        <Button variant="link" onPress={() => setSelectedDoc(null)} className="mb-4 self-start">
           <Text className="text-sm text-primary">← {t('action.back')}</Text>
-        </Pressable>
+        </Button>
 
         <Text className="text-xl font-bold text-foreground mb-2">{selectedDoc.title}</Text>
         {!isRootDoc && (
@@ -260,22 +262,24 @@ export default function DocsScreen() {
                     <Text className="text-sm font-semibold text-foreground">
                       {t('docs.table_of_contents')}
                     </Text>
-                    <Pressable onPress={() => setTocOpen(false)} className="rounded p-1 active:bg-muted">
+                    <Button variant="ghost" size="icon" onPress={() => setTocOpen(false)}>
                       <X size={18} color={ICON_MUTED} />
-                    </Pressable>
+                    </Button>
                   </View>
                   {tocSidebar}
                 </View>
               </>
             )}
 
-            <Pressable
+            <Button
               onPress={() => setTocOpen(true)}
-              className="absolute right-4 top-4 z-50 h-8 w-8 items-center justify-center rounded-md border border-border bg-background"
+              variant="outline"
+              size="icon"
+              className="absolute right-4 top-4 z-50"
               accessibilityLabel={t('docs.table_of_contents')}
             >
               <List size={18} color={ICON_MUTED} />
-            </Pressable>
+            </Button>
           </>
         )}
       </PageContainer>
@@ -291,8 +295,8 @@ export default function DocsScreen() {
       {/* Search */}
       <View className="flex-row items-center border border-border rounded-xl px-3 py-2.5 bg-card mb-4 mt-5">
         <Search size={16} color={ICON_MUTED} />
-        <TextInput
-          className="flex-1 ml-2 text-sm text-foreground"
+        <Input
+          className="flex-1 ml-2 text-sm text-foreground border-0 bg-card px-0 py-0"
           placeholder={t('placeholder.filter')}
           placeholderTextColor={ICON_MUTED}
           value={query}

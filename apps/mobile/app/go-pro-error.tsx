@@ -1,5 +1,5 @@
 import { View, Text, Linking } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
@@ -33,23 +33,25 @@ export default function GoProErrorPage() {
         </Text>
 
         <View className={`mt-8 w-full max-w-sm gap-3 ${isSm ? 'flex-row' : ''}`}>
-          <Pressable
-            className={`${isSm ? 'flex-1 ' : ''}border border-border rounded-lg py-3 items-center`}
+          <Button
+            variant="outline"
+            className={isSm ? 'flex-1' : ''}
             onPress={() => router.back()}
           >
             <Text className="text-foreground font-bold text-base">
               {t('action.try_again')}
             </Text>
-          </Pressable>
+          </Button>
 
-          <Pressable
-            className={`${isSm ? 'flex-1 ' : ''}bg-primary rounded-lg py-3 items-center`}
+          <Button
+            variant="default"
+            className={isSm ? 'flex-1' : ''}
             onPress={handleEmailSupport}
           >
             <Text className="text-primary-foreground font-bold text-base">
               {t('action.email_support')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       </View>
     </View>

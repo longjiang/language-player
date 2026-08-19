@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, LayoutChangeEvent } from 'react-native';
+import { Button } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -53,13 +54,14 @@ export function Header() {
           <SyncStatusIcon />
 
           {/* Search icon */}
-          <Pressable
+          <Button
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
-            className="rounded-lg p-1 active:bg-muted"
+            variant="ghost"
+            size="icon"
             {...e2e('header-search-button')}
           >
             <Search size={20} color={ICON_MUTED} />
-          </Pressable>
+          </Button>
 
           {/* Language switcher */}
           <LanguageSwitcher />
@@ -69,13 +71,14 @@ export function Header() {
 
           {/* Hamburger — phones only; md+ uses NavBar */}
           {!isMd && (
-            <Pressable
+            <Button
               onPress={() => setDrawerOpen(!drawerOpen)}
-              className="rounded-lg p-1.5 active:bg-muted"
+              variant="ghost"
+              size="icon"
               {...e2e('header-hamburger-button')}
             >
               {drawerOpen ? <X size={22} color={ICON_MUTED} /> : <Menu size={22} color={ICON_MUTED} />}
-            </Pressable>
+            </Button>
           )}
         </View>
       </View>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
@@ -298,16 +299,17 @@ export function DictionaryEntryCard({
             {saveButton
               ? <View className="-mr-1">{saveButton as any}</View>
               : saveContext ? (
-                <Pressable
+                <Button
                   onPress={(e) => { e.stopPropagation(); toggleSave(); }}
                   hitSlop={8}
-                  className="rounded p-1"
+                  variant="ghost"
+                  size="icon"
                   accessibilityLabel={wordSaved ? t('action.remove_from_saved') : t('action.save_word')}
                 >
                   {wordSaved
                     ? <BookmarkCheck size={20} color="#f59e0b" fill="#f59e0b" />
                     : <Bookmark size={20} color="#f59e0b" />}
-                </Pressable>
+                </Button>
               ) : null}
           </View>
         )}
