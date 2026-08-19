@@ -1,32 +1,32 @@
 import React from 'react';
-import { View } from 'react-native';
 import * as SwitchPrimitive from '@rn-primitives/switch';
-import { useColorScheme } from 'nativewind';
-import { darkSemantic, hslToHex, lightSemantic } from '@langplayer/shared';
+import { cn } from '@/lib/utils';
 
 // ── Root ──
+// Stock react-native-reusables/shadcn switch (no customizations other than
+// the app's color tokens): small (w-8 / h-[1.15rem]), bg-primary when
+// checked, bg-input when off.
 
 type RootProps = SwitchPrimitive.RootProps & {
   className?: string;
 };
 
 export function Root({ className, ...props }: RootProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
-  const bgColor = props.checked
-    ? hslToHex(isDark ? darkSemantic.primary : lightSemantic.primary)
-    : hslToHex(isDark ? darkSemantic.muted : lightSemantic.muted);
-
   return (
     <SwitchPrimitive.Root
-      className={`h-6 w-11 flex-row items-center rounded-full ${className ?? ''}`}
-      style={{ backgroundColor: bgColor }}
+      className={cn(
+        'flex h-[1.15rem] w-8 shrink-0 flex-row items-center rounded-full border border-transparent shadow-sm shadow-black/5',
+        props.checked ? 'bg-primary' : 'bg-input dark:bg-input/80',
+        props.disabled && 'opacity-50',
+        className,
+      )}
       {...props}
     >
       <SwitchPrimitive.Thumb
-        className="h-5 w-5 rounded-full bg-primary-foreground shadow-sm"
-        style={{ marginLeft: props.checked ? 22 : 2 }}
+        className={cn(
+          'bg-background size-4 rounded-full',
+          props.checked ? 'dark:bg-primary-foreground translate-x-3.5' : 'dark:bg-foreground translate-x-0',
+        )}
       />
     </SwitchPrimitive.Root>
   );

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -169,7 +169,7 @@ export default function PlaylistDetailScreen() {
             variant="link"
             className="mt-3"
           >
-            <Text className="text-sm font-medium text-primary">{t('title.playlists')}</Text>
+            <Text className={buttonTextClass('link')}>{t('title.playlists')}</Text>
           </Button>
         </View>
       </PageContainer>
@@ -214,7 +214,7 @@ export default function PlaylistDetailScreen() {
             variant="outline"
           >
             <Pencil size={14} color={ICON_MUTED} />
-            <Text className="text-sm text-foreground">{t('action.rename_playlist')}</Text>
+            <Text className={buttonTextClass('outline')}>{t('action.rename_playlist')}</Text>
           </Button>
           <Pressable
             onPress={handleDelete}
@@ -292,7 +292,7 @@ export default function PlaylistDetailScreen() {
               placeholder={t('label.playlist_name')}
               placeholderTextColor={PLACEHOLDER_COLOR}
               autoFocus
-              className="mt-3 rounded-lg border border-border bg-background px-3 py-2.5 text-foreground"
+              className="mt-3"
               onSubmitEditing={() => void handleRename()}
               returnKeyType="done"
             />
@@ -308,7 +308,7 @@ export default function PlaylistDetailScreen() {
                 {renaming ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text className="text-sm font-bold text-primary-foreground">{t('action.save')}</Text>
+                  <Text className={buttonTextClass('default')}>{t('action.save')}</Text>
                 )}
               </Button>
             </View>

@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -248,11 +248,11 @@ export function TextActionMenu(props: TextActionMenuProps) {
                 </View>
                 {contextExpanded ? (
                   <Button onPress={() => setContextExpanded(false)} variant="link" size="sm" className="mt-1">
-                    <Text className="text-xs font-medium text-primary">{t('action.show_less')}</Text>
+                    <Text className={buttonTextClass('link')}>{t('action.show_less')}</Text>
                   </Button>
                 ) : (
                   <Button onPress={() => setContextExpanded(true)} variant="link" size="sm" className="mt-1">
-                    <Text className="text-xs font-medium text-primary">{t('action.show_more')}</Text>
+                    <Text className={buttonTextClass('link')}>{t('action.show_more')}</Text>
                   </Button>
                 )}
               </View>

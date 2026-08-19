@@ -2,15 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, ActivityIndicator, Image } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { SearchBar } from '@/components/ui/search-bar';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
-import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
+import { Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
 import type { LiveTVChannel } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
@@ -142,14 +142,11 @@ export default function LiveTvScreen() {
     <>
       {/* Search & filter bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-3 py-2">
-        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-2.5">
-          <Search size={14} color={ICON_MUTED} />
-          <Input
-            className="flex-1 px-2 py-1.5 text-sm text-foreground"
-            placeholder={t('action.search')}
-            placeholderTextColor={PLACEHOLDER_COLOR}
+        <View className="flex-1">
+          <SearchBar
             value={search}
             onChangeText={setSearch}
+            placeholder={t('action.search')}
           />
         </View>
         <Button

@@ -86,7 +86,7 @@ export function Content({ children, className, ...props }: ContentProps) {
   return (
     <View className="absolute inset-0 flex items-center justify-center">
       <DialogPrimitive.Content
-        className={`w-[90%] max-w-md rounded-xl bg-card p-4 border border-border shadow-lg ${className ?? ''}`}
+        className={`bg-background border-border z-50 w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 ${className ?? ''}`}
         {...props}
       >
         {children}
@@ -205,7 +205,7 @@ type TitleProps = DialogPrimitive.TitleProps;
 
 export function Title({ children, className, ...props }: TitleProps) {
   return (
-    <DialogPrimitive.Title className={`text-lg font-bold text-foreground ${className ?? ''}`} {...props}>
+    <DialogPrimitive.Title className={`text-foreground text-lg font-semibold leading-none ${className ?? ''}`} {...props}>
       {children}
     </DialogPrimitive.Title>
   );

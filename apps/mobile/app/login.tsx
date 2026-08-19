@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ActivityIndicator, Keyboard } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,7 +64,7 @@ export default function LoginScreen() {
       )}
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        className="mb-3"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
@@ -74,7 +74,7 @@ export default function LoginScreen() {
         {...e2e('login-email-input')}
       />
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        className="mb-3"
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
@@ -103,7 +103,7 @@ export default function LoginScreen() {
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
-          <Text className="text-primary-foreground font-bold text-base">
+          <Text className={buttonTextClass('default')}>
             {t('action.login')}
           </Text>
         )}

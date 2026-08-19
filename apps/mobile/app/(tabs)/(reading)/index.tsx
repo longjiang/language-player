@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -211,7 +211,7 @@ export default function ReaderScreen() {
           {activeTab === 'edit' && (
             <View className="flex-1">
               <Textarea
-                className="flex-1 px-5 pt-4 pb-4 text-sm text-foreground"
+                className="flex-1"
                 placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
                 placeholderTextColor={ICON_MUTED}
                 value={text}
@@ -230,7 +230,7 @@ export default function ReaderScreen() {
                   ) : (
                     <Sparkles size={14} color={ICON_MUTED} />
                   )}
-                  <Text className="text-sm font-medium text-foreground">
+                  <Text className={buttonTextClass('outline')}>
                     {t('action.add_sample_text')}
                   </Text>
                 </Button>
@@ -240,7 +240,7 @@ export default function ReaderScreen() {
                   variant="default"
                 >
                   <Sparkles size={14} color="#fff" />
-                  <Text className="text-sm font-medium text-primary-foreground">
+                  <Text className={buttonTextClass('default')}>
                     {t('action.tokenize')}
                   </Text>
                 </Button>
@@ -289,7 +289,7 @@ export default function ReaderScreen() {
                 className="mt-4"
               >
                 <PenLine size={14} color={ICON_MUTED} />
-                <Text className="text-xs text-foreground">{t('action.edit')}</Text>
+                <Text className={buttonTextClass('outline')}>{t('action.edit')}</Text>
               </Button>
             </View>
           )}

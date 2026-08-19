@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -171,7 +171,7 @@ export default function ChannelPage() {
               onPress={() => fetchVideos(1)}
               variant="outline"
             >
-              <Text className="text-sm font-medium text-foreground">{t('action.try_again')}</Text>
+              <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
             </Button>
           </View>
         )}
@@ -200,7 +200,7 @@ export default function ChannelPage() {
               >
                 <View className="flex-row items-center gap-2">
                   {loading && <ActivityIndicator size="small" color={ICON_MUTED} />}
-                  <Text className="text-sm font-medium text-foreground">
+                  <Text className={buttonTextClass('outline')}>
                     {t('action.load_more')}
                   </Text>
                 </View>

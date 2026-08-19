@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Image, Linking } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Card, CardContent } from '@/components/ui/card';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Dialog from '@/components/ui/dialog';
@@ -118,45 +119,51 @@ export function AboutDialog({
       </View>
 
       {/* Build info */}
-      <View className="mt-4 rounded-xl border border-border bg-card p-4">
-        <InfoRow icon={Package} label={t('label.version')} value={`v${version}`} />
-        <InfoRow icon={Calendar} label={t('label.build_date')} value={formatDate(buildDate)} />
-        {gitSha ? (
-          <InfoRow icon={GitCommit} label={t('label.commit')} value={gitSha.slice(0, 12)} />
-        ) : null}
-        <InfoRow icon={Globe} label={t('label.environment')} value={environment} />
-      </View>
+      <Card className="mt-4">
+        <CardContent>
+          <InfoRow icon={Package} label={t('label.version')} value={`v${version}`} />
+          <InfoRow icon={Calendar} label={t('label.build_date')} value={formatDate(buildDate)} />
+          {gitSha ? (
+            <InfoRow icon={GitCommit} label={t('label.commit')} value={gitSha.slice(0, 12)} />
+          ) : null}
+          <InfoRow icon={Globe} label={t('label.environment')} value={environment} />
+        </CardContent>
+      </Card>
 
       {/* Contact */}
-      <View className="mt-3 rounded-xl border border-border bg-card p-4">
-        <Text className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t('action.contact_us')}
-        </Text>
-        <LinkRow
-          icon={Mail}
-          label={t('action.email_support')}
-          onPress={() => openLink('mailto:jon.long@zerotohero.ca')}
-        />
-        <LinkRow
-          icon={MessageCircle}
-          label={t('label.discord_server')}
-          onPress={() => openLink('https://discord.gg/D7vKcuKXuA')}
-        />
-      </View>
+      <Card className="mt-3">
+        <CardContent>
+          <Text className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('action.contact_us')}
+          </Text>
+          <LinkRow
+            icon={Mail}
+            label={t('action.email_support')}
+            onPress={() => openLink('mailto:jon.long@zerotohero.ca')}
+          />
+          <LinkRow
+            icon={MessageCircle}
+            label={t('label.discord_server')}
+            onPress={() => openLink('https://discord.gg/D7vKcuKXuA')}
+          />
+        </CardContent>
+      </Card>
 
       {/* Links */}
-      <View className="mt-3 rounded-xl border border-border bg-card p-4">
-        <LinkRow
-          icon={BookOpen}
-          label={t('title.docs')}
-          onPress={() => pushRoute('/(tabs)/(me)/docs')}
-        />
-        <LinkRow
-          icon={Wrench}
-          label={t('title.tokenizer_test')}
-          onPress={() => pushRoute('/(tabs)/(me)/tokenizer-test')}
-        />
-      </View>
+      <Card className="mt-3">
+        <CardContent>
+          <LinkRow
+            icon={BookOpen}
+            label={t('title.docs')}
+            onPress={() => pushRoute('/(tabs)/(me)/docs')}
+          />
+          <LinkRow
+            icon={Wrench}
+            label={t('title.tokenizer_test')}
+            onPress={() => pushRoute('/(tabs)/(me)/tokenizer-test')}
+          />
+        </CardContent>
+      </Card>
 
       <Text className="py-4 text-center text-xs text-muted-foreground">
         &copy; {new Date().getFullYear()} Language Player

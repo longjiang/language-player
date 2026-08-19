@@ -727,7 +727,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onChangeText={setListSearch}
           placeholder={t('placeholder.filter_videos', { n: filteredVideos.length })}
           placeholderTextColor={ICON_MUTED}
-          className="h-8 flex-1 rounded-md border border-border bg-muted/50 px-2 text-xs text-foreground"
+          className="flex-1"
         />
         <MenuView
           onPressAction={({ nativeEvent }) => setListSort(nativeEvent.event as SubsSearchSortKey)}
@@ -763,7 +763,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             hitSlop={6}
             accessibilityRole="button"
           >
-            <Text className="text-xs font-semibold text-primary underline">{t('action.retry')}</Text>
+            <Text className={buttonTextClass('link')}>{t('action.retry')}</Text>
           </Button>
         </View>
       ) : null}
@@ -821,7 +821,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onChangeText={setCustomTerms}
           placeholder={t('placeholder.custom_search_terms')}
           placeholderTextColor={ICON_MUTED}
-          className="mb-4 h-9 rounded-lg border border-border bg-muted/50 px-3 text-sm text-foreground"
+          className="mb-4"
         />
 
         {/* Exclude terms */}
@@ -831,7 +831,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           onChangeText={setExcludeTerms}
           placeholder={t('placeholder.exclude_terms')}
           placeholderTextColor={ICON_MUTED}
-          className="mb-4 h-9 rounded-lg border border-border bg-muted/50 px-3 text-sm text-foreground"
+          className="mb-4"
         />
 
         {/* Shows to include */}
@@ -948,13 +948,13 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           size="sm"
           accessibilityRole="button"
         >
-          <Text className={buttonTextClass('ghost') + ' text-xs font-medium'}>{t('action.reset')}</Text>
+          <Text className={buttonTextClass('ghost')}>{t('action.reset')}</Text>
         </Button>
         <Button
           onPress={() => setAdvancedOpen(false)}
           accessibilityRole="button"
         >
-          <Text className="text-xs font-semibold text-primary-foreground">{t('action.apply')}</Text>
+          <Text className={buttonTextClass('default')}>{t('action.apply')}</Text>
         </Button>
       </View>
     </>
@@ -1038,7 +1038,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             size="sm"
             onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
           >
-            <Text className="text-xs font-semibold text-primary underline">
+            <Text className={buttonTextClass('link')}>
               {t('action.upgrade_to_pro')}
             </Text>
           </Button>

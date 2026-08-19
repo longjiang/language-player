@@ -62,7 +62,7 @@ export function VisitedSitesSidebar({
                     onSubmitEditing={() => commitRename(site.url)}
                     onBlur={() => commitRename(site.url)}
                     placeholder={t('placeholder.enter_title')}
-                    className="w-full rounded border border-primary bg-background px-1.5 py-0.5 text-xs text-foreground"
+                    className="w-full"
                   />
                 </View>
               </View>

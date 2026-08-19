@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ActivityIndicator, Keyboard } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
@@ -55,7 +55,7 @@ export default function ForgotPasswordScreen() {
             onPress={() => router.back()}
             {...e2e('forgot-back-to-login-button')}
           >
-            <Text className="text-foreground font-medium text-sm">
+            <Text className={buttonTextClass('outline')}>
               {t('action.back_to_login')}
             </Text>
           </Button>
@@ -83,7 +83,7 @@ export default function ForgotPasswordScreen() {
       )}
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        className="mb-6"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
@@ -102,7 +102,7 @@ export default function ForgotPasswordScreen() {
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
-          <Text className="text-primary-foreground font-bold text-base">
+          <Text className={buttonTextClass('default')}>
             {t('action.send_reset_link')}
           </Text>
         )}

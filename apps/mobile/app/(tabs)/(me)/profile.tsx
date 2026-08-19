@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Modal, Linking, AppState, Alert } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
@@ -285,7 +285,7 @@ export default function ProfileScreen() {
             <Button
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
             >
-              <Text className="text-sm font-semibold text-primary-foreground">{t('action.upgrade_to_pro')}</Text>
+              <Text className={buttonTextClass('default')}>{t('action.upgrade_to_pro')}</Text>
               <ArrowRight size={14} color="#fff" />
             </Button>
             <View className="mt-3 flex-row items-center justify-center gap-1 flex-wrap">
@@ -349,7 +349,7 @@ export default function ProfileScreen() {
                   variant="outline"
                   size="sm"
                 >
-                  <Text className="text-sm text-foreground">
+                  <Text className={buttonTextClass('outline')}>
                     {cancelling ? t('msg.cancelling') : t('action.cancel_auto_renewal')}
                   </Text>
                 </Button>
@@ -359,7 +359,7 @@ export default function ProfileScreen() {
                 variant="outline"
                 size="sm"
               >
-                <Text className="text-sm text-foreground">
+                <Text className={buttonTextClass('outline')}>
                   {isExpired ? t('action.renew') : t('action.view_plans')}
                 </Text>
               </Button>
@@ -378,7 +378,7 @@ export default function ProfileScreen() {
                     </View>
                   </View>
                   <Button onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} variant="link" className="mt-2">
-                    <Text className="text-sm font-medium text-primary">{t('action.upgrade_to_lifetime')}</Text>
+                    <Text className={buttonTextClass('link')}>{t('action.upgrade_to_lifetime')}</Text>
                   </Button>
                 </View>
               </View>
@@ -457,7 +457,7 @@ export default function ProfileScreen() {
             className="mt-4"
           >
             <Trash2 size={16} color={ICON_ON_PRIMARY} />
-            <Text className="text-sm font-semibold text-destructive-foreground">
+            <Text className={buttonTextClass('destructive')}>
               {t('action.delete_account_permanently')}
             </Text>
           </Button>
@@ -500,7 +500,7 @@ export default function ProfileScreen() {
               placeholderTextColor={PLACEHOLDER_COLOR}
               autoCapitalize="characters"
               autoCorrect={false}
-              className="mt-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+              className="mt-1.5"
             />
             {deleteError && (
               <Text className="mt-2 text-sm text-destructive">{t('msg.delete_account_error')}</Text>
@@ -511,20 +511,20 @@ export default function ProfileScreen() {
                 variant="outline"
                 className="w-full"
               >
-                <Text className="text-sm text-foreground">{t('action.cancel')}</Text>
+                <Text className={buttonTextClass('outline')}>{t('action.cancel')}</Text>
               </Button>
               <Button
                 onPress={handleDeleteAccount}
                 disabled={deleteConfirm !== 'DELETE' || deleting}
                 variant="destructive"
-                className={`w-full ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
+                className="w-full"
               >
                 {deleting ? (
                   <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
                 ) : (
                   <Trash2 size={14} color={ICON_ON_PRIMARY} />
                 )}
-                <Text className="text-sm font-semibold text-destructive-foreground">
+                <Text className={buttonTextClass('destructive')}>
                   {t('action.delete_account_permanently')}
                 </Text>
               </Button>

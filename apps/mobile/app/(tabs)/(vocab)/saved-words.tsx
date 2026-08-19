@@ -1,8 +1,7 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, Alert } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
-import { Input } from '@/components/ui/input';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { SearchBar } from '@/components/ui/search-bar';
 import { useRouter } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -13,7 +12,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { gridColumnCount } from '@/lib/constants';
 import { decomposeWordId } from '@langplayer/shared';
-import { Search, Trash2, Download, BookOpen } from 'lucide-react-native';
+import { Trash2, Download, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { logwarn } from '@/lib/logger';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -223,31 +222,23 @@ export default function SavedWordsScreen() {
             ) : (
               <Download size={14} color={ICON_MUTED} />
             )}
-            <Text className={`text-xs ${buttonTextClass('outline')}`}>{t('action.export')}</Text>
+            <Text className={buttonTextClass('outline')}>{t('action.export')}</Text>
           </Button>
           <Button onPress={handleClearAll} variant="outline" size="sm">
             <Trash2 size={14} color={ICON_MUTED} />
-            <Text className={`text-xs ${buttonTextClass('outline')}`}>{t('action.clear_all')}</Text>
+            <Text className={buttonTextClass('outline')}>{t('action.clear_all')}</Text>
           </Button>
         </View>
       </View>
 
       {/* Toolbar: filter only (sort toggle removed — always newest-first) */}
       <View className="flex-row items-center gap-3 px-4 pb-3">
-        <View className="flex-row items-center rounded-lg border border-border bg-background px-3 py-2 flex-1">
-          <Search size={14} color={ICON_MUTED} />
-          <Input
-            className="ml-2 flex-1 text-sm text-foreground border-0 bg-background px-0 py-0"
-            placeholder={t('placeholder.filter')}
-            placeholderTextColor={ICON_MUTED}
+        <View className="flex-1">
+          <SearchBar
             value={filterText}
             onChangeText={setFilterText}
+            placeholder={t('placeholder.filter')}
           />
-          {filterText ? (
-            <Pressable onPress={() => setFilterText('')}>
-              <Text className="text-muted-foreground">✕</Text>
-            </Pressable>
-          ) : null}
         </View>
       </View>
 

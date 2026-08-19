@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Input } from '@/components/ui/input';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { SearchBar } from '@/components/ui/search-bar';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -11,8 +11,8 @@ import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import { baseCode } from '@langplayer/utils';
-import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
-import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { AlertCircle, Film, Tag } from 'lucide-react-native';
+import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { OfflineFeatureNotice } from '@/components/OfflineFeatureNotice';
@@ -102,19 +102,13 @@ export default function SearchScreen() {
 
       {/* Search bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">
-        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-3">
-          <Search size={16} color={ICON_MUTED} />
-          <Input
-            className="flex-1 py-2.5 pl-2 pr-0 text-sm text-foreground"
-            placeholder={t('placeholder.search_dots')}
-            placeholderTextColor={PLACEHOLDER_COLOR}
+        <View className="flex-1">
+          <SearchBar
             value={query}
             onChangeText={setQuery}
-            onSubmitEditing={() => doSearch(query)}
-            returnKeyType="search"
-            autoCapitalize="none"
-            autoFocus
-            {...e2e('search-input')}
+            onSubmit={() => doSearch(query)}
+            placeholder={t('placeholder.search_dots')}
+            inputProps={{ autoFocus: true, ...e2e('search-input') }}
           />
         </View>
         <Button
@@ -122,7 +116,7 @@ export default function SearchScreen() {
           disabled={loading || !query.trim()}
           {...e2e('search-button')}
         >
-          <Text className="text-sm font-bold text-primary-foreground">{t('action.search')}</Text>
+          <Text className={buttonTextClass('default')}>{t('action.search')}</Text>
         </Button>
       </View>
 

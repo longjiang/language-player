@@ -234,7 +234,7 @@ export default function WordDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
         <Button onPress={() => router.push('/(tabs)/(vocab)' as any)} variant="link" className="self-start">
-          <Text className="text-sm text-primary">← {t('action.back')}</Text>
+          <Text className={buttonTextClass('link')}>← {t('action.back')}</Text>
         </Button>
         <ErrorNotice message={error} />
       </View>
@@ -246,7 +246,7 @@ export default function WordDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
         <Button onPress={() => router.push('/(tabs)/(vocab)' as any)} variant="link" className="self-start">
-          <Text className="text-sm text-primary">← {t('action.back')}</Text>
+          <Text className={buttonTextClass('link')}>← {t('action.back')}</Text>
         </Button>
         <Text className="text-muted-foreground">{t('msg.no_notes_yet')}</Text>
       </View>
@@ -295,7 +295,7 @@ export default function WordDetailScreen() {
               ) : (
                 <PanelRight size={16} color={ICON_MUTED} />
               )}
-              <Text className={`text-xs ${buttonTextClass('outline')}`}>
+              <Text className={buttonTextClass('outline')}>
                 {t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
               </Text>
             </Button>

@@ -13,6 +13,10 @@
  * that NativeWind can resolve them at runtime for light ↔ dark switching,
  * matching the web app's next-themes + CSS variables pattern.
  *
+ * Scale: component spacing/font-size/radius intentionally use the DEFAULT
+ * Tailwind scale (no overrides) so the mobile UI matches shadcn/ui and the
+ * web app's proportions exactly — only colors and fontFamily are customized.
+ *
  * ADR-0011 (SUPERSEDED): Mobile design system now follows the web app's
  * CSS variable pattern exactly — no per-component dark: overrides needed.
  * ADR-0010: Port Web to Mobile (see "Styling: NativeWind + shared tokens")
@@ -25,13 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens.ts');
-const {
-  lightSemantic,
-  darkSemantic,
-  typography,
-  spacing,
-  borderRadius,
-} = await import(TOKENS_PATH);
+const { lightSemantic, darkSemantic, typography } = await import(TOKENS_PATH);
 
 // ── Helpers ────────────────────────────────────
 
@@ -44,15 +42,6 @@ function kebabCase(str: string): string {
 function formatKey(key: string): string {
   const k = kebabCase(key);
   return k.includes('-') ? `'${k}'` : k;
-}
-
-/** Mobile font sizes render ~12% smaller than web at the same rem value
- *  due to platform font rendering differences. Scale up to match visually. */
-const MOBILE_SCALE = 1.25;
-function scaleRem(rem: string): string {
-  const num = parseFloat(rem);
-  if (isNaN(num)) return rem;
-  return `${(num * MOBILE_SCALE).toFixed(3)}rem`;
 }
 
 // ── All semantic color keys (light and dark have the same keys) ──
@@ -114,54 +103,6 @@ module.exports = {
     extend: {
       colors: {
 ${colorEntries.join('\n')}
-      },
-      fontSize: {
-        xs: '${scaleRem(typography.fontSize.xs)}',
-        sm: '${scaleRem(typography.fontSize.sm)}',
-        base: '${scaleRem(typography.fontSize.base)}',
-        lg: '${scaleRem(typography.fontSize.lg)}',
-        xl: '${scaleRem(typography.fontSize.xl)}',
-        '2xl': '${scaleRem(typography.fontSize['2xl'])}',
-        '3xl': '${scaleRem(typography.fontSize['3xl'])}',
-        '4xl': '${scaleRem(typography.fontSize['4xl'])}',
-        '5xl': '${scaleRem(typography.fontSize['5xl'])}',
-      },
-      fontWeight: {
-        normal: '${typography.fontWeight.normal}',
-        bold: '${typography.fontWeight.bold}',
-      },
-      lineHeight: {
-        tight: '${typography.lineHeight.tight}',
-        normal: '${typography.lineHeight.normal}',
-        relaxed: '${typography.lineHeight.relaxed}',
-      },
-      spacing: {
-        0: '0',
-        0.5: '${scaleRem(spacing[0.5])}',
-        1: '${scaleRem(spacing[1])}',
-        1.5: '${scaleRem(spacing[1.5])}',
-        2: '${scaleRem(spacing[2])}',
-        2.5: '${scaleRem(spacing[2.5])}',
-        3: '${scaleRem(spacing[3])}',
-        3.5: '${scaleRem(spacing[3.5])}',
-        4: '${scaleRem(spacing[4])}',
-        5: '${scaleRem(spacing[5])}',
-        6: '${scaleRem(spacing[6])}',
-        7: '${scaleRem(spacing[7])}',
-        8: '${scaleRem(spacing[8])}',
-        9: '${scaleRem(spacing[9])}',
-        10: '${scaleRem(spacing[10])}',
-        12: '${scaleRem(spacing[12])}',
-        16: '${scaleRem(spacing[16])}',
-      },
-      borderRadius: {
-        none: '${borderRadius.none}',
-        sm: '${borderRadius.sm}',
-        DEFAULT: '${borderRadius.DEFAULT}',
-        md: '${borderRadius.md}',
-        lg: '${borderRadius.lg}',
-        xl: '${borderRadius.xl}',
-        full: '${borderRadius.full}',
       },
       fontFamily: {
 ${fontFamilyEntries.join('\n')}

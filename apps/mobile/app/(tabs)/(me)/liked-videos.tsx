@@ -124,7 +124,6 @@ export default function LikedVideosScreen() {
                 onPress={() => handleUnlike(item)}
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 active:bg-destructive/10"
                 hitSlop={8}
               >
                 <Heart size={18} color={ICON_DESTRUCTIVE} fill={ICON_DESTRUCTIVE} />

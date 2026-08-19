@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, MoreHorizontal, PenLine, Trash2, Check, Cloud } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
@@ -53,7 +53,7 @@ export function NotesSidebar({
           variant="outline"
         >
           <Plus size={14} color={ICON_MUTED} />
-          <Text className="text-xs text-foreground">{t('action.new_note')}</Text>
+          <Text className={buttonTextClass('outline')}>{t('action.new_note')}</Text>
         </Button>
       </View>
 
@@ -72,7 +72,7 @@ export function NotesSidebar({
             {renameId === n.id ? (
               <View className="flex-row items-center px-2 py-1">
                 <Input
-                  className="flex-1 rounded border border-border px-2 py-1 text-xs text-foreground"
+                  className="flex-1"
                   value={renameText}
                   onChangeText={setRenameText}
                   onSubmitEditing={handleRenameSubmit}

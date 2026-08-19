@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, useWindowDimensions } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Monitor, Play, Volume2, RotateCcw, Search, Download, ChevronRight, WifiOff, Cloud } from 'lucide-react-native';
@@ -245,7 +245,7 @@ function SettingsList({
               {t('msg.no_settings_match', { query })}
             </Text>
             <Button variant="link" onPress={() => setQuery('')} className="mt-3">
-              <Text className="text-sm font-semibold text-primary">
+              <Text className={buttonTextClass('link')}>
                 {t('action.clear_recent_searches')}
               </Text>
             </Button>
