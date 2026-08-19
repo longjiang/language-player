@@ -326,12 +326,13 @@ export default function EpubPage() {
           </div>
 
           {/* Close button (chrome): X in a 24px circle, top right — fades in
-              with the chrome. */}
+              with the chrome. top-1.5 (6px) centers the 24px circle on the
+              chapter-title line (title top 10px + half its 16px line box). */}
           <button
             onClick={handleCloseReader}
             aria-label={t('action.close')}
             title={t('action.close')}
-            className={`absolute right-3 top-3 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
+            className={`absolute right-3 top-1.5 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
               chromeVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
           >
