@@ -593,6 +593,33 @@ node scripts/tag-release.mjs --extension
   (`PRODUCT_BUILD_NUMBER`, SPEC-076). Never reuse a number, even after a
   rejection or rollback — record it in the ledger immediately.
 
+### Chrome Web Store
+
+- **After a rejection, the API publish may fail with `400 INVALID_ITEM_METADATA`**
+  ("Your submission does not meet the requirements to be published in the
+  store. Check the Developer Dashboard for steps to resolve."). This is a
+  listing-metadata problem, not a ZIP problem — the upload succeeds
+  (`crxVersion` bumps) but `items.publish` validates the store listing. The
+  most common trigger: the manifest's permission set changed (added/removed)
+  but the dashboard **Privacy practices** tab still holds stale permission
+  justifications. Every requested permission needs a justification; a
+  permission removed from the manifest leaves an orphaned justification that
+  blocks publishing until removed/re-saved in the dashboard. The API cannot
+  read or write listing/privacy metadata — the specific reason is only visible
+  in the dashboard Edit page (see the `error.details[].Help` link). Fix the
+  Privacy tab, then re-run `node scripts/upload.mjs chrome <zip> --publish`
+  on the same ZIP (no re-upload needed, but re-uploading is harmless).
+- **`tag-release.mjs --extension` fails when the shared build tag
+  (`v<version>-b<N>`) already exists** — the script unconditionally creates
+  the build tag even for extension-only releases, and `v3.2.2-b7` was already
+  consumed by a mobile release. For extension-only releases, create the tag
+  directly: `git tag ext-v<manifest version>` at the release commit.
+- **`BROAD_HOST_USAGE` on publish is a non-blocking warning**, not a
+  rejection: "Your item is requesting broad host permissions which may require
+  an in-depth review." The extension legitimately needs `http://*/*`,
+  `https://*/*` to intercept subtitles across streaming sites; expect a slower
+  review, not a failure.
+
 ### Both stores / general
 
 - **Run the version gate before uploading** (`verify-version.mjs`), tag
