@@ -370,7 +370,7 @@ export default function EpubPage() {
               immersiveReserve={{ top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE }}
               chromeVisible={chromeVisible}
               onToggleChrome={toggleChrome}
-              onOpenToc={() => setTocOpen(true)}
+              onOpenToc={epub.toc.length > 0 ? () => setTocOpen(true) : undefined}
               onOpenSearch={() => setSearchOpen(true)}
               topOverlay={
                 <span className="max-w-[85%] truncate text-xs text-muted-foreground">
@@ -465,42 +465,44 @@ export default function EpubPage() {
       )}
 
       {/* ── TOC modal (replaces the sidebar) ── */}
-      <Dialog open={tocOpen} onOpenChange={setTocOpen}>
-        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
-          <DialogHeader className="flex-row items-center justify-between pr-10">
-            <DialogTitle>{t('title.chapters')}</DialogTitle>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => navigateTo(chapterNav.prev?.location ?? null)}
-                disabled={!chapterNav.prev}
-                className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-                {t('action.previous_chapter')}
-              </button>
-              <button
-                onClick={() => navigateTo(chapterNav.next?.location ?? null)}
-                disabled={!chapterNav.next}
-                className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
-              >
-                {t('action.next_chapter')}
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
+      {epub.toc.length > 0 && (
+        <Dialog open={tocOpen} onOpenChange={setTocOpen}>
+          <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
+            <DialogHeader className="flex-row items-center justify-between pr-10">
+              <DialogTitle>{t('title.chapters')}</DialogTitle>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => navigateTo(chapterNav.prev?.location ?? null)}
+                  disabled={!chapterNav.prev}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  {t('action.previous_chapter')}
+                </button>
+                <button
+                  onClick={() => navigateTo(chapterNav.next?.location ?? null)}
+                  disabled={!chapterNav.next}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 transition-colors"
+                >
+                  {t('action.next_chapter')}
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </DialogHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <EpubChapterSidebar
+                toc={epub.toc}
+                markers={epub.markers}
+                activeLocation={location}
+                onLoadChapter={handleLoadChapter}
+              />
             </div>
-          </DialogHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <EpubChapterSidebar
-              toc={epub.toc}
-              markers={epub.markers}
-              activeLocation={location}
-              onLoadChapter={handleLoadChapter}
-            />
-          </div>
-          <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-            {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
-          </p>
-        </DialogContent>
-      </Dialog>
+            <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+              {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
+            </p>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* ── Search modal (replaces the sidebar) ── */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
