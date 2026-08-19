@@ -33,7 +33,15 @@ export const RTL_L2S = new Set(['ar', 'fa', 'he', 'ur', 'sd', 'ps', 'dv']);
 
 /** Target gap (px) between furigana glyphs and the base text. Web's native
  *  <ruby> annotation sits ~0–2px above the base, so mobile matches that
- *  instead of leaving the base line's full half-leading as a gap. */
+ *  instead of leaving the base line's full half-leading as a gap.
+ *
+ *  Native renderers reproduce this gap on their own:
+ *  - iOS (Core Text CTRubyAnnotation) positions the reading a fixed ~4–5px
+ *    above the base text — the base run is nudged down by `rubyBaseTextOffset`
+ *    (2) in RubyTextView.swift / RubyTextParagraphView.swift so the visible
+ *    gap lands back at ~2px.
+ *  - Android per-token canvas anchors the reading baseline 2dp above the base
+ *    glyphs' top edge in RubyTextView.kt. */
 export const RUBY_READING_GAP = 2;
 
 /** `bg-yellow-200/20` from the View fallback (saved-word highlight), resolved

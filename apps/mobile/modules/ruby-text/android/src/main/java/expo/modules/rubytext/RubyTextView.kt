@@ -117,15 +117,6 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     Log.i("LP Mobile", "[RubyText] size ${w}x$h color=0x${Integer.toHexString(color)}")
   }
 
-  private fun readingSlotHeight(): Float {
-    val hasReading = segments.any { !it.reading.isNullOrEmpty() }
-    return if (hasReading || reserveReadingSlot) {
-      max(0f, dp(readingSize - rubyPull))
-    } else {
-      0f
-    }
-  }
-
   private fun rebuild() {
     basePaint.textSize = dp(fontSize)
     basePaint.color = color
@@ -144,12 +135,18 @@ class RubyTextView(context: Context, appContext: AppContext) : ExpoView(context,
     super.draw(canvas)
     if (segments.isEmpty() || width <= 0 || height <= 0) return
 
-    val slot = readingSlotHeight()
     // Base text sits at the bottom of the measured box (mirrors the View
     // fallback: reading slot on top, base line at the bottom).
     val baseBaseline = height - basePaint.fontMetrics.descent
-    // Reading line box occupies [0, readingSize] at the top of the view.
-    val readingBaseline = dp(readingSize) - readingPaint.fontMetrics.descent
+    // Reading sits ~2dp above the base text's ink top. The old formula
+    // anchored the reading to the bottom of the reserved slot (the
+    // readingSize band), leaving a wide visual gap above the base glyphs
+    // (~20-40% of a CJK character height). fontMetrics.ascent is negative
+    // (Android top-down coordinates), so baseBaseline + ascent is the base
+    // glyphs' top edge; the reading baseline is that edge minus the gap minus
+    // the reading's own descent.
+    val readingBaseline =
+      baseBaseline + basePaint.fontMetrics.ascent - dp(2f) - readingPaint.fontMetrics.descent
 
     var x = 0f
     for (segment in segments) {

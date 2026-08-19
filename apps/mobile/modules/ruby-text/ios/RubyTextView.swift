@@ -33,6 +33,16 @@ internal final class RubyTextView: ExpoView {
   var italic = false { didSet { rebuild() } }
   var fontFamily: String? { didSet { rebuild() } }
 
+  /// How far the base text is nudged down so the reading sits close to it.
+  /// Core Text's CTRubyAnnotation positions the reading a fixed ~4–5px above
+  /// the base text (measured: 4px at 20pt base / 11pt reading, 5px at
+  /// 16/9) — independent of the reserved slot or line height. The JS fallback
+  /// (apps/mobile/lib/ruby-layout.ts, RUBY_READING_GAP) targets a ~2px gap,
+  /// so the base text is offset down by the difference to match it. The
+  /// annotation does NOT follow the base run's baselineOffset — it stays
+  /// anchored to the original baseline, which is exactly what closes the gap.
+  private let rubyBaseTextOffset: CGFloat = 2
+
   private var attributedString: NSAttributedString?
 
   required init(appContext: AppContext? = nil) {
@@ -95,6 +105,9 @@ internal final class RubyTextView: ExpoView {
       .font: baseFont,
       .foregroundColor: color,
       .paragraphStyle: paragraph,
+      // Nudge the base text down so the reading sits ~RUBY_READING_GAP above
+      // it (Core Text's annotation gap is ~4–5px — see rubyBaseTextOffset).
+      .baselineOffset: rubyBaseTextOffset,
     ]
     if underline {
       baseAttributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
