@@ -74,6 +74,9 @@ interface ChatMessage {
   /** AI-selected video examples ("Examples from Videos" follow-up): rendered
    *  as subs-search-style chips, each followed by the explanation. */
   examples?: AiVideoExampleData[];
+  /** The usage pattern the LLM identified for the examples above (L1 heading
+   *  + L2 syntax pattern), rendered as a sort-by-AI-style group header. */
+  pattern?: { heading: string; pattern: string };
   /** True while the "Examples from Videos" follow-up is fetching/analyzing
    *  (non-streaming request — shows a spinner in the assistant bubble). */
   loading?: boolean;
@@ -335,11 +338,17 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   // ── "Examples from Videos" follow-up ──
   // 1. Search subtitles (limit 50) for the word being explained.
-  // 2. Feed a succinct payload (≤3 subtitle lines per video) to the LLM.
-  // 3. The LLM replies with strict JSON: { examples: [{ video_id, explanation }] }.
-  // 4. The client maps ids back to the fetched results and renders the chips
-  //    (the same SubsSearchRow component the results list uses, translations
-  //    included), each followed by the LLM's explanation.
+  // 2. Feed a succinct payload (≤3 subtitle lines per video) to the LLM,
+  //    along with the context sentence when available.
+  // 3. Like the subs-search "Sort by AI" grouping, the LLM identifies the
+  //    single usage pattern of the term — the one matching its use in the
+  //    context sentence (or the most representative usage without context) —
+  //    and replies with strict JSON: { heading, pattern, examples: [...] }.
+  // 4. The client maps ids back to the fetched results and renders a
+  //    sort-by-AI-style pattern header (L1 heading + L2 syntax pattern) above
+  //    the example chips (the same SubsSearchRow component the results list
+  //    uses, translations included), each chip followed by the LLM's
+  //    explanation of the word's usage in that result.
   const fetchSubsSearch = useCallback(
     async (term: string): Promise<SubsSearchVideo[]> => {
       const res = await fetch(
@@ -400,10 +409,21 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         l2Name,
         term: terms,
       });
-      const prompt = buildAiExamplesPrompt({ prose, lines, l1Name, l2Name, term: terms });
+      // The context sentence (when available) anchors the LLM's choice of
+      // usage pattern to the sense the user is actually looking at.
+      const cleanContext = contextText ? contextText.replace(/[.。！!？?…]+$/, '') : undefined;
+      const prompt = buildAiExamplesPrompt({
+        prose,
+        lines,
+        l1Name,
+        l2Name,
+        term: terms,
+        context: cleanContext,
+      });
       log('AI examples follow-up request', {
         word,
         terms,
+        context: cleanContext ?? undefined,
         n: results.length,
         promptChars: prompt.length,
       });
@@ -432,17 +452,22 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
       updateMessage(aiId, {
         text: t('msg.examples_from_videos_intro'),
+        pattern: { heading: parsed.heading, pattern: parsed.pattern },
         examples,
         loading: false,
       });
-      log('AI examples follow-up applied', { word, n: examples.length });
+      log('AI examples follow-up applied', {
+        word,
+        pattern: parsed.heading,
+        n: examples.length,
+      });
     } catch (err) {
       logwarn('AI examples follow-up failed', {
         message: err instanceof Error ? err.message : String(err),
       });
       updateMessage(aiId, { text: t('msg.ai_examples_failed'), loading: false });
     }
-  }, [word, contextForm, searchTerms, l1.code, l2.code, t, appendMessage, updateMessage, fetchSubsSearch]);
+  }, [word, contextForm, contextText, searchTerms, l1.code, l2.code, t, appendMessage, updateMessage, fetchSubsSearch]);
 
   const handleFollowUp = useCallback((kind: FollowUpKind) => {
     if (kind === 'examples') {
@@ -821,6 +846,18 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
                     ) : null}
                     {isExamplesMessage && (
                       <div className="mt-2 space-y-2">
+                        {message.pattern && (
+                          <div className="rounded-lg border border-border bg-muted/60 px-2 py-1">
+                            <div className="text-[11px] font-semibold text-foreground">
+                              {message.pattern.heading}
+                            </div>
+                            {message.pattern.pattern && (
+                              <div className="text-[10px] text-muted-foreground">
+                                {message.pattern.pattern}
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {message.examples!.map((ex, i) => (
                           <div key={ex.video.id}>
                             <SubsSearchRow

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  AI_EXAMPLES_TARGET,
+  AI_EXAMPLES_MAX,
   buildAiExamplesPayload,
   buildAiExamplesPrompt,
   parseAiExamplesResponse,
@@ -47,29 +47,47 @@ describe('buildAiExamplesPayload', () => {
 });
 
 describe('buildAiExamplesPrompt', () => {
-  it('asks for strict JSON with the target count', () => {
-    const prompt = buildAiExamplesPrompt({
-      prose: 'Pick examples.',
-      lines: 'id,"line"\n1,"*word"',
-      l1Name: 'English',
-      l2Name: 'Japanese',
-      term: 'word',
-    });
-    expect(prompt).toContain('Pick examples.');
+  const base = {
+    prose: 'Analyze these lines.',
+    lines: 'id,"line"\n1,"*word"',
+    l1Name: 'English',
+    l2Name: 'Japanese',
+    term: 'word',
+  };
+
+  it('asks for strict JSON with the pattern shape and the example cap', () => {
+    const prompt = buildAiExamplesPrompt(base);
+    expect(prompt).toContain('Analyze these lines.');
+    expect(prompt).toContain('"heading"');
+    expect(prompt).toContain('"pattern"');
+    expect(prompt).toContain('"examples"');
     expect(prompt).toContain('"video_id"');
     expect(prompt).toContain('"explanation"');
-    expect(prompt).toContain(String(AI_EXAMPLES_TARGET));
+    expect(prompt).toContain(`up to ${AI_EXAMPLES_MAX} videos`);
     expect(prompt).toContain('English');
     expect(prompt).toContain('Japanese');
+  });
+
+  it('asks for the most representative pattern when no context is given', () => {
+    const prompt = buildAiExamplesPrompt(base);
+    expect(prompt).toContain('most representative usage pattern');
+  });
+
+  it('asks for the pattern matching the context sentence when one is given', () => {
+    const prompt = buildAiExamplesPrompt({ ...base, context: '彼は何も持っていない。' });
+    expect(prompt).toContain('彼は何も持っていない。');
+    expect(prompt).toContain('matches the word\'s usage in the given context');
   });
 });
 
 describe('parseAiExamplesResponse', () => {
   it('parses a clean JSON response', () => {
     const result = parseAiExamplesResponse(
-      '{"examples": [{"video_id": 11, "explanation": "Here it means X."}, {"video_id": "22", "explanation": "Here it means Y."}]}',
+      '{"heading": "Not even a little", "pattern": "noun + っぽっち + も + negative", "examples": [{"video_id": 11, "explanation": "Here it means X."}, {"video_id": "22", "explanation": "Here it means Y."}]}',
     );
     expect(result).toEqual({
+      heading: 'Not even a little',
+      pattern: 'noun + っぽっち + も + negative',
       examples: [
         { videoId: 11, explanation: 'Here it means X.' },
         { videoId: 22, explanation: 'Here it means Y.' },
@@ -79,18 +97,21 @@ describe('parseAiExamplesResponse', () => {
 
   it('tolerates markdown fences and trailing garbage', () => {
     const result = parseAiExamplesResponse(
-      '```json\n{"examples": [{"video_id": 7, "explanation": "Means Z."}]}\n``` trailing text',
+      '```json\n{"heading": "Means Z.", "pattern": "", "examples": [{"video_id": 7, "explanation": "Means Z."}]}\n``` trailing text',
     );
+    expect(result?.heading).toBe('Means Z.');
     expect(result?.examples).toEqual([{ videoId: 7, explanation: 'Means Z.' }]);
   });
 
-  it('drops duplicates and caps at the target', () => {
+  it('drops duplicates and caps at the max', () => {
     const examples = Array.from({ length: 12 }, (_, i) => ({
       video_id: 100 + (i % 3),
       explanation: `Expl ${i}`,
     }));
-    const result = parseAiExamplesResponse(JSON.stringify({ examples }));
-    expect(result!.examples.length).toBeLessThanOrEqual(AI_EXAMPLES_TARGET);
+    const result = parseAiExamplesResponse(
+      JSON.stringify({ heading: 'H', pattern: 'P', examples }),
+    );
+    expect(result!.examples.length).toBeLessThanOrEqual(AI_EXAMPLES_MAX);
     const ids = result!.examples.map((e) => e.videoId);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -98,5 +119,7 @@ describe('parseAiExamplesResponse', () => {
   it('rejects malformed output', () => {
     expect(parseAiExamplesResponse('not json at all')).toBeNull();
     expect(parseAiExamplesResponse('{"examples": [{"video_id": "x", "explanation": ""}]}')).toBeNull();
+    expect(parseAiExamplesResponse('{"heading": "", "pattern": "P", "examples": [{"video_id": 1, "explanation": "X"}]}')).toBeNull();
+    expect(parseAiExamplesResponse('{"heading": "H", "pattern": "P", "examples": []}')).toBeNull();
   });
 });

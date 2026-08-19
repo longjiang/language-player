@@ -130,10 +130,10 @@ export {
 export type { SubsSearchSortKey } from './subs-search';
 export {
   AI_EXAMPLES_LIMIT,
-  AI_EXAMPLES_TARGET,
+  AI_EXAMPLES_MAX,
   AI_EXAMPLES_CONTEXT_LINES,
   buildAiExamplesPayload,
   buildAiExamplesPrompt,
   parseAiExamplesResponse,
 } from './subs-ai-examples';
-export type { AiVideoExample, AiExamplesResult } from './subs-ai-examples';
+export type { AiVideoExample, AiUsagePatternResult } from './subs-ai-examples';
