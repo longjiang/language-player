@@ -363,7 +363,22 @@ function TokenizedTextImpl({ text, l2Code, highlightTerms, highlightEntryIds, to
   // ── Leading ratio from prop (default: relaxed = 1.625) ──
   const effectiveLeading = leading ?? tokenSettings.leading ?? 1.625;
   const leadingRatio: number | undefined = inline ? undefined : effectiveLeading;
-  const fallbackLineHeight = leadingRatio ? Math.round((textStyle.fontSize ?? 16) * leadingRatio) : undefined;
+  // The plain render (loading / offline / rapid page flipping) must keep the
+  // SAME line pitch the tokenized render will use — otherwise the page jumps
+  // the moment readings appear. The base line height is the user's leading;
+  // in ruby mode the reading band (readingSize − rubyPull) is added, exactly
+  // like the tokenized paragraph's line box (paragraphLineHeight below).
+  const baseFontSize = textStyle.fontSize ?? 16;
+  const plainRubyLayout = computeRubyLayout(baseCode(l2Code), {
+    fontSize: baseFontSize,
+    lineHeight: leadingRatio ? Math.round(baseFontSize * leadingRatio) : undefined,
+    showPhonetics,
+    phoneticsShow: phonetics.show,
+  });
+  const fallbackLineHeight = leadingRatio
+    ? Math.round(baseFontSize * leadingRatio)
+      + (plainRubyLayout.isRubyMode ? (plainRubyLayout.readingSize - plainRubyLayout.rubyPull) : 0)
+    : undefined;
   const fallbackStyle = fallbackLineHeight ? { lineHeight: fallbackLineHeight } : undefined;
 
   // ── Quick lookup set for saved word forms (quickGloss) ──
