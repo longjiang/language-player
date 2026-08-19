@@ -25,11 +25,12 @@ uploads and dev (Debug) builds, one row per commit, chronological.
 | 6 | ddb8cc50 | 2026-08-16 | — | dev 2 (Release-config, legacy; archived; lp-dev-2-ios-device-ddb8cc50f8d9.zip; 1437ff69da9b72fd366949974ecd036518a6531fdef86f44a71c763d4512e3ea) · dev 5 (Debug; archived; lp-dev-5-ios-device-ddb8cc50f8d9.zip; 9d66e6cb66b44cd0183540c18ea7d5b5afe8a58edb140745184e1a80136ea1cb) |
 | 7 | 88135bde | 2026-08-16 | — | dev 3 (Debug; archived; lp-dev-3-ios-device-88135bde47af.zip; 6e10c5aed4541adf030f02325001dbe72bf0416388776ea0754446a694d8ea5e) |
 | 8 | e64bcf32 | 2026-08-17 | — | dev 6 (Debug; archived; lp-dev-6-ios-device-e64bcf325739.zip; 72d49156cf3b018f9dd165319ef66d05e3f8aa1aabd971e96b56a63dbaf21183) |
-| 9 | abbafdc0 | 2026-08-16 | — | dev 7 (Debug; active; lp-dev-7-ios-device-abbafdc0.zip; 3d0c594cc25a4e0c88eb9f080f89be4223837ac8f24924e3b255bc90b06ef321) |
+| 9 | abbafdc0 | 2026-08-16 | — | dev 7 (Debug; archived; lp-dev-7-ios-device-abbafdc0.zip; 3d0c594cc25a4e0c88eb9f080f89be4223837ac8f24924e3b255bc90b06ef321) |
 | 10 | 9a23db1c | 2026-08-18 | — | dev 8 (Debug; active; lp-dev-8-ios-device-9a23db1c8dea.zip; be3c8020ad81179737112ce85e5510be1c594beb27463d63e4bd0d0fb664bf5e) |
 | 11 | 6c12a034 | 2026-08-18 | — | dev 9 (Debug; active; lp-dev-9-ios-device-6c12a0348b41.zip; 15b3c7f3727ba1b112021580344b37286844740df75970adedc7ecd7b5fc95cf) |
 | 12 | 77ccd8ef | 2026-08-18 | 3.2.1 — iOS TestFlight (b6, consumed) · 3.2.1 — Android Internal testing (b6, consumed) | — |
 | 13 | 7f220cf9 | 2026-08-18 | 3.2.2 — iOS testflight (b7, consumed) · 3.2.2 — Android internal (b7, consumed) | — |
+| 14 | 0dddc4ba | 2026-08-19 | — | dev 10 (Debug; active; lp-dev-10-ios-device-0dddc4ba14fe.zip; 8596df43fe7407a3779402af17c5ccea521a7ec217aefee79a4d5c1ceb0cabe3) |
 
 ## Preserved working builds
 
