@@ -435,6 +435,10 @@ export function PaginatedReader({
   const persistedSplit = display.translationSplit;
   const [liveSplit, setLiveSplit] = useState(persistedSplit);
   const appliedSplit = liveSplit;
+  // The L2 tokenized text's leading (user setting, default 1.625). The
+  // stacked translation column uses the SAME leading so its line pitch
+  // matches the L2 text exactly (narrow screens / below md).
+  const translationLeading = tokenSettings.leading ?? 1.625;
   const onSplitChange = useCallback((r: number) => setLiveSplit(r), []);
   const onSplitCommit = useCallback((r: number) => {
     setLiveSplit(r);
@@ -677,7 +681,7 @@ export function PaginatedReader({
       <View className="flex-1">
         <View className="px-4">
           {blocks.map((block, bi) =>
-              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary),
+              renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, undefined, false, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, false, undefined, hideSplitHandle, selectionDictionary, translationLeading),
           )}
         </View>
         {onToggleTranslation && (
@@ -725,7 +729,7 @@ export function PaginatedReader({
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
                   {visibleBlocks.map((block, bi) =>
-                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary),
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -854,6 +858,7 @@ function renderBlock(
   upgradedBlocks?: ReadonlySet<number>,
   hideSplitHandle = false,
   selectionDictionary = false,
+  translationLeading = 1.625,
 ) {
   const scale = textScale ?? 1;
   const blockScale = scale * zoomRem;
@@ -1013,14 +1018,20 @@ function renderBlock(
     // baseline). Falls back to the plain column when no grid is available
     // (non-paragraph render paths, e.g. Expo Go / Android view columns).
     const l2Grid = translationSideBySide ? lineGrids?.[globalIdx] : undefined;
+    // Narrow-screen (stacked) translation typography — matches the L2 text:
+    // the SAME leading ratio (user setting, not a fixed leading-relaxed) and
+    // the same first-line indentation (the \u3000 the tokenized text starts
+    // with when firstLineIndent is on, so the translation aligns under it).
+    const trLineHeight = Math.round(trFontSize * translationLeading);
+    const indentPrefix = firstLineIndent && block.type === 'paragraph' ? '\u3000' : '';
     const transEl = isPlain && showTranslation ? (
       // During rapid flipping the translation is deferred, but the skeleton
       // stays visible immediately so the reader doesn't look broken; show the
       // real translation once it has arrived (pause window).
       translation ? (
-        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: trFontSize }}>{translation}</Text>
+        <Text className="mt-2 text-sm text-muted-foreground" style={{ fontSize: trFontSize, lineHeight: trLineHeight }}>{indentPrefix}{translation}</Text>
       ) : (
-        <View className="mt-1">
+        <View className="mt-2">
           <TranslationSkeleton text={block.text} />
         </View>
       )
@@ -1034,10 +1045,10 @@ function renderBlock(
           highlight={trHighlightRange}
         />
       ) : (
-        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground" style={{ fontSize: trFontSize }}>{highlightedTranslation}</Text>
+        <Text className="mt-2 text-sm text-muted-foreground" style={{ fontSize: trFontSize, lineHeight: trLineHeight }}>{indentPrefix}{highlightedTranslation}</Text>
       )
     ) : showTranslation && isTranslating ? (
-      <View className="mt-1">
+      <View className="mt-2">
         <TranslationSkeleton text={block.text} />
       </View>
     ) : null;

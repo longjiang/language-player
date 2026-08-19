@@ -4,6 +4,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
+import { useResponsive } from '@/hooks/use-responsive';
 import { useEpub } from '@/hooks/use-epub';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
@@ -30,6 +31,9 @@ export default function EpubReaderScreen() {
   const epub = useEpub();
   const { height: windowHeight } = useWindowDimensions();
   const { isWide, sidebarOpen, mobileOpen, setMobileOpen, toggle } = useSidebar();
+  // Reader translation goes side-by-side from md (>=768px) — portrait iPads —
+  // while the outer sidebar layout still switches at the wider breakpoint.
+  const { isMd } = useResponsive();
 
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
@@ -399,7 +403,7 @@ export default function EpubReaderScreen() {
               updateDisplay({ translation: next });
             }}
             showTextActions
-            translationSideBySide={isWide}
+            translationSideBySide={isMd}
             hideSplitHandle
             selectionDictionary
             firstLineIndent
