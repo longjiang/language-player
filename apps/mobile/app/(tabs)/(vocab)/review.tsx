@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -914,14 +915,13 @@ export default function ReviewScreen() {
         <Text className="mb-4 text-center text-muted-foreground max-w-md">
           {t('msg.save_words_to_build_deck')}
         </Text>
-        <Pressable
+        <Button
           onPress={() => router.push('/(tabs)/(media)' as any)}
-          className="rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
         >
           <Text className="text-sm font-semibold text-primary-foreground">
             {t('action.explore_videos')}
           </Text>
-        </Pressable>
+        </Button>
       </View>
     );
   }
@@ -943,14 +943,14 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {formatNextDueLabel(nextDue.due, l1Lang.code)}.</>
           )}
         </Text>
-        <Pressable
+        <Button
           onPress={() => router.push('/(tabs)/(media)' as any)}
-          className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+          className="mt-4"
         >
           <Text className="text-sm font-semibold text-primary-foreground">
             {t('action.explore_videos')}
           </Text>
-        </Pressable>
+        </Button>
       </View>
     );
   }
@@ -974,14 +974,14 @@ export default function ReviewScreen() {
             <> {t('msg.save_more_words')}</>
           )}
         </Text>
-        <Pressable
+        <Button
           onPress={() => router.push('/(tabs)/(media)' as any)}
-          className="mt-4 rounded-lg bg-primary px-5 py-2.5 active:bg-primary/80"
+          className="mt-4"
         >
           <Text className="text-sm font-semibold text-primary-foreground">
             {t('action.explore_videos')}
           </Text>
-        </Pressable>
+        </Button>
       </View>
     );
   }
@@ -1095,14 +1095,16 @@ export default function ReviewScreen() {
 
           {/* Toggle button for definition + translation — hidden once shown */}
           {!showTabs && (
-            <Pressable
+            <Button
               onPress={handleReveal}
-              className="mb-2 rounded-lg border border-border py-1.5 active:bg-muted"
+              variant="outline"
+              size="sm"
+              className="mb-2"
             >
-              <Text className="text-center text-xs text-muted-foreground">
+              <Text className={`text-xs ${buttonTextClass('outline')}`}>
                 {t('review.show_definition')}
               </Text>
-            </Pressable>
+            </Button>
           )}
 
           {/* Matched entry card — full with tabs (no double border inside card) */}
@@ -1144,11 +1146,11 @@ export default function ReviewScreen() {
               <Text className="text-sm text-center font-medium text-foreground">
                 {t('msg.upgrade_to_pro_banner')}
               </Text>
-              <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} className="mt-1">
+              <Button onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} variant="link" className="mt-1">
                 <Text className="text-sm font-semibold text-primary underline">
                   {t('action.upgrade_to_pro')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
           )}
           <View className="flex-row gap-2">

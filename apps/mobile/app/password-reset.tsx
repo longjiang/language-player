@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { router, useLocalSearchParams } from 'expo-router';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -74,15 +76,15 @@ export default function PasswordResetScreen() {
           <Text className="text-muted-foreground text-sm text-center mt-2">
             {t('msg.reset_password_success')}
           </Text>
-          <Pressable
-            className="mt-6 bg-primary px-6 py-3 rounded-lg"
+          <Button
+            className="mt-6"
             onPress={() => router.replace('/login')}
             {...e2e('reset-back-to-login-button')}
           >
             <Text className="text-primary-foreground font-medium text-sm">
               {t('action.back_to_login')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
       </AuthContainer>
     );
@@ -101,7 +103,7 @@ export default function PasswordResetScreen() {
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
       )}
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -111,7 +113,7 @@ export default function PasswordResetScreen() {
         {...e2e('reset-password-input')}
       />
 
-      <TextInput
+      <Input
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
         placeholder={t('placeholder.confirm_password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
@@ -121,8 +123,8 @@ export default function PasswordResetScreen() {
         {...e2e('reset-confirm-password-input')}
       />
 
-      <Pressable
-        className="bg-primary py-3 rounded-lg items-center mb-3"
+      <Button
+        className="mb-3"
         onPress={handleReset}
         disabled={loading || !token}
         {...e2e('reset-confirm-button')}
@@ -134,7 +136,7 @@ export default function PasswordResetScreen() {
             {t('action.confirm')}
           </Text>
         )}
-      </Pressable>
+      </Button>
 
       <Pressable onPress={() => router.replace('/login')}>
         <Text className="text-primary text-center text-sm">

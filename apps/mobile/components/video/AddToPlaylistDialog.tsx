@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import type { PlaylistVideo, YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -175,7 +177,7 @@ export function AddToPlaylistDialog({ open, onOpenChange, video }: AddToPlaylist
                 <View className="min-w-0 flex-1">
                   <Text className="text-sm font-medium text-foreground">{t('action.new_playlist')}</Text>
                   {createNew ? (
-                    <TextInput
+                    <Input
                       value={newName}
                       onChangeText={(text) => {
                         setNewName(text);
@@ -203,17 +205,17 @@ export function AddToPlaylistDialog({ open, onOpenChange, video }: AddToPlaylist
             <Dialog.Close className="w-full items-center rounded-lg px-4 py-2.5">
               <Text className="text-sm text-muted-foreground">{t('action.cancel')}</Text>
             </Dialog.Close>
-            <Pressable
+            <Button
               onPress={() => void handleSave()}
               disabled={!isSignedIn || !loaded || saving || (!createNew && selected.size === 0)}
-              className="w-full flex-row items-center justify-center rounded-lg bg-primary px-4 py-2.5 disabled:opacity-50"
+              className="w-full"
             >
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text className="text-sm font-bold text-primary-foreground">{t('action.add')}</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
         </Dialog.Content>
       </Dialog.Portal>

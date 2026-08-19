@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  View, Text, TextInput, ScrollView, ActivityIndicator,
+  View, Text, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -154,17 +156,19 @@ export default function WebReaderScreen() {
                 </Text>
               </View>
               {!!title && (
-                <Pressable
+                <Button
                   onPress={handleHome}
-                  className="rounded p-1.5 active:bg-muted"
+                  variant="ghost"
+                  size="icon"
                   accessibilityLabel={t('title.web_reader')}
                 >
                   <Home size={18} color={ICON_MUTED} />
-                </Pressable>
+                </Button>
               )}
-              <Pressable
+              <Button
                 onPress={toggle}
-                className="rounded p-1.5 active:bg-muted"
+                variant="ghost"
+                size="icon"
                 accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
                 accessibilityRole="button"
               >
@@ -173,15 +177,15 @@ export default function WebReaderScreen() {
                 ) : (
                   <PanelRightOpen size={18} color={ICON_MUTED} />
                 )}
-              </Pressable>
+              </Button>
             </View>
 
             {/* ── URL input ── */}
             <View className="px-4 mb-4">
               <View className="flex-row gap-2">
                 <View className="flex-1 relative flex-row items-center rounded-lg border border-border bg-background">
-                  <TextInput
-                    className="flex-1 px-3 py-2 text-sm text-foreground"
+                  <Input
+                    className="flex-1 border-0 bg-transparent px-3 py-2 text-sm text-foreground"
                     value={url}
                     onChangeText={setUrl}
                     placeholder={t('placeholder.paste_url', { l2: t(`lang.${l2Lang.code}`) })}
@@ -193,10 +197,10 @@ export default function WebReaderScreen() {
                     onSubmitEditing={() => handleLoad()}
                   />
                 </View>
-                <Pressable
+                <Button
                   onPress={() => handleLoad()}
                   disabled={!url.trim() || loading}
-                  className={`rounded-lg px-4 py-2 items-center justify-center ${!url.trim() || loading ? 'bg-muted' : 'bg-primary'}`}
+                  variant="default"
                 >
                   {loading ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
@@ -205,7 +209,7 @@ export default function WebReaderScreen() {
                       {t('action.load')}
                     </Text>
                   )}
-                </Pressable>
+                </Button>
               </View>
             </View>
 

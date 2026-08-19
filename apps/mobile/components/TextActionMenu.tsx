@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -233,9 +234,9 @@ export function TextActionMenu(props: TextActionMenuProps) {
                 </Text>
                 {explainLoading && <ActivityIndicator size="small" color={ICON_MUTED} />}
               </View>
-              <Pressable onPress={closeAction} className="rounded p-1 active:bg-muted">
+              <Button onPress={closeAction} variant="ghost" size="icon">
                 <X size={16} color={ICON_MUTED} />
-              </Pressable>
+              </Button>
             </View>
 
             {/* Body */}
@@ -246,13 +247,13 @@ export function TextActionMenu(props: TextActionMenuProps) {
                   <TokenizedText text={text} l2Code={l2Code} />
                 </View>
                 {contextExpanded ? (
-                  <Pressable onPress={() => setContextExpanded(false)} className="mt-1">
+                  <Button onPress={() => setContextExpanded(false)} variant="link" size="sm" className="mt-1">
                     <Text className="text-xs font-medium text-primary">{t('action.show_less')}</Text>
-                  </Pressable>
+                  </Button>
                 ) : (
-                  <Pressable onPress={() => setContextExpanded(true)} className="mt-1">
+                  <Button onPress={() => setContextExpanded(true)} variant="link" size="sm" className="mt-1">
                     <Text className="text-xs font-medium text-primary">{t('action.show_more')}</Text>
-                  </Pressable>
+                  </Button>
                 )}
               </View>
 
@@ -290,9 +291,9 @@ export function TextActionMenu(props: TextActionMenuProps) {
               <Text className="text-sm font-semibold text-foreground">
                 {t('action.translation')}
               </Text>
-              <Pressable onPress={closeAction} className="rounded p-1 active:bg-muted">
+              <Button onPress={closeAction} variant="ghost" size="icon">
                 <X size={16} color={ICON_MUTED} />
-              </Pressable>
+              </Button>
             </View>
             {translateLoading ? (
               <ActivityIndicator size="small" color={ICON_MUTED} />

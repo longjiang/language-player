@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
 import { Search, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -68,8 +69,8 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
     <View className="p-2">
       <View className="flex-row items-center gap-2 border-b border-border px-1 pb-2">
         <Search size={16} color={ICON_MUTED} />
-        <TextInput
-          className="flex-1 text-sm text-foreground"
+        <Input
+          className="flex-1 border-0 bg-transparent px-0 py-0 text-sm text-foreground"
           value={query}
           onChangeText={setQuery}
           placeholder={t('placeholder.search_dots')}

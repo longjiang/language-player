@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { CheckCircle, Loader2, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
@@ -93,8 +93,9 @@ export default function GoProSuccessPage() {
               {t('msg.pro_subscription_active')}
             </Text>
             <View className={`mt-8 w-full max-w-sm gap-3 ${isSm ? 'flex-row' : ''}`}>
-              <Pressable
-                className={`${isSm ? 'flex-1 ' : ''}border border-border rounded-lg py-3 items-center`}
+              <Button
+                variant="outline"
+                className={isSm ? 'flex-1' : ''}
                 onPress={() =>
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   router.replace('/(tabs)' as any)
@@ -103,9 +104,10 @@ export default function GoProSuccessPage() {
                 <Text className="text-foreground font-bold text-base">
                   {t('action.view_profile')}
                 </Text>
-              </Pressable>
-              <Pressable
-                className={`${isSm ? 'flex-1 ' : ''}bg-primary rounded-lg py-3 items-center flex-row justify-center`}
+              </Button>
+              <Button
+                variant="default"
+                className={isSm ? 'flex-1' : ''}
                 onPress={() =>
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   router.replace('/(tabs)' as any)
@@ -115,7 +117,7 @@ export default function GoProSuccessPage() {
                   {t('action.start_watching')}
                 </Text>
                 <ArrowRight size={16} color="#fff" style={{ marginLeft: 4 }} />
-              </Pressable>
+              </Button>
             </View>
           </>
         ) : user ? (
@@ -130,8 +132,8 @@ export default function GoProSuccessPage() {
               {t('msg.contact_support_if_delayed')}
             </Text>
             <View className="mt-8 w-full max-w-sm">
-              <Pressable
-                className="border border-border rounded-lg py-3 items-center"
+              <Button
+                variant="outline"
                 onPress={() =>
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   router.replace('/(tabs)' as any)
@@ -140,7 +142,7 @@ export default function GoProSuccessPage() {
                 <Text className="text-foreground font-bold text-base">
                   {t('action.continue')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
           </>
         ) : (
@@ -152,14 +154,14 @@ export default function GoProSuccessPage() {
               {t('msg.login_to_verify_pro')}
             </Text>
             <View className="mt-8 w-full max-w-sm">
-              <Pressable
-                className="bg-primary rounded-lg py-3 items-center"
+              <Button
+                variant="default"
                 onPress={() => router.replace('/login')}
               >
                 <Text className="text-primary-foreground font-bold text-base">
                   {t('action.log_in')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
           </>
         )}

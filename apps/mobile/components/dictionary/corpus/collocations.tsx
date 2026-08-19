@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { isContinua, type SketchCollocationsResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -146,9 +146,11 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
               })}
             </View>
             {hiddenCount > 0 && (
-              <Pressable
+              <Button
                 onPress={() => toggleExpanded(gramrelIndex)}
-                className="mt-2 flex-row items-center gap-1"
+                variant="link"
+                size="sm"
+                className="mt-2"
               >
                 {isExpanded ? (
                   <>
@@ -164,7 +166,7 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                     </Text>
                   </>
                 )}
-              </Pressable>
+              </Button>
             )}
           </View>
         );

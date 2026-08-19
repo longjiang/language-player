@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -311,9 +311,9 @@ export default function EpubReaderScreen() {
       <View className="flex-1 bg-background">
         <View className="px-4 py-5 flex-row items-center justify-between">
           <Text className="text-xl font-bold text-foreground">{epub.fileName}</Text>
-          <Pressable onPress={handleClose} className="rounded p-1 active:bg-muted">
+          <Button onPress={handleClose} variant="ghost" size="icon">
             <X size={18} color={ICON_MUTED} />
-          </Pressable>
+          </Button>
         </View>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
           <Text className="text-sm text-destructive">{errorText}</Text>
@@ -342,21 +342,22 @@ export default function EpubReaderScreen() {
   return (
     <View className="flex-1 bg-background">
       <View className="px-4 py-5 flex-row items-center gap-3">
-        <Pressable onPress={handleBack} className="rounded p-1 active:bg-muted" accessibilityLabel={t('action.back')}>
+        <Button onPress={handleBack} variant="ghost" size="icon" accessibilityLabel={t('action.back')}>
           <ArrowLeft size={18} color={ICON_MUTED} />
-        </Pressable>
+        </Button>
         <View className="flex-1 min-w-0">
           <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
             {nearestMarker?.label || epub.fileName || t('title.epub_reader')}
           </Text>
           <Text className="text-xs text-muted-foreground">{l2Lang.name} → {l1Lang.name}</Text>
         </View>
-        <Pressable onPress={handleClose} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
-          <X size={14} color={ICON_MUTED} /><Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
-        </Pressable>
-        <Pressable
+        <Button onPress={handleClose} variant="ghost" size="sm">
+          <X size={14} color={ICON_MUTED} /><Text className="text-xs text-foreground">{t('action.close')}</Text>
+        </Button>
+        <Button
           onPress={toggle}
-          className="rounded p-1 active:bg-muted"
+          variant="ghost"
+          size="icon"
           accessibilityLabel={t(isWide && sidebarOpen ? 'action.hide_sidebar' : 'action.show_sidebar')}
         >
           {isWide && sidebarOpen ? (
@@ -364,7 +365,7 @@ export default function EpubReaderScreen() {
           ) : (
             <PanelRightOpen size={20} color={ICON_MUTED} />
           )}
-        </Pressable>
+        </Button>
       </View>
 
       <View className="flex-1 pt-2" style={{ flexDirection: isWide ? 'row' : 'column' }}>
@@ -423,24 +424,26 @@ export default function EpubReaderScreen() {
           desktopClassName="w-64 ml-3"
           headerActions={
             <View className="flex-row items-center gap-1">
-              <Pressable
+              <Button
                 onPress={() => jumpToMarker(markerNav.prev)}
                 disabled={!markerNav.prev}
-                className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+                variant="ghost"
+                size="sm"
                 accessibilityLabel={t('action.previous_chapter')}
               >
                 <ChevronLeft size={16} color={ICON_MUTED} />
-                <Text className="text-xs text-muted-foreground">{t('action.previous_chapter')}</Text>
-              </Pressable>
-              <Pressable
+                <Text className="text-xs text-foreground">{t('action.previous_chapter')}</Text>
+              </Button>
+              <Button
                 onPress={() => jumpToMarker(markerNav.next)}
                 disabled={!markerNav.next}
-                className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted disabled:opacity-30"
+                variant="ghost"
+                size="sm"
                 accessibilityLabel={t('action.next_chapter')}
               >
-                <Text className="text-xs text-muted-foreground">{t('action.next_chapter')}</Text>
+                <Text className="text-xs text-foreground">{t('action.next_chapter')}</Text>
                 <ChevronRight size={16} color={ICON_MUTED} />
-              </Pressable>
+              </Button>
             </View>
           }
           footer={

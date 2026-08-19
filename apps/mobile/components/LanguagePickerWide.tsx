@@ -10,10 +10,11 @@ import React from 'react';
 import {
   View,
   Text,
-  TextInput,
   FlatList,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Search, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -84,8 +85,8 @@ function LanguagePanel({
       {showSearch && (
         <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2 mb-3">
           <Search size={16} color={ICON_MUTED} />
-          <TextInput
-            className="flex-1 ml-2 text-foreground text-sm"
+          <Input
+            className="flex-1 ml-2 border-0 bg-transparent px-0 py-0 text-foreground text-sm"
             placeholder={t('placeholder.search_languages')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={search}
@@ -257,25 +258,27 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
 
           {/* Bottom action: Next (no L2 yet) or Start Learning */}
           {!selectedL2 ? (
-            <Pressable
+            <Button
               disabled
-              className="bg-primary/50 px-4 py-2 rounded-lg ml-2 flex-row flex-wrap items-center gap-1 max-w-full"
+              variant="default"
+              className="ml-2 max-w-full flex-wrap"
             >
               <Text className="text-primary-foreground font-bold text-sm flex-shrink">
                 {t('action.next')}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />
-            </Pressable>
+            </Button>
           ) : (
-            <Pressable
+            <Button
               onPress={onConfirm}
-              className="bg-primary px-4 py-2 rounded-lg ml-2 flex-row flex-wrap items-center gap-1 max-w-full"
+              variant="default"
+              className="ml-2 max-w-full flex-wrap"
             >
               <Text className="text-primary-foreground font-bold text-sm flex-shrink">
                 {t('action.start_learning_lang', { name: getName(selectedL2) })}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />
-            </Pressable>
+            </Button>
           )}
         </View>
       )}

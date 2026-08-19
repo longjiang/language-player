@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -96,7 +97,7 @@ export default function TokenizerScreen() {
         </Text>
 
         {/* ── Sample text (paginated, like reader) ── */}
-        <View className="mt-6 rounded-lg border border-border bg-card p-4">
+        <Card className="mt-6">
           <Text className="mb-3 text-xs font-medium text-muted-foreground">
             {sampleTitle} · {t('label.sample')}
           </Text>
@@ -127,36 +128,33 @@ export default function TokenizerScreen() {
               <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
             </View>
           )}
-        </View>
+        </Card>
 
         {/* ── Custom text input ── */}
         <View className="mt-6">
           <Text className="mb-2 text-sm font-medium text-foreground">
             {t('label.custom_text')}
           </Text>
-          <TextInput
+          <Textarea
             className="mb-3 min-h-[80px] rounded-lg border border-border bg-background p-4 text-sm text-foreground"
             value={customText}
             onChangeText={setCustomText}
             placeholder={t('placeholder.enter_text', { l2: l2Lang.name })}
             placeholderTextColor={ICON_MUTED}
-            multiline
-            textAlignVertical="top"
             autoCapitalize="none"
             autoCorrect={false}
           />
-          <Pressable
+          <Button
             onPress={handleTokenizeCustom}
             disabled={!customText.trim()}
-            className={`flex-row items-center self-start rounded-lg px-4 py-2.5 ${
-              !customText.trim() ? 'bg-muted' : 'bg-primary active:bg-primary/80'
-            }`}
+            variant="default"
+            className="self-start"
           >
             <Sparkles size={16} color="#fff" />
-            <Text className="ml-2 text-sm font-medium text-primary-foreground">
+            <Text className="text-sm font-medium text-primary-foreground">
               {t('action.tokenize')}
             </Text>
-          </Pressable>
+          </Button>
         </View>
 
         {/* ── Custom text result ── */}
@@ -167,14 +165,14 @@ export default function TokenizerScreen() {
           </View>
         )}
         {customTokens && customTokens.length > 0 && (
-          <View className="mt-4 rounded-lg border border-border bg-card p-4">
+          <Card className="mt-4">
             <TokenizedText
               text={customText.trim()}
               l2Code={l2Lang.code}
               tokens={customTokens}
               textScale={1}
             />
-          </View>
+          </Card>
         )}
       </ScrollView>
     </PageContainer>

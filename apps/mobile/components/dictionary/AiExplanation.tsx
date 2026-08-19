@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -472,13 +473,13 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
   if (!showAi && !autoLoad) {
     return (
       <View className="mt-4 pb-2">
-        <Pressable
+        <Button
           onPress={() => setShowAi(true)}
-          className="flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
+          variant="outline"
         >
           <Sparkles size={16} color={ICON_PRIMARY} />
           <Text className="text-sm font-medium text-foreground">{t('action.let_ai_explain')}</Text>
-        </Pressable>
+        </Button>
       </View>
     );
   }
@@ -569,19 +570,21 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                 </View>
                 <View className="mt-1 flex-row items-center gap-1 pl-1">
                   {(message.examples?.length ?? 0) === 0 && (
-                    <Pressable
+                    <Button
                       onPress={() => handleRegenerate(message.id)}
                       disabled={loading}
-                      className="rounded p-1 active:bg-muted disabled:opacity-40"
+                      variant="ghost"
+                      size="icon"
                       accessibilityLabel={t('action.regenerate')}
                     >
                       <RefreshCw size={12} color={ICON_MUTED} />
-                    </Pressable>
+                    </Button>
                   )}
-                  <Pressable
+                  <Button
                     onPress={() => handleCopy(message.id)}
                     disabled={loading || message.loading || !message.text}
-                    className="rounded p-1 active:bg-muted disabled:opacity-40"
+                    variant="ghost"
+                    size="icon"
                     accessibilityLabel={t('action.copy')}
                   >
                     {copiedId === message.id ? (
@@ -589,7 +592,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                     ) : (
                       <Copy size={12} color={ICON_MUTED} />
                     )}
-                  </Pressable>
+                  </Button>
                 </View>
               </View>
             ),

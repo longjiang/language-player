@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Animated, useWindowDimensions, Linking } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -542,16 +542,17 @@ export function DictionaryPopup({
                     </Text>
                   )}
                 </View>
-                <Pressable
+                <Button
                   onPress={onClose}
-                  className="rounded-full p-1.5 active:bg-muted"
+                  variant="ghost"
+                  size="icon"
                   hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={t('action.close')}
                   testID="dictionary-popup-close"
                 >
                   <X size={16} color={ICON_MUTED} />
-                </Pressable>
+                </Button>
               </View>
 
               {/* Results */}
@@ -565,7 +566,7 @@ export function DictionaryPopup({
                 onContentSizeChange={(_w, h) => setScrollContentHeight(h)}
               >
                 {linkUrl ? (
-                  <Pressable
+                  <Button
                     onPress={() => {
                       onClose();
                       if (onOpenLink) {
@@ -574,11 +575,13 @@ export function DictionaryPopup({
                         Linking.openURL(linkUrl).catch(() => {});
                       }
                     }}
-                    className="mb-3 flex-row items-center gap-2 rounded-lg border border-border bg-card px-3 py-2"
+                    variant="outline"
+                    size="sm"
+                    className="mb-3"
                   >
                     <ExternalLink size={14} color={ICON_PRIMARY} />
-                    <Text className="text-sm font-medium text-primary">{t('action.open_in_reader')}</Text>
-                  </Pressable>
+                    <Text className={`text-sm font-medium ${buttonTextClass('outline')}`}>{t('action.open_in_reader')}</Text>
+                  </Button>
                 ) : null}
 
                 {/* AI + image sections need the network — hide while offline. */}
@@ -594,15 +597,16 @@ export function DictionaryPopup({
                     {/* Search Google Images — opens the in-app browser (replaces
                         the in-popup gallery), styled to match the "Let DeepSeek
                         explain" button (outline Pressable, centered). */}
-                    <Pressable
+                    <Button
                       onPress={() => setShowImageSearch(true)}
-                      className="mb-3 flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
+                      variant="outline"
+                      className="mb-3"
                       accessibilityRole="button"
                       accessibilityLabel={t('action.search_images')}
                     >
                       <ImageIcon size={16} color={ICON_PRIMARY} />
                       <Text className="text-sm font-medium text-foreground">{t('action.search_images')}</Text>
-                    </Pressable>
+                    </Button>
                     <WebViewSheet
                       visible={showImageSearch}
                       url={googleImagesUrl}

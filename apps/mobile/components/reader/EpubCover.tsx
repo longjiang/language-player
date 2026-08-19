@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { BookOpen, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -40,9 +41,9 @@ export function EpubCover({ fileName, epubTitle, epubAuthor, coverUrl, onClose, 
       <View className="px-4 py-5">
         <View className="flex-row items-center justify-between">
           <Text className="text-xl font-bold text-foreground" numberOfLines={1}>{fileName}</Text>
-          <Pressable onPress={onClose} className="rounded p-1 active:bg-muted">
+          <Button onPress={onClose} variant="ghost" size="icon">
             <X size={18} color={ICON_MUTED} />
-          </Pressable>
+          </Button>
         </View>
       </View>
       <Pressable onPress={onOpen} className="flex-1 items-center justify-center px-4">

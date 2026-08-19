@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import * as Dialog from '@/components/ui/dialog';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -252,14 +253,16 @@ export function SubsSearchPlaybackModal({
           </View>
         )}
       </View>
-      <Pressable
+      <Button
         onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}` as any)}
-        className="mt-1 flex-row items-center gap-1 self-start rounded-md px-2 py-1.5 active:bg-muted"
+        variant="ghost"
+        size="sm"
+        className="mt-1 self-start"
         accessibilityRole="button"
       >
         <Play size={14} color={ICON_MUTED} />
-        <Text className="text-xs font-medium text-primary">{t('action.watch')}</Text>
-      </Pressable>
+        <Text className={buttonTextClass('ghost') + ' text-xs font-medium'}>{t('action.watch')}</Text>
+      </Button>
     </View>
   ) : null;
 
@@ -341,16 +344,18 @@ export function SubsSearchPlaybackModal({
               <Text className="flex-1 text-xs text-amber-700 dark:text-amber-300">
                 {t('msg.subs_out_of_range')}
               </Text>
-              <Pressable
+              <Button
                 onPress={onLoadFullSubtitles}
                 disabled={loadingFullSubs}
-                className="shrink-0 rounded-md bg-primary px-3 py-1.5 active:opacity-80 disabled:opacity-50"
+                variant="default"
+                size="sm"
+                className="shrink-0"
                 accessibilityRole="button"
               >
                 <Text className="text-xs font-semibold text-primary-foreground">
                   {loadingFullSubs ? t('msg.loading') : t('action.load_full_subtitles')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
           )}
         </View>

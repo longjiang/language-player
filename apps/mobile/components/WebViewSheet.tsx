@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, Share2, X } from 'lucide-react-native';
@@ -126,27 +127,33 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
               ) : null}
             </View>
             <View className="flex-row items-center gap-2">
-              <Pressable
+              <Button
                 onPress={handleShare}
-                className="rounded-full bg-muted p-2 active:opacity-70"
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <Share2 size={16} color={ICON_MUTED} />
-              </Pressable>
-              <Pressable
+              </Button>
+              <Button
                 onPress={handleOpenInBrowser}
-                className="rounded-full bg-muted p-2 active:opacity-70"
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <ExternalLink size={16} color={ICON_MUTED} />
-              </Pressable>
-              <Pressable
+              </Button>
+              <Button
                 onPress={onClose}
-                className="rounded-full bg-muted p-2 active:opacity-70"
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <X size={16} color={ICON_MUTED} />
-              </Pressable>
+              </Button>
             </View>
           </View>
 
@@ -163,17 +170,17 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
                   <Text className="text-sm text-muted-foreground text-center">
                     {t('msg.load_failed')}
                   </Text>
-                  <Pressable
+                  <Button
                     onPress={() => {
                       setLoadError(false);
                       setLoading(true);
                     }}
-                    className="mt-3 rounded-lg bg-primary px-4 py-2"
+                    className="mt-3"
                   >
                     <Text className="text-sm font-medium text-primary-foreground">
                       {t('action.retry')}
                     </Text>
-                  </Pressable>
+                  </Button>
                 </View>
               ) : (
                 <WebView

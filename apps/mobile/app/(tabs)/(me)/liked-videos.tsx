@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, Image, FlatList, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserLibraryContext } from '@/contexts/UserLibraryContext';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
@@ -119,13 +120,15 @@ export default function LikedVideosScreen() {
               </View>
 
               {/* Unlike */}
-              <Pressable
+              <Button
                 onPress={() => handleUnlike(item)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg active:bg-destructive/10"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 active:bg-destructive/10"
                 hitSlop={8}
               >
                 <Heart size={18} color={ICON_DESTRUCTIVE} fill={ICON_DESTRUCTIVE} />
-              </Pressable>
+              </Button>
             </Pressable>
           );
         }}

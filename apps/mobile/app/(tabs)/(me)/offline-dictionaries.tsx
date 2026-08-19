@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, ScrollView, Alert, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, Alert, Platform } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -428,13 +430,15 @@ export default function OfflineDictionariesScreen() {
               },
             ]}
           >
-            <Pressable
-              className="rounded-lg p-2 -mt-1"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-mt-1"
               hitSlop={6}
               accessibilityRole="button"
             >
               <MoreVertical size={20} color={ICON_MUTED} />
-            </Pressable>
+            </Button>
           </MenuView>
         )}
       </View>
@@ -452,8 +456,8 @@ export default function OfflineDictionariesScreen() {
       {/* Search bar */}
       <View className="mx-4 mt-4 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
         <Search size={16} color={ICON_MUTED} />
-        <TextInput
-          className="flex-1 ml-2 text-sm text-foreground"
+        <Input
+          className="flex-1 ml-2 text-sm text-foreground border-0 bg-muted px-0 py-0"
           placeholder={t('placeholder.search_languages')}
           placeholderTextColor={ICON_MUTED}
           value={searchQuery}

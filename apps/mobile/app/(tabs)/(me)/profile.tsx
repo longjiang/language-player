@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Modal, TextInput, Linking, AppState, Alert } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Modal, Linking, AppState, Alert } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Pressable } from '@/components/ui/pressable';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -280,13 +282,12 @@ export default function ProfileScreen() {
                 </View>
               ))}
             </View>
-            <Pressable
+            <Button
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
-              className="flex-row items-center justify-center gap-1.5 rounded-lg bg-primary py-2.5"
             >
               <Text className="text-sm font-semibold text-primary-foreground">{t('action.upgrade_to_pro')}</Text>
               <ArrowRight size={14} color="#fff" />
-            </Pressable>
+            </Button>
             <View className="mt-3 flex-row items-center justify-center gap-1 flex-wrap">
               <Text className="text-center text-xs text-muted-foreground">
                 {t('msg.money_back_guarantee')}
@@ -342,24 +343,26 @@ export default function ProfileScreen() {
 
             <View className="flex-row gap-2">
               {willAutoRenew && (
-                <Pressable
+                <Button
                   onPress={handleCancel}
                   disabled={cancelling}
-                  className="rounded-lg border border-border px-3 py-2"
+                  variant="outline"
+                  size="sm"
                 >
                   <Text className="text-sm text-foreground">
                     {cancelling ? t('msg.cancelling') : t('action.cancel_auto_renewal')}
                   </Text>
-                </Pressable>
+                </Button>
               )}
-              <Pressable
+              <Button
                 onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
-                className="rounded-lg border border-border px-3 py-2"
+                variant="outline"
+                size="sm"
               >
                 <Text className="text-sm text-foreground">
                   {isExpired ? t('action.renew') : t('action.view_plans')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
 
             {/* Lifetime upsell */}
@@ -374,9 +377,9 @@ export default function ProfileScreen() {
                       <Text className="text-xs text-muted-foreground">{t('msg.pay_once_forever')}</Text>
                     </View>
                   </View>
-                  <Pressable onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} className="mt-2">
+                  <Button onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} variant="link" className="mt-2">
                     <Text className="text-sm font-medium text-primary">{t('action.upgrade_to_lifetime')}</Text>
-                  </Pressable>
+                  </Button>
                 </View>
               </View>
             )}
@@ -448,15 +451,16 @@ export default function ProfileScreen() {
             {t('msg.delete_account_cancel_subscription_first')}
           </Text>
         ) : (
-          <Pressable
+          <Button
             onPress={() => setDeleteOpen(true)}
-            className="mt-4 flex-row items-center justify-center gap-2 rounded-lg bg-destructive py-2.5"
+            variant="destructive"
+            className="mt-4"
           >
             <Trash2 size={16} color={ICON_ON_PRIMARY} />
             <Text className="text-sm font-semibold text-destructive-foreground">
               {t('action.delete_account_permanently')}
             </Text>
-          </Pressable>
+          </Button>
         )}
       </View>
 
@@ -486,7 +490,7 @@ export default function ProfileScreen() {
               <Text className="text-sm text-destructive">{t('msg.delete_account_irreversible')}</Text>
             </View>
             <Text className="mt-3 text-sm font-medium text-foreground">{t('msg.delete_account_type_to_confirm')}</Text>
-            <TextInput
+            <Input
               value={deleteConfirm}
               onChangeText={(text) => {
                 setDeleteConfirm(text);
@@ -502,16 +506,18 @@ export default function ProfileScreen() {
               <Text className="mt-2 text-sm text-destructive">{t('msg.delete_account_error')}</Text>
             )}
             <View className="mt-4 flex-col gap-2">
-              <Pressable
+              <Button
                 onPress={closeDeleteDialog}
-                className="w-full rounded-lg border border-border px-4 py-2.5 items-center"
+                variant="outline"
+                className="w-full"
               >
                 <Text className="text-sm text-foreground">{t('action.cancel')}</Text>
-              </Pressable>
-              <Pressable
+              </Button>
+              <Button
                 onPress={handleDeleteAccount}
                 disabled={deleteConfirm !== 'DELETE' || deleting}
-                className={`w-full flex-row items-center justify-center gap-2 rounded-lg bg-destructive px-4 py-2.5 ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
+                variant="destructive"
+                className={`w-full ${deleteConfirm !== 'DELETE' || deleting ? 'opacity-50' : ''}`}
               >
                 {deleting ? (
                   <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
@@ -521,7 +527,7 @@ export default function ProfileScreen() {
                 <Text className="text-sm font-semibold text-destructive-foreground">
                   {t('action.delete_account_permanently')}
                 </Text>
-              </Pressable>
+              </Button>
             </View>
           </View>
         </View>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -102,7 +104,7 @@ export default function SearchScreen() {
       <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">
         <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-3">
           <Search size={16} color={ICON_MUTED} />
-          <TextInput
+          <Input
             className="flex-1 py-2.5 pl-2 pr-0 text-sm text-foreground"
             placeholder={t('placeholder.search_dots')}
             placeholderTextColor={PLACEHOLDER_COLOR}
@@ -115,14 +117,13 @@ export default function SearchScreen() {
             {...e2e('search-input')}
           />
         </View>
-        <Pressable
+        <Button
           onPress={() => doSearch(query)}
           disabled={loading || !query.trim()}
-          className="rounded-lg bg-primary px-4 py-2 active:bg-primary/80"
           {...e2e('search-button')}
         >
           <Text className="text-sm font-bold text-primary-foreground">{t('action.search')}</Text>
-        </Pressable>
+        </Button>
       </View>
 
       {/* YouTube URL hint */}
@@ -154,11 +155,16 @@ export default function SearchScreen() {
                 ))}
               </View>
               {tags.length > INITIAL_TAG_COUNT && (
-                <Pressable onPress={() => setTagsExpanded(!tagsExpanded)} className="mt-2">
-                  <Text className="text-xs text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => setTagsExpanded(!tagsExpanded)}
+                  className="mt-2"
+                >
+                  <Text className={buttonTextClass('ghost') + ' text-xs'}>
                     {tagsExpanded ? t('action.show_less') : t('action.show_more')}
                   </Text>
-                </Pressable>
+                </Button>
               )}
             </>
           ) : null}

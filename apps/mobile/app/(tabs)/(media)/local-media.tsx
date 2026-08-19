@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
@@ -122,21 +123,23 @@ export default function LocalMediaScreen() {
       <Text className="flex-1 truncate text-sm font-medium text-foreground" numberOfLines={1}>
         {localMedia.fileName ?? t('label.untitled_video')}
       </Text>
-      <Pressable
+      <Button
         onPress={localMedia.loadCaptions}
-        className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted"
+        variant="ghost"
+        size="sm"
       >
         <FileText size={14} color={ICON_MUTED} />
-        <Text className="text-xs text-muted-foreground">
+        <Text className={buttonTextClass('ghost') + ' text-xs'}>
           {hasSubtitles ? `${localMedia.subtitleLines.length} captions` : 'Add captions'}
         </Text>
-      </Pressable>
-      <Pressable
+      </Button>
+      <Button
         onPress={localMedia.clear}
-        className="rounded p-1 active:bg-muted"
+        variant="ghost"
+        size="icon"
       >
         <X size={14} color={ICON_MUTED} />
-      </Pressable>
+      </Button>
     </View>
   );
 
@@ -237,13 +240,13 @@ export default function LocalMediaScreen() {
           <Upload size={48} className="mb-4 text-muted-foreground/40" />
           <Text className="mb-2 text-sm text-muted-foreground">{t('msg.drop_media_here')}</Text>
           <Text className="mb-4 text-xs text-muted-foreground/60">{t('msg.supported_media_formats')}</Text>
-          <Pressable
+          <Button
             onPress={localMedia.openFile}
-            className="flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted"
+            variant="outline"
           >
             <Upload size={16} className="text-foreground" />
             <Text className="text-sm text-foreground">{t('action.browse')}</Text>
-          </Pressable>
+          </Button>
         </View>
       )}
 

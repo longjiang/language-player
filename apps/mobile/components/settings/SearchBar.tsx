@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TextInput } from 'react-native';
+import { View } from 'react-native';
+import { Input } from '@/components/ui/input';
 import { Search, X } from 'lucide-react-native';
 import { ICON_MUTED, PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 
@@ -13,8 +14,8 @@ export function SearchBar({ value, onChangeText, placeholder }: SearchBarProps) 
   return (
     <View className="flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
       <Search size={16} color={ICON_MUTED} />
-      <TextInput
-        className="flex-1 text-sm text-foreground ml-2"
+      <Input
+        className="flex-1 text-sm text-foreground ml-2 border-0 bg-muted px-0 py-0"
         placeholder={placeholder}
         placeholderTextColor={PLACEHOLDER_COLOR}
         value={value}

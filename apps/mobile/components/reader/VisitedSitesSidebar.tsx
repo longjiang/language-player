@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { Input } from '@/components/ui/input';
 import { Globe, MoreHorizontal, PenLine, Trash2 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -54,7 +55,7 @@ export function VisitedSitesSidebar({
               <View className="relative z-20 flex-row items-center gap-2 rounded-md px-2 py-1.5">
                 <Globe size={14} color={ICON_MUTED} />
                 <View className="min-w-0 flex-1">
-                  <TextInput
+                  <Input
                     autoFocus
                     value={editValue}
                     onChangeText={setEditValue}
