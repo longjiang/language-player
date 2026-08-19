@@ -1,5 +1,5 @@
 import { View, Text, Linking } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
@@ -38,7 +38,7 @@ export default function GoProErrorPage() {
             className={isSm ? 'flex-1' : ''}
             onPress={() => router.back()}
           >
-            <Text className="text-foreground font-bold text-base">
+            <Text className={buttonTextClass('outline')}>
               {t('action.try_again')}
             </Text>
           </Button>
@@ -48,7 +48,7 @@ export default function GoProErrorPage() {
             className={isSm ? 'flex-1' : ''}
             onPress={handleEmailSupport}
           >
-            <Text className="text-primary-foreground font-bold text-base">
+            <Text className={buttonTextClass('default')}>
               {t('action.email_support')}
             </Text>
           </Button>

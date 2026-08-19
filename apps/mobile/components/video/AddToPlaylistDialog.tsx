@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import type { PlaylistVideo, YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -186,9 +186,7 @@ export function AddToPlaylistDialog({ open, onOpenChange, video }: AddToPlaylist
                       placeholder={t('label.playlist_name')}
                       placeholderTextColor={PLACEHOLDER_COLOR}
                       autoFocus
-                      className={`mt-1.5 rounded-md border bg-background px-3 py-1.5 text-sm text-foreground ${
-                        nameError ? 'border-destructive' : 'border-border'
-                      }`}
+                      className="mt-1.5"
                     />
                   ) : null}
                   {nameError ? (
@@ -213,7 +211,7 @@ export function AddToPlaylistDialog({ open, onOpenChange, video }: AddToPlaylist
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text className="text-sm font-bold text-primary-foreground">{t('action.add')}</Text>
+                <Text className={buttonTextClass('default')}>{t('action.add')}</Text>
               )}
             </Button>
           </View>

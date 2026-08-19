@@ -918,7 +918,7 @@ export default function ReviewScreen() {
         <Button
           onPress={() => router.push('/(tabs)/(media)' as any)}
         >
-          <Text className="text-sm font-semibold text-primary-foreground">
+          <Text className={buttonTextClass('default')}>
             {t('action.explore_videos')}
           </Text>
         </Button>
@@ -947,7 +947,7 @@ export default function ReviewScreen() {
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="mt-4"
         >
-          <Text className="text-sm font-semibold text-primary-foreground">
+          <Text className={buttonTextClass('default')}>
             {t('action.explore_videos')}
           </Text>
         </Button>
@@ -978,7 +978,7 @@ export default function ReviewScreen() {
           onPress={() => router.push('/(tabs)/(media)' as any)}
           className="mt-4"
         >
-          <Text className="text-sm font-semibold text-primary-foreground">
+          <Text className={buttonTextClass('default')}>
             {t('action.explore_videos')}
           </Text>
         </Button>
@@ -1101,7 +1101,7 @@ export default function ReviewScreen() {
               size="sm"
               className="mb-2"
             >
-              <Text className={`text-xs ${buttonTextClass('outline')}`}>
+              <Text className={buttonTextClass('outline')}>
                 {t('review.show_definition')}
               </Text>
             </Button>
@@ -1147,7 +1147,7 @@ export default function ReviewScreen() {
                 {t('msg.upgrade_to_pro_banner')}
               </Text>
               <Button onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} variant="link" className="mt-1">
-                <Text className="text-sm font-semibold text-primary underline">
+                <Text className={buttonTextClass('link')}>
                   {t('action.upgrade_to_pro')}
                 </Text>
               </Button>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Alert, View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -175,7 +175,7 @@ export default function VerifyEmailScreen() {
             onPress={() => router.replace('/login')}
             {...e2e('verify-back-to-login-button')}
           >
-            <Text className="text-foreground font-medium text-sm">
+            <Text className={buttonTextClass('outline')}>
               {t('action.back_to_login')}
             </Text>
           </Button>
@@ -196,7 +196,7 @@ export default function VerifyEmailScreen() {
             {t('msg.verification_code_sent', { email: email ?? '' })}
           </Text>
           <Input
-            className="mt-4 w-full rounded-lg border border-input bg-background px-4 py-3 text-center text-2xl tracking-widest text-foreground"
+            className="mt-4 w-full"
             placeholder={t('placeholder.verification_code')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="number-pad"
@@ -222,7 +222,7 @@ export default function VerifyEmailScreen() {
             {verifyingCode ? (
               <ActivityIndicator color={ICON_ON_PRIMARY} />
             ) : (
-              <Text className="text-primary-foreground font-medium text-sm">
+              <Text className={buttonTextClass('default')}>
                 {t('action.verify')}
               </Text>
             )}
@@ -233,7 +233,7 @@ export default function VerifyEmailScreen() {
             onPress={handleResend}
             disabled={resending}
           >
-            <Text className="text-foreground font-medium text-sm">
+            <Text className={buttonTextClass('outline')}>
               {resending ? t('msg.verifying') : t('action.resend_code')}
             </Text>
           </Button>
@@ -265,7 +265,7 @@ export default function VerifyEmailScreen() {
           onPress={() => router.replace('/login')}
           {...e2e('verify-back-to-login-button')}
         >
-          <Text className="text-primary-foreground font-medium text-sm">
+          <Text className={buttonTextClass('default')}>
             {t('action.back_to_login')}
           </Text>
         </Button>

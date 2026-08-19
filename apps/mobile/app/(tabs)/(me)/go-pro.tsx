@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Linking, Platform } from 'react-native';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button, buttonTextClass } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -356,11 +356,14 @@ export default function GoProScreen() {
       {/* ── Current Subscription Status ── */}
       {subLoaded && isPro && (
         <Card className="mt-6">
-          <View className="flex-row items-center gap-2">
-            <Crown size={18} color={ICON_WARNING} />
-            <Text className="text-base font-semibold text-foreground">{t('title.subscription')}</Text>
-          </View>
-          <View className="mt-2 flex-row flex-wrap items-center gap-2">
+          <CardHeader>
+            <View className="flex-row items-center gap-2">
+              <Crown size={18} color={ICON_WARNING} />
+              <CardTitle>{t('title.subscription')}</CardTitle>
+            </View>
+          </CardHeader>
+          <CardContent>
+            <View className="mt-2 flex-row flex-wrap items-center gap-2">
             <View className={`rounded-full px-3 py-1 ${
               isLifetime ? 'bg-amber-100 dark:bg-amber-900' :
               isExpired ? 'bg-red-100 dark:bg-red-900' :
@@ -386,6 +389,7 @@ export default function GoProScreen() {
               {t('msg.days_remaining', { n: daysUntilExpiry })}
             </Text>
           )}
+          </CardContent>
         </Card>
       )}
 
@@ -469,15 +473,17 @@ export default function GoProScreen() {
       {/* ── Purchase (store billing only, SPEC-014 / SPEC-068) ── */}
       {IAP_AVAILABLE && selectedPlan === 'lifetime' && selectedPlanData && (
           <Card className="mt-8">
-            <View className="flex-row items-center gap-2 mb-4">
-              {Platform.OS === 'android' ? (
-                <CreditCard size={20} color={ICON_PRIMARY} />
-              ) : (
-                <Apple size={20} color={ICON_PRIMARY} />
-              )}
-              <Text className="text-base font-semibold text-foreground">{t('title.choose_payment_method')}</Text>
-            </View>
-
+            <CardHeader>
+              <View className="flex-row items-center gap-2 mb-4">
+                {Platform.OS === 'android' ? (
+                  <CreditCard size={20} color={ICON_PRIMARY} />
+                ) : (
+                  <Apple size={20} color={ICON_PRIMARY} />
+                )}
+                <CardTitle>{t('title.choose_payment_method')}</CardTitle>
+              </View>
+            </CardHeader>
+            <CardContent>
             {activeNonTrial ? (
               <View className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 items-center">
                 <AlertCircle size={28} color={ICON_WARNING} />
@@ -489,7 +495,7 @@ export default function GoProScreen() {
                   variant="outline"
                   className="mt-4"
                 >
-                  <Text className="text-sm font-medium text-foreground">
+                  <Text className={buttonTextClass('outline')}>
                     {t('action.view_profile')}
                   </Text>
                 </Button>
@@ -550,7 +556,7 @@ export default function GoProScreen() {
                 ) : (
                   <RefreshCw size={16} color={ICON_MUTED} />
                 )}
-                <Text className="text-sm text-foreground">{t('action.restore_purchases')}</Text>
+                <Text className={buttonTextClass('outline')}>{t('action.restore_purchases')}</Text>
               </Button>
             )}
 
@@ -571,18 +577,23 @@ export default function GoProScreen() {
                 <Text className="text-xs text-primary underline">{t('action.contact_us')}</Text>
               </Pressable>
             </View>
+            </CardContent>
           </Card>
       )}
 
       {/* Features */}
       <Card className="mt-8">
-        <Text className="mb-3 text-sm font-semibold text-foreground">{t('pro.features_title')}</Text>
-        {FEATURE_KEYS.map((key) => (
-          <View key={key} className="flex-row items-center gap-2 py-1.5">
-            <Check size={16} color={ICON_PRIMARY} />
-            <Text className="text-sm text-foreground">{t(key)}</Text>
-          </View>
-        ))}
+        <CardHeader>
+          <CardTitle>{t('pro.features_title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {FEATURE_KEYS.map((key) => (
+            <View key={key} className="flex-row items-center gap-2 py-1.5">
+              <Check size={16} color={ICON_PRIMARY} />
+              <Text className="text-sm text-foreground">{t(key)}</Text>
+            </View>
+          ))}
+        </CardContent>
       </Card>
 
       <Text className="mt-6 text-center text-xs text-muted-foreground">

@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExternalLink, Share2, X } from 'lucide-react-native';
@@ -131,7 +131,6 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
                 onPress={handleShare}
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <Share2 size={16} color={ICON_MUTED} />
@@ -140,7 +139,6 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
                 onPress={handleOpenInBrowser}
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <ExternalLink size={16} color={ICON_MUTED} />
@@ -149,7 +147,6 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
                 onPress={onClose}
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-muted"
                 hitSlop={8}
               >
                 <X size={16} color={ICON_MUTED} />
@@ -177,7 +174,7 @@ export function WebViewSheet({ visible, url, title, onClose }: WebViewSheetProps
                     }}
                     className="mt-3"
                   >
-                    <Text className="text-sm font-medium text-primary-foreground">
+                    <Text className={buttonTextClass('default')}>
                       {t('action.retry')}
                     </Text>
                   </Button>

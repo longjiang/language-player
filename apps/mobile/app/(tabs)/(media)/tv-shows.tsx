@@ -187,9 +187,7 @@ export default function TvShowsScreen() {
       >
         {/* Search */}
         <Input
-          className={`rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground ${
-            isMd ? 'flex-1' : ''
-          }`}
+          className={isMd ? 'flex-1' : ''}
           placeholder={t('action.search') + '...'}
           placeholderTextColor={PLACEHOLDER_COLOR}
           value={search}

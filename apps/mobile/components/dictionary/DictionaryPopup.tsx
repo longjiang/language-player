@@ -580,7 +580,7 @@ export function DictionaryPopup({
                     className="mb-3"
                   >
                     <ExternalLink size={14} color={ICON_PRIMARY} />
-                    <Text className={`text-sm font-medium ${buttonTextClass('outline')}`}>{t('action.open_in_reader')}</Text>
+                    <Text className={buttonTextClass('outline')}>{t('action.open_in_reader')}</Text>
                   </Button>
                 ) : null}
 
@@ -605,7 +605,7 @@ export function DictionaryPopup({
                       accessibilityLabel={t('action.search_images')}
                     >
                       <ImageIcon size={16} color={ICON_PRIMARY} />
-                      <Text className="text-sm font-medium text-foreground">{t('action.search_images')}</Text>
+                      <Text className={buttonTextClass('outline')}>{t('action.search_images')}</Text>
                     </Button>
                     <WebViewSheet
                       visible={showImageSearch}

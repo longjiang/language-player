@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, Animated, Easing } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -337,7 +337,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
               onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
               className="mt-3"
             >
-              <Text className="text-sm font-semibold text-primary-foreground">
+              <Text className={buttonTextClass('default')}>
                 {t('action.upgrade_to_pro')}
               </Text>
             </Button>

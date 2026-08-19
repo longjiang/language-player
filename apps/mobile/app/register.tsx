@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -101,7 +101,6 @@ export default function RegisterScreen() {
       <View className="flex-row gap-3 mb-3">
         <View className="flex-1">
           <Input
-            className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
             placeholder={t('placeholder.first_name')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={firstName}
@@ -111,7 +110,6 @@ export default function RegisterScreen() {
         </View>
         <View className="flex-1">
           <Input
-            className="bg-card border border-border rounded-lg px-4 py-3 text-foreground"
             placeholder={t('placeholder.last_name')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={lastName}
@@ -122,7 +120,7 @@ export default function RegisterScreen() {
       </View>
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        className="mb-3"
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
@@ -135,7 +133,7 @@ export default function RegisterScreen() {
       />
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        className="mb-3"
         placeholder={t('placeholder.password_min')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
@@ -147,7 +145,7 @@ export default function RegisterScreen() {
       />
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        className="mb-6"
         placeholder={t('placeholder.confirm_password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
@@ -205,7 +203,7 @@ export default function RegisterScreen() {
 
         {acquisitionSource === 'other' && (
           <Input
-            className="mt-3 bg-card border border-border rounded-lg px-4 py-3 text-foreground"
+            className="mt-3"
             placeholder={t('placeholder.please_specify')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={acquisitionDetails}
@@ -227,7 +225,7 @@ export default function RegisterScreen() {
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
-          <Text className="text-primary-foreground font-bold text-base">
+          <Text className={buttonTextClass('default')}>
             {t('action.create_account')}
           </Text>
         )}

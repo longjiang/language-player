@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { CheckCircle, Loader2, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
@@ -101,7 +101,7 @@ export default function GoProSuccessPage() {
                   router.replace('/(tabs)' as any)
                 }
               >
-                <Text className="text-foreground font-bold text-base">
+                <Text className={buttonTextClass('outline')}>
                   {t('action.view_profile')}
                 </Text>
               </Button>
@@ -113,7 +113,7 @@ export default function GoProSuccessPage() {
                   router.replace('/(tabs)' as any)
                 }
               >
-                <Text className="text-primary-foreground font-bold text-base">
+                <Text className={buttonTextClass('default')}>
                   {t('action.start_watching')}
                 </Text>
                 <ArrowRight size={16} color="#fff" style={{ marginLeft: 4 }} />
@@ -139,7 +139,7 @@ export default function GoProSuccessPage() {
                   router.replace('/(tabs)' as any)
                 }
               >
-                <Text className="text-foreground font-bold text-base">
+                <Text className={buttonTextClass('outline')}>
                   {t('action.continue')}
                 </Text>
               </Button>
@@ -158,7 +158,7 @@ export default function GoProSuccessPage() {
                 variant="default"
                 onPress={() => router.replace('/login')}
               >
-                <Text className="text-primary-foreground font-bold text-base">
+                <Text className={buttonTextClass('default')}>
                   {t('action.log_in')}
                 </Text>
               </Button>

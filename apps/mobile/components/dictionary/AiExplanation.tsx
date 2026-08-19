@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import * as Clipboard from 'expo-clipboard';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -478,7 +478,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           variant="outline"
         >
           <Sparkles size={16} color={ICON_PRIMARY} />
-          <Text className="text-sm font-medium text-foreground">{t('action.let_ai_explain')}</Text>
+          <Text className={buttonTextClass('outline')}>{t('action.let_ai_explain')}</Text>
         </Button>
       </View>
     );

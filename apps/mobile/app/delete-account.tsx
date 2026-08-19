@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,7 +73,7 @@ export default function DeleteAccountScreen() {
             onPress={() => router.replace('/login')}
             {...e2e('delete-account-back-button')}
           >
-            <Text className="text-primary-foreground font-medium text-sm">
+            <Text className={buttonTextClass('default')}>
               {t('action.back_to_login')}
             </Text>
           </Button>
@@ -107,7 +107,7 @@ export default function DeleteAccountScreen() {
               onPress={handleDelete}
               {...e2e('delete-account-confirm-button')}
             >
-              <Text className="text-destructive-foreground font-bold text-base">
+              <Text className={buttonTextClass('destructive')}>
                 {t('action.confirm_deletion')}
               </Text>
             </Button>
@@ -117,7 +117,7 @@ export default function DeleteAccountScreen() {
               onPress={() => router.back()}
               {...e2e('delete-account-cancel-button')}
             >
-              <Text className="text-foreground font-medium text-sm">
+              <Text className={buttonTextClass('outline')}>
                 {t('action.cancel')}
               </Text>
             </Button>

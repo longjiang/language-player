@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, useWindowDimensions, Linking } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -352,7 +352,7 @@ export default function EpubReaderScreen() {
           <Text className="text-xs text-muted-foreground">{l2Lang.name} → {l1Lang.name}</Text>
         </View>
         <Button onPress={handleClose} variant="ghost" size="sm">
-          <X size={14} color={ICON_MUTED} /><Text className="text-xs text-foreground">{t('action.close')}</Text>
+          <X size={14} color={ICON_MUTED} /><Text className={buttonTextClass('ghost')}>{t('action.close')}</Text>
         </Button>
         <Button
           onPress={toggle}
@@ -432,7 +432,7 @@ export default function EpubReaderScreen() {
                 accessibilityLabel={t('action.previous_chapter')}
               >
                 <ChevronLeft size={16} color={ICON_MUTED} />
-                <Text className="text-xs text-foreground">{t('action.previous_chapter')}</Text>
+                <Text className={buttonTextClass('ghost')}>{t('action.previous_chapter')}</Text>
               </Button>
               <Button
                 onPress={() => jumpToMarker(markerNav.next)}
@@ -441,7 +441,7 @@ export default function EpubReaderScreen() {
                 size="sm"
                 accessibilityLabel={t('action.next_chapter')}
               >
-                <Text className="text-xs text-foreground">{t('action.next_chapter')}</Text>
+                <Text className={buttonTextClass('ghost')}>{t('action.next_chapter')}</Text>
                 <ChevronRight size={16} color={ICON_MUTED} />
               </Button>
             </View>

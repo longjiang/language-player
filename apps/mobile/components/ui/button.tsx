@@ -3,10 +3,9 @@ import { Pressable, type PressableProps } from 'react-native';
 import { cn } from '@/lib/utils';
 
 /**
- * App-wide Button (react-native-reusables pattern, adapted to this app's
- * semantic tokens and spacing scale). One button look everywhere: variant +
- * size classes replace the ad-hoc `rounded-lg bg-primary px-4 py-2 …`
- * containers that used to differ between screens.
+ * App-wide Button — stock react-native-reusables/shadcn defaults (no
+ * customizations other than the app's color tokens). One button look
+ * everywhere; variants + sizes match the library exactly.
  *
  * Text color is NOT inherited in React Native, so pair the label with
  * `buttonTextClass(variant)`:
@@ -14,32 +13,33 @@ import { cn } from '@/lib/utils';
  *   <Button variant="default"><Text className={buttonTextClass('default')}>Save</Text></Button>
  */
 const buttonVariants = {
-  default: 'bg-primary active:bg-primary/90',
-  destructive: 'bg-destructive active:bg-destructive/90',
-  outline: 'border border-border bg-background active:bg-muted',
-  secondary: 'bg-secondary active:bg-secondary/80',
-  ghost: 'active:bg-muted',
-  link: 'active:opacity-70',
+  default: 'bg-primary active:bg-primary/90 shadow-sm shadow-black/5',
+  destructive: 'bg-destructive active:bg-destructive/90 dark:bg-destructive/60 shadow-sm shadow-black/5',
+  outline: 'border border-border bg-background active:bg-accent dark:bg-input/30 dark:border-input dark:active:bg-input/50 shadow-sm shadow-black/5',
+  secondary: 'bg-secondary active:bg-secondary/80 shadow-sm shadow-black/5',
+  ghost: 'active:bg-accent dark:active:bg-accent/50',
+  link: '',
 } as const;
 
 const buttonSizes = {
-  default: 'h-11 rounded-lg px-4',
-  sm: 'h-9 rounded-md px-3',
-  lg: 'h-12 rounded-lg px-6',
-  icon: 'h-10 w-10 rounded-lg',
+  default: 'h-10 px-4 py-2',
+  sm: 'h-9 gap-1.5 rounded-md px-3',
+  lg: 'h-11 rounded-md px-6',
+  icon: 'h-10 w-10',
 } as const;
 
 export type ButtonVariant = keyof typeof buttonVariants;
 export type ButtonSize = keyof typeof buttonSizes;
 
-/** Text color class per variant — pair with `<Button>` labels. */
+/** Label classes per variant (stock: text-sm font-medium + variant color) —
+ *  pair with `<Button>` labels. */
 const buttonTextClasses = {
-  default: 'text-primary-foreground',
-  destructive: 'text-destructive-foreground',
-  outline: 'text-foreground',
-  secondary: 'text-secondary-foreground',
-  ghost: 'text-foreground',
-  link: 'text-primary',
+  default: 'text-sm font-medium text-primary-foreground',
+  destructive: 'text-sm font-medium text-destructive-foreground',
+  outline: 'text-sm font-medium text-foreground',
+  secondary: 'text-sm font-medium text-secondary-foreground',
+  ghost: 'text-sm font-medium text-foreground',
+  link: 'text-sm font-medium text-primary',
 } as const;
 
 export function buttonTextClass(variant: ButtonVariant = 'default'): string {
@@ -60,8 +60,8 @@ export function Button({
   return (
     <Pressable
       className={cn(
-        'flex-row items-center justify-center gap-2',
-        props.disabled && 'opacity-40',
+        'flex-row items-center justify-center gap-2 rounded-md',
+        props.disabled && 'opacity-50',
         buttonVariants[variant],
         buttonSizes[size],
         className,

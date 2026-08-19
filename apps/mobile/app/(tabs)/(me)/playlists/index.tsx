@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -76,7 +76,7 @@ export default function PlaylistsScreen() {
       variant="default"
     >
       <Plus size={16} color="#fff" />
-      <Text className="text-sm font-bold text-primary-foreground">{t('action.new_playlist')}</Text>
+      <Text className={buttonTextClass('default')}>{t('action.new_playlist')}</Text>
     </Button>
   );
 
@@ -100,7 +100,7 @@ export default function PlaylistsScreen() {
             placeholder={t('label.playlist_name')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             autoFocus
-            className="mt-3 rounded-lg border border-border bg-background px-3 py-2.5 text-foreground"
+            className="mt-3"
             onSubmitEditing={() => void handleCreate()}
             returnKeyType="done"
           />
@@ -116,7 +116,7 @@ export default function PlaylistsScreen() {
               {creating ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text className="text-sm font-bold text-primary-foreground">{t('action.create')}</Text>
+                <Text className={buttonTextClass('default')}>{t('action.create')}</Text>
               )}
             </Button>
           </View>

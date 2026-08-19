@@ -5,9 +5,9 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -98,36 +98,38 @@ export default function TokenizerScreen() {
 
         {/* ── Sample text (paginated, like reader) ── */}
         <Card className="mt-6">
-          <Text className="mb-3 text-xs font-medium text-muted-foreground">
-            {sampleTitle} · {t('label.sample')}
-          </Text>
-          {longSample ? (
-            <PaginatedReader
-              blocks={samplePagination.blocks}
-              visibleBlocks={samplePagination.visibleBlocks}
-              page={samplePagination.page}
-              totalPages={samplePagination.totalPages}
-              hasMeasured={samplePagination.hasMeasured}
-              loadingTokens={samplePagination.loadingTokens}
-              tokenCache={samplePagination.tokenCache}
-              blockTranslations={samplePagination.blockTranslations}
-              prevPage={samplePagination.prevPage}
-              nextPage={samplePagination.nextPage}
-              goToPage={samplePagination.goToPage}
-              handleMeasureBlock={samplePagination.handleMeasureBlock}
-              onVisibleBlocksChange={samplePagination.onVisibleBlocksChange}
-              contentWidth={samplePagination.contentWidth}
-              l2Code={l2Lang.code}
-              l1Code={l1Lang.code}
-              showTextActions
-              t={t}
-            />
-          ) : (
-            <View className="items-center justify-center py-10">
-              <ActivityIndicator size="small" color={ICON_MUTED} />
-              <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
-            </View>
-          )}
+          <CardHeader>
+            <CardTitle>{sampleTitle} · {t('label.sample')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {longSample ? (
+              <PaginatedReader
+                blocks={samplePagination.blocks}
+                visibleBlocks={samplePagination.visibleBlocks}
+                page={samplePagination.page}
+                totalPages={samplePagination.totalPages}
+                hasMeasured={samplePagination.hasMeasured}
+                loadingTokens={samplePagination.loadingTokens}
+                tokenCache={samplePagination.tokenCache}
+                blockTranslations={samplePagination.blockTranslations}
+                prevPage={samplePagination.prevPage}
+                nextPage={samplePagination.nextPage}
+                goToPage={samplePagination.goToPage}
+                handleMeasureBlock={samplePagination.handleMeasureBlock}
+                onVisibleBlocksChange={samplePagination.onVisibleBlocksChange}
+                contentWidth={samplePagination.contentWidth}
+                l2Code={l2Lang.code}
+                l1Code={l1Lang.code}
+                showTextActions
+                t={t}
+              />
+            ) : (
+              <View className="items-center justify-center py-10">
+                <ActivityIndicator size="small" color={ICON_MUTED} />
+                <Text className="mt-2 text-sm text-muted-foreground">{t('msg.loading')}</Text>
+              </View>
+            )}
+          </CardContent>
         </Card>
 
         {/* ── Custom text input ── */}
@@ -136,7 +138,7 @@ export default function TokenizerScreen() {
             {t('label.custom_text')}
           </Text>
           <Textarea
-            className="mb-3 min-h-[80px] rounded-lg border border-border bg-background p-4 text-sm text-foreground"
+            className="mb-3"
             value={customText}
             onChangeText={setCustomText}
             placeholder={t('placeholder.enter_text', { l2: l2Lang.name })}
@@ -151,7 +153,7 @@ export default function TokenizerScreen() {
             className="self-start"
           >
             <Sparkles size={16} color="#fff" />
-            <Text className="text-sm font-medium text-primary-foreground">
+            <Text className={buttonTextClass('default')}>
               {t('action.tokenize')}
             </Text>
           </Button>
@@ -166,12 +168,14 @@ export default function TokenizerScreen() {
         )}
         {customTokens && customTokens.length > 0 && (
           <Card className="mt-4">
-            <TokenizedText
-              text={customText.trim()}
-              l2Code={l2Lang.code}
-              tokens={customTokens}
-              textScale={1}
-            />
+            <CardContent>
+              <TokenizedText
+                text={customText.trim()}
+                l2Code={l2Lang.code}
+                tokens={customTokens}
+                textScale={1}
+              />
+            </CardContent>
           </Card>
         )}
       </ScrollView>

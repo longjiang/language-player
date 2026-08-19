@@ -13,11 +13,11 @@ import {
   FlatList,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, ArrowRight } from 'lucide-react-native';
+import { Button, buttonTextClass } from '@/components/ui/button';
+import { SearchBar } from '@/components/ui/search-bar';
+import { ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
-import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import type {
   LanguageSection,
   UseLanguagePickerReturn,
@@ -83,15 +83,11 @@ function LanguagePanel({
 
       {/* Search */}
       {showSearch && (
-        <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2 mb-3">
-          <Search size={16} color={ICON_MUTED} />
-          <Input
-            className="flex-1 ml-2 border-0 bg-transparent px-0 py-0 text-foreground text-sm"
-            placeholder={t('placeholder.search_languages')}
-            placeholderTextColor={PLACEHOLDER_COLOR}
+        <View className="mb-3">
+          <SearchBar
             value={search}
             onChangeText={onSearchChange}
-            autoCapitalize="none"
+            placeholder={t('placeholder.search_languages')}
           />
         </View>
       )}
@@ -261,9 +257,9 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
             <Button
               disabled
               variant="default"
-              className="ml-2 max-w-full flex-wrap"
+              className="ml-2"
             >
-              <Text className="text-primary-foreground font-bold text-sm flex-shrink">
+              <Text className={buttonTextClass('default')}>
                 {t('action.next')}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />
@@ -272,9 +268,9 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
             <Button
               onPress={onConfirm}
               variant="default"
-              className="ml-2 max-w-full flex-wrap"
+              className="ml-2"
             >
-              <Text className="text-primary-foreground font-bold text-sm flex-shrink">
+              <Text className={buttonTextClass('default')}>
                 {t('action.start_learning_lang', { name: getName(selectedL2) })}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />

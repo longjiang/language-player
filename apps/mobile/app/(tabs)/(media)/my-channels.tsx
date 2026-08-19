@@ -158,7 +158,7 @@ export default function MyChannelsScreen() {
             variant="outline"
             size="sm"
           >
-            <Text className={buttonTextClass('outline') + ' text-xs'}>
+            <Text className={buttonTextClass('outline')}>
               {busy
                 ? t('msg.loading')
                 : tab === 'subscribed'

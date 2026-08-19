@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Button, buttonTextClass } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -217,9 +217,11 @@ function SidebarEntryCard({
   const displayHead = item.head || item.entryId || item.id;
   if (entry === undefined) {
     content = (
-      <Card className="flex-row items-center gap-2 p-3">
-        <Text className="flex-1 text-sm font-medium text-muted-foreground" numberOfLines={1}>{displayHead}</Text>
-        <ActivityIndicator size="small" color={ICON_MUTED} />
+      <Card className="flex-row items-center">
+        <CardContent className="flex-row items-center gap-2">
+          <Text className="flex-1 text-sm font-medium text-muted-foreground" numberOfLines={1}>{displayHead}</Text>
+          <ActivityIndicator size="small" color={ICON_MUTED} />
+        </CardContent>
       </Card>
     );
   } else if (!entry) {
@@ -302,7 +304,7 @@ export function WordListSidebar({
               accessibilityLabel={t('action.previous')}
             >
               <ChevronLeft size={16} color={ICON_MUTED} />
-              <Text className={`text-xs ${buttonTextClass('ghost')}`}>{t('action.previous')}</Text>
+              <Text className={buttonTextClass('ghost')}>{t('action.previous')}</Text>
             </Button>
             <Button
               onPress={() => {
@@ -317,7 +319,7 @@ export function WordListSidebar({
               size="sm"
               accessibilityLabel={t('action.next')}
             >
-              <Text className={`text-xs ${buttonTextClass('ghost')}`}>{t('action.next')}</Text>
+              <Text className={buttonTextClass('ghost')}>{t('action.next')}</Text>
               <ChevronRight size={16} color={ICON_MUTED} />
             </Button>
           </View>

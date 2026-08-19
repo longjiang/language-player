@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -183,20 +183,18 @@ export default function WebReaderScreen() {
             {/* ── URL input ── */}
             <View className="px-4 mb-4">
               <View className="flex-row gap-2">
-                <View className="flex-1 relative flex-row items-center rounded-lg border border-border bg-background">
-                  <Input
-                    className="flex-1 border-0 bg-transparent px-3 py-2 text-sm text-foreground"
-                    value={url}
-                    onChangeText={setUrl}
-                    placeholder={t('placeholder.paste_url', { l2: t(`lang.${l2Lang.code}`) })}
-                    placeholderTextColor={ICON_MUTED}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="url"
-                    returnKeyType="go"
-                    onSubmitEditing={() => handleLoad()}
-                  />
-                </View>
+                <Input
+                  className="flex-1"
+                  value={url}
+                  onChangeText={setUrl}
+                  placeholder={t('placeholder.paste_url', { l2: t(`lang.${l2Lang.code}`) })}
+                  placeholderTextColor={ICON_MUTED}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  returnKeyType="go"
+                  onSubmitEditing={() => handleLoad()}
+                />
                 <Button
                   onPress={() => handleLoad()}
                   disabled={!url.trim() || loading}
@@ -205,7 +203,7 @@ export default function WebReaderScreen() {
                   {loading ? (
                     <ActivityIndicator size="small" color={ICON_MUTED} />
                   ) : (
-                    <Text className={`text-sm font-medium ${!url.trim() || loading ? 'text-muted-foreground' : 'text-primary-foreground'}`}>
+                    <Text className={buttonTextClass('default')}>
                       {t('action.load')}
                     </Text>
                   )}

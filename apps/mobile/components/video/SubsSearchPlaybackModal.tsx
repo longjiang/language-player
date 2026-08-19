@@ -261,7 +261,7 @@ export function SubsSearchPlaybackModal({
         accessibilityRole="button"
       >
         <Play size={14} color={ICON_MUTED} />
-        <Text className={buttonTextClass('ghost') + ' text-xs font-medium'}>{t('action.watch')}</Text>
+        <Text className={buttonTextClass('ghost')}>{t('action.watch')}</Text>
       </Button>
     </View>
   ) : null;
@@ -352,7 +352,7 @@ export function SubsSearchPlaybackModal({
                 className="shrink-0"
                 accessibilityRole="button"
               >
-                <Text className="text-xs font-semibold text-primary-foreground">
+                <Text className={buttonTextClass('default')}>
                   {loadingFullSubs ? t('msg.loading') : t('action.load_full_subtitles')}
                 </Text>
               </Button>

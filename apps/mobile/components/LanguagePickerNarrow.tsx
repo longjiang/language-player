@@ -14,11 +14,11 @@ import {
   type SectionListData,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, Search, ArrowRight } from 'lucide-react-native';
+import { Button, buttonTextClass } from '@/components/ui/button';
+import { SearchBar } from '@/components/ui/search-bar';
+import { X, ArrowRight } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
-import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_ON_PRIMARY, ICON_ON_ACCENT } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_ON_PRIMARY, ICON_ON_ACCENT } from '@/lib/theme-colors';
 import { e2e } from '@/lib/e2e';
 import type {
   LanguageSection,
@@ -198,19 +198,12 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
         {/* Search */}
         {!isL1 && (
           <View className="px-3 pt-3 pb-1">
-            <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2">
-              <Search size={16} color={ICON_MUTED} />
-              <Input
-                className="flex-1 ml-2 border-0 bg-transparent px-0 py-0 text-foreground text-sm"
-                placeholder={t('placeholder.search_languages')}
-                placeholderTextColor={PLACEHOLDER_COLOR}
-                value={search}
-                onChangeText={setSearch}
-                autoCapitalize="none"
-                autoFocus={false}
-                {...e2e('picker-search-input')}
-              />
-            </View>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t('placeholder.search_languages')}
+              inputProps={{ autoFocus: false, ...e2e('picker-search-input') }}
+            />
           </View>
         )}
 
@@ -270,10 +263,9 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
             <Button
               onPress={() => setActiveTab('l2')}
               variant="default"
-              className="max-w-full flex-wrap"
               {...e2e('picker-next-button')}
             >
-              <Text className="text-primary-foreground font-bold text-sm flex-shrink">
+              <Text className={buttonTextClass('default')}>
                 {t('action.next')}
               </Text>
               <ArrowRight size={16} color={ICON_ON_PRIMARY} />

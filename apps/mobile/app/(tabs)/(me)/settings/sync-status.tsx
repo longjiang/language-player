@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button, buttonTextClass } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { RefreshCw, CloudOff, CloudUpload, CheckCircle2, AlertTriangle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useSyncStatus } from '@/contexts/SyncStatusContext';
@@ -91,7 +91,7 @@ export default function SyncStatusScreen() {
           accessibilityRole="button"
         >
           <RefreshCw size={16} color={ICON_MUTED} />
-          <Text className="text-sm font-medium text-foreground">{t('action.retry')}</Text>
+          <Text className={buttonTextClass('outline')}>{t('action.retry')}</Text>
         </Button>
       )}
 
@@ -105,26 +105,28 @@ export default function SyncStatusScreen() {
         ops.map((op) => (
           <Card
             key={op.id}
-            className="mb-2 p-3"
+            className="mb-2"
           >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-medium text-foreground">
-                {op.op === 'delete' ? '✕' : '＋'} {op.entity}
+            <CardContent>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-medium text-foreground">
+                  {op.op === 'delete' ? '✕' : '＋'} {op.entity}
+                </Text>
+                <Text
+                  className={`text-xs font-semibold ${
+                    op.status === 'error' ? 'text-destructive' : 'text-muted-foreground'
+                  }`}
+                >
+                  {op.status === 'error' ? t('msg.needs_attention') : t('msg.saved_locally')}
+                </Text>
+              </View>
+              <Text className="mt-0.5 text-xs text-muted-foreground font-mono">
+                {op.entity_id}
               </Text>
-              <Text
-                className={`text-xs font-semibold ${
-                  op.status === 'error' ? 'text-destructive' : 'text-muted-foreground'
-                }`}
-              >
-                {op.status === 'error' ? t('msg.needs_attention') : t('msg.saved_locally')}
-              </Text>
-            </View>
-            <Text className="mt-0.5 text-xs text-muted-foreground font-mono">
-              {op.entity_id}
-            </Text>
-            {op.last_error ? (
-              <Text className="mt-1 text-xs text-destructive">{op.last_error}</Text>
-            ) : null}
+              {op.last_error ? (
+                <Text className="mt-1 text-xs text-destructive">{op.last_error}</Text>
+              ) : null}
+            </CardContent>
           </Card>
         ))
       )}

@@ -129,7 +129,7 @@ export default function LocalMediaScreen() {
         size="sm"
       >
         <FileText size={14} color={ICON_MUTED} />
-        <Text className={buttonTextClass('ghost') + ' text-xs'}>
+        <Text className={buttonTextClass('ghost')}>
           {hasSubtitles ? `${localMedia.subtitleLines.length} captions` : 'Add captions'}
         </Text>
       </Button>
@@ -245,7 +245,7 @@ export default function LocalMediaScreen() {
             variant="outline"
           >
             <Upload size={16} className="text-foreground" />
-            <Text className="text-sm text-foreground">{t('action.browse')}</Text>
+            <Text className={buttonTextClass('outline')}>{t('action.browse')}</Text>
           </Button>
         </View>
       )}

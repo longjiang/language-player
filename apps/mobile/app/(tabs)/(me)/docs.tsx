@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
+import { SearchBar } from '@/components/ui/search-bar';
 import { useLocalSearchParams } from 'expo-router';
 import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -10,7 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { useResponsive } from '@/hooks/use-responsive';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { MarkdownText } from '@/components/MarkdownText';
-import { Search, BookOpen, List, X } from 'lucide-react-native';
+import { BookOpen, List, X } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 function stripMarkdown(text: string): string {
@@ -210,7 +210,7 @@ export default function DocsScreen() {
     const docContent = (
       <>
         <Button variant="link" onPress={() => setSelectedDoc(null)} className="mb-4 self-start">
-          <Text className="text-sm text-primary">← {t('action.back')}</Text>
+          <Text className={buttonTextClass('link')}>← {t('action.back')}</Text>
         </Button>
 
         <Text className="text-xl font-bold text-foreground mb-2">{selectedDoc.title}</Text>
@@ -293,14 +293,11 @@ export default function DocsScreen() {
       <Text className="text-2xl font-bold text-foreground mb-1">{t('title.docs')}</Text>
 
       {/* Search */}
-      <View className="flex-row items-center border border-border rounded-xl px-3 py-2.5 bg-card mb-4 mt-5">
-        <Search size={16} color={ICON_MUTED} />
-        <Input
-          className="flex-1 ml-2 text-sm text-foreground border-0 bg-card px-0 py-0"
-          placeholder={t('placeholder.filter')}
-          placeholderTextColor={ICON_MUTED}
+      <View className="mb-4 mt-5">
+        <SearchBar
           value={query}
           onChangeText={setQuery}
+          placeholder={t('placeholder.filter')}
         />
       </View>
 

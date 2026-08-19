@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, ScrollView, Alert, Platform } from 'react-native';
 import { MenuView } from '@react-native-menu/menu';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
+import { SearchBar } from '@/components/ui/search-bar';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -11,7 +11,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L2S, TOKENIZER_CONFIG, POPULAR_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search, MoreVertical } from 'lucide-react-native';
+import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, MoreVertical } from 'lucide-react-native';
 import { log } from '@/lib/logger';
 
 // ── Language name lookup ─────────────────────
@@ -454,21 +454,12 @@ export default function OfflineDictionariesScreen() {
       )}
 
       {/* Search bar */}
-      <View className="mx-4 mt-4 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
-        <Search size={16} color={ICON_MUTED} />
-        <Input
-          className="flex-1 ml-2 text-sm text-foreground border-0 bg-muted px-0 py-0"
-          placeholder={t('placeholder.search_languages')}
-          placeholderTextColor={ICON_MUTED}
+      <View className="mx-4 mt-4">
+        <SearchBar
           value={searchQuery}
           onChangeText={setSearchQuery}
-          autoCorrect={false}
+          placeholder={t('placeholder.search_languages')}
         />
-        {searchQuery.length > 0 && (
-          <Pressable onPress={() => setSearchQuery('')}>
-            <Text className="text-xs text-primary">{t('action.close')}</Text>
-          </Pressable>
-        )}
       </View>
 
       {/* Downloaded section */}

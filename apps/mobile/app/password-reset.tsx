@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
-import { Button } from '@/components/ui/button';
+import { Button, buttonTextClass } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { router, useLocalSearchParams } from 'expo-router';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -81,7 +81,7 @@ export default function PasswordResetScreen() {
             onPress={() => router.replace('/login')}
             {...e2e('reset-back-to-login-button')}
           >
-            <Text className="text-primary-foreground font-medium text-sm">
+            <Text className={buttonTextClass('default')}>
               {t('action.back_to_login')}
             </Text>
           </Button>
@@ -104,7 +104,7 @@ export default function PasswordResetScreen() {
       )}
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        className="mb-3"
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
@@ -114,7 +114,7 @@ export default function PasswordResetScreen() {
       />
 
       <Input
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        className="mb-6"
         placeholder={t('placeholder.confirm_password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
@@ -132,7 +132,7 @@ export default function PasswordResetScreen() {
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
-          <Text className="text-primary-foreground font-bold text-base">
+          <Text className={buttonTextClass('default')}>
             {t('action.confirm')}
           </Text>
         )}

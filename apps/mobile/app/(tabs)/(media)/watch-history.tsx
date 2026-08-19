@@ -248,7 +248,7 @@ export default function WatchHistoryScreen() {
             ) : (
               <Trash2 size={16} color={ICON_MUTED} />
             )}
-            <Text className={buttonTextClass('ghost') + ' text-sm'}>{t('action.clear_all')}</Text>
+            <Text className={buttonTextClass('ghost')}>{t('action.clear_all')}</Text>
           </Button>
         )}
       </View>
