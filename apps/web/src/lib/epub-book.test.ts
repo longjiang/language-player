@@ -4,6 +4,7 @@ import JSZip from 'jszip';
 import {
   findSpineIndex,
   fullTocHref,
+  imageArchiveKey,
   normalizeLanguageCode,
   resolveNavDir,
   resolveLinkHref,
@@ -56,6 +57,70 @@ describe('resolveLinkHref (in-content link canonicalization)', () => {
       .toBe('OEBPS/html/chapter01.html#ich01en01');
     expect(resolveLinkHref('OEBPS/html/chapter01.html', 'chapter02.html'))
       .toBe('OEBPS/html/chapter02.html');
+  });
+});
+
+describe('imageArchiveKey (inline image resolution)', () => {
+  it('resolves a src relative to the spine document, keeping the OPF directory', () => {
+    // 1Q84-style nested book: OPF at OPS/package.opf, content at
+    // OPS/xhtml/0001.xhtml referencing ../images/0002.jpg.
+    expect(imageArchiveKey('OPS/xhtml/0001.xhtml', '../images/0002.jpg'))
+      .toBe('/OPS/images/0002.jpg');
+    expect(imageArchiveKey('OPS/xhtml/0001.xhtml', 'images/0002.jpg'))
+      .toBe('/OPS/xhtml/images/0002.jpg');
+    expect(imageArchiveKey('text/part0001.html', '../images/00001.jpeg'))
+      .toBe('/images/00001.jpeg');
+  });
+
+  it('leaves absolute srcs untouched', () => {
+    expect(imageArchiveKey('OPS/xhtml/1.xhtml', 'data:image/png;base64,AAA')).toBeNull();
+    expect(imageArchiveKey('OPS/xhtml/1.xhtml', 'https://example.com/a.jpg')).toBeNull();
+    expect(imageArchiveKey('OPS/xhtml/1.xhtml', 'blob:abc')).toBeNull();
+  });
+
+  it('every <img>/<image> src in real books resolves to a real zip entry', async () => {
+    const files = [
+      'tmp/testing-assets/epub/ja/2009 村上春樹 - 1Q84 BOOK2.epub',
+      'tmp/testing-assets/epub/ja/2016 村田沙耶香 - コンビニ人間.epub',
+    ];
+    for (const file of files) {
+      const zip = await JSZip.loadAsync(readFileSync(file));
+      const container = await zip.file('META-INF/container.xml')!.async('text');
+      const opfPath = attr(container, 'full-path')!;
+      const opfDir = dirname(opfPath);
+      const opf = await zip.file(opfPath)!.async('text');
+      const manifest = new Map<string, string>();
+      for (const m of opf.matchAll(/<item\b([^>]*?)\/?>/gi)) {
+        const id = attr(m[1], 'id');
+        const href = attr(m[1], 'href');
+        if (id && href) manifest.set(id, href);
+      }
+      const spineMatch = opf.match(/<spine\b[^>]*>([\s\S]*?)<\/spine>/i);
+      const spineRaw: string[] = [];
+      for (const m of (spineMatch?.[1] ?? '').matchAll(/<itemref\b([^>]*?)\/?>/gi)) {
+        const item = manifest.get(attr(m[1], 'idref') ?? '');
+        if (item) spineRaw.push(item);
+      }
+
+      let imageCount = 0;
+      for (const rawHref of spineRaw) {
+        const canonical = resolvePath(opfDir, rawHref);
+        const doc = await zip.file(canonical)?.async('text');
+        if (!doc) continue;
+        const srcs = [
+          ...[...doc.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gi)].map(m => m[1]!),
+          ...[...doc.matchAll(/<image\b[^>]*\bxlink:href="([^"]+)"/gi)].map(m => m[1]!),
+        ];
+        for (const src of srcs) {
+          const key = imageArchiveKey(canonical, src);
+          expect(key, `${file} ${canonical} img src="${src}"`).not.toBeNull();
+          const entry = key ? zip.file(key.slice(1)) : null;
+          expect(entry, `${file} ${canonical} img src="${src}" → key=${key}`).toBeTruthy();
+          imageCount += 1;
+        }
+      }
+      expect(imageCount).toBeGreaterThan(0);
+    }
   });
 });
 

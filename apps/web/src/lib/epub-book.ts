@@ -64,6 +64,24 @@ function dirname(path: string): string {
 }
 
 /**
+ * Canonical archive key (leading "/", e.g. "/OPS/images/0002.jpg") for an
+ * image `src` inside a spine document — the key format epubjs's Archive
+ * `urlCache` / `createUrl` use (archive.getBlob strips the leading slash and
+ * looks the path up in the zip).
+ *
+ * Resolution is against the spine document's CANONICAL directory (dirname of
+ * its zip-relative href), never epubjs's `book.path.resolve`: that resolves
+ * against the book's own root URL, so a "../" src (and any content-relative
+ * src) drops the OPF directory (e.g. "OPS/") and misses the zip entry.
+ * Absolute srcs (data:/http(s)/blob:) are left untouched (null).
+ */
+export function imageArchiveKey(spineHref: string, src: string): string | null {
+  if (/^(data:|https?:|blob:)/i.test(src)) return null;
+  const resolved = resolvePath(dirname(spineHref), src);
+  return resolved ? `/${resolved}` : null;
+}
+
+/**
  * Directory of the nav/NCX document, canonicalized into the same path space
  * as spine hrefs. epubjs exposes navPath/ncxPath as raw OPF-relative hrefs
  * (e.g. "toc.ncx"); taking dirname() of the raw value drops the OPF
@@ -523,38 +541,47 @@ export class EpubBook {
           return [];
         }
 
-        // Resolve images to session blob URLs via the epubjs archive cache.
-        // Fall back to our own canonical path resolver (dirname of the spine
-        // href) when epubjs's book.path.resolve misses — otherwise the raw
-        // relative src (e.g. "0002.jpg") 404s against the page URL.
-        const urlCache = this.book.archive?.urlCache ?? {};
-        const srcToBlob = (src: string): string | null => {
-          const resolvedByEpubjs = this.book.path?.resolve?.(src);
-          if (resolvedByEpubjs && urlCache[resolvedByEpubjs]) {
-            return urlCache[resolvedByEpubjs] as string;
+        // Resolve images to blob URLs via the epubjs archive, creating the
+        // blob URL on demand. The archive's urlCache only contains resources
+        // epubjs has already created URLs for (e.g. the cover); an image that
+        // was never requested is left as a raw relative src — which 404s
+        // against the app page. `createUrl` reads the zip entry, makes an
+        // object URL, and caches it under the same key.
+        const archive = this.book.archive;
+        const urlCache = archive?.urlCache ?? {};
+        const srcToBlob = async (src: string): Promise<string | null> => {
+          const key = imageArchiveKey(item.href, src);
+          if (!key) return null;
+          if (urlCache[key]) return urlCache[key] as string;
+          if (!archive) return null;
+          try {
+            const url = await archive.createUrl(key);
+            return url ?? null;
+          } catch (err) {
+            epubWarn(
+              `getBlocks spine ${spineIndex}: image src "${src}" unresolvable ` +
+                `(key="${key}") — keeping raw src`,
+              err,
+            );
+            return null;
           }
-          const resolvedOurs = resolvePath(dirname(item.hrefRaw), src);
-          if (resolvedOurs && urlCache[resolvedOurs]) {
-            return urlCache[resolvedOurs] as string;
-          }
-          epubWarn(
-            `getBlocks spine ${spineIndex}: image src "${src}" unresolvable ` +
-              `(epubjs=${String(resolvedByEpubjs)} ours=${String(resolvedOurs)} urlCacheHits=${Object.keys(urlCache).length}) — keeping raw src`,
-          );
-          return null;
         };
-        body.querySelectorAll('img').forEach(img => {
-          const src = img.getAttribute('src');
-          if (!src) return;
-          const blob = srcToBlob(src);
-          if (blob) img.setAttribute('src', blob);
-        });
-        body.querySelectorAll('image').forEach(img => {
-          const src = img.getAttribute('xlink:href') || img.getAttribute('href');
-          if (!src) return;
-          const blob = srcToBlob(src);
-          if (blob) img.setAttribute('xlink:href', blob);
-        });
+        const imgEls = Array.from(body.querySelectorAll('img'));
+        const svgImageEls = Array.from(body.querySelectorAll('image'));
+        await Promise.all([
+          ...imgEls.map(async (img) => {
+            const src = img.getAttribute('src');
+            if (!src) return;
+            const blob = await srcToBlob(src);
+            if (blob) img.setAttribute('src', blob);
+          }),
+          ...svgImageEls.map(async (img) => {
+            const src = img.getAttribute('xlink:href') || img.getAttribute('href');
+            if (!src) return;
+            const blob = await srcToBlob(src);
+            if (blob) img.setAttribute('xlink:href', blob);
+          }),
+        ]);
 
         const blocks = convertDocument(body);
         epubLog(`getBlocks spine ${spineIndex}: ${blocks.length} blocks`);
