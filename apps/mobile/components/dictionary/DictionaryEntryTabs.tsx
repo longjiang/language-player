@@ -130,7 +130,16 @@ export function DictionaryEntryTabs({
   );
   const deepseekPanel = (
     <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
-      <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+      <AiExplanation
+        word={entry.head}
+        contextText={contextText}
+        contextForm={contextForm}
+        entryFound={true}
+        autoLoad
+        // Same term set the Examples tab's subs search uses — the AI
+        // "Examples from Videos" follow-up must find the same videos.
+        searchTerms={allTerms}
+      />
     </View>
   );
   const imagesPanel = (
