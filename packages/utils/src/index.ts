@@ -90,6 +90,14 @@ export {
   deviceTimezone,
 } from './day-boundary';
 export { tokenMatchesAnyTerm, tokenMatchesAnyForm, kanaFormsForEntries } from './highlight-match';
+export {
+  scoreTestAnswer,
+  testScoreToRating,
+  needsPronunciationTest,
+  DEEP_ORTHOGRAPHY_LANGUAGES,
+  buildSrsQuestionPrompt,
+} from './srs-test-mode';
+export type { SrsTestQuestion, TestQuestionKind } from './srs-test-mode';
 export type { HighlightToken, KanaEntryForm } from './highlight-match';
 export { pickSavedEntry } from './saved-gloss';
 export {
