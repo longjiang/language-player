@@ -8,6 +8,35 @@ export interface SrsTestQuestion {
   correctAnswer: string;
 }
 
+export interface SrsQuestionResponse {
+  kind: string;
+  question: string;
+  correct_answer: string;
+  confounders?: unknown[];
+}
+
+/**
+ * Parse the JSON object returned by the SRS question prompt.
+ *
+ * Models occasionally wrap otherwise-valid JSON in a Markdown code fence even
+ * though the prompt asks for JSON only. Accept both forms, including a fence
+ * whose closing marker was omitted by a truncated response.
+ */
+export function parseSrsQuestionResponse(raw: unknown): SrsQuestionResponse {
+  if (typeof raw !== 'string') {
+    throw new Error('SRS test response was not text');
+  }
+
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)(?:\s*```)?$/i);
+  const jsonText = (fenced?.[1] ?? trimmed).trim();
+  const parsed: unknown = JSON.parse(jsonText);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('SRS test response was not a JSON object');
+  }
+  return parsed as SrsQuestionResponse;
+}
+
 /** Score a response using the review-mode time bands. */
 export function scoreTestAnswer(correct: boolean, elapsedMs: number): 1 | 2 | 3 | 4 {
   if (!correct) return 1;

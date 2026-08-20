@@ -22,6 +22,7 @@ import {
   testScoreToRating,
   type SrsTestQuestion,
   normalizeTestChoice,
+  parseSrsQuestionResponse,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import {
@@ -51,7 +52,7 @@ import { TranslationSkeleton } from '@/components/ui/translation-skeleton';
 import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
-import { log } from '@/lib/logger';
+import { log, logerr } from '@/lib/logger';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -495,7 +496,19 @@ export default function ReviewPage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         log('[SRS Test] response received', { l2Code, word: wordForm, kind, status: response.status, responseType: typeof payload.response, responseLength: typeof payload.response === 'string' ? payload.response.length : null });
-        const parsed = JSON.parse(payload.response);
+        let parsed: ReturnType<typeof parseSrsQuestionResponse>;
+         try {
+          parsed = parseSrsQuestionResponse(payload.response);
+         } catch (error) {
+           logerr('[SRS Test] response JSON parse failed', {
+             l2Code,
+             word: wordForm,
+             kind,
+             responsePreview: typeof payload.response === 'string' ? payload.response.slice(0, 500) : payload.response,
+             error: error instanceof Error ? error.message : String(error),
+           });
+           throw error;
+         }
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
