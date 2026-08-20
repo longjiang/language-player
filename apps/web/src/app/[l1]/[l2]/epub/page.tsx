@@ -28,9 +28,9 @@ import { epubLog } from '@/lib/epub-log';
 /** Height of the app header (h-14 content + border-b) — the reader's top
  *  chrome bar. */
 const HEADER_HEIGHT = 57;
-/** Height of the reader's bottom pagination bar (py-2 + 16px content row +
+/** Height of the reader's bottom pagination bar (py-2 + 24px button row +
  *  1px border). */
-const BOTTOM_BAR_HEIGHT = 33;
+const BOTTOM_BAR_HEIGHT = 41;
 /** Top reserved strip: header + 8 clearance + 16 title line + 8 breathing
  *  room (SPEC-085 §6.2) — the dropped-down header never obscures the muted
  *  chapter title (title line top = HEADER_HEIGHT + 12). */
@@ -38,7 +38,7 @@ const TOP_CHROME_RESERVE = HEADER_HEIGHT + 32; // 89
 /** Bottom reserved strip: bar + 8 clearance + 16 counter line + 8 breathing
  *  room (SPEC-085 §6.2) — the bottom bar never covers the muted page counter
  *  (counter line bottom = BOTTOM_BAR_HEIGHT + 8 above the screen bottom). */
-const BOTTOM_CHROME_RESERVE = BOTTOM_BAR_HEIGHT + 32; // 65
+const BOTTOM_CHROME_RESERVE = BOTTOM_BAR_HEIGHT + 32; // 73
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
