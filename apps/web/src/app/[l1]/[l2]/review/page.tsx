@@ -138,6 +138,8 @@ export default function ReviewPage() {
   const [testAnswered, setTestAnswered] = useState(false);
   const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
   const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
+  const [testScores, setTestScores] = useState<number[]>([]);
+  const [suggestedRating, setSuggestedRating] = useState<Rating | null>(null);
   const [rated, setRated] = useState(false);
   const [initializing, setInitializing] = useState(false);
   /** True when the user just finished reviewing the last due card. */
@@ -513,6 +515,7 @@ export default function ReviewPage() {
     if (!question) return;
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    setTestScores((previous) => [...previous, score]);
     setTestSelectedAnswer(answer);
     setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
@@ -520,17 +523,14 @@ export default function ReviewPage() {
       setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
       return;
     }
-    const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
-    setTimeout(() => {
-      setShowDefinition(true);
-      setTestQuestions([]);
-      setTestQuestionIndex(0);
-      setTestSelectedAnswer(null);
-      setTestAnswerCorrect(null);
-      setTestStartedAt(null);
-      setTestAnswered(false);
-      void handleRate(testScoreToRating(finalScore));
-    }, 1000);
+    const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
+    const rating = testScoreToRating(finalScore);
+    setSuggestedRating(rating);
+    setTestScores([]);
+    setShowDefinition(true);
+    setTestQuestions([]);
+    setTestQuestionIndex(0);
+    setTestStartedAt(null);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, handleRate]);
 
   /** Remove this word from saved words and SRS. The card drops from the list naturally. */
@@ -1232,7 +1232,7 @@ export default function ReviewPage() {
               <button
                 key={key}
                 onClick={() => handleRate(key as 'again' | 'hard' | 'good' | 'easy')}
-                disabled={rated || (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
+                disabled={rated || (suggestedRating ? key !== suggestedRating : false) || (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
                 className={`${color} text-white rounded-lg py-3 px-2 text-sm font-medium transition-all
                   hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
                   flex flex-col items-center gap-1`}
