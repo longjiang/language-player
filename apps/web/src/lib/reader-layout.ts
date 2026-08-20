@@ -16,9 +16,9 @@ export function readerLeadingPx(zoom: number, leading: number): number {
 export function readerHorizontalPadding(
   zoom: number,
   leading: number,
-): { left: number; right: number } {
+): { paddingLeft: number; paddingRight: number } {
   return {
-    left: readerLeadingPx(zoom, leading),
-    right: READER_RIGHT_PADDING,
+    paddingLeft: readerLeadingPx(zoom, leading),
+    paddingRight: READER_RIGHT_PADDING,
   };
 }
