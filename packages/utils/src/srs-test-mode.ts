@@ -31,6 +31,11 @@ export function needsPronunciationTest(l2Code: string): boolean {
   return DEEP_ORTHOGRAPHY_LANGUAGES.has((l2Code.split('-')[0] ?? '').toLowerCase());
 }
 
+/** Normalize an answer for duplicate-choice detection without changing display text. */
+export function normalizeTestChoice(choice: string): string {
+  return choice.trim().replace(/\\s+/g, ' ').toLocaleLowerCase();
+}
+
 /**
  * Build the model instruction for a contextual question. The model must return
  * strict JSON so both clients can render the same question and randomize only
@@ -60,6 +65,8 @@ export function buildSrsQuestionPrompt(input: {
     'Return JSON only with exactly these fields: question, correct_answer, confounders.',
     'question must be a natural question in L1. correct_answer must be one concise answer in L1 (or the standard L2 pronunciation for pronunciation questions).',
     'confounders must contain exactly three plausible but incorrect answers of the same type and length as the correct answer.',
+    'Every confounder must be distinct from the correct_answer and from every other confounder after trimming, collapsing whitespace, and ignoring letter case. Never repeat, paraphrase only by formatting, or include the correct answer among the confounders.',
+    'Before returning JSON, verify that correct_answer plus the three confounders are four unique strings.',
     'Do not include answer labels, markdown, commentary, or the target word in the answer choices.',
   ].filter(Boolean).join('\n');
 }
