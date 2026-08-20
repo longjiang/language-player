@@ -136,6 +136,26 @@ describe('bulkLookupWords', () => {
     expect(bodyWords(fetchMock.mock.calls[0]![1] as RequestInit)).toEqual(['fresh-y']);
   });
 
+  it('does not retry successful empty results', async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const words = bodyWords(init);
+      return {
+        ok: true,
+        json: async () => ({ results: Object.fromEntries(words.map((w) => [w, []])) }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const word = 'missing-dictionary-word';
+    await bulkLookupWords([{ text: word, l2Code: 'ja' }], API);
+    await bulkLookupWords([{ text: word, l2Code: 'ja' }], API);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Keep an empty batch result distinguishable from a richer lookup miss so
+    // interactive callers can still use their single-word fallback.
+    expect(getCachedEntries('ja', word)).toBeUndefined();
+  });
+
   it('falls back to per-word requests when the batch request fails', async () => {
     let batchFailed = false;
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
@@ -163,6 +183,23 @@ describe('bulkLookupWords', () => {
 });
 
 describe('enqueueLookupWords', () => {
+  it('does not requeue successful empty results after a cache-driven rerender', async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const words = bodyWords(init);
+      return {
+        ok: true,
+        json: async () => ({ results: Object.fromEntries(words.map((w) => [w, []])) }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const word = 'missing-queued-dictionary-word';
+    expect(await enqueueLookupWords([{ text: word, l2Code: 'ja' }], API)).toBe(true);
+    expect(await enqueueLookupWords([{ text: word, l2Code: 'ja' }], API)).toBe(false);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('drains more than LOOKUP_BATCH_MAX words in one flush', async () => {
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
       const words = bodyWords(init);
