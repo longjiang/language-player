@@ -1161,7 +1161,10 @@ export default function ReviewPage() {
 
         {testError && (
           <div className="mt-4 w-full rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
-            {testError}
+            <p>{testError}</p>
+            <button type="button" onClick={() => { setTestError(null); void loadTestQuestions(); }} className="mt-2 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium hover:bg-destructive/10">
+              {t('action.try_again')}
+            </button>
           </div>
         )}
 
