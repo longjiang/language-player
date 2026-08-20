@@ -320,6 +320,12 @@ export default function EpubPage() {
           ? 'h-screen w-full'
           : 'mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)]'
       }`}
+      onClick={readerActive ? (event) => {
+        if (window.getSelection()?.toString()) return;
+        const target = event.target as HTMLElement | null;
+        if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
+        toggleChrome();
+      } : undefined}
     >
       {readerActive ? (
         /* ── Immersive book reader ── */
@@ -386,7 +392,6 @@ export default function EpubPage() {
               immersive
               immersiveReserve={{ top: TOP_CHROME_RESERVE, bottom: BOTTOM_CHROME_RESERVE }}
               chromeVisible={chromeVisible}
-              onToggleChrome={toggleChrome}
               onOpenToc={epub.toc.length > 0 ? () => setTocOpen(true) : undefined}
               onOpenSearch={() => setSearchOpen(true)}
               topOverlay={
