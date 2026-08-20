@@ -16,6 +16,7 @@ import { useAppFonts } from '@/lib/fonts';
 import { initOfflineMode } from '@/lib/offline-mode';
 import { TokenizationWorkerHost } from '@/components/TokenizationWorkerHost';
 import { mapWebUrlToAppRoute } from '@/lib/web-url-mapper';
+import { rem } from 'nativewind';
 
 // ── Custom toast config ──
 
@@ -81,6 +82,14 @@ import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { UserLibraryProvider } from '@/contexts/UserLibraryContext';
 import '../global.css';
+
+// NativeWind's css-interop engine defaults the `rem` unit to 14, while web's
+// `rem` is the browser root font-size (16px). That silently shrank every
+// rem-based class on mobile (e.g. text-sm = 0.875rem → 12.25 instead of 14),
+// making mobile text/spacing ~12.5% smaller than web's for the same class.
+// Set it to 16 to match web (SPEC: web/mobile typography parity). Must run at
+// module scope — before any component reads rem-derived styles.
+rem.set(16);
 
 // Suppress all on-screen LogBox notifications. This is intentional for store
 // screenshot capture (SPEC-070) — remove this line when you need warnings/
