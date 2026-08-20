@@ -464,7 +464,7 @@ export default function ReviewPage() {
     // feedback enough, and a second toast would be redundant.
   }, [l2Code, updateCard, isPro, reviewsDoneToday, reviewCounterKey]);
 
-  const loadTestQuestions = useCallback(async () => {
+  const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
     const context = card.word.context?.text ?? '';
@@ -477,7 +477,7 @@ export default function ReviewPage() {
       const questions = await Promise.all(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: context, l1Code: baseCode(l1.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         log('[SRS Test] request started', { l2Code, word: wordForm, kind });
-        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: false, max_tokens: 500 }) });
+        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: !options?.retry, max_tokens: 500 }) });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         log('[SRS Test] response received', { l2Code, word: wordForm, kind, status: response.status, responseType: typeof payload.response, responseLength: typeof payload.response === 'string' ? payload.response.length : null });
@@ -1163,7 +1163,7 @@ export default function ReviewPage() {
         {testError && (
           <div className="mt-4 w-full rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
             <p>{testError}</p>
-            <button type="button" onClick={() => { setTestError(null); void loadTestQuestions(); }} className="mt-2 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium hover:bg-destructive/10">
+            <button type="button" onClick={() => { setTestError(null); void loadTestQuestions({ retry: true }); }} className="mt-2 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium hover:bg-destructive/10">
               {t('action.try_again')}
             </button>
           </div>
