@@ -1059,8 +1059,8 @@ export default function ReviewScreen() {
       {/* Mode switch with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <View className="flex-row rounded-lg border border-border p-1">
-          <Pressable onPress={() => { setReviewMode('recall'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>Recall mode</Text></Pressable>
-          <Pressable onPress={() => { setReviewMode('test'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'test' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'test' ? 'text-primary-foreground' : 'text-muted-foreground'}>Test mode</Text></Pressable>
+          <Pressable onPress={() => { setReviewMode('recall'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.recall_mode')}</Text></Pressable>
+          <Pressable onPress={() => { setReviewMode('test'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'test' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'test' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.test_mode')}</Text></Pressable>
         </View>
         {/* Anki-style colored dots */}
         <View className="flex-row items-center gap-3">
@@ -1158,7 +1158,7 @@ export default function ReviewScreen() {
             </View>
           ) : !showTabs && (
             <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
-              <Text className={buttonTextClass('outline')}>{testLoading ? 'Loading…' : reviewMode === 'test' ? 'Start test' : t('review.show_definition')}</Text>
+              <Text className={buttonTextClass('outline')}>{testLoading ? t('review.loading_test') : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}</Text>
             </Button>
           )}
 

@@ -1014,9 +1014,9 @@ export default function ReviewPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label="Review mode">
-          <button type="button" onClick={() => { setReviewMode('recall'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Recall mode</button>
-          <button type="button" onClick={() => { setReviewMode('test'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Test mode</button>
+        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label={t('review.test_mode')}>
+          <button type="button" onClick={() => { setReviewMode('recall'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.recall_mode')}</button>
+          <button type="button" onClick={() => { setReviewMode('test'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.test_mode')}</button>
         </div>
         <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
@@ -1136,7 +1136,7 @@ export default function ReviewPage() {
           </div>
         ) : !showDefinition ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>
-            {testLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : reviewMode === 'test' ? 'Start test' : t('review.show_definition')}
+            {testLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}
           </Button>
         ) : (
           <div className="mt-4 w-full text-left space-y-3">

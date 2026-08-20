@@ -1249,11 +1249,15 @@
         "good_hint": "تذكرت بشكل صحيح",
         "hard": "صعب",
         "hard_hint": "تذكرت بصعوبة",
+        "loading_test": "جارٍ التحميل…",
         "no_definition_available": "لم يتم العثور على هذه الكلمة في قاموسنا.",
+        "recall_mode": "وضع الاستدعاء",
         "shortcut_hint": "اضغط <space></space> للقلب، <k1></k1>–<k2></k2> للتقييم، <enter></enter> للمتابعة",
         "show_definition": "إظهار التعريف",
         "srs_new": "جديد",
-        "srs_review": "{count, plural, one {تمت المراجعة مرة واحدة} two {تمت المراجعة مرتين} few {تمت المراجعة # مرات} other {تمت المراجعة # مرة}}"
+        "srs_review": "{count, plural, one {تمت المراجعة مرة واحدة} two {تمت المراجعة مرتين} few {تمت المراجعة # مرات} other {تمت المراجعة # مرة}}",
+        "start_test": "بدء الاختبار",
+        "test_mode": "وضع الاختبار"
     },
     "setting": {
         "all_words": "كل الكلمات",

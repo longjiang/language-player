@@ -1249,11 +1249,15 @@
         "good_hint": "Diingat dengan benar",
         "hard": "Sulit",
         "hard_hint": "Diingat dengan susah payah",
+        "loading_test": "Memuat…",
         "no_definition_available": "Kata ini tidak ditemukan di kamus kami.",
+        "recall_mode": "Mode mengingat",
         "shortcut_hint": "Tekan <space></space> untuk membalik, <k1></k1>–<k2></k2> untuk menilai, <enter></enter> untuk lanjut",
         "show_definition": "Tampilkan Definisi",
         "srs_new": "baru",
-        "srs_review": "{count, plural, other {diulas # kali}}"
+        "srs_review": "{count, plural, other {diulas # kali}}",
+        "start_test": "Mulai tes",
+        "test_mode": "Mode tes"
     },
     "setting": {
         "all_words": "Semua kata",

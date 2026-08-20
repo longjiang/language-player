@@ -1249,11 +1249,15 @@
         "good_hint": "Вспомнил правильно",
         "hard": "Трудно",
         "hard_hint": "Вспомнил с трудом",
+        "loading_test": "Загрузка…",
         "no_definition_available": "Это слово не найдено в нашем словаре.",
+        "recall_mode": "Режим вспоминания",
         "shortcut_hint": "Нажми <space></space> чтобы перевернуть, <k1></k1>–<k2></k2> чтобы оценить, <enter></enter> чтобы продолжить",
         "show_definition": "Показать определение",
         "srs_new": "новый",
-        "srs_review": "{count, plural, one {повторено 1 раз} few {повторено # раза} many {повторено # раз} other {повторено # раз}}"
+        "srs_review": "{count, plural, one {повторено 1 раз} few {повторено # раза} many {повторено # раз} other {повторено # раз}}",
+        "start_test": "Начать тест",
+        "test_mode": "Режим тестирования"
     },
     "setting": {
         "all_words": "Все слова",

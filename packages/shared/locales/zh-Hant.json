@@ -1213,9 +1213,13 @@
         "easy": "簡單",
         "good": "良好",
         "hard": "困難",
+        "loading_test": "載入中…",
         "no_definition_available": "詞典中未找到此單詞。",
+        "recall_mode": "回憶模式",
         "shortcut_hint": "按<space></space>翻轉，<k1></k1>–<k2></k2>評分，<enter></enter>繼續",
-        "srs_review": "{count, plural, other {已複習 # 次}}"
+        "srs_review": "{count, plural, other {已複習 # 次}}",
+        "start_test": "開始測試",
+        "test_mode": "測試模式"
     },
     "setting": {
         "all_words": "所有單字",

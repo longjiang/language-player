@@ -1249,11 +1249,15 @@
         "good_hint": "Ricordato correttamente",
         "hard": "Difficile",
         "hard_hint": "Ricordato con difficoltà",
+        "loading_test": "Caricamento…",
         "no_definition_available": "Questa parola non è presente nel nostro dizionario.",
+        "recall_mode": "Modalità richiamo",
         "shortcut_hint": "Premi <space></space> per girare, <k1></k1>–<k2></k2> per valutare, <enter></enter> per continuare",
         "show_definition": "Mostra definizione",
         "srs_new": "nuovo",
-        "srs_review": "{count, plural, one {revisionato 1 volta} other {revisionato # volte}}"
+        "srs_review": "{count, plural, one {revisionato 1 volta} other {revisionato # volte}}",
+        "start_test": "Inizia test",
+        "test_mode": "Modalità test"
     },
     "setting": {
         "all_words": "Tutte le parole",
