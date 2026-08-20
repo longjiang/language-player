@@ -583,6 +583,12 @@ export default function ReviewScreen() {
     if (rated) return;
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
+    setTestQuestions([]);
+    setTestQuestionIndex(0);
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
+    setTestScores([]);
+    setSuggestedRating(null);
 
     const card = cards[currentIndex];
     if (!card) {
@@ -1191,7 +1197,7 @@ export default function ReviewScreen() {
             </View>
           )}
 
-          {/* Definition reveal or contextual test questions */}
+          {/* Test results remain visible while the dictionary back is revealed. */}
           {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
             <View className="mt-2 gap-2" onStartShouldSetResponder={() => true}>
               <Text className="mb-2 font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</Text>
@@ -1213,6 +1219,27 @@ export default function ReviewScreen() {
             <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
               <Text className={buttonTextClass('outline')}>{testLoading ? t('review.loading_test') : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}</Text>
             </Button>
+          )}
+
+          {showTabs && (
+            <View className="mb-2">
+              {entry ? (
+                <DictionaryEntryTabs
+                  entry={entry}
+                  showDefinitionTab
+                  embedded
+                  l2Code={l2Lang.code}
+                  contextText={displayInstance?.context?.text}
+                  contextForm={wordForm}
+                />
+              ) : offlineEntryLookupDone[currentCard.word.id] ? (
+                <View className="items-center justify-center py-8">
+                  <Text className="text-sm text-muted-foreground">{dictAvailable === false ? t('msg.offline_dictionary_required') : t('msg.no_definition_offline')}</Text>
+                </View>
+              ) : (
+                <View className="items-center justify-center py-8"><ActivityIndicator size="small" color={ICON_MUTED} /></View>
+              )}
+            </View>
           )}
 
           </ScrollView>
