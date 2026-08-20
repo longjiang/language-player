@@ -59,7 +59,7 @@ export function buildSrsQuestionPrompt(input: {
     ]
     : [
       'This is the PRONUNCIATION question. Ask how the target word is pronounced/read, using the context only to identify the intended word and sense.',
-      'correct_answer and every confounder must be pronunciation readings in the standard L2 notation (for Japanese, kana; for Chinese, pinyin or the appropriate standard romanization). Do not return definitions, translations, or explanations.',
+      'correct_answer and every confounder must be pronunciation readings in the standard L2 notation (for Japanese, hiragana only; never romaji, Latin transliteration, kanji, or definitions; for Chinese, pinyin or the appropriate standard romanization). Do not return definitions, translations, or explanations.',
     ];
   return [
     'Generate one multiple-choice question for a language-learning SRS review card.',
