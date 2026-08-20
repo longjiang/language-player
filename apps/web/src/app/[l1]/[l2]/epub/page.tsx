@@ -26,11 +26,19 @@ import {
 import { epubLog } from '@/lib/epub-log';
 
 /** Height of the app header (h-14 content + border-b) — the reader's top
- *  margin equals this so the dropped-down header never obscures content. */
-const TOP_CHROME_RESERVE = 57;
-/** Height of the reader's bottom pagination bar — reserved for the bottom
- *  chrome. Same height as the top margin (symmetric design). */
-const BOTTOM_CHROME_RESERVE = TOP_CHROME_RESERVE;
+ *  chrome bar. */
+const HEADER_HEIGHT = 57;
+/** Height of the reader's bottom pagination bar (py-2 + 16px content row +
+ *  1px border). */
+const BOTTOM_BAR_HEIGHT = 33;
+/** Top reserved strip: header + 8 clearance + 16 title line + 8 breathing
+ *  room (SPEC-085 §6.2) — the dropped-down header never obscures the muted
+ *  chapter title (title line top = HEADER_HEIGHT + 12). */
+const TOP_CHROME_RESERVE = HEADER_HEIGHT + 32; // 89
+/** Bottom reserved strip: bar + 8 clearance + 16 counter line + 8 breathing
+ *  room (SPEC-085 §6.2) — the bottom bar never covers the muted page counter
+ *  (counter line bottom = BOTTOM_BAR_HEIGHT + 8 above the screen bottom). */
+const BOTTOM_CHROME_RESERVE = BOTTOM_BAR_HEIGHT + 32; // 65
 
 export default function EpubPage() {
   const { l1, l2 } = useLanguage();
@@ -330,13 +338,15 @@ export default function EpubPage() {
           </div>
 
           {/* Close button (chrome): X in a 24px circle, top right — fades in
-              with the chrome. top-1.5 (6px) centers the 24px circle on the
-              chapter-title line (title top 10px + half its 16px line box). */}
+              with the chrome. top = HEADER_HEIGHT + 8 keeps it ≥ 8px below
+              the site top bar and centers the 24px circle on the chapter-
+              title line (SPEC-085 §6.2). */}
           <button
             onClick={handleCloseReader}
             aria-label={t('action.close')}
             title={t('action.close')}
-            className={`absolute right-3 top-1.5 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
+            style={{ top: HEADER_HEIGHT + 8 }}
+            className={`absolute right-3 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground shadow-sm transition-opacity duration-300 hover:text-foreground ${
               chromeVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
           >
@@ -512,12 +522,16 @@ export default function EpubPage() {
       )}
 
       {/* ── Search modal (replaces the sidebar) ── */}
+      {/* Fixed height, independent of the result count (SPEC-085 §9): the
+          search bar stays pinned at the top and the results area reserves
+          its space even when empty, so the bar sits well above the software
+          keyboard. */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
+        <DialogContent className="flex h-[min(70vh,560px)] flex-col sm:max-w-lg z-[70]" overlayClassName="z-[70]">
           <DialogHeader>
             <DialogTitle>{t('action.search')}</DialogTitle>
           </DialogHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex min-h-0 flex-1 flex-col">
             <EpubSearchPanel
               onSearch={epub.searchBook}
               onNavigate={handleSearchNavigate}

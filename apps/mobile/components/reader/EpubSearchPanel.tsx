@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SearchBar } from '@/components/ui/search-bar';
 import { Search } from 'lucide-react-native';
@@ -66,7 +66,9 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
   }, [query, blocks]);
 
   return (
-    <View className="p-2">
+    <View className="flex-1 p-2">
+      {/* Search bar — pinned at the top of the fixed-height modal; it never
+          scrolls or re-positions (SPEC-085 §9). */}
       <View className="pb-2">
         <SearchBar
           value={query}
@@ -78,39 +80,47 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
 
       {query.trim() ? (
         <>
-          <Text className="px-1 py-2 text-xs text-muted-foreground">
+          <Text className="px-1 pb-1 text-xs text-muted-foreground">
             {t('msg.result_count', { count: matches.length })}
           </Text>
           {matches.length === 0 ? (
-            <Text className="px-1 py-2 text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+            /* Empty result set — the reserved area keeps the modal height
+               (SPEC-085 §9). */
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-sm text-muted-foreground">{t('msg.no_results')}</Text>
+            </View>
           ) : (
-            matches.map((m, i) => (
-              <Pressable
-                key={`${m.blockIndex}-${m.offset}-${i}`}
-                onPress={() => onSelect({
-                  blockIndex: m.blockIndex,
-                  start: m.offset,
-                  end: m.offset + query.trim().length,
-                })}
-                className="border-b border-border px-1 py-2.5 active:bg-muted"
-              >
-                <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
-                  <HighlightSnippet snippet={m.snippet} term={query.trim()} />
-                </Text>
-                {labelForBlock(m.blockIndex) ? (
-                  <Text className="mt-0.5 text-[10px] font-medium text-primary/80" numberOfLines={1}>
-                    {labelForBlock(m.blockIndex)}
+            <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+              {matches.map((m, i) => (
+                <Pressable
+                  key={`${m.blockIndex}-${m.offset}-${i}`}
+                  onPress={() => onSelect({
+                    blockIndex: m.blockIndex,
+                    start: m.offset,
+                    end: m.offset + query.trim().length,
+                  })}
+                  className="border-b border-border px-1 py-2.5 active:bg-muted"
+                >
+                  <Text className="text-sm leading-relaxed text-foreground" numberOfLines={2}>
+                    <HighlightSnippet snippet={m.snippet} term={query.trim()} />
                   </Text>
-                ) : null}
-                <Text className="mt-0.5 text-[10px] text-muted-foreground/70">
-                  {t('action.go_to_page')}
-                </Text>
-              </Pressable>
-            ))
+                  {labelForBlock(m.blockIndex) ? (
+                    <Text className="mt-0.5 text-[10px] font-medium text-primary/80" numberOfLines={1}>
+                      {labelForBlock(m.blockIndex)}
+                    </Text>
+                  ) : null}
+                  <Text className="mt-0.5 text-[10px] text-muted-foreground/70">
+                    {t('action.go_to_page')}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           )}
         </>
       ) : (
-        <View className="items-center py-10">
+        /* Initial state — reserved empty area keeps the modal height and the
+           search bar above the software keyboard (SPEC-085 §9.4). */
+        <View className="flex-1 items-center justify-center">
           <Search size={32} color={ICON_MUTED} style={{ opacity: 0.4 }} />
           <Text className="mt-2 text-sm text-muted-foreground">{t('placeholder.search_dots')}</Text>
         </View>

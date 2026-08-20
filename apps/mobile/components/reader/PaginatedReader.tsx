@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import {
   Animated, View, Text, Image, ActivityIndicator, ScrollView, Alert, Platform, useWindowDimensions,
   type DimensionValue, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent,
+  type StyleProp, type ViewStyle,
 } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -748,13 +749,18 @@ export function PaginatedReader({
   }
 
   // ── Paginated mode ──
+  // Immersive: the whole padded container is the blank-tap surface — it
+  // covers the entire screen, including the reserved strips and the empty
+  // page area below the last paragraph (SPEC-085 §5). Deeper Pressables
+  // (tokens, links, bar controls) claim their own touches; the ScrollView's
+  // pan cancels the press on a swipe, so page turns never toggle the chrome.
+  const tapSurface = !!(immersive && onToggleChrome);
+  const containerStyle = immersive && immersiveReserve
+    ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
+    : undefined;
+
   return (
-    <View
-      className="flex-1 flex-col"
-      style={immersive && immersiveReserve
-        ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
-        : undefined}
-    >
+    <TapSurfaceView tapSurface={tapSurface} onPress={onToggleChrome} style={containerStyle}>
       {blocks && !hasMeasured && (
         <View className="flex-1 items-center justify-center" onLayout={handleViewportLayout}>
           <ActivityIndicator size="small" color={ICON_MUTED} />
@@ -787,20 +793,8 @@ export function PaginatedReader({
                       it doesn't resize the measured viewport. */}
                   {/* loadingTokens indicator removed — no "making text
                       interactive" row; content shows when ready */}
-                  {/* Immersive mode: the whole page is a Pressable whose onPress
-                      only fires for blank-space taps (the deeper token/link
-                      Pressables claim touches on interactive elements), toggling
-                      the reader chrome. */}
-                  {immersive && onToggleChrome ? (
-                    <Pressable onPress={onToggleChrome} className="active:bg-transparent">
-                      {visibleBlocks.map((block, bi) =>
-                        renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
-                      )}
-                    </Pressable>
-                  ) : (
-                    visibleBlocks.map((block, bi) =>
-                      renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
-                    )
+                  {visibleBlocks.map((block, bi) =>
+                    renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, isTranslating, showTranslation, l2Code, l1Code, contentWidth, showTextActions, onOpenLink, highlight, textScale, zoomRem, translationSideBySide, handleBlockLayout, true, translationFactor, appliedSplit, onSplitChange, onSplitCommit, activeSentence, sentenceMapFor, getTokenPressHandler, lineGrids, getLineGridHandler, firstLineIndent, flipping, lazyPagination ? upgradedBlocks : undefined, hideSplitHandle, selectionDictionary, translationLeading),
                   )}
                 </ScrollView>
               </Animated.View>
@@ -810,16 +804,29 @@ export function PaginatedReader({
       )}
 
       {/* Immersive metadata overlays — muted chapter title (top strip) and
-          page count (bottom strip). Non-interactive, never reflow the book. */}
+          page count (bottom strip). Non-interactive, never reflow the book.
+          Their offsets are fixed inside the reserved strips (SPEC-085 §6.2):
+          the title line starts reserve.top − 20 (= H + 12) from the screen
+          top and the counter line bottom sits reserve.bottom − 24
+          (= BAR_H + 8) above the screen bottom, so the chrome bars never
+          cover them and toggling the chrome never moves them. */}
       {immersive && (
         <>
           {topOverlay && (
-            <View pointerEvents="none" className="absolute inset-x-0 top-0 z-10 items-center px-4 pt-2.5">
+            <View
+              pointerEvents="none"
+              className="absolute inset-x-0 top-0 z-10 items-center px-4"
+              style={{ paddingTop: immersiveReserve ? immersiveReserve.top - 20 : 10 }}
+            >
               {topOverlay}
             </View>
           )}
           {pageInfoOverlay && (
-            <View pointerEvents="none" className="absolute inset-x-0 bottom-0 z-10 items-center px-4 pb-2.5">
+            <View
+              pointerEvents="none"
+              className="absolute inset-x-0 bottom-0 z-10 items-center px-4"
+              style={{ paddingBottom: immersiveReserve ? immersiveReserve.bottom - 24 : 10 }}
+            >
               {pageInfoOverlay(page + 1, Math.max(1, totalPages))}
             </View>
           )}
@@ -946,6 +953,39 @@ export function PaginatedReader({
           onComplete={handleCalibrationComplete}
         />
       )}
+    </TapSurfaceView>
+  );
+}
+
+/**
+ * Full-area blank-tap surface for the immersive reader (SPEC-085 §5.3):
+ * renders as a Pressable covering the whole padded container when
+ * `tapSurface` is true — so blank-space taps, including the reserved strips
+ * and the empty page area below the last paragraph, toggle the chrome — and
+ * as a plain View otherwise. Deeper interactive Pressables (tokens, links,
+ * bar controls) always win the touch.
+ */
+function TapSurfaceView({
+  tapSurface,
+  onPress,
+  style,
+  children,
+}: {
+  tapSurface: boolean;
+  onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+}) {
+  if (tapSurface) {
+    return (
+      <Pressable onPress={onPress} className="flex-1 flex-col active:bg-transparent" style={style}>
+        {children}
+      </Pressable>
+    );
+  }
+  return (
+    <View className="flex-1 flex-col" style={style}>
+      {children}
     </View>
   );
 }
