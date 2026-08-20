@@ -527,9 +527,9 @@ export default function ReviewPage() {
     const rating = testScoreToRating(finalScore);
     setSuggestedRating(rating);
     setTestScores([]);
+    setTestStartedAt(null);
     setShowDefinition(true);
-    setTestQuestions([]);
-    setTestQuestionIndex(0);
+    setTestQuestionIndex(testQuestions.length - 1);
     setTestStartedAt(null);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, handleRate]);
 
