@@ -118,7 +118,19 @@ export default function ReviewPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
-  const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
+  const [reviewMode, setReviewMode] = useState<'recall' | 'test'>(() => {
+    if (typeof window === 'undefined') return 'recall';
+    return window.localStorage.getItem('lp:srs-review-mode') === 'test' ? 'test' : 'recall';
+  });
+  const [testError, setTestError] = useState<string | null>(null);
+
+  const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
+    setReviewMode(mode);
+    window.localStorage.setItem('lp:srs-review-mode', mode);
+    setTestQuestions([]);
+    setShowDefinition(false);
+    setTestError(null);
+  }, []);
   const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
@@ -472,9 +484,9 @@ export default function ReviewPage() {
       setTestQuestions(questions);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
-    } catch {
-      setReviewMode('recall');
-      setShowDefinition(true);
+    } catch (error) {
+      setTestError(error instanceof Error ? error.message : t('error.unexpected'));
+      setTestQuestions([]);
     } finally { setTestLoading(false); }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
 
@@ -1019,8 +1031,8 @@ export default function ReviewPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label={t('review.test_mode')}>
-          <button type="button" onClick={() => { setReviewMode('recall'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.recall_mode')}</button>
-          <button type="button" onClick={() => { setReviewMode('test'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.test_mode')}</button>
+          <button type="button" onClick={() => { changeReviewMode('recall'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.recall_mode')}</button>
+          <button type="button" onClick={() => { changeReviewMode('test'); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{t('review.test_mode')}</button>
         </div>
         <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
