@@ -27,8 +27,13 @@ export const DEEP_ORTHOGRAPHY_LANGUAGES = new Set([
   'zh', 'yue', 'ja', 'ko', 'ar', 'fa', 'he', 'hi', 'th', 'my', 'km', 'lo', 'ta', 'te', 'ml', 'bn',
 ]);
 
-export function needsPronunciationTest(l2Code: string): boolean {
-  return DEEP_ORTHOGRAPHY_LANGUAGES.has((l2Code.split('-')[0] ?? '').toLowerCase());
+export function needsPronunciationTest(l2Code: string, word?: string): boolean {
+  const base = (l2Code.split('-')[0] ?? '').toLowerCase();
+  if (!DEEP_ORTHOGRAPHY_LANGUAGES.has(base)) return false;
+  // Japanese kana-only words already reveal their reading; pronunciation testing
+  // is useful when kanji create an orthography-to-reading ambiguity.
+  if (base === 'ja' && word && !/[\u3400-\u4dbf\u4e00-\u9fff]/u.test(word)) return false;
+  return true;
 }
 
 /** Normalize an answer for duplicate-choice detection without changing display text. */

@@ -467,7 +467,7 @@ export default function ReviewPage() {
     if (!card) return;
     const context = card.word.context?.text ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
-    const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
     log('[SRS Test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(context) });
     setTestError(null);
     setTestLoading(true);
