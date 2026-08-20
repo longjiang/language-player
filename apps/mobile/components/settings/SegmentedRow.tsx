@@ -23,7 +23,7 @@ export function SegmentedRow<T extends string>({
           onPress={() => onChange(opt)}
           className={`flex-1 py-2 items-center rounded-md ${value === opt ? 'bg-card' : ''}`}
         >
-          <Text className={`text-xs font-semibold ${value === opt ? 'text-foreground' : 'text-muted-foreground'}`}>
+          <Text className={`text-sm font-semibold ${value === opt ? 'text-foreground' : 'text-muted-foreground'}`}>
             {renderLabel(opt)}
           </Text>
         </Pressable>

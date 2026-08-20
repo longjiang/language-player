@@ -46,7 +46,7 @@ export default function ForgotPasswordScreen() {
           <Text className="text-2xl font-bold text-foreground text-center">
             {t('title.check_email')}
           </Text>
-          <Text className="text-muted-foreground text-sm text-center mt-2">
+          <Text className="text-muted-foreground text-base text-center mt-2">
             {t('msg.password_reset_sent', { email })}
           </Text>
           <Button
@@ -70,10 +70,10 @@ export default function ForgotPasswordScreen() {
         onPress={() => Keyboard.dismiss()}
         {...e2e('dismiss-keyboard')}
       >
-        <Text className="text-3xl font-bold text-foreground mb-2 text-center">
+        <Text className="text-2xl font-bold text-foreground mb-2 text-center">
           {t('title.reset_password')}
         </Text>
-        <Text className="text-muted-foreground text-sm text-center mb-8">
+        <Text className="text-muted-foreground text-base text-center mb-8">
           {t('msg.enter_email_for_reset')}
         </Text>
       </Pressable>

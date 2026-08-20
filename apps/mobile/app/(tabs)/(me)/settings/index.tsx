@@ -241,7 +241,7 @@ function SettingsList({
           ))
         ) : (
           <View className="flex-1 items-center justify-center pt-16">
-            <Text className="text-sm text-muted-foreground text-center">
+            <Text className="text-base text-muted-foreground text-center">
               {t('msg.no_settings_match', { query })}
             </Text>
             <Button variant="link" onPress={() => setQuery('')} className="mt-3">

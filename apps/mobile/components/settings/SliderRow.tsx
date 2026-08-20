@@ -34,7 +34,7 @@ export function SliderRow({
     <View className="py-2.5">
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-sm font-medium text-foreground">{label}</Text>
-        <Text className="text-base font-semibold text-foreground tabular-nums">
+        <Text className="text-lg font-semibold text-foreground tabular-nums">
           {valueDisplay ?? value}
         </Text>
       </View>

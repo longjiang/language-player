@@ -129,7 +129,7 @@ export function DisplaySettings() {
               {previewTranslation ? (
                 <Text
                   className="pt-1 text-sm text-muted-foreground leading-relaxed"
-                  style={{ fontSize: 14 * translationSizeFactor({ tokenizedText }) }}
+                  style={{ fontSize: 16 * translationSizeFactor({ tokenizedText }) }}
                 >
                   {renderInlineMarkdown(previewTranslation, { markBold: true })}
                 </Text>
@@ -251,7 +251,7 @@ export function DisplaySettings() {
                         onPress={() => updateL2(l2Lang.code, { display: { ...l2Settings.display, traditional: o.v === 'true' } })}
                         className={`flex-1 py-2 items-center rounded-md ${String(l2Settings.display.traditional) === o.v ? 'bg-card' : ''}`}
                       >
-                        <Text className={`text-xs font-semibold ${String(l2Settings.display.traditional) === o.v ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        <Text className={`text-sm font-semibold ${String(l2Settings.display.traditional) === o.v ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {o.l}
                         </Text>
                       </Pressable>

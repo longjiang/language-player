@@ -89,7 +89,7 @@ export default function GoProSuccessPage() {
             <Text className="mt-4 text-2xl font-bold text-foreground text-center">
               {t('msg.you_are_pro')}
             </Text>
-            <Text className="mt-2 text-muted-foreground text-center">
+            <Text className="mt-2 text-base text-muted-foreground text-center">
               {t('msg.pro_subscription_active')}
             </Text>
             <View className={`mt-8 w-full max-w-sm gap-3 ${isSm ? 'flex-row' : ''}`}>
@@ -125,7 +125,7 @@ export default function GoProSuccessPage() {
             <Text className="text-2xl font-bold text-foreground text-center">
               {t('msg.subscription_not_confirmed')}
             </Text>
-            <Text className="mt-2 text-muted-foreground text-center">
+            <Text className="mt-2 text-base text-muted-foreground text-center">
               {t('msg.payment_may_take_longer')}
             </Text>
             <Text className="mt-4 text-sm text-muted-foreground text-center">
@@ -150,7 +150,7 @@ export default function GoProSuccessPage() {
             <Text className="text-2xl font-bold text-foreground text-center">
               {t('msg.subscription_not_confirmed')}
             </Text>
-            <Text className="mt-2 text-muted-foreground text-center">
+            <Text className="mt-2 text-base text-muted-foreground text-center">
               {t('msg.login_to_verify_pro')}
             </Text>
             <View className="mt-8 w-full max-w-sm">

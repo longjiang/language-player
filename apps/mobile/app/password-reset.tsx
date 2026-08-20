@@ -73,7 +73,7 @@ export default function PasswordResetScreen() {
           <Text className="text-2xl font-bold text-foreground text-center">
             {t('title.reset_password')}
           </Text>
-          <Text className="text-muted-foreground text-sm text-center mt-2">
+          <Text className="text-muted-foreground text-base text-center mt-2">
             {t('msg.reset_password_success')}
           </Text>
           <Button
@@ -92,10 +92,10 @@ export default function PasswordResetScreen() {
 
   return (
     <AuthContainer>
-      <Text className="text-3xl font-bold text-foreground mb-2 text-center">
+      <Text className="text-2xl font-bold text-foreground mb-2 text-center">
         {t('title.reset_password')}
       </Text>
-      <Text className="text-muted-foreground text-sm text-center mb-8">
+      <Text className="text-muted-foreground text-base text-center mb-8">
         {t('placeholder.password_min')}
       </Text>
 

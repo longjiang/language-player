@@ -86,10 +86,10 @@ export default function RegisterScreen() {
         onPress={() => Keyboard.dismiss()}
         {...e2e('dismiss-keyboard')}
       >
-        <Text className="text-3xl font-bold text-foreground mb-2 text-center">
+        <Text className="text-2xl font-bold text-foreground mb-2 text-center">
           {t('title.create_account')}
         </Text>
-        <Text className="text-muted-foreground text-sm text-center mb-8">
+        <Text className="text-muted-foreground text-base text-center mb-8">
           {t('msg.start_learning')}
         </Text>
       </Pressable>
