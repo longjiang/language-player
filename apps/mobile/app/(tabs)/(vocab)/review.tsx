@@ -19,6 +19,11 @@ import {
   msUntilNextDay,
   deviceTimezone,
   newRatingId,
+  buildSrsQuestionPrompt,
+  needsPronunciationTest,
+  scoreTestAnswer,
+  testScoreToRating,
+  type SrsTestQuestion,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
@@ -167,6 +172,12 @@ export default function ReviewScreen() {
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
+  const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
+  const [testQuestionIndex, setTestQuestionIndex] = useState(0);
+  const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testAnswered, setTestAnswered] = useState(false);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -480,7 +491,48 @@ export default function ReviewScreen() {
   // ── Handlers ──
 
   /** Reveal the definition + translation for the current card. */
+  const loadTestQuestions = useCallback(async () => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
+    const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    setTestLoading(true);
+    try {
+      const questions = await Promise.all(kinds.map(async (kind) => {
+        const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
+        const { apiClient } = await import('@langplayer/api-client');
+        const payload = await apiClient.post('/chatgpt', { prompt, cache: true, max_tokens: 500 });
+        const parsed = JSON.parse((payload as any).response);
+        const choices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string').slice(0, 4);
+        if (choices.length !== 4) throw new Error('Invalid question choices');
+        return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
+      }));
+      setTestQuestions(questions); setTestQuestionIndex(0); setTestStartedAt(Date.now());
+    } catch { setReviewMode('recall'); setShowTabs(true); }
+    finally { setTestLoading(false); }
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
+
+  const handleTestAnswer = useCallback((answer: string) => {
+    if (testAnswered || !testStartedAt) return;
+    const question = testQuestions[testQuestionIndex];
+    if (!question) return;
+    const score = scoreTestAnswer(answer === question.correctAnswer, Date.now() - testStartedAt);
+    setTestAnswered(true);
+    if (testQuestionIndex < testQuestions.length - 1) {
+      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestAnswered(false); }, 700);
+      return;
+    }
+    const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
+    setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setTestAnswered(false); setShowTabs(true);
+    const quality = testScoreToRating(finalScore);
+    setTimeout(() => {
+      const card = cards[currentIndex];
+      if (card) handleRate(quality);
+    }, 0);
+  }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, cards, currentIndex]);
+
   const handleReveal = useCallback(() => {
+    if (reviewMode === 'test') { void loadTestQuestions(); return; }
     const card = cards[currentIndex];
     log('[srs] reveal', {
       wordId: card?.word.id,
@@ -489,7 +541,7 @@ export default function ReviewScreen() {
       totalCards: cards.length,
     });
     setShowTabs(true);
-  }, [cards, currentIndex]);
+  }, [cards, currentIndex, reviewMode, loadTestQuestions]);
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
@@ -1004,10 +1056,11 @@ export default function ReviewScreen() {
 
   return (
     <PageContainer maxWidth="2xl">
-      {/* Header with card counts */}
+      {/* Mode switch with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
-        <View>
-          <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
+        <View className="flex-row rounded-lg border border-border p-1">
+          <Pressable onPress={() => { setReviewMode('recall'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>Recall mode</Text></Pressable>
+          <Pressable onPress={() => { setReviewMode('test'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'test' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'test' ? 'text-primary-foreground' : 'text-muted-foreground'}>Test mode</Text></Pressable>
         </View>
         {/* Anki-style colored dots */}
         <View className="flex-row items-center gap-3">
@@ -1093,17 +1146,19 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Toggle button for definition + translation — hidden once shown */}
-          {!showTabs && (
-            <Button
-              onPress={handleReveal}
-              variant="outline"
-              size="sm"
-              className="mb-2"
-            >
-              <Text className={buttonTextClass('outline')}>
-                {t('review.show_definition')}
-              </Text>
+          {/* Definition reveal or contextual test questions */}
+          {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
+            <View className="mt-2 gap-2" onStartShouldSetResponder={() => true}>
+              <Text className="mb-2 font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</Text>
+              {testQuestions[testQuestionIndex]!.choices.map((choice, index) => (
+                <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={testAnswered} className="rounded-lg border border-border bg-background p-3">
+                  <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : !showTabs && (
+            <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
+              <Text className={buttonTextClass('outline')}>{testLoading ? 'Loading…' : reviewMode === 'test' ? 'Start test' : t('review.show_definition')}</Text>
             </Button>
           )}
 

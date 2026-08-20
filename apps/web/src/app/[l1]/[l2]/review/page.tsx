@@ -16,6 +16,11 @@ import {
   msUntilNextDay,
   deviceTimezone,
   newRatingId,
+  buildSrsQuestionPrompt,
+  needsPronunciationTest,
+  scoreTestAnswer,
+  testScoreToRating,
+  type SrsTestQuestion,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import {
@@ -112,6 +117,12 @@ export default function ReviewPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
+  const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
+  const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
+  const [testQuestionIndex, setTestQuestionIndex] = useState(0);
+  const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testAnswered, setTestAnswered] = useState(false);
   const [rated, setRated] = useState(false);
   const [initializing, setInitializing] = useState(false);
   /** True when the user just finished reviewing the last due card. */
@@ -436,9 +447,56 @@ export default function ReviewPage() {
     // feedback enough, and a second toast would be redundant.
   }, [l2Code, updateCard, isPro, reviewsDoneToday, reviewCounterKey]);
 
+  const loadTestQuestions = useCallback(async () => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    const context = card.word.context?.text ?? '';
+    const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
+    const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    setTestLoading(true);
+    try {
+      const questions = await Promise.all(kinds.map(async (kind) => {
+        const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: context, l1Code: baseCode(l1.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
+        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: true, max_tokens: 500 }) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        const parsed = JSON.parse(payload.response);
+        const choices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string').slice(0, 4);
+        if (choices.length !== 4) throw new Error('Invalid question choices');
+        return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
+      }));
+      setTestQuestions(questions);
+      setTestQuestionIndex(0);
+      setTestStartedAt(Date.now());
+    } catch {
+      setReviewMode('recall');
+      setShowDefinition(true);
+    } finally { setTestLoading(false); }
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
+
   const handleReveal = useCallback(() => {
+    if (reviewMode === 'test') { void loadTestQuestions(); return; }
     setShowDefinition(true);
-  }, []);
+  }, [reviewMode, loadTestQuestions]);
+
+  const handleTestAnswer = useCallback((answer: string) => {
+    if (testAnswered || !testStartedAt) return;
+    const question = testQuestions[testQuestionIndex];
+    if (!question) return;
+    const score = scoreTestAnswer(answer === question.correctAnswer, Date.now() - testStartedAt);
+    setTestAnswered(true);
+    if (testQuestionIndex < testQuestions.length - 1) {
+      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestAnswered(false); }, 700);
+      return;
+    }
+    const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
+    setShowDefinition(true);
+    setTestQuestions([]);
+    setTestQuestionIndex(0);
+    setTestStartedAt(null);
+    setTestAnswered(false);
+    void handleRate(testScoreToRating(finalScore));
+  }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, handleRate]);
 
   /** Remove this word from saved words and SRS. The card drops from the list naturally. */
   const handleRemove = useCallback(() => {
@@ -956,13 +1014,10 @@ export default function ReviewPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <Link
-          href={`/${l1.code}/${l2.code}/explore`}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('action.back')}
-        </Link>
+        <div className="inline-flex rounded-lg border border-border p-1" role="group" aria-label="Review mode">
+          <button type="button" onClick={() => { setReviewMode('recall'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'recall' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Recall mode</button>
+          <button type="button" onClick={() => { setReviewMode('test'); setTestQuestions([]); setShowDefinition(false); }} className={`rounded-md px-3 py-1.5 text-sm ${reviewMode === 'test' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>Test mode</button>
+        </div>
         <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
               <span className="inline-flex items-center gap-1">
@@ -1069,15 +1124,19 @@ export default function ReviewPage() {
           )}
         </p>
 
-        {/* Definition (hidden until revealed) */}
-        {!showDefinition ? (
-          <Button
-            onClick={handleReveal}
-            variant="outline"
-            size="lg"
-            className="mt-4 gap-2"
-          >
-            {t('review.show_definition')}
+        {/* Definition or contextual test question */}
+        {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
+          <div className="mt-4 w-full space-y-3 text-left" onClick={(e) => e.stopPropagation()}>
+            <p className="font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</p>
+            {testQuestions[testQuestionIndex]!.choices.map((choice, index) => (
+              <button key={`${choice}-${index}`} type="button" disabled={testAnswered} onClick={() => handleTestAnswer(choice)} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-left text-sm hover:border-primary disabled:opacity-60">
+                <span className="mr-2 font-semibold">{String.fromCharCode(97 + index)}.</span>{choice}
+              </button>
+            ))}
+          </div>
+        ) : !showDefinition ? (
+          <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>
+            {testLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : reviewMode === 'test' ? 'Start test' : t('review.show_definition')}
           </Button>
         ) : (
           <div className="mt-4 w-full text-left space-y-3">
