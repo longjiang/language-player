@@ -195,8 +195,11 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
         : t('prompt.followup_synonyms', wordParams);
     }
 
+    const synonymExamplesPrompt = kind === 'synonyms'
+      ? t('prompt.followup_synonyms_examples', { l2Name })
+      : '';
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return `${prompt}\n\n${ticksPrompt}`;
+    return [prompt, synonymExamplesPrompt, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, word, contextText, contextForm]);
 
   const startStream = useCallback((prompt: string, regenerate = false) => {
