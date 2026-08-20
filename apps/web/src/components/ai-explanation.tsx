@@ -296,8 +296,11 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
 
     // L2 strings are backticked so they render as interactive tokenized text
+    const synonymExamplesPrompt = kind === 'synonyms'
+      ? t('prompt.followup_synonyms_examples', { l2Name })
+      : '';
     const ticksPrompt = t('prompt.explain_ticks', { l2Name });
-    return `${prompt}\n\n${ticksPrompt}`;
+    return [prompt, synonymExamplesPrompt, ticksPrompt].filter(Boolean).join('\n\n');
   }, [t, l1.code, l2.code, word, contextText, contextForm]);
 
   // ── "Examples from Videos" follow-up ──
