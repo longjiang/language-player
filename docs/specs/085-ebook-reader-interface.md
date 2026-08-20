@@ -40,7 +40,7 @@ All numbers are as-built at the time of writing (`apps/web/src/app/[l1]/[l2]/epu
 |---|---|---|
 | 1 | Web: the blank-tap click listener is attached to the **scroll viewport** (`pager.viewportRef.current`), which only spans the text area — not the reserved strips. Mobile: the tap `Pressable` wraps **only the visible blocks**, so the empty page area below the last paragraph is not tappable. | The tap surface does not cover the entire screen. |
 | 2 | Web: title overlay at `pt-2.5` (10 px from screen top); close button at `top-1.5` (6 px). Mobile: title `paddingTop: insets.top + 10`; close at `insets.top + 6`. The top bar is 57 px tall (web) / `insets.top + 57` (mobile). | When the chrome is ON, the site top bar covers the chapter title and the close button entirely. |
-| 3 | Page counter overlay at `pb-2.5` (10 px from screen bottom). The bottom bar is ~33 px tall (web) / ~27 px + `insets.bottom` (mobile) and sits at the screen bottom. | When the chrome is ON, the bottom bar covers the page counter entirely. |
+| 3 | Page counter overlay at `pb-2.5` (10 px from screen bottom). The bottom bar is ~41 px tall (web: 8 px padding + 24 px button row + 1 px border) / ~27 px + `insets.bottom` (mobile) and sits at the screen bottom. | When the chrome is ON, the bottom bar covers the page counter entirely. |
 | 4 | Web search dialog: `max-h-[80vh]`, content-sized — with zero results the modal collapses to a short strip and the search bar sits low on screen. Mobile: modal `max-h-[85%]` with the panel in a `max-h-[70%]` `ScrollView`. | The search modal height depends on the result count; with the software keyboard open, the search bar can end up under or level with the keyboard. |
 | 5 | Web: the immersive `PaginatedReader` is inside a `flex-1` wrapper that is not itself a flex container, so the reader can collapse to rendered content height instead of occupying the full viewport. Mobile: the equivalent native containers are flex layouts by default. | The page area and bottom bar stop after short content, leaving a large unused region below the reader. |
 | 6 | Mobile derives the reader's left padding from the rendered L2 line leading; web EPUB content still uses a fixed `px-1` margin. | The web text starts too close to the page edge and the horizontal layout is not visually aligned with mobile. |
@@ -141,12 +141,12 @@ Check the clearance with these formulas (the bar's bottom edge is at `H`, its bo
 |---|---|---|
 | `H` | 57 | header `h-14` (56) + 1 px `border-b` |
 | `T` | **89** | `57 + 8 + 16 + 8` (was 57) |
-| `B` | **65** | `BAR_H + 32` with `BAR_H = 33` (was 57) |
+| `B` | **73** | `BAR_H + 32` with `BAR_H = 41` (was 65) |
 | Title line | `[69, 85]` | `[H + 12, H + 28]` |
 | Close button | `top 65, right 12` | `[H + 8, H + 32]` |
 | Counter line | `[S − 57, S − 41]` | `[S − BAR_H − 24, S − BAR_H − 8]` |
 
-`BAR_H` must equal the rendered height of the bottom bar (≈ 33 px today: 8 top padding + 16 content row + 8 bottom padding + 1 border). If the bar composition changes, re-derive `B`; do not hard-code a stale number. If a component's rendered size ever disagrees with the constant, log the mismatch (`[LP Web]`) rather than silently mis-reserving.
+`BAR_H` must equal the rendered height of the bottom bar (≈ 41 px today: 8 top padding + 24 button row + 8 bottom padding + 1 border). If the bar composition changes, re-derive `B`; do not hard-code a stale number. If a component's rendered size ever disagrees with the constant, log the mismatch (`[LP Web]`) rather than silently mis-reserving.
 
 The immersive page wrapper must be a flex column so the nested `PaginatedReader` can
 stretch to the full `h-screen` frame. A `flex-1` child inside a non-flex wrapper does
@@ -197,7 +197,7 @@ Changing `T`/`B` re-paginates once (pages become slightly shorter). That is expe
   C ├──────────────────────────────────────────────────────────────┤ ┘  bar top edge at S − BAR_H
     │   ◀   42 / ~612   ▶    │  Translation  [on]     ▤    ⌕       │ ┐
     │                                                              │ │  BOTTOM BAR — pagination +
-    S └────────────────────────────────────────────────────────────┘ ┘  toggles (height BAR_H ≈ 33 web)
+    S └────────────────────────────────────────────────────────────┘ ┘  toggles (height BAR_H ≈ 41 web)
 ```
 
 ### 7.1 Element-by-element (chrome ON)
@@ -370,7 +370,7 @@ Elements:
   - Move the immersive tap listener from `pager.viewportRef.current` to the padded container (add a ref to the `relative … flex flex-col` root). Keep the selection and `closest(...)` guards. The existing capture-phase click suppression after a drag still prevents drags from toggling.
   - No layout change needed here: the strips are passed in as `immersiveReserve` from the page.
 - `apps/web/src/app/[l1]/[l2]/epub/page.tsx`
-  - `TOP_CHROME_RESERVE` → 89, `BOTTOM_CHROME_RESERVE` → 65 (or derive: `H + 32`, `BAR_H + 32` with `BAR_H` = measured bar height).
+  - `TOP_CHROME_RESERVE` → 89, `BOTTOM_CHROME_RESERVE` → 73 (or derive: `H + 32`, `BAR_H + 32` with `BAR_H` = measured bar height).
   - Close button: `top-1.5` → `top-[65px]` (or `top-[H+8]`), keep `right-3`.
   - `topOverlay`: change the overlay container's top inset so the title line box starts at `H + 12` (69 px); keep it centered/truncated and `pointer-events: none` (already via the overlay wrapper).
   - `pageInfoOverlay`: change the overlay container's bottom inset so the counter line box sits at `[S − BAR_H − 24, S − BAR_H − 8]` (`pb` computed from the new `B`).
