@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Opnieuw",
         "again_hint": "Volledig vergeten",
+        "answer_correct": "Correct",
+        "answer_incorrect": "Onjuist",
         "context_label": "Context",
         "easy": "Makkelijk",
         "easy_hint": "Directe herinnering",

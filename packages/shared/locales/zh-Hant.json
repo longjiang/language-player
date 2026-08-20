@@ -1210,6 +1210,8 @@
     },
     "review": {
         "again": "重來",
+        "answer_correct": "正確",
+        "answer_incorrect": "錯誤",
         "easy": "簡單",
         "good": "良好",
         "hard": "困難",

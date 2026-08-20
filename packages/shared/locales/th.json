@@ -1242,6 +1242,8 @@
     "review": {
         "again": "อีกครั้ง",
         "again_hint": "ลืมไปหมดแล้ว",
+        "answer_correct": "ถูกต้อง",
+        "answer_incorrect": "ไม่ถูกต้อง",
         "context_label": "บริบท",
         "easy": "ง่าย",
         "easy_hint": "นึกออกทันที",

@@ -1219,6 +1219,8 @@
     "review": {
         "again": "重来",
         "again_hint": "完全忘记",
+        "answer_correct": "正确",
+        "answer_incorrect": "错误",
         "context_label": "上下文",
         "easy": "简单",
         "easy_hint": "立即想起",

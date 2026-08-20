@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Tekrar",
         "again_hint": "Tamamen unuttum",
+        "answer_correct": "Doğru",
+        "answer_incorrect": "Yanlış",
         "context_label": "Bağlam",
         "easy": "Kolay",
         "easy_hint": "Anında hatırlama",

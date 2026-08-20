@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Lại nữa",
         "again_hint": "Quên hoàn toàn",
+        "answer_correct": "Đúng",
+        "answer_incorrect": "Sai",
         "context_label": "Ngữ cảnh",
         "easy": "Dễ",
         "easy_hint": "Nhớ ngay lập tức",

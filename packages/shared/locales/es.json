@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Otra vez",
         "again_hint": "Olvidé por completo",
+        "answer_correct": "Correcto",
+        "answer_incorrect": "Incorrecto",
         "context_label": "Contexto",
         "easy": "Fácil",
         "easy_hint": "Recuerdo instantáneo",

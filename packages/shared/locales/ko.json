@@ -1242,6 +1242,8 @@
     "review": {
         "again": "다시",
         "again_hint": "완전히 잊어버림",
+        "answer_correct": "정답",
+        "answer_incorrect": "오답",
         "context_label": "문맥",
         "easy": "쉬움",
         "easy_hint": "즉시 기억",
