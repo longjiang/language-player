@@ -418,7 +418,10 @@ export function PaginatedReader({
           className="rounded p-1 hover:bg-muted disabled:opacity-30">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span>
+        <span
+          onClick={(event) => event.stopPropagation()}
+          className="select-none"
+        >
           {pager.page}
           {pager.totalPages > 0 ? ` / ${pager.totalPagesIsEstimate ? '~' : ''}${pager.totalPages}` : ''}
         </span>
