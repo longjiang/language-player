@@ -510,7 +510,7 @@ export default function ReviewScreen() {
   // ── Handlers ──
 
   /** Reveal the definition + translation for the current card. */
-  const loadTestQuestions = useCallback(async () => {
+  const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
@@ -523,7 +523,7 @@ export default function ReviewScreen() {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         const { apiClient } = await import('@langplayer/api-client');
         log('[srs-test] request started', { l2Code, word: wordForm, kind });
-        const payload = await apiClient.post('/chatgpt', { prompt, cache: false, max_tokens: 500 });
+        const payload = await apiClient.post('/chatgpt', { prompt, cache: !options?.retry, max_tokens: 500 });
         log('[srs-test] response received', { l2Code, word: wordForm, kind, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
         const parsed = JSON.parse((payload as any).response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
@@ -1185,7 +1185,7 @@ export default function ReviewScreen() {
           {testError && (
             <View className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
               <Text className="text-sm text-destructive">{testError}</Text>
-              <Button onPress={() => { setTestError(null); void loadTestQuestions(); }} variant="outline" size="sm" className="mt-2">
+              <Button onPress={() => { setTestError(null); void loadTestQuestions({ retry: true }); }} variant="outline" size="sm" className="mt-2">
                 <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
               </Button>
             </View>
