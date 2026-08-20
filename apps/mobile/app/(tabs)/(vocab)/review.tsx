@@ -512,7 +512,7 @@ export default function ReviewScreen() {
     const card = cards[currentIndex];
     if (!card) return;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
-    const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
     log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text) });
     setTestError(null);
     setTestLoading(true);
