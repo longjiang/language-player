@@ -148,7 +148,7 @@ export default function VerifyEmailScreen() {
       <AuthContainer>
         <View className="items-center">
           <ActivityIndicator size="large" />
-          <Text className="text-muted-foreground text-sm mt-4" {...e2e('verify-verifying-text')}>
+          <Text className="text-muted-foreground text-2xl mt-4" {...e2e('verify-verifying-text')}>
             {t('action.verify_email')}
           </Text>
         </View>
@@ -161,11 +161,11 @@ export default function VerifyEmailScreen() {
       <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">⚠️</Text>
-          <Text className="text-xl font-bold text-foreground text-center">
+          <Text className="text-2xl font-bold text-foreground text-center">
             {t('error.invalid_verification_link') || 'Invalid verification link'}
           </Text>
           {errorMsg && (
-            <Text className="text-muted-foreground text-sm text-center mt-2">
+            <Text className="text-muted-foreground text-base text-center mt-2">
               {errorMsg}
             </Text>
           )}
@@ -189,14 +189,14 @@ export default function VerifyEmailScreen() {
       <AuthContainer>
         <View className="rounded-2xl border border-border bg-card p-8 items-center">
           <Text className="text-5xl mb-4">📬</Text>
-          <Text className="text-xl font-bold text-foreground text-center">
+          <Text className="text-2xl font-bold text-foreground text-center">
             {t('title.check_email')}
           </Text>
-          <Text className="text-muted-foreground text-sm text-center mt-2">
+          <Text className="text-muted-foreground text-base text-center mt-2">
             {t('msg.verification_code_sent', { email: email ?? '' })}
           </Text>
           <Input
-            className="mt-4 w-full"
+            className="mt-4 w-full text-2xl"
             placeholder={t('placeholder.verification_code')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="number-pad"
@@ -257,7 +257,7 @@ export default function VerifyEmailScreen() {
         <Text className="text-2xl font-bold text-foreground text-center">
           {t('title.email_verified')}
         </Text>
-        <Text className="text-muted-foreground text-sm text-center mt-2">
+        <Text className="text-muted-foreground text-base text-center mt-2">
           {t('msg.email_verified')}
         </Text>
         <Button

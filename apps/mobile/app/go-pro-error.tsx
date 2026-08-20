@@ -25,7 +25,7 @@ export default function GoProErrorPage() {
         <Text className="mt-4 text-2xl font-bold text-foreground text-center">
           {t('title.payment_issue')}
         </Text>
-        <Text className="mt-2 text-muted-foreground text-center">
+        <Text className="mt-2 text-base text-muted-foreground text-center">
           {t('msg.payment_issue_desc')}
         </Text>
         <Text className="mt-2 text-sm text-muted-foreground text-center">
