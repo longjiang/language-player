@@ -1159,6 +1159,12 @@ export default function ReviewPage() {
           )}
         </p>
 
+        {testError && (
+          <div className="mt-4 w-full rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+            {testError}
+          </div>
+        )}
+
         {/* Definition or contextual test question */}
         {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
           <div className="mt-4 w-full space-y-3 text-left" onClick={(e) => e.stopPropagation()}>
