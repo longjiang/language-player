@@ -520,14 +520,16 @@ export default function ReviewPage() {
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
-    setShowDefinition(true);
-    setTestQuestions([]);
-    setTestQuestionIndex(0);
-    setTestSelectedAnswer(null);
-    setTestAnswerCorrect(null);
-    setTestStartedAt(null);
-    setTestAnswered(false);
-    void handleRate(testScoreToRating(finalScore));
+    setTimeout(() => {
+      setShowDefinition(true);
+      setTestQuestions([]);
+      setTestQuestionIndex(0);
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestStartedAt(null);
+      setTestAnswered(false);
+      void handleRate(testScoreToRating(finalScore));
+    }, 1000);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, handleRate]);
 
   /** Remove this word from saved words and SRS. The card drops from the list naturally. */
