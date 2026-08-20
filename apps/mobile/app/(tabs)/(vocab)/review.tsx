@@ -174,6 +174,20 @@ export default function ReviewScreen() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
+  const [testError, setTestError] = useState<string | null>(null);
+  const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
+    setReviewMode(mode);
+    AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
+    setTestQuestions([]);
+    setShowTabs(false);
+    setTestError(null);
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem('lp:srs-review-mode').then((mode) => {
+      if (mode === 'test' || mode === 'recall') setReviewMode(mode);
+    }).catch(() => {});
+  }, []);
   const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
@@ -512,7 +526,10 @@ export default function ReviewScreen() {
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       setTestQuestions(questions); setTestQuestionIndex(0); setTestStartedAt(Date.now());
-    } catch { setReviewMode('recall'); setShowTabs(true); }
+    } catch (error) {
+      setTestError(error instanceof Error ? error.message : t('error.unexpected'));
+      setTestQuestions([]);
+    }
     finally { setTestLoading(false); }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
@@ -1063,8 +1080,8 @@ export default function ReviewScreen() {
       {/* Mode switch with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <View className="flex-row rounded-lg border border-border p-1">
-          <Pressable onPress={() => { setReviewMode('recall'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.recall_mode')}</Text></Pressable>
-          <Pressable onPress={() => { setReviewMode('test'); setTestQuestions([]); setShowTabs(false); }} className={`rounded-md px-3 py-2 ${reviewMode === 'test' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'test' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.test_mode')}</Text></Pressable>
+          <Pressable onPress={() => { changeReviewMode('recall'); }} className={`rounded-md px-3 py-2 ${reviewMode === 'recall' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'recall' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.recall_mode')}</Text></Pressable>
+          <Pressable onPress={() => { changeReviewMode('test'); }} className={`rounded-md px-3 py-2 ${reviewMode === 'test' ? 'bg-primary' : ''}`}><Text className={reviewMode === 'test' ? 'text-primary-foreground' : 'text-muted-foreground'}>{t('review.test_mode')}</Text></Pressable>
         </View>
         {/* Anki-style colored dots */}
         <View className="flex-row items-center gap-3">
@@ -1149,6 +1166,12 @@ export default function ReviewScreen() {
               <>{' · '}{t('review.srs_review', { count: srs.reps })}</>
             )}
           </Text>
+
+          {testError && (
+            <View className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+              <Text className="text-sm text-destructive">{testError}</Text>
+            </View>
+          )}
 
           {/* Definition reveal or contextual test questions */}
           {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
