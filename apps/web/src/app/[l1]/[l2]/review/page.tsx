@@ -716,6 +716,9 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
   const currentCardState = currentCard ? fsrs.getCardState(currentCard.srs) : null;
+  const definitionTestAnswered = reviewMode === 'test'
+    && testQuestions.some((question, index) => question.kind === 'definition' && Boolean(testAnswers[index]));
+  const showContextTranslation = showDefinition || definitionTestAnswered;
   /** Every form the saved word can appear as: canonical, legacy context, and
    *  per-instance surfaces (multi-token selections like "got even with me"
    *  saved under the canonical "to get even with someone"). */
@@ -942,9 +945,9 @@ export default function ReviewPage() {
     setFallbackEntry(null);
   }, [currentCard?.word.id]);
 
-  // ── Auto-translate context text when back is revealed (if no saved translation) ──
+  // ── Auto-translate context text after the definition test (or back reveal) ──
   useEffect(() => {
-    if (!showDefinition || !display.translation) return;
+    if (!showContextTranslation || !display.translation) return;
 
     const ctxText = currentCard?.word.context?.text;
     const savedTranslation = currentCard?.word.context?.translation;
@@ -983,7 +986,7 @@ export default function ReviewPage() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showDefinition, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code]);
+  }, [showContextTranslation, currentCard?.word.context?.text, currentCard?.word.context?.form, l2Code, l1.code, display.translation]);
 
   // ── Render states ──
 
@@ -1088,6 +1091,8 @@ export default function ReviewPage() {
   const entry = l1Entry ?? fallbackEntry ?? currentCard.entry;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
+  // Keep later tests hidden until the preceding test has been answered.
+  const visibleTestQuestions = testQuestions.slice(0, testQuestionIndex + 1);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -1155,10 +1160,10 @@ export default function ReviewPage() {
             <div className="text-xs text-muted-foreground/70 mt-1">
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
-            {showDefinition && display.translation && !wordCtx.translation && !contextTranslation && contextTranslating && (
+            {showContextTranslation && display.translation && !wordCtx.translation && !contextTranslation && contextTranslating && (
               <TranslationSkeleton text={wordCtx.text} className="mt-2 border-t border-border pt-2" barClassName="h-3" />
             )}
-            {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
+            {showContextTranslation && display.translation && (wordCtx.translation || contextTranslation) && (
               wordCtx.translation ? (
                 <p
                   className="mt-2 leading-relaxed text-muted-foreground border-t border-border pt-2"
@@ -1215,7 +1220,7 @@ export default function ReviewPage() {
         {/* Test results stay on screen; each answered question is followed by the next. */}
         {reviewMode === 'test' && testQuestions.length > 0 ? (
           <div className="mt-4 w-full space-y-6 text-left" onClick={(e) => e.stopPropagation()}>
-            {testQuestions.map((question, questionIndex) => {
+            {visibleTestQuestions.map((question, questionIndex) => {
               const result = testAnswers[questionIndex];
               const isCurrent = questionIndex === testQuestionIndex;
               return (
