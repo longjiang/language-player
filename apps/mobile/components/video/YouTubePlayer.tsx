@@ -163,7 +163,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
             <Pressable
               onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${youtubeId}`)}
             >
-              <Text className="text-sm font-medium text-primary">{t('action.view_on_youtube')} ↗</Text>
+              <Text className="text-xs font-medium text-primary">{t('action.view_on_youtube')} ↗</Text>
             </Pressable>
           )}
         </View>

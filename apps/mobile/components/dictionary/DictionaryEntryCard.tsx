@@ -192,7 +192,7 @@ export function DictionaryEntryCard({
     <View className="flex-row flex-wrap gap-1">
       {formattedLevels.map((level, i) => (
         <View key={i} className="rounded px-1.5 py-0.5" style={{ backgroundColor: level.hexColor + '1A' }}>
-          <Text className="text-xs font-bold" style={{ color: level.hexColor }}>{level.short}</Text>
+          <Text className="text-[10px] font-bold" style={{ color: level.hexColor }}>{level.short}</Text>
         </View>
       ))}
 
@@ -207,10 +207,10 @@ export function DictionaryEntryCard({
   const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`;
   const sourceLine = (
     <View className="flex-row items-center gap-2">
-      <Text className="text-[10px] text-muted-foreground/50">
+      <Text className="text-xs text-muted-foreground/50">
         {displaySource}
         {entry.match_type && entry.match_type !== 'exact' && (
-          <Text className="text-[10px] text-amber-600"> · {entry.match_type}</Text>
+          <Text className="text-xs text-amber-600"> · {entry.match_type}</Text>
         )}
       </Text>
       <Pressable
@@ -218,7 +218,7 @@ export function DictionaryEntryCard({
         className="flex-row items-center gap-0.5"
       >
         <ExternalLink size={10} color={ICON_MUTED} />
-        <Text className="text-[10px] text-muted-foreground/50 underline">{t('action.search_images')}</Text>
+        <Text className="text-xs text-muted-foreground/50 underline">{t('action.search_images')}</Text>
       </Pressable>
     </View>
   );
@@ -446,7 +446,7 @@ export function DictionaryEntryCard({
             if (key === 'pinyin_numeric' || key === 'kana') return null;
             if (key === 'ipa' && value === entry.pronunciation) return null;
             if (typeof value === 'string' && value) {
-              return <Text key={key} className="text-xs text-muted-foreground/70">{key}: {value}</Text>;
+              return <Text key={key} className="text-sm text-muted-foreground/70">{key}: {value}</Text>;
             }
             return null;
           })}
@@ -461,7 +461,7 @@ export function DictionaryEntryCard({
           className={`flex-row items-center rounded-md border px-2 py-1 ${wordSaved ? 'border-amber-500 bg-amber-500' : 'border-amber-500/50'}`}
         >
           <Bookmark size={14} color={wordSaved ? '#fff' : '#f59e0b'} fill={wordSaved ? '#fff' : 'none'} style={{ marginRight: 4 }} />
-          <Text className={`text-xs ${wordSaved ? 'text-white' : 'text-amber-500/80'}`}>{wordSaved ? t('label.saved') : t('action.save_word')}</Text>
+          <Text className={`text-sm ${wordSaved ? 'text-white' : 'text-amber-500/80'}`}>{wordSaved ? t('label.saved') : t('action.save_word')}</Text>
         </Pressable>
       </View>
 

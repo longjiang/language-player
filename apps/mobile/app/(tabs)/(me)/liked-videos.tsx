@@ -49,10 +49,10 @@ export default function LikedVideosScreen() {
   if (!isSignedIn) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <Heart size={40} className="mb-3 text-muted-foreground" />
-          <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
       </PageContainer>
     );
@@ -62,7 +62,7 @@ export default function LikedVideosScreen() {
   if (!loaded) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
@@ -74,10 +74,10 @@ export default function LikedVideosScreen() {
   if (liked.length === 0) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.liked_videos')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.liked_videos')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <Heart size={40} className="mb-3 text-muted-foreground" />
-          <Text className="text-center text-muted-foreground">{t('msg.no_liked_videos')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.no_liked_videos')}</Text>
         </View>
       </PageContainer>
     );

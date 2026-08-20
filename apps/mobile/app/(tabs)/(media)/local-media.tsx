@@ -129,7 +129,7 @@ export default function LocalMediaScreen() {
         size="sm"
       >
         <FileText size={14} color={ICON_MUTED} />
-        <Text className={buttonTextClass('ghost')}>
+        <Text className="text-xs font-medium text-foreground">
           {hasSubtitles ? `${localMedia.subtitleLines.length} captions` : 'Add captions'}
         </Text>
       </Button>

@@ -227,10 +227,10 @@ export default function ProfileScreen() {
           <User size={28} color={ICON_PRIMARY} />
         </View>
         <View className="flex-1">
-          <Text className="text-xl font-bold text-foreground">{displayName}</Text>
+          <Text className="text-2xl font-bold text-foreground">{displayName}</Text>
           <View className="flex-row items-center gap-1 mt-0.5">
             <Mail size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{user.email}</Text>
+            <Text className="text-sm text-muted-foreground">{user.email}</Text>
           </View>
         </View>
       </View>
@@ -239,7 +239,7 @@ export default function ProfileScreen() {
       <View className="mx-4 mb-6">
         <View className="flex-row items-center gap-2 mb-3">
           <BookOpen size={18} color={ICON_PRIMARY} />
-          <Text className="text-base font-semibold text-foreground">{t('title.settings')}</Text>
+          <Text className="text-lg font-semibold text-foreground">{t('title.settings')}</Text>
         </View>
         <View className="rounded-xl border border-border bg-card p-4">
           <Text className="text-sm text-muted-foreground mb-3">
@@ -253,7 +253,7 @@ export default function ProfileScreen() {
       <View className="mx-4 mb-6">
         <View className="flex-row items-center gap-2 mb-3">
           <Crown size={18} color="#f59e0b" />
-          <Text className="text-base font-semibold text-foreground">{t('title.subscription')}</Text>
+          <Text className="text-lg font-semibold text-foreground">{t('title.subscription')}</Text>
         </View>
 
         {subLoading ? (
@@ -275,10 +275,10 @@ export default function ProfileScreen() {
                   className="rounded-lg border border-border px-3 py-2.5"
                 >
                   <View>
-                    <Text className="text-sm font-semibold text-foreground">{t(plan.nameKey)}</Text>
-                    <Text className="text-xs text-muted-foreground">{plan.interval}</Text>
+                    <Text className="text-lg font-semibold text-foreground">{t(plan.nameKey)}</Text>
+                    <Text className="text-sm text-muted-foreground">{plan.interval}</Text>
                   </View>
-                  <Text className="mt-1 text-lg font-bold text-foreground">{plan.price}</Text>
+                  <Text className="mt-1 text-2xl font-bold text-foreground">{plan.price}</Text>
                 </View>
               ))}
             </View>
@@ -373,8 +373,8 @@ export default function ProfileScreen() {
                   <View className="flex-row items-center gap-2">
                     <Star size={18} color="#f59e0b" />
                     <View>
-                      <Text className="text-sm font-semibold text-foreground">{t('subscription.lifetime_cap')}</Text>
-                      <Text className="text-xs text-muted-foreground">{t('msg.pay_once_forever')}</Text>
+                      <Text className="text-base font-semibold text-foreground">{t('subscription.lifetime_cap')}</Text>
+                      <Text className="text-sm text-muted-foreground">{t('msg.pay_once_forever')}</Text>
                     </View>
                   </View>
                   <Button onPress={() => router.push('/(tabs)/(me)/go-pro' as any)} variant="link" className="mt-2">
@@ -391,7 +391,7 @@ export default function ProfileScreen() {
       <View className="mx-4 mb-6">
         <View className="flex-row items-center gap-2 mb-3">
           <Clock size={18} color={ICON_PRIMARY} />
-          <Text className="text-base font-semibold text-foreground">{t('title.my_activity')}</Text>
+          <Text className="text-lg font-semibold text-foreground">{t('title.my_activity')}</Text>
         </View>
         <View className="rounded-xl border border-border bg-card p-2">
           <Pressable
@@ -436,7 +436,7 @@ export default function ProfileScreen() {
       <View className="mx-4 mb-6 rounded-xl border border-destructive/40 bg-destructive/5 p-4">
         <View className="flex-row items-center gap-2">
           <Trash2 size={18} color={ICON_DESTRUCTIVE} />
-          <Text className="text-base font-semibold text-destructive">{t('title.delete_account')}</Text>
+          <Text className="text-lg font-semibold text-destructive">{t('title.delete_account')}</Text>
         </View>
         <Text className="mt-2 text-sm text-muted-foreground">
           {t('msg.delete_account_permanent_warning')}
@@ -481,7 +481,7 @@ export default function ProfileScreen() {
           <View className="w-full max-w-sm rounded-2xl border border-destructive/40 bg-card p-5">
             <View className="flex-row items-center gap-2">
               <AlertTriangle size={18} color={ICON_DESTRUCTIVE} />
-              <Text className="text-lg font-bold text-destructive">{t('title.delete_account')}</Text>
+              <Text className="text-base font-bold text-destructive">{t('title.delete_account')}</Text>
             </View>
             <Text className="mt-2 text-sm text-muted-foreground">
               {t('msg.delete_account_permanent_warning')}

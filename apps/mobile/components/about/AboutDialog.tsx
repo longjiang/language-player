@@ -114,7 +114,7 @@ export function AboutDialog({
         {logoSource && (
           <Image source={logoSource} className="mb-3 h-16 w-16 rounded-xl" resizeMode="contain" />
         )}
-        <Text className="text-xl font-bold text-foreground">{t('title.app_name')}</Text>
+        <Text className="text-2xl font-bold text-foreground">{t('title.app_name')}</Text>
         <Text className="mt-0.5 text-sm text-muted-foreground">{t('title.about')}</Text>
       </View>
 

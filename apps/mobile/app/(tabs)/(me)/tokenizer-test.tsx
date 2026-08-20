@@ -89,10 +89,10 @@ export default function TokenizerScreen() {
   return (
     <PageContainer maxWidth="2xl">
       <ScrollView className="flex-1 px-4 py-5">
-        <Text className="text-2xl font-bold text-foreground">
+        <Text className="text-3xl font-bold text-foreground">
           {t('title.tokenizer_test')}
         </Text>
-        <Text className="mt-2 text-sm text-muted-foreground">
+        <Text className="mt-2 text-base text-muted-foreground">
           {t('msg.tokenizer_desc', { l2: l2Lang.name })}
         </Text>
 

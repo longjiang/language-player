@@ -311,7 +311,7 @@ function ReadingSuggestionsList({ l2Code, onLoad }: { l2Code: string; onLoad: (u
 
   return (
     <View>
-      <Text className="mb-2 text-xs font-medium text-muted-foreground">
+      <Text className="mb-2 text-sm font-medium text-muted-foreground">
         {t('title.suggested_reading')}
       </Text>
       {(Object.keys(suggestions) as ReadingCategory[]).map((category) => {
@@ -319,7 +319,7 @@ function ReadingSuggestionsList({ l2Code, onLoad }: { l2Code: string; onLoad: (u
         if (!items || items.length === 0) return null;
         return (
           <View key={category} className="mb-4">
-            <Text className="mb-1 text-xs text-muted-foreground/70">{category}</Text>
+            <Text className="mb-1 text-sm text-muted-foreground/70">{category}</Text>
             {items.map((item: ReadingSuggestionItem) => (
               <Pressable
                 key={item.url}

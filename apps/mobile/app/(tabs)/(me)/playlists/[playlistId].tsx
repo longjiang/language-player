@@ -140,7 +140,7 @@ export default function PlaylistDetailScreen() {
     return (
       <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
       </PageContainer>
     );
@@ -163,7 +163,7 @@ export default function PlaylistDetailScreen() {
       <PageContainer maxWidth="4xl">
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
-          <Text className="text-center text-muted-foreground">{t('msg.playlist_not_found')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.playlist_not_found')}</Text>
           <Button
             onPress={() => router.push('/(tabs)/(me)/playlists' as any)}
             variant="link"
@@ -181,14 +181,14 @@ export default function PlaylistDetailScreen() {
     return (
       <PageContainer maxWidth="4xl">
         <View className="px-4 py-5">
-          <Text className="text-xl font-bold text-foreground" numberOfLines={1}>{playlist.title}</Text>
+          <Text className="text-3xl font-bold text-foreground" numberOfLines={1}>{playlist.title}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
             {t('msg.playlist_video_count', { count: playlist.videos.length })}
           </Text>
         </View>
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
-          <Text className="text-center text-muted-foreground">{t('msg.playlist_empty')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.playlist_empty')}</Text>
         </View>
       </PageContainer>
     );
@@ -200,7 +200,7 @@ export default function PlaylistDetailScreen() {
       {/* Header */}
       <View className="flex-row items-center justify-between gap-3 px-4 py-5">
         <View className="flex-1 min-w-0">
-          <Text className="text-xl font-bold text-foreground" numberOfLines={1}>{playlist.title}</Text>
+          <Text className="text-3xl font-bold text-foreground" numberOfLines={1}>{playlist.title}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
             {t('msg.playlist_video_count', { count: playlist.videos.length })}
           </Text>

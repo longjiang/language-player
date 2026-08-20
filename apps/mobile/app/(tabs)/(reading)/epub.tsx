@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking, KeyboardAvoidingView, Platform } from 'react-native';
-import { Button, buttonTextClass } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -523,7 +523,7 @@ export default function EpubReaderScreen() {
                 accessibilityLabel={t('action.previous_chapter')}
               >
                 <ChevronLeft size={16} color={ICON_MUTED} />
-                <Text className={buttonTextClass('ghost')}>{t('action.previous_chapter')}</Text>
+                <Text className="text-xs font-medium text-primary">{t('action.previous_chapter')}</Text>
               </Button>
               <Button
                 onPress={() => jumpToMarker(markerNav.next)}
@@ -532,7 +532,7 @@ export default function EpubReaderScreen() {
                 size="sm"
                 accessibilityLabel={t('action.next_chapter')}
               >
-                <Text className={buttonTextClass('ghost')}>{t('action.next_chapter')}</Text>
+                <Text className="text-xs font-medium text-primary">{t('action.next_chapter')}</Text>
                 <ChevronRight size={16} color={ICON_MUTED} />
               </Button>
               <Pressable

@@ -525,7 +525,7 @@ export function DictionaryPopup({
               >
                 <View className="flex-1 mr-2">
                   <View className="flex-row items-baseline gap-2 flex-wrap">
-                    <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
+                    <Text className="text-xl font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
                       {word}
                     </Text>
                     {tokenPron ? (

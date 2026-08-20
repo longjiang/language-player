@@ -763,7 +763,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             hitSlop={6}
             accessibilityRole="button"
           >
-            <Text className={buttonTextClass('link')}>{t('action.retry')}</Text>
+            <Text className="text-xs font-medium text-primary">{t('action.retry')}</Text>
           </Button>
         </View>
       ) : null}
@@ -806,7 +806,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
       <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
         <View className="flex-row items-center gap-2">
           <SlidersHorizontal size={16} color={ICON_PRIMARY} />
-          <Text className="text-sm font-bold text-foreground">{t('action.advanced_search')}</Text>
+          <Text className="text-base font-bold text-foreground">{t('action.advanced_search')}</Text>
         </View>
         <Dialog.Close className="rounded-full bg-muted p-2">
           <X size={16} color={ICON_MUTED} />
@@ -973,7 +973,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               className={`rounded-full px-2.5 py-0.5 ${exactMatch ? 'bg-primary/10' : ''}`}
               accessibilityLabel={t('msg.exact_match_searching_only', { term: headTerm || term, n: formCount })}
             >
-              <Text className={`text-xs font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Text className={`text-[11px] font-medium ${exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
                 {headTerm || term}
               </Text>
             </Pressable>
@@ -982,7 +982,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               className={`rounded-full px-2.5 py-0.5 ${!exactMatch ? 'bg-primary/10' : ''}`}
               accessibilityLabel={t('msg.exact_match_searching', { n: formCount })}
             >
-              <Text className={`text-xs font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Text className={`text-[11px] font-medium ${!exactMatch ? 'text-primary' : 'text-muted-foreground'}`}>
                 {t('msg.all_forms')}
               </Text>
             </Pressable>
@@ -1005,7 +1005,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
             >
-              <Text className={`text-xs font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+              <Text className={`text-[11px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                 {t(pill.labelKey)}
               </Text>
             </Pressable>
@@ -1022,7 +1022,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
           accessibilityLabel={t('action.advanced_search')}
         >
           <SlidersHorizontal size={12} color={isAdvancedActive ? ICON_PRIMARY : ICON_MUTED} />
-          <Text className={`text-xs font-medium ${isAdvancedActive ? 'text-primary' : 'text-muted-foreground'}`}>
+          <Text className={`text-[11px] font-medium ${isAdvancedActive ? 'text-primary' : 'text-muted-foreground'}`}>
             {t('action.advanced_search')}
           </Text>
         </Pressable>
@@ -1038,7 +1038,7 @@ export function SubsSearchResults({ term, headTerm = '', exactMatch = false, onE
             size="sm"
             onPress={() => router.push('/(tabs)/(me)/go-pro' as any)}
           >
-            <Text className={buttonTextClass('link')}>
+            <Text className="text-xs font-medium text-primary">
               {t('action.upgrade_to_pro')}
             </Text>
           </Button>

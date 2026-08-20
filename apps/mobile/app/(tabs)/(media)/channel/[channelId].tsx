@@ -122,7 +122,7 @@ export default function ChannelPage() {
               className="h-16 w-16 rounded-full"
             />
             <View className="flex-1">
-              <Text className="text-xl font-bold text-foreground">{channel.title}</Text>
+              <Text className="text-2xl font-bold text-foreground">{channel.title}</Text>
               <View className="mt-1 flex-row items-center gap-3">
                 <Pressable
                   onPress={() =>
@@ -166,7 +166,7 @@ export default function ChannelPage() {
         {error && videos.length === 0 && (
           <View className="items-center gap-4 rounded-2xl border-2 border-dashed border-destructive/30 p-8">
             <AlertCircle size={40} color={ICON_DESTRUCTIVE} />
-            <Text className="text-center text-muted-foreground">{error}</Text>
+            <Text className="text-center text-base text-muted-foreground">{error}</Text>
             <Button
               onPress={() => fetchVideos(1)}
               variant="outline"
@@ -179,7 +179,7 @@ export default function ChannelPage() {
         {/* Empty */}
         {!loading && !error && videos.length === 0 && (
           <View className="items-center rounded-2xl border-2 border-dashed border-border p-8">
-            <Text className="text-center text-muted-foreground">
+            <Text className="text-center text-base text-muted-foreground">
               {t('msg.no_videos_found')}
             </Text>
           </View>

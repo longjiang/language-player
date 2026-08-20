@@ -126,7 +126,7 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
 
         {/* Channel name overlay */}
         <View className="absolute left-3 top-3 rounded bg-black/60 px-2.5 py-1">
-          <Text className="text-xs font-medium text-white" numberOfLines={1}>
+          <Text className="text-sm font-medium text-white" numberOfLines={1}>
             {channel.name}
           </Text>
         </View>

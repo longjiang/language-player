@@ -32,7 +32,7 @@ export default function ChannelsScreen() {
     <PageContainer maxWidth="7xl">
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
         <View className="px-4 pt-4 pb-2">
-          <Text className="text-2xl font-bold text-foreground">
+          <Text className="text-3xl font-bold text-foreground">
             {t('msg.channels_for_l2', { l2: l2Lang.name })}
           </Text>
         </View>
@@ -41,7 +41,7 @@ export default function ChannelsScreen() {
             <ActivityIndicator size="large" className="text-primary" />
           </View>
         ) : channels.length === 0 ? (
-          <Text className="py-16 text-center text-sm text-muted-foreground">
+          <Text className="py-16 text-center text-base text-muted-foreground">
             {t('msg.no_videos_found')}
           </Text>
         ) : (

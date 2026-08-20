@@ -248,7 +248,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                 {showTranslation && shownLine.l1Line ? (
                   <Text
                     className={`text-sm text-center mt-0.5 ${overlay ? 'text-white/70' : 'text-muted-foreground'}`}
-                    style={{ fontSize: translationFactor * 14 * singlelineTextScale * zoomRem }}
+                    style={{ fontSize: translationFactor * 16 * singlelineTextScale * zoomRem }}
                   >
                     {renderInlineMarkdown(shownLine.l1Line, { markBold: true })}
                   </Text>
@@ -320,7 +320,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
                   selectionDictionary
                 />
                 {item.l1Line ? (
-                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: translationFactor * 14 * zoomRem }}>
+                  <Text className="mt-1 text-sm text-muted-foreground" style={{ fontSize: translationFactor * 16 * zoomRem }}>
                     {renderInlineMarkdown(item.l1Line, { markBold: true })}
                   </Text>
                 ) : null}

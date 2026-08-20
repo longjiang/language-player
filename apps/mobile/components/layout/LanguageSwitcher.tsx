@@ -56,7 +56,7 @@ export function LanguageSwitcher() {
     <View>
       {/* Plain language name + chevron */}
       <Pressable onPress={handleOpen} className="flex-row items-center gap-1 px-2.5 py-1">
-        <Text className="text-sm text-foreground" numberOfLines={1}>
+        <Text className="text-xs text-foreground" numberOfLines={1}>
           {l2Lang.name}
         </Text>
         <Animated.View style={{ transform: [{ rotate: spin }] }}>

@@ -331,8 +331,8 @@ export default function GoProScreen() {
       {/* Header */}
       <View className="items-center">
         <Crown size={48} color={ICON_PRIMARY} />
-        <Text className="mt-3 text-2xl font-bold text-foreground">{t('action.go_pro')}</Text>
-        <Text className="mt-2 text-center text-sm text-muted-foreground">
+        <Text className="mt-3 text-3xl font-bold text-foreground">{t('action.go_pro')}</Text>
+        <Text className="mt-2 text-center text-base text-muted-foreground">
           {t('pro.desc', { count: CONTENT_L2_COUNT })}
         </Text>
       </View>
@@ -447,10 +447,10 @@ export default function GoProScreen() {
                     {planSalePrice ? (
                       <View className="flex-row items-center gap-1">
                         <Text className="text-sm text-muted-foreground line-through">{planDisplayPrice}</Text>
-                        <Text className="text-xl font-bold text-foreground">{planSalePrice}</Text>
+                        <Text className="text-2xl font-bold text-foreground">{planSalePrice}</Text>
                       </View>
                     ) : (
-                      <Text className="text-xl font-bold text-foreground">{planDisplayPrice}</Text>
+                      <Text className="text-2xl font-bold text-foreground">{planDisplayPrice}</Text>
                     )}
                   </View>
                 </View>
@@ -480,7 +480,7 @@ export default function GoProScreen() {
                 ) : (
                   <Apple size={20} color={ICON_PRIMARY} />
                 )}
-                <CardTitle>{t('title.choose_payment_method')}</CardTitle>
+                <CardTitle className="text-lg">{t('title.choose_payment_method')}</CardTitle>
               </View>
             </CardHeader>
             <CardContent>
@@ -533,7 +533,7 @@ export default function GoProScreen() {
                     <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
                   ) : (
                     <View className="flex-row items-center gap-1">
-                      <Text className="text-xs text-white/70">
+                      <Text className="text-sm text-white/70">
                         {lifetimeSalePrice ?? displayPrice(prices, 'lifetime', '$169')}
                       </Text>
                       <ArrowRight size={14} color={ICON_ON_PRIMARY} />

@@ -96,7 +96,7 @@ export default function SearchScreen() {
   return (
     <PageContainer maxWidth={hasResults ? '7xl' : '2xl'}>
       <View className="px-4 py-5">
-        <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
+        <Text className="text-3xl font-bold text-foreground">{t('title.search')}</Text>
       </View>
       <OfflineFeatureNotice />
 
@@ -180,7 +180,7 @@ export default function SearchScreen() {
       {hasSearched && !hasResults && !loading && !error && (
         <View className="mt-12 items-center px-8">
           <Film size={48} color={ICON_MUTED} className="mb-4 text-muted-foreground/40" />
-          <Text className="text-center text-muted-foreground">{t('msg.no_videos_found')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.no_videos_found')}</Text>
         </View>
       )}
 

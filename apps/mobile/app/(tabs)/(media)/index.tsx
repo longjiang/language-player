@@ -96,10 +96,10 @@ export default function ExploreScreen() {
   return (
     <PageContainer maxWidth="7xl" {...e2e('explore-screen')}>
       <View className="px-4 pt-4 pb-1">
-        <Text className="text-2xl font-bold text-foreground">
+        <Text className="text-3xl font-bold text-foreground">
           {t('msg.explore_media_for', { l2: l2Lang.name })}
         </Text>
-        <Text className="mt-1 text-sm text-muted-foreground">
+        <Text className="mt-1 text-base text-muted-foreground">
           {t('msg.find_videos_matched')}
         </Text>
       </View>
@@ -107,7 +107,7 @@ export default function ExploreScreen() {
       <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
         {error && videos.length === 0 && (
           <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
-            <Text className="text-sm text-destructive">{t(error as any)}</Text>
+            <Text className="text-base text-destructive">{t(error as any)}</Text>
           </View>
         )}
         <VideoGrid

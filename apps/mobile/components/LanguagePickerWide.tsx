@@ -177,7 +177,7 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
           <Text className="text-3xl font-bold text-foreground text-center">
             {t('title.welcome')}
           </Text>
-          <Text className="text-muted-foreground text-center mt-2">
+          <Text className="text-base text-muted-foreground text-center mt-2">
             {t('msg.choose_languages')}
           </Text>
         </View>

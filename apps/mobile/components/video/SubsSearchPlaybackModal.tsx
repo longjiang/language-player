@@ -231,7 +231,7 @@ export function SubsSearchPlaybackModal({
         {currentVideo.views != null && (
           <View className="flex-row items-center gap-1">
             <Eye size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-sm text-muted-foreground">
               {t('label.views_count', { count: formatNumber(currentVideo.views, l1Lang.code) })}
             </Text>
           </View>
@@ -239,7 +239,7 @@ export function SubsSearchPlaybackModal({
         {currentVideo.duration != null && (
           <View className="flex-row items-center gap-1">
             <Clock size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-sm text-muted-foreground">
               {formatTime(currentVideo.duration)}
             </Text>
           </View>
@@ -247,7 +247,7 @@ export function SubsSearchPlaybackModal({
         {currentVideo.date && (
           <View className="flex-row items-center gap-1">
             <Calendar size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-sm text-muted-foreground">
               {new Date(currentVideo.date).toLocaleDateString(l1Lang.code)}
             </Text>
           </View>
@@ -261,7 +261,7 @@ export function SubsSearchPlaybackModal({
         accessibilityRole="button"
       >
         <Play size={14} color={ICON_MUTED} />
-        <Text className={buttonTextClass('ghost')}>{t('action.watch')}</Text>
+        <Text className="text-xs font-medium text-foreground">{t('action.watch')}</Text>
       </Button>
     </View>
   ) : null;

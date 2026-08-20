@@ -205,7 +205,7 @@ type TitleProps = DialogPrimitive.TitleProps;
 
 export function Title({ children, className, ...props }: TitleProps) {
   return (
-    <DialogPrimitive.Title className={`text-foreground text-lg font-semibold leading-none ${className ?? ''}`} {...props}>
+    <DialogPrimitive.Title className={`text-foreground text-base font-semibold leading-none ${className ?? ''}`} {...props}>
       {children}
     </DialogPrimitive.Title>
   );

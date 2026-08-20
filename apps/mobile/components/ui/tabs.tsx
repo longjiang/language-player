@@ -58,7 +58,7 @@ export function Trigger({
       {...props}
     >
       {typeof children === 'string' ? (
-        <Text className="text-xs font-medium text-muted-foreground">{children}</Text>
+        <Text className="text-sm font-medium text-muted-foreground">{children}</Text>
       ) : (
         children
       )}

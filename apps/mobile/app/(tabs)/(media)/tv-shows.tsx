@@ -156,7 +156,7 @@ export default function TvShowsScreen() {
     return (
       <PageContainer maxWidth="7xl">
         <View className="px-4 py-8 flex-1">
-        <Text className="text-2xl font-bold text-foreground mb-4">{t('title.tv_shows')}</Text>
+        <Text className="text-3xl font-bold text-foreground mb-4">{t('title.tv_shows')}</Text>
         <View className="flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <AlertCircle size={16} className="text-destructive" />
           <Text className="text-sm text-destructive">{error}</Text>
@@ -170,8 +170,8 @@ export default function TvShowsScreen() {
     <PageContainer maxWidth="7xl">
       {/* Header */}
       <View className="px-4 pt-5 pb-2">
-        <Text className="text-2xl font-bold text-foreground">{t('title.tv_shows')}</Text>
-        <Text className="mt-1 text-sm text-muted-foreground">
+        <Text className="text-3xl font-bold text-foreground">{t('title.tv_shows')}</Text>
+        <Text className="mt-1 text-base text-muted-foreground">
           {t('msg.tv_shows_desc', { l2: t('lang.' + l2Lang.code) })}
         </Text>
       </View>
@@ -222,7 +222,7 @@ export default function TvShowsScreen() {
       {filtered.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
           <Tv size={48} color={ICON_MUTED} />
-          <Text className="mt-4 text-center text-muted-foreground">{t('msg.no_shows_found')}</Text>
+          <Text className="mt-4 text-center text-base text-muted-foreground">{t('msg.no_shows_found')}</Text>
         </View>
       ) : (
         /* Grid — responsive columns (1/2/3/4 at web breakpoints) */

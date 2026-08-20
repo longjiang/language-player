@@ -105,7 +105,7 @@ export function EpubSearchPanel({ blocks, chapterLabels = [], onSelect }: EpubSe
                     <HighlightSnippet snippet={m.snippet} term={query.trim()} />
                   </Text>
                   {labelForBlock(m.blockIndex) ? (
-                    <Text className="mt-0.5 text-[10px] font-medium text-primary/80" numberOfLines={1}>
+                    <Text className="mt-0.5 text-xs font-medium text-primary/80" numberOfLines={1}>
                       {labelForBlock(m.blockIndex)}
                     </Text>
                   ) : null}

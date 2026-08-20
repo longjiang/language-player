@@ -157,14 +157,14 @@ export default function TvShowEpisodesScreen() {
             <View className="flex-row items-center gap-3">
               <Tv size={28} className="text-primary" />
               <View className="flex-1">
-                <Text className="text-2xl font-bold text-foreground">{show.title}</Text>
+                <Text className="text-3xl font-bold text-foreground">{show.title}</Text>
                 {show.locale ? (
-                  <Text className="text-xs text-muted-foreground uppercase">{show.locale}</Text>
+                  <Text className="text-sm text-muted-foreground uppercase">{show.locale}</Text>
                 ) : null}
               </View>
             </View>
             {show.description ? (
-              <Text className="mt-3 text-sm text-muted-foreground">{show.description}</Text>
+              <Text className="mt-3 text-base text-muted-foreground">{show.description}</Text>
             ) : null}
           </View>
         )}
@@ -179,7 +179,7 @@ export default function TvShowEpisodesScreen() {
         {episodes.length === 0 ? (
           <View className="flex-1 items-center justify-center px-8">
             <Tv size={40} className="mb-3 text-muted-foreground" />
-            <Text className="text-center text-muted-foreground">{t('msg.no_episodes')}</Text>
+            <Text className="text-center text-base text-muted-foreground">{t('msg.no_episodes')}</Text>
           </View>
         ) : (
           <FlatList

@@ -80,7 +80,7 @@ export function VisitedSitesSidebar({
                     {site.url}
                   </Text>
                   {site.visitedAt > 0 && (
-                    <Text className="text-[10px] text-muted-foreground/70">
+                    <Text className="text-xs text-muted-foreground/70">
                       {new Date(site.visitedAt).toLocaleDateString()}
                     </Text>
                   )}
@@ -105,14 +105,14 @@ export function VisitedSitesSidebar({
                   className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
                 >
                   <PenLine size={12} color={ICON_MUTED} />
-                  <Text className="text-xs text-foreground">{t('action.rename')}</Text>
+                  <Text className="text-sm text-foreground">{t('action.rename')}</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => { setMenuUrl(null); onDelete(site.url); }}
                   className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
                 >
                   <Trash2 size={12} color={ICON_DESTRUCTIVE} />
-                  <Text className="text-xs text-red-500">{t('action.delete')}</Text>
+                  <Text className="text-sm text-red-500">{t('action.delete')}</Text>
                 </Pressable>
               </View>
             )}
