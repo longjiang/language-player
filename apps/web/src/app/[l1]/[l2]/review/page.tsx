@@ -127,12 +127,15 @@ export default function ReviewPage() {
   });
   const [testError, setTestError] = useState<string | null>(null);
   const testAutoLoadKeyRef = useRef<string | null>(null);
+  const testRequestVersionRef = useRef(0);
 
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
+    testRequestVersionRef.current += 1;
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
     setTestQuestions([]);
     setTestAnswers([]);
+    setTestStartedAt(null);
     testAutoLoadKeyRef.current = null;
     setShowDefinition(false);
     setTestError(null);
@@ -376,9 +379,11 @@ export default function ReviewPage() {
     if (rated) return;
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
+    testRequestVersionRef.current += 1;
     setShowDefinition(false); // hide answer immediately for next card
     setTestQuestions([]);
     setTestAnswers([]);
+    setTestStartedAt(null);
     testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
@@ -482,6 +487,7 @@ export default function ReviewPage() {
   const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
+    const requestVersion = ++testRequestVersionRef.current;
     const context = card.word.context?.text ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
@@ -517,18 +523,21 @@ export default function ReviewPage() {
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
-      setTestQuestions(questions);
+      if (requestVersion !== testRequestVersionRef.current) return;
+       setTestQuestions(questions);
       setTestAnswers([]);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('error.unexpected');
+      if (requestVersion !== testRequestVersionRef.current) return;
+       const message = error instanceof Error ? error.message : t('error.unexpected');
       log('[SRS Test] question generation failed', { l2Code, word: wordForm, error: message });
       setTestError(message);
       setTestQuestions([]);
     } finally {
       log('[SRS Test] question generation finished', { l2Code, word: wordForm, loading: false });
-      setTestLoading(false);
+      if (requestVersion !== testRequestVersionRef.current) return;
+       setTestLoading(false);
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
 
@@ -594,9 +603,20 @@ export default function ReviewPage() {
   const handleRemove = useCallback(() => {
     const card = cards[currentIndex];
     if (!card) return;
+    testRequestVersionRef.current += 1;
     removeSavedWord(l2Code, card.word.id);
     removeCard(l2Code, card.word.id);
     setShowDefinition(false);
+    setTestQuestions([]);
+    setTestAnswers([]);
+    setTestQuestionIndex(0);
+    setTestStartedAt(null);
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
+    setTestScores([]);
+    setTestError(null);
+    setSuggestedRating(null);
+    testAutoLoadKeyRef.current = null;
     setRated(false);
     // Don't increment currentIndex — the removed card drops from the array,
     // so the next card shifts into the current slot.
@@ -615,8 +635,19 @@ export default function ReviewPage() {
     const currentId = card?.word.id ?? null;
     if (currentId && currentId !== lastCardIdRef.current) {
       lastCardIdRef.current = currentId;
-      if (showDefinition && !rated) {
+      if (!rated) {
+        testRequestVersionRef.current += 1;
         setShowDefinition(false);
+        setTestQuestions([]);
+        setTestAnswers([]);
+        setTestQuestionIndex(0);
+        setTestStartedAt(null);
+        setTestSelectedAnswer(null);
+        setTestAnswerCorrect(null);
+        setTestScores([]);
+        setTestError(null);
+        setSuggestedRating(null);
+        testAutoLoadKeyRef.current = null;
       }
     }
   }, [cards, currentIndex, showDefinition, rated]);

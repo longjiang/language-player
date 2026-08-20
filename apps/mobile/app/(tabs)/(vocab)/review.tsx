@@ -179,11 +179,14 @@ export default function ReviewScreen() {
   const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
   const [testError, setTestError] = useState<string | null>(null);
   const testAutoLoadKeyRef = useRef<string | null>(null);
+  const testRequestVersionRef = useRef(0);
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
+    testRequestVersionRef.current += 1;
     setReviewMode(mode);
     AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
     setTestQuestions([]);
     setTestAnswers([]);
+    setTestStartedAt(null);
     testAutoLoadKeyRef.current = null;
     setShowTabs(false);
     setTestError(null);
@@ -523,6 +526,7 @@ export default function ReviewScreen() {
   const loadTestQuestions = useCallback(async (options?: { retry?: boolean }) => {
     const card = cards[currentIndex];
     if (!card) return;
+    const requestVersion = ++testRequestVersionRef.current;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
     log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text) });
@@ -544,16 +548,19 @@ export default function ReviewScreen() {
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
-      setTestQuestions(questions); setTestAnswers([]); setTestQuestionIndex(0); setTestStartedAt(Date.now());
+      if (requestVersion !== testRequestVersionRef.current) return;
+       setTestQuestions(questions); setTestAnswers([]); setTestQuestionIndex(0); setTestStartedAt(Date.now());
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('error.unexpected');
+      if (requestVersion !== testRequestVersionRef.current) return;
+       const message = error instanceof Error ? error.message : t('error.unexpected');
       log('[srs-test] question generation failed', { l2Code, word: wordForm, error: message });
       setTestError(message);
       setTestQuestions([]);
     }
     finally {
       log('[srs-test] question generation finished', { l2Code, word: wordForm, loading: false });
-      setTestLoading(false);
+      if (requestVersion !== testRequestVersionRef.current) return;
+       setTestLoading(false);
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
@@ -621,8 +628,10 @@ export default function ReviewScreen() {
     if (rated) return;
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
+    testRequestVersionRef.current += 1;
     setTestQuestions([]);
     setTestAnswers([]);
+    setTestStartedAt(null);
     testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
@@ -749,7 +758,19 @@ export default function ReviewScreen() {
 
     const prevStillSaved = l2SavedWords.some((w) => w.id === prev.id);
     if (!prevStillSaved) {
-      log('[srs] unsave', {
+      testRequestVersionRef.current += 1;
+       setTestQuestions([]);
+       setTestAnswers([]);
+       setTestQuestionIndex(0);
+       setTestStartedAt(null);
+       setTestSelectedAnswer(null);
+       setTestAnswerCorrect(null);
+       setTestScores([]);
+       setTestError(null);
+       setSuggestedRating(null);
+       testAutoLoadKeyRef.current = null;
+       setShowTabs(false);
+       log('[srs] unsave', {
         wordId: prev.id,
         head: prev.head,
         remainingCards: cards.length,
