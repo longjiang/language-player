@@ -205,6 +205,10 @@ export function PaginatedReader({
     lastT: 0,
     animating: false,
   });
+  const wheelStateRef = useRef({
+    deltaX: 0,
+    lastTime: 0,
+  });
 
   useEffect(() => {
     const el = pager.viewportRef.current;
@@ -212,6 +216,7 @@ export function PaginatedReader({
     if (!el || !content) return;
 
     const state = dragStateRef.current;
+    const wheelState = wheelStateRef.current;
     /** Horizontal velocity (px/s) at release that counts as a "flick" even
      *  with a short stroke (iBooks-style, mobile parity). */
     const FLICK_VELOCITY = 800;
@@ -234,6 +239,10 @@ export function PaginatedReader({
     const onPointerDown = (e: PointerEvent) => {
       if (state.animating) return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      // A mouse drag over reader text is the browser's primary text-selection
+      // gesture. Leave it entirely to the browser; trackpad paging is handled
+      // by the horizontal wheel path below, and touch still supports flicks.
+      if (e.pointerType === 'mouse') return;
       // Never hijack a drag that starts while text is selected (selection UX).
       if (window.getSelection()?.toString()) return;
       const { hasPrev, hasNext } = pagerActionsRef.current;
@@ -251,6 +260,13 @@ export function PaginatedReader({
       const dy = e.clientY - state.startY;
       if (!state.tracking) {
         if (Math.abs(dx) < ACTIVATE && Math.abs(dy) < ACTIVATE) return;
+        // Selection can be created after pointerdown. Check again immediately
+        // before claiming the horizontal gesture so selection handles/ranges
+        // always win over paging.
+        if (window.getSelection()?.type === 'Range') {
+          state.active = false;
+          return;
+        }
         // Vertical intent → leave it to native scrolling.
         if (Math.abs(dy) > Math.abs(dx)) {
           state.active = false;
@@ -287,6 +303,43 @@ export function PaginatedReader({
       }, commit ? 130 : 190);
     };
 
+    // macOS two-finger trackpad swipes arrive in browsers as horizontal wheel
+    // deltas (deltaMode === DOM_DELTA_PIXEL). Accumulate the gesture so small
+    // inertial events do not turn multiple pages, and require horizontal
+    // dominance so ordinary vertical scrolling remains untouched.
+    const onWheel = (e: WheelEvent) => {
+      if (state.animating || e.ctrlKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
+
+      const scale = e.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? 16
+        : e.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? el.clientWidth
+          : 1;
+      const dx = e.deltaX * scale;
+      const dy = e.deltaY * scale;
+      if (Math.abs(dx) < 1 || Math.abs(dx) <= Math.abs(dy) * 1.15) {
+        if (e.timeStamp - wheelState.lastTime > 180) wheelState.deltaX = 0;
+        return;
+      }
+
+      if (e.timeStamp - wheelState.lastTime > 180) wheelState.deltaX = 0;
+      wheelState.lastTime = e.timeStamp;
+      wheelState.deltaX += dx;
+      if (Math.abs(wheelState.deltaX) < 64) return;
+
+      const next = wheelState.deltaX < 0;
+      const { hasPrev, hasNext } = pagerActionsRef.current;
+      const canTurn = next ? hasNext : hasPrev;
+      wheelState.deltaX = 0;
+      if (!canTurn) return;
+
+      e.preventDefault();
+      state.commitNext = next;
+      settle(true);
+    };
+
     const onPointerUp = (e: PointerEvent) => {
       if (!state.active) return;
       state.active = false;
@@ -321,11 +374,13 @@ export function PaginatedReader({
     el.addEventListener('pointermove', onPointerMove);
     el.addEventListener('pointerup', onPointerUp);
     el.addEventListener('pointercancel', onPointerCancel);
+    el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);
       el.removeEventListener('pointercancel', onPointerCancel);
+      el.removeEventListener('wheel', onWheel);
     };
     // The viewport/content elements are stable for the reader's lifetime;
     // dynamic values (hasPrev/hasNext/prevPage/nextPage) go through refs.
