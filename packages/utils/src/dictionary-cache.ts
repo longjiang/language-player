@@ -19,6 +19,12 @@ import type { DictionaryEntry } from '@langplayer/shared';
 
 const textCache = new Map<string, DictionaryEntry[]>();
 const idCache = new Map<string, DictionaryEntry>();
+// The batch endpoint deliberately returns [] for words that are not present
+// in the local dictionary. Keep those successful misses separate from the
+// entry cache so callers that need a richer single-word lookup can still see
+// getCachedEntries() as a miss, while background prefetch does not retry the
+// same word on every cache-driven render.
+const negativeTextCache = new Set<string>();
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -36,7 +42,9 @@ export function getCachedEntries(l2Code: string, text: string): DictionaryEntry[
 
 export function setCachedEntries(l2Code: string, text: string, entries: DictionaryEntry[]): void {
   if (entries.length > 0) {
-    textCache.set(`${l2Code}:${text}`, entries);
+    const key = `${l2Code}:${text}`;
+    negativeTextCache.delete(key);
+    textCache.set(key, entries);
     // Also index each entry by its ID
     for (const entry of entries) {
       if (entry.id) {
@@ -159,7 +167,10 @@ export async function bulkLookupWords(
   apiUrl: string,
 ): Promise<void> {
   // Filter out words already in cache
-  const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
+  const uncached = words.filter((w) => {
+    const key = `${w.l2Code}:${w.text}`;
+    return !textCache.has(key) && !negativeTextCache.has(key);
+  });
   if (uncached.length === 0) return;
 
   // The batch endpoint takes one language per request — group by l2Code so
@@ -229,9 +240,13 @@ async function _postBulkLookup(
 
   // A group is single-language by construction (see bulkLookupWords).
   const l2 = words[0]?.l2Code ?? '';
-  for (const [text, entries] of Object.entries(results)) {
+  for (const word of words) {
+    const text = word.text;
+    const entries = results[text] ?? [];
     if (entries.length > 0) {
-      textCache.set(`${l2}:${text}`, entries);
+      const key = `${l2}:${text}`;
+      negativeTextCache.delete(key);
+      textCache.set(key, entries);
       for (const entry of entries) {
         if (entry.id) {
           idCache.set(`${l2}:${entry.id}`, entry);
@@ -239,6 +254,11 @@ async function _postBulkLookup(
       }
       _cacheVersion++;
       notify();
+    } else if (!textCache.has(`${l2}:${text}`)) {
+      // An empty result is a successful, authoritative batch lookup. Do not
+      // expose it through getCachedEntries(): interactive callers should still
+      // be able to fall back to the richer single-word endpoint on demand.
+      negativeTextCache.add(`${l2}:${text}`);
     }
   }
 }
@@ -277,7 +297,10 @@ export function enqueueLookupWords(
   words: { text: string; l2Code: string }[],
   apiUrl: string,
 ): Promise<boolean> {
-  const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
+  const uncached = words.filter((w) => {
+    const key = `${w.l2Code}:${w.text}`;
+    return !textCache.has(key) && !negativeTextCache.has(key);
+  });
   if (uncached.length === 0) return Promise.resolve(false);
 
   let remaining = 0;
