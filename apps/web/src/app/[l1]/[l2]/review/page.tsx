@@ -370,6 +370,12 @@ export default function ReviewPage() {
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     setShowDefinition(false); // hide answer immediately for next card
+    setTestQuestions([]);
+    setTestQuestionIndex(0);
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
+    setTestScores([]);
+    setSuggestedRating(null);
 
     const card = cards[currentIndex];
     if (!card) {
@@ -1169,7 +1175,7 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Definition or contextual test question */}
+        {/* Test results remain visible while the dictionary back is revealed. */}
         {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
           <div className="mt-4 w-full space-y-3 text-left" onClick={(e) => e.stopPropagation()}>
             <p className="font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</p>
@@ -1191,7 +1197,9 @@ export default function ReviewPage() {
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>
             {testLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}
           </Button>
-        ) : (
+        ) : null}
+
+        {showDefinition && (
           <div className="mt-4 w-full text-left space-y-3">
             {entry ? (
               <DictionaryEntryTabs
