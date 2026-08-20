@@ -564,11 +564,19 @@ export default function ReviewScreen() {
   }, [reviewMode, cards, currentIndex, l2Code, testQuestions.length, testLoading, testError, rated, loadTestQuestions]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) return;
+    log('[srs-test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), questionCount: testQuestions.length });
+    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) {
+      log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: testAnswered ? 'already answering' : !testStartedAt ? 'timer missing' : 'question already answered' });
+      return;
+    }
     const question = testQuestions[testQuestionIndex];
-    if (!question) return;
+    if (!question) {
+      log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: 'question missing' });
+      return;
+    }
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    log('[srs-test] answer accepted', { word: wordForm, questionIndex: testQuestionIndex, correct: isCorrect, score, isFinal: testQuestionIndex === testQuestions.length - 1 });
     setTestScores((previous) => [...previous, score]);
     setTestAnswers((previous) => {
       const next = [...previous];
@@ -591,7 +599,7 @@ export default function ReviewScreen() {
     setSuggestedRating(testScoreToRating(finalScore));
     setTestScores([]);
     setTestQuestionIndex(testQuestions.length - 1); setTestStartedAt(null); setShowTabs(true);
-  }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, cards, currentIndex]);
+  }, [testAnswered, testStartedAt, testAnswers, testQuestions, testQuestionIndex, testScores, wordForm, cards, currentIndex]);
 
   const handleReveal = useCallback(() => {
     if (reviewMode === 'test') { void loadTestQuestions(); return; }

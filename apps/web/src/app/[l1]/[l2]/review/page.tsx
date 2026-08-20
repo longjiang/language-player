@@ -535,11 +535,19 @@ export default function ReviewPage() {
   }, [reviewMode, loadTestQuestions]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) return;
+    log('[SRS Test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), questionCount: testQuestions.length });
+    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) {
+      log('[SRS Test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: testAnswered ? 'already answering' : !testStartedAt ? 'timer missing' : 'question already answered' });
+      return;
+    }
     const question = testQuestions[testQuestionIndex];
-    if (!question) return;
+    if (!question) {
+      log('[SRS Test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: 'question missing' });
+      return;
+    }
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    log('[SRS Test] answer accepted', { word: wordForm, questionIndex: testQuestionIndex, correct: isCorrect, score, isFinal: testQuestionIndex === testQuestions.length - 1 });
     setTestScores((previous) => [...previous, score]);
     setTestAnswers((previous) => {
       const next = [...previous];
@@ -567,7 +575,7 @@ export default function ReviewPage() {
     setShowDefinition(true);
     setTestQuestionIndex(testQuestions.length - 1);
     setTestStartedAt(null);
-  }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, handleRate]);
+  }, [testAnswered, testStartedAt, testAnswers, testQuestions, testQuestionIndex, testScores, wordForm, handleRate]);
 
   /** Remove this word from saved words and SRS. The card drops from the list naturally. */
   const handleRemove = useCallback(() => {
