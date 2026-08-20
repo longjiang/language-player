@@ -42,6 +42,8 @@ All numbers are as-built at the time of writing (`apps/web/src/app/[l1]/[l2]/epu
 | 2 | Web: title overlay at `pt-2.5` (10 px from screen top); close button at `top-1.5` (6 px). Mobile: title `paddingTop: insets.top + 10`; close at `insets.top + 6`. The top bar is 57 px tall (web) / `insets.top + 57` (mobile). | When the chrome is ON, the site top bar covers the chapter title and the close button entirely. |
 | 3 | Page counter overlay at `pb-2.5` (10 px from screen bottom). The bottom bar is ~33 px tall (web) / ~27 px + `insets.bottom` (mobile) and sits at the screen bottom. | When the chrome is ON, the bottom bar covers the page counter entirely. |
 | 4 | Web search dialog: `max-h-[80vh]`, content-sized — with zero results the modal collapses to a short strip and the search bar sits low on screen. Mobile: modal `max-h-[85%]` with the panel in a `max-h-[70%]` `ScrollView`. | The search modal height depends on the result count; with the software keyboard open, the search bar can end up under or level with the keyboard. |
+| 5 | Web: the immersive `PaginatedReader` is inside a `flex-1` wrapper that is not itself a flex container, so the reader can collapse to rendered content height instead of occupying the full viewport. Mobile: the equivalent native containers are flex layouts by default. | The page area and bottom bar stop after short content, leaving a large unused region below the reader. |
+| 6 | Mobile derives the reader's left padding from the rendered L2 line leading; web EPUB content still uses a fixed `px-1` margin. | The web text starts too close to the page edge and the horizontal layout is not visually aligned with mobile. |
 
 ## 4. Design invariants
 
@@ -50,6 +52,8 @@ All numbers are as-built at the time of writing (`apps/web/src/app/[l1]/[l2]/epu
 3. **Everything non-interactive is part of the tap surface** (§5). Interactive elements claim their own touches; the tap surface covers the rest of the screen, no gaps.
 4. **Persistent overlays are never interactive** (`pointer-events: none`) — they never block taps or clicks on the surface beneath them.
 5. **Modals take over input.** While the TOC or Search modal is open, its backdrop absorbs all touches; the reader's tap surface is inert underneath.
+6. **The reader frame fills the viewport.** Once a book is open, the web and mobile reader roots occupy the full available screen height; the text viewport is the screen height minus the constant reserved strips, even when the current page has very little text.
+7. **Horizontal reader geometry follows typography.** The left page margin equals the rendered L2 body-text leading, and the side-by-side L2/L1 gap uses the same leading value. The visible reader, measuring mirror, calibration probe, and pagination width calculations use identical horizontal geometry.
 
 ## 5. The tap surface
 
@@ -121,6 +125,7 @@ counter line box y ∈ [S − BAR_H − 24, S − BAR_H − 8]      (= [S − B 
 ```
 
 - **Text viewport:** `[T, S − B]`. The paginator measures against exactly this; first text line starts at `T`, last ends at `S − B`.
+- **Horizontal layout:** let `L` be the rendered L2 body-text line height (`16 px × zoom × text scale × leading`, rounded to a whole pixel). The reader content uses `padding-left: L` and `padding-right: 16 px`; when L2 and L1 are side by side, their visible gap is `L` (accounting for the split-handle footprint when present). These values are layout constants for a composition, not per-page values.
 
 Check the clearance with these formulas (the bar's bottom edge is at `H`, its border included):
 
@@ -142,6 +147,16 @@ Check the clearance with these formulas (the bar's bottom edge is at `H`, its bo
 | Counter line | `[S − 57, S − 41]` | `[S − BAR_H − 24, S − BAR_H − 8]` |
 
 `BAR_H` must equal the rendered height of the bottom bar (≈ 33 px today: 8 top padding + 16 content row + 8 bottom padding + 1 border). If the bar composition changes, re-derive `B`; do not hard-code a stale number. If a component's rendered size ever disagrees with the constant, log the mismatch (`[LP Web]`) rather than silently mis-reserving.
+
+The immersive page wrapper must be a flex column so the nested `PaginatedReader` can
+stretch to the full `h-screen` frame. A `flex-1` child inside a non-flex wrapper does
+not consume the available page height and causes short books/pages to leave unused
+space below the bottom bar.
+
+The EPUB reader's horizontal padding must derive from `L`, not a fixed `px-1` class.
+The same left/right padding must be applied to the visible content, the hidden measuring
+mirror, the calibration probe, and any width used for pagination so adding the margin
+does not change the measured-vs-rendered line wraps.
 
 **Mobile** (`epub.tsx`, `PaginatedReader.tsx`):
 
@@ -392,6 +407,7 @@ Elements:
 | `apps/web/src/components/reader/paginated-reader.tsx` | Tap listener moves to the padded container (full-screen surface) |
 | `apps/web/src/app/[l1]/[l2]/epub/page.tsx` | New `T`/`B` constants; title/close/counter offsets; search dialog fixed height |
 | `apps/web/src/components/reader/epub-search-panel.tsx` | Pinned search bar + reserved results/empty area |
+| `apps/web/src/lib/reader-layout.ts` | Web leading-based reader padding and geometry helper |
 | `apps/mobile/components/reader/PaginatedReader.tsx` | Full-screen tap surface (root Pressable) |
 | `apps/mobile/app/(tabs)/(reading)/epub.tsx` | New reserves; title/close/counter offsets; search modal fixed height + `KeyboardAvoidingView` |
 | `apps/mobile/components/reader/EpubSearchPanel.tsx` | Reserved empty results area |
@@ -402,6 +418,8 @@ Elements:
 - **Red paint test** (§5.2): debug-paint the tap surface; confirm it covers 100% of the screen in both chrome states on web (desktop + touch) and mobile (simulator + device); confirm every excluded element is unpainted and functional.
 - **Clearance checks:** with chrome ON, measure (web: devtools; mobile: screenshot) that the title line top and close button top are ≥ 8 px below the top bar's bottom edge, and the counter's bottom is ≥ 8 px above the bottom bar's top edge. Repeat at the largest text scale and with the translation split at its extremes.
 - **No-reflow invariant:** toggle chrome repeatedly; assert the page number, the first visible block, and the text layout never change (only overlays move).
+- **Full-height frame:** on a short page, confirm the reader root and bottom bar reach the viewport bottom; the text viewport occupies `[T, S − B]` rather than collapsing to content height.
+- **Leading margin parity:** at default and non-default leading/text-scale settings, confirm the web left text margin and side-by-side text/translation gap match the rendered L2 leading; confirm visible and measured line wraps remain identical.
 - **Search modal:** with 0, 1, and 200 results (and in the initial state), assert the modal height is identical and the search bar's position is identical. On mobile, open the keyboard and assert the bar stays above it.
 - **Regression:** word lookup, links, prev/next page, page-number tap, translation toggle, TOC jump, search jump + highlight, close, back-stack, and position restore all still work; swiping/flicking never toggles the chrome; tapping during a selection never toggles.
 - **Typecheck:** `cd apps/web && ./node_modules/.bin/tsc --noEmit`; `cd apps/mobile && ./node_modules/.bin/tsc --noEmit`.
