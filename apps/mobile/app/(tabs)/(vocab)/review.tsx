@@ -195,6 +195,8 @@ export default function ReviewScreen() {
   const [testAnswered, setTestAnswered] = useState(false);
   const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
   const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
+  const [testScores, setTestScores] = useState<number[]>([]);
+  const [suggestedRating, setSuggestedRating] = useState<Rating | null>(null);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -551,6 +553,7 @@ export default function ReviewScreen() {
     if (!question) return;
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    setTestScores((previous) => [...previous, score]);
     setTestSelectedAnswer(answer);
     setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
@@ -558,13 +561,10 @@ export default function ReviewScreen() {
       setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
       return;
     }
-    const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
-    const quality = testScoreToRating(finalScore);
-    setTimeout(() => {
-      setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setTestAnswered(false); setShowTabs(true);
-      const card = cards[currentIndex];
-      if (card) handleRate(quality);
-    }, 1000);
+    const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
+    setSuggestedRating(testScoreToRating(finalScore));
+    setTestScores([]);
+    setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setShowTabs(true);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, cards, currentIndex]);
 
   const handleReveal = useCallback(() => {
@@ -1239,7 +1239,7 @@ export default function ReviewScreen() {
               <Pressable
                 key={r.key}
                 onPress={() => handleRate(r.key)}
-                disabled={!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP}
+                disabled={suggestedRating ? r.key !== suggestedRating : (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP)}
                 className="flex-1 items-center rounded-lg py-3"
                 style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: !isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP ? 0.5 : 1 }}
               >
