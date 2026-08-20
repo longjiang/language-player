@@ -512,6 +512,9 @@ export default function ReviewScreen() {
     srs: (store.cards[l2Code] ?? {})[word.id] || fsrs.newCard(),
     entry: word.id === currentDueCard?.id ? currentEntry : null,
   })), [dueCards, store, l2Code, currentDueCard?.id, currentEntry]);
+  const definitionTestAnswered = reviewMode === 'test'
+    && testQuestions.some((question, index) => question.kind === 'definition' && Boolean(testAnswers[index]));
+  const showContextTranslation = showTabs || definitionTestAnswered;
 
   // ── Handlers ──
 
@@ -822,9 +825,9 @@ export default function ReviewScreen() {
     });
   }, [cards[currentIndex]?.word.id]);
 
-  // ── Auto-translate context text (if no saved translation) ──
+  // ── Auto-translate context text after the definition test (or back reveal) ──
   useEffect(() => {
-    if (!display.translation) return;
+    if (!showContextTranslation || !display.translation) return;
 
     const card = cards[currentIndex];
     const ctxText = card?.word.context?.text;
@@ -872,7 +875,7 @@ export default function ReviewScreen() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
+  }, [showContextTranslation, cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
   // ── Per-card L1 dictionary lookup (non-English L1 users) ──
   // The batched lookup returns English-only definitions for speed; on reveal,
@@ -1131,6 +1134,8 @@ export default function ReviewScreen() {
   // latest context until the UI explicitly supports adding more instances.
   const displayInstance = instances[instances.length - 1] ?? null;
   const srs = currentCard.srs;
+  // Keep later tests hidden until the preceding test has been answered.
+  const visibleTestQuestions = testQuestions.slice(0, testQuestionIndex + 1);
 
   return (
     <PageContainer maxWidth="2xl">
@@ -1202,7 +1207,7 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={displayInstance.context} date={displayInstance.timestamp ?? savedWord.date} locale={baseCode(l1Lang.code)} />
               </View>
-              {showTabs && display.translation && (displayInstance.context.translation || contextTranslation) && (
+              {showContextTranslation && display.translation && (displayInstance.context.translation || contextTranslation) && (
                 <View className="mt-2 border-t border-border pt-2">
                   {displayInstance.context.translation ? (
                     <Text className="text-xs leading-relaxed text-muted-foreground">
@@ -1236,7 +1241,7 @@ export default function ReviewScreen() {
           {/* Test results stay on screen; each answered question is followed by the next. */}
           {reviewMode === 'test' && testQuestions.length > 0 ? (
             <View className="mt-2 gap-5" onStartShouldSetResponder={() => true}>
-              {testQuestions.map((question, questionIndex) => {
+              {visibleTestQuestions.map((question, questionIndex) => {
                 const result = testAnswers[questionIndex];
                 const isCurrent = questionIndex === testQuestionIndex;
                 return (
