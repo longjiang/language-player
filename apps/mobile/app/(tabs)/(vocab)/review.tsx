@@ -564,7 +564,7 @@ export default function ReviewScreen() {
     const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
     setSuggestedRating(testScoreToRating(finalScore));
     setTestScores([]);
-    setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setShowTabs(true);
+    setTestQuestionIndex(testQuestions.length - 1); setTestStartedAt(null); setShowTabs(true);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, cards, currentIndex]);
 
   const handleReveal = useCallback(() => {
