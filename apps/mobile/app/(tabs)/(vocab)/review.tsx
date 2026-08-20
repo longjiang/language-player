@@ -564,9 +564,9 @@ export default function ReviewScreen() {
   }, [reviewMode, cards, currentIndex, l2Code, testQuestions.length, testLoading, testError, rated, loadTestQuestions]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    log('[srs-test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), questionCount: testQuestions.length });
-    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) {
-      log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: testAnswered ? 'already answering' : !testStartedAt ? 'timer missing' : 'question already answered' });
+    log('[srs-test] answer clicked', { word: wordForm, questionIndex: testQuestionIndex, answer, testAnswered, hasTimer: Boolean(testStartedAt), alreadyAnswered: Boolean(testAnswers[testQuestionIndex]), answerCount: testAnswers.length, questionCount: testQuestions.length });
+    if (!testStartedAt || testAnswers[testQuestionIndex]) {
+      log('[srs-test] answer ignored', { word: wordForm, questionIndex: testQuestionIndex, reason: !testStartedAt ? 'timer missing' : 'question already answered' });
       return;
     }
     const question = testQuestions[testQuestionIndex];
