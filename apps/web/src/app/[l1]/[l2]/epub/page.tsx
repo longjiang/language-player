@@ -356,7 +356,7 @@ export default function EpubPage() {
           {/* The reader — top/bottom strips are reserved for the chrome and
               the muted chapter title / page count, so toggling the chrome
               never reflows the book. */}
-          <div className="min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 flex-col">
             <EpubReaderPanel
               key={epub.openBookId}
               book={epub.book!}
