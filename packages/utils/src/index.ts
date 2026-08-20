@@ -96,6 +96,7 @@ export {
   needsPronunciationTest,
   DEEP_ORTHOGRAPHY_LANGUAGES,
   buildSrsQuestionPrompt,
+  normalizeTestChoice,
 } from './srs-test-mode';
 export type { SrsTestQuestion, TestQuestionKind } from './srs-test-mode';
 export type { HighlightToken, KanaEntryForm } from './highlight-match';
