@@ -308,9 +308,9 @@ export function PaginatedReader({
     // inertial events do not turn multiple pages, and require horizontal
     // dominance so ordinary vertical scrolling remains untouched.
     const onWheel = (e: WheelEvent) => {
-      if (state.animating || e.ctrlKey) return;
+      if (e.ctrlKey) return;
       const target = e.target as HTMLElement | null;
-      if (target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
+      const onControl = !!target?.closest?.('a, button, input, textarea, select, [contenteditable="true"]');
 
       const scale = e.deltaMode === WheelEvent.DOM_DELTA_LINE
         ? 16
@@ -324,18 +324,24 @@ export function PaginatedReader({
         return;
       }
 
+      // Cancel horizontal overscroll as soon as the gesture is recognized;
+      // waiting until the page threshold is reached lets Safari/Chrome treat
+      // the initial two-finger movement as browser history navigation.
+      e.preventDefault();
+      if (state.animating || onControl) return;
       if (e.timeStamp - wheelState.lastTime > 180) wheelState.deltaX = 0;
       wheelState.lastTime = e.timeStamp;
       wheelState.deltaX += dx;
       if (Math.abs(wheelState.deltaX) < 64) return;
 
-      const next = wheelState.deltaX < 0;
+      // With natural trackpad scrolling, a physical swipe left produces a
+      // positive horizontal scroll delta; left is next, right is previous.
+      const next = wheelState.deltaX > 0;
       const { hasPrev, hasNext } = pagerActionsRef.current;
       const canTurn = next ? hasNext : hasPrev;
       wheelState.deltaX = 0;
       if (!canTurn) return;
 
-      e.preventDefault();
       state.commitNext = next;
       settle(true);
     };
@@ -425,7 +431,11 @@ export function PaginatedReader({
         ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
         : undefined}
     >
-      <div ref={pager.viewportRef} className="min-h-0 flex-1 overflow-auto touch-pan-y">
+      <div
+        ref={pager.viewportRef}
+        className="min-h-0 flex-1 overflow-auto touch-pan-y"
+        style={{ overscrollBehaviorX: 'contain' }}
+      >
         <div
           ref={dragRef}
           className={contentClassName}
