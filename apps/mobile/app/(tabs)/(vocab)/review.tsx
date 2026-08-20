@@ -1185,6 +1185,9 @@ export default function ReviewScreen() {
           {testError && (
             <View className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
               <Text className="text-sm text-destructive">{testError}</Text>
+              <Button onPress={() => { setTestError(null); void loadTestQuestions(); }} variant="outline" size="sm" className="mt-2">
+                <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
+              </Button>
             </View>
           )}
 

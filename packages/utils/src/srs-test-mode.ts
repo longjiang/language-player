@@ -59,7 +59,7 @@ export function buildSrsQuestionPrompt(input: {
     ]
     : [
       'This is the PRONUNCIATION question. Ask how the target word is pronounced/read, using the context only to identify the intended word and sense.',
-      'correct_answer and every confounder must be pronunciation readings in the standard L2 notation (for Japanese, hiragana only; never romaji, Latin transliteration, kanji, or definitions; for Chinese, pinyin or the appropriate standard romanization). Do not return definitions, translations, or explanations.',
+      'For Japanese, correct_answer and every confounder MUST each be written only in hiragana characters U+3040–U+309F, plus the long-vowel mark ー and spaces. Convert katakana readings to hiragana before returning them. Never use romaji, Latin letters, kanji, katakana, definitions, translations, or explanations in Japanese pronunciation choices. For Chinese, use pinyin or the appropriate standard romanization. Do not return definitions, translations, or explanations.',
     ];
   return [
     'Generate one multiple-choice question for a language-learning SRS review card.',
