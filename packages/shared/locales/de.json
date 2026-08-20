@@ -1249,11 +1249,15 @@
         "good_hint": "Richtig erinnert",
         "hard": "Schwer",
         "hard_hint": "Mit Mühe erinnert",
+        "loading_test": "Wird geladen…",
         "no_definition_available": "Dieses Wort wurde in unserem Wörterbuch nicht gefunden.",
+        "recall_mode": "Abrufmodus",
         "shortcut_hint": "Drücke <space></space> zum Umdrehen, <k1></k1>–<k2></k2> zum Bewerten, <enter></enter> zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "srs_new": "neu",
-        "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}"
+        "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}",
+        "start_test": "Test starten",
+        "test_mode": "Testmodus"
     },
     "setting": {
         "all_words": "Alle Wörter",

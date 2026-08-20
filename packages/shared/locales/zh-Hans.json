@@ -1226,11 +1226,15 @@
         "good_hint": "正确回忆",
         "hard": "困难",
         "hard_hint": "回忆困难",
+        "loading_test": "加载中…",
         "no_definition_available": "词典中未找到此单词。",
+        "recall_mode": "回忆模式",
         "shortcut_hint": "按<space></space>翻转，<k1></k1>–<k2></k2>评分，<enter></enter>继续",
         "show_definition": "显示释义",
         "srs_new": "新",
-        "srs_review": "{count, plural, other {已复习 # 次}}"
+        "srs_review": "{count, plural, other {已复习 # 次}}",
+        "start_test": "开始测试",
+        "test_mode": "测试模式"
     },
     "setting": {
         "all_words": "所有单词",
