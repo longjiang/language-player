@@ -55,7 +55,7 @@ function MeasureRow({
             style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 10 }}
           >
             {tab.icon ? <>{tab.icon()}</> : null}
-            {showLabel && <Text style={{ fontSize: 12, fontWeight: '500' }}>{tab.label}</Text>}
+            {showLabel && <Text style={{ fontSize: 14, fontWeight: '500' }}>{tab.label}</Text>}
           </View>
         );
       })}
@@ -142,7 +142,7 @@ export function TabbedPanel({
                   {showLabel && (
                     <Text
                       numberOfLines={1}
-                      className={`text-xs font-medium ${
+                      className={`text-sm font-medium ${
                         activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
                       }`}
                     >

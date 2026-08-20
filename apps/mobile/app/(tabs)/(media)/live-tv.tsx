@@ -52,7 +52,7 @@ function DropdownPicker<T extends string>({
       actions={actions}
     >
       <Pressable className="flex-row items-center gap-1 rounded-lg border border-border bg-card px-3 py-2">
-        <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
+        <Text className="text-xs text-foreground flex-1" numberOfLines={1}>
           {getLabel(value)}
         </Text>
         <ChevronDown size={14} color={ICON_MUTED} />
@@ -212,11 +212,11 @@ export default function LiveTvScreen() {
             </View>
             {/* Info */}
             <View className="flex-1">
-              <Text className="text-sm font-medium text-foreground" numberOfLines={1}>
+              <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
                 {item.name}
               </Text>
               <View className="flex-row items-center gap-2">
-                <Text className="text-xs text-muted-foreground">{item.category}</Text>
+                <Text className="text-[10px] text-muted-foreground">{item.category}</Text>
                 {item.countries ? (
                   <Text className="text-xs text-muted-foreground">
                     · {item.countries.split(',').map((c) => countryName(c.trim(), l1Lang?.code ?? 'en')).join(', ')}
@@ -229,11 +229,11 @@ export default function LiveTvScreen() {
               <View className="flex-row items-center gap-1">
                 {getSignalIcon(item)}
                 {getLatencyText(item) ? (
-                  <Text className="text-xs text-muted-foreground">{getLatencyText(item)}</Text>
+                  <Text className="text-[10px] text-muted-foreground">{getLatencyText(item)}</Text>
                 ) : null}
               </View>
               {!item.alive && (
-                <Text className="text-xs text-muted-foreground">{t('label.offline')}</Text>
+                <Text className="text-[10px] text-muted-foreground">{t('label.offline')}</Text>
               )}
             </View>
           </Pressable>
@@ -253,14 +253,14 @@ export default function LiveTvScreen() {
   if (error && channels.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-muted-foreground">{t(error as any)}</Text>
+        <Text className="text-base text-muted-foreground">{t(error as any)}</Text>
       </View>
     );
   }
 
   return (
     <PageContainer maxWidth="7xl">
-      <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
+      <Text className="px-4 py-5 mb-4 text-2xl font-bold text-foreground">{t('title.live_tv')}</Text>
       <OfflineFeatureNotice />
       <View className={isLg ? 'flex-row gap-6 px-4' : 'px-4'}>
         {/* Player section */}

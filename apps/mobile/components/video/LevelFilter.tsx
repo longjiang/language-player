@@ -36,7 +36,7 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
         className={`rounded-full px-3 py-1 ${level === undefined ? 'bg-primary' : 'bg-muted'}`}
         {...e2e('level-filter-all')}
       >
-        <Text className={`text-xs font-bold ${level === undefined ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+        <Text className={`text-sm font-bold ${level === undefined ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
           {t('filter.all')}
         </Text>
       </Pressable>
@@ -50,7 +50,7 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
             style={active ? levelBadgeStyle(l) : undefined}
             {...e2e(`level-filter-${l}`)}
           >
-            <Text className={`text-xs font-bold ${active ? 'text-white' : 'text-muted-foreground'}`}>
+            <Text className={`text-sm font-bold ${active ? 'text-white' : 'text-muted-foreground'}`}>
               {labels[i]}
             </Text>
           </Pressable>

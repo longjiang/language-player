@@ -197,7 +197,7 @@ export default function WatchHistoryScreen() {
   if (!user) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <AlertCircle size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
@@ -210,7 +210,7 @@ export default function WatchHistoryScreen() {
   if (loading) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
@@ -222,7 +222,7 @@ export default function WatchHistoryScreen() {
   if (error) {
     return (
       <PageContainer maxWidth="4xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
@@ -235,7 +235,7 @@ export default function WatchHistoryScreen() {
     <PageContainer maxWidth="4xl">
       {/* Header row */}
       <View className="flex-row items-center justify-between px-4 py-5">
-        <Text className="text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="text-3xl font-bold text-foreground">{t('title.watch_history')}</Text>
         {items.length > 0 && (
           <Button
             onPress={handleClearAll}
@@ -256,7 +256,7 @@ export default function WatchHistoryScreen() {
       {items.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
           <Clock size={40} className="mb-3 text-muted-foreground" />
-          <Text className="text-center text-muted-foreground">{t('msg.no_watch_history')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.no_watch_history')}</Text>
         </View>
       ) : (
         <SectionList

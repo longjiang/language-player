@@ -205,8 +205,8 @@ export default function SavedWordsScreen() {
       {/* Header row — title + export + clear */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-foreground">{t('title.saved_words')}</Text>
-          <Text className="mt-1 text-sm text-muted-foreground">
+          <Text className="text-3xl font-bold text-foreground">{t('title.saved_words')}</Text>
+          <Text className="mt-1 text-base text-muted-foreground">
             {t('msg.saved_words_desc', { count: allWords.length, l2: l2Lang.name })}
           </Text>
         </View>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
+import { cn } from '@/lib/utils';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { router } from 'expo-router';
@@ -304,7 +305,7 @@ export function WordListSidebar({
               accessibilityLabel={t('action.previous')}
             >
               <ChevronLeft size={16} color={ICON_MUTED} />
-              <Text className={buttonTextClass('ghost')}>{t('action.previous')}</Text>
+              <Text className={cn(buttonTextClass('ghost'), 'text-xs')}>{t('action.previous')}</Text>
             </Button>
             <Button
               onPress={() => {
@@ -319,7 +320,7 @@ export function WordListSidebar({
               size="sm"
               accessibilityLabel={t('action.next')}
             >
-              <Text className={buttonTextClass('ghost')}>{t('action.next')}</Text>
+              <Text className={cn(buttonTextClass('ghost'), 'text-xs')}>{t('action.next')}</Text>
               <ChevronRight size={16} color={ICON_MUTED} />
             </Button>
           </View>

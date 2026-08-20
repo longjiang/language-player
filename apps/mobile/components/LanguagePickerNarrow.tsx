@@ -153,7 +153,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
           <Text className="text-2xl font-bold text-foreground">
             {t('title.welcome')}
           </Text>
-          <Text className="text-muted-foreground mt-1">
+          <Text className="text-base text-muted-foreground mt-1">
             {t('msg.choose_languages')}
           </Text>
         </View>

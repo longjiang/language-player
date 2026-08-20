@@ -912,7 +912,7 @@ export default function ReviewScreen() {
       <View className="flex-1 items-center justify-center bg-background p-4">
         <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
         <Text className="mb-2 text-xl font-semibold text-foreground">{t('msg.no_words_to_review')}</Text>
-        <Text className="mb-4 text-center text-muted-foreground max-w-md">
+        <Text className="mb-4 text-center text-base text-muted-foreground max-w-md">
           {t('msg.save_words_to_build_deck')}
         </Text>
         <Button
@@ -937,7 +937,7 @@ export default function ReviewScreen() {
       <View className="flex-1 items-center justify-center bg-background p-4">
         <CheckCircle2 size={56} color={ICON_PRIMARY} style={{ marginBottom: 16 }} />
         <Text className="mb-2 text-xl font-semibold text-foreground">{t('msg.all_done_for_now')}</Text>
-        <Text className="mb-4 text-center text-muted-foreground">
+        <Text className="mb-4 text-center text-base text-muted-foreground">
           {t('msg.all_done_desc')}
           {nextDue && (
             <>{' '}{t('msg.next_review')}: {formatNextDueLabel(nextDue.due, l1Lang.code)}.</>
@@ -966,7 +966,7 @@ export default function ReviewScreen() {
       <View className="flex-1 items-center justify-center bg-background p-4">
         <CheckCircle2 size={56} color={ICON_PRIMARY} style={{ marginBottom: 16 }} />
         <Text className="mb-2 text-xl font-semibold text-foreground">{t('msg.no_cards_due')}</Text>
-        <Text className="mb-4 text-center text-muted-foreground">
+        <Text className="mb-4 text-center text-base text-muted-foreground">
           {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2Lang.name })}
           {nextDue ? (
             <> {t('msg.next_review_date', { date: formatNextDueLabel(nextDue.due, l1Lang.code) })}</>
@@ -1162,8 +1162,8 @@ export default function ReviewScreen() {
                 className="flex-1 items-center rounded-lg py-3"
                 style={{ backgroundColor: RATING_ICON_COLORS[r.key], opacity: !isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP ? 0.5 : 1 }}
               >
-                <Text className="text-xs font-bold text-white">{r.label}</Text>
-                <Text className="mt-0.5 text-[10px] text-white/70">{r.hint}</Text>
+                <Text className="text-sm font-bold text-white">{r.label}</Text>
+                <Text className="mt-0.5 text-xs text-white/70">{r.hint}</Text>
               </Pressable>
             ))}
           </View>

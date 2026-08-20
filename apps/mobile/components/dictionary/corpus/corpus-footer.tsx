@@ -11,7 +11,7 @@ export function CorpusFooter() {
   const t = useT();
   return (
     <View className="mt-4 border-t border-border pt-2">
-      <Text className="text-[10px] text-muted-foreground/60">{t('corpus.provided_by')}</Text>
+      <Text className="text-xs text-muted-foreground/60">{t('corpus.provided_by')}</Text>
     </View>
   );
 }

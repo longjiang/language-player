@@ -300,7 +300,7 @@ export default function DictionaryScreen() {
       {!query && !loading && !results?.length && recentSearches.length === 0 && (
         <View className="mx-4 mt-4 items-center rounded-xl border border-border bg-card p-8">
           <Search size={48} color={ICON_MUTED} />
-          <Text className="mt-4 text-center text-sm text-muted-foreground">
+          <Text className="mt-4 text-center text-base text-muted-foreground">
             {t('msg.dictionary_empty_state', { l2: l2Lang.name })}
           </Text>
         </View>
@@ -308,7 +308,7 @@ export default function DictionaryScreen() {
 
       {message && !results?.length && !loading && (
         <View className="mx-4 mt-8 items-center">
-          <Text className="text-muted-foreground">{message}</Text>
+          <Text className="text-base text-muted-foreground">{message}</Text>
         </View>
       )}
 

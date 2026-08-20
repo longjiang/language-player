@@ -170,7 +170,7 @@ export default function MyChannelsScreen() {
       </View>
 
       {tabChannels.length === 0 ? (
-        <Text className="py-10 text-center text-sm text-muted-foreground">
+        <Text className="py-10 text-center text-xs text-muted-foreground">
           {t(emptyKey)}
         </Text>
       ) : (
@@ -188,7 +188,7 @@ export default function MyChannelsScreen() {
       <View className="flex-1">
         {/* Header — title + sidebar show/collapse toggle (web parity) */}
         <View className="mb-4 flex-row items-center gap-3 px-4 pt-4">
-          <Text className="flex-1 text-2xl font-bold text-foreground">
+          <Text className="flex-1 text-3xl font-bold text-foreground">
             {t('title.my_channels')}
           </Text>
           <Button
@@ -215,13 +215,13 @@ export default function MyChannelsScreen() {
         <View className="flex-1 flex-row">
           <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
             {!user?.id ? (
-              <Text className="py-16 text-center text-sm text-muted-foreground">
+              <Text className="py-16 text-center text-base text-muted-foreground">
                 {t('label.guest_user')}
               </Text>
             ) : error ? (
               <View className="mx-4 mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
                 <AlertCircle size={16} color="#ef4444" />
-                <Text className="text-sm text-destructive">{t('error.failed_to_load')}</Text>
+                <Text className="text-base text-destructive">{t('error.failed_to_load')}</Text>
               </View>
             ) : (
               <VideoGrid

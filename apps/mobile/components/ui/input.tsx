@@ -14,7 +14,7 @@ export function Input({ className, ...props }: TextInputProps) {
   return (
     <TextInput
       className={cn(
-        'dark:bg-input/30 border-input bg-background text-foreground flex h-10 w-full min-w-0 flex-row items-center rounded-md border px-3 py-1 text-base leading-5 shadow-sm shadow-black/5',
+        'dark:bg-input/30 border-input bg-background text-foreground flex h-10 w-full min-w-0 flex-row items-center rounded-md border px-3 py-1 text-sm leading-5 shadow-sm shadow-black/5',
         'placeholder:text-muted-foreground/50',
         props.editable === false && 'opacity-50',
         className,
@@ -35,7 +35,7 @@ export function Textarea({ className, style, ...props }: TextInputProps) {
     <TextInput
       multiline
       className={cn(
-        'dark:bg-input/30 border-input text-foreground flex min-h-16 w-full flex-row rounded-md border bg-transparent px-3 py-2 text-base shadow-sm shadow-black/5',
+        'dark:bg-input/30 border-input text-foreground flex min-h-16 w-full flex-row rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm shadow-black/5',
         'placeholder:text-muted-foreground/50',
         props.editable === false && 'opacity-50',
         className,

@@ -48,7 +48,7 @@ export function Header() {
               className="h-7 w-7"
               resizeMode="contain"
             />
-            {isSm && <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>}
+            {isSm && <Text className="text-base font-bold text-foreground">{t('title.app_name')}</Text>}
           </Pressable>
 
           {/* Desktop/tablet navigation — mirrors web md+ dropdowns */}

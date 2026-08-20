@@ -612,7 +612,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
                 disabled={loading}
                 className="rounded-lg rounded-br-none border border-border px-3 py-1.5 active:bg-muted disabled:opacity-40"
               >
-                <Text className="text-xs font-medium text-foreground">{t(followUp.labelKey)}</Text>
+                <Text className="text-sm font-medium text-foreground">{t(followUp.labelKey)}</Text>
               </Pressable>
             ))}
           </View>

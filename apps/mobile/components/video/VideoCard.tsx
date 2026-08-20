@@ -87,12 +87,12 @@ export function VideoCard({ video, layout = 'card', videos, queueType = 'recomme
           <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
           {levelLabel && levelColor && (
             <View className="absolute left-0.5 top-0.5 rounded px-1 py-0" style={{ backgroundColor: levelColor }}>
-              <Text className="text-[9px] font-bold text-primary-foreground">{levelLabel}</Text>
+              <Text className="text-[10px] font-bold text-primary-foreground">{levelLabel}</Text>
             </View>
           )}
         </View>
         <View className="flex-1">
-          <Text className={`text-sm font-medium ${isActive ? 'text-primary' : 'text-foreground'}`} numberOfLines={2}>
+          <Text className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-foreground'}`} numberOfLines={2}>
             {video.title ?? ''}
           </Text>
           <View className="mt-1 flex-row items-center gap-2">

@@ -35,7 +35,7 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
   if (!loading && videos.length === 0) {
     return (
       <View className="flex-1 items-center justify-center py-16 px-4" {...e2e('video-grid-empty')}>
-        <Text className="text-center text-muted-foreground">{t('msg.no_videos_found')}</Text>
+        <Text className="text-center text-base text-muted-foreground">{t('msg.no_videos_found')}</Text>
       </View>
     );
   }

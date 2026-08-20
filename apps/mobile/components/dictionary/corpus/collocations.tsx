@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Button, buttonTextClass } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { isContinua, type SketchCollocationsResponse } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -155,12 +156,12 @@ export function Collocations({ word, l2Code, l1Code = 'en', corpname = null, hig
                 {isExpanded ? (
                   <>
                     <ChevronUp size={14} color="#6366f1" />
-                    <Text className={buttonTextClass('link')}>{t('action.show_less')}</Text>
+                    <Text className={cn(buttonTextClass('link'), 'text-xs')}>{t('action.show_less')}</Text>
                   </>
                 ) : (
                   <>
                     <ChevronDown size={14} color="#6366f1" />
-                    <Text className={buttonTextClass('link')}>
+                    <Text className={cn(buttonTextClass('link'), 'text-xs')}>
                       {t('action.show_more')}
                       <Text className="text-muted-foreground"> ({hiddenCount})</Text>
                     </Text>

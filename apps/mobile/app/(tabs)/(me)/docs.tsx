@@ -317,8 +317,8 @@ export default function DocsScreen() {
                   onPress={() => setSelectedDoc(doc)}
                   className="border border-border rounded-xl bg-card p-3.5 mb-2.5"
                 >
-                  <Text className="text-base font-semibold text-foreground mb-1">{doc.title}</Text>
-                  <Text className="text-sm text-muted-foreground leading-5" numberOfLines={2}>
+                  <Text className="text-sm font-semibold text-foreground mb-1">{doc.title}</Text>
+                  <Text className="text-xs text-muted-foreground leading-5" numberOfLines={2}>
                     {stripMarkdown(doc.content).substring(0, 200)}
                   </Text>
                 </Pressable>
@@ -329,7 +329,7 @@ export default function DocsScreen() {
           {/* Categorized docs — grouped under translated category labels */}
           {Object.entries(grouped).map(([cat, catDocs]) => (
             <View key={cat} className="mb-5">
-              <Text className="text-xs font-bold text-primary uppercase mb-1.5">
+              <Text className="text-sm font-bold text-primary uppercase mb-1.5">
                 {t(categoryKey(cat))}
               </Text>
               {catDocs.map((doc) => (
@@ -338,8 +338,8 @@ export default function DocsScreen() {
                   onPress={() => setSelectedDoc(doc)}
                   className="border border-border rounded-xl bg-card p-3.5 mb-2.5"
                 >
-                  <Text className="text-base font-semibold text-foreground mb-1">{doc.title}</Text>
-                  <Text className="text-sm text-muted-foreground leading-5" numberOfLines={2}>
+                  <Text className="text-sm font-semibold text-foreground mb-1">{doc.title}</Text>
+                  <Text className="text-xs text-muted-foreground leading-5" numberOfLines={2}>
                     {stripMarkdown(doc.content).substring(0, 200)}
                   </Text>
                 </Pressable>

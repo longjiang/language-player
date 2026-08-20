@@ -129,10 +129,10 @@ export default function PlaylistsScreen() {
   if (!isSignedIn) {
     return (
       <PageContainer maxWidth="5xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.playlists')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.playlists')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
-          <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
         {createDialog}
       </PageContainer>
@@ -143,7 +143,7 @@ export default function PlaylistsScreen() {
   if (!loaded) {
     return (
       <PageContainer maxWidth="5xl">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.playlists')}</Text>
+        <Text className="px-4 py-5 mb-4 text-3xl font-bold text-foreground">{t('title.playlists')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
@@ -156,12 +156,12 @@ export default function PlaylistsScreen() {
     return (
       <PageContainer maxWidth="5xl">
         <View className="flex-row items-center justify-between px-4 py-5">
-          <Text className="text-xl font-bold text-foreground">{t('title.playlists')}</Text>
+          <Text className="text-3xl font-bold text-foreground">{t('title.playlists')}</Text>
           {renderNewButton()}
         </View>
         <View className="flex-1 items-center justify-center px-8">
           <ListVideo size={40} color={ICON_MUTED} style={{ marginBottom: 12 }} />
-          <Text className="text-center text-muted-foreground">{t('msg.no_playlists')}</Text>
+          <Text className="text-center text-base text-muted-foreground">{t('msg.no_playlists')}</Text>
           <View className="mt-4">{renderNewButton()}</View>
         </View>
         {createDialog}

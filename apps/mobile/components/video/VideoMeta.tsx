@@ -65,7 +65,7 @@ export function VideoMeta({ video }: VideoMetaProps) {
         {video.views != null && (
           <View className="flex-row items-center gap-1">
             <Eye size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-sm text-muted-foreground">
               {t('label.views_count', { count: formatNumber(video.views) })}
             </Text>
           </View>
@@ -79,19 +79,19 @@ export function VideoMeta({ video }: VideoMetaProps) {
         {video.likes != null && (
           <View className="flex-row items-center gap-1">
             <ThumbsUp size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{formatNumber(video.likes)}</Text>
+            <Text className="text-sm text-muted-foreground">{formatNumber(video.likes)}</Text>
           </View>
         )}
         {video.comments != null && (
           <View className="flex-row items-center gap-1">
             <MessageCircle size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{formatNumber(video.comments)}</Text>
+            <Text className="text-sm text-muted-foreground">{formatNumber(video.comments)}</Text>
           </View>
         )}
         {video.date && (
           <View className="flex-row items-center gap-1">
             <Calendar size={14} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{formatDate(video.date)}</Text>
+            <Text className="text-sm text-muted-foreground">{formatDate(video.date)}</Text>
           </View>
         )}
       </View>
