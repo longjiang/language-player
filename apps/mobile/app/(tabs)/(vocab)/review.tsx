@@ -25,6 +25,7 @@ import {
   testScoreToRating,
   type SrsTestQuestion,
   normalizeTestChoice,
+  parseSrsQuestionResponse,
 } from '@langplayer/utils';
 import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
@@ -534,7 +535,7 @@ export default function ReviewScreen() {
         log('[srs-test] request started', { l2Code, word: wordForm, kind });
         const payload = await apiClient.post('/chatgpt', { prompt, cache: !options?.retry, max_tokens: 500 });
         log('[srs-test] response received', { l2Code, word: wordForm, kind, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
-        const parsed = JSON.parse((payload as any).response);
+        const parsed = parseSrsQuestionResponse((payload as any).response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
