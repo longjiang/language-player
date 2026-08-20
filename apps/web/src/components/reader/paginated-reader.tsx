@@ -208,6 +208,7 @@ export function PaginatedReader({
   const wheelStateRef = useRef({
     deltaX: 0,
     lastTime: 0,
+    gestureLocked: false,
   });
 
   useEffect(() => {
@@ -328,9 +329,21 @@ export function PaginatedReader({
       // waiting until the page threshold is reached lets Safari/Chrome treat
       // the initial two-finger movement as browser history navigation.
       e.preventDefault();
+      const now = e.timeStamp;
+      // A single trackpad swipe produces an inertial burst after the fingers
+      // leave the surface. Consume that burst until horizontal wheel events
+      // have been quiet long enough to indicate a new physical swipe.
+      if (wheelState.gestureLocked) {
+        if (now - wheelState.lastTime <= 240) {
+          wheelState.lastTime = now;
+          return;
+        }
+        wheelState.gestureLocked = false;
+        wheelState.deltaX = 0;
+      }
       if (state.animating || onControl) return;
-      if (e.timeStamp - wheelState.lastTime > 180) wheelState.deltaX = 0;
-      wheelState.lastTime = e.timeStamp;
+      if (now - wheelState.lastTime > 180) wheelState.deltaX = 0;
+      wheelState.lastTime = now;
       wheelState.deltaX += dx;
       if (Math.abs(wheelState.deltaX) < 64) return;
 
@@ -340,6 +353,8 @@ export function PaginatedReader({
       const { hasPrev, hasNext } = pagerActionsRef.current;
       const canTurn = next ? hasNext : hasPrev;
       wheelState.deltaX = 0;
+      wheelState.gestureLocked = true;
+      wheelState.lastTime = now;
       if (!canTurn) return;
 
       state.commitNext = next;
