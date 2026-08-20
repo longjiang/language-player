@@ -210,7 +210,8 @@ function AlignedTranslationImpl({
         const l2Line = l2Lines[Math.min(j, l2Lines.length - 1)] ?? l2Lines[l2Lines.length - 1]!;
         const shift = lineBaselineOffset(l2Line) - naturalAscent!;
         if (j === 0) {
-          log(`[AlignedTranslation] l2Lines=${l2Lines.length} trFontSize=${trFontSize} lh2=${lh2} l2Asc0=${lineBaselineOffset(l2Lines[0]!)} trNaturalAsc=${naturalAscent} shift0=${shift}`);
+          const l2Prev = j + 1 < l2Lines.length ? lineBaselineOffset(l2Lines[j + 1]!) : null;
+          log(`[AlignedTranslation] trLines=${probe!.lines.length} trFontSize=${trFontSize} lh2=${lh2} l2Asc0=${lineBaselineOffset(l2Lines[0]!)} l2Asc1=${l2Prev} trNaturalAsc=${naturalAscent} shift0=${shift}`);
         }
         const hl = highlight && highlight.start < off.end && highlight.end > off.start;
         return (
