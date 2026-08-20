@@ -466,13 +466,17 @@ export default function ReviewPage() {
     const context = card.word.context?.text ?? '';
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    log('[SRS Test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(context) });
+    setTestError(null);
     setTestLoading(true);
     try {
       const questions = await Promise.all(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: context, l1Code: baseCode(l1.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
-        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: true, max_tokens: 500 }) });
+        log('[SRS Test] request started', { l2Code, word: wordForm, kind });
+        const response = await fetch(`${PYTHON_API_URL}/chatgpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, cache: false, max_tokens: 500 }) });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
+        log('[SRS Test] response received', { l2Code, word: wordForm, kind, status: response.status, responseType: typeof payload.response, responseLength: typeof payload.response === 'string' ? payload.response.length : null });
         const parsed = JSON.parse(payload.response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
@@ -485,9 +489,14 @@ export default function ReviewPage() {
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
     } catch (error) {
-      setTestError(error instanceof Error ? error.message : t('error.unexpected'));
+      const message = error instanceof Error ? error.message : t('error.unexpected');
+      log('[SRS Test] question generation failed', { l2Code, word: wordForm, error: message });
+      setTestError(message);
       setTestQuestions([]);
-    } finally { setTestLoading(false); }
+    } finally {
+      log('[SRS Test] question generation finished', { l2Code, word: wordForm, loading: false });
+      setTestLoading(false);
+    }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
 
   const handleReveal = useCallback(() => {

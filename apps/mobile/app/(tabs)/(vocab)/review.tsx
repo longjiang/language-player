@@ -511,12 +511,16 @@ export default function ReviewScreen() {
     if (!card) return;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
+    log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text) });
+    setTestError(null);
     setTestLoading(true);
     try {
       const questions = await Promise.all(kinds.map(async (kind) => {
         const prompt = buildSrsQuestionPrompt({ word: wordForm, contextSentence: cards[currentIndex]?.word.context?.text as string | undefined, l1Code: baseCode(l1Lang.code), l2Code, kind, definition: entryForQuestion?.definitions?.[0], pronunciation: entryForQuestion?.pronunciation });
         const { apiClient } = await import('@langplayer/api-client');
-        const payload = await apiClient.post('/chatgpt', { prompt, cache: true, max_tokens: 500 });
+        log('[srs-test] request started', { l2Code, word: wordForm, kind });
+        const payload = await apiClient.post('/chatgpt', { prompt, cache: false, max_tokens: 500 });
+        log('[srs-test] response received', { l2Code, word: wordForm, kind, responseType: typeof (payload as any).response, responseLength: typeof (payload as any).response === 'string' ? (payload as any).response.length : null });
         const parsed = JSON.parse((payload as any).response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
@@ -527,10 +531,15 @@ export default function ReviewScreen() {
       }));
       setTestQuestions(questions); setTestQuestionIndex(0); setTestStartedAt(Date.now());
     } catch (error) {
-      setTestError(error instanceof Error ? error.message : t('error.unexpected'));
+      const message = error instanceof Error ? error.message : t('error.unexpected');
+      log('[srs-test] question generation failed', { l2Code, word: wordForm, error: message });
+      setTestError(message);
       setTestQuestions([]);
     }
-    finally { setTestLoading(false); }
+    finally {
+      log('[srs-test] question generation finished', { l2Code, word: wordForm, loading: false });
+      setTestLoading(false);
+    }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
   const handleTestAnswer = useCallback((answer: string) => {
