@@ -177,11 +177,13 @@ export default function ReviewScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState<'recall' | 'test'>('recall');
   const [testError, setTestError] = useState<string | null>(null);
+  const testAutoLoadKeyRef = useRef<string | null>(null);
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     setReviewMode(mode);
     AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
     setTestQuestions([]);
     setTestAnswers([]);
+    testAutoLoadKeyRef.current = null;
     setShowTabs(false);
     setTestError(null);
   }, []);
@@ -551,6 +553,16 @@ export default function ReviewScreen() {
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
+  useEffect(() => {
+    const cardId = cards[currentIndex]?.word.id;
+    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated) return;
+    const requestKey = `${l2Code}:${cardId}`;
+    if (testAutoLoadKeyRef.current === requestKey) return;
+    testAutoLoadKeyRef.current = requestKey;
+    log('[srs-test] auto-loading questions', { l2Code, cardId });
+    void loadTestQuestions();
+  }, [reviewMode, cards, currentIndex, l2Code, testQuestions.length, testLoading, testError, rated, loadTestQuestions]);
+
   const handleTestAnswer = useCallback((answer: string) => {
     if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) return;
     const question = testQuestions[testQuestionIndex];
@@ -599,6 +611,7 @@ export default function ReviewScreen() {
     setRated(true);
     setTestQuestions([]);
     setTestAnswers([]);
+    testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
@@ -1238,11 +1251,13 @@ export default function ReviewScreen() {
                 );
               })}
             </View>
-          ) : !showTabs && (
-            <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
-              <Text className={buttonTextClass('outline')}>{testLoading ? t('review.loading_test') : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}</Text>
+          ) : !showTabs && reviewMode === 'recall' ? (
+            <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2">
+              <Text className={buttonTextClass('outline')}>{t('review.show_definition')}</Text>
             </Button>
-          )}
+          ) : reviewMode === 'test' && testLoading ? (
+            <View className="mt-2 items-center"><ActivityIndicator size="small" color={ICON_MUTED} /></View>
+          ) : null}
 
           {showTabs && (
             <View className="mb-2">

@@ -125,12 +125,14 @@ export default function ReviewPage() {
     return window.localStorage.getItem('lp:srs-review-mode') === 'test' ? 'test' : 'recall';
   });
   const [testError, setTestError] = useState<string | null>(null);
+  const testAutoLoadKeyRef = useRef<string | null>(null);
 
   const changeReviewMode = useCallback((mode: 'recall' | 'test') => {
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
     setTestQuestions([]);
     setTestAnswers([]);
+    testAutoLoadKeyRef.current = null;
     setShowDefinition(false);
     setTestError(null);
   }, []);
@@ -376,6 +378,7 @@ export default function ReviewPage() {
     setShowDefinition(false); // hide answer immediately for next card
     setTestQuestions([]);
     setTestAnswers([]);
+    testAutoLoadKeyRef.current = null;
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
@@ -515,6 +518,16 @@ export default function ReviewPage() {
       setTestLoading(false);
     }
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1.code, l2Code]);
+
+  useEffect(() => {
+    const cardId = cards[currentIndex]?.word.id;
+    if (reviewMode !== 'test' || !cardId || testQuestions.length > 0 || testLoading || testError || rated) return;
+    const requestKey = `${l2Code}:${cardId}`;
+    if (testAutoLoadKeyRef.current === requestKey) return;
+    testAutoLoadKeyRef.current = requestKey;
+    log('[SRS Test] auto-loading questions', { l2Code, cardId });
+    void loadTestQuestions();
+  }, [reviewMode, cards, currentIndex, l2Code, testQuestions.length, testLoading, testError, rated, loadTestQuestions]);
 
   const handleReveal = useCallback(() => {
     if (reviewMode === 'test') { void loadTestQuestions(); return; }
@@ -1217,10 +1230,12 @@ export default function ReviewPage() {
               );
             })}
           </div>
-        ) : !showDefinition ? (
-          <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>
-            {testLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : reviewMode === 'test' ? t('review.start_test') : t('review.show_definition')}
+        ) : !showDefinition && reviewMode === 'recall' ? (
+          <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2">
+            {t('review.show_definition')}
           </Button>
+        ) : reviewMode === 'test' && testLoading ? (
+          <div className="mt-4 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : null}
 
         {showDefinition && (
