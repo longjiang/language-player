@@ -29,12 +29,23 @@
  * layout-neutral. When no L2 grid is available (non-paragraph render paths,
  * e.g. Expo Go / Android view columns) the reader falls back to the plain
  * translation column and never mounts this component.
+ *
+ * Baseline-math note: each row renders its translation as a SINGLE-line Text
+ * with no pinned lineHeight, so its on-canvas baseline sits at the raw font
+ * ascent. The wrapping probe, by contrast, pins `lineHeight: lh2` and its
+ * reported `ascender` includes the half-leading — subtracting THAT (as the
+ * code once did) over-shifted the rows 2–5px and accrued line after line on
+ * iOS. We subtract the single-line ascent (measured on a second,
+ * lineHeight-free probe) so the reference exactly matches how the row paints.
  */
 
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import type { TextLayoutEvent } from 'react-native';
 import { lineOffsets, type GridLine, type TextLayoutLine } from '@/lib/aligned-translation';
+import { readerLogger } from '@/lib/logger';
+
+const { log } = readerLogger;
 
 export interface AlignedTranslationProps {
   /** Translation text (L1). */
@@ -50,19 +61,21 @@ export interface AlignedTranslationProps {
   highlight?: { start: number; end: number } | null;
 }
 
+/** Baseline offset from the L2 line's top. RN reports the per-line ascent in
+ *  `ascender` on both platforms (verified on the iOS TextKit 2 layout path:
+ *  constant per line while `y` varies), matching Android's `-getLineAscent`.
+ *  For the native ruby paragraph the native reporter provides the same
+ *  semantics with the ruby band already included. This is the TARGET baseline
+ *  we align the translation to.
+ */
+export function lineBaselineOffset(ln: GridLine): number {
+  return ln.ascender;
+}
+
 interface ProbeState {
   /** Which text/size/grid this measurement belongs to (staleness guard). */
   key: string;
   lines: TextLayoutLine[];
-}
-
-/** Baseline offset from the line's top. RN reports the per-line ascent in
- *  `ascender` on both platforms (verified on the iOS TextKit 2 layout path:
- *  constant per line while `y` varies), matching Android's `-getLineAscent`.
- *  For the native ruby paragraph the native reporter provides the same
- *  semantics with the ruby band already included. */
-export function lineBaselineOffset(ln: GridLine): number {
-  return ln.ascender;
 }
 
 function AlignedTranslationImpl({
@@ -73,6 +86,17 @@ function AlignedTranslationImpl({
   highlight = null,
 }: AlignedTranslationProps) {
   const [probe, setProbe] = useState<ProbeState | null>(null);
+  // The TRANSLATION font's raw single-line ascent. The wrapping probe below
+  // pins `lineHeight: lh2`, so its reported per-line `ascender` includes the
+  // half-leading (`ascent + (lh2 − (ascent+descent)) / 2`). But each row's
+  // translation is rendered as a pixel-identical SINGLE-line Text: one glyph
+  // run, top-aligned, its baseline at the raw font ascent — NOT at the
+  // half-leading-inflated ascender (that mismatch over-shifted the rows
+  // 2–5px and accrued line after line). So we measure the raw ascent on the
+  // same single-line shape the rows render and subtract THAT from the L2
+  // target. Kept on state so the sliced render is only committed once the
+  // alignment reference is known.
+  const [naturalAscent, setNaturalAscent] = useState<number | null>(null);
 
   // L2 line pitch: consecutive line tops (probe spacing + stand-in line
   // height). For a single-line block the only measure is the line's height.
@@ -83,7 +107,6 @@ function AlignedTranslationImpl({
         ? l2Lines[0]!.height
         : 0;
   const probeKey = `${text}:${trFontSize}:${lh2}`;
-
   const handleProbeLayout = useCallback(
     (e: TextLayoutEvent) => {
       const lines = e.nativeEvent.lines;
@@ -93,6 +116,15 @@ function AlignedTranslationImpl({
     },
     [probeKey],
   );
+  // Natural single-line render metrics — a single "Ag中" run at the same font
+  // with no pinned lineHeight, matching EXACTLY how each row renders its
+  // translation line (top-aligned, baseline at raw ascent). Invalidates when
+  // the font size changes.
+  const handleNaturalProbeLayout = useCallback((e: TextLayoutEvent) => {
+    const l0 = e.nativeEvent.lines[0];
+    if (!l0) return;
+    setNaturalAscent((prev) => (prev === l0.ascender ? prev : l0.ascender));
+  }, []);
 
   const ready = probe != null && probe.key === probeKey && probe.lines.length > 0;
   const offsets = useMemo(
@@ -127,12 +159,37 @@ function AlignedTranslationImpl({
     </Text>
   );
 
-  if (!ready) {
+  // Natural single-line ascent probe (hidden). The rows slice `text` by the
+  // wrapping probe's lines; their rendered baselines come from THIS probe.
+  const naturalProbeEl = (
+    <Text
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        opacity: 0,
+        fontSize: trFontSize,
+      }}
+      className={className}
+      numberOfLines={1}
+      onTextLayout={handleNaturalProbeLayout}
+    >
+      {'Ag中'}
+    </Text>
+  );
+
+  // alignmentReady: wrapped lines known AND the single-line baseline known.
+  // Until both land, render the layout-neutral stand-in (same font and pitch).
+  const alignmentReady = ready && naturalAscent != null;
+
+  if (!alignmentReady) {
     // One-frame stand-in: same size and line spacing as the aligned rows, so
     // the swap to sliced rows is layout-neutral.
     return (
       <View>
         {probeEl}
+        {naturalProbeEl}
         <Text className={className} style={{ fontSize: trFontSize, lineHeight: lh2 }}>{text}</Text>
       </View>
     );
@@ -141,30 +198,33 @@ function AlignedTranslationImpl({
   return (
     <View>
       {probeEl}
+      {naturalProbeEl}
       {probe!.lines.map((ln, j) => {
         const off = offsets[j] ?? { start: 0, end: 0 };
         const lineText = text.slice(off.start, off.end);
-        // This row pairs with L2 line j: its own box height and baseline
-        // (per-line — the ruby band can shift the first line differently
-        // from the rest). The shift puts the translation line's baseline on
-        // the L2 line's baseline; negative when the translation font's
-        // ascent is larger.
+        // This row pairs with L2 line j (per-line — the ruby band can shift
+        // the first line differently from the rest). The shift puts the
+        // translation line's single-line baseline on the L2 line's baseline.
+        // We subtract the SINGLE-LINE baseline (naturalAscent), not the
+        // wrapping probe's half-leading-inflated ascender.
         const l2Line = l2Lines[Math.min(j, l2Lines.length - 1)] ?? l2Lines[l2Lines.length - 1]!;
-        const shift = lineBaselineOffset(l2Line) - lineBaselineOffset(ln);
+        const shift = lineBaselineOffset(l2Line) - naturalAscent!;
+        if (j === 0) {
+          log(`[AlignedTranslation] l2Lines=${l2Lines.length} trFontSize=${trFontSize} lh2=${lh2} l2Asc0=${lineBaselineOffset(l2Lines[0]!)} trNaturalAsc=${naturalAscent} shift0=${shift}`);
+        }
         const hl = highlight && highlight.start < off.end && highlight.end > off.start;
         return (
-          // Rows stack at the L2 line PITCH (lh2), not the per-line measured
-          // height: RN's reported line `height` can exceed the pitch by a few
-          // px on iOS, so rows sized by it drift further from the L2 grid on
-          // every line (2–5px per line with ruby on or off). The web
-          // AlignedTranslation uses the same fixed-pitch rows; the baseline
-          // inside each row is still positioned by `shift`, so ruby's
-          // per-line baseline delta keeps working.
+          // Rows stack at the L2 line PITCH (lh2): RN's reported line
+          // `height` can exceed the pitch by a few px on iOS, so rows sized
+          // by it drift from the L2 grid every line. The translation line
+          // renders with NO pinned lineHeight (natural single line), so its
+          // on-canvas baseline is exactly `naturalAscent` from its top and
+          // `shift` lands it on the L2 baseline unambiguously.
           <View key={j} style={{ height: lh2 }}>
             <Text
               numberOfLines={1}
               className={className}
-              style={{ fontSize: trFontSize, lineHeight: lh2, marginTop: shift }}
+              style={{ fontSize: trFontSize, marginTop: shift }}
             >
               {hl ? (
                 <>
