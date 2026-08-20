@@ -504,6 +504,10 @@ export default function ReviewScreen() {
         const { apiClient } = await import('@langplayer/api-client');
         const payload = await apiClient.post('/chatgpt', { prompt, cache: true, max_tokens: 500 });
         const parsed = JSON.parse((payload as any).response);
+        const questionText = typeof parsed.question === 'string' ? parsed.question : '';
+        const pronunciationQuestion = kind === 'pronunciation' && /pronunciation|pronounced|reading|read|发音|读音|読み|発音|발음|النطق/i.test(questionText);
+        const definitionQuestion = kind === 'definition' && /meaning|definition|mean|意味|定義|뜻|의미|含义|含意|المعنى|التعريف/i.test(questionText);
+        if (!(kind === 'pronunciation' ? pronunciationQuestion : definitionQuestion)) throw new Error('LLM returned the wrong question type');
         const rawChoices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
         if (choices.length !== 4) throw new Error('Invalid question choices');
