@@ -63,6 +63,8 @@ import {
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
+type TestAnswer = { answer: string; correct: boolean; score: 1 | 2 | 3 | 4 };
+
 /** ADR-0034: free users can complete 20 SRS reviews per day. */
 const FREE_SRS_DAILY_CAP = 20;
 
@@ -128,10 +130,12 @@ export default function ReviewPage() {
     setReviewMode(mode);
     window.localStorage.setItem('lp:srs-review-mode', mode);
     setTestQuestions([]);
+    setTestAnswers([]);
     setShowDefinition(false);
     setTestError(null);
   }, []);
   const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
+  const [testAnswers, setTestAnswers] = useState<TestAnswer[]>([]);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
   const [testLoading, setTestLoading] = useState(false);
@@ -371,6 +375,7 @@ export default function ReviewPage() {
     setRated(true);
     setShowDefinition(false); // hide answer immediately for next card
     setTestQuestions([]);
+    setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
@@ -497,6 +502,7 @@ export default function ReviewPage() {
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       setTestQuestions(questions);
+      setTestAnswers([]);
       setTestQuestionIndex(0);
       setTestStartedAt(Date.now());
     } catch (error) {
@@ -516,17 +522,27 @@ export default function ReviewPage() {
   }, [reviewMode, loadTestQuestions]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    if (testAnswered || !testStartedAt) return;
+    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) return;
     const question = testQuestions[testQuestionIndex];
     if (!question) return;
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
     setTestScores((previous) => [...previous, score]);
+    setTestAnswers((previous) => {
+      const next = [...previous];
+      next[testQuestionIndex] = { answer, correct: isCorrect, score };
+      return next;
+    });
     setTestSelectedAnswer(answer);
     setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
     if (testQuestionIndex < testQuestions.length - 1) {
-      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
+      // Keep the answered question rendered and immediately append the next one below it.
+      setTestQuestionIndex((i) => i + 1);
+      setTestStartedAt(Date.now());
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestAnswered(false);
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
@@ -1175,23 +1191,31 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Test results remain visible while the dictionary back is revealed. */}
-        {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
-          <div className="mt-4 w-full space-y-3 text-left" onClick={(e) => e.stopPropagation()}>
-            <p className="font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</p>
-            {testQuestions[testQuestionIndex]!.choices.map((choice, index) => {
-              const isSelected = testSelectedAnswer === choice;
-              const isCorrectChoice = testAnswered && choice === testQuestions[testQuestionIndex]!.correctAnswer;
-              const choiceClass = testAnswered
-                ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
-                : 'border-border bg-background hover:border-primary';
+        {/* Test results stay on screen; each answered question is followed by the next. */}
+        {reviewMode === 'test' && testQuestions.length > 0 ? (
+          <div className="mt-4 w-full space-y-6 text-left" onClick={(e) => e.stopPropagation()}>
+            {testQuestions.map((question, questionIndex) => {
+              const result = testAnswers[questionIndex];
+              const isCurrent = questionIndex === testQuestionIndex;
               return (
-                <button key={`${choice}-${index}`} type="button" disabled={testAnswered} onClick={() => handleTestAnswer(choice)} className={`w-full rounded-lg border px-4 py-3 text-left text-sm disabled:cursor-default ${choiceClass}`}>
-                  <span className="mr-2 font-semibold">{String.fromCharCode(97 + index)}.</span>{choice}
-                </button>
+                <div key={`${question.kind}-${questionIndex}`} className="space-y-3 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                  <p className="font-medium text-foreground">{question.prompt}</p>
+                  {question.choices.map((choice, index) => {
+                    const isSelected = result?.answer === choice;
+                    const isCorrectChoice = Boolean(result) && choice === question.correctAnswer;
+                    const choiceClass = result
+                      ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
+                      : 'border-border bg-background hover:border-primary';
+                    return (
+                      <button key={`${choice}-${index}`} type="button" disabled={Boolean(result) || !isCurrent} onClick={() => handleTestAnswer(choice)} className={`w-full rounded-lg border px-4 py-3 text-left text-sm disabled:cursor-default ${choiceClass}`}>
+                        <span className="mr-2 font-semibold">{String.fromCharCode(97 + index)}.</span>{choice}
+                      </button>
+                    );
+                  })}
+                  {result && <p className={`text-sm font-semibold ${result.correct ? 'text-green-600' : 'text-destructive'}`}>{result.correct ? t('review.answer_correct') : t('review.answer_incorrect')}</p>}
+                </div>
               );
             })}
-            {testAnswered && <p className={`text-sm font-semibold ${testAnswerCorrect ? 'text-green-600' : 'text-destructive'}`}>{testAnswerCorrect ? t('review.answer_correct') : t('review.answer_incorrect')}</p>}
           </div>
         ) : !showDefinition ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>

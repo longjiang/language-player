@@ -63,6 +63,8 @@ const { log } = srsLogger;
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
+type TestAnswer = { answer: string; correct: boolean; score: 1 | 2 | 3 | 4 };
+
 /** ADR-0034: free users can complete 20 SRS reviews per day. */
 const FREE_SRS_DAILY_CAP = 20;
 
@@ -179,6 +181,7 @@ export default function ReviewScreen() {
     setReviewMode(mode);
     AsyncStorage.setItem('lp:srs-review-mode', mode).catch(() => {});
     setTestQuestions([]);
+    setTestAnswers([]);
     setShowTabs(false);
     setTestError(null);
   }, []);
@@ -189,6 +192,7 @@ export default function ReviewScreen() {
     }).catch(() => {});
   }, []);
   const [testQuestions, setTestQuestions] = useState<SrsTestQuestion[]>([]);
+  const [testAnswers, setTestAnswers] = useState<TestAnswer[]>([]);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
   const [testLoading, setTestLoading] = useState(false);
@@ -534,7 +538,7 @@ export default function ReviewScreen() {
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
-      setTestQuestions(questions); setTestQuestionIndex(0); setTestStartedAt(Date.now());
+      setTestQuestions(questions); setTestAnswers([]); setTestQuestionIndex(0); setTestStartedAt(Date.now());
     } catch (error) {
       const message = error instanceof Error ? error.message : t('error.unexpected');
       log('[srs-test] question generation failed', { l2Code, word: wordForm, error: message });
@@ -548,17 +552,27 @@ export default function ReviewScreen() {
   }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
 
   const handleTestAnswer = useCallback((answer: string) => {
-    if (testAnswered || !testStartedAt) return;
+    if (testAnswered || !testStartedAt || testAnswers[testQuestionIndex]) return;
     const question = testQuestions[testQuestionIndex];
     if (!question) return;
     const isCorrect = answer === question.correctAnswer;
     const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
     setTestScores((previous) => [...previous, score]);
+    setTestAnswers((previous) => {
+      const next = [...previous];
+      next[testQuestionIndex] = { answer, correct: isCorrect, score };
+      return next;
+    });
     setTestSelectedAnswer(answer);
     setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
     if (testQuestionIndex < testQuestions.length - 1) {
-      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
+      // Keep the answered question rendered and immediately append the next one below it.
+      setTestQuestionIndex((i) => i + 1);
+      setTestStartedAt(Date.now());
+      setTestSelectedAnswer(null);
+      setTestAnswerCorrect(null);
+      setTestAnswered(false);
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
@@ -584,6 +598,7 @@ export default function ReviewScreen() {
     if (!isPro && reviewsDoneToday >= FREE_SRS_DAILY_CAP) return;
     setRated(true);
     setTestQuestions([]);
+    setTestAnswers([]);
     setTestQuestionIndex(0);
     setTestSelectedAnswer(null);
     setTestAnswerCorrect(null);
@@ -1197,23 +1212,31 @@ export default function ReviewScreen() {
             </View>
           )}
 
-          {/* Test results remain visible while the dictionary back is revealed. */}
-          {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
-            <View className="mt-2 gap-2" onStartShouldSetResponder={() => true}>
-              <Text className="mb-2 font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</Text>
-              {testQuestions[testQuestionIndex]!.choices.map((choice, index) => {
-                const isSelected = testSelectedAnswer === choice;
-                const isCorrectChoice = testAnswered && choice === testQuestions[testQuestionIndex]!.correctAnswer;
-                const choiceClass = testAnswered
-                  ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
-                  : 'border-border bg-background';
+          {/* Test results stay on screen; each answered question is followed by the next. */}
+          {reviewMode === 'test' && testQuestions.length > 0 ? (
+            <View className="mt-2 gap-5" onStartShouldSetResponder={() => true}>
+              {testQuestions.map((question, questionIndex) => {
+                const result = testAnswers[questionIndex];
+                const isCurrent = questionIndex === testQuestionIndex;
                 return (
-                  <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={testAnswered} className={`rounded-lg border p-3 ${choiceClass}`}>
-                    <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
-                  </Pressable>
+                  <View key={`${question.kind}-${questionIndex}`} className="gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
+                    <Text className="mb-2 font-medium text-foreground">{question.prompt}</Text>
+                    {question.choices.map((choice, index) => {
+                      const isSelected = result?.answer === choice;
+                      const isCorrectChoice = Boolean(result) && choice === question.correctAnswer;
+                      const choiceClass = result
+                        ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
+                        : 'border-border bg-background';
+                      return (
+                        <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={Boolean(result) || !isCurrent} className={`rounded-lg border p-3 ${choiceClass}`}>
+                          <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
+                        </Pressable>
+                      );
+                    })}
+                    {result && <Text className={`text-sm font-semibold ${result.correct ? 'text-green-600' : 'text-destructive'}`}>{result.correct ? t('review.answer_correct') : t('review.answer_incorrect')}</Text>}
+                  </View>
                 );
               })}
-              {testAnswered && <Text className={`text-sm font-semibold ${testAnswerCorrect ? 'text-green-600' : 'text-destructive'}`}>{testAnswerCorrect ? t('review.answer_correct') : t('review.answer_incorrect')}</Text>}
             </View>
           ) : !showTabs && (
             <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
