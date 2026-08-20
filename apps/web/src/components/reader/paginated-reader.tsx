@@ -329,12 +329,17 @@ export function PaginatedReader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Blank-space tap toggles the immersive chrome. Token clicks stopPropagation
-  // in token-span, so only taps on truly empty space reach this handler; links
-  // and controls are excluded via closest(). Text selection never toggles.
+  // Blank-space tap toggles the immersive chrome. The listener lives on the
+  // padded container — the reader's full-area root — so the tap surface
+  // covers the entire screen: the text column, the empty area below the last
+  // paragraph, and both reserved strips (SPEC-085 §5). Token clicks
+  // stopPropagation in token-span, so only taps on truly empty space reach
+  // this handler; links and controls are excluded via closest(). Text
+  // selection never toggles.
+  const tapSurfaceRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!immersive || !onToggleChrome) return;
-    const el = pager.viewportRef.current;
+    const el = tapSurfaceRef.current;
     if (!el) return;
     const onTap = (e: MouseEvent) => {
       if (window.getSelection()?.toString()) return;
@@ -344,7 +349,7 @@ export function PaginatedReader({
     };
     el.addEventListener('click', onTap);
     return () => el.removeEventListener('click', onTap);
-    // The viewport element is stable for the reader's lifetime.
+    // The container element is stable for the reader's lifetime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [immersive, onToggleChrome]);
 
@@ -356,6 +361,7 @@ export function PaginatedReader({
 
   return (
     <div
+      ref={tapSurfaceRef}
       className="relative min-w-0 flex-1 flex flex-col min-h-0 overflow-hidden"
       style={immersive && immersiveReserve
         ? { paddingTop: immersiveReserve.top, paddingBottom: immersiveReserve.bottom }
@@ -443,16 +449,27 @@ export function PaginatedReader({
       </div>
 
       {/* Immersive metadata overlays — muted chapter title (top strip) and
-          page count (bottom strip). Non-interactive, never reflow the book. */}
+          page count (bottom strip). Non-interactive, never reflow the book.
+          Their offsets are fixed inside the reserved strips (SPEC-085 §6.2):
+          the title line starts reserve.top − 20 (= H + 12) from the screen
+          top and the counter line bottom sits reserve.bottom − 24
+          (= BAR_H + 8) above the screen bottom, so the chrome bars never
+          cover them and toggling the chrome never moves them. */}
       {immersive && (
         <>
           {topOverlay && (
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center px-4 pt-2.5">
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center px-4"
+              style={{ paddingTop: immersiveReserve ? immersiveReserve.top - 20 : 10 }}
+            >
               {topOverlay}
             </div>
           )}
           {pageInfoOverlay && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-2.5">
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4"
+              style={{ paddingBottom: immersiveReserve ? immersiveReserve.bottom - 24 : 10 }}
+            >
               {pageInfoOverlay(pager.page, pager.totalPages, pager.totalPagesIsEstimate)}
             </div>
           )}

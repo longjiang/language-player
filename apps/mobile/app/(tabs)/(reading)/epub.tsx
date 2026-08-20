@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking } from 'react-native';
+import { View, Text, ActivityIndicator, Modal, Animated, ScrollView, useWindowDimensions, Linking, KeyboardAvoidingView, Platform } from 'react-native';
 import { Button, buttonTextClass } from '@/components/ui/button';
 import { Pressable } from '@/components/ui/pressable';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -38,13 +38,14 @@ export default function EpubReaderScreen() {
   // Reader translation goes side-by-side from md (>=768px) — portrait iPads.
   const { isMd } = useResponsive();
 
-  /** Top strip reserved for the app-header chrome + the muted chapter title.
-   *  Equals the real Header height (insets.top + 8 pt + 40 icon row + 8 pb +
-   *  1 border) so the dropped-down header never obscures content. */
-  const TOP_CHROME_RESERVE = insets.top + 57;
+  /** Top strip reserved for the app-header chrome + the muted chapter title:
+   *  header (insets.top + 57) + 8 clearance + 16 title line + 8 breathing
+   *  room (SPEC-085 §6.2) — the dropped-down header never obscures content. */
+  const TOP_CHROME_RESERVE = insets.top + 89;
   /** Bottom strip reserved for the pagination-bar chrome + the muted page
-   *  count — same height as the top margin (symmetric design). */
-  const BOTTOM_CHROME_RESERVE = TOP_CHROME_RESERVE;
+   *  count: bar (27 + insets.bottom) + 8 clearance + 16 counter line + 8
+   *  breathing room (SPEC-085 §6.2) — the bottom bar never covers the counter. */
+  const BOTTOM_CHROME_RESERVE = 59 + insets.bottom;
 
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [location, setLocation] = useState<BookLocation | null>(null);
@@ -458,7 +459,6 @@ export default function EpubReaderScreen() {
           topOverlay={
             <Text
               className="max-w-[85%] text-xs text-muted-foreground"
-              style={{ paddingTop: insets.top }}
               numberOfLines={1}
             >
               {nearestMarker?.label || epub.fileName || t('title.epub_reader')}
@@ -483,13 +483,14 @@ export default function EpubReaderScreen() {
       </Animated.View>
 
       {/* Close button (chrome): X in a 24px circle, top right — fades in
-          with the chrome. top = insets.top + 6 centers the 24px circle on
-          the chapter-title line (title top insets.top + 10 + half its 16px
-          line box). */}
+          with the chrome. top = insets.top + 65 (H + 8, where H is the
+          header height incl. inset) keeps it ≥ 8px below the site top bar
+          and centers the 24px circle on the chapter-title line (SPEC-085
+          §6.2). */}
       <Animated.View
         pointerEvents={chromeVisible ? 'auto' : 'none'}
         className="absolute z-40"
-        style={{ top: insets.top + 6, right: 12, opacity: closeOpacity }}
+        style={{ top: insets.top + 65, right: 12, opacity: closeOpacity }}
       >
         <Pressable
           onPress={handleCloseReader}
@@ -549,39 +550,55 @@ export default function EpubReaderScreen() {
                 onSelect={handleChapterSelect}
               />
             </ScrollView>
+            {/* Chapter count footer — web parity (SPEC-085 §10). */}
+            <View className="border-t border-border px-4 py-2">
+              <Text className="text-xs text-muted-foreground">
+                {(epub.markers?.length ?? epub.toc.length)} {t('msg.chapters')}
+              </Text>
+            </View>
           </View>
         </View>
         </Modal>
       )}
 
       {/* ── Search modal (replaces the sidebar) ── */}
+      {/* Fixed height, independent of the result count (SPEC-085 §9): the
+          search bar stays pinned at the top and the results area reserves
+          its space even when empty, so the bar sits well above the software
+          keyboard; the KeyboardAvoidingView shifts the modal up when the
+          keyboard opens. */}
       <Modal
         visible={searchOpen}
         transparent
         animationType="fade"
         onRequestClose={() => setSearchOpen(false)}
       >
-        <View className="flex-1 items-center justify-center bg-black/40 px-6">
-          <View className="max-h-[85%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
-            <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
-              <Text className="flex-1 text-base font-semibold text-foreground">{t('action.search')}</Text>
-              <Pressable
-                onPress={() => setSearchOpen(false)}
-                className="rounded p-1 active:bg-muted"
-                accessibilityLabel={t('action.close')}
-              >
-                <X size={18} color={ICON_MUTED} />
-              </Pressable>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+        >
+          <View className="flex-1 items-center justify-center bg-black/40 px-6">
+            <View className="h-[70%] w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+              <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+                <Text className="flex-1 text-base font-semibold text-foreground">{t('action.search')}</Text>
+                <Pressable
+                  onPress={() => setSearchOpen(false)}
+                  className="rounded p-1 active:bg-muted"
+                  accessibilityLabel={t('action.close')}
+                >
+                  <X size={18} color={ICON_MUTED} />
+                </Pressable>
+              </View>
+              <View className="flex-1">
+                <EpubSearchPanel
+                  blocks={pagination.blocks}
+                  chapterLabels={epub.chapterLabels}
+                  onSelect={handleSearchSelect}
+                />
+              </View>
             </View>
-            <ScrollView className="max-h-[70%]" keyboardShouldPersistTaps="handled">
-              <EpubSearchPanel
-                blocks={pagination.blocks}
-                chapterLabels={epub.chapterLabels}
-                onSelect={handleSearchSelect}
-              />
-            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
