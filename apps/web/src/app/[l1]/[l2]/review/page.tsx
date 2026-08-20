@@ -462,6 +462,10 @@ export default function ReviewPage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         const parsed = JSON.parse(payload.response);
+        const questionText = typeof parsed.question === 'string' ? parsed.question : '';
+        const pronunciationQuestion = kind === 'pronunciation' && /pronunciation|pronounced|reading|read|发音|读音|読み|発音|발음|발음|النطق/i.test(questionText);
+        const definitionQuestion = kind === 'definition' && /meaning|definition|mean|意味|定義|뜻|의미|含义|含意|المعنى|التعريف/i.test(questionText);
+        if (!(kind === 'pronunciation' ? pronunciationQuestion : definitionQuestion)) throw new Error('LLM returned the wrong question type');
         const rawChoices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
         if (choices.length !== 4) throw new Error('Invalid question choices');
