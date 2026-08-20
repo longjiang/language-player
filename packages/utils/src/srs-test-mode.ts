@@ -74,7 +74,7 @@ export function buildSrsQuestionPrompt(input: {
     input.kind === 'definition'
       ? 'Make the question explicitly refer to the sentence above, for example: “What does this word mean in the text shown above?”'
       : 'Make the question explicitly ask for the target word’s pronunciation/reading, for example: “How is this word pronounced in the text shown above?”',
-    'Return JSON only with exactly these fields: question, correct_answer, confounders.',
+    `Return JSON only with exactly these fields: kind, question, correct_answer, confounders. Set kind to exactly "${input.kind}".`,
     'question must be a natural question in L1. For definition questions, correct_answer must be one concise answer in L1; for pronunciation questions, correct_answer must be the standard L2 pronunciation only.',
     'confounders must contain exactly three plausible but incorrect answers of the same type and length as the correct answer.',
     'Every confounder must be distinct from the correct_answer and from every other confounder after trimming, collapsing whitespace, and ignoring letter case. Never repeat, paraphrase only by formatting, or include the correct answer among the confounders.',
