@@ -82,8 +82,12 @@ export function buildSrsQuestionPrompt(input: {
     `Return JSON only with exactly these fields: kind, question, correct_answer, confounders. Set kind to exactly "${input.kind}".`,
     'question must be a natural question in L1. For definition questions, correct_answer must be one concise answer in L1; for pronunciation questions, correct_answer must be the standard L2 pronunciation only.',
     'confounders must contain exactly three plausible but incorrect answers of the same type and length as the correct answer.',
+    input.kind === 'definition'
+      ? 'There must be exactly one defensible answer for this exact sentence. Confounders must be clearly incompatible with the sentence, not synonyms, near-synonyms, paraphrases, broader or narrower versions, translations that could also fit, or alternate acceptable glosses of the target word. Do not use two answers that a native speaker could reasonably accept.'
+      : 'There must be exactly one valid pronunciation for the target word in this sentence. Confounders must be readings of other words or deliberate near-misses, never alternate valid readings of the target word.',
+    'Before returning JSON, evaluate every choice against the context sentence. If a confounder could also answer the question reasonably, discard it and generate a different one.',
     'Every confounder must be distinct from the correct_answer and from every other confounder after trimming, collapsing whitespace, and ignoring letter case. Never repeat, paraphrase only by formatting, or include the correct answer among the confounders.',
-    'Before returning JSON, verify that correct_answer plus the three confounders are four unique strings.',
+    'Before returning JSON, verify that correct_answer plus the three confounders are four unique strings and that only correct_answer fits the context.',
     'Do not include answer labels, markdown, commentary, or the target word in the answer choices.',
   ].filter(Boolean).join('\n');
 }
