@@ -525,6 +525,7 @@ export default function ReviewPage() {
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((testScores.reduce((a, b) => a + b, 0) + score) / (testScores.length + 1));
     const rating = testScoreToRating(finalScore);
+    // Always reveal the dictionary back after the final answer, correct or wrong.
     setSuggestedRating(rating);
     setTestScores([]);
     setTestStartedAt(null);
