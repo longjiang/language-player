@@ -86,7 +86,7 @@ export interface PaginatedReaderProps {
   /** Applied to the hidden measuring mirror; defaults to `contentClassName`. */
   measureClassName?: string;
   /** EPUB reader horizontal geometry; applied to visible and measured content. */
-  readerHorizontalPadding?: { left: number; right: number };
+  readerHorizontalPadding?: { paddingLeft: number; paddingRight: number };
 
   // ── Immersive reader mode (EPUB) ──
   /**
