@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useTextActions } from '@/hooks/use-text-actions';
@@ -72,6 +72,8 @@ interface TextActionMenuProps {
    *  everything else keeps 'lg' (>=1024px) so e.g. subtitle rows only split on
    *  genuinely wide screens. Default 'lg'. */
   sideBySideBreakpoint?: 'md' | 'lg';
+  /** Visible gap between L2 and translation columns, in CSS pixels. */
+  sideBySideGapPx?: number;
   children: ReactNode;
 }
 
@@ -93,6 +95,7 @@ export function TextActionMenu({
   onTranslationSplitChange,
   onTranslationSplitCommit,
   sideBySideBreakpoint = 'lg',
+  sideBySideGapPx,
   children,
 }: TextActionMenuProps) {
   const t = useT();
@@ -118,6 +121,20 @@ export function TextActionMenu({
   // L2 column flex-grow factor (basis 0% → grow ratio distributes the row).
   const l2Grow = resizable ? translationSplit! : 3;
   const trGrow = resizable ? 1 - translationSplit! : 2;
+  // The split handle occupies 8px of the visible row after its negative
+  // margins, so reduce the flex gap by that footprint and keep the requested
+  // text-leading gap between the two text columns.
+  const sideBySideGap = sideBySideGapPx == null
+    ? undefined
+    : resizable
+      ? Math.max(0, (sideBySideGapPx - 8) / 2)
+      : sideBySideGapPx;
+  const sideBySideGapClass = sideBySideGap == null
+    ? (resizable ? `${sideBySideBreakpoint}:gap-2` : `${sideBySideBreakpoint}:gap-4`)
+    : `${sideBySideBreakpoint}:gap-[var(--reader-side-gap)]`;
+  const sideBySideGapStyle = sideBySideGap == null
+    ? undefined
+    : { '--reader-side-gap': `${sideBySideGap}px` } as CSSProperties;
   const {
     activeAction,
     close,
@@ -146,7 +163,10 @@ export function TextActionMenu({
   return (
     <div className={`group relative flex items-start gap-3 ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
-      <div className={`flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : resizable ? `${sideBySideBreakpoint}:flex-row ${sideBySideBreakpoint}:gap-2` : `${sideBySideBreakpoint}:flex-row ${sideBySideBreakpoint}:gap-4`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}>
+      <div
+        className={`flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
+        style={sideBySideGapStyle}
+      >
         <div className="min-w-0" style={{ flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }} ref={l2Ref}>
           {children}
         </div>
