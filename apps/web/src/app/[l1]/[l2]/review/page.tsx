@@ -481,6 +481,7 @@ export default function ReviewPage() {
         log('[SRS Test] response received', { l2Code, word: wordForm, kind, status: response.status, responseType: typeof payload.response, responseLength: typeof payload.response === 'string' ? payload.response.length : null });
         const parsed = JSON.parse(payload.response);
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
+        if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
         const rawChoices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
