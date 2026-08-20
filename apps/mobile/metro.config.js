@@ -42,4 +42,11 @@ config.resolver.blockList = blockList.filter(
 );
 
 // 4. NativeWind integration
-module.exports = withNativeWind(config, { input: './global.css' });
+// `inlineRem: 16` matches web: NativeWind's default inlines `rem` units as
+// 1rem = 14 on native (RN's default Text size), so e.g. text-sm (0.875rem)
+// compiled to 12.25 instead of web's 14. Setting it to 16 makes every
+// rem-based class resolve to the same px on mobile as on web.
+module.exports = withNativeWind(config, {
+  input: './global.css',
+  inlineRem: 16,
+});
