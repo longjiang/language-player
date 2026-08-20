@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { isPhoneticsEligible } from '@langplayer/utils';
 import ReactMarkdown from 'react-markdown';
@@ -10,6 +10,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { translationFontSizeRem } from '@/lib/reader-text-size';
+import { READER_DEFAULT_LEADING, readerHorizontalPadding, readerLeadingPx } from '@/lib/reader-layout';
 import {
   blockTag,
   blockClass,
@@ -93,6 +94,14 @@ export function EpubReaderPanel({
   // User's text-size setting (Settings → Display → Text Size) as a CSS zoom
   // factor. Applied to blocks so headings keep their relative sizes.
   const textZoom = useTextScale();
+  const readerLeading = readerLeadingPx(
+    tokenizedText.zoom,
+    tokenizedText.leading ?? READER_DEFAULT_LEADING,
+  );
+  const readerPadding = readerHorizontalPadding(
+    tokenizedText.zoom,
+    tokenizedText.leading ?? READER_DEFAULT_LEADING,
+  );
   // Ruby/furigana/pinyin estimate for pagination: when phonetics are shown
   // above words, every annotated line is taller than the raw text line.
   const phonetics = getL2(l2.code).tokenSpan.phonetics;
@@ -115,7 +124,7 @@ export function EpubReaderPanel({
     setLiveSplit((prev) => (Math.abs(prev - persistedSplit) < 0.001 ? prev : persistedSplit));
   }, [persistedSplit]);
 
-  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}:${persistedSplit}:${tokenizedText.translationSize}`;
+  const measureNonce = `${textZoom}:${showTranslation ? 1 : 0}:${phoneticsEstimate}:${persistedSplit}:${tokenizedText.translationSize}:${tokenizedText.leading ?? READER_DEFAULT_LEADING}`;
 
   // Paging away from the highlighted search result dismisses the highlight.
   // The shared reader reports every visible-page start change through
@@ -197,6 +206,7 @@ export function EpubReaderPanel({
             onTranslationSplitChange={onTranslationSplitChange}
             onTranslationSplitCommit={onTranslationSplitCommit}
             sideBySideBreakpoint="md"
+            sideBySideGapPx={readerLeading}
             loading={showTranslation && !rctx.translation}>
             <Tag
               className={blockClass(tb)}
@@ -211,7 +221,7 @@ export function EpubReaderPanel({
         )}
       </SentenceHighlightBlock>
     );
-  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, markdownComponents, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit]);
+  }, [highlight, showTranslation, textZoom, l2.code, l1.code, ctx, onOpenLink, markdownComponents, measureNonce, appliedSplit, onTranslationSplitChange, onTranslationSplitCommit, readerLeading]);
 
   /** Mirror of the visible rendering for the measuring container — one root
    *  element per block. Mirrors the shared web-reader measurement (dual-column
@@ -232,7 +242,10 @@ export function EpubReaderPanel({
     const lines = Math.max(1, Math.ceil(tb.text.length / 50));
     return (
       <div key={item.key} className="mb-4 flex items-start gap-3">
-        <div className="flex-1 min-w-0 flex flex-col gap-y-2 md:flex-row md:gap-4 md:items-center">
+        <div
+          className="flex-1 min-w-0 flex flex-col gap-y-2 md:flex-row md:gap-[var(--reader-side-gap)] md:items-center"
+          style={{ '--reader-side-gap': `${readerLeading}px` } as CSSProperties}
+        >
           <div className="flex-[3] min-w-0">
             <Tag
               className={`${blockClass(tb)}${phoneticsEstimate ? ` ${phoneticsEstimate}` : ''}`}
@@ -258,7 +271,7 @@ export function EpubReaderPanel({
         <div className="mt-1 h-6 w-6 shrink-0" />
       </div>
     );
-  }, [phoneticsEstimate, showTranslation, textZoom, markdownComponents, tokenizedText.translationSize]);
+  }, [phoneticsEstimate, showTranslation, textZoom, markdownComponents, tokenizedText.translationSize, readerLeading]);
 
   return (
     <PaginatedReader
@@ -276,10 +289,11 @@ export function EpubReaderPanel({
       onOpenSearch={onOpenSearch}
       topOverlay={topOverlay}
       pageInfoOverlay={pageInfoOverlay}
+      readerHorizontalPadding={readerPadding}
       onLemmatize={onLemmatize}
       onPageTranslate={onPageTranslate}
       onLocationChange={handleLocationChange}
-      contentClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
+      contentClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
         [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0
@@ -296,7 +310,7 @@ export function EpubReaderPanel({
         [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
         [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-0
         [&_hr]:border-border [&_hr]:my-6"
-      measureClassName="px-1 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
+      measureClassName="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-0 [&_h1]:mb-0
         [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-0 [&_h2]:mb-0
         [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-0 [&_h3]:mb-0
         [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-0 [&_h4]:mb-0

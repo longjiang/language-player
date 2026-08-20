@@ -85,6 +85,8 @@ export interface PaginatedReaderProps {
   contentClassName?: string;
   /** Applied to the hidden measuring mirror; defaults to `contentClassName`. */
   measureClassName?: string;
+  /** EPUB reader horizontal geometry; applied to visible and measured content. */
+  readerHorizontalPadding?: { left: number; right: number };
 
   // ── Immersive reader mode (EPUB) ──
   /**
@@ -135,6 +137,7 @@ export function PaginatedReader({
   header,
   contentClassName = '',
   measureClassName,
+  readerHorizontalPadding,
   immersive = false,
   immersiveReserve,
   chromeVisible = true,
@@ -368,7 +371,13 @@ export function PaginatedReader({
         : undefined}
     >
       <div ref={pager.viewportRef} className="min-h-0 flex-1 overflow-auto touch-pan-y">
-        <div ref={dragRef} className={contentClassName} lang={glyphLang} dir={dir}>
+        <div
+          ref={dragRef}
+          className={contentClassName}
+          style={readerHorizontalPadding}
+          lang={glyphLang}
+          dir={dir}
+        >
           {pager.pageBlocks.length > 0 && header}
           {showFallback ? (
             <TextActionMenu text={stripMarkdown(text!)} l2Code={l2.code} l1Code={l1.code}>
@@ -487,6 +496,7 @@ export function PaginatedReader({
         ref={pager.measureRef}
         aria-hidden="true"
         className={`absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none ${measureClassName ?? contentClassName}`}
+        style={readerHorizontalPadding}
         lang={glyphLang} dir={dir}
       >
         {pager.measureWindow.map((item, i) => renderMeasureBlock(item, i))}
