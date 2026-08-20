@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Снова",
         "again_hint": "Полностью забыл",
+        "answer_correct": "Правильно",
+        "answer_incorrect": "Неправильно",
         "context_label": "Контекст",
         "easy": "Легко",
         "easy_hint": "Мгновенное запоминание",

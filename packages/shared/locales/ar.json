@@ -1242,6 +1242,8 @@
     "review": {
         "again": "مجددًا",
         "again_hint": "نسيت تمامًا",
+        "answer_correct": "صحيح",
+        "answer_incorrect": "غير صحيح",
         "context_label": "السياق",
         "easy": "سهل",
         "easy_hint": "تذكرت فورًا",

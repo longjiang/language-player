@@ -1242,6 +1242,8 @@
     "review": {
         "again": "Lagi",
         "again_hint": "Sepenuhnya lupa",
+        "answer_correct": "Benar",
+        "answer_incorrect": "Salah",
         "context_label": "Konteks",
         "easy": "Mudah",
         "easy_hint": "Ingatan seketika",

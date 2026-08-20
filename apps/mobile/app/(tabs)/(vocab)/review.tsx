@@ -193,6 +193,8 @@ export default function ReviewScreen() {
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
   const [testLoading, setTestLoading] = useState(false);
   const [testAnswered, setTestAnswered] = useState(false);
+  const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
+  const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -546,10 +548,13 @@ export default function ReviewScreen() {
     if (testAnswered || !testStartedAt) return;
     const question = testQuestions[testQuestionIndex];
     if (!question) return;
-    const score = scoreTestAnswer(answer === question.correctAnswer, Date.now() - testStartedAt);
+    const isCorrect = answer === question.correctAnswer;
+    const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    setTestSelectedAnswer(answer);
+    setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
     if (testQuestionIndex < testQuestions.length - 1) {
-      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestAnswered(false); }, 700);
+      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
@@ -1186,11 +1191,19 @@ export default function ReviewScreen() {
           {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
             <View className="mt-2 gap-2" onStartShouldSetResponder={() => true}>
               <Text className="mb-2 font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</Text>
-              {testQuestions[testQuestionIndex]!.choices.map((choice, index) => (
-                <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={testAnswered} className="rounded-lg border border-border bg-background p-3">
-                  <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
-                </Pressable>
-              ))}
+              {testQuestions[testQuestionIndex]!.choices.map((choice, index) => {
+                const isSelected = testSelectedAnswer === choice;
+                const isCorrectChoice = testAnswered && choice === testQuestions[testQuestionIndex]!.correctAnswer;
+                const choiceClass = testAnswered
+                  ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
+                  : 'border-border bg-background';
+                return (
+                  <Pressable key={`${choice}-${index}`} onPress={() => handleTestAnswer(choice)} disabled={testAnswered} className={`rounded-lg border p-3 ${choiceClass}`}>
+                    <Text className="text-foreground"><Text className="font-semibold">{String.fromCharCode(97 + index)}. </Text>{choice}</Text>
+                  </Pressable>
+                );
+              })}
+              {testAnswered && <Text className={`text-sm font-semibold ${testAnswerCorrect ? 'text-green-600' : 'text-destructive'}`}>{testAnswerCorrect ? t('review.answer_correct') : t('review.answer_incorrect')}</Text>}
             </View>
           ) : !showTabs && (
             <Button onPress={handleReveal} variant="outline" size="sm" className="mb-2" disabled={testLoading}>
@@ -1198,33 +1211,6 @@ export default function ReviewScreen() {
             </Button>
           )}
 
-          {/* Matched entry card — full with tabs (no double border inside card) */}
-          {showTabs && (
-            <View className="mb-2">
-              {entry ? (
-                <DictionaryEntryTabs
-                  entry={entry}
-                  showDefinitionTab
-                  embedded
-                  l2Code={l2Lang.code}
-                  contextText={displayInstance?.context?.text}
-                  contextForm={wordForm}
-                />
-              ) : offlineEntryLookupDone[currentCard.word.id] ? (
-                <View className="items-center justify-center py-8">
-                  <Text className="text-sm text-muted-foreground">
-                    {dictAvailable === false
-                      ? t('msg.offline_dictionary_required')
-                      : t('msg.no_definition_offline')}
-                  </Text>
-                </View>
-              ) : (
-                <View className="items-center justify-center py-8">
-                  <ActivityIndicator size="small" color={ICON_MUTED} />
-                </View>
-              )}
-            </View>
-          )}
           </ScrollView>
         </View>
       </View>

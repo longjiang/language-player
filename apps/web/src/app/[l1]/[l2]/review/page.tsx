@@ -136,6 +136,8 @@ export default function ReviewPage() {
   const [testStartedAt, setTestStartedAt] = useState<number | null>(null);
   const [testLoading, setTestLoading] = useState(false);
   const [testAnswered, setTestAnswered] = useState(false);
+  const [testSelectedAnswer, setTestSelectedAnswer] = useState<string | null>(null);
+  const [testAnswerCorrect, setTestAnswerCorrect] = useState<boolean | null>(null);
   const [rated, setRated] = useState(false);
   const [initializing, setInitializing] = useState(false);
   /** True when the user just finished reviewing the last due card. */
@@ -508,16 +510,21 @@ export default function ReviewPage() {
     if (testAnswered || !testStartedAt) return;
     const question = testQuestions[testQuestionIndex];
     if (!question) return;
-    const score = scoreTestAnswer(answer === question.correctAnswer, Date.now() - testStartedAt);
+    const isCorrect = answer === question.correctAnswer;
+    const score = scoreTestAnswer(isCorrect, Date.now() - testStartedAt);
+    setTestSelectedAnswer(answer);
+    setTestAnswerCorrect(isCorrect);
     setTestAnswered(true);
     if (testQuestionIndex < testQuestions.length - 1) {
-      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestAnswered(false); }, 700);
+      setTimeout(() => { setTestQuestionIndex((i) => i + 1); setTestStartedAt(Date.now()); setTestSelectedAnswer(null); setTestAnswerCorrect(null); setTestAnswered(false); }, 1000);
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
     setShowDefinition(true);
     setTestQuestions([]);
     setTestQuestionIndex(0);
+    setTestSelectedAnswer(null);
+    setTestAnswerCorrect(null);
     setTestStartedAt(null);
     setTestAnswered(false);
     void handleRate(testScoreToRating(finalScore));
@@ -1153,11 +1160,19 @@ export default function ReviewPage() {
         {reviewMode === 'test' && testQuestions[testQuestionIndex] ? (
           <div className="mt-4 w-full space-y-3 text-left" onClick={(e) => e.stopPropagation()}>
             <p className="font-medium text-foreground">{testQuestions[testQuestionIndex]!.prompt}</p>
-            {testQuestions[testQuestionIndex]!.choices.map((choice, index) => (
-              <button key={`${choice}-${index}`} type="button" disabled={testAnswered} onClick={() => handleTestAnswer(choice)} className="w-full rounded-lg border border-border bg-background px-4 py-3 text-left text-sm hover:border-primary disabled:opacity-60">
-                <span className="mr-2 font-semibold">{String.fromCharCode(97 + index)}.</span>{choice}
-              </button>
-            ))}
+            {testQuestions[testQuestionIndex]!.choices.map((choice, index) => {
+              const isSelected = testSelectedAnswer === choice;
+              const isCorrectChoice = testAnswered && choice === testQuestions[testQuestionIndex]!.correctAnswer;
+              const choiceClass = testAnswered
+                ? isCorrectChoice ? 'border-green-500 bg-green-500/10' : isSelected ? 'border-destructive bg-destructive/10' : 'border-border bg-background opacity-60'
+                : 'border-border bg-background hover:border-primary';
+              return (
+                <button key={`${choice}-${index}`} type="button" disabled={testAnswered} onClick={() => handleTestAnswer(choice)} className={`w-full rounded-lg border px-4 py-3 text-left text-sm disabled:cursor-default ${choiceClass}`}>
+                  <span className="mr-2 font-semibold">{String.fromCharCode(97 + index)}.</span>{choice}
+                </button>
+              );
+            })}
+            {testAnswered && <p className={`text-sm font-semibold ${testAnswerCorrect ? 'text-green-600' : 'text-destructive'}`}>{testAnswerCorrect ? t('review.answer_correct') : t('review.answer_incorrect')}</p>}
           </div>
         ) : !showDefinition ? (
           <Button onClick={handleReveal} variant="outline" size="lg" className="mt-4 gap-2" disabled={testLoading}>
@@ -1165,7 +1180,6 @@ export default function ReviewPage() {
           </Button>
         ) : (
           <div className="mt-4 w-full text-left space-y-3">
-            {/* Full dictionary entry card with tabs (hidden until reveal) */}
             {entry ? (
               <DictionaryEntryTabs
                 entry={entry}
@@ -1173,27 +1187,15 @@ export default function ReviewPage() {
                 embedded
                 l2Code={l2Code}
                 l1Code={baseCode(l1.code)}
-                saveContext={{
-                  form: wordForm,
-                  text: wordCtx.text,
-                  youtube_id: wordCtx.youtube_id,
-                  videoTitle: wordCtx.videoTitle,
-                }}
+                saveContext={{ form: wordForm, text: wordCtx.text, youtube_id: wordCtx.youtube_id, videoTitle: wordCtx.videoTitle }}
                 contextText={wordCtx.text}
                 contextForm={wordCtx.form}
-                onCardClick={(e) => {
-                  const dictId = e.dictionary?.id ?? 'llm';
-                  router.push(buildEntryRoute(l1.code, l2.code, dictId, e.id));
-                }}
+                onCardClick={(e) => { const dictId = e.dictionary?.id ?? 'llm'; router.push(buildEntryRoute(l1.code, l2.code, dictId, e.id)); }}
               />
             ) : exactEntryLoading[currentCard.word.id] ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
+              <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
             ) : (
-              <p className="text-muted-foreground italic text-sm text-center">
-                {t('review.no_definition_available')}
-              </p>
+              <p className="text-muted-foreground italic text-sm text-center">{t('review.no_definition_available')}</p>
             )}
           </div>
         )}
