@@ -558,12 +558,12 @@ export default function ReviewScreen() {
       return;
     }
     const finalScore = testQuestions.length === 1 ? score : Math.floor((4 + score) / 2);
-    setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setTestAnswered(false); setShowTabs(true);
     const quality = testScoreToRating(finalScore);
     setTimeout(() => {
+      setTestQuestions([]); setTestQuestionIndex(0); setTestStartedAt(null); setTestAnswered(false); setShowTabs(true);
       const card = cards[currentIndex];
       if (card) handleRate(quality);
-    }, 0);
+    }, 1000);
   }, [testAnswered, testStartedAt, testQuestions, testQuestionIndex, cards, currentIndex]);
 
   const handleReveal = useCallback(() => {
