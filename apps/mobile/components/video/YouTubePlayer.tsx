@@ -203,7 +203,9 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           width={playerWidth}
           videoId={youtubeId}
           playbackRate={playbackRate}
-          initialPlayerParams={{ start: startTime, controls: false }}
+          // Let YouTube render its own progress bar, captions, settings,
+          // fullscreen, and the rest of the standard player controls.
+          initialPlayerParams={{ start: startTime, controls: true }}
           webViewProps={{
             allowsInlineMediaPlayback: true,
             allowsFullscreenVideo: true,
