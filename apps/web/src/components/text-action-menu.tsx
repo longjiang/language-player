@@ -184,16 +184,16 @@ export function TextActionMenu({
   ];
 
   return (
-    <div className={`group relative ${centered ? 'flex items-start' : 'flex items-start gap-3'} ${noMargin ? '' : 'mb-4'}`}>
+    <div className={`group relative ${centered ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start' : 'flex items-start gap-3'} ${noMargin ? '' : 'mb-4'}`}>
       {/* Content + inline translation */}
       <div
         className={centered
-          ? 'w-full min-w-0 flex flex-col items-center gap-y-1'
+          ? 'col-start-2 min-w-0 max-w-full flex flex-col items-center gap-y-1'
           : `flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
         style={sideBySideGapStyle}
       >
         <div
-          className={centered ? 'w-full min-w-0' : 'min-w-0'}
+          className={centered ? 'w-max max-w-full min-w-0' : 'min-w-0'}
           style={centered ? undefined : { flexBasis: 0, flexGrow: l2Grow, flexShrink: 1 }}
           ref={l2Ref}
         >
@@ -253,7 +253,7 @@ export function TextActionMenu({
       {/* Action menu dropdown — controlled so any option click closes it
           immediately (Radix popovers don't auto-close on item click). */}
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-        <PopoverTrigger className={`z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100 ${centered ? 'absolute right-0 top-0 mt-1' : 'mt-1'}`} aria-label={t('action.more')}>
+        <PopoverTrigger className={`z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100 ${centered ? 'col-start-3 row-start-1 mt-1 justify-self-end' : 'mt-1'}`} aria-label={t('action.more')}>
           <MoreVertical className="h-4 w-4" />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" sideOffset={4} className="min-w-[180px] p-1">
