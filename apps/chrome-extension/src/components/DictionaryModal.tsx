@@ -12,6 +12,8 @@ interface DictionaryModalProps {
   cueStartTime?: number;
   videoTitle?: string;
   pageUrl?: string;
+  linkUrl?: string | null;
+  onFollowLink?: (href: string) => void;
   isPro: boolean;
   subLoading: boolean;
   onClose: () => void;
@@ -30,6 +32,8 @@ export const DictionaryModal: React.FC<DictionaryModalProps> = ({
   cueStartTime,
   videoTitle,
   pageUrl,
+  linkUrl,
+  onFollowLink,
   isPro,
   subLoading,
   onClose,
@@ -52,6 +56,8 @@ export const DictionaryModal: React.FC<DictionaryModalProps> = ({
           cueStartTime={cueStartTime}
           videoTitle={videoTitle}
           pageUrl={pageUrl}
+          linkUrl={linkUrl}
+          onFollowLink={onFollowLink}
           isPro={isPro}
           subLoading={subLoading}
           onClose={onClose}

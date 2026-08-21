@@ -55,6 +55,8 @@ function PageDictionaryHost() {
           l2Code={language.l2Code}
           contextText={lookup?.blockText}
           pageUrl={lookup?.pageUrl || location.href}
+          linkUrl={lookup?.href}
+          onFollowLink={(href) => window.location.assign(href)}
           isPro={isPro}
           subLoading={subLoading}
           onClose={() => setLookup(null)}
