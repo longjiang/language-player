@@ -539,7 +539,7 @@ export default function ReviewScreen() {
     const requestVersion = ++testRequestVersionRef.current;
     const entryForQuestion = currentEntry ?? l1Entry ?? fallbackEntry;
     const kinds = needsPronunciationTest(l2Code, wordForm) ? ['definition', 'pronunciation'] as const : ['definition'] as const;
-    log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text) });
+    log('[srs-test] question generation started', { l2Code, word: wordForm, kinds, hasContext: Boolean(cards[currentIndex]?.word.context?.text), retry: Boolean(options?.retry), requestVersion });
     setTestError(null);
     setTestLoading(true);
     try {
@@ -553,26 +553,43 @@ export default function ReviewScreen() {
         if (parsed.kind !== kind) throw new Error('LLM returned the wrong question type');
         if (kind === 'pronunciation' && l2Code.split('-')[0] === 'ja' && !/^[\u3040-\u309fー\s]+$/.test(parsed.correct_answer) ) throw new Error('Japanese pronunciation must be hiragana');
         if (typeof parsed.question !== 'string' || !parsed.question.trim()) throw new Error('LLM returned an invalid question');
-        const rawChoices = [parsed.correct_answer, ...(parsed.confounders ?? [])].filter((x): x is string => typeof x === 'string');
+        const confounders = Array.isArray(parsed.confounders) ? parsed.confounders : [];
+        const rawChoices = [parsed.correct_answer, ...confounders].filter((x): x is string => typeof x === 'string');
         const choices = rawChoices.filter((choice, index) => rawChoices.findIndex((candidate) => normalizeTestChoice(candidate) === normalizeTestChoice(choice)) === index).slice(0, 4);
+        log('[srs-test] choices parsed', { l2Code, word: wordForm, kind, rawChoiceCount: rawChoices.length, uniqueChoiceCount: choices.length, confoundersIsArray: Array.isArray(parsed.confounders) });
         if (choices.length !== 4) throw new Error('Invalid question choices');
         return { kind, prompt: parsed.question, choices: choices.sort(() => Math.random() - 0.5), correctAnswer: parsed.correct_answer };
       }));
       if (requestVersion !== testRequestVersionRef.current) return;
-       setTestQuestions(questions); setTestAnswers([]); setTestQuestionIndex(0); setTestStartedAt(Date.now());
+      setTestQuestions(questions);
+      setTestError(null);
+      setTestAnswers([]);
+      setTestQuestionIndex(0);
+      setTestStartedAt(Date.now());
+      log('[srs-test] question generation succeeded', { l2Code, word: wordForm, requestVersion, questionCount: questions.length });
     } catch (error) {
       if (requestVersion !== testRequestVersionRef.current) return;
-       const message = error instanceof Error ? error.message : t('error.unexpected');
+      const message = error instanceof Error ? error.message : t('error.unexpected');
       log('[srs-test] question generation failed', { l2Code, word: wordForm, error: message });
       setTestError(message);
       setTestQuestions([]);
-    }
-    finally {
+    } finally {
       log('[srs-test] question generation finished', { l2Code, word: wordForm, loading: false });
       if (requestVersion !== testRequestVersionRef.current) return;
-       setTestLoading(false);
+      setTestLoading(false);
     }
-  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code]);
+  }, [cards, currentIndex, currentEntry, l1Entry, fallbackEntry, wordForm, l1Lang.code, l2Code, t]);
+
+  const handleRetryTestQuestions = useCallback(() => {
+    log('[srs-test] retry requested', { l2Code, word: wordForm });
+    testAutoLoadKeyRef.current = null;
+    setTestError(null);
+    setTestQuestions([]);
+    setTestAnswers([]);
+    setTestQuestionIndex(0);
+    setTestStartedAt(null);
+    void loadTestQuestions({ retry: true });
+  }, [l2Code, wordForm, loadTestQuestions]);
 
   useEffect(() => {
     const cardId = cards[currentIndex]?.word.id;
@@ -1271,7 +1288,7 @@ export default function ReviewScreen() {
           {testError && (
             <View className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
               <Text className="text-sm text-destructive">{testError}</Text>
-              <Button onPress={() => { setTestError(null); void loadTestQuestions({ retry: true }); }} variant="outline" size="sm" className="mt-2">
+              <Button onPress={handleRetryTestQuestions} variant="outline" size="sm" className="mt-2">
                 <Text className={buttonTextClass('outline')}>{t('action.try_again')}</Text>
               </Button>
             </View>
