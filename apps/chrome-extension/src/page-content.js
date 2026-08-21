@@ -285,8 +285,12 @@ function onTokenClick(e, token, textNodeParent) {
     blockText,
     blockId,
     href,
+    l1Code,
+    l2Code,
+    pageUrl: location.href,
   };
   lastLookup = payload;
+  window.dispatchEvent(new CustomEvent('lpv-page-dictionary-open', { detail: payload }));
   try {
     chrome.runtime.sendMessage({ action: 'pageLookup', payload }).catch(() => {});
   } catch {}

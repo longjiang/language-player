@@ -1070,6 +1070,92 @@ body.lpv-panel-open disney-web-player-ui {
   background: rgba(255, 193, 7, 0.1);
 }
 
+/* ── Page-mode dictionary modal ────────────────────────────────────────── */
+
+#lpv-page-dictionary-root {
+  --lpv-page-bg: hsl(0 0% 100%);
+  --lpv-page-fg: hsl(222 47% 11%);
+  --lpv-page-muted: hsl(215 14% 46%);
+  --lpv-page-border: hsl(214 20% 85%);
+  --lpv-page-primary: hsl(274 60% 38%);
+  --lpv-page-card: hsl(0 0% 100%);
+  color: var(--lpv-page-fg);
+}
+
+#lpv-page-dictionary-root .lpv-ui-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: hsl(222 47% 11% / 0.5);
+}
+
+#lpv-page-dictionary-root .lpv-ui-dialog {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: min(42rem, calc(100vh - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--lpv-page-border);
+  border-radius: 0.75rem;
+  background: var(--lpv-page-bg);
+  color: var(--lpv-page-fg);
+  box-shadow: 0 1.5rem 4rem hsl(222 47% 11% / 0.24);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+#lpv-page-dictionary-root .lpv-ui-dialog-body,
+#lpv-page-dictionary-root .lpv-dict-card-body {
+  max-height: min(40rem, calc(100vh - 4rem));
+  overflow-y: auto;
+}
+
+#lpv-page-dictionary-root .lpv-dict-card {
+  overflow: hidden;
+  background: var(--lpv-page-bg);
+  color: var(--lpv-page-fg);
+}
+
+#lpv-page-dictionary-root .lpv-dict-card-header {
+  border-bottom: 1px solid var(--lpv-page-border);
+}
+
+#lpv-page-dictionary-root .lpv-dict-card-word,
+#lpv-page-dictionary-root .lpv-dict-head {
+  color: var(--lpv-page-fg);
+}
+
+#lpv-page-dictionary-root .lpv-dict-card-pron,
+#lpv-page-dictionary-root .lpv-dict-pron-small,
+#lpv-page-dictionary-root .lpv-dict-card-lemma,
+#lpv-page-dictionary-root .lpv-dict-def {
+  color: var(--lpv-page-muted);
+}
+
+#lpv-page-dictionary-root .lpv-dict-entry-row:hover,
+#lpv-page-dictionary-root .lpv-dict-entry:hover {
+  background: hsl(210 17% 94% / 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  #lpv-page-dictionary-root {
+    --lpv-page-bg: hsl(230 30% 8%);
+    --lpv-page-fg: hsl(0 0% 95%);
+    --lpv-page-muted: hsl(215 14% 56%);
+    --lpv-page-border: hsl(230 20% 22%);
+    --lpv-page-primary: hsl(274 60% 46%);
+    --lpv-page-card: hsl(230 25% 12%);
+  }
+
+  #lpv-page-dictionary-root .lpv-dict-entry-row:hover,
+  #lpv-page-dictionary-root .lpv-dict-entry:hover {
+    background: hsl(230 20% 18% / 0.7);
+  }
+}
+
 /* ── Page Mode (webpage tokenization) ─────────────────────────────────── */
 
 .lpv-page-panel-scroll {

@@ -240,6 +240,40 @@ if (sidePanelResult.warnings.length > 0) {
   console.warn('[build] Side panel warnings:', sidePanelResult.warnings);
 }
 
+// Step 2f: Bundle the webpage dictionary modal host. This is loaded as a
+// content script on ordinary webpages and receives lookup events from the
+// page tokenizer in the same isolated world.
+console.log('[build] Bundling webpage dictionary host...');
+
+const pageDictionaryResult = await esbuild.build({
+  entryPoints: [resolve(__dirname, 'src/page-dictionary.tsx')],
+  bundle: true,
+  outfile: resolve(outDir, 'page-dictionary.js'),
+  banner: { js: banner },
+  format: 'iife',
+  target: ['chrome120'],
+  platform: 'browser',
+  jsx: 'automatic',
+  alias: {
+    '@langplayer/shared': resolve(root, 'packages/shared/src'),
+    '@langplayer/utils': resolve(root, 'packages/utils/src'),
+  },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+  external: ['chrome'],
+  minify: false,
+  sourcemap: false,
+});
+
+if (pageDictionaryResult.errors.length > 0) {
+  console.error('[build] Webpage dictionary errors:', pageDictionaryResult.errors);
+  process.exit(1);
+}
+if (pageDictionaryResult.warnings.length > 0) {
+  console.warn('[build] Webpage dictionary warnings:', pageDictionaryResult.warnings);
+}
+
 // Copy CSS
 copyFileSync(
   resolve(__dirname, 'src/content.css'),

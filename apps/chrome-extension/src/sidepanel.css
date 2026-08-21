@@ -135,7 +135,15 @@ button:focus-visible,
 }
 
 .lpv-profile-trigger {
-  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 9999px;
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.lpv-profile-trigger:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
 
 .lpv-user-menu {
