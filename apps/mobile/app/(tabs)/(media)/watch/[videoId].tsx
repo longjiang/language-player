@@ -406,9 +406,9 @@ export default function WatchScreen() {
           {playerElement}
           <View
             {...bandPanResponder.panHandlers}
-            className="absolute bottom-0 z-10 min-h-24 max-w-full self-center rounded-t-xl bg-black/70"
+            className="absolute bottom-0 z-10 min-h-24 max-w-full self-center rounded-xl bg-black/70"
             style={[
-              { maxWidth: Math.max(0, screenWidth - 16) },
+              { maxWidth: Math.max(0, screenWidth - 64) },
               bandTop === null ? { bottom: 0 } : { top: bandTop },
             ]}
             onLayout={(e) => {
@@ -416,9 +416,10 @@ export default function WatchScreen() {
               bandLayoutTopRef.current = e.nativeEvent.layout.y;
             }}
           >
-            <View className="flex-row justify-center border-b border-primary-foreground/10 py-1">
+            <View className="flex-row justify-center py-1">
               <VideoControlBar
                 reduced
+                subtitlesBand
                 playerRef={playerRef}
                 currentTime={currentTime}
                 duration={duration}

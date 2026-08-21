@@ -43,6 +43,8 @@ interface VideoControlBarProps {
   videoCountText?: string | null;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
+  /** Uses the subtitles-band order: previous video, previous line, like, playlist, panel, next line, next video. */
+  subtitlesBand?: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -76,6 +78,7 @@ export function VideoControlBar({
   playlistDisabled = false,
   videoCountText,
   reduced = false,
+  subtitlesBand = false,
 }: VideoControlBarProps) {
   const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -115,9 +118,36 @@ export function VideoControlBar({
         >
           <ChevronLeft size={18} color={ICON_MUTED} />
         </Pressable>
-        {videoCountText ? (
+        {!subtitlesBand && videoCountText ? (
           <Text className="px-1 text-xs tabular-nums text-muted-foreground">{videoCountText}</Text>
         ) : null}
+        {subtitlesBand && onToggleLike && (
+          <Pressable
+            onPress={onToggleLike}
+            disabled={likeDisabled}
+            className={`rounded p-1.5 ${likeDisabled ? 'opacity-30' : 'active:bg-muted'}`}
+          >
+            <Heart size={16} color={liked ? ICON_DESTRUCTIVE : ICON_MUTED} fill={liked ? ICON_DESTRUCTIVE : 'transparent'} />
+          </Pressable>
+        )}
+        {subtitlesBand && onSaveToPlaylist && (
+          <Pressable
+            onPress={onSaveToPlaylist}
+            disabled={playlistDisabled}
+            className={`rounded p-1.5 ${playlistDisabled ? 'opacity-30' : 'active:bg-muted'}`}
+          >
+            <Bookmark size={16} color={ICON_MUTED} />
+          </Pressable>
+        )}
+        {subtitlesBand && onTogglePanel && (
+          <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
+            {panelOpen ? (
+              <PanelRightClose size={16} color={ICON_MUTED} />
+            ) : (
+              <PanelRightOpen size={16} color={ICON_MUTED} />
+            )}
+          </Pressable>
+        )}
         <Pressable
           onPress={onNextLine}
           disabled={!hasNextLine}
@@ -132,7 +162,7 @@ export function VideoControlBar({
         >
           <SkipForward size={16} color={ICON_MUTED} />
         </Pressable>
-        {onToggleLike && (
+        {!subtitlesBand && onToggleLike && (
           <Pressable
             onPress={onToggleLike}
             disabled={likeDisabled}
@@ -150,7 +180,7 @@ export function VideoControlBar({
             <Bookmark size={16} color={ICON_MUTED} />
           </Pressable>
         )}
-        {onTogglePanel && (
+        {!subtitlesBand && onTogglePanel && (
           <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
             {panelOpen ? (
               <PanelRightClose size={16} color={ICON_MUTED} />
