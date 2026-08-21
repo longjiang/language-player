@@ -387,7 +387,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       ? 'absolute left-1/2 z-10 w-fit max-w-[calc(100%-4rem)] -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-xl'
       : 'bg-card border-t border-border';
     const btnColorClass = overlay
-      ? 'text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10'
+      ? 'text-primary-foreground hover:text-primary-foreground hover:bg-primary-foreground/10'
       : 'text-muted-foreground hover:text-foreground';
     const textClass = overlay ? 'text-primary-foreground' : 'text-foreground';
     const transClass = overlay ? 'text-primary-foreground/80' : 'text-muted-foreground';
