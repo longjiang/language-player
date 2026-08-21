@@ -244,6 +244,11 @@ that rating back to the daily budget. Both
 platforms share this algorithm through the same utility implementation, so a
 card rated on web and a card rated on mobile follow identical scheduling.
 
+After a rating, both platforms show a toast with the rating label on the first
+line and the newly scheduled interval on the second line (for example,
+“Next review in 3 days”). The interval rounds up and uses minutes, hours, or
+days as appropriate.
+
 ## Routes
 
 - **Web**: `apps/web/src/app/[l1]/[l2]/review/page.tsx` (+ `loading.tsx`,
