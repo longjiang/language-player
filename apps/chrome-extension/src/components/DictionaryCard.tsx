@@ -12,6 +12,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
+import { formatPronunciation } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
@@ -153,8 +154,8 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
       >
         <div className="lpv-dict-entry-header">
           <span className="lpv-dict-head">{entry.head}</span>
-          {entry.pronunciation && (
-            <span className="lpv-dict-pron-small">[{entry.pronunciation}]</span>
+          {formatPronunciation(entry, l2Code.split('-')[0] || l2Code) && (
+            <span className="lpv-dict-pron-small">{formatPronunciation(entry, l2Code.split('-')[0] || l2Code)}</span>
           )}
           {entry.part_of_speech && (
             <span className="lpv-dict-pos">{entry.part_of_speech}</span>
