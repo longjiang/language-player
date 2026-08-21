@@ -188,7 +188,7 @@ export function TextActionMenu({
       {/* Content + inline translation */}
       <div
         className={centered
-          ? 'w-full min-w-0 flex flex-col items-center gap-y-2'
+          ? 'w-full min-w-0 flex flex-col items-center gap-y-1'
           : `flex-1 min-w-0 flex flex-col gap-y-2 ${translationBelow ? '' : `${sideBySideBreakpoint}:flex-row ${sideBySideGapClass}`} ${aligned && !translationBelow ? `${sideBySideBreakpoint}:items-start` : translationBelow ? '' : `${sideBySideBreakpoint}:items-center`}`}
         style={sideBySideGapStyle}
       >
