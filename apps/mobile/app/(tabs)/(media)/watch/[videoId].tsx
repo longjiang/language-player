@@ -93,6 +93,7 @@ export default function WatchScreen() {
   const bandHeightRef = useRef(0);
   const bandLayoutTopRef = useRef(0);
   const bandTopRef = useRef<number | null>(null);
+  const bandDragStartTopRef = useRef(0);
 
   const bandPanResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => false,
@@ -101,12 +102,13 @@ export default function WatchScreen() {
     onMoveShouldSetPanResponderCapture: (_, gestureState) =>
       Math.abs(gestureState.dy) > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
     onPanResponderGrant: () => {
-      bandTopRef.current = bandTopRef.current ?? bandLayoutTopRef.current;
+      const startTop = bandTopRef.current ?? bandLayoutTopRef.current;
+      bandDragStartTopRef.current = startTop;
+      bandTopRef.current = startTop;
     },
     onPanResponderMove: (_, gestureState) => {
       const maxTop = Math.max(0, bandFrameHeightRef.current - bandHeightRef.current);
-      const startTop = bandTopRef.current ?? bandLayoutTopRef.current;
-      const nextTop = Math.min(maxTop, Math.max(0, startTop + gestureState.dy));
+      const nextTop = Math.min(maxTop, Math.max(0, bandDragStartTopRef.current + gestureState.dy));
       bandTopRef.current = nextTop;
       setBandTop(nextTop);
     },
@@ -406,9 +408,9 @@ export default function WatchScreen() {
           {playerElement}
           <View
             {...bandPanResponder.panHandlers}
-            className={`absolute z-10 min-h-24 max-w-full self-center rounded-xl bg-black/70 ${bandTop === null ? 'bottom-0' : ''}`}
+            className={`absolute z-10 min-h-24 self-center rounded-xl bg-black/70 pb-2 ${bandTop === null ? 'bottom-0' : ''}`}
             style={[
-              { maxWidth: Math.max(0, screenWidth - 64) },
+              { alignSelf: 'center', maxWidth: Math.max(0, screenWidth - 64), width: 'auto' },
               bandTop === null ? { bottom: 0 } : { top: bandTop },
             ]}
             onLayout={(e) => {
@@ -416,7 +418,7 @@ export default function WatchScreen() {
               bandLayoutTopRef.current = e.nativeEvent.layout.y;
             }}
           >
-            <View className="flex-row justify-center py-1">
+            <View className="flex-row justify-center pb-2 pt-1">
               <VideoControlBar
                 reduced
                 subtitlesBand

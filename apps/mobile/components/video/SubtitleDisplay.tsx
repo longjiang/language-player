@@ -226,7 +226,7 @@ export function SubtitleDisplay({ lines, activeLineIndex, currentTime, tokenCach
       <View className={overlay ? 'min-h-0' : 'min-h-32 flex-1 bg-card border-t border-border'}>
         {/* Active line */}
         <Pressable
-          className={`${overlay ? '' : 'flex-1'} flex-col items-center justify-start ${overlay ? 'px-1 pt-1 pb-0' : 'px-4 pt-4 pb-2'} min-h-0`}
+          className={`${overlay ? '' : 'flex-1'} flex-col items-center justify-start ${overlay ? 'px-0 pt-2 pb-0' : 'px-4 pt-4 pb-2'} min-h-0`}
           onPress={() => { if (shownLine) onSeekToLine?.(shownLine.starttime); }}
         >
           {shownLine ? (
