@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Przykłady z filmów"
+  },
+  "subsAiExamples": {
+    "message": "Jesteś asystentem nauki języków. Poniżej znajdują się linie napisów z $n$ filmów, każda w języku $l2Name$, zawierające termin \"$term$\". Linie zaczynające się od * to linie pasujące.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

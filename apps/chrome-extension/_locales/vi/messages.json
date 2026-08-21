@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Ví dụ từ video"
+  },
+  "subsAiExamples": {
+    "message": "Bạn là trợ lý học ngôn ngữ. Dưới đây là các dòng phụ đề từ $n$ video, mỗi dòng bằng tiếng $l2Name$, có chứa từ \"$term$\". Các dòng bắt đầu bằng * là các dòng khớp.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

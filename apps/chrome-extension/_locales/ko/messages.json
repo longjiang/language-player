@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "동영상 예시"
+  },
+  "subsAiExamples": {
+    "message": "당신은 언어 학습 도우미입니다. 아래는 \"$term$\"을(를) 포함하는 $n$개 동영상의 자막 줄(모두 $l2Name$)입니다. *로 시작하는 줄이 일치하는 줄입니다.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

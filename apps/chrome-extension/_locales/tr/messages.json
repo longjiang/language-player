@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Videolardan Örnekler"
+  },
+  "subsAiExamples": {
+    "message": "Sen bir dil öğrenme asistanısın. Aşağıda, \"$term$\" terimini içeren $n$ videonun her biri $l2Name$ dilindeki altyazı satırları yer alıyor. * ile başlayan satırlar eşleşen satırlardır.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Esempi dai video"
+  },
+  "subsAiExamples": {
+    "message": "Sei un assistente per l'apprendimento delle lingue. Di seguito ci sono righe di sottotitoli di $n$ video, ciascuna in $l2Name$, che contengono il termine \"$term$\". Le righe che iniziano con * sono quelle corrispondenti.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }

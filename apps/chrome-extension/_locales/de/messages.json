@@ -702,5 +702,22 @@
         "content": "$1"
       }
     }
+  },
+  "examples": {
+    "message": "Beispiele aus Videos"
+  },
+  "subsAiExamples": {
+    "message": "Du bist ein Sprachlern-Assistent. Unten findest du Untertitelzeilen aus $n$ Videos, jeweils auf $l2Name$, die den Begriff \"$term$\" enthalten. Zeilen mit führendem * sind die Trefferzeilen.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "term": {
+        "content": "$3"
+      }
+    }
   }
 }
