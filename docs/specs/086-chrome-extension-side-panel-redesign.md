@@ -4,7 +4,7 @@
 
 - **Spec ID**: SPEC-086
 - **Feature**: Redesign the Chrome extension side panel to match the apps/web visual language and interaction model
-- **Status**: draft
+- **Status**: implemented; manual browser parity verification pending
 - **Created**: 2026-08-21
 - **ROADMAP Phase**: Chrome Extension
 - **Scope**: apps/chrome-extension/
@@ -573,6 +573,25 @@ Careful points: an entry can have a valid head word but no formatted pronunciati
 - No card or modal contains a duplicate local implementation of web pronunciation formatting, entry routing, subscription predicates, or AI prompt/follow-up logic when the shared/web implementation can be reused.
 - Restricted tabs, missing content scripts, navigation races, API failures, empty results, expired sessions, RTL languages, and reduced motion have tested fallback behavior.
 - node apps/chrome-extension/build.mjs succeeds and the resulting unpacked extension loads without manifest, i18n, or runtime errors.
+
+### Implementation evidence
+
+The implementation is split into independently rebuilt commits:
+
+- `a2a59bed` — baseline and permission regression guard
+- `27513c8a` — side-panel foundation and action toggle
+- `fd41d6be` — typed subtitle/page state bridge hardening
+- `8f4ed1aa` — lazy Page Translation tab
+- `1ce632b7` — language picker and Display settings
+- `6e4b81b4` — account, Help, About, login/logout, and subscription flows
+- `ea4d4554` — dictionary modal surface
+- `7bd9366a` — compact dictionary cards, shared pronunciation formatting, and event boundaries
+
+Every implementation phase ran `node apps/chrome-extension/build.mjs` and
+`node scripts/check-extension-permissions.mjs`. The shared pronunciation
+fixtures pass with 10 tests. Manual browser verification across supported hosts,
+widths, themes, accounts, and languages remains a release check rather than
+something proven by the bundle alone.
 
 ## Open Questions
 

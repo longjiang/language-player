@@ -12,7 +12,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
-import { formatPronunciation } from '@langplayer/utils';
+import { baseCode, formatPronunciation } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
@@ -48,6 +48,14 @@ interface DictionaryCardProps {
 // ── API ────────────────────────────────────────────────────────────────────
 
 const WEB_APP = 'https://languageplayer.io';
+type FollowUpKind = 'inflection' | 'morphemes' | 'etymology' | 'syntax' | 'synonyms';
+const FOLLOW_UPS: Array<{ kind: FollowUpKind; labelKey: string }> = [
+  { kind: 'inflection', labelKey: 'inflection' },
+  { kind: 'morphemes', labelKey: 'morphemes' },
+  { kind: 'etymology', labelKey: 'etymology' },
+  { kind: 'syntax', labelKey: 'syntax' },
+  { kind: 'synonyms', labelKey: 'synonyms' },
+];
 
 async function fetchEntries(
   text: string,
@@ -58,7 +66,7 @@ async function fetchEntries(
   const res = await apiFetch(`${API_BASE}/dictionary/lookup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, l2: l2Code.split('-')[0], l1: l1Code }),
+    body: JSON.stringify({ text, l2: baseCode(l2Code), l1: l1Code }),
     signal,
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -92,7 +100,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const dictId = entry.dictionary?.id ?? 'llm';
   const listCurrent = `${dictId}-${entry.id}`;
   const webAppUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary/entry/${encodeURIComponent(dictId)}/${encodeURIComponent(entry.id)}?listCurrent=${encodeURIComponent(listCurrent)}`;
-  const l2Base = l2Code.split('-')[0] || l2Code;
+  const l2Base = baseCode(l2Code);
   const formattedPronunciation = formatPronunciation(entry, l2Base);
   const levelBadges = (entry.levels ?? [])
     .filter((level) => level.numeric != null && shouldShowLevel(level, l2Base))
@@ -249,6 +257,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [explainLoading, setExplainLoading] = useState(false);
   const [explainError, setExplainError] = useState<string | null>(null);
   const [showExplain, setShowExplain] = useState(false);
+  const [followUpLoading, setFollowUpLoading] = useState<FollowUpKind | null>(null);
+  const [usedFollowUps, setUsedFollowUps] = useState<FollowUpKind[]>([]);
 
   // DeepSeek responses are per-word — never carry them over to a new lookup.
   useEffect(() => {
@@ -256,6 +266,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     setExplainError(null);
     setExplainLoading(false);
     setShowExplain(false);
+    setFollowUpLoading(null);
+    setUsedFollowUps([]);
   }, [token]);
 
   useEffect(() => {
@@ -371,6 +383,55 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     }
   }, [isPro, showExplain, explainText, explainError, token, l1Code, l2Code, l1Name, l2Name, contextText]);
 
+  const handleFollowUp = useCallback(async (kind: FollowUpKind) => {
+    if (!isPro || followUpLoading) return;
+    const word = token.lemmas[0]?.lemma || token.text;
+    const language = l2Name || l2Code;
+    const context = contextText?.replace(/[.。！!？?…]+$/, '');
+    const contextForm = token.text !== word ? token.text : undefined;
+    let prompt = '';
+    if (kind === 'inflection') {
+      prompt = context && contextForm
+        ? t('followupInflectionContextForm', [language, word, contextForm, context])
+        : context
+          ? t('followupInflectionContext', [language, word, context])
+          : t('followupInflection', [language, word]);
+    } else if (kind === 'morphemes') {
+      prompt = context
+        ? t('followupMorphemesContext', [language, word, context])
+        : t('followupMorphemes', [language, word]);
+    } else if (kind === 'etymology') {
+      prompt = t('followupEtymology', [language, word]);
+    } else if (kind === 'syntax') {
+      prompt = context
+        ? t('followupSyntaxContext', [language, word, context])
+        : t('followupSyntax', [language, word]);
+    } else {
+      prompt = context
+        ? t('followupSynonymsContext', [language, word, context])
+        : t('followupSynonyms', [language, word]);
+      prompt += `\n\n${t('followupSynonymsExamples', [language])}`;
+    }
+    setFollowUpLoading(kind);
+    setShowExplain(true);
+    setExplainError(null);
+    try {
+      const res = await apiFetch(`${API_BASE}/chatgpt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setExplainText(data.response || data.text || data.result || JSON.stringify(data));
+      setUsedFollowUps((current) => current.includes(kind) ? current : [...current, kind]);
+    } catch (err: any) {
+      setExplainError(err?.message || 'Follow-up failed');
+    } finally {
+      setFollowUpLoading(null);
+    }
+  }, [isPro, followUpLoading, token, l2Name, l2Code, contextText]);
+
   const searchUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary?q=${encodeURIComponent(token.text)}`;
 
   return (
@@ -422,6 +483,21 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
             )}
             {explainText && (
               <Markdown text={explainText} />
+            )}
+            {isPro && (
+              <div className="lpv-explain-followups" aria-label={t('actions')}>
+                {FOLLOW_UPS.map(({ kind, labelKey }) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    className={`lpv-explain-followup ${usedFollowUps.includes(kind) ? 'is-used' : ''}`}
+                    disabled={!!followUpLoading}
+                    onClick={() => handleFollowUp(kind)}
+                  >
+                    {followUpLoading === kind ? '…' : t(labelKey)}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         )}

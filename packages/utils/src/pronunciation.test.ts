@@ -17,6 +17,33 @@ function entry(overrides: Partial<DictionaryEntry>): DictionaryEntry {
 }
 
 describe('formatPronunciation', () => {
+  it('formats Japanese kana, romaji, downstep, and pitch pattern together', () => {
+    const e = entry({
+      head: '残り',
+      pronunciation: 'nokori',
+      phonetic_detail: { kana: 'のこり', pitch_accent: [3] },
+    });
+    expect(formatPronunciation(e, 'ja')).toBe('[のこりꜜ, nokorí]③');
+  });
+
+  it('uses Japanese kana without pitch data before romanization', () => {
+    const e = entry({
+      head: '残り',
+      pronunciation: 'nokori',
+      phonetic_detail: { kana: 'のこり' },
+    });
+    expect(formatPronunciation(e, 'ja')).toBe('[のこり]');
+  });
+
+  it('falls back to Japanese romanization when kana is unavailable', () => {
+    const e = entry({
+      head: '残り',
+      pronunciation: '',
+      phonetic_detail: { romanization: 'nokori' },
+    });
+    expect(formatPronunciation(e, 'ja')).toBe('[nokori]');
+  });
+
   it('uses jyutping for Cantonese, not Mandarin pinyin', () => {
     const e = entry({
       pronunciation: 'ni1 go3',
@@ -63,6 +90,15 @@ describe('formatPronunciation', () => {
       },
     });
     expect(formatPronunciation(e, 'th')).toBe('[bprà-têet]');
+  });
+
+  it('uses IPA as the final fallback for other languages', () => {
+    const e = entry({
+      head: 'bonjour',
+      pronunciation: '',
+      phonetic_detail: { ipa: 'bɔ̃.ʒuʁ' },
+    });
+    expect(formatPronunciation(e, 'fr')).toBe('[bɔ̃.ʒuʁ]');
   });
 
   it('strips Wiktionary grammatical labels from Thai pronunciation', () => {

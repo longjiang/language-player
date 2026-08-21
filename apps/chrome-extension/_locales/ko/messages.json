@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "발음과 형태(또는 적절한 경우 어원)를 제시하세요. 굴절된 형태라면 기본형(레마)과 굴절형을 제시하고, 그렇지 않으면 굴절이나 기본형을 언급하지 마세요."
+  },
+  "inflection": {
+    "message": "굴절"
+  },
+  "morphemes": {
+    "message": "형태소"
+  },
+  "etymology": {
+    "message": "어원"
+  },
+  "syntax": {
+    "message": "통사론"
+  },
+  "synonyms": {
+    "message": "동의어"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "$l2Name$ 단어 \"$word$\"의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"(굴절형: $contextForm$)의 기본형(사전형), 단어의 굴절 방식, 그리고 굴절형의 의미를 설명하세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "$l2Name$ 단어 \"$word$\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"를 의미 단위(형태소)로 분해할 수 있는지 설명하고, 단어의 문자 그대로의 해석이 있으면 언급하세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "$l2Name$ 단어 \"$word$\"의 어원을 알려주세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "$l2Name$ 단어 \"$word$\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"가 통사적 요소로 기능하는지 설명하고, 통사 구조가 무엇인지 설명하세요(예: 문장 구조, 구의 일부, 특정 문법 현상 등).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "$l2Name$ 단어 \"$word$\"(그 단어 자체는 제외)의 동의어를 최대 3개 나열해 주세요. 각각이 \"$word$\"와 의미나 용법에서 어떻게 다른지 간단히 설명해 주세요. 발음을 포함할 경우 줄 안에 함께 쓰고 별도의 줄을 만들지 마세요. 표나 다른 내용은 필요 없습니다.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "\"$context$\"에서 $l2Name$ 단어 \"$word$\"(그 단어 자체는 제외)의 동의어를 최대 3개 나열해 주세요. 각각이 \"$word$\"와 의미나 용법에서 어떻게 다른지 간단히 설명해 주세요. 발음을 포함할 경우 줄 안에 함께 쓰고 별도의 줄을 만들지 마세요. 표나 다른 내용은 필요 없습니다.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "각 동의어마다 $l2Name$로 된 자연스러운 예문 하나와 학습자 인터페이스 언어 번역을 포함하세요. 각 동의어의 설명, 예문, 번역을 함께 묶어 제시하세요. 표는 사용하지 마세요.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

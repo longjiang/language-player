@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "Gib die Aussprache und Morphologie (oder Etymologie, falls zutreffend) an. Wenn flektiert, gib das Lemma und die Flexion an; andernfalls erwähne Flexion oder Lemma nicht."
+  },
+  "inflection": {
+    "message": "Flexion"
+  },
+  "morphemes": {
+    "message": "Morpheme"
+  },
+  "etymology": {
+    "message": "Etymologie"
+  },
+  "syntax": {
+    "message": "Syntax"
+  },
+  "synonyms": {
+    "message": "Synonyme"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "Erkläre bitte das Lemma (Wörterbuchform) des $l2Name$-Wortes \"$word$\", wie das Wort flektiert wird und die Bedeutung der flektierten Form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "Erkläre bitte das Lemma (Wörterbuchform) des $l2Name$-Wortes \"$word$\", wie das Wort in \"$context$\" flektiert wird und die Bedeutung der flektierten Form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "Erkläre bitte das Lemma (Wörterbuchform) des $l2Name$-Wortes \"$word$\" (flektierte Form: $contextForm$), wie das Wort in \"$context$\" flektiert wird und die Bedeutung der flektierten Form.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "Erkläre bitte, ob das $l2Name$-Wort \"$word$\" in semantische Bestandteile (Morpheme) zerlegt werden kann, und nenne wörtliche Deutungen des Wortes.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "Erkläre bitte, ob das $l2Name$-Wort \"$word$\" in \"$context$\" in semantische Bestandteile (Morpheme) zerlegt werden kann, und nenne wörtliche Deutungen des Wortes.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "Gib bitte die Etymologie des $l2Name$-Wortes \"$word$\" an.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "Erkläre bitte, ob das $l2Name$-Wort \"$word$\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "Erkläre bitte, ob das $l2Name$-Wort \"$word$\" in \"$context$\" als syntaktisches Element fungiert, und erkläre, worin die syntaktische Struktur besteht (z. B. Satzstruktur, Teil einer Phrase, ein bestimmtes grammatisches Phänomen usw.).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "Nenne bis zu drei Synonyme des $l2Name$-Wortes \"$word$\" (nicht das Wort selbst). Erkläre kurz, wie sich jedes von \"$word$\" in Bedeutung oder Gebrauch unterscheidet. Aussprache falls nötig inline angeben, niemals in einer separaten Zeile. Keine Tabellen oder sonstigen Inhalte.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "Nenne bis zu drei Synonyme des $l2Name$-Wortes \"$word$\" in \"$context$\" (nicht das Wort selbst). Erkläre kurz, wie sich jedes von \"$word$\" in Bedeutung oder Gebrauch unterscheidet. Aussprache falls nötig inline angeben, niemals in einer separaten Zeile. Keine Tabellen oder sonstigen Inhalte.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "Füge für jedes Synonym einen natürlichen Beispielsatz auf $l2Name$ und dessen Übersetzung in die Sprache der Benutzeroberfläche des Lernenden hinzu. Halte die Erklärung, den Beispielsatz und die Übersetzung jedes Synonyms zusammen. Keine Tabellen.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

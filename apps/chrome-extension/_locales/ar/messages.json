@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "اذكر نطقها وصرفها (أو أصلها اللغوي إن أمكن). إذا كانت مصرفة، فاذكر الليما والتصريف؛ وإلا فلا تذكر التصريف أو الليما."
+  },
+  "inflection": {
+    "message": "التصريف"
+  },
+  "morphemes": {
+    "message": "المورفيمات"
+  },
+  "etymology": {
+    "message": "أصل الكلمة"
+  },
+  "syntax": {
+    "message": "النحو"
+  },
+  "synonyms": {
+    "message": "مرادفات"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "يرجى شرح الليما (الصيغة المعجمية) لكلمة $l2Name$ \"$word$\"، وكيفية تصريفها، ومعنى الصيغة المصرفة.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "يرجى شرح الليما (الصيغة المعجمية) لكلمة $l2Name$ \"$word$\"، وكيفية تصريفها في \"$context$\"، ومعنى الصيغة المصرفة.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "يرجى شرح الليما (الصيغة المعجمية) لكلمة $l2Name$ \"$word$\" (الصيغة المصرفة: $contextForm$)، وكيفية تصريفها في \"$context$\"، ومعنى الصيغة المصرفة.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "يرجى شرح ما إذا كانت كلمة $l2Name$ \"$word$\" يمكن تقسيمها إلى أجزاء دلالية (مورفيمات)، واذكر أي تفسيرات حرفية للكلمة.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "يرجى شرح ما إذا كانت كلمة $l2Name$ \"$word$\" في \"$context$\" يمكن تقسيمها إلى أجزاء دلالية (مورفيمات)، واذكر أي تفسيرات حرفية للكلمة.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "يرجى تقديم أصل كلمة $l2Name$ \"$word$\".",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "يرجى شرح ما إذا كانت كلمة $l2Name$ \"$word$\" تعمل كعنصر نحوي، وشرح ما هو التركيب النحوي (مثل بنية الجملة، جزء من عبارة، ظاهرة نحوية معينة، إلخ).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "يرجى شرح ما إذا كانت كلمة $l2Name$ \"$word$\" في \"$context$\" تعمل كعنصر نحوي، وشرح ما هو التركيب النحوي (مثل بنية الجملة، جزء من عبارة، ظاهرة نحوية معينة، إلخ).",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "اذكر ما يصل إلى ثلاثة مرادفات لكلمة $l2Name$ \"$word$\" (وليس الكلمة نفسها). وضح بإيجاز كيف يختلف كل مرادف عن \"$word$\" في المعنى أو الاستخدام. إذا أضفت النطق فاجعله ضمن السطر، دون سطر نطق منفصل. دون جداول أو أي محتوى إضافي.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "اذكر ما يصل إلى ثلاثة مرادفات لكلمة $l2Name$ \"$word$\" في \"$context$\" (وليس الكلمة نفسها). وضح بإيجاز كيف يختلف كل مرادف عن \"$word$\" في المعنى أو الاستخدام. إذا أضفت النطق فاجعله ضمن السطر، دون سطر نطق منفصل. دون جداول أو أي محتوى إضافي.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "لكل مرادف، أدرج جملة مثال طبيعية بلغة $l2Name$ وترجمتها إلى لغة واجهة المتعلم. اجمع شرح كل مرادف وجملة المثال وترجمتها معًا. دون جداول.",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }

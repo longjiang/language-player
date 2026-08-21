@@ -545,5 +545,162 @@
   },
   "explainMorphology": {
     "message": "给出其发音。如果是屈折或变位形式，给出其原形并说明屈折变化。如果不是屈折形式，则不要提及屈折或词元。"
+  },
+  "inflection": {
+    "message": "屈折变化"
+  },
+  "morphemes": {
+    "message": "语素"
+  },
+  "etymology": {
+    "message": "词源"
+  },
+  "syntax": {
+    "message": "句法"
+  },
+  "synonyms": {
+    "message": "同义词"
+  },
+  "zoomOut": {
+    "message": "Zoom out"
+  },
+  "zoomIn": {
+    "message": "Zoom in"
+  },
+  "followupInflection": {
+    "message": "请解释$l2Name$单词\"$word$\"的词元（词典形式）、该词的屈折变化方式，以及屈折形式的意义。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupInflectionContext": {
+    "message": "请解释$l2Name$单词\"$word$\"的词元（词典形式）、该词在\"$context$\"中的屈折变化方式，以及屈折形式的意义。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupInflectionContextForm": {
+    "message": "请解释$l2Name$单词\"$word$\"（屈折形式：$contextForm$）的词元（词典形式）、该词在\"$context$\"中的屈折变化方式，以及屈折形式的意义。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "contextForm": {
+        "content": "$3"
+      },
+      "context": {
+        "content": "$4"
+      }
+    }
+  },
+  "followupMorphemes": {
+    "message": "请解释$l2Name$单词\"$word$\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupMorphemesContext": {
+    "message": "请解释\"$context$\"中的$l2Name$单词\"$word$\"是否可以分解成语义部分（语素），并指出该词是否有字面解释。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupEtymology": {
+    "message": "请给出$l2Name$单词\"$word$\"的词源。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntax": {
+    "message": "请解释$l2Name$单词\"$word$\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSyntaxContext": {
+    "message": "请解释\"$context$\"中的$l2Name$单词\"$word$\"是否在充当某种句法成分，并说明其句法结构是什么（例如句子结构、短语的一部分、某种语法现象等）。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonyms": {
+    "message": "列出$l2Name$单词\"$word$\"最多三个同义词（不包括\"$word$\"本身）。简要说明每个词与\"$word$\"在意义或用法上的区别。如给出发音，请内联标注，不要单独一行。不要表格或其他内容。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      }
+    }
+  },
+  "followupSynonymsContext": {
+    "message": "列出\"$context$\"中$l2Name$单词\"$word$\"最多三个同义词（不包括\"$word$\"本身）。简要说明每个词与\"$word$\"在意义或用法上的区别。如给出发音，请内联标注，不要单独一行。不要表格或其他内容。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      },
+      "word": {
+        "content": "$2"
+      },
+      "context": {
+        "content": "$3"
+      }
+    }
+  },
+  "followupSynonymsExamples": {
+    "message": "对于每个同义词，请提供一个自然的$l2Name$例句及其用户界面语言翻译。将每个同义词的解释、例句和翻译放在一起。不要使用表格。",
+    "placeholders": {
+      "l2Name": {
+        "content": "$1"
+      }
+    }
   }
 }
