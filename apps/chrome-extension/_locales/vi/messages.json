@@ -180,6 +180,9 @@
   "speak": {
     "message": "Nói"
   },
+  "searchImages": {
+    "message": "Tìm kiếm hình ảnh"
+  },
   "startPlaying": {
     "message": "Bắt đầu phát video."
   },

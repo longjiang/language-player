@@ -180,6 +180,9 @@
   "speak": {
     "message": "Konuş"
   },
+  "searchImages": {
+    "message": "Görsel ara"
+  },
   "startPlaying": {
     "message": "Bir video oynatmaya başlayın."
   },

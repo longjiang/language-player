@@ -10,15 +10,15 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
-import { formatLevel } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
+import { formatProficiencyLevel, primaryScale, shouldShowLevel } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useSavedWords } from './SavedWordsProvider';
 import { API_BASE } from '../api-config';
 import { fetchInflectedForms } from '../saved-words';
 import { apiFetch } from '../api-fetch';
 import { Markdown } from './Markdown';
-import { Bookmark, BookmarkCheck, X } from './Icons';
+import { Bookmark, BookmarkCheck, ExternalLink, Volume2, X } from './Icons';
 import { log, logerr, t } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -66,10 +66,6 @@ async function fetchEntries(
   return (data.results ?? []) as DictionaryEntry[];
 }
 
-function levelLabel(scale: string, value: string | number): string {
-  return formatLevel({ scale, value } as ProficiencyLevel).long;
-}
-
 // ── Entry Row ──────────────────────────────────────────────────────────────
 
 interface EntryRowProps {
@@ -96,6 +92,11 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
   const dictId = entry.dictionary?.id ?? 'llm';
   const listCurrent = `${dictId}-${entry.id}`;
   const webAppUrl = `${WEB_APP}/${encodeURIComponent(l1Code)}/${encodeURIComponent(l2Code)}/dictionary/entry/${encodeURIComponent(dictId)}/${encodeURIComponent(entry.id)}?listCurrent=${encodeURIComponent(listCurrent)}`;
+  const l2Base = l2Code.split('-')[0] || l2Code;
+  const formattedPronunciation = formatPronunciation(entry, l2Base);
+  const levelBadges = (entry.levels ?? [])
+    .filter((level) => level.numeric != null && shouldShowLevel(level, l2Base))
+    .map((level) => formatProficiencyLevel(level, primaryScale(l2Base)));
 
   const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
 
@@ -144,45 +145,74 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     }
   }, [entry, isLoggedIn, wordsLoading, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
 
+  const handleSpeak = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+    window.speechSynthesis?.cancel();
+    const utterance = new SpeechSynthesisUtterance(entry.head);
+    utterance.lang = l2Base;
+    utterance.rate = 0.75;
+    window.speechSynthesis?.speak(utterance);
+  }, [entry.head, l2Base]);
+
+  const openEntry = useCallback(() => {
+    window.open(webAppUrl, '_blank', 'noopener,noreferrer');
+  }, [webAppUrl]);
+
   return (
-    <div className="lpv-dict-entry-row">
-      <a
-        href={webAppUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="lpv-dict-entry"
-      >
+    <div
+      className="lpv-dict-entry-row lpv-dict-entry-card"
+      role="link"
+      tabIndex={0}
+      onClick={openEntry}
+      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openEntry(); } }}
+    >
+      <div className="lpv-dict-entry">
         <div className="lpv-dict-entry-header">
           <span className="lpv-dict-head">{entry.head}</span>
-          {formatPronunciation(entry, l2Code.split('-')[0] || l2Code) && (
-            <span className="lpv-dict-pron-small">{formatPronunciation(entry, l2Code.split('-')[0] || l2Code)}</span>
-          )}
-          {entry.part_of_speech && (
-            <span className="lpv-dict-pos">{entry.part_of_speech}</span>
-          )}
-          {entry.dictionary && (
-            <span className="lpv-dict-source">{entry.dictionary.name}</span>
+          <button className="lpv-dict-speak" type="button" onClick={handleSpeak} title={t('speak')} aria-label={t('speak')}>
+            <Volume2 size={14} />
+          </button>
+          {formattedPronunciation && (
+            <span className="lpv-dict-pron-small">{formattedPronunciation}</span>
           )}
         </div>
-        {entry.definitions && entry.definitions.length > 0 && (
-          <div className="lpv-dict-def">{entry.definitions.join('; ')}</div>
+        {(entry.part_of_speech || entry.definitions?.length) && (
+          <div className="lpv-dict-def">
+            {entry.part_of_speech && <em>{entry.part_of_speech}</em>}
+            {entry.definitions?.map((definition, index) => (
+              <span key={index}>{entry.part_of_speech || index > 0 ? '  ' : ''}<strong>{index + 1}</strong> {definition}</span>
+            ))}
+          </div>
         )}
-        {entry.levels && entry.levels.length > 0 && (
+        {levelBadges.length > 0 && (
           <div className="lpv-dict-levels">
-            {entry.levels.map((lvl, i) => (
+            {levelBadges.map((level, i) => (
               <span key={i} className="lpv-dict-level">
-                {levelLabel(lvl.scale, lvl.value)}
+                {level.short}
               </span>
             ))}
           </div>
         )}
-      </a>
+        <div className="lpv-dict-entry-footer">
+          <span className="lpv-dict-source">{entry.dictionary?.name ?? entry.source ?? ''}</span>
+          <a
+            href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lpv-dict-images-link"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ExternalLink size={12} /> {t('searchImages')}
+          </a>
+        </div>
+      </div>
       {isLoggedIn && !wordsLoading && (
         <button
           onClick={handleSave}
           disabled={saving}
           className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
           title={isSaved ? t('removeFromSaved') : t('save')}
+          aria-label={isSaved ? t('removeFromSaved') : t('save')}
         >
           {saving ? '…' : isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
         </button>

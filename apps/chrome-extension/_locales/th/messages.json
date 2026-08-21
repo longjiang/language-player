@@ -180,6 +180,9 @@
   "speak": {
     "message": "พูด"
   },
+  "searchImages": {
+    "message": "ค้นหารูปภาพ"
+  },
   "startPlaying": {
     "message": "เริ่มเล่นวิดีโอ"
   },

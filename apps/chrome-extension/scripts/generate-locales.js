@@ -33,6 +33,7 @@ const CSV_LOOKUP = {
   'copy': 'action.copy',
   'retry': 'action.retry',
   'speak': 'action.speak',
+  'searchImages': 'action.search_images',
   'profile': 'title.profile',
   'subtitles': 'label.subtitles',
   'login': 'action.log_in',

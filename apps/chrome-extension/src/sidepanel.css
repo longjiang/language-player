@@ -652,6 +652,144 @@ button:focus-visible,
   padding: 1rem 1.25rem;
 }
 
+/* DictionaryPopup parity: compact entry cards use the same information
+ * hierarchy as apps/web while retaining the extension's semantic tokens. */
+.lpv-dictionary-dialog {
+  width: min(100%, 30rem);
+}
+
+.lpv-dictionary-dialog .lpv-ui-dialog-body {
+  padding: 0;
+}
+
+.lpv-dictionary-dialog .lpv-dict-card {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-header {
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 0;
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-word,
+.lpv-dictionary-dialog .lpv-dict-head {
+  color: hsl(var(--foreground));
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-pron,
+.lpv-dictionary-dialog .lpv-dict-pron-small,
+.lpv-dictionary-dialog .lpv-dict-pos,
+.lpv-dictionary-dialog .lpv-dict-def {
+  color: hsl(var(--muted-foreground));
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-close,
+.lpv-dictionary-dialog .lpv-dict-speak {
+  border: 0;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-close:hover,
+.lpv-dictionary-dialog .lpv-dict-speak:hover {
+  background: hsl(var(--accent) / 0.12);
+  color: hsl(var(--foreground));
+}
+
+.lpv-dictionary-dialog .lpv-dict-card-body {
+  max-height: min(55vh, 32rem);
+  padding: 0 1.25rem 1.25rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry-row {
+  align-items: stretch;
+  margin-top: 0.625rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.06);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry-row:hover {
+  border-color: hsl(var(--ring));
+  background: hsl(var(--muted) / 0.3);
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry {
+  padding: 0.75rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry-header {
+  gap: 0.375rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-head {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.lpv-dictionary-dialog .lpv-dict-def {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.lpv-dictionary-dialog .lpv-dict-def em {
+  margin-right: 0.375rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-def strong {
+  color: hsl(var(--foreground));
+  font-weight: 700;
+}
+
+.lpv-dictionary-dialog .lpv-dict-level {
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+.lpv-dictionary-dialog .lpv-dict-entry-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.625rem;
+  font-size: 0.6875rem;
+}
+
+.lpv-dictionary-dialog .lpv-dict-source,
+.lpv-dictionary-dialog .lpv-dict-images-link {
+  color: hsl(var(--muted-foreground));
+}
+
+.lpv-dictionary-dialog .lpv-dict-images-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-decoration: none;
+}
+
+.lpv-dictionary-dialog .lpv-dict-images-link:hover {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+}
+
+.lpv-dictionary-dialog .lpv-entry-save-btn {
+  align-self: flex-start;
+  margin: 0.625rem 0.625rem 0 0;
+  border-color: transparent;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.lpv-dictionary-dialog .lpv-entry-save-btn:hover,
+.lpv-dictionary-dialog .lpv-entry-save-btn-saved {
+  color: hsl(var(--primary));
+}
+
 .lpv-ui-input,
 .lpv-ui-select {
   width: 100%;

@@ -180,6 +180,9 @@
   "speak": {
     "message": "Bicara"
   },
+  "searchImages": {
+    "message": "Cari gambar"
+  },
   "startPlaying": {
     "message": "Mulai putar video."
   },
